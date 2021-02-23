@@ -34,7 +34,6 @@ use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
 use craft\helpers\ElementHelper;
 use craft\helpers\Html;
-use craft\helpers\Json;
 use craft\helpers\UrlHelper;
 use craft\models\EntryType;
 use craft\models\Section;
@@ -166,7 +165,7 @@ class Entry extends Element
             self::STATUS_LIVE => Craft::t('app', 'Live'),
             self::STATUS_PENDING => Craft::t('app', 'Pending'),
             self::STATUS_EXPIRED => Craft::t('app', 'Expired'),
-            self::STATUS_DISABLED => Craft::t('app', 'Disabled')
+            self::STATUS_DISABLED => Craft::t('app', 'Disabled'),
         ];
     }
 
@@ -212,10 +211,10 @@ class Entry extends Element
                 'label' => Craft::t('app', 'All entries'),
                 'criteria' => [
                     'sectionId' => $sectionIds,
-                    'editable' => $editable
+                    'editable' => $editable,
                 ],
-                'defaultSort' => ['postDate', 'desc']
-            ]
+                'defaultSort' => ['postDate', 'desc'],
+            ],
         ];
 
         if (!empty($singleSectionIds)) {
@@ -224,15 +223,15 @@ class Entry extends Element
                 'label' => Craft::t('app', 'Singles'),
                 'criteria' => [
                     'sectionId' => $singleSectionIds,
-                    'editable' => $editable
+                    'editable' => $editable,
                 ],
-                'defaultSort' => ['title', 'asc']
+                'defaultSort' => ['title', 'asc'],
             ];
         }
 
         $sectionTypes = [
             Section::TYPE_CHANNEL => Craft::t('app', 'Channels'),
-            Section::TYPE_STRUCTURE => Craft::t('app', 'Structures')
+            Section::TYPE_STRUCTURE => Craft::t('app', 'Structures'),
         ];
 
         foreach ($sectionTypes as $type => $heading) {
@@ -247,12 +246,12 @@ class Entry extends Element
                         'sites' => $section->getSiteIds(),
                         'data' => [
                             'type' => $type,
-                            'handle' => $section->handle
+                            'handle' => $section->handle,
                         ],
                         'criteria' => [
                             'sectionId' => $section->id,
-                            'editable' => $editable
-                        ]
+                            'editable' => $editable,
+                        ],
                     ];
 
                     if ($type == Section::TYPE_STRUCTURE) {
@@ -593,7 +592,7 @@ class Entry extends Element
 
             return [
                 'elementType' => User::class,
-                'map' => $map
+                'map' => $map,
             ];
         }
 
@@ -883,7 +882,7 @@ class Entry extends Element
                 $sites[] = [
                     'siteId' => $siteSettings->siteId,
                     'propagate' => $propagate,
-                    'enabledByDefault' => $siteSettings->enabledByDefault
+                    'enabledByDefault' => $siteSettings->enabledByDefault,
                 ];
             }
         }
@@ -948,8 +947,8 @@ class Entry extends Element
                 'template' => (string)$sectionSiteSettings[$siteId]->template,
                 'variables' => [
                     'entry' => $this,
-                ]
-            ]
+                ],
+            ],
         ];
     }
 
@@ -1377,7 +1376,7 @@ class Entry extends Element
                 foreach ($entryTypes as $entryType) {
                     $entryTypeOptions[] = [
                         'label' => Craft::t('site', $entryType->name),
-                        'value' => $entryType->id
+                        'value' => $entryType->id,
                     ];
                 }
 

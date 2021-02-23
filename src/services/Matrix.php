@@ -202,7 +202,7 @@ class Matrix extends Component
                     $error = Craft::t('app', '{attribute} “{value}” has already been taken.',
                         [
                             'attribute' => Craft::t('app', 'Handle'),
-                            'value' => $field->handle
+                            'value' => $field->handle,
                         ]);
 
                     $field->addError('handle', $error);
@@ -516,7 +516,7 @@ class Matrix extends Component
                     $blockType->addError($attribute, Craft::t('app', '{attribute} “{value}” has already been taken.',
                         [
                             'attribute' => $blockType->getAttributeLabel($attribute),
-                            'value' => Html::encode($value)
+                            'value' => Html::encode($value),
                         ]));
 
                     $validates = false;
@@ -996,7 +996,7 @@ class Matrix extends Component
                 'bt.name',
                 'bt.handle',
                 'bt.sortOrder',
-                'bt.uid'
+                'bt.uid',
             ])
             ->from(['bt' => Table::MATRIXBLOCKTYPES])
             ->orderBy(['bt.sortOrder' => SORT_ASC]);
@@ -1046,7 +1046,7 @@ class Matrix extends Component
     private function _createContentTable(string $tableName)
     {
         $migration = new CreateMatrixContentTable([
-            'tableName' => $tableName
+            'tableName' => $tableName,
         ]);
 
         ob_start();

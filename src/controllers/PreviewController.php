@@ -74,7 +74,7 @@ class PreviewController extends Controller
                 'siteId' => (int)$siteId,
                 'draftId' => (int)$draftId ?: null,
                 'revisionId' => (int)$revisionId ?: null,
-            ]
+            ],
         ];
 
         $token = Craft::$app->getTokens()->createToken($route);

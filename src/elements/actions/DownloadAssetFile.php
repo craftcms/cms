@@ -68,10 +68,10 @@ JS;
         $request = Craft::$app->getRequest();
         $js = str_replace([
             '{csrfName}',
-            '{csrfValue}'
+            '{csrfValue}',
         ], [
             $request->csrfParam,
-            $request->getCsrfToken()
+            $request->getCsrfToken(),
         ], $js);
 
         Craft::$app->getView()->registerJs($js);

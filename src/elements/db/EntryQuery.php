@@ -842,14 +842,14 @@ class EntryQuery extends ElementQuery
                     'and',
                     [
                         'elements.enabled' => true,
-                        'elements_sites.enabled' => true
+                        'elements_sites.enabled' => true,
                     ],
                     ['<=', 'entries.postDate', $currentTimeDb],
                     [
                         'or',
                         ['entries.expiryDate' => null],
-                        ['>', 'entries.expiryDate', $currentTimeDb]
-                    ]
+                        ['>', 'entries.expiryDate', $currentTimeDb],
+                    ],
                 ];
             case Entry::STATUS_PENDING:
                 return [
@@ -858,17 +858,17 @@ class EntryQuery extends ElementQuery
                         'elements.enabled' => true,
                         'elements_sites.enabled' => true,
                     ],
-                    ['>', 'entries.postDate', $currentTimeDb]
+                    ['>', 'entries.postDate', $currentTimeDb],
                 ];
             case Entry::STATUS_EXPIRED:
                 return [
                     'and',
                     [
                         'elements.enabled' => true,
-                        'elements_sites.enabled' => true
+                        'elements_sites.enabled' => true,
                     ],
                     ['not', ['entries.expiryDate' => null]],
-                    ['<=', 'entries.expiryDate', $currentTimeDb]
+                    ['<=', 'entries.expiryDate', $currentTimeDb],
                 ];
             default:
                 return parent::statusCondition($status);
@@ -894,7 +894,7 @@ class EntryQuery extends ElementQuery
 
         // Limit the query to only the sections the user has permission to edit
         $this->subQuery->andWhere([
-            'entries.sectionId' => Craft::$app->getSections()->getEditableSectionIds()
+            'entries.sectionId' => Craft::$app->getSections()->getEditableSectionIds(),
         ]);
 
         // Enforce the editPeerEntries permissions for non-Single sections
@@ -903,7 +903,7 @@ class EntryQuery extends ElementQuery
                 $this->subQuery->andWhere([
                     'or',
                     ['not', ['entries.sectionId' => $section->id]],
-                    ['entries.authorId' => $user->id]
+                    ['entries.authorId' => $user->id],
                 ]);
             }
         }
@@ -995,7 +995,7 @@ class EntryQuery extends ElementQuery
                     $condition[] = [
                         'and',
                         Db::parseParam('sections.handle', $parts[0]),
-                        Db::parseParam('elements_sites.slug', $parts[1])
+                        Db::parseParam('elements_sites.slug', $parts[1]),
                     ];
                     $joinSections = true;
                 }

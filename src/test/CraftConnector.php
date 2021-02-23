@@ -68,9 +68,9 @@ class CraftConnector extends Yii2
     {
         $config = parent::mockMailer($config);
         $config['components']['mailer'] = array_merge($config['components']['mailer'], [
-            'class' => TestMailer::class, 'callback' => function(MessageInterface $message) {
+            'class' => TestMailer::class, 'callback' => function (MessageInterface $message) {
                 $this->emails[] = $message;
-            }
+            },
         ]);
 
         return $config;

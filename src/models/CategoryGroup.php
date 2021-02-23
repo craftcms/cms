@@ -180,7 +180,7 @@ class CategoryGroup extends Model
                 'uid' => $this->structureId ? Db::uidById(Table::STRUCTURES, $this->structureId) : StringHelper::UUID(),
                 'maxLevels' => (int)$this->maxLevels ?: null,
             ],
-            'siteSettings' => []
+            'siteSettings' => [],
         ];
 
         $fieldLayout = $this->getFieldLayout();

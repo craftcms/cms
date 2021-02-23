@@ -330,7 +330,7 @@ class UrlManager extends \yii\web\UrlManager
         }
 
         $event = new RegisterUrlRulesEvent([
-            'rules' => $rules
+            'rules' => $rules,
         ]);
         $this->trigger($eventName, $event);
 
@@ -405,7 +405,7 @@ class UrlManager extends \yii\web\UrlManager
             Craft::debug([
                 'rule' => 'Element URI: ' . $path,
                 'match' => $this->_matchedElement instanceof ElementInterface,
-                'parent' => null
+                'parent' => null,
             ], __METHOD__);
         }
 
@@ -429,7 +429,7 @@ class UrlManager extends \yii\web\UrlManager
                 Craft::debug([
                     'rule' => 'URL Rule: ' . (method_exists($rule, '__toString') ? $rule->__toString() : get_class($rule)),
                     'match' => $route !== false,
-                    'parent' => null
+                    'parent' => null,
                 ], __METHOD__);
             }
 
@@ -461,7 +461,7 @@ class UrlManager extends \yii\web\UrlManager
             Craft::debug([
                 'rule' => 'Discoverable change password URL',
                 'match' => $redirectUri !== null,
-                'parent' => null
+                'parent' => null,
             ], __METHOD__);
         }
 
@@ -474,7 +474,7 @@ class UrlManager extends \yii\web\UrlManager
             [
                 'url' => $redirectUri,
                 'statusCode' => 302,
-            ]
+            ],
         ];
     }
 
@@ -525,7 +525,7 @@ class UrlManager extends \yii\web\UrlManager
             Craft::debug([
                 'rule' => 'Template: ' . $path,
                 'match' => $matches,
-                'parent' => null
+                'parent' => null,
             ], __METHOD__);
         }
 
@@ -554,7 +554,7 @@ class UrlManager extends \yii\web\UrlManager
             Craft::debug([
                 'rule' => 'Token' . ($token !== null ? ': ' . $token : ''),
                 'match' => $token !== null,
-                'parent' => null
+                'parent' => null,
             ], __METHOD__);
         }
 

@@ -18,13 +18,13 @@ class m180904_112109_permission_changes extends Migration
         $this->update(Table::USERPERMISSIONS, [
             'name' => 'moderateusers',
         ], [
-            'name' => 'administrateusers'
+            'name' => 'administrateusers',
         ], [], false);
 
         $this->update(Table::USERPERMISSIONS, [
             'name' => 'administrateusers',
         ], [
-            'name' => 'changeuseremails'
+            'name' => 'changeuseremails',
         ], [], false);
     }
 

@@ -35,7 +35,7 @@ abstract class BaseUiElement extends FieldLayoutElement
 
         return Html::tag('div',
             Html::tag('div', $icon, [
-                'class' => 'fld-element-icon'
+                'class' => 'fld-element-icon',
             ]) . Html::tag('div', $labelHtml, [
                 'class' => ['field-name'],
             ]), [

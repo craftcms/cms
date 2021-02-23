@@ -509,7 +509,7 @@ class Db
                     $valCondition = [
                         'or',
                         [$column => null],
-                        [$column => '']
+                        [$column => ''],
                     ];
                 } else {
                     $valCondition = [$column => null];

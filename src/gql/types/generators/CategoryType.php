@@ -65,9 +65,9 @@ class CategoryType extends Generator implements GeneratorInterface, SingleGenera
 
         return GqlEntityRegistry::getEntity($typeName) ?: GqlEntityRegistry::createEntity($typeName, new Category([
             'name' => $typeName,
-            'fields' => function() use ($categoryGroupFields) {
+            'fields' => function () use ($categoryGroupFields) {
                 return $categoryGroupFields;
-            }
+            },
         ]));
     }
 }

@@ -10,7 +10,6 @@ namespace craft\widgets;
 use Craft;
 use craft\base\Widget;
 use craft\helpers\ArrayHelper;
-use craft\helpers\Html;
 use craft\helpers\Json;
 use craft\models\Section;
 use craft\web\assets\quickpost\QuickPostAsset;
@@ -114,7 +113,7 @@ class QuickPost extends Widget
         return Craft::$app->getView()->renderTemplate('_components/widgets/QuickPost/settings',
             [
                 'sections' => $sections,
-                'widget' => $this
+                'widget' => $this,
             ]);
     }
 
@@ -172,7 +171,7 @@ class QuickPost extends Widget
             [
                 'section' => $section,
                 'entryType' => $entryType,
-                'widget' => $this
+                'widget' => $this,
             ]);
 
         $fieldJs = $view->clearJsBuffer(false);

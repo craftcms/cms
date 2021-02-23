@@ -90,7 +90,7 @@ class Content extends Component
             ->from([$this->contentTable])
             ->where([
                 'elementId' => $element->id,
-                'siteId' => $element->siteId
+                'siteId' => $element->siteId,
             ])
             ->one();
 
@@ -161,14 +161,14 @@ class Content extends Component
         // Fire a 'beforeSaveContent' event
         if ($this->hasEventHandlers(self::EVENT_BEFORE_SAVE_CONTENT)) {
             $this->trigger(self::EVENT_BEFORE_SAVE_CONTENT, new ElementContentEvent([
-                'element' => $element
+                'element' => $element,
             ]));
         }
 
         // Prepare the data to be saved
         $values = [
             'elementId' => $element->id,
-            'siteId' => $element->siteId
+            'siteId' => $element->siteId,
         ];
         if ($element->hasTitles() && ($title = (string)$element->title) !== '') {
             $values['title'] = $title;
@@ -193,7 +193,7 @@ class Content extends Component
                 ->from([$this->contentTable])
                 ->where([
                     'elementId' => $element->id,
-                    'siteId' => $element->siteId
+                    'siteId' => $element->siteId,
                 ])
                 ->scalar();
         }
@@ -213,7 +213,7 @@ class Content extends Component
         // Fire an 'afterSaveContent' event
         if ($this->hasEventHandlers(self::EVENT_AFTER_SAVE_CONTENT)) {
             $this->trigger(self::EVENT_AFTER_SAVE_CONTENT, new ElementContentEvent([
-                'element' => $element
+                'element' => $element,
             ]));
         }
 

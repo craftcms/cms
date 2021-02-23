@@ -164,8 +164,8 @@ JS;
                         'descendants',
                         [
                             'orderBy' => ['structureelements.lft' => SORT_DESC],
-                        ]
-                    ]
+                        ],
+                    ],
                 ])
                 ->orderBy(['structureelements.lft' => SORT_DESC]);
         }

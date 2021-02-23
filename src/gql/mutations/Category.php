@@ -62,7 +62,7 @@ class Category extends Mutation
                 'args' => ['id' => Type::nonNull(Type::int())],
                 'resolve' => [Craft::createObject(CategoryResolver::class), 'deleteCategory'],
                 'description' => 'Delete a category.',
-                'type' => Type::boolean()
+                'type' => Type::boolean(),
             ];
         }
 
@@ -93,7 +93,7 @@ class Category extends Mutation
             'description' => 'Save the “' . $categoryGroup->name . '” category.',
             'args' => $mutationArguments,
             'resolve' => [$resolver, 'saveCategory'],
-            'type' => $generatedType
+            'type' => $generatedType,
         ];
     }
 }

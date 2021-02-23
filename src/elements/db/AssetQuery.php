@@ -837,7 +837,7 @@ class AssetQuery extends ElementQuery
             'assets.focalPoint',
             'assets.keptFile',
             'assets.dateModified',
-            'volumeFolders.path AS folderPath'
+            'volumeFolders.path AS folderPath',
         ]);
 
         if (self::_supportsUploaderParam()) {

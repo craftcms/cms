@@ -75,49 +75,49 @@ class Asset extends Element
             'volumeId' => [
                 'name' => 'volumeId',
                 'type' => Type::int(),
-                'description' => 'The ID of the volume that the asset belongs to.'
+                'description' => 'The ID of the volume that the asset belongs to.',
             ],
             'folderId' => [
                 'name' => 'folderId',
                 'type' => Type::int(),
-                'description' => 'The ID of the folder that the asset belongs to.'
+                'description' => 'The ID of the folder that the asset belongs to.',
             ],
             'filename' => [
                 'name' => 'filename',
                 'type' => Type::string(),
-                'description' => 'The filename of the asset file.'
+                'description' => 'The filename of the asset file.',
             ],
             'extension' => [
                 'name' => 'extension',
                 'type' => Type::string(),
-                'description' => 'The file extension for the asset file.'
+                'description' => 'The file extension for the asset file.',
             ],
             'hasFocalPoint' => [
                 'name' => 'hasFocalPoint',
                 'type' => Type::boolean(),
-                'description' => 'Whether a user-defined focal point is set on the asset.'
+                'description' => 'Whether a user-defined focal point is set on the asset.',
             ],
             'focalPoint' => [
                 'name' => 'focalPoint',
                 'type' => Type::listOf(Type::float()),
-                'description' => 'The focal point represented as an array with `x` and `y` keys, or null if it\'s not an image.'
+                'description' => 'The focal point represented as an array with `x` and `y` keys, or null if it\'s not an image.',
             ],
             'kind' => [
                 'name' => 'kind',
                 'type' => Type::string(),
-                'description' => 'The file kind.'
+                'description' => 'The file kind.',
             ],
             'size' => [
                 'name' => 'size',
                 'type' => Type::string(),
-                'description' => 'The file size in bytes.'
+                'description' => 'The file size in bytes.',
             ],
             'height' => [
                 'name' => 'height',
                 'args' => Transform::getArguments(),
                 'type' => Type::int(),
                 'description' => 'The height in pixels or null if it\'s not an image.',
-                'complexity' => function($childrenComplexity, $args) {
+                'complexity' => function ($childrenComplexity, $args) {
                     if (empty($args)) {
                         return $childrenComplexity + GqlService::GRAPHQL_COMPLEXITY_SIMPLE_FIELD;
                     }
@@ -135,7 +135,7 @@ class Asset extends Element
                 'args' => Transform::getArguments(),
                 'type' => Type::int(),
                 'description' => 'The width in pixels or null if it\'s not an image.',
-                'complexity' => function($childrenComplexity, $args) {
+                'complexity' => function ($childrenComplexity, $args) {
                     if (empty($args)) {
                         return $childrenComplexity + GqlService::GRAPHQL_COMPLEXITY_SIMPLE_FIELD;
                     }
@@ -151,7 +151,7 @@ class Asset extends Element
             'img' => [
                 'name' => 'img',
                 'type' => Type::string(),
-                'description' => 'An `<img>` tag based on this asset.'
+                'description' => 'An `<img>` tag based on this asset.',
             ],
             'srcset' => [
                 'name' => 'srcset',
@@ -160,17 +160,17 @@ class Asset extends Element
                     'sizes' => [
                         'name' => 'sizes',
                         'description' => 'A list of size descriptors. If you pass x-descriptors, it will be assumed that the image’s current width is the indented 1x width.',
-                        'type' => Type::nonNull(Type::listOf(Type::nonNull(Type::string())))
-                    ]
+                        'type' => Type::nonNull(Type::listOf(Type::nonNull(Type::string()))),
+                    ],
                 ],
-                'description' => 'Returns a `srcset` attribute value based on the given widths or x-descriptors.'
+                'description' => 'Returns a `srcset` attribute value based on the given widths or x-descriptors.',
             ],
             'url' => [
                 'name' => 'url',
                 'args' => Transform::getArguments(),
                 'type' => Type::string(),
                 'description' => 'The full URL of the asset. This field accepts the same fields as the `transform` directive.',
-                'complexity' => function($childrenComplexity, $args) {
+                'complexity' => function ($childrenComplexity, $args) {
                     if (empty($args)) {
                         return $childrenComplexity + GqlService::GRAPHQL_COMPLEXITY_SIMPLE_FIELD;
                     }
@@ -186,24 +186,24 @@ class Asset extends Element
             'mimeType' => [
                 'name' => 'mimeType',
                 'type' => Type::string(),
-                'description' => 'The file’s MIME type, if it can be determined.'
+                'description' => 'The file’s MIME type, if it can be determined.',
             ],
             'path' => [
                 'name' => 'path',
                 'type' => Type::string(),
-                'description' => 'The asset\'s path in the volume.'
+                'description' => 'The asset\'s path in the volume.',
             ],
             'dateModified' => [
                 'name' => 'dateModified',
                 'type' => DateTime::getType(),
-                'description' => 'The date the asset file was last modified.'
+                'description' => 'The date the asset file was last modified.',
             ],
             'prev' => [
                 'name' => 'prev',
                 'type' => self::getType(),
                 'args' => AssetArguments::getArguments(),
                 'description' => 'Returns the previous element relative to this one, from a given set of criteria.',
-                'complexity' => function($childrenComplexity, $args) {
+                'complexity' => function ($childrenComplexity, $args) {
                     return $childrenComplexity + GqlService::GRAPHQL_COMPLEXITY_NPLUS1 * (int)!empty($args);
                 },
             ],
@@ -212,7 +212,7 @@ class Asset extends Element
                 'type' => self::getType(),
                 'args' => AssetArguments::getArguments(),
                 'description' => 'Returns the next element relative to this one, from a given set of criteria.',
-                'complexity' => function($childrenComplexity, $args) {
+                'complexity' => function ($childrenComplexity, $args) {
                     return $childrenComplexity + GqlService::GRAPHQL_COMPLEXITY_NPLUS1 * (int)!empty($args);
                 },
             ],
@@ -229,13 +229,13 @@ class Asset extends Element
                 'uploaderId' => [
                     'name' => 'uploaderId',
                     'type' => Type::int(),
-                    'description' => 'The ID of the user who first added this asset (if known).'
+                    'description' => 'The ID of the user who first added this asset (if known).',
                 ],
                 'uploader' => [
                     'name' => 'uploader',
                     'type' => User::getType(),
                     'args' => UserArguments::getArguments(),
-                    'description' => 'The user who first added this asset (if known).'
+                    'description' => 'The user who first added this asset (if known).',
                 ],
             ];
         }

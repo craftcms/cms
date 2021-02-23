@@ -29,17 +29,17 @@ class Draft extends Entry
             'draftId' => [
                 'name' => 'draftId',
                 'type' => Type::nonNull(Type::id()),
-                'description' => 'The ID of the draft.'
+                'description' => 'The ID of the draft.',
             ],
             'draftName' => [
                 'name' => 'draftName',
                 'type' => Type::string(),
-                'description' => 'The name of the draft.'
+                'description' => 'The name of the draft.',
             ],
             'draftNotes' => [
                 'name' => 'draftNotes',
                 'type' => Type::string(),
-                'description' => 'Notes for the draft.'
+                'description' => 'Notes for the draft.',
             ],
         ]);
     }

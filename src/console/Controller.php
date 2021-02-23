@@ -7,7 +7,6 @@
 
 namespace craft\console;
 
-use Composer\Util\Platform;
 use craft\console\controllers\ResaveController;
 use craft\events\DefineConsoleActionsEvent;
 use craft\helpers\ArrayHelper;

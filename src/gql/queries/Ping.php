@@ -26,7 +26,7 @@ class Ping extends Query
         return [
             'ping' => [
                 'type' => Type::string(),
-                'resolve' => function() {
+                'resolve' => function () {
                     return 'pong';
                 },
             ],

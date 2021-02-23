@@ -195,7 +195,7 @@ class ConvertEntryRevisions extends BaseJob
                 '>', 'num', (new Query())
                     ->select(new Expression("max({$numSql})" . ($maxRevisions ? " - {$maxRevisions}" : '')))
                     ->from([Table::ENTRYVERSIONS])
-                    ->where('[[entryId]] = [[v.entryId]]')
+                    ->where('[[entryId]] = [[v.entryId]]'),
             ]);
         }
 
