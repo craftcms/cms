@@ -12,6 +12,7 @@
 ## 3.6.7 - 2021-02-23
 
 ### Added
+- Added `craft\gql\base\ElementArguments::getStatusArguments()`.
 - Added `craft\helpers\Gql::relatedArgumentComplexity()`.
 
 ### Changed

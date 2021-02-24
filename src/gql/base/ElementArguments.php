@@ -152,6 +152,7 @@ abstract class ElementArguments extends Arguments
      * Return the various status arguments.
      *
      * @return array
+     * @since 3.6.7
      */
     public static function getStatusArguments(): array
     {
