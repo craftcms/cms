@@ -54,6 +54,14 @@ class GlobalSet extends ElementArguments
     /**
      * @inheritdoc
      */
+    public static function getRevisionArguments(): array
+    {
+        return [];
+    }
+
+    /**
+     * @inheritdoc
+     */
     public static function getStatusArguments(): array
     {
         return [];

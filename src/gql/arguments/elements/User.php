@@ -93,4 +93,12 @@ class User extends ElementArguments
     {
         return [];
     }
+
+    /**
+     * @inheritdoc
+     */
+    public static function getRevisionArguments(): array
+    {
+        return [];
+    }
 }
