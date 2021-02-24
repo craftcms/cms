@@ -40,7 +40,7 @@ class ErrorHandler extends \yii\web\ErrorHandler
         // Fire a 'beforeHandleException' event
         if ($this->hasEventHandlers(self::EVENT_BEFORE_HANDLE_EXCEPTION)) {
             $this->trigger(self::EVENT_BEFORE_HANDLE_EXCEPTION, new ExceptionEvent([
-                'exception' => $exception
+                'exception' => $exception,
             ]));
         }
 

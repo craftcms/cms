@@ -208,7 +208,7 @@ class FieldsController extends Controller
         foreach ($allGroups as $group) {
             $groupOptions[] = [
                 'value' => $group->id,
-                'label' => $group->name
+                'label' => $group->name,
             ];
         }
 
@@ -218,15 +218,15 @@ class FieldsController extends Controller
         $crumbs = [
             [
                 'label' => Craft::t('app', 'Settings'),
-                'url' => UrlHelper::url('settings')
+                'url' => UrlHelper::url('settings'),
             ],
             [
                 'label' => Craft::t('app', 'Fields'),
-                'url' => UrlHelper::url('settings/fields')
+                'url' => UrlHelper::url('settings/fields'),
             ],
             [
                 'label' => Craft::t('site', $fieldGroup->name),
-                'url' => UrlHelper::url('settings/fields/' . $groupId)
+                'url' => UrlHelper::url('settings/fields/' . $groupId),
             ],
         ];
 
@@ -278,7 +278,7 @@ JS;
         $view = Craft::$app->getView();
         $html = $view->renderTemplate('settings/fields/_type-settings', [
             'field' => $field,
-            'namespace' => $this->request->getBodyParam('namespace')
+            'namespace' => $this->request->getBodyParam('namespace'),
         ]);
 
         return $this->asJson([
@@ -330,7 +330,7 @@ JS;
 
             // Send the field back to the template
             Craft::$app->getUrlManager()->setRouteParams([
-                'field' => $field
+                'field' => $field,
             ]);
 
             return null;

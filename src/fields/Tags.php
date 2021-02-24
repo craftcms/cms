@@ -135,7 +135,7 @@ class Tags extends BaseRelationField
             'type' => Type::listOf(TagInterface::getType()),
             'args' => TagArguments::getArguments(),
             'resolve' => TagResolver::class . '::resolve',
-            'complexity' => GqlHelper::relatedArgumentComplexity(GqlService::GRAPHQL_COMPLEXITY_EAGER_LOAD)
+            'complexity' => GqlHelper::relatedArgumentComplexity(GqlService::GRAPHQL_COMPLEXITY_EAGER_LOAD),
         ];
     }
 

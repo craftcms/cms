@@ -151,7 +151,7 @@ class PlainText extends Field implements PreviewableFieldInterface, SortableFiel
     {
         return Craft::$app->getView()->renderTemplate('_components/fieldtypes/PlainText/settings',
             [
-                'field' => $this
+                'field' => $this,
             ]);
     }
 

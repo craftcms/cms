@@ -83,7 +83,7 @@ class CacheTokenParser extends AbstractTokenParser
                     'year',
                     'years',
                     'week',
-                    'weeks'
+                    'weeks',
                 ])->getValue();
         } else if ($stream->test(Token::NAME_TYPE, 'until')) {
             $stream->next();
@@ -101,7 +101,7 @@ class CacheTokenParser extends AbstractTokenParser
         $stream->expect(Token::BLOCK_END_TYPE);
         $nodes['body'] = $parser->subparse([
             $this,
-            'decideCacheEnd'
+            'decideCacheEnd',
         ], true);
         $stream->expect(Token::BLOCK_END_TYPE);
 

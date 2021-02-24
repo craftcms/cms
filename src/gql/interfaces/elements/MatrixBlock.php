@@ -69,17 +69,17 @@ class MatrixBlock extends Element
             'fieldId' => [
                 'name' => 'fieldId',
                 'type' => Type::int(),
-                'description' => 'The ID of the field that owns the matrix block.'
+                'description' => 'The ID of the field that owns the matrix block.',
             ],
             'ownerId' => [
                 'name' => 'ownerId',
                 'type' => Type::int(),
-                'description' => 'The ID of the element that owns the matrix block.'
+                'description' => 'The ID of the element that owns the matrix block.',
             ],
             'typeId' => [
                 'name' => 'typeId',
                 'type' => Type::int(),
-                'description' => 'The ID of the matrix block\'s type.'
+                'description' => 'The ID of the matrix block\'s type.',
             ],
             'typeHandle' => [
                 'name' => 'typeHandle',
@@ -90,7 +90,7 @@ class MatrixBlock extends Element
             'sortOrder' => [
                 'name' => 'sortOrder',
                 'type' => Type::int(),
-                'description' => 'The sort order of the matrix block within the owner element field.'
+                'description' => 'The sort order of the matrix block within the owner element field.',
             ],
         ]), self::getName());
     }

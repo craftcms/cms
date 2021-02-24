@@ -41,7 +41,7 @@ class TagsController extends Controller
         $tagGroups = Craft::$app->getTags()->getAllTagGroups();
 
         return $this->renderTemplate('settings/tags/index', [
-            'tagGroups' => $tagGroups
+            'tagGroups' => $tagGroups,
         ]);
     }
 
@@ -79,12 +79,12 @@ class TagsController extends Controller
         $crumbs = [
             [
                 'label' => Craft::t('app', 'Settings'),
-                'url' => UrlHelper::url('settings')
+                'url' => UrlHelper::url('settings'),
             ],
             [
                 'label' => Craft::t('app', 'Tags'),
-                'url' => UrlHelper::url('settings/tags')
-            ]
+                'url' => UrlHelper::url('settings/tags'),
+            ],
         ];
 
         return $this->renderTemplate('settings/tags/_edit', [
@@ -133,7 +133,7 @@ class TagsController extends Controller
 
             // Send the tag group back to the template
             Craft::$app->getUrlManager()->setRouteParams([
-                'tagGroup' => $group
+                'tagGroup' => $group,
             ]);
 
             return null;
@@ -224,7 +224,7 @@ class TagsController extends Controller
 
         return $this->asJson([
             'tags' => $return,
-            'exactMatch' => $exactMatch
+            'exactMatch' => $exactMatch,
         ]);
     }
 
@@ -250,13 +250,13 @@ class TagsController extends Controller
         // Don't validate required custom fields
         if (!Craft::$app->getElements()->saveElement($tag)) {
             return $this->asJson([
-                'success' => false
+                'success' => false,
             ]);
         }
 
         return $this->asJson([
             'success' => true,
-            'id' => $tag->id
+            'id' => $tag->id,
         ]);
     }
 }

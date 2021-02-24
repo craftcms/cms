@@ -99,13 +99,13 @@ class I18N extends \yii\i18n\I18N
 
                 $localeFiles = FileHelper::findFiles($appLocalesPath, [
                     'only' => ['*.php'],
-                    'recursive' => false
+                    'recursive' => false,
                 ]);
 
                 if (is_dir($customLocalesPath)) {
                     $localeFiles = array_merge($localeFiles, FileHelper::findFiles($customLocalesPath, [
                         'only' => ['*.php'],
-                        'recursive' => false
+                        'recursive' => false,
                     ]));
                 }
 

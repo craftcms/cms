@@ -78,7 +78,7 @@ class Structures extends Component
             ->select([
                 'id',
                 'maxLevels',
-                'uid'
+                'uid',
             ])
             ->from([Table::STRUCTURES])
             ->where(['id' => $structureId]);
@@ -104,7 +104,7 @@ class Structures extends Component
             ->select([
                 'id',
                 'maxLevels',
-                'uid'
+                'uid',
             ])
             ->from([Table::STRUCTURES])
             ->where(['uid' => $structureUid]);
@@ -241,7 +241,7 @@ class Structures extends Component
 
         $affectedRows = Craft::$app->getDb()->createCommand()
             ->softDelete(Table::STRUCTURES, [
-                'id' => $structureId
+                'id' => $structureId,
             ])
             ->execute();
 
@@ -412,7 +412,7 @@ class Structures extends Component
         if ($elementId) {
             return StructureElement::findOne([
                 'structureId' => $structureId,
-                'elementId' => $elementId
+                'elementId' => $elementId,
             ]);
         }
 

@@ -118,7 +118,7 @@ abstract class Model extends \yii\base\Model
         if (is_array($rule) && isset($rule[1]) && $rule[1] instanceof \Closure) {
             // Wrap the closure in another one, so InlineValidator doesn’t bind it to the model
             $method = $rule[1];
-            $rule[1] = function($attribute, $params, $validator, $current) use ($method) {
+            $rule[1] = function ($attribute, $params, $validator, $current) use ($method) {
                 $method($attribute, $params, $validator, $current);
             };
         }
@@ -175,7 +175,7 @@ abstract class Model extends \yii\base\Model
 
         // Have all DateTime attributes converted to ISO-8601 strings
         foreach ($this->datetimeAttributes() as $attribute) {
-            $fields[$attribute] = function($model, $attribute) {
+            $fields[$attribute] = function ($model, $attribute) {
                 if (!empty($model->$attribute)) {
                     return DateTimeHelper::toIso8601($model->$attribute);
                 }

@@ -261,7 +261,7 @@ class App
         }
 
         $testValue = sprintf('%sM', ceil($testBytes / (1024 * 1024)));
-        set_error_handler(function() {
+        set_error_handler(function () {
         });
         $result = ini_set('memory_limit', $testValue);
         $newValue = ini_get('memory_limit');
@@ -512,7 +512,7 @@ class App
             'class' => Mailer::class,
             'messageClass' => Message::class,
             'from' => [
-                Craft::parseEnv($settings->fromEmail) => Craft::parseEnv($settings->fromName)
+                Craft::parseEnv($settings->fromEmail) => Craft::parseEnv($settings->fromName),
             ],
             'replyTo' => Craft::parseEnv($settings->replyToEmail),
             'template' => Craft::parseEnv($settings->template),

@@ -667,14 +667,14 @@ class View extends \yii\web\View
         $tokens = [];
 
         // Tokenize {% verbatim %} tags
-        $template = preg_replace_callback('/\{%-?\s*verbatim\s*-?%\}.*?{%-?\s*endverbatim\s*-?%\}/s', function(array $matches) use (&$tokens) {
+        $template = preg_replace_callback('/\{%-?\s*verbatim\s*-?%\}.*?{%-?\s*endverbatim\s*-?%\}/s', function (array $matches) use (&$tokens) {
             $token = 'tok_' . StringHelper::randomString(10);
             $tokens[$token] = $matches[0];
             return $token;
         }, $template);
 
         // Tokenize inline code and code blocks
-        $template = preg_replace_callback('/(?<!`)(`|`{3,})(?!`).*?(?<!`)\1(?!`)/s', function(array $matches) use (&$tokens) {
+        $template = preg_replace_callback('/(?<!`)(`|`{3,})(?!`).*?(?<!`)\1(?!`)/s', function (array $matches) use (&$tokens) {
             $token = 'tok_' . StringHelper::randomString(10);
             $tokens[$token] = '{% verbatim %}' . $matches[0] . '{% endverbatim %}';
             return $token;
@@ -682,7 +682,7 @@ class View extends \yii\web\View
 
         // Tokenize objects (call preg_replace_callback() multiple times in case there are nested objects)
         while (true) {
-            $template = preg_replace_callback('/\{\s*([\'"]?)\w+\1\s*:[^\{]+?\}/', function(array $matches) use (&$tokens) {
+            $template = preg_replace_callback('/\{\s*([\'"]?)\w+\1\s*:[^\{]+?\}/', function (array $matches) use (&$tokens) {
                 $token = 'tok_' . StringHelper::randomString(10);
                 $tokens[$token] = $matches[0];
                 return $token;
@@ -693,7 +693,7 @@ class View extends \yii\web\View
         }
 
         // Swap out the remaining {xyz} tags with {{object.xyz}}
-        $template = preg_replace_callback('/(?<!\{)\{\s*(\w+)([^\{]*?)\}/', function(array $match) {
+        $template = preg_replace_callback('/(?<!\{)\{\s*(\w+)([^\{]*?)\}/', function (array $match) {
             // Is this a function call like `clone()`?
             if (!empty($match[2]) && $match[2][0] === '(') {
                 $replace = $match[1] . $match[2];
@@ -1325,7 +1325,7 @@ JS;
         // Validate
         if (!in_array($templateMode, [
             self::TEMPLATE_MODE_CP,
-            self::TEMPLATE_MODE_SITE
+            self::TEMPLATE_MODE_SITE,
         ], true)
         ) {
             throw new Exception('"' . $templateMode . '" is not a valid template mode');

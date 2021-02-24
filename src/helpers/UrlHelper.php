@@ -160,7 +160,7 @@ class UrlHelper
         $url = static::urlWithScheme($url, $scheme);
 
         return static::urlWithParams($url, [
-            Craft::$app->getConfig()->getGeneral()->tokenParam => $token
+            Craft::$app->getConfig()->getGeneral()->tokenParam => $token,
         ]);
     }
 

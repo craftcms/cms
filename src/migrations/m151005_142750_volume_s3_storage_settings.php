@@ -32,7 +32,7 @@ class m151005_142750_volume_s3_storage_settings extends Migration
                 $settings['storageClass'] = 'STANDARD'; // value of \craft\base\Volume::STORAGE_STANDARD
 
                 Db::update(Table::VOLUMES, [
-                    'settings' => Json::encode($settings)
+                    'settings' => Json::encode($settings),
                 ], [
                     'id' => $volume['id'],
                 ], [], true, $this->db);

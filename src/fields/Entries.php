@@ -80,7 +80,7 @@ class Entries extends BaseRelationField
             'type' => Type::listOf(EntryInterface::getType()),
             'args' => EntryArguments::getArguments(),
             'resolve' => EntryResolver::class . '::resolve',
-            'complexity' => GqlHelper::relatedArgumentComplexity(GqlService::GRAPHQL_COMPLEXITY_EAGER_LOAD)
+            'complexity' => GqlHelper::relatedArgumentComplexity(GqlService::GRAPHQL_COMPLEXITY_EAGER_LOAD),
         ];
     }
 
@@ -103,7 +103,7 @@ class Entries extends BaseRelationField
 
         return [
             'typeId' => array_values($entryTypeIds),
-            'sectionId' => array_values($sectionIds)
+            'sectionId' => array_values($sectionIds),
         ];
     }
 }

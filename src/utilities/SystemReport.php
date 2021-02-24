@@ -105,7 +105,7 @@ class SystemReport extends Utility
         ];
 
         if (!class_exists(InstalledVersions::class, false)) {
-            $path = Craft::$app->getPath()->getVendorPath() . DIRECTORY_SEPARATOR . 'composer' .  DIRECTORY_SEPARATOR . 'InstalledVersions.php';
+            $path = Craft::$app->getPath()->getVendorPath() . DIRECTORY_SEPARATOR . 'composer' . DIRECTORY_SEPARATOR . 'InstalledVersions.php';
             if (file_exists($path)) {
                 require $path;
             }

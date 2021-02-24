@@ -224,12 +224,12 @@ class ElementRelationParamParser extends BaseObject
                 'or',
                 [
                     'sourceElement' => $relElementIds,
-                    'field' => $relCriteria['field']
+                    'field' => $relCriteria['field'],
                 ],
                 [
                     'targetElement' => $relSourceElementIds,
-                    'field' => $relCriteria['field']
-                ]
+                    'field' => $relCriteria['field'],
+                ],
             ]);
         }
 
@@ -320,7 +320,7 @@ class ElementRelationParamParser extends BaseObject
                             $subQuery->andWhere([
                                 'or',
                                 ["$sourcesAlias.sourceSiteId" => null],
-                                ["$sourcesAlias.sourceSiteId" => $relCriteria['sourceSite']]
+                                ["$sourcesAlias.sourceSiteId" => $relCriteria['sourceSite']],
                             ]);
                         }
 
@@ -342,14 +342,14 @@ class ElementRelationParamParser extends BaseObject
                                 "$sourceMatrixElementsAlias.enabled" => true,
                                 "$sourceMatrixElementsAlias.dateDeleted" => null,
                                 "$matrixBlockTargetsAlias.targetId" => $relElementIds,
-                                "$sourceMatrixBlocksAlias.fieldId" => $fieldModel->id
+                                "$sourceMatrixBlocksAlias.fieldId" => $fieldModel->id,
                             ]);
 
                         if ($relCriteria['sourceSite']) {
                             $subQuery->andWhere([
                                 'or',
                                 ["$matrixBlockTargetsAlias.sourceSiteId" => null],
-                                ["$matrixBlockTargetsAlias.sourceSiteId" => $relCriteria['sourceSite']]
+                                ["$matrixBlockTargetsAlias.sourceSiteId" => $relCriteria['sourceSite']],
                             ]);
                         }
 
@@ -392,7 +392,7 @@ class ElementRelationParamParser extends BaseObject
                 $subQuery->andWhere([
                     'or',
                     ["$relTableAlias.sourceSiteId" => null],
-                    ["$relTableAlias.sourceSiteId" => $relCriteria['sourceSite']]
+                    ["$relTableAlias.sourceSiteId" => $relCriteria['sourceSite']],
                 ]);
             }
 

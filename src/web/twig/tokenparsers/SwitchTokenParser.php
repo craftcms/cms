@@ -77,7 +77,7 @@ class SwitchTokenParser extends AbstractTokenParser
                     $body = $parser->subparse([$this, 'decideIfFork']);
                     $cases[] = new Node([
                         'values' => new Node($values),
-                        'body' => $body
+                        'body' => $body,
                     ]);
                     break;
                 case 'default':

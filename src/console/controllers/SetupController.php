@@ -245,9 +245,9 @@ EOD;
         $this->port = (int)$this->prompt('Database port:', [
             'required' => true,
             'default' => $this->port ?: ($this->driver === Connection::DRIVER_MYSQL ? 3306 : 5432),
-            'validator' => function(string $input): bool {
+            'validator' => function (string $input): bool {
                 return is_numeric($input);
-            }
+            },
         ]);
 
         userCredentials:
@@ -293,13 +293,13 @@ EOD;
         // tablePrefix
         $this->tablePrefix = $this->prompt('Database table prefix' . ($this->tablePrefix ? ' (type "none" for none)' : '') . ':', [
             'default' => $this->tablePrefix ?: null,
-            'validator' => function(string $input): bool {
+            'validator' => function (string $input): bool {
                 if (strlen(StringHelper::ensureRight($input, '_')) > 6) {
                     $this->stderr('The table prefix must be 5 or less characters long.' . PHP_EOL, Console::FG_RED);
                     return false;
                 }
                 return true;
-            }
+            },
         ]);
         if ($this->tablePrefix && $this->tablePrefix !== 'none') {
             $this->tablePrefix = StringHelper::ensureRight($this->tablePrefix, '_');

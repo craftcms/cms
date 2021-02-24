@@ -62,7 +62,7 @@ class LivePreviewController extends Controller
             'live-preview/preview', [
                 'previewAction' => $action,
                 'userId' => Craft::$app->getUser()->getId(),
-            ]
+            ],
         ];
 
         $expiryDate = (new \DateTime())->add(new \DateInterval('P1D'));

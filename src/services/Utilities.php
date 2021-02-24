@@ -90,7 +90,7 @@ class Utilities extends Component
         $utilityTypes[] = Migrations::class;
 
         $event = new RegisterComponentTypesEvent([
-            'types' => $utilityTypes
+            'types' => $utilityTypes,
         ]);
         $this->trigger(self::EVENT_REGISTER_UTILITY_TYPES, $event);
 

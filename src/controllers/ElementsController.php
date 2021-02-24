@@ -117,7 +117,7 @@ class ElementsController extends BaseElementsController
                 'sources' => $sources,
                 'showSidebar' => $showSidebar,
                 'showSiteMenu' => $showSiteMenu,
-            ])
+            ]),
         ]);
     }
 

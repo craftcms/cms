@@ -28,12 +28,12 @@ abstract class MutationArguments
             'id' => [
                 'name' => 'id',
                 'type' => Type::id(),
-                'description' => 'Set the element’s ID.'
+                'description' => 'Set the element’s ID.',
             ],
             'uid' => [
                 'name' => 'uid',
                 'type' => Type::string(),
-                'description' => 'Set the element’s UID.'
+                'description' => 'Set the element’s UID.',
             ],
         ];
     }

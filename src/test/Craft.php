@@ -80,7 +80,7 @@ class Craft extends Yii2
         'dbSetup' => null,
         'projectConfig' => null,
         'fullMock' => false,
-        'edition' => \Craft::Solo
+        'edition' => \Craft::Solo,
     ];
 
     /**
@@ -345,12 +345,13 @@ class Craft extends Yii2
         $callback,
         string $eventInstance = '',
         array $eventValues = []
-    ) {
+    )
+    {
         // Add this event.
         $eventTriggered = false;
 
         // Listen to this event and log it.
-        Event::on($class, $eventName, function($event) use (&$eventTriggered, $eventInstance, $eventValues) {
+        Event::on($class, $eventName, function ($event) use (&$eventTriggered, $eventInstance, $eventValues) {
             $eventTriggered = true;
 
             if ($eventInstance && !$event instanceof $eventInstance) {
@@ -665,7 +666,7 @@ class Craft extends Yii2
             'SCRIPT_NAME' => $entryScript,
             'SERVER_NAME' => parse_url($entryUrl, PHP_URL_HOST),
             'SERVER_PORT' => parse_url($entryUrl, PHP_URL_PORT) ?: '80',
-            'HTTPS' => parse_url($entryUrl, PHP_URL_SCHEME) === 'https'
+            'HTTPS' => parse_url($entryUrl, PHP_URL_SCHEME) === 'https',
         ]);
 
         $this->configureClient($this->_getConfig());

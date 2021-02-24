@@ -30,12 +30,12 @@ class Tag extends ElementArguments
             'group' => [
                 'name' => 'group',
                 'type' => Type::listOf(Type::string()),
-                'description' => 'Narrows the query results based on the tag groups the tags belong to per the group’s handles.'
+                'description' => 'Narrows the query results based on the tag groups the tags belong to per the group’s handles.',
             ],
             'groupId' => [
                 'name' => 'groupId',
                 'type' => Type::listOf(QueryArgument::getType()),
-                'description' => 'Narrows the query results based on the tag groups the tags belong to, per the groups’ IDs.'
+                'description' => 'Narrows the query results based on the tag groups the tags belong to, per the groups’ IDs.',
             ],
         ]);
     }

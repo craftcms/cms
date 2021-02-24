@@ -282,7 +282,7 @@ class Connection extends \yii\db\Connection
         // Fire an 'afterCreateBackup' event
         if ($this->hasEventHandlers(self::EVENT_AFTER_CREATE_BACKUP)) {
             $this->trigger(self::EVENT_AFTER_CREATE_BACKUP, new BackupEvent([
-                'file' => $filePath
+                'file' => $filePath,
             ]));
         }
 
@@ -295,7 +295,7 @@ class Connection extends \yii\db\Connection
             $files = glob($backupPath . DIRECTORY_SEPARATOR . '*.sql');
 
             // Sort them by file modified time descending (newest first).
-            usort($files, static function($a, $b) {
+            usort($files, static function ($a, $b) {
                 return filemtime($a) < filemtime($b);
             });
 
@@ -321,7 +321,7 @@ class Connection extends \yii\db\Connection
         // Fire a 'beforeRestoreBackup' event
         if ($this->hasEventHandlers(self::EVENT_BEFORE_RESTORE_BACKUP)) {
             $this->trigger(self::EVENT_BEFORE_RESTORE_BACKUP, new RestoreEvent([
-                'file' => $filePath
+                'file' => $filePath,
             ]));
         }
 
@@ -345,7 +345,7 @@ class Connection extends \yii\db\Connection
         // Fire an 'afterRestoreBackup' event
         if ($this->hasEventHandlers(self::EVENT_AFTER_RESTORE_BACKUP)) {
             $this->trigger(self::EVENT_AFTER_RESTORE_BACKUP, new BackupEvent([
-                'file' => $filePath
+                'file' => $filePath,
             ]));
         }
     }
@@ -562,7 +562,7 @@ class Connection extends \yii\db\Connection
 
             // Redact the PGPASSWORD
             if ($this->getIsPgsql()) {
-                $execCommand = preg_replace_callback('/(PGPASSWORD=")([^"]+)"/i', function($match) {
+                $execCommand = preg_replace_callback('/(PGPASSWORD=")([^"]+)"/i', function ($match) {
                     return $match[1] . str_repeat('•', strlen($match[2])) . '"';
                 }, $execCommand);
             }

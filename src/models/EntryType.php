@@ -125,7 +125,7 @@ class EntryType extends Model
         $rules[] = [
             ['handle'],
             HandleValidator::class,
-            'reservedWords' => ['id', 'dateCreated', 'dateUpdated', 'uid', 'title']
+            'reservedWords' => ['id', 'dateCreated', 'dateUpdated', 'uid', 'title'],
         ];
         $rules[] = [
             ['name'],

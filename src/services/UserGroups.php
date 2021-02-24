@@ -169,7 +169,7 @@ class UserGroups extends Component
                 'g.id',
                 'g.name',
                 'g.handle',
-                'g.uid'
+                'g.uid',
             ])
             ->from(['g' => Table::USERGROUPS])
             ->innerJoin(['gu' => Table::USERGROUPS_USERS], '[[gu.groupId]] = [[g.id]]')
@@ -407,7 +407,7 @@ class UserGroups extends Component
                 'id',
                 'name',
                 'handle',
-                'uid'
+                'uid',
             ])
             ->from([Table::USERGROUPS]);
 

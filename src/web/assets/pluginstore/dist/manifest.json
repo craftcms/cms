@@ -7,6 +7,7 @@
   "chunk-vendors.js": "/js/chunk-vendors.js",
   "chunk-vendors.css.map": "/css/chunk-vendors.css.map",
   "chunk-vendors.js.map": "/js/chunk-vendors.js.map",
+  "images/alert.svg": "/images/alert.svg",
   "images/craft.svg": "/images/craft.svg",
   "images/default-plugin.svg": "/images/default-plugin.svg",
   "images/powered_by_stripe.svg": "/images/powered_by_stripe.svg",

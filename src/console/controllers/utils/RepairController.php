@@ -118,7 +118,7 @@ class RepairController extends Controller
             ->leftJoin('{{%structureelements}} structureelements', [
                 'and',
                 '[[structureelements.elementId]] = [[elements.id]]',
-                ['structureelements.structureId' => $structureId]
+                ['structureelements.structureId' => $structureId],
             ])
             ->orderBy([
                 new Expression('CASE WHEN ([[structureelements.lft]] IS NOT NULL) THEN 0 ELSE [[elements.dateCreated]] END ASC'),
