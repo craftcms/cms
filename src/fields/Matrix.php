@@ -66,6 +66,10 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
     const PROPAGATION_METHOD_NONE = 'none';
     const PROPAGATION_METHOD_SITE_GROUP = 'siteGroup';
     const PROPAGATION_METHOD_LANGUAGE = 'language';
+    /**
+     * @since 3.7.0
+     */
+    const PROPAGATION_METHOD_CUSTOM = 'custom';
     const PROPAGATION_METHOD_ALL = 'all';
 
     /**
@@ -126,6 +130,12 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
     public $propagationMethod = self::PROPAGATION_METHOD_ALL;
 
     /**
+     * @var string|null The field’s propagation key format, if [[propagationMethod]] is `custom`
+     * @since 3.7.0
+     */
+    public $propagationKeyFormat;
+
+    /**
      * @var int Whether each site should get its own unique set of blocks
      * @deprecated in 3.2.0. Use [[$propagationMethod]] instead
      */
@@ -159,6 +169,10 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
      */
     public function init()
     {
+        if ($this->propagationKeyFormat === '') {
+            $this->propagationKeyFormat = null;
+        }
+
         // todo: remove this in 4.0
         // Set localizeBlocks in case anything is still checking it
         $this->localizeBlocks = $this->propagationMethod === self::PROPAGATION_METHOD_NONE;
@@ -185,6 +199,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
                 self::PROPAGATION_METHOD_NONE,
                 self::PROPAGATION_METHOD_SITE_GROUP,
                 self::PROPAGATION_METHOD_LANGUAGE,
+                self::PROPAGATION_METHOD_CUSTOM,
                 self::PROPAGATION_METHOD_ALL,
             ],
         ];
@@ -961,7 +976,8 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
         // If the propagation method just changed, resave all the Matrix blocks
         if ($this->oldSettings !== null) {
             $oldPropagationMethod = $this->oldSettings['propagationMethod'] ?? self::PROPAGATION_METHOD_ALL;
-            if ($this->propagationMethod !== $oldPropagationMethod) {
+            $oldPropagationKeyFormat = $this->oldSettings['propagationKeyFormat'] ?? null;
+            if ($this->propagationMethod !== $oldPropagationMethod || $this->propagationKeyFormat !== $oldPropagationKeyFormat) {
                 Queue::push(new ApplyNewPropagationMethod([
                     'description' => Craft::t('app', 'Applying new propagation method to Matrix blocks'),
                     'elementType' => MatrixBlock::class,

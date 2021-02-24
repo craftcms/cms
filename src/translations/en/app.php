@@ -1275,6 +1275,7 @@ return [
     'Temp files' => 'Temp files',
     'Template caches' => 'Template caches',
     'Template that defines the Title field’s custom “translation key” format. {type} titles will be copied to all sites that produce the same key. For example, to make titles translatable based on the first two characters of the site handle, you could enter `{site.handle[:2]}`.' => 'Template that defines the Title field’s custom “translation key” format. {type} titles will be copied to all sites that produce the same key. For example, to make titles translatable based on the first two characters of the site handle, you could enter `{site.handle[:2]}`.',
+    'Template that defines the field’s custom “propagation key” format. Blocks will be saved to all sites that produce the same key.' => 'Template that defines the field’s custom “propagation key” format. Blocks will be saved to all sites that produce the same key.',
     'Template' => 'Template',
     'Templates' => 'Templates',
     'Temporary Uploads' => 'Temporary Uploads',
