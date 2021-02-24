@@ -6,9 +6,9 @@ use Craft;
 use craft\db\Migration;
 
 /**
- * m230214_150900_add_new_element_gql_schema_components migration.
+ * m210223_150900_add_new_element_gql_schema_components migration.
  */
-class m230214_150900_add_new_element_gql_schema_components extends Migration
+class m210223_150900_add_new_element_gql_schema_components extends Migration
 {
     /**
      * @inheritdoc
@@ -19,7 +19,7 @@ class m230214_150900_add_new_element_gql_schema_components extends Migration
         $projectConfig = Craft::$app->getProjectConfig();
         $schemaVersion = $projectConfig->get('system.schemaVersion', true);
 
-        if (version_compare($schemaVersion, '3.6.6', '<')) {
+        if (version_compare($schemaVersion, '3.6.5', '<')) {
             foreach ($projectConfig->get('graphql.schemas') ?? [] as $schemaUid => $schemaComponents) {
                 $scope = $schemaComponents['scope'];
                 $scope[] = 'elements.drafts:read';
@@ -37,7 +37,7 @@ class m230214_150900_add_new_element_gql_schema_components extends Migration
      */
     public function safeDown()
     {
-        echo "m230214_150900_add_new_element_gql_schema_components cannot be reverted.\n";
+        echo "m210223_150900_add_new_element_gql_schema_components cannot be reverted.\n";
         return false;
     }
 }
