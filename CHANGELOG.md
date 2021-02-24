@@ -1,5 +1,14 @@
 # Release Notes for Craft CMS 3.x
 
+## Unreleased
+
+### Added
+- Added new schema components to help control what elements can be queried. ([#7590](https://github.com/craftcms/cms/issues/7590)).
+- Added `craft\gql\base\ElementArguments::getRevisionArguments()`.
+- Added `craft\helpers\Gql::canQueryDrafts()`.
+- Added `craft\helpers\Gql::canQueryInactiveElements()`.
+- Added `craft\helpers\Gql::canQueryRevisions()`.
+
 ## 3.6.7 - 2021-02-23
 
 ### Added

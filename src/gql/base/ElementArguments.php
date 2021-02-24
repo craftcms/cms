@@ -13,6 +13,7 @@ use craft\gql\types\input\criteria\Entry;
 use craft\gql\types\input\criteria\Tag;
 use craft\gql\types\input\criteria\User;
 use craft\gql\types\QueryArgument;
+use craft\helpers\Gql;
 use GraphQL\Type\Definition\Type;
 
 /**
@@ -28,7 +29,7 @@ abstract class ElementArguments extends Arguments
      */
     public static function getArguments(): array
     {
-        return array_merge(parent::getArguments(), static::getDraftArguments(), static::getStatusArguments(), [
+        return array_merge(parent::getArguments(), static::getDraftArguments(), static::getRevisionArguments(), static::getStatusArguments(), [
             'site' => [
                 'name' => 'site',
                 'type' => Type::listOf(Type::string()),
@@ -154,6 +155,10 @@ abstract class ElementArguments extends Arguments
      */
     public static function getStatusArguments(): array
     {
+        if (!Gql::canQueryInactiveElements()) {
+            return [];
+        }
+
         return [
             'status' => [
                 'name' => 'status',
@@ -180,6 +185,10 @@ abstract class ElementArguments extends Arguments
      */
     public static function getDraftArguments(): array
     {
+        if (!Gql::canQueryDrafts()) {
+            return [];
+        }
+
         return [
             'drafts' => [
                 'name' => 'drafts',
@@ -201,6 +210,22 @@ abstract class ElementArguments extends Arguments
                 'type' => Type::int(),
                 'description' => 'The drafts’ creator ID',
             ],
+        ];
+    }
+
+    /**
+     * Return the arguments used for elements that support revisions.
+     *
+     * @return array
+     * @since 3.6.8
+     */
+    public static function getRevisionArguments(): array
+    {
+        if (!Gql::canQueryRevisions()) {
+            return [];
+        }
+
+        return [
             'revisions' => [
                 'name' => 'revisions',
                 'type' => Type::boolean(),

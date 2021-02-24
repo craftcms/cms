@@ -397,6 +397,45 @@ class Gql
     }
 
     /**
+     * Return true if active schema can query for drafts.
+     *
+     * @param GqlSchema|null $schema The GraphQL schema. If none is provided, the active schema will be used.
+     * @return bool
+     * @since 3.6.8
+     */
+    public static function canQueryDrafts(?GqlSchema $schema = null): bool
+    {
+        $allowedEntities = self::extractAllowedEntitiesFromSchema('read', $schema);
+        return isset($allowedEntities['elements']) && is_array($allowedEntities['elements']) && in_array('drafts', $allowedEntities['elements'], true);
+    }
+
+    /**
+     * Return true if active schema can query for revisions.
+     *
+     * @param GqlSchema|null $schema The GraphQL schema. If none is provided, the active schema will be used.
+     * @return bool
+     * @since 3.6.8
+     */
+    public static function canQueryRevisions(?GqlSchema $schema = null): bool
+    {
+        $allowedEntities = self::extractAllowedEntitiesFromSchema('read', $schema);
+        return isset($allowedEntities['elements']) && is_array($allowedEntities['elements']) && in_array('revisions', $allowedEntities['elements'], true);
+    }
+
+    /**
+     * Return true if active schema can query for inactive elements.
+     *
+     * @param GqlSchema|null $schema The GraphQL schema. If none is provided, the active schema will be used.
+     * @return bool
+     * @since 3.6.8
+     */
+    public static function canQueryInactiveElements(?GqlSchema $schema = null): bool
+    {
+        $allowedEntities = self::extractAllowedEntitiesFromSchema('read', $schema);
+        return isset($allowedEntities['elements']) && is_array($allowedEntities['elements']) && in_array('inactive', $allowedEntities['elements'], true);
+    }
+
+    /**
      * @param ValueNode|VariableNode $value
      * @param array $variableValues
      * @return array|array[]|mixed
