@@ -21,12 +21,14 @@ class m210223_150900_add_new_element_gql_schema_components extends Migration
 
         if (version_compare($schemaVersion, '3.6.5', '<')) {
             foreach ($projectConfig->get('graphql.schemas') ?? [] as $schemaUid => $schemaComponents) {
-                $scope = $schemaComponents['scope'];
-                $scope[] = 'elements.drafts:read';
-                $scope[] = 'elements.revisions:read';
-                $scope[] = 'elements.inactive:read';
+                if (isset($schemaComponents['scope'])) {
+                    $scope = $schemaComponents['scope'];
+                    $scope[] = 'elements.drafts:read';
+                    $scope[] = 'elements.revisions:read';
+                    $scope[] = 'elements.inactive:read';
 
-                $projectConfig->set("graphql.schemas.$schemaUid.scope", $scope);
+                    $projectConfig->set("graphql.schemas.$schemaUid.scope", $scope);
+                }
             }
         }
 
