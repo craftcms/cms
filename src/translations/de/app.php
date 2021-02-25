@@ -1750,7 +1750,7 @@ Glückwunsch! Craft konnte erfolgreich eine E-Mail versenden. Hier sind die von 
     '{price}/year' => '{price}/Jahr',
     '{renewalPrice}/year per site for updates after that.' => 'Danach {renewalPrice}/Jahr pro Site für Updates.',
     '{section} Entry Types' => '{section}-Eintragstypen',
-    '{step} of {total}' => '{step} von {total}',
+    '{step, number} of {total, number}' => '{step, number} of {total, number}',
     '{title} ({site})' => '{title} ({site})',
     '{title} copy' => '{title} zum Kopieren',
     '{total, number} {total, plural, =1{{item}} other{{items}}}' => '{total, number} {total, plural, =1{{item}} other{{items}}}',
