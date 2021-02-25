@@ -3,7 +3,7 @@
 ## Unreleased
 
 ### Added
-- Added new schema components to help control what elements can be queried. ([#7590](https://github.com/craftcms/cms/issues/7590)).
+- GraphQL schemas now include settings that determine whether inactive elements, drafts, and/or revisions should be included in query results. ([#7590](https://github.com/craftcms/cms/issues/7590)).
 - Added `craft\gql\base\ElementArguments::getRevisionArguments()`.
 - Added `craft\helpers\Gql::canQueryDrafts()`.
 - Added `craft\helpers\Gql::canQueryInactiveElements()`.
