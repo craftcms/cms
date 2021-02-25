@@ -81,6 +81,11 @@
                 <p>{{ "This plugin isn’t compatible with your version of Craft."|t('app') }}</p>
             </div>
         </template>
+        <template v-else-if="!isPluginEditionFree && plugin.abandoned">
+            <div class="text-grey mt-4 px-8">
+                <p>{{ "This plugin is no longer maintained."|t('app') }}</p>
+            </div>
+        </template>
     </div>
 </template>
 
