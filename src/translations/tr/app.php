@@ -1750,7 +1750,7 @@ Tebrikler! Craft eposta göndermeyi başardı.Gerkli ayarlar şu şekilde: {{ se
     '{price}/year' => '{price}/yıl',
     '{renewalPrice}/year per site for updates after that.' => 'Bu tarihten sonraki güncellemeler için site başına yıllık {renewalPrice}.',
     '{section} Entry Types' => '{section} Kayıt Tipleri',
-    '{step} of {total}' => '{step} / {total}',
+    '{step, number} of {total, number}' => '{step, number} of {total, number}',
     '{title} ({site})' => '{title} ({site})',
     '{title} copy' => '{title} kopyası',
     '{total, number} {total, plural, =1{{item}} other{{items}}}' => '{total, number} {total, plural, =1{{item}} other{{items}}}',
