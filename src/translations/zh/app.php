@@ -1748,7 +1748,7 @@ return [
     '{price}/year' => '{price}/年',
     '{renewalPrice}/year per site for updates after that.' => '之后更新的价格是每个站点每年 {renewalPrice}。',
     '{section} Entry Types' => '{section} 条目类型',
-    '{step} of {total}' => '第 {step} 步，共 {total} 步',
+    '{step, number} of {total, number}' => '{step, number} of {total, number}',
     '{title} ({site})' => '{title} ({site})',
     '{title} copy' => '{title} 复制',
     '{total, number} {total, plural, =1{{item}} other{{items}}}' => '{total, number} {total, plural, =1{{item}} other{{items}}}',
