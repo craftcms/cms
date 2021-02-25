@@ -1748,7 +1748,7 @@ return [
     '{price}/year' => '{price}/ano',
     '{renewalPrice}/year per site for updates after that.' => '{renewalPrice}/ano por site para atualizações depois disso.',
     '{section} Entry Types' => '{section} tipos de entrada',
-    '{step} of {total}' => '{step} de {total}',
+    '{step, number} of {total, number}' => '{step, number} of {total, number}',
     '{title} ({site})' => '{title} ({site})',
     '{title} copy' => '{title} cópia',
     '{total, number} {total, plural, =1{{item}} other{{items}}}' => '{total, number} {total, plural, =1{{item}} other{{items}}}',
