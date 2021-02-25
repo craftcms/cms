@@ -431,7 +431,7 @@ class User extends \yii\web\User
             }
         }
 
-        return parent::switchIdentity($identity, $duration);
+        parent::switchIdentity($identity, $duration);
     }
 
     /**
