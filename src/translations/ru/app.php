@@ -1749,7 +1749,7 @@ return [
     '{price}/year' => '{price}/год',
     '{renewalPrice}/year per site for updates after that.' => '{renewalPrice}/в год за последующие обновления.',
     '{section} Entry Types' => 'Типы записей раздела {section}',
-    '{step} of {total}' => '{step} из {total}',
+    '{step, number} of {total, number}' => '{step, number} of {total, number}',
     '{title} ({site})' => '{title} ({site})',
     '{title} copy' => '{title} скопировать.',
     '{total, number} {total, plural, =1{{item}} other{{items}}}' => '{total, number} {total, plural, =1{{item}} other{{items}}}',
