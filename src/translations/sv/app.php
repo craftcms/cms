@@ -1748,7 +1748,7 @@ return [
     '{price}/year' => '{price}/år',
     '{renewalPrice}/year per site for updates after that.' => '{renewalPrice}/år per webbplats för efterföljande uppdateringar.',
     '{section} Entry Types' => '{section} Inläggstyper',
-    '{step} of {total}' => '{step} av {total}',
+    '{step, number} of {total, number}' => '{step, number} of {total, number}',
     '{title} ({site})' => '{title} ({site})',
     '{title} copy' => '{title} kopia',
     '{total, number} {total, plural, =1{{item}} other{{items}}}' => '{total, number} {total, plural, =1{{item}} other{{items}}}',
