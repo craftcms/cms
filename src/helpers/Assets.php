@@ -472,16 +472,6 @@ class Assets
                         'xltm',
                     ],
                 ],
-                Asset::KIND_FLASH => [
-                    'label' => Craft::t('app', 'Flash'),
-                    'extensions' => [
-                        'fla',
-                        'flv',
-                        'swf',
-                        'swt',
-                        'swc',
-                    ],
-                ],
                 Asset::KIND_HTML => [
                     'label' => Craft::t('app', 'HTML'),
                     'extensions' => [

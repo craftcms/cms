@@ -599,7 +599,6 @@ return [
     'First draft' => 'First draft',
     'Fit' => 'Fit',
     'Fix validation errors on the related {type}.' => 'Fix validation errors on the related {type}.',
-    'Flash' => 'Flash',
     'Flip Horizontal' => 'Flip Horizontal',
     'Flip Vertical' => 'Flip Vertical',
     'Focal Point' => 'Focal Point',
