@@ -1748,7 +1748,7 @@ return [
     '{price}/year' => '{price}/jaar',
     '{renewalPrice}/year per site for updates after that.' => '{renewalPrice} per jaar per site voor updates daarna.',
     '{section} Entry Types' => '{section} berichttypes',
-    '{step, number} of {total, number}' => '{step, number} of {total, number}',
+    '{step, number} of {total, number}' => '{step, number} van {total, number}',
     '{title} ({site})' => '{title} ({site})',
     '{title} copy' => '{title} - kopie',
     '{total, number} {total, plural, =1{{item}} other{{items}}}' => '{total, number} {total, plural, =1{{item}} other{{items}}}',
