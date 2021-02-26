@@ -1748,7 +1748,7 @@ return [
     '{price}/year' => '{price}/rok',
     '{renewalPrice}/year per site for updates after that.' => 'Potom {renewalPrice}/rok za web za aktualizácie.',
     '{section} Entry Types' => 'Typy Záznamov Sekcie {section}',
-    '{step, number} of {total, number}' => '{step, number} of {total, number}',
+    '{step, number} of {total, number}' => '{step, number} z {total, number}',
     '{title} ({site})' => '{title} ({site})',
     '{title} copy' => 'Kópia {title}',
     '{total, number} {total, plural, =1{{item}} other{{items}}}' => '{total, number} {total, plural, =1{{item}} other{{items}}}',
