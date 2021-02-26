@@ -1752,7 +1752,7 @@ Köszönjük, hogy regsiztráltál, a felhasználói filókod aktiváláshoz kat
     '{price}/year' => '{price}/év',
     '{renewalPrice}/year per site for updates after that.' => 'Ezután webhelyenként {renewalPrice}/év a frissítésekért.',
     '{section} Entry Types' => '{section} Bejegyzés Tipusok',
-    '{step} of {total}' => '{step} / {total}',
+    '{step, number} of {total, number}' => '{step, number} / {total, number}',
     '{title} ({site})' => '{title} ({site})',
     '{title} copy' => '{title} másolata',
     '{total, number} {total, plural, =1{{item}} other{{items}}}' => '{total, number} {total, plural, =1{{item}} other{{items}}}',
