@@ -486,6 +486,10 @@ class Plugins extends Component
 
         $plugin = $this->createPlugin($handle);
 
+        if ($plugin === null) {
+            throw new InvalidPluginException($handle);
+        }
+
         // Set the edition
         if ($edition === null) {
             // See if one is already set in the project config
@@ -872,10 +876,10 @@ class Plugins extends Component
      *
      * @param string $handle The plugin’s handle
      * @param array|null $info The plugin’s stored info, if any
-     * @return PluginInterface
+     * @return PluginInterface|null
      * @throws InvalidPluginException if $handle is invalid
      */
-    public function createPlugin(string $handle, array $info = null)
+    public function createPlugin(string $handle, array $info = null): ?PluginInterface
     {
         if (!isset($this->_composerPluginInfo[$handle])) {
             throw new InvalidPluginException($handle);
