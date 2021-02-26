@@ -1748,7 +1748,7 @@ return [
     '{price}/year' => '{price}/년',
     '{renewalPrice}/year per site for updates after that.' => '이후 업데이트는 사이트당 {renewalPrice}/년',
     '{section} Entry Types' => '{section} 항목 타입',
-    '{step, number} of {total, number}' => '{step, number} of {total, number}',
+    '{step, number} of {total, number}' => '{step, number} / {total, number}',
     '{title} ({site})' => '{title} ({site})',
     '{title} copy' => '{title} 복사',
     '{total, number} {total, plural, =1{{item}} other{{items}}}' => '{total, number} {total, plural, =1{{item}} other{{items}}}',
