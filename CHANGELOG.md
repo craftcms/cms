@@ -4,6 +4,7 @@
 
 ### Added
 - GraphQL schemas now include settings that determine whether inactive elements, drafts, and/or revisions should be included in query results. ([#7590](https://github.com/craftcms/cms/issues/7590)).
+- Project Config now labels UIDs in Yaml files with comments to help readability. ([#7584](https://github.com/craftcms/cms/issues/7584))
 - Added `craft\gql\base\ElementArguments::getRevisionArguments()`.
 - Added `craft\helpers\Gql::canQueryDrafts()`.
 - Added `craft\helpers\Gql::canQueryInactiveElements()`.
