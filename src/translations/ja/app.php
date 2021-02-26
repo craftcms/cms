@@ -1748,7 +1748,7 @@ return [
     '{price}/year' => '{price}/年',
     '{renewalPrice}/year per site for updates after that.' => 'その後の更新は、サイトごとに{renewalPrice}/年が発生します。',
     '{section} Entry Types' => '{section} 入力タイプ',
-    '{step, number} of {total, number}' => '{step, number} of {total, number}',
+    '{step, number} of {total, number}' => '{step, number}/{total, number}',
     '{title} ({site})' => '{title} ({site})',
     '{title} copy' => '{title}のコピー',
     '{total, number} {total, plural, =1{{item}} other{{items}}}' => '{total, number} {total, plural, =1{{item}} other{{items}}}',
