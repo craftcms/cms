@@ -1748,7 +1748,7 @@ return [
     '{price}/year' => '{price}/السنة',
     '{renewalPrice}/year per site for updates after that.' => '{تجديد السعر}/سنة لكل موقع للحصول على التحديثات بعد ذلك.',
     '{section} Entry Types' => 'أنواع الإدخال في {section}',
-    '{step} of {total}' => '{step} من {total}',
+    '{step, number} of {total, number}' => '{step, number} من {total, number}',
     '{title} ({site})' => '{title} ({site})',
     '{title} copy' => 'نسخ {title}',
     '{total, number} {total, plural, =1{{item}} other{{items}}}' => '{total, number} {total, plural, zero {} one {{items}} two {{items}} few {{items}} many {{items}} =1{{item}} other{{items}}}',
