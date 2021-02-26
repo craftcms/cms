@@ -1750,7 +1750,7 @@ Gratulerer! Craft var i stand til å sende e-post. Her er innstillingene du beny
     '{price}/year' => '{price}/år',
     '{renewalPrice}/year per site for updates after that.' => 'Deretter {renewalPrice}/år per side for oppdateringer.',
     '{section} Entry Types' => 'Artikkeltyper for {section}',
-    '{step} of {total}' => '{step} av {total}',
+    '{step, number} of {total, number}' => '{step, number} av {total, number}',
     '{title} ({site})' => '{title} ({site})',
     '{title} copy' => '{title} kopi',
     '{total, number} {total, plural, =1{{item}} other{{items}}}' => '{total, number} {total, plural, =1{{item}} other{{items}}}',

@@ -1749,7 +1749,7 @@ return [
     '{price}/year' => '{price}/year',
     '{renewalPrice}/year per site for updates after that.' => '{renewalPrice}/year per site for updates after that.',
     '{section} Entry Types' => '{section} Entry Types',
-    '{step} of {total}' => '{step} of {total}',
+    '{step, number} of {total, number}' => '{step, number} of {total, number}',
     '{title} ({site})' => '{title} ({site})',
     '{title} copy' => '{title} copy',
     '{total, number} {total, plural, =1{{item}} other{{items}}}' => '{total, number} {total, plural, =1{{item}} other{{items}}}',

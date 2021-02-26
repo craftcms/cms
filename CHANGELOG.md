@@ -3,11 +3,16 @@
 ## Unreleased
 
 ### Added
-- Added new schema components to help control what elements can be queried. ([#7590](https://github.com/craftcms/cms/issues/7590)).
+- GraphQL schemas now include settings that determine whether inactive elements, drafts, and/or revisions should be included in query results. ([#7590](https://github.com/craftcms/cms/issues/7590)).
+- Project Config now labels UIDs in Yaml files with comments to help readability. ([#7584](https://github.com/craftcms/cms/issues/7584))
 - Added `craft\gql\base\ElementArguments::getRevisionArguments()`.
 - Added `craft\helpers\Gql::canQueryDrafts()`.
 - Added `craft\helpers\Gql::canQueryInactiveElements()`.
 - Added `craft\helpers\Gql::canQueryRevisions()`.
+
+### Fixed
+- Fixed a bug where release dates shown in the Updates utility could be off by a day compared to the dates in the changelogs, for clients whose system clock was set to a time zone behind UTC. ([#7612](https://github.com/craftcms/cms/issues/7612))
+- Fixed a bug where user sessions weren’t lasting the extended duration specified by the `rememberedUserSessionDuration` config setting when the `rememberMe` checkbox was ticked. ([#7619](https://github.com/craftcms/cms/issues/7619))
 
 ## 3.6.7 - 2021-02-23
 

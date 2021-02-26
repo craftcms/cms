@@ -124,7 +124,10 @@ class ConvertEntryRevisions extends BaseJob
         $total = $query->count();
 
         foreach ($query->each() as $i => $result) {
-            $this->setProgress($this->queue, $i / $total, 'Draft ' . $i . ' of ' . $total);
+            $this->setProgress($this->queue, $i / $total, Craft::t('app', '{step, number} of {total, number}', [
+                'step' => $i,
+                'total' => $total,
+            ]));
             try {
                 $this->convertDraft($result);
             } catch (\Throwable $e) {
@@ -202,7 +205,10 @@ class ConvertEntryRevisions extends BaseJob
         $total = $query->count();
 
         foreach ($query->each() as $i => $result) {
-            $this->setProgress($this->queue, $i / $total, 'Revision ' . $i . ' of ' . $total);
+            $this->setProgress($this->queue, $i / $total, Craft::t('app', '{step, number} of {total, number}', [
+                'step' => $i,
+                'total' => $total,
+            ]));
             try {
                 $this->convertVersion($result);
             } catch (\Throwable $e) {

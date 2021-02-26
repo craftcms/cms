@@ -1750,7 +1750,7 @@ Gratulacje! Craft z powodzeniem może wysyłać e-maile. Zostały użyte poniżs
     '{price}/year' => '{price}/rok',
     '{renewalPrice}/year per site for updates after that.' => '{renewalPrice}/rok na każdą witrynę za późniejsze aktualizacje.',
     '{section} Entry Types' => 'Rodzaje wpisów "{section}"',
-    '{step} of {total}' => '{step} z {total}',
+    '{step, number} of {total, number}' => '{step, number} z {total, number}',
     '{title} ({site})' => '{title} ({site})',
     '{title} copy' => '{title} – kopia',
     '{total, number} {total, plural, =1{{item}} other{{items}}}' => '{total, number} {total, plural, =1{{item}} other{{items}}}',
