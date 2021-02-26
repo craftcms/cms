@@ -1748,7 +1748,7 @@ return [
     '{price}/year' => '{price}/سال',
     '{renewalPrice}/year per site for updates after that.' => '{renewalPrice}/سال هر سایت برای بروزرسانی های بعد آن',
     '{section} Entry Types' => 'انواع محتوای {section}',
-    '{step, number} of {total, number}' => '{step, number} of {total, number}',
+    '{step, number} of {total, number}' => '{step, number} از {total, number}',
     '{title} ({site})' => '{title} ({site})',
     '{title} copy' => 'کپی {title}',
     '{total, number} {total, plural, =1{{item}} other{{items}}}' => '{total, number} {total, plural, =1{{item}} other{{items}}}',
