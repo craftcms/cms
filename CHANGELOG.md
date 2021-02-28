@@ -17,6 +17,7 @@
 - Fixed a bug where Redis connection exceptions were getting swallowed when Dev Mode was disabled, and Craft was falsely reporting that it wasn't installed yet instead. ([#7617](https://github.com/craftcms/cms/issues/7617))
 - Fixed a bug where Local volumes were creating extra directories in the web root when saved, if the File System Path was set to an environment variable.
 - Fixed an error that could occur when indexing the search keywords for an element in a disabled site. ([#6383](https://github.com/craftcms/cms/issues/6383))
+- Fixed a bug where `craft\helpers\ProjectConfig::cleanupConfig` wasn’t handling packed aways properly. ([#7630](https://github.com/craftcms/cms/issues/7630))
 
 ## 3.6.7 - 2021-02-23
 
