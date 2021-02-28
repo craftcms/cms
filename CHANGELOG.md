@@ -10,6 +10,9 @@
 - Added `craft\helpers\Gql::canQueryInactiveElements()`.
 - Added `craft\helpers\Gql::canQueryRevisions()`.
 
+### Changed
+- Control panel requests now explicitly send no-cache headers. ([#7631](https://github.com/craftcms/cms/issues/7631))
+
 ### Fixed
 - Fixed a bug where release dates shown in the Updates utility could be off by a day compared to the dates in the changelogs, for clients whose system clock was set to a time zone behind UTC. ([#7612](https://github.com/craftcms/cms/issues/7612))
 - Fixed a bug where user sessions weren’t lasting the extended duration specified by the `rememberedUserSessionDuration` config setting when the `rememberMe` checkbox was ticked. ([#7619](https://github.com/craftcms/cms/issues/7619))
