@@ -248,7 +248,7 @@
                     } %}
                         {% set a11yDefaults = craft.app.config.general.accessibilityDefaults %}
                         {% block input %}
-                            {% from '_includes/forms' import checkboxField %}
+                            {% from '_includes/forms' import checkboxField, textField %}
                             {{ checkboxField({
                                 label: 'Use shapes to represent statuses'|t('app'),
                                 name: 'useShapes',
@@ -260,6 +260,18 @@
                                 name: 'underlineLinks',
                                 id: 'underlineLinks',
                                 checked: user.getPreference('underlineLinks') ?? a11yDefaults['underlineLinks'] ?? false,
+                            }) }}
+
+                            {{ textField({
+                                label: "Notification duration"|t('app'),
+                                instructions: 'Number of seconds to display notification messages.'|t('app'),
+                                id: 'notificationDuration',
+                                name: 'notificationDuration',
+                                value: 5,
+                                min: 5,
+                                size: 2,
+                                required: true,
+                                type: 'number',
                             }) }}
                         {% endblock %}
                     {% endembed %}
