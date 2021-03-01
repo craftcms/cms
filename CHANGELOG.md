@@ -24,6 +24,7 @@
 - Fixed an error that could occur when indexing the search keywords for an element in a disabled site. ([#6383](https://github.com/craftcms/cms/issues/6383))
 - Fixed a bug where `craft\helpers\ProjectConfig::cleanupConfig` wasn’t handling packed aways properly. ([#7630](https://github.com/craftcms/cms/issues/7630))
 - Fixed a bug where the `_includes/forms/text.html` control panel template and `Craft.ui.createTextInput()` JavaScript method weren’t respecting custom `autocomplete` values.
+- Fixed a bug where the “Save and continue editing” action on the Edit Entry page wasn’t retaining the currently-selected site.
 
 ## 3.6.7 - 2021-02-23
 
