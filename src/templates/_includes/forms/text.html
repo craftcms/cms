@@ -17,7 +17,7 @@
     value: value ?? false,
     maxlength: maxlength ?? false,
     autofocus: (autofocus ?? false) and not craft.app.request.isMobileBrowser(true),
-    autocomplete: autocomplete is not same as(null) ? (autocomplete is same as(true) ? 'on' : (autocomplete ? false : 'off' )) : null,
+    autocomplete: autocomplete is same as(true) ? 'on' : autocomplete is same as(false) ? 'off' : autocomplete,
     autocorrect: (autocorrect ?? true) ? false : 'off',
     autocapitalize: (autocapitalize ?? true) ? false : 'off',
     disabled: disabled ?? false,
