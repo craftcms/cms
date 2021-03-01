@@ -1,4 +1,4 @@
-<div id="notifications">
+<div id="notifications" role="status">
     {% for type in ['cp-notice', 'cp-error'] %}
         {% set message = craft.app.session.getFlash(type) %}
         {% if message %}
