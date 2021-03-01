@@ -448,10 +448,10 @@ class User extends Element implements IdentityInterface
         if ($previousUserId = Craft::$app->getSession()->get(self::IMPERSONATE_KEY)) {
             $previousUser = static::find()
                 ->id($previousUserId)
-                ->admin()
+                ->anyStatus()
                 ->one();
 
-            if ($previousUser) {
+            if ($previousUser && $previousUser->can('impersonateUsers')) {
                 return $user;
             }
         }
