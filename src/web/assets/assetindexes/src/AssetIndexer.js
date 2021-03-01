@@ -30,6 +30,7 @@ class AssetIndexer {
         this._tasksWaiting = [];
         this._priorityTasks = [];
         this._prunedSessionIds = [];
+        this._currentlyReviewing = false;
         this.indexingSessions = {};
         this._maxConcurrentConnections = maxConcurrentConnections;
         this.$indexingSessionTable = $indexingSessionTable;
@@ -153,6 +154,10 @@ class AssetIndexer {
         this.enqueueTask(task);
     }
     reviewSession(session) {
+        if (this._currentlyReviewing) {
+            return;
+        }
+        this._currentlyReviewing = true;
         this.pruneWaitingTasks(session.getSessionId());
         let $confirmBody = $('<div></div>');
         const missingEntries = session.getMissingEntries();
@@ -207,6 +212,9 @@ class AssetIndexer {
         const modal = new Garnish.Modal($modal, {
             hideOnEsc: false,
             hideOnShadeClick: false,
+            onHide: () => {
+                this._currentlyReviewing = false;
+            }
         });
         if (haveMissingItems) {
             let $cancelBtn = $('<button/>', {
@@ -216,7 +224,6 @@ class AssetIndexer {
             }).on('click', ev => {
                 ev.preventDefault();
                 this.stopIndexingSession(session);
-                modal.settings.onHide = $.noop;
                 modal.hide();
             }).appendTo($buttons);
             $('<button/>', {
@@ -236,7 +243,6 @@ class AssetIndexer {
         modal.updateSizeAndPosition();
         $modal.on('submit', (ev) => {
             ev.preventDefault();
-            modal.settings.onHide = $.noop;
             modal.hide();
             const postData = Garnish.getPostData($body);
             const postParams = Craft.expandPostArray(postData);
@@ -388,16 +394,17 @@ class AssetIndexingSession {
      */
     getIndexingSessionRowHtml() {
         const $tr = $('<tr class="indexingSession" data-session-id="' + this.getSessionId() + '">');
-        $tr.append('<td>' + Object.values(this.indexingSessionData.indexedVolumes).join(', ') + '</td>');
+        $tr.append('<td><ul><li>' + Object.values(this.indexingSessionData.indexedVolumes).join('</li><li>') + '</li></ul></td>');
         $tr.append('<td>' + this.indexingSessionData.dateCreated + '</td>');
-        $tr.append('<td>' + this.indexingSessionData.dateUpdated + '</td>');
-        const $progressCell = $('<td class="progress"></td>').css('position', 'relative');
-        const progressBar = new Craft.ProgressBar($progressCell, false);
+        const $progressCell = $('<td class="progress"><div class="progressContainer"></div></td>').css('position', 'relative');
+        const progressBar = new Craft.ProgressBar($progressCell.find('.progressContainer'), false);
         progressBar.setItemCount(this.indexingSessionData.totalEntries);
         progressBar.setProcessedItemCount(this.indexingSessionData.processedEntries);
         progressBar.updateProgressBar();
         progressBar.showProgressBar();
-        $tr.append($progressCell.data('progressBar', progressBar));
+        $progressCell.data('progressBar', progressBar);
+        $progressCell.find('.progressContainer').append(`<div class="progressInfo">${this.indexingSessionData.processedEntries} / ${this.indexingSessionData.totalEntries}</div>`);
+        $tr.append($progressCell);
         $tr.append('<td>' + this.getSessionStatusMessage() + '</td>');
         const $actions = this.getActionButtons();
         $('<td></td>').append($actions).appendTo($tr);

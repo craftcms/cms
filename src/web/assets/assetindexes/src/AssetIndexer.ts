@@ -49,7 +49,6 @@ type AssetIndexingSessionModel = {
     readonly totalEntries: number,
     readonly processedEntries: number,
     readonly dateCreated: string,
-    readonly dateUpdated: string,
     readonly actionRequired: boolean,
     readonly skippedEntries: string[],
     readonly missingEntries: StringHash,
@@ -83,6 +82,7 @@ class AssetIndexer {
     private _tasksWaiting: ConcurrentTask[] = [];
     private _priorityTasks: ConcurrentTask[] = [];
     private _prunedSessionIds: number[] = [];
+    private _currentlyReviewing = false;
 
     private indexingSessions: {
         [key: number]: AssetIndexingSession
@@ -222,6 +222,7 @@ class AssetIndexer {
         }
 
         this._updateCurrentIndexingSession();
+
         if (textStatus === 'success' && response.stop) {
             this.discardIndexingSession(response.stop);
         }
@@ -243,6 +244,11 @@ class AssetIndexer {
 
     public reviewSession(session: AssetIndexingSession): void
     {
+        if (this._currentlyReviewing) {
+            return;
+        }
+
+        this._currentlyReviewing = true;
         this.pruneWaitingTasks(session.getSessionId());
         let $confirmBody = $('<div></div>');
 
@@ -308,6 +314,9 @@ class AssetIndexer {
         const modal = new Garnish.Modal($modal, {
             hideOnEsc: false,
             hideOnShadeClick: false,
+            onHide: () => {
+                this._currentlyReviewing = false
+            }
         });
 
         if (haveMissingItems) {
@@ -318,7 +327,6 @@ class AssetIndexer {
             }).on('click', ev => {
                 ev.preventDefault();
                 this.stopIndexingSession(session);
-                modal.settings.onHide = $.noop;
                 modal.hide();
             }).appendTo($buttons);
 
@@ -343,7 +351,6 @@ class AssetIndexer {
         $modal.on('submit', (ev) => {
             ev.preventDefault();
 
-            modal.settings.onHide = $.noop;
             modal.hide();
 
             const postData = Garnish.getPostData($body);
@@ -532,17 +539,19 @@ class AssetIndexingSession {
      */
     public getIndexingSessionRowHtml(): JQuery {
         const $tr = $('<tr class="indexingSession" data-session-id="' + this.getSessionId() + '">');
-        $tr.append('<td>' + Object.values(this.indexingSessionData.indexedVolumes).join(', ') + '</td>');
+        $tr.append('<td><ul><li>' + Object.values(this.indexingSessionData.indexedVolumes).join('</li><li>') + '</li></ul></td>');
         $tr.append('<td>' + this.indexingSessionData.dateCreated + '</td>');
-        $tr.append('<td>' + this.indexingSessionData.dateUpdated + '</td>');
 
-        const $progressCell = $('<td class="progress"></td>').css('position', 'relative');
-        const progressBar = new Craft.ProgressBar($progressCell, false);
+        const $progressCell = $('<td class="progress"><div class="progressContainer"></div></td>').css('position', 'relative');
+        const progressBar = new Craft.ProgressBar($progressCell.find('.progressContainer'), false);
+
         progressBar.setItemCount(this.indexingSessionData.totalEntries);
         progressBar.setProcessedItemCount(this.indexingSessionData.processedEntries);
         progressBar.updateProgressBar();
         progressBar.showProgressBar();
-        $tr.append($progressCell.data('progressBar', progressBar));
+        $progressCell.data('progressBar', progressBar)
+        $progressCell.find('.progressContainer').append(`<div class="progressInfo">${this.indexingSessionData.processedEntries} / ${this.indexingSessionData.totalEntries}</div>`);
+        $tr.append($progressCell);
 
         $tr.append('<td>' + this.getSessionStatusMessage() + '</td>');
         const $actions = this.getActionButtons();

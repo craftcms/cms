@@ -2,13 +2,12 @@
 
 <form id="asset-indexes" class="utility" method="post" accept-charset="UTF-8">
 
-    <table id="indexing-sessions" class="hidden">
+    <table id="indexing-sessions" class="hidden fullwidth">
         <thead>
             <tr>
-                <th>Volumes being indexed</th>
-                <th>Time started</th>
-                <th>Last change</th>
-                <th>Progress</th>
+                <th style="width: 10%">Volumes being indexed</th>
+                <th style="width: 15%">Last update</th>
+                <th style="width: 35%">Progress</th>
                 <th>Status</th>
                 <th>Actions</th>
             </tr>
@@ -51,8 +50,7 @@
             actionRequired: {{ session.actionRequired + 0 }},
             skippedEntries: [],
             missingEntries: [],
-            dateCreated: "{{ session.dateCreated|date("Y-m-d H:i") }}",
-            dateUpdated: "{{ session.dateUpdated|date("Y-m-d H:i") }}",
+            dateCreated: "{{ session.dateCreated|date(dateFormat) }}",
         };
 
         indexingSessions.push(data);

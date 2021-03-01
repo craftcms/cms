@@ -23,6 +23,7 @@ use craft\helpers\Json;
 use craft\helpers\StringHelper;
 use craft\helpers\UrlHelper;
 use craft\i18n\Formatter;
+use craft\i18n\Locale;
 use craft\image\Raster;
 use craft\models\AssetIndexingSession;
 use craft\models\VolumeFolder;
@@ -237,8 +238,8 @@ class AssetIndexesController extends Controller
     private function prepareSessionData(AssetIndexingSession $indexingSession): array
     {
         $sessionData = $indexingSession->toArray();
-        $sessionData['dateCreated'] = $indexingSession->dateCreated->format('Y-m-d H:i');
-        $sessionData['dateUpdated'] = $indexingSession->dateUpdated->format('Y-m-d H:i');
+        unset($sessionData['dateUpdated']);
+        $sessionData['dateCreated'] = $indexingSession->dateUpdated->format(Craft::$app->getLocale()->getDateTimeFormat('medium', Locale::FORMAT_PHP));
         $sessionData['indexedVolumes'] = Json::decodeIfJson($indexingSession->indexedVolumes);
         return $sessionData;
     }
