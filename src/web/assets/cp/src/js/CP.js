@@ -655,7 +655,7 @@ Craft.CP = Garnish.Base.extend({
             var timeRemaining = notificationDuration;
             var countdownTime = 100;
 
-            var countdownInterval = = setInterval(function() {
+            var countdownInterval = setInterval(function() {
                 if (document.hidden) {
                     return;
                 }
@@ -675,7 +675,6 @@ Craft.CP = Garnish.Base.extend({
                 }
             }, countdownTime);
         })();
-
 
         this.trigger('displayNotification', {
             notificationType: type,
