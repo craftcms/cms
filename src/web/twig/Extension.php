@@ -286,6 +286,9 @@ class Extension extends AbstractExtension implements GlobalsInterface
             new TwigTest('missing', function ($obj) {
                 return $obj instanceof MissingComponentInterface;
             }),
+            new TwigTest('boolean', function($obj): bool {
+                return is_bool($obj);
+            }),
         ];
     }
 
