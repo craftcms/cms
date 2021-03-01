@@ -562,11 +562,21 @@ Craft.CP = Garnish.Base.extend({
     displayNotification: function(type, message) {
         var notificationDuration = Craft.CP.notificationDuration;
 
-        if (type === 'error') {
+        if (type === 'cp-error') {
             notificationDuration *= 2;
+            icon = 'error';
+            label = Craft.t('app', 'Error');
+        } else {
+            icon = 'info';
+            label = Craft.t('app', 'Notice');
         }
 
-        var $notification = $('<div class="notification ' + type + '">' + message + '</div>')
+        var $notification = $(`
+            <div class="notification ${ type }">
+                <span data-icon="${ icon }" aria-label="${ label }"></span>
+                ${ message }
+            </div>
+            `)
             .appendTo(this.$notificationContainer);
 
         var fadedMargin = -($notification.outerWidth() / 2) + 'px';

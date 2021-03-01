@@ -931,6 +931,7 @@ return [
     'Notes' => 'Notes',
     'Nothing selected.' => 'Nothing selected.',
     'Nothing to update.' => 'Nothing to update.',
+    'Notice' => 'Notice',
     'Number' => 'Number',
     'OFF Label' => 'OFF Label',
     'OK' => 'OK',
