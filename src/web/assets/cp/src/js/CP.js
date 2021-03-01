@@ -627,8 +627,8 @@ Craft.CP = Garnish.Base.extend({
     displayNotification: function(type, message) {
         var notificationDuration = Craft.CP.notificationDuration;
 
+
         if (['cp-error', 'error'].includes(type)) {
-            notificationDuration *= 2;
             icon = 'alert';
             label = Craft.t('app', 'Error');
         } else {
@@ -649,13 +649,33 @@ Craft.CP = Garnish.Base.extend({
         $notification
             .hide()
             .css({opacity: 0, 'margin-left': fadedMargin, 'margin-right': fadedMargin})
-            .velocity({opacity: 1, 'margin-left': '2px', 'margin-right': '2px'}, {display: 'inline-block', duration: 'fast'})
-            .delay(notificationDuration)
-            .velocity({opacity: 0, 'margin-left': fadedMargin, 'margin-right': fadedMargin}, {
-                complete: function() {
-                    $notification.remove();
+            .velocity({opacity: 1, 'margin-left': '2px', 'margin-right': '2px'}, {display: 'inline-block', duration: 'fast'});
+
+        (function() {
+            var timeRemaining = notificationDuration;
+            var countdownTime = 100;
+
+            var countdownInterval = = setInterval(function() {
+                if (document.hidden) {
+                    return;
                 }
-            });
+
+                timeRemaining -= countdownTime;
+
+                if (timeRemaining <= 0) {
+                    clearInterval(countdownInterval);
+
+                    // Hide notification
+                    $notification
+                        .velocity({opacity: 0, 'margin-left': fadedMargin, 'margin-right': fadedMargin}, {
+                            complete: function() {
+                                $notification.remove();
+                            }
+                        });
+                }
+            }, countdownTime);
+        })();
+
 
         this.trigger('displayNotification', {
             notificationType: type,
