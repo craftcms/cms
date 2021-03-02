@@ -179,7 +179,33 @@ class ProjectConfigHelperTest extends Unit
                     'plainSettings' => 'plain',
                     'randomArray' => [1, 7, 2, 'ok']
                 ],
-            ]
+            ],
+            // Make sure empty values aren't removed from packed arrays
+            // https://github.com/craftcms/cms/issues/7630
+            [
+                [
+                    'a' => [
+                        ProjectConfig::CONFIG_ASSOC_KEY => [
+                            ['foo', []],
+                            ['bar'],
+                            ['baz', 0],
+                        ]
+                    ],
+                    'b' => [
+                        ProjectConfig::CONFIG_ASSOC_KEY => [
+                            ['foo', []],
+                            ['bar'],
+                        ]
+                    ],
+                ],
+                [
+                    'a' => [
+                        ProjectConfig::CONFIG_ASSOC_KEY => [
+                            ['baz', 0],
+                        ]
+                    ],
+                ],
+            ],
         ];
     }
 

@@ -299,6 +299,11 @@ trait ApplicationTrait
         try {
             $info = $this->getInfo(true);
         } catch (DbException $e) {
+            // yii2-redis awkwardly throws yii\db\Exception's rather than their own exception class.
+            if (strpos($e->getMessage(), 'Redis') !== false) {
+                throw $e;
+            }
+
             Craft::error('There was a problem fetching the info row: ' . $e->getMessage(), __METHOD__);
             /** @var ErrorHandler $errorHandler */
             $errorHandler = $this->getErrorHandler();
@@ -1406,7 +1411,7 @@ trait ApplicationTrait
     {
         // Load the request before anything else, so everything else can safely check Craft::$app->has('request', true)
         // to avoid possible recursive fatal errors in the request initialization
-        $this->getRequest();
+        $request = $this->getRequest();
         $this->getLog();
 
         // Set the timezone
@@ -1414,6 +1419,11 @@ trait ApplicationTrait
 
         // Set the language
         $this->updateTargetLanguage();
+
+        // Prevent browser caching if this is a control panel request
+        if ($request->getIsCpRequest()) {
+            $this->getResponse()->setNoCacheHeaders();
+        }
     }
 
     /**
