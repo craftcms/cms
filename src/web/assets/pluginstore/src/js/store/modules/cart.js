@@ -137,6 +137,10 @@ const getters = {
             // plugin edition
             const activeTrialPluginEdition = getPluginEdition(plugin, pluginLicenseInfo.edition)
 
+            if (!activeTrialPluginEdition) {
+                continue
+            }
+
             // licensed edition
             const licensedEdition = getPluginEdition(plugin, pluginLicenseInfo.licensedEdition)
 
@@ -147,15 +151,11 @@ const getters = {
             const navigateTo = '/' + plugin.handle
 
             // price & discount price
-            let price = null
             let discountPrice = null
+            let price = activeTrialPluginEdition.price
 
-            if (activeTrialPluginEdition) {
-                price = activeTrialPluginEdition.price
-
-                if (licensedEdition && licensedEdition.handle !== activeTrialPluginEdition.handle && licensedEdition.price > 0 && licenseValidOrAstray) {
-                    discountPrice = activeTrialPluginEdition.price - licensedEdition.price
-                }
+            if (licensedEdition && licensedEdition.handle !== activeTrialPluginEdition.handle && licensedEdition.price > 0 && licenseValidOrAstray) {
+                discountPrice = activeTrialPluginEdition.price - licensedEdition.price
             }
 
             // show edition badge
@@ -374,7 +374,10 @@ const actions = {
             const pluginLicenseInfo = rootState.craft.pluginLicenseInfo
 
             for (let pluginHandle in pluginLicenseInfo) {
-                if (Object.prototype.hasOwnProperty.call(pluginLicenseInfo, pluginHandle)) {
+                if (
+                    Object.prototype.hasOwnProperty.call(pluginLicenseInfo, pluginHandle) &&
+                    pluginLicenseInfo[pluginHandle].isEnabled
+                ) {
                     pluginHandles.push(pluginHandle)
                 }
             }
