@@ -1,10 +1,27 @@
 {% import "_includes/forms" as forms %}
 
 <form id="asset-indexes" class="utility" method="post" accept-charset="UTF-8">
-    {{ actionInput('utilities/asset-index-perform-action') }}
+
+    <table id="indexing-sessions" class="hidden fullwidth">
+        <thead>
+            <tr>
+                <th style="width: 10%">Volumes being indexed</th>
+                <th style="width: 15%">Last update</th>
+                <th style="width: 35%">Progress</th>
+                <th>Status</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+        </tbody>
+    </table>
+
     {{ csrfInput() }}
 
+    <h2>{{ 'Volumes'|t('app') }} </h2>
     {{ checkboxSelectHtml|raw }}
+
+    <h2>{{ 'Options'|t('app') }} </h2>
 
     {{ forms.lightswitchField({
         name: 'cacheImages',
@@ -18,3 +35,49 @@
         <div class="utility-status"></div>
     </div>
 </form>
+
+{% js %}
+
+    let indexingSessions = [];
+    let data = {};
+
+    {% for session in existingSessions %}
+        data = {
+            id: {{ session.id }},
+            indexedVolumes: {{ session.indexedVolumes|raw }},
+            totalEntries: {{ session.totalEntries }},
+            processedEntries: {{ session.processedEntries }},
+            actionRequired: {{ session.actionRequired + 0 }},
+            skippedEntries: [],
+            missingEntries: [],
+            dateCreated: "{{ session.dateCreated|date(dateFormat) }}",
+        };
+
+        indexingSessions.push(data);
+    {% endfor %}
+
+    Craft.AssetIndexer = new AssetIndexer($('#indexing-sessions'), indexingSessions);
+
+    $('form#asset-indexes').on('submit', function (ev) {
+        const $submitButton = $('form#asset-indexes button.submit:last');
+
+        if ($submitButton.hasClass('disabled')) {
+            return false;
+        }
+
+        const data = {};
+        for (let param of $(ev.target).serialize().split('&')) {
+            let parts = param.split('=');
+            data[unescape(parts[0])] = parts[1];
+        }
+
+        $submitButton.addClass('disabled').after('<div class="spinner"></div>');
+
+        Craft.AssetIndexer.startIndexing(data, () => {
+            $('form#asset-indexes .spinner').remove();
+            $submitButton.removeClass('disabled')
+        });
+
+        return false;
+    });
+{% endjs %}

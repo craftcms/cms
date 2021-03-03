@@ -4800,6 +4800,31 @@ fieldset {
   overflow: auto;
 }
 
+/* Asset indexing related */
+tr.indexingSession td {
+  height: 34px;
+  padding: 1px 10px;
+}
+
+tr.indexingSession td.progress div.progressContainer {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+tr.indexingSession td.progress div.progressContainer .progressbar {
+  width: 70%;
+  position: relative;
+  left: 0;
+  height: 4px;
+  z-index: 1;
+}
+
+tr.indexingSession td.progress div.progressContainer  div.progressInfo {
+  width: 20%;
+}
+
 // Selects
 .select:not(.selectize),
 .select:not(.selectize) select {

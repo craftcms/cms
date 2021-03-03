@@ -19,6 +19,7 @@ use craft\base\VolumeInterface;
  * @property-read VolumeInterface $volume The volume containing the listing.
  * @property-read string $uri Listing URI
  * @property-read null|int $fileSize
+ * @property-read bool $isDir
  * @property-read int $dateModified
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
@@ -122,5 +123,15 @@ class VolumeListing extends Model
     public function getUri(): string
     {
         return $this->dirname . ($this->dirname ? DIRECTORY_SEPARATOR : '') . $this->basename;
+    }
+
+    /**
+     * Return true if this listing is a directory.
+     *
+     * @return bool
+     */
+    public function getIsDir(): bool
+    {
+        return $this->type === 'dir';
     }
 }

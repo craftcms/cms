@@ -323,6 +323,7 @@ class Assets extends Component
         $elementService = Craft::$app->getElements();
 
         foreach ($assets as $asset) {
+            $asset->keepFileOnDelete = !$deleteDir;
             $elementService->deleteElement($asset, true);
         }
 
@@ -509,7 +510,7 @@ class Assets extends Component
      * @param mixed $criteria
      * @return VolumeFolder|null
      */
-    public function findFolder($criteria = null)
+    public function findFolder($criteria = null): ?VolumeFolder
     {
         if (!($criteria instanceof FolderCriteria)) {
             $criteria = new FolderCriteria($criteria);
