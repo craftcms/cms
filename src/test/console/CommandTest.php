@@ -258,7 +258,7 @@ class CommandTest
      */
     protected function outputCommandHandler(): Closure
     {
-        return function ($out, $withScriptName = true) {
+        return function($out, $withScriptName = true) {
             $nextItem = $this->runHandlerCheck($out, self::OUTPUT_COMMAND);
             $this->test::assertSame($nextItem->withScriptName, $withScriptName);
             if (is_string($nextItem->desiredOutput)) {
@@ -275,7 +275,7 @@ class CommandTest
      */
     protected function stdOutHandler(): Closure
     {
-        return function ($out) {
+        return function($out) {
             if (!$this->ignoreStdOut) {
                 $nextItem = $this->runHandlerCheck($out, self::STD_OUT);
                 if (is_string($nextItem->desiredOutput)) {
@@ -292,7 +292,7 @@ class CommandTest
      */
     protected function stderrHandler(): Closure
     {
-        return function ($out) {
+        return function($out) {
             $nextItem = $this->runHandlerCheck($out, self::STD_ERR);
             if (is_string($nextItem->desiredOutput)) {
                 $this->test::assertSame($nextItem->desiredOutput, $out);
@@ -307,7 +307,7 @@ class CommandTest
      */
     protected function promptHandler(): Closure
     {
-        return function ($text, $options = []) {
+        return function($text, $options = []) {
             $nextItem = $this->runHandlerCheck('A prompt with value: ' . $text, self::PROMPT);
             $this->test::assertSame($nextItem->prompt, $text);
             $this->test::assertSame($nextItem->options, $options);
@@ -320,7 +320,7 @@ class CommandTest
      */
     protected function confirmHandler(): Closure
     {
-        return function ($message, $default = false) {
+        return function($message, $default = false) {
             $nextItem = $this->runHandlerCheck('A confirm with value: ' . $message, self::CONFIRM);
             $this->test::assertSame($nextItem->message, $message);
             $this->test::assertSame($nextItem->default, $default);
@@ -333,7 +333,7 @@ class CommandTest
      */
     protected function selectHandler(): Closure
     {
-        return function ($prompt, $options = []) {
+        return function($prompt, $options = []) {
             $nextItem = $this->runHandlerCheck('A select with value: ' . $prompt, self::SELECT);
             $this->test::assertSame($nextItem->prompt, $prompt);
             $this->test::assertSame($nextItem->options, $options);

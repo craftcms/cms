@@ -28,7 +28,7 @@ class DbCache extends YiiDbCache
     {
         // Copied from yii\caching\DbCache::setValue() except for the added includeAuditColumns=false argument
         try {
-            $this->db->noCache(function (Connection $db) use ($key, $value, $duration) {
+            $this->db->noCache(function(Connection $db) use ($key, $value, $duration) {
                 Db::upsert($this->cacheTable, [
                     'id' => $key,
                     'expire' => $duration > 0 ? $duration + time() : 0,
@@ -51,7 +51,7 @@ class DbCache extends YiiDbCache
         $this->gc();
 
         try {
-            $this->db->noCache(function (Connection $db) use ($key, $value, $duration) {
+            $this->db->noCache(function(Connection $db) use ($key, $value, $duration) {
                 Db::insert($this->cacheTable, [
                     'id' => $key,
                     'expire' => $duration > 0 ? $duration + time() : 0,

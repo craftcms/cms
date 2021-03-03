@@ -1738,17 +1738,19 @@ class ProjectConfig extends Component
     /**
      * Discard all project config names.
      *
+     * @return void
      * @throws \yii\db\Exception
      */
     private function _discardProjectConfigNames(): void
     {
         $this->_projectConfigNameChanges = [];
-        Db::delete(Table::PROJECTCONFIGNAMES);
+        Db::truncateTable(Table::PROJECTCONFIGNAMES);
     }
 
     /**
      * Process any queued up project config name changes.
      *
+     * @return void
      * @throws \yii\db\Exception
      */
     private function _processProjectConfigNameChanges(): void
@@ -2214,6 +2216,7 @@ class ProjectConfig extends Component
      *
      * @param string $lastPathSegment
      * @param array $data
+     * @return void
      */
     private function _setContainedProjectConfigNames(string $lastPathSegment, array $data): void
     {
@@ -2234,6 +2237,7 @@ class ProjectConfig extends Component
      *
      * @param string $lastPathSegment
      * @param array $data
+     * @return void
      */
     private function _removeContainedProjectConfigNames(string $lastPathSegment, array $data): void
     {

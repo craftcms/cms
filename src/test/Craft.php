@@ -351,7 +351,7 @@ class Craft extends Yii2
         $eventTriggered = false;
 
         // Listen to this event and log it.
-        Event::on($class, $eventName, function ($event) use (&$eventTriggered, $eventInstance, $eventValues) {
+        Event::on($class, $eventName, function($event) use (&$eventTriggered, $eventInstance, $eventValues) {
             $eventTriggered = true;
 
             if ($eventInstance && !$event instanceof $eventInstance) {

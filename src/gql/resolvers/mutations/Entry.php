@@ -71,9 +71,10 @@ class Entry extends ElementMutationResolver
     public function deleteEntry($source, array $arguments, $context, ResolveInfo $resolveInfo)
     {
         $entryId = $arguments['id'];
+        $siteId = $arguments['siteId'] ?? null;
 
         $elementService = Craft::$app->getElements();
-        $entry = $elementService->getElementById($entryId, EntryElement::class);
+        $entry = $elementService->getElementById($entryId, EntryElement::class, $siteId);
 
         if (!$entry) {
             return true;

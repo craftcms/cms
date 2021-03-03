@@ -576,7 +576,7 @@ class UpdateController extends Controller
 
             if (!$user) {
                 $email = $this->prompt('Enter your email address to request a new license key:', [
-                    'validator' => function (string $input, string &$error = null) {
+                    'validator' => function(string $input, string &$error = null) {
                         return (new EmailValidator())->validate($input, $error);
                     },
                 ]);

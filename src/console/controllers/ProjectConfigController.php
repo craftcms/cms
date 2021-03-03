@@ -160,15 +160,15 @@ class ProjectConfigController extends Controller
                 $projectConfig->on(ProjectConfigService::EVENT_REMOVE_ITEM, $this->_generateOutputFunction('removing '), null, false);
                 $projectConfig->on(ProjectConfigService::EVENT_UPDATE_ITEM, $this->_generateOutputFunction('updating '), null, false);
 
-                $projectConfig->on(ProjectConfigService::EVENT_ADD_ITEM, function () {
+                $projectConfig->on(ProjectConfigService::EVENT_ADD_ITEM, function() {
                     $this->stdout(' ... ');
                     $this->stdout('done' . PHP_EOL, Console::FG_GREEN);
                 });
-                $projectConfig->on(ProjectConfigService::EVENT_REMOVE_ITEM, function () {
+                $projectConfig->on(ProjectConfigService::EVENT_REMOVE_ITEM, function() {
                     $this->stdout(' ... ');
                     $this->stdout('done' . PHP_EOL, Console::FG_GREEN);
                 });
-                $projectConfig->on(ProjectConfigService::EVENT_UPDATE_ITEM, function () {
+                $projectConfig->on(ProjectConfigService::EVENT_UPDATE_ITEM, function() {
                     $this->stdout(' ... ');
                     $this->stdout('done' . PHP_EOL, Console::FG_GREEN);
                 });
@@ -328,7 +328,7 @@ class ProjectConfigController extends Controller
      */
     private function _generateOutputFunction($mode): callable
     {
-        return function (ConfigEvent $configEvent) use ($mode) {
+        return function(ConfigEvent $configEvent) use ($mode) {
             $key = $mode . $configEvent->path;
 
             if (isset($this->announcedPaths[$key])) {

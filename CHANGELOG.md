@@ -2,18 +2,28 @@
 
 ## Unreleased
 
+### Changed
+- Updated Yii to 2.0.41.
+
+### Fixed
+- Fixed SQL errors that could occur when MySQL was running in `ANSI`/`ANSI_QUOTES` modes. ([#5804](https://github.com/craftcms/cms/issues/5804))
+
+## 3.6.8 - 2021-03-03
+
 ### Added
 - Added the `is boolean` Twig test.
 - GraphQL schemas now include settings that determine whether inactive elements, drafts, and/or revisions should be included in query results. ([#7590](https://github.com/craftcms/cms/issues/7590)).
-- Project Config now labels UIDs in Yaml files with comments to help readability. ([#7584](https://github.com/craftcms/cms/issues/7584))
 - Added `craft\gql\base\ElementArguments::getRevisionArguments()`.
+- Added `craft\helpers\Db::truncateTable()`.
 - Added `craft\helpers\Gql::canQueryDrafts()`.
 - Added `craft\helpers\Gql::canQueryInactiveElements()`.
 - Added `craft\helpers\Gql::canQueryRevisions()`.
 
 ### Changed
+- Project config YAML files now include comments alongside UIDs, identifying the name of the component being referenced. ([#7584](https://github.com/craftcms/cms/issues/7584))
 - Control panel requests now explicitly send no-cache headers. ([#7631](https://github.com/craftcms/cms/issues/7631))
 - Plain Text fields’ Placeholder settings now support emoji on MySQL. ([#7629](https://github.com/craftcms/cms/issues/7629))
+- `deleteEntry` GraphQL mutation queries now support `siteId` arguments. ([#7611](https://github.com/craftcms/cms/issues/7611))
 
 ### Fixed
 - Fixed a bug where release dates shown in the Updates utility could be off by a day compared to the dates in the changelogs, for clients whose system clock was set to a time zone behind UTC. ([#7612](https://github.com/craftcms/cms/issues/7612))
@@ -27,6 +37,10 @@
 - Fixed a bug where the “Save and continue editing” action on the Edit Entry page wasn’t retaining the currently-selected site.
 - Fixed a bug where non-admins weren’t able to impersonate inactive users. ([#7475](https://github.com/craftcms/cms/issues/7475))
 - Fixed a bug where the Plugin Store wouldn‘t fully load when clicking the “Buy now” button on the “There are trial licenses that require payment” alert, if any of the trialled plugins were disabled.
+- Fixed a bug where the Plugin Store’s cart was not showing the updates dropdown for plugin trial licenses.
+- Fixed a bug where the Plugin Store was showing a generic error when a credit card was declined, instead of a more detailed error.
+- Fixed an error where it wasn’t possible to delete entries from non-primary sites via GraphQL. ([#7611](https://github.com/craftcms/cms/issues/7611))
+- Fixed a bug where the GraphQL API could return unexpected results if multiple `relatedTo*` arguments were used. ([#7534](https://github.com/craftcms/cms/issues/7534))
 
 ## 3.6.7 - 2021-02-23
 

@@ -3,7 +3,7 @@
 return [
     'id' => 'CraftCMS',
     'name' => 'Craft CMS',
-    'version' => '3.6.7',
+    'version' => '3.6.8',
     'schemaVersion' => '3.6.6',
     'minVersionRequired' => '2.6.2788',
     'basePath' => dirname(__DIR__), // Defines the @app alias
@@ -205,44 +205,44 @@ return [
         // Dynamically configured components
         // -------------------------------------------------------------------------
 
-        'cache' => function () {
+        'cache' => function() {
             $config = craft\helpers\App::cacheConfig();
             return Craft::createObject($config);
         },
 
-        'db' => function () {
+        'db' => function() {
             $config = craft\helpers\App::dbConfig();
             return Craft::createObject($config);
         },
 
-        'formatter' => function () {
+        'formatter' => function() {
             return Craft::$app->getFormattingLocale()->getFormatter();
         },
 
-        'formattingLocale' => function () {
+        'formattingLocale' => function() {
             return craft\helpers\App::createFormattingLocale();
         },
 
-        'locale' => function () {
+        'locale' => function() {
             return Craft::$app->getI18n()->getLocaleById(Craft::$app->language);
         },
 
-        'mailer' => function () {
+        'mailer' => function() {
             $config = craft\helpers\App::mailerConfig();
             return Craft::createObject($config);
         },
 
-        'mutex' => function () {
+        'mutex' => function() {
             $config = craft\helpers\App::dbMutexConfig();
             return Craft::createObject($config);
         },
 
-        'projectConfig' => function () {
+        'projectConfig' => function() {
             $config = craft\helpers\App::projectConfigConfig();
             return Craft::createObject($config);
         },
 
-        'view' => function () {
+        'view' => function() {
             $config = craft\helpers\App::viewConfig();
             return Craft::createObject($config);
         },

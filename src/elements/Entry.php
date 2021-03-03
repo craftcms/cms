@@ -479,7 +479,7 @@ class Entry extends Element
             'uri' => Craft::t('app', 'URI'),
             [
                 'label' => Craft::t('app', 'Post Date'),
-                'orderBy' => function (int $dir) {
+                'orderBy' => function(int $dir) {
                     if ($dir === SORT_ASC) {
                         if (Craft::$app->getDb()->getIsMysql()) {
                             return new Expression('[[postDate]] IS NOT NULL DESC, [[postDate]] ASC');
@@ -969,7 +969,7 @@ class Entry extends Element
      */
     protected function previewTargets(): array
     {
-        return array_map(function ($previewTarget) {
+        return array_map(function($previewTarget) {
             $previewTarget['label'] = Craft::t('site', $previewTarget['label']);
             return $previewTarget;
         }, $this->getSection()->previewTargets);

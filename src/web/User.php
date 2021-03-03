@@ -9,7 +9,6 @@ namespace craft\web;
 
 use Craft;
 use craft\controllers\UsersController;
-use craft\db\Query;
 use craft\db\Table;
 use craft\elements\User as UserElement;
 use craft\errors\UserLockedException;
@@ -494,9 +493,6 @@ class User extends \yii\web\User
         // Should we be extending the user's session on this request?
         $extendSession = !Craft::$app->getRequest()->getParam('dontExtendSession');
 
-        // Make sure their user session token is valid
-        $this->_validateToken($extendSession);
-
         // Prevent the user session from getting extended?
         if ($this->authTimeout !== null && !$extendSession) {
             $this->absoluteAuthTimeout = $this->authTimeout;
@@ -587,54 +583,6 @@ class User extends \yii\web\User
         }
 
         return true;
-    }
-
-    /**
-     * Validates that a user's session token is valid.
-     *
-     * @param bool $extendSession
-     */
-    private function _validateToken(bool $extendSession)
-    {
-        $session = Craft::$app->getSession();
-        $id = $session->getHasSessionId() || $session->getIsActive() ? $session->get($this->idParam) : null;
-
-        if ($id === null) {
-            return;
-        }
-
-        $token = $session->get($this->tokenParam);
-
-        if ($token === null) {
-            // Just give them a new token and be done with it
-            $this->generateToken($id);
-            return;
-        }
-
-        $tokenId = (new Query())
-            ->select(['id'])
-            ->from([Table::SESSIONS])
-            ->where([
-                'token' => $token,
-                'userId' => $id,
-            ])
-            ->scalar();
-
-        if (!$tokenId) {
-            // Kill their PHP session. Their session may still be auto-renewed via their session cookie, though
-            $session->remove($this->idParam);
-            $session->remove($this->tokenParam);
-            return;
-        }
-
-        if ($extendSession) {
-            // Update the session row's dateUpdated value so it doesn't get GC'd
-            Craft::$app->getDb()->createCommand()
-                ->update(Table::SESSIONS, [
-                    'dateUpdated' => Db::prepareDateForDb(new \DateTime()),
-                ], ['id' => $tokenId])
-                ->execute();
-        }
     }
 
     /**

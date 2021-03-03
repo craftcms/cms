@@ -641,7 +641,7 @@ class Fields extends Component
      */
     public function getFieldsWithContent(): array
     {
-        return ArrayHelper::where($this->getAllFields(), function (FieldInterface $field) {
+        return ArrayHelper::where($this->getAllFields(), function(FieldInterface $field) {
             return $field::hasContentColumn();
         }, true, true, false);
     }

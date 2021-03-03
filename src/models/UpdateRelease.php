@@ -9,7 +9,6 @@ namespace craft\models;
 
 use craft\base\Model;
 use craft\helpers\DateTimeHelper;
-use DateTime;
 use DateTimeZone;
 
 /**

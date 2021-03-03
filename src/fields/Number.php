@@ -180,7 +180,7 @@ class Number extends Field implements PreviewableFieldInterface, SortableFieldIn
 
         $rules[] = [['previewFormat'], 'in', 'range' => [self::FORMAT_DECIMAL, self::FORMAT_CURRENCY, self::FORMAT_NONE]];
         $rules[] = [
-            ['previewCurrency'], 'required', 'when' => function (): bool {
+            ['previewCurrency'], 'required', 'when' => function(): bool {
                 return $this->previewFormat === self::FORMAT_CURRENCY;
             },
         ];

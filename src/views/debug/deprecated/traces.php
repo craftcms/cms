@@ -5,7 +5,7 @@ use craft\models\DeprecationError;
 /** @var $log DeprecationError */
 /** @var $panel craft\debug\DeprecatedPanel */
 ?>
-  <h1><?= $log->key ?></h1>
+    <h1><?= $log->key ?></h1>
 
 <?php
 
@@ -14,17 +14,17 @@ echo $this->render('../table', [
     'values' => [
         [
             Craft::t('app', 'Message'),
-            \yii\helpers\Markdown::processParagraph(\craft\helpers\Html::encode($log->message))
+            \yii\helpers\Markdown::processParagraph(\craft\helpers\Html::encode($log->message)),
         ],
         [
             Craft::t('app', 'Origin'),
-            '<code>' . str_replace('/', '/<wbr>', \craft\helpers\Html::encode($log->file)) . ($log->line ? ':' . $log->line : '') . '</code>'
+            '<code>' . str_replace('/', '/<wbr>', \craft\helpers\Html::encode($log->file)) . ($log->line ? ':' . $log->line : '') . '</code>',
         ],
         [
             Craft::t('app', 'Last Occurrence'),
-            Craft::$app->getFormatter()->asDatetime($log->lastOccurrence, 'short')
+            Craft::$app->getFormatter()->asDatetime($log->lastOccurrence, 'short'),
         ],
-    ]
+    ],
 ]);
 
 
@@ -48,5 +48,5 @@ foreach ($log->traces as $i => $trace) {
 echo $this->render('../table', [
     'columnStyles' => ['width: 5%; text-align: center;', ''],
     'caption' => 'Stack Trace',
-    'values' => $values
+    'values' => $values,
 ]);
