@@ -5,6 +5,9 @@
 ### Changed
 - Updated Yii to 2.0.41.
 
+### Fixed
+- Fixed SQL errors that could occur when MySQL was running in `ANSI`/`ANSI_QUOTES` modes. ([#5804](https://github.com/craftcms/cms/issues/5804))
+
 ## 3.6.8 - 2021-03-03
 
 ### Added
