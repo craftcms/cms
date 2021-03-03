@@ -832,7 +832,7 @@ class Db
      * @throws DbException if execution failed
      * @since 3.5.0
      */
-    public static function delete(string $table, $condition = '', array $params = [], ?Connection $db = null)
+    public static function delete(string $table, $condition = '', array $params = [], ?Connection $db = null): int
     {
         if ($db === null) {
             $db = self::db();
