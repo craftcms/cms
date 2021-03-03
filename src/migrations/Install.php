@@ -481,6 +481,11 @@ class Install extends Migration
             'value' => $this->text()->notNull(),
             'PRIMARY KEY([[path]])',
         ]);
+        $this->createTable(Table::PROJECTCONFIGNAMES, [
+            'uid' => $this->uid()->notNull(),
+            'name' => $this->string()->notNull(),
+            'PRIMARY KEY([[uid]])',
+        ]);
         $this->createTable(Table::QUEUE, [
             'id' => $this->primaryKey(),
             'channel' => $this->string()->notNull()->defaultValue('queue'),

@@ -44,7 +44,7 @@ class ElementType implements GeneratorInterface, SingleGeneratorInterface
 
         return GqlEntityRegistry::getEntity($typeName) ?: GqlEntityRegistry::createEntity($typeName, new Element([
             'name' => $typeName,
-            'fields' => function () use ($elementFields) {
+            'fields' => function() use ($elementFields) {
                 return $elementFields;
             },
         ]));

@@ -1762,7 +1762,7 @@ class Elements extends Component
         $allRefTagTokens = [];
         $str = preg_replace_callback(
             '/\{([\w\\\\]+)\:([^@\:\}]+)(?:@([^\:\}]+))?(?:\:([^\}\| ]+))?(?: *\|\| *([^\}]+))?\}/',
-            function (array $matches) use (
+            function(array $matches) use (
                 $defaultSiteId,
                 $sitesService,
                 &$allRefTagTokens

@@ -261,7 +261,7 @@ class PluginStoreAsset extends AssetBundle
         $cache = Craft::$app->getCache();
         $file = $cache->getOrSet(
             self::CACHE_KEY . $path,
-            function () use ($path, $callback) {
+            function() use ($path, $callback) {
                 $result = null;
                 if (UrlHelper::isAbsoluteUrl($path)) {
                     /**
@@ -310,7 +310,7 @@ class PluginStoreAsset extends AssetBundle
     private static function combinePaths(string ...$paths): string
     {
         $last_key = \count($paths) - 1;
-        array_walk($paths, function (&$val, $key) use ($last_key) {
+        array_walk($paths, function(&$val, $key) use ($last_key) {
             switch ($key) {
                 case 0:
                     $val = rtrim($val, '/ ');

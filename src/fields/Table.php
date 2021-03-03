@@ -465,7 +465,7 @@ class Table extends Field
 
         $argumentType = GqlEntityRegistry::createEntity($typeName, new InputObjectType([
             'name' => $typeName,
-            'fields' => function () use ($contentFields) {
+            'fields' => function() use ($contentFields) {
                 return $contentFields;
             },
         ]));

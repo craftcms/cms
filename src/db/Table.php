@@ -66,6 +66,8 @@ abstract class Table
     const PLUGINS = '{{%plugins}}';
     /** @since 3.4.0 */
     const PROJECTCONFIG = '{{%projectconfig}}';
+    /** @since 3.6.8 */
+    const PROJECTCONFIGNAMES = '{{%projectconfignames}}';
     const QUEUE = '{{%queue}}';
     const RELATIONS = '{{%relations}}';
     const SECTIONS = '{{%sections}}';

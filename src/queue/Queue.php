@@ -109,11 +109,11 @@ class Queue extends \yii\queue\cli\Queue implements QueueInterface
         $this->db = Instance::ensure($this->db, Connection::class);
         $this->mutex = Instance::ensure($this->mutex, Mutex::class);
 
-        $this->on(self::EVENT_BEFORE_EXEC, function (ExecEvent $e) {
+        $this->on(self::EVENT_BEFORE_EXEC, function(ExecEvent $e) {
             $this->_executingJobId = $e->id;
         });
 
-        $this->on(self::EVENT_AFTER_EXEC, function (ExecEvent $e) {
+        $this->on(self::EVENT_AFTER_EXEC, function(ExecEvent $e) {
             $this->_executingJobId = null;
         });
     }
@@ -198,7 +198,7 @@ class Queue extends \yii\queue\cli\Queue implements QueueInterface
      */
     public function retry(string $id)
     {
-        $this->_lock(function () use ($id) {
+        $this->_lock(function() use ($id) {
             Db::update($this->tableName, [
                 'dateReserved' => null,
                 'timeUpdated' => null,
@@ -219,7 +219,7 @@ class Queue extends \yii\queue\cli\Queue implements QueueInterface
      */
     public function retryAll()
     {
-        $this->_lock(function () {
+        $this->_lock(function() {
             // Move expired messages into waiting list
             $this->_moveExpired();
 
@@ -244,7 +244,7 @@ class Queue extends \yii\queue\cli\Queue implements QueueInterface
      */
     public function release(string $id)
     {
-        $this->_lock(function () use ($id) {
+        $this->_lock(function() use ($id) {
             Db::delete($this->tableName, [
                 'id' => $id,
             ], [], $this->db);
@@ -256,7 +256,7 @@ class Queue extends \yii\queue\cli\Queue implements QueueInterface
      */
     public function releaseAll()
     {
-        $this->_lock(function () {
+        $this->_lock(function() {
             Db::delete($this->tableName, [
                 'channel' => $this->channel,
             ], [], $this->db);
@@ -268,7 +268,7 @@ class Queue extends \yii\queue\cli\Queue implements QueueInterface
      */
     public function setProgress(int $progress, string $label = null)
     {
-        $this->_lock(function () use ($progress, $label) {
+        $this->_lock(function() use ($progress, $label) {
             $data = [
                 'progress' => $progress,
                 'timeUpdated' => time(),
@@ -450,7 +450,7 @@ class Queue extends \yii\queue\cli\Queue implements QueueInterface
         // Have we given up?
         if (parent::handleError($event)) {
             // Mark the job as failed
-            $this->_lock(function () use ($event) {
+            $this->_lock(function() use ($event) {
                 Db::update($this->tableName, [
                     'fail' => true,
                     'dateFailed' => Db::prepareDateForDb(new \DateTime()),
@@ -554,7 +554,7 @@ EOD;
     {
         $payload = null;
 
-        $this->_lock(function () use (&$payload) {
+        $this->_lock(function() use (&$payload) {
             // Move expired messages into waiting list
             $this->_moveExpired();
 
@@ -615,7 +615,7 @@ EOD;
     private function _moveExpired()
     {
         if ($this->_reserveTime !== time()) {
-            $this->_lock(function () {
+            $this->_lock(function() {
                 $this->_reserveTime = time();
 
                 $expiredIds = (new Query())

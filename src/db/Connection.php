@@ -295,7 +295,7 @@ class Connection extends \yii\db\Connection
             $files = glob($backupPath . DIRECTORY_SEPARATOR . '*.sql');
 
             // Sort them by file modified time descending (newest first).
-            usort($files, static function ($a, $b) {
+            usort($files, static function($a, $b) {
                 return filemtime($a) < filemtime($b);
             });
 
@@ -562,7 +562,7 @@ class Connection extends \yii\db\Connection
 
             // Redact the PGPASSWORD
             if ($this->getIsPgsql()) {
-                $execCommand = preg_replace_callback('/(PGPASSWORD=")([^"]+)"/i', function ($match) {
+                $execCommand = preg_replace_callback('/(PGPASSWORD=")([^"]+)"/i', function($match) {
                     return $match[1] . str_repeat('•', strlen($match[2])) . '"';
                 }, $execCommand);
             }

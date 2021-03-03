@@ -46,7 +46,7 @@ class TagTokenParser extends AbstractTokenParser
         }
 
         $stream->expect(Token::BLOCK_END_TYPE);
-        $nodes['content'] = $this->parser->subparse(function (Token $token) {
+        $nodes['content'] = $this->parser->subparse(function(Token $token) {
             return $token->test('endtag');
         }, true);
         $stream->expect(Token::BLOCK_END_TYPE);

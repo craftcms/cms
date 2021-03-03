@@ -1,8 +1,43 @@
 # Release Notes for Craft CMS 3.x
 
+## 3.6.8 - 2021-03-03
+
+### Added
+- Added the `is boolean` Twig test.
+- GraphQL schemas now include settings that determine whether inactive elements, drafts, and/or revisions should be included in query results. ([#7590](https://github.com/craftcms/cms/issues/7590)).
+- Added `craft\gql\base\ElementArguments::getRevisionArguments()`.
+- Added `craft\helpers\Db::truncateTable()`.
+- Added `craft\helpers\Gql::canQueryDrafts()`.
+- Added `craft\helpers\Gql::canQueryInactiveElements()`.
+- Added `craft\helpers\Gql::canQueryRevisions()`.
+
+### Changed
+- Project config YAML files now include comments alongside UIDs, identifying the name of the component being referenced. ([#7584](https://github.com/craftcms/cms/issues/7584))
+- Control panel requests now explicitly send no-cache headers. ([#7631](https://github.com/craftcms/cms/issues/7631))
+- Plain Text fields’ Placeholder settings now support emoji on MySQL. ([#7629](https://github.com/craftcms/cms/issues/7629))
+- `deleteEntry` GraphQL mutation queries now support `siteId` arguments. ([#7611](https://github.com/craftcms/cms/issues/7611))
+
+### Fixed
+- Fixed a bug where release dates shown in the Updates utility could be off by a day compared to the dates in the changelogs, for clients whose system clock was set to a time zone behind UTC. ([#7612](https://github.com/craftcms/cms/issues/7612))
+- Fixed a bug where user sessions weren’t lasting the extended duration specified by the `rememberedUserSessionDuration` config setting when the `rememberMe` checkbox was ticked. ([#7619](https://github.com/craftcms/cms/issues/7619))
+- Fixed a bug where the <kbd>Ctrl</kbd> + <kbd>Alt</kbd> + <kbd>S</kbd> “Publish draft” keyboard shortcut wasn’t working for unpublished drafts on Windows computers.
+- Fixed a bug where Redis connection exceptions were getting swallowed when Dev Mode was disabled, and Craft was falsely reporting that it wasn't installed yet instead. ([#7617](https://github.com/craftcms/cms/issues/7617))
+- Fixed a bug where Local volumes were creating extra directories in the web root when saved, if the File System Path was set to an environment variable.
+- Fixed an error that could occur when indexing the search keywords for an element in a disabled site. ([#6383](https://github.com/craftcms/cms/issues/6383))
+- Fixed a bug where `craft\helpers\ProjectConfig::cleanupConfig` wasn’t handling packed aways properly. ([#7630](https://github.com/craftcms/cms/issues/7630))
+- Fixed a bug where the `_includes/forms/text.html` control panel template and `Craft.ui.createTextInput()` JavaScript method weren’t respecting custom `autocomplete` values.
+- Fixed a bug where the “Save and continue editing” action on the Edit Entry page wasn’t retaining the currently-selected site.
+- Fixed a bug where non-admins weren’t able to impersonate inactive users. ([#7475](https://github.com/craftcms/cms/issues/7475))
+- Fixed a bug where the Plugin Store wouldn‘t fully load when clicking the “Buy now” button on the “There are trial licenses that require payment” alert, if any of the trialled plugins were disabled.
+- Fixed a bug where the Plugin Store’s cart was not showing the updates dropdown for plugin trial licenses.
+- Fixed a bug where the Plugin Store was showing a generic error when a credit card was declined, instead of a more detailed error.
+- Fixed an error where it wasn’t possible to delete entries from non-primary sites via GraphQL. ([#7611](https://github.com/craftcms/cms/issues/7611))
+- Fixed a bug where the GraphQL API could return unexpected results if multiple `relatedTo*` arguments were used. ([#7534](https://github.com/craftcms/cms/issues/7534))
+
 ## 3.6.7 - 2021-02-23
 
 ### Added
+- Added `craft\gql\base\ElementArguments::getStatusArguments()`.
 - Added `craft\helpers\Gql::relatedArgumentComplexity()`.
 
 ### Changed

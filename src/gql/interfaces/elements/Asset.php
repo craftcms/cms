@@ -117,7 +117,7 @@ class Asset extends Element
                 'args' => Transform::getArguments(),
                 'type' => Type::int(),
                 'description' => 'The height in pixels or null if it\'s not an image.',
-                'complexity' => function ($childrenComplexity, $args) {
+                'complexity' => function($childrenComplexity, $args) {
                     if (empty($args)) {
                         return $childrenComplexity + GqlService::GRAPHQL_COMPLEXITY_SIMPLE_FIELD;
                     }
@@ -135,7 +135,7 @@ class Asset extends Element
                 'args' => Transform::getArguments(),
                 'type' => Type::int(),
                 'description' => 'The width in pixels or null if it\'s not an image.',
-                'complexity' => function ($childrenComplexity, $args) {
+                'complexity' => function($childrenComplexity, $args) {
                     if (empty($args)) {
                         return $childrenComplexity + GqlService::GRAPHQL_COMPLEXITY_SIMPLE_FIELD;
                     }
@@ -170,7 +170,7 @@ class Asset extends Element
                 'args' => Transform::getArguments(),
                 'type' => Type::string(),
                 'description' => 'The full URL of the asset. This field accepts the same fields as the `transform` directive.',
-                'complexity' => function ($childrenComplexity, $args) {
+                'complexity' => function($childrenComplexity, $args) {
                     if (empty($args)) {
                         return $childrenComplexity + GqlService::GRAPHQL_COMPLEXITY_SIMPLE_FIELD;
                     }
@@ -203,7 +203,7 @@ class Asset extends Element
                 'type' => self::getType(),
                 'args' => AssetArguments::getArguments(),
                 'description' => 'Returns the previous element relative to this one, from a given set of criteria.',
-                'complexity' => function ($childrenComplexity, $args) {
+                'complexity' => function($childrenComplexity, $args) {
                     return $childrenComplexity + GqlService::GRAPHQL_COMPLEXITY_NPLUS1 * (int)!empty($args);
                 },
             ],
@@ -212,7 +212,7 @@ class Asset extends Element
                 'type' => self::getType(),
                 'args' => AssetArguments::getArguments(),
                 'description' => 'Returns the next element relative to this one, from a given set of criteria.',
-                'complexity' => function ($childrenComplexity, $args) {
+                'complexity' => function($childrenComplexity, $args) {
                     return $childrenComplexity + GqlService::GRAPHQL_COMPLEXITY_NPLUS1 * (int)!empty($args);
                 },
             ],

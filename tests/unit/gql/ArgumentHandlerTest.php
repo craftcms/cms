@@ -9,25 +9,20 @@ namespace craftunit\gql;
 
 use Codeception\Test\Unit;
 use Craft;
-use craft\elements\db\AssetQuery;
-use craft\elements\db\CategoryQuery;
-use craft\elements\db\ElementQueryInterface;
-use craft\elements\db\EntryQuery;
-use craft\elements\db\TagQuery;
-use craft\elements\db\UserQuery;
-use craft\events\DefineGqlTypeFieldsEvent;
+use craft\elements\Asset;
+use craft\elements\Category;
+use craft\elements\Entry;
+use craft\elements\Tag;
+use craft\elements\User;
 use craft\events\RegisterGqlArgumentHandlersEvent;
 use craft\events\RegisterGqlQueriesEvent;
 use craft\gql\ArgumentManager;
-use craft\gql\base\ArgumentHandler;
 use craft\gql\base\ArgumentHandlerInterface;
-use craft\gql\base\RelationArgumentHandler;
 use craft\gql\handlers\RelatedAssets;
 use craft\gql\handlers\RelatedCategories;
 use craft\gql\handlers\RelatedEntries;
 use craft\gql\handlers\RelatedTags;
 use craft\gql\handlers\RelatedUsers;
-use craft\gql\TypeManager;
 use craft\models\GqlSchema;
 use craft\services\Gql;
 use GraphQL\Type\Definition\ResolveInfo;
@@ -119,8 +114,8 @@ class ArgumentHandlerTest extends Unit
 
     public function relationArgumentHandlerProvider(): array
     {
-        $getIds = function(ElementQueryInterface $elementQuery, array $criteria = []) {
-            $this->assertInstanceOf($criteria['expected'], $elementQuery);
+        $getIds = function(string $elementClass, array $criteria = []) {
+            $this->assertSame($criteria['expected'], $elementClass);
             return $criteria['return'];
         };
 
@@ -134,17 +129,17 @@ class ArgumentHandlerTest extends Unit
 
         return [
             [[], ['relatedToAll' => [1, 2, 3]], 'relatedTo' => ['and', ['element' => 1], ['element' => 2], ['element' => 3]]],
-            [$handlers, ['relatedToAssets' => ['expected' => AssetQuery::class, 'return' => [[1, 2]]]], ['and', ['element' => [1, 2]]]],
-            [$handlers, ['relatedToEntries' => ['expected' => EntryQuery::class, 'return' => [[3], [4]]]], ['and', ['element' => [3]], ['element' => [4]]]],
-            [$handlers, ['relatedToCategories' => ['expected' => CategoryQuery::class, 'return' => []]], ['and', ['element' => [0]]]],
-            [$handlers, ['relatedToTags' => ['expected' => TagQuery::class, 'return' => [[7], [8]]]], ['and', ['element' => [7]], ['element' => [8]]]],
-            [$handlers, ['relatedToUsers' => ['expected' => UserQuery::class, 'return' => [[9, 10]]]], ['and', ['element' => [9, 10]]]],
+            [$handlers, ['relatedToAssets' => ['expected' => Asset::class, 'return' => [[1, 2]]]], ['and', ['element' => [1, 2]]]],
+            [$handlers, ['relatedToEntries' => ['expected' => Entry::class, 'return' => [[3], [4]]]], ['and', ['element' => [3]], ['element' => [4]]]],
+            [$handlers, ['relatedToCategories' => ['expected' => Category::class, 'return' => []]], ['and', ['element' => [0]]]],
+            [$handlers, ['relatedToTags' => ['expected' => Tag::class, 'return' => [[7], [8]]]], ['and', ['element' => [7]], ['element' => [8]]]],
+            [$handlers, ['relatedToUsers' => ['expected' => User::class, 'return' => [[9, 10]]]], ['and', ['element' => [9, 10]]]],
 
             [
                 $handlers,
                 [
-                    'relatedToEntries' => ['expected' => EntryQuery::class, 'return' => [[3, 4]]],
-                    'relatedToAssets' => ['expected' => AssetQuery::class, 'return' => [[9,10]]]
+                    'relatedToEntries' => ['expected' => Entry::class, 'return' => [[3, 4]]],
+                    'relatedToAssets' => ['expected' => Asset::class, 'return' => [[9,10]]]
                 ],
                 [
                     'and',
@@ -155,7 +150,7 @@ class ArgumentHandlerTest extends Unit
             [
                 $handlers,
                 [
-                    'relatedToEntries' => ['expected' => EntryQuery::class, 'return' => [[3], [4]]],
+                    'relatedToEntries' => ['expected' => Entry::class, 'return' => [[3], [4]]],
                     'relatedTo' => [8, 9]
                 ],
                 [
@@ -168,7 +163,7 @@ class ArgumentHandlerTest extends Unit
             [
                 $handlers,
                 [
-                    'relatedToEntries' => ['expected' => EntryQuery::class, 'return' => [[3, 4]]],
+                    'relatedToEntries' => ['expected' => Entry::class, 'return' => [[3, 4]]],
                     'relatedTo' => ['and', 8, 9]
                 ],
                 [

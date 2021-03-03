@@ -832,7 +832,7 @@ class Db
      * @throws DbException if execution failed
      * @since 3.5.0
      */
-    public static function delete(string $table, $condition = '', array $params = [], ?Connection $db = null)
+    public static function delete(string $table, $condition = '', array $params = [], ?Connection $db = null): int
     {
         if ($db === null) {
             $db = self::db();
@@ -868,6 +868,26 @@ class Db
             ->exists($db);
 
         return $exists ? static::delete($table, $condition, $params, $db) : 0;
+    }
+
+    /**
+     * Creates and executes a `TRUNCATE TABLE` SQL statement.
+     *
+     * @param string $table the table where the data will be deleted from
+     * @param Connection|null $db The database connection to use
+     * @return int The number of rows affected by the execution
+     * @throws DbException if execution failed
+     * @since 3.6.8
+     */
+    public static function truncateTable(string $table, ?Connection $db = null): int
+    {
+        if ($db === null) {
+            $db = self::db();
+        }
+
+        return $db->createCommand()
+            ->truncateTable($table)
+            ->execute();
     }
 
     /**

@@ -53,9 +53,9 @@ class ApplyMatrixPropagationMethod extends BaseJob
         $matrixService = Craft::$app->getMatrix();
         $elementsService = Craft::$app->getElements();
 
-        $callback = function (BatchElementActionEvent $e) use ($queue, $query, $total, $matrixService, $elementsService) {
+        $callback = function(BatchElementActionEvent $e) use ($queue, $query, $total, $matrixService, $elementsService) {
             if ($e->query === $query) {
-                $this->setProgress($queue, ($e->position - 1) / $total, Craft::t('app', '{step} of {total}', [
+                $this->setProgress($queue, ($e->position - 1) / $total, Craft::t('app', '{step, number} of {total, number}', [
                     'step' => $e->position,
                     'total' => $total,
                 ]));

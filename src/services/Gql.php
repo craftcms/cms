@@ -691,6 +691,11 @@ class Gql extends Component
         $queries = [];
         $mutations = [];
 
+        // Elements
+        $components = $this->_getElementSchemaComponents();
+        $label = Craft::t('app', 'All elements');
+        $queries[$label] = $components['query'] ?? [];
+
         // Entries
         // ---------------------------------------------------------------------
         $components = $this->_getSectionSchemaComponents();
@@ -1357,7 +1362,7 @@ class Gql extends Component
 
         $this->trigger(self::EVENT_REGISTER_GQL_QUERIES, $event);
 
-        TypeLoader::registerType('Query', function () use ($event) {
+        TypeLoader::registerType('Query', function() use ($event) {
             return call_user_func(Query::class . '::getType', $event->queries);
         });
     }
@@ -1384,7 +1389,7 @@ class Gql extends Component
 
         $this->trigger(self::EVENT_REGISTER_GQL_MUTATIONS, $event);
 
-        TypeLoader::registerType('Mutation', function () use ($event) {
+        TypeLoader::registerType('Mutation', function() use ($event) {
             return call_user_func(Mutation::class . '::getType', $event->mutations);
         });
     }
@@ -1421,6 +1426,22 @@ class Gql extends Component
         }
 
         return $directives;
+    }
+
+    /**
+     * Return element schema components.
+     *
+     * @return array
+     */
+    private function _getElementSchemaComponents(): array
+    {
+        return [
+            'query' => [
+                'elements.drafts:read' => ['label' => Craft::t('app', 'Allow listing element drafts')],
+                'elements.revisions:read' => ['label' => Craft::t('app', 'Allow listing element revisions')],
+                'elements.inactive:read' => ['label' => Craft::t('app', 'Allow listing non-live and otherwise inactive elements.')],
+            ],
+        ];
     }
 
     /**

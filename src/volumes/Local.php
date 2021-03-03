@@ -67,23 +67,24 @@ class Local extends FlysystemVolume implements LocalVolumeInterface
      * @param string $attribute
      * @param array|null $params
      * @param InlineValidator $validator
-     * @param string $path
      * @return void
      * @since 3.6.7
      */
-    public function validatePath(string $attribute, ?array $params, InlineValidator $validator, string $path): void
+    public function validatePath(string $attribute, ?array $params, InlineValidator $validator): void
     {
+        // If the folder doesn't exist yet, create it with a .gitignore file
+        $path = $this->getRootPath();
         if ($created = !file_exists($path)) {
             FileHelper::createDirectory($path);
+            FileHelper::writeGitignoreFile($path);
         }
 
-        $path = realpath($this->getRootPath());
-
+        // Make sure it’s not within any of the system directories
+        $path = realpath($path);
         if ($path === false) {
             return;
         }
 
-        // Make sure it’s not within any of the system directories
         $pathService = Craft::$app->getPath();
         $systemDirs = [
             Craft::getAlias('@contentMigrations'),
@@ -123,22 +124,6 @@ class Local extends FlysystemVolume implements LocalVolumeInterface
             [
                 'volume' => $this,
             ]);
-    }
-
-    /**
-     * @inheritdoc
-     * @since 3.4.0
-     */
-    public function afterSave(bool $isNew)
-    {
-        // If the folder doesn't exist yet, create it with a .gitignore file
-        $path = $this->getRootPath();
-        if (!is_dir($path)) {
-            FileHelper::createDirectory($path);
-            FileHelper::writeGitignoreFile($path);
-        }
-
-        parent::afterSave($isNew);
     }
 
     /**

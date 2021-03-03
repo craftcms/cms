@@ -61,4 +61,12 @@ class Category extends StructureElementArguments
     {
         return [];
     }
+
+    /**
+     * @inheritdoc
+     */
+    public static function getRevisionArguments(): array
+    {
+        return [];
+    }
 }

@@ -182,10 +182,10 @@ class Site extends Model
         $behaviors['parser'] = [
             'class' => EnvAttributeParserBehavior::class,
             'attributes' => [
-                'name' => function () {
+                'name' => function() {
                     return $this->getName(false);
                 },
-                'baseUrl' => function () {
+                'baseUrl' => function() {
                     return $this->getBaseUrl(false);
                 },
             ],
@@ -224,7 +224,7 @@ class Site extends Model
         }
 
         $rules[] = [
-            ['enabled'], function (string $attribute) {
+            ['enabled'], function(string $attribute) {
                 if ($this->primary && !$this->enabled) {
                     $this->addError($attribute, Craft::t('app', 'The primary site cannot be disabled.'));
                 }

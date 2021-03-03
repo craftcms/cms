@@ -299,6 +299,11 @@ trait ApplicationTrait
         try {
             $info = $this->getInfo(true);
         } catch (DbException $e) {
+            // yii2-redis awkwardly throws yii\db\Exception's rather than their own exception class.
+            if (strpos($e->getMessage(), 'Redis') !== false) {
+                throw $e;
+            }
+
             Craft::error('There was a problem fetching the info row: ' . $e->getMessage(), __METHOD__);
             /** @var ErrorHandler $errorHandler */
             $errorHandler = $this->getErrorHandler();
@@ -1406,7 +1411,7 @@ trait ApplicationTrait
     {
         // Load the request before anything else, so everything else can safely check Craft::$app->has('request', true)
         // to avoid possible recursive fatal errors in the request initialization
-        $this->getRequest();
+        $request = $this->getRequest();
         $this->getLog();
 
         // Set the timezone
@@ -1414,6 +1419,11 @@ trait ApplicationTrait
 
         // Set the language
         $this->updateTargetLanguage();
+
+        // Prevent browser caching if this is a control panel request
+        if ($request->getIsCpRequest()) {
+            $this->getResponse()->setNoCacheHeaders();
+        }
     }
 
     /**
@@ -1528,7 +1538,7 @@ trait ApplicationTrait
      */
     private function _registerFieldLayoutListener()
     {
-        Event::on(FieldLayout::class, FieldLayout::EVENT_DEFINE_STANDARD_FIELDS, function (DefineFieldLayoutFieldsEvent $event) {
+        Event::on(FieldLayout::class, FieldLayout::EVENT_DEFINE_STANDARD_FIELDS, function(DefineFieldLayoutFieldsEvent $event) {
             /** @var FieldLayout $fieldLayout */
             $fieldLayout = $event->sender;
 
@@ -1621,7 +1631,7 @@ trait ApplicationTrait
             ->onUpdate(Gql::CONFIG_GQL_PUBLIC_TOKEN_KEY, $this->_proxy('gql', 'handleChangedPublicToken'));
 
         // Prune deleted fields from their layouts
-        Event::on(Fields::class, Fields::EVENT_AFTER_DELETE_FIELD, function (FieldEvent $event) {
+        Event::on(Fields::class, Fields::EVENT_AFTER_DELETE_FIELD, function(FieldEvent $event) {
             $this->getVolumes()->pruneDeletedField($event);
             $this->getTags()->pruneDeletedField($event);
             $this->getCategories()->pruneDeletedField($event);
@@ -1631,7 +1641,7 @@ trait ApplicationTrait
         });
 
         // Prune deleted sites from site settings
-        Event::on(Sites::class, Sites::EVENT_AFTER_DELETE_SITE, function (DeleteSiteEvent $event) {
+        Event::on(Sites::class, Sites::EVENT_AFTER_DELETE_SITE, function(DeleteSiteEvent $event) {
             $this->getRoutes()->handleDeletedSite($event);
             $this->getCategories()->pruneDeletedSite($event);
             $this->getSections()->pruneDeletedSite($event);
@@ -1650,7 +1660,7 @@ trait ApplicationTrait
      */
     private function _proxy(string $id, string $method): callable
     {
-        return function () use ($id, $method) {
+        return function() use ($id, $method) {
             return $this->get($id)->$method(...func_get_args());
         };
     }

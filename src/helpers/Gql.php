@@ -320,7 +320,7 @@ class Gql
         $schema = new GqlSchema(['name' => 'Full Schema', 'uid' => '*']);
 
         // Fetch all nested components
-        $traverser = function ($group) use ($schema, &$traverser) {
+        $traverser = function($group) use ($schema, &$traverser) {
             foreach ($group as $component => $config) {
                 $schema->scope[] = $component;
 
@@ -397,6 +397,45 @@ class Gql
     }
 
     /**
+     * Return true if active schema can query for drafts.
+     *
+     * @param GqlSchema|null $schema The GraphQL schema. If none is provided, the active schema will be used.
+     * @return bool
+     * @since 3.6.8
+     */
+    public static function canQueryDrafts(?GqlSchema $schema = null): bool
+    {
+        $allowedEntities = self::extractAllowedEntitiesFromSchema('read', $schema);
+        return isset($allowedEntities['elements']) && is_array($allowedEntities['elements']) && in_array('drafts', $allowedEntities['elements'], true);
+    }
+
+    /**
+     * Return true if active schema can query for revisions.
+     *
+     * @param GqlSchema|null $schema The GraphQL schema. If none is provided, the active schema will be used.
+     * @return bool
+     * @since 3.6.8
+     */
+    public static function canQueryRevisions(?GqlSchema $schema = null): bool
+    {
+        $allowedEntities = self::extractAllowedEntitiesFromSchema('read', $schema);
+        return isset($allowedEntities['elements']) && is_array($allowedEntities['elements']) && in_array('revisions', $allowedEntities['elements'], true);
+    }
+
+    /**
+     * Return true if active schema can query for inactive elements.
+     *
+     * @param GqlSchema|null $schema The GraphQL schema. If none is provided, the active schema will be used.
+     * @return bool
+     * @since 3.6.8
+     */
+    public static function canQueryInactiveElements(?GqlSchema $schema = null): bool
+    {
+        $allowedEntities = self::extractAllowedEntitiesFromSchema('read', $schema);
+        return isset($allowedEntities['elements']) && is_array($allowedEntities['elements']) && in_array('inactive', $allowedEntities['elements'], true);
+    }
+
+    /**
      * @param ValueNode|VariableNode $value
      * @param array $variableValues
      * @return array|array[]|mixed
@@ -408,7 +447,7 @@ class Gql
         }
 
         if ($value instanceof ListValueNode) {
-            return array_map(function ($node) {
+            return array_map(function($node) {
                 return self::_convertArgumentValue($node);
             }, iterator_to_array($value->values));
         }
@@ -452,7 +491,7 @@ class Gql
      */
     public static function eagerLoadComplexity(): callable
     {
-        return static function ($childComplexity) {
+        return static function($childComplexity) {
             return $childComplexity + GqlService::GRAPHQL_COMPLEXITY_EAGER_LOAD;
         };
     }
@@ -465,7 +504,7 @@ class Gql
      */
     public static function singleQueryComplexity(): callable
     {
-        return static function ($childComplexity) {
+        return static function($childComplexity) {
             return $childComplexity + GqlService::GRAPHQL_COMPLEXITY_QUERY;
         };
     }
@@ -480,7 +519,7 @@ class Gql
      */
     public static function relatedArgumentComplexity(int $baseComplexity = GqlService::GRAPHQL_COMPLEXITY_QUERY): callable
     {
-        return static function ($childComplexity, $args) use ($baseComplexity) {
+        return static function($childComplexity, $args) use ($baseComplexity) {
             $complexityScore = $childComplexity + $baseComplexity;
             $relatedArguments = ['relatedToAssets', 'relatedToEntries', 'relatedToUsers', 'relatedToCategories', 'relatedToTags'];
 
@@ -509,7 +548,7 @@ class Gql
      */
     public static function nPlus1Complexity(): callable
     {
-        return static function ($childComplexity) {
+        return static function($childComplexity) {
             return $childComplexity + GqlService::GRAPHQL_COMPLEXITY_NPLUS1;
         };
     }
