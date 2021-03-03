@@ -27,17 +27,17 @@ abstract class RelationArgumentHandler extends ArgumentHandler
     /**
      * Get the IDs of elements returned by configuring the provided element query with given criteria.
      *
-     * @param ElementQueryInterface $elementQuery
+     * @param string $elementType
      * @param array $criteriaList
      * @return int[]
      */
-    protected function getIds(ElementQueryInterface $elementQuery, array $criteriaList = []): array
+    protected function getIds(string $elementType, array $criteriaList = []): array
     {
         $idSets = [];
 
         foreach ($criteriaList as $criteria) {
             /** @var ElementQuery $elementQuery */
-            $elementQuery = Craft::configure($elementQuery, $criteria);
+            $elementQuery = Craft::configure(Craft::$app->getElements()->createElementQuery($elementType), $criteria);
             $idSets[] = $elementQuery->ids();
         }
 
