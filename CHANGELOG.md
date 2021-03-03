@@ -31,6 +31,7 @@
 - Fixed a bug where the Plugin Store’s cart was not showing the updates dropdown for plugin trial licenses.
 - Fixed a bug where the Plugin Store was showing a generic error when a credit card was declined, instead of a more detailed error.
 - Fixed an error where it was impossible to delete entries from non-primary sites using GraphQL mutations. ([#7611](https://github.com/craftcms/cms/issues/7611))
+- Fixed a bug where querying via GraphQL API would sometimes not return the expected results, if using multiple `relatedTo*` arguments. ([#7534](https://github.com/craftcms/cms/issues/7534))
 
 ## 3.6.7 - 2021-02-23
 

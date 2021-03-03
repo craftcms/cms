@@ -27,6 +27,6 @@ class RelatedAssets extends RelationArgumentHandler
     protected function handleArgument($argumentValue)
     {
         $argumentValue = parent::handleArgument($argumentValue);
-        return $this->getIds(Craft::$app->getElements()->createElementQuery(Asset::class), $argumentValue);
+        return $this->getIds(Asset::class, $argumentValue);
     }
 }
