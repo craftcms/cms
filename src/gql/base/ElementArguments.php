@@ -117,7 +117,7 @@ abstract class ElementArguments extends Arguments
             'relatedToAll' => [
                 'name' => 'relatedToAll',
                 'type' => Type::listOf(QueryArgument::getType()),
-                'description' => 'Narrows the query results to elements that relate to *all* of the provided element IDs. Using this argument will cause `relatedTo` argument to be ignored. **This argument is deprecated** in favor of `relatedTo: ["and", ...ids]`.',
+                'description' => 'Narrows the query results to elements that relate to *all* of the provided element IDs. Using this argument will cause `relatedTo` argument to be ignored. **This argument is deprecated.** `relatedTo: ["and", ...ids]` should be used instead.',
             ],
             'ref' => [
                 'name' => 'ref',

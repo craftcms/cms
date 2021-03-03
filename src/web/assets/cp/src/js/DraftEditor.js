@@ -36,8 +36,10 @@ Craft.DraftEditor = Garnish.Base.extend({
     duplicatedElements: null,
     errors: null,
 
+    openingPreview: false,
     preview: null,
     previewToken: null,
+    createdDraftInPreview: false,
 
     init: function(settings) {
         this.setSettings(settings, Craft.DraftEditor.defaults);
@@ -175,6 +177,19 @@ Craft.DraftEditor = Garnish.Base.extend({
 
         if (Craft.autosaveDrafts) {
             this.listenForChanges();
+        }
+
+        if (this.settings.canUpdateSource) {
+            Garnish.shortcutManager.registerShortcut({
+                keyCode: Garnish.S_KEY,
+                ctrl: true,
+                alt: true
+            }, () => {
+                Craft.submitForm(Craft.cp.$primaryForm, {
+                    action: this.settings.publishDraftAction,
+                    redirect: this.settings.hashedCpEditUrl,
+                });
+            }, 0);
         }
     },
 
@@ -545,16 +560,72 @@ Craft.DraftEditor = Garnish.Base.extend({
                     }
                     this.stopListeningForChanges();
                 }
+
+                // did we just create a draft?
+                if (this.createdDraftInPreview) {
+                    setTimeout(() => {
+                        this.createDraftNoticeHud();
+                        this.createdDraftInPreview = false;
+                    }, 750);
+                }
             }.bind(this));
         }
         return this.preview;
     },
 
+    createDraftNoticeHud: function() {
+        const $closeBtn = $('<button/>', {
+            class: 'btn',
+            type: 'button',
+            text: Craft.t('app', 'Keep it'),
+        });
+        const $deleteBtn = $('<button/>', {
+            class: 'btn caution',
+            type: 'button',
+            text: Craft.t('app', 'Delete it'),
+        });
+
+        const hud = new Garnish.HUD(
+            $('#context-btngroup'),
+            $('<div/>', {class: 'readable centeralign'})
+                .append(
+                    $('<p/>', {
+                        text: Craft.t('app', 'You’re now editing a draft.'),
+                    })
+                )
+                .append(
+                    $('<div/>', {class: 'flex flex-nowrap'})
+                        .append($closeBtn)
+                        .append($deleteBtn)
+                ),
+            {
+                hideOnEsc: false,
+                hideOnShadeClick: false,
+            }
+        );
+
+        $closeBtn.on('click', () => {
+            hud.hide();
+            hud.destroy();
+        });
+
+        $deleteBtn.on('click', () => {
+            if (confirm(Craft.t('app', 'Are you sure you want to delete this draft?'))) {
+                Craft.submitForm(Craft.cp.$primaryForm, {
+                    action: this.settings.deleteDraftAction,
+                    redirect: this.settings.hashedCpEditUrl,
+                });
+            }
+        })
+    },
+
     openPreview: function() {
         return new Promise(function(resolve, reject) {
+            this.openingPreview = true;
             this.ensureIsDraftOrRevision(true)
                 .then(function() {
                     this.getPreview().open();
+                    this.openingPreview = false;
                     resolve();
                 }.bind(this))
                 .catch(reject);
@@ -753,6 +824,7 @@ Craft.DraftEditor = Garnish.Base.extend({
                             type: 'button',
                             class: 'btn secondary formsubmit',
                             text: Craft.t('app', 'Publish draft'),
+                            title: Craft.shortcutText('S', false, true),
                             data: {
                                 action: this.settings.publishDraftAction,
                                 redirect: this.settings.hashedCpEditUrl,
@@ -800,7 +872,7 @@ Craft.DraftEditor = Garnish.Base.extend({
                                                 .prepend(
                                                     $('<span/>', {
                                                         class: 'shortcut',
-                                                        text: (Craft.clientOs === 'Mac' ? '⌘' : 'Ctrl+') + 'S',
+                                                        text: Craft.shortcutText('S'),
                                                     })
                                                 )
                                         )
@@ -879,6 +951,11 @@ Craft.DraftEditor = Garnish.Base.extend({
                             const $siteOption = $siteOptions.eq(i);
                             $siteOption.attr('href', Craft.getUrl($siteOption.attr('href'), {draftId: response.draftId}));
                         }
+                    }
+
+                    // is Live Preview currently active?
+                    if (this.openingPreview || (this.preview && this.preview.isActive)) {
+                        this.createdDraftInPreview = true;
                     }
                 }
 

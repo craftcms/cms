@@ -58,7 +58,8 @@ new Vue({
                 disabled: disabled ?? false,
                 title: title ?? '',
                 placeholder: placeholder ?? '',
-            },
+                'aria-describedby': instructionsId ?? false,
+            }|merge(inputProps ?? inputAttributes ?? [], recursive=true)|filter,
             limit: limit ?? 5
         }|json_encode|raw }};
         data.inputProps.onInputChange = this.onInputChange;

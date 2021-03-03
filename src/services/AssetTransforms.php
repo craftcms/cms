@@ -1539,8 +1539,7 @@ class AssetTransforms extends Component
 
         // Already created. Relax, grasshopper!
         if ($volume->fileExists($transformPath)) {
-            $metaData = $volume->getFileMetadata($transformPath);
-            $dateModified = $metaData['timestamp'];
+            $dateModified = $volume->getDateModified($transformPath);
             $dimensionChangeTime = $index->getTransform()->dimensionChangeTime;
 
             if (!$dimensionChangeTime || $dimensionChangeTime->getTimestamp() <= $dateModified) {

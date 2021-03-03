@@ -8,6 +8,7 @@
 namespace craft\test\console;
 
 use craft\base\Model;
+use Traversable;
 
 /**
  * Class CommandTestItem
@@ -19,7 +20,7 @@ use craft\base\Model;
 class CommandTestItem extends Model
 {
     /**
-     * @var string
+     * @var string|string[]|Traversable
      */
     public $desiredOutput;
 

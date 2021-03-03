@@ -44,7 +44,7 @@ body.ltr #plugins tbody .plugin-infos .details .plugin-id .edition .edition-name
 
 body.rtl #plugins tbody .plugin-infos .details .plugin-id .edition .edition-name + .edition-trial { padding-right: 4px; }
 
-#plugins tbody .plugin-infos .details .plugin-id .edition .edition-name + .edition-trial:before { display: block; position: absolute; top: 0; content: '.'; font-size: 0; width: 0; height: 0; border-style: solid; -o-transition: border-color linear 100ms; transition: border-color linear 100ms; }
+#plugins tbody .plugin-infos .details .plugin-id .edition .edition-name + .edition-trial:before { display: block; position: absolute; top: 0; content: ''; font-size: 0; width: 0; height: 0; border-style: solid; -o-transition: border-color linear 100ms; transition: border-color linear 100ms; }
 
 body.ltr #plugins tbody .plugin-infos .details .plugin-id .edition .edition-name + .edition-trial:before { left: -7px; border-width: 0 7px 16px 0; border-color: transparent #596673 transparent transparent; }
 

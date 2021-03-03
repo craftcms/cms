@@ -132,7 +132,7 @@ class ElementQuery extends Query implements ElementQueryInterface
     // -------------------------------------------------------------------------
 
     /**
-     * @var bool Whether draft elements should be returned.
+     * @var bool|null Whether draft elements should be returned.
      * @since 3.2.0
      */
     public $drafts = false;
@@ -161,6 +161,12 @@ class ElementQuery extends Query implements ElementQueryInterface
      * @since 3.2.0
      */
     public $draftCreator;
+
+    /**
+     * @var bool Whether only unpublished drafts which have been saved after initial creation should be included in the results.
+     * @since 3.6.6
+     */
+    public $savedDraftsOnly = false;
 
     /**
      * @var bool Whether revision elements should be returned.
@@ -702,7 +708,7 @@ class ElementQuery extends Query implements ElementQueryInterface
      * @inheritdoc
      * @uses $drafts
      */
-    public function drafts(bool $value = true)
+    public function drafts(?bool $value = true)
     {
         $this->drafts = $value;
         return $this;
@@ -716,7 +722,9 @@ class ElementQuery extends Query implements ElementQueryInterface
     public function draftId(int $value = null)
     {
         $this->draftId = $value;
-        $this->drafts = $value !== null;
+        if ($value !== null && $this->drafts === false) {
+            $this->drafts = true;
+        }
         return $this;
     }
 
@@ -729,12 +737,14 @@ class ElementQuery extends Query implements ElementQueryInterface
     {
         if ($value instanceof ElementInterface) {
             $this->draftOf = $value->getSourceId();
-        } else if (is_numeric($value) || $value === false) {
+        } else if (is_numeric($value) || $value === '*' || $value === false || $value === null) {
             $this->draftOf = $value;
         } else {
             throw new InvalidArgumentException('Invalid draftOf value');
         }
-        $this->drafts = $value !== null;
+        if ($value !== null && $this->drafts === false) {
+            $this->drafts = true;
+        }
         return $this;
     }
 
@@ -747,12 +757,24 @@ class ElementQuery extends Query implements ElementQueryInterface
     {
         if ($value instanceof User) {
             $this->draftCreator = $value->id;
-        } else if (is_numeric($value)) {
+        } else if (is_numeric($value) || $value === null) {
             $this->draftCreator = $value;
         } else {
             throw new InvalidArgumentException('Invalid draftCreator value');
         }
-        $this->drafts = $value !== null;
+        if ($value !== null && $this->drafts === false) {
+            $this->drafts = true;
+        }
+        return $this;
+    }
+
+    /**
+     * @inheritdoc
+     * @uses $savedDraftsOnly
+     */
+    public function savedDraftsOnly(bool $value = true)
+    {
+        $this->savedDraftsOnly = $value;
         return $this;
     }
 
@@ -787,7 +809,7 @@ class ElementQuery extends Query implements ElementQueryInterface
     {
         if ($value instanceof ElementInterface) {
             $this->revisionOf = $value->getSourceId();
-        } else if (is_numeric($value)) {
+        } else if (is_numeric($value) || $value === null) {
             $this->revisionOf = $value;
         } else {
             throw new InvalidArgumentException('Invalid revisionOf value');
@@ -805,7 +827,7 @@ class ElementQuery extends Query implements ElementQueryInterface
     {
         if ($value instanceof User) {
             $this->revisionCreator = $value->id;
-        } else if (is_numeric($value)) {
+        } else if (is_numeric($value) || $value === null) {
             $this->revisionCreator = $value;
         } else {
             throw new InvalidArgumentException('Invalid revisionCreator value');
@@ -1675,7 +1697,17 @@ class ElementQuery extends Query implements ElementQueryInterface
         foreach ((new \ReflectionClass($behavior))->getProperties(ReflectionProperty::IS_PUBLIC) as $property) {
             if (
                 !$property->isStatic() &&
-                !in_array($property->getName(), ['hasMethods', 'owner'], true)
+                !in_array($property->getName(), [
+                    'hasMethods',
+                    'owner',
+                    // avoid conflicts with ElementQuery getters
+                    'iterator',
+                    'cachedResult',
+                    'criteria',
+                    'behaviors',
+                    'behavior',
+                    'rawSql',
+                ], true)
             ) {
                 $names[] = $property->getName();
             }
@@ -1799,15 +1831,26 @@ class ElementQuery extends Query implements ElementQueryInterface
 
         $behaviors = [];
 
-        if ($this->drafts) {
-            $behaviors['draft'] = new DraftBehavior([
-                'sourceId' => ArrayHelper::remove($row, 'draftSourceId'),
-                'creatorId' => ArrayHelper::remove($row, 'draftCreatorId'),
-                'draftName' => ArrayHelper::remove($row, 'draftName'),
-                'draftNotes' => ArrayHelper::remove($row, 'draftNotes'),
-                'trackChanges' => (bool)ArrayHelper::remove($row, 'draftTrackChanges'),
-                'dateLastMerged' => ArrayHelper::remove($row, 'draftDateLastMerged'),
-            ]);
+        if ($this->drafts !== false) {
+            if (!empty($row['draftId'])) {
+                $behaviors['draft'] = new DraftBehavior([
+                    'sourceId' => ArrayHelper::remove($row, 'draftSourceId'),
+                    'creatorId' => ArrayHelper::remove($row, 'draftCreatorId'),
+                    'draftName' => ArrayHelper::remove($row, 'draftName'),
+                    'draftNotes' => ArrayHelper::remove($row, 'draftNotes'),
+                    'trackChanges' => (bool)ArrayHelper::remove($row, 'draftTrackChanges'),
+                    'dateLastMerged' => ArrayHelper::remove($row, 'draftDateLastMerged'),
+                ]);
+            } else {
+                unset(
+                    $row['draftSourceId'],
+                    $row['draftCreatorId'],
+                    $row['draftName'],
+                    $row['draftNotes'],
+                    $row['draftTrackChanges'],
+                    $row['draftDateLastMerged']
+                );
+            }
         }
 
         if ($this->revisions) {
@@ -2465,23 +2508,28 @@ class ElementQuery extends Query implements ElementQueryInterface
     private function _applyRevisionParams()
     {
         if (!self::_supportsRevisionParams()) {
-            if ($this->drafts || $this->revisions) {
+            if ($this->drafts !== false || $this->revisions) {
                 throw new QueryAbortedException();
             }
             return;
         }
 
-        if ($this->drafts) {
-            $this->subQuery->innerJoin(['drafts' => Table::DRAFTS], '[[drafts.id]] = [[elements.draftId]]');
-            $this->query
-                ->innerJoin(['drafts' => Table::DRAFTS], '[[drafts.id]] = [[elements.draftId]]')
-                ->addSelect([
-                    'elements.draftId',
-                    'drafts.sourceId as draftSourceId',
-                    'drafts.creatorId as draftCreatorId',
-                    'drafts.name as draftName',
-                    'drafts.notes as draftNotes',
-                ]);
+        if ($this->drafts !== false) {
+            if ($this->drafts === true) {
+                $this->subQuery->innerJoin(['drafts' => Table::DRAFTS], '[[drafts.id]] = [[elements.draftId]]');
+                $this->query->innerJoin(['drafts' => Table::DRAFTS], '[[drafts.id]] = [[elements.draftId]]');
+            } else {
+                $this->subQuery->leftJoin(['drafts' => Table::DRAFTS], '[[drafts.id]] = [[elements.draftId]]');
+                $this->query->leftJoin(['drafts' => Table::DRAFTS], '[[drafts.id]] = [[elements.draftId]]');
+            }
+
+            $this->query->addSelect([
+                'elements.draftId',
+                'drafts.sourceId as draftSourceId',
+                'drafts.creatorId as draftCreatorId',
+                'drafts.name as draftName',
+                'drafts.notes as draftNotes',
+            ]);
 
             $schemaVersion = Craft::$app->getInstalledSchemaVersion();
             if (version_compare($schemaVersion, '3.4.3', '>=')) {
@@ -2501,6 +2549,15 @@ class ElementQuery extends Query implements ElementQueryInterface
 
             if ($this->draftCreator) {
                 $this->subQuery->andWhere(['drafts.creatorId' => $this->draftCreator]);
+            }
+
+            if ($this->savedDraftsOnly) {
+                $this->subQuery->andWhere([
+                    'or',
+                    ['elements.draftId' => null],
+                    ['not', ['drafts.sourceId' => null]],
+                    ['drafts.saved' => true]
+                ]);
             }
         } else {
             $this->subQuery->andWhere($this->_placeholderCondition(['elements.draftId' => null]));

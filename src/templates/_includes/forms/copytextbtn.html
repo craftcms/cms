@@ -1,20 +1,23 @@
 {% set attributes = {
-  id: id ?? "copytext#{random()}",
-  class: (class ?? [])|explodeClass|push('copytextbtn'),
-  role: 'button',
-  title: 'Copy to clipboard'|t('app'),
-  'aria-label': 'Copy to clipboard'|t('app'),
-  tabindex: '0',
+    id: id ?? "copytext#{random()}",
+    class: (class ?? [])|explodeClass|push('copytextbtn'),
+    role: 'button',
+    title: 'Copy to clipboard'|t('app'),
+    aria: {
+        label: 'Copy to clipboard'|t('app'),
+        describedby: instructionsId ?? false,
+    },
+    tabindex: '0',
 } %}
 
-<div {{ attr(attributes) }}>
+{% tag 'div' with attributes %}
     {{ input('text', null, value, {
         readonly: true,
         size: value|length,
         tabindex: '-1',
     }) }}
-    <span data-icon="clipboard"></span>
-</div>
+    <span data-icon="clipboard" aria-hidden="true"></span>
+{% endtag %}
 
 {% js %}
     {% block js %}

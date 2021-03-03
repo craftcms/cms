@@ -6,6 +6,7 @@
         isCurrent: null,
 
         $copyPasswordResetUrlBtn: null,
+        $copyImpersonationUrlBtn: null,
         $actionSpinner: null,
 
         confirmDeleteModal: null,
@@ -18,10 +19,12 @@
             this.setSettings(settings, Craft.AccountSettingsForm.defaults);
 
             this.$copyPasswordResetUrlBtn = $('#copy-passwordreset-url');
+            this.$copyImpersonationUrlBtn = $('#copy-impersonation-url')
             this.$actionSpinner = $('#action-spinner');
             this.$deleteBtn = $('#delete-btn');
 
             this.addListener(this.$copyPasswordResetUrlBtn, 'click', 'handleCopyPasswordResetUrlBtnClick');
+            this.addListener(this.$copyImpersonationUrlBtn, 'click', 'handleCopyImpersonationUrlBtnClick');
             this.addListener(this.$deleteBtn, 'click', 'showConfirmDeleteModal');
         },
 
@@ -47,6 +50,25 @@
                     });
                 }
             }, this));
+        },
+
+        handleCopyImpersonationUrlBtnClick: function() {
+            this.$actionSpinner.removeClass('hidden');
+
+            var data = {
+                userId: this.userId
+            };
+
+            Craft.postActionRequest('users/get-impersonation-url', data, (response, textStatus) => {
+                this.$actionSpinner.addClass('hidden');
+
+                if (textStatus === 'success') {
+                    Craft.ui.createCopyTextPrompt({
+                        label: Craft.t('app', 'Copy the impersonation URL, and open it in a new private window.'),
+                        value: response.url,
+                    });
+                }
+            });
         },
 
         showConfirmDeleteModal: function() {

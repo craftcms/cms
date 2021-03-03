@@ -3339,8 +3339,6 @@ class StringHelperTest extends Unit
             ['bàř', 'fòô bàř', ['fòô '], '', true],
             ['far bàř', 'fòô bàř', ['fòô'], 'far', true],
             ['bàř bàř', 'fòô bàř fòô bàř', ['fòô ', 'fòô'], '', true],
-            ['fòô bàř fòô bàř', 'fòô bàř fòô bàř', ['Fòô '], true],
-            ['fòô bàř fòô bàř', 'fòô bàř fòô bàř', ['fòÔ '], true],
             ['', '', [''], '', false],
             ['fòô', ' ', [' ', '', '  '], 'fòô', false],
             ['fòôòô', '\s', ['\s', 'f'], 'fòô', false],

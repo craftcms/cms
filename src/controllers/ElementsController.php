@@ -212,12 +212,12 @@ class ElementsController extends BaseElementsController
                 ->all();
 
             // Fill in the gaps
-            $categoriesService = Craft::$app->getCategories();
-            $categoriesService->fillGapsInCategories($categories);
+            $structuresService = Craft::$app->getStructures();
+            $structuresService->fillGapsInElements($categories);
 
             // Enforce the branch limit
             if ($branchLimit = $this->request->getParam('branchLimit')) {
-                $categoriesService->applyBranchLimitToCategories($categories, $branchLimit);
+                $structuresService->applyBranchLimitToElements($categories, $branchLimit);
             }
         }
 

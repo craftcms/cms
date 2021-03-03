@@ -2,6 +2,7 @@
     {{ hiddenInput(name, '') }}
 {% endif -%}
 
+{% set id = id ?? "elementselect#{random()}" -%}
 {% set elements = elements ?? [] -%}
 {% set jsClass = jsClass ?? 'Craft.BaseElementSelectInput' -%}
 {% set sources = sources ?? null -%}
@@ -14,8 +15,16 @@
 {% set fieldId = fieldId ?? null %}
 {% set limit = limit ?? null %}
 
-<div id="{{ id }}" class="elementselect"
-        {%- if block('attr') is defined %} {{ block('attr') }}{% endif %}>
+{% set containerAttributes = {
+    id: id,
+    class: ['elementselect']|merge((class ?? [])|explodeClass),
+}|merge(containerAttributes ?? [], recursive=true) %}
+
+{%- if block('attr') is defined %}
+    {%- set containerAttributes = containerAttributes|merge(('<div ' ~ block('attr') ~ '>')|parseAttr, recursive=true) %}
+{% endif %}
+
+{% tag 'div' with containerAttributes %}
     <div class="elements">
         {% for element in elements %}
             {% include "_elements/element" with {
@@ -28,7 +37,7 @@
     <div class="flex{% if limit and elements|length >= limit %} hidden{% endif %}">
         <button type="button" class="btn add icon dashed">{{ selectionLabel ?? "Choose"|t('app') }}</button>
     </div>
-</div>
+{% endtag %}
 
 {% set jsSettings = {
     id: id|namespaceInputId,

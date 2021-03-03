@@ -11,6 +11,8 @@ use craft\base\MissingComponentInterface;
 use craft\base\MissingComponentTrait;
 use craft\base\Volume;
 use craft\errors\VolumeException;
+use craft\errors\VolumeObjectExistsException;
+use craft\errors\VolumeObjectNotFoundException;
 use yii\base\NotSupportedException;
 
 /**
@@ -108,33 +110,49 @@ class MissingVolume extends Volume implements MissingComponentInterface
     /**
      * @inheritdoc
      */
-    public function deleteDirectory(string $path): void
+    public function deleteDir(string $path)
     {
-        throw new NotSupportedException('deleteDirectory() is not implemented.');
+        throw new NotSupportedException('deleteDir() is not implemented.');
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
-    public function renameDirectory(string $path, string $newName): void
-    {
-        throw new NotSupportedException('renameDir() is not implemented.');
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getFileSize(string $uri)
+    public function getFileSize(string $uri): ?int
     {
         throw new NotSupportedException('getFileSize() is not implemented.');
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
-    public function getDateModified(string $uri)
+
     {
-        throw new NotSupportedException('writeFileFromStream() is not implemented.');
+
+    }
+
+    /**
+     * @inheritDoc
+     */
+
+    {
+
+    }
+
+    /**
+     * @inheritDoc
+     */
+
+    {
+
+    }
+
+    /**
+     * @inheritDoc
+     */
+
+    {
+
     }
 
     /**

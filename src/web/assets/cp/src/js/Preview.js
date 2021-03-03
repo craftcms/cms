@@ -14,8 +14,13 @@ Craft.Preview = Garnish.Base.extend({
     $dragHandle: null,
     $previewContainer: null,
     $iframeContainer: null,
+    $previewHeader: null,
     $targetBtn: null,
     $targetMenu: null,
+    $deviceTypeContainer: null,
+    $orientationBtn: null,
+    $deviceMask: null,
+    $devicePreviewContainer: null,
     $iframe: null,
     iframeLoaded: false,
     $tempInput: null,
@@ -24,6 +29,24 @@ Craft.Preview = Garnish.Base.extend({
     isActive: false,
     isVisible: false,
     activeTarget: 0,
+
+    isDeviceUpdating: false,
+    deviceAnimationTimeout: null,
+    currentDeviceType: 'desktop',
+    deviceOrientation: null,
+    deviceWidth: '',
+    deviceHeight: '',
+    deviceMaskDimensions: {
+        phone: {
+            width: 375,
+            height: 753
+        },
+        tablet: {
+            width: 768,
+            height: 1110
+        }
+    },
+
     draftId: null,
     url: null,
     fields: null,
@@ -107,32 +130,116 @@ Craft.Preview = Garnish.Base.extend({
             this.$spinner = $('<div/>', {'class': 'spinner hidden', title: Craft.t('app', 'Saving')}).appendTo($editorHeader);
             this.$statusIcon = $('<div/>', {'class': 'invisible'}).appendTo($editorHeader);
 
-            if (this.draftEditor.settings.previewTargets.length > 1) {
-                var $previewHeader = $('<header/>', {'class': 'lp-preview-header flex'}).appendTo(this.$previewContainer);
-                this.$targetBtn = $('<button/>', {
-                    type: 'button',
-                    'class': 'btn menubtn',
-                    text: this.draftEditor.settings.previewTargets[0].label,
-                }).appendTo($previewHeader);
-                this.$targetMenu = $('<div/>', {'class': 'menu lp-target-menu'}).insertAfter(this.$targetBtn);
-                var $ul = $('<ul/>', {'class': 'padded'}).appendTo(this.$targetMenu);
-                var $li, $a;
-                for (let i = 0; i < this.draftEditor.settings.previewTargets.length; i++) {
-                    $li = $('<li/>').appendTo($ul)
-                    $a = $('<a/>', {
-                        data: {target: i},
-                        text: this.draftEditor.settings.previewTargets[i].label,
-                        'class': i === 0 ? 'sel' : null,
-                    }).appendTo($li);
+            if (Craft.Pro) {
+                this.$previewHeader = $('<header/>', {'class': 'lp-preview-header'}).appendTo(this.$previewContainer);
+
+                // Preview targets
+                if (this.draftEditor.settings.previewTargets.length > 1) {
+                    this.$targetBtn = $('<button/>', {
+                        type: 'button',
+                        'class': 'btn menubtn',
+                        text: this.draftEditor.settings.previewTargets[0].label,
+                    }).appendTo(this.$previewHeader);
+                    this.$targetMenu = $('<div/>', {'class': 'menu lp-target-menu'}).insertAfter(this.$targetBtn);
+                    const $ul = $('<ul/>', {'class': 'padded'}).appendTo(this.$targetMenu);
+                    let $li, $a;
+                    for (let i = 0; i < this.draftEditor.settings.previewTargets.length; i++) {
+                        $li = $('<li/>').appendTo($ul)
+                        $a = $('<a/>', {
+                            data: {target: i},
+                            text: this.draftEditor.settings.previewTargets[i].label,
+                            'class': i === 0 ? 'sel' : null,
+                        }).appendTo($li);
+                    }
+                    new Garnish.MenuBtn(this.$targetBtn, {
+                        onOptionSelect: option => {
+                            this.switchTarget($(option).data('target'));
+                        },
+                    });
+
+                    $('<div class="flex-grow"/>').appendTo(this.$previewHeader);
                 }
-                new Garnish.MenuBtn(this.$targetBtn, {
-                    onOptionSelect: option => {
-                        this.switchTarget($(option).data('target'));
-                    },
+
+                // Device type buttons
+                this.$deviceTypeContainer = $('<div/>', {
+                    class: 'btngroup lp-device-type',
+                    role: 'listbox',
+                    'aria-label': Craft.t('app', 'Device type'),
+                    tabindex: '0',
+                }).appendTo(this.$previewHeader);
+                $('<button/>', {
+                    type: 'button',
+                    role: 'option',
+                    'class': 'btn lp-device-type-btn--desktop active',
+                    title: Craft.t('app', 'Desktop'),
+                    'aria-label': Craft.t('app', 'Desktop'),
+                    'aria-selected': 'true',
+                    tabindex: '-1',
+                    data: {
+                        width: '',
+                        height: '',
+                        deviceType: 'desktop'
+                    }
+                }).appendTo(this.$deviceTypeContainer);
+                $('<button/>', {
+                    type: 'button',
+                    role: 'option',
+                    'class': 'btn lp-device-type-btn--tablet',
+                    title: Craft.t('app', 'Tablet'),
+                    'aria-label': Craft.t('app', 'Tablet'),
+                    'aria-selected': 'false',
+                    tabindex: '-1',
+                    data: {
+                        width: 768,
+                        height: 1024,
+                        deviceType: 'tablet'
+                    }
+                }).appendTo(this.$deviceTypeContainer);
+                $('<button/>', {
+                    type: 'button',
+                    role: 'option',
+                    'class': 'btn lp-device-type-btn--phone',
+                    title: Craft.t('app', 'Mobile'),
+                    'aria-label': Craft.t('app', 'Mobile'),
+                    'aria-selected': 'false',
+                    tabindex: '-1',
+                    data: {
+                        width: 375,
+                        height: 667,
+                        deviceType: 'phone'
+                    }
+                }).appendTo(this.$deviceTypeContainer);
+
+                $('<div class="flex-grow"/>').appendTo(this.$previewHeader);
+
+                // Orientation toggle
+                this.$orientationBtn = $('<button/>', {
+                    type: 'button',
+                    'class': 'btn disabled',
+                    'data-icon': 'refresh',
+                    disabled: '',
+                    'aria-hidden': '',
+                    'text': Craft.t('app', 'Rotate')
+                }).appendTo(this.$previewHeader);
+                this.addListener(this.$orientationBtn, 'click', 'switchOrientation');
+
+                // Get the last stored orientation
+                this.deviceOrientation = Craft.getLocalStorage('LivePreview.orientation');
+
+                // Device type button click handler
+                this.addListener($('.btn', this.$deviceTypeContainer), 'click', 'switchDeviceType');
+
+                // Device mask
+                this.$deviceMask = $('<div/>', {
+                    'class': 'lp-device-mask'
                 });
             }
 
             this.$iframeContainer = $('<div/>', {'class': 'lp-iframe-container'}).appendTo(this.$previewContainer);
+
+            if (this.$deviceMask) {
+                this.$iframeContainer.append(this.$deviceMask);
+            }
 
             this.dragger = new Garnish.BaseDrag(this.$dragHandle, {
                 axis: Garnish.X_AXIS,
@@ -264,6 +371,7 @@ Craft.Preview = Garnish.Base.extend({
 
         this.$previewContainer.velocity('stop').animateRight(-this.getIframeWidth(), 'slow', () => {
             this.$previewContainer.hide();
+            this.resetDevicePreview();
         });
 
         this.draftEditor.off('update', this._updateIframeProxy);
@@ -300,6 +408,9 @@ Craft.Preview = Garnish.Base.extend({
     updateWidths: function() {
         this.$editorContainer.css('width', this.editorWidthInPx + 'px');
         this.$previewContainer.width(this.getIframeWidth());
+        if (this._devicePreviewIsActive()) {
+            this.updateDevicePreview();
+        }
     },
 
     _useIframeResizer: function() {
@@ -366,6 +477,18 @@ Craft.Preview = Garnish.Base.extend({
                 $iframe.appendTo(this.$iframeContainer);
             }
 
+            // If we’re on tablet/phone then wrap the iframe in our own container
+            // so we can keep all the iFrameResizer() stuff working
+            if (this._devicePreviewIsActive()) {
+                if (!this.$devicePreviewContainer) {
+                    this.$devicePreviewContainer = $('<div/>', {
+                        'class': 'lp-device-preview-container'
+                    });
+                    $iframe.wrap('<div class="lp-device-preview-container"></div>');
+                    this.$devicePreviewContainer = this.$iframeContainer.find('.lp-device-preview-container');
+                }
+            }
+
             // Keep the iframe height consistent with its content
             if (this._useIframeResizer()) {
                 if (!resetScroll && this.iframeHeight !== null) {
@@ -396,6 +519,10 @@ Craft.Preview = Garnish.Base.extend({
             this.url = url;
             this.$iframe = $iframe;
 
+            if (this._devicePreviewIsActive()) {
+                this.updateDevicePreview();
+            }
+
             this.trigger('afterUpdateIframe', {
                 previewTarget: this.draftEditor.settings.previewTargets[this.activeTarget],
                 $iframe: this.$iframe,
@@ -403,6 +530,205 @@ Craft.Preview = Garnish.Base.extend({
 
             this.slideIn();
         });
+    },
+
+    _devicePreviewIsActive: function() {
+        return this.currentDeviceType !== 'desktop';
+    },
+
+    switchDeviceType: function(ev) {
+        if (this.isDeviceUpdating) {
+            return false;
+        }
+
+        this.$iframeContainer.removeClass('lp-iframe-container--animating');
+
+        const $btn = $(ev.target);
+        const newDeviceType = $btn.data('deviceType');
+
+        // Bail if we’re just smashing the same button
+        if (newDeviceType === this.currentDeviceType) {
+            return false;
+        }
+
+        // Store new device type data
+        this.currentDeviceType = newDeviceType;
+        this.deviceWidth = $btn.data('width');
+        this.deviceHeight = $btn.data('height');
+
+        // Set the active state on the button
+        this.$deviceTypeContainer.find('.btn')
+            .removeClass('active')
+            .attr('aria-selected', 'false');
+
+        $btn
+            .addClass('active')
+            .attr('aria-selected', 'true');
+
+        // Update or reset
+        if (this.currentDeviceType === 'desktop') {
+            this.resetDevicePreview();
+        } else {
+            this.$iframeContainer.addClass('lp-iframe-container--updating');
+            this.updateIframe();
+            this.updateDevicePreview();
+        }
+    },
+
+    switchOrientation: function()
+    {
+        if (this.isDeviceUpdating || !this._devicePreviewIsActive()) {
+            return false;
+        }
+
+        // Switch to whichever orientation is currently not stored
+        if (!this.deviceOrientation || this.deviceOrientation === 'portrait') {
+            this.deviceOrientation = 'landscape';
+        } else {
+            this.deviceOrientation = 'portrait';
+        }
+
+        // Store the new one
+        Craft.setLocalStorage('LivePreview.orientation', this.deviceOrientation);
+
+        // Allow the animation to take place
+        this.$iframeContainer.addClass('lp-iframe-container--animating');
+
+        // Update the device preview
+        this.updateDevicePreview();
+    },
+
+    updateDevicePreview: function()
+    {
+        if (this.isDeviceUpdating) {
+            return false;
+        }
+
+        this.isDeviceUpdating = true;
+
+        // Enable the orientation button
+        this.$orientationBtn
+            .removeClass('disabled')
+            .removeAttr('disabled')
+            .removeAttr('aria-hidden');
+
+        // Trigger the resized css mods
+        this.$iframeContainer.addClass('lp-iframe-container--has-device-preview');
+
+        // Add the tablet class if needed
+        if (this.currentDeviceType === 'tablet') {
+            this.$iframeContainer.addClass('lp-iframe-container--tablet');
+        } else {
+            this.$iframeContainer.removeClass('lp-iframe-container--tablet');
+        }
+
+        // Figure out the best zoom
+        let hZoom = 1;
+        let wZoom = 1;
+        let zoom = 1;
+        let previewHeight = (this.$previewContainer.height() - 50) - 48; // 50px for the header bar and 24px clearance
+        let previewWidth = this.$previewContainer.width() - 48;
+        let maskHeight = this.deviceMaskDimensions[this.currentDeviceType].height;
+        let maskWidth = this.deviceMaskDimensions[this.currentDeviceType].width;
+
+        if (this.deviceOrientation === 'landscape') {
+            if (previewWidth < maskHeight) {
+                hZoom = previewWidth / maskHeight;
+            }
+            if (previewHeight < maskWidth) {
+                wZoom = previewHeight / maskWidth;
+            }
+        } else {
+            if (previewHeight < maskHeight) {
+                hZoom = previewHeight / maskHeight;
+            }
+            if (previewWidth < maskWidth) {
+                wZoom = previewWidth / maskWidth;
+            }
+        }
+
+        zoom = hZoom;
+        if (wZoom < hZoom) {
+            zoom = wZoom;
+        }
+
+        // Figure out the css values
+        const translate = -((100/zoom)/2);
+        const rotationDeg = this.deviceOrientation === 'landscape' ? '-90deg' : '0deg';
+
+        // Apply first to the device mask
+        this.$deviceMask.css({
+            width: this.deviceMaskDimensions[this.currentDeviceType].width + 'px',
+            height: this.deviceMaskDimensions[this.currentDeviceType].height + 'px',
+            transform: 'scale('+zoom+') translate('+translate+'%, '+translate+'%) rotate('+rotationDeg+')'
+        });
+
+        // After the animation duration we can update the iframe sizes and show it
+        if (this.deviceAnimationTimeout) {
+            clearTimeout(this.deviceAnimationTimeout);
+        }
+        this.deviceAnimationTimeout = setTimeout($.proxy(function() {
+
+            // Then make the size change to the preview container
+            if (this.deviceOrientation === 'landscape') {
+                this.$devicePreviewContainer.css({
+                    width: this.deviceHeight + 'px',
+                    height: this.deviceWidth + 'px',
+                    transform: 'scale('+zoom+') translate('+translate+'%, '+translate+'%)',
+                    marginTop: 0,
+                    marginLeft: '-' + (12*zoom) + 'px'
+                });
+            } else {
+                this.$devicePreviewContainer.css({
+                    width: this.deviceWidth + 'px',
+                    height: this.deviceHeight + 'px',
+                    transform: 'scale('+zoom+') translate('+translate+'%, '+translate+'%)',
+                    marginTop: '-' + (12*zoom) + 'px',
+                    marginLeft: 0
+                });
+            }
+
+            // Remove the animating class and show the iframe
+            this.$iframeContainer.removeClass('lp-iframe-container--animating');
+            this.$iframeContainer.removeClass('lp-iframe-container--updating');
+            this.isDeviceUpdating = false;
+
+        }, this), 300);
+    },
+
+    resetDevicePreview: function()
+    {
+        if (this.deviceAnimationTimeout) {
+            clearTimeout(this.deviceAnimationTimeout);
+        }
+        this.currentDeviceType = 'desktop';
+        this.$deviceTypeContainer.find('.btn')
+            .removeClass('active')
+            .attr('aria-selected', 'false');
+        this.$deviceTypeContainer.find('.lp-device-type-btn--desktop')
+            .addClass('active')
+            .attr('aria-selected', 'true');
+        this.$orientationBtn
+            .addClass('disabled')
+            .attr('disabled', '')
+            .attr('aria-hidden', '');
+        this.$iframeContainer.removeClass('lp-iframe-container--animating');
+        this.$iframeContainer.removeClass('lp-iframe-container--has-device-preview');
+        this.$iframeContainer.removeClass('lp-iframe-container--tablet');
+
+        // Flat out remove the iframe and let it get regenerated
+        if (this.$devicePreviewContainer) {
+            // If using iFrameResizer then remove the listeners first so we don’t get zombie instances
+            if (this._useIframeResizer()) {
+                this.$iframe[0].iFrameResizer.removeListeners();
+            }
+            this.$devicePreviewContainer.detach();
+            this.$devicePreviewContainer = null;
+            this.$iframe = null;
+            this.updateIframe();
+        }
+
+        this.isDeviceUpdating = false;
     },
 
     _getClone: function($field) {

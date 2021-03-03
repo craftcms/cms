@@ -238,11 +238,12 @@
                 {{ tag('button', {
                     type: 'button',
                     class: ['btn', 'secondary', 'formsubmit'],
+                    text: 'Publish draft'|t('app'),
+                    title: forms.shortcutText('S', false, true),
                     data: {
                         action: publishDraftAction,
                         redirect: hashedCpEditUrl,
                     },
-                    text: 'Publish draft'|t('app'),
                 }) }}
             </div>
         {% elseif isRevision and canUpdateSource and revertSourceAction %}

@@ -425,6 +425,30 @@ class Assets
                         'wv',
                     ]
                 ],
+                Asset::KIND_CAPTIONS_SUBTITLES => [
+                    'label' => Craft::t('app', 'Captions/Subtitles'),
+                    'extensions' => [
+                        'asc',
+                        'cap',
+                        'cin',
+                        'dfxp',
+                        'itt',
+                        'lrc',
+                        'mcc',
+                        'mpsub',
+                        'rt',
+                        'sami',
+                        'sbv',
+                        'scc',
+                        'smi',
+                        'srt',
+                        'stl',
+                        'sub',
+                        'tds',
+                        'ttml',
+                        'vtt',
+                    ]
+                ],
                 Asset::KIND_COMPRESSED => [
                     'label' => Craft::t('app', 'Compressed'),
                     'extensions' => [

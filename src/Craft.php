@@ -280,10 +280,18 @@ EOD;
                 include $filePath;
             }
 
-            // Delete any other CustomFieldBehavior files
+            // Delete any CustomFieldBehavior files that are over 10 seconds old
+            $basename = basename($filePath);
+            $time = time() - 10;
             FileHelper::clearDirectory($dir, [
-                'only' => ['CustomFieldBehavior*.php'],
-                'except' => [basename($filePath)],
+                'filter' => function(string $path) use($basename, $time): bool {
+                    $b = basename($path);
+                    return (
+                        $b !== $basename &&
+                        strpos($b, 'CustomFieldBehavior') === 0 &&
+                        filemtime($path) < $time
+                    );
+                },
             ]);
         } else if ($load) {
             // Just evaluate the code

@@ -156,7 +156,7 @@ class Site extends Model
     public function getBaseUrl(bool $parse = true)
     {
         if ($this->_baseUrl) {
-            return rtrim($parse ? Craft::parseEnv($this->_baseUrl) : $this->_baseUrl, '/') . '/';
+            return $parse ? rtrim(Craft::parseEnv($this->_baseUrl), '/') . '/' : $this->_baseUrl;
         }
 
         return null;

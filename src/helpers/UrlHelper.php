@@ -342,7 +342,7 @@ class UrlHelper
 
         $request = Craft::$app->getRequest();
 
-        if ($request->getIsCpRequest()) {
+        if ($generalConfig->headlessMode || $request->getIsCpRequest()) {
             $path = static::prependCpTrigger($path);
             $cpUrl = true;
         } else {

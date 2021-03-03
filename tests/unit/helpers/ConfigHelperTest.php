@@ -96,9 +96,6 @@ class ConfigHelperTest extends Unit
      */
     public function localizedValueDataProvider(): array
     {
-        $exampleModel = new ExampleModel();
-        $exampleModel->exampleParam = 'imaparam';
-
         return [
             // Ensure if array that it is accessed by the handle and returns the value of the index.
             ['imavalue', ['imahandle' => 'imavalue'], 'imahandle'],
@@ -109,8 +106,6 @@ class ConfigHelperTest extends Unit
                 return $handle;
             }, 'imahandle'
             ],
-            ['imaparam', $exampleModel],
-            [reset($exampleModel), $exampleModel],
             ['imnotavalue', ['imnotahandle' => 'imnotavalue', 'anotherkey' => 'anothervalue'], 'imahandle'],
             ['string', 'string'],
             ['', ''],

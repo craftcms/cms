@@ -91,7 +91,7 @@ class Duplicate extends ElementAction
             }
 
             $newAttributes = [];
-            if ($element::hasTitles()) {
+            if ($element::hasTitles() && (!$element->getIsDraft() || $element->getIsUnpublishedDraft())) {
                 $newAttributes['title'] = Craft::t('app', '{title} copy', ['title' => $element->title]);
             }
 

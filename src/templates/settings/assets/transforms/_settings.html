@@ -105,14 +105,14 @@
             label: "Quality"|t('app'),
             id: "quality",
             name: "quality",
-            options: {
-                '0': "Auto"|t('app'),
-                '10': "Low"|t('app'),
-                '30': "Medium"|t('app'),
-                '60': "High"|t('app'),
-                '82': "Very High (Recommended)"|t('app'),
-                '100': "Maximum"|t('app')
-            },
+            options: [
+                {label: 'Auto'|t('app'), value: '0'},
+                {label: 'Low'|t('app'), value: '10'},
+                {label: 'Medium'|t('app'), value: '30'},
+                {label: 'High'|t('app'), value: '60'},
+                {label: 'Very High (Recommended)'|t('app'), value: '82'},
+                {label: 'Maximum'|t('app'), value: '100'},
+            ],
             value: (transform is defined ? transform.quality : 82),
             errors: (transform is defined ? transform.getErrors('quality') : null),
         }) }}
@@ -121,12 +121,12 @@
             label: "Interlacing"|t('app'),
             id: "interlace",
             name: "interlace",
-            options: {
-                'none': "None"|t('app'),
-                'line': "Line"|t('app'),
-                'plane': "Plane"|t('app'),
-                'partition': "Partition"|t('app')
-            },
+            options: [
+                {label: 'None'|t('app'), value: 'none'},
+                {label: 'Line'|t('app'), value: 'line'},
+                {label: 'Plane'|t('app'), value: 'plane'},
+                {label: 'Partition'|t('app'), value: 'partition'},
+            ],
             value: (transform is defined ? transform.interlace : 'none'),
             errors: (transform is defined ? transform.getErrors('interlace') : null),
         }) }}

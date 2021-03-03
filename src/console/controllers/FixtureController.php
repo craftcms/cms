@@ -7,6 +7,7 @@
 
 namespace craft\console\controllers;
 
+use craft\console\ControllerTrait;
 use yii\console\controllers\FixtureController as BaseFixtureController;
 
 /**
@@ -19,4 +20,14 @@ use yii\console\controllers\FixtureController as BaseFixtureController;
  */
 class FixtureController extends BaseFixtureController
 {
+    use ControllerTrait;
+
+    /**
+     * @inheritdoc
+     */
+    public function init()
+    {
+        parent::init();
+        $this->checkTty();
+    }
 }

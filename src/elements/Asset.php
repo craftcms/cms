@@ -106,6 +106,10 @@ class Asset extends Element
 
     const KIND_ACCESS = 'access';
     const KIND_AUDIO = 'audio';
+    /**
+     * @since 3.6.0
+     */
+    const KIND_CAPTIONS_SUBTITLES = 'captionsSubtitles';
     const KIND_COMPRESSED = 'compressed';
     const KIND_EXCEL = 'excel';
     const KIND_FLASH = 'flash';
@@ -327,6 +331,7 @@ class Asset extends Element
             $folder = Craft::$app->getAssets()->getFolderByUid($matches[1])
         ) {
             $volume = $folder->getVolume();
+            $isTemp = $volume instanceof Temp;
 
             $actions[] = [
                 'type' => PreviewAsset::class,
@@ -343,7 +348,7 @@ class Asset extends Element
             ];
 
             $userSession = Craft::$app->getUser();
-            if ($userSession->checkPermission("replaceFilesInVolume:$volume->uid")) {
+            if ($isTemp || $userSession->checkPermission("replaceFilesInVolume:$volume->uid")) {
                 // Rename/Replace File
                 $actions[] = RenameFile::class;
                 $actions[] = ReplaceFile::class;
@@ -361,12 +366,12 @@ class Asset extends Element
             ];
 
             // Edit Image
-            if ($userSession->checkPermission("editImagesInVolume:$volume->uid")) {
+            if ($isTemp || $userSession->checkPermission("editImagesInVolume:$volume->uid")) {
                 $actions[] = EditImage::class;
             }
 
             // Delete
-            if ($userSession->checkPermission("deleteFilesAndFoldersInVolume:$volume->uid")) {
+            if ($isTemp || $userSession->checkPermission("deleteFilesAndFoldersInVolume:$volume->uid")) {
                 $actions[] = DeleteAssets::class;
             }
         }
@@ -862,9 +867,13 @@ class Asset extends Element
      */
     public function getIsDeletable(): bool
     {
-        $userSession = Craft::$app->getUser();
         $volume = $this->getVolume();
 
+        if ($volume instanceof Temp) {
+            return true;
+        }
+
+        $userSession = Craft::$app->getUser();
         return (
             $userSession->checkPermission("deleteFilesAndFoldersInVolume:$volume->uid") &&
             ($userSession->getId() == $this->uploaderId || $userSession->checkPermission("deletePeerFilesInVolume:$volume->uid"))
@@ -995,6 +1004,9 @@ class Asset extends Element
             [$value, $unit] = Assets::parseSrcsetSize($size);
 
             $sizeTransform = $transform ? $transform->toArray() : [];
+
+            // Having handle or name here will override dimensions, so we don't want that.
+            unset($sizeTransform['handle'], $sizeTransform['name']);
 
             if ($unit === 'w') {
                 $sizeTransform['width'] = (int)$value;
@@ -1820,9 +1832,13 @@ class Asset extends Element
     public function afterSave(bool $isNew)
     {
         if (!$this->propagating) {
+            $isCpRequest = Craft::$app->getRequest()->getIsCpRequest();
+            $sanitizeCpImageUploads = Craft::$app->getConfig()->getGeneral()->sanitizeCpImageUploads;
+            
             if (
                 \in_array($this->getScenario(), [self::SCENARIO_REPLACE, self::SCENARIO_CREATE], true) &&
-                AssetsHelper::getFileKindByExtension($this->tempFilePath) === static::KIND_IMAGE
+                AssetsHelper::getFileKindByExtension($this->tempFilePath) === static::KIND_IMAGE &&
+                !($isCpRequest && !$sanitizeCpImageUploads)
             ) {
                 Image::cleanImageByPath($this->tempFilePath);
             }
@@ -1921,15 +1937,15 @@ class Asset extends Element
             $attributes['data-image-height'] = $this->getHeight();
         }
 
+        $volume = $this->getVolume();
         $userSession = Craft::$app->getUser();
         $imageEditable = $context === 'index' && $this->getSupportsImageEditor();
 
-        if ($userSession->getId() == $this->uploaderId) {
+        if ($volume instanceof Temp || $userSession->getId() == $this->uploaderId) {
             $attributes['data-own-file'] = null;
             $movable = $replaceable = true;
         } else {
             $attributes['data-peer-file'] = null;
-            $volume = $this->getVolume();
             $movable = (
                 $userSession->checkPermission("editPeerFilesInVolume:$volume->uid") &&
                 $userSession->checkPermission("deletePeerFilesInVolume:$volume->uid")

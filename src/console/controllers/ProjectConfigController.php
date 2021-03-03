@@ -10,10 +10,12 @@ namespace craft\console\controllers;
 use Craft;
 use craft\console\Controller;
 use craft\db\Table;
+use craft\events\ConfigEvent;
 use craft\helpers\Console;
 use craft\helpers\Db;
 use craft\helpers\ProjectConfig;
 use craft\services\Plugins;
+use craft\services\ProjectConfig as ProjectConfigService;
 use yii\console\ExitCode;
 
 /**
@@ -34,6 +36,12 @@ class ProjectConfigController extends Controller
      * @since 3.5.13
      */
     public $invert = false;
+
+    /**
+     * @var array Keeps track of announced processed paths
+     * @since 3.6.0
+     */
+    protected $announcedPaths = [];
 
     /**
      * @inheritdoc
@@ -134,18 +142,30 @@ class ProjectConfigController extends Controller
             // Any plugins need to be installed/uninstalled?
             $loadedConfigPlugins = array_keys($projectConfig->get(Plugins::CONFIG_PLUGINS_KEY) ?? []);
             $yamlPlugins = array_keys($projectConfig->get(Plugins::CONFIG_PLUGINS_KEY, true) ?? []);
-            $this->_uninstallPlugins(array_diff($loadedConfigPlugins, $yamlPlugins));
 
             if (!$this->_installPlugins(array_diff($yamlPlugins, $loadedConfigPlugins))) {
                 $this->stdout('Aborting config apply process' . PHP_EOL, Console::FG_RED);
                 return ExitCode::UNSPECIFIED_ERROR;
             }
 
-            $this->stdout("Applying changes from your project config files ... ", Console::FG_YELLOW);
+            $this->_uninstallPlugins(array_diff($loadedConfigPlugins, $yamlPlugins));
+            
+            $this->stdout("Applying changes from your project config files ... " . PHP_EOL);
+
             try {
                 $forceUpdate = $projectConfig->forceUpdate;
                 $projectConfig->forceUpdate = $this->force;
+
+                $projectConfig->on(ProjectConfigService::EVENT_ADD_ITEM, $this->_generateOutputFunction('adding '), null, false);
+                $projectConfig->on(ProjectConfigService::EVENT_REMOVE_ITEM, $this->_generateOutputFunction('removing '), null, false);
+                $projectConfig->on(ProjectConfigService::EVENT_UPDATE_ITEM, $this->_generateOutputFunction('updating '), null, false);
+
+                $projectConfig->on(ProjectConfigService::EVENT_ADD_ITEM, function () { $this->stdout(' ... '); $this->stdout('done' . PHP_EOL, Console::FG_GREEN);});
+                $projectConfig->on(ProjectConfigService::EVENT_REMOVE_ITEM, function () { $this->stdout(' ... '); $this->stdout('done' . PHP_EOL, Console::FG_GREEN);});
+                $projectConfig->on(ProjectConfigService::EVENT_UPDATE_ITEM, function () { $this->stdout(' ... '); $this->stdout('done' . PHP_EOL, Console::FG_GREEN);});
+
                 $projectConfig->applyYamlChanges();
+
                 $projectConfig->forceUpdate = $forceUpdate;
             } catch (\Throwable $e) {
                 $this->stderr('error: ' . $e->getMessage() . PHP_EOL, Console::FG_RED);
@@ -154,12 +174,12 @@ class ProjectConfigController extends Controller
             }
         }
 
-        $this->stdout('done' . PHP_EOL, Console::FG_GREEN);
+        $this->stdout('Finished applying changes' . PHP_EOL, Console::FG_GREEN);
         return ExitCode::OK;
     }
 
     /**
-     * Alias for `apply`.
+     * DEPRECATED. Use `project-config/apply` instead.
      *
      * @return int
      * @deprecated in 3.5.0. Use [[actionApply()]] instead.
@@ -289,5 +309,26 @@ class ProjectConfigController extends Controller
         }
 
         return true;
+    }
+
+    /**
+     * Generate an output function for logging.
+     *
+     * @param $mode
+     * @return callable
+     */
+    private function _generateOutputFunction($mode): callable
+    {
+        return function (ConfigEvent $configEvent) use ($mode) {
+            $key = $mode . $configEvent->path;
+
+            if (isset($this->announcedPaths[$key])) {
+                return;
+            }
+            $this->announcedPaths[$key] = true;
+
+            $this->stdout(' - ' . $mode);
+            $this->stdout($configEvent->path, Console::FG_CYAN);
+        };
     }
 }

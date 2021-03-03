@@ -2,29 +2,33 @@ html, body { height: 100%; }
 
 body { display: -webkit-flex; display: flex; -webkit-flex-direction: column; flex-direction: column; -webkit-align-items: center; align-items: center; -webkit-justify-content: center; justify-content: center; }
 
-#login-form { display: block; width: 300px; background: no-repeat center top; }
+#login { width: 300px; }
 
-#login-form.has-logo { padding-top: 116px; }
+#login h1 { text-align: center; font-size: 3em; word-wrap: break-word; }
 
-#login-form h1 { text-align: center; font-size: 3em; color: #3f4d5a; word-wrap: break-word; }
+#login-logo { width: 100%; height: auto; }
 
-#login-fields { position: relative; padding: 1px; }
+#login-form-top { padding: 1px; }
 
-#login-fields:after { position: absolute; z-index: 1; top: 0; right: 0; left: 0; bottom: 0; display: block; content: '.'; font-size: 0; border-radius: 3px; border: 1px solid rgba(96, 125, 159, 0.25); background-color: #fbfcfe; box-shadow: inset 0 1px 4px -1px rgba(96, 125, 159, 0.25); background-clip: padding-box; background-color: transparent; border-color: transparent; -webkit-user-select: none; user-select: none; pointer-events: none; }
-
-#login-fields .text { box-shadow: none; }
+#login-form-top .text { box-shadow: none; }
 
 #login-form .field { margin: 0; }
 
 #login-form .btn { display: block; }
 
-.passwordwrapper .password-toggle { z-index: 1; }
+#loginName { margin: 0 -1px; width: calc(100% + 2px); padding: 14px 16px; border-radius: 5px; }
 
-#loginName { margin: -1px -1px 0; width: calc(100% + 2px); padding: 14px 16px; border-radius: 5px 5px 0 0; border-bottom-width: 0; }
+#remember-password { display: none; }
 
-#loginName:focus { border-bottom-width: 1px; margin-bottom: -1px; }
+#login-form.remember-me:not(.reset-password) #login-form-bottom { -webkit-justify-content: space-between; justify-content: space-between; }
 
-#login-form.reset-password #loginName { border-bottom-left-radius: 5px; border-bottom-right-radius: 5px; }
+#login-form:not(.reset-password) #loginName { margin: -1px -1px 0; border-radius: 5px 5px 0 0; border-bottom-width: 0; }
+
+#login-form:not(.reset-password) #loginName:focus { border-bottom-width: 1px; margin-bottom: -1px; }
+
+#login-form.reset-password #password-field, #login-form.reset-password #rememberMe-field, #login-form.reset-password #forgot-password { display: none; }
+
+#login-form.reset-password #remember-password { display: block; }
 
 .passwordwrapper { margin: 0 -1px -1px; border-radius: 0 0 5px 5px; }
 
@@ -36,43 +40,25 @@ body.ltr .passwordwrapper .password-toggle { padding-right: 14px; }
 
 body.rtl .passwordwrapper .password-toggle { padding-left: 14px; }
 
-#password-fields { margin-top: 24px; display: -webkit-flex; display: flex; -webkit-justify-content: space-between; justify-content: space-between; }
+#login-form-bottom { margin-top: 24px; display: -webkit-flex; display: flex; -webkit-justify-content: center; justify-content: center; }
 
 body.ltr #rememberMe-field { margin-right: 14px; }
 
 body.rtl #rememberMe-field { margin-left: 14px; }
 
-#forgot-password { position: relative; z-index: 1; display: block; font-style: normal; font-size: 11px; color: #596673; }
+#forgot-password, #remember-password { font-size: 11px; color: #596673; }
 
-#forgot-password:only-child { width: 100%; text-align: center; margin-top: -20px; }
+#forgot-password:hover, #forgot-password:focus, #remember-password:hover, #remember-password:focus { color: #0B69A3; }
 
-#forgot-password:hover { color: #0B69A3; text-decoration: none; }
-
-#login-form .buttons { position: relative; text-align: center; }
-
-#login-form #ssl-icon { position: absolute; top: 0; z-index: 1; line-height: 30px; width: 2.2em; color: #fff; text-align: center; cursor: pointer; }
-
-body.ltr #login-form #ssl-icon { left: 0; }
-
-body.rtl #login-form #ssl-icon { right: 0; }
-
-#login-form #ssl-icon.disabled { opacity: 0.75; cursor: default; }
-
-body.ltr #login-form #ssl-icon + #submit { padding-left: 2em; }
-
-body.rtl #login-form #ssl-icon + #submit { padding-right: 2em; }
-
-#login-form .submit { display: block; float: none; padding: 14px 16px; height: auto; width: 100%; border-radius: 4px; }
+#login-form .submit { display: block; padding: 14px 16px; height: auto; width: 100%; }
 
 #spinner { position: absolute; top: 58px; left: 50%; margin-left: -12px; }
 
-p.error { text-align: center; }
+#login-errors { text-align: center; color: #CF1124; margin-top: 1em; }
 
-#poweredby { display: block; text-align: center; margin-top: 70px; margin-bottom: 48px; opacity: .6; }
+#poweredby { display: block; text-align: center; margin-top: 70px; margin-bottom: 48px; opacity: .8; }
 
-#poweredby:hover { opacity: 0.8; }
-
-#poweredby:active { opacity: 1; }
+#poweredby:hover, #poweredby:focus, #poweredby:active { opacity: 1; }
 
 .modal.email-sent { width: 300px; }
 
@@ -85,7 +71,5 @@ body.rtl .modal.email-sent .body { padding-right: 68px; }
 body.ltr .modal.email-sent .body:before { left: 24px; }
 
 body.rtl .modal.email-sent .body:before { right: 24px; }
-
-@media only screen and (-webkit-min-device-pixel-ratio: 1.5), only screen and (-moz-min-device-pixel-ratio: 1.5), only screen and (-o-min-device-pixel-ratio: 3 / 2), only screen and (min-device-pixel-ratio: 1.5), only screen and (-o-min-device-pixel-ratio: 3/2), only screen and (min-resolution: 1.5dppx) { #login-form { -o-background-size: 202px; background-size: 202px; } }
 
 /*# sourceMappingURL=login.css.map */

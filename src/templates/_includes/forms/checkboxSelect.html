@@ -8,12 +8,20 @@
     {%- set allChecked = (values == allValue) %}
 {%- endif %}
 
-<fieldset class="checkbox-select{% if class ?? false %} {{ class }}{% endif %}"
-        {%- if block('attr') is defined %} {{ block('attr') }}{% endif %}>
+{% set containerAttributes = {
+    class: ['checkbox-select']|merge((class ?? [])|explodeClass),
+}|merge(containerAttributes ?? [], recursive=true) %}
+
+{%- if block('attr') is defined %}
+    {%- set containerAttributes = containerAttributes|merge(('<div ' ~ block('attr') ~ '>')|parseAttr, recursive=true) %}
+{% endif %}
+
+{% tag 'fieldset' with containerAttributes %}
     {%- if showAllOption %}
         <div>
             {% include "_includes/forms/checkbox" with {
                 id: id ?? null,
+                instructionsId: instructionsId ?? false,
                 class: 'all',
                 label: raw("<b>#{allLabel}</b>"),
                 name: name ?? null,
@@ -37,4 +45,4 @@
             </div>
         {% endif %}
     {% endfor %}
-</fieldset>
+{% endtag %}
