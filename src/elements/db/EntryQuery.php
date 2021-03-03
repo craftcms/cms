@@ -773,6 +773,9 @@ class EntryQuery extends ElementQuery
      */
     protected function beforePrepare(): bool
     {
+        $this->_normalizeSectionId();
+        $this->_normalizeTypeId();
+
         // See if 'section', 'type', or 'authorGroup' were set to invalid handles
         if ($this->sectionId === [] || $this->typeId === [] || $this->authorGroupId === []) {
             return false;
@@ -803,7 +806,6 @@ class EntryQuery extends ElementQuery
             $this->subQuery->andWhere(Db::parseDateParam('entries.expiryDate', $this->expiryDate));
         }
 
-        $this->_normalizeTypeId();
         if ($this->typeId) {
             $this->subQuery->andWhere(['entries.typeId' => $this->typeId]);
         }
@@ -840,14 +842,14 @@ class EntryQuery extends ElementQuery
                     'and',
                     [
                         'elements.enabled' => true,
-                        'elements_sites.enabled' => true
+                        'elements_sites.enabled' => true,
                     ],
                     ['<=', 'entries.postDate', $currentTimeDb],
                     [
                         'or',
                         ['entries.expiryDate' => null],
-                        ['>', 'entries.expiryDate', $currentTimeDb]
-                    ]
+                        ['>', 'entries.expiryDate', $currentTimeDb],
+                    ],
                 ];
             case Entry::STATUS_PENDING:
                 return [
@@ -856,17 +858,17 @@ class EntryQuery extends ElementQuery
                         'elements.enabled' => true,
                         'elements_sites.enabled' => true,
                     ],
-                    ['>', 'entries.postDate', $currentTimeDb]
+                    ['>', 'entries.postDate', $currentTimeDb],
                 ];
             case Entry::STATUS_EXPIRED:
                 return [
                     'and',
                     [
                         'elements.enabled' => true,
-                        'elements_sites.enabled' => true
+                        'elements_sites.enabled' => true,
                     ],
                     ['not', ['entries.expiryDate' => null]],
-                    ['<=', 'entries.expiryDate', $currentTimeDb]
+                    ['<=', 'entries.expiryDate', $currentTimeDb],
                 ];
             default:
                 return parent::statusCondition($status);
@@ -892,7 +894,7 @@ class EntryQuery extends ElementQuery
 
         // Limit the query to only the sections the user has permission to edit
         $this->subQuery->andWhere([
-            'entries.sectionId' => Craft::$app->getSections()->getEditableSectionIds()
+            'entries.sectionId' => Craft::$app->getSections()->getEditableSectionIds(),
         ]);
 
         // Enforce the editPeerEntries permissions for non-Single sections
@@ -901,7 +903,7 @@ class EntryQuery extends ElementQuery
                 $this->subQuery->andWhere([
                     'or',
                     ['not', ['entries.sectionId' => $section->id]],
-                    ['entries.authorId' => $user->id]
+                    ['entries.authorId' => $user->id],
                 ]);
             }
         }
@@ -932,7 +934,6 @@ class EntryQuery extends ElementQuery
      */
     private function _applySectionIdParam()
     {
-        $this->_normalizeSectionId();
         if ($this->sectionId) {
             $this->subQuery->andWhere(['entries.sectionId' => $this->sectionId]);
 
@@ -950,7 +951,7 @@ class EntryQuery extends ElementQuery
     }
 
     /**
-     * Normalizes the groupId param to an array of IDs or null
+     * Normalizes the sectionId param to an array of IDs or null
      */
     private function _normalizeSectionId()
     {
@@ -994,7 +995,7 @@ class EntryQuery extends ElementQuery
                     $condition[] = [
                         'and',
                         Db::parseParam('sections.handle', $parts[0]),
-                        Db::parseParam('elements_sites.slug', $parts[1])
+                        Db::parseParam('elements_sites.slug', $parts[1]),
                     ];
                     $joinSections = true;
                 }

@@ -52,7 +52,7 @@ class GlobalSet extends ActiveRecord
                     'exists', (new Query())
                         ->from(['e' => Table::ELEMENTS])
                         ->where('[[e.id]] = ' . static::tableName() . '.[[id]]')
-                        ->andWhere(['e.dateDeleted' => null])
+                        ->andWhere(['e.dateDeleted' => null]),
                 ]);
         }
 
@@ -76,7 +76,7 @@ class GlobalSet extends ActiveRecord
             'not exists', (new Query())
                 ->from(['e' => Table::ELEMENTS])
                 ->where('[[e.id]] = ' . static::tableName() . '.[[id]]')
-                ->andWhere(['e.dateDeleted' => null])
+                ->andWhere(['e.dateDeleted' => null]),
         ]);
     }
 

@@ -52,7 +52,7 @@ class TableRowType implements GeneratorInterface, SingleGeneratorInterface
             'name' => $typeName,
             'fields' => function() use ($contentFields) {
                 return $contentFields;
-            }
+            },
         ]));
     }
 }

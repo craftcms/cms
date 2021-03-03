@@ -286,6 +286,9 @@ class Extension extends AbstractExtension implements GlobalsInterface
             new TwigTest('missing', function($obj) {
                 return $obj instanceof MissingComponentInterface;
             }),
+            new TwigTest('boolean', function($obj): bool {
+                return is_bool($obj);
+            }),
         ];
     }
 
@@ -1128,10 +1131,12 @@ class Extension extends AbstractExtension implements GlobalsInterface
             new TwigFunction('actionInput', [Html::class, 'actionInput'], ['is_safe' => ['html']]),
             new TwigFunction('attr', [Html::class, 'renderTagAttributes'], ['is_safe' => ['html']]),
             new TwigFunction('csrfInput', [Html::class, 'csrfInput'], ['is_safe' => ['html']]),
+            new TwigFunction('failMessageInput', [Html::class, 'failMessageInput'], ['is_safe' => ['html']]),
             new TwigFunction('hiddenInput', [Html::class, 'hiddenInput'], ['is_safe' => ['html']]),
             new TwigFunction('input', [Html::class, 'input'], ['is_safe' => ['html']]),
             new TwigFunction('ol', [Html::class, 'ol'], ['is_safe' => ['html']]),
             new TwigFunction('redirectInput', [Html::class, 'redirectInput'], ['is_safe' => ['html']]),
+            new TwigFunction('successMessageInput', [Html::class, 'successMessageInput'], ['is_safe' => ['html']]),
             new TwigFunction('svg', [$this, 'svgFunction'], ['is_safe' => ['html']]),
             new TwigFunction('tag', [$this, 'tagFunction'], ['is_safe' => ['html']]),
             new TwigFunction('ul', [Html::class, 'ul'], ['is_safe' => ['html']]),
@@ -1406,7 +1411,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
             'loginUrl' => UrlHelper::siteUrl($generalConfig->getLoginPath()),
             'logoutUrl' => UrlHelper::siteUrl($generalConfig->getLogoutPath()),
             'setPasswordUrl' => $setPasswordRequestPath !== null ? UrlHelper::siteUrl($setPasswordRequestPath) : null,
-            'now' => new DateTime(null, new \DateTimeZone(Craft::$app->getTimeZone()))
+            'now' => new DateTime(null, new \DateTimeZone(Craft::$app->getTimeZone())),
         ];
 
         $globals['craft'] = new CraftVariable();

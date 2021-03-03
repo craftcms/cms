@@ -66,7 +66,7 @@ class TagType extends Generator implements GeneratorInterface, SingleGeneratorIn
             'name' => $typeName,
             'fields' => function() use ($tagGroupFields) {
                 return $tagGroupFields;
-            }
+            },
         ]));
     }
 }

@@ -11,7 +11,6 @@ use Craft;
 use craft\helpers\ChartHelper;
 use craft\helpers\Json;
 use craft\i18n\Locale;
-use craft\volumes\Local;
 use craft\web\AssetBundle;
 use craft\web\View;
 

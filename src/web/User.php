@@ -9,7 +9,6 @@ namespace craft\web;
 
 use Craft;
 use craft\controllers\UsersController;
-use craft\db\Query;
 use craft\db\Table;
 use craft\elements\User as UserElement;
 use craft\errors\UserLockedException;
@@ -21,6 +20,7 @@ use craft\helpers\User as UserHelper;
 use craft\validators\UserPasswordValidator;
 use yii\web\Cookie;
 use yii\web\ForbiddenHttpException;
+use yii\web\IdentityInterface;
 
 /**
  * The User component provides APIs for managing the user authentication status.
@@ -35,6 +35,12 @@ use yii\web\ForbiddenHttpException;
  */
 class User extends \yii\web\User
 {
+    /**
+     * @var string The session variable name used to store the duration of the authenticated state.
+     * @since 3.6.8
+     */
+    public $authDurationParam = '__duration';
+
     /**
      * @var string the session variable name used to store the user session token.
      */
@@ -380,6 +386,21 @@ class User extends \yii\web\User
     /**
      * @inheritdoc
      */
+    public function login(IdentityInterface $identity, $duration = 0)
+    {
+        $authTimeout = $this->authTimeout;
+        if ($duration > 0) {
+            // Set authTimeout to the duration so it gets factored into the session's expiration time in switchIdentity()
+            $this->authTimeout = $duration;
+        }
+        $success = parent::login($identity, $duration);
+        $this->authTimeout = $authTimeout;
+        return $success;
+    }
+
+    /**
+     * @inheritdoc
+     */
     protected function beforeLogin($identity, $cookieBased, $duration)
     {
         // Only allow the login if the request meets our user agent and IP requirements
@@ -397,6 +418,13 @@ class User extends \yii\web\User
     {
         /** @var UserElement $identity */
         $session = Craft::$app->getSession();
+
+        if ($duration > 0) {
+            // Store the duration on the session
+            $session->set($this->authDurationParam, $duration);
+        } else {
+            $session->remove($this->authDurationParam);
+        }
 
         // Save the username cookie if they're not being impersonated
         $impersonating = $session->get(UserElement::IMPERSONATE_KEY) !== null;
@@ -431,7 +459,7 @@ class User extends \yii\web\User
             }
         }
 
-        return parent::switchIdentity($identity, $duration);
+        parent::switchIdentity($identity, $duration);
     }
 
     /**
@@ -465,9 +493,6 @@ class User extends \yii\web\User
         // Should we be extending the user's session on this request?
         $extendSession = !Craft::$app->getRequest()->getParam('dontExtendSession');
 
-        // Make sure their user session token is valid
-        $this->_validateToken($extendSession);
-
         // Prevent the user session from getting extended?
         if ($this->authTimeout !== null && !$extendSession) {
             $this->absoluteAuthTimeout = $this->authTimeout;
@@ -482,7 +507,14 @@ class User extends \yii\web\User
             $this->absoluteAuthTimeoutParam = $absoluteAuthTimeoutParam;
             $this->autoRenewCookie = $autoRenewCookie;
         } else {
+            $authTimeout = $this->authTimeout;
+            // Was a specific session duration specified on login?
+            $session = Craft::$app->getSession();
+            if ($session->has($this->authDurationParam)) {
+                $this->authTimeout = $session->get($this->authDurationParam);
+            }
             parent::renewAuthStatus();
+            $this->authTimeout = $authTimeout;
         }
     }
 
@@ -496,6 +528,9 @@ class User extends \yii\web\User
         }
 
         $session = Craft::$app->getSession();
+
+        // Stop keeping track of the session duration specified on login
+        $session->remove($this->authDurationParam);
 
         // Delete the session token in the database
         $token = $session->get($this->tokenParam);
@@ -548,54 +583,6 @@ class User extends \yii\web\User
         }
 
         return true;
-    }
-
-    /**
-     * Validates that a user's session token is valid.
-     *
-     * @param bool $extendSession
-     */
-    private function _validateToken(bool $extendSession)
-    {
-        $session = Craft::$app->getSession();
-        $id = $session->getHasSessionId() || $session->getIsActive() ? $session->get($this->idParam) : null;
-
-        if ($id === null) {
-            return;
-        }
-
-        $token = $session->get($this->tokenParam);
-
-        if ($token === null) {
-            // Just give them a new token and be done with it
-            $this->generateToken($id);
-            return;
-        }
-
-        $tokenId = (new Query())
-            ->select(['id'])
-            ->from([Table::SESSIONS])
-            ->where([
-                'token' => $token,
-                'userId' => $id,
-            ])
-            ->scalar();
-
-        if (!$tokenId) {
-            // Kill their PHP session. Their session may still be auto-renewed via their session cookie, though
-            $session->remove($this->idParam);
-            $session->remove($this->tokenParam);
-            return;
-        }
-
-        if ($extendSession) {
-            // Update the session row's dateUpdated value so it doesn't get GC'd
-            Craft::$app->getDb()->createCommand()
-                ->update(Table::SESSIONS, [
-                    'dateUpdated' => Db::prepareDateForDb(new \DateTime()),
-                ], ['id' => $tokenId])
-                ->execute();
-        }
     }
 
     /**

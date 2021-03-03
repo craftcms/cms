@@ -25,7 +25,7 @@ class m151002_095935_volume_cache_settings extends Migration
             ->where([
                 'or',
                 ['like', 'type', '%AwsS3', false],
-                ['like', 'type', '%GoogleCloud', false]
+                ['like', 'type', '%GoogleCloud', false],
             ])
             ->all($this->db);
 
@@ -36,7 +36,7 @@ class m151002_095935_volume_cache_settings extends Migration
                 $settings['expires'] = $matches[1] . ' ' . $matches[2];
 
                 Db::update(Table::VOLUMES, [
-                    'settings' => Json::encode($settings)
+                    'settings' => Json::encode($settings),
                 ], [
                     'id' => $volume['id'],
                 ], [], true, $this->db);

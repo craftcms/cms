@@ -30,63 +30,63 @@ class Asset extends ElementArguments
             'volumeId' => [
                 'name' => 'volumeId',
                 'type' => Type::listOf(QueryArgument::getType()),
-                'description' => 'Narrows the query results based on the volumes the assets belong to, per the volumes’ IDs.'
+                'description' => 'Narrows the query results based on the volumes the assets belong to, per the volumes’ IDs.',
             ],
             'volume' => [
                 'name' => 'volume',
                 'type' => Type::listOf(Type::string()),
-                'description' => 'Narrows the query results based on the volumes the assets belong to, per the volumes’ handles.'
+                'description' => 'Narrows the query results based on the volumes the assets belong to, per the volumes’ handles.',
             ],
             'folderId' => [
                 'name' => 'folderId',
                 'type' => Type::listOf(QueryArgument::getType()),
-                'description' => 'Narrows the query results based on the folders the assets belong to, per the folders’ IDs.'
+                'description' => 'Narrows the query results based on the folders the assets belong to, per the folders’ IDs.',
             ],
             'filename' => [
                 'name' => 'filename',
                 'type' => Type::listOf(Type::string()),
-                'description' => 'Narrows the query results based on the assets’ filenames.'
+                'description' => 'Narrows the query results based on the assets’ filenames.',
             ],
             'kind' => [
                 'name' => 'kind',
                 'type' => Type::listOf(Type::string()),
-                'description' => 'Narrows the query results based on the assets’ file kinds.'
+                'description' => 'Narrows the query results based on the assets’ file kinds.',
             ],
             'height' => [
                 'name' => 'height',
                 'type' => Type::listOf(Type::string()),
-                'description' => 'Narrows the query results based on the assets’ image heights.'
+                'description' => 'Narrows the query results based on the assets’ image heights.',
             ],
             'width' => [
                 'name' => 'width',
                 'type' => Type::listOf(Type::string()),
-                'description' => 'Narrows the query results based on the assets’ image widths.'
+                'description' => 'Narrows the query results based on the assets’ image widths.',
             ],
             'size' => [
                 'name' => 'size',
                 'type' => Type::listOf(Type::string()),
-                'description' => 'Narrows the query results based on the assets’ file sizes (in bytes).'
+                'description' => 'Narrows the query results based on the assets’ file sizes (in bytes).',
             ],
             'dateModified' => [
                 'name' => 'dateModified',
                 'type' => Type::string(),
-                'description' => 'Narrows the query results based on the assets’ files’ last-modified dates.'
+                'description' => 'Narrows the query results based on the assets’ files’ last-modified dates.',
             ],
             'includeSubfolders' => [
                 'name' => 'includeSubfolders',
                 'type' => Type::boolean(),
-                'description' => 'Broadens the query results to include assets from any of the subfolders of the folder specified by `folderId`.'
+                'description' => 'Broadens the query results to include assets from any of the subfolders of the folder specified by `folderId`.',
             ],
             'withTransforms' => [
                 'name' => 'withTransforms',
                 'type' => Type::listOf(Type::string()),
-                'description' => 'A list of transform handles to preload.'
+                'description' => 'A list of transform handles to preload.',
             ],
             'uploader' => [
                 'name' => 'uploader',
                 'type' => QueryArgument::getType(),
-                'description' => 'Narrows the query results based on the user the assets were uploaded by, per the user’s ID.'
-            ]
+                'description' => 'Narrows the query results based on the user the assets were uploaded by, per the user’s ID.',
+            ],
         ]);
     }
 
@@ -97,5 +97,32 @@ class Asset extends ElementArguments
     {
         $volumeFieldArguments = Craft::$app->getGql()->getContentArguments(Craft::$app->getVolumes()->getAllVolumes(), AssetElement::class);
         return array_merge(parent::getContentArguments(), $volumeFieldArguments);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public static function getDraftArguments(): array
+    {
+        return [];
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public static function getRevisionArguments(): array
+    {
+        return [];
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public static function getStatusArguments(): array
+    {
+        $arguments = parent::getStatusArguments();
+        unset($arguments['status']);
+
+        return $arguments;
     }
 }

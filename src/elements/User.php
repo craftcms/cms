@@ -141,6 +141,14 @@ class User extends Element implements IdentityInterface
     /**
      * @inheritdoc
      */
+    public static function trackChanges(): bool
+    {
+        return true;
+    }
+
+    /**
+     * @inheritdoc
+     */
     public static function hasContent(): bool
     {
         return true;
@@ -185,8 +193,8 @@ class User extends Element implements IdentityInterface
             [
                 'key' => '*',
                 'label' => Craft::t('app', 'All users'),
-                'hasThumbs' => true
-            ]
+                'hasThumbs' => true,
+            ],
         ];
 
         if (Craft::$app->getEdition() === Craft::Pro) {
@@ -195,7 +203,7 @@ class User extends Element implements IdentityInterface
                 'key' => 'admins',
                 'label' => Craft::t('app', 'Admins'),
                 'criteria' => ['admin' => true],
-                'hasThumbs' => true
+                'hasThumbs' => true,
             ];
 
             $groups = Craft::$app->getUserGroups()->getAllGroups();
@@ -208,7 +216,7 @@ class User extends Element implements IdentityInterface
                         'key' => 'group:' . $group->uid,
                         'label' => Craft::t('site', $group->name),
                         'criteria' => ['groupId' => $group->id],
-                        'hasThumbs' => true
+                        'hasThumbs' => true,
                     ];
                 }
             }
@@ -397,7 +405,7 @@ class User extends Element implements IdentityInterface
 
             return [
                 'elementType' => Asset::class,
-                'map' => $map
+                'map' => $map,
             ];
         }
 
@@ -440,10 +448,10 @@ class User extends Element implements IdentityInterface
         if ($previousUserId = Craft::$app->getSession()->get(self::IMPERSONATE_KEY)) {
             $previousUser = static::find()
                 ->id($previousUserId)
-                ->admin()
+                ->anyStatus()
                 ->one();
 
-            if ($previousUser) {
+            if ($previousUser && $previousUser->can('impersonateUsers')) {
                 return $user;
             }
         }
@@ -754,7 +762,7 @@ class User extends Element implements IdentityInterface
                 if (strpos($this->$attribute, '://') !== false) {
                     $validator->addError($this, $attribute, Craft::t('app', 'Invalid value “{value}”.'));
                 }
-            }
+            },
         ];
 
         return $rules;
@@ -850,13 +858,25 @@ class User extends Element implements IdentityInterface
             return false;
         }
 
-        return (new Query())
+        $tokenId = (new Query())
+            ->select(['id'])
             ->from([Table::SESSIONS])
             ->where([
                 'token' => $token,
-                'userId' => $this->id
+                'userId' => $this->id,
             ])
-            ->exists();
+            ->scalar();
+
+        if (!$tokenId) {
+            return false;
+        }
+
+        // Update the session row's dateUpdated value so it doesn't get GC'd
+        Db::update(Table::SESSIONS, [
+            'dateUpdated' => Db::prepareDateForDb(new \DateTime()),
+        ], ['id' => $tokenId]);
+
+        return true;
     }
 
     /**
@@ -1051,7 +1071,7 @@ class User extends Element implements IdentityInterface
         if ($photo) {
             return $photo->getUrl([
                 'width' => $size,
-                'height' => $size
+                'height' => $size,
             ]);
         }
 
@@ -1436,12 +1456,17 @@ class User extends Element implements IdentityInterface
             $this->newPassword = null;
         }
 
+        // Capture the dirty attributes from the record
+        $dirtyAttributes = array_keys($record->getDirtyAttributes());
+
         $record->save(false);
 
         // Make sure that the photo is located in the right place
         if (!$isNew && $this->photoId) {
             Craft::$app->getUsers()->relocateUserPhoto($this);
         }
+
+        $this->setDirtyAttributes($dirtyAttributes);
 
         parent::afterSave($isNew);
 
@@ -1487,7 +1512,7 @@ class User extends Element implements IdentityInterface
 
                 foreach ($userRefs as $table => $column) {
                     Db::update($table, [
-                        $column => $this->inheritorOnDelete->id
+                        $column => $this->inheritorOnDelete->id,
                     ], [
                         $column => $this->id,
                     ], [], false);

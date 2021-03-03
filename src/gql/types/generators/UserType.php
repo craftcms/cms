@@ -52,7 +52,7 @@ class UserType extends Generator implements GeneratorInterface, SingleGeneratorI
             'name' => $typeName,
             'fields' => function() use ($userFields) {
                 return $userFields;
-            }
+            },
         ]));
     }
 }

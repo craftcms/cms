@@ -28,8 +28,8 @@ return [
         },
         'errorHandler' => [
             'class' => craft\web\ErrorHandler::class,
-            'errorAction' => 'templates/render-error'
-        ]
+            'errorAction' => 'templates/render-error',
+        ],
     ],
     'controllerNamespace' => 'craft\\controllers',
 ];

@@ -512,7 +512,7 @@ class App
             'class' => Mailer::class,
             'messageClass' => Message::class,
             'from' => [
-                Craft::parseEnv($settings->fromEmail) => Craft::parseEnv($settings->fromName)
+                Craft::parseEnv($settings->fromEmail) => Craft::parseEnv($settings->fromName),
             ],
             'replyTo' => Craft::parseEnv($settings->replyToEmail),
             'template' => Craft::parseEnv($settings->template),

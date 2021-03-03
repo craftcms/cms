@@ -51,8 +51,8 @@ class MatrixBlockType extends ActiveRecord
                     'dateCreated',
                     'dateUpdated',
                     'uid',
-                    'title'
-                ]
+                    'title',
+                ],
             ],
         ];
     }

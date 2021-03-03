@@ -67,7 +67,7 @@ class AssetType extends Generator implements GeneratorInterface, SingleGenerator
             'name' => $typeName,
             'fields' => function() use ($assetFields) {
                 return $assetFields;
-            }
+            },
         ]));
     }
 }

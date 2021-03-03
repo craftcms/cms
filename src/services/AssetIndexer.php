@@ -105,7 +105,7 @@ class AssetIndexer extends Component
                 'volumeId' => $volumeId,
                 'total' => count($fileList),
                 'missingFolders' => $missingFolders,
-                'skippedFiles' => $skippedItems
+                'skippedFiles' => $skippedItems,
             ];
         } catch (\Throwable $exception) {
             Craft::$app->getErrorHandler()->logException($exception);
@@ -284,7 +284,7 @@ class AssetIndexer extends Component
                 'volumeId' => $volumeId,
                 'sessionId' => $sessionId,
                 'completed' => false,
-                'inProgress' => false
+                'inProgress' => false,
             ])
             ->one();
 
@@ -324,7 +324,7 @@ class AssetIndexer extends Component
             ->where([
                 'and',
                 ['sessionId' => $sessionId],
-                ['not', ['recordId' => null]]
+                ['not', ['recordId' => null]],
             ])
             ->column();
 
@@ -388,7 +388,7 @@ class AssetIndexer extends Component
             'size' => $volume->getFileSize($path),
             'timestamp' => $volume->getDateModified($path),
             'inProgress' => true,
-            'completed' => false
+            'completed' => false,
         ]);
 
         return $this->indexFileByEntry($indexEntry, $cacheImages, $createIfMissing);
@@ -485,7 +485,7 @@ class AssetIndexer extends Component
         $folder = $assets->findFolder([
             'volumeId' => $indexEntry->volumeId,
             'path' => $path,
-            'parentId' => $parentId
+            'parentId' => $parentId,
         ]);
 
         if (!$folder) {

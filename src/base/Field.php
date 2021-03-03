@@ -222,8 +222,8 @@ abstract class Field extends SavableComponent implements FieldInterface
                 self::TRANSLATION_METHOD_SITE,
                 self::TRANSLATION_METHOD_SITE_GROUP,
                 self::TRANSLATION_METHOD_LANGUAGE,
-                self::TRANSLATION_METHOD_CUSTOM
-            ]
+                self::TRANSLATION_METHOD_CUSTOM,
+            ],
         ];
         $rules[] = [
             ['handle'],
@@ -278,7 +278,7 @@ abstract class Field extends SavableComponent implements FieldInterface
                 'uri',
                 'url',
                 'username', // user-specific
-            ]
+            ],
         ];
         $rules[] = [
             ['handle'],
@@ -602,7 +602,7 @@ abstract class Field extends SavableComponent implements FieldInterface
     {
         return [
             'name' => $this->handle,
-            'type' => Type::listOf(QueryArgument::getType())
+            'type' => Type::listOf(QueryArgument::getType()),
         ];
     }
 

@@ -66,8 +66,8 @@ abstract class Volume extends SavableComponent implements VolumeInterface
                 'dateCreated',
                 'dateUpdated',
                 'uid',
-                'title'
-            ]
+                'title',
+            ],
         ];
 
         // Require URLs for public Volumes.

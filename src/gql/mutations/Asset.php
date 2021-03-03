@@ -63,7 +63,7 @@ class Asset extends Mutation
                 'args' => ['id' => Type::nonNull(Type::int())],
                 'resolve' => [Craft::createObject(AssetResolver::class), 'deleteAsset'],
                 'description' => 'Delete an asset.',
-                'type' => Type::boolean()
+                'type' => Type::boolean(),
             ];
         }
 
@@ -94,7 +94,7 @@ class Asset extends Mutation
             'description' => 'Save an asset.',
             'args' => $mutationArguments,
             'resolve' => [$resolver, 'saveAsset'],
-            'type' => $generatedType
+            'type' => $generatedType,
         ];
     }
 }

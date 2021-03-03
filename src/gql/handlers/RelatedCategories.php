@@ -7,7 +7,6 @@
 
 namespace craft\gql\handlers;
 
-use Craft;
 use craft\elements\Category;
 use craft\gql\base\RelationArgumentHandler;
 
@@ -27,6 +26,6 @@ class RelatedCategories extends RelationArgumentHandler
     protected function handleArgument($argumentValue)
     {
         $argumentValue = parent::handleArgument($argumentValue);
-        return $this->getIds(Craft::$app->getElements()->createElementQuery(Category::class), $argumentValue);
+        return $this->getIds(Category::class, $argumentValue);
     }
 }

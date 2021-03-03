@@ -185,8 +185,8 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
                 self::PROPAGATION_METHOD_NONE,
                 self::PROPAGATION_METHOD_SITE_GROUP,
                 self::PROPAGATION_METHOD_LANGUAGE,
-                self::PROPAGATION_METHOD_ALL
-            ]
+                self::PROPAGATION_METHOD_ALL,
+            ],
         ];
         $rules[] = [['blockTypes'], ArrayValidator::class, 'min' => 1, 'skipOnEmpty' => false];
         $rules[] = [['minBlocks', 'maxBlocks'], 'integer', 'min' => 0];
@@ -442,7 +442,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
                         /** @var PlainText $fallback */
                         $fallback = $field->createFallback(PlainText::class);
                         $fallback->addError('type', Craft::t('app', 'The field type “{type}” could not be found.', [
-                            'type' => $field->expectedType
+                            'type' => $field->expectedType,
                         ]));
                         $field = $fallback;
                         $element->setField($field);
@@ -574,7 +574,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
                         "matrixblocks_$ns.fieldId" => $this->id,
                         "elements_$ns.enabled" => true,
                         "elements_$ns.dateDeleted" => null,
-                    ])
+                    ]),
             ];
 
             if ($value === ':notempty:') {
@@ -848,7 +848,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
                 'fieldId' => $this->id,
                 'allowOwnerDrafts' => true,
                 'allowOwnerRevisions' => true,
-            ]
+            ],
         ];
     }
 
@@ -869,7 +869,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
             'type' => Type::listOf(GqlHelper::getUnionType($typeName, $typeArray, $resolver)),
             'args' => MatrixBlockArguments::getArguments(),
             'resolve' => MatrixBlockResolver::class . '::resolve',
-            'complexity' => Gql::eagerLoadComplexity()
+            'complexity' => Gql::eagerLoadComplexity(),
         ];
     }
 

@@ -58,12 +58,12 @@ class NavTokenParser extends AbstractTokenParser
             if ($nextValue === 'ifchildren') {
                 $indent = $parser->subparse([
                     $this,
-                    'decideChildrenFork'
+                    'decideChildrenFork',
                 ], true);
                 $stream->expect(Token::BLOCK_END_TYPE);
                 $outdent = $parser->subparse([
                     $this,
-                    'decideChildrenEnd'
+                    'decideChildrenEnd',
                 ], true);
                 $stream->expect(Token::BLOCK_END_TYPE);
             }

@@ -43,6 +43,22 @@ class GeneralConfig extends BaseObject
     const SNAKE_CASE = 'snake';
 
     /**
+     * @var array The default user accessibility preferences that should be applied to users that haven’t saved their preferences yet.
+     *
+     * The array can contain the following keys:
+     *
+     * - `useShapes` – Whether shapes should be used to represent statuses
+     * - `underlineLinks` – Whether links should be underlined
+     *
+     * @since 3.6.4
+     * @group System
+     */
+    public $accessibilityDefaults = [
+        'useShapes' => false,
+        'underlineLinks' => false,
+    ];
+
+    /**
      * @var string The URI segment Craft should look for when determining if the current request should be routed to a controller action.
      * @group Routing
      */
@@ -73,11 +89,11 @@ class GeneralConfig extends BaseObject
     /**
      * @var bool Whether admins should be allowed to make administrative changes to the system.
      *
-     * If this is disabled, the Settings and Plugin Store sections will be hidden, the Craft edition and Craft/plugin versions will be locked,
+     * When this is disabled, the Settings and Plugin Store sections will be hidden, the Craft edition and Craft/plugin versions will be locked,
      * and the project config will become read-only.
      *
-     * Therefore you should only disable this in production environments when you have a deployment workflow that runs `composer install`
-     * automatically on deploy.
+     * It’s best to disable this in production environments with a deployment workflow that runs `composer install` and
+     * [propagates project config updates](../project-config.md#propagating-changes) on deploy.
      *
      * ::: warning
      * Don’t disable this setting until **all** environments have been updated to Craft 3.1.0 or later.
@@ -407,7 +423,6 @@ class GeneralConfig extends BaseObject
      * ```
      *
      * @deprecated in 3.0.10. Any corrections to ASCII char mappings should be submitted to [Stringy](https://github.com/voku/Stringy).
-     * @group System
      */
     public $customAsciiCharMappings = [];
 
@@ -567,7 +582,7 @@ class GeneralConfig extends BaseObject
 
     /**
      * @var bool Whether the `transform` directive should be disabled for the GraphQL API.
-     * @since 4.0.0
+     * @since 3.6.0
      * @group GraphQL
      */
     public $disableGraphqlTransformDirective = false;
@@ -590,7 +605,7 @@ class GeneralConfig extends BaseObject
 
     /**
      * @var bool Whether GraphQL introspection queries are allowed. Defaults to `true` and is always allowed in the CP.
-     * @since 4.0.0
+     * @since 3.6.0
      * @group GraphQL
      */
     public $enableGraphqlIntrospection = true;
@@ -728,8 +743,8 @@ class GeneralConfig extends BaseObject
      * - `pascal` – for PascalCase (aka UpperCamelCase)
      * - `snake` – for snake_case
      *
-     * @group System
      * @since 3.6.0
+     * @group System
      */
     public $handleCasing = self::CAMEL_CASE;
 
@@ -869,21 +884,21 @@ class GeneralConfig extends BaseObject
 
     /**
      * @var int The maximum allowed complexity a GraphQL query is allowed to have. Set to `0` to allow any complexity.
-     * @since 4.0.0
+     * @since 3.6.0
      * @group GraphQL
      */
     public $maxGraphqlComplexity = 0;
 
     /**
      * @var int The maximum allowed depth a GraphQL query is allowed to reach. Set to `0` to allow any depth.
-     * @since 4.0.0
+     * @since 3.6.0
      * @group GraphQL
      */
     public $maxGraphqlDepth = 0;
 
     /**
      * @var int The maximum allowed results for a single GraphQL query. Set to `0` to disable any limits.
-     * @since 4.0.0
+     * @since 3.6.0
      * @group GraphQL
      */
     public $maxGraphqlResults = 0;
@@ -1040,6 +1055,13 @@ class GeneralConfig extends BaseObject
     public $postLogoutRedirect = '';
 
     /**
+     * @var bool Whether the <config3:gqlTypePrefix> config setting should have an impact on `query`, `mutation`, and `subscirption` types.
+     * @since 3.6.6
+     * @group GraphQL
+     */
+    public $prefixGqlRootTypes = true;
+
+    /**
      * @var bool Whether CMYK should be preserved as the colorspace when manipulating images.
      *
      * Setting this to `true` will prevent Craft from transforming CMYK images to sRGB, but on some ImageMagick versions it can cause
@@ -1137,19 +1159,25 @@ class GeneralConfig extends BaseObject
     public $purgeStaleUserSessionDuration = 7776000;
 
     /**
-     * @var mixed The amount of time to wait before Craft purges drafts of new elements that were never formally saved.
+     * @var mixed The amount of time to wait before Craft purges unpublished drafts that were never updated with content.
+     *
+     * Set to `0` to disable this feature.
+     *
+     * See [[ConfigHelper::durationInSeconds()]] for a list of supported value types.
+     *
      * @since 3.2.0
      * @group Garbage Collection
-     * @deprecated in 3.6.0
+     * @defaultAlt 30 days
      */
-    public $purgeUnsavedDraftsDuration = 0;
+    public $purgeUnsavedDraftsDuration = 2592000;
 
     /**
      * @var bool Whether SVG thumbnails should be rasterized.
      *
-     * Note this will only work if ImageMagick is installed, and <config:imageDriver> is set to either `auto` or `imagick`.
+     * Note this will only work if ImageMagick is installed, and <config3:imageDriver> is set to either `auto` or `imagick`.
      *
      * @since 3.6.0
+     * @group Image Handling
      */
     public $rasterizeSvgThumbs = false;
 
@@ -1339,7 +1367,6 @@ class GeneralConfig extends BaseObject
      *
      * This can be set to a string, which will override the primary site’s name only, or an array with site handles used as the keys.
      *
-     * @group System
      * @deprecated in 3.6.0. Set your sites’ Name settings on a per-environment basis using environment variables instead.
      * See [Environmental Configuration](https://craftcms.com/docs/3.x/config/#environmental-configuration) for more info.
      */
@@ -1366,7 +1393,6 @@ class GeneralConfig extends BaseObject
      * ],
      * ```
      *
-     * @group Routing
      * @deprecated in 3.6.0. Set your sites’ Base URL settings on a per-environment basis using aliases or environment variables instead.
      * See [Environmental Configuration](https://craftcms.com/docs/3.x/config/#environmental-configuration) for more info.
      */
@@ -1426,7 +1452,6 @@ class GeneralConfig extends BaseObject
      * If it is set to `true`, the errors will still be logged to Craft’s log files.
      *
      * @deprecated in 3.3.0
-     * @group System
      */
     public $suppressTemplateErrors = false;
 

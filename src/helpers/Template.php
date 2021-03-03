@@ -143,7 +143,7 @@ class Template
 
         return [
             Paginate::create($paginator),
-            $paginator->getPageResults()
+            $paginator->getPageResults(),
         ];
     }
 

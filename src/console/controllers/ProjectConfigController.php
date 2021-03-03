@@ -149,7 +149,7 @@ class ProjectConfigController extends Controller
             }
 
             $this->_uninstallPlugins(array_diff($loadedConfigPlugins, $yamlPlugins));
-            
+
             $this->stdout("Applying changes from your project config files ... " . PHP_EOL);
 
             try {
@@ -160,9 +160,18 @@ class ProjectConfigController extends Controller
                 $projectConfig->on(ProjectConfigService::EVENT_REMOVE_ITEM, $this->_generateOutputFunction('removing '), null, false);
                 $projectConfig->on(ProjectConfigService::EVENT_UPDATE_ITEM, $this->_generateOutputFunction('updating '), null, false);
 
-                $projectConfig->on(ProjectConfigService::EVENT_ADD_ITEM, function () { $this->stdout(' ... '); $this->stdout('done' . PHP_EOL, Console::FG_GREEN);});
-                $projectConfig->on(ProjectConfigService::EVENT_REMOVE_ITEM, function () { $this->stdout(' ... '); $this->stdout('done' . PHP_EOL, Console::FG_GREEN);});
-                $projectConfig->on(ProjectConfigService::EVENT_UPDATE_ITEM, function () { $this->stdout(' ... '); $this->stdout('done' . PHP_EOL, Console::FG_GREEN);});
+                $projectConfig->on(ProjectConfigService::EVENT_ADD_ITEM, function() {
+                    $this->stdout(' ... ');
+                    $this->stdout('done' . PHP_EOL, Console::FG_GREEN);
+                });
+                $projectConfig->on(ProjectConfigService::EVENT_REMOVE_ITEM, function() {
+                    $this->stdout(' ... ');
+                    $this->stdout('done' . PHP_EOL, Console::FG_GREEN);
+                });
+                $projectConfig->on(ProjectConfigService::EVENT_UPDATE_ITEM, function() {
+                    $this->stdout(' ... ');
+                    $this->stdout('done' . PHP_EOL, Console::FG_GREEN);
+                });
 
                 $projectConfig->applyYamlChanges();
 
@@ -179,7 +188,7 @@ class ProjectConfigController extends Controller
     }
 
     /**
-     * Alias for `apply`.
+     * DEPRECATED. Use `project-config/apply` instead.
      *
      * @return int
      * @deprecated in 3.5.0. Use [[actionApply()]] instead.
@@ -319,7 +328,7 @@ class ProjectConfigController extends Controller
      */
     private function _generateOutputFunction($mode): callable
     {
-        return function (ConfigEvent $configEvent) use ($mode) {
+        return function(ConfigEvent $configEvent) use ($mode) {
             $key = $mode . $configEvent->path;
 
             if (isset($this->announcedPaths[$key])) {

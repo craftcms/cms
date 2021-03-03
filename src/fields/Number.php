@@ -149,6 +149,14 @@ class Number extends Field implements PreviewableFieldInterface, SortableFieldIn
         if ($this->size !== null && !$this->size) {
             $this->size = null;
         }
+
+        if ($this->prefix === '') {
+            $this->prefix = null;
+        }
+
+        if ($this->suffix === '') {
+            $this->suffix = null;
+        }
     }
 
     /**
@@ -163,7 +171,7 @@ class Number extends Field implements PreviewableFieldInterface, SortableFieldIn
             ['max'],
             'compare',
             'compareAttribute' => 'min',
-            'operator' => '>='
+            'operator' => '>=',
         ];
 
         if (!$this->decimals) {
@@ -174,7 +182,7 @@ class Number extends Field implements PreviewableFieldInterface, SortableFieldIn
         $rules[] = [
             ['previewCurrency'], 'required', 'when' => function(): bool {
                 return $this->previewFormat === self::FORMAT_CURRENCY;
-            }
+            },
         ];
         $rules[] = [['previewCurrency'], 'string', 'min' => 3, 'max' => 3, 'encoding' => '8bit'];
 
@@ -188,7 +196,7 @@ class Number extends Field implements PreviewableFieldInterface, SortableFieldIn
     {
         return Craft::$app->getView()->renderTemplate('_components/fieldtypes/Number/settings',
             [
-                'field' => $this
+                'field' => $this,
             ]);
     }
 

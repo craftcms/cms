@@ -80,7 +80,7 @@ class Craft extends Yii2
         'dbSetup' => null,
         'projectConfig' => null,
         'fullMock' => false,
-        'edition' => \Craft::Solo
+        'edition' => \Craft::Solo,
     ];
 
     /**
@@ -134,6 +134,7 @@ class Craft extends Yii2
             $this->setupDb();
         }
 
+        TestSetup::removeProjectConfigFolders(CRAFT_CONFIG_PATH . DIRECTORY_SEPARATOR . 'project');
     }
 
     /**
@@ -143,9 +144,7 @@ class Craft extends Yii2
     {
         parent::_afterSuite();
 
-        if (TestSetup::useProjectConfig()) {
-            TestSetup::removeProjectConfigFolders(CRAFT_CONFIG_PATH . DIRECTORY_SEPARATOR . 'project');
-        }
+        TestSetup::removeProjectConfigFolders(CRAFT_CONFIG_PATH . DIRECTORY_SEPARATOR . 'project');
     }
 
     /**
@@ -346,7 +345,8 @@ class Craft extends Yii2
         $callback,
         string $eventInstance = '',
         array $eventValues = []
-    ) {
+    )
+    {
         // Add this event.
         $eventTriggered = false;
 
@@ -417,7 +417,7 @@ class Craft extends Yii2
      * @param string $elementType
      * @param array $searchProperties
      * @param int $amount
-     * @param bool $searchAll - Wether anyStatus() and trashed(null) should be applied
+     * @param bool $searchAll - Whether anyStatus() and trashed(null) should be applied
      * @return array
      */
     public function assertElementsExist(string $elementType, array $searchProperties = [], int $amount = 1, bool $searchAll = false): array
@@ -666,7 +666,7 @@ class Craft extends Yii2
             'SCRIPT_NAME' => $entryScript,
             'SERVER_NAME' => parse_url($entryUrl, PHP_URL_HOST),
             'SERVER_PORT' => parse_url($entryUrl, PHP_URL_PORT) ?: '80',
-            'HTTPS' => parse_url($entryUrl, PHP_URL_SCHEME) === 'https'
+            'HTTPS' => parse_url($entryUrl, PHP_URL_SCHEME) === 'https',
         ]);
 
         $this->configureClient($this->_getConfig());

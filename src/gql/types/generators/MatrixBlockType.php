@@ -71,7 +71,7 @@ class MatrixBlockType extends Generator implements GeneratorInterface, SingleGen
                     'name' => $typeName,
                     'fields' => function() use ($blockTypeFields) {
                         return $blockTypeFields;
-                    }
+                    },
                 ]);
 
                 // It's possible that creating the matrix block triggered creating all matrix block types, so check again.

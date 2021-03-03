@@ -186,13 +186,13 @@ class GlobalSet extends Element
         $rules[] = [
             ['name', 'handle'],
             UniqueValidator::class,
-            'targetClass' => GlobalSetRecord::class
+            'targetClass' => GlobalSetRecord::class,
         ];
 
         $rules[] = [
             ['handle'],
             HandleValidator::class,
-            'reservedWords' => ['id', 'dateCreated', 'dateUpdated', 'uid', 'title']
+            'reservedWords' => ['id', 'dateCreated', 'dateUpdated', 'uid', 'title'],
         ];
 
         return $rules;

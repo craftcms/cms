@@ -220,7 +220,7 @@ class Url extends Field implements PreviewableFieldInterface
 
             $typeOptions[] = ['label' => $label, 'value' => $type];
 
-            if ($type === $valueType && $prefix) {
+            if (is_string($value) && $type === $valueType && $prefix) {
                 $value = StringHelper::removeLeft($value, $prefix);
             }
         }
@@ -241,7 +241,9 @@ class Url extends Field implements PreviewableFieldInterface
         ]);
 
         if (count($this->types) === 1) {
-            return $input;
+            return
+                Html::hiddenInput("$this->handle[type]", $valueType) .
+                $input;
         }
 
         $view = Craft::$app->getView();

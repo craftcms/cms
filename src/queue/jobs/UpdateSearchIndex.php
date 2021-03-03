@@ -47,6 +47,7 @@ class UpdateSearchIndex extends BaseJob
     {
         $class = $this->elementType;
         $elements = $class::find()
+            ->drafts(null)
             ->id($this->elementId)
             ->siteId($this->siteId)
             ->anyStatus()

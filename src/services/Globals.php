@@ -398,7 +398,7 @@ class Globals extends Component
         if ($this->hasEventHandlers(self::EVENT_AFTER_SAVE_GLOBAL_SET)) {
             $this->trigger(self::EVENT_AFTER_SAVE_GLOBAL_SET, new GlobalSetEvent([
                 'globalSet' => $this->getSetById($globalSetRecord->id),
-                'isNew' => $isNewSet
+                'isNew' => $isNewSet,
             ]));
         }
 

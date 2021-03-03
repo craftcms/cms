@@ -246,19 +246,20 @@
                     {% embed '_includes/forms/field' with {
                         label: 'Accessibility'|t('app'),
                     } %}
+                        {% set a11yDefaults = craft.app.config.general.accessibilityDefaults %}
                         {% block input %}
                             {% from '_includes/forms' import checkboxField %}
                             {{ checkboxField({
                                 label: 'Use shapes to represent statuses'|t('app'),
                                 name: 'useShapes',
                                 id: 'useShapes',
-                                checked: user.getPreference('useShapes')
+                                checked: user.getPreference('useShapes') ?? a11yDefaults['useShapes'] ?? false,
                             }) }}
                             {{ checkboxField({
                                 label: 'Underline links'|t('app'),
                                 name: 'underlineLinks',
                                 id: 'underlineLinks',
-                                checked: user.getPreference('underlineLinks')
+                                checked: user.getPreference('underlineLinks') ?? a11yDefaults['underlineLinks'] ?? false,
                             }) }}
                         {% endblock %}
                     {% endembed %}

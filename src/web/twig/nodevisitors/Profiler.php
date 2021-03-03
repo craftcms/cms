@@ -42,20 +42,20 @@ class Profiler implements NodeVisitorInterface
             $name = $node->getTemplateName();
             $node->setNode('display_start', new Node([
                 new ProfileNode(Template::PROFILE_STAGE_BEGIN, Template::PROFILE_TYPE_TEMPLATE, $name),
-                $node->getNode('display_start')
+                $node->getNode('display_start'),
             ]));
             $node->setNode('display_end', new Node([
                 new ProfileNode(Template::PROFILE_STAGE_END, Template::PROFILE_TYPE_TEMPLATE, $name),
-                $node->getNode('display_end')
+                $node->getNode('display_end'),
             ]));
-        } elseif ($node instanceof BlockNode) {
+        } else if ($node instanceof BlockNode) {
             $name = $node->getAttribute('name');
             $node->setNode('body', new BodyNode([
                 new ProfileNode(Template::PROFILE_STAGE_BEGIN, Template::PROFILE_TYPE_BLOCK, $name),
                 $node->getNode('body'),
                 new ProfileNode(Template::PROFILE_STAGE_END, Template::PROFILE_TYPE_BLOCK, $name),
             ]));
-        } elseif ($node instanceof MacroNode) {
+        } else if ($node instanceof MacroNode) {
             $name = $node->getAttribute('name');
             $node->setNode('body', new BodyNode([
                 new ProfileNode(Template::PROFILE_STAGE_BEGIN, Template::PROFILE_TYPE_MACRO, $name),

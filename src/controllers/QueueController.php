@@ -121,7 +121,7 @@ class QueueController extends Controller
         Craft::$app->getQueue()->release($id);
 
         return $this->asJson([
-            'success' => true
+            'success' => true,
         ]);
     }
 
@@ -143,7 +143,7 @@ class QueueController extends Controller
         Craft::$app->getQueue()->releaseAll();
 
         return $this->asJson([
-            'success' => true
+            'success' => true,
         ]);
     }
 

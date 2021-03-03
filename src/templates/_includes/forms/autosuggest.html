@@ -19,7 +19,7 @@
     <vue-autosuggest
         :suggestions="filteredOptions"
         :get-suggestion-value="getSuggestionValue"
-        :input-props="inputAttributes"
+        :input-props="inputProps"
         :limit="limit"
         :component-attr-id-autosuggest="id"
         @selected="onSelected"
@@ -46,7 +46,7 @@ new Vue({
             filteredOptions: [],
             suggestions: suggestions ?? [],
             id: autosuggestId,
-            inputAttributes: {
+            inputProps: {
                 class: class|join(' '),
                 initialValue: value ?? '',
                 style: style ?? '',
@@ -59,10 +59,10 @@ new Vue({
                 title: title ?? '',
                 placeholder: placeholder ?? '',
                 'aria-describedby': instructionsId ?? false,
-            }|merge(inputAttributes ?? [], recursive=true)|filter,
+            }|merge(inputProps ?? inputAttributes ?? [], recursive=true)|filter,
             limit: limit ?? 5
         }|json_encode|raw }};
-        data.inputAttributes.onInputChange = this.onInputChange;
+        data.inputProps.onInputChange = this.onInputChange;
         {% endblock %}
         return data;
     },

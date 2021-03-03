@@ -59,11 +59,11 @@ class ArgumentManager extends Component
             'relatedToCategories' => RelatedCategories::class,
             'relatedToTags' => RelatedTags::class,
             'relatedToUsers' => RelatedUsers::class,
-            'site' => Site::class
+            'site' => Site::class,
         ];
 
         $event = new RegisterGqlArgumentHandlersEvent([
-            'handlers' => $handlers
+            'handlers' => $handlers,
         ]);
 
         $this->trigger(self::EVENT_DEFINE_GQL_ARGUMENT_HANDLERS, $event);

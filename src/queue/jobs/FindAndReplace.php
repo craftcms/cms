@@ -73,7 +73,7 @@ class FindAndReplace extends BaseJob
     {
         return Craft::t('app', 'Replacing “{find}” with “{replace}”', [
             'find' => $this->find,
-            'replace' => $this->replace
+            'replace' => $this->replace,
         ]);
     }
 
@@ -105,7 +105,7 @@ class FindAndReplace extends BaseJob
             'text',
             'varchar',
             'string',
-            'char'
+            'char',
         ], true)) {
             $this->_textColumns[] = [$table, $fieldColumnPrefix . $field->handle];
         }

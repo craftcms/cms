@@ -242,7 +242,7 @@ class TestSetup
         $config = ArrayHelper::merge(
             [
                 'components' => [
-                    'config' => $configService
+                    'config' => $configService,
                 ],
             ],
             require $srcPath . '/config/app.php',
@@ -263,7 +263,7 @@ class TestSetup
             'class' => $class,
             'id' => 'craft-test',
             'env' => 'test',
-            'basePath' => $srcPath
+            'basePath' => $srcPath,
         ]);
     }
 
@@ -490,14 +490,9 @@ class TestSetup
             'password' => 'craftcms2018!!',
             'email' => 'support@craftcms.com',
             'site' => $site,
-            'applyProjectConfigYaml' => false,
         ]);
 
         $migration->safeUp();
-
-        if ($projectConfig) {
-            Craft::$app->getProjectConfig()->applyYamlChanges();
-        }
     }
 
     /**

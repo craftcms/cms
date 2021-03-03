@@ -26,7 +26,6 @@ use craft\helpers\ArrayHelper;
 use craft\helpers\Cp;
 use craft\helpers\ElementHelper;
 use craft\helpers\Html;
-use craft\helpers\Json;
 use craft\helpers\Queue;
 use craft\helpers\StringHelper;
 use craft\queue\jobs\LocalizeRelations;
@@ -414,8 +413,8 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
                     [
                         'or',
                         ['relations.sourceSiteId' => null],
-                        ['relations.sourceSiteId' => $element->siteId]
-                    ]
+                        ['relations.sourceSiteId' => $element->siteId],
+                    ],
                 ]
             );
 
@@ -489,7 +488,7 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
                         "elements_$ns.enabled" => true,
                         "elements_$ns.dateDeleted" => null,
                     ])
-                    ->andWhere(['not', ["elements_sites_$ns.enabled" => false]])
+                    ->andWhere(['not', ["elements_sites_$ns.enabled" => false]]),
             ];
 
             if ($emptyCondition === ':notempty:') {
@@ -625,39 +624,19 @@ JS;
             $value = $this->_all($value, $element)->all();
         }
 
-        if (empty($value)) {
-            return '';
-        }
-
-        $first = array_shift($value);
-        $html = $this->elementPreviewHtml($first);
-
-        if (!empty($value)) {
-            $otherHtml = '';
-            foreach ($value as $other) {
-                $otherHtml .= $this->elementPreviewHtml($other);
-            }
-            $html .= Html::tag('span', '+' . Craft::$app->getFormatter()->asInteger(count($value)), [
-                'title' => implode(', ', ArrayHelper::getColumn($value, 'title')),
-                'class' => 'btn small',
-                'role' => 'button',
-                'onclick' => 'jQuery(this).replaceWith(' . Json::encode($otherHtml) . ')',
-            ]);
-        }
-
-        return $html;
+        return $this->tableAttributeHtml($value);
     }
 
     /**
-     * Renders a related element’s HTML for the element index.
+     * Returns the HTML that should be shown for this field in Table View.
      *
-     * @param ElementInterface $element
+     * @param ElementInterface[] $elements
      * @return string
-     * @since 3.5.11
+     * @since 3.6.3
      */
-    protected function elementPreviewHtml(ElementInterface $element): string
+    protected function tableAttributeHtml(array $elements): string
     {
-        return Cp::elementHtml($element);
+        return Cp::elementPreviewHtml($elements);
     }
 
     /**
@@ -683,8 +662,8 @@ JS;
                 [
                     'or',
                     ['sourceSiteId' => $sourceSiteId],
-                    ['sourceSiteId' => null]
-                ]
+                    ['sourceSiteId' => null],
+                ],
             ])
             ->orderBy(['sortOrder' => SORT_ASC])
             ->all();
@@ -788,7 +767,7 @@ JS;
             if (!isset($source['heading'])) {
                 $options[] = [
                     'label' => $source['label'],
-                    'value' => $source['key']
+                    'value' => $source['key'],
                 ];
                 $optionNames[] = $source['label'];
             }
@@ -823,7 +802,7 @@ JS;
         foreach (Craft::$app->getSites()->getAllSites() as $site) {
             $siteOptions[] = [
                 'label' => Craft::t('site', $site->getName()),
-                'value' => $site->uid
+                'value' => $site->uid,
             ];
         }
 

@@ -16,6 +16,7 @@ use Composer\IO\NullIO;
 use Composer\Json\JsonFile;
 use Composer\Json\JsonManipulator;
 use Composer\Package\Locker;
+use Composer\Util\Platform;
 use Craft;
 use craft\composer\Factory;
 use craft\helpers\App;
@@ -351,7 +352,7 @@ class Composer extends Component
     protected function _ensureHomeVar()
     {
         // Must call getenv() instead of App::env() here because Composer\Factory doesn’t check $_SERVER
-        if (!getenv('COMPOSER_HOME')) {
+        if (!getenv('COMPOSER_HOME') && !getenv(Platform::isWindows() ? 'APPDATA' : 'HOME')) {
             $path = Craft::$app->getPath()->getRuntimePath() . DIRECTORY_SEPARATOR . 'composer';
             FileHelper::createDirectory($path);
             putenv("COMPOSER_HOME=$path");

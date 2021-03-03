@@ -17,13 +17,13 @@ namespace craft\base;
 interface SortableFieldInterface
 {
     /**
-     * Returns the field’s sort option configuration.
+     * Returns the field’s sort option definition.
      *
      * This should return an array with the following keys:
      *
      * - `label` – The sort option label
      * - `orderBy` – An array or comma-delimited string of columns to order the query by
-     * - `attribute` _(optional)_ – The table attribute name that this option is associated with
+     * - `attribute` – The table attribute name that this option is associated with
      *   (required if `orderBy` is an array or more than one column name)
      *
      * @return array

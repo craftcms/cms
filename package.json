@@ -3,6 +3,8 @@
   "main": "gulpfile.js",
   "scripts": {
     "gulp:cp": "gulp cp",
+    "gulp:cp-sass": "gulp cp-sass",
+    "gulp:cp-js": "gulp cp-js",
     "gulp:deps": "gulp deps"
   },
   "devDependencies": {
@@ -19,7 +21,7 @@
     "element-resize-detector": "^1.2.1",
     "event-stream": "3.3.4",
     "fabric": "^1.7.19",
-    "garnishjs": "^0.1.37",
+    "garnishjs": "^0.1.40",
     "graphiql": "^0.14.2",
     "graphiql-explorer": "^0.6.2",
     "graphql": "^14.6.0",

@@ -27,7 +27,7 @@ class OptionField extends Arguments
             'label' => [
                 'name' => 'label',
                 'type' => Type::boolean(),
-                'description' => 'If set to true, will return label instead of the value'
+                'description' => 'If set to true, will return label instead of the value',
             ],
         ];
     }

@@ -164,7 +164,7 @@ class EntryRevisionsController extends BaseEntriesController
 
         // Save it and redirect to its edit page
         $entry->setScenario(Element::SCENARIO_ESSENTIALS);
-        if (!Craft::$app->getDrafts()->saveElementAsDraft($entry, Craft::$app->getUser()->getId())) {
+        if (!Craft::$app->getDrafts()->saveElementAsDraft($entry, Craft::$app->getUser()->getId(), null, null, false)) {
             throw new Exception('Unable to save entry as a draft: ' . implode(', ', $entry->getErrorSummary(true)));
         }
 
@@ -444,7 +444,7 @@ class EntryRevisionsController extends BaseEntriesController
 
             // Send the draft back to the template
             Craft::$app->getUrlManager()->setRouteParams([
-                'entry' => $draft
+                'entry' => $draft,
             ]);
             return null;
         }

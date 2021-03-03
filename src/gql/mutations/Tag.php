@@ -63,7 +63,7 @@ class Tag extends Mutation
                 'args' => ['id' => Type::nonNull(Type::int())],
                 'resolve' => [Craft::createObject(TagResolver::class), 'deleteTag'],
                 'description' => 'Delete a tag.',
-                'type' => Type::boolean()
+                'type' => Type::boolean(),
             ];
         }
 
@@ -94,7 +94,7 @@ class Tag extends Mutation
             'description' => 'Save the “' . $tagGroup->name . '” tag.',
             'args' => $mutationArguments,
             'resolve' => [$resolver, 'saveTag'],
-            'type' => $generatedType
+            'type' => $generatedType,
         ];
     }
 }

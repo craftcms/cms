@@ -15,6 +15,7 @@ use craft\helpers\Api;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Cp;
 use craft\helpers\DateTimeHelper;
+use craft\helpers\Html;
 use craft\helpers\Update as UpdateHelper;
 use craft\helpers\UrlHelper;
 use craft\models\Update;
@@ -316,7 +317,7 @@ class AppController extends Controller
         }
 
         return $this->asJson([
-            'badgeCount' => $badgeCount
+            'badgeCount' => $badgeCount,
         ]);
     }
 
@@ -356,7 +357,7 @@ class AppController extends Controller
 
         if (Craft::$app->getUsers()->shunMessageForUser($user->id, $message, $tomorrow)) {
             return $this->asJson([
-                'success' => true
+                'success' => true,
             ]);
         }
 
@@ -401,7 +402,7 @@ class AppController extends Controller
         Craft::$app->setEdition($edition);
 
         return $this->asJson([
-            'success' => true
+            'success' => true,
         ]);
     }
 
@@ -480,12 +481,26 @@ class AppController extends Controller
         $arr['name'] = $name;
         $arr['latestVersion'] = $update->getLatest()->version ?? null;
 
-        if ($update->status === Update::STATUS_EXPIRED) {
+        if ($update->abandoned) {
+            $arr['statusText'] = Html::tag('strong', Craft::t('app', 'This plugin is no longer maintained.'));
+            if ($update->replacementName) {
+                if (Craft::$app->getUser()->getIsAdmin() && Craft::$app->getConfig()->getGeneral()->allowAdminChanges) {
+                    $replacementUrl = UrlHelper::url("plugin-store/$update->replacementHandle");
+                } else {
+                    $replacementUrl = $update->replacementUrl;
+                }
+                $arr['statusText'] .= ' ' .
+                    Craft::t('app', 'The developer recommends using <a href="{url}">{name}</a> instead.', [
+                        'url' => $replacementUrl,
+                        'name' => $update->replacementName,
+                    ]);
+            }
+        } else if ($update->status === Update::STATUS_EXPIRED) {
             $arr['statusText'] = Craft::t('app', '<strong>Your license has expired!</strong> Renew your {name} license for another year of amazing updates.', [
-                'name' => $name
+                'name' => $name,
             ]);
             $arr['ctaText'] = Craft::t('app', 'Renew for {price}', [
-                'price' => Craft::$app->getFormatter()->asCurrency($update->renewalPrice, $update->renewalCurrency)
+                'price' => Craft::$app->getFormatter()->asCurrency($update->renewalPrice, $update->renewalCurrency),
             ]);
             $arr['ctaUrl'] = UrlHelper::url($update->renewalUrl);
         } else {
@@ -498,7 +513,7 @@ class AppController extends Controller
             } else {
                 if ($update->status === Update::STATUS_BREAKPOINT) {
                     $arr['statusText'] = Craft::t('app', '<strong>You’ve reached a breakpoint!</strong> More updates will become available after you install {update}.', [
-                        'update' => $name . ' ' . ($update->getLatest()->version ?? '')
+                        'update' => $name . ' ' . ($update->getLatest()->version ?? ''),
                     ]);
                 }
 
@@ -566,7 +581,7 @@ class AppController extends Controller
                         if ($pluginLicenseInfo['expired']) {
                             $result[$handle]['renewalUrl'] = $pluginLicenseInfo['renewalUrl'];
                             $result[$handle]['renewalText'] = Craft::t('app', 'Renew for {price}', [
-                                'price' => $formatter->asCurrency($pluginLicenseInfo['renewalPrice'], $pluginLicenseInfo['renewalCurrency'])
+                                'price' => $formatter->asCurrency($pluginLicenseInfo['renewalPrice'], $pluginLicenseInfo['renewalCurrency']),
                             ]);
                         }
                     }

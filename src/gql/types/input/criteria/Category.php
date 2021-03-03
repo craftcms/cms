@@ -27,7 +27,7 @@ class Category extends InputObjectType
             'name' => $typeName,
             'fields' => function() {
                 return CategoryArguments::getArguments();
-            }
+            },
         ]));
     }
 }

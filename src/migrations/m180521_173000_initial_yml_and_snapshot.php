@@ -488,7 +488,7 @@ class m180521_173000_initial_yml_and_snapshot extends Migration
             $data['groups'][$group['uid']] = [
                 'name' => $group['name'],
                 'handle' => $group['handle'],
-                'permissions' => $permissionList[$group['id']] ?? []
+                'permissions' => $permissionList[$group['id']] ?? [],
             ];
         }
 

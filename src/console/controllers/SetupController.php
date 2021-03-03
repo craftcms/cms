@@ -247,7 +247,7 @@ EOD;
             'default' => $this->port ?: ($this->driver === Connection::DRIVER_MYSQL ? 3306 : 5432),
             'validator' => function(string $input): bool {
                 return is_numeric($input);
-            }
+            },
         ]);
 
         userCredentials:
@@ -299,7 +299,7 @@ EOD;
                     return false;
                 }
                 return true;
-            }
+            },
         ]);
         if ($this->tablePrefix && $this->tablePrefix !== 'none') {
             $this->tablePrefix = StringHelper::ensureRight($this->tablePrefix, '_');
@@ -484,7 +484,7 @@ EOD;
                 $script = '~' . substr($script, strlen($home));
             }
         }
-        $this->stdout(PHP_EOL . '    ' . $script . ' ' . $command . PHP_EOL . PHP_EOL);
+        $this->stdout(PHP_EOL . '    php ' . $script . ' ' . $command . PHP_EOL . PHP_EOL);
     }
 
     /**

@@ -69,7 +69,7 @@ class UserSettingsController extends Controller
 
             // Send the group back to the template
             Craft::$app->getUrlManager()->setRouteParams([
-                'group' => $group
+                'group' => $group,
             ]);
 
             return null;

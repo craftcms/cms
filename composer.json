@@ -1,7 +1,7 @@
 {
   "name": "craftcms/cms",
   "description": "Craft CMS",
-  "version": "3.6.2",
+  "version": "3.6.8",
   "keywords": [
     "cms",
     "craftcms",
@@ -27,7 +27,7 @@
     "ext-pcre": "*",
     "ext-pdo": "*",
     "ext-zip": "*",
-    "composer/composer": "2.0.8",
+    "composer/composer": "2.0.10",
     "craftcms/oauth2-craftid": "~1.0.0",
     "craftcms/plugin-installer": "~1.5.6",
     "craftcms/server-check": "~1.2.0",
@@ -48,7 +48,7 @@
     "voku/stringy": "^6.4.0",
     "webonyx/graphql-php": "~14.4.1",
     "yii2tech/ar-softdelete": "^1.0.4",
-    "yiisoft/yii2": "~2.0.40.0",
+    "yiisoft/yii2": "~2.0.41.0",
     "yiisoft/yii2-debug": "^2.1.16",
     "yiisoft/yii2-queue": "~2.3.1",
     "yiisoft/yii2-swiftmailer": "^2.1.2"

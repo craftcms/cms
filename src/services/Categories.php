@@ -517,7 +517,7 @@ class Categories extends Component
         // Fire a 'beforeDeleteGroup' event
         if ($this->hasEventHandlers(self::EVENT_BEFORE_DELETE_GROUP)) {
             $this->trigger(self::EVENT_BEFORE_DELETE_GROUP, new CategoryGroupEvent([
-                'categoryGroup' => $group
+                'categoryGroup' => $group,
             ]));
         }
 
@@ -751,7 +751,7 @@ class Categories extends Component
             'fieldLayoutId',
             'name',
             'handle',
-            'uid'
+            'uid',
         ]));
 
         if ($groupRecord->structure) {
