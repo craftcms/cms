@@ -106,7 +106,7 @@ class UsersController extends Controller
             }
         } else {
             $this->passwordPrompt([
-                'validator' => function (string $input, string &$error = null) use ($user) {
+                'validator' => function(string $input, string &$error = null) use ($user) {
                     $user->newPassword = $input;
                     if (!$user->validate()) {
                         $error = $user->getFirstError('newPassword');

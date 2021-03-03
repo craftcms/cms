@@ -69,7 +69,7 @@ class MatrixBlockType extends Generator implements GeneratorInterface, SingleGen
             if (!$entity) {
                 $entity = new MatrixBlock([
                     'name' => $typeName,
-                    'fields' => function () use ($blockTypeFields) {
+                    'fields' => function() use ($blockTypeFields) {
                         return $blockTypeFields;
                     },
                 ]);

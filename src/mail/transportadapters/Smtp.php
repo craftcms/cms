@@ -106,7 +106,7 @@ class Smtp extends BaseTransportAdapter
         $rules[] = [
             ['username', 'password'],
             'required',
-            'when' => function ($model) {
+            'when' => function($model) {
                 /** @var self $model */
                 return (bool)$model->useAuthentication;
             },

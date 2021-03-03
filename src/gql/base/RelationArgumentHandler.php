@@ -9,7 +9,6 @@ namespace craft\gql\base;
 
 use Craft;
 use craft\elements\db\ElementQuery;
-use craft\elements\db\ElementQueryInterface;
 use craft\helpers\ArrayHelper;
 use craft\helpers\StringHelper;
 

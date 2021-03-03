@@ -2439,7 +2439,7 @@ abstract class Element extends Component implements ElementInterface
             if ($dist === null) {
                 return $ancestors;
             }
-            return ArrayHelper::where($ancestors, function (self $element) use ($dist) {
+            return ArrayHelper::where($ancestors, function(self $element) use ($dist) {
                 return $element->level >= $this->level - $dist;
             }, true, true, false);
         }
@@ -2461,7 +2461,7 @@ abstract class Element extends Component implements ElementInterface
             if ($dist === null) {
                 return $descendants;
             }
-            return ArrayHelper::where($descendants, function (self $element) use ($dist) {
+            return ArrayHelper::where($descendants, function(self $element) use ($dist) {
                 return $element->level <= $this->level + $dist;
             }, true, true, false);
         }

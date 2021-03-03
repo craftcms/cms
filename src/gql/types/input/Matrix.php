@@ -73,14 +73,14 @@ class Matrix extends InputObjectType
         $blockTypeContainerName = $context->handle . '_MatrixBlockContainerInput';
         $blockContainerInputType = GqlEntityRegistry::createEntity($blockTypeContainerName, new InputObjectType([
             'name' => $blockTypeContainerName,
-            'fields' => function () use ($blockInputTypes) {
+            'fields' => function() use ($blockInputTypes) {
                 return $blockInputTypes;
             },
         ]));
 
         $inputType = GqlEntityRegistry::createEntity($typeName, new InputObjectType([
             'name' => $typeName,
-            'fields' => function () use ($blockContainerInputType) {
+            'fields' => function() use ($blockContainerInputType) {
                 return [
                     'sortOrder' => [
                         'name' => 'sortOrder',

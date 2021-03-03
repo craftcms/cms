@@ -259,7 +259,7 @@
                         this.loading = false
 
                         if (!errorMsg) {
-                            errorMsg = this.$options.filters.t("There was an error with your credit card.", 'app')
+                            errorMsg = this.$options.filters.t("There was a problem processing your credit card.", 'app')
                         }
 
                         this.$root.displayError(errorMsg)

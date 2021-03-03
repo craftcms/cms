@@ -26,7 +26,7 @@ class Ping extends Mutation
         return [
             'ping' => [
                 'type' => Type::string(),
-                'resolve' => function () {
+                'resolve' => function() {
                     return 'A mutated pong';
                 },
             ],
