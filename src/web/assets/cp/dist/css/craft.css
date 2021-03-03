@@ -2410,6 +2410,15 @@ body.rtl .timewrapper .text:before { right: 7px; }
 /* Assets related */
 .hud.assetshud .body { max-height: 500px; overflow: auto; }
 
+/* Asset indexing related */
+tr.indexingSession td { height: 34px; padding: 1px 10px; }
+
+tr.indexingSession td.progress div.progressContainer { width: 100%; display: -webkit-flex; display: flex; -webkit-justify-content: space-between; justify-content: space-between; -webkit-align-items: center; align-items: center; }
+
+tr.indexingSession td.progress div.progressContainer .progressbar { width: 70%; position: relative; left: 0; height: 4px; z-index: 1; }
+
+tr.indexingSession td.progress div.progressContainer div.progressInfo { width: 20%; }
+
 .select:not(.selectize), .select:not(.selectize) select { position: relative; border-radius: 5px; white-space: nowrap; }
 
 .select:not(.selectize) { max-width: 100%; position: relative; }
@@ -2637,11 +2646,11 @@ body.rtl .message-container { right: 0; }
 
 .autosuggest__results-container { position: absolute; z-index: 2; width: 100%; border-radius: 5px; background-color: #fff; box-shadow: 0 1px 5px -1px rgba(31, 41, 51, 0.2); box-sizing: border-box; padding: 0 14px; text-align: left; font-family: system-ui, BlinkMacSystemFont, -apple-system, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif; font-size: 1em !important; }
 
-.autosuggest__results-container .autosuggest__results_title { margin: 14px 0 3px; font-size: 10px; line-height: 1.2; color: #606d7b; text-transform: uppercase; font-weight: bold; margin-top: 14px !important; }
+.autosuggest__results-container .autosuggest__results-before { margin: 14px 0 3px; font-size: 10px; line-height: 1.2; color: #606d7b; text-transform: uppercase; font-weight: bold; margin-top: 14px !important; }
 
-.autosuggest__results-container .autosuggest__results_item { margin: 0 -14px; padding: 10px 14px; color: #3f4d5a; text-decoration: none; white-space: nowrap; }
+.autosuggest__results-container .autosuggest__results-item { margin: 0 -14px; padding: 10px 14px; color: #3f4d5a; text-decoration: none; white-space: nowrap; }
 
-.autosuggest__results-container .autosuggest__results_item:hover, .autosuggest__results-container .autosuggest__results_item.autosuggest__results_item-highlighted { color: #3f4d5a; background-color: #f3f7fc; cursor: pointer; }
+.autosuggest__results-container .autosuggest__results-item:hover, .autosuggest__results-container .autosuggest__results-item.autosuggest__results_item-highlighted { color: #3f4d5a; background-color: #f3f7fc; cursor: pointer; }
 
 /* ----------------------------------------
 /* Matrix
