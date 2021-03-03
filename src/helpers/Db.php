@@ -871,6 +871,26 @@ class Db
     }
 
     /**
+     * Creates and executes a `TRUNCATE TABLE` SQL statement.
+     *
+     * @param string $table the table where the data will be deleted from
+     * @param Connection|null $db The database connection to use
+     * @return int The number of rows affected by the execution
+     * @throws DbException if execution failed
+     * @since 3.6.8
+     */
+    public static function truncateTable(string $table, ?Connection $db = null): int
+    {
+        if ($db === null) {
+            $db = self::db();
+        }
+
+        return $db->createCommand()
+            ->truncateTable($table)
+            ->execute();
+    }
+
+    /**
      * Returns the `id` of a row in the given table by its `uid`.
      *
      * @param string $table

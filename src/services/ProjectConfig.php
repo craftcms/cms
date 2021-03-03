@@ -1743,7 +1743,7 @@ class ProjectConfig extends Component
     private function _discardProjectConfigNames(): void
     {
         $this->_projectConfigNameChanges = [];
-        Db::delete(Table::PROJECTCONFIGNAMES);
+        Db::truncateTable(Table::PROJECTCONFIGNAMES);
     }
 
     /**

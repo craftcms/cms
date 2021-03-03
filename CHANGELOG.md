@@ -8,6 +8,7 @@
 - Project Config now labels UIDs in Yaml files with comments to help readability. ([#7584](https://github.com/craftcms/cms/issues/7584))
 - Added the `siteId` arguments for the `deleteEntry` mutation. ([#7611](https://github.com/craftcms/cms/issues/7611))
 - Added `craft\gql\base\ElementArguments::getRevisionArguments()`.
+- Added `craft\helpers\Db::truncateTable()`.
 - Added `craft\helpers\Gql::canQueryDrafts()`.
 - Added `craft\helpers\Gql::canQueryInactiveElements()`.
 - Added `craft\helpers\Gql::canQueryRevisions()`.
