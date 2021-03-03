@@ -73,12 +73,14 @@
                         }
                     }, (status, response) => {
                         if (response.error) {
+                            this.handleSaveError();
                             cbError(response)
                         } else {
                             cb(response)
                         }
                     })
                 } else {
+                    this.handleSaveError();
                     cbError()
                 }
             },
@@ -105,7 +107,13 @@
                 }
 
                 return !hasErrors
-            }
+            },
+
+            handleSaveError() {
+                this.errors.number = true
+                this.errors.exp = true
+                this.errors.cvc = true
+            },
         },
     }
 </script>
