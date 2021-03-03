@@ -1362,7 +1362,7 @@ class Gql extends Component
 
         $this->trigger(self::EVENT_REGISTER_GQL_QUERIES, $event);
 
-        TypeLoader::registerType('Query', function () use ($event) {
+        TypeLoader::registerType('Query', function() use ($event) {
             return call_user_func(Query::class . '::getType', $event->queries);
         });
     }
@@ -1389,7 +1389,7 @@ class Gql extends Component
 
         $this->trigger(self::EVENT_REGISTER_GQL_MUTATIONS, $event);
 
-        TypeLoader::registerType('Mutation', function () use ($event) {
+        TypeLoader::registerType('Mutation', function() use ($event) {
             return call_user_func(Mutation::class . '::getType', $event->mutations);
         });
     }

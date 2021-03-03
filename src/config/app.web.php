@@ -3,26 +3,26 @@
 return [
     'class' => craft\web\Application::class,
     'components' => [
-        'assetManager' => function () {
+        'assetManager' => function() {
             $config = craft\helpers\App::assetManagerConfig();
             return Craft::createObject($config);
         },
-        'request' => function () {
+        'request' => function() {
             $config = craft\helpers\App::webRequestConfig();
             /** @var craft\web\Request $request */
             $request = Craft::createObject($config);
             $request->csrfCookie = Craft::cookieConfig([], $request);
             return $request;
         },
-        'response' => function () {
+        'response' => function() {
             $config = craft\helpers\App::webResponseConfig();
             return Craft::createObject($config);
         },
-        'session' => function () {
+        'session' => function() {
             $config = craft\helpers\App::sessionConfig();
             return Craft::createObject($config);
         },
-        'user' => function () {
+        'user' => function() {
             $config = craft\helpers\App::userConfig();
             return Craft::createObject($config);
         },

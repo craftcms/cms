@@ -189,7 +189,7 @@ class Tag extends Element
         $rules[] = [
             ['title'],
             'validateTitle',
-            'when' => function (): bool {
+            'when' => function(): bool {
                 return !$this->hasErrors('groupId') && !$this->hasErrors('title');
             },
         ];

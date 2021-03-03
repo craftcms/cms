@@ -492,7 +492,7 @@ class ElementQueryConditionBuilder extends Component
                         /** @var InlineFragmentNode|FragmentDefinitionNode $wrappingFragment */
                         if ($wrappingFragment) {
                             // TODO: In Craft 4, get rid of all closures
-                            $plan->when = function (Element $element) use ($wrappingFragment) {
+                            $plan->when = function(Element $element) use ($wrappingFragment) {
                                 return $element->getGqlTypeName() === $wrappingFragment->typeCondition->name->value;
                             };
                         }

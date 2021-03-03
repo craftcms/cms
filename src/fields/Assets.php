@@ -225,7 +225,7 @@ class Assets extends BaseRelationField
         $rules = parent::defineRules();
 
         $rules[] = [
-            ['allowedKinds'], 'required', 'when' => function (self $field): bool {
+            ['allowedKinds'], 'required', 'when' => function(self $field): bool {
                 return (bool)$field->restrictFiles;
             },
         ];
@@ -495,7 +495,7 @@ class Assets extends BaseRelationField
         $query = $element->getFieldValue($this->handle);
         $assetsService = Craft::$app->getAssets();
 
-        $getTargetFolderId = function () use ($element, $isDraftOrRevision): int {
+        $getTargetFolderId = function() use ($element, $isDraftOrRevision): int {
             static $targetFolderId;
             return $targetFolderId = $targetFolderId ?? $this->_determineUploadFolderId($element, !$isDraftOrRevision);
         };
@@ -557,7 +557,7 @@ class Assets extends BaseRelationField
             // Only enforce the single upload folder setting if this isn't a draft or revision
             if ($this->useSingleFolder && !$isDraftOrRevision) {
                 $targetFolderId = $getTargetFolderId();
-                $assetsToMove = ArrayHelper::where($assets, function (Asset $asset) use ($targetFolderId) {
+                $assetsToMove = ArrayHelper::where($assets, function(Asset $asset) use ($targetFolderId) {
                     return $asset->folderId != $targetFolderId;
                 });
             } else {
@@ -655,7 +655,7 @@ class Assets extends BaseRelationField
         // Now enforce the showUnpermittedVolumes setting
         if (!$this->showUnpermittedVolumes && !empty($sources)) {
             $userService = Craft::$app->getUser();
-            return ArrayHelper::where($sources, function (string $source) use ($assetsService, $userService) {
+            return ArrayHelper::where($sources, function(string $source) use ($assetsService, $userService) {
                 // If it's not a volume folder, let it through
                 if (strpos($source, 'folder:') !== 0) {
                     return true;
@@ -816,11 +816,11 @@ class Assets extends BaseRelationField
             }
 
             // Sanitize the subpath
-            $segments = array_filter(explode('/', $renderedSubpath), function (string $segment): bool {
+            $segments = array_filter(explode('/', $renderedSubpath), function(string $segment): bool {
                 return $segment !== ':ignore:';
             });
             $generalConfig = Craft::$app->getConfig()->getGeneral();
-            $segments = array_map(function (string $segment) use ($generalConfig): string {
+            $segments = array_map(function(string $segment) use ($generalConfig): string {
                 return FileHelper::sanitizeFilename($segment, [
                     'asciiOnly' => $generalConfig->convertFilenamesToAscii,
                 ]);

@@ -482,7 +482,7 @@ class Html extends \yii\helpers\Html
     {
         if (self::$_sortedDataAttributes === null) {
             self::$_sortedDataAttributes = array_merge(static::$dataAttributes);
-            usort(self::$_sortedDataAttributes, function (string $a, string $b): int {
+            usort(self::$_sortedDataAttributes, function(string $a, string $b): int {
                 return strlen($b) - strlen($a);
             });
         }
@@ -636,7 +636,7 @@ class Html extends \yii\helpers\Html
 
         // Namespace & capture the ID attributes
         $ids = [];
-        $html = preg_replace_callback('/(?<=\sid=)(\'|")([^\'"\s]*)\1/i', function ($match) use ($namespace, &$ids): string {
+        $html = preg_replace_callback('/(?<=\sid=)(\'|")([^\'"\s]*)\1/i', function($match) use ($namespace, &$ids): string {
             $ids[] = $match[2];
             return $match[1] . $namespace . '-' . $match[2] . $match[1];
         }, $html);
@@ -645,7 +645,7 @@ class Html extends \yii\helpers\Html
         // normal HTML attributes
         $html = preg_replace_callback(
             "/(?<=\\s)((for|list|xlink:href|href|aria\\-labelledby|aria\\-describedby|data\\-target|data\\-reverse\\-target|data\\-target\\-prefix)=('|\")#?)([^\.'\"\s]*)\\3/i",
-            function (array $match) use ($namespace, $ids): string {
+            function(array $match) use ($namespace, $ids): string {
                 if ($match[2] === 'data-target-prefix' || isset($ids[$match[4]])) {
                     return $match[1] . $namespace . '-' . $match[4] . $match[3];
                 }
@@ -655,7 +655,7 @@ class Html extends \yii\helpers\Html
         // ID references in url() calls
         $html = preg_replace_callback(
             "/(?<=url\\(#)[^'\"\s\)]*(?=\\))/i",
-            function (array $match) use ($namespace, $ids): string {
+            function(array $match) use ($namespace, $ids): string {
                 if (isset($ids[$match[0]])) {
                     return $namespace . '-' . $match[0];
                 }
@@ -664,7 +664,7 @@ class Html extends \yii\helpers\Html
 
         // class attributes
         if ($withClasses) {
-            $html = preg_replace_callback('/(?<![\w\-])\bclass=(\'|")([^\'"]+)\\1/i', function ($match) use ($namespace) {
+            $html = preg_replace_callback('/(?<![\w\-])\bclass=(\'|")([^\'"]+)\\1/i', function($match) use ($namespace) {
                 $newClasses = [];
                 foreach (preg_split('/\s+/', $match[2]) as $class) {
                     $newClasses[] = "$namespace-$class";
@@ -676,10 +676,10 @@ class Html extends \yii\helpers\Html
         // CSS selectors
         $html = preg_replace_callback(
             '/(<style\b[^>]*>)(.*?)(<\/style>)/is',
-            function (array $match) use ($namespace, $withClasses, $ids) {
+            function(array $match) use ($namespace, $withClasses, $ids) {
                 $html = preg_replace_callback(
                     "/(?<![\w'\"])#([^'\"\s]*)(?=[,\\s\\{])/",
-                    function (array $match) use ($namespace, $ids): string {
+                    function(array $match) use ($namespace, $ids): string {
                         if (isset($ids[$match[1]])) {
                             return '#' . $namespace . '-' . $match[1];
                         }
@@ -701,7 +701,7 @@ class Html extends \yii\helpers\Html
     private static function _escapeTextareas(string &$html): array
     {
         $markers = [];
-        $html = preg_replace_callback('/(<textarea\b[^>]*>)(.*?)(<\/textarea>)/is', function (array $matches) use (&$markers) {
+        $html = preg_replace_callback('/(<textarea\b[^>]*>)(.*?)(<\/textarea>)/is', function(array $matches) use (&$markers) {
             $marker = '{marker:' . StringHelper::randomString() . '}';
             $markers[$marker] = $matches[2];
             return $matches[1] . $marker . $matches[3];

@@ -216,7 +216,7 @@ abstract class Controller extends \yii\web\Controller
                         'exception' => get_class($e),
                         'file' => $e->getFile(),
                         'line' => $e->getLine(),
-                        'trace' => array_map(function ($step) {
+                        'trace' => array_map(function($step) {
                             unset($step['args']);
                             return $step;
                         }, $e->getTrace()),

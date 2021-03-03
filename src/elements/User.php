@@ -758,7 +758,7 @@ class User extends Element implements IdentityInterface
         ];
 
         $rules[] = [
-            ['firstName', 'lastName'], function ($attribute, $params, Validator $validator) {
+            ['firstName', 'lastName'], function($attribute, $params, Validator $validator) {
                 if (strpos($this->$attribute, '://') !== false) {
                     $validator->addError($this, $attribute, Craft::t('app', 'Invalid value “{value}”.'));
                 }
@@ -1340,7 +1340,7 @@ class User extends Element implements IdentityInterface
                 return $this->email ? Html::mailto(Html::encode($this->email)) : '';
 
             case 'groups':
-                return implode(', ', array_map(function (UserGroup $group) {
+                return implode(', ', array_map(function(UserGroup $group) {
                     return Html::encode(Craft::t('site', $group->name));
                 }, $this->getGroups()));
 

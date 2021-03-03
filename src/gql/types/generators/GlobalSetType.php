@@ -81,7 +81,7 @@ class GlobalSetType implements GeneratorInterface, SingleGeneratorInterface
 
         return GqlEntityRegistry::getEntity($typeName) ?: GqlEntityRegistry::createEntity($typeName, new GlobalSet([
             'name' => $typeName,
-            'fields' => function () use ($globalSetFields) {
+            'fields' => function() use ($globalSetFields) {
                 return $globalSetFields;
             },
         ]));

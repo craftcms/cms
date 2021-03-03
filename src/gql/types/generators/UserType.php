@@ -50,7 +50,7 @@ class UserType extends Generator implements GeneratorInterface, SingleGeneratorI
 
         return GqlEntityRegistry::getEntity($typeName) ?: GqlEntityRegistry::createEntity($typeName, new User([
             'name' => $typeName,
-            'fields' => function () use ($userFields) {
+            'fields' => function() use ($userFields) {
                 return $userFields;
             },
         ]));

@@ -484,7 +484,7 @@ class ProjectConfig
         $projectConfig = Craft::$app->getProjectConfig();
         $cacheKey = ProjectConfigService::DIFF_CACHE_KEY . ($invert ? ':reverse' : '');
 
-        return Craft::$app->getCache()->getOrSet($cacheKey, function () use ($projectConfig, $invert): string {
+        return Craft::$app->getCache()->getOrSet($cacheKey, function() use ($projectConfig, $invert): string {
             $currentConfig = static::cleanupConfig($projectConfig->get());
             $pendingConfig = static::cleanupConfig($projectConfig->get(null, true));
 

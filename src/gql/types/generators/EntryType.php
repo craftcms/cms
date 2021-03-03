@@ -69,7 +69,7 @@ class EntryType extends Generator implements GeneratorInterface, SingleGenerator
 
         return GqlEntityRegistry::createEntity($typeName, new Entry([
             'name' => $typeName,
-            'fields' => function () use ($entryTypeFields) {
+            'fields' => function() use ($entryTypeFields) {
                 return $entryTypeFields;
             },
         ]));
