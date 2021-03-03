@@ -73,7 +73,10 @@ class Entry extends Mutation
             if ($createDeleteMutation) {
                 $mutationList['deleteEntry'] = [
                     'name' => 'deleteEntry',
-                    'args' => ['id' => Type::nonNull(Type::int())],
+                    'args' => [
+                        'id' => Type::nonNull(Type::int()),
+                        'siteId' => Type::int(),
+                    ],
                     'resolve' => [$resolver, 'deleteEntry'],
                     'description' => 'Delete an entry.',
                     'type' => Type::boolean(),

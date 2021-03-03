@@ -6,6 +6,7 @@
 - Added the `is boolean` Twig test.
 - GraphQL schemas now include settings that determine whether inactive elements, drafts, and/or revisions should be included in query results. ([#7590](https://github.com/craftcms/cms/issues/7590)).
 - Project Config now labels UIDs in Yaml files with comments to help readability. ([#7584](https://github.com/craftcms/cms/issues/7584))
+- Added the `siteId` arguments for the `deleteEntry` mutation. ([#7611](https://github.com/craftcms/cms/issues/7611))
 - Added `craft\gql\base\ElementArguments::getRevisionArguments()`.
 - Added `craft\helpers\Gql::canQueryDrafts()`.
 - Added `craft\helpers\Gql::canQueryInactiveElements()`.
@@ -29,6 +30,7 @@
 - Fixed a bug where the Plugin Store wouldn‘t fully load when clicking the “Buy now” button on the “There are trial licenses that require payment” alert, if any of the trialled plugins were disabled.
 - Fixed a bug where the Plugin Store’s cart was not showing the updates dropdown for plugin trial licenses.
 - Fixed a bug where the Plugin Store was showing a generic error when a credit card was declined, instead of a more detailed error.
+- Fixed an error where it was impossible to delete entries from non-primary sites using GraphQL mutations. ([#7611](https://github.com/craftcms/cms/issues/7611))
 
 ## 3.6.7 - 2021-02-23
 
