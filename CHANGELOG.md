@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 3.x
 
-## Unreleased
+## 3.6.8 - 2021-03-03
 
 ### Added
 - Added the `is boolean` Twig test.
