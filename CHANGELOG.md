@@ -1,5 +1,10 @@
 # Release Notes for Craft CMS 3.x
 
+## Unreleased
+
+### Changed
+- Updated Yii to 2.0.41.
+
 ## 3.6.8 - 2021-03-03
 
 ### Added

@@ -858,13 +858,25 @@ class User extends Element implements IdentityInterface
             return false;
         }
 
-        return (new Query())
+        $tokenId = (new Query())
+            ->select(['id'])
             ->from([Table::SESSIONS])
             ->where([
                 'token' => $token,
                 'userId' => $this->id,
             ])
-            ->exists();
+            ->scalar();
+
+        if (!$tokenId) {
+            return false;
+        }
+
+        // Update the session row's dateUpdated value so it doesn't get GC'd
+        Db::update(Table::SESSIONS, [
+            'dateUpdated' => Db::prepareDateForDb(new \DateTime()),
+        ], ['id' => $tokenId]);
+
+        return true;
     }
 
     /**

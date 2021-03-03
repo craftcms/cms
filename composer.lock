@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "e71e72d985812d2fb26440b6a127bda5",
+    "content-hash": "d15b3981e9e481d477d5b5eff4818c8f",
     "packages": [
         {
             "name": "cebe/markdown",
@@ -4963,16 +4963,16 @@
         },
         {
             "name": "yiisoft/yii2",
-            "version": "2.0.40",
+            "version": "2.0.41",
             "source": {
                 "type": "git",
                 "url": "https://github.com/yiisoft/yii2-framework.git",
-                "reference": "debb520c1d72a2c97c09d70a2a2a4f600ef3958e"
+                "reference": "0bb56fc24f7b07841095d2ba90fa8ad0c2828601"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/yiisoft/yii2-framework/zipball/debb520c1d72a2c97c09d70a2a2a4f600ef3958e",
-                "reference": "debb520c1d72a2c97c09d70a2a2a4f600ef3958e",
+                "url": "https://api.github.com/repos/yiisoft/yii2-framework/zipball/0bb56fc24f7b07841095d2ba90fa8ad0c2828601",
+                "reference": "0bb56fc24f7b07841095d2ba90fa8ad0c2828601",
                 "shasum": ""
             },
             "require": {
@@ -5080,7 +5080,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2020-12-23T15:44:43+00:00"
+            "time": "2021-03-03T21:51:35+00:00"
         },
         {
             "name": "yiisoft/yii2-composer",
@@ -5479,16 +5479,16 @@
         },
         {
             "name": "codeception/codeception",
-            "version": "4.1.17",
+            "version": "4.1.18",
             "source": {
                 "type": "git",
                 "url": "https://github.com/Codeception/Codeception.git",
-                "reference": "c153b1ab289b3e3109e685379aa8847c54ac2b68"
+                "reference": "f47547bac347dfb5ea5351ff91148cbcc08e6818"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Codeception/Codeception/zipball/c153b1ab289b3e3109e685379aa8847c54ac2b68",
-                "reference": "c153b1ab289b3e3109e685379aa8847c54ac2b68",
+                "url": "https://api.github.com/repos/Codeception/Codeception/zipball/f47547bac347dfb5ea5351ff91148cbcc08e6818",
+                "reference": "f47547bac347dfb5ea5351ff91148cbcc08e6818",
                 "shasum": ""
             },
             "require": {
@@ -5562,7 +5562,7 @@
             ],
             "support": {
                 "issues": "https://github.com/Codeception/Codeception/issues",
-                "source": "https://github.com/Codeception/Codeception/tree/4.1.17"
+                "source": "https://github.com/Codeception/Codeception/tree/4.1.18"
             },
             "funding": [
                 {
@@ -5570,7 +5570,7 @@
                     "type": "open_collective"
                 }
             ],
-            "time": "2021-02-01T07:30:47+00:00"
+            "time": "2021-02-23T17:11:42+00:00"
         },
         {
             "name": "codeception/lib-asserts",
@@ -5628,16 +5628,16 @@
         },
         {
             "name": "codeception/lib-innerbrowser",
-            "version": "1.4.0",
+            "version": "1.4.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/Codeception/lib-innerbrowser.git",
-                "reference": "b7406c710684c255d9b067d7795269a5585a0406"
+                "reference": "693e116f81ef98eae98c43ef785a726faf87394e"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Codeception/lib-innerbrowser/zipball/b7406c710684c255d9b067d7795269a5585a0406",
-                "reference": "b7406c710684c255d9b067d7795269a5585a0406",
+                "url": "https://api.github.com/repos/Codeception/lib-innerbrowser/zipball/693e116f81ef98eae98c43ef785a726faf87394e",
+                "reference": "693e116f81ef98eae98c43ef785a726faf87394e",
                 "shasum": ""
             },
             "require": {
@@ -5682,9 +5682,9 @@
             ],
             "support": {
                 "issues": "https://github.com/Codeception/lib-innerbrowser/issues",
-                "source": "https://github.com/Codeception/lib-innerbrowser/tree/1.4.0"
+                "source": "https://github.com/Codeception/lib-innerbrowser/tree/1.4.1"
             },
-            "time": "2021-01-29T18:17:25+00:00"
+            "time": "2021-03-02T08:01:54+00:00"
         },
         {
             "name": "codeception/module-asserts",
@@ -5851,16 +5851,16 @@
         },
         {
             "name": "codeception/module-rest",
-            "version": "1.2.7",
+            "version": "1.2.8",
             "source": {
                 "type": "git",
                 "url": "https://github.com/Codeception/module-rest.git",
-                "reference": "beeb5a91a97d042273bf10f00063e9b8f541879a"
+                "reference": "4c8c6bd75f67a25ff91bdce0d6c135c5e7aa5e10"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Codeception/module-rest/zipball/beeb5a91a97d042273bf10f00063e9b8f541879a",
-                "reference": "beeb5a91a97d042273bf10f00063e9b8f541879a",
+                "url": "https://api.github.com/repos/Codeception/module-rest/zipball/4c8c6bd75f67a25ff91bdce0d6c135c5e7aa5e10",
+                "reference": "4c8c6bd75f67a25ff91bdce0d6c135c5e7aa5e10",
                 "shasum": ""
             },
             "require": {
@@ -5899,9 +5899,9 @@
             ],
             "support": {
                 "issues": "https://github.com/Codeception/module-rest/issues",
-                "source": "https://github.com/Codeception/module-rest/tree/1.2.7"
+                "source": "https://github.com/Codeception/module-rest/tree/1.2.8"
             },
-            "time": "2020-11-04T16:58:11+00:00"
+            "time": "2021-03-02T06:47:59+00:00"
         },
         {
             "name": "codeception/module-yii2",
