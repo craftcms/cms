@@ -27,6 +27,7 @@
 - Fixed a bug where the “Save and continue editing” action on the Edit Entry page wasn’t retaining the currently-selected site.
 - Fixed a bug where non-admins weren’t able to impersonate inactive users. ([#7475](https://github.com/craftcms/cms/issues/7475))
 - Fixed a bug where the Plugin Store wouldn‘t fully load when clicking the “Buy now” button on the “There are trial licenses that require payment” alert, if any of the trialled plugins were disabled.
+- Fixed a bug where the Plugin Store’s cart was not showing the updates dropdown for plugin trial licenses.
 
 ## 3.6.7 - 2021-02-23
 
