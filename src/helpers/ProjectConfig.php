@@ -179,7 +179,7 @@ class ProjectConfig
         $cleanConfig = [];
 
         foreach ($config as $key => $value) {
-            self::_cleanupConfigValue($value);
+            $value = self::_cleanupConfigValue($value);
 
             // Ignore empty arrays
             if (!is_array($value) || !empty($value)) {
@@ -195,10 +195,10 @@ class ProjectConfig
      * Cleans a config value.
      *
      * @param mixed $value
-     * @return void
+     * @return mixed
      * @throws InvalidConfigException
      */
-    private static function _cleanupConfigValue(&$value): void
+    private static function _cleanupConfigValue($value)
     {
         // Only scalars, arrays and simple objects allowed.
         if ($value instanceof \StdClass) {
@@ -218,7 +218,7 @@ class ProjectConfig
                 foreach ($value[ProjectConfigService::CONFIG_ASSOC_KEY] as $pKey => $pArray) {
                     // Make sure it has a value
                     if (isset($pArray[1])) {
-                        self::_cleanupConfigValue($pArray[1]);
+                        $pArray[1] = self::_cleanupConfigValue($pArray[1]);
 
                         // Ignore empty arrays
                         if (!is_array($pArray[1]) || !empty($pArray[1])) {
@@ -237,6 +237,8 @@ class ProjectConfig
                 $value = static::cleanupConfig($value);
             }
         }
+
+        return $value;
     }
 
     /**
