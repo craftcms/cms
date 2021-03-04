@@ -1525,7 +1525,7 @@ class User extends Element implements IdentityInterface
                     ->authorId($this->id)
                     ->anyStatus();
 
-                foreach ($entryQuery->each() as $entry) {
+                foreach (Db::each($entryQuery) as $entry) {
                     $elementsService->deleteElement($entry);
                 }
             }

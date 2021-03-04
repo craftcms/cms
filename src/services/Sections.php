@@ -850,7 +850,7 @@ class Sections extends Component
                 ->sectionId($sectionRecord->id);
             $elementsService = Craft::$app->getElements();
             foreach (Craft::$app->getSites()->getAllSiteIds() as $siteId) {
-                foreach ($entryQuery->siteId($siteId)->each() as $entry) {
+                foreach (Db::each($entryQuery->siteId($siteId)) as $entry) {
                     $elementsService->deleteElement($entry);
                 }
             }
@@ -1367,7 +1367,7 @@ class Sections extends Component
 
             $elementsService = Craft::$app->getElements();
             foreach (Craft::$app->getSites()->getAllSiteIds() as $siteId) {
-                foreach ($entryQuery->siteId($siteId)->each() as $entry) {
+                foreach (Db::each($entryQuery->siteId($siteId)) as $entry) {
                     /** @var Entry $entry */
                     $entry->deletedWithEntryType = true;
                     $elementsService->deleteElement($entry);
@@ -1539,7 +1539,7 @@ class Sections extends Component
             ->id(['not', $entry->id])
             ->anyStatus();
 
-        foreach ($otherEntriesQuery->each() as $entry) {
+        foreach (Db::each($otherEntriesQuery) as $entry) {
             $elementsService->deleteElement($entry, true);
         }
 
@@ -1567,7 +1567,7 @@ class Sections extends Component
         $structuresService = Craft::$app->getStructures();
 
         /** @var Entry $entry */
-        foreach ($query->each() as $entry) {
+        foreach (Db::each($query) as $entry) {
             $structuresService->appendToRoot($sectionRecord->structureId, $entry, Structures::MODE_INSERT);
         }
     }

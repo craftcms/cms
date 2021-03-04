@@ -780,7 +780,7 @@ class Elements extends Component
         $position = 0;
 
         try {
-            foreach ($query->each() as $element) {
+            foreach (Db::each($query) as $element) {
                 $position++;
 
                 $element->setScenario(Element::SCENARIO_ESSENTIALS);
@@ -875,7 +875,7 @@ class Elements extends Component
         $position = 0;
 
         try {
-            foreach ($query->each() as $element) {
+            foreach (Db::each($query) as $element) {
                 $position++;
 
                 $element->setScenario(Element::SCENARIO_ESSENTIALS);
