@@ -560,13 +560,12 @@ class EntryRevisionsController extends BaseEntriesController
         $draft->authorId = $authorId;
 
         // Parent
-        $parentId = $this->request->getBodyParam('parentId');
-
-        if (is_array($parentId)) {
-            $parentId = $parentId[0] ?? null;
+        if (($parentId = $this->request->getBodyParam('parentId')) !== null) {
+            if (is_array($parentId)) {
+                $parentId = reset($parentId) ?: false;
+            }
+            $draft->newParentId = $parentId ?: false;
         }
-
-        $draft->newParentId = $parentId ?: null;
 
         // Draft meta
         /** @var Entry|DraftBehavior $draft */

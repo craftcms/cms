@@ -356,7 +356,7 @@ class Category extends Element
     public $groupId;
 
     /**
-     * @var int|null New parent ID
+     * @var int|false|null New parent ID
      */
     public $newParentId;
 
@@ -388,7 +388,7 @@ class Category extends Element
     protected function defineRules(): array
     {
         $rules = parent::defineRules();
-        $rules[] = [['groupId', 'newParentId'], 'number', 'integerOnly' => true];
+        $rules[] = [['groupId'], 'number', 'integerOnly' => true];
         return $rules;
     }
 

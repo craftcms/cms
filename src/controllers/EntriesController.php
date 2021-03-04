@@ -838,10 +838,9 @@ class EntriesController extends BaseEntriesController
         // Parent
         if (($parentId = $this->request->getBodyParam('parentId')) !== null) {
             if (is_array($parentId)) {
-                $parentId = reset($parentId) ?: '';
+                $parentId = reset($parentId) ?: false;
             }
-
-            $entry->newParentId = $parentId ?: '';
+            $entry->newParentId = $parentId ?: false;
         }
 
         // Revision notes

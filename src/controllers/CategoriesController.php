@@ -781,10 +781,9 @@ class CategoriesController extends Controller
         // Parent
         if (($parentId = $this->request->getBodyParam('parentId')) !== null) {
             if (is_array($parentId)) {
-                $parentId = reset($parentId) ?: '';
+                $parentId = reset($parentId) ?: false;
             }
-
-            $category->newParentId = $parentId ?: '';
+            $category->newParentId = $parentId ?: false;
         }
     }
 
