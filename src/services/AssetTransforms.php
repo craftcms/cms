@@ -367,7 +367,7 @@ class AssetTransforms extends Component
         // Fire a 'beforeDeleteAssetTransform' event
         if ($this->hasEventHandlers(self::EVENT_BEFORE_DELETE_ASSET_TRANSFORM)) {
             $this->trigger(self::EVENT_BEFORE_DELETE_ASSET_TRANSFORM, new AssetTransformEvent([
-                'assetTransform' => $transform
+                'assetTransform' => $transform,
             ]));
         }
 
@@ -407,7 +407,7 @@ class AssetTransforms extends Component
         // Fire an 'afterDeleteAssetTransform' event
         if ($this->hasEventHandlers(self::EVENT_AFTER_DELETE_ASSET_TRANSFORM)) {
             $this->trigger(self::EVENT_AFTER_DELETE_ASSET_TRANSFORM, new AssetTransformEvent([
-                'assetTransform' => $transform
+                'assetTransform' => $transform,
             ]));
         }
 
@@ -516,7 +516,7 @@ class AssetTransforms extends Component
             ->where([
                 'and',
                 ['assetId' => array_keys($assetsById)],
-                $indexCondition
+                $indexCondition,
             ])
             ->all();
 
@@ -582,7 +582,7 @@ class AssetTransforms extends Component
             ->where([
                 'volumeId' => $asset->getVolumeId(),
                 'assetId' => $asset->id,
-                'location' => $transformLocation
+                'location' => $transformLocation,
             ]);
 
         if ($transform->format === null) {
@@ -617,7 +617,7 @@ class AssetTransforms extends Component
             'dateIndexed' => Db::prepareDateForDb(new DateTime()),
             'location' => $transformLocation,
             'fileExists' => false,
-            'inProgress' => false
+            'inProgress' => false,
         ]);
 
         return $this->storeTransformIndexData($transformIndex);
@@ -790,7 +790,7 @@ class AssetTransforms extends Component
                         'location' => $possibleLocations,
                         'format' => $index->detectedFormat,
                     ],
-                    ['not', ['id' => $index->id]]
+                    ['not', ['id' => $index->id]],
                 ])
                 ->one();
 
@@ -985,7 +985,7 @@ class AssetTransforms extends Component
         $result = $this->_createTransformIndexQuery()
             ->where([
                 'assetId' => $assetId,
-                'location' => '_' . $transformHandle
+                'location' => '_' . $transformHandle,
             ])
             ->one();
 
@@ -1072,8 +1072,8 @@ class AssetTransforms extends Component
                     // Fetch a list of existing temp files for this image.
                     $files = FileHelper::findFiles($tempPath, [
                         'only' => [
-                            $prefix . '*' . '.' . $extension
-                        ]
+                            $prefix . '*' . '.' . $extension,
+                        ],
                     ]);
 
                     // And clean them up.
@@ -1320,7 +1320,7 @@ class AssetTransforms extends Component
     {
         $dirs = [
             Craft::$app->getPath()->getAssetThumbsPath(),
-            Craft::$app->getPath()->getImageEditorSourcesPath() . '/' . $asset->id
+            Craft::$app->getPath()->getImageEditorSourcesPath() . '/' . $asset->id,
         ];
 
         foreach ($dirs as $dir) {
@@ -1455,7 +1455,7 @@ class AssetTransforms extends Component
                 'quality',
                 'interlace',
                 'dimensionChangeTime',
-                'uid'
+                'uid',
             ])
             ->from([Table::ASSETTRANSFORMS])
             ->orderBy(['name' => SORT_ASC]);
@@ -1531,8 +1531,7 @@ class AssetTransforms extends Component
 
         // Already created. Relax, grasshopper!
         if ($volume->fileExists($transformPath)) {
-            $metaData = $volume->getFileMetadata($transformPath);
-            $dateModified = $metaData['timestamp'];
+            $dateModified = $volume->getDateModified($transformPath);
             $dimensionChangeTime = $index->getTransform()->dimensionChangeTime;
 
             if (!$dimensionChangeTime || $dimensionChangeTime->getTimestamp() <= $dateModified) {

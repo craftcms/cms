@@ -10,6 +10,7 @@ use craft\behaviors\CustomFieldBehavior;
 use craft\db\Query;
 use craft\db\Table;
 use craft\helpers\App;
+use craft\helpers\ArrayHelper;
 use craft\helpers\Component;
 use craft\helpers\FileHelper;
 use GuzzleHttp\Client;
@@ -280,10 +281,18 @@ EOD;
                 include $filePath;
             }
 
-            // Delete any other CustomFieldBehavior files
+            // Delete any CustomFieldBehavior files that are over 10 seconds old
+            $basename = basename($filePath);
+            $time = time() - 10;
             FileHelper::clearDirectory($dir, [
-                'only' => ['CustomFieldBehavior*.php'],
-                'except' => [basename($filePath)],
+                'filter' => function (string $path) use ($basename, $time): bool {
+                    $b = basename($path);
+                    return (
+                        $b !== $basename &&
+                        strpos($b, 'CustomFieldBehavior') === 0 &&
+                        filemtime($path) < $time
+                    );
+                },
             ]);
         } else if ($load) {
             // Just evaluate the code
@@ -329,18 +338,15 @@ EOD;
         // Set the Craft header by default.
         $defaultConfig = [
             'headers' => [
-                'User-Agent' => 'Craft/' . static::$app->getVersion() . ' ' . \GuzzleHttp\default_user_agent()
+                'User-Agent' => 'Craft/' . static::$app->getVersion() . ' ' . \GuzzleHttp\default_user_agent(),
             ],
         ];
 
         // Grab the config from config/guzzle.php that is used on every Guzzle request.
         $guzzleConfig = static::$app->getConfig()->getConfigFromFile('guzzle');
 
-        // Merge default into guzzle config.
-        $guzzleConfig = array_replace_recursive($guzzleConfig, $defaultConfig);
-
-        // Maybe they want to set some config options specifically for this request.
-        $guzzleConfig = array_replace_recursive($guzzleConfig, $config);
+        // Merge everything together
+        $guzzleConfig = ArrayHelper::merge($defaultConfig, $guzzleConfig, $config);
 
         return new Client($guzzleConfig);
     }

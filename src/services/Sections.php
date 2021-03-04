@@ -447,7 +447,7 @@ class Sections extends Component
         if ($this->hasEventHandlers(self::EVENT_BEFORE_SAVE_SECTION)) {
             $this->trigger(self::EVENT_BEFORE_SAVE_SECTION, new SectionEvent([
                 'section' => $section,
-                'isNew' => $isNewSection
+                'isNew' => $isNewSection,
             ]));
         }
 
@@ -752,7 +752,7 @@ class Sections extends Component
         if ($this->hasEventHandlers(self::EVENT_AFTER_SAVE_SECTION)) {
             $this->trigger(self::EVENT_AFTER_SAVE_SECTION, new SectionEvent([
                 'section' => $section,
-                'isNew' => $isNewSection
+                'isNew' => $isNewSection,
             ]));
         }
 
@@ -1200,6 +1200,8 @@ class Sections extends Component
         if ($wasTrashed) {
             // Restore the entries that were deleted with the entry type
             $entries = Entry::find()
+                ->drafts(null)
+                ->draftOf(false)
                 ->sectionId($entryTypeRecord->sectionId)
                 ->typeId($entryTypeRecord->id)
                 ->anyStatus()
@@ -1230,7 +1232,7 @@ class Sections extends Component
                     'siteId' => '*',
                     'unique' => true,
                     'status' => null,
-                ]
+                ],
             ]));
         }
 
@@ -1355,9 +1357,11 @@ class Sections extends Component
         $transaction = Craft::$app->getDb()->beginTransaction();
 
         try {
-            // Delete the entries
+            // Delete the entries, including unpublished drafts
             // (loop through all the sites in case there are any lingering entries from unsupported sites
             $entryQuery = Entry::find()
+                ->drafts(null)
+                ->draftOf(false)
                 ->anyStatus()
                 ->typeId($entryTypeRecord->id);
 
@@ -1416,7 +1420,7 @@ class Sections extends Component
             $joinCondition = [
                 'and',
                 $joinCondition,
-                ['structures.dateDeleted' => null]
+                ['structures.dateDeleted' => null],
             ];
         }
 
@@ -1528,6 +1532,7 @@ class Sections extends Component
 
         $elementsService = Craft::$app->getElements();
         $otherEntriesQuery = Entry::find()
+            ->drafts(null)
             ->sectionId($section->id)
             ->siteId('*')
             ->unique()

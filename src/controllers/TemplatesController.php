@@ -157,7 +157,7 @@ class TemplatesController extends Controller
             }
 
             return $this->renderTemplate('_special/cantrun', [
-                'reqCheck' => $reqCheck
+                'reqCheck' => $reqCheck,
             ]);
         }
 

@@ -60,7 +60,7 @@ class CategoriesController extends Controller
         $groups = Craft::$app->getCategories()->getAllGroups();
 
         return $this->renderTemplate('settings/categories/index', [
-            'categoryGroups' => $groups
+            'categoryGroups' => $groups,
         ]);
     }
 
@@ -82,12 +82,12 @@ class CategoriesController extends Controller
         $variables['crumbs'] = [
             [
                 'label' => Craft::t('app', 'Settings'),
-                'url' => UrlHelper::url('settings')
+                'url' => UrlHelper::url('settings'),
             ],
             [
                 'label' => Craft::t('app', 'Categories'),
-                'url' => UrlHelper::url('settings/categories')
-            ]
+                'url' => UrlHelper::url('settings/categories'),
+            ],
         ];
 
         $variables['brandNewGroup'] = false;
@@ -175,7 +175,7 @@ class CategoriesController extends Controller
 
             // Send the category group back to the template
             Craft::$app->getUrlManager()->setRouteParams([
-                'categoryGroup' => $group
+                'categoryGroup' => $group,
             ]);
 
             return null;
@@ -227,7 +227,7 @@ class CategoriesController extends Controller
 
         return $this->renderTemplate('categories/_index', [
             'groupHandle' => $groupHandle,
-            'groups' => $groups
+            'groups' => $groups,
         ]);
     }
 
@@ -246,7 +246,7 @@ class CategoriesController extends Controller
         $variables = [
             'groupHandle' => $groupHandle,
             'categoryId' => $categoryId,
-            'category' => $category
+            'category' => $category,
         ];
 
         if ($siteHandle !== null) {
@@ -307,7 +307,7 @@ class CategoriesController extends Controller
                 $variables['parentOptionCriteria']['where'] = [
                     'not in',
                     'elements.id',
-                    $excludeIds
+                    $excludeIds,
                 ];
             }
 
@@ -346,19 +346,19 @@ class CategoriesController extends Controller
         $variables['crumbs'] = [
             [
                 'label' => Craft::t('app', 'Categories'),
-                'url' => UrlHelper::url('categories')
+                'url' => UrlHelper::url('categories'),
             ],
             [
                 'label' => Craft::t('site', $variables['group']->name),
-                'url' => UrlHelper::url('categories/' . $variables['group']->handle)
-            ]
+                'url' => UrlHelper::url('categories/' . $variables['group']->handle),
+            ],
         ];
 
         /** @var Category $ancestor */
         foreach ($category->getAncestors()->all() as $ancestor) {
             $variables['crumbs'][] = [
                 'label' => $ancestor->title,
-                'url' => $ancestor->getCpEditUrl()
+                'url' => $ancestor->getCpEditUrl(),
             ];
         }
 
@@ -375,7 +375,7 @@ class CategoriesController extends Controller
                         'groupId' => $variables['group']->id,
                         'categoryId' => $category->id,
                         'siteId' => $category->siteId,
-                    ]
+                    ],
                 ]) . ');');
 
             if (!Craft::$app->getConfig()->getGeneral()->headlessMode) {
@@ -391,7 +391,7 @@ class CategoriesController extends Controller
                     $variables['shareUrl'] = UrlHelper::actionUrl('categories/share-category',
                         [
                             'categoryId' => $category->id,
-                            'siteId' => $category->siteId
+                            'siteId' => $category->siteId,
                         ]);
                 }
             }
@@ -471,7 +471,7 @@ class CategoriesController extends Controller
                 // Send the original category back to the template, with any validation errors on the clone
                 $category->addErrors($clone->getErrors());
                 Craft::$app->getUrlManager()->setRouteParams([
-                    'category' => $category
+                    'category' => $category,
                 ]);
 
                 return null;
@@ -500,7 +500,7 @@ class CategoriesController extends Controller
 
             // Send the category back to the template
             Craft::$app->getUrlManager()->setRouteParams([
-                $categoryVariable => $category
+                $categoryVariable => $category,
             ]);
 
             return null;
@@ -514,7 +514,7 @@ class CategoriesController extends Controller
                 'slug' => $category->slug,
                 'status' => $category->getStatus(),
                 'url' => $category->getUrl(),
-                'cpEditUrl' => $category->getCpEditUrl()
+                'cpEditUrl' => $category->getCpEditUrl(),
             ]);
         }
 
@@ -552,7 +552,7 @@ class CategoriesController extends Controller
 
             // Send the category back to the template
             Craft::$app->getUrlManager()->setRouteParams([
-                'category' => $category
+                'category' => $category,
             ]);
 
             return null;
@@ -597,8 +597,8 @@ class CategoriesController extends Controller
             'categories/view-shared-category',
             [
                 'categoryId' => $categoryId,
-                'siteId' => $category->siteId
-            ]
+                'siteId' => $category->siteId,
+            ],
         ]);
 
         if ($token === false) {
@@ -781,10 +781,9 @@ class CategoriesController extends Controller
         // Parent
         if (($parentId = $this->request->getBodyParam('parentId')) !== null) {
             if (is_array($parentId)) {
-                $parentId = reset($parentId) ?: '';
+                $parentId = reset($parentId) ?: false;
             }
-
-            $category->newParentId = $parentId ?: '';
+            $category->newParentId = $parentId ?: false;
         }
     }
 
@@ -820,7 +819,7 @@ class CategoriesController extends Controller
         $this->getView()->getTwig()->disableStrictVariables();
 
         return $this->renderTemplate($categoryGroupSiteSettings[$category->siteId]->template, [
-            'category' => $category
+            'category' => $category,
         ]);
     }
 }

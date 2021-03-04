@@ -356,7 +356,7 @@ class Category extends Element
     public $groupId;
 
     /**
-     * @var int|null New parent ID
+     * @var int|false|null New parent ID
      */
     public $newParentId;
 
@@ -388,7 +388,7 @@ class Category extends Element
     protected function defineRules(): array
     {
         $rules = parent::defineRules();
-        $rules[] = [['groupId', 'newParentId'], 'number', 'integerOnly' => true];
+        $rules[] = [['groupId'], 'number', 'integerOnly' => true];
         return $rules;
     }
 
@@ -435,8 +435,8 @@ class Category extends Element
                 'template' => (string)$categoryGroupSiteSettings[$siteId]->template,
                 'variables' => [
                     'category' => $this,
-                ]
-            ]
+                ],
+            ],
         ];
     }
 
@@ -673,7 +673,7 @@ class Category extends Element
                         $source['fieldId'],
                         $source['sourceId'],
                         $source['sourceSiteId'],
-                        $categoryId
+                        $categoryId,
                     ];
                 }
             }

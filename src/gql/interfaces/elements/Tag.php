@@ -70,14 +70,14 @@ class Tag extends Element
             'groupId' => [
                 'name' => 'groupId',
                 'type' => Type::int(),
-                'description' => 'The ID of the group that contains the tag.'
+                'description' => 'The ID of the group that contains the tag.',
             ],
             'groupHandle' => [
                 'name' => 'groupHandle',
                 'type' => Type::string(),
                 'description' => 'The handle of the group that contains the tag.',
                 'complexity' => Gql::singleQueryComplexity(),
-            ]
+            ],
         ]), self::getName());
     }
 }

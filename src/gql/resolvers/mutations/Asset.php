@@ -80,7 +80,7 @@ class Asset extends ElementMutationResolver
             $asset = $elementService->createElement([
                 'type' => AssetElement::class,
                 'volumeId' => $volume->id,
-                'newFolderId' => $newFolderId
+                'newFolderId' => $newFolderId,
             ]);
         }
 

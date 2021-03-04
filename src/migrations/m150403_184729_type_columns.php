@@ -27,7 +27,7 @@ class m150403_184729_type_columns extends Migration
                     'Local',
                     'Rackspace' => 'craft\rackspace\Volume',
                     'S3' => 'craft\awss3\Volume',
-                ]
+                ],
             ],
             [
                 'namespace' => 'craft\elements',
@@ -45,7 +45,7 @@ class m150403_184729_type_columns extends Migration
                     'MatrixBlock',
                     'Tag',
                     'User',
-                ]
+                ],
             ],
             [
                 'namespace' => 'craft\fields',
@@ -71,7 +71,7 @@ class m150403_184729_type_columns extends Migration
                     'Table',
                     'Tags',
                     'Users',
-                ]
+                ],
             ],
             [
                 'namespace' => 'craft\widgets',
@@ -85,7 +85,7 @@ class m150403_184729_type_columns extends Migration
                     'QuickPost',
                     'RecentEntries',
                     'Updates',
-                ]
+                ],
             ],
         ];
 
@@ -102,7 +102,7 @@ class m150403_184729_type_columns extends Migration
             }
 
             $columns = [
-                'type' => new Expression('concat(\'' . addslashes($componentType['namespace'] . '\\') . '\', type)')
+                'type' => new Expression('concat(\'' . addslashes($componentType['namespace'] . '\\') . '\', type)'),
             ];
 
             $condition = ['type' => $nativeTypes];

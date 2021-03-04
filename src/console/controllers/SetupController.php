@@ -159,9 +159,15 @@ EOD;
         // Can't do anything interactive here (https://github.com/composer/composer/issues/3299)
         $this->run('app-id');
         $this->run('security-key');
-        $this->stdout(PHP_EOL . 'Welcome to Craft CMS! Run the following command if you want to setup Craft from your terminal:' . PHP_EOL);
-        $this->_outputCommand('setup');
-        return ExitCode::OK;
+        $this->stdout(PHP_EOL . 'Welcome to Craft CMS!' . PHP_EOL . PHP_EOL);
+
+        if (!$this->interactive || !$this->confirm('Are you ready to begin the setup?')) {
+            $this->stdout('Run the following command if you want to setup Craft from your terminal:' . PHP_EOL);
+            $this->_outputCommand('setup');
+            return ExitCode::OK;
+        }
+
+        return $this->run('index');
     }
 
     /**
@@ -241,7 +247,7 @@ EOD;
             'default' => $this->port ?: ($this->driver === Connection::DRIVER_MYSQL ? 3306 : 5432),
             'validator' => function(string $input): bool {
                 return is_numeric($input);
-            }
+            },
         ]);
 
         userCredentials:
@@ -293,7 +299,7 @@ EOD;
                     return false;
                 }
                 return true;
-            }
+            },
         ]);
         if ($this->tablePrefix && $this->tablePrefix !== 'none') {
             $this->tablePrefix = StringHelper::ensureRight($this->tablePrefix, '_');
@@ -478,7 +484,7 @@ EOD;
                 $script = '~' . substr($script, strlen($home));
             }
         }
-        $this->stdout(PHP_EOL . '    ' . $script . ' ' . $command . PHP_EOL . PHP_EOL);
+        $this->stdout(PHP_EOL . '    php ' . $script . ' ' . $command . PHP_EOL . PHP_EOL);
     }
 
     /**

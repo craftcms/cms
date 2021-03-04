@@ -254,7 +254,8 @@ class MatrixBlock extends Element implements BlockElementInterface
             return [Craft::$app->getSites()->getPrimarySite()->id];
         }
 
-        return Craft::$app->getMatrix()->getSupportedSiteIds($this->_field()->propagationMethod, $owner);
+        $field = $this->_field();
+        return Craft::$app->getMatrix()->getSupportedSiteIds($field->propagationMethod, $owner, $field->propagationKeyFormat);
     }
 
     /**

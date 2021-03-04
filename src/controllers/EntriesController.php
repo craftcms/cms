@@ -64,7 +64,7 @@ class EntriesController extends BaseEntriesController
             'entryId' => $entryId,
             'draftId' => $draftId,
             'revisionId' => $revisionId,
-            'entry' => $entry
+            'entry' => $entry,
         ];
 
         if ($site !== null) {
@@ -139,7 +139,7 @@ class EntriesController extends BaseEntriesController
                 'siteId' => $site->id,
                 'sectionId' => $section->id,
                 'status' => null,
-                'where' => ['not in', 'elements.id', $excludeIds]
+                'where' => ['not in', 'elements.id', $excludeIds],
             ];
 
             if ($section->maxLevels) {
@@ -196,19 +196,19 @@ class EntriesController extends BaseEntriesController
         $variables['crumbs'] = [
             [
                 'label' => Craft::t('app', 'Entries'),
-                'url' => UrlHelper::url('entries')
-            ]
+                'url' => UrlHelper::url('entries'),
+            ],
         ];
 
         if ($section->type === Section::TYPE_SINGLE) {
             $variables['crumbs'][] = [
                 'label' => Craft::t('app', 'Singles'),
-                'url' => UrlHelper::url('entries/singles')
+                'url' => UrlHelper::url('entries/singles'),
             ];
         } else {
             $variables['crumbs'][] = [
                 'label' => Craft::t('site', $section->name),
-                'url' => UrlHelper::url('entries/' . $section->handle)
+                'url' => UrlHelper::url('entries/' . $section->handle),
             ];
 
             if ($section->type === Section::TYPE_STRUCTURE) {
@@ -216,7 +216,7 @@ class EntriesController extends BaseEntriesController
                 foreach ($entry->getAncestors()->all() as $ancestor) {
                     $variables['crumbs'][] = [
                         'label' => $ancestor->title,
-                        'url' => $ancestor->getCpEditUrl()
+                        'url' => $ancestor->getCpEditUrl(),
                     ];
                 }
             }
@@ -231,7 +231,7 @@ class EntriesController extends BaseEntriesController
             foreach ($entryTypes as $entryType) {
                 $variables['entryTypeOptions'][] = [
                     'label' => Craft::t('site', $entryType->name),
-                    'value' => $entryType->id
+                    'value' => $entryType->id,
                 ];
             }
 
@@ -348,7 +348,7 @@ class EntriesController extends BaseEntriesController
                 // Send the original entry back to the template, with any validation errors on the clone
                 $entry->addErrors($clone->getErrors());
                 Craft::$app->getUrlManager()->setRouteParams([
-                    'entry' => $entry
+                    'entry' => $entry,
                 ]);
 
                 return null;
@@ -396,7 +396,7 @@ class EntriesController extends BaseEntriesController
 
             // Send the entry back to the template
             Craft::$app->getUrlManager()->setRouteParams([
-                $entryVariable => $entry
+                $entryVariable => $entry,
             ]);
 
             return null;
@@ -552,7 +552,7 @@ class EntriesController extends BaseEntriesController
 
             // Send the entry back to the template
             Craft::$app->getUrlManager()->setRouteParams([
-                'entry' => $entry
+                'entry' => $entry,
             ]);
 
             return null;
@@ -838,10 +838,9 @@ class EntriesController extends BaseEntriesController
         // Parent
         if (($parentId = $this->request->getBodyParam('parentId')) !== null) {
             if (is_array($parentId)) {
-                $parentId = reset($parentId) ?: '';
+                $parentId = reset($parentId) ?: false;
             }
-
-            $entry->newParentId = $parentId ?: '';
+            $entry->newParentId = $parentId ?: false;
         }
 
         // Revision notes

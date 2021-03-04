@@ -20,10 +20,7 @@ module.exports = {
     devServer: {
         port: process.env.DEV_SERVER_PORT,
         headers: {"Access-Control-Allow-Origin": "*"},
-        https: {
-            key: process.env.DEV_SERVER_SSL_KEY ? fs.readFileSync(process.env.DEV_SERVER_SSL_KEY) : null,
-            cert: process.env.DEV_SERVER_SSL_CERT ? fs.readFileSync(process.env.DEV_SERVER_SSL_CERT) : null,
-        },
+        https: true,
 
         // Fix bug caused by webpack-dev-server 3.1.11.
         // https://github.com/vuejs/vue-cli/issues/3173#issuecomment-449573901

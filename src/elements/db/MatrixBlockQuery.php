@@ -456,6 +456,8 @@ class MatrixBlockQuery extends ElementQuery
     protected function beforePrepare(): bool
     {
         $this->_normalizeFieldId();
+        $this->_normalizeOwnerId();
+
         $this->joinElementTable('matrixblocks');
 
         // Figure out which content table to use
@@ -479,7 +481,6 @@ class MatrixBlockQuery extends ElementQuery
             $this->subQuery->andWhere(['matrixblocks.fieldId' => $this->fieldId]);
         }
 
-        $this->_normalizeOwnerId();
         if ($this->ownerId) {
             $this->subQuery->andWhere(['matrixblocks.ownerId' => $this->ownerId]);
         }

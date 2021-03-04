@@ -12,7 +12,7 @@ use craft\base\ElementAction;
 use craft\base\ElementActionInterface;
 use craft\base\ElementExporterInterface;
 use craft\base\ElementInterface;
-use craft\elements\actions\Delete;
+use craft\elements\actions\DeleteActionInterface;
 use craft\elements\actions\Restore;
 use craft\elements\db\ElementQuery;
 use craft\elements\db\ElementQueryInterface;
@@ -221,7 +221,7 @@ class ElementIndexesController extends BaseElementsController
         // Fire a 'beforePerformAction' event
         $event = new ElementActionEvent([
             'action' => $action,
-            'criteria' => $actionCriteria
+            'criteria' => $actionCriteria,
         ]);
 
         $elementsService->trigger($elementsService::EVENT_BEFORE_PERFORM_ACTION, $event);
@@ -234,7 +234,7 @@ class ElementIndexesController extends BaseElementsController
                 // Fire an 'afterPerformAction' event
                 $elementsService->trigger($elementsService::EVENT_AFTER_PERFORM_ACTION, new ElementActionEvent([
                     'action' => $action,
-                    'criteria' => $actionCriteria
+                    'criteria' => $actionCriteria,
                 ]));
             }
         } else {
@@ -274,8 +274,8 @@ class ElementIndexesController extends BaseElementsController
         return $this->asJson([
             'html' => $this->getView()->renderTemplate('_elements/sources', [
                 'elementType' => $this->elementType,
-                'sources' => $sources
-            ])
+                'sources' => $sources,
+            ]),
         ]);
     }
 
@@ -320,10 +320,10 @@ class ElementIndexesController extends BaseElementsController
                     break;
             }
         } else if (
+            is_callable($export) ||
             is_resource($export) ||
             (is_array($export) && isset($export[0]) && is_resource($export[0]))
         ) {
-            // todo: check for is_callable() here if https://github.com/yiisoft/yii2/pull/18394 gets accepted
             $this->response->stream = $export;
         } else {
             $this->response->data = $export;
@@ -567,7 +567,7 @@ class ElementIndexesController extends BaseElementsController
             }
 
             if ($this->elementQuery->trashed) {
-                if ($action instanceof Delete && !$action->withDescendants) {
+                if ($action instanceof DeleteActionInterface && $action->canHardDelete()) {
                     $action->hard = true;
                 } else if (!$action instanceof Restore) {
                     unset($actions[$i]);
@@ -579,7 +579,7 @@ class ElementIndexesController extends BaseElementsController
 
         if ($this->elementQuery->trashed) {
             // Make sure Restore goes first
-            usort($actions, function($a, $b): int {
+            usort($actions, function ($a, $b): int {
                 if ($a instanceof Restore) {
                     return -1;
                 }

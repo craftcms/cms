@@ -13,6 +13,7 @@ use craft\base\Field;
 use craft\base\PreviewableFieldInterface;
 use craft\base\SortableFieldInterface;
 use craft\helpers\Db;
+use craft\helpers\Html;
 use LitEmoji\LitEmoji;
 use yii\db\Schema;
 
@@ -117,6 +118,34 @@ class PlainText extends Field implements PreviewableFieldInterface, SortableFiel
     /**
      * @inheritdoc
      */
+    public function init()
+    {
+        parent::init();
+
+        if ($this->placeholder === '') {
+            $this->placeholder = null;
+        }
+
+        if ($this->placeholder !== null) {
+            $this->placeholder = LitEmoji::shortcodeToUnicode($this->placeholder);
+        }
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getSettings(): array
+    {
+        $settings = parent::getSettings();
+        if (isset($settings['placeholder'])) {
+            $settings['placeholder'] = LitEmoji::unicodeToShortcode($settings['placeholder']);
+        }
+        return $settings;
+    }
+
+    /**
+     * @inheritdoc
+     */
     protected function defineRules(): array
     {
         $rules = parent::defineRules();
@@ -150,7 +179,7 @@ class PlainText extends Field implements PreviewableFieldInterface, SortableFiel
     {
         return Craft::$app->getView()->renderTemplate('_components/fieldtypes/PlainText/settings',
             [
-                'field' => $this
+                'field' => $this,
             ]);
     }
 
@@ -193,6 +222,7 @@ class PlainText extends Field implements PreviewableFieldInterface, SortableFiel
     protected function inputHtml($value, ElementInterface $element = null): string
     {
         return Craft::$app->getView()->renderTemplate('_components/fieldtypes/PlainText/input', [
+            'id' => Html::id($this->handle),
             'name' => $this->handle,
             'value' => $value,
             'field' => $this,

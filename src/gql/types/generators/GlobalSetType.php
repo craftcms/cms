@@ -83,7 +83,7 @@ class GlobalSetType implements GeneratorInterface, SingleGeneratorInterface
             'name' => $typeName,
             'fields' => function() use ($globalSetFields) {
                 return $globalSetFields;
-            }
+            },
         ]));
     }
 

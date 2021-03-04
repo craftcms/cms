@@ -213,7 +213,7 @@ class ConfigSyncController extends BaseUpdaterController
                 'options' => [
                     $this->finishedState(['label' => Craft::t('app', 'Cancel')]),
                     $this->actionOption(Craft::t('app', 'Try again'), self::ACTION_RETRY, ['submit' => true]),
-                ]
+                ],
             ];
         }
 
@@ -229,7 +229,7 @@ class ConfigSyncController extends BaseUpdaterController
                     $this->actionOption(Craft::t('app', 'Use YAML files'), $this->_nextApplyYamlAction(), [
                         'submit' => true,
                     ]),
-                ]
+                ],
             ];
         }
 
@@ -286,12 +286,12 @@ class ConfigSyncController extends BaseUpdaterController
      */
     private function _nextApplyYamlAction(): string
     {
-        if (!empty($this->data['uninstallPlugins'])) {
-            return self::ACTION_UNINSTALL_PLUGIN;
-        }
-
         if (!empty($this->data['installPlugins'])) {
             return self::ACTION_INSTALL_PLUGIN;
+        }
+
+        if (!empty($this->data['uninstallPlugins'])) {
+            return self::ACTION_UNINSTALL_PLUGIN;
         }
 
         return self::ACTION_APPLY_YAML_CHANGES;

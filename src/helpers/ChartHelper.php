@@ -100,12 +100,12 @@ class ChartHelper
             'columns' => [
                 [
                     'type' => $intervalUnit === 'hour' ? 'datetime' : 'date',
-                    'label' => $options['categoryLabel']
+                    'label' => $options['categoryLabel'],
                 ],
                 [
                     'type' => $options['valueType'],
-                    'label' => $options['valueLabel']
-                ]
+                    'label' => $options['valueLabel'],
+                ],
             ],
             'rows' => $rows,
         ];
@@ -157,7 +157,7 @@ class ChartHelper
      */
     public static function shortDateFormats(): array
     {
-        $format = Craft::$app->getLocale()->getDateFormat('short');
+        $format = Craft::$app->getFormattingLocale()->getDateFormat('short');
 
         // Some of these are RTL versions
         $removals = [
@@ -182,7 +182,7 @@ class ChartHelper
         $yiiToD3Formats = [
             'day' => ['dd' => '%-d', 'd' => '%-d'],
             'month' => ['MM' => '%-m', 'M' => '%-m'],
-            'year' => ['yyyy' => '%Y', 'yy' => '%y', 'y' => '%y']
+            'year' => ['yyyy' => '%Y', 'yy' => '%y', 'y' => '%y'],
         ];
 
         foreach ($shortDateFormats as $unit => $format) {

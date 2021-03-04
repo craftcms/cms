@@ -85,7 +85,7 @@ class SystemSettingsController extends Controller
             $timezoneIds[] = $timezoneId;
             $timezoneOptions[] = [
                 'value' => $timezoneId,
-                'label' => 'UTC' . $format . ($abbr !== 'UTC' ? " ({$abbr})" : '') . ($timezoneId !== 'UTC' ? ' – ' . $timezoneId : '')
+                'label' => 'UTC' . $format . ($abbr !== 'UTC' ? " ({$abbr})" : '') . ($timezoneId !== 'UTC' ? ' – ' . $timezoneId : ''),
             ];
         }
 
@@ -95,7 +95,7 @@ class SystemSettingsController extends Controller
 
         return $this->renderTemplate('settings/general/_index', [
             'system' => Craft::$app->getProjectConfig()->get('system'),
-            'timezoneOptions' => $timezoneOptions
+            'timezoneOptions' => $timezoneOptions,
         ]);
     }
 
@@ -140,7 +140,7 @@ class SystemSettingsController extends Controller
             } catch (MissingComponentException $e) {
                 $adapter = new Sendmail();
                 $adapter->addError('type', Craft::t('app', 'The transport type “{type}” could not be found.', [
-                    'type' => $settings->transportType
+                    'type' => $settings->transportType,
                 ]));
             }
         }
@@ -162,7 +162,7 @@ class SystemSettingsController extends Controller
                 $allTransportAdapters[] = MailerHelper::createTransportAdapter($transportAdapterType);
                 $transportTypeOptions[] = [
                     'value' => $transportAdapterType,
-                    'label' => $transportAdapterType::displayName()
+                    'label' => $transportAdapterType::displayName(),
                 ];
             }
         }
@@ -211,7 +211,7 @@ class SystemSettingsController extends Controller
             // Send the settings back to the template
             Craft::$app->getUrlManager()->setRouteParams([
                 'settings' => $settings,
-                'adapter' => $adapter
+                'adapter' => $adapter,
             ]);
 
             return null;
@@ -243,7 +243,7 @@ class SystemSettingsController extends Controller
             $mailer = Craft::createObject(App::mailerConfig($settings));
             $message = $mailer
                 ->composeFromKey('test_email', [
-                    'settings' => MailerHelper::settingsReport($mailer, $adapter)
+                    'settings' => MailerHelper::settingsReport($mailer, $adapter),
                 ])
                 ->setTo(Craft::$app->getUser()->getIdentity());
 
@@ -259,7 +259,7 @@ class SystemSettingsController extends Controller
         // Send the settings back to the template
         Craft::$app->getUrlManager()->setRouteParams([
             'settings' => $settings,
-            'adapter' => $adapter
+            'adapter' => $adapter,
         ]);
     }
 
@@ -295,12 +295,12 @@ class SystemSettingsController extends Controller
         $crumbs = [
             [
                 'label' => Craft::t('app', 'Settings'),
-                'url' => UrlHelper::url('settings')
+                'url' => UrlHelper::url('settings'),
             ],
             [
                 'label' => Craft::t('app', 'Globals'),
-                'url' => UrlHelper::url('settings/globals')
-            ]
+                'url' => UrlHelper::url('settings/globals'),
+            ],
         ];
 
         // Render the template!

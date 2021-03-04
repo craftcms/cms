@@ -82,7 +82,7 @@ class Feed extends Widget
     {
         return Craft::$app->getView()->renderTemplate('_components/widgets/Feed/settings',
             [
-                'widget' => $this
+                'widget' => $this,
             ]);
     }
 

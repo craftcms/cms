@@ -51,7 +51,7 @@ class PruneRevisionsController extends Controller
                 'default' => Craft::$app->getConfig()->getGeneral()->maxRevisions,
                 'validator' => function($input) {
                     return filter_var($input, FILTER_VALIDATE_INT, FILTER_NULL_ON_FAILURE) !== null && $input >= 0;
-                }
+                },
             ]);
         }
 
@@ -64,14 +64,14 @@ class PruneRevisionsController extends Controller
                 'type' => (new Query())
                     ->select(['type'])
                     ->from([Table::ELEMENTS])
-                    ->where(new Expression('[[id]] = [[s.sourceId]]'))
+                    ->where(new Expression('[[id]] = [[s.sourceId]]')),
             ])
             ->from([
                 's' => (new Query())
                     ->select(['sourceId', 'count' => 'COUNT(*)'])
                     ->from(['r' => Table::REVISIONS])
                     ->groupBy(['sourceId'])
-                    ->having(['>', 'COUNT(*)', $this->maxRevisions])
+                    ->having(['>', 'COUNT(*)', $this->maxRevisions]),
             ])
             ->all();
         $this->stdout('done' . PHP_EOL . PHP_EOL, Console::FG_GREEN);

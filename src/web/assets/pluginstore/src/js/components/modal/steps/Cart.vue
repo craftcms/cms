@@ -42,13 +42,23 @@
                                         <td>
                                             <div class="item-name">
                                                 <strong>{{ item.plugin.name}}</strong>
-                                                <edition-badge :name="item.lineItem.purchasable.name"></edition-badge>
+                                                <edition-badge v-if="item.plugin.editions > 1" :name="item.lineItem.purchasable.name"></edition-badge>
                                             </div>
                                         </td>
                                     </template>
 
                                     <td class="expiry-date">
-                                        <template v-if="item.lineItem.purchasable.type === 'cms-edition' || (item.lineItem.purchasable.type === 'plugin-edition' && item.lineItem.options.licenseKey.substr(0, 4) === 'new:')">
+                                        <template v-if="
+                                            item.lineItem.purchasable.type === 'cms-edition'
+                                            || (item.lineItem.purchasable.type === 'plugin-edition'
+                                            && (
+                                                item.lineItem.options.licenseKey.substr(0, 4) === 'new:'
+                                                || (
+                                                    pluginLicenseInfo(item.plugin.handle) &&
+                                                    pluginLicenseInfo(item.plugin.handle).isTrial
+                                                )
+                                            )
+                                        )">
                                             <dropdown v-model="selectedExpiryDates[itemKey]" :options="itemExpiryDateOptions(itemKey)" @input="onSelectedExpiryDateChange(itemKey)" />
                                         </template>
 
@@ -112,27 +122,7 @@
                     </div>
                 </template>
 
-                <template v-if="pendingActiveTrials && pendingActiveTrials.length > 0">
-                    <hr />
-
-                    <div v-if="pendingActiveTrials.length > 1" class="right">
-                        <a @click="addAllToCart()">{{ "Add all to cart"|t('app') }}</a>
-                    </div>
-
-                    <h2>{{ "Active Trials"|t('app') }}</h2>
-
-                    <table class="cart-data">
-                        <thead>
-                        <tr>
-                            <th class="thin"></th>
-                            <th>{{ "Plugin Name"|t('app') }}</th>
-                        </tr>
-                        </thead>
-                        <tbody v-for="(plugin, key) in pendingActiveTrials" :key="key">
-                            <active-trials-table-row :plugin="plugin"></active-trials-table-row>
-                        </tbody>
-                    </table>
-                </template>
+                <active-trials></active-trials>
             </template>
             <template v-else>
                 <spinner></spinner>
@@ -147,12 +137,12 @@
     import {mapState, mapGetters, mapActions} from 'vuex'
     import Step from '../Step'
     import EditionBadge from '../../EditionBadge'
-    import ActiveTrialsTableRow from './cart/ActiveTrialsTableRow';
+    import ActiveTrials from './cart/ActiveTrials';
 
     export default {
         data() {
             return {
-                activeTrialsLoading: false,
+                activeTrialsLoading: true,
                 loadingItems: {},
                 loadingRemoveFromCart: {},
                 loadingCheckout: false,
@@ -160,7 +150,7 @@
         },
 
         components: {
-            ActiveTrialsTableRow,
+            ActiveTrials,
             EditionBadge,
             Step,
         },
@@ -172,28 +162,13 @@
                 craftId: state => state.craft.craftId,
                 craftLogo: state => state.craft.craftLogo,
                 expiryDateOptions: state => state.pluginStore.expiryDateOptions,
-                pluginLicenseInfo: state => state.craft.pluginLicenseInfo,
             }),
 
             ...mapGetters({
                 cartItems: 'cart/cartItems',
                 cartItemsData: 'cart/cartItemsData',
-                getActiveTrialPluginEdition: 'cart/getActiveTrialPluginEdition',
+                getPluginLicenseInfo: 'craft/getPluginLicenseInfo',
             }),
-
-            pendingActiveTrials() {
-                return this.activeTrialPlugins.filter(p => {
-                    if (p) {
-                        if(!this.cart) {
-                            return false
-                        }
-
-                        return !this.cart.lineItems.find(item => {
-                            return item.purchasable.pluginId == p.id
-                        })
-                    }
-                })
-            },
 
             selectedExpiryDates: {
                 get() {
@@ -209,28 +184,6 @@
             ...mapActions({
                 removeFromCart: 'cart/removeFromCart'
             }),
-
-            addAllToCart() {
-                let $store = this.$store
-                let items = []
-
-                this.pendingActiveTrials.forEach(plugin => {
-                    const edition = this.getActiveTrialPluginEdition(plugin)
-
-                    const item = {
-                        type: 'plugin-edition',
-                        plugin: plugin.handle,
-                        edition: edition.handle
-                    }
-
-                    items.push(item)
-                })
-
-                $store.dispatch('cart/addToCart', items)
-                    .catch(() => {
-                        this.$root.displayError(this.$options.filters.t('Couldn’t add all items to the cart.', 'app'))
-                    })
-            },
 
             itemExpiryDateOptions(itemKey) {
                 const item = this.cartItems[itemKey]
@@ -340,12 +293,14 @@
 
                 return true
             },
+
+            pluginLicenseInfo(pluginHandle) {
+                return this.getPluginLicenseInfo(pluginHandle)
+            },
         },
 
         mounted() {
-            this.activeTrialsLoading = true
-
-            this.$store.dispatch('cart/getActiveTrialPlugins')
+            this.$store.dispatch('cart/getActiveTrials')
                 .then(() => {
                     this.activeTrialsLoading = false
                 })
@@ -360,6 +315,8 @@
     @import "../../../../../../../../../node_modules/craftcms-sass/mixins";
 
     table.cart-data {
+        border-top: 1px solid #eee;
+
         thead,
         tbody {
             border-bottom: 1px solid #eee;
@@ -406,8 +363,6 @@
 
     @media (max-width: 991px) {
         table.cart-data {
-            border-top: 1px solid #eee;
-
             thead {
                 display: none;
             }

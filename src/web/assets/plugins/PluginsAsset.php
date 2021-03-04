@@ -57,6 +57,7 @@ class PluginsAsset extends AssetBundle
                 'Documentation',
                 'Install',
                 'Missing',
+                'Plugin trials are not allowed on this domain.',
                 'Status',
                 'Switch',
                 'This license is for the {name} edition.',

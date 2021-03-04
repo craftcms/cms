@@ -164,7 +164,7 @@ class EntryRevisionsController extends BaseEntriesController
 
         // Save it and redirect to its edit page
         $entry->setScenario(Element::SCENARIO_ESSENTIALS);
-        if (!Craft::$app->getDrafts()->saveElementAsDraft($entry, Craft::$app->getUser()->getId())) {
+        if (!Craft::$app->getDrafts()->saveElementAsDraft($entry, Craft::$app->getUser()->getId(), null, null, false)) {
             throw new Exception('Unable to save entry as a draft: ' . implode(', ', $entry->getErrorSummary(true)));
         }
 
@@ -444,7 +444,7 @@ class EntryRevisionsController extends BaseEntriesController
 
             // Send the draft back to the template
             Craft::$app->getUrlManager()->setRouteParams([
-                'entry' => $draft
+                'entry' => $draft,
             ]);
             return null;
         }
@@ -560,13 +560,12 @@ class EntryRevisionsController extends BaseEntriesController
         $draft->authorId = $authorId;
 
         // Parent
-        $parentId = $this->request->getBodyParam('parentId');
-
-        if (is_array($parentId)) {
-            $parentId = $parentId[0] ?? null;
+        if (($parentId = $this->request->getBodyParam('parentId')) !== null) {
+            if (is_array($parentId)) {
+                $parentId = reset($parentId) ?: false;
+            }
+            $draft->newParentId = $parentId ?: false;
         }
-
-        $draft->newParentId = $parentId ?: null;
 
         // Draft meta
         /** @var Entry|DraftBehavior $draft */

@@ -152,22 +152,13 @@ class Drafts extends Component
         $notes = $event->draftNotes;
 
         if ($name === null || $name === '') {
-            $draftNames = (new Query())
-                ->select(['name'])
-                ->from([Table::DRAFTS])
-                ->where(['sourceId' => $source->id])
-                ->column();
-            $draftNames = array_flip($draftNames);
-            $num = count($draftNames);
-            do {
-                $name = Craft::t('app', 'Draft {num}', ['num' => ++$num]);
-            } while (isset($draftNames[$name]));
+            $name = $this->generateDraftName($source->id);
         }
 
         $transaction = $this->db->beginTransaction();
         try {
             // Create the draft row
-            $draftId = $this->_insertDraftRow($source->id, $creatorId, $name, $notes, $source::trackChanges());
+            $draftId = $this->insertDraftRow($name, $notes, $creatorId, $source->id, $source::trackChanges());
 
             $newAttributes['draftId'] = $draftId;
             $newAttributes['behaviors']['draft'] = [
@@ -203,29 +194,57 @@ class Drafts extends Component
     }
 
     /**
+     * Returns the next auto-generated draft name that should be assigned, for the given source element.
+     *
+     * @param int $sourceId The source element’s ID
+     * @return string
+     * @since 3.6.5
+     */
+    public function generateDraftName(int $sourceId): string
+    {
+        // Get all of the source's current draft names
+        $draftNames = (new Query())
+            ->select(['name'])
+            ->from([Table::DRAFTS])
+            ->where(['sourceId' => $sourceId])
+            ->column();
+        $draftNames = array_flip($draftNames);
+
+        // Find one that isn't taken
+        $num = count($draftNames);
+        do {
+            $name = Craft::t('app', 'Draft {num}', ['num' => ++$num]);
+        } while (isset($draftNames[$name]));
+
+        return $name;
+    }
+
+    /**
      * Saves an element as a draft.
      *
      * @param ElementInterface $element
-     * @param int $creatorId
+     * @param int|null $creatorId
      * @param string|null $name
      * @param string|null $notes
+     * @param bool $markAsSaved
      * @return bool
      * @throws \Throwable
      */
-    public function saveElementAsDraft(ElementInterface $element, int $creatorId, string $name = null, string $notes = null): bool
+    public function saveElementAsDraft(ElementInterface $element, ?int $creatorId = null, ?string $name = null, ?string $notes = null, bool $markAsSaved = true): bool
     {
         if ($name === null) {
             $name = Craft::t('app', 'First draft');
         }
 
         // Create the draft row
-        $draftId = $this->_insertDraftRow(null, $creatorId, $name, $notes);
+        $draftId = $this->insertDraftRow($name, $notes, $creatorId);
 
         $element->draftId = $draftId;
         $element->attachBehavior('draft', new DraftBehavior([
             'creatorId' => $creatorId,
             'draftName' => $name,
             'draftNotes' => $notes,
+            'markAsSaved' => $markAsSaved,
         ]));
 
         // Try to save and return the result
@@ -492,24 +511,68 @@ class Drafts extends Component
     /**
      * Deletes any sourceless drafts that were never formally saved.
      *
-     * @deprecated in 3.6.0
+     * @return void
      */
-    public function purgeUnsavedDrafts()
+    public function purgeUnsavedDrafts(): void
     {
+        $generalConfig = Craft::$app->getConfig()->getGeneral();
+
+        if ($generalConfig->purgeUnsavedDraftsDuration === 0) {
+            return;
+        }
+
+        $interval = DateTimeHelper::secondsToInterval($generalConfig->purgeUnsavedDraftsDuration);
+        $expire = DateTimeHelper::currentUTCDateTime();
+        $pastTime = $expire->sub($interval);
+
+        $drafts = (new Query())
+            ->select(['e.draftId', 'e.type'])
+            ->from(['e' => Table::ELEMENTS])
+            ->innerJoin(['d' => Table::DRAFTS], '[[d.id]] = [[e.draftId]]')
+            ->where(['d.saved' => false])
+            ->andWhere(['d.sourceId' => null])
+            ->andWhere(['<', 'e.dateUpdated', Db::prepareDateForDb($pastTime)])
+            ->all();
+
+        $elementsService = Craft::$app->getElements();
+
+        foreach ($drafts as $draftInfo) {
+            /** @var ElementInterface|string $elementType */
+            $elementType = $draftInfo['type'];
+            $draft = $elementType::find()
+                ->draftId($draftInfo['draftId'])
+                ->anyStatus()
+                ->siteId('*')
+                ->one();
+
+            if ($draft) {
+                $elementsService->deleteElement($draft, true);
+            } else {
+                // Perhaps the draft's row in the `entries` table was deleted manually or something.
+                // Just drop its row in the `drafts` table, and let that cascade to `elements` and whatever other tables
+                // still have rows for the draft.
+                Db::delete(Table::DRAFTS, [
+                    'id' => $draftInfo['draftId'],
+                ], [], $this->db);
+            }
+
+            Craft::info("Deleted unsaved draft {$draftInfo['draftId']}", __METHOD__);
+        }
     }
 
     /**
      * Creates a new row in the `drafts` table.
      *
-     * @param int|null $sourceId
-     * @param int $creatorId
      * @param string|null $name
      * @param string|null $notes
+     * @param int|null $creatorId
+     * @param int|null $sourceId
      * @param bool $trackChanges
      * @return int The new draft ID
      * @throws DbException
+     * @since 3.6.4
      */
-    private function _insertDraftRow(int $sourceId = null, int $creatorId, string $name = null, string $notes = null, bool $trackChanges = false): int
+    public function insertDraftRow(?string $name, ?string $notes = null, int $creatorId = null, ?int $sourceId = null, bool $trackChanges = false): int
     {
         Db::insert(Table::DRAFTS, [
             'sourceId' => $sourceId,

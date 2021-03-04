@@ -14,6 +14,7 @@ use DateTime;
 use DateTimeImmutable;
 use DateTimeZone;
 use yii\base\ErrorException;
+use yii\base\InvalidArgumentException;
 
 /**
  * Class DateTimeHelper
@@ -436,24 +437,35 @@ class DateTimeHelper
      * @param mixed $timeInterval The numeric value with space then time type.
      * Example of valid types: '6 hours', '2 days', '1 minute'.
      * @return bool Whether the $dateString was within the specified $timeInterval.
+     * @throws InvalidArgumentException
      */
     public static function isWithinLast($date, $timeInterval): bool
     {
+        $date = static::toDateTime($date);
+
+        if ($date === false) {
+            throw new InvalidArgumentException('Invalid date');
+        }
+
+        $timestamp = $date->getTimestamp();
+        $now = new DateTime();
+
+        // Bail early if it's in the future
+        if ($timestamp > $now->getTimestamp()) {
+            return false;
+        }
+
         if (is_numeric($timeInterval)) {
             $timeInterval .= ' days';
         }
 
-        $date = self::toDateTime($date);
-        $timestamp = $date->getTimestamp();
-
-        // Bail early if it's in the future
-        if ($timestamp > time()) {
-            return false;
+        try {
+            $earliestTimestamp = $now->modify("-$timeInterval")->getTimestamp();
+        } catch (\Throwable $e) {
+            throw new InvalidArgumentException("Invalid time interval: $timeInterval", 0, $e);
         }
 
-        $earliestTimestamp = strtotime('-' . $timeInterval);
-
-        return ($timestamp >= $earliestTimestamp);
+        return $timestamp >= $earliestTimestamp;
     }
 
     /**
@@ -590,7 +602,7 @@ class DateTimeHelper
         }
 
         // Get the locale's short date format
-        $format = Craft::$app->getLocale()->getDateFormat(Locale::LENGTH_SHORT, Locale::FORMAT_PHP);
+        $format = Craft::$app->getFormattingLocale()->getDateFormat(Locale::LENGTH_SHORT, Locale::FORMAT_PHP);
 
         // Make sure it's a 4-digit year
         $format = StringHelper::replace($format, 'y', 'Y');
@@ -631,13 +643,13 @@ class DateTimeHelper
             return [$value, 'H:i' . (isset($matches[1]) ? ':s' : '')];
         }
 
-        // Get the locale's short time format
-        $locale = Craft::$app->getLocale();
-        $format = $locale->getTimeFormat(Locale::LENGTH_SHORT, Locale::FORMAT_PHP);
+        // Get the formatting locale's short time format
+        $formattingLocale = Craft::$app->getFormattingLocale();
+        $format = $formattingLocale->getTimeFormat(Locale::LENGTH_SHORT, Locale::FORMAT_PHP);
 
         // Replace the localized "AM" and "PM"
-        $am = $locale->getAMName();
-        $pm = $locale->getPMName();
+        $am = $formattingLocale->getAMName();
+        $pm = $formattingLocale->getPMName();
 
         if (preg_match('/(.*)(' . preg_quote($am, '/') . '|' . preg_quote($pm, '/') . ')(.*)/iu', $value, $matches)) {
             $value = $matches[1] . $matches[3];
@@ -730,13 +742,9 @@ class DateTimeHelper
     private static function _getDateTranslations(string $language): array
     {
         if (!isset(self::$_translationPairs[$language])) {
-            if (strpos(Craft::$app->language, 'en') === 0) {
-                $sourceLocale = Craft::$app->getLocale();
-            } else {
-                $sourceLocale = Craft::$app->getI18n()->getLocaleById('en-US');
-            }
-
-            $targetLocale = Craft::$app->getI18n()->getLocaleById($language);
+            $i18n = Craft::$app->getI18n();
+            $sourceLocale = $i18n->getLocaleById('en-US');
+            $targetLocale = $i18n->getLocaleById($language);
 
             $amName = $targetLocale->getAMName();
             $pmName = $targetLocale->getPMName();
@@ -750,7 +758,7 @@ class DateTimeHelper
                     'AM' => mb_strtoupper($amName),
                     'PM' => mb_strtoupper($pmName),
                     'am' => mb_strtolower($amName),
-                    'pm' => mb_strtolower($pmName)
+                    'pm' => mb_strtolower($pmName),
                 ]
             );
         }

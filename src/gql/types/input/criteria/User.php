@@ -27,7 +27,7 @@ class User extends InputObjectType
             'name' => $typeName,
             'fields' => function() {
                 return UserArguments::getArguments();
-            }
+            },
         ]));
     }
 }

@@ -1,11 +1,12 @@
 {% set systemName = craft.app.getSystemName()|t('site') -%}
 {% set docTitle = docTitle is defined ? docTitle : title|striptags -%}
 {% set orientation = craft.app.locale.getOrientation() -%}
+{% set a11yDefaults = craft.app.config.general.accessibilityDefaults %}
 
 {% set bodyClass = (bodyClass ?? [])|explodeClass|merge([
     orientation,
-    currentUser and currentUser.getPreference('useShapes') ? 'use-shapes',
-    currentUser and currentUser.getPreference('underlineLinks') ? 'underline-links',
+    (currentUser.getPreference('useShapes') ?? a11yDefaults['useShapes'] ?? false) ? 'use-shapes',
+    (currentUser.getPreference('underlineLinks') ?? a11yDefaults['underlineLinks'] ?? false) ? 'underline-links',
 ])|filter -%}
 
 {% set bodyAttributes = {

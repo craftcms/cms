@@ -146,6 +146,7 @@ class ImagesTest extends Unit
      */
     public function testGetExifData()
     {
+        $this->_skipIfNoImagick();
         $exifData = $this->images->getExifData($this->sandboxPath . 'image-rotated-180.jpg');
 
         $requiredValues = [
@@ -162,7 +163,7 @@ class ImagesTest extends Unit
     }
 
     /**
-     * Test that false is returned (and not for example an exeption being thrown) when calling exif based functions.
+     * Test that false is returned (and not for example an exception being thrown) when calling exif based functions.
      */
     public function testNoExifFalses()
     {

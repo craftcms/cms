@@ -8,6 +8,8 @@
 namespace craft\models;
 
 use craft\base\Model;
+use craft\helpers\DateTimeHelper;
+use DateTimeZone;
 
 /**
  * Stores the info for an update release.
@@ -45,5 +47,23 @@ class UpdateRelease extends Model
         $attributes = parent::datetimeAttributes();
         $attributes[] = 'date';
         return $attributes;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function fields()
+    {
+        $fields = parent::fields();
+
+        // Don't include time zone in the date
+        $fields['date'] = function(): ?string {
+            if ($this->date !== null) {
+                return DateTimeHelper::toDateTime($this->date)->setTimezone(new DateTimeZone('UTC'))->format('Y-m-d\TH:i:s');
+            }
+            return null;
+        };
+
+        return $fields;
     }
 }

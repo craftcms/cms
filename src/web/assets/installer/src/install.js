@@ -107,7 +107,7 @@
                 $h1.text(Craft.t('app', 'Craft is installed! 🎉'));
 
                 setTimeout(function() {
-                    window.location.href = Craft.getUrl('dashboard');
+                    window.location.href = Craft.getUrl(postCpLoginRedirect);
                 }, 1000);
             } else {
                 $h1.text('Install failed 😞');

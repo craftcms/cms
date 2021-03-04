@@ -71,6 +71,8 @@ use craft\models\GqlToken;
 use craft\models\Section;
 use craft\records\GqlSchema as GqlSchemaRecord;
 use craft\records\GqlToken as GqlTokenRecord;
+use GraphQL\Error\DebugFlag;
+use GraphQL\Error\Error;
 use GraphQL\GraphQL;
 use GraphQL\Type\Schema;
 use GraphQL\Validator\DocumentValidator;
@@ -101,7 +103,7 @@ class Gql extends Component
      * ---
      * ```php
      * use craft\events\RegisterGqlTypeEvent;
-     * use craft\services\GraphQl;
+     * use craft\services\Gql;
      * use yii\base\Event;
      *
      * Event::on(Gql::class, Gql::EVENT_REGISTER_GQL_TYPES, function(RegisterGqlTypeEvent $event) {
@@ -121,7 +123,7 @@ class Gql extends Component
      * ---
      * ```php
      * use craft\events\RegisterGqlQueriesEvent;
-     * use craft\services\GraphQl;
+     * use craft\services\Gql;
      * use yii\base\Event;
      * use GraphQL\Type\Definition\Type;
      *
@@ -129,7 +131,7 @@ class Gql extends Component
      *     // Add my GraphQL queries
      *     $event->queries['queryPluginData'] =
      *     [
-     *         'type' => Type::listOf(MyType::getType())),
+     *         'type' => Type::listOf(MyType::getType()),
      *         'args' => MyArguments::getArguments(),
      *         'resolve' => MyResolver::class . '::resolve'
      *     ];
@@ -147,7 +149,7 @@ class Gql extends Component
      * ---
      * ```php
      * use craft\events\RegisterGqlMutationsEvent;
-     * use craft\services\GraphQl;
+     * use craft\services\Gql;
      * use yii\base\Event;
      * use GraphQL\Type\Definition\Type;
      *
@@ -155,7 +157,7 @@ class Gql extends Component
      *     // Add my GraphQL queries
      *     $event->queries['mutationPluginData'] =
      *     [
-     *         'type' => Type::listOf(MyType::getType())),
+     *         'type' => Type::listOf(MyType::getType()),
      *         'args' => MyArguments::getArguments(),
      *     ];
      * });
@@ -172,7 +174,7 @@ class Gql extends Component
      * ---
      * ```php
      * use craft\events\RegisterGqlDirectivesEvent;
-     * use craft\services\GraphQl;
+     * use craft\services\Gql;
      * use yii\base\Event;
      *
      * Event::on(Gql::class,
@@ -206,7 +208,7 @@ class Gql extends Component
      * ---
      * ```php
      * use craft\events\DefineGqlValidationRulesEvent;
-     * use craft\services\GraphQl;
+     * use craft\services\Gql;
      * use yii\base\Event;
      * use GraphQL\Type\Definition\Type;
      * use GraphQL\Validator\Rules\DisableIntrospection;
@@ -227,7 +229,7 @@ class Gql extends Component
      * ---
      * ```php
      * use craft\events\ExecuteGqlQueryEvent;
-     * use craft\services\GraphQl;
+     * use craft\services\Gql;
      * use yii\base\Event;
      *
      * Event::on(Gql::class,
@@ -251,7 +253,7 @@ class Gql extends Component
      * ---
      * ```php
      * use craft\events\ExecuteGqlQueryEvent;
-     * use craft\services\GraphQl;
+     * use craft\services\Gql;
      * use yii\base\Event;
      *
      * Event::on(Gql::class,
@@ -470,7 +472,7 @@ class Gql extends Component
 
         $event = new DefineGqlValidationRulesEvent([
             'validationRules' => $validationRules,
-            'debug' => $debug
+            'debug' => $debug,
         ]);
 
         $this->trigger(self::EVENT_DEFINE_GQL_VALIDATION_RULES, $event);
@@ -495,7 +497,8 @@ class Gql extends Component
         array $variables = null,
         string $operationName = null,
         bool $debugMode = false
-    ): array {
+    ): array
+    {
         $event = new ExecuteGqlQueryEvent([
             'schemaId' => $schema->id,
             'query' => $query,
@@ -506,9 +509,9 @@ class Gql extends Component
                     'class' => ElementQueryConditionBuilder::class,
                 ]),
                 'argumentManager' => Craft::createObject([
-                    'class' => ArgumentManager::class
-                ])
-            ]
+                    'class' => ArgumentManager::class,
+                ]),
+            ],
         ]);
 
         $this->trigger(self::EVENT_BEFORE_EXECUTE_GQL_QUERY, $event);
@@ -540,7 +543,9 @@ class Gql extends Component
                     $event->operationName,
                     null,
                     $this->getValidationRules($debugMode, $isIntrospectionQuery)
-                )->toArray($debugMode);
+                )
+                    ->setErrorsHandler([$this, 'handleQueryErrors'])
+                    ->toArray($debugMode ? DebugFlag::INCLUDE_DEBUG_MESSAGE | DebugFlag::INCLUDE_TRACE : false);
 
                 $dep = $elementsService->stopCollectingCacheTags();
 
@@ -686,6 +691,11 @@ class Gql extends Component
         $queries = [];
         $mutations = [];
 
+        // Elements
+        $components = $this->_getElementSchemaComponents();
+        $label = Craft::t('app', 'All elements');
+        $queries[$label] = $components['query'] ?? [];
+
         // Entries
         // ---------------------------------------------------------------------
         $components = $this->_getSectionSchemaComponents();
@@ -733,7 +743,7 @@ class Gql extends Component
 
         if ($this->hasEventHandlers(self::EVENT_REGISTER_GQL_PERMISSIONS)) {
             $deprecatedEvent = new RegisterGqlPermissionsEvent([
-                'permissions' => $queries
+                'permissions' => $queries,
             ]);
 
             $this->trigger(self::EVENT_REGISTER_GQL_PERMISSIONS, $deprecatedEvent);
@@ -743,14 +753,14 @@ class Gql extends Component
 
         $event = new RegisterGqlSchemaComponentsEvent([
             'queries' => $queries,
-            'mutations' => $mutations
+            'mutations' => $mutations,
         ]);
 
         $this->trigger(self::EVENT_REGISTER_GQL_SCHEMA_COMPONENTS, $event);
 
         return [
             'queries' => $event->queries,
-            'mutations' => $event->mutations
+            'mutations' => $event->mutations,
         ];
     }
 
@@ -899,7 +909,7 @@ class Gql extends Component
         if ($token->accessToken === GqlToken::PUBLIC_TOKEN) {
             $data = [
                 'expiryDate' => $token->expiryDate ? $token->expiryDate->getTimestamp() : null,
-                'enabled' => (bool)$token->enabled
+                'enabled' => (bool)$token->enabled,
             ];
 
             Craft::$app->getProjectConfig()->set(self::CONFIG_GQL_PUBLIC_TOKEN_KEY, $data);
@@ -1204,6 +1214,39 @@ class Gql extends Component
     }
 
     /**
+     * Custom error handler for GraphQL query errors
+     *
+     * @param Error[] $errors
+     * @param callable $formatter
+     * @return Error[]
+     * @since 3.6.2
+     */
+    public function handleQueryErrors(array $errors, callable $formatter)
+    {
+        $devMode = Craft::$app->getConfig()->getGeneral()->devMode;
+
+        /** @var Error $error */
+        foreach ($errors as &$error) {
+            $originException = $nextException = $error;
+
+            // Get the origin exception.
+            while ($nextException = $nextException->getPrevious()) {
+                $originException = $nextException;
+            }
+
+            // If devMode enabled, substitute the original exception here.
+            if ($devMode) {
+                $error = $originException;
+            }
+
+            // Otherwise, just log it.
+            Craft::$app->getErrorHandler()->logException($originException);
+        }
+
+        return array_map($formatter, $errors);
+    }
+
+    /**
      * Generate a cache key for the GraphQL operation. Returns null if caching is disabled or unable to generate one.
      *
      * @param GqlSchema $schema
@@ -1222,7 +1265,8 @@ class Gql extends Component
         $context,
         array $variables = null,
         string $operationName = null
-    ) {
+    )
+    {
         // No cache key, if explicitly disabled
         $generalConfig = Craft::$app->getConfig()->getGeneral();
 
@@ -1313,7 +1357,7 @@ class Gql extends Component
 
 
         $event = new RegisterGqlQueriesEvent([
-            'queries' => array_merge(...$queryList)
+            'queries' => array_merge(...$queryList),
         ]);
 
         $this->trigger(self::EVENT_REGISTER_GQL_QUERIES, $event);
@@ -1340,7 +1384,7 @@ class Gql extends Component
 
 
         $event = new RegisterGqlMutationsEvent([
-            'mutations' => array_merge(...$mutationList)
+            'mutations' => array_merge(...$mutationList),
         ]);
 
         $this->trigger(self::EVENT_REGISTER_GQL_MUTATIONS, $event);
@@ -1369,7 +1413,7 @@ class Gql extends Component
         }
 
         $event = new RegisterGqlDirectivesEvent([
-            'directives' => $directiveClasses
+            'directives' => $directiveClasses,
         ]);
 
         $this->trigger(self::EVENT_REGISTER_GQL_DIRECTIVES, $event);
@@ -1382,6 +1426,22 @@ class Gql extends Component
         }
 
         return $directives;
+    }
+
+    /**
+     * Return element schema components.
+     *
+     * @return array
+     */
+    private function _getElementSchemaComponents(): array
+    {
+        return [
+            'query' => [
+                'elements.drafts:read' => ['label' => Craft::t('app', 'Allow listing element drafts')],
+                'elements.revisions:read' => ['label' => Craft::t('app', 'Allow listing element revisions')],
+                'elements.inactive:read' => ['label' => Craft::t('app', 'Allow listing non-live and otherwise inactive elements.')],
+            ],
+        ];
     }
 
     /**
@@ -1460,7 +1520,7 @@ class Gql extends Component
                         $suffix . ':create' => ['label' => Craft::t('app', 'Create assets in the “{volume}” volume', ['volume' => Craft::t('site', $volume->name)])],
                         $suffix . ':save' => ['label' => Craft::t('app', 'Modify assets in the “{volume}” volume', ['volume' => Craft::t('site', $volume->name)])],
                         $suffix . ':delete' => ['label' => Craft::t('app', 'Delete assets from the “{volume}” volume', ['volume' => Craft::t('site', $volume->name)])],
-                    ]
+                    ],
                 ];
             }
         }
@@ -1518,7 +1578,7 @@ class Gql extends Component
                     'nested' => [
                         $suffix . ':save' => ['label' => Craft::t('app', 'Save categories in the “{categoryGroup}” category group', ['categoryGroup' => Craft::t('site', $categoryGroup->name)])],
                         $suffix . ':delete' => ['label' => Craft::t('app', 'Delete categories from the “{categoryGroup}” category group', ['categoryGroup' => Craft::t('site', $categoryGroup->name)])],
-                    ]
+                    ],
                 ];
             }
         }
@@ -1550,7 +1610,7 @@ class Gql extends Component
                     'nested' => [
                         $suffix . ':save' => ['label' => Craft::t('app', 'Save tags in the “{tagGroup}” tag group', ['tagGroup' => Craft::t('site', $tagGroup->name)])],
                         $suffix . ':delete' => ['label' => Craft::t('app', 'Delete tags from the “{tagGroup}” tag group', ['tagGroup' => Craft::t('site', $tagGroup->name)])],
-                    ]
+                    ],
                 ];
             }
         }

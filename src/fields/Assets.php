@@ -27,8 +27,10 @@ use craft\helpers\Db;
 use craft\helpers\ElementHelper;
 use craft\helpers\FileHelper;
 use craft\helpers\Gql;
+use craft\helpers\Gql as GqlHelper;
 use craft\helpers\Html;
 use craft\models\GqlSchema;
+use craft\services\Gql as GqlService;
 use craft\web\UploadedFile;
 use GraphQL\Type\Definition\Type;
 use yii\base\InvalidConfigException;
@@ -225,7 +227,7 @@ class Assets extends BaseRelationField
         $rules[] = [
             ['allowedKinds'], 'required', 'when' => function(self $field): bool {
                 return (bool)$field->restrictFiles;
-            }
+            },
         ];
 
         $rules[] = [['previewMode'], 'in', 'range' => [self::PREVIEW_MODE_FULL, self::PREVIEW_MODE_THUMBS], 'skipOnEmpty' => false];
@@ -244,7 +246,7 @@ class Assets extends BaseRelationField
             if (!isset($volume['heading'])) {
                 $sourceOptions[] = [
                     'label' => $volume['label'],
-                    'value' => $volume['key']
+                    'value' => $volume['key'],
                 ];
             }
         }
@@ -277,7 +279,7 @@ class Assets extends BaseRelationField
             return parent::inputHtml($value, $element);
         } catch (InvalidSubpathException $e) {
             return Html::tag('p', Craft::t('app', 'This field’s target subfolder path is invalid: {path}', [
-                'path' => '<code>' . $this->singleUploadLocationSubpath . '</code>'
+                'path' => '<code>' . $this->singleUploadLocationSubpath . '</code>',
             ]), [
                 'class' => ['warning', 'with-icon'],
             ]);
@@ -350,7 +352,7 @@ class Assets extends BaseRelationField
         foreach ($filenames as $filename) {
             if (!in_array(mb_strtolower(pathinfo($filename, PATHINFO_EXTENSION)), $allowedExtensions, true)) {
                 $element->addError($this->handle, Craft::t('app', '“{filename}” is not allowed in this field.', [
-                    'filename' => $filename
+                    'filename' => $filename,
                 ]));
             }
         }
@@ -383,7 +385,7 @@ class Assets extends BaseRelationField
 
         foreach ($filenames as $filename) {
             $element->addError($this->handle, Craft::t('app', '“{filename}” is too large.', [
-                'filename' => $filename
+                'filename' => $filename,
             ]));
         }
     }
@@ -468,16 +470,16 @@ class Assets extends BaseRelationField
             'type' => Type::listOf(AssetInterface::getType()),
             'args' => AssetArguments::getArguments(),
             'resolve' => AssetResolver::class . '::resolve',
-            'complexity' => Gql::eagerLoadComplexity()
+            'complexity' => GqlHelper::relatedArgumentComplexity(GqlService::GRAPHQL_COMPLEXITY_EAGER_LOAD),
         ];
     }
 
     /**
      * @inheritdoc
      */
-    protected function elementPreviewHtml(ElementInterface $element): string
+    protected function tableAttributeHtml(array $elements): string
     {
-        return Cp::elementHtml($element, 'index', Cp::ELEMENT_SIZE_SMALL, null, false, true, $this->previewMode === self::PREVIEW_MODE_FULL);
+        return Cp::elementPreviewHtml($elements, Cp::ELEMENT_SIZE_SMALL, false, true, $this->previewMode === self::PREVIEW_MODE_FULL);
     }
 
     // Events
@@ -744,7 +746,7 @@ class Assets extends BaseRelationField
                     $uploadedFiles[] = [
                         'filename' => $filename,
                         'data' => $data,
-                        'type' => 'data'
+                        'type' => 'data',
                     ];
                 }
             }
@@ -760,7 +762,7 @@ class Assets extends BaseRelationField
                 $uploadedFiles[] = [
                     'filename' => $file->name,
                     'location' => $file->tempName,
-                    'type' => 'upload'
+                    'type' => 'upload',
                 ];
             }
         }
@@ -814,18 +816,20 @@ class Assets extends BaseRelationField
             }
 
             // Sanitize the subpath
-            $segments = explode('/', $renderedSubpath);
-            foreach ($segments as &$segment) {
-                $segment = FileHelper::sanitizeFilename($segment, [
-                    'asciiOnly' => Craft::$app->getConfig()->getGeneral()->convertFilenamesToAscii
+            $segments = array_filter(explode('/', $renderedSubpath), function(string $segment): bool {
+                return $segment !== ':ignore:';
+            });
+            $generalConfig = Craft::$app->getConfig()->getGeneral();
+            $segments = array_map(function(string $segment) use ($generalConfig): string {
+                return FileHelper::sanitizeFilename($segment, [
+                    'asciiOnly' => $generalConfig->convertFilenamesToAscii,
                 ]);
-            }
-            unset($segment);
+            }, $segments);
             $subpath = implode('/', $segments);
 
             $folder = $assetsService->findFolder([
                 'volumeId' => $volumeId,
-                'path' => $subpath . '/'
+                'path' => $subpath . '/',
             ]);
 
             // Ensure that the folder exists

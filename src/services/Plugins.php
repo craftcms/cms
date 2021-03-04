@@ -164,7 +164,12 @@ class Plugins extends Component
                 $plugin['packageName'] = $packageName;
                 // Normalize the base path (and find the actual path, not a possibly-symlinked path)
                 if (isset($plugin['basePath'])) {
-                    $plugin['basePath'] = FileHelper::normalizePath(realpath($plugin['basePath']));
+                    if (($basePath = realpath($plugin['basePath'])) !== false) {
+                        $plugin['basePath'] = FileHelper::normalizePath($basePath);
+                    } else {
+                        Craft::warning("Invalid plugin base path: {$plugin['basePath']}", __METHOD__);
+                        unset($plugin['basePath']);
+                    }
                 }
                 $handle = $this->_normalizeHandle(ArrayHelper::remove($plugin, 'handle'));
                 $this->_composerPluginInfo[$handle] = $plugin;
@@ -244,7 +249,7 @@ class Plugins extends Component
                     throw new HttpException(200, Craft::t('app', 'You need to be on at least {plugin} {version} before you can update to {plugin} {targetVersion}.', [
                         'version' => $plugin->minVersionRequired,
                         'targetVersion' => $plugin->version,
-                        'plugin' => $plugin->name
+                        'plugin' => $plugin->name,
                     ]));
                 }
 
@@ -389,7 +394,7 @@ class Plugins extends Component
         // Fire a 'beforeEnablePlugin' event
         if ($this->hasEventHandlers(self::EVENT_BEFORE_ENABLE_PLUGIN)) {
             $this->trigger(self::EVENT_BEFORE_ENABLE_PLUGIN, new PluginEvent([
-                'plugin' => $plugin
+                'plugin' => $plugin,
             ]));
         }
 
@@ -402,7 +407,7 @@ class Plugins extends Component
         // Fire an 'afterEnablePlugin' event
         if ($this->hasEventHandlers(self::EVENT_AFTER_ENABLE_PLUGIN)) {
             $this->trigger(self::EVENT_AFTER_ENABLE_PLUGIN, new PluginEvent([
-                'plugin' => $plugin
+                'plugin' => $plugin,
             ]));
         }
 
@@ -434,7 +439,7 @@ class Plugins extends Component
         // Fire a 'beforeDisablePlugin' event
         if ($this->hasEventHandlers(self::EVENT_BEFORE_DISABLE_PLUGIN)) {
             $this->trigger(self::EVENT_BEFORE_DISABLE_PLUGIN, new PluginEvent([
-                'plugin' => $plugin
+                'plugin' => $plugin,
             ]));
         }
 
@@ -447,7 +452,7 @@ class Plugins extends Component
         // Fire an 'afterDisablePlugin' event
         if ($this->hasEventHandlers(self::EVENT_AFTER_DISABLE_PLUGIN)) {
             $this->trigger(self::EVENT_AFTER_DISABLE_PLUGIN, new PluginEvent([
-                'plugin' => $plugin
+                'plugin' => $plugin,
             ]));
         }
 
@@ -481,6 +486,10 @@ class Plugins extends Component
 
         $plugin = $this->createPlugin($handle);
 
+        if ($plugin === null) {
+            throw new InvalidPluginException($handle);
+        }
+
         // Set the edition
         if ($edition === null) {
             // See if one is already set in the project config
@@ -495,7 +504,7 @@ class Plugins extends Component
         // Fire a 'beforeInstallPlugin' event
         if ($this->hasEventHandlers(self::EVENT_BEFORE_INSTALL_PLUGIN)) {
             $this->trigger(self::EVENT_BEFORE_INSTALL_PLUGIN, new PluginEvent([
-                'plugin' => $plugin
+                'plugin' => $plugin,
             ]));
         }
 
@@ -548,7 +557,7 @@ class Plugins extends Component
             $pluginData = [
                 'edition' => $edition,
                 'enabled' => true,
-                'schemaVersion' => $plugin->schemaVersion
+                'schemaVersion' => $plugin->schemaVersion,
             ];
 
             $projectConfig->set($configKey, $pluginData, "Install plugin “{$handle}”");
@@ -560,7 +569,7 @@ class Plugins extends Component
         // Fire an 'afterInstallPlugin' event
         if ($this->hasEventHandlers(self::EVENT_AFTER_INSTALL_PLUGIN)) {
             $this->trigger(self::EVENT_AFTER_INSTALL_PLUGIN, new PluginEvent([
-                'plugin' => $plugin
+                'plugin' => $plugin,
             ]));
         }
 
@@ -603,7 +612,7 @@ class Plugins extends Component
         // Fire a 'beforeUninstallPlugin' event
         if ($this->hasEventHandlers(self::EVENT_BEFORE_UNINSTALL_PLUGIN)) {
             $this->trigger(self::EVENT_BEFORE_UNINSTALL_PLUGIN, new PluginEvent([
-                'plugin' => $plugin
+                'plugin' => $plugin,
             ]));
         }
 
@@ -645,7 +654,7 @@ class Plugins extends Component
         // Fire an 'afterUninstallPlugin' event
         if ($this->hasEventHandlers(self::EVENT_AFTER_UNINSTALL_PLUGIN)) {
             $this->trigger(self::EVENT_AFTER_UNINSTALL_PLUGIN, new PluginEvent([
-                'plugin' => $plugin
+                'plugin' => $plugin,
             ]));
         }
 
@@ -710,7 +719,7 @@ class Plugins extends Component
         // Fire a 'beforeSavePluginSettings' event
         if ($this->hasEventHandlers(self::EVENT_BEFORE_SAVE_PLUGIN_SETTINGS)) {
             $this->trigger(self::EVENT_BEFORE_SAVE_PLUGIN_SETTINGS, new PluginEvent([
-                'plugin' => $plugin
+                'plugin' => $plugin,
             ]));
         }
 
@@ -728,7 +737,7 @@ class Plugins extends Component
         // Fire an 'afterSavePluginSettings' event
         if ($this->hasEventHandlers(self::EVENT_AFTER_SAVE_PLUGIN_SETTINGS)) {
             $this->trigger(self::EVENT_AFTER_SAVE_PLUGIN_SETTINGS, new PluginEvent([
-                'plugin' => $plugin
+                'plugin' => $plugin,
             ]));
         }
 
@@ -867,10 +876,10 @@ class Plugins extends Component
      *
      * @param string $handle The plugin’s handle
      * @param array|null $info The plugin’s stored info, if any
-     * @return PluginInterface
+     * @return PluginInterface|null
      * @throws InvalidPluginException if $handle is invalid
      */
-    public function createPlugin(string $handle, array $info = null)
+    public function createPlugin(string $handle, array $info = null): ?PluginInterface
     {
         if (!isset($this->_composerPluginInfo[$handle])) {
             throw new InvalidPluginException($handle);
@@ -997,13 +1006,17 @@ class Plugins extends Component
         $info['licensedEdition'] = $pluginInfo['licensedEdition'] ?? null;
         $info['licenseIssues'] = $installed ? $this->getLicenseIssues($handle) : [];
 
-        // The plugin is in trial if it's missing its license key, or running the wrong edition
-        $info['isTrial'] = $installed
-            ? (
-                ($info['licenseKeyStatus'] === LicenseKeyStatus::Invalid && empty($info['licenseIssues'])) ||
-                ($info['licenseKeyStatus'] === LicenseKeyStatus::Valid && !empty($pluginInfo['licensedEdition']) && $pluginInfo['licensedEdition'] !== $edition)
+        $info['isTrial'] = (
+            $installed &&
+            (
+                $info['licenseKeyStatus'] === LicenseKeyStatus::Trial ||
+                (
+                    $info['licenseKeyStatus'] === LicenseKeyStatus::Valid &&
+                    !empty($pluginInfo['licensedEdition'])
+                    && $pluginInfo['licensedEdition'] !== $edition
+                )
             )
-            : false;
+        );
 
         // An upgrade is available if the plugin is in trial or licensed to less than the best edition
         $info['upgradeAvailable'] = (
@@ -1080,18 +1093,15 @@ class Plugins extends Component
 
         // General license issues
         switch ($pluginInfo['licenseKeyStatus']) {
-            case LicenseKeyStatus::Mismatched:
-                $issues[] = 'mismatched';
-                break;
-            case LicenseKeyStatus::Astray:
-                $issues[] = 'astray';
+            case LicenseKeyStatus::Trial:
+                if (!$canTestEditions) {
+                    $issues[] = empty($pluginInfo['licenseKey']) ? 'required' : 'no_trials';
+                }
                 break;
             case LicenseKeyStatus::Invalid:
-                if (!empty($pluginInfo['licenseKey'])) {
-                    $issues[] = 'invalid';
-                } else if (!$canTestEditions) {
-                    $issues[] = 'required';
-                }
+            case LicenseKeyStatus::Mismatched:
+            case LicenseKeyStatus::Astray:
+                $issues[] = $pluginInfo['licenseKeyStatus'];
                 break;
         }
 
@@ -1252,7 +1262,7 @@ class Plugins extends Component
                 'version',
                 'schemaVersion',
                 'licenseKeyStatus',
-                'installDate'
+                'installDate',
             ])
             ->from([Table::PLUGINS]);
 

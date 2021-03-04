@@ -400,7 +400,7 @@ class Sites extends Component
         // Fire a 'beforeDeleteSiteGroup' event
         if ($this->hasEventHandlers(self::EVENT_BEFORE_DELETE_SITE_GROUP)) {
             $this->trigger(self::EVENT_BEFORE_DELETE_SITE_GROUP, new SiteGroupEvent([
-                'group' => $group
+                'group' => $group,
             ]));
         }
 
@@ -1348,7 +1348,7 @@ class Sites extends Component
                     $deleteCondition = [
                         'and',
                         ['elementId' => $elementIds],
-                        ['not', ['siteId' => $oldPrimarySiteId]]
+                        ['not', ['siteId' => $oldPrimarySiteId]],
                     ];
 
                     Db::delete(Table::ELEMENTS_SITES, $deleteCondition);

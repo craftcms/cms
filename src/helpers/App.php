@@ -17,11 +17,14 @@ use craft\db\mysql\Schema as MysqlSchema;
 use craft\db\pgsql\Schema as PgsqlSchema;
 use craft\elements\User;
 use craft\errors\MissingComponentException;
+use craft\i18n\Locale;
 use craft\log\Dispatcher;
 use craft\mail\Mailer;
 use craft\mail\Message;
 use craft\mail\transportadapters\Sendmail;
 use craft\models\MailSettings;
+use craft\mutex\MysqlMutex;
+use craft\mutex\PgsqlMutex;
 use craft\services\ProjectConfig as ProjectConfigService;
 use craft\web\AssetManager;
 use craft\web\Request;
@@ -33,8 +36,6 @@ use craft\web\View;
 use yii\base\InvalidArgumentException;
 use yii\helpers\Inflector;
 use yii\mutex\FileMutex;
-use yii\mutex\MysqlMutex;
-use yii\mutex\PgsqlMutex;
 use yii\web\JsonParser;
 
 /**
@@ -511,7 +512,7 @@ class App
             'class' => Mailer::class,
             'messageClass' => Message::class,
             'from' => [
-                Craft::parseEnv($settings->fromEmail) => Craft::parseEnv($settings->fromName)
+                Craft::parseEnv($settings->fromEmail) => Craft::parseEnv($settings->fromName),
             ],
             'replyTo' => Craft::parseEnv($settings->replyToEmail),
             'template' => Craft::parseEnv($settings->template),
@@ -562,6 +563,7 @@ class App
         return [
             'class' => $db->getIsMysql() ? MysqlMutex::class : PgsqlMutex::class,
             'db' => $db,
+            'namePrefix' => Craft::$app->id,
         ];
     }
 
@@ -734,5 +736,49 @@ class App
         }
 
         return $config;
+    }
+
+    /**
+     * Creates a locale object that should be used for date and number formatting.
+     *
+     * @return Locale
+     * @since 3.6.0
+     */
+    public static function createFormattingLocale(): Locale
+    {
+        $i18n = Craft::$app->getI18n();
+
+        if (Craft::$app->getRequest()->getIsCpRequest() && !Craft::$app->getResponse()->isSent) {
+            // Is someone logged in?
+            $session = Craft::$app->getSession();
+            $id = $session->getHasSessionId() || $session->getIsActive() ? $session->get(Craft::$app->getUser()->idParam) : null;
+            if ($id) {
+                // If they have a preferred locale, use it
+                $usersService = Craft::$app->getUsers();
+                if (
+                    ($locale = $usersService->getUserPreference($id, 'locale')) !== null &&
+                    $i18n->validateAppLocaleId($locale)
+                ) {
+                    return $i18n->getLocaleById($locale);
+                }
+
+                // Otherwise see if they have a preferred language
+                if (
+                    ($language = $usersService->getUserPreference($id, 'language')) !== null &&
+                    $i18n->validateAppLocaleId($language)
+                ) {
+                    return $i18n->getLocaleById($language);
+                }
+            }
+
+            // If the defaultCpLocale setting is set, go with that
+            $generalConfig = Craft::$app->getConfig()->getGeneral();
+            if ($generalConfig->defaultCpLocale) {
+                return $i18n->getLocaleById($generalConfig->defaultCpLocale);
+            }
+        }
+
+        // Default to the application locale
+        return Craft::$app->getLocale();
     }
 }

@@ -66,6 +66,10 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
     const PROPAGATION_METHOD_NONE = 'none';
     const PROPAGATION_METHOD_SITE_GROUP = 'siteGroup';
     const PROPAGATION_METHOD_LANGUAGE = 'language';
+    /**
+     * @since 3.7.0
+     */
+    const PROPAGATION_METHOD_CUSTOM = 'custom';
     const PROPAGATION_METHOD_ALL = 'all';
 
     /**
@@ -126,6 +130,12 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
     public $propagationMethod = self::PROPAGATION_METHOD_ALL;
 
     /**
+     * @var string|null The field’s propagation key format, if [[propagationMethod]] is `custom`
+     * @since 3.7.0
+     */
+    public $propagationKeyFormat;
+
+    /**
      * @var int Whether each site should get its own unique set of blocks
      * @deprecated in 3.2.0. Use [[$propagationMethod]] instead
      */
@@ -159,6 +169,10 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
      */
     public function init()
     {
+        if ($this->propagationKeyFormat === '') {
+            $this->propagationKeyFormat = null;
+        }
+
         // todo: remove this in 4.0
         // Set localizeBlocks in case anything is still checking it
         $this->localizeBlocks = $this->propagationMethod === self::PROPAGATION_METHOD_NONE;
@@ -185,8 +199,9 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
                 self::PROPAGATION_METHOD_NONE,
                 self::PROPAGATION_METHOD_SITE_GROUP,
                 self::PROPAGATION_METHOD_LANGUAGE,
-                self::PROPAGATION_METHOD_ALL
-            ]
+                self::PROPAGATION_METHOD_CUSTOM,
+                self::PROPAGATION_METHOD_ALL,
+            ],
         ];
         $rules[] = [['blockTypes'], ArrayValidator::class, 'min' => 1, 'skipOnEmpty' => false];
         $rules[] = [['minBlocks', 'maxBlocks'], 'integer', 'min' => 0];
@@ -442,7 +457,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
                         /** @var PlainText $fallback */
                         $fallback = $field->createFallback(PlainText::class);
                         $fallback->addError('type', Craft::t('app', 'The field type “{type}” could not be found.', [
-                            'type' => $field->expectedType
+                            'type' => $field->expectedType,
                         ]));
                         $field = $fallback;
                         $element->setField($field);
@@ -574,7 +589,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
                         "matrixblocks_$ns.fieldId" => $this->id,
                         "elements_$ns.enabled" => true,
                         "elements_$ns.dateDeleted" => null,
-                    ])
+                    ]),
             ];
 
             if ($value === ':notempty:') {
@@ -689,7 +704,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
         if ($createDefaultBlocks) {
             $blockTypeJs = Json::encode($blockTypes[0]->handle);
             for ($i = count($value); $i < $this->minBlocks; $i++) {
-                $js .= "\nmatrixInput.addBlock({$blockTypeJs});";
+                $js .= "\nmatrixInput.addBlock($blockTypeJs, null, false);";
             }
         }
 
@@ -712,7 +727,10 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
     public function getElementValidationRules(): array
     {
         return [
-            'validateBlocks',
+            [
+                'validateBlocks',
+                'on' => [Element::SCENARIO_ESSENTIALS, Element::SCENARIO_DEFAULT, Element::SCENARIO_LIVE],
+            ],
             [
                 ArrayValidator::class,
                 'min' => $this->minBlocks ?: null,
@@ -745,11 +763,15 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
         $value = $element->getFieldValue($this->handle);
         $blocks = $value->all();
         $allBlocksValidate = true;
+        $scenario = $element->getScenario();
 
         foreach ($blocks as $i => $block) {
             /** @var MatrixBlock $block */
-            if ($block->enabled && $element->getScenario() === Element::SCENARIO_LIVE) {
-                $block->setScenario(Element::SCENARIO_LIVE);
+            if (
+                $scenario === Element::SCENARIO_ESSENTIALS ||
+                ($block->enabled && $scenario === Element::SCENARIO_LIVE)
+            ) {
+                $block->setScenario($scenario);
             }
 
             if (!$block->validate()) {
@@ -841,7 +863,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
                 'fieldId' => $this->id,
                 'allowOwnerDrafts' => true,
                 'allowOwnerRevisions' => true,
-            ]
+            ],
         ];
     }
 
@@ -862,7 +884,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
             'type' => Type::listOf(GqlHelper::getUnionType($typeName, $typeArray, $resolver)),
             'args' => MatrixBlockArguments::getArguments(),
             'resolve' => MatrixBlockResolver::class . '::resolve',
-            'complexity' => Gql::eagerLoadComplexity()
+            'complexity' => Gql::eagerLoadComplexity(),
         ];
     }
 
@@ -954,7 +976,8 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
         // If the propagation method just changed, resave all the Matrix blocks
         if ($this->oldSettings !== null) {
             $oldPropagationMethod = $this->oldSettings['propagationMethod'] ?? self::PROPAGATION_METHOD_ALL;
-            if ($this->propagationMethod !== $oldPropagationMethod) {
+            $oldPropagationKeyFormat = $this->oldSettings['propagationKeyFormat'] ?? null;
+            if ($this->propagationMethod !== $oldPropagationMethod || $this->propagationKeyFormat !== $oldPropagationKeyFormat) {
                 Queue::push(new ApplyNewPropagationMethod([
                     'description' => Craft::t('app', 'Applying new propagation method to Matrix blocks'),
                     'elementType' => MatrixBlock::class,

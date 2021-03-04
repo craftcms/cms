@@ -182,14 +182,6 @@ Craft.CP = Garnish.Base.extend({
             this.$mainContainer.on('focus', 'input, textarea, .focusable-input', $.proxy(this, '_handleInputFocus'));
             this.$mainContainer.on('blur', 'input, textarea, .focusable-input', $.proxy(this, '_handleInputBlur'));
         }
-
-        // Open outbound links in new windows
-        // hat tip: https://stackoverflow.com/a/2911045/1688568
-        $('a').each(function() {
-            if (this.hostname.length && this.hostname !== location.hostname && typeof $(this).attr('target') === 'undefined') {
-                $(this).attr('rel', 'noopener').attr('target', '_blank')
-            }
-        });
     },
 
     initSpecialForms: function() {

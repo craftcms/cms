@@ -28,7 +28,7 @@ class UpdateControllerTest extends BaseConsoleTest
         $this->consoleCommand('update/info')
             ->stdOut('Fetching available updates ... ')
             ->stdOut('done' . PHP_EOL)
-            ->stdOut('You’re all up-to-date!' . PHP_EOL . PHP_EOL)
+            ->stdOut(['You’re all up-to-date!' . PHP_EOL . PHP_EOL, 'You’ve got '])
             ->exitCode(ExitCode::OK)
             ->run();
     }

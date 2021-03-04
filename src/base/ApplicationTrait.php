@@ -72,10 +72,11 @@ use yii\web\ServerErrorHttpException;
  * @property-read \craft\db\MigrationManager $contentMigrator The content migration manager
  * @property-read \craft\db\MigrationManager $migrator The application’s migration manager
  * @property-read \craft\feeds\Feeds $feeds The feeds service
+ * @property-read \craft\i18n\Locale $formattingLocale The Locale object that should be used to define the formatter
  * @property-read \craft\i18n\Locale $locale The Locale object for the target language
  * @property-read \craft\mail\Mailer $mailer The mailer component
  * @property-read \craft\services\Api $api The API service
- * @property-read \craft\services\AssetIndexer $assetIndexing The asset indexer service
+ * @property-read \craft\services\AssetIndexer $assetIndexer The asset indexer service
  * @property-read \craft\services\Assets $assets The assets service
  * @property-read \craft\services\AssetTransforms $assetTransforms The asset transforms service
  * @property-read \craft\services\Categories $categories The categories service
@@ -298,6 +299,11 @@ trait ApplicationTrait
         try {
             $info = $this->getInfo(true);
         } catch (DbException $e) {
+            // yii2-redis awkwardly throws yii\db\Exception's rather than their own exception class.
+            if (strpos($e->getMessage(), 'Redis') !== false) {
+                throw $e;
+            }
+
             Craft::error('There was a problem fetching the info row: ' . $e->getMessage(), __METHOD__);
             /** @var ErrorHandler $errorHandler */
             $errorHandler = $this->getErrorHandler();
@@ -363,7 +369,7 @@ trait ApplicationTrait
                         'x' => (new Query)
                             ->select([new Expression('1')])
                             ->from([Table::SITES])
-                            ->limit(2)
+                            ->limit(2),
                     ])
                     ->count() != 1;
         }
@@ -466,7 +472,7 @@ trait ApplicationTrait
         if (!$request->getIsConsoleRequest() && $this->hasEventHandlers(WebApplication::EVENT_AFTER_EDITION_CHANGE)) {
             $this->trigger(WebApplication::EVENT_AFTER_EDITION_CHANGE, new EditionChangeEvent([
                 'oldEdition' => $oldEdition,
-                'newEdition' => $edition
+                'newEdition' => $edition,
             ]));
         }
 
@@ -1046,6 +1052,17 @@ trait ApplicationTrait
     }
 
     /**
+     * Returns the locale that should be used to define the formatter.
+     *
+     * @return Locale
+     * @since 3.6.0
+     */
+    public function getFormattingLocale(): Locale
+    {
+        return $this->get('formattingLocale');
+    }
+
+    /**
      * Returns the garbage collection service.
      *
      * @return \craft\services\Gc The garbage collection service
@@ -1394,7 +1411,7 @@ trait ApplicationTrait
     {
         // Load the request before anything else, so everything else can safely check Craft::$app->has('request', true)
         // to avoid possible recursive fatal errors in the request initialization
-        $this->getRequest();
+        $request = $this->getRequest();
         $this->getLog();
 
         // Set the timezone
@@ -1402,6 +1419,11 @@ trait ApplicationTrait
 
         // Set the language
         $this->updateTargetLanguage();
+
+        // Prevent browser caching if this is a control panel request
+        if ($request->getIsCpRequest()) {
+            $this->getResponse()->setNoCacheHeaders();
+        }
     }
 
     /**
@@ -1478,7 +1500,11 @@ trait ApplicationTrait
             // Don't actually try to fetch the user, as plugins haven't been loaded yet.
             $session = $this->getSession();
             $id = $session->getHasSessionId() || $session->getIsActive() ? $session->get($this->getUser()->idParam) : null;
-            if ($id && ($language = $this->getUsers()->getUserPreference($id, 'language')) !== null) {
+            if (
+                $id &&
+                ($language = $this->getUsers()->getUserPreference($id, 'language')) !== null &&
+                Craft::$app->getI18n()->validateAppLocaleId($language)
+            ) {
                 return $language;
             }
         }

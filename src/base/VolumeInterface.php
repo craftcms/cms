@@ -55,8 +55,29 @@ interface VolumeInterface extends SavableComponentInterface
      * @param string $uri URI to the file on the volume
      * @return array
      * @throws VolumeObjectNotFoundException if the file cannot be found
+     * @deprecated in Craft 3.6.0. Use [[getFileSize()]] and [[getDateModified()]] instead.
      */
     public function getFileMetadata(string $uri): array;
+
+    /**
+     * Returns the file size.
+     *
+     * @param string $uri
+     * @return int|null
+     * @throws VolumeObjectNotFoundException if the file cannot be found
+     * @since 3.6.0
+     */
+    public function getFileSize(string $uri): ?int;
+
+    /**
+     * Returns the last time the file was modified.
+     *
+     * @param string $uri
+     * @return int|null
+     * @throws VolumeObjectNotFoundException if the file cannot be found
+     * @since 3.6.0
+     */
+    public function getDateModified(string $uri): ?int;
 
     /**
      * Creates a file.
@@ -150,8 +171,27 @@ interface VolumeInterface extends SavableComponentInterface
      * @param string $path The path of the directory, relative to the source’s root
      * @throws VolumeObjectExistsException if a directory with such name already exists
      * @throws VolumeException if something else goes wrong
+     * @deprecated in 3.6.0. Use [[createDirectory()]] instead.
      */
     public function createDir(string $path);
+
+    /**
+     * Creates a directory.
+     *
+     * @param string $path The path of the directory, relative to the source’s root
+     * @throws VolumeObjectExistsException if a directory with such name already exists
+     * @throws VolumeException if something else goes wrong
+     */
+    public function createDirectory(string $path);
+
+    /**
+     * Deletes a directory.
+     *
+     * @param string $path The path of the directory, relative to the source’s root
+     * @throws VolumeException if something goes wrong
+     * @deprecated in 3.6.0. Use [[deleteDirectory()]] instead.
+     */
+    public function deleteDir(string $path);
 
     /**
      * Deletes a directory.
@@ -159,7 +199,19 @@ interface VolumeInterface extends SavableComponentInterface
      * @param string $path The path of the directory, relative to the source’s root
      * @throws VolumeException if something goes wrong
      */
-    public function deleteDir(string $path);
+    public function deleteDirectory(string $path);
+
+    /**
+     * Renames a directory.
+     *
+     * @param string $path The path of the directory, relative to the source’s root
+     * @param string $newName The new path of the directory, relative to the source’s root
+     * @throws VolumeObjectNotFoundException if a directory with such name already exists
+     * @throws VolumeObjectExistsException if a directory with such name already exists
+     * @throws VolumeException if something else goes wrong
+     * @deprecated in 3.6.0. Use [[renameDirectory()]] instead.
+     */
+    public function renameDir(string $path, string $newName);
 
     /**
      * Renames a directory.
@@ -170,5 +222,5 @@ interface VolumeInterface extends SavableComponentInterface
      * @throws VolumeObjectExistsException if a directory with such name already exists
      * @throws VolumeException if something else goes wrong
      */
-    public function renameDir(string $path, string $newName);
+    public function renameDirectory(string $path, string $newName);
 }

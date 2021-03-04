@@ -25,7 +25,7 @@
 {% set canDeleteDraft = currentUser.can('deletePeerEntryDrafts'~permissionSuffix) %}
 
 {% if not isSingle and canUpdateSource %}
-    {% set nextEntryParams = ["siteId=#{entry.siteId}"] %}
+    {% set nextEntryParams = ["site=#{entry.site.handle}"] %}
     {% if showEntryTypes %}
         {% set nextEntryParams = nextEntryParams|merge(['typeId={type.id}']) %}
     {% endif %}

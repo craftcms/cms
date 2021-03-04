@@ -202,7 +202,7 @@ class Matrix extends Component
                     $error = Craft::t('app', '{attribute} “{value}” has already been taken.',
                         [
                             'attribute' => Craft::t('app', 'Handle'),
-                            'value' => $field->handle
+                            'value' => $field->handle,
                         ]);
 
                     $field->addError('handle', $error);
@@ -516,7 +516,7 @@ class Matrix extends Component
                     $blockType->addError($attribute, Craft::t('app', '{attribute} “{value}” has already been taken.',
                         [
                             'attribute' => $blockType->getAttributeLabel($attribute),
-                            'value' => Html::encode($value)
+                            'value' => Html::encode($value),
                         ]));
 
                     $validates = false;
@@ -755,7 +755,7 @@ class Matrix extends Component
             ) {
                 // Find the owner's site IDs that *aren't* supported by this site's Matrix blocks
                 $ownerSiteIds = ArrayHelper::getColumn(ElementHelper::supportedSitesForElement($owner), 'siteId');
-                $fieldSiteIds = $this->getSupportedSiteIds($field->propagationMethod, $owner);
+                $fieldSiteIds = $this->getSupportedSiteIds($field->propagationMethod, $owner, $field->propagationKeyFormat);
                 $otherSiteIds = array_diff($ownerSiteIds, $fieldSiteIds);
 
                 // If propagateAll isn't set, only deal with sites that the element was just propagated to for the first time
@@ -791,7 +791,7 @@ class Matrix extends Component
                         }
 
                         // Find all of the field’s supported sites shared with this target
-                        $sourceSupportedSiteIds = $this->getSupportedSiteIds($field->propagationMethod, $localizedOwner);
+                        $sourceSupportedSiteIds = $this->getSupportedSiteIds($field->propagationMethod, $localizedOwner, $field->propagationKeyFormat);
 
                         // Do blocks in this target happen to share supported sites with a preexisting site?
                         if (
@@ -883,7 +883,7 @@ class Matrix extends Component
         if ($checkOtherSites && $field->propagationMethod !== MatrixField::PROPAGATION_METHOD_ALL) {
             // Find the target's site IDs that *aren't* supported by this site's Matrix blocks
             $targetSiteIds = ArrayHelper::getColumn(ElementHelper::supportedSitesForElement($target), 'siteId');
-            $fieldSiteIds = $this->getSupportedSiteIds($field->propagationMethod, $target);
+            $fieldSiteIds = $this->getSupportedSiteIds($field->propagationMethod, $target, $field->propagationKeyFormat);
             $otherSiteIds = array_diff($targetSiteIds, $fieldSiteIds);
 
             if (!empty($otherSiteIds)) {
@@ -921,7 +921,7 @@ class Matrix extends Component
                     $this->duplicateBlocks($field, $otherSource, $otherTargets[$otherSource->siteId]);
 
                     // Make sure we don't duplicate blocks for any of the sites that were just propagated to
-                    $sourceSupportedSiteIds = $this->getSupportedSiteIds($field->propagationMethod, $otherSource);
+                    $sourceSupportedSiteIds = $this->getSupportedSiteIds($field->propagationMethod, $otherSource, $field->propagationKeyFormat);
                     $handledSiteIds = array_merge($handledSiteIds, $sourceSupportedSiteIds);
                 }
             }
@@ -939,7 +939,7 @@ class Matrix extends Component
      */
     public function getSupportedSiteIdsForField(MatrixField $field, ElementInterface $owner): array
     {
-        return $this->getSupportedSiteIds($field->propagationMethod, $owner);
+        return $this->getSupportedSiteIds($field->propagationMethod, $owner, $field->propagationKeyFormat);
     }
 
     /**
@@ -947,15 +947,22 @@ class Matrix extends Component
      *
      * @param string $propagationMethod
      * @param ElementInterface $owner
+     * @param string|null $propagationKeyFormat
      * @return int[]
      * @since 3.3.18
      */
-    public function getSupportedSiteIds(string $propagationMethod, ElementInterface $owner): array
+    public function getSupportedSiteIds(string $propagationMethod, ElementInterface $owner, ?string $propagationKeyFormat = null): array
     {
         /** @var Site[] $allSites */
         $allSites = ArrayHelper::index(Craft::$app->getSites()->getAllSites(), 'id');
         $ownerSiteIds = ArrayHelper::getColumn(ElementHelper::supportedSitesForElement($owner), 'siteId');
         $siteIds = [];
+
+        if ($propagationMethod === MatrixField::PROPAGATION_METHOD_CUSTOM && $propagationKeyFormat !== null) {
+            $view = Craft::$app->getView();
+            $elementsService = Craft::$app->getElements();
+            $propagationKey = $view->renderObjectTemplate($propagationKeyFormat, $owner);
+        }
 
         foreach ($ownerSiteIds as $siteId) {
             switch ($propagationMethod) {
@@ -967,6 +974,14 @@ class Matrix extends Component
                     break;
                 case MatrixField::PROPAGATION_METHOD_LANGUAGE:
                     $include = $allSites[$siteId]->language == $allSites[$owner->siteId]->language;
+                    break;
+                case MatrixField::PROPAGATION_METHOD_CUSTOM:
+                    if (!isset($propagationKey)) {
+                        $include = true;
+                    } else {
+                        $siteOwner = $elementsService->getElementById($owner->id, get_class($owner), $siteId);
+                        $include = $siteOwner && $propagationKey === $view->renderObjectTemplate($propagationKeyFormat, $siteOwner);
+                    }
                     break;
                 default:
                     $include = true;
@@ -996,7 +1011,7 @@ class Matrix extends Component
                 'bt.name',
                 'bt.handle',
                 'bt.sortOrder',
-                'bt.uid'
+                'bt.uid',
             ])
             ->from(['bt' => Table::MATRIXBLOCKTYPES])
             ->orderBy(['bt.sortOrder' => SORT_ASC]);
@@ -1046,7 +1061,7 @@ class Matrix extends Component
     private function _createContentTable(string $tableName)
     {
         $migration = new CreateMatrixContentTable([
-            'tableName' => $tableName
+            'tableName' => $tableName,
         ]);
 
         ob_start();

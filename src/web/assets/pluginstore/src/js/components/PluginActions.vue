@@ -8,7 +8,7 @@
 
             <template v-else>
                 <!-- Add to cart / Upgrade (from lower edition) -->
-                <btn v-if="allowUpdates && isEditionMoreExpensiveThanLicensed" kind="primary" @click="addEditionToCart(edition.handle)" :loading="addToCartloading" :disabled="addToCartloading || !plugin.latestCompatibleVersion || licenseMismatched" block large>{{ "Add to cart"|t('app') }}</btn>
+                <btn v-if="allowUpdates && isEditionMoreExpensiveThanLicensed" kind="primary" @click="addEditionToCart(edition.handle)" :loading="addToCartloading" :disabled="addToCartloading || !plugin.latestCompatibleVersion || licenseMismatched || plugin.abandoned" block large>{{ "Add to cart"|t('app') }}</btn>
 
                 <!-- Licensed -->
                 <btn v-else-if="licensedEdition === edition.handle" kind="primary" block large disabled>{{ "Licensed"|t('app') }}</btn>
@@ -79,6 +79,11 @@
         <template v-else-if="!plugin.latestCompatibleVersion">
             <div class="text-grey mt-4 px-8">
                 <p>{{ "This plugin isn’t compatible with your version of Craft."|t('app') }}</p>
+            </div>
+        </template>
+        <template v-else-if="!isPluginEditionFree && plugin.abandoned">
+            <div class="text-grey mt-4 px-8">
+                <p>{{ "This plugin is no longer maintained."|t('app') }}</p>
             </div>
         </template>
     </div>
@@ -155,7 +160,7 @@
             },
 
             allowUpdates() {
-                return window.allowUpdates
+                return Craft.allowUpdates && Craft.allowAdminChanges
             },
 
             csrfTokenName() {

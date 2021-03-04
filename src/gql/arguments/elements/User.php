@@ -31,22 +31,22 @@ class User extends ElementArguments
             'email' => [
                 'name' => 'email',
                 'type' => Type::listOf(Type::string()),
-                'description' => 'Narrows the query results based on the users’ email addresses.'
+                'description' => 'Narrows the query results based on the users’ email addresses.',
             ],
             'username' => [
                 'name' => 'username',
                 'type' => Type::listOf(Type::string()),
-                'description' => 'Narrows the query results based on the users’ usernames.'
+                'description' => 'Narrows the query results based on the users’ usernames.',
             ],
             'firstName' => [
                 'name' => 'firstName',
                 'type' => Type::listOf(Type::string()),
-                'description' => 'Narrows the query results based on the users’ first names.'
+                'description' => 'Narrows the query results based on the users’ first names.',
             ],
             'lastName' => [
                 'name' => 'lastName',
                 'type' => Type::listOf(Type::string()),
-                'description' => 'Narrows the query results based on the users’ last names.'
+                'description' => 'Narrows the query results based on the users’ last names.',
             ],
             'hasPhoto' => [
                 'name' => 'hasPhoto',
@@ -56,12 +56,12 @@ class User extends ElementArguments
             'groupId' => [
                 'name' => 'groupId',
                 'type' => Type::listOf(QueryArgument::getType()),
-                'description' => 'Narrows the query results based on the user group the users belong to, per the groups’ IDs.'
+                'description' => 'Narrows the query results based on the user group the users belong to, per the groups’ IDs.',
             ],
             'group' => [
                 'name' => 'group',
                 'type' => Type::listOf(QueryArgument::getType()),
-                'description' => 'Narrows the query results based on the user group the users belong to.'
+                'description' => 'Narrows the query results based on the user group the users belong to.',
             ],
         ]);
     }
@@ -84,5 +84,21 @@ class User extends ElementArguments
         }
 
         return array_merge(parent::getContentArguments(), $contentArguments);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public static function getDraftArguments(): array
+    {
+        return [];
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public static function getRevisionArguments(): array
+    {
+        return [];
     }
 }

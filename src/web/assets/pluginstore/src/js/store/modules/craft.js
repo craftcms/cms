@@ -13,6 +13,7 @@ const state = {
     licensedEdition: null,
     pluginLicenseInfo: {},
     poweredByStripe: null,
+    alertIcon: null,
 
     // Craft editions
     CraftEdition: null,
@@ -102,6 +103,19 @@ const getters = {
             }
 
             return true
+        }
+    },
+
+    getCmsEditionIndex(state) {
+        return editionHandle => {
+            switch (editionHandle) {
+                case 'solo':
+                    return state.CraftSolo
+                case 'pro':
+                    return state.CraftPro
+                default:
+                    return null
+            }
         }
     },
 }
@@ -201,6 +215,7 @@ const mutations = {
         state.defaultPluginSvg = response.data.defaultPluginSvg
         state.licensedEdition = response.data.licensedEdition
         state.poweredByStripe = response.data.poweredByStripe
+        state.alertIcon = response.data.alertIcon
 
         // Craft editions
         state.CraftEdition = response.data.CraftEdition

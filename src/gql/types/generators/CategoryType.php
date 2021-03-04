@@ -67,7 +67,7 @@ class CategoryType extends Generator implements GeneratorInterface, SingleGenera
             'name' => $typeName,
             'fields' => function() use ($categoryGroupFields) {
                 return $categoryGroupFields;
-            }
+            },
         ]));
     }
 }

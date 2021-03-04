@@ -125,6 +125,7 @@ class Controller extends YiiController
     public function init()
     {
         parent::init();
+        $this->checkTty();
 
         $this->_actions = [];
         foreach ($this->defineActions() as $id => $action) {

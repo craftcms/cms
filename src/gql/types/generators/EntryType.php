@@ -71,7 +71,7 @@ class EntryType extends Generator implements GeneratorInterface, SingleGenerator
             'name' => $typeName,
             'fields' => function() use ($entryTypeFields) {
                 return $entryTypeFields;
-            }
+            },
         ]));
     }
 }

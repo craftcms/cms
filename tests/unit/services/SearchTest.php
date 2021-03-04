@@ -76,29 +76,6 @@ class SearchTest extends Unit
     }
 
     /**
-     * @dataProvider filterScoresDataProvider
-     *
-     * @param $scoresAndNames
-     * @param $usernameOrEmailsForQuery
-     * @param $query
-     * @param bool $scoreResults
-     * @param null $siteId
-     */
-    public function testFilterScores($scoresAndNames, $usernameOrEmailsForQuery, $query, $scoreResults = true, $siteId = null)
-    {
-        // Repackage the dataProvider input into what the filter function will return.
-        $result = $this->_scoreList($scoresAndNames);
-
-        // Get the user ids to send into the filter function
-        $forQuery = $this->_usernameEmailArrayToIdList($usernameOrEmailsForQuery);
-
-        // Filter them
-        $filtered = $this->search->filterElementIdsByQuery($forQuery, $query, $scoreResults, $siteId, true);
-
-        self::assertSame($result, $filtered);
-    }
-
-    /**
      *
      */
     public function testElementQueryReturnsInt()
@@ -165,50 +142,6 @@ class SearchTest extends Unit
     }
 
     /**
-     * @return array
-     */
-    public function filterScoresDataProvider(): array
-    {
-        return [
-            [
-                [
-                    ['identifier' => 'user1', 'score' => 13.333333333333332]
-                ], ['user1'], 'user', true, 1
-            ],
-            [
-                [
-                    ['identifier' => 'user4', 'score' => 118.33333333333333],
-                    ['identifier' => 'user1', 'score' => 13.333333333333332],
-                    ['identifier' => 'user2', 'score' => 13.333333333333332],
-                    ['identifier' => 'user3', 'score' => 13.333333333333332]
-                ], ['user1', 'user2', 'user3', 'user4'], 'user', true, 1
-            ],
-            [
-                [
-                    ['identifier' => 'user4', 'score' => 118.33333333333333],
-                    ['identifier' => 'user1', 'score' => 13.333333333333332],
-                    ['identifier' => 'user2', 'score' => 13.333333333333332],
-                    ['identifier' => 'user3', 'score' => 13.333333333333332]
-                ], [], 'user', true, 1
-            ],
-            [
-                [
-                    ['identifier' => 'user4', 'score' => 1.6666666666666665],
-                    ['identifier' => 'user1', 'score' => 0.0],
-                ], ['user1', 'user2', 'user3', 'user4'], 'someemail OR -firstname:*', true, 1
-            ],
-            [
-                [
-                    ['identifier' => 'user4', 'score' => 60.833333333333336],
-                    ['identifier' => 'user1', 'score' => 6.666666666666666],
-                    ['identifier' => 'user2', 'score' => 6.666666666666666],
-                    ['identifier' => 'user3', 'score' => 6.666666666666666]
-                ], ['user1', 'user2', 'user3', 'user4'], 'user OR someemail', true, 1
-            ],
-        ];
-    }
-
-    /**
      * @inheritdoc
      */
     protected function _before()
@@ -262,22 +195,6 @@ class SearchTest extends Unit
         foreach ($usernameOrEmails as $usernameOrEmail) {
             $userId = $this->_getUserIdByEmailOrUserName($usernameOrEmail)->id;
             $ids[] = $typecastToInt === true ? (int)$userId : $userId;
-        }
-
-        return $ids;
-    }
-
-    /**
-     * @param array $usernameOrEmailsAndScores
-     * @return array
-     */
-    private function _scoreList(array $usernameOrEmailsAndScores): array
-    {
-        $ids = [];
-
-        foreach ($usernameOrEmailsAndScores as $usernameOrEmailAndScore) {
-            $userId = $this->_getUserIdByEmailOrUserName($usernameOrEmailAndScore['identifier'])->id;
-            $ids[$userId] = $usernameOrEmailAndScore['score'];
         }
 
         return $ids;

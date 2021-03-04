@@ -21,6 +21,7 @@ use craft\records\Widget as WidgetRecord;
 use craft\widgets\CraftSupport as CraftSupportWidget;
 use craft\widgets\Feed as FeedWidget;
 use craft\widgets\MissingWidget;
+use craft\widgets\MyDrafts;
 use craft\widgets\NewUsers as NewUsersWidget;
 use craft\widgets\QuickPost as QuickPostWidget;
 use craft\widgets\RecentEntries as RecentEntriesWidget;
@@ -92,11 +93,12 @@ class Dashboard extends Component
             NewUsersWidget::class,
             QuickPostWidget::class,
             RecentEntriesWidget::class,
+            MyDrafts::class,
             UpdatesWidget::class,
         ];
 
         $event = new RegisterComponentTypesEvent([
-            'types' => $widgetTypes
+            'types' => $widgetTypes,
         ]);
         $this->trigger(self::EVENT_REGISTER_WIDGET_TYPES, $event);
 
@@ -376,7 +378,7 @@ class Dashboard extends Component
         $this->saveWidget($this->createWidget([
             'type' => FeedWidget::class,
             'url' => 'https://craftcms.com/news.rss',
-            'title' => 'Craft News'
+            'title' => 'Craft News',
         ]));
 
         // Update the user record
@@ -401,7 +403,7 @@ class Dashboard extends Component
         if ($widgetId !== null) {
             $widgetRecord = WidgetRecord::findOne([
                 'id' => $widgetId,
-                'userId' => $userId
+                'userId' => $userId,
             ]);
 
             if (!$widgetRecord) {

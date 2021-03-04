@@ -121,7 +121,7 @@ class Tag extends Element
             $sources[] = [
                 'key' => 'taggroup:' . $tagGroup->uid,
                 'label' => Craft::t('site', $tagGroup->name),
-                'criteria' => ['groupId' => $tagGroup->id]
+                'criteria' => ['groupId' => $tagGroup->id],
             ];
         }
 

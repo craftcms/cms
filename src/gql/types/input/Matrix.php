@@ -49,7 +49,7 @@ class Matrix extends InputObjectType
                 'id' => [
                     'name' => 'id',
                     'type' => Type::id(),
-                ]
+                ],
             ];
 
             // Get the field input types
@@ -63,8 +63,8 @@ class Matrix extends InputObjectType
                 'name' => $blockType->handle,
                 'type' => GqlEntityRegistry::createEntity($blockTypeGqlName, new InputObjectType([
                     'name' => $blockTypeGqlName,
-                    'fields' => $blockTypeFields
-                ]))
+                    'fields' => $blockTypeFields,
+                ])),
             ];
         }
 
@@ -75,7 +75,7 @@ class Matrix extends InputObjectType
             'name' => $blockTypeContainerName,
             'fields' => function() use ($blockInputTypes) {
                 return $blockInputTypes;
-            }
+            },
         ]));
 
         $inputType = GqlEntityRegistry::createEntity($typeName, new InputObjectType([
@@ -84,15 +84,15 @@ class Matrix extends InputObjectType
                 return [
                     'sortOrder' => [
                         'name' => 'sortOrder',
-                        'type' => Type::listOf(QueryArgument::getType())
+                        'type' => Type::listOf(QueryArgument::getType()),
                     ],
                     'blocks' => [
                         'name' => 'blocks',
-                        'type' => Type::listOf($blockContainerInputType)
-                    ]
+                        'type' => Type::listOf($blockContainerInputType),
+                    ],
                 ];
             },
-            'normalizeValue' => [self::class, 'normalizeValue']
+            'normalizeValue' => [self::class, 'normalizeValue'],
         ]));
 
         return $inputType;
@@ -122,7 +122,7 @@ class Matrix extends InputObjectType
 
                     $preparedBlocks[$blockId] = [
                         'type' => $type,
-                        'fields' => $block
+                        'fields' => $block,
                     ];
                 }
             }

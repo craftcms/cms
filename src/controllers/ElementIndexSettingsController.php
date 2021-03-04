@@ -66,7 +66,7 @@ class ElementIndexSettingsController extends BaseElementsController
             foreach ($tableAttributes as $attribute) {
                 $source['tableAttributes'][] = [
                     $attribute[0],
-                    $attribute[1]['label']
+                    $attribute[1]['label'],
                 ];
             }
 

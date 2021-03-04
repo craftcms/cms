@@ -199,7 +199,7 @@ class Formatter extends \yii\i18n\Formatter
         // If it were up to 7 days ago, display the weekday name.
         if (DateTimeHelper::isWithinLast($timestamp, '7 days')) {
             $day = $timestamp->format('w');
-            $dayName = Craft::$app->getI18n()->getLocaleById($this->locale)->getWeekDayName($day);
+            $dayName = Craft::$app->getLocale()->getWeekDayName($day);
             return $withPreposition ? Craft::t('app', 'on {day}', ['day' => $dayName]) : $dayName;
         }
 
@@ -310,7 +310,7 @@ class Formatter extends \yii\i18n\Formatter
                     default:
                         // Make sure we are formatting the date with the right timezone consistently
                         if (!isset($timestamp)) {
-                            list($timestamp, $hasTimeInfo, $hasDateInfo) = $this->normalizeDatetimeValue($value, true);
+                            [$timestamp, $hasTimeInfo, $hasDateInfo] = $this->normalizeDatetimeValue($value, true);
                             if ($type === 'date' && !$hasTimeInfo || $type === 'time' && !$hasDateInfo) {
                                 $timeZone = $this->defaultTimeZone;
                             } else {

@@ -228,7 +228,7 @@ class Site extends Model
                 if ($this->primary && !$this->enabled) {
                     $this->addError($attribute, Craft::t('app', 'The primary site cannot be disabled.'));
                 }
-            }
+            },
         ];
 
         return $rules;

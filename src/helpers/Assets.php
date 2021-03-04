@@ -143,7 +143,7 @@ class Assets
 
         $baseNameSanitized = FileHelper::sanitizeFilename($baseName, [
             'asciiOnly' => $generalConfig->convertFilenamesToAscii,
-            'separator' => $separator
+            'separator' => $separator,
         ]);
 
         // Give developers a chance to do their own sanitation
@@ -151,7 +151,7 @@ class Assets
             $event = new SetAssetFilenameEvent([
                 'filename' => $baseNameSanitized,
                 'originalFilename' => $baseName,
-                'extension' => $extension
+                'extension' => $extension,
             ]);
             Event::trigger(self::class, self::EVENT_SET_FILENAME, $event);
             $baseName = $event->filename;
@@ -239,7 +239,7 @@ class Assets
             $fileTransferList[] = [
                 'assetId' => $asset->id,
                 'folderId' => $newFolderId,
-                'force' => true
+                'force' => true,
             ];
         }
 
@@ -385,7 +385,7 @@ class Assets
                         'accde',
                         'accdt',
                         'accdr',
-                    ]
+                    ],
                 ],
                 Asset::KIND_AUDIO => [
                     'label' => Craft::t('app', 'Audio'),
@@ -421,7 +421,7 @@ class Assets
                         'wav',
                         'wma',
                         'wv',
-                    ]
+                    ],
                 ],
                 Asset::KIND_CAPTIONS_SUBTITLES => [
                     'label' => Craft::t('app', 'Captions/Subtitles'),
@@ -445,7 +445,7 @@ class Assets
                         'tds',
                         'ttml',
                         'vtt',
-                    ]
+                    ],
                 ],
                 Asset::KIND_COMPRESSED => [
                     'label' => Craft::t('app', 'Compressed'),
@@ -460,7 +460,7 @@ class Assets
                         'zip',
                         'tgz',
                         'zipx',
-                    ]
+                    ],
                 ],
                 Asset::KIND_EXCEL => [
                     'label' => Craft::t('app', 'Excel'),
@@ -470,30 +470,20 @@ class Assets
                         'xlsm',
                         'xltx',
                         'xltm',
-                    ]
-                ],
-                Asset::KIND_FLASH => [
-                    'label' => Craft::t('app', 'Flash'),
-                    'extensions' => [
-                        'fla',
-                        'flv',
-                        'swf',
-                        'swt',
-                        'swc',
-                    ]
+                    ],
                 ],
                 Asset::KIND_HTML => [
                     'label' => Craft::t('app', 'HTML'),
                     'extensions' => [
                         'html',
                         'htm',
-                    ]
+                    ],
                 ],
                 Asset::KIND_ILLUSTRATOR => [
                     'label' => Craft::t('app', 'Illustrator'),
                     'extensions' => [
                         'ai',
-                    ]
+                    ],
                 ],
                 Asset::KIND_IMAGE => [
                     'label' => Craft::t('app', 'Image'),
@@ -516,34 +506,34 @@ class Assets
                         'pfm',
                         'pam',
                         'svg',
-                    ]
+                    ],
                 ],
                 Asset::KIND_JAVASCRIPT => [
                     'label' => Craft::t('app', 'JavaScript'),
                     'extensions' => [
                         'js',
-                    ]
+                    ],
                 ],
                 Asset::KIND_JSON => [
                     'label' => Craft::t('app', 'JSON'),
                     'extensions' => [
                         'json',
-                    ]
+                    ],
                 ],
                 Asset::KIND_PDF => [
                     'label' => Craft::t('app', 'PDF'),
-                    'extensions' => ['pdf']
+                    'extensions' => ['pdf'],
                 ],
                 Asset::KIND_PHOTOSHOP => [
                     'label' => Craft::t('app', 'Photoshop'),
                     'extensions' => [
                         'psd',
                         'psb',
-                    ]
+                    ],
                 ],
                 Asset::KIND_PHP => [
                     'label' => Craft::t('app', 'PHP'),
-                    'extensions' => ['php']
+                    'extensions' => ['php'],
                 ],
                 Asset::KIND_POWERPOINT => [
                     'label' => Craft::t('app', 'PowerPoint'),
@@ -555,14 +545,14 @@ class Assets
                         'pptm',
                         'pptx',
                         'potx',
-                    ]
+                    ],
                 ],
                 Asset::KIND_TEXT => [
                     'label' => Craft::t('app', 'Text'),
                     'extensions' => [
                         'txt',
                         'text',
-                    ]
+                    ],
                 ],
                 Asset::KIND_VIDEO => [
                     'label' => Craft::t('app', 'Video'),
@@ -594,7 +584,7 @@ class Assets
                         'wmv',
                         'webm',
                         'vob',
-                    ]
+                    ],
                 ],
                 Asset::KIND_WORD => [
                     'label' => Craft::t('app', 'Word'),
@@ -604,13 +594,13 @@ class Assets
                         'dot',
                         'docm',
                         'dotm',
-                    ]
+                    ],
                 ],
                 Asset::KIND_XML => [
                     'label' => Craft::t('app', 'XML'),
                     'extensions' => [
                         'xml',
-                    ]
+                    ],
                 ],
             ];
 

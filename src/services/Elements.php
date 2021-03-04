@@ -987,6 +987,28 @@ class Elements extends Component
             throw new UnsupportedSiteException($element, $mainClone->siteId, 'Attempting to duplicate an element in an unsupported site.');
         }
 
+        // If we are duplicating a draft as another draft, create a new draft row
+        if ($mainClone->draftId && $mainClone->draftId === $element->draftId) {
+            /* @var ElementInterface|DraftBehavior $element */
+            /* @var DraftBehavior $draftBehavior */
+            $draftBehavior = $mainClone->getBehavior('draft');
+            $draftsService = Craft::$app->getDrafts();
+            // Are we duplicating a draft of a published element?
+            if ($element->sourceId) {
+                $draftBehavior->draftName = $draftsService->generateDraftName($element->sourceId);
+            } else {
+                $draftBehavior->draftName = Craft::t('app', 'First draft');
+            }
+            $draftBehavior->draftNotes = null;
+            $mainClone->draftId = $draftsService->insertDraftRow(
+                $draftBehavior->draftName,
+                null,
+                Craft::$app->getUser()->getId(),
+                $draftBehavior->sourceId,
+                $draftBehavior->trackChanges
+            );
+        }
+
         // Validate
         $mainClone->setScenario(Element::SCENARIO_ESSENTIALS);
         $mainClone->validate();
@@ -1159,7 +1181,7 @@ class Elements extends Component
         // Fire a 'beforeUpdateSlugAndUri' event
         if ($this->hasEventHandlers(self::EVENT_BEFORE_UPDATE_SLUG_AND_URI)) {
             $this->trigger(self::EVENT_BEFORE_UPDATE_SLUG_AND_URI, new ElementEvent([
-                'element' => $element
+                'element' => $element,
             ]));
         }
 
@@ -1174,7 +1196,7 @@ class Elements extends Component
         // Fire a 'afterUpdateSlugAndUri' event
         if ($this->hasEventHandlers(self::EVENT_AFTER_UPDATE_SLUG_AND_URI)) {
             $this->trigger(self::EVENT_AFTER_UPDATE_SLUG_AND_URI, new ElementEvent([
-                'element' => $element
+                'element' => $element,
             ]));
         }
 
@@ -1312,7 +1334,7 @@ class Elements extends Component
                         'fieldId' => $relation['fieldId'],
                         'sourceId' => $relation['sourceId'],
                         'sourceSiteId' => $relation['sourceSiteId'],
-                        'targetId' => $prevailingElement->id
+                        'targetId' => $prevailingElement->id,
                     ])
                     ->exists();
 
@@ -1338,7 +1360,7 @@ class Elements extends Component
                     ->from([Table::STRUCTUREELEMENTS])
                     ->where([
                         'structureId' => $structureElement['structureId'],
-                        'elementId' => $prevailingElement->id
+                        'elementId' => $prevailingElement->id,
                     ])
                     ->exists();
 
@@ -1375,7 +1397,7 @@ class Elements extends Component
             if ($this->hasEventHandlers(self::EVENT_AFTER_MERGE_ELEMENTS)) {
                 $this->trigger(self::EVENT_AFTER_MERGE_ELEMENTS, new MergeElementsEvent([
                     'mergedElementId' => $mergedElement->id,
-                    'prevailingElementId' => $prevailingElement->id
+                    'prevailingElementId' => $prevailingElement->id,
                 ]));
             }
 
@@ -1661,7 +1683,7 @@ class Elements extends Component
         ];
 
         $event = new RegisterComponentTypesEvent([
-            'types' => $elementTypes
+            'types' => $elementTypes,
         ]);
         $this->trigger(self::EVENT_REGISTER_ELEMENT_TYPES, $event);
 
@@ -2270,7 +2292,7 @@ class Elements extends Component
         if ($this->hasEventHandlers(self::EVENT_BEFORE_SAVE_ELEMENT)) {
             $this->trigger(self::EVENT_BEFORE_SAVE_ELEMENT, new ElementEvent([
                 'element' => $element,
-                'isNew' => $isNewElement
+                'isNew' => $isNewElement,
             ]));
         }
 
@@ -2502,7 +2524,7 @@ class Elements extends Component
                     [
                         'and',
                         ['elementId' => $element->id],
-                        ['not', ['siteId' => $supportedSiteIds]]
+                        ['not', ['siteId' => $supportedSiteIds]],
                     ]
                 );
 
@@ -2512,7 +2534,7 @@ class Elements extends Component
                         [
                             'and',
                             ['elementId' => $element->id],
-                            ['not', ['siteId' => $supportedSiteIds]]
+                            ['not', ['siteId' => $supportedSiteIds]],
                         ]
                     );
                 }
@@ -2523,7 +2545,7 @@ class Elements extends Component
         }
 
         // Update search index
-        if ($updateSearchIndex && !$isDraftOrRevision) {
+        if ($updateSearchIndex && !$element->getIsRevision()) {
             if (Craft::$app->getRequest()->getIsConsoleRequest()) {
                 Craft::$app->getSearch()->indexElementAttributes($element);
             } else {
@@ -2531,7 +2553,7 @@ class Elements extends Component
                     'elementType' => get_class($element),
                     'elementId' => $element->id,
                     'siteId' => $propagate ? '*' : $element->siteId,
-                    'fieldHandles' => $element->getDirtyFields(),
+                    'fieldHandles' => $element->getIsDraft() ? [] : $element->getDirtyFields(),
                 ]), 2048);
             }
         }
@@ -2541,7 +2563,7 @@ class Elements extends Component
             $userId = Craft::$app->getUser()->getId();
             $timestamp = Db::prepareDateForDb(new \DateTime());
 
-            foreach ($dirtyAttributes as $attributeName) {
+            foreach ($element->getDirtyAttributes() as $attributeName) {
                 Db::upsert(Table::CHANGEDATTRIBUTES, [
                     'elementId' => $element->id,
                     'siteId' => $element->siteId,

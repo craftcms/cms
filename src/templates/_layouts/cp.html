@@ -89,17 +89,17 @@
 }|merge(mainAttributes ?? []) %}
 
 {% set mainFormAttributes = {
-    'id': 'main-form',
-    'method': 'post',
+    id: 'main-form',
+    method: 'post',
     'accept-charset': 'UTF-8',
-    'novalidate': true,
-    'data': {
-        'saveshortcut': saveShortcut ?? true,
+    novalidate: true,
+    data: {
+        saveshortcut: saveShortcut ?? true,
         'saveshortcut-redirect': (saveShortcutRedirect ?? false) ? saveShortcutRedirect|hash : false,
         'saveshortcut-scroll': retainScrollOnSaveShortcut ?? false,
-        'actions': formActions ?? false,
+        actions: formActions ?? false,
         'confirm-unload': true,
-        'delta': view.getIsDeltaRegistrationActive(),
+        delta: view.getIsDeltaRegistrationActive(),
     },
 }|merge(mainFormAttributes ?? [], recursive=true) %}
 

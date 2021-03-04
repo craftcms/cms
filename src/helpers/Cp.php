@@ -9,6 +9,7 @@ namespace craft\helpers;
 
 use Craft;
 use craft\base\ElementInterface;
+use craft\behaviors\DraftBehavior;
 use craft\enums\LicenseKeyStatus;
 use craft\events\RegisterCpAlertsEvent;
 use craft\web\twig\TemplateLoaderException;
@@ -68,6 +69,8 @@ class Cp
         }
 
         $updatesService = Craft::$app->getUpdates();
+        $canSettleUp = true;
+        $licenseAlerts = [];
 
         if ($updatesService->getIsUpdateInfoCached() || $fetch) {
             // Fetch the updates regardless of whether we're on the Updates page or not, because the other alerts are
@@ -84,7 +87,7 @@ class Cp
                 } else if (Craft::$app->getHasWrongEdition()) {
                     $message = Craft::t('app', 'You’re running Craft {edition} with a Craft {licensedEdition} license.', [
                             'edition' => Craft::$app->getEditionName(),
-                            'licensedEdition' => Craft::$app->getLicensedEditionName()
+                            'licensedEdition' => Craft::$app->getLicensedEditionName(),
                         ]) . ' ';
                     if ($user->admin) {
                         if ($generalConfig->allowAdminChanges) {
@@ -96,44 +99,8 @@ class Cp
                         $message .= Craft::t('app', 'Please notify one of your site’s admins.');
                     }
 
-                    $alerts[] = $message;
+                    $licenseAlerts[] = $message;
                 }
-            }
-
-            if (
-                $path !== 'utilities/updates' &&
-                $user->can('utility:updates') &&
-                $updatesService->getIsCriticalUpdateAvailable()
-            ) {
-                $alerts[] = Craft::t('app', 'A critical update is available.') .
-                    ' <a class="go nowrap" href="' . UrlHelper::url('utilities/updates') . '">' . Craft::t('app', 'Go to Updates') . '</a>';
-            }
-
-            // Domain mismatch?
-            if ($licenseKeyStatus === LicenseKeyStatus::Mismatched) {
-                $licensedDomain = Craft::$app->getCache()->get('licensedDomain');
-                $domainLink = '<a href="http://' . $licensedDomain . '" rel="noopener" target="_blank">' . $licensedDomain . '</a>';
-
-                if (defined('CRAFT_LICENSE_KEY')) {
-                    $message = Craft::t('app', 'The license key in use belongs to {domain}', [
-                        'domain' => $domainLink
-                    ]);
-                } else {
-                    $keyPath = Craft::$app->getPath()->getLicenseKeyPath();
-
-                    // If the license key path starts with the root project path, trim the project path off
-                    $rootPath = Craft::getAlias('@root');
-                    if (strpos($keyPath, $rootPath . '/') === 0) {
-                        $keyPath = substr($keyPath, strlen($rootPath) + 1);
-                    }
-
-                    $message = Craft::t('app', 'The license located at {file} belongs to {domain}.', [
-                        'file' => $keyPath,
-                        'domain' => $domainLink
-                    ]);
-                }
-
-                $alerts[] = $message . ' <a class="go" href="https://craftcms.com/support/resolving-mismatched-licenses">' . Craft::t('app', 'Learn more') . '</a>';
             }
 
             // Any plugin issues?
@@ -166,8 +133,63 @@ class Cp
                         $message .= Craft::t('app', 'Please notify one of your site’s admins.');
                     }
 
-                    $alerts[] = $message;
+                    $licenseAlerts[] = $message;
+
+                    // Is this reconcilable?
+                    foreach ($issuePlugins as $pluginHandle) {
+                        if (!$pluginsService->getPluginLicenseKeyStatus($pluginHandle) === LicenseKeyStatus::Trial) {
+                            $canSettleUp = false;
+                            break;
+                        }
+                    }
                 }
+            }
+
+            if (!empty($licenseAlerts)) {
+                if ($canSettleUp) {
+                    if ($path !== 'plugin-store/buy-all-trials') {
+                        $alerts[] = Craft::t('app', 'There are trial licenses that require payment.') . ' ' .
+                            Html::a(Craft::t('app', 'Buy now'), UrlHelper::cpUrl('plugin-store/buy-all-trials'), ['class' => 'go']);
+                    }
+                } else {
+                    array_push($alerts, ...$licenseAlerts);
+                }
+            }
+
+            if (
+                $path !== 'utilities/updates' &&
+                $user->can('utility:updates') &&
+                $updatesService->getIsCriticalUpdateAvailable()
+            ) {
+                $alerts[] = Craft::t('app', 'A critical update is available.') .
+                    ' <a class="go nowrap" href="' . UrlHelper::url('utilities/updates') . '">' . Craft::t('app', 'Go to Updates') . '</a>';
+            }
+
+            // Domain mismatch?
+            if ($licenseKeyStatus === LicenseKeyStatus::Mismatched) {
+                $licensedDomain = Craft::$app->getCache()->get('licensedDomain');
+                $domainLink = '<a href="http://' . $licensedDomain . '" rel="noopener" target="_blank">' . $licensedDomain . '</a>';
+
+                if (defined('CRAFT_LICENSE_KEY')) {
+                    $message = Craft::t('app', 'The license key in use belongs to {domain}', [
+                        'domain' => $domainLink,
+                    ]);
+                } else {
+                    $keyPath = Craft::$app->getPath()->getLicenseKeyPath();
+
+                    // If the license key path starts with the root project path, trim the project path off
+                    $rootPath = Craft::getAlias('@root');
+                    if (strpos($keyPath, $rootPath . '/') === 0) {
+                        $keyPath = substr($keyPath, strlen($rootPath) + 1);
+                    }
+
+                    $message = Craft::t('app', 'The license located at {file} belongs to {domain}.', [
+                        'file' => $keyPath,
+                        'domain' => $domainLink,
+                    ]);
+                }
+
+                $alerts[] = $message . ' <a class="go" href="https://craftcms.com/support/resolving-mismatched-licenses">' . Craft::t('app', 'Learn more') . '</a>';
             }
         }
 
@@ -209,9 +231,10 @@ class Cp
      * @param string $context The context the element is going to be shown in (`index`, `field`, etc.)
      * @param string $size The size of the element (`small` or `large`)
      * @param string|null $inputName The `name` attribute that should be set on the hidden input, if `$context` is set to `field`
-     * @param bool $showStatus Whether the elemnet status should be shown (if the element type has statuses)
+     * @param bool $showStatus Whether the element status should be shown (if the element type has statuses)
      * @param bool $showThumb Whether the element thumb should be shown (if the element has one)
      * @param bool $showLabel Whether the element label should be shown
+     * @param bool $showDraftName Whether to show the draft name beside the label if the element is a draft of a published element
      * @return string
      * @since 3.5.8
      */
@@ -222,9 +245,14 @@ class Cp
         ?string $inputName = null,
         bool $showStatus = true,
         bool $showThumb = true,
-        bool $showLabel = true
-    ): string {
+        bool $showLabel = true,
+        bool $showDraftName = true
+    ): string
+    {
+        $isDraft = $element->getIsDraft();
+        $isRevision = !$isDraft && $element->getIsRevision();
         $label = $element->getUiLabel();
+        $showStatus = $showStatus && ($isDraft || $element::hasStatuses());
 
         // Create the thumb/icon image, if there is one
         if ($showThumb) {
@@ -281,7 +309,7 @@ class Cp
             $htmlAttributes['class'] .= ' error';
         }
 
-        if ($element::hasStatuses()) {
+        if ($showStatus) {
             $htmlAttributes['class'] .= ' hasstatus';
         }
 
@@ -319,15 +347,27 @@ class Cp
                 ]);
         }
 
-        if ($showStatus && $element::hasStatuses()) {
-            $status = $element->getStatus();
-            $html .= Html::tag('span', '', [
-                'class' => array_filter([
-                    'status',
-                    $status,
-                    $status ? ($element::statuses()[$status]['color'] ?? null) : null,
-                ]),
-            ]);
+        if ($showStatus) {
+            if ($isDraft) {
+                $html .= Html::tag('span', '', [
+                    'class' => ['icon'],
+                    'aria' => [
+                        'hidden' => 'true',
+                    ],
+                    'data' => [
+                        'icon' => 'draft',
+                    ],
+                ]);
+            } else {
+                $status = !$isRevision ? $element->getStatus() : null;
+                $html .= Html::tag('span', '', [
+                    'class' => array_filter([
+                        'status',
+                        $status,
+                        $status ? ($element::statuses()[$status]['color'] ?? null) : null,
+                    ]),
+                ]);
+            }
         }
 
         $html .= $imgHtml;
@@ -338,15 +378,22 @@ class Cp
 
             $encodedLabel = Html::encode($label);
 
+            if ($showDraftName && $isDraft && !$element->getIsUnpublishedDraft()) {
+                /* @var DraftBehavior|ElementInterface $element */
+                $encodedLabel .= Html::tag('span', $element->draftName ?: Craft::t('app', 'Draft'), [
+                    'class' => 'draft-label',
+                ]);
+            }
+
             // Should we make the element a link?
             if (
                 $context === 'index' &&
                 !$element->trashed &&
                 ($cpEditUrl = $element->getCpEditUrl())
             ) {
-                if ($element->getIsDraft()) {
+                if ($isDraft) {
                     $cpEditUrl = UrlHelper::urlWithParams($cpEditUrl, ['draftId' => $element->draftId]);
-                } else if ($element->getIsRevision()) {
+                } else if ($isRevision) {
                     $cpEditUrl = UrlHelper::urlWithParams($cpEditUrl, ['revisionId' => $element->revisionId]);
                 }
 
@@ -364,6 +411,50 @@ class Cp
     }
 
     /**
+     * Returns element preview HTML, for a list of elements.
+     *
+     * @param ElementInterface[] $elements The elements
+     * @param string $size The size of the element (`small` or `large`)
+     * @param bool $showStatus Whether the element status should be shown (if the element type has statuses)
+     * @param bool $showThumb Whether the element thumb should be shown (if the element has one)
+     * @param bool $showLabel Whether the element label should be shown
+     * @param bool $showDraftName Whether to show the draft name beside the label if the element is a draft of a published element
+     * @return string
+     * @since 3.6.3
+     */
+    public static function elementPreviewHtml(
+        array $elements,
+        string $size = self::ELEMENT_SIZE_SMALL,
+        bool $showStatus = true,
+        bool $showThumb = true,
+        bool $showLabel = true,
+        bool $showDraftName = true
+    ): string
+    {
+        if (empty($elements)) {
+            return '';
+        }
+
+        $first = array_shift($elements);
+        $html = static::elementHtml($first, 'index', $size, null, $showStatus, $showThumb, $showLabel, $showDraftName);
+
+        if (!empty($elements)) {
+            $otherHtml = '';
+            foreach ($elements as $other) {
+                $otherHtml .= static::elementHtml($other, 'index', $size, null, $showStatus, $showThumb, $showLabel, $showDraftName);
+            }
+            $html .= Html::tag('span', '+' . Craft::$app->getFormatter()->asInteger(count($elements)), [
+                'title' => implode(', ', ArrayHelper::getColumn($elements, 'title')),
+                'class' => 'btn small',
+                'role' => 'button',
+                'onclick' => 'jQuery(this).replaceWith(' . Json::encode($otherHtml) . ')',
+            ]);
+        }
+
+        return $html;
+    }
+
+    /**
      * Renders a field’s HTML, for the given input HTML or a template.
      *
      * @param string $input The input HTML or template path. If passing a template path, it must begin with `template:`.
@@ -375,17 +466,17 @@ class Cp
      */
     public static function fieldHtml(string $input, array $config = []): string
     {
-        // Set the ID before rendering the field so it's consistent
-        $config['id'] = $config['id'] ?? 'field' . mt_rand();
+        // Set the ID and instructionsId before rendering the field so it's consistent
+        $id = $config['id'] = $config['id'] ?? 'field' . mt_rand();
+        $instructionsId = $config['instructionsId'] = $config['instructionsId'] ?? "$id-instructions";
 
         if (StringHelper::startsWith($input, 'template:')) {
             $input = static::renderTemplate(substr($input, 9), $config);
         }
 
         $fieldset = $config['fieldset'] ?? false;
-        $fieldId = $config['fieldId'] ?? "{$config['id']}-field";
-        $labelId = $config['labelId'] ?? "$fieldId-" . ($fieldset ? 'legend' : 'label');
-        $instructionsId = $config['instructionsId'] ?? "$fieldId-instructions";
+        $fieldId = $config['fieldId'] ?? "$id-field";
+        $labelId = $config['labelId'] ?? "$id-" . ($fieldset ? 'legend' : 'label');
         $status = $config['status'] ?? null;
         $label = $config['fieldLabel'] ?? $config['label'] ?? null;
         if ($label === '__blank__') {
@@ -430,7 +521,7 @@ class Cp
                 'input',
                 $orientation,
                 $errors ? 'errors' : null,
-            ])
+            ]),
         ], $config['inputContainerAttributes'] ?? []);
         $instructionsHtml = $instructions
             ? Html::tag('div', preg_replace('/&amp;(\w+);/', '&$1;', Markdown::process($instructions, 'gfm-comment')), [
@@ -452,13 +543,16 @@ class Cp
                         ? Html::tag($fieldset ? 'legend' : 'label', $label, ArrayHelper::merge([
                             'id' => $labelId,
                             'class' => $required ? ['required'] : [],
-                            'for' => ($config['id'] ?? false) && !$fieldset ? $config['id'] : null,
+                            'for' => !$fieldset ? $id : null,
                         ], $config['labelAttributes'] ?? []))
                         : '') .
                     ($translatable
                         ? Html::tag('div', '', [
-                            'title' => $config['translationDescription'] ?? Craft::t('app', 'This field is translatable.'),
                             'class' => ['t9n-indicator'],
+                            'title' => $config['translationDescription'] ?? Craft::t('app', 'This field is translatable.'),
+                            'aria' => [
+                                'label' => $config['translationDescription'] ?? Craft::t('app', 'This field is translatable.'),
+                            ],
                             'data' => [
                                 'icon' => 'language',
                             ],
@@ -468,7 +562,7 @@ class Cp
                         ? Html::tag('div', '', [
                             'class' => ['flex-grow'],
                         ]) . static::renderTemplate('_includes/forms/copytextbtn', [
-                            'id' => "$fieldId-attribute",
+                            'id' => "$id-attribute",
                             'class' => ['code', 'small', 'light'],
                             'value' => $config['attribute'],
                         ])
@@ -512,6 +606,8 @@ class Cp
      */
     public static function checkboxFieldHtml(array $config): string
     {
+        $config['id'] = $config['id'] ?? 'checkbox' . mt_rand();
+
         $config['fieldClass'] = Html::explodeClass($config['fieldClass'] ?? []);
         $config['fieldClass'][] = 'checkboxfield';
         $config['instructionsPosition'] = $config['instructionsPosition'] ?? 'after';
@@ -520,6 +616,21 @@ class Cp
         unset($config['label']);
 
         return static::fieldHtml('template:_includes/forms/checkbox', $config);
+    }
+
+    /**
+     * Renders a checkbox select field’s HTML.
+     *
+     * @param array $config
+     * @return string
+     * @throws InvalidArgumentException if `$config['siteId']` is invalid
+     * @since 3.6.0
+     */
+    public static function checkboxSelectFieldHtml(array $config): string
+    {
+        $config['id'] = $config['id'] ?? 'checkboxselect' . mt_rand();
+        $config['fieldset'] = true;
+        return static::fieldHtml('template:_includes/forms/checkboxSelect', $config);
     }
 
     /**
@@ -532,6 +643,7 @@ class Cp
      */
     public static function colorFieldHtml(array $config): string
     {
+        $config['id'] = $config['id'] ?? 'color' . mt_rand();
         return static::fieldHtml('template:_includes/forms/color', $config);
     }
 
@@ -545,6 +657,7 @@ class Cp
      */
     public static function editableTableFieldHtml(array $config): string
     {
+        $config['id'] = $config['id'] ?? 'editabletable' . mt_rand();
         return static::fieldHtml('template:_includes/forms/editableTable', $config);
     }
 
@@ -558,6 +671,8 @@ class Cp
      */
     public static function lightswitchFieldHtml(array $config): string
     {
+        $config['id'] = $config['id'] ?? 'lightswitch' . mt_rand();
+
         $config['fieldClass'] = Html::explodeClass($config['fieldClass'] ?? []);
         $config['fieldClass'][] = 'lightswitch-field';
 
@@ -566,6 +681,18 @@ class Cp
         unset($config['label']);
 
         return static::fieldHtml('template:_includes/forms/lightswitch', $config);
+    }
+
+    /**
+     * Renders a select input.
+     *
+     * @param array $config
+     * @return string
+     * @since 3.6.0
+     */
+    public static function selectHtml(array $config): string
+    {
+        return static::renderTemplate('_includes/forms/select', $config);
     }
 
     /**
@@ -578,6 +705,7 @@ class Cp
      */
     public static function selectFieldHtml(array $config): string
     {
+        $config['id'] = $config['id'] ?? 'select' . mt_rand();
         return static::fieldHtml('template:_includes/forms/select', $config);
     }
 
@@ -592,18 +720,7 @@ class Cp
     public static function textFieldHtml(array $config): string
     {
         $config['id'] = $config['id'] ?? 'text' . mt_rand();
-        $input = static::renderTemplate('_includes/forms/text', $config);
-
-        if (isset($config['unit'])) {
-            $input = Html::tag('div',
-                Html::tag('div', $input, ['class' => 'textwrapper']) .
-                Html::tag('div', Html::encode($config['unit']), ['class' => ['label', 'light']]),
-                [
-                    'class' => 'flex',
-                ]);
-        }
-
-        return static::fieldHtml($input, $config);
+        return static::fieldHtml('template:_includes/forms/text', $config);
     }
 
     /**
@@ -616,6 +733,7 @@ class Cp
      */
     public static function textareaFieldHtml(array $config): string
     {
+        $config['id'] = $config['id'] ?? 'textarea' . mt_rand();
         return static::fieldHtml('template:_includes/forms/textarea', $config);
     }
 }

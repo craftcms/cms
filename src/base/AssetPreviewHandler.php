@@ -31,7 +31,7 @@ abstract class AssetPreviewHandler extends Component implements AssetPreviewHand
     public function __construct(Asset $asset)
     {
         parent::__construct([
-            'asset' => $asset
+            'asset' => $asset,
         ]);
     }
 }

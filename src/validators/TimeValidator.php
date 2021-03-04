@@ -89,7 +89,7 @@ class TimeValidator extends Validator
             }
             if ($value < $min) {
                 $this->addError($model, $attribute, $this->tooEarly, [
-                    'min' => Craft::$app->getFormatter()->asTime($min, Locale::LENGTH_SHORT)
+                    'min' => Craft::$app->getFormatter()->asTime($min, Locale::LENGTH_SHORT),
                 ]);
             }
         }
@@ -101,7 +101,7 @@ class TimeValidator extends Validator
             }
             if ($value > $max) {
                 $this->addError($model, $attribute, $this->tooLate, [
-                    'max' => Craft::$app->getFormatter()->asTime($max, Locale::LENGTH_SHORT)
+                    'max' => Craft::$app->getFormatter()->asTime($max, Locale::LENGTH_SHORT),
                 ]);
             }
         }

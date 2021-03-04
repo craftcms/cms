@@ -222,7 +222,7 @@ class Plugin extends Module implements PluginInterface
 
         return $controller->renderTemplate('settings/plugins/_settings', [
             'plugin' => $this,
-            'settingsHtml' => $settingsHtml
+            'settingsHtml' => $settingsHtml,
         ]);
     }
 

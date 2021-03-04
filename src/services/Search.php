@@ -370,7 +370,7 @@ SQL;
         $attribute = strtolower($attribute);
 
         /** @var Site $site */
-        $site = Craft::$app->getSites()->getSiteById($siteId);
+        $site = Craft::$app->getSites()->getSiteById($siteId, true);
 
         // Clean 'em up
         $cleanKeywords = SearchHelper::normalizeKeywords($dirtyKeywords, [], true, $site->language);

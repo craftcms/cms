@@ -30,7 +30,7 @@ class DeprecatedPanel extends Panel
     public function getSummary()
     {
         return Craft::$app->getView()->render('@app/views/debug/deprecated/summary', [
-            'panel' => $this
+            'panel' => $this,
         ]);
     }
 
@@ -57,12 +57,12 @@ class DeprecatedPanel extends Panel
 
             return Craft::$app->getView()->render('@app/views/debug/deprecated/traces', [
                 'panel' => $this,
-                'log' => $log
+                'log' => $log,
             ]);
         }
 
         return Craft::$app->getView()->render('@app/views/debug/deprecated/detail', [
-            'panel' => $this
+            'panel' => $this,
         ]);
     }
 

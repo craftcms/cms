@@ -3,6 +3,9 @@
 Craft.ui =
     {
         createTextInput: function(config) {
+            config = $.extend({
+                autocomplete: false,
+            }, config);
             var $input = $('<input/>', {
                 attr: {
                     'class': 'text',
@@ -14,7 +17,7 @@ Craft.ui =
                     value: config.value,
                     maxlength: config.maxlength,
                     autofocus: this.getAutofocusValue(config.autofocus),
-                    autocomplete: (typeof config.autocomplete === 'undefined' || !config.autocomplete ? 'off' : null),
+                    autocomplete: typeof config.autocomplete === 'boolean' ? (config.autocomplete ? 'on' : 'off') : config.autocomplete,
                     disabled: this.getDisabledValue(config.disabled),
                     readonly: config.readonly,
                     title: config.title,
@@ -83,6 +86,7 @@ Craft.ui =
                 'class': 'btn',
                 'data-icon': 'clipboard',
                 title: Craft.t('app', 'Copy to clipboard'),
+                'aria-label': Craft.t('app', 'Copy to clipboard'),
             }).appendTo($container);
 
             $btn.on('click', () => {
@@ -377,13 +381,13 @@ Craft.ui =
             var value = config.value || '1';
             var indeterminateValue = config.indeterminateValue || '-';
 
-            var $container = $('<div/>', {
+            var $container = $('<button/>', {
+                'type': 'button',
                 'class': 'lightswitch',
-                tabindex: '0',
                 'data-value': value,
                 'data-indeterminate-value': indeterminateValue,
                 id: config.id,
-                role: 'switch',
+                role: 'checkbox',
                 'aria-checked': config.on ? 'true' : (config.indeterminate ? 'mixed' : 'false'),
                 'aria-labelledby': config.labelId,
                 'data-target': config.toggle,

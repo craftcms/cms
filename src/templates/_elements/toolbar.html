@@ -40,7 +40,7 @@
             {% if context == 'index' %}
                 {% if showStatusMenu %}<hr class="padded">{% endif %}
                 <ul class="padded">
-                    {% if elementInstance.find().draftOf(false).anyStatus().siteId('*').limit(1).exists() %}
+                    {% if canHaveDrafts ?? false %}
                         <li><a data-drafts><span class="icon" data-icon="draft" aria-hidden="true"></span>{{ 'Drafts'|t('app') }}</a></li>
                     {% endif %}
                     <li><a data-trashed><span class="icon" data-icon="trash" aria-hidden="true"></span>{{ "Trashed"|t('app') }}</a></li>
@@ -55,7 +55,11 @@
 <div class="flex-grow texticon search icon clearable">
     {{ text({
         placeholder: "Search"|t('app'),
-        'aria-label': "Search"|t('app'),
+        inputAttributes: {
+            aria: {
+                label: 'Search'|t('app'),
+            },
+        },
     }) }}
     <div class="clear hidden" title="{{ 'Clear'|t('app') }}" aria-label="{{ 'Clear'|t('app') }}"></div>
 </div>

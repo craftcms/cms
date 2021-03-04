@@ -54,7 +54,7 @@ class ResaveElements extends BaseJob
 
         $callback = function(BatchElementActionEvent $e) use ($queue, $query, $total) {
             if ($e->query === $query) {
-                $this->setProgress($queue, ($e->position - 1) / $total, Craft::t('app', '{step} of {total}', [
+                $this->setProgress($queue, ($e->position - 1) / $total, Craft::t('app', '{step, number} of {total, number}', [
                     'step' => $e->position,
                     'total' => $total,
                 ]));

@@ -19,7 +19,9 @@ use craft\helpers\ArrayHelper;
 use craft\helpers\Db;
 use craft\helpers\ElementHelper;
 use craft\helpers\Gql;
+use craft\helpers\Gql as GqlHelper;
 use craft\models\GqlSchema;
+use craft\services\Gql as GqlService;
 use GraphQL\Type\Definition\Type;
 
 /**
@@ -111,12 +113,12 @@ class Categories extends BaseRelationField
                 ->all();
 
             // Fill in any gaps
-            $categoriesService = Craft::$app->getCategories();
-            $categoriesService->fillGapsInCategories($categories);
+            $structuresService = Craft::$app->getStructures();
+            $structuresService->fillGapsInElements($categories);
 
             // Enforce the branch limit
             if ($this->branchLimit) {
-                $categoriesService->applyBranchLimitToCategories($categories, $this->branchLimit);
+                $structuresService->applyBranchLimitToElements($categories, $this->branchLimit);
             }
 
             $value = ArrayHelper::getColumn($categories, 'id');
@@ -172,7 +174,7 @@ class Categories extends BaseRelationField
             'type' => Type::listOf(CategoryInterface::getType()),
             'args' => CategoryArguments::getArguments(),
             'resolve' => CategoryResolver::class . '::resolve',
-            'complexity' => Gql::eagerLoadComplexity()
+            'complexity' => GqlHelper::relatedArgumentComplexity(GqlService::GRAPHQL_COMPLEXITY_EAGER_LOAD),
         ];
     }
 

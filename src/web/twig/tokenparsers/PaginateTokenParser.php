@@ -32,7 +32,7 @@ class PaginateTokenParser extends AbstractTokenParser
         $stream = $parser->getStream();
 
         $nodes = [
-            'query' => $parser->getExpressionParser()->parseExpression()
+            'query' => $parser->getExpressionParser()->parseExpression(),
         ];
         $stream->expect('as');
         $targets = $parser->getExpressionParser()->parseAssignmentExpression();

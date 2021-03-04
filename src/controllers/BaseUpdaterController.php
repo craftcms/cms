@@ -142,7 +142,7 @@ abstract class BaseUpdaterController extends Controller
                         ['label' => Craft::t('app', 'Learn how'), 'url' => 'https://craftcms.com/guides/php-ini'],
                         $this->actionOption(Craft::t('app', 'Check again'), self::ACTION_PRECHECK),
                         $this->actionOption(Craft::t('app', 'Continue anyway'), $postState['nextAction'], $postState),
-                    ]
+                    ],
                 ]);
             }
         }
@@ -236,7 +236,7 @@ abstract class BaseUpdaterController extends Controller
                 'options' => [
                     $this->actionOption(Craft::t('app', 'Try again'), self::ACTION_COMPOSER_OPTIMIZE),
                     $continueOption,
-                ]
+                ],
             ]);
         }
 
@@ -345,7 +345,7 @@ abstract class BaseUpdaterController extends Controller
             'errorDetails' => 'define(\'CRAFT_COMPOSER_PATH\', \'path/to/composer.json\');',
             'options' => [
                 $this->actionOption(Craft::t('app', 'Try again'), self::ACTION_RECHECK_COMPOSER, ['submit' => true]),
-            ]
+            ],
         ];
     }
 
@@ -411,7 +411,7 @@ abstract class BaseUpdaterController extends Controller
                 'label' => Craft::t('app', 'Send for help'),
                 'email' => 'support@craftcms.com',
                 'subject' => 'Composer error',
-            ]
+            ],
         ];
 
         return $this->send($state);
@@ -465,11 +465,11 @@ abstract class BaseUpdaterController extends Controller
                 return Craft::t('app', 'Checking…');
             case self::ACTION_COMPOSER_INSTALL:
                 return Craft::t('app', 'Updating Composer dependencies (this may take a minute)…', [
-                    'command' => '`composer install`'
+                    'command' => '`composer install`',
                 ]);
             case self::ACTION_COMPOSER_REMOVE:
                 return Craft::t('app', 'Updating Composer dependencies (this may take a minute)…', [
-                    'command' => '`composer remove`'
+                    'command' => '`composer remove`',
                 ]);
             case self::ACTION_FINISH:
                 return Craft::t('app', 'Finishing up…');

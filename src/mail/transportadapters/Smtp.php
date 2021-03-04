@@ -109,7 +109,7 @@ class Smtp extends BaseTransportAdapter
             'when' => function($model) {
                 /** @var self $model */
                 return (bool)$model->useAuthentication;
-            }
+            },
         ];
         $rules[] = [['encryptionMethod'], 'in', 'range' => ['tls', 'ssl']];
         $rules[] = [['timeout'], 'number', 'integerOnly' => true];
@@ -122,7 +122,7 @@ class Smtp extends BaseTransportAdapter
     public function getSettingsHtml()
     {
         return Craft::$app->getView()->renderTemplate('_components/mailertransportadapters/Smtp/settings', [
-            'adapter' => $this
+            'adapter' => $this,
         ]);
     }
 
