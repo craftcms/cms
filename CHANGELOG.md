@@ -4,6 +4,7 @@
 
 ### Fixed
 - Fixed a bug where entry drafts were retaining their former parent entry relationship, if the parent entry was removed and not replaced. ([#7643](https://github.com/craftcms/cms/issues/7643))
+- Fixed an error that could occur during the `update` command on Windows. ([#7644](https://github.com/craftcms/cms/issues/7644))
 
 ## 3.6.8 - 2021-03-03
 
