@@ -4,12 +4,14 @@
 
 ### Changed
 - Updated Yii to 2.0.41.
+- Warning and error logs are no longer included in the `stdout` log target if the `CRAFT_STREAM_LOG` PHP constant is set to `true`.
 
 ### Fixed
 - Fixed a bug where entry drafts were retaining their former parent entry relationship, if the parent entry was removed and not replaced. ([#7643](https://github.com/craftcms/cms/issues/7643))
 - Fixed an error that could occur during the `update` command on Windows. ([#7644](https://github.com/craftcms/cms/issues/7644))
 - Fixed a bug where the `utils/repair/project-config` command was removing all packed arrays, not just double-packed arrays.
 - Fixed SQL errors that could occur when MySQL was running in `ANSI`/`ANSI_QUOTES` modes. ([#5804](https://github.com/craftcms/cms/issues/5804))
+- Fixed a bug where 404s weren’t getting logged to `web-404s.log`. ([#7653](https://github.com/craftcms/cms/issues/7653))
 
 ## 3.6.8 - 2021-03-03
 

@@ -19,6 +19,15 @@ use yii\log\Logger;
  */
 class Dispatcher extends \yii\log\Dispatcher
 {
+    /** @since 3.6.9 */
+    const TARGET_FILE = '__file__';
+
+    /** @since 3.6.9 */
+    const TARGET_STDOUT = '__stdout__';
+
+    /** @since 3.6.9 */
+    const TARGET_STDERR = '__stderr__';
+
     /**
      * @inheritdoc
      */
@@ -52,7 +61,7 @@ class Dispatcher extends \yii\log\Dispatcher
                 $fileTargetConfig['levels'] = Logger::LEVEL_ERROR | Logger::LEVEL_WARNING;
             }
 
-            $this->targets['__craftFileTarget'] = Craft::createObject($fileTargetConfig);
+            $this->targets[self::TARGET_FILE] = Craft::createObject($fileTargetConfig);
 
             if (defined('CRAFT_STREAM_LOG') && CRAFT_STREAM_LOG === true) {
                 $streamErrLogTarget = [
@@ -62,16 +71,17 @@ class Dispatcher extends \yii\log\Dispatcher
                     'includeUserIp' => $generalConfig->storeUserIps,
                 ];
 
-                $this->targets['__craftStreamErrTarget'] = Craft::createObject($streamErrLogTarget);
+                $this->targets[self::TARGET_STDERR] = Craft::createObject($streamErrLogTarget);
 
                 if ($devModeLogging) {
                     $streamOutLogTarget = [
                         'class' => StreamLogTarget::class,
                         'url' => 'php://stdout',
+                        'levels' => ~Logger::LEVEL_ERROR & ~Logger::LEVEL_WARNING,
                         'includeUserIp' => $generalConfig->storeUserIps,
                     ];
 
-                    $this->targets['__craftStreamOutTarget'] = Craft::createObject($streamOutLogTarget);
+                    $this->targets[self::TARGET_STDOUT] = Craft::createObject($streamOutLogTarget);
                 }
             }
         }
@@ -84,7 +94,7 @@ class Dispatcher extends \yii\log\Dispatcher
     {
         // Only log errors and warnings, unless Craft is running in Dev Mode or it's being installed/updated
         // (Explicitly check GeneralConfig::$devMode here, because YII_DEBUG is always `1` for console requests.)
-        if (!Craft::$app->getConfig()->getGeneral()->devMode && Craft::$app->getIsInstalled() && !Craft::$app->getUpdates()->getIsCraftDbMigrationNeeded()) {
+        if (!YII_DEBUG && Craft::$app->getIsInstalled() && !Craft::$app->getUpdates()->getIsCraftDbMigrationNeeded()) {
             return false;
         }
 
