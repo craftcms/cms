@@ -1263,7 +1263,7 @@ class Db
      * @param YiiQuery $query The query that should be executed
      * @param int $batchSize The number of rows to be fetched in each batch
      * @return BatchQueryResult The batched query to be iterated on
-     * @since 3.6.0
+     * @since 3.7.0
      */
     public static function batch(YiiQuery $query, int $batchSize = 100): BatchQueryResult
     {
@@ -1292,7 +1292,7 @@ class Db
      * @param YiiQuery $query The query that should be executed
      * @param int $batchSize The number of rows to be fetched in each batch
      * @return BatchQueryResult The batched query to be iterated on
-     * @since 3.6.0
+     * @since 3.7.0
      */
     public static function each(YiiQuery $query, int $batchSize = 100): BatchQueryResult
     {
