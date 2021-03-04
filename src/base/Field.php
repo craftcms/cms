@@ -313,7 +313,7 @@ abstract class Field extends SavableComponent implements FieldInterface
      */
     public function getIsTranslatable(ElementInterface $element = null): bool
     {
-        return ($this->translationMethod !== self::TRANSLATION_METHOD_NONE);
+        return $this->translationMethod !== self::TRANSLATION_METHOD_NONE;
     }
 
     /**
