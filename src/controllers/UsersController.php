@@ -25,6 +25,7 @@ use craft\helpers\FileHelper;
 use craft\helpers\Html;
 use craft\helpers\Image;
 use craft\helpers\Json;
+use craft\helpers\Session;
 use craft\helpers\UrlHelper;
 use craft\helpers\User as UserHelper;
 use craft\i18n\Locale;
@@ -201,7 +202,6 @@ class UsersController extends Controller
         $this->requirePostRequest();
 
         $userSession = Craft::$app->getUser();
-        $session = Craft::$app->getSession();
         $userId = $this->request->getRequiredBodyParam('userId');
         $user = Craft::$app->getUsers()->getUserById($userId);
 
@@ -214,10 +214,10 @@ class UsersController extends Controller
 
         // Save the original user ID to the session now so User::findIdentity()
         // knows not to worry if the user isn't active yet
-        $session->set(User::IMPERSONATE_KEY, $userSession->getId());
+        Session::set(User::IMPERSONATE_KEY, $userSession->getId());
 
         if (!$userSession->loginByUserId($userId)) {
-            $session->remove(User::IMPERSONATE_KEY);
+            Session::remove(User::IMPERSONATE_KEY);
             $this->setFailFlash(Craft::t('app', 'There was a problem impersonating this user.'));
             Craft::error($userSession->getIdentity()->username . ' tried to impersonate userId: ' . $userId . ' but something went wrong.', __METHOD__);
             return null;
@@ -281,15 +281,14 @@ class UsersController extends Controller
     {
         $this->requireToken();
 
-        $session = Craft::$app->getSession();
         $userSession = Craft::$app->getUser();
 
         // Save the original user ID to the session now so User::findIdentity()
         // knows not to worry if the user isn't active yet
-        $session->set(User::IMPERSONATE_KEY, $prevUserId);
+        Session::set(User::IMPERSONATE_KEY, $prevUserId);
 
         if (!$userSession->loginByUserId($userId)) {
-            $session->remove(User::IMPERSONATE_KEY);
+            Session::remove(User::IMPERSONATE_KEY);
             $this->setFailFlash(Craft::t('app', 'There was a problem impersonating this user.'));
             Craft::error($userSession->getIdentity()->username . ' tried to impersonate userId: ' . $userId . ' but something went wrong.', __METHOD__);
             return null;
@@ -791,7 +790,7 @@ class UsersController extends Controller
                             ($currentUser->admin || !$user->admin) &&
                             $userSession->checkPermission('moderateUsers') &&
                             (
-                                ($previousUserId = Craft::$app->getSession()->get(User::IMPERSONATE_KEY)) === null ||
+                                ($previousUserId = Session::get(User::IMPERSONATE_KEY)) === null ||
                                 $user->id != $previousUserId
                             )
                         ) {
@@ -1547,7 +1546,7 @@ class UsersController extends Controller
             }
 
             // And admins can't unlock themselves by impersonating another admin
-            $previousUserId = Craft::$app->getSession()->get(User::IMPERSONATE_KEY);
+            $previousUserId = Session::get(User::IMPERSONATE_KEY);
             if ($previousUserId && $user->id == $previousUserId) {
                 throw new ForbiddenHttpException('You can’t unlock yourself via impersonation.');
             }

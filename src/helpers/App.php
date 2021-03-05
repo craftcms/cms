@@ -17,6 +17,7 @@ use craft\db\mysql\Schema as MysqlSchema;
 use craft\db\pgsql\Schema as PgsqlSchema;
 use craft\elements\User;
 use craft\errors\MissingComponentException;
+use craft\helpers\Session as SessionHelper;
 use craft\i18n\Locale;
 use craft\log\Dispatcher;
 use craft\mail\Mailer;
@@ -750,8 +751,7 @@ class App
 
         if (Craft::$app->getRequest()->getIsCpRequest() && !Craft::$app->getResponse()->isSent) {
             // Is someone logged in?
-            $session = Craft::$app->getSession();
-            $id = $session->getHasSessionId() || $session->getIsActive() ? $session->get(Craft::$app->getUser()->idParam) : null;
+            $id = SessionHelper::get(Craft::$app->getUser()->idParam);
             if ($id) {
                 // If they have a preferred locale, use it
                 $usersService = Craft::$app->getUsers();

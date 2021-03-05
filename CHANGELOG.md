@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+### Added
+- Added `craft\helpers\Session`, which provides methods for working with PHP session variables, without creating a new PHP session if one didn’t need to exist.
+
 ### Changed
 - Updated Yii to 2.0.41.
 - Warning and error logs are no longer included in the `stdout` log target if the `CRAFT_STREAM_LOG` PHP constant is set to `true`.
@@ -13,6 +16,7 @@
 - Fixed SQL errors that could occur when MySQL was running in `ANSI`/`ANSI_QUOTES` modes. ([#5804](https://github.com/craftcms/cms/issues/5804))
 - Fixed a bug where 404s weren’t getting logged to `web-404s.log`. ([#7653](https://github.com/craftcms/cms/issues/7653))
 - Fixed a bug where `craft\helpers\Assets::prepareAssetName()` was appending a `.` to file names that did not have an extension.
+- Fixed a bug where all requests were creating PHP sessions, even if no `CraftSessionId` cookie was present.
 
 ## 3.6.8 - 2021-03-03
 

@@ -29,6 +29,7 @@ use craft\fieldlayoutelements\EntryTitleField;
 use craft\fieldlayoutelements\TitleField;
 use craft\helpers\App;
 use craft\helpers\Db;
+use craft\helpers\Session;
 use craft\i18n\Formatter;
 use craft\i18n\I18N;
 use craft\i18n\Locale;
@@ -1498,8 +1499,7 @@ trait ApplicationTrait
         // If the user is logged in *and* has a primary language set, use that
         if ($this instanceof WebApplication) {
             // Don't actually try to fetch the user, as plugins haven't been loaded yet.
-            $session = $this->getSession();
-            $id = $session->getHasSessionId() || $session->getIsActive() ? $session->get($this->getUser()->idParam) : null;
+            $id = Session::get($this->getUser()->idParam);
             if (
                 $id &&
                 ($language = $this->getUsers()->getUserPreference($id, 'language')) !== null &&

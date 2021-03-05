@@ -15,6 +15,7 @@ use craft\helpers\FileHelper;
 use craft\helpers\Html;
 use craft\helpers\Json;
 use craft\helpers\Path;
+use craft\helpers\Session as SessionHelper;
 use craft\helpers\StringHelper;
 use craft\web\twig\Environment;
 use craft\web\twig\Extension;
@@ -1791,9 +1792,9 @@ JS;
             return;
         }
 
-        $session = Craft::$app->getSession();
+        if (SessionHelper::exists()) {
+            $session = Craft::$app->getSession();
 
-        if ($session->getIsActive()) {
             foreach ($session->getAssetBundleFlashes(true) as $name => $position) {
                 if (!is_subclass_of($name, YiiAssetBundle::class)) {
                     throw new Exception("$name is not an asset bundle");

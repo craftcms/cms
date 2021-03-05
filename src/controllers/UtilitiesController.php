@@ -15,6 +15,7 @@ use craft\errors\MigrationException;
 use craft\helpers\Db;
 use craft\helpers\FileHelper;
 use craft\helpers\Queue;
+use craft\helpers\Session;
 use craft\queue\jobs\FindAndReplace;
 use craft\utilities\ClearCaches;
 use craft\utilities\Updates;
@@ -164,7 +165,7 @@ class UtilitiesController extends Controller
 
         // Initial request
         $assetIndexerService = Craft::$app->getAssetIndexer();
-        $userSession = Craft::$app->getSession();
+
         if (!empty($params['start'])) {
             $sessionId = $assetIndexerService->getIndexingSessionId();
 
@@ -205,9 +206,9 @@ class UtilitiesController extends Controller
                 ];
             }
 
-            $userSession->set('assetsVolumesBeingIndexed', $volumeIds);
-            $userSession->set('assetsMissingFolders', $missingFolders);
-            $userSession->set('assetsSkippedFiles', $skippedFiles);
+            Session::set('assetsVolumesBeingIndexed', $volumeIds);
+            Session::set('assetsMissingFolders', $missingFolders);
+            Session::set('assetsSkippedFiles', $skippedFiles);
 
             return $this->asJson([
                 'indexingData' => $response,
@@ -225,8 +226,8 @@ class UtilitiesController extends Controller
 
         if (!empty($params['overview'])) {
             $missingFiles = $assetIndexerService->getMissingFiles($params['sessionId']);
-            $missingFolders = $userSession->get('assetsMissingFolders', []);
-            $skippedFiles = $userSession->get('assetsSkippedFiles', []);
+            $missingFolders = Session::get('assetsMissingFolders') ?? [];
+            $skippedFiles = Session::get('assetsSkippedFiles') ?? [];
 
             if (!empty($missingFiles) || !empty($missingFolders) || !empty($skippedFiles)) {
                 return $this->asJson([
