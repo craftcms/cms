@@ -10,6 +10,7 @@ namespace craft\controllers;
 use Craft;
 use craft\helpers\App;
 use craft\helpers\Json;
+use craft\helpers\Session;
 use craft\helpers\UrlHelper;
 use craft\web\assets\pluginstore\PluginStoreAsset;
 use craft\web\assets\pluginstoreoauth\PluginStoreOauthAsset;
@@ -94,7 +95,7 @@ class PluginStoreController extends Controller
             $redirectUrl = UrlHelper::url($redirect);
         }
 
-        Craft::$app->getSession()->set('pluginStoreConnectRedirectUrl', $redirectUrl);
+        Session::set('pluginStoreConnectRedirectUrl', $redirectUrl);
 
         $authorizationUrl = $provider->getAuthorizationUrl([
             'scope' => [
@@ -150,7 +151,7 @@ class PluginStoreController extends Controller
 
         $view->registerAssetBundle(PluginStoreOauthAsset::class);
 
-        $redirectUrl = Craft::$app->getSession()->get('pluginStoreConnectRedirectUrl');
+        $redirectUrl = Session::get('pluginStoreConnectRedirectUrl');
 
         $options = [
             'redirectUrl' => $redirectUrl,

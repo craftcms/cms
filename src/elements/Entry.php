@@ -718,7 +718,7 @@ class Entry extends Element
     public $expiryDate;
 
     /**
-     * @var int|null New parent ID
+     * @var int|false|null New parent ID
      * @internal
      */
     public $newParentId;
@@ -794,7 +794,7 @@ class Entry extends Element
     protected function defineRules(): array
     {
         $rules = parent::defineRules();
-        $rules[] = [['sectionId', 'typeId', 'authorId', 'newParentId'], 'number', 'integerOnly' => true];
+        $rules[] = [['sectionId', 'typeId', 'authorId'], 'number', 'integerOnly' => true];
         $rules[] = [['postDate', 'expiryDate'], DateTimeValidator::class];
 
         if ($this->getSection()->type !== Section::TYPE_SINGLE) {

@@ -415,7 +415,7 @@ class UpdateController extends Controller
 
         $this->stdout('Applying new migrations ... ', Console::FG_YELLOW);
 
-        $process = new Process([$script, 'migrate/all', '--no-backup', '--no-content']);
+        $process = new Process([PHP_BINARY, $script, 'migrate/all', '--no-backup', '--no-content']);
         $process->setTimeout(null);
         try {
             $process->mustRun();
@@ -506,7 +506,7 @@ class UpdateController extends Controller
 
         $this->stdout('Reverting Composer changes ... ', Console::FG_YELLOW);
 
-        $process = new Process([$script, 'update/composer-install']);
+        $process = new Process([PHP_BINARY, $script, 'update/composer-install']);
         $process->setTimeout(null);
         try {
             $process->mustRun();

@@ -257,10 +257,21 @@ class RepairController extends Controller
     private function _repairProjectConfigItem(ProjectConfig $projectConfigService, string $path, $value)
     {
         if (is_array($value)) {
+            // Is this a packed array?
             if (isset($value[ProjectConfig::CONFIG_ASSOC_KEY])) {
-                $this->stdout("- double-packed array found at $path" . PHP_EOL);
-                $value = ProjectConfigHelper::unpackAssociativeArray($value, false);
-                $projectConfigService->set($path, $value);
+                $double = false;
+                while (
+                    isset($value[ProjectConfig::CONFIG_ASSOC_KEY][0][0]) &&
+                    $value[ProjectConfig::CONFIG_ASSOC_KEY][0][0] === ProjectConfig::CONFIG_ASSOC_KEY
+                ) {
+                    $value[ProjectConfig::CONFIG_ASSOC_KEY] = $value[ProjectConfig::CONFIG_ASSOC_KEY][0][1] ?? [];
+                    $double = true;
+                }
+
+                if ($double) {
+                    $this->stdout("- double-packed array found at $path" . PHP_EOL);
+                    $projectConfigService->set($path, $value);
+                }
             }
 
             foreach ($value as $k => $v) {

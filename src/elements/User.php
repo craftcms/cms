@@ -24,6 +24,7 @@ use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
 use craft\helpers\Html;
 use craft\helpers\Json;
+use craft\helpers\Session;
 use craft\helpers\StringHelper;
 use craft\helpers\UrlHelper;
 use craft\i18n\Locale;
@@ -445,7 +446,7 @@ class User extends Element implements IdentityInterface
         }
 
         // If the current user is being impersonated by an admin, ignore their status
-        if ($previousUserId = Craft::$app->getSession()->get(self::IMPERSONATE_KEY)) {
+        if ($previousUserId = Session::get(self::IMPERSONATE_KEY)) {
             $previousUser = static::find()
                 ->id($previousUserId)
                 ->anyStatus()
@@ -825,7 +826,7 @@ class User extends Element implements IdentityInterface
      */
     public function getAuthKey()
     {
-        $token = Craft::$app->getSession()->get(Craft::$app->getUser()->tokenParam);
+        $token = Session::get(Craft::$app->getUser()->tokenParam);
 
         if ($token === null) {
             throw new Exception('No user session token exists.');
@@ -858,13 +859,25 @@ class User extends Element implements IdentityInterface
             return false;
         }
 
-        return (new Query())
+        $tokenId = (new Query())
+            ->select(['id'])
             ->from([Table::SESSIONS])
             ->where([
                 'token' => $token,
                 'userId' => $this->id,
             ])
-            ->exists();
+            ->scalar();
+
+        if (!$tokenId) {
+            return false;
+        }
+
+        // Update the session row's dateUpdated value so it doesn't get GC'd
+        Db::update(Table::SESSIONS, [
+            'dateUpdated' => Db::prepareDateForDb(new \DateTime()),
+        ], ['id' => $tokenId]);
+
+        return true;
     }
 
     /**
