@@ -214,15 +214,6 @@ abstract class FlysystemVolume extends Volume
      */
     public function folderExists(string $path): bool
     {
-        Craft::$app->getDeprecator()->log('folderExists', "The `folderExists()` method has been deprecated. Use `directoryExists()` instead.");
-        return $this->directoryExists($path);
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function directoryExists(string $path): bool
-    {
         // Calling adapter directly instead of filesystem to avoid losing the trailing slash (if any)
         return $this->adapter()->has(rtrim($path, '/') . ($this->foldersHaveTrailingSlashes ? '/' : ''));
     }

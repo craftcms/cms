@@ -162,18 +162,8 @@ interface VolumeInterface extends SavableComponentInterface
      *
      * @param string $path The folder path to check
      * @return bool
-     * @deprecated in 3.6.9. Use [[directoryExists()]] instead.
      */
     public function folderExists(string $path): bool;
-
-    /**
-     * Returns whether a directory exists at the given path.
-     *
-     * @param string $path The folder path to check
-     * @return bool
-     * @since 3.6.9
-     */
-    public function directoryExists(string $path): bool;
 
     /**
      * Creates a directory.
@@ -191,7 +181,6 @@ interface VolumeInterface extends SavableComponentInterface
      * @param string $path The path of the directory, relative to the source’s root
      * @throws VolumeObjectExistsException if a directory with such name already exists
      * @throws VolumeException if something else goes wrong
-     * @since 3.6.0
      */
     public function createDirectory(string $path);
 
@@ -209,7 +198,6 @@ interface VolumeInterface extends SavableComponentInterface
      *
      * @param string $path The path of the directory, relative to the source’s root
      * @throws VolumeException if something goes wrong
-     * @since 3.6.0
      */
     public function deleteDirectory(string $path);
 
@@ -233,7 +221,6 @@ interface VolumeInterface extends SavableComponentInterface
      * @throws VolumeObjectNotFoundException if a directory with such name already exists
      * @throws VolumeObjectExistsException if a directory with such name already exists
      * @throws VolumeException if something else goes wrong
-     * @since 3.6.0
      */
     public function renameDirectory(string $path, string $newName);
 }

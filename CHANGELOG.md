@@ -18,9 +18,6 @@
 - Fixed a bug where `craft\helpers\Assets::prepareAssetName()` was appending a `.` to file names that did not have an extension.
 - Fixed a bug where all requests were creating PHP sessions, even if no `CraftSessionId` cookie was present.
 
-### Deprecated
-- Deprecated `craft\base\VolumeInterface::folderExists()`. `directoryExists()` should be used instead.
-
 ## 3.6.8 - 2021-03-03
 
 ### Added
