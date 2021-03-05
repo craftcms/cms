@@ -162,8 +162,17 @@ interface VolumeInterface extends SavableComponentInterface
      *
      * @param string $path The folder path to check
      * @return bool
+     * @deprecated in 3.6.9. Use [[directoryExists()]] instead.
      */
     public function folderExists(string $path): bool;
+
+    /**
+     * Returns whether a directory exists at the given path.
+     *
+     * @param string $path The folder path to check
+     * @return bool
+     */
+    public function directoryExists(string $path): bool;
 
     /**
      * Creates a directory.
