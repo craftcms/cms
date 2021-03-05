@@ -12,6 +12,7 @@
 - Fixed a bug where the `utils/repair/project-config` command was removing all packed arrays, not just double-packed arrays.
 - Fixed SQL errors that could occur when MySQL was running in `ANSI`/`ANSI_QUOTES` modes. ([#5804](https://github.com/craftcms/cms/issues/5804))
 - Fixed a bug where 404s weren’t getting logged to `web-404s.log`. ([#7653](https://github.com/craftcms/cms/issues/7653))
+- Fixed a bug where `craft\helpers\Assets::prepareAssetName()` was appending a `.` to file names that did not have an extension.
 
 ## 3.6.8 - 2021-03-03
 
