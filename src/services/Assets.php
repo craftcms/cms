@@ -20,10 +20,12 @@ use craft\db\Table;
 use craft\elements\Asset;
 use craft\elements\db\AssetQuery;
 use craft\elements\User;
-use craft\errors\AssetConflictException;
-use craft\errors\AssetLogicException;
-use craft\errors\FileException;
+use craft\errors\AssetException;
+use craft\errors\AssetOperationException;
+use craft\errors\AssetTransformException;
+use craft\errors\ElementNotFoundException;
 use craft\errors\ImageException;
+use craft\errors\MissingComponentException;
 use craft\errors\VolumeException;
 use craft\errors\VolumeObjectExistsException;
 use craft\errors\VolumeObjectNotFoundException;
@@ -49,6 +51,8 @@ use craft\queue\jobs\GeneratePendingTransforms;
 use craft\records\VolumeFolder as VolumeFolderRecord;
 use craft\volumes\Temp;
 use yii\base\Component;
+use yii\base\ErrorException;
+use yii\base\Exception;
 use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
 use yii\base\NotSupportedException;
@@ -59,55 +63,57 @@ use yii\base\NotSupportedException;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
+ *
+ * @property-read VolumeFolder $currentUserTemporaryUploadFolder
  */
 class Assets extends Component
 {
     /**
      * @event ReplaceAssetEvent The event that is triggered before an asset is replaced.
      */
-    const EVENT_BEFORE_REPLACE_ASSET = 'beforeReplaceFile';
+    public const EVENT_BEFORE_REPLACE_ASSET = 'beforeReplaceFile';
 
     /**
      * @event ReplaceAssetEvent The event that is triggered after an asset is replaced.
      */
-    const EVENT_AFTER_REPLACE_ASSET = 'afterReplaceFile';
+    public const EVENT_AFTER_REPLACE_ASSET = 'afterReplaceFile';
 
     /**
      * @event GetAssetUrlEvent The event that is triggered when a transform is being generated for an Asset.
      */
-    const EVENT_GET_ASSET_URL = 'getAssetUrl';
+    public const EVENT_GET_ASSET_URL = 'getAssetUrl';
 
     /**
      * @event GetAssetThumbUrlEvent The event that is triggered when a thumbnail is being generated for an Asset.
      * @todo rename to GET_THUMB_URL in Craft 4
      */
-    const EVENT_GET_ASSET_THUMB_URL = 'getAssetThumbUrl';
+    public const EVENT_GET_ASSET_THUMB_URL = 'getAssetThumbUrl';
 
     /**
      * @event AssetThumbEvent The event that is triggered when a thumbnail path is requested.
      */
-    const EVENT_GET_THUMB_PATH = 'getThumbPath';
+    public const EVENT_GET_THUMB_PATH = 'getThumbPath';
 
     /**
      * @event AssetPreviewEvent The event that is triggered when determining the preview handler for an asset.
      * @since 3.4.0
      */
-    const EVENT_REGISTER_PREVIEW_HANDLER = 'registerPreviewHandler';
+    public const EVENT_REGISTER_PREVIEW_HANDLER = 'registerPreviewHandler';
 
     /**
-     * @var
+     * @var array
      */
-    private $_foldersById = [];
+    private array $_foldersById = [];
 
     /**
-     * @var
+     * @var array
      */
-    private $_foldersByUid = [];
+    private array $_foldersByUid = [];
 
     /**
      * @var bool Whether a Generate Pending Transforms job has already been queued up in this request
      */
-    private $_queuedGeneratePendingTransformsJob = false;
+    private bool $_queuedGeneratePendingTransformsJob = false;
 
     /**
      * Returns a file by its ID.
@@ -116,7 +122,7 @@ class Assets extends Component
      * @param int|null $siteId
      * @return Asset|null
      */
-    public function getAssetById(int $assetId, int $siteId = null)
+    public function getAssetById(int $assetId, int $siteId = null): ?Asset
     {
         /** @noinspection PhpIncompatibleReturnTypeInspection */
         return Craft::$app->getElements()->getElementById($assetId, Asset::class, $siteId);
@@ -150,10 +156,8 @@ class Assets extends Component
      * @param Asset $asset
      * @param string $pathOnServer
      * @param string $filename
-     * @throws FileException If there was a problem with the actual file.
-     * @throws AssetLogicException If the Asset to be replaced cannot be found.
      */
-    public function replaceAssetFile(Asset $asset, string $pathOnServer, string $filename)
+    public function replaceAssetFile(Asset $asset, string $pathOnServer, string $filename): void
     {
         // Fire a 'beforeReplaceFile' event
         if ($this->hasEventHandlers(self::EVENT_BEFORE_REPLACE_ASSET)) {
@@ -189,7 +193,6 @@ class Assets extends Component
      * @param VolumeFolder $folder The Volume Folder to move the Asset to.
      * @param string $filename The new filename
      * @return bool Whether the asset was renamed successfully
-     * @throws AssetLogicException if the asset’s volume is missing
      */
     public function moveAsset(Asset $asset, VolumeFolder $folder, string $filename = ''): bool
     {
@@ -205,17 +208,16 @@ class Assets extends Component
      * Save an Asset folder.
      *
      * @param VolumeFolder $folder
-     * @param bool $indexExisting Set to true to just index the folder if it already exists on volume.
-     * @throws AssetConflictException if a folder already exists with such a name
-     * @throws VolumeException if something went catastrophically wrong creating the folder.
-     * @throws InvalidConfigException
+     * @throws VolumeObjectExistsException if a folder already exists with such a name
+     * @throws VolumeException if unable to create the directory on volume
+     * @throws AssetException if invalid folder provided
      */
-    public function createFolder(VolumeFolder $folder, bool $indexExisting = false)
+    public function createFolder(VolumeFolder $folder): void
     {
         $parent = $folder->getParent();
 
         if (!$parent) {
-            throw new InvalidArgumentException('Folder ' . $folder->id . ' doesn’t have a parent.');
+            throw new AssetException('Folder ' . $folder->id . ' doesn’t have a parent.');
         }
 
         $existingFolder = $this->findFolder([
@@ -224,7 +226,7 @@ class Assets extends Component
         ]);
 
         if ($existingFolder && (!$folder->id || $folder->id !== $existingFolder->id)) {
-            throw new AssetConflictException(Craft::t('app',
+            throw new VolumeObjectExistsException(Craft::t('app',
                 'A folder with the name “{folderName}” already exists in the volume.',
                 ['folderName' => $folder->name]));
         }
@@ -243,10 +245,9 @@ class Assets extends Component
      * @param int $folderId
      * @param string $newName
      * @return string The new folder name after cleaning it.
-     * @throws AssetConflictException
-     * @throws AssetLogicException If the folder to be renamed can't be found or trying to rename the top folder.
-     * @throws InvalidConfigException
-     * @throws VolumeException
+     * @throws AssetOperationException If the folder to be renamed can't be found or trying to rename the top folder.
+     * @throws VolumeObjectExistsException
+     * @throws VolumeObjectNotFoundException
      */
     public function renameFolderById(int $folderId, string $newName): string
     {
@@ -254,13 +255,13 @@ class Assets extends Component
         $folder = $this->getFolderById($folderId);
 
         if (!$folder) {
-            throw new AssetLogicException(Craft::t('app',
+            throw new AssetOperationException(Craft::t('app',
                 'No folder exists with the ID “{id}”',
                 ['id' => $folderId]));
         }
 
         if (!$folder->parentId) {
-            throw new AssetLogicException(Craft::t('app',
+            throw new AssetOperationException(Craft::t('app',
                 'It’s not possible to rename the top folder of a Volume.'));
         }
 
@@ -270,7 +271,7 @@ class Assets extends Component
         ]);
 
         if ($conflictingFolder) {
-            throw new AssetConflictException(Craft::t('app',
+            throw new VolumeObjectExistsException(Craft::t('app',
                 'A folder with the name “{folderName}” already exists in the folder.',
                 ['folderName' => $folder->name]));
         }
@@ -303,18 +304,15 @@ class Assets extends Component
      * @param bool $deleteDir Should the volume directory be deleted along the record, if applicable. Defaults to true.
      * @throws InvalidConfigException if the volume cannot be fetched from folder.
      * @throws VolumeException if a folder cannot be deleted.
-     * @throws \Throwable if an asset cannot be deleted
      */
-    public function deleteFoldersByIds($folderIds, bool $deleteDir = true)
+    public function deleteFoldersByIds($folderIds, bool $deleteDir = true): void
     {
         foreach ((array)$folderIds as $folderId) {
             $folder = $this->getFolderById($folderId);
 
-            if ($folder) {
-                if ($deleteDir) {
-                    $volume = $folder->getVolume();
-                    $volume->deleteDirectory($folder->path);
-                }
+            if ($folder && $deleteDir) {
+                $volume = $folder->getVolume();
+                $volume->deleteDirectory($folder->path);
             }
         }
 
@@ -337,7 +335,7 @@ class Assets extends Component
      * @param array $additionalCriteria additional criteria for filtering the tree
      * @return array
      */
-    public function getFolderTreeByVolumeIds($allowedVolumeIds, array $additionalCriteria = []): array
+    public function getFolderTreeByVolumeIds(array $allowedVolumeIds, array $additionalCriteria = []): array
     {
         static $volumeFolders = [];
 
@@ -390,7 +388,7 @@ class Assets extends Component
      * @param int $folderId
      * @return VolumeFolder|null
      */
-    public function getFolderById(int $folderId)
+    public function getFolderById(int $folderId): ?VolumeFolder
     {
         if ($this->_foldersById !== null && array_key_exists($folderId, $this->_foldersById)) {
             return $this->_foldersById[$folderId];
@@ -413,7 +411,7 @@ class Assets extends Component
      * @param string $folderUid
      * @return VolumeFolder|null
      */
-    public function getFolderByUid(string $folderUid)
+    public function getFolderByUid(string $folderUid): ?VolumeFolder
     {
         if ($this->_foldersByUid !== null && array_key_exists($folderUid, $this->_foldersByUid)) {
             return $this->_foldersByUid[$folderUid];
@@ -475,7 +473,7 @@ class Assets extends Component
      *
      * @param VolumeFolder $parentFolder
      * @param string $orderBy
-     * @return array
+     * @return VolumeFolder[]
      */
     public function getAllDescendantFolders(VolumeFolder $parentFolder, string $orderBy = 'path'): array
     {
@@ -532,7 +530,7 @@ class Assets extends Component
      * @param int $volumeId The volume ID
      * @return VolumeFolder|null The root folder in that volume, or null if the volume doesn’t exist
      */
-    public function getRootFolderByVolumeId(int $volumeId)
+    public function getRootFolderByVolumeId(int $volumeId): ?VolumeFolder
     {
         return $this->findFolder([
             'volumeId' => $volumeId,
@@ -571,8 +569,10 @@ class Assets extends Component
      * @param bool|null $generateNow Whether the transformed image should be generated immediately if it doesn’t exist. If `null`, it will be left
      * up to the `generateTransformsBeforePageLoad` config setting.
      * @return string|null
+     * @throws VolumeException
+     * @throws AssetTransformException
      */
-    public function getAssetUrl(Asset $asset, $transform = null, bool $generateNow = null)
+    public function getAssetUrl(Asset $asset, $transform = null, bool $generateNow = null): ?string
     {
         // Maybe a plugin wants to do something here
         $event = new GetAssetUrlEvent([
@@ -639,11 +639,9 @@ class Assets extends Component
      * @param int $width width of the returned thumb
      * @param int|null $height height of the returned thumb (defaults to $width if null)
      * @param bool $generate whether to generate a thumb in none exists yet
-     * @param bool $fallbackToIcon whether to return the URL to a generic icon if a thumbnail can't be generated
      * @return string
-     * @throws NotSupportedException if the asset can't have a thumbnail, and $fallbackToIcon is `false`
      */
-    public function getThumbUrl(Asset $asset, int $width, int $height = null, bool $generate = false, bool $fallbackToIcon = true): string
+    public function getThumbUrl(Asset $asset, int $width, int $height = null, bool $generate = false): string
     {
         if ($height === null) {
             $height = $width;
@@ -684,7 +682,10 @@ class Assets extends Component
      * @param bool $generate whether to generate a thumb in none exists yet
      * @param bool $fallbackToIcon whether to return the path to a generic icon if a thumbnail can't be generated
      * @return string|false thumbnail path, or `false` if it doesn't exist and $generate is `false`
+     * @throws InvalidConfigException
      * @throws NotSupportedException if the asset can't have a thumbnail, and $fallbackToIcon is `false`
+     * @throws VolumeException
+     * @throws VolumeObjectNotFoundException
      * @see getThumbUrl()
      */
     public function getThumbPath(Asset $asset, int $width, int $height = null, bool $generate = true, bool $fallbackToIcon = true)
@@ -803,8 +804,9 @@ class Assets extends Component
      * @param string $originalFilename the original filename for which to find a replacement.
      * @param int $folderId The folder in which to find the replacement
      * @return string If a suitable filename replacement cannot be found.
-     * @throws AssetLogicException If a suitable filename replacement cannot be found.
-     * @throws InvalidArgumentException if folder ID invalid
+     * @throws AssetOperationException If a suitable filename replacement cannot be found.
+     * @throws InvalidConfigException
+     * @throws VolumeException
      */
     public function getNameReplacementInFolder(string $originalFilename, int $folderId): string
     {
@@ -840,7 +842,7 @@ class Assets extends Component
         }
 
         // Check whether a filename we'd want to use does not exist
-        $canUse = function($filenameToTest) use ($potentialConflicts, $volume, $folder) {
+        $canUse = static function($filenameToTest) use ($potentialConflicts, $volume, $folder) {
             return !isset($potentialConflicts[mb_strtolower($filenameToTest)]) && !$volume->fileExists($folder->path . $filenameToTest);
         };
 
@@ -868,7 +870,7 @@ class Assets extends Component
             }
 
             if ($increment === 50) {
-                throw new AssetLogicException(Craft::t('app', 'Could not find a suitable replacement filename for “{filename}”.', [
+                throw new AssetOperationException(Craft::t('app', 'Could not find a suitable replacement filename for “{filename}”.', [
                     'filename' => $originalFilename,
                 ]));
             }
@@ -938,7 +940,7 @@ class Assets extends Component
      *
      * @param VolumeFolder $folder
      */
-    public function storeFolderRecord(VolumeFolder $folder)
+    public function storeFolderRecord(VolumeFolder $folder): void
     {
         if (!$folder->id) {
             $record = new VolumeFolderRecord();
@@ -960,9 +962,10 @@ class Assets extends Component
      * Return the current user's temporary upload folder.
      *
      * @return VolumeFolder
+     * @throws VolumeException
      * @deprecated in 3.2.0. Use [[getUserTemporaryUploadFolder()]] instead.
      */
-    public function getCurrentUserTemporaryUploadFolder()
+    public function getCurrentUserTemporaryUploadFolder(): VolumeFolder
     {
         return $this->getUserTemporaryUploadFolder();
     }
@@ -975,8 +978,9 @@ class Assets extends Component
      *
      * @param User|null $user
      * @return VolumeFolder
+     * @throws VolumeException If no correct volume provided.
      */
-    public function getUserTemporaryUploadFolder(User $user = null)
+    public function getUserTemporaryUploadFolder(User $user = null): VolumeFolder
     {
         if ($user === null) {
             // Default to the logged-in user, if there is one
@@ -1028,7 +1032,11 @@ class Assets extends Component
             $this->storeFolderRecord($folder);
         }
 
-        FileHelper::createDirectory(Craft::$app->getPath()->getTempAssetUploadsPath() . DIRECTORY_SEPARATOR . $folderName);
+        try {
+            FileHelper::createDirectory(Craft::$app->getPath()->getTempAssetUploadsPath() . DIRECTORY_SEPARATOR . $folderName);
+        } catch (Exception $exception) {
+            throw new VolumeException(Craft::t('app', 'Unable to create directory for temporary volume.'));
+        }
 
         return $folder;
     }
@@ -1117,7 +1125,7 @@ class Assets extends Component
      * @param Query $query
      * @param FolderCriteria $criteria
      */
-    private function _applyFolderConditions(Query $query, FolderCriteria $criteria)
+    private function _applyFolderConditions(Query $query, FolderCriteria $criteria): void
     {
         if ($criteria->id) {
             $query->andWhere(Db::parseParam('id', $criteria->id));

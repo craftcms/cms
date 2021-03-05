@@ -11,7 +11,7 @@ use Craft;
 use craft\base\Element;
 use craft\elements\Asset;
 use craft\errors\AssetException;
-use craft\errors\AssetLogicException;
+use craft\errors\AssetOperationException;
 use craft\errors\UploadFailedException;
 use craft\errors\VolumeException;
 use craft\fields\Assets as AssetsField;
@@ -64,6 +64,8 @@ class AssetsController extends Controller
      * @return Response
      * @throws BadRequestHttpException if `$assetId` is invalid
      * @throws ForbiddenHttpException if the user isn't permitted to edit the asset
+     * @throws InvalidConfigException
+     * @throws \craft\errors\SiteNotFoundException
      * @since 3.4.0
      */
     public function actionEditAsset(int $assetId, Asset $asset = null, string $site = null): Response
@@ -159,7 +161,7 @@ class AssetsController extends Controller
             $canDelete = false;
         }
 
-        if (in_array($asset->kind, [Asset::KIND_IMAGE, Asset::KIND_PDF, Asset::KIND_TEXT])) {
+        if (in_array($asset->kind, [Asset::KIND_IMAGE, Asset::KIND_PDF, Asset::KIND_TEXT], true)) {
             $assetUrl = $asset->getUrl();
         } else {
             $assetUrl = null;
@@ -186,6 +188,7 @@ class AssetsController extends Controller
      *
      * @return Response
      * @throws BadRequestHttpException
+     * @throws NotSupportedException
      * @since 3.4.0
      */
     public function actionPreviewThumb(): Response
@@ -209,9 +212,18 @@ class AssetsController extends Controller
      * Saves an asset.
      *
      * @return Response|null
+     * @throws BadRequestHttpException
+     * @throws Exception
+     * @throws ForbiddenHttpException
+     * @throws InvalidConfigException
+     * @throws VolumeException
+     * @throws \Throwable
+     * @throws \craft\errors\DeprecationException
+     * @throws \craft\errors\ElementNotFoundException
+     * @throws \yii\base\InvalidRouteException
      * @since 3.4.0
      */
-    public function actionSaveAsset()
+    public function actionSaveAsset(): ?Response
     {
         if (UploadedFile::getInstanceByName('assets-upload') !== null) {
             Craft::$app->getDeprecator()->log(__METHOD__, 'Uploading new files via `assets/save-asset` has been deprecated. Use `assets/upload` instead.');
@@ -363,7 +375,7 @@ class AssetsController extends Controller
                     'conflict' => Craft::t('app', 'A file with the name “{filename}” already exists.', ['filename' => $asset->conflictingFilename]),
                     'assetId' => $asset->id,
                     'filename' => $asset->conflictingFilename,
-                    'conflictingAssetId' => $conflictingAsset ? $conflictingAsset->id : null,
+                    'conflictingAssetId' => $conflictingAsset->id ?? null,
                     'suggestedFilename' => $asset->suggestedFilename,
                     'conflictingAssetUrl' => ($conflictingAsset && $conflictingAsset->getVolume()->hasUrls) ? $conflictingAsset->getUrl() : null
                 ]);
@@ -386,7 +398,10 @@ class AssetsController extends Controller
      *
      * @return Response
      * @throws BadRequestHttpException if incorrect combination of parameters passed.
+     * @throws ForbiddenHttpException
+     * @throws InvalidConfigException
      * @throws NotFoundHttpException if Asset cannot be found by id.
+     * @throws VolumeException
      */
     public function actionReplaceFile(): Response
     {
@@ -425,15 +440,15 @@ class AssetsController extends Controller
 
         try {
             // Handle the Element Action
-            if (!empty($assetToReplace) && $uploadedFile) {
+            if ($assetToReplace !== null && $uploadedFile) {
                 $tempPath = $this->_getUploadedFileTempPath($uploadedFile);
                 $filename = Assets::prepareAssetName($uploadedFile->name);
                 $assets->replaceAssetFile($assetToReplace, $tempPath, $filename);
-            } else if (!empty($sourceAsset)) {
+            } else if ($sourceAsset !== null) {
                 // Or replace using an existing Asset
 
                 // See if we can find an Asset to replace.
-                if (empty($assetToReplace)) {
+                if ($assetToReplace === null) {
                     // Make sure the extension didn't change
                     if (pathinfo($targetFilename, PATHINFO_EXTENSION) !== $sourceAsset->getExtension()) {
                         throw new Exception($targetFilename . ' doesn\'t have the original file extension.');
@@ -485,6 +500,7 @@ class AssetsController extends Controller
      *
      * @return Response
      * @throws BadRequestHttpException if the parent folder cannot be found
+     * @throws InvalidConfigException
      */
     public function actionCreateFolder(): Response
     {
@@ -518,9 +534,7 @@ class AssetsController extends Controller
                 'folderUid' => $folderModel->uid,
                 'folderId' => $folderModel->id
             ]);
-        } catch (AssetException $exception) {
-            return $this->asErrorJson($exception->getMessage());
-        } catch (ForbiddenHttpException $exception) {
+        } catch (VolumeException | ForbiddenHttpException $exception) {
             return $this->asErrorJson($exception->getMessage());
         }
     }
@@ -530,6 +544,10 @@ class AssetsController extends Controller
      *
      * @return Response
      * @throws BadRequestHttpException if the folder cannot be found
+     * @throws ForbiddenHttpException
+     * @throws InvalidConfigException
+     * @throws VolumeException
+     * @throws \Throwable
      */
     public function actionDeleteFolder(): Response
     {
@@ -547,7 +565,7 @@ class AssetsController extends Controller
         $this->requireVolumePermissionByFolder('deleteFilesAndFoldersInVolume', $folder);
         try {
             $assets->deleteFoldersByIds($folderId);
-        } catch (AssetException $exception) {
+        } catch (VolumeException $exception) {
             return $this->asErrorJson($exception->getMessage());
         }
 
@@ -560,9 +578,9 @@ class AssetsController extends Controller
      * @return Response|null
      * @throws BadRequestHttpException if the folder cannot be found
      * @throws ForbiddenHttpException
-     * @throws AssetException
+     * @throws \Throwable
      */
-    public function actionDeleteAsset()
+    public function actionDeleteAsset(): ?Response
     {
         $this->requirePostRequest();
 
@@ -579,7 +597,7 @@ class AssetsController extends Controller
 
         try {
             $success = Craft::$app->getElements()->deleteElement($asset);
-        } catch (AssetException $e) {
+        } catch (\Throwable $e) {
             if ($this->request->getAcceptsJson()) {
                 return $this->asErrorJson($e->getMessage());
             }
@@ -614,6 +632,9 @@ class AssetsController extends Controller
      *
      * @return Response
      * @throws BadRequestHttpException if the folder cannot be found
+     * @throws ForbiddenHttpException
+     * @throws InvalidConfigException
+     * @throws VolumeException
      */
     public function actionRenameFolder(): Response
     {
@@ -633,9 +654,8 @@ class AssetsController extends Controller
         $this->requireVolumePermissionByFolder('createFoldersInVolume', $folder);
 
         try {
-            $newName = Craft::$app->getAssets()->renameFolderById($folderId,
-                $newName);
-        } catch (\Throwable $exception) {
+            $newName = Craft::$app->getAssets()->renameFolderById($folderId, $newName);
+        } catch (VolumeException | AssetException $exception) {
             return $this->asErrorJson($exception->getMessage());
         }
 
@@ -648,6 +668,12 @@ class AssetsController extends Controller
      *
      * @return Response
      * @throws BadRequestHttpException if the asset or the target folder cannot be found
+     * @throws Exception
+     * @throws ForbiddenHttpException
+     * @throws InvalidConfigException
+     * @throws VolumeException
+     * @throws \Throwable
+     * @throws \craft\errors\ElementNotFoundException
      */
     public function actionMoveAsset(): Response
     {
@@ -659,7 +685,7 @@ class AssetsController extends Controller
         $assetId = $this->request->getRequiredBodyParam('assetId');
         $asset = $assetsService->getAssetById($assetId);
 
-        if (empty($asset)) {
+        if ($asset === null) {
             throw new BadRequestHttpException('The Asset cannot be found');
         }
 
@@ -667,7 +693,7 @@ class AssetsController extends Controller
         $folderId = $this->request->getBodyParam('folderId', $asset->folderId);
         $folder = $assetsService->getFolderById($folderId);
 
-        if (empty($folder)) {
+        if ($folder === null) {
             throw new BadRequestHttpException('The folder cannot be found');
         }
 
@@ -719,6 +745,10 @@ class AssetsController extends Controller
      *
      * @return Response
      * @throws BadRequestHttpException if the folder to move, or the destination parent folder, cannot be found
+     * @throws ForbiddenHttpException
+     * @throws InvalidConfigException
+     * @throws VolumeException
+     * @throws \Throwable
      */
     public function actionMoveFolder(): Response
     {
@@ -731,11 +761,11 @@ class AssetsController extends Controller
         $folderToMove = $assets->getFolderById($folderBeingMovedId);
         $destinationFolder = $assets->getFolderById($newParentFolderId);
 
-        if (empty($folderToMove)) {
+        if ($folderToMove === null) {
             throw new BadRequestHttpException('The folder you are trying to move does not exist');
         }
 
-        if (empty($destinationFolder)) {
+        if ($destinationFolder === null) {
             throw new BadRequestHttpException('The destination folder does not exist');
         }
 
@@ -754,7 +784,7 @@ class AssetsController extends Controller
 
         if (!$existingFolder) {
             try {
-                $existingFolder = $targetVolume->folderExists(rtrim($destinationFolder->path, '/') . '/' . $folderToMove->name);
+                $existingFolder = $targetVolume->directoryExists(rtrim($destinationFolder->path, '/') . '/' . $folderToMove->name);
             } catch (VolumeException $exception) {
                 Craft::$app->getErrorHandler()->logException($exception);
                 return $this->asErrorJson(Craft::t('app', 'An error was encountered while attempting the operation.'));
@@ -771,61 +801,62 @@ class AssetsController extends Controller
             ]);
         }
 
-        try {
-            $sourceTree = $assets->getAllDescendantFolders($folderToMove);
+        $sourceTree = $assets->getAllDescendantFolders($folderToMove);
 
-            if (!$existingFolder) {
-                // No conflicts, mirror the existing structure
-                $folderIdChanges = Assets::mirrorFolderStructure($folderToMove, $destinationFolder);
+        if (!$existingFolder) {
+            // No conflicts, mirror the existing structure
+            $folderIdChanges = Assets::mirrorFolderStructure($folderToMove, $destinationFolder);
 
-                // Get the file transfer list.
-                $allSourceFolderIds = array_keys($sourceTree);
-                $allSourceFolderIds[] = $folderBeingMovedId;
-                $foundAssets = Asset::find()
-                    ->folderId($allSourceFolderIds)
-                    ->all();
-                $fileTransferList = Assets::fileTransferList($foundAssets, $folderIdChanges);
-            } else {
-                $targetTreeMap = [];
+            // Get the file transfer list.
+            $allSourceFolderIds = array_keys($sourceTree);
+            $allSourceFolderIds[] = $folderBeingMovedId;
+            $foundAssets = Asset::find()
+                ->folderId($allSourceFolderIds)
+                ->all();
+            $fileTransferList = Assets::fileTransferList($foundAssets, $folderIdChanges);
+        } else {
+            $targetTreeMap = [];
 
-                // If an indexed folder is conflicting
-                if ($existingFolder instanceof VolumeFolder) {
-                    // Delete if using dforce
-                    if ($force) {
-                        $assets->deleteFoldersByIds($existingFolder->id);
-                    } else {
-                        // Or build a map of existing folders for file move
-                        $targetTree = $assets->getAllDescendantFolders($existingFolder);
-                        $targetPrefixLength = strlen($destinationFolder->path);
-
-                        foreach ($targetTree as $existingFolder) {
-                            $targetTreeMap[substr($existingFolder->path,
-                                $targetPrefixLength)] = $existingFolder->id;
-                        }
-                    }
-                } else if ($existingFolder && $force) {
-                    // An un-indexed folder is conflicting. If we're forcing things, just remove it.
+            // If an indexed folder is conflicting
+            if ($existingFolder instanceof VolumeFolder) {
+                // Delete if using force
+                if ($force) {
                     try {
-                        $targetVolume->deleteDirectory(rtrim($destinationFolder->path, '/') . '/' . $folderToMove->name);
+                        $assets->deleteFoldersByIds($existingFolder->id);
                     } catch (VolumeException $exception) {
                         Craft::$app->getErrorHandler()->logException($exception);
                         return $this->asErrorJson(Craft::t('app', 'Unable to delete directory while moving assets.'));
                     }
+                } else {
+                    // Or build a map of existing folders for file move
+                    $targetTree = $assets->getAllDescendantFolders($existingFolder);
+                    $targetPrefixLength = strlen($destinationFolder->path);
+
+                    foreach ($targetTree as $existingFolder) {
+                        $targetTreeMap[substr($existingFolder->path,
+                            $targetPrefixLength)] = $existingFolder->id;
+                    }
                 }
-
-                // Mirror the structure, passing along the exsting folder map
-                $folderIdChanges = Assets::mirrorFolderStructure($folderToMove, $destinationFolder, $targetTreeMap);
-
-                // Get file transfer list for the progress bar
-                $allSourceFolderIds = array_keys($sourceTree);
-                $allSourceFolderIds[] = $folderBeingMovedId;
-                $foundAssets = Asset::find()
-                    ->folderId($allSourceFolderIds)
-                    ->all();
-                $fileTransferList = Assets::fileTransferList($foundAssets, $folderIdChanges);
+            } else if ($force) {
+                // An un-indexed folder is conflicting. If we're forcing things, just remove it.
+                try {
+                    $targetVolume->deleteDirectory(rtrim($destinationFolder->path, '/') . '/' . $folderToMove->name);
+                } catch (VolumeException $exception) {
+                    Craft::$app->getErrorHandler()->logException($exception);
+                    return $this->asErrorJson(Craft::t('app', 'Unable to delete directory while moving assets.'));
+                }
             }
-        } catch (AssetLogicException $exception) {
-            return $this->asErrorJson($exception->getMessage());
+
+            // Mirror the structure, passing along the exsting folder map
+            $folderIdChanges = Assets::mirrorFolderStructure($folderToMove, $destinationFolder, $targetTreeMap);
+
+            // Get file transfer list for the progress bar
+            $allSourceFolderIds = array_keys($sourceTree);
+            $allSourceFolderIds[] = $folderBeingMovedId;
+            $foundAssets = Asset::find()
+                ->folderId($allSourceFolderIds)
+                ->all();
+            $fileTransferList = Assets::fileTransferList($foundAssets, $folderIdChanges);
         }
 
         $newFolderId = $folderIdChanges[$folderBeingMovedId] ?? null;
@@ -844,6 +875,10 @@ class AssetsController extends Controller
      *
      * @return Response
      * @throws BadRequestHttpException if the Asset is missing.
+     * @throws Exception
+     * @throws \Twig\Error\LoaderError
+     * @throws \Twig\Error\RuntimeError
+     * @throws \Twig\Error\SyntaxError
      */
     public function actionImageEditor(): Response
     {
@@ -866,6 +901,7 @@ class AssetsController extends Controller
      *
      * @return Response
      * @throws BadRequestHttpException
+     * @throws Exception
      */
     public function actionEditImage(): Response
     {
@@ -906,13 +942,13 @@ class AssetsController extends Controller
 
             $asset = $assets->getAssetById($assetId);
 
-            if (empty($asset)) {
+            if ($asset === null) {
                 throw new BadRequestHttpException('The Asset cannot be found');
             }
 
             $folder = $asset->getFolder();
 
-            if (empty($folder)) {
+            if ($folder === null) {
                 throw new BadRequestHttpException('The folder cannot be found');
             }
 
@@ -1052,7 +1088,13 @@ class AssetsController extends Controller
      * Download a file.
      *
      * @return Response
+     * @throws AssetException
      * @throws BadRequestHttpException if the file to download cannot be found.
+     * @throws Exception
+     * @throws ForbiddenHttpException
+     * @throws InvalidConfigException
+     * @throws VolumeException
+     * @throws \yii\web\RangeNotSatisfiableHttpException
      */
     public function actionDownloadAsset(): Response
     {
@@ -1110,6 +1152,7 @@ class AssetsController extends Controller
      * @param int $width The thumbnail width
      * @param int $height The thumbnail height
      * @return Response
+     * @throws \craft\errors\DeprecationException
      * @deprecated in 3.0.13. Use [[actionThumb()]] instead.
      */
     public function actionGenerateThumb(string $uid, int $width, int $height): Response
@@ -1156,8 +1199,10 @@ class AssetsController extends Controller
      *
      * @param int|null $transformId
      * @return Response
+     * @throws BadRequestHttpException
      * @throws NotFoundHttpException if the transform can't be found
      * @throws ServerErrorHttpException if the transform can't be generated
+     * @throws \craft\errors\AssetTransformException
      */
     public function actionGenerateTransform(int $transformId = null): Response
     {
@@ -1261,9 +1306,11 @@ class AssetsController extends Controller
      * @param string $permissionName The name of the permission to require (sans `:<volume-uid>` suffix)
      * @param Asset $asset The asset whose volume should be checked
      * @throws ForbiddenHttpException
+     * @throws InvalidConfigException
+     * @throws VolumeException
      * @since 3.4.8
      */
-    protected function requireVolumePermissionByAsset(string $permissionName, Asset $asset)
+    protected function requireVolumePermissionByAsset(string $permissionName, Asset $asset): void
     {
         if (!$asset->getVolumeId()) {
             $userTemporaryFolder = Craft::$app->getAssets()->getUserTemporaryUploadFolder();
@@ -1286,7 +1333,7 @@ class AssetsController extends Controller
      * @throws ForbiddenHttpException
      * @since 3.4.8
      */
-    protected function requirePeerVolumePermissionByAsset(string $permissionName, Asset $asset)
+    protected function requirePeerVolumePermissionByAsset(string $permissionName, Asset $asset): void
     {
         if ($asset->getVolumeId()) {
             $userId = Craft::$app->getUser()->getId();
@@ -1302,9 +1349,11 @@ class AssetsController extends Controller
      * @param string $permissionName The name of the peer permission to require (sans `:<volume-uid>` suffix)
      * @param VolumeFolder $folder The folder whose volume should be checked
      * @throws ForbiddenHttpException
+     * @throws InvalidConfigException
+     * @throws VolumeException
      * @since 3.4.8
      */
-    protected function requireVolumePermissionByFolder(string $permissionName, VolumeFolder $folder)
+    protected function requireVolumePermissionByFolder(string $permissionName, VolumeFolder $folder): void
     {
         if (!$folder->volumeId) {
             $userTemporaryFolder = Craft::$app->getAssets()->getUserTemporaryUploadFolder();
@@ -1327,7 +1376,7 @@ class AssetsController extends Controller
      * @throws ForbiddenHttpException
      * @since 3.4.8
      */
-    protected function requireVolumePermission(string $permissionName, string $volumeUid)
+    protected function requireVolumePermission(string $permissionName, string $volumeUid): void
     {
         $this->requirePermission($permissionName . ':' . $volumeUid);
     }
@@ -1337,18 +1386,14 @@ class AssetsController extends Controller
      * @return string
      * @throws UploadFailedException
      */
-    private function _getUploadedFileTempPath(UploadedFile $uploadedFile)
+    private function _getUploadedFileTempPath(UploadedFile $uploadedFile): string
     {
         if ($uploadedFile->getHasError()) {
             throw new UploadFailedException($uploadedFile->error);
         }
 
         // Move the uploaded file to the temp folder
-        try {
-            $tempPath = $uploadedFile->saveAsTempFile();
-        } catch (ErrorException $e) {
-            throw new UploadFailedException(0, null, $e);
-        }
+        $tempPath = $uploadedFile->saveAsTempFile();
 
         if ($tempPath === false) {
             throw new UploadFailedException(UPLOAD_ERR_CANT_WRITE);

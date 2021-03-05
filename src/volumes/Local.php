@@ -6,6 +6,7 @@ use Craft;
 use craft\base\LocalVolumeInterface;
 use craft\base\Volume;
 use craft\errors\VolumeException;
+use craft\errors\VolumeObjectNotFoundException;
 use craft\helpers\FileHelper;
 use craft\helpers\Path;
 use craft\helpers\StringHelper;
@@ -62,7 +63,7 @@ class Local extends Volume implements LocalVolumeInterface
     /**
      * @var string|null Path to the root of this sources local folder.
      */
-    public $path;
+    public ?string $path;
 
     /**
      * @inheritdoc
@@ -171,6 +172,8 @@ class Local extends Volume implements LocalVolumeInterface
         if ($fileSize === false) {
             throw new VolumeException("Unable to get file size for “{$uri}”");
         }
+
+        return $fileSize;
     }
 
     /**
@@ -185,6 +188,8 @@ class Local extends Volume implements LocalVolumeInterface
         if ($dateModified === false) {
             throw new VolumeException("Unable to get date modified for “{$uri}”");
         }
+
+        return $dateModified;
     }
 
     /**
@@ -267,7 +272,7 @@ class Local extends Volume implements LocalVolumeInterface
     /**
      * @inheritdoc
      */
-    public function folderExists(string $path): bool
+    public function directoryExists(string $path): bool
     {
         return is_dir($this->prefixPath($path));
     }
@@ -294,9 +299,11 @@ class Local extends Volume implements LocalVolumeInterface
      */
     public function renameDirectory(string $path, string $newName): void
     {
-        if (is_dir($this->prefixPath($path))) {
-            @rename($path, $this->prefixPath($path));
+        if (!is_dir($this->prefixPath($path))) {
+            throw new VolumeObjectNotFoundException('No folder exists at path: ' . $path);
         }
+
+        @rename($path, $this->prefixPath($path));
     }
 
     /**

@@ -13,7 +13,7 @@ namespace craft\errors;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
-class AssetLogicException extends AssetException
+class AssetOperationException extends AssetException
 {
     /**
      * @return string the user-friendly name of this exception

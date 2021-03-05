@@ -11,7 +11,7 @@ use Craft;
 use craft\base\Element;
 use craft\elements\Asset;
 use craft\errors\AssetException;
-use craft\errors\AssetLogicException;
+use craft\errors\AssetOperationException;
 use craft\errors\UploadFailedException;
 use craft\errors\VolumeException;
 use craft\fields\Assets as AssetsField;

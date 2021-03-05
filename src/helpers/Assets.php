@@ -213,7 +213,7 @@ class Assets
 
                 // Any and all parent folders should be already mirrored
                 $folder->parentId = ($folderIdChanges[$sourceFolder->parentId] ?? $destinationFolder->id);
-                $assets->createFolder($folder, true);
+                $assets->createFolder($folder);
 
                 $folderIdChanges[$sourceFolder->id] = $folder->id;
             }

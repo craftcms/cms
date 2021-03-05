@@ -38,6 +38,16 @@ use yii\base\UnknownPropertyException;
  * @see http://craftcms.com
  * @package craft.app.services
  * @since 3.0.0
+ *
+ * @property-read int[] $allVolumeIds
+ * @property-read string[] $allVolumeTypes
+ * @property-read int $totalVolumes
+ * @property-read array $viewableVolumeIds
+ * @property-read \craft\base\VolumeInterface[] $allVolumes
+ * @property-read int[] $publicVolumeIds
+ * @property-read int $totalViewableVolumes
+ * @property-read \craft\base\VolumeInterface[] $publicVolumes
+ * @property-read \craft\base\VolumeInterface[] $viewableVolumes
  */
 class Volumes extends Component
 {
@@ -61,35 +71,35 @@ class Volumes extends Component
      * );
      * ```
      */
-    const EVENT_REGISTER_VOLUME_TYPES = 'registerVolumeTypes';
+    public const EVENT_REGISTER_VOLUME_TYPES = 'registerVolumeTypes';
 
     /**
      * @event VolumeEvent The event that is triggered before an Asset volume is saved.
      */
-    const EVENT_BEFORE_SAVE_VOLUME = 'beforeSaveVolume';
+    public const EVENT_BEFORE_SAVE_VOLUME = 'beforeSaveVolume';
 
     /**
      * @event VolumeEvent The event that is triggered after an Asset volume is saved.
      */
-    const EVENT_AFTER_SAVE_VOLUME = 'afterSaveVolume';
+    public const EVENT_AFTER_SAVE_VOLUME = 'afterSaveVolume';
 
     /**
      * @event VolumeEvent The event that is triggered before an Asset volume is deleted.
      */
-    const EVENT_BEFORE_DELETE_VOLUME = 'beforeDeleteVolume';
+    public const EVENT_BEFORE_DELETE_VOLUME = 'beforeDeleteVolume';
 
     /**
      * @event VolumeEvent The event that is triggered before a volume delete is applied to the database.
      * @since 3.1.0
      */
-    const EVENT_BEFORE_APPLY_VOLUME_DELETE = 'beforeApplyVolumeDelete';
+    public const EVENT_BEFORE_APPLY_VOLUME_DELETE = 'beforeApplyVolumeDelete';
 
     /**
      * @event VolumeEvent The event that is triggered after a Asset volume is deleted.
      */
-    const EVENT_AFTER_DELETE_VOLUME = 'afterDeleteVolume';
+    public const EVENT_AFTER_DELETE_VOLUME = 'afterDeleteVolume';
 
-    const CONFIG_VOLUME_KEY = 'volumes';
+    public const CONFIG_VOLUME_KEY = 'volumes';
 
     /**
      * @var MemoizableArray|null
@@ -107,7 +117,7 @@ class Volumes extends Component
      *
      * @since 3.5.14
      */
-    public function __serialize()
+    public function __serialize(): array
     {
         $vars = get_object_vars($this);
         unset($vars['_volumes']);
@@ -248,7 +258,7 @@ class Volumes extends Component
      * @param int $volumeId
      * @return VolumeInterface|null
      */
-    public function getVolumeById(int $volumeId)
+    public function getVolumeById(int $volumeId): ?VolumeInterface
     {
         return $this->_volumes()->firstWhere('id', $volumeId);
     }
@@ -259,7 +269,7 @@ class Volumes extends Component
      * @param string $volumeUid
      * @return VolumeInterface|null
      */
-    public function getVolumeByUid(string $volumeUid)
+    public function getVolumeByUid(string $volumeUid): ?VolumeInterface
     {
         return $this->_volumes()->firstWhere('uid', $volumeUid, true);
     }
@@ -270,7 +280,7 @@ class Volumes extends Component
      * @param string $handle
      * @return VolumeInterface|null
      */
-    public function getVolumeByHandle(string $handle)
+    public function getVolumeByHandle(string $handle): ?VolumeInterface
     {
         return $this->_volumes()->firstWhere('handle', $handle, true);
     }
@@ -383,7 +393,7 @@ class Volumes extends Component
      *
      * @param ConfigEvent $event
      */
-    public function handleChangedVolume(ConfigEvent $event)
+    public function handleChangedVolume(ConfigEvent $event): void
     {
         $volumeUid = $event->tokenMatches[0];
         $data = $event->newValue;
@@ -513,7 +523,7 @@ class Volumes extends Component
      * @deprecated in 3.5.8. [Environment variables](https://craftcms.com/docs/3.x/config/#environmental-configuration) or [dependency injection](https://craftcms.com/knowledge-base/using-local-volumes-for-development)
      * should be used instead.
      */
-    public function getVolumeOverrides(string $handle)
+    public function getVolumeOverrides(string $handle): ?array
     {
         if ($this->_overrides === null) {
             $this->_overrides = Craft::$app->getConfig()->getConfigFromFile('volumes');
@@ -559,9 +569,7 @@ class Volumes extends Component
             // Special case for Local volumes that are being converted to something else
             // https://github.com/craftcms/cms/issues/5277
             if (
-                isset($originalConfig) &&
-                $originalConfig['type'] === Local::class &&
-                isset($originalConfig['settings']['path'])
+                isset($originalConfig['settings']['path']) && $originalConfig['type'] === Local::class
             ) {
                 unset($originalConfig['settings']['path']);
                 return $this->createVolume($originalConfig);
@@ -654,7 +662,7 @@ class Volumes extends Component
      *
      * @param ConfigEvent $event
      */
-    public function handleDeletedVolume(ConfigEvent $event)
+    public function handleDeletedVolume(ConfigEvent $event): void
     {
         $uid = $event->tokenMatches[0];
         $volumeRecord = $this->_getVolumeRecord($uid);
@@ -728,7 +736,7 @@ class Volumes extends Component
      *
      * @param FieldEvent $event
      */
-    public function pruneDeletedField(FieldEvent $event)
+    public function pruneDeletedField(FieldEvent $event): void
     {
         $field = $event->field;
         $fieldUid = $field->uid;
@@ -814,6 +822,7 @@ class Volumes extends Component
     {
         $query = $withTrashed ? AssetVolumeRecord::findWithTrashed() : AssetVolumeRecord::find();
         $query->andWhere(['uid' => $uid]);
+        /** @noinspection PhpIncompatibleReturnTypeInspection */
         return $query->one() ?? new AssetVolumeRecord();
     }
 }

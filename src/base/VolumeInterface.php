@@ -163,7 +163,7 @@ interface VolumeInterface extends SavableComponentInterface
      * @return bool
      * @throws VolumeException if something goes wrong
      */
-    public function folderExists(string $path): bool;
+    public function directoryExists(string $path): bool;
 
     /**
      * Creates a directory.
@@ -187,6 +187,7 @@ interface VolumeInterface extends SavableComponentInterface
      *
      * @param string $path The path of the directory, relative to the source’s root
      * @param string $newName The new path of the directory, relative to the source’s root
+     * @throws VolumeObjectNotFoundException if directory cannot be found
      */
     public function renameDirectory(string $path, string $newName): void;
 }

@@ -1252,7 +1252,7 @@ class Asset extends Element
             [$width * 2, $height * 2],
         ];
         foreach ($thumbSizes as [$width, $height]) {
-            $thumbUrl = $assetsService->getThumbUrl($this, $width, $height, false, false);
+            $thumbUrl = $assetsService->getThumbUrl($this, $width, $height, false);
             $srcsets[] = $thumbUrl . ' ' . $width . 'w';
         }
 
@@ -2143,7 +2143,8 @@ class Asset extends Element
             }
 
             $this->size = filesize($tempPath);
-            $this->dateModified = new DateTime('@' . filemtime($tempPath));
+            $mtime = filemtime($tempPath);
+            $this->dateModified = $mtime ? new DateTime('@' . $mtime) : null;
 
             // Delete the temp file
             FileHelper::unlink($tempPath);

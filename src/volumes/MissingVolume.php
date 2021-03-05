@@ -92,7 +92,7 @@ class MissingVolume extends Volume implements MissingComponentInterface
     /**
      * @inheritdoc
      */
-    public function folderExists(string $path): bool
+    public function directoryExists(string $path): bool
     {
         throw new NotSupportedException('folderExists() is not implemented.');
     }

@@ -39,6 +39,8 @@ use yii\base\InvalidConfigException;
  * @see http://craftcms.com
  * @package craft.app.services
  * @since 3.0.0
+ *
+ * @property-read array $existingIndexingSessions
  */
 class AssetIndexer extends Component
 {
@@ -156,7 +158,13 @@ class AssetIndexer extends Component
 
         /** @var VolumeInterface $volume */
         foreach ($volumeList as $volume) {
-            $fileList = $volume->getFileList();
+            try {
+                $fileList = $volume->getFileList();
+            } catch (VolumeException $e) {
+                Craft::warning('Unable to list files in ' . $volume->handle . '.');
+                continue;
+            }
+
             $total += $this->storeIndexList($fileList, $session->id, $volume->id);
         }
 
@@ -189,7 +197,6 @@ class AssetIndexer extends Component
      * @param bool $cacheRemoteImages Whether remote images should be cached.
      * @param bool $isCli Whether indexing is run via CLI
      * @return AssetIndexingSession
-     * @throws \Exception
      * @since 4.0.0
      */
     public function createIndexingSession(array $volumeList, bool $cacheRemoteImages = true, $isCli = false): AssetIndexingSession
@@ -219,7 +226,6 @@ class AssetIndexer extends Component
      * Store an indexing session to DB.
      *
      * @param AssetIndexingSession $session
-     * @throws \Exception
      */
     protected function storeIndexingSession(AssetIndexingSession $session): void
     {
@@ -277,10 +283,7 @@ class AssetIndexer extends Component
      *
      * @param AssetIndexingSession $indexingSession
      * @return AssetIndexingSession
-     * @throws Exception
-     * @throws InvalidConfigException
-     * @throws MissingAssetException
-     * @throws VolumeException
+     * @throws VolumeException if unable to index file because of Volume issue
      * @since 4.0.0
      */
     public function processIndexSession(AssetIndexingSession $indexingSession): AssetIndexingSession
@@ -319,7 +322,6 @@ class AssetIndexer extends Component
         }
 
         $session = $this->incrementProcessedEntryCount($indexingSession);
-
 
         if ($session->processedEntries == $session->totalEntries) {
             $session->actionRequired = true;
@@ -504,7 +506,6 @@ class AssetIndexer extends Component
      * @param bool $createIfMissing
      * @return Asset
      * @throws AssetDisallowedExtensionException if attempting to index an Asset with a disallowed extension
-     * @throws InvalidConfigException if misconfigured volume
      * @throws MissingAssetException if asset not found and `createIfMissing` set to `false`.
      * @since 4.0.0
      */
@@ -533,7 +534,6 @@ class AssetIndexer extends Component
      * @param int $sessionId
      * @param bool $createIfMissing
      * @return VolumeFolder
-     * @throws InvalidConfigException if misconfigured volume
      * @throws MissingVolumeFolderException if asset not found and `createIfMissing` set to `false`.
      * @since 4.0.0
      */
@@ -596,6 +596,7 @@ class AssetIndexer extends Component
      * @param AssetIndexData $indexEntry
      * @param bool $createIfMissing Whether the asset record should be created if it doesn't exist yet
      * @return VolumeFolder
+     * @throws VolumeException
      * @since 4.0.0
      */
     public function indexFolderByEntry(AssetIndexData $indexEntry, bool $createIfMissing = true): VolumeFolder
@@ -659,7 +660,6 @@ class AssetIndexer extends Component
      * @param bool $cacheImages Whether remotely-stored images should be downloaded and stored locally, to speed up transform generation.
      * @return Asset
      * @throws AssetDisallowedExtensionException if the extension of the file is not allowed.
-     * @throws InvalidConfigException
      * @throws MissingAssetException
      * @throws VolumeException
      */

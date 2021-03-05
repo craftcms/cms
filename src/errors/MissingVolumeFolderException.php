@@ -19,7 +19,7 @@ use yii\base\Exception;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.0.0
  */
-class MissingVolumeFolderException extends Exception
+class MissingVolumeFolderException extends VolumeException
 {
     /**
      * @var AssetIndexData

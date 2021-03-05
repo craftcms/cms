@@ -15,7 +15,7 @@ use craft\db\Query;
 use craft\db\Table;
 use craft\elements\Asset;
 use craft\errors\AssetException;
-use craft\errors\AssetLogicException;
+use craft\errors\AssetOperationException;
 use craft\errors\AssetTransformException;
 use craft\errors\VolumeException;
 use craft\errors\VolumeObjectNotFoundException;
@@ -1206,7 +1206,7 @@ class AssetTransforms extends Component
      *
      * @param Asset $asset
      * @return mixed|string
-     * @throws AssetLogicException If attempting to detect an image format for a non-image.
+     * @throws AssetOperationException If attempting to detect an image format for a non-image.
      * @throws VolumeException If unable to fetch file from volume.
      * @throws InvalidConfigException If no volume can be found.
      */
@@ -1217,7 +1217,7 @@ class AssetTransforms extends Component
         }
 
         if ($asset->kind !== Asset::KIND_IMAGE) {
-            throw new AssetLogicException(Craft::t('app',
+            throw new AssetOperationException(Craft::t('app',
                 'Tried to detect the appropriate image format for a non-image!'));
         }
 
@@ -1366,7 +1366,6 @@ class AssetTransforms extends Component
      * Delete created transforms for an Asset.
      *
      * @param Asset $asset
-     * @throws VolumeException if something went very wrong when deleting a transform
      */
     public function deleteCreatedTransformsForAsset(Asset $asset)
     {
