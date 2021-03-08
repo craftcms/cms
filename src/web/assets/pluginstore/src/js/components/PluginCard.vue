@@ -37,7 +37,6 @@
 
 import {mapState, mapGetters} from 'vuex'
 import EditionBadge from './EditionBadge'
-import {currency} from '@/js/filters/currency'
 
 export default {
     props: ['plugin', 'trialMode'],
@@ -111,7 +110,7 @@ export default {
 
     methods: {
         priceLabel(price) {
-            return price > 0 ? currency(price) : Craft.t('app', 'Free')
+            return price > 0 ? this.$options.filters.currency(price) : Craft.t('app', 'Free')
         }
     }
 }
