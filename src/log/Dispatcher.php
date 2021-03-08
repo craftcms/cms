@@ -94,7 +94,7 @@ class Dispatcher extends \yii\log\Dispatcher
     {
         // Only log errors and warnings, unless Craft is running in Dev Mode or it's being installed/updated
         // (Explicitly check GeneralConfig::$devMode here, because YII_DEBUG is always `1` for console requests.)
-        if (!YII_DEBUG && Craft::$app->getIsInstalled() && !Craft::$app->getUpdates()->getIsCraftDbMigrationNeeded()) {
+        if (!Craft::$app->getConfig()->getGeneral()->devMode && Craft::$app->getIsInstalled() && !Craft::$app->getUpdates()->getIsCraftDbMigrationNeeded()) {
             return false;
         }
 

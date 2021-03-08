@@ -1,5 +1,9 @@
 # Release Notes for Craft CMS 3.x
 
+## Unreleased
+
+### Fixed a bug where console requests were logging non-error/warning logs when Dev Mode was disabled. ([#7659](https://github.com/craftcms/cms/issues/7659))
+
 ## 3.6.9 - 2021-03-05
 
 ### Added
