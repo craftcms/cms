@@ -396,7 +396,7 @@ class ElementHelper
      */
     public static function isDraftOrRevision(ElementInterface $element): bool
     {
-        $root = ElementHelper::rootElement($element);
+        $root = static::rootElement($element);
         return $root->getIsDraft() || $root->getIsRevision();
     }
 
