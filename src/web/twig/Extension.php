@@ -229,6 +229,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
             new TwigFilter('filterByValue', [ArrayHelper::class, 'where'], ['deprecated' => '3.5.0', 'alternative' => 'where']),
             new TwigFilter('group', [$this, 'groupFilter']),
             new TwigFilter('hash', [$security, 'hashData']),
+            new TwigFilter('httpdate', [$this, 'httpdateFilter'], ['needs_environment' => true]),
             new TwigFilter('id', [Html::class, 'id']),
             new TwigFilter('index', [ArrayHelper::class, 'index']),
             new TwigFilter('indexOf', [$this, 'indexOfFilter']),
@@ -989,6 +990,22 @@ class Extension extends AbstractExtension implements GlobalsInterface
 
         return $groups;
     }
+
+
+    /**
+     * Converts a date to the HTTP format (used by HTTP headers such as `Expires`).
+     *
+     * @param TwigEnvironment $env
+     * @param DateTime|DateTimeInterface|string $date A date
+     * @param DateTimeZone|string|false|null $timezone The target timezone, null to use the default, false to leave unchanged
+     * @return string The formatted date
+     * @since 3.6.10
+     */
+    public function httpdateFilter(TwigEnvironment $env, $date, $timezone = null): string
+    {
+        return \twig_date_format_filter($env, $date, \DateTime::RFC7231, $timezone);
+    }
+
 
     /**
      * Returns the index of an item in a string or array, or -1 if it cannot be found.

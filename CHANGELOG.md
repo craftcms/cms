@@ -3,6 +3,7 @@
 ## Unreleased
 
 ### Added
+- Added the `|httpdate` Twig filter, which can be used to format dates for HTTP headers such as `Expires`. ([craftcms/docs#167](https://github.com/craftcms/docs/pull/167))
 - Added `craft\events\FormActionsEvent`.
 - Added `craft\web\twig\variables\Cp::EVENT_REGISTER_FORM_ACTIONS`. ([#7660](https://github.com/craftcms/cms/issues/7660))
 - Added `craft\web\twig\variables\Cp::prepFormActions()`.
