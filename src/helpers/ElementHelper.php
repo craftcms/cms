@@ -388,6 +388,30 @@ class ElementHelper
     }
 
     /**
+     * Returns whether the given element (or its root element if a block element) is a draft.
+     *
+     * @param ElementInterface $element
+     * @return bool
+     * @since 3.7.0
+     */
+    public static function isDraft(ElementInterface $element): bool
+    {
+        return static::rootElement($element)->getIsDraft();
+    }
+
+    /**
+     * Returns whether the given element (or its root element if a block element) is a revision.
+     *
+     * @param ElementInterface $element
+     * @return bool
+     * @since 3.7.0
+     */
+    public static function isRevision(ElementInterface $element): bool
+    {
+        return static::rootElement($element)->getIsRevision();
+    }
+
+    /**
      * Returns whether the given element (or its root element if a block element) is a draft or revision.
      *
      * @param ElementInterface $element

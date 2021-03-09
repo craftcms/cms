@@ -805,12 +805,11 @@ class Elements extends Component
                     // Make sure this isn't a revision
                     if ($skipRevisions) {
                         try {
-                            $root = ElementHelper::rootElement($element);
+                            if (ElementHelper::isRevision($element)) {
+                                throw new InvalidElementException($element, "Skipped resaving {$element} ({$element->id}) because it's a revision.");
+                            }
                         } catch (\Throwable $rootException) {
                             throw new InvalidElementException($element, "Skipped resaving {$element} ({$element->id}) due to an error obtaining its root element: " . $rootException->getMessage());
-                        }
-                        if ($root->getIsRevision()) {
-                            throw new InvalidElementException($element, "Skipped resaving {$element} ({$element->id}) because it's a revision.");
                         }
                     }
                 } catch (InvalidElementException $e) {
