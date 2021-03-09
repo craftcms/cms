@@ -2,7 +2,8 @@
 
 ## Unreleased
 
-### Fixed a bug where console requests were logging non-error/warning logs when Dev Mode was disabled. ([#7659](https://github.com/craftcms/cms/issues/7659))
+### Fixed
+- Fixed a bug where console requests were logging non-error/warning logs when Dev Mode was disabled. ([#7659](https://github.com/craftcms/cms/issues/7659))
 - Fixed an error that could occur when updating Craft. ([#7662](https://github.com/craftcms/cms/issues/7662))
 
 ## 3.6.9 - 2021-03-05
