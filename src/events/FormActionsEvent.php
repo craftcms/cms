@@ -24,7 +24,8 @@ class FormActionsEvent extends Event
      *
      * - `label` – The human-facing label for the action.
      * - `action` – The controller action path that should be requested when the action is selected.
-     * - `redirect` – The `redirect` param that should be passed to the controller action if the action is selected.
+     * - `redirect` – The `redirect` param that should be passed to the controller action if the action is selected. Note that this value should be
+     *   hashed via `Craft::$app->security->hashData()`.
      * - `confirm` – A confirmation message that should be displayed when the action is selected.
      * - `params` – An array of param names/values that should be passed to the controller action if the action is selected.
      * - `destructive` – `true` or `false` depending on whether the action should be considered destructive.
