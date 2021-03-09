@@ -616,6 +616,19 @@ class ExtensionTest extends Unit
     /**
      *
      */
+    public function testHttpdateFilter()
+    {
+        $d = new \DateTime();
+        $this->testRenderResult(
+            $d->format(\DateTime::RFC7231),
+            '{{ d|httpdate }}',
+            compact('d')
+        );
+    }
+
+    /**
+     *
+     */
     public function testEncencFilter()
     {
         $enc = $this->view->renderString('{{ "foo"|encenc }}');

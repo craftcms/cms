@@ -17,6 +17,7 @@ use craft\helpers\Assets as AssetsHelper;
 use craft\helpers\Db;
 use craft\helpers\FileHelper;
 use craft\helpers\Image;
+use craft\helpers\Session;
 use craft\helpers\StringHelper;
 use craft\models\AssetIndexData;
 use craft\records\AssetIndexData as AssetIndexDataRecord;
@@ -337,7 +338,7 @@ class AssetIndexer extends Component
 
         // What if there were no files at all?
         if (empty($volumeIds) && !Craft::$app->getRequest()->getIsConsoleRequest()) {
-            $volumeIds = Craft::$app->getSession()->get('assetsVolumesBeingIndexed');
+            $volumeIds = Session::get('assetsVolumesBeingIndexed');
         }
 
         // Flip for faster lookup

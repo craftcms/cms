@@ -10,6 +10,7 @@ namespace crafttests\unit\web;
 use Craft;
 use craft\elements\User as UserElement;
 use craft\errors\UserLockedException;
+use craft\helpers\Session;
 use craft\services\Config;
 use craft\test\TestCase;
 use craft\web\User as WebUser;
@@ -107,6 +108,8 @@ class UserTest extends TestCase
 
         // Give a few seconds depending on how fast tests run.
         self::assertContains(Craft::$app->getUser()->getRemainingSessionTime(), [48, 49, 50]);
+
+        Session::reset();
     }
 
     /**
@@ -132,6 +135,8 @@ class UserTest extends TestCase
         // Session must return null
         $this->_sessionGetStub(null);
         self::assertSame(false, $this->user->getElevatedSessionTimeout());
+
+        Session::reset();
     }
 
     /**
@@ -147,6 +152,8 @@ class UserTest extends TestCase
         // If the session->get() return value is smaller than time 0 is returned
         $this->_sessionGetStub(time() - 50);
         self::assertEqualsWithDelta(0, $this->user->getElevatedSessionTimeout(), 2.0);
+
+        Session::reset();
     }
 
     /**
@@ -243,7 +250,16 @@ class UserTest extends TestCase
      */
     private function _sessionGetStub($returnValue)
     {
-        $this->tester->mockCraftMethods('session', ['get' => $returnValue]);
+        Session::reset();
+
+        $this->tester->mockCraftMethods('session', [
+            'getHasSessionId' => function() {
+                return true;
+            },
+            'get' => function($tokenParam) use ($returnValue) {
+                return $returnValue;
+            }
+        ]);
     }
 
     /**

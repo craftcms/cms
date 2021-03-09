@@ -59,12 +59,6 @@ class FlysysteVolumeTest extends Unit
      */
     public function testFileMetadataDeprecation()
     {
-        $deprecator = $this->make(Deprecator::class, [
-            'log' => Expected::once()
-        ]);
-
-        Craft::$app->set('deprecator', $deprecator);
-
         /** @var Local $volume */
         $volume = $this->make(Local::class, [
             'filesystem' => $this->make(Filesystem::class, [

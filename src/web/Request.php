@@ -12,6 +12,7 @@ use craft\base\RequestTrait;
 use craft\config\GeneralConfig;
 use craft\errors\SiteNotFoundException;
 use craft\helpers\ArrayHelper;
+use craft\helpers\Session as SessionHelper;
 use craft\helpers\StringHelper;
 use craft\models\Site;
 use craft\services\Sites;
@@ -1362,7 +1363,7 @@ class Request extends \yii\web\Request
             $cookie = $this->createCsrfCookie($token);
             Craft::$app->getResponse()->getCookies()->add($cookie);
         } else {
-            Craft::$app->getSession()->set($this->csrfParam, $token);
+            SessionHelper::set($this->csrfParam, $token);
         }
 
         return $token;

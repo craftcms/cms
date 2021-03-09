@@ -59,7 +59,6 @@ abstract class FlysystemVolume extends Volume
      */
     public function getFileMetadata(string $uri): array
     {
-        Craft::$app->getDeprecator()->log('getFileMetadata', "The `getFileMetadata()` method has been deprecated. Use `getDateModified()` and `getFileSize()` instead.");
         return $this->fetchFileMetadata($uri, true);
     }
 
@@ -223,7 +222,6 @@ abstract class FlysystemVolume extends Volume
      */
     public function createDir(string $path)
     {
-        Craft::$app->getDeprecator()->log('createDir', "The `createDir()` method has been deprecated. Use `createDirectory()` instead.");
         $this->createDirectory($path);
     }
 
@@ -246,7 +244,6 @@ abstract class FlysystemVolume extends Volume
      */
     public function deleteDir(string $path)
     {
-        Craft::$app->getDeprecator()->log('deleteDir', "The `deleteDir()` method has been deprecated. Use `deleteDirectory()` instead.");
         $this->deleteDirectory($path);
     }
 
@@ -271,7 +268,6 @@ abstract class FlysystemVolume extends Volume
      */
     public function renameDir(string $path, string $newName)
     {
-        Craft::$app->getDeprecator()->log('renameDir', "The `renameDir()` method has been deprecated. Use `renameDirectory()` instead.");
         $this->renameDirectory($path, $newName);
     }
 

@@ -954,8 +954,10 @@ class Elements extends Component
             throw new Exception('Attempting to duplicate an unsaved element.');
         }
 
-        // Create our first clone for the $element's site
+        // Ensure all fields have been normalized
         $element->getFieldValues();
+
+        // Create our first clone for the $element's site
         $mainClone = clone $element;
         $mainClone->id = null;
         $mainClone->uid = StringHelper::UUID();
@@ -985,6 +987,13 @@ class Elements extends Component
         $supportedSiteIds = ArrayHelper::getColumn($supportedSites, 'siteId');
         if (!in_array($mainClone->siteId, $supportedSiteIds, false)) {
             throw new UnsupportedSiteException($element, $mainClone->siteId, 'Attempting to duplicate an element in an unsupported site.');
+        }
+
+        // Clone any field values that are objects
+        foreach ($mainClone->getFieldValues() as $handle => $value) {
+            if (is_object($value)) {
+                $mainClone->setFieldValue($handle, clone $value);
+            }
         }
 
         // If we are duplicating a draft as another draft, create a new draft row
@@ -1093,7 +1102,9 @@ class Elements extends Component
                         continue;
                     }
 
+                    // Ensure all fields have been normalized
                     $siteElement->getFieldValues();
+
                     $siteClone = clone $siteElement;
                     $siteClone->duplicateOf = $siteElement;
                     $siteClone->propagating = true;
@@ -1115,6 +1126,13 @@ class Elements extends Component
 
                     $siteClone->setAttributes($newAttributes, false);
                     $siteClone->siteId = $siteInfo['siteId'];
+
+                    // Clone any field values that are objects
+                    foreach ($siteClone->getFieldValues() as $handle => $value) {
+                        if (is_object($value)) {
+                            $siteClone->setFieldValue($handle, clone $value);
+                        }
+                    }
 
                     if ($element::hasUris()) {
                         // Make sure it has a valid slug

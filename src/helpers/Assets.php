@@ -128,7 +128,10 @@ class Assets
     {
         if ($isFilename) {
             $baseName = pathinfo($name, PATHINFO_FILENAME);
-            $extension = '.' . pathinfo($name, PATHINFO_EXTENSION);
+            $extension = pathinfo($name, PATHINFO_EXTENSION);
+            if ($extension) {
+                $extension = '.'.$extension;
+            }
         } else {
             $baseName = $name;
             $extension = '';

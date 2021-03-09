@@ -15,6 +15,7 @@ use craft\errors\UserLockedException;
 use craft\events\LoginFailureEvent;
 use craft\helpers\ConfigHelper;
 use craft\helpers\Db;
+use craft\helpers\Session as SessionHelper;
 use craft\helpers\UrlHelper;
 use craft\helpers\User as UserHelper;
 use craft\validators\UserPasswordValidator;
@@ -137,7 +138,7 @@ class User extends \yii\web\User
      */
     public function removeReturnUrl()
     {
-        Craft::$app->getSession()->remove($this->returnUrlParam);
+        SessionHelper::remove($this->returnUrlParam);
     }
 
     /**
@@ -223,7 +224,7 @@ class User extends \yii\web\User
                 return -1;
             }
 
-            $expire = Craft::$app->getSession()->get($this->authTimeoutParam);
+            $expire = SessionHelper::get($this->authTimeoutParam);
             $time = time();
 
             if ($expire !== null && $expire > $time) {
@@ -272,8 +273,7 @@ class User extends \yii\web\User
     {
         // Are they logged in?
         if (!$this->getIsGuest()) {
-            $session = Craft::$app->getSession();
-            $expires = $session->get($this->elevatedSessionTimeoutParam);
+            $expires = SessionHelper::get($this->elevatedSessionTimeoutParam);
 
             if ($expires !== null) {
                 $currentTime = time();
@@ -316,10 +316,8 @@ class User extends \yii\web\User
      */
     public function startElevatedSession(string $password): bool
     {
-        $session = Craft::$app->getSession();
-
         // If the current user is being impersonated by an admin, get the admin instead
-        if ($previousUserId = $session->get(UserElement::IMPERSONATE_KEY)) {
+        if ($previousUserId = SessionHelper::get(UserElement::IMPERSONATE_KEY)) {
             $user = UserElement::find()
                 ->addSelect(['users.password'])
                 ->id($previousUserId)
@@ -357,7 +355,7 @@ class User extends \yii\web\User
 
         // Set the elevated session expiration date
         $timeout = time() + $generalConfig->elevatedSessionDuration;
-        $session->set($this->elevatedSessionTimeoutParam, $timeout);
+        SessionHelper::set($this->elevatedSessionTimeoutParam, $timeout);
 
         return true;
     }
@@ -417,23 +415,22 @@ class User extends \yii\web\User
     protected function afterLogin($identity, $cookieBased, $duration)
     {
         /** @var UserElement $identity */
-        $session = Craft::$app->getSession();
 
         if ($duration > 0) {
             // Store the duration on the session
-            $session->set($this->authDurationParam, $duration);
+            SessionHelper::set($this->authDurationParam, $duration);
         } else {
-            $session->remove($this->authDurationParam);
+            SessionHelper::remove($this->authDurationParam);
         }
 
         // Save the username cookie if they're not being impersonated
-        $impersonating = $session->get(UserElement::IMPERSONATE_KEY) !== null;
+        $impersonating = SessionHelper::get(UserElement::IMPERSONATE_KEY) !== null;
         if (!$impersonating) {
             $this->sendUsernameCookie($identity);
         }
 
         // Clear out the elevated session, if there is one
-        $session->remove($this->elevatedSessionTimeoutParam);
+        SessionHelper::remove($this->elevatedSessionTimeoutParam);
 
         // Update the user record
         if (!$impersonating) {
@@ -449,8 +446,7 @@ class User extends \yii\web\User
     public function switchIdentity($identity, $duration = 0)
     {
         if ($this->enableSession) {
-            $session = Craft::$app->getSession();
-            $session->remove($this->tokenParam);
+            SessionHelper::remove($this->tokenParam);
 
             if ($identity) {
                 /** @var UserElement $identity */
@@ -477,7 +473,7 @@ class User extends \yii\web\User
             'token' => $token,
         ]);
 
-        Craft::$app->getSession()->set($this->tokenParam, $token);
+        SessionHelper::set($this->tokenParam, $token);
     }
 
     /**
@@ -509,9 +505,8 @@ class User extends \yii\web\User
         } else {
             $authTimeout = $this->authTimeout;
             // Was a specific session duration specified on login?
-            $session = Craft::$app->getSession();
-            if ($session->has($this->authDurationParam)) {
-                $this->authTimeout = $session->get($this->authDurationParam);
+            if (SessionHelper::has($this->authDurationParam)) {
+                $this->authTimeout = SessionHelper::get($this->authDurationParam);
             }
             parent::renewAuthStatus();
             $this->authTimeout = $authTimeout;
@@ -527,15 +522,13 @@ class User extends \yii\web\User
             return false;
         }
 
-        $session = Craft::$app->getSession();
-
         // Stop keeping track of the session duration specified on login
-        $session->remove($this->authDurationParam);
+        SessionHelper::remove($this->authDurationParam);
 
         // Delete the session token in the database
-        $token = $session->get($this->tokenParam);
+        $token = SessionHelper::get($this->tokenParam);
         if ($token !== null) {
-            $session->remove($this->tokenParam);
+            SessionHelper::remove($this->tokenParam);
             Db::delete(Table::SESSIONS, [
                 'token' => $token,
                 'userId' => $identity->id,
@@ -552,8 +545,7 @@ class User extends \yii\web\User
     {
         /** @var UserElement $identity */
         // Delete the impersonation session, if there is one
-        $session = Craft::$app->getSession();
-        $session->remove(UserElement::IMPERSONATE_KEY);
+        SessionHelper::remove(UserElement::IMPERSONATE_KEY);
 
         if (Craft::$app->getConfig()->getGeneral()->enableCsrfProtection) {
             // Let's keep the current nonce around.
