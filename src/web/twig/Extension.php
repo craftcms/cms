@@ -761,7 +761,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
      * @param DateTimeInterface|DateInterval|string $date A date
      * @param string|null $format The target format, null to use the default
      * @param DateTimeZone|string|false|null $timezone The target timezone, null to use the default, false to leave unchanged
-     * @param string|null $locale The target locale the date should be formatted for. By default the current systme locale will be used.
+     * @param string|null $locale The target locale the date should be formatted for. By default the current system locale will be used.
      * @return mixed|string
      */
     public function dateFilter(TwigEnvironment $env, $date, string $format = null, $timezone = null, string $locale = null)
