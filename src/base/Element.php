@@ -98,7 +98,6 @@ use yii\validators\Validator;
  * @property string|null $url The element’s full URL
  * @property-write int|null $revisionCreatorId revision creator ID to be saved
  * @property-write string|null $revisionNotes revision notes to be saved
- * @mixin CustomFieldBehavior
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */

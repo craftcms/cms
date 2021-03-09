@@ -19,6 +19,7 @@ use Twig\Markup;
  * A class implementing this interface should also use [[ElementTrait]] and [[ContentTrait]].
  *
  * @mixin ElementTrait
+ * @mixin \craft\behaviors\CustomFieldBehavior
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */

@@ -1690,10 +1690,15 @@ class ProjectConfig extends Component
                 'except' => ['.*', '.*/'],
             ]);
 
-            $projectConfigNames = (new Query())
-                ->select(['uid', 'name'])
-                ->from([Table::PROJECTCONFIGNAMES])
-                ->pairs();
+            // todo: remove this condition after the next breakpoint
+            if (Craft::$app->getDb()->tableExists(Table::PROJECTCONFIGNAMES)) {
+                $projectConfigNames = (new Query())
+                    ->select(['uid', 'name'])
+                    ->from([Table::PROJECTCONFIGNAMES])
+                    ->pairs();
+            } else {
+                $projectConfigNames = [];
+            }
 
             $uids = [];
             $replacements = [];
@@ -1744,7 +1749,11 @@ class ProjectConfig extends Component
     private function _discardProjectConfigNames(): void
     {
         $this->_projectConfigNameChanges = [];
-        Db::truncateTable(Table::PROJECTCONFIGNAMES);
+
+        // todo: remove this condition after the next breakpoint
+        if (Craft::$app->getDb()->tableExists(Table::PROJECTCONFIGNAMES)) {
+            Db::truncateTable(Table::PROJECTCONFIGNAMES);
+        }
     }
 
     /**
@@ -1767,16 +1776,19 @@ class ProjectConfig extends Component
                 }
             }
 
-            if (!empty($remove)) {
-                Db::delete(Table::PROJECTCONFIGNAMES, ['uid' => $remove]);
-            }
+            // todo: remove this condition after the next breakpoint
+            if (Craft::$app->getDb()->tableExists(Table::PROJECTCONFIGNAMES)) {
+                if (!empty($remove)) {
+                    Db::delete(Table::PROJECTCONFIGNAMES, ['uid' => $remove]);
+                }
 
-            if (!empty($set)) {
-                Db::delete(Table::PROJECTCONFIGNAMES, ['uid' => array_keys($set)]);
-                array_walk($set, function(&$value, $key) {
-                    $value = [$key, $value];
-                });
-                Db::batchInsert(Table::PROJECTCONFIGNAMES, ['uid', 'name'], $set, false);
+                if (!empty($set)) {
+                    Db::delete(Table::PROJECTCONFIGNAMES, ['uid' => array_keys($set)]);
+                    array_walk($set, function(&$value, $key) {
+                        $value = [$key, $value];
+                    });
+                    Db::batchInsert(Table::PROJECTCONFIGNAMES, ['uid', 'name'], $set, false);
+                }
             }
 
             $this->_projectConfigNameChanges = [];

@@ -653,9 +653,9 @@ class Sites extends Component
         $isNewSite = !$site->id;
 
         if (!empty($this->_allSitesById)) {
-            $oldPrimarySiteId = $this->getPrimarySite()->id;
+            $primarySite = $this->getPrimarySite();
         } else {
-            $oldPrimarySiteId = null;
+            $primarySite = null;
         }
 
         // Fire a 'beforeSaveSite' event
@@ -663,7 +663,7 @@ class Sites extends Component
             $this->trigger(self::EVENT_BEFORE_SAVE_SITE, new SiteEvent([
                 'site' => $site,
                 'isNew' => $isNewSite,
-                'oldPrimarySiteId' => $oldPrimarySiteId,
+                'oldPrimarySiteId' => $primarySite->id,
             ]));
         }
 
@@ -682,13 +682,25 @@ class Sites extends Component
             $site->uid = Db::uidById(Table::SITES, $site->id);
         }
 
-        $configPath = self::CONFIG_SITES_KEY . '.' . $site->uid;
-        $configData = $site->getConfig();
-        Craft::$app->getProjectConfig()->set($configPath, $configData, "Save the “{$site->handle}” site");
+        $projectConfigService = Craft::$app->getProjectConfig();
+        $projectConfigService->set(
+            self::CONFIG_SITES_KEY . ".$site->uid",
+            $site->getConfig(),
+            "Save the “{$site->handle}” site"
+        );
 
         // Now that we have a site ID, save it on the model
         if ($isNewSite) {
             $site->id = Db::idByUid(Table::SITES, $site->uid);
+        }
+
+        // If this just became the new primary site, update the old primary site's config
+        if ($site->primary && $primarySite && $site->id != $primarySite->id) {
+            $projectConfigService->set(
+                self::CONFIG_SITES_KEY . ".$primarySite->uid.primary",
+                false,
+                "Set the “{$primarySite->handle}” site not be primary"
+            );
         }
 
         return true;

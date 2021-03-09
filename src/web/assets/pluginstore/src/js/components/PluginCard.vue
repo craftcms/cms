@@ -22,24 +22,7 @@
             </template>
             <template v-else>
                 <p class="light">
-                    <template v-if="priceRange.min !== priceRange.max">
-                        <template v-if="priceRange.min > 0">
-                            {{ priceRange.min|currency }}
-                        </template>
-                        <template v-else>
-                            {{ "Free"|t('app') }}
-                        </template>
-                        -
-                        {{ priceRange.max|currency }}
-                    </template>
-                    <template v-else>
-                        <template v-if="priceRange.min > 0">
-                            {{ priceRange.min|currency }}
-                        </template>
-                        <template v-else>
-                            {{ "Free"|t('app') }}
-                        </template>
-                    </template>
+                  {{ fullPriceLabel }}
                 </p>
             </template>
 
@@ -50,6 +33,8 @@
 </template>
 
 <script>
+/* global Craft */
+
 import {mapState, mapGetters} from 'vuex'
 import EditionBadge from './EditionBadge'
 
@@ -110,8 +95,24 @@ export default {
                 min,
                 max
             }
-        }
+        },
+
+        fullPriceLabel() {
+            const {min, max} = this.priceRange
+
+            if (min !== max) {
+                return `${this.priceLabel(min)}–${this.priceLabel(max)}`
+            }
+
+            return this.priceLabel(min)
+        },
     },
+
+    methods: {
+        priceLabel(price) {
+            return price > 0 ? this.$options.filters.currency(price) : Craft.t('app', 'Free')
+        }
+    }
 }
 </script>
 

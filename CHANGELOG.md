@@ -1,9 +1,27 @@
 # Release Notes for Craft CMS 3.x
 
+## 3.6.10 - 2021-03-09
+
+### Added
+- Added the `|httpdate` Twig filter, which can be used to format dates for HTTP headers such as `Expires`. ([craftcms/docs#167](https://github.com/craftcms/docs/pull/167))
+- Added `craft\events\FormActionsEvent`.
+- Added `craft\web\twig\variables\Cp::EVENT_REGISTER_FORM_ACTIONS`. ([#7660](https://github.com/craftcms/cms/issues/7660))
+- Added `craft\web\twig\variables\Cp::prepFormActions()`.
+
+### Fixed
+- Fixed a bug where console requests were logging non-error/warning logs when Dev Mode was disabled. ([#7659](https://github.com/craftcms/cms/issues/7659))
+- Fixed an error that could occur when updating Craft. ([#7662](https://github.com/craftcms/cms/issues/7662))
+- Fixed a bug where search results could yield no results if any of the search terms were MySQL fulltext stop words. ([#7642](https://github.com/craftcms/cms/issues/7642))
+- Fixed a bug where entries could return the wrong Matrix/Neo/Super Table blocks if the blocks were queried immediately after the entry was created via `craft\services\Elements::duplicateElement()`.
+- Fixed a bug where Craft wasn’t updating the prior primary site’s project config when a new site was set as the primary in the control panel. ([#7657](https://github.com/craftcms/cms/issues/7657))
+- Fixed a bug where the `project-config/apply` command output didn’t make any sense at times.
+- Fixed a race condition where the same queue job could get executed multiple times if there was more than one active queue worker and the database used read/write splitting.
+- Fixed a race condition that could result in a SQL error if two revisions were attempted to be created for the same entry at the same time if the database used read/write splitting. ([#7598](https://github.com/craftcms/cms/issues/7598))
+
 ## 3.6.9 - 2021-03-05
 
 ### Added
-- Added `craft\helpers\Session`, which provides methods for working with PHP session variables, without creating a new PHP session if one didn’t need to exist.
+- Added `craft\helpers\Session`, which provides methods for working with PHP session variables, without creating a new PHP session if owelne didn’t need to exist.
 
 ### Changed
 - Updated Yii to 2.0.41.
@@ -159,7 +177,7 @@
 ### Added
 - Added the `accessibilityDefaults` config setting, which determines users’ default accessibility preferences. ([#7504](https://github.com/craftcms/cms/issues/7504))
 - Added the `collation` database config setting, which determines the default collation that should be used when creating tables, rather than leaving it up to the character set’s default collation. (MySQL only.)
-- Added the `db/change-charset` command, which can be used to convert all database tables’ and textual columns’ character sets and collations in one fell swoop.
+- Added the `db/convert-charset` command, which can be used to convert all database tables’ and textual columns’ character sets and collations in one fell swoop.
 - Added `craft\base\ElementInterface::uiLabel()`.
 - Added `craft\services\Drafts::insertDraftRow()`.
 
