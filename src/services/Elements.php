@@ -989,6 +989,13 @@ class Elements extends Component
             throw new UnsupportedSiteException($element, $mainClone->siteId, 'Attempting to duplicate an element in an unsupported site.');
         }
 
+        // Clone any field values that are objects
+        foreach ($mainClone->getFieldValues() as $handle => $value) {
+            if (is_object($value)) {
+                $mainClone->setFieldValue($handle, clone $value);
+            }
+        }
+
         // If we are duplicating a draft as another draft, create a new draft row
         if ($mainClone->draftId && $mainClone->draftId === $element->draftId) {
             /* @var ElementInterface|DraftBehavior $element */
@@ -1119,6 +1126,13 @@ class Elements extends Component
 
                     $siteClone->setAttributes($newAttributes, false);
                     $siteClone->siteId = $siteInfo['siteId'];
+
+                    // Clone any field values that are objects
+                    foreach ($siteClone->getFieldValues() as $handle => $value) {
+                        if (is_object($value)) {
+                            $siteClone->setFieldValue($handle, clone $value);
+                        }
+                    }
 
                     if ($element::hasUris()) {
                         // Make sure it has a valid slug
