@@ -78,6 +78,8 @@ class Revisions extends Component
             throw new Exception('Could not acquire a lock to save a revision for element ' . $source->id);
         }
 
+        $db = Craft::$app->getDb();
+
         $num = ArrayHelper::remove($newAttributes, 'revisionNum');
 
         if (!$force || !$num) {
@@ -135,7 +137,7 @@ class Revisions extends Component
 
         $elementsService = Craft::$app->getElements();
 
-        $transaction = Craft::$app->getDb()->beginTransaction();
+        $transaction = $db->beginTransaction();
         try {
             // Create the revision row
             Db::insert(Table::REVISIONS, [
@@ -145,7 +147,7 @@ class Revisions extends Component
                 'notes' => $notes,
             ], false);
 
-            $newAttributes['revisionId'] = Craft::$app->getDb()->getLastInsertID(Table::REVISIONS);
+            $newAttributes['revisionId'] = $db->getLastInsertID(Table::REVISIONS);
             $newAttributes['behaviors']['revision'] = [
                 'class' => RevisionBehavior::class,
                 'sourceId' => $source->id,
