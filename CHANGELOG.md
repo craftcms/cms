@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+### Added
+- Added `craft\events\FormActionsEvent`.
+- Added `craft\web\twig\variables\Cp::EVENT_REGISTER_FORM_ACTIONS`. ([#7660](https://github.com/craftcms/cms/issues/7660))
+- Added `craft\web\twig\variables\Cp::prepFormActions()`.
+
 ### Fixed
 - Fixed a bug where console requests were logging non-error/warning logs when Dev Mode was disabled. ([#7659](https://github.com/craftcms/cms/issues/7659))
 - Fixed an error that could occur when updating Craft. ([#7662](https://github.com/craftcms/cms/issues/7662))
