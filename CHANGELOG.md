@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 3.x
 
-## Unreleased
+## 3.6.10 - 2021-03-09
 
 ### Added
 - Added the `|httpdate` Twig filter, which can be used to format dates for HTTP headers such as `Expires`. ([craftcms/docs#167](https://github.com/craftcms/docs/pull/167))
