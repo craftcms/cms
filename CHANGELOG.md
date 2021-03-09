@@ -16,6 +16,7 @@
 - Fixed a bug where Craft wasn’t updating the prior primary site’s project config when a new site was set as the primary in the control panel. ([#7657](https://github.com/craftcms/cms/issues/7657))
 - Fixed a bug where the `project-config/apply` command output didn’t make any sense at times.
 - Fixed a race condition where the same queue job could get executed multiple times if there was more than one active queue worker and the database used read/write splitting.
+- Fixed a race condition that could result in a SQL error if two revisions were attempted to be created for the same entry at the same time if the database used read/write splitting. ([#7598](https://github.com/craftcms/cms/issues/7598))
 
 ## 3.6.9 - 2021-03-05
 

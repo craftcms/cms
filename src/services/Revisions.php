@@ -84,23 +84,27 @@ class Revisions extends Component
 
         if (!$force || !$num) {
             // Find the source's last revision number, if it has one
-            $lastRevisionNum = (new Query())
-                ->select(['num'])
-                ->from([Table::REVISIONS])
-                ->where(['sourceId' => $source->id])
-                ->orderBy(['num' => SORT_DESC])
-                ->limit(1)
-                ->scalar();
+            $lastRevisionNum = $db->usePrimary(function() use ($source) {
+                return (new Query())
+                    ->select(['num'])
+                    ->from([Table::REVISIONS])
+                    ->where(['sourceId' => $source->id])
+                    ->orderBy(['num' => SORT_DESC])
+                    ->limit(1)
+                    ->scalar();
+            });
 
             if (!$force && $lastRevisionNum) {
                 // Get the revision, if it exists for the source's site
                 /** @var ElementInterface|RevisionBehavior|null $lastRevision */
-                $lastRevision = $source::find()
-                    ->revisionOf($source)
-                    ->siteId($source->siteId)
-                    ->anyStatus()
-                    ->andWhere(['revisions.num' => $lastRevisionNum])
-                    ->one();
+                $lastRevision = $db->usePrimary(function() use ($source, $lastRevisionNum) {
+                    return $source::find()
+                        ->revisionOf($source)
+                        ->siteId($source->siteId)
+                        ->anyStatus()
+                        ->andWhere(['revisions.num' => $lastRevisionNum])
+                        ->one();
+                });
 
                 // If the source hasn't been updated since the revision's creation date,
                 // there's no need to create a new one
