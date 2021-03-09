@@ -109,7 +109,11 @@ class Revisions extends Component
             }
 
             // Get the next revision number for this element
-            $num = ($lastRevisionNum ?: 0) + 1;
+            if ($lastRevisionNum) {
+                $num = $lastRevisionNum + 1;
+            } else {
+                $num = 1;
+            }
         }
 
         if ($creatorId === null) {
