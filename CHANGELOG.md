@@ -14,11 +14,12 @@
 - Fixed a bug where search results could yield no results if any of the search terms were MySQL fulltext stop words. ([#7642](https://github.com/craftcms/cms/issues/7642))
 - Fixed a bug where entries could return the wrong Matrix/Neo/Super Table blocks if the blocks were queried immediately after the entry was created via `craft\services\Elements::duplicateElement()`.
 - Fixed a bug where Craft wasn’t updating the prior primary site’s project config when a new site was set as the primary in the control panel. ([#7657](https://github.com/craftcms/cms/issues/7657))
+- Fixed a bug where the `project-config/apply` command output didn’t make any sense at times.
 
 ## 3.6.9 - 2021-03-05
 
 ### Added
-- Added `craft\helpers\Session`, which provides methods for working with PHP session variables, without creating a new PHP session if one didn’t need to exist.
+- Added `craft\helpers\Session`, which provides methods for working with PHP session variables, without creating a new PHP session if owelne didn’t need to exist.
 
 ### Changed
 - Updated Yii to 2.0.41.
