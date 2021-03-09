@@ -682,9 +682,11 @@ class Sites extends Component
             $site->uid = Db::uidById(Table::SITES, $site->id);
         }
 
-        $configPath = self::CONFIG_SITES_KEY . '.' . $site->uid;
-        $configData = $site->getConfig();
-        Craft::$app->getProjectConfig()->set($configPath, $configData, "Save the “{$site->handle}” site");
+        Craft::$app->getProjectConfig()->set(
+            self::CONFIG_SITES_KEY . ".$site->uid",
+            $site->getConfig(),
+            "Save the “{$site->handle}” site"
+        );
 
         // Now that we have a site ID, save it on the model
         if ($isNewSite) {
