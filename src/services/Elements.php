@@ -954,8 +954,10 @@ class Elements extends Component
             throw new Exception('Attempting to duplicate an unsaved element.');
         }
 
-        // Create our first clone for the $element's site
+        // Ensure all fields have been normalized
         $element->getFieldValues();
+
+        // Create our first clone for the $element's site
         $mainClone = clone $element;
         $mainClone->id = null;
         $mainClone->uid = StringHelper::UUID();
@@ -1093,7 +1095,9 @@ class Elements extends Component
                         continue;
                     }
 
+                    // Ensure all fields have been normalized
                     $siteElement->getFieldValues();
+
                     $siteClone = clone $siteElement;
                     $siteClone->duplicateOf = $siteElement;
                     $siteClone->propagating = true;
