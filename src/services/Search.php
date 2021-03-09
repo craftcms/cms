@@ -50,7 +50,7 @@ class Search extends Component
     public $useFullText = true;
 
     /**
-     * @var int The minimum word length that keywords must be in order to use a full-text search.
+     * @var int|null The minimum word length that keywords must be in order to use a full-text search (MySQL only).
      */
     public $minFullTextWordLength;
 
@@ -70,6 +70,11 @@ class Search extends Component
     private $_groups;
 
     /**
+     * @var bool
+     */
+    private $_isMysql;
+
+    /**
      * @var int Because the `keywords` column in the search index table is a
      * B-TREE index on Postgres, you can get an "index row size exceeds maximum
      * for index" error with a lot of data. This value is a hard limit to
@@ -84,12 +89,10 @@ class Search extends Component
     {
         parent::init();
 
-        if ($this->minFullTextWordLength === null) {
-            if (Craft::$app->getDb()->getIsMysql()) {
-                $this->minFullTextWordLength = 4;
-            } else {
-                $this->minFullTextWordLength = 1;
-            }
+        $this->_isMysql = Craft::$app->getDb()->getIsMysql();
+
+        if ($this->_isMysql && $this->minFullTextWordLength === null) {
+            $this->minFullTextWordLength = 4;
         }
     }
 
@@ -843,7 +846,7 @@ SQL;
             !$term->subLeft &&
             !$term->exact &&
             !$term->exclude &&
-            strlen($keywords) >= $this->minFullTextWordLength &&
+            (!$this->_isMysql || strlen($keywords) >= $this->minFullTextWordLength)  &&
             // Workaround on MySQL until this gets fixed: https://bugs.mysql.com/bug.php?id=78485
             // Related issue: https://github.com/craftcms/cms/issues/3862
             strpos($keywords, ' ') === false;
