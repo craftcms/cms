@@ -14,6 +14,7 @@ use craft\db\Table;
  * Element record class.
  *
  * @property int $id ID
+ * @property int|null $canonicalId Canonical element ID
  * @property int|null $draftId Draft ID
  * @property int|null $revisionId Revision ID
  * @property int|null $fieldLayoutId Field layout ID

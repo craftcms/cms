@@ -147,11 +147,13 @@ class DraftBehavior extends BaseRevisionBehavior
      */
     public function getIsOutdated(): bool
     {
-        if (($source = $this->source()) === null) {
+        if ($this->owner->getIsCanonical()) {
             return false;
         }
 
-        if ($this->owner->dateCreated > $source->dateUpdated) {
+        $canonical = $this->owner->getCanonical();
+
+        if ($this->owner->dateCreated > $canonical->dateUpdated) {
             return false;
         }
 
@@ -159,7 +161,7 @@ class DraftBehavior extends BaseRevisionBehavior
             return true;
         }
 
-        return $this->dateLastMerged < $source->dateUpdated;
+        return $this->dateLastMerged < $canonical->dateUpdated;
     }
 
     /**
@@ -237,7 +239,7 @@ class DraftBehavior extends BaseRevisionBehavior
      */
     private function _outdatedAttributes(): array
     {
-        if (!$this->sourceId || !$this->trackChanges) {
+        if ($this->owner->getIsCanonical() || !$this->trackChanges) {
             return [];
         }
 
@@ -249,7 +251,7 @@ class DraftBehavior extends BaseRevisionBehavior
             ->select(['attribute'])
             ->from([Table::CHANGEDATTRIBUTES])
             ->where([
-                'elementId' => $this->sourceId,
+                'elementId' => $this->owner->getCanonicalId(),
                 'siteId' => $this->owner->siteId,
             ]);
 
@@ -290,7 +292,7 @@ class DraftBehavior extends BaseRevisionBehavior
      */
     private function _outdatedFields(): array
     {
-        if ($this->source() === null || !$this->trackChanges) {
+        if ($this->owner->getIsCanonical() || !$this->trackChanges) {
             return [];
         }
 
@@ -303,7 +305,7 @@ class DraftBehavior extends BaseRevisionBehavior
             ->from(['f' => Table::FIELDS])
             ->innerJoin(['cf' => Table::CHANGEDFIELDS], '[[cf.fieldId]] = [[f.id]]')
             ->where([
-                'cf.elementId' => $this->sourceId,
+                'cf.elementId' => $this->owner->getCanonicalId(),
                 'cf.siteId' => $this->owner->siteId,
             ]);
 

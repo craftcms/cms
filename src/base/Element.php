@@ -64,6 +64,10 @@ use yii\validators\Validator;
 /**
  * Element is the base class for classes representing elements in terms of objects.
  *
+ * @property int|null $canonicalId The element’s canonical ID
+ * @property-read string $canonicalUid The element’s canonical UID
+ * @property-read $isCanonical Whether this is the canonical element
+ * @property-read $isDerivative Whether this is a derivative element, such as a draft or revision
  * @property ElementQueryInterface $ancestors The element’s ancestors
  * @property ElementQueryInterface $children The element’s children
  * @property string $contentTable The name of the table this element’s content is stored in
@@ -1358,6 +1362,21 @@ abstract class Element extends Component implements ElementInterface
     protected $revisionNotes;
 
     /**
+     * @var int|null
+     * @see getCanonicalId()
+     * @see setCanonicalId()
+     * @see getIsCanonical()
+     * @see getIsDerivative()
+     */
+    private $_canonicalId;
+
+    /**
+     * @var static|null
+     * @see getCanonical()
+     */
+    private $_canonical;
+
+    /**
      * @var bool
      */
     private $_initialized = false;
@@ -1630,6 +1649,7 @@ abstract class Element extends Component implements ElementInterface
         ArrayHelper::removeValue($names, 'previewing');
         ArrayHelper::removeValue($names, 'hardDelete');
 
+        $names[] = 'canonicalId';
         $names[] = 'ref';
         $names[] = 'status';
         $names[] = 'structureId';
@@ -1948,24 +1968,91 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @inheritdoc
      */
-    public function getSourceId()
+    public function getIsCanonical(): bool
     {
-        /** @var DraftBehavior|RevisionBehavior|null $behavior */
-        $behavior = $this->getBehavior('draft') ?: $this->getBehavior('revision');
-        return $behavior->sourceId ?? $this->id;
+        return $this->_canonicalId === null;
     }
 
     /**
      * @inheritdoc
      */
+    public function getIsDerivative(): bool
+    {
+        return !$this->getIsCanonical();
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getCanonical(bool $anySite = false): ElementInterface
+    {
+        if ($this->getIsCanonical()) {
+            return $this;
+        }
+
+        if ($this->_canonical === null) {
+            $this->_canonical = static::find()
+                ->id($this->_canonicalId)
+                ->siteId($anySite ? '*' : $this->siteId)
+                ->preferSites([$this->siteId])
+                ->structureId($this->structureId)
+                ->unique()
+                ->anyStatus()
+                ->ignorePlaceholders()
+                ->one() ?? false;
+        }
+
+        return $this->_canonical ?: $this;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getCanonicalId(): ?int
+    {
+        return $this->getSourceId();
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function setCanonicalId(?int $canonicalId): void
+    {
+        if ($canonicalId != $this->id) {
+            $this->_canonicalId = $canonicalId;
+        } else {
+            $this->_canonicalId = null;
+        }
+
+        $this->_canonical = null;
+    }
+
+    /**
+     * Returns the element’s canonical ID.
+     *
+     * @return int|null
+     * @since 3.2.0
+     * @deprecated in 3.7.0. Use [[getCanonicalId()]] instead.
+     */
+    public function getSourceId()
+    {
+        return $this->_canonicalId ?? $this->id;
+    }
+
+    /**
+     * Returns the element’s canonical UID.
+     *
+     * @return string
+     * @since 3.2.0
+     * @deprecated in 3.7.0. Use [[getCanonical()]] instead.
+     */
     public function getSourceUid(): string
     {
-        $sourceId = $this->getSourceId();
-        if ($sourceId === $this->id) {
+        if ($this->getIsCanonical()) {
             return $this->uid;
         }
         return static::find()
-            ->id($sourceId)
+            ->id($this->_canonicalId)
             ->siteId($this->siteId)
             ->anyStatus()
             ->select(['elements.uid'])
@@ -1989,11 +2076,7 @@ abstract class Element extends Component implements ElementInterface
      */
     public function getIsUnsavedDraft(): bool
     {
-        if (!$this->getIsDraft()) {
-            return false;
-        }
-        $sourceId = $this->getSourceId();
-        return !$sourceId || $sourceId == $this->id;
+        return $this->getIsDraft() && $this->getIsCanonical();
     }
 
     /**
@@ -2473,7 +2556,7 @@ abstract class Element extends Component implements ElementInterface
 
         return static::find()
             ->structureId($this->structureId)
-            ->descendantOf(ElementHelper::sourceElement($this))
+            ->descendantOf($this->getCanonical())
             ->siteId($this->siteId)
             ->descendantDist($dist);
     }
@@ -2575,8 +2658,8 @@ abstract class Element extends Component implements ElementInterface
      */
     public function isAncestorOf(ElementInterface $element): bool
     {
-        $source = ElementHelper::sourceElement($this);
-        return ($source->root == $element->root && $source->lft < $element->lft && $source->rgt > $element->rgt);
+        $canonical = $this->getCanonical();
+        return ($canonical->root == $element->root && $canonical->lft < $element->lft && $canonical->rgt > $element->rgt);
     }
 
     /**
@@ -2592,8 +2675,8 @@ abstract class Element extends Component implements ElementInterface
      */
     public function isParentOf(ElementInterface $element): bool
     {
-        $source = ElementHelper::sourceElement($this);
-        return ($source->root == $element->root && $source->level == $element->level - 1 && $source->isAncestorOf($element));
+        $canonical = $this->getCanonical();
+        return ($canonical->root == $element->root && $canonical->level == $element->level - 1 && $canonical->isAncestorOf($element));
     }
 
     /**
@@ -3070,10 +3153,10 @@ abstract class Element extends Component implements ElementInterface
         }
 
         if ($this->_currentRevision === null) {
-            $source = ElementHelper::sourceElement($this, true);
+            $canonical = $this->getCanonical(true);
             $this->_currentRevision = static::find()
-                ->revisionOf($source->id)
-                ->dateCreated($source->dateUpdated)
+                ->revisionOf($canonical->id)
+                ->dateCreated($canonical->dateUpdated)
                 ->anyStatus()
                 ->orderBy(['num' => SORT_DESC])
                 ->one() ?: false;
@@ -3612,7 +3695,7 @@ abstract class Element extends Component implements ElementInterface
 
         /** @var ElementQuery $query */
         $elementIds = $query->ids();
-        $key = array_search($this->getSourceId(), $elementIds, false);
+        $key = array_search($this->getCanonicalId(), $elementIds, false);
 
         if ($key === false || !isset($elementIds[$key + $dir])) {
             return null;

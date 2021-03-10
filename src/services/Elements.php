@@ -968,6 +968,7 @@ class Elements extends Component
         $mainClone->level = null;
         $mainClone->dateCreated = null;
         $mainClone->duplicateOf = $element;
+        $mainClone->setCanonicalId(null);
 
         $behaviors = ArrayHelper::remove($newAttributes, 'behaviors', []);
         $mainClone->setRevisionNotes(ArrayHelper::remove($newAttributes, 'revisionNotes'));
@@ -1002,17 +1003,18 @@ class Elements extends Component
             $draftBehavior = $mainClone->getBehavior('draft');
             $draftsService = Craft::$app->getDrafts();
             // Are we duplicating a draft of a published element?
-            if ($element->sourceId) {
-                $draftBehavior->draftName = $draftsService->generateDraftName($element->sourceId);
+            if ($element->getIsDerivative()) {
+                $draftBehavior->draftName = $draftsService->generateDraftName($element->getCanonicalId());
             } else {
                 $draftBehavior->draftName = Craft::t('app', 'First draft');
             }
             $draftBehavior->draftNotes = null;
+            $mainClone->setCanonicalId($element->getCanonicalId());
             $mainClone->draftId = $draftsService->insertDraftRow(
                 $draftBehavior->draftName,
                 null,
                 Craft::$app->getUser()->getId(),
-                $draftBehavior->sourceId,
+                $element->getCanonicalId(),
                 $draftBehavior->trackChanges
             );
         }
@@ -1114,6 +1116,7 @@ class Elements extends Component
                     $siteClone->contentId = null;
                     $siteClone->dateCreated = $mainClone->dateCreated;
                     $siteClone->dateUpdated = $mainClone->dateUpdated;
+                    $siteClone->setCanonicalId(null);
 
                     // Attach behaviors
                     foreach ($behaviors as $name => $behavior) {
@@ -1890,7 +1893,7 @@ class Elements extends Component
             throw new InvalidArgumentException('Placeholder element is missing an ID');
         }
 
-        $this->_placeholderElements[$element->getSourceId()][$element->siteId] = $element;
+        $this->_placeholderElements[$element->getCanonicalId()][$element->siteId] = $element;
 
         if ($element->uri) {
             $this->_placeholderUris[$element->uri][$element->siteId] = $element;
@@ -2379,6 +2382,7 @@ class Elements extends Component
 
                 // Set the attributes
                 $elementRecord->uid = $element->uid;
+                $elementRecord->canonicalId = $element->getIsDerivative() ? $element->getCanonicalId() : null;
                 $elementRecord->draftId = (int)$element->draftId ?: null;
                 $elementRecord->revisionId = (int)$element->revisionId ?: null;
                 $elementRecord->fieldLayoutId = $element->fieldLayoutId = (int)($element->fieldLayoutId ?? $element->getFieldLayout()->id ?? 0) ?: null;

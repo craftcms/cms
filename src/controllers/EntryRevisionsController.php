@@ -291,7 +291,7 @@ class EntryRevisionsController extends BaseEntriesController
         if ($this->request->getAcceptsJson()) {
             $creator = $draft->getCreator();
             return $this->asJson([
-                'sourceId' => $draft->sourceId,
+                'sourceId' => $draft->getCanonicalId(),
                 'draftId' => $draft->draftId,
                 'timestamp' => Craft::$app->getFormatter()->asTimestamp($draft->dateUpdated, 'short', true),
                 'creator' => $creator ? $creator->getName() : null,
@@ -385,7 +385,7 @@ class EntryRevisionsController extends BaseEntriesController
         // Permission enforcement
         /** @var Entry|null $entry */
         $this->enforceSitePermission($draft->getSite());
-        $entry = ElementHelper::sourceElement($draft, true);
+        $entry = $draft->getCanonical(true);
         $this->enforceEditEntryPermissions($entry);
         $section = $entry->getSection();
 
@@ -484,8 +484,7 @@ class EntryRevisionsController extends BaseEntriesController
         }
 
         // Permission enforcement
-        /** @var Entry $entry */
-        $entry = ElementHelper::sourceElement($revision);
+        $entry = $revision->getCanonical();
 
         $this->enforceSitePermission($entry->getSite());
         $this->enforceEditEntryPermissions($entry);

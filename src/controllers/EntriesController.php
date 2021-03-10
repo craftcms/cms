@@ -133,7 +133,7 @@ class EntriesController extends BaseEntriesController
                 ->descendantOf($entry)
                 ->anyStatus()
                 ->ids();
-            $excludeIds[] = $entry->getSourceId();
+            $excludeIds[] = $entry->getCanonicalId();
 
             $variables['parentOptionCriteria'] = [
                 'siteId' => $site->id,
@@ -512,8 +512,7 @@ class EntriesController extends BaseEntriesController
 
         if ($draftId) {
             // Redirect to the same draft in the fetched site
-            $source = ElementHelper::sourceElement($entry) ?? $entry;
-            return $this->redirect(UrlHelper::url($source->getCpEditUrl(), [
+            return $this->redirect(UrlHelper::url($entry->getCanonical()->getCpEditUrl(), [
                 'siteId' => $entry->siteId,
                 'draftId' => $draftId,
             ]));

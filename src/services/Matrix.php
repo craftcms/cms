@@ -862,6 +862,8 @@ class Matrix extends Component
             foreach ($blocks as $block) {
                 /** @var MatrixBlock $newBlock */
                 $newBlock = $elementsService->duplicateElement($block, [
+                    // Only set the canonicalId if the target owner element is a derivative
+                    'canonicalId' => $target->getIsDerivative() ? $block->id : null,
                     'ownerId' => $target->id,
                     'owner' => $target,
                     'siteId' => $target->siteId,

@@ -161,10 +161,10 @@ class Drafts extends Component
             $draftId = $this->insertDraftRow($name, $notes, $creatorId, $source->id, $source::trackChanges());
 
             // Duplicate the element
+            $newAttributes['canonicalId'] = $source->id;
             $newAttributes['draftId'] = $draftId;
             $newAttributes['behaviors']['draft'] = [
                 'class' => DraftBehavior::class,
-                'sourceId' => $source->id,
                 'creatorId' => $creatorId,
                 'draftName' => $name,
                 'draftNotes' => $notes,
@@ -259,6 +259,10 @@ class Drafts extends Component
      */
     public function mergeSourceChanges(ElementInterface $draft)
     {
+        if ($draft->getIsCanonical()) {
+            return;
+        }
+
         /** @var ElementInterface|DraftBehavior $draft */
         /** @var DraftBehavior $behavior */
         $behavior = $draft->getBehavior('draft');
@@ -267,13 +271,8 @@ class Drafts extends Component
             return;
         }
 
-        $sourceId = $draft->getSourceId();
-        if ($sourceId === $draft->id) {
-            return;
-        }
-
         $sourceElements = $draft::find()
-            ->id($sourceId)
+            ->id($draft->getCanonicalId())
             ->siteId('*')
             ->anyStatus()
             ->ignorePlaceholders()
@@ -389,30 +388,26 @@ class Drafts extends Component
         /** @var ElementInterface|DraftBehavior $draft */
         /** @var DraftBehavior $behavior */
         $behavior = $draft->getBehavior('draft');
-        $source = ElementHelper::sourceElement($draft, true);
-
-        if ($source === null) {
-            throw new Exception('Could not find a source element for the draft in any of its supported sites.');
-        }
+        $canonical = $draft->getCanonical(true);
 
         // If the source ended up being from a different site than the draft, get the draft in that site
-        if ($source->siteId != $draft->siteId) {
+        if ($canonical->siteId != $draft->siteId) {
             $draft = $draft::find()
                 ->drafts()
                 ->id($draft->id)
-                ->siteId($source->siteId)
-                ->structureId($source->structureId)
+                ->siteId($canonical->siteId)
+                ->structureId($canonical->structureId)
                 ->anyStatus()
                 ->one();
             if ($draft === null) {
-                throw new Exception("Could not load the draft for site ID $source->siteId");
+                throw new Exception("Could not load the draft for site ID $canonical->siteId");
             }
         }
 
         // Fire a 'beforePublishDraft' event
         if ($this->hasEventHandlers(self::EVENT_BEFORE_PUBLISH_DRAFT)) {
             $this->trigger(self::EVENT_BEFORE_PUBLISH_DRAFT, new DraftEvent([
-                'source' => $source,
+                'source' => $canonical,
                 'creatorId' => $behavior->creatorId,
                 'draftName' => $behavior->draftName,
                 'draftNotes' => $behavior->draftNotes,
@@ -425,19 +420,19 @@ class Drafts extends Component
 
         $transaction = $this->db->beginTransaction();
         try {
-            if ($source !== $draft) {
+            if ($canonical !== $draft) {
                 // Merge in any attribute & field values that were updated in the source element, but not the draft
                 $this->mergeSourceChanges($draft);
 
                 // "Duplicate" the draft with the source element's ID, UID, and content ID
                 $newSource = $elementsService->duplicateElement($draft, [
-                    'id' => $source->id,
-                    'uid' => $source->uid,
-                    'root' => $source->root,
-                    'lft' => $source->lft,
-                    'rgt' => $source->rgt,
-                    'level' => $source->level,
-                    'dateCreated' => $source->dateCreated,
+                    'id' => $canonical->id,
+                    'uid' => $canonical->uid,
+                    'root' => $canonical->root,
+                    'lft' => $canonical->lft,
+                    'rgt' => $canonical->rgt,
+                    'level' => $canonical->level,
+                    'dateCreated' => $canonical->dateCreated,
                     'draftId' => null,
                     'revisionNotes' => $draftNotes ?: Craft::t('app', 'Applied “{name}”', ['name' => $draft->draftName]),
                 ]);
@@ -575,7 +570,7 @@ class Drafts extends Component
     public function insertDraftRow(?string $name, ?string $notes = null, int $creatorId = null, ?int $sourceId = null, bool $trackChanges = false): int
     {
         Db::insert(Table::DRAFTS, [
-            'sourceId' => $sourceId,
+            'sourceId' => $sourceId, // todo: remove this in v4
             'creatorId' => $creatorId,
             'name' => $name,
             'notes' => $notes,

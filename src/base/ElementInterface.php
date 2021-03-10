@@ -540,20 +540,50 @@ interface ElementInterface extends ComponentInterface
     public function getIsRevision(): bool;
 
     /**
-     * Returns the element’s ID, or if it’s a draft/revision, its source element’s ID.
+     * Returns whether this is the canonical element.
      *
-     * @return int|null
-     * @since 3.2.0
+     * @return bool
+     * @since 3.7.0
      */
-    public function getSourceId();
+    public function getIsCanonical(): bool;
 
     /**
-     * Returns the element’s UUID, or if it’s a draft/revision, its source element’s UUID.
+     * Returns whether this is a derivative element, such as a draft or revision.
      *
-     * @return string
-     * @since 3.2.0
+     * @return bool
+     * @since 3.7.0
      */
-    public function getSourceUid(): string;
+    public function getIsDerivative(): bool;
+
+    /**
+     * Returns the canonical version of the element.
+     *
+     * If this is a draft or revision, the source element will be returned.
+     *
+     * @param bool $anySite Whether the canonical element can be retrieved in any site
+     * @return static
+     * @since 3.7.0
+     */
+    public function getCanonical(bool $anySite = false): ElementInterface;
+
+    /**
+     * Returns the element’s canonical ID.
+     *
+     * If this is a draft or revision, the source element’s ID will be returned.
+     *
+     * @return int|null
+     * @since 3.7.0
+     */
+    public function getCanonicalId(): ?int;
+
+    /**
+     * Sets the element’s canonical ID.
+     *
+     * @param int|null $canonicalId
+     * @return void
+     * @since 3.7.0
+     */
+    public function setCanonicalId(?int $canonicalId): void;
 
     /**
      * Returns whether the element is an unpublished draft.
