@@ -151,6 +151,7 @@ class Revisions extends Component
                 'notes' => $notes,
             ], false);
 
+            // Duplicate the element
             $newAttributes['revisionId'] = $db->getLastInsertID(Table::REVISIONS);
             $newAttributes['behaviors']['revision'] = [
                 'class' => RevisionBehavior::class,
@@ -164,7 +165,6 @@ class Revisions extends Component
                 $newAttributes['dateCreated'] = $source->dateUpdated;
             }
 
-            // Duplicate the element
             $revision = $elementsService->duplicateElement($source, $newAttributes);
 
             $transaction->commit();
