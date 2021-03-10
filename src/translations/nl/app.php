@@ -1724,7 +1724,7 @@ return [
     'stripe_error_pickup_card' => 'De kaart kan niet gebruikt worden om deze betaling te maken (het is mogelijk dat het aangegeven is als verloren of gestolen).',
     'stripe_error_pin_try_exceeded' => 'Het toegestane aantal van PIN pogingen is overschreven.',
     'stripe_error_processing_error' => 'Er is een fout opgetreden bij het verwerken van de kaart.',
-    'stripe_error_reenter_transaction' => 'The payment could not be processed by the issuer for an unknown reason.',
+    'stripe_error_reenter_transaction' => 'De betaling kon niet verwerkt worden door de uitgever vanwege een onbekende reden.',
     'stripe_error_restricted_card' => 'De kaart kan niet gebruikt worden om deze betaling te maken (het is mogelijk dat het aangegeven is als verloren of gestolen).',
     'stripe_error_revocation_of_all_authorizations' => 'De kaart is geweigerd voor een onbekende reden.',
     'stripe_error_revocation_of_authorization' => 'De kaart is geweigerd voor een onbekende reden.',
