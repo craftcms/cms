@@ -102,11 +102,11 @@ class Gql extends Component
      *
      * ---
      * ```php
-     * use craft\events\RegisterGqlTypeEvent;
+     * use craft\events\RegisterGqlTypesEvent;
      * use craft\services\Gql;
      * use yii\base\Event;
      *
-     * Event::on(Gql::class, Gql::EVENT_REGISTER_GQL_TYPES, function(RegisterGqlTypeEvent $event) {
+     * Event::on(Gql::class, Gql::EVENT_REGISTER_GQL_TYPES, function(RegisterGqlTypesEvent $event) {
      *     // Add my GraphQL types
      *     $event->types[] = MyType::class;
      * });
