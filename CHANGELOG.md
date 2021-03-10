@@ -1,5 +1,10 @@
 # Release Notes for Craft CMS 3.x
 
+## Unreleased
+
+### Fixed
+- Fixed a bug where requests with an invalid `action` param would return a 500 status code instead of 400. ([#7668](https://github.com/craftcms/cms/issues/7668))
+
 ## 3.6.10 - 2021-03-09
 
 ### Added
