@@ -63,7 +63,7 @@ class Local extends Volume implements LocalVolumeInterface
     /**
      * @var string|null Path to the root of this sources local folder.
      */
-    public ?string $path;
+    public ?string $path = null;
 
     /**
      * @inheritdoc
