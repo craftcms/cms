@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+### Changed
+- The `gc` command can now delete unneeded rows from deprecated database tables, including `templatecaches`, `entrydrafts`, and `entryrevisions`. ([#6434](https://github.com/craftcms/cms/issues/6434))
+
 ### Fixed
 - Fixed a bug where requests with an invalid `action` param would return a 500 status code instead of 400. ([#7668](https://github.com/craftcms/cms/issues/7668))
 
