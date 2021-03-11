@@ -11,6 +11,7 @@
 
 ### Deprecated
 - Deprecated `craft\elements\Asset::KIND_FLASH`.
+- Deprecated `craft\base\VolumeInterface::folderExists()`. `directoryExists()` should be used instead.
 
 ### Removed
 - Removed support for the “Flash” file kind. ([#7626](https://github.com/craftcms/cms/issues/7626))
