@@ -1615,6 +1615,9 @@ class Request extends \yii\web\Request
                 $actionParam = $this->getQueryParam('action');
             }
             $hasActionParam = $actionParam !== null;
+            if ($hasActionParam && !is_string($actionParam)) {
+                throw new BadRequestHttpException('Invalid action param');
+            }
             $hasSpecialPath = $checkSpecialPaths && in_array($this->_path, [
                     $loginPath,
                     $logoutPath,

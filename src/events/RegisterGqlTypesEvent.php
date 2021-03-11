@@ -10,7 +10,7 @@ namespace craft\events;
 use yii\base\Event;
 
 /**
- * RegisterGqlTypeEvent class.
+ * RegisterGqlTypesEvent class.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.3.0
