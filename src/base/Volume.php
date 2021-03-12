@@ -125,6 +125,14 @@ abstract class Volume extends SavableComponent implements VolumeInterface
     {
         $this->renameDir($path, $newName);
     }
+    
+    /**
+     * @inheritDoc
+     */
+    public function directoryExists(string $path): bool
+    {
+        return $this->folderExists($path);
+    }
 
     /**
      * Creates a directory.
@@ -158,5 +166,17 @@ abstract class Volume extends SavableComponent implements VolumeInterface
     public function renameDir(string $path, string $newName)
     {
         throw new NotSupportedException('renameDir() has not been implemented.');
+    }
+
+    /**
+     * Returns whether a folder exists at the given path.
+     *
+     * @param string $path The folder path to check
+     * @return bool
+     * @deprecated in 3.7.0. Use [[directoryExists()]] instead.
+     */
+    public function folderExists(string $path): bool
+    {
+        throw new NotSupportedException('folderExists() has not been implemented.');
     }
 }
