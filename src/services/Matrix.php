@@ -860,15 +860,23 @@ class Matrix extends Component
         $transaction = Craft::$app->getDb()->beginTransaction();
         try {
             foreach ($blocks as $block) {
-                /** @var MatrixBlock $newBlock */
-                $newBlock = $elementsService->duplicateElement($block, [
+                $newAttributes = [
                     // Only set the canonicalId if the target owner element is a derivative
                     'canonicalId' => $target->getIsDerivative() ? $block->id : null,
                     'ownerId' => $target->id,
                     'owner' => $target,
                     'siteId' => $target->siteId,
                     'propagating' => false,
-                ]);
+                ];
+
+                if ($target->updatingFromDerivative && $block->getIsDerivative()) {
+                    /** @var MatrixBlock $newBlock */
+                    $newBlock = $elementsService->updateCanonicalElement($block, $newAttributes);
+                } else {
+                    /** @var MatrixBlock $newBlock */
+                    $newBlock = $elementsService->duplicateElement($block, $newAttributes);
+                }
+
                 $newBlockIds[] = $newBlock->id;
             }
 
