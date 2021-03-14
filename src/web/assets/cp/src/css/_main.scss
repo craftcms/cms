@@ -599,7 +599,6 @@ td.right {
 .token:focus {
   box-shadow: 0 0 0 1px transparentize($grey500, 0.75);;
   background-color: $white;
-  outline: none;
 }
 
 // Override .token for Prism
@@ -1082,7 +1081,6 @@ ul.icons {
   cursor: pointer;
   box-sizing: border-box;
   appearance: none;
-  outline: none;
   color: $textColor;
   font-size: inherit;
   background-color: transparentize($inputColor, 0.75);
@@ -1134,10 +1132,6 @@ ul.icons {
 
   &:hover {
     text-decoration: none;
-  }
-
-  &:active {
-    outline: none;
   }
 
   &[data-icon]:not(:empty):before,
@@ -1221,10 +1215,6 @@ ul.icons {
   white-space: nowrap;
   align-items: center;
 
-  &:focus {
-    outline: none;
-  }
-
   &.fullwidth .btn {
     flex: 1;
   }
@@ -1307,7 +1297,6 @@ ul.icons {
   transition: border-color linear 100ms;
   padding: 0 9px;
   cursor: pointer;
-  outline: none;
   transition: margin-left linear 100ms, margin-right linear 100ms;
 
   input {
@@ -1320,7 +1309,6 @@ ul.icons {
     cursor: pointer;
     color: $textColor;
     text-align: center;
-    outline: none;
   }
 
   &.light input {
@@ -1746,8 +1734,6 @@ div.btn.submit input {
   }
 
   &:focus {
-    outline: none;
-
     .lightswitch-container {
       .handle {
         background-color: $lightSelColor;
@@ -2035,8 +2021,6 @@ table {
 
     tbody {
       tr {
-        outline: none;
-
         &:not(.disabled) {
           &:hover {
             th,
@@ -2173,7 +2157,6 @@ $elementInnerSpacing: 5px;
 .element {
   position: relative;
   cursor: default;
-  outline: none !important;
   user-select: none;
   font-weight: normal;
 
@@ -2406,10 +2389,6 @@ $checkboxPadding: $checkboxSize + 4;
     .selectallcontainer {
       cursor: default;
 
-      &:focus {
-        outline: none;
-      }
-
       .checkbox {
         @include margin-right($elementInnerSpacing);
       }
@@ -2418,12 +2397,6 @@ $checkboxPadding: $checkboxSize + 4;
 
   // table views
   .tableview {
-    thead {
-      th.selectallcontainer {
-        outline: none;
-      }
-    }
-
     .move {
       display: block;
       position: absolute;
@@ -2457,7 +2430,6 @@ $checkboxPadding: $checkboxSize + 4;
     li {
       position: relative;
       @include margin(0, 1px, 1px, 0);
-      outline: none;
 
       &:hover {
         .element {
@@ -2858,10 +2830,6 @@ table.editable {
       overflow: hidden;
       transition: none;
       box-sizing: border-box;
-
-      &:focus {
-        outline: none;
-      }
     }
 
     .color-container {
@@ -3815,9 +3783,6 @@ ul.tree,
             }
 
             tr {
-              &:focus {
-                outline: none;
-              }
 
               &.disabled {
                 opacity: 1;
@@ -3841,7 +3806,6 @@ ul.tree,
 
           .structure .row {
             margin-top: 1px;
-            outline: none;
           }
         }
       }
@@ -4550,7 +4514,6 @@ div.checkbox.indeterminate:before {
 
 input.checkbox:focus + label:before,
 :focus div.checkbox:before {
-  outline: none;
   border-color: $inputColor;
 }
 
@@ -4610,7 +4573,6 @@ fieldset {
     margin: 0;
     padding: 0;
     border: none;
-    outline: none;
     background-color: transparent;
   }
 }
@@ -5112,8 +5074,6 @@ body .selectize-dropdown .active {
   }
 
   &:focus {
-    outline: none;
-
     a.active {
       background-color: $lightSelColor;
     }
@@ -5395,7 +5355,6 @@ $titlebarBorderRadius: $largeBorderRadius - 1;
   border-radius: $largeBorderRadius;
   border: 1px solid $hairlineColor;
   background-color: $grey050;
-  outline: none;
 
   &.static {
     padding-top: 14px;

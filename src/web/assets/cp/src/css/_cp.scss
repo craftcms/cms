@@ -47,7 +47,6 @@ $sidebarLinkSecondaryColor: $grey200;
 
   & > a,
   *:not(.has-subnav) > a {
-    outline: none;
     transition: background-color linear 100ms;
 
     &[href] {
@@ -1312,7 +1311,6 @@ $toolbarIconColor: darken($inputColor, 10%);
         box-sizing: border-box;
         color: $textColor;
         user-select: none;
-        outline: none;
         border-radius: $largeBorderRadius;
 
         .status {
