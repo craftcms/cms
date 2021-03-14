@@ -402,13 +402,6 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
   li {
     padding: 4px 24px;
 
-    &:before {
-      @include icon;
-      @include margin(-1px, 3px, 0, 0);
-      content: 'alert';
-      font-size: 16px;
-    }
-
     a {
       color: $errorColor;
       text-decoration: underline;
