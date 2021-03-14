@@ -15,6 +15,12 @@ body {
   min-height: 100vh;
 }
 
+*:focus {
+  outline-style: solid;
+  outline-color: transparent;
+  box-shadow: 0 0 0 1px $darkFocusColor, 0 0 0 3px transparentize($darkFocusColor, 0.5);
+}
+
 #global-container {
   position: relative;
   display: flex;
@@ -38,6 +44,10 @@ $sidebarLinkSecondaryColor: $grey200;
   -webkit-overflow-scrolling: touch;
   @include light-on-dark-text;
   background-color: $grey800;
+
+  *:focus {
+    box-shadow: 0 0 0 1px $lightFocusColor, 0 0 0 3px transparentize($lightFocusColor, 0.5);
+  }
 
   a {
     color: $sidebarLinkStaticColor;
