@@ -4510,7 +4510,7 @@ div.checkbox.indeterminate:before {
 
 input.checkbox:focus + label:before,
 :focus div.checkbox:before {
-  box-shadow: 0 0 0 1px $darkFocusColor, 0 0 0 3px transparentize($darkFocusColor, 0.5);
+  @include input-focused-styles;
 }
 
 fieldset {

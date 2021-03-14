@@ -18,7 +18,7 @@ body {
 *:focus {
   outline-style: solid;
   outline-color: transparent;
-  box-shadow: 0 0 0 1px $darkFocusColor, 0 0 0 3px transparentize($darkFocusColor, 0.5);
+  @include input-focused-styles;
 }
 
 #global-container {
@@ -46,7 +46,7 @@ $sidebarLinkSecondaryColor: $grey200;
   background-color: $grey800;
 
   *:focus {
-    box-shadow: 0 0 0 1px $lightFocusColor, 0 0 0 3px transparentize($lightFocusColor, 0.5);
+    box-shadow: $lightFocusRing;
   }
 
   a {
@@ -690,7 +690,6 @@ $toolbarIconColor: darken($inputColor, 10%);
 
   .text {
     border-radius: $largeBorderRadius;
-    box-shadow: none;
 
     &::-webkit-input-placeholder {
       color: $toolbarIconColor;
