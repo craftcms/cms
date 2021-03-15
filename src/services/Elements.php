@@ -758,6 +758,40 @@ class Elements extends Component
     }
 
     /**
+     * Updates the canonical element from a given derivative, such as a draft or revision.
+     *
+     * @param ElementInterface $element The derivative element
+     * @param array $newAttributes Any attributes to apply to the canonical element
+     * @return ElementInterface The updated canonical element
+     * @throws InvalidArgumentException if the element is already a canonical element
+     * @since 3.7.0
+     */
+    public function updateCanonicalElement(ElementInterface $element, array $newAttributes = []): ElementInterface
+    {
+        if ($element->getIsCanonical()) {
+            throw new InvalidArgumentException('Element was already canonical');
+        }
+
+        // "Duplicate" the revision with the source element's ID, UID, and content ID
+        $canonical = $element->getCanonical();
+
+        $newAttributes += [
+            'id' => $canonical->id,
+            'uid' => $canonical->uid,
+            'root' => $canonical->root,
+            'lft' => $canonical->lft,
+            'rgt' => $canonical->rgt,
+            'level' => $canonical->level,
+            'dateCreated' => $canonical->dateCreated,
+            'draftId' => null,
+            'revisionId' => null,
+            'updatingFromDerivative' => true,
+        ];
+
+        return $this->duplicateElement($element, $newAttributes);
+    }
+
+    /**
      * Resaves all elements that match a given element query.
      *
      * @param ElementQueryInterface $query The element query to fetch elements with

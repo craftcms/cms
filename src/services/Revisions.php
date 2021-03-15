@@ -224,26 +224,11 @@ class Revisions extends Component
             ]));
         }
 
-        $transaction = Craft::$app->getDb()->beginTransaction();
-        try {
-            // "Duplicate" the revision with the source element's ID, UID, and content ID
-            $newSource = Craft::$app->getElements()->duplicateElement($revision, [
-                'id' => $canonical->id,
-                'uid' => $canonical->uid,
-                'root' => $canonical->root,
-                'lft' => $canonical->lft,
-                'rgt' => $canonical->rgt,
-                'level' => $canonical->level,
-                'revisionId' => null,
-                'revisionCreatorId' => $creatorId,
-                'revisionNotes' => Craft::t('app', 'Reverted to revision {num}.', ['num' => $revision->revisionNum]),
-            ]);
-
-            $transaction->commit();
-        } catch (\Throwable $e) {
-            $transaction->rollBack();
-            throw $e;
-        }
+        // "Duplicate" the revision with the source element's ID, UID, and content ID
+        $newSource = Craft::$app->getElements()->duplicateElement($revision, [
+            'revisionCreatorId' => $creatorId,
+            'revisionNotes' => Craft::t('app', 'Reverted to revision {num}.', ['num' => $revision->revisionNum]),
+        ]);
 
         // Fire an 'afterRevertToRevision' event
         if ($this->hasEventHandlers(self::EVENT_AFTER_REVERT_TO_REVISION)) {

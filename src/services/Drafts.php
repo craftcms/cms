@@ -425,15 +425,7 @@ class Drafts extends Component
                 $this->mergeSourceChanges($draft);
 
                 // "Duplicate" the draft with the source element's ID, UID, and content ID
-                $newSource = $elementsService->duplicateElement($draft, [
-                    'id' => $canonical->id,
-                    'uid' => $canonical->uid,
-                    'root' => $canonical->root,
-                    'lft' => $canonical->lft,
-                    'rgt' => $canonical->rgt,
-                    'level' => $canonical->level,
-                    'dateCreated' => $canonical->dateCreated,
-                    'draftId' => null,
+                $newSource = $elementsService->updateCanonicalElement($draft, [
                     'revisionNotes' => $draftNotes ?: Craft::t('app', 'Applied “{name}”', ['name' => $draft->draftName]),
                 ]);
             } else {

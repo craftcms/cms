@@ -176,6 +176,15 @@ trait ElementTrait
     public $duplicateOf;
 
     /**
+     * @var bool Whether the element is being updated from a derivative element, such as a draft or revision.
+     *
+     * If this is true, the derivative element can be accessed via [[duplicateOf]].
+     *
+     * @since 3.7.0
+     */
+    public $updatingFromDerivative = false;
+
+    /**
      * @var bool Whether the element is currently being previewed.
      * @since 3.2.0
      */

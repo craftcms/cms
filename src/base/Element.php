@@ -1646,6 +1646,7 @@ abstract class Element extends Component implements ElementInterface
         ArrayHelper::removeValue($names, 'newSiteIds');
         ArrayHelper::removeValue($names, 'resaving');
         ArrayHelper::removeValue($names, 'duplicateOf');
+        ArrayHelper::removeValue($names, 'updatingFromDerivative');
         ArrayHelper::removeValue($names, 'previewing');
         ArrayHelper::removeValue($names, 'hardDelete');
 
