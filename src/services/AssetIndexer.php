@@ -10,6 +10,7 @@ use craft\db\Table;
 use craft\elements\Asset;
 use craft\errors\AssetDisallowedExtensionException;
 use craft\errors\AssetException;
+use craft\errors\AssetNotIndexableException;
 use craft\errors\MissingAssetException;
 use craft\errors\MissingVolumeFolderException;
 use craft\errors\VolumeException;
@@ -268,7 +269,7 @@ class AssetIndexer extends Component
                 $sessionId,
                 $volumeListing->getUri(),
                 $volumeListing->getFileSize(),
-                Db::prepareDateForDb(new \DateTime('@' . $volumeListing->getDateModified())),
+                !$volumeListing->getIsDir() ? Db::prepareDateForDb(new \DateTime('@' . $volumeListing->getDateModified())) : null,
                 $volumeListing->getIsDir(),
                 false,
                 false
@@ -317,7 +318,7 @@ class AssetIndexer extends Component
             }
 
             $this->updateIndexEntry($indexEntry->id, ['completed' => true, 'inProgress' => false, 'recordId' => $recordId]);
-        } catch (AssetDisallowedExtensionException $exception) {
+        } catch (AssetDisallowedExtensionException | AssetNotIndexableException $exception) {
             $this->updateIndexEntry($indexEntry->id, ['completed' => true, 'inProgress' => false, 'isSkipped' => true]);
         }
 
@@ -601,6 +602,12 @@ class AssetIndexer extends Component
      */
     public function indexFolderByEntry(AssetIndexData $indexEntry, bool $createIfMissing = true): VolumeFolder
     {
+        foreach (explode('/', $indexEntry) as $part) {
+            if ($part[0] === '_') {
+                throw new AssetNotIndexableException("The directory “{$indexEntry->uri}” cannot be indexed.");
+            }
+        }
+
         $indexEntry->inProgress = true;
         $indexEntry->completed = false;
         $recordData = $indexEntry->toArray();
@@ -662,12 +669,32 @@ class AssetIndexer extends Component
      * @throws AssetDisallowedExtensionException if the extension of the file is not allowed.
      * @throws MissingAssetException
      * @throws VolumeException
+     * @throws AssetNotIndexableException if file is in a non-indexable directory or matches skip pattern.
      */
     private function _indexFileByIndexData(AssetIndexData $indexEntry, bool $createIfMissing = true, bool $cacheImages = false): Asset
     {
         // Determine the parent folder
         $uriPath = $indexEntry->uri;
         $dirname = dirname($uriPath);
+
+        // Check if in a directory that cannot be indexed
+        foreach (explode('/', $dirname) as $part) {
+            if ($part[0] === '_') {
+                throw new AssetNotIndexableException("File “{$indexEntry->uri}” is in a directory that cannot be indexed.");
+            }
+        }
+
+        $extension = pathinfo($indexEntry->uri, PATHINFO_EXTENSION);
+        $filename = basename($indexEntry->uri);
+
+        // Check if filename is allowed and extension are allowed
+        if (preg_match(AssetsHelper::INDEX_SKIP_ITEMS_PATTERN, $filename)) {
+            throw new AssetNotIndexableException("File “{$indexEntry->uri}” will not be indexed.");
+        }
+
+        if (!in_array(strtolower($extension), Craft::$app->getConfig()->getGeneral()->allowedFileExtensions, true)) {
+            throw new AssetDisallowedExtensionException("File “{$indexEntry->uri}” was not indexed because extension “{$extension}” is not allowed.");
+        }
 
         if ($dirname === '.') {
             $parentId = ':empty:';
@@ -690,14 +717,6 @@ class AssetIndexer extends Component
             $folder = $assets->ensureFolderByFullPathAndVolume($path, $volume);
         } else {
             $volume = $folder->getVolume();
-        }
-
-        // Check if the extension is allowed
-        $extension = pathinfo($indexEntry->uri, PATHINFO_EXTENSION);
-        $filename = basename($indexEntry->uri);
-
-        if (!in_array(strtolower($extension), Craft::$app->getConfig()->getGeneral()->allowedFileExtensions, true)) {
-            throw new AssetDisallowedExtensionException("File “{$indexEntry->uri}” was not indexed because extension “{$extension}” is not allowed.");
         }
 
         $folderId = $folder->id;

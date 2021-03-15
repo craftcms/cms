@@ -12,6 +12,7 @@ use craft\base\VolumeInterface;
 use craft\console\Controller;
 use craft\db\Table;
 use craft\errors\AssetDisallowedExtensionException;
+use craft\errors\AssetNotIndexableException;
 use craft\errors\MissingAssetException;
 use craft\errors\MissingVolumeFolderException;
 use craft\errors\VolumeException;
@@ -182,7 +183,7 @@ class IndexAssetsController extends Controller
                     $this->stdout('missing' . PHP_EOL, Console::FG_YELLOW);
                     $missingRecords[] = $e;
                     continue;
-                } catch (AssetDisallowedExtensionException $e) {
+                } catch (AssetDisallowedExtensionException | AssetNotIndexableException $e) {
                     $this->stdout('skipped: ' . $e->getMessage() . PHP_EOL, Console::FG_YELLOW);
                     continue;
                 } catch (\Throwable $e) {

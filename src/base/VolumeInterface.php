@@ -8,7 +8,6 @@
 namespace craft\base;
 
 use craft\errors\VolumeException;
-use craft\errors\VolumeObjectExistsException;
 use craft\errors\VolumeObjectNotFoundException;
 use craft\models\FieldLayout;
 use craft\models\VolumeListing;

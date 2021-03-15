@@ -50,7 +50,7 @@ class VolumeListing extends Model
     /**
      * @var int|null Timestamp of date modified.
      */
-    private int $dateModified;
+    private ?int $dateModified;
 
     private VolumeInterface $volume;
 
@@ -104,13 +104,13 @@ class VolumeListing extends Model
     /**
      * @return int
      */
-    public function getDateModified(): int
+    public function getDateModified(): ?int
     {
         return $this->dateModified;
     }
 
     /**
-     * @return VolumeInterface|mixed
+     * @return VolumeInterface
      */
     public function getVolume(): VolumeInterface
     {
