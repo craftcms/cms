@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+### Added
+- Added the `{% script %}` tag, for outputting `<script>` tags with full control over the attributes. ([#7676](https://github.com/craftcms/cms/issues/7676))
+
 ### Changed
 - The `gc` command can now delete unneeded rows from deprecated database tables, including `templatecaches`, `entrydrafts`, and `entryrevisions`. ([#6434](https://github.com/craftcms/cms/issues/6434))
 
