@@ -82,8 +82,10 @@ class ElementHelper
         for ($i = 0; $i < $maxSlugIncrement; $i++) {
             $testSlug = $element->slug;
 
+            $suffixLength = 0;
             if ($i > 0) {
                 $testSlug .= $slugWordSeparator . $i;
+                $suffixLength = mb_strlen($slugWordSeparator . $i);
             }
 
             $originalSlug = $element->slug;
@@ -94,7 +96,7 @@ class ElementHelper
             // Make sure we're not over our max length.
             if (mb_strlen($testUri) > 255) {
                 // See how much over we are.
-                $overage = mb_strlen($testUri) - 255;
+                $overage = mb_strlen($testUri) + $suffixLength - 255;
 
                 // Do we have anything left to chop off?
                 if ($overage < mb_strlen($element->slug)) {
@@ -114,7 +116,6 @@ class ElementHelper
                 // OMG!
                 $element->slug = $testSlug;
                 $element->uri = $testUri;
-
                 return;
             }
 
