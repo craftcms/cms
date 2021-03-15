@@ -10,6 +10,7 @@
 
 ### Changed
 - Custom fields with a custom translation method are no longer labelled as translatable if the translation key is an empty string. ([#7647](https://github.com/craftcms/cms/issues/7647))
+- The `date()` Twig function now supports arrays with `date` and/or `time` keys. ([#7681](https://github.com/craftcms/cms/issues/7681))
 
 ### Deprecated
 - Deprecated `craft\elements\Asset::KIND_FLASH`.
