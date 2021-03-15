@@ -310,11 +310,9 @@ class AssetIndexer extends Component
 
         try {
             if ($indexEntry->isDir) {
-                /** @var VolumeInterface $volume */
-                $volume = Craft::$app->getVolumes()->getVolumeById($indexEntry->volumeId);
-                $recordId = Craft::$app->getAssets()->ensureFolderByFullPathAndVolume($indexEntry->uri, $volume)->id;
+                $recordId = $this->indexFolderByEntry($indexEntry)->id;
             } else {
-                $recordId = $this->_indexFileByIndexData($indexEntry, true, $indexingSession->cacheRemoteImages)->id;
+                $recordId = $this->indexFileByEntry($indexEntry, $indexingSession->cacheRemoteImages)->id;
             }
 
             $this->updateIndexEntry($indexEntry->id, ['completed' => true, 'inProgress' => false, 'recordId' => $recordId]);
@@ -572,107 +570,6 @@ class AssetIndexer extends Component
      */
     public function indexFileByEntry(AssetIndexData $indexEntry, bool $cacheImages = false, bool $createIfMissing = true): Asset
     {
-        $indexEntry->inProgress = true;
-        $indexEntry->completed = false;
-        $recordData = $indexEntry->toArray();
-
-        $record = new AssetIndexDataRecord($recordData);
-        $record->save();
-        $indexEntry->id = $record->id;
-
-        try {
-            $asset = $this->_indexFileByIndexData($indexEntry, $createIfMissing, $cacheImages);
-            $this->updateIndexEntry($indexEntry->id, ['completed' => true, 'inProgress' => false, 'recordId' => $asset->id]);
-        } catch (AssetDisallowedExtensionException $exception) {
-            $this->updateIndexEntry($indexEntry->id, ['completed' => true, 'inProgress' => false, 'isSkipped' => true]);
-            throw $exception;
-        }
-
-        return $asset;
-    }
-
-    /**
-     * Indexes a folder by its index entry.
-     *
-     * @param AssetIndexData $indexEntry
-     * @param bool $createIfMissing Whether the asset record should be created if it doesn't exist yet
-     * @return VolumeFolder
-     * @throws VolumeException
-     * @since 4.0.0
-     */
-    public function indexFolderByEntry(AssetIndexData $indexEntry, bool $createIfMissing = true): VolumeFolder
-    {
-        foreach (explode('/', $indexEntry) as $part) {
-            if ($part[0] === '_') {
-                throw new AssetNotIndexableException("The directory “{$indexEntry->uri}” cannot be indexed.");
-            }
-        }
-
-        $indexEntry->inProgress = true;
-        $indexEntry->completed = false;
-        $recordData = $indexEntry->toArray();
-
-        $record = new AssetIndexDataRecord($recordData);
-        $record->save();
-        $indexEntry->id = $record->id;
-
-        $folder = Craft::$app->getAssets()->findFolder(['path' => $indexEntry->uri . '/', 'volumeId' => $indexEntry->volumeId]);
-
-        /** @var VolumeInterface $volume */
-        $volume = Craft::$app->getVolumes()->getVolumeById($indexEntry->volumeId);
-
-        if (!$folder && !$createIfMissing) {
-            throw new MissingVolumeFolderException($indexEntry, $volume, $indexEntry->uri);
-        }
-
-        $folder = Craft::$app->getAssets()->ensureFolderByFullPathAndVolume($indexEntry->uri, $volume);
-        $this->updateIndexEntry($indexEntry->id, ['completed' => true, 'inProgress' => false, 'recordId' => $folder->id]);
-
-        return $folder;
-    }
-
-    /**
-     * Increment the processed entry count on a session.
-     *
-     * @param AssetIndexingSession $session
-     * @return AssetIndexingSession
-     * @throws Exception
-     */
-    protected function incrementProcessedEntryCount(AssetIndexingSession $session): AssetIndexingSession
-    {
-        // Make SURE the counter proceeds correctly across multiple indexing jobs.
-        $mutex = Craft::$app->getMutex();
-        $lockName = 'idx--update-' . $session->id . '--';
-
-        if (!$mutex->acquire($lockName, 5)) {
-            throw new Exception('Could not acquire a lock for the indexing session "' . $session->id . '".');
-        }
-
-        /** @var AssetIndexingSessionRecord $record */
-        $record = AssetIndexingSessionRecord::findOne($session->id);
-        $record->processedEntries++;
-        $record->save();
-        $mutex->release($lockName);
-
-        $session->processedEntries = (int)$record->processedEntries;
-
-        return $session;
-    }
-
-    /**
-     * Indexes a file.
-     *
-     * @param AssetIndexData $indexEntry Asset Index Data entry that contains information for the Asset-to-be.
-     * @param bool $createIfMissing Whether the asset record should be created if none exists
-     * @param bool $cacheImages Whether remotely-stored images should be downloaded and stored locally, to speed up transform generation.
-     * @return Asset
-     * @throws AssetDisallowedExtensionException if the extension of the file is not allowed.
-     * @throws MissingAssetException
-     * @throws VolumeException
-     * @throws AssetNotIndexableException if file is in a non-indexable directory or matches skip pattern.
-     */
-    private function _indexFileByIndexData(AssetIndexData $indexEntry, bool $createIfMissing = true, bool $cacheImages = false): Asset
-    {
         // Determine the parent folder
         $uriPath = $indexEntry->uri;
         $dirname = dirname($uriPath);
@@ -807,6 +704,67 @@ class AssetIndexer extends Component
         }
 
         return $asset;
+    }
+
+    /**
+     * Indexes a folder by its index entry.
+     *
+     * @param AssetIndexData $indexEntry
+     * @param bool $createIfMissing Whether the asset record should be created if it doesn't exist yet
+     * @return VolumeFolder
+     * @throws VolumeException
+     * @throws AssetNotIndexableException
+     * @since 4.0.0
+     */
+    public function indexFolderByEntry(AssetIndexData $indexEntry, bool $createIfMissing = true): VolumeFolder
+    {
+        foreach (explode('/', $indexEntry->uri) as $part) {
+            if ($part[0] === '_') {
+                throw new AssetNotIndexableException("The directory “{$indexEntry->uri}” cannot be indexed.");
+            }
+        }
+
+        $folder = Craft::$app->getAssets()->findFolder(['path' => $indexEntry->uri . '/', 'volumeId' => $indexEntry->volumeId]);
+
+        /** @var VolumeInterface $volume */
+        $volume = Craft::$app->getVolumes()->getVolumeById($indexEntry->volumeId);
+
+        if (!$folder && !$createIfMissing) {
+            throw new MissingVolumeFolderException($indexEntry, $volume, $indexEntry->uri);
+        }
+
+        $folder = Craft::$app->getAssets()->ensureFolderByFullPathAndVolume($indexEntry->uri, $volume);
+        $this->updateIndexEntry($indexEntry->id, ['completed' => true, 'inProgress' => false, 'recordId' => $folder->id]);
+
+        return $folder;
+    }
+
+    /**
+     * Increment the processed entry count on a session.
+     *
+     * @param AssetIndexingSession $session
+     * @return AssetIndexingSession
+     * @throws Exception
+     */
+    protected function incrementProcessedEntryCount(AssetIndexingSession $session): AssetIndexingSession
+    {
+        // Make SURE the counter proceeds correctly across multiple indexing jobs.
+        $mutex = Craft::$app->getMutex();
+        $lockName = 'idx--update-' . $session->id . '--';
+
+        if (!$mutex->acquire($lockName, 5)) {
+            throw new Exception('Could not acquire a lock for the indexing session "' . $session->id . '".');
+        }
+
+        /** @var AssetIndexingSessionRecord $record */
+        $record = AssetIndexingSessionRecord::findOne($session->id);
+        $record->processedEntries++;
+        $record->save();
+        $mutex->release($lockName);
+
+        $session->processedEntries = (int)$record->processedEntries;
+
+        return $session;
     }
 
     /**
