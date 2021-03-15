@@ -293,6 +293,8 @@ interface FieldInterface extends SavableComponentInterface
      *   `content` table column. (Or if the field doesn’t have a `content` table column per [[hasContentColumn()]],
      *   the value will be `null`.)
      *
+     * There are cases where a pre-normalized value could be passed in as well, so be sure to account for that.
+     *
      * @param mixed $value The raw field value
      * @param ElementInterface|null $element The element the field is associated with, if there is one
      * @return mixed The prepared field value
