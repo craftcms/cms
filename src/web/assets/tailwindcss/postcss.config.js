@@ -1,11 +1,11 @@
 /* jshint esversion: 6 */
-/* globals module, require */
+/* globals module, require, __dirname */
 const path = require('path');
-const tailwindcss = require('tailwindcss');
+const tailwindcssJit = require('@tailwindcss/jit');
 
 module.exports = {
     plugins: [
-        tailwindcss(path.resolve(__dirname, 'tailwind.config.js')),
+        tailwindcssJit(path.resolve(__dirname, 'tailwind.config.js')),
         require('autoprefixer')
-    ],
+    ]
 }
