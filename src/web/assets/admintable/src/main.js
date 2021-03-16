@@ -3,7 +3,7 @@
 /* global $ */
 
 import Vue from 'vue'
-import App from './App'
+import App from './App.vue'
 import {t} from '../../pluginstore/src/js/filters/craft'
 
 Vue.filter('t', t)

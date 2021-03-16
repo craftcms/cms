@@ -47,7 +47,7 @@
     }
 </script>
 
-<style land="scss">
+<style lang="scss">
   .vue-admin-table-pagination {
     border-top: 1px solid #f3f7fc;
     margin-top: 14px;
