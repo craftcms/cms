@@ -17,18 +17,19 @@ class PrismJsAsset extends AssetBundle
     /**
      * @inheritdoc
      */
-    public function init()
-    {
-        $this->sourcePath = '@lib/prismjs';
+    public $sourcePath = __DIR__ . '/dist';
 
-        $this->js = [
-            'prism.js',
-        ];
+    /**
+     * @inheritdoc
+     */
+    public $js = [
+        'prism.min.js',
+    ];
 
-        $this->css = [
-            'prism.css',
-        ];
-
-        parent::init();
-    }
+    /**
+     * @inheritdoc
+     */
+    public $css = [
+        'css/prism.css',
+    ];
 }
