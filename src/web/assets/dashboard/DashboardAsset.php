@@ -32,7 +32,7 @@ class DashboardAsset extends AssetBundle
      * @inheritdoc
      */
     public $css = [
-        'dashboard.css',
+        'css/Dashboard.css',
     ];
 
     /**

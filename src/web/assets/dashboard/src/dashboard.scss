@@ -103,7 +103,7 @@
 }
 
 .widget > .back > .pane {
-  background: $grey050;
+  @apply bg-craft-bg-15;
 }
 
 .widget > .back > .pane > .errors {
