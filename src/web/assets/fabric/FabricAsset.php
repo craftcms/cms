@@ -17,14 +17,12 @@ class FabricAsset extends AssetBundle
     /**
      * @inheritdoc
      */
-    public function init()
-    {
-        $this->sourcePath = '@lib/fabric';
+    public $sourcePath = __DIR__ . '/dist';
 
-        $this->js = [
-            'fabric.js',
-        ];
-
-        parent::init();
-    }
+    /**
+     * @inheritdoc
+     */
+    public $js = [
+        'fabric.js',
+    ];
 }
