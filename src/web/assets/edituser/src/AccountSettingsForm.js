@@ -1,3 +1,5 @@
+import '../../edituser/src/account.scss';
+
 (function($) {
     /** global: Craft */
     /** global: Garnish */
