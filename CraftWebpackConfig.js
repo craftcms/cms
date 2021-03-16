@@ -144,6 +144,14 @@ class CraftWebpackConfig {
             },
             module: {
                 rules: [
+                    // Typescript
+                    {
+                        test: /.ts$/,
+                        exclude: /(node_modules|bower_components)/,
+                        use: {
+                            loader: 'ts-loader',
+                        }
+                    },
                     // Babel
                     {
                         test: /.m?js?$/,
