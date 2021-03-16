@@ -17,18 +17,19 @@ class SelectizeAsset extends AssetBundle
     /**
      * @inheritdoc
      */
-    public function init()
-    {
-        $this->sourcePath = '@lib/selectize';
+    public $sourcePath = __DIR__ . '/dist';
 
-        $this->css = [
-            'selectize.css',
-        ];
+    /**
+     * @inheritdoc
+     */
+    public $js = [
+        'selectize.js'
+    ];
 
-        $this->js = [
-            'selectize.js',
-        ];
-
-        parent::init();
-    }
+    /**
+     * @inheritdoc
+     */
+    public $css = [
+        'selectize.css'
+    ];
 }
