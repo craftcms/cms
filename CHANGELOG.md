@@ -5,6 +5,7 @@
 ### Added
 - Added the `{% script %}` tag, for outputting `<script>` tags with full control over the attributes. ([#7676](https://github.com/craftcms/cms/issues/7676))
 - Added `craft\web\User::getToken()`.
+- Added `craft\test\Craft::mockDbMethods()`.
 
 ### Changed
 - The `gc` command can now delete unneeded rows from deprecated database tables, including `templatecaches`, `entrydrafts`, and `entryrevisions`. ([#6434](https://github.com/craftcms/cms/issues/6434))
@@ -14,6 +15,7 @@
 - Fixed a bug where requests with an invalid `action` param would return a 500 status code instead of 400. ([#7668](https://github.com/craftcms/cms/issues/7668))
 - Fixed a bug where asset, category, and entry queries could return results when they shouldn’t. ([#7678](https://github.com/craftcms/cms/issues/7678))
 - Fixed a bug where users were getting logged out after changing their password. ([#7682](https://github.com/craftcms/cms/issues/7682))
+- Fixed an infinite loop bug that could occur when saving an element with a non-unique URI over 255 bytes long. ([#7684](https://github.com/craftcms/cms/pull/7684))
 - Fixed a bug where `craft\test\Craft::mockMethods()` and `mockCraftMethods()`’ `$constructorParams` arguments only accepted a single argument’s value, rather than an array of constructor arguments.
 
 ## 3.6.10 - 2021-03-09

@@ -14,6 +14,7 @@ use Codeception\Stub;
 use Codeception\TestInterface;
 use craft\base\ElementInterface;
 use craft\config\DbConfig;
+use craft\db\Command;
 use craft\db\Query;
 use craft\db\Table;
 use craft\elements\db\ElementQuery;
@@ -503,6 +504,31 @@ class Craft extends Yii2
     public function mockCraftMethods(string $component, array $params = [], array $constructorParams = [])
     {
         $this->mockMethods(\Craft::$app, $component, $params, $constructorParams);
+    }
+
+    /**
+     * @param array $params
+     * @return void
+     * @since 3.6.11
+     */
+    public function mockDbMethods(array $params = []): void
+    {
+        $db = \Craft::$app->getDb();
+        $this->mockCraftMethods('db', $params, [
+            [
+                'driverName' => $db->driverName,
+                'dsn' => $db->dsn,
+                'username' => $db->username,
+                'password' => $db->password,
+                'charset' => $db->charset,
+                'tablePrefix' => $db->tablePrefix,
+                'schemaMap' => $db->schemaMap,
+                'commandMap' => $db->commandMap,
+                'attributes' => $db->attributes,
+                'enableSchemaCache' => $db->enableSchemaCache,
+                'pdo' => $db->pdo,
+            ],
+        ]);
     }
 
     /**
