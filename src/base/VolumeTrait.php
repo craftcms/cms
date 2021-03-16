@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 /**
  * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
@@ -18,47 +19,47 @@ trait VolumeTrait
     /**
      * @var string|null Name
      */
-    public $name;
+    public ?string $name = null;
 
     /**
      * @var string|null Handle
      */
-    public $handle;
+    public ?string $handle = null;
 
     /**
      * @var bool|null Whether the volume has a public URL
      */
-    public $hasUrls;
+    public bool $hasUrls = false;
 
     /**
      * @var string|null The volume’s URL
      */
-    public $url;
+    public ?string $url = null;
 
     /**
      * @var string Title translation method
      * @since 3.6.0
      */
-    public $titleTranslationMethod = Field::TRANSLATION_METHOD_SITE;
+    public string $titleTranslationMethod = Field::TRANSLATION_METHOD_SITE;
 
     /**
      * @var string|null Title translation key format
      * @since 3.6.0
      */
-    public $titleTranslationKeyFormat;
+    public ?string $titleTranslationKeyFormat = null;
 
     /**
      * @var int|null Sort order
      */
-    public $sortOrder;
+    public ?int $sortOrder = null;
 
     /**
      * @var int|null Field layout ID
      */
-    public $fieldLayoutId;
+    public ?int $fieldLayoutId = null;
 
     /**
      * @var string|null UID
      */
-    public $uid;
+    public ?string $uid = null;
 }

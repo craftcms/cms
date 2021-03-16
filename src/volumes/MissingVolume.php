@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 /**
  * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
@@ -36,7 +37,7 @@ class MissingVolume extends Volume implements MissingComponentInterface
     /**
      * @inheritdoc
      */
-    public function getFileList(string $directory = '', bool $recursive = true): array
+    public function getFileList(string $directory = '', bool $recursive = true): \Generator
     {
         throw new NotSupportedException('getFileList() is not implemented.');
     }
