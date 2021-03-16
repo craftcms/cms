@@ -1,4 +1,5 @@
-@import "tailwindcss/base";
+// TODO figure out what we need from the reset/base
+//@import "tailwindcss/base";
 @import "tailwindcss/components";
-.testing { background: red; }
+
 @import "tailwindcss/utilities";
