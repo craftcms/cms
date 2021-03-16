@@ -94,7 +94,7 @@ class MissingVolume extends Volume implements MissingComponentInterface
      */
     public function directoryExists(string $path): bool
     {
-        throw new NotSupportedException('folderExists() is not implemented.');
+        throw new NotSupportedException('directoryExists() is not implemented.');
     }
 
     /**
@@ -102,7 +102,7 @@ class MissingVolume extends Volume implements MissingComponentInterface
      */
     public function createDirectory(string $path, array $config = []): void
     {
-        throw new NotSupportedException('createDir() is not implemented.');
+        throw new NotSupportedException('createDirectory() is not implemented.');
     }
 
     /**
@@ -118,13 +118,13 @@ class MissingVolume extends Volume implements MissingComponentInterface
      */
     public function renameDirectory(string $path, string $newName): void
     {
-        throw new NotSupportedException('renameDir() is not implemented.');
+        throw new NotSupportedException('renameDirectory() is not implemented.');
     }
 
     /**
      * @inheritdoc
      */
-    public function getFileSize(string $uri)
+    public function getFileSize(string $uri): int
     {
         throw new NotSupportedException('getFileSize() is not implemented.');
     }
@@ -132,9 +132,9 @@ class MissingVolume extends Volume implements MissingComponentInterface
     /**
      * @inheritdoc
      */
-    public function getDateModified(string $uri)
+    public function getDateModified(string $uri): int
     {
-        throw new NotSupportedException('writeFileFromStream() is not implemented.');
+        throw new NotSupportedException('getDateModified() is not implemented.');
     }
 
     /**
