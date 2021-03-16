@@ -17,14 +17,12 @@ class VelocityAsset extends AssetBundle
     /**
      * @inheritdoc
      */
-    public function init()
-    {
-        $this->sourcePath = '@lib/velocity';
+    public $sourcePath = __DIR__ . '/dist';
 
-        $this->js = [
-            'velocity.js',
-        ];
-
-        parent::init();
-    }
+    /**
+     * @inheritdoc
+     */
+    public $js = [
+        'velocity.js',
+    ];
 }
