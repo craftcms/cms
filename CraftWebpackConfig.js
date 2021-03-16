@@ -71,6 +71,7 @@ class CraftWebpackConfig {
         // Set options from class call
         this.type = options.type || 'asset';
         this.config = options.config || {};
+        this.postCssConfig = options.postCssConfig || path.resolve(__dirname, 'postcss.config.js');
 
         if (this.types.indexOf(this.type) === -1) {
             throw 'Type "' + this.type + '" is not a valid config type.';
@@ -191,7 +192,7 @@ class CraftWebpackConfig {
                                 loader: 'postcss-loader',
                                 options: {
                                     config: {
-                                        path: path.resolve(__dirname, 'postcss.config.js')
+                                        path: this.postCssConfig
                                     },
                                 }
                             },
