@@ -19,6 +19,11 @@ class DatepickerI18nAsset extends AssetBundle
     /**
      * @inheritdoc
      */
+    public $sourcePath = __DIR__ . '/dist';
+
+    /**
+     * @inheritdoc
+     */
     public function init()
     {
         // Figure out which Datepicker i18n script to load
@@ -36,8 +41,6 @@ class DatepickerI18nAsset extends AssetBundle
 
         /** @noinspection UnSafeIsSetOverArrayInspection */
         if (isset($datepickerLanguage)) {
-            $this->sourcePath = '@lib/datepicker-i18n';
-
             $this->depends = [
                 JqueryUiAsset::class,
             ];
