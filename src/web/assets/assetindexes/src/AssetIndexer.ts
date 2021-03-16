@@ -1,4 +1,3 @@
-// @TODO: once webpack stuff is in, move things out to imports.
 // Set up interfaces and types
 interface ProgressBarInterface {
     new($element: JQuery, displaySteps?: boolean): ProgressBarInterface
