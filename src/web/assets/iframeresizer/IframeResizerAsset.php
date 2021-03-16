@@ -19,7 +19,7 @@ class IframeResizerAsset extends AssetBundle
     /**
      * @inheritdoc
      */
-    public $sourcePath = '@lib/iframe-resizer';
+    public $sourcePath = __DIR__ . '/dist';
 
     /**
      * @inheritdoc

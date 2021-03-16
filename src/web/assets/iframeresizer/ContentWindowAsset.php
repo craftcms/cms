@@ -21,7 +21,7 @@ class ContentWindowAsset extends AssetBundle
     /**
      * @inheritdoc
      */
-    public $sourcePath = '@lib/iframe-resizer-cw';
+    public $sourcePath = __DIR__ . '/dist';
 
     /**
      * @inheritdoc
