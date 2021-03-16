@@ -24,6 +24,6 @@ class TailwindCssAsset extends AssetBundle
      * @inheritdoc
      */
     public $css = [
-        'TailwindCss.css',
+        'css/TailwindCss.css',
     ];
 }
