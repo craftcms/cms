@@ -42,11 +42,11 @@
           @include left(26px);
           width: 20px;
           height: 20px;
-          background: no-repeat 0 0 url(invalid-icon.svg) ;
+          background: no-repeat 0 0 url(images/invalid-icon.svg) ;
           background-size: 100% 100%;
 
           &.valid {
-            background-image: url(valid-icon.svg);
+            background-image: url(images/valid-icon.svg);
           }
         }
       }
@@ -221,7 +221,7 @@
           .pane {
             margin: 0;
             padding: 3px;
-            background: $grey050;
+            @apply bg-craft-bg-15;
             border-radius: $mediumBorderRadius;
 
             input.text {
