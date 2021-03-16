@@ -11,6 +11,7 @@
 
 ### Fixed
 - Fixed a bug where requests with an invalid `action` param would return a 500 status code instead of 400. ([#7668](https://github.com/craftcms/cms/issues/7668))
+- Fixed a bug where asset, category, and entry queries could return results when they shouldn’t. ([#7678](https://github.com/craftcms/cms/issues/7678))
 - Fixed a bug where users were getting logged out after changing their password. ([#7682](https://github.com/craftcms/cms/issues/7682))
 
 ## 3.6.10 - 2021-03-09

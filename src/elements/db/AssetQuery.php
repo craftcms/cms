@@ -912,7 +912,7 @@ class AssetQuery extends ElementQuery
         }
 
         if (empty($this->volumeId)) {
-            $this->volumeId = null;
+            $this->volumeId = is_array($this->volumeId) ? [] : null;
         } else if (is_numeric($this->volumeId)) {
             $this->volumeId = [$this->volumeId];
         } else if (!is_array($this->volumeId) || !ArrayHelper::isNumeric($this->volumeId)) {
