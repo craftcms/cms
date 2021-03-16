@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="32px" height="22px" viewBox="0 0 32 22" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 61 (89581) - https://sketch.com -->
+    <title>orientation-landscape-checked</title>
+    <desc>Created with Sketch.</desc>
+    <g id="Page-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="orientation-landscape-checked" transform="translate(1.000000, 1.000000)">
+            <rect id="Rectangle" stroke="#C1CAD3" fill="#C1CAD3" transform="translate(15.000000, 10.000000) rotate(-270.000000) translate(-15.000000, -10.000000) " x="5" y="-5" width="20" height="30" rx="2"></rect>
+            <path d="M13.3111903,15.4297137 L22.0947387,6.64613665 C22.2320389,6.5088651 22.2320389,6.28624943 22.0947387,6.14894927 L21.2661312,5.32031317 C21.1288311,5.18304161 20.906244,5.18304161 20.7689439,5.32031317 L13.0625966,13.0266604 L10.2310204,10.1950841 C10.0937202,10.0577839 9.87113316,10.0577839 9.73380438,10.1950841 L8.90519689,11.0236916 C8.76789673,11.1609918 8.76789673,11.3835788 8.90519689,11.5209076 L12.814003,15.4297137 C12.9512745,15.5669852 13.1738616,15.5669852 13.3111903,15.4297137 Z" id="" fill="#1F2932" fill-rule="nonzero"></path>
+        </g>
+    </g>
+</svg>
