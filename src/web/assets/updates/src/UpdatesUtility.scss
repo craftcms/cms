@@ -20,7 +20,7 @@
     text-align: center;
     font-size: 16px;
     line-height: 20px;
-    color: $grey500;
+    @apply text-craft-text-medium;
   }
 
   .update {
@@ -45,8 +45,14 @@
       }
     }
 
-    blockquote.ineligible:before {
-      content: 'ban';
+    blockquote.ineligible {
+      border: none;
+      @apply bg-craft-warning;
+      color: #110902;
+      &:before {
+        content: 'ban';
+        color: #110902;
+      }
     }
 
     .releases {
@@ -57,7 +63,7 @@
 
         &.critical {
           h2 {
-            color: $red600;
+            @apply text-craft-support-red-dark-1;
           }
 
           .critical {
@@ -70,7 +76,7 @@
             line-height: 24px;
             color: $white;
             font-weight: normal;
-            background: $red500;
+            @apply bg-craft-support-red;
             text-transform: uppercase;
           }
         }
