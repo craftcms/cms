@@ -5,6 +5,7 @@
   position: relative;
   cursor: pointer;
 
+  /*
   &:hover {
     @include padding-right(26px);
 
@@ -17,6 +18,7 @@
       color: $linkColor;
     }
   }
+  */
 
   .subject {
     padding-bottom: 15px;

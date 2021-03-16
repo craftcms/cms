@@ -1,3 +1,5 @@
+import '../../systemmessages/src/SystemMessages.scss';
+
 (function($) {
     /** global: Craft */
     /** global: Garnish */
