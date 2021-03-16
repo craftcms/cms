@@ -21,21 +21,22 @@ class GarnishAsset extends AssetBundle
     /**
      * @inheritdoc
      */
-    public function init()
-    {
-        $this->sourcePath = '@lib/garnishjs';
+    public $sourcePath = __DIR__ . '/dist';
 
-        $this->depends = [
-            ElementResizeDetectorAsset::class,
-            JqueryAsset::class,
-            JqueryTouchEventsAsset::class,
-            VelocityAsset::class,
-        ];
+    /**
+     * @inheritdoc
+     */
+    public $js = [
+        'garnish.js'
+    ];
 
-        $this->js = [
-            'garnish.js',
-        ];
-
-        parent::init();
-    }
+    /**
+     * @inheritdoc
+     */
+    public $depends = [
+        ElementResizeDetectorAsset::class,
+        JqueryAsset::class,
+        JqueryTouchEventsAsset::class,
+        VelocityAsset::class,
+    ];
 }
