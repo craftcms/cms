@@ -1,3 +1,5 @@
+import '../../deprecationerrors/src/deprecator.scss';
+
 (function($) {
     /** global: Craft */
     /** global: Garnish */

@@ -31,7 +31,7 @@ class DeprecationErrorsAsset extends AssetBundle
      * @inheritdoc
      */
     public $css = [
-        'deprecator.css',
+        'css/deprecator.css',
     ];
 
     /**
