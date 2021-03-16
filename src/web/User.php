@@ -142,6 +142,17 @@ class User extends \yii\web\User
     }
 
     /**
+     * Returns the user token from the session.
+     *
+     * @return string
+     * @since 3.6.11
+     */
+    public function getToken(): ?string
+    {
+        return SessionHelper::get($this->tokenParam);
+    }
+
+    /**
      * Returns the username of the account that the browser was last logged in as.
      *
      * ---
@@ -526,7 +537,7 @@ class User extends \yii\web\User
         SessionHelper::remove($this->authDurationParam);
 
         // Delete the session token in the database
-        $token = SessionHelper::get($this->tokenParam);
+        $token = $this->getToken();
         if ($token !== null) {
             SessionHelper::remove($this->tokenParam);
             Db::delete(Table::SESSIONS, [
