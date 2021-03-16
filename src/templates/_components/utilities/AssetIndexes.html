@@ -59,6 +59,11 @@
     Craft.AssetIndexer = new AssetIndexer($('#indexing-sessions'), indexingSessions);
 
     $('form#asset-indexes').on('submit', function (ev) {
+        const anyVolumesSelected = $('input[name="volumes[]"]').is(':checked') || $('input[name="volumes"]').is(':checked');
+        if (!anyVolumesSelected) {
+            return false;
+        }
+
         const $submitButton = $('form#asset-indexes button.submit:last');
 
         if ($submitButton.hasClass('disabled')) {
