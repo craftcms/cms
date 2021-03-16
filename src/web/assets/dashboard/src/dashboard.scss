@@ -1,5 +1,5 @@
 @charset "UTF-8";
-@import "../../../../../node_modules/craftcms-sass/mixins";
+@import "~craftcms-sass/mixins";
 
 /* widgets */
 .widget {
@@ -103,7 +103,7 @@
 }
 
 .widget > .back > .pane {
-  @apply bg-craft-bg-15;
+  background: $grey050;
 }
 
 .widget > .back > .pane > .errors {

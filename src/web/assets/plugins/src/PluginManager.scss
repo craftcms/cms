@@ -1,5 +1,5 @@
 @charset "UTF-8";
-@import "../../../../../node_modules/craftcms-sass/mixins";
+@import "~craftcms-sass/mixins";
 
 #plugins {
   tbody {
@@ -221,7 +221,7 @@
           .pane {
             margin: 0;
             padding: 3px;
-            @apply bg-craft-bg-15;
+            background: $grey050;
             border-radius: $mediumBorderRadius;
 
             input.text {

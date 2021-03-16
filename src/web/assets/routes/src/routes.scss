@@ -11,17 +11,17 @@
   margin: 14px 0;
   padding: 0;
   border-radius: $largeBorderRadius;
-  // background-color: $grey050;
+  background-color: $grey050;
   cursor: pointer;
 
-/*  &:hover:after {
+  &:hover:after {
     position: absolute;
     top: 9px;
     @include right(5px);
     @include icon;
     content: 'edit';
     color: $linkColor;
-  }*/
+  }
 
   .uri-container,
   .template {
@@ -32,12 +32,12 @@
 
   .uri-container {
     position: relative;
-    @include margin-right(10px);
+    @include margin-right(20px);
     @include padding-right(10px);
     @include border-radius($largeBorderRadius, 0, 0, $largeBorderRadius);
     @include floatleft;
-    @apply text-craft-link;
-    // background: $white;
+    color: $linkColor;
+    background: $white;
 
     &:after {
       display: block;
@@ -63,9 +63,9 @@
       @include margin(-1px, 8px, -1px, 0);
       border-radius: $smallBorderRadius;
       padding: 1px 5px;
-      @apply bg-craft-bg-15;
-      box-shadow: inset 0 0 0 1px var(--craftui-craft-hairline);
-      @apply text-craft-text-medium;
+      background: $grey050;
+      box-shadow: inset 0 0 0 1px $hairlineColor;
+      color: $mediumTextColor;
     }
 
     .uri .token {
@@ -74,13 +74,13 @@
   }
 
   .template {
-    @apply text-craft-text-medium;
-/*
+    color: $mediumTextColor;
+
     &:before {
       @include icon;
       @include margin(0, 5px, 0, 0);
       content: 'template';
-    }*/
+    }
   }
 }
 
@@ -107,8 +107,7 @@
     margin-top: 10px;
     border-radius: $largeBorderRadius;
     padding: 15px 25px;
-    //box-shadow: inset 0 1px 3px -1px var(--craftui-grey-100-dark-10);
-    box-shadow: inset 0 1px 3px -1px var(--craftui-craft-shadow-6);
+    box-shadow: inset 0 1px 3px -1px darken($grey100, 10%);
 
     h4 {
       margin-bottom: 5px;
@@ -125,7 +124,7 @@
     display: block;
     @include floatleft;
     margin-top: 7px;
-    @apply text-craft-support-red-dark-1;
+    color: $red600;
   }
 }
 

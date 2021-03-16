@@ -1,5 +1,4 @@
 @charset "UTF-8";
-@import "~graphiql/graphiql";
 @import "~craftcms-sass/mixins";
 
 body,
@@ -14,7 +13,7 @@ body,
   justify-content: center;
   font-size: 14px;
   line-height: 20px;
-  @apply text-craft-text;
+  color: $textColor;
   -webkit-font-smoothing: subpixel-antialiased;
 
   .graphiql-container .topBar,
@@ -46,8 +45,8 @@ body,
 
   .graphiql-container .history-contents > p:hover,
   .graphiql-container .history-contents > p:active {
-    @apply text-craft-text;
-    @apply bg-craft-bg-15;
+    color: $textColor;
+    background-color: $grey050;
 
     span:not(.history-label) {
       font-size: 14px;
@@ -67,7 +66,7 @@ body,
         font-size: 18px;
         font-weight: bold;
         line-height: 1.2;
-        @apply text-craft-text;
+        color: $textColor;
       }
     }
 
@@ -101,22 +100,22 @@ body,
     border-radius: $largeBorderRadius;
 
     .CodeMirror-gutters {
-      @apply bg-craft-bg-15;
-      box-shadow: inset -1px 0 0 var(--craftui-craft-hairline);
+      background: $grey050;
+      box-shadow: inset -1px 0 0 $hairlineColor;
     }
 
     .CodeMirror-linenumber {
-      @apply text-light-text;
+      color: $lightTextColor;
     }
 
     .variable-editor {
       height: 28px;
 
       .variable-editor-title {
-        @apply bg-craft-bg-15;
-        box-shadow: 0 -1px 0 var(--craftui-craft-hairline), 0 1px 0 var(--craftui-craft-hairline);
+        background: $grey050;
+        box-shadow: 0 -1px 0 $hairlineColor, 0 1px 0 $hairlineColor;
         z-index: 4;
-        @apply text-light-text;
+        color: $lightTextColor;
       }
     }
   }
@@ -127,8 +126,7 @@ body,
     }
     .toolbar-button {
       display: inline-block;
-      @apply bg-craft-input-transparent-75;
-
+      background-color: $grey200;
       border-radius: $largeBorderRadius;
       padding: 7px 14px;
       border: none;
@@ -138,14 +136,14 @@ body,
       cursor: pointer;
       box-sizing: border-box;
       appearance: none;
-      @apply text-craft-text;
+      color: $textColor;
       height: 34px;
       max-width: 100%;
       box-shadow: none;
 
       &:focus,
       &:hover {
-        @apply bg-craft-input-transparent-60;
+        background-color: darken($grey200, 5%);
       }
 
       svg {
@@ -178,7 +176,7 @@ body,
             @include floatleft;
             @include margin(3px, 0, 0, -17px);
             font-size: 14px;
-            @apply text-light-text;
+            color: $lightTextColor;
           }
 
           &:hover {
@@ -187,7 +185,7 @@ body,
         }
       }
     }
-    
+
     .execute-options li {
       padding-left: 14px;
     }

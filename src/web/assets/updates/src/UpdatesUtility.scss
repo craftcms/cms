@@ -1,5 +1,5 @@
 @charset "UTF-8";
-@import "../../../../../node_modules/craftcms-sass/mixins";
+@import "~craftcms-sass/mixins";
 
 #content {
   #graphic {
@@ -20,7 +20,7 @@
     text-align: center;
     font-size: 16px;
     line-height: 20px;
-    @apply text-craft-text-medium;
+    color: $grey500;
   }
 
   .update {
@@ -45,14 +45,8 @@
       }
     }
 
-    blockquote.ineligible {
-      border: none;
-      @apply bg-craft-warning;
-      color: #110902;
-      &:before {
-        content: 'ban';
-        color: #110902;
-      }
+    blockquote.ineligible:before {
+      content: 'ban';
     }
 
     .releases {
@@ -63,7 +57,7 @@
 
         &.critical {
           h2 {
-            @apply text-craft-support-red-dark-1;
+            color: $red600;
           }
 
           .critical {
@@ -76,7 +70,7 @@
             line-height: 24px;
             color: $white;
             font-weight: normal;
-            @apply bg-craft-support-red;
+            background: $red500;
             text-transform: uppercase;
           }
         }

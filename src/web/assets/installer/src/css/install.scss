@@ -7,8 +7,7 @@ html, body {
 
 body {
   overflow: hidden;
-  background: url('../images/installer-bg.png') no-repeat 50% 50%;
-  @apply bg-craft-global-sidebar-background;
+  background: $grey100 url(images/installer-bg.png) no-repeat 50% 50%;
   background-size: cover;
 }
 
@@ -28,8 +27,7 @@ body {
   font-size: 19px;
   height: 42px;
   line-height: 18px;
-  //box-shadow: 0 0 0 4px var(--craftui-bg-grey-100);
-  box-shadow: 0 0 0 4px var(--craftui-craft-global-sidebar-background);
+  box-shadow: 0 0 0 4px $grey100;
 }
 
 #install-modal {
@@ -55,8 +53,7 @@ body {
           left: -100px;
           width: 500px;
           height: 500px;
-          //@include svg-mask(var(--craftui-bg-grey-050));
-          @include svg-mask(var(--craftui-craft-bg-15));
+          @include svg-mask($grey050);
         }
       }
 
@@ -136,7 +133,7 @@ body {
 
     &.loading:after {
       content: '' !important;
-      background: url('../images/spinner_submit.gif') no-repeat 0 0;
+      background: url(images/spinner_submit.gif) no-repeat 0 0;
     }
   }
 }
@@ -147,24 +144,30 @@ input.hidden {
 }
 
 #license {
-  padding: 70px 105px !important;
+  padding: 0 !important;
   overflow-y: scroll;
 
-  .license {
-    &,
-    h1 {
-      font-family: Menlo, monospace;
-      font-size: 13px;
-      line-height: 25px;
+  #license-content {
+    padding: 70px 105px;
+
+    .license {
+      &,
+      h1 {
+        font-family: Menlo, monospace;
+        font-size: 13px;
+        line-height: 25px;
+      }
+
+      h1 {
+        font-weight: bold;
+      }
     }
 
-    h1 {
-      font-weight: bold;
+    #license-accept {
+      margin-top: 35px;
+      display: flex;
+      justify-content: center;
     }
-  }
-
-  .centeralign {
-    margin-top: 35px;
   }
 }
 
@@ -194,7 +197,7 @@ only screen and (-o-min-device-pixel-ratio: 3/2),
 only screen and (min-device-pixel-ratio: 1.5),
 only screen and (min-resolution: 1.5dppx) {
   .buttons .btn.loading:after {
-    background-image: url('../images/spinner_submit_2x.gif');
+    background-image: url(images/spinner_submit_2x.gif);
     background-size: 20px;
   }
 }

@@ -1,11 +1,10 @@
 @charset "UTF-8";
-@import "../../../../../node_modules/craftcms-sass/mixins";
+@import "~craftcms-sass/mixins";
 
 .message {
   position: relative;
   cursor: pointer;
 
-  /*
   &:hover {
     @include padding-right(26px);
 
@@ -18,7 +17,6 @@
       color: $linkColor;
     }
   }
-  */
 
   .subject {
     padding-bottom: 15px;
