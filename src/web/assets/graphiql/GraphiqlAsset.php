@@ -33,6 +33,6 @@ class GraphiqlAsset extends AssetBundle
 
     /** @inheritdoc */
     public $css = [
-        'graphiql.css',
+        'css/graphiql.css',
     ];
 }
