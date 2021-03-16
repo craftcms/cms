@@ -17,14 +17,12 @@ class JqueryPaymentAsset extends AssetBundle
     /**
      * @inheritdoc
      */
-    public function init()
-    {
-        $this->sourcePath = '@lib/jquery.payment';
+    public $sourcePath = __DIR__ . '/dist';
 
-        $this->js = [
-            'jquery.payment.js',
-        ];
-
-        parent::init();
-    }
+    /**
+     * @inheritdoc
+     */
+    public $js = [
+        'jquery.payment.js',
+    ];
 }
