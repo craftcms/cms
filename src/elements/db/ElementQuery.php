@@ -1085,6 +1085,31 @@ class ElementQuery extends Query implements ElementQueryInterface
 
     /**
      * @inheritdoc
+     * @throws NotSupportedException
+     * @uses $relatedTo
+     */
+    public function andRelatedTo($value)
+    {
+        if ($this->relatedTo === null) {
+            return $this->relatedTo($value);
+        }
+
+        // Normalize so element/targetElement/sourceElement values get pushed down to the 2nd level
+        $relatedTo = ElementRelationParamParser::normalizeRelatedToParam($this->relatedTo);
+        $criteriaCount = count($relatedTo) - 1;
+
+        // Not possible to switch from `or` to `and` if there are multiple criteria
+        if ($relatedTo[0] === 'or' && $criteriaCount > 1) {
+            throw new NotSupportedException('It’s not possible to combine “or” and “and” relatedTo conditions.');
+        }
+
+        $relatedTo[0] = $criteriaCount > 0 ? 'and' : 'or';
+        $relatedTo[] = ElementRelationParamParser::normalizeRelatedToCriteria($value);
+        return $this->relatedTo($relatedTo);
+    }
+
+    /**
+     * @inheritdoc
      * @uses $title
      */
     public function title($value)
