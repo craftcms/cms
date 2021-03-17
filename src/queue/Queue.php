@@ -426,21 +426,23 @@ class Queue extends \yii\queue\cli\Queue implements QueueInterface
         // Move expired messages into waiting list
         $this->_moveExpired();
 
+        $query = $this->_createJobQuery();
+
         // Set up the reserved jobs condition
-        $reservedParams = [];
         $reservedCondition = $this->db->getQueryBuilder()->buildCondition([
             'and',
             ['fail' => false],
             ['not', ['timeUpdated' => null]],
-        ], $reservedParams);
+        ], $query->params);
 
-        $results = $this->db->usePrimary(function() use ($reservedCondition, $reservedParams, $limit) {
-            return $this->_createJobQuery()
-                ->select(['id', 'description', 'timePushed', 'delay', 'progress', 'progressLabel', 'timeUpdated', 'fail', 'error'])
-                ->orderBy(new Expression("CASE WHEN $reservedCondition THEN 1 ELSE 0 END DESC", $reservedParams))
-                ->addOrderBy(['priority' => SORT_ASC, 'id' => SORT_ASC])
-                ->limit($limit)
-                ->all($this->db);
+        $query
+            ->select(['id', 'description', 'timePushed', 'delay', 'progress', 'progressLabel', 'timeUpdated', 'fail', 'error'])
+            ->orderBy(new Expression("CASE WHEN $reservedCondition THEN 1 ELSE 0 END DESC"))
+            ->addOrderBy(['priority' => SORT_ASC, 'id' => SORT_ASC])
+            ->limit($limit);
+
+        $results = $this->db->usePrimary(function() use ($query) {
+            return $query->all($this->db);
         });
 
         $info = [];
