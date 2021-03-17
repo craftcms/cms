@@ -3,12 +3,14 @@
 ## Unreleased
 
 ### Added
+- Added the `andRelatedTo` element query param, for adding additional relation criteria. ([#5733](https://github.com/craftcms/cms/issues/5733))
 - Added the `{% script %}` tag, for outputting `<script>` tags with full control over the attributes. ([#7676](https://github.com/craftcms/cms/issues/7676))
 - Added `craft\web\User::getToken()`.
 - Added `craft\test\Craft::mockDbMethods()`.
 
 ### Changed
 - The `gc` command can now delete unneeded rows from deprecated database tables, including `templatecaches`, `entrydrafts`, and `entryrevisions`. ([#6434](https://github.com/craftcms/cms/issues/6434))
+- `relatedTo` element query params can now be set to multiple `or` relation criteria inclusively, without specifying the `element`/`targetElement`/`sourceElement` keys. ([#5733](https://github.com/craftcms/cms/issues/5733))
 - `craft\helpers\ElementHelper::setUniqueUri()` now starts incrementing duplicate slugs with `-2` instead of `-1`.
 
 ### Fixed
