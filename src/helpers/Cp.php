@@ -535,6 +535,9 @@ class Cp
                 ? Html::tag('div', Html::encode(mb_strtoupper($status[1][0])), [
                     'class' => ['status-badge', $status[0]],
                     'title' => $status[1],
+                    'aria' => [
+                        'label' => $status[1],
+                    ],
                 ])
                 : '') .
             (($label || $showAttribute)
