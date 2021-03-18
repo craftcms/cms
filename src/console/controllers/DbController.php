@@ -50,7 +50,7 @@ class DbController extends Controller
     /**
      * Creates a new database backup.
      *
-     * @param string|null The path the database backup should be created at.
+     * @param string|null $path The path the database backup should be created at.
      * Can be any of the following:
      *
      * - A full file path
