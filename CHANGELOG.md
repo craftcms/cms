@@ -25,6 +25,7 @@
 - Fixed an infinite loop bug that could occur when saving an element with a non-unique URI over 255 bytes long. ([#7684](https://github.com/craftcms/cms/pull/7684))
 - Fixed a bug where `Craft.initUiElements()` was adding `rel="noopener"` and `target="_blank"` to all external links, rather than just ones within the passed-in container. ([#7686](https://github.com/craftcms/cms/issues/7686))
 - Fixed a bug where the `queue/listen` command wasn’t always respecting exit signals. ([#7704](https://github.com/craftcms/cms/issues/7704))
+- Fixed a SQL error that could occur when running the `utils/repair/section-structure` or `utils/repair/category-group-structure` commands. ([#7699](https://github.com/craftcms/cms/issues/7699))
 - Fixed a bug where `craft\test\Craft::mockMethods()` and `mockCraftMethods()`’ `$constructorParams` arguments only accepted a single argument’s value, rather than an array of constructor arguments.
 
 ## 3.6.10 - 2021-03-09
