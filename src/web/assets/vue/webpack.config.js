@@ -6,6 +6,7 @@ const MergeIntoSingleFilePlugin = require('webpack-merge-and-include-globally');
 const NODE_MODULES = __dirname + '/../../../../node_modules/';
 
 module.exports = new CraftWebpackConfig({
+    type: 'lib',
     config: {
         entry: {'entry': './entry.js'},
         plugins: [

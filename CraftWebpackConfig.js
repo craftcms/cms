@@ -23,8 +23,9 @@ const Dotenv = require('dotenv-webpack');
 class CraftWebpackConfig {
     constructor(options = {}) {
         this.types = [
-            'base',
             'asset',
+            'base',
+            'lib',
             'vue',
         ];
 
@@ -250,6 +251,10 @@ class CraftWebpackConfig {
         };
 
         return merge(this.base(), assetConfig);
+    }
+
+    lib() {
+        return this.asset();
     }
 
     /**
