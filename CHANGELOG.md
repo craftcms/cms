@@ -504,6 +504,11 @@
 ### Security
 - The default `allowedFileExtensions` config setting value no longer includes `htm` or `html`.
 
+## 3.5.19.1 - 2021-01-28
+
+### Fixed
+- Fixed an error that could occur when validating dates. ([#7459](https://github.com/craftcms/cms/issues/7459))
+
 ## 3.5.19 - 2021-01-26
 
 ### Changed
