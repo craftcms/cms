@@ -8,12 +8,12 @@
 
 namespace craft\web\assets\tailwindcss;
 
-use craft\web\AssetBundle;
+use craft\base\HotReloadAssetBundle;
 
 /**
  * Asset bundle for Tailwind CSS
  */
-class TailwindCssAsset extends AssetBundle
+class TailwindCssAsset extends HotReloadAssetBundle
 {
     /**
      * @inheritdoc
@@ -25,5 +25,12 @@ class TailwindCssAsset extends AssetBundle
      */
     public $css = [
         'css/TailwindCss.css',
+    ];
+
+    /**
+     * @inheritdoc
+     */
+    public $js = [
+        'TailwindCss.min.js',
     ];
 }
