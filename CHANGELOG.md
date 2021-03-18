@@ -13,6 +13,10 @@
 - The `gc` command can now delete unneeded rows from deprecated database tables, including `templatecaches`, `entrydrafts`, and `entryrevisions`. ([#6434](https://github.com/craftcms/cms/issues/6434))
 - `relatedTo` element query params can now be set to multiple `or` relation criteria inclusively, without specifying the `element`/`targetElement`/`sourceElement` keys. ([#5733](https://github.com/craftcms/cms/issues/5733))
 - `craft\helpers\ElementHelper::setUniqueUri()` now starts incrementing duplicate slugs with `-2` instead of `-1`.
+- `craft\queue\Queue::run()` now has `$repeat` and `$timeout` arguments.
+
+### Deprecated
+- Deprecated `craft\queue\Queue::listen()`. `run()` can be used instead.
 
 ### Fixed
 - Fixed a bug where requests with an invalid `action` param would return a 500 status code instead of 400. ([#7668](https://github.com/craftcms/cms/issues/7668))
@@ -20,6 +24,7 @@
 - Fixed a bug where users were getting logged out after changing their password. ([#7682](https://github.com/craftcms/cms/issues/7682))
 - Fixed an infinite loop bug that could occur when saving an element with a non-unique URI over 255 bytes long. ([#7684](https://github.com/craftcms/cms/pull/7684))
 - Fixed a bug where `Craft.initUiElements()` was adding `rel="noopener"` and `target="_blank"` to all external links, rather than just ones within the passed-in container. ([#7686](https://github.com/craftcms/cms/issues/7686))
+- Fixed a bug where the `queue/listen` command wasn’t always respecting exit signals. ([#7704](https://github.com/craftcms/cms/issues/7704))
 - Fixed a SQL error that could occur when running the `utils/repair/section-structure` or `utils/repair/category-group-structure` commands. ([#7699](https://github.com/craftcms/cms/issues/7699))
 - Fixed a bug where `craft\test\Craft::mockMethods()` and `mockCraftMethods()`’ `$constructorParams` arguments only accepted a single argument’s value, rather than an array of constructor arguments.
 

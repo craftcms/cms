@@ -21,7 +21,6 @@ use yii\db\Expression;
 use yii\db\Query;
 use yii\di\Instance;
 use yii\mutex\Mutex;
-use yii\queue\cli\Signal;
 use yii\queue\ExecEvent;
 use yii\web\Response;
 
@@ -120,26 +119,37 @@ class Queue extends \yii\queue\cli\Queue implements QueueInterface
 
     /**
      * @inheritdoc
+     * @param bool $repeat Whether to continue listening when the queue is empty.
+     * @param int $timeout The number of seconds to wait between cycles
+     * @retrun int|null the exit code
      */
-    public function run()
+    public function run(bool $repeat = false, int $timeout = 0): ?int
     {
-        while (!Signal::isExit() && ($payload = $this->reserve())) {
-            if ($this->handleMessage($payload['id'], $payload['job'], $payload['ttr'], $payload['attempt'])) {
-                $this->release($payload['id']);
+        return $this->runWorker(function(callable $canContinue) use ($repeat, $timeout) {
+            while ($canContinue()) {
+                if ($payload = $this->reserve()) {
+                    if ($this->handleMessage($payload['id'], $payload['job'], $payload['ttr'], $payload['attempt'])) {
+                        $this->release($payload['id']);
+                    }
+                } else if (!$repeat) {
+                    break;
+                } else if ($timeout) {
+                    sleep($timeout);
+                }
             }
-        }
+        });
     }
 
     /**
      * Listens to the queue and runs new jobs.
      *
-     * @param integer $delay number of seconds for waiting new job.
+     * @param integer $timeout The number of seconds to wait between cycles
+     * @retrun int|null the exit code
+     * @deprecated in 3.6.11. Use [[run()]] instead.
      */
-    public function listen(int $delay)
+    public function listen(int $timeout = 0): ?int
     {
-        do {
-            $this->run();
-        } while (!$delay || sleep($delay) === 0);
+        return $this->run(true, $timeout);
     }
 
     /**
