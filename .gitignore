@@ -13,3 +13,5 @@ node_modules/
 vendor/
 /bower_components
 cpresources/*
+/.env
+/src/web/assets/*/.env
