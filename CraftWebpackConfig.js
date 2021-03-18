@@ -31,9 +31,15 @@ class CraftWebpackConfig {
         this.basePath = path.dirname(ParentModule());
 
         // env
-        this.envPath = path.join(this.basePath, './.env');
-        this.envFileExists = fs.existsSync(this.envPath);
-        if (this.envFileExists) {
+        let assetEnvPath = path.join(this.basePath, './.env');
+        let baseEnvPath = path.resolve(__dirname, './.env');
+
+        // Check asset for env file or fall back to root env if it exists.
+        this.envPath = fs.existsSync(assetEnvPath)
+            ? assetEnvPath
+            : (fs.existsSync(baseEnvPath) ? baseEnvPath : null);
+
+        if (this.envPath) {
             require('dotenv').config({path: this.envPath});
         }
 
@@ -58,6 +64,7 @@ class CraftWebpackConfig {
         }
 
         this.devServer = {
+            contentBase: process.env.DEV_SERVER_CONTENT_BASE ? process.env.DEV_SERVER_CONTENT_BASE : path.join(this.basePath, 'dist'),
             host: process.env.DEV_SERVER_HOST ? process.env.DEV_SERVER_HOST : 'localhost',
             port: process.env.DEV_SERVER_PORT ? process.env.DEV_SERVER_PORT : '8085',
             publicPath: process.env.DEV_SERVER_PUBLIC ? process.env.DEV_SERVER_PUBLIC : (this.https ? 'https' : 'http') + '://localhost:8085/'
@@ -86,7 +93,8 @@ class CraftWebpackConfig {
      */
     _devServer() {
         return {
-            contentBase: path.join(this.basePath, 'dist'),
+            contentBase: this.devServer.contentBase,
+            watchContentBase: true,
             disableHostCheck: true,
             headers: {"Access-Control-Allow-Origin": "*"},
             host: this.devServer.host,
@@ -107,7 +115,7 @@ class CraftWebpackConfig {
         let optimization = {};
 
         // Only load dotenv plugin if there is a .env file
-        if (this.envFileExists) {
+        if (this.envPath) {
             plugins.push(new Dotenv());
         }
 
@@ -136,6 +144,7 @@ class CraftWebpackConfig {
         }
 
         const baseConfig = {
+            watch: this.nodeEnv === 'development',
             mode: this.nodeEnv,
             devtool: 'source-map',
             optimization,
@@ -180,6 +189,7 @@ class CraftWebpackConfig {
             output: {
                 filename: this.jsFilename,
                 path: this.distPath,
+                publicPath: this.nodeEnv == 'development' ? this.devServer.publicPath : '/',
             },
             devServer: this._devServer(),
             module: {
