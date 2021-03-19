@@ -137,7 +137,7 @@ class UpdateController extends Controller
      * @param string $handle
      * The update handle (`all`, `craft`, or a plugin handle). You can pass
      * multiple handles separated by spaces, and you can update to a specific
-     * version using the syntax <handle>:<version>`.
+     * version using the syntax `<handle>:<version>`.
      * @return int
      */
     public function actionUpdate(string $handle = null): int
