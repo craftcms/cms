@@ -267,7 +267,10 @@ class Craft extends Yii2
             // Add any plugins
             if ($plugins = $this->_getConfig('plugins')) {
                 foreach ($plugins as $plugin) {
-                    $this->installPlugin($plugin);
+                    // Assume plugins need to be installed by default or check the `install` key
+                    if (!isset($plugin['install']) || (isset($plugin['install']) && $plugin['install'] === true)) {
+                        $this->installPlugin($plugin);
+                    }
                 }
             }
 
