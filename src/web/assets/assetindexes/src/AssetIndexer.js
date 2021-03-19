@@ -113,6 +113,9 @@ class AssetIndexer {
         this._currentConnectionCount--;
         if (textStatus === 'success' && response.error) {
             alert(response.error);
+            if (response.stop) {
+                this.discardIndexingSession(response.stop);
+            }
             // A mere error shall not stop the party.
             this.runTasks();
             return;

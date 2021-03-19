@@ -82,7 +82,14 @@ class AssetIndexesController extends Controller
         $indexingSession = Craft::$app->getAssetIndexer()->startIndexingSession($volumes, $cacheRemoteImages);
         $sessionData = $this->prepareSessionData($indexingSession);
 
-        return $this->asJson(['session' => $sessionData]);
+        $response = ['session' => $sessionData];
+
+        if ($indexingSession->totalEntries === 0) {
+            $response['stop'] = $indexingSession->id;
+            $response['error'] = Craft::t('app', 'Unable to find anything to index.');
+        }
+
+        return $this->asJson($response);
     }
 
     /**
