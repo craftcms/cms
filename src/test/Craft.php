@@ -225,12 +225,15 @@ class Craft extends Yii2
     {
         ob_start();
         try {
+            $dbSetupConfig = $this->_getConfig('dbSetup');
+
             // Prevent's a static properties bug.
-            ProjectConfig::reset();
+            // Only reset PC when cleaning
+            if (isset($dbSetupConfig['clean']) && $dbSetupConfig['clean'] === true) {
+                ProjectConfig::reset();
+            }
 
             App::maxPowerCaptain();
-
-            $dbSetupConfig = $this->_getConfig('dbSetup');
 
             // Setup the project config from the passed file.
             if ($projectConfig = TestSetup::useProjectConfig()) {
