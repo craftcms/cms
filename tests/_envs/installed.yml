@@ -1,0 +1,8 @@
+# `installed` environment config
+# This environment can be used after a full test has been run once.
+# It expects that the database has been setup and everything installed.
+# Cleanup and setup will be skipped
+modules:
+  config:
+    \craft\test\Craft:
+      dbSetup: {clean: false, setupCraft: false}
