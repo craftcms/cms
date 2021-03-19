@@ -21,6 +21,7 @@ use craft\db\Table;
  * @property string $type Type
  * @property bool $enabled Enabled
  * @property bool $archived Archived
+ * @property string|null $dateLastMerged The date that the canonical element was last merged into this one
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */

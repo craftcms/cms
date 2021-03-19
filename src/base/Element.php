@@ -1377,6 +1377,30 @@ abstract class Element extends Component implements ElementInterface
     private $_canonical;
 
     /**
+     * @var array|null
+     * @see _outdatedAttributes()
+     */
+    private $_outdatedAttributes;
+
+    /**
+     * @var array|null
+     * @see _modifiedAttributes()
+     */
+    private $_modifiedAttributes;
+
+    /**
+     * @var array|null
+     * @see _outdatedFields()
+     */
+    private $_outdatedFields;
+
+    /**
+     * @var array|null
+     * @see _modifiedFields()
+     */
+    private $_modifiedFields;
+
+    /**
      * @var bool
      */
     private $_initialized = false;
@@ -1646,6 +1670,7 @@ abstract class Element extends Component implements ElementInterface
         ArrayHelper::removeValue($names, 'newSiteIds');
         ArrayHelper::removeValue($names, 'resaving');
         ArrayHelper::removeValue($names, 'duplicateOf');
+        ArrayHelper::removeValue($names, 'mergingCanonicalChanges');
         ArrayHelper::removeValue($names, 'updatingFromDerivative');
         ArrayHelper::removeValue($names, 'previewing');
         ArrayHelper::removeValue($names, 'hardDelete');
@@ -1791,6 +1816,16 @@ abstract class Element extends Component implements ElementInterface
         }
 
         return $rules;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function datetimeAttributes(): array
+    {
+        $attributes = parent::datetimeAttributes();
+        $attributes[] = 'dateLastMerged';
+        return $attributes;
     }
 
     /**
@@ -2078,6 +2113,30 @@ abstract class Element extends Component implements ElementInterface
     public function getIsUnsavedDraft(): bool
     {
         return $this->getIsDraft() && $this->getIsCanonical();
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function mergeCanonicalChanges(): void
+    {
+        if (($canonical = $this->getCanonical()) === null) {
+            return;
+        }
+
+        // Update any attributes that were modified upstream
+        foreach ($this->getOutdatedAttributes() as $attribute) {
+            if (!$this->isAttributeModified($attribute)) {
+                $this->$attribute = $canonical->$attribute;
+            }
+        }
+
+        foreach ($this->getOutdatedFields() as $fieldHandle) {
+            if (!$this->isFieldModified($fieldHandle)) {
+                $field = $this->fieldByHandle($fieldHandle);
+                $field->copyValue($canonical, $this);
+            }
+        }
     }
 
     /**
@@ -2737,32 +2796,108 @@ abstract class Element extends Component implements ElementInterface
      */
     function getAttributeStatus(string $attribute)
     {
-        if (!$this->getIsDraft()) {
-            return null;
+        $modified = $this->isAttributeModified($attribute);
+        $outdated = $this->isAttributeOutdated($attribute);
+
+        if ($modified && !$outdated) {
+            return [
+                self::ATTR_STATUS_MODIFIED,
+                Craft::t('app', 'This field was updated in the draft.'),
+            ];
         }
 
-        /** @var DraftBehavior $behavior */
-        $behavior = $this->getBehavior('draft');
-        $modified = $behavior->isAttributeModified($attribute);
-        $outdated = $behavior->isAttributeOutdated($attribute);
-        if ($modified && !$outdated) {
-            return [self::ATTR_STATUS_MODIFIED, Craft::t('app', 'Modified in draft')];
-        }
         if ($outdated && !$modified) {
             return [
-                self::ATTR_STATUS_OUTDATED, Craft::t('app', 'Modified in source {type}', [
-                    'type' => static::lowerDisplayName(),
-                ]),
+                self::ATTR_STATUS_OUTDATED,
+                Craft::t('app', 'This field was updated in the main revision.'),
             ];
         }
+
         if ($outdated && $modified) {
             return [
-                self::ATTR_STATUS_CONFLICTED, Craft::t('app', 'Modified in draft and source {type}', [
-                    'type' => static::lowerDisplayName(),
-                ]),
+                self::ATTR_STATUS_CONFLICTED,
+                Craft::t('app', 'This field was updated in the main revision and the draft. The draft’s value will be used when merged.'),
             ];
         }
+
         return null;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getOutdatedAttributes(): array
+    {
+        return array_keys($this->_outdatedAttributes());
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function isAttributeOutdated(string $name): bool
+    {
+        return isset($this->_outdatedAttributes()[$name]);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function isAttributeModified(string $name): bool
+    {
+        return isset($this->_modifiedAttributes()[$name]);
+    }
+
+    /**
+     * @return array The attribute names that have been modified for this element
+     */
+    private function _outdatedAttributes(): array
+    {
+        if (!static::trackChanges() || $this->getIsCanonical()) {
+            return [];
+        }
+
+        if ($this->_outdatedAttributes === null) {
+            $query = (new Query())
+                ->select(['attribute'])
+                ->from([Table::CHANGEDATTRIBUTES])
+                ->where([
+                    'elementId' => $this->getCanonicalId(),
+                    'siteId' => $this->siteId,
+                ]);
+
+            if ($this->dateLastMerged) {
+                $query->andWhere(['>=', 'dateUpdated', Db::prepareDateForDb($this->dateLastMerged)]);
+            } else {
+                $query->andWhere(['>=', 'dateUpdated', Db::prepareDateForDb($this->dateCreated)]);
+            }
+
+            $this->_outdatedAttributes = array_flip($query->column());
+        }
+
+        return $this->_outdatedAttributes;
+    }
+
+    /**
+     * @return array The attribute names that have been modified for this element
+     */
+    private function _modifiedAttributes(): array
+    {
+        if (!static::trackChanges() || $this->getIsCanonical()) {
+            return [];
+        }
+
+        if ($this->_modifiedAttributes === null) {
+            $this->_modifiedAttributes = array_flip((new Query())
+                ->select(['attribute'])
+                ->from([Table::CHANGEDATTRIBUTES])
+                ->where([
+                    'elementId' => $this->id,
+                    'siteId' => $this->siteId,
+                ])
+                ->column());
+        }
+
+        return $this->_modifiedAttributes;
     }
 
     /**
@@ -2892,36 +3027,98 @@ abstract class Element extends Component implements ElementInterface
     }
 
     /**
-     * @inheritdoc
+     * Returns the status of a given field.
+     *
+     * @param string $fieldHandle
+     * @return array|null
+     * @since 3.4.0
+     * @deprecated in 3.7.0. Use [[FieldInterface::getStatus()]] instead.
      */
     function getFieldStatus(string $fieldHandle)
     {
-        if (!$this->getIsDraft()) {
-            return null;
-        }
-
-        /** @var DraftBehavior $behavior */
-        $behavior = $this->getBehavior('draft');
-        $modified = $behavior->isFieldModified($fieldHandle);
-        $outdated = $behavior->isFieldOutdated($fieldHandle);
-        if ($modified && !$outdated) {
-            return [self::ATTR_STATUS_MODIFIED, Craft::t('app', 'Modified in draft')];
-        }
-        if ($outdated && !$modified) {
-            return [
-                self::ATTR_STATUS_OUTDATED, Craft::t('app', 'Modified in source {type}', [
-                    'type' => static::lowerDisplayName(),
-                ]),
-            ];
-        }
-        if ($outdated && $modified) {
-            return [
-                self::ATTR_STATUS_CONFLICTED, Craft::t('app', 'Modified in draft and source {type}', [
-                    'type' => static::lowerDisplayName(),
-                ]),
-            ];
+        if (($field = $this->fieldByHandle($fieldHandle)) !== null) {
+            return $field->getStatus($this);
         }
         return null;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getOutdatedFields(): array
+    {
+        return array_keys($this->_outdatedFields());
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function isFieldOutdated(string $fieldHandle): bool
+    {
+        return isset($this->_outdatedFields()[$fieldHandle]);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function isFieldModified(string $fieldHandle): bool
+    {
+        return isset($this->_modifiedFields()[$fieldHandle]);
+    }
+
+    /**
+     * @return array The field handles that have been modified for this element
+     */
+    private function _outdatedFields(): array
+    {
+        if (!static::trackChanges() || $this->getIsCanonical()) {
+            return [];
+        }
+
+        if ($this->_outdatedFields === null) {
+            $query = (new Query())
+                ->select(['f.handle'])
+                ->from(['f' => Table::FIELDS])
+                ->innerJoin(['cf' => Table::CHANGEDFIELDS], '[[cf.fieldId]] = [[f.id]]')
+                ->where([
+                    'cf.elementId' => $this->getCanonicalId(),
+                    'cf.siteId' => $this->siteId,
+                ]);
+
+            if ($this->dateLastMerged) {
+                $query->andWhere(['>=', 'cf.dateUpdated', Db::prepareDateForDb($this->dateLastMerged)]);
+            } else {
+                $query->andWhere(['>=', 'cf.dateUpdated', Db::prepareDateForDb($this->dateCreated)]);
+            }
+
+            $this->_outdatedFields = array_flip($query->column());
+        }
+
+        return $this->_outdatedFields;
+    }
+
+    /**
+     * @return array The field handles that have been modified for this element
+     */
+    private function _modifiedFields(): array
+    {
+        if (!static::trackChanges() || $this->getIsCanonical()) {
+            return [];
+        }
+
+        if ($this->_modifiedFields === null) {
+            $this->_modifiedFields = array_flip((new Query())
+                ->select(['f.handle'])
+                ->from(['f' => Table::FIELDS])
+                ->innerJoin(['cf' => Table::CHANGEDFIELDS], '[[cf.fieldId]] = [[f.id]]')
+                ->where([
+                    'cf.elementId' => $this->id,
+                    'cf.siteId' => $this->siteId,
+                ])
+                ->column());
+        }
+
+        return $this->_modifiedFields;
     }
 
     /**

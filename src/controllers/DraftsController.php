@@ -52,7 +52,7 @@ class DraftsController extends Controller
             throw new BadRequestHttpException('Invalid draft ID: ' . $draftId);
         }
 
-        Craft::$app->getDrafts()->mergeSourceChanges($draft);
+        Craft::$app->getElements()->mergeCanonicalChanges($draft);
 
         // Redirect to the requested URL to reload the draft
         $this->setSuccessFlash(Craft::t('app', 'Recent {type} changes merged.', [

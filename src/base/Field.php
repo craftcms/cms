@@ -342,6 +342,38 @@ abstract class Field extends SavableComponent implements FieldInterface
     /**
      * @inheritdoc
      */
+    public function getStatus(ElementInterface $element): ?array
+    {
+        $modified = $element->isFieldModified($this->handle);
+        $outdated = $element->isFieldOutdated($this->handle);
+
+        if ($modified && !$outdated) {
+            return [
+                Element::ATTR_STATUS_MODIFIED,
+                Craft::t('app', 'This field was updated in the draft.'),
+            ];
+        }
+
+        if ($outdated && !$modified) {
+            return [
+                Element::ATTR_STATUS_OUTDATED,
+                Craft::t('app', 'This field was updated in the main revision.'),
+            ];
+        }
+
+        if ($outdated && $modified) {
+            return [
+                Element::ATTR_STATUS_CONFLICTED,
+                Craft::t('app', 'This field was updated in the main revision and the draft. The draft’s value will be used when merged.'),
+            ];
+        }
+
+        return null;
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function useFieldset(): bool
     {
         return false;
@@ -521,6 +553,15 @@ abstract class Field extends SavableComponent implements FieldInterface
         }
 
         return $value;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function copyValue(ElementInterface $from, ElementInterface $to): void
+    {
+        $value = $this->serializeValue($from->getFieldValue($this->handle));
+        $to->setFieldValue($this->handle, $value);
     }
 
     /**

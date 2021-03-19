@@ -261,6 +261,7 @@ class Install extends Migration
             'archived' => $this->boolean()->notNull()->defaultValue(false),
             'dateCreated' => $this->dateTime()->notNull(),
             'dateUpdated' => $this->dateTime()->notNull(),
+            'dateLastMerged' => $this->dateTime()->null(),
             'dateDeleted' => $this->dateTime()->null(),
             'uid' => $this->uid(),
         ]);

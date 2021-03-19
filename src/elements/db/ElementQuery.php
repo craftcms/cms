@@ -1862,16 +1862,12 @@ class ElementQuery extends Query implements ElementQueryInterface
                     'creatorId' => ArrayHelper::remove($row, 'draftCreatorId'),
                     'draftName' => ArrayHelper::remove($row, 'draftName'),
                     'draftNotes' => ArrayHelper::remove($row, 'draftNotes'),
-                    'trackChanges' => (bool)ArrayHelper::remove($row, 'draftTrackChanges'),
-                    'dateLastMerged' => ArrayHelper::remove($row, 'draftDateLastMerged'),
                 ]);
             } else {
                 unset(
                     $row['draftCreatorId'],
                     $row['draftName'],
                     $row['draftNotes'],
-                    $row['draftTrackChanges'],
-                    $row['draftDateLastMerged']
                 );
             }
         }
@@ -2552,12 +2548,6 @@ class ElementQuery extends Query implements ElementQueryInterface
                 'drafts.notes as draftNotes',
             ]);
 
-            $schemaVersion = Craft::$app->getInstalledSchemaVersion();
-            if (version_compare($schemaVersion, '3.4.3', '>=')) {
-                $this->query->addSelect(['drafts.trackChanges as draftTrackChanges']);
-                $this->query->addSelect(['drafts.dateLastMerged as draftDateLastMerged']);
-            }
-
             if ($this->draftId) {
                 $this->subQuery->andWhere(['elements.draftId' => $this->draftId]);
             }
@@ -2833,6 +2823,7 @@ class ElementQuery extends Query implements ElementQueryInterface
             // todo: remove this condition after the next breakpoint
             if (Craft::$app->getDb()->columnExists(Table::ELEMENTS, 'canonicalId')) {
                 $select['elements.canonicalId'] = 'elements.canonicalId';
+                $select['elements.dateLastMerged'] = 'elements.dateLastMerged';
             }
 
             // If the query includes soft-deleted elements, include the date deleted

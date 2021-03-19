@@ -939,6 +939,87 @@ class Matrix extends Component
     }
 
     /**
+     * Merges recent canonical Matrix block changes into the given Matrix field’s blocks.
+     *
+     * @param MatrixField $field The Matrix field
+     * @param ElementInterface $owner The element the field is associated with
+     * @return void
+     * @since 3.7.0
+     */
+    public function mergeCanonicalChanges(MatrixField $field, ElementInterface $owner): void
+    {
+        // Get the canonical owner across all sites
+        $canonicalOwners = $owner::find()
+            ->id($owner->getCanonicalId())
+            ->siteId('*')
+            ->anyStatus()
+            ->ignorePlaceholders()
+            ->all();
+
+        $elementsService = Craft::$app->getElements();
+        $handledSiteIds = [];
+
+        foreach ($canonicalOwners as $canonicalOwner) {
+            if (isset($handledSiteIds[$canonicalOwner->siteId])) {
+                continue;
+            }
+
+            // Get all the canonical owner’s blocks, including soft-deleted ones
+            $canonicalBlocks = MatrixBlock::find()
+                ->fieldId($field->id)
+                ->ownerId($canonicalOwner->id)
+                ->siteId($canonicalOwner->siteId)
+                ->status(null)
+                ->trashed(null)
+                ->ignorePlaceholders()
+                ->all();
+
+            // Get all the derivative owner’s blocks, so we can compare
+            $derivativeBlocks = MatrixBlock::find()
+                ->fieldId($field->id)
+                ->ownerId($owner->id)
+                ->siteId($canonicalOwner->siteId)
+                ->status(null)
+                ->trashed(null)
+                ->ignorePlaceholders()
+                ->indexBy('canonicalId')
+                ->all();
+
+            foreach ($canonicalBlocks as $canonicalBlock) {
+                if (isset($derivativeBlocks[$canonicalBlock->id])) {
+                    $derivativeBlock = $derivativeBlocks[$canonicalBlock->id];
+
+                    // Has it been soft-deleted?
+                    if ($canonicalBlock->trashed) {
+                        // Delete the derivative block too, unless any changes were made to it
+                        if ($derivativeBlock->dateUpdated == $derivativeBlock->dateCreated) {
+                            $elementsService->deleteElement($derivativeBlock);
+                        }
+                    } else if (!$derivativeBlock->trashed) {
+                        // Merge the upstream changes into the derivative block
+                        $elementsService->mergeCanonicalChanges($derivativeBlock);
+                    }
+                } else if (!$canonicalBlock->trashed && $canonicalBlock->dateCreated > $owner->dateCreated) {
+                    // This is a new block, so duplicate it into the derivative owner
+                    $elementsService->duplicateElement($canonicalBlock, [
+                        'canonicalId' => $canonicalBlock->id,
+                        'ownerId' => $owner->id,
+                        'owner' => $owner,
+                        'siteId' => $canonicalOwner->siteId,
+                        'propagating' => false,
+                    ]);
+                }
+            }
+
+            // Keep track of the sites we've already covered
+            $siteIds = $this->getSupportedSiteIds($field->propagationMethod, $canonicalOwner, $field->propagationKeyFormat);
+            foreach ($siteIds as $siteId) {
+                $handledSiteIds[$siteId] = true;
+            }
+        }
+    }
+
+    /**
      * Returns the site IDs that are supported by Matrix blocks for the given Matrix field and owner element.
      *
      * @param MatrixField $field

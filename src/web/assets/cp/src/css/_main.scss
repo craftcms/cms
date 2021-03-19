@@ -4321,20 +4321,17 @@ fieldset {
 .field {
   & > .status-badge {
     position: absolute;
-    top: -3px;
-    @include left(-19px);
-    font-size: 9px;
-    font-weight: bold;
-    line-height: 15px;
-    width: 15px;
-    text-align: center;
-    cursor: default;
-    border-radius: $smallBorderRadius;
+    top: 0;
+    @include left(-26px);
+    width: 2px;
+    height: 100%;
+    content: '';
+    cursor: help;
+    border: 2px solid transparent;
+    background-clip: content-box;
 
     &.modified {
       background-color: $blue600;
-      color: $white;
-      @include light-on-dark-text;
     }
 
     &.outdated {
@@ -4343,8 +4340,6 @@ fieldset {
 
     &.conflicted {
       background-color: $red600;
-      color: $white;
-      @include light-on-dark-text;
     }
   }
 
@@ -5523,12 +5518,10 @@ $titlebarBorderRadius: $largeBorderRadius - 1;
   &:not(.static) {
     & > .fields {
       padding-top: 14px;
-    }
-  }
 
-  & > .fields {
-    & > .field {
-      margin: 15px 0;
+      & > .flex-fields > .field > .status-badge {
+        @include left(-17px);
+      }
     }
   }
 

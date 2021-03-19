@@ -53,6 +53,7 @@ use craft\records\Element_SiteSettings as Element_SiteSettingsRecord;
 use craft\records\StructureElement as StructureElementRecord;
 use craft\validators\HandleValidator;
 use craft\validators\SlugValidator;
+use DateTime;
 use yii\base\Behavior;
 use yii\base\Component;
 use yii\base\Exception;
@@ -230,6 +231,18 @@ class Elements extends Component
      * @event \craft\events\ElementActionEvent The event that is triggered after an element action is performed.
      */
     const EVENT_AFTER_PERFORM_ACTION = 'afterPerformAction';
+
+    /**
+     * @event ElementEvent The event that is triggered before canonical element changes are merged into a derivative.
+     * @since 3.7.0
+     */
+    const EVENT_BEFORE_MERGE_CANONICAL_CHANGES = 'beforeMergeCanonical';
+
+    /**
+     * @event ElementEvent The event that is triggered after canonical element changes are merged into a derivative.
+     * @since 3.7.0
+     */
+    const EVENT_AFTER_MERGE_CANONICAL_CHANGES = 'afterMergeCanonical';
 
     /**
      * @var int[] Stores a mapping of source element IDs to their duplicated element IDs.
@@ -758,6 +771,73 @@ class Elements extends Component
     }
 
     /**
+     * Merges recent canonical element changes into a given derivative, such as a draft.
+     *
+     * @param ElementInterface $element The derivative element
+     * @return void
+     * @since 3.7.0
+     */
+    public function mergeCanonicalChanges(ElementInterface $element): void
+    {
+        if ($element->getIsCanonical()) {
+            throw new InvalidArgumentException('Only a derivative element can be passed to ' . __METHOD__);
+        }
+
+        if (!$element::trackChanges()) {
+            throw new InvalidArgumentException(get_class($element) . ' elements don’t track their changes');
+        }
+
+        // Make sure the derivative element actually supports its own site ID
+        $supportedSites = ElementHelper::supportedSitesForElement($element);
+        $supportedSiteIds = ArrayHelper::getColumn($supportedSites, 'siteId');
+        if (!in_array($element->siteId, $supportedSiteIds, false)) {
+            throw new Exception('Attempting to merge source changes for a draft in an unsupported site.');
+        }
+
+        // Fire a 'beforeMergeCanonical' event
+        if ($this->hasEventHandlers(self::EVENT_BEFORE_MERGE_CANONICAL_CHANGES)) {
+            $this->trigger(self::EVENT_BEFORE_MERGE_CANONICAL_CHANGES, new ElementEvent([
+                'element' => $element,
+            ]));
+        }
+
+        Craft::$app->getDb()->transaction(function() use ($element, $supportedSiteIds) {
+            // Start with $element's site
+            $element->mergeCanonicalChanges();
+            $element->dateLastMerged = new DateTime();
+            $element->mergingCanonicalChanges = true;
+            $this->saveElement($element, false, false);
+
+            // Now the other sites
+            $siteElements = $element::find()
+                ->drafts(null)
+                ->id($element->id)
+                ->siteId(ArrayHelper::withoutValue($supportedSiteIds, $element->id))
+                ->anyStatus()
+                ->all();
+
+            foreach ($siteElements as $siteElement) {
+                $siteElement->mergeCanonicalChanges();
+                $siteElement->dateLastMerged = $element->dateLastMerged;
+                $siteElement->mergingCanonicalChanges = true;
+                $this->saveElement($siteElement, false, false);
+            }
+
+            // It's now fully merged and propagated
+            $element->afterPropagate(false);
+        });
+
+        $element->mergingCanonicalChanges = false;
+
+        // Fire an 'afterMergeCanonical' event
+        if ($this->hasEventHandlers(self::EVENT_AFTER_MERGE_CANONICAL_CHANGES)) {
+            $this->trigger(self::EVENT_AFTER_MERGE_CANONICAL_CHANGES, new ElementEvent([
+                'element' => $element,
+            ]));
+        }
+    }
+
+    /**
      * Updates the canonical element from a given derivative, such as a draft or revision.
      *
      * @param ElementInterface $element The derivative element
@@ -1001,6 +1081,7 @@ class Elements extends Component
         $mainClone->rgt = null;
         $mainClone->level = null;
         $mainClone->dateCreated = null;
+        $mainClone->dateUpdated = null;
         $mainClone->duplicateOf = $element;
         $mainClone->setCanonicalId(null);
 
@@ -2310,9 +2391,6 @@ class Elements extends Component
         /** @var ElementInterface|DraftBehavior|RevisionBehavior $element */
         $isNewElement = !$element->id;
 
-        /** @var DraftBehavior|null $draftBehavior */
-        $draftBehavior = $element->getIsDraft() ? $element->getBehavior('draft') : null;
-
         // Are we tracking changes?
         // todo: remove the tableExists condition after the next breakpoint
         $trackChanges = (
@@ -2320,8 +2398,7 @@ class Elements extends Component
             $element->siteSettingsId &&
             $element->duplicateOf === null &&
             $element::trackChanges() &&
-            ($draftBehavior->trackChanges ?? true) &&
-            !($draftBehavior->mergingChanges ?? false) &&
+            !$element->mergingCanonicalChanges &&
             Craft::$app->getDb()->tableExists(Table::CHANGEDATTRIBUTES)
         );
         $dirtyAttributes = [];
@@ -2422,6 +2499,7 @@ class Elements extends Component
                 $elementRecord->fieldLayoutId = $element->fieldLayoutId = (int)($element->fieldLayoutId ?? $element->getFieldLayout()->id ?? 0) ?: null;
                 $elementRecord->enabled = (bool)$element->enabled;
                 $elementRecord->archived = (bool)$element->archived;
+                $elementRecord->dateLastMerged = Db::prepareDateForDb($element->dateLastMerged);
 
                 if ($isNewElement) {
                     if (isset($element->dateCreated)) {
@@ -2552,7 +2630,7 @@ class Elements extends Component
             if (
                 !$element->propagating &&
                 !$element->duplicateOf &&
-                !($draftBehavior->mergingChanges ?? false)
+                !$element->mergingCanonicalChanges
             ) {
                 $element->afterPropagate($isNewElement);
             }
@@ -2705,6 +2783,10 @@ class Elements extends Component
         if ($enabledForSite !== null) {
             $siteElement->setEnabledForSite($enabledForSite);
         }
+
+        // Copy the timestamps
+        $siteElement->dateCreated = $element->dateCreated;
+        $siteElement->dateUpdated = $element->dateUpdated;
 
         // Copy the title value?
         if (

@@ -2182,17 +2182,17 @@ body.rtl .chars-left { margin: -27px 0 0 7px ; }
 
 .flex > .field, .flex > fieldset { margin-top: 0; margin-bottom: 0; }
 
-.field > .status-badge { position: absolute; top: -3px; font-size: 9px; font-weight: bold; line-height: 15px; width: 15px; text-align: center; cursor: default; border-radius: 3px; }
+.field > .status-badge { position: absolute; top: 0; width: 2px; height: 100%; content: ''; cursor: help; border: 2px solid transparent; background-clip: content-box; }
 
-body.ltr .field > .status-badge { left: -19px; }
+body.ltr .field > .status-badge { left: -26px; }
 
-body.rtl .field > .status-badge { right: -19px; }
+body.rtl .field > .status-badge { right: -26px; }
 
-.field > .status-badge.modified { background-color: #1992D4; color: #fff; -moz-osx-font-smoothing: grayscale; -webkit-font-smoothing: antialiased; font-weight: 500; }
+.field > .status-badge.modified { background-color: #1992D4; }
 
 .field > .status-badge.outdated { background-color: #FADB5F; }
 
-.field > .status-badge.conflicted { background-color: #CF1124; color: #fff; -moz-osx-font-smoothing: grayscale; -webkit-font-smoothing: antialiased; font-weight: 500; }
+.field > .status-badge.conflicted { background-color: #CF1124; }
 
 .field > .heading { display: -webkit-flex; display: flex; -webkit-flex-wrap: wrap; flex-wrap: wrap; -webkit-align-items: center; align-items: center; position: relative; margin-top: -5px; margin-bottom: 5px; }
 
@@ -2793,7 +2793,9 @@ body.rtl .matrixblock > .actions a.settings:after { margin-right: 3px; }
 
 .matrixblock:not(.static) > .fields { padding-top: 14px; }
 
-.matrixblock > .fields > .field { margin: 15px 0; }
+body.ltr .matrixblock:not(.static) > .fields > .flex-fields > .field > .status-badge { left: -17px; }
+
+body.rtl .matrixblock:not(.static) > .fields > .flex-fields > .field > .status-badge { right: -17px; }
 
 .matrixblock > .buttons { margin-top: 0; height: 30px; }
 

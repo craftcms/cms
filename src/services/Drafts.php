@@ -47,12 +47,14 @@ class Drafts extends Component
     /**
      * @event DraftEvent The event that is triggered before source changes are merged into a draft.
      * @since 3.4.0
+     * @deprecated in 3.7.0. Use [[Elements::EVENT_BEFORE_MERGE_CANONICAL_CHANGES]] instead.
      */
     const EVENT_BEFORE_MERGE_SOURCE_CHANGES = 'beforeMergeSource';
 
     /**
      * @event DraftEvent The event that is triggered after source changes are merged into a draft.
      * @since 3.4.0
+     * @deprecated in 3.7.0. Use [[Elements::EVENT_AFTER_MERGE_CANONICAL_CHANGES]] instead.
      */
     const EVENT_AFTER_MERGE_SOURCE_CHANGES = 'afterMergeSource';
 
@@ -256,123 +258,14 @@ class Drafts extends Component
      *
      * @param ElementInterface $draft The draft
      * @since 3.4.0
+     * @deprecated in 3.7.0. Use [[Elements::mergeCanonicalChanges()]] instead.
      */
     public function mergeSourceChanges(ElementInterface $draft)
     {
-        if ($draft->getIsCanonical()) {
-            return;
-        }
-
-        /** @var ElementInterface|DraftBehavior $draft */
-        /** @var DraftBehavior $behavior */
-        $behavior = $draft->getBehavior('draft');
-
-        if (!$behavior->trackChanges) {
-            return;
-        }
-
-        $sourceElements = $draft::find()
-            ->id($draft->getCanonicalId())
-            ->siteId('*')
-            ->anyStatus()
-            ->ignorePlaceholders()
-            ->indexBy('siteId')
-            ->all();
-
-        // Make sure the draft actually supports its own site ID
-        $supportedSites = ElementHelper::supportedSitesForElement($draft);
-        $supportedSiteIds = ArrayHelper::getColumn($supportedSites, 'siteId');
-        if (!in_array($draft->siteId, $supportedSiteIds, false)) {
-            throw new Exception('Attempting to merge source changes for a draft in an unsupported site.');
-        }
-
-        // Fire a 'beforeMergeSource' event
-        if ($this->hasEventHandlers(self::EVENT_BEFORE_MERGE_SOURCE_CHANGES)) {
-            $this->trigger(self::EVENT_BEFORE_MERGE_SOURCE_CHANGES, new DraftEvent([
-                'source' => $sourceElements[$draft->siteId] ?? reset($sourceElements),
-                'creatorId' => $behavior->creatorId,
-                'draftName' => $behavior->draftName,
-                'draftNotes' => $behavior->draftNotes,
-                'draft' => $draft,
-            ]));
-        }
-
-        $transaction = $this->db->beginTransaction();
         try {
-            // Start with $draft's site
-            if (isset($sourceElements[$draft->siteId])) {
-                $this->_mergeSourceChangesInternal($sourceElements[$draft->siteId], $draft);
-            }
-
-            // Now the other sites
-            /** @var ElementInterface[]|DraftBehavior[] $otherSiteDrafts */
-            $otherSiteDrafts = $draft::find()
-                ->drafts()
-                ->id($draft->id)
-                ->siteId(ArrayHelper::withoutValue($supportedSiteIds, $draft->id))
-                ->anyStatus()
-                ->all();
-
-            foreach ($otherSiteDrafts as $otherSiteDraft) {
-                if (!isset($sourceElements[$otherSiteDraft->siteId])) {
-                    continue;
-                }
-                $this->_mergeSourceChangesInternal($sourceElements[$otherSiteDraft->siteId], $otherSiteDraft);
-            }
-
-            // It's now fully duplicated and propagated
-            $behavior->dateLastMerged = new \DateTime();
-            $draft->afterPropagate(false);
-
-            $transaction->commit();
-        } catch (\Throwable $e) {
-            $transaction->rollBack();
-            throw $e;
+            Craft::$app->getElements()->mergeCanonicalChanges($draft);
+        } catch (InvalidArgumentException $e) {
         }
-
-        // Fire an 'afterMergeSource' event
-        if ($this->hasEventHandlers(self::EVENT_AFTER_MERGE_SOURCE_CHANGES)) {
-            $this->trigger(self::EVENT_AFTER_MERGE_SOURCE_CHANGES, new DraftEvent([
-                'source' => $sourceElements[$draft->siteId] ?? reset($sourceElements),
-                'creatorId' => $behavior->creatorId,
-                'draftName' => $behavior->draftName,
-                'draftNotes' => $behavior->draftNotes,
-                'draft' => $draft,
-            ]));
-        }
-    }
-
-    /**
-     * Merges recent source element changes into a draft for a given site
-     *
-     * @param ElementInterface $source The source element
-     * @param ElementInterface $draft The draft element
-     */
-    private function _mergeSourceChangesInternal(ElementInterface $source, ElementInterface $draft)
-    {
-        /** @var ElementInterface|DraftBehavior $draft */
-        /** @var DraftBehavior $behavior */
-        $behavior = $draft->getBehavior('draft');
-
-        foreach ($behavior->getOutdatedAttributes() as $attribute) {
-            if (!$behavior->isAttributeModified($attribute)) {
-                $draft->$attribute = $source->$attribute;
-            }
-        }
-
-        $outdatedFieldHandles = [];
-        foreach ($behavior->getOutdatedFields() as $fieldHandle) {
-            if (!$behavior->isFieldModified($fieldHandle)) {
-                $outdatedFieldHandles[] = $fieldHandle;
-            }
-        }
-        if (!empty($outdatedFieldHandles)) {
-            $draft->setFieldValues($source->getSerializedFieldValues($outdatedFieldHandles));
-        }
-
-        $behavior->mergingChanges = true;
-        Craft::$app->getElements()->saveElement($draft, false, false);
-        $behavior->mergingChanges = false;
     }
 
     /**
@@ -422,7 +315,7 @@ class Drafts extends Component
         try {
             if ($canonical !== $draft) {
                 // Merge in any attribute & field values that were updated in the source element, but not the draft
-                $this->mergeSourceChanges($draft);
+                $elementsService->mergeCanonicalChanges($draft);
 
                 // "Duplicate" the draft with the source element's ID, UID, and content ID
                 $newSource = $elementsService->updateCanonicalElement($draft, [

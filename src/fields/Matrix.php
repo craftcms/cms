@@ -571,6 +571,14 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
     /**
      * @inheritdoc
      */
+    public function copyValue(ElementInterface $from, ElementInterface $to): void
+    {
+        // We'll do it later from afterElementPropagate()
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function modifyElementsQuery(ElementQueryInterface $query, $value)
     {
         /** @var ElementQuery $query */
@@ -639,6 +647,23 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
             default:
                 return null;
         }
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getStatus(ElementInterface $element): ?array
+    {
+        // The only thing we need to actually present to the UI is whether it is outdated.
+        // Individual blocks will show their own field statuses.
+        if ($element->isFieldOutdated($this->handle)) {
+            return [
+                Element::ATTR_STATUS_OUTDATED,
+                Craft::t('app', 'This field was updated in the main revision.'),
+            ];
+        }
+
+        return null;
     }
 
     /**
@@ -1011,6 +1036,8 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
             $matrixService->duplicateBlocks($this, $element->duplicateOf, $element, true);
         } else if ($element->isFieldDirty($this->handle) || !empty($element->newSiteIds)) {
             $matrixService->saveField($this, $element);
+        } else if ($element->mergingCanonicalChanges) {
+            $matrixService->mergeCanonicalChanges($this, $element);
         }
 
         // Repopulate the Matrix block query if this is a new element
