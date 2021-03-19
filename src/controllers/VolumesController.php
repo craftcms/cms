@@ -8,6 +8,7 @@
 namespace craft\controllers;
 
 use Craft;
+use craft\base\Field;
 use craft\base\VolumeInterface;
 use craft\db\Table;
 use craft\elements\Asset;
@@ -186,7 +187,7 @@ class VolumesController extends Controller
             'handle' => $this->request->getBodyParam('handle'),
             'hasUrls' => (bool)$this->request->getBodyParam('hasUrls'),
             'url' => $this->request->getBodyParam('url'),
-            'titleTranslationMethod' => $this->request->getBodyParam('titleTranslationMethod'),
+            'titleTranslationMethod' => $this->request->getBodyParam('titleTranslationMethod', Field::TRANSLATION_METHOD_SITE),
             'titleTranslationKeyFormat' => $this->request->getBodyParam('titleTranslationKeyFormat'),
             'settings' => $this->request->getBodyParam('types.' . $type)
         ]);
