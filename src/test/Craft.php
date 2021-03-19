@@ -227,7 +227,7 @@ class Craft extends Yii2
         try {
             $dbSetupConfig = $this->_getConfig('dbSetup');
 
-            // Prevent's a static properties bug.
+            // Prevents a static properties bug.
             // Only reset PC when cleaning
             if (isset($dbSetupConfig['clean']) && $dbSetupConfig['clean'] === true) {
                 ProjectConfig::reset();
