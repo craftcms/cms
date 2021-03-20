@@ -732,7 +732,7 @@ return [
     'Job retried.' => 'Aufgabe erneut versucht.',
     'Job' => 'Aufgabe',
     'Keep both' => 'Beide behalten',
-    'Keep it' => 'Entwurf erstellen',
+    'Keep it' => 'Behalten',
     'Keep me logged in' => 'Angemeldet bleiben',
     'Keep them' => 'Behalte sie',
     'Label' => 'Bezeichnung',
