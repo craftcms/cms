@@ -7,6 +7,7 @@
 - Fixed a bug where asset, category, and entry queries could return results when they shouldn’t. ([#7678](https://github.com/craftcms/cms/issues/7678))
 - Fixed a bug where `Craft.initUiElements()` was adding `rel="noopener"` and `target="_blank"` to all external links, rather than just ones within the passed-in container. ([#7686](https://github.com/craftcms/cms/issues/7686))
 - Fixed a SQL error that could occur when running the `utils/repair/section-structure` or `utils/repair/category-group-structure` commands. ([#7699](https://github.com/craftcms/cms/issues/7699))
+- Fixed an error that could occur if the project config data contained any incomplete packed associative arrays.
 
 ## 3.6.10 - 2021-03-09
 
