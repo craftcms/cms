@@ -26,6 +26,8 @@
 - Fixed a bug where `Craft.initUiElements()` was adding `rel="noopener"` and `target="_blank"` to all external links, rather than just ones within the passed-in container. ([#7686](https://github.com/craftcms/cms/issues/7686))
 - Fixed a bug where the `queue/listen` command wasn’t always respecting exit signals. ([#7704](https://github.com/craftcms/cms/issues/7704))
 - Fixed a SQL error that could occur when running the `utils/repair/section-structure` or `utils/repair/category-group-structure` commands. ([#7699](https://github.com/craftcms/cms/issues/7699))
+- Fixed an error that could occur if the project config data contained any incomplete packed associative arrays.
+- Fixed a bug where `craft\helpers\Queue::push()` wasn’t respecting its `$priority` argument.
 - Fixed a bug where `craft\test\Craft::mockMethods()` and `mockCraftMethods()`’ `$constructorParams` arguments only accepted a single argument’s value, rather than an array of constructor arguments.
 
 ## 3.6.10 - 2021-03-09
@@ -523,6 +525,11 @@
 
 ### Security
 - The default `allowedFileExtensions` config setting value no longer includes `htm` or `html`.
+
+## 3.5.19.1 - 2021-01-28
+
+### Fixed
+- Fixed an error that could occur when validating dates. ([#7459](https://github.com/craftcms/cms/issues/7459))
 
 ## 3.5.19 - 2021-01-26
 

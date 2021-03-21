@@ -351,6 +351,10 @@ class ProjectConfig
             $associative = [];
             if (!empty($array[ProjectConfigService::CONFIG_ASSOC_KEY])) {
                 foreach ($array[ProjectConfigService::CONFIG_ASSOC_KEY] as $items) {
+                    if (!isset($items[0], $items[1])) {
+                        Craft::warning('Skipping incomplete packed associative array data', __METHOD__);
+                        continue;
+                    }
                     $associative[$items[0]] = $items[1];
                 }
             }

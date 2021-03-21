@@ -30,7 +30,7 @@ class Queue
     {
         $queue = Craft::$app->getQueue();
 
-        if ($priority !== null) {
+        if ($priority === null) {
             return $queue->push($job);
         }
 
