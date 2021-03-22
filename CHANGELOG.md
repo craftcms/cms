@@ -9,6 +9,7 @@
 - Fixed a SQL error that could occur when running the `utils/repair/section-structure` or `utils/repair/category-group-structure` commands. ([#7699](https://github.com/craftcms/cms/issues/7699))
 - Fixed an error that could occur if the project config data contained any incomplete packed associative arrays.
 - Fixed a bug where `craft\helpers\Queue::push()` wasn’t respecting its `$priority` argument.
+- Fixed a bug where relational fields weren’t showing all of the currently selected elements if the field’s limit had decreased, making it difficult to fix the validation error. ([#7707](https://github.com/craftcms/cms/issues/7707))
 
 ## 3.6.10 - 2021-03-09
 
