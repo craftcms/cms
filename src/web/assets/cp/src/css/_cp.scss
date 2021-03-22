@@ -1226,6 +1226,7 @@ $toolbarIconColor: darken($inputColor, 10%);
 /* grids */
 .grid {
   position: relative;
+  min-height: 1px; // Required for Grid.js to run
 
   &:after {
     @include clearafter;
