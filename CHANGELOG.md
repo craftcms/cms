@@ -15,6 +15,7 @@
 - `craft\helpers\ElementHelper::setUniqueUri()` now starts incrementing duplicate slugs with `-2` instead of `-1`.
 - `craft\helpers\Queue::push()` now has `$delay` and `$ttr` arguments.
 - `craft\queue\Queue::run()` now has `$repeat` and `$timeout` arguments.
+- Updated Garnish to 0.1.41.
 
 ### Deprecated
 - Deprecated `craft\queue\Queue::listen()`. `run()` can be used instead.
@@ -30,6 +31,7 @@
 - Fixed an error that could occur if the project config data contained any incomplete packed associative arrays.
 - Fixed a bug where `craft\helpers\Queue::push()` wasn’t respecting its `$priority` argument.
 - Fixed a bug where `craft\test\Craft::mockMethods()` and `mockCraftMethods()`’ `$constructorParams` arguments only accepted a single argument’s value, rather than an array of constructor arguments.
+- Fixed a JavaScript error that would occur if any elements had a `pill` class. ([#7705](https://github.com/craftcms/cms/issues/7705))
 
 ## 3.6.10 - 2021-03-09
 

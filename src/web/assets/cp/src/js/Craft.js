@@ -1495,7 +1495,6 @@ $.extend(Craft,
             $('.fieldtoggle', $container).fieldtoggle();
             $('.lightswitch', $container).lightswitch();
             $('.nicetext', $container).nicetext();
-            $('.pill', $container).pill();
             $('.formsubmit', $container).formsubmit();
             $('.menubtn', $container).menubtn();
             $('.datetimewrapper', $container).datetime();
@@ -2000,14 +1999,6 @@ $.extend($.fn,
             return this.each(function() {
                 if (!$.data(this, 'nicetext')) {
                     new Garnish.NiceText(this);
-                }
-            });
-        },
-
-        pill: function() {
-            return this.each(function() {
-                if (!$.data(this, 'pill')) {
-                    new Garnish.Pill(this);
                 }
             });
         },
