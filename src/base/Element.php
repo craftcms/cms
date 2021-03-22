@@ -2802,21 +2802,21 @@ abstract class Element extends Component implements ElementInterface
         if ($modified && !$outdated) {
             return [
                 self::ATTR_STATUS_MODIFIED,
-                Craft::t('app', 'This field was updated in the draft.'),
+                Craft::t('app', 'This field was updated in this draft.'),
             ];
         }
 
         if ($outdated && !$modified) {
             return [
                 self::ATTR_STATUS_OUTDATED,
-                Craft::t('app', 'This field was updated in the main revision.'),
+                Craft::t('app', 'This field was updated in the Current revision.'),
             ];
         }
 
         if ($outdated && $modified) {
             return [
                 self::ATTR_STATUS_CONFLICTED,
-                Craft::t('app', 'This field was updated in the main revision and the draft. The draft’s value will be used when merged.'),
+                Craft::t('app', 'This field was updated in the Current revision and this draft. This draft’s value will be used when merged.'),
             ];
         }
 

@@ -659,7 +659,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
         if ($element->isFieldOutdated($this->handle)) {
             return [
                 Element::ATTR_STATUS_OUTDATED,
-                Craft::t('app', 'This field was updated in the main revision.'),
+                Craft::t('app', 'This field was updated in the Current revision.'),
             ];
         }
 
