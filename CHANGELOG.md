@@ -30,8 +30,11 @@
 - Fixed a SQL error that could occur when running the `utils/repair/section-structure` or `utils/repair/category-group-structure` commands. ([#7699](https://github.com/craftcms/cms/issues/7699))
 - Fixed an error that could occur if the project config data contained any incomplete packed associative arrays.
 - Fixed a bug where `craft\helpers\Queue::push()` wasn’t respecting its `$priority` argument.
-- Fixed a bug where `craft\test\Craft::mockMethods()` and `mockCraftMethods()`’ `$constructorParams` arguments only accepted a single argument’s value, rather than an array of constructor arguments.
+- Fixed a bug where relational fields weren’t showing all of the currently selected elements if the field’s limit had decreased, making it difficult to fix the validation error. ([#7707](https://github.com/craftcms/cms/issues/7707))
+- Fixed a PHP error that occurred during garbage collection if the `purgeUnsavedDraftsDuration` config setting was set to a [duration string](https://en.wikipedia.org/wiki/ISO_8601#Durations). ([#7714](https://github.com/craftcms/cms/issues/7714))
+- Fixed a bug where project config changes could be applied incorrectly for numerically-indexed arrays with 10 or more items. ([presseddigital/linkit#88](https://github.com/presseddigital/linkit/issues/88#issuecomment-802794767))
 - Fixed a JavaScript error that would occur if any elements had a `pill` class. ([#7705](https://github.com/craftcms/cms/issues/7705))
+- Fixed a bug where `craft\test\Craft::mockMethods()` and `mockCraftMethods()`’ `$constructorParams` arguments only accepted a single argument’s value, rather than an array of constructor arguments.
 
 ## 3.6.10 - 2021-03-09
 

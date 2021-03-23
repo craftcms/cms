@@ -1085,6 +1085,7 @@ JS;
         $clone
             ->anyStatus()
             ->siteId('*')
+            ->limit(null)
             ->unique();
         if ($element !== null) {
             $clone->preferSites([$this->targetSiteId($element)]);

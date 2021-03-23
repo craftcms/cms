@@ -187,7 +187,7 @@ class ProjectConfig
             }
         }
 
-        ksort($cleanConfig);
+        ksort($cleanConfig, SORT_NATURAL);
         return $cleanConfig;
     }
 
@@ -222,12 +222,13 @@ class ProjectConfig
 
                         // Ignore empty arrays
                         if (!is_array($pArray[1]) || !empty($pArray[1])) {
-                            $cleanPackedArray[] = $pArray;
+                            $cleanPackedArray[$pKey] = $pArray;
                         }
                     }
                 }
 
                 if (!empty($cleanPackedArray)) {
+                    ksort($cleanPackedArray, SORT_NATURAL);
                     $value[ProjectConfigService::CONFIG_ASSOC_KEY] = $cleanPackedArray;
                 } else {
                     // Set $value to an empty array so it doesn't make it into the final config
