@@ -4,11 +4,11 @@
 
         <table class="data fullwidth fixed-layout">
             <tbody>
-            <tr v-for="(value, name) in activeJob" v-if="!Craft.inArray(name, ['description', 'progressLabel', 'job'])">
+            <tr v-for="(value, name) in activeJob" v-if="!Craft.inArray(name, ['delay', 'description', 'progressLabel', 'job'])">
                 <th class="light">[[jobAttributeName(name)]]</th>
                 <td :class="(name == 'status' || name == 'error') ? jobStatusClass(activeJob.status) : null">
                     <template v-if="name == 'status'">
-                        <span :class="jobStatusIconClass(value)"></span>[[jobStatusLabel(value)]]
+                        <span :class="jobStatusIconClass(value)"></span>[[jobStatusLabel(value, activeJob.delay)]]
                     </template>
                     <template v-else-if="name == 'progress'">
                         [[activeJob.progress]]%
@@ -48,7 +48,7 @@
                         <tr v-for="job in jobs">
                             <th><a @click="setActiveJob(job.id, true)">[[job.description]]</a></th>
                             <td :class="jobStatusClass(job.status)">
-                                <span :class="jobStatusIconClass(job.status)"></span>[[jobStatusLabel(job.status)]]
+                                <span :class="jobStatusIconClass(job.status)"></span>[[jobStatusLabel(job.status, job.delay)]]
                             </td>
                             <td>
                                 <template v-if="job.status == 2">

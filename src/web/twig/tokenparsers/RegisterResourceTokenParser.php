@@ -53,6 +53,12 @@ class RegisterResourceTokenParser extends AbstractTokenParser
     public $allowOptions = false;
 
     /**
+     * @var int|null The default `$position` value that should be possed to the [[method]], if it has a `$position` argument.
+     * @since 3.6.11
+     */
+    public $defaultPosition;
+
+    /**
      * @var string|null The new template code that should be used if this tag is deprecated
      * @todo Remove this in Craft 4
      */
@@ -154,6 +160,7 @@ class RegisterResourceTokenParser extends AbstractTokenParser
             'method' => $this->method,
             'allowOptions' => $this->allowOptions,
             'allowPosition' => $this->allowPosition,
+            'defaultPosition' => $this->defaultPosition,
             'capture' => $capture,
             'position' => $position,
             'first' => $first,

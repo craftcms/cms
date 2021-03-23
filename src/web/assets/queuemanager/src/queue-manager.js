@@ -43,7 +43,6 @@ new Vue({
         })
 
         window.onpopstate = (event) => {
-            console.log('popstate', event.state)
             if (event.state && event.state.jobId) {
                 this.setActiveJob(event.state.jobId, false)
             } else {
@@ -291,9 +290,14 @@ new Vue({
         /**
          * Returns a job status code.
          * @param {number} status
+         * @param {number} delay
          * @returns {string}
          */
-        jobStatusLabel(status) {
+        jobStatusLabel(status, delay) {
+            if (delay) {
+                return Craft.t('app', 'Delayed')
+            }
+
             switch (status) {
                 case 1:
                     return Craft.t('app', 'Pending')
@@ -387,4 +391,3 @@ new Vue({
         }
     }
 })
-

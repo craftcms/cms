@@ -786,6 +786,35 @@ interface ElementQueryInterface extends QueryInterface, ArrayAccess, Arrayable, 
     public function relatedTo($value);
 
     /**
+     * Narrows the query results to only {elements} that are related to certain other elements.
+     *
+     * See [Relations](https://craftcms.com/docs/3.x/relations.html) for a full explanation of how to work with this parameter.
+     *
+     * ---
+     *
+     * ```twig
+     * {# Fetch all {elements} that are related to myCategoryA and myCategoryB #}
+     * {% set {elements-var} = {twig-method}
+     *     .relatedTo(myCategoryA)
+     *     .andRelatedTo(myCategoryBy)
+     *     .all() %}
+     * ```
+     *
+     * ```php
+     * // Fetch all {elements} that are related to $myCategoryA and $myCategoryB
+     * ${elements-var} = {php-method}
+     *     ->relatedTo($myCategoryA)
+     *     ->andRelatedTo($myCategoryB)
+     *     ->all();
+     * ```
+     *
+     * @param int|array|ElementInterface|null $value The property value
+     * @return static self reference
+     * @since 3.6.11
+     */
+    public function andRelatedTo($value);
+
+    /**
      * Narrows the query results based on the {elements}’ titles.
      *
      * Possible values include:

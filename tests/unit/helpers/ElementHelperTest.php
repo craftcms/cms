@@ -7,11 +7,15 @@
 
 namespace crafttests\unit\helpers;
 
+use Codeception\Stub;
 use Codeception\Test\Unit;
 use Craft;
+use craft\db\Command;
+use craft\elements\Asset;
 use craft\errors\OperationAbortedException;
 use craft\helpers\ElementHelper;
 use craft\test\mockclasses\elements\ExampleElement;
+use craft\test\mockclasses\elements\MockElementQuery;
 use crafttests\fixtures\EntryFixture;
 use Exception;
 use UnitTester;
@@ -96,10 +100,29 @@ class ElementHelperTest extends Unit
      *
      * @param array $expected
      * @param array $config
+     * @param int $duplicates
      * @throws OperationAbortedException
      */
-    public function testSetUniqueUri(array $expected, array $config)
+    public function testSetUniqueUri(array $expected, array $config, int $duplicates = 0)
     {
+        if ($duplicates) {
+            $db = \Craft::$app->getDb();
+            $this->tester->mockDbMethods([
+                'createCommand' => function($sql, $params) use (&$duplicates, &$db) {
+                    /* @var Command $command */
+                    $command = Stub::construct(Command::class, [
+                        ['db' => $db, 'sql' => $sql],
+                    ], [
+                        'queryScalar' => function() use (&$duplicates) {
+                            return $duplicates-- ? 1 : 0;
+                        },
+                    ]);
+                    $command->bindValues($params);
+                    return $command;
+                }
+            ]);
+        }
+
         $example = new ExampleElement($config);
         self::assertNull(ElementHelper::setUniqueUri($example));
 
@@ -233,6 +256,8 @@ class ElementHelperTest extends Unit
             [['uri' => null], ['uriFormat' => null]],
             [['uri' => null], ['uriFormat' => '']],
             [['uri' => 'craft'], ['uriFormat' => '{slug}', 'slug' => 'craft']],
+            [['uri' => 'craft--3'], ['uriFormat' => '{slug}', 'slug' => 'craft'], 2],
+            [['uri' => 'testing-uri-longer-than-255-chars/arrêté-du-24-décembre-2020-portant-modification-de-larrêté-du-4-décembre-2020-fixant-la-liste-des-personnes-autorisées-à-exercer-en-france-la-profession-de-médecin-dans-la-spécialité-gériatrie-en-application-des-dispos--2'], ['uriFormat' => 'testing-uri-longer-than-255-chars/{slug}', 'slug' => 'arrêté-du-24-décembre-2020-portant-modification-de-larrêté-du-4-décembre-2020-fixant-la-liste-des-personnes-autorisées-à-exercer-en-france-la-profession-de-médecin-dans-la-spécialité-gériatrie-en-application-des-dispositions-de-larti'], 1],
             [['uri' => 'test'], ['uriFormat' => 'test/{slug}']],
             [['uri' => 'test/test'], ['uriFormat' => 'test/{slug}', 'slug' => 'test']],
             [['uri' => 'test/tes.!@#$%^&*()_t'], ['uriFormat' => 'test/{slug}', 'slug' => 'tes.!@#$%^&*()_t']],
@@ -240,8 +265,8 @@ class ElementHelperTest extends Unit
             // 254 chars.
             [['uri' => 'test/asdsadsadaasdasdadssssssssssssssssssssssssssssssssssssssssssssssadsasdsdaadsadsasddasadsdasasasdsadsadaasdasdadssssssssssssssssssssssssssssssssssssssssssssssadsasdsdaadsadsasddasadsdasasasdsadsadaasdasdadsssssssssssssssssssssssssssssssssssssssssssss'], ['uriFormat' => 'test/{slug}', 'slug' => 'asdsadsadaasdasdadssssssssssssssssssssssssssssssssssssssssssssssadsasdsdaadsadsasddasadsdasasasdsadsadaasdasdadssssssssssssssssssssssssssssssssssssssssssssssadsasdsdaadsadsasddasadsdasasasdsadsadaasdasdadsssssssssssssssssssssssssssssssssssssssssssss']],
 
-            [['uri' => 'some-uri/With--URL--2--1'], ['uriFormat' => 'some-uri/{slug}', 'slug' => 'With--URL--2']],
-            [['uri' => 'some-uri/With--URL--1--1'], ['uriFormat' => 'some-uri/{slug}', 'slug' => 'With--URL--1']],
+            [['uri' => 'some-uri/With--URL--2--2'], ['uriFormat' => 'some-uri/{slug}', 'slug' => 'With--URL--2']],
+            [['uri' => 'some-uri/With--URL--1--2'], ['uriFormat' => 'some-uri/{slug}', 'slug' => 'With--URL--1']],
             [['uri' => 'different-uri/With--URL--1'], ['uriFormat' => 'different-uri/{slug}', 'slug' => 'With--URL--1']],
         ];
     }

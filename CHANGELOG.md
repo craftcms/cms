@@ -1,17 +1,40 @@
 # Release Notes for Craft CMS 3.x
 
-## Unreleased
+## 3.6.11 - 2021-03-23
+
+### Added
+- Added the `andRelatedTo` element query param, for adding additional relation criteria. ([#5733](https://github.com/craftcms/cms/issues/5733))
+- Added the `{% script %}` tag, for outputting `<script>` tags with full control over the attributes. ([#7676](https://github.com/craftcms/cms/issues/7676))
+- Added `craft\web\User::getToken()`.
+- Added `craft\test\Craft::mockDbMethods()`.
+
+### Changed
+- The Queue Manager utility now shows delayed jobs. ([#7692](https://github.com/craftcms/cms/issues/7692))
+- The `gc` command can now delete unneeded rows from deprecated database tables, including `templatecaches`, `entrydrafts`, and `entryrevisions`. ([#6434](https://github.com/craftcms/cms/issues/6434))
+- `relatedTo` element query params can now be set to multiple `or` relation criteria inclusively, without specifying the `element`/`targetElement`/`sourceElement` keys. ([#5733](https://github.com/craftcms/cms/issues/5733))
+- `craft\helpers\ElementHelper::setUniqueUri()` now starts incrementing duplicate slugs with `-2` instead of `-1`.
+- `craft\helpers\Queue::push()` now has `$delay` and `$ttr` arguments.
+- `craft\queue\Queue::run()` now has `$repeat` and `$timeout` arguments.
+- Updated Garnish to 0.1.41.
+
+### Deprecated
+- Deprecated `craft\queue\Queue::listen()`. `run()` can be used instead.
 
 ### Fixed
 - Fixed a bug where requests with an invalid `action` param would return a 500 status code instead of 400. ([#7668](https://github.com/craftcms/cms/issues/7668))
 - Fixed a bug where asset, category, and entry queries could return results when they shouldn’t. ([#7678](https://github.com/craftcms/cms/issues/7678))
+- Fixed a bug where users were getting logged out after changing their password. ([#7682](https://github.com/craftcms/cms/issues/7682))
+- Fixed an infinite loop bug that could occur when saving an element with a non-unique URI over 255 bytes long. ([#7684](https://github.com/craftcms/cms/pull/7684))
 - Fixed a bug where `Craft.initUiElements()` was adding `rel="noopener"` and `target="_blank"` to all external links, rather than just ones within the passed-in container. ([#7686](https://github.com/craftcms/cms/issues/7686))
+- Fixed a bug where the `queue/listen` command wasn’t always respecting exit signals. ([#7704](https://github.com/craftcms/cms/issues/7704))
 - Fixed a SQL error that could occur when running the `utils/repair/section-structure` or `utils/repair/category-group-structure` commands. ([#7699](https://github.com/craftcms/cms/issues/7699))
 - Fixed an error that could occur if the project config data contained any incomplete packed associative arrays.
 - Fixed a bug where `craft\helpers\Queue::push()` wasn’t respecting its `$priority` argument.
 - Fixed a bug where relational fields weren’t showing all of the currently selected elements if the field’s limit had decreased, making it difficult to fix the validation error. ([#7707](https://github.com/craftcms/cms/issues/7707))
 - Fixed a PHP error that occurred during garbage collection if the `purgeUnsavedDraftsDuration` config setting was set to a [duration string](https://en.wikipedia.org/wiki/ISO_8601#Durations). ([#7714](https://github.com/craftcms/cms/issues/7714))
 - Fixed a bug where project config changes could be applied incorrectly for numerically-indexed arrays with 10 or more items. ([presseddigital/linkit#88](https://github.com/presseddigital/linkit/issues/88#issuecomment-802794767))
+- Fixed a JavaScript error that would occur if any elements had a `pill` class. ([#7705](https://github.com/craftcms/cms/issues/7705))
+- Fixed a bug where `craft\test\Craft::mockMethods()` and `mockCraftMethods()`’ `$constructorParams` arguments only accepted a single argument’s value, rather than an array of constructor arguments.
 
 ## 3.6.10 - 2021-03-09
 
