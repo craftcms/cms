@@ -220,14 +220,6 @@ abstract class FlysystemVolume extends Volume
     /**
      * @inheritdoc
      */
-    public function createDir(string $path)
-    {
-        $this->createDirectory($path);
-    }
-
-    /**
-     * @inheritdoc
-     */
     public function createDirectory(string $path)
     {
         if ($this->folderExists($path)) {
@@ -237,14 +229,6 @@ abstract class FlysystemVolume extends Volume
         if (!$this->filesystem()->createDir($path)) {
             throw new VolumeException('Couldn’t create ' . $path);
         }
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function deleteDir(string $path)
-    {
-        $this->deleteDirectory($path);
     }
 
     /**
@@ -261,14 +245,6 @@ abstract class FlysystemVolume extends Volume
         if (!$success) {
             throw new VolumeException('Couldn’t delete ' . $path);
         }
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function renameDir(string $path, string $newName)
-    {
-        $this->renameDirectory($path, $newName);
     }
 
     /**

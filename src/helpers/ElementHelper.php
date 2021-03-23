@@ -25,6 +25,8 @@ use yii\base\Exception;
  */
 class ElementHelper
 {
+    private const URI_MAX_LENGTH = 255;
+
     /**
      * Generates a new temporary slug.
      *
@@ -155,51 +157,44 @@ class ElementHelper
             return;
         }
 
-        $slugWordSeparator = Craft::$app->getConfig()->getGeneral()->slugWordSeparator;
+        $generalConfig = Craft::$app->getConfig()->getGeneral();
         $maxSlugIncrement = Craft::$app->getConfig()->getGeneral()->maxSlugIncrement;
+        $originalSlug = $element->slug;
+        $originalSlugLen = mb_strlen($originalSlug);
 
-        for ($i = 0; $i < $maxSlugIncrement; $i++) {
-            $testSlug = $element->slug;
-
-            if ($i > 0) {
-                $testSlug .= $slugWordSeparator . $i;
-            }
-
-            $originalSlug = $element->slug;
-            $element->slug = $testSlug;
-
+        for ($i = 1; $i <= $maxSlugIncrement; $i++) {
+            $suffix = ($i !== 1) ? $generalConfig->slugWordSeparator . $i : '';
+            $element->slug = $originalSlug . $suffix;
             $testUri = self::_renderUriFormat($uriFormat, $element);
 
             // Make sure we're not over our max length.
-            if (mb_strlen($testUri) > 255) {
+            $testUriLen = mb_strlen($testUri);
+            if ($testUriLen > self::URI_MAX_LENGTH) {
                 // See how much over we are.
-                $overage = mb_strlen($testUri) - 255;
+                $overage = $testUriLen - self::URI_MAX_LENGTH;
 
-                // Do we have anything left to chop off?
-                if ($overage < mb_strlen($element->slug)) {
-                    // Chop off the overage amount from the slug
-                    $element->slug = mb_substr($element->slug, 0, -$overage);
-
-                    // Let's try this again.
-                    $i--;
-                    continue;
+                // If the slug is too small to be trimmed down, we're SOL
+                if ($overage >= $originalSlugLen) {
+                    $element->slug = $originalSlug;
+                    throw new OperationAbortedException('Could not find a unique URI for this element');
                 }
 
-                // We're screwed, blow things up.
-                throw new OperationAbortedException('Could not find a unique URI for this element');
+                $trimmedSlug = mb_substr($originalSlug, 0, -$overage);
+                if ($generalConfig->slugWordSeparator) {
+                    $trimmedSlug = rtrim($trimmedSlug, $generalConfig->slugWordSeparator);
+                }
+                $element->slug = $trimmedSlug . $suffix;
+                $testUri = self::_renderUriFormat($uriFormat, $element);
             }
 
             if (self::_isUniqueUri($testUri, $element)) {
                 // OMG!
-                $element->slug = $testSlug;
                 $element->uri = $testUri;
                 return;
             }
-
-            // Try again...
-            $element->slug = $originalSlug;
         }
 
+        $element->slug = $originalSlug;
         throw new OperationAbortedException('Could not find a unique URI for this element');
     }
 
@@ -396,7 +391,7 @@ class ElementHelper
      */
     public static function isDraftOrRevision(ElementInterface $element): bool
     {
-        $root = ElementHelper::rootElement($element);
+        $root = static::rootElement($element);
         return $root->getIsDraft() || $root->getIsRevision();
     }
 

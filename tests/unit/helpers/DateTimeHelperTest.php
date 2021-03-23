@@ -429,12 +429,16 @@ class DateTimeHelperTest extends Unit
     /**
      * @dataProvider timeZoneOffsetDataDataProvider
      *
-     * @param string $expected
+     * @param string|string[] $expected
      * @param string $timeZone
      */
-    public function testTimeZoneOffset(string $expected, string $timeZone)
+    public function testTimeZoneOffset($expected, string $timeZone)
     {
-        self::assertSame($expected, DateTimeHelper::timeZoneOffset($timeZone));
+        if (is_string($expected)) {
+            self::assertSame($expected, DateTimeHelper::timeZoneOffset($timeZone));
+        } else {
+            self::assertContains(DateTimeHelper::timeZoneOffset($timeZone), $expected);
+        }
     }
 
     /**
@@ -537,8 +541,7 @@ class DateTimeHelperTest extends Unit
         return [
             ['+00:00', 'UTC'],
             ['+00:00', 'GMT'],
-            ['-05:00', 'America/New_York'],
-            ['+09:00', 'Asia/Tokyo'],
+            [['-05:00', '-04:00'], 'America/New_York'],
             ['+09:00', '+09:00'],
         ];
     }

@@ -160,6 +160,7 @@ class Drafts extends Component
             // Create the draft row
             $draftId = $this->insertDraftRow($name, $notes, $creatorId, $source->id, $source::trackChanges());
 
+            // Duplicate the element
             $newAttributes['draftId'] = $draftId;
             $newAttributes['behaviors']['draft'] = [
                 'class' => DraftBehavior::class,
@@ -170,7 +171,6 @@ class Drafts extends Component
                 'trackChanges' => $source::trackChanges(),
             ];
 
-            // Duplicate the element
             $draft = Craft::$app->getElements()->duplicateElement($source, $newAttributes);
 
             $transaction->commit();

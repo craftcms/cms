@@ -250,7 +250,7 @@ class CategoryQuery extends ElementQuery
     private function _normalizeGroupId()
     {
         if (empty($this->groupId)) {
-            $this->groupId = null;
+            $this->groupId = is_array($this->groupId) ? [] : null;
         } else if (is_numeric($this->groupId)) {
             $this->groupId = [$this->groupId];
         } else if (!is_array($this->groupId) || !ArrayHelper::isNumeric($this->groupId)) {

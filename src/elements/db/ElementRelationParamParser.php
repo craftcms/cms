@@ -18,6 +18,7 @@ use craft\helpers\ArrayHelper;
 use craft\helpers\StringHelper;
 use craft\models\Site;
 use yii\base\BaseObject;
+use yii\base\InvalidArgumentException;
 
 /**
  * Parses a relatedTo param on an ElementQuery.
@@ -56,6 +57,131 @@ class ElementRelationParamParser extends BaseObject
     public $fields;
 
     /**
+     * Normalizes a `relatedTo` param for [[parse()]].
+     *
+     * @param array|string|int|ElementInterface $relatedToParam
+     * @return array
+     * @throws InvalidArgumentException if any of the relation criteria contain an invalid site handle
+     * @since 3.6.11
+     */
+    public static function normalizeRelatedToParam($relatedToParam): array
+    {
+        // Ensure it's array
+        if (!is_array($relatedToParam)) {
+            $relatedToParam = is_string($relatedToParam) ? StringHelper::split($relatedToParam) : [$relatedToParam];
+        }
+
+        if (isset($relatedToParam[0]) && in_array($relatedToParam[0], ['and', 'or'])) {
+            $glue = array_shift($relatedToParam);
+            if ($glue === 'and' && count($relatedToParam) < 2) {
+                $glue = 'or';
+            }
+        } else {
+            $glue = 'or';
+        }
+
+        if (isset($relatedToParam['element']) || isset($relatedToParam['sourceElement']) || isset($relatedToParam['targetElement'])) {
+            $relatedToParam = [$relatedToParam];
+        }
+
+        $relatedToParam = array_map([static::class, 'normalizeRelatedToCriteria'], $relatedToParam);
+
+        if ($glue === 'or') {
+            // Group all of the OR elements, so we avoid adding massive JOINs to the query
+            $orElements = [];
+
+            foreach ($relatedToParam as $i => $relCriteria) {
+                if (
+                    isset($relCriteria['element']) &&
+                    $relCriteria['element'][0] === 'or'
+                    && $relCriteria['field'] === null &&
+                    $relCriteria['sourceSite'] === null
+                ) {
+                    ArrayHelper::append($orElements, ...array_slice($relCriteria['element'], 1));
+                    unset($relatedToParam[$i]);
+                }
+            }
+
+            if (!empty($orElements)) {
+                $relatedToParam[] = static::normalizeRelatedToCriteria($orElements);
+            }
+        }
+
+        array_unshift($relatedToParam, $glue);
+        return $relatedToParam;
+    }
+
+    /**
+     * Normalizes an individual `relatedTo` criteria.
+     *
+     * @param mixed $relCriteria
+     * @return array
+     * @throws InvalidArgumentException if the criteria contains an invalid site handle
+     * @since 3.6.11
+     */
+    public static function normalizeRelatedToCriteria($relCriteria): array
+    {
+        if (
+            !is_array($relCriteria) ||
+            (!isset($relCriteria['element']) && !isset($relCriteria['sourceElement']) && !isset($relCriteria['targetElement']))
+        ) {
+            $relCriteria = ['element' => $relCriteria];
+        }
+
+        // Merge in default criteria params
+        $relCriteria += [
+            'field' => null,
+            'sourceSite' => null,
+        ];
+
+        // Check for now-deprecated sourceLocale param
+        if (isset($relCriteria['sourceLocale'])) {
+            Craft::$app->getDeprecator()->log('relatedTo:sourceLocale', 'The `sourceLocale` criteria in `relatedTo` element query params has been deprecated. Use `sourceSite` instead.');
+            $relCriteria['sourceSite'] = $relCriteria['sourceLocale'];
+            unset($relCriteria['sourceLocale']);
+        }
+
+        // Normalize the sourceSite param (should be an ID)
+        if ($relCriteria['sourceSite'] && !is_numeric($relCriteria['sourceSite'])) {
+            if ($relCriteria['sourceSite'] instanceof Site) {
+                $relCriteria['sourceSite'] = $relCriteria['sourceSite']->id;
+            } else {
+                $site = Craft::$app->getSites()->getSiteByHandle($relCriteria['sourceSite']);
+                if (!$site) {
+                    // Invalid handle
+                    throw new InvalidArgumentException("Invalid site: {$relCriteria['sourceSite']}");
+                }
+                $relCriteria['sourceSite'] = $site->id;
+            }
+        }
+
+        // Normalize the elements
+        foreach (['element', 'sourceElement', 'targetElement'] as $elementParam) {
+            if (isset($relCriteria[$elementParam])) {
+                $elements = &$relCriteria[$elementParam];
+
+                if (!is_array($elements)) {
+                    $elements = is_string($elements) ? StringHelper::split($elements) : [$elements];
+                }
+
+                if (isset($elements[0]) && in_array($elements[0], ['and', 'or'])) {
+                    $glue = array_shift($elements);
+                    if ($glue === 'and' && count($elements) < 2) {
+                        $glue = 'or';
+                    }
+                } else {
+                    $glue = 'or';
+                }
+
+                array_unshift($elements, $glue);
+                break;
+            }
+        }
+
+        return $relCriteria;
+    }
+
+    /**
      * Parses a `relatedTo` element query param and returns the condition that should
      * be applied back on the element query, or `false` if there's an issue.
      *
@@ -64,42 +190,14 @@ class ElementRelationParamParser extends BaseObject
      */
     public function parse($relatedToParam)
     {
-        // Ensure the criteria is an array
-        if (!is_array($relatedToParam)) {
-            $relatedToParam = is_string($relatedToParam) ? StringHelper::split($relatedToParam) : [$relatedToParam];
-        }
+        $relatedToParam = static::normalizeRelatedToParam($relatedToParam);
+        $glue = array_shift($relatedToParam);
 
-        if (isset($relatedToParam['element']) || isset($relatedToParam['sourceElement']) || isset($relatedToParam['targetElement'])) {
-            $relatedToParam = [$relatedToParam];
-        }
-
-        if (!isset($relatedToParam[0])) {
+        if (empty($relatedToParam)) {
             return false;
         }
 
         $conditions = [];
-
-        if ($relatedToParam[0] === 'and' || $relatedToParam[0] === 'or') {
-            $glue = array_shift($relatedToParam);
-        } else {
-            $glue = 'or';
-        }
-
-        if ($glue === 'or') {
-            // Group all of the unspecified elements, so we avoid adding massive JOINs to the query
-            $unspecifiedElements = [];
-
-            foreach ($relatedToParam as $i => $relCriteria) {
-                if (!is_array($relCriteria)) {
-                    $unspecifiedElements[] = $relCriteria;
-                    unset($relatedToParam[$i]);
-                }
-            }
-
-            if (!empty($unspecifiedElements)) {
-                $relatedToParam[] = ['element' => $unspecifiedElements];
-            }
-        }
 
         foreach ($relatedToParam as $relCriteria) {
             $condition = $this->_subparse($relCriteria);
@@ -134,37 +232,6 @@ class ElementRelationParamParser extends BaseObject
      */
     private function _subparse($relCriteria)
     {
-        if (!is_array($relCriteria)) {
-            $relCriteria = ['element' => $relCriteria];
-        }
-
-        // Merge in default criteria params
-        $relCriteria = array_merge([
-            'field' => null,
-            'sourceSite' => null,
-        ], $relCriteria);
-
-        // Check for now-deprecated sourceLocale param
-        if (isset($relCriteria['sourceLocale'])) {
-            Craft::$app->getDeprecator()->log('relatedTo:sourceLocale', 'The `sourceLocale` criteria in `relatedTo` element query params has been deprecated. Use `sourceSite` instead.');
-            $relCriteria['sourceSite'] = $relCriteria['sourceLocale'];
-            unset($relCriteria['sourceLocale']);
-        }
-
-        // Normalize the sourceSite param (should be an ID)
-        if ($relCriteria['sourceSite'] && !is_numeric($relCriteria['sourceSite'])) {
-            if ($relCriteria['sourceSite'] instanceof Site) {
-                $relCriteria['sourceSite'] = $relCriteria['sourceSite']->id;
-            } else {
-                $site = Craft::$app->getSites()->getSiteByHandle($relCriteria['sourceSite']);
-                if (!$site) {
-                    // Invalid handle
-                    return false;
-                }
-                $relCriteria['sourceSite'] = $site->id;
-            }
-        }
-
         // Get the element IDs, wherever they are
         $relElementIds = [];
         $relSourceElementIds = [];
@@ -176,13 +243,7 @@ class ElementRelationParamParser extends BaseObject
         foreach ($elementParams as $elementParam) {
             if (isset($relCriteria[$elementParam])) {
                 $elements = $relCriteria[$elementParam];
-                if (!is_array($elements)) {
-                    $elements = is_string($elements) ? StringHelper::split($elements) : [$elements];
-                }
-
-                if (isset($elements[0]) && ($elements[0] === 'and' || $elements[0] === 'or')) {
-                    $glue = array_shift($elements);
-                }
+                $glue = array_shift($elements);
 
                 foreach ($elements as $element) {
                     if (is_numeric($element)) {

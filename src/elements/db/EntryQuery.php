@@ -917,7 +917,7 @@ class EntryQuery extends ElementQuery
     private function _normalizeTypeId()
     {
         if (empty($this->typeId)) {
-            $this->typeId = null;
+            $this->typeId = is_array($this->typeId) ? [] : null;
         } else if (is_numeric($this->typeId)) {
             $this->typeId = [$this->typeId];
         } else if (!is_array($this->typeId) || !ArrayHelper::isNumeric($this->typeId)) {
@@ -956,7 +956,7 @@ class EntryQuery extends ElementQuery
     private function _normalizeSectionId()
     {
         if (empty($this->sectionId)) {
-            $this->sectionId = null;
+            $this->sectionId = is_array($this->sectionId) ? [] : null;
         } else if (is_numeric($this->sectionId)) {
             $this->sectionId = [$this->sectionId];
         } else if (!is_array($this->sectionId) || !ArrayHelper::isNumeric($this->sectionId)) {

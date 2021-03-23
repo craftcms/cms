@@ -1495,14 +1495,13 @@ $.extend(Craft,
             $('.fieldtoggle', $container).fieldtoggle();
             $('.lightswitch', $container).lightswitch();
             $('.nicetext', $container).nicetext();
-            $('.pill', $container).pill();
             $('.formsubmit', $container).formsubmit();
             $('.menubtn', $container).menubtn();
             $('.datetimewrapper', $container).datetime();
 
             // Open outbound links in new windows
             // hat tip: https://stackoverflow.com/a/2911045/1688568
-            $('a').each(function() {
+            $('a', $container).each(function() {
                 if (this.hostname.length && this.hostname !== location.hostname && typeof $(this).attr('target') === 'undefined') {
                     $(this).attr('rel', 'noopener').attr('target', '_blank')
                 }
@@ -2000,14 +1999,6 @@ $.extend($.fn,
             return this.each(function() {
                 if (!$.data(this, 'nicetext')) {
                     new Garnish.NiceText(this);
-                }
-            });
-        },
-
-        pill: function() {
-            return this.each(function() {
-                if (!$.data(this, 'pill')) {
-                    new Garnish.Pill(this);
                 }
             });
         },
