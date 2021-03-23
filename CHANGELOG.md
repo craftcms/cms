@@ -11,6 +11,7 @@
 - Fixed a bug where `craft\helpers\Queue::push()` wasn’t respecting its `$priority` argument.
 - Fixed a bug where relational fields weren’t showing all of the currently selected elements if the field’s limit had decreased, making it difficult to fix the validation error. ([#7707](https://github.com/craftcms/cms/issues/7707))
 - Fixed a PHP error that occurred during garbage collection if the `purgeUnsavedDraftsDuration` config setting was set to a [duration string](https://en.wikipedia.org/wiki/ISO_8601#Durations). ([#7714](https://github.com/craftcms/cms/issues/7714))
+- Fixed a bug where changing a non-sorted setting array with more than 9 elements could cause project config to be unable to apply the changes cleanly.
 
 ## 3.6.10 - 2021-03-09
 
