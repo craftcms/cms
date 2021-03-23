@@ -414,6 +414,7 @@ return [
     'Define the columns your table should have.' => 'Define las columnas que debe tener tu tabla.',
     'Define the default values for the field.' => 'Define los valores predeterminados del campo.',
     'Define the types of blocks that can be created within this Matrix field, as well as the fields each block type is made up of.' => 'Defina los tipos de bloques que pueden ser creados dentro de este espacio de Matrix asi como los espacios que component cada tipo de bloque.',
+    'Delayed' => 'Delayed',
     'Delete (with descendants)' => 'Eliminar (con descendientes)',
     'Delete assets from the “{volume}” volume' => 'Eliminar recursos del volumen “{volume}”',
     'Delete categories from the “{categoryGroup}” category group' => 'Eliminar categorías del grupo de categorías “{categoryGroup}”',
