@@ -414,6 +414,7 @@ return [
     'Define the columns your table should have.' => 'Определите столбцы, которые будут в вашей таблице.',
     'Define the default values for the field.' => 'Установите значение по умолчанию для этого поля.',
     'Define the types of blocks that can be created within this Matrix field, as well as the fields each block type is made up of.' => 'Определите типы блоков, которые можно создавать внутри матричного поля, а также поля, из которых может состоять каждый из типов блоков.',
+    'Delayed' => 'Delayed',
     'Delete (with descendants)' => 'Удалить (с дочерними элементами)',
     'Delete assets from the “{volume}” volume' => 'Удалить ресурсы из тома «{volume}»',
     'Delete categories from the “{categoryGroup}” category group' => 'Удалить категории из группы категорий «{categoryGroup}»',
