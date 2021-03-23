@@ -201,7 +201,7 @@ class ProjectConfigHelperTest extends Unit
                 [
                     'a' => [
                         ProjectConfig::CONFIG_ASSOC_KEY => [
-                            ['baz', 0],
+                            2 => ['baz', 0],
                         ]
                     ],
                 ],
