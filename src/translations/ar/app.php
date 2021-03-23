@@ -414,6 +414,7 @@ return [
     'Define the columns your table should have.' => 'حدد الأعمدة التي يلزم أن يحتوي عليها الجدول.',
     'Define the default values for the field.' => 'حدد القيم الافتراضية للحقل.',
     'Define the types of blocks that can be created within this Matrix field, as well as the fields each block type is made up of.' => 'حدد أنواع الكتل التي يمكن إنشاؤها في حقل المصفوفة بالإضافة إلى الحقول التي تم إنشاء نوع الكتلة منها.',
+    'Delayed' => 'Delayed',
     'Delete (with descendants)' => 'حذف (باستخدام العناصر التابعة)',
     'Delete assets from the “{volume}” volume' => 'حذف الأصول من وحدة التخزين "{volume}"',
     'Delete categories from the “{categoryGroup}” category group' => 'حذف الفئات من مجموعة الفئات "{categoryGroup}"',

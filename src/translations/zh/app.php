@@ -414,6 +414,7 @@ return [
     'Define the columns your table should have.' => '定义您的表格应有的列。',
     'Define the default values for the field.' => '为字段定义默认值。',
     'Define the types of blocks that can be created within this Matrix field, as well as the fields each block type is made up of.' => '定义可在该矩阵字段内创建的区块类型，以及组成各区块类型的字段。',
+    'Delayed' => 'Delayed',
     'Delete (with descendants)' => '删除（包含后代）',
     'Delete assets from the “{volume}” volume' => '从“{volume}”存储卷中删除资产',
     'Delete categories from the “{categoryGroup}” category group' => '从“{categoryGroup}”类别组中删除类别',

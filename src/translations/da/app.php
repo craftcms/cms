@@ -414,6 +414,7 @@ return [
     'Define the columns your table should have.' => 'Angiv kolonnerne din tabel skal have.',
     'Define the default values for the field.' => 'Definer standard værdien for feltet.',
     'Define the types of blocks that can be created within this Matrix field, as well as the fields each block type is made up of.' => 'Definer de typer af blokke der kan oprettes inden inden for dette Matrix felt, såvel som de felter hver blok type består af.',
+    'Delayed' => 'Delayed',
     'Delete (with descendants)' => 'Slet (med underordnede)',
     'Delete assets from the “{volume}” volume' => 'Slet aktiver fra diskenheden “{volume}”',
     'Delete categories from the “{categoryGroup}” category group' => 'Slet kategorierne fra kategorigruppen “{categoryGroup}”',

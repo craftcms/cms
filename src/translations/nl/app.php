@@ -414,6 +414,7 @@ return [
     'Define the columns your table should have.' => 'Tabel-kolommen instellen.',
     'Define the default values for the field.' => 'Standaardwaardes voor veld instellen.',
     'Define the types of blocks that can be created within this Matrix field, as well as the fields each block type is made up of.' => 'Definieer de soorten blokken die kunnen worden gemaakt binnen dit Matrixveld, zowel als de velden waar elk bloktype van is gemaakt.',
+    'Delayed' => 'Delayed',
     'Delete (with descendants)' => 'Verwijderen (met afstammelingen)',
     'Delete assets from the “{volume}” volume' => 'Bestanden verwijderen in het volume “{volume}”',
     'Delete categories from the “{categoryGroup}” category group' => 'Categorieën verwijderen uit de categoriegroep “{categoryGroup}”',

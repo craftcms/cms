@@ -414,6 +414,7 @@ return [
     'Define the columns your table should have.' => 'Tablonuzda olması gereken kolonları tanımlayınız.',
     'Define the default values for the field.' => 'Alan için varsayılan değerleri belirle.',
     'Define the types of blocks that can be created within this Matrix field, as well as the fields each block type is made up of.' => 'Bu Matrix alanın içerisinde oluşturulabilecek blok tiplerini ve ek olarak her bir blok tipinin hangi alanlardan oluştuğunu tanımlayın.',
+    'Delayed' => 'Delayed',
     'Delete (with descendants)' => 'Sil (alt verilerle birlikle)',
     'Delete assets from the “{volume}” volume' => '“{volume}” birimindeki dosyaları sil',
     'Delete categories from the “{categoryGroup}” category group' => '“{categoryGroup}” kategori grubundaki kategorileri sil',
