@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 3.x
 
-## Unreleased
+## 3.6.11 - 2021-03-23
 
 ### Added
 - Added the `andRelatedTo` element query param, for adding additional relation criteria. ([#5733](https://github.com/craftcms/cms/issues/5733))
