@@ -567,9 +567,13 @@ class ProjectConfig extends Component
         $changes = $this->_getPendingChanges();
 
         $this->_applyChanges($changes);
+        $anyChangesApplied = (bool)(count($changes['newItems']) + count($changes['removedItems']) + count($changes['changedItems']));
 
         // Kill the cached config data
         $cache->delete(self::STORED_CACHE_KEY);
+        if ($anyChangesApplied) {
+            $this->_updateConfigVersion();
+        }
 
         $mutex->release($lockName);
     }

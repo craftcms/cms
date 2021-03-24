@@ -414,6 +414,7 @@ return [
     'Define the columns your table should have.' => 'Add meg a oszlopokat, melyek a táblához tartoznak.',
     'Define the default values for the field.' => 'Határozza meg a mező alapértelmezett értékeit.',
     'Define the types of blocks that can be created within this Matrix field, as well as the fields each block type is made up of.' => 'Add meg a blokk tipusokat, mezőket melyeket létre lehet hozni ezen a Mátrixon belül.',
+    'Delayed' => 'Delayed',
     'Delete (with descendants)' => 'Törlés (utódokkal együtt)',
     'Delete assets from the “{volume}” volume' => 'Tartalmak törlése a "{volume}" kötetből',
     'Delete categories from the “{categoryGroup}” category group' => 'Kategóriák törlése a “{categoryGroup}” kategóriacsoportból',
