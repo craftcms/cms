@@ -414,6 +414,7 @@ return [
     'Define the columns your table should have.' => 'Určete sloupce, které má Vaše tabulka mít.',
     'Define the default values for the field.' => 'Výchozí hodnota pro toto pole.',
     'Define the types of blocks that can be created within this Matrix field, as well as the fields each block type is made up of.' => 'Definujte stavební bloky, které lze použít v této matici. Stejně tak definujte, z jak jsou vytvořené samotné stavební bloky.',
+    'Delayed' => 'Delayed',
     'Delete (with descendants)' => 'Smazat (s následníky)',
     'Delete assets from the “{volume}” volume' => 'Smazat objekty ze svazku "{volume}"',
     'Delete categories from the “{categoryGroup}” category group' => 'Smazat kategorie ze skupiny kategorií "{categoryGroup}"',

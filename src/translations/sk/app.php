@@ -414,6 +414,7 @@ return [
     'Define the columns your table should have.' => 'Definovať stĺpce tabuľky.',
     'Define the default values for the field.' => 'Definovať predvolené hodnoty poľa.',
     'Define the types of blocks that can be created within this Matrix field, as well as the fields each block type is made up of.' => 'Definovať typy blokov, ktoré môžu byť vytvorené v rámci tejto Matrix oblasti a tiež polia pre každý typ bloku z ktorých je vytvorená.',
+    'Delayed' => 'Delayed',
     'Delete (with descendants)' => 'Zmazať (s potomkami)',
     'Delete assets from the “{volume}” volume' => 'Zmazať prostriedky zo zväzku „{volume}“',
     'Delete categories from the “{categoryGroup}” category group' => 'Zmazať kategórie zo skupiny kategórií „{categoryGroup}“',

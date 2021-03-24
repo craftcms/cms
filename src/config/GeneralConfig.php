@@ -1751,6 +1751,7 @@ class GeneralConfig extends BaseObject
         $this->elevatedSessionDuration = ConfigHelper::durationInSeconds($this->elevatedSessionDuration);
         $this->invalidLoginWindowDuration = ConfigHelper::durationInSeconds($this->invalidLoginWindowDuration);
         $this->purgePendingUsersDuration = ConfigHelper::durationInSeconds($this->purgePendingUsersDuration);
+        $this->purgeUnsavedDraftsDuration = ConfigHelper::durationInSeconds($this->purgeUnsavedDraftsDuration);
         $this->rememberUsernameDuration = ConfigHelper::durationInSeconds($this->rememberUsernameDuration);
         $this->rememberedUserSessionDuration = ConfigHelper::durationInSeconds($this->rememberedUserSessionDuration);
         $this->softDeleteDuration = ConfigHelper::durationInSeconds($this->softDeleteDuration);

@@ -414,6 +414,7 @@ return [
     'Define the columns your table should have.' => 'テーブルの欄を定義してください。',
     'Define the default values for the field.' => 'フィールドの初期値を定義してください。',
     'Define the types of blocks that can be created within this Matrix field, as well as the fields each block type is made up of.' => 'この行列フィールド内部で作成可能なブロックのタイプ、および各ブロックタイプが構成するフィールドのタイプを定義する。',
+    'Delayed' => 'Delayed',
     'Delete (with descendants)' => '削除 (子孫も含む)',
     'Delete assets from the “{volume}” volume' => '“{volume}” ボリュームからアセットを削除',
     'Delete categories from the “{categoryGroup}” category group' => '“{categoryGroup}” カテゴリグループからカテゴリを削除',

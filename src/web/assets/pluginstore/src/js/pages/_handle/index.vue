@@ -30,7 +30,7 @@
 
                             <div class="flex-1 mb-0">
                                 <strong>{{ "This plugin is no longer maintained."|t('app') }} </strong>
-                                <span v-html="recommendedLabel"></span>
+                                <span v-if="recommendedLabel" v-html="recommendedLabel"></span>
                             </div>
                         </div>
                     </template>
@@ -223,6 +223,10 @@ c-2-26.8-24.8-53.5-42-72.5S0,169.8,0,144C0,76,64.8,32,128,32S256,76,256,144z"/>
             },
 
             recommendedLabel() {
+                if (!this.plugin.replacementHandle) {
+                    return null
+                }
+
                 return this.$options.filters.t('The developer recommends using <a href="{url}">{name}</a> instead.', 'app', {
                     name: this.plugin.replacementName,
                     url: Craft.getCpUrl('plugin-store/' + this.plugin.replacementHandle)
