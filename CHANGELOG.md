@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 3.x
 
-## Unreleased
+## 3.6.11.1 - 2021-03-24
 
 ### Fixed
 - Fixed a bug where the cached project config data wasn’t getting invalidated after applying YAML changes.
