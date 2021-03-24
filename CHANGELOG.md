@@ -1,5 +1,12 @@
 # Release Notes for Craft CMS 3.x
 
+## 3.6.11.1 - 2021-03-24
+
+### Fixed
+- Fixed a bug where the cached project config data wasn’t getting invalidated after applying YAML changes.
+- Fixed an error that could occur when adding jobs to the queue with a custom priority, if the queue driver didn’t support priorities. ([#7719](https://github.com/craftcms/cms/issues/7719))
+- Fixed a bug where some field name characters were getting double-encoded in validation errors. ([#7718](https://github.com/craftcms/cms/issues/7718))
+
 ## 3.6.11 - 2021-03-23
 
 ### Added

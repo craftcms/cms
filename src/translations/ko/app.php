@@ -414,6 +414,7 @@ return [
     'Define the columns your table should have.' => '표에 포함되어야 하는 열 정의',
     'Define the default values for the field.' => '필드에 대한 기본값 정의',
     'Define the types of blocks that can be created within this Matrix field, as well as the fields each block type is made up of.' => '각 블록 유형이 구성된 필드뿐만 아니라 매트릭스 필드 내에서 생성될 수 있는 블록 유형 정의',
+    'Delayed' => 'Delayed',
     'Delete (with descendants)' => '삭제(하위 항목 포함)',
     'Delete assets from the “{volume}” volume' => '“{volume}” 볼륨에서 에셋 삭제',
     'Delete categories from the “{categoryGroup}” category group' => '“{categoryGroup}” 카테고리 그룹에서 카테고리 삭제',

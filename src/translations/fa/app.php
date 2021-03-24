@@ -414,6 +414,7 @@ return [
     'Define the columns your table should have.' => 'ستون هایی که جدول شما باید داشته باشد تعریف نمایید.',
     'Define the default values for the field.' => 'مقادیر پیش را برای فیلد تعریف نمایید.',
     'Define the types of blocks that can be created within this Matrix field, as well as the fields each block type is made up of.' => 'انواع بلوک هایی که در این فیلد ماتریسی می تواند ایجاد شود تعریف نمایید، همچنین فیلدهایی که هر نوع بلوک از آن ساخته می شود.',
+    'Delayed' => 'Delayed',
     'Delete (with descendants)' => 'حذف (به همراه زیرمجموعه ها)',
     'Delete assets from the “{volume}” volume' => 'حذف فایل های پروژه از مخزن "{volume}"',
     'Delete categories from the “{categoryGroup}” category group' => 'حذف دسته بندی ها از گروه دسته بندی "{categoryGroup}"',

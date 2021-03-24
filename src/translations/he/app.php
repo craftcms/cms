@@ -414,6 +414,7 @@ return [
     'Define the columns your table should have.' => 'הגדרת את העמודות הנחוצות לטבלה שלך.',
     'Define the default values for the field.' => 'הגדר ערכי ברירת מחדל לשדה.',
     'Define the types of blocks that can be created within this Matrix field, as well as the fields each block type is made up of.' => 'הגדרת סוגי הבלוקים שניתן ליצור במסגרת שדה מטריצה זה, וכן את השדות שמהם מורכב כל סוג בלוק.',
+    'Delayed' => 'Delayed',
     'Delete (with descendants)' => 'מחק (עם צאצאים)',
     'Delete assets from the “{volume}” volume' => 'מחק נכסים מאמצעי האחסון "{volume}"',
     'Delete categories from the “{categoryGroup}” category group' => 'מחק קטגוריות מקבוצת הקטגוריות "{categoryGroup}"',

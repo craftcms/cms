@@ -414,6 +414,7 @@ return [
     'Define the columns your table should have.' => 'Ange egenskaper för tabellkolumnerna.',
     'Define the default values for the field.' => 'Definiera standardvärdena för fältet.',
     'Define the types of blocks that can be created within this Matrix field, as well as the fields each block type is made up of.' => 'Ange vilka typer av blockelement som kan skapas inom denna matris, samt vilka fält som varje blocktyp består av.',
+    'Delayed' => 'Delayed',
     'Delete (with descendants)' => 'Radera (med underordnade)',
     'Delete assets from the “{volume}” volume' => 'Radera tillgångar från volymen “{volume}”',
     'Delete categories from the “{categoryGroup}” category group' => 'Radera kategorier från kategorigruppen “{categoryGroup}”',
