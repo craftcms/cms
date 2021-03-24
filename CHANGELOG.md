@@ -1,5 +1,10 @@
 # Release Notes for Craft CMS 3.x
 
+## Unreleased
+
+### Fixed
+- Fixed a bug where applying pending project config changes would not invalidate cached project config diffs.
+
 ## 3.6.11 - 2021-03-23
 
 ### Added
