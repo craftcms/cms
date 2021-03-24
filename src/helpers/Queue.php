@@ -32,27 +32,18 @@ class Queue
     {
         $queue = Craft::$app->getQueue();
 
-        if ($priority !== null) {
-            try {
-                $queue->priority($priority);
-            } catch (NotSupportedException $e) {
-            }
+        try {
+            $queue
+                ->priority($priority)
+                ->delay($delay)
+                ->ttr($ttr)
+                ->push($job);
+        } catch (NotSupportedException $e) {
+            // Some queue drivers don't support priority
+            $queue
+                ->delay($delay)
+                ->ttr($ttr)
+                ->push($job);
         }
-
-        if ($delay !== null) {
-            try {
-                $queue->delay($delay);
-            } catch (NotSupportedException $e) {
-            }
-        }
-
-        if ($ttr !== null) {
-            try {
-                $queue->ttr($ttr);
-            } catch (NotSupportedException $e) {
-            }
-        }
-
-        return $queue->push($job);
     }
 }

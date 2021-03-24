@@ -4,6 +4,7 @@
 
 ### Fixed
 - Fixed a bug where the cached project config data wasn’t getting invalidated after applying YAML changes.
+- Fixed an error that could occur when adding jobs to the queue with a custom priority, if the queue driver didn’t support priorities. ([#7719](https://github.com/craftcms/cms/issues/7719))
 
 ## 3.6.11 - 2021-03-23
 
