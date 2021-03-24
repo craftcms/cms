@@ -3,7 +3,7 @@
 ## Unreleased
 
 ### Fixed
-- Fixed a bug where applying pending project config changes would not invalidate cached project config diffs.
+- Fixed a bug where the cached project config data wasn’t getting invalidated after applying YAML changes.
 
 ## 3.6.11 - 2021-03-23
 
