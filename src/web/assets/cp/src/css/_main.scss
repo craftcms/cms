@@ -4942,6 +4942,11 @@ body .selectize-dropdown .active {
   @include menu-option-active-styles;
 }
 
+/* time zones */
+.timezone {
+  max-width: 25em;
+}
+
 /* datepicker */
 .ui-datepicker {
   position: fixed;
