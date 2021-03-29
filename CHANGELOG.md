@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 3.x
 
-## Unreleased
+## 3.6.11.2 - 2021-03-29
 
 ### Fixed
 - Fixed a bug where Matrix field changes on the Current revision weren’t getting propagated to drafts when the “Merge changes into draft” button was clicked. ([#7727](https://github.com/craftcms/cms/issues/7727))
