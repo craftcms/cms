@@ -2189,6 +2189,7 @@ class Elements extends Component
                         if (!empty($criteria['inReverse'])) {
                             $targetElementIdsForSource = array_reverse($targetElementIdsForSource);
                         }
+
                         // Create the elements
                         $currentOffset = 0;
                         $count = 0;
