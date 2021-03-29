@@ -7,6 +7,7 @@
 - Fixed an error that occurred when publishing a draft with an outdated Matrix field. ([#7727](https://github.com/craftcms/cms/issues/7727))
 - Fixed a bug where renaming empty folders would delete them from the disk, instead. ([#7721](https://github.com/craftcms/cms/issues/7721))
 - Fixed a bug where the `inReverse` element query param was getting ignored when eager-loading elements. ([#7737](https://github.com/craftcms/cms/issues/7737))
+- Fixed a bug where the `migrate/all` command was attempting to re-apply old plugin migrations when updating from Craft 3.4 or earlier.
 
 ## 3.6.11.1 - 2021-03-24
 
