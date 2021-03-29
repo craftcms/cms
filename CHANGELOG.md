@@ -1,5 +1,15 @@
 # Release Notes for Craft CMS 3.x
 
+## 3.6.11.2 - 2021-03-29
+
+### Fixed
+- Fixed a bug where Matrix field changes on the Current revision weren’t getting propagated to drafts when the “Merge changes into draft” button was clicked. ([#7727](https://github.com/craftcms/cms/issues/7727))
+- Fixed an error that occurred when publishing a draft with an outdated Matrix field. ([#7727](https://github.com/craftcms/cms/issues/7727))
+- Fixed a bug where renaming empty folders would delete them from the disk, instead. ([#7721](https://github.com/craftcms/cms/issues/7721))
+- Fixed a bug where the `inReverse` element query param was getting ignored when eager-loading elements. ([#7737](https://github.com/craftcms/cms/issues/7737))
+- Fixed a bug where the `migrate/all` command was attempting to re-apply old plugin migrations when updating from Craft 3.4 or earlier.
+- Fixed a bug where action requests weren’t getting `X-Robots-Tag: none` headers in their responses. ([#7738](https://github.com/craftcms/cms/issues/7738))
+
 ## 3.6.11.1 - 2021-03-24
 
 ### Fixed

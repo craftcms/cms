@@ -990,15 +990,25 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
     public function afterElementPropagate(ElementInterface $element, bool $isNew)
     {
         $matrixService = Craft::$app->getMatrix();
+        $resetValue = false;
 
         if ($element->duplicateOf !== null) {
             $matrixService->duplicateBlocks($this, $element->duplicateOf, $element, true);
+            $resetValue = true;
         } else if ($element->isFieldDirty($this->handle) || !empty($element->newSiteIds)) {
             $matrixService->saveField($this, $element);
+        } else if (
+            ($status = $element->getFieldStatus($this->handle)) !== null &&
+            $status[0] === Element::ATTR_STATUS_OUTDATED
+        ) {
+            // This is just a temporary fix for merging Matrix field changes.
+            // Will be replaced with a more thorough solution in 3.7: https://github.com/craftcms/cms/pull/7710
+            $matrixService->duplicateBlocks($this, ElementHelper::sourceElement($element), $element, true);
+            $resetValue = true;
         }
 
         // Repopulate the Matrix block query if this is a new element
-        if ($element->duplicateOf || $isNew) {
+        if ($resetValue || $isNew) {
             /** @var MatrixBlockQuery $query */
             $query = $element->getFieldValue($this->handle);
             $this->_populateQuery($query, $element);
