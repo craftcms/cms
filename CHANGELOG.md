@@ -6,6 +6,7 @@
 - Fixed a bug where Matrix field changes on the Current revision weren’t getting propagated to drafts when the “Merge changes into draft” button was clicked. ([#7727](https://github.com/craftcms/cms/issues/7727))
 - Fixed an error that occurred when publishing a draft with an outdated Matrix field. ([#7727](https://github.com/craftcms/cms/issues/7727))
 - Fixed a bug where renaming empty folders would delete them from the disk, instead. ([#7721](https://github.com/craftcms/cms/issues/7721))
+- Fixed a bug where `inReverse` parameter was ignored when eager-loading elements. ([#7737](https://github.com/craftcms/cms/issues/7737))
 
 ## 3.6.11.1 - 2021-03-24
 
