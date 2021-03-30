@@ -562,7 +562,7 @@ class Cp extends Component
             ];
         }
 
-        array_multisort($offsets, $timezoneIds, $options);
+        array_multisort($offsets, SORT_ASC, SORT_NUMERIC, $timezoneIds, $options);
 
         return $options;
     }
