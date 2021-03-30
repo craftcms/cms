@@ -87,6 +87,7 @@ class AssetIndexesController extends Controller
         if ($indexingSession->totalEntries === 0) {
             $response['stop'] = $indexingSession->id;
             $response['error'] = Craft::t('app', 'Unable to find anything to index.');
+            Craft::$app->getAssetIndexer()->stopIndexingSession($indexingSession);
         }
 
         return $this->asJson($response);
