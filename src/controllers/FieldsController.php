@@ -303,10 +303,11 @@ JS;
         $fieldId = $this->request->getBodyParam('fieldId') ?: null;
 
         if ($fieldId) {
-            $fieldUid = Db::uidById(Table::FIELDS, $fieldId);
-            if (!$fieldUid) {
+            $oldField = clone Craft::$app->getFields()->getFieldById($fieldId);
+            if (!$oldField) {
                 throw new BadRequestHttpException("Invalid field ID: $fieldId");
             }
+            $fieldUid = $oldField->uid;
         } else {
             $fieldUid = null;
         }
@@ -318,6 +319,7 @@ JS;
             'groupId' => $this->request->getRequiredBodyParam('group'),
             'name' => $this->request->getBodyParam('name'),
             'handle' => $this->request->getBodyParam('handle'),
+            'columnSuffix' => $oldField->columnSuffix ?? null,
             'instructions' => $this->request->getBodyParam('instructions'),
             'searchable' => (bool)$this->request->getBodyParam('searchable', true),
             'translationMethod' => $this->request->getBodyParam('translationMethod', Field::TRANSLATION_METHOD_NONE),

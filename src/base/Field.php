@@ -26,6 +26,7 @@ use craft\validators\UniqueValidator;
 use GraphQL\Type\Definition\Type;
 use yii\base\Arrayable;
 use yii\base\ErrorHandler;
+use yii\base\NotSupportedException;
 use yii\db\Schema;
 
 /**
@@ -207,8 +208,8 @@ abstract class Field extends SavableComponent implements FieldInterface
     {
         $rules = parent::defineRules();
 
-        // Make sure the column name is under the databases maximum column length allowed.
-        $maxHandleLength = Craft::$app->getDb()->getSchema()->maxObjectNameLength - strlen(Craft::$app->getContent()->fieldColumnPrefix);
+        // Make sure the column name is under the databases maximum column length allowed, including the column prefix/suffix lengths
+        $maxHandleLength = Craft::$app->getDb()->getSchema()->maxObjectNameLength - strlen(Craft::$app->getContent()->fieldColumnPrefix) - 9;
 
         $rules[] = [['name'], 'string', 'max' => 255];
         $rules[] = [['handle'], 'string', 'max' => $maxHandleLength];
@@ -303,7 +304,7 @@ abstract class Field extends SavableComponent implements FieldInterface
     /**
      * @inheritdoc
      */
-    public function getContentColumnType(): string
+    public function getContentColumnType()
     {
         return Schema::TYPE_STRING;
     }
@@ -493,9 +494,18 @@ abstract class Field extends SavableComponent implements FieldInterface
      */
     public function getSortOption(): array
     {
+        $column = ElementHelper::fieldColumnFromField($this);
+
+        if ($column === null) {
+            throw new NotSupportedException('getSortOption() not supported by ' . $this->name);
+        }
+
         return [
             'label' => Craft::t('site', $this->name),
-            'orderBy' => ($this->columnPrefix ?: 'field_') . $this->handle . ', elements.id',
+            'orderBy' => [
+                $column => SORT_ASC,
+                'elements.id' => SORT_ASC,
+            ],
             'attribute' => 'field:' . $this->id,
         ];
     }
@@ -528,15 +538,17 @@ abstract class Field extends SavableComponent implements FieldInterface
      */
     public function modifyElementsQuery(ElementQueryInterface $query, $value)
     {
+        /* @var ElementQuery $query */
         if ($value !== null) {
+            $column = ElementHelper::fieldColumnFromField($this);
+
             // If the field type doesn't have a content column, it *must* override this method
             // if it wants to support a custom query criteria attribute
-            if (!static::hasContentColumn()) {
+            if ($column === null) {
                 return false;
             }
 
-            /** @var ElementQuery $query */
-            $query->subQuery->andWhere(Db::parseParam('content.' . Craft::$app->getContent()->fieldColumnPrefix . $this->handle, $value));
+            $query->subQuery->andWhere(Db::parseParam("content.$column", $value));
         }
 
         return null;

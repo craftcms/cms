@@ -1876,13 +1876,32 @@ abstract class Element extends Component implements ElementInterface
     {
         $field = $this->fieldByHandle($attribute);
         $columnType = $field->getContentColumnType();
+        $value = $field->serializeValue($this->getFieldValue($attribute), $this);
+
+        if (is_array($columnType)) {
+            foreach ($columnType as $key => $type) {
+                $this->_validateCustomFieldContentSizeInternal($attribute, $type, $value[$key] ?? null);
+            }
+        } else {
+            $this->_validateCustomFieldContentSizeInternal($attribute, $columnType, $value);
+        }
+    }
+
+    /**
+     * @param string $attribute
+     * @param string $columnType
+     * @param mixed $value
+     * @return void
+     */
+    private function _validateCustomFieldContentSizeInternal(string $attribute, string $columnType, $value): void
+    {
         $simpleColumnType = Db::getSimplifiedColumnType($columnType);
 
         if (!in_array($simpleColumnType, [Db::SIMPLE_TYPE_NUMERIC, Db::SIMPLE_TYPE_TEXTUAL], true)) {
             return;
         }
 
-        $value = Db::prepareValueForDb($field->serializeValue($this->getFieldValue($attribute), $this));
+        $value = Db::prepareValueForDb($value);
 
         // Ignore empty values
         if ($value === null || $value === '') {

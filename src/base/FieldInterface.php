@@ -68,17 +68,30 @@ interface FieldInterface extends SavableComponentInterface
     public static function valueType(): string;
 
     /**
-     * Returns the column type that this field should get within the content table.
+     * Returns the column type(s) that this field should get within the content table.
      *
      * This method will only be called if [[hasContentColumn()]] returns true.
      *
-     * @return string The column type. [[\yii\db\QueryBuilder::getColumnType()]] will be called
+     * If the field type requires multiple columns, an array should be returned:
+     *
+     * ```php
+     * return [
+     *     'date' => 'datetime',
+     *     'tz' => 'string',
+     * ];
+     * ```
+     *
+     * When this is the case, all columns’ values will be passed to [[normalizeValue()]] as an associative
+     * array, whose keys match the keys returned by this method. The field type should also override
+     * [[serializeValue()]] to ensure values are being returned as associative arrays using the same keys.
+     *
+     * @return string|string[] The column type(s). [[\yii\db\QueryBuilder::getColumnType()]] will be called
      * to convert the give column type to the physical one. For example, `string` will be converted
      * as `varchar(255)` and `string(100)` becomes `varchar(100)`. `not null` will automatically be
      * appended as well.
      * @see \yii\db\QueryBuilder::getColumnType()
      */
-    public function getContentColumnType(): string;
+    public function getContentColumnType();
 
     /**
      * Returns whether the field should be shown as translatable in the UI.
