@@ -71,6 +71,7 @@ class Content extends Component
      *
      * @param ElementInterface $element The element whose content we're looking for.
      * @return array|null The element's content row values, or null if the row could not be found
+     * @deprecated in 3.7.0
      */
     public function getContentRow(ElementInterface $element)
     {
@@ -109,6 +110,7 @@ class Content extends Component
      * Populates a given element with its custom field values.
      *
      * @param ElementInterface $element The element for which we should create a new content model.
+     * @deprecated in 3.7.0
      */
     public function populateElementContent(ElementInterface $element)
     {
