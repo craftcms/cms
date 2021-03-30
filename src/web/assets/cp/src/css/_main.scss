@@ -4703,7 +4703,8 @@ fieldset {
   flex-direction: row;
   align-items: center;
 
-  & > .datewrapper + .timewrapper {
+  & > .datewrapper + .timewrapper,
+  & > .timewrapper + .timezone {
     @include margin-left(5px);
   }
 }
@@ -4944,6 +4945,7 @@ body .selectize-dropdown .active {
 
 /* time zones */
 .timezone {
+  height: 34px;
   max-width: 25em;
 }
 

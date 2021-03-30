@@ -1,6 +1,7 @@
 # Release Notes for Craft CMS 3.7
 
 ### Added
+- Date fields now have a “Show Time Zone” setting, allowing authors to choose which time zone the date is set to, rather than using the system time zone.
 - Matrix fields can now be set to custom propagation methods, based on a propagation key template. ([#7610](https://github.com/craftcms/cms/issues/7610))
 - Added `craft\base\FieldTrait::$columnSuffix`.
 - Added `craft\fields\Matrix::$propagationKeyFormat`.
