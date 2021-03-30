@@ -16,8 +16,8 @@
 - The `date()` Twig function now supports arrays with `date` and/or `time` keys. ([#7681](https://github.com/craftcms/cms/issues/7681))
 
 ### Deprecated
-- Deprecated `craft\elements\Asset::KIND_FLASH`.
 - Deprecated `craft\base\VolumeInterface::folderExists()`. `directoryExists()` should be used instead.
+- Deprecated `craft\elements\Asset::KIND_FLASH`.
 
 ### Removed
 - Removed support for the “Flash” file kind. ([#7626](https://github.com/craftcms/cms/issues/7626))
