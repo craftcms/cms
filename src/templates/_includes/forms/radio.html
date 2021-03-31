@@ -1,3 +1,6 @@
+{% set id = id ?? "radio#{random()}" %}
+{% set label = radioLabel ?? label ?? null %}
+
 {% set containerAttributes = containerAttributes ?? [] %}
 
 {%- if block('attr') is defined %}
@@ -6,7 +9,7 @@
 
 {% set inputAttributes = {
     type: 'radio',
-    id: id ?? false,
+    id: id,
     class: (class ?? [])|explodeClass,
     name: name ?? false,
     value: value ?? '1',
@@ -20,5 +23,5 @@
 
 {% tag 'label' with containerAttributes %}
     {{ tag('input', inputAttributes) }}
-    {% if label is defined %}{{ label|raw }}{% endif %}
+    {{ label|raw }}
 {% endtag %}
