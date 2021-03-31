@@ -150,7 +150,7 @@ class MatrixBlock extends Element implements BlockElementInterface
      */
     public static function gqlTypeNameByContext($context): string
     {
-        /** @var MatrixBlockTypeModel $context */
+        /* @var MatrixBlockTypeModel $context */
         return $context->getField()->handle . '_' . $context->handle . '_BlockType';
     }
 
@@ -300,7 +300,7 @@ class MatrixBlock extends Element implements BlockElementInterface
         return $blockType;
     }
 
-    /** @inheritdoc */
+    /* @inheritdoc */
     public function getOwner(): ElementInterface
     {
         if ($this->_owner === null) {
@@ -479,7 +479,7 @@ class MatrixBlock extends Element implements BlockElementInterface
      */
     private function _field(): Matrix
     {
-        /** @noinspection PhpIncompatibleReturnTypeInspection */
+        /* @noinspection PhpIncompatibleReturnTypeInspection */
         return Craft::$app->getFields()->getFieldById($this->fieldId);
     }
 }

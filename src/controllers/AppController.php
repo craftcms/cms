@@ -312,7 +312,7 @@ class AppController extends Controller
         $utilities = Craft::$app->getUtilities()->getAuthorizedUtilityTypes();
 
         foreach ($utilities as $class) {
-            /** @var UtilityInterface $class */
+            /* @var UtilityInterface $class */
             $badgeCount += $class::badgeCount();
         }
 

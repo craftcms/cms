@@ -22,10 +22,10 @@ trait ClonefixTrait
 {
     public function __clone()
     {
-        /** @var Model|Query $this */
+        /* @var Model|Query $this */
         $behaviors = $this->getBehaviors();
         parent::__clone();
-        /** @var \yii\base\Component $this */
+        /* @var \yii\base\Component $this */
         foreach ($behaviors as $name => $behavior) {
             $this->attachBehavior($name, clone $behavior);
         }

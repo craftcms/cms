@@ -36,7 +36,7 @@ use yii\web\Response;
 use yii\web\ServerErrorHttpException;
 use ZipArchive;
 
-/** @noinspection ClassOverridesFieldOfSuperClassInspection */
+/* @noinspection ClassOverridesFieldOfSuperClassInspection */
 
 /**
  * The AssetsController class is a controller that handles various actions related to asset tasks, such as uploading
@@ -221,7 +221,7 @@ class AssetsController extends Controller
         $siteId = $this->request->getBodyParam('siteId');
         $assetVariable = $this->request->getValidatedBodyParam('assetVariable') ?? 'asset';
 
-        /** @var Asset|null $asset */
+        /* @var Asset|null $asset */
         $asset = Asset::find()
             ->id($assetId)
             ->siteId($siteId)
@@ -932,7 +932,7 @@ class AssetsController extends Controller
 
             $imageSize = Image::imageSize($imageCopy);
 
-            /** @var Raster $image */
+            /* @var Raster $image */
             $image = Craft::$app->getImages()->loadImage($imageCopy, true, max($imageSize));
 
             // TODO Is this hacky? It seems hacky.

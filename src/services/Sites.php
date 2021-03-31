@@ -388,7 +388,7 @@ class Sites extends Component
             return false;
         }
 
-        /** @var SiteGroupRecord $groupRecord */
+        /* @var SiteGroupRecord $groupRecord */
         $groupRecord = SiteGroupRecord::find()
             ->where(['id' => $group->id])
             ->one();
@@ -766,7 +766,7 @@ class Sites extends Component
         // Clear caches
         $this->refreshSites();
 
-        /** @var Site $site */
+        /* @var Site $site */
         $site = $this->getSiteById($siteRecord->id);
 
         // Is this the current site?
@@ -1063,7 +1063,7 @@ class Sites extends Component
             return;
         }
 
-        /** @var Site $site */
+        /* @var Site $site */
         $site = $this->getSiteById($siteRecord->id);
 
         // Fire a 'beforeApplySiteDelete' event
@@ -1201,7 +1201,7 @@ class Sites extends Component
             if (isset($e->errorInfo[0]) && in_array($e->errorInfo[0], ['42S02', '42P01'], true)) {
                 return;
             }
-            /** @noinspection PhpUnhandledExceptionInspection */
+            /* @noinspection PhpUnhandledExceptionInspection */
             throw $e;
         }
 
@@ -1341,7 +1341,7 @@ class Sites extends Component
             $nonLocalizedElementTypes = [];
 
             foreach (Craft::$app->getElements()->getAllElementTypes() as $elementType) {
-                /** @var ElementInterface|string $elementType */
+                /* @var ElementInterface|string $elementType */
                 if (!$elementType::isLocalized()) {
                     $nonLocalizedElementTypes[] = $elementType;
                 }

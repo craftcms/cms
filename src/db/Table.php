@@ -19,33 +19,33 @@ abstract class Table
     const ASSETS = '{{%assets}}';
     const ASSETTRANSFORMINDEX = '{{%assettransformindex}}';
     const ASSETTRANSFORMS = '{{%assettransforms}}';
-    /** @since 3.4.14 */
+    /* @since 3.4.14 */
     const CACHE = '{{%cache}}';
     const CATEGORIES = '{{%categories}}';
     const CATEGORYGROUPS = '{{%categorygroups}}';
     const CATEGORYGROUPS_SITES = '{{%categorygroups_sites}}';
-    /** @since 3.4.0 */
+    /* @since 3.4.0 */
     const CHANGEDATTRIBUTES = '{{%changedattributes}}';
-    /** @since 3.4.0 */
+    /* @since 3.4.0 */
     const CHANGEDFIELDS = '{{%changedfields}}';
     const CONTENT = '{{%content}}';
     const CRAFTIDTOKENS = '{{%craftidtokens}}';
     const DEPRECATIONERRORS = '{{%deprecationerrors}}';
-    /** @since 3.2.0 */
+    /* @since 3.2.0 */
     const DRAFTS = '{{%drafts}}';
     const ELEMENTINDEXSETTINGS = '{{%elementindexsettings}}';
     const ELEMENTS = '{{%elements}}';
     const ELEMENTS_SITES = '{{%elements_sites}}';
     const RESOURCEPATHS = '{{%resourcepaths}}';
-    /** @since 3.2.0 */
+    /* @since 3.2.0 */
     const REVISIONS = '{{%revisions}}';
     const SEQUENCES = '{{%sequences}}';
     const SYSTEMMESSAGES = '{{%systemmessages}}';
     const ENTRIES = '{{%entries}}';
-    /** @deprecated in 3.2.0 */
+    /* @deprecated in 3.2.0 */
     const ENTRYDRAFTS = '{{%entrydrafts}}';
     const ENTRYTYPES = '{{%entrytypes}}';
-    /** @deprecated in 3.2.0 */
+    /* @deprecated in 3.2.0 */
     const ENTRYVERSIONS = '{{%entryversions}}';
     const FIELDGROUPS = '{{%fieldgroups}}';
     const FIELDLAYOUTFIELDS = '{{%fieldlayoutfields}}';
@@ -53,20 +53,20 @@ abstract class Table
     const FIELDLAYOUTTABS = '{{%fieldlayouttabs}}';
     const FIELDS = '{{%fields}}';
     const GLOBALSETS = '{{%globalsets}}';
-    /** @since 3.3.0 */
+    /* @since 3.3.0 */
     const GQLSCHEMAS = '{{%gqlschemas}}';
-    /** @since 3.4.0 */
+    /* @since 3.4.0 */
     const GQLTOKENS = '{{%gqltokens}}';
     const INFO = '{{%info}}';
     const MATRIXBLOCKS = '{{%matrixblocks}}';
     const MATRIXBLOCKTYPES = '{{%matrixblocktypes}}';
     const MIGRATIONS = '{{%migrations}}';
-    /** @since 3.4.0 */
+    /* @since 3.4.0 */
     const PHPSESSIONS = '{{%phpsessions}}';
     const PLUGINS = '{{%plugins}}';
-    /** @since 3.4.0 */
+    /* @since 3.4.0 */
     const PROJECTCONFIG = '{{%projectconfig}}';
-    /** @since 3.6.8 */
+    /* @since 3.6.8 */
     const PROJECTCONFIGNAMES = '{{%projectconfignames}}';
     const QUEUE = '{{%queue}}';
     const RELATIONS = '{{%relations}}';
@@ -80,11 +80,11 @@ abstract class Table
     const STRUCTURES = '{{%structures}}';
     const TAGGROUPS = '{{%taggroups}}';
     const TAGS = '{{%tags}}';
-    /** @deprecated in 3.5.0 */
+    /* @deprecated in 3.5.0 */
     const TEMPLATECACHEELEMENTS = '{{%templatecacheelements}}';
-    /** @deprecated in 3.5.0 */
+    /* @deprecated in 3.5.0 */
     const TEMPLATECACHEQUERIES = '{{%templatecachequeries}}';
-    /** @deprecated in 3.5.0 */
+    /* @deprecated in 3.5.0 */
     const TEMPLATECACHES = '{{%templatecaches}}';
     const TOKENS = '{{%tokens}}';
     const USERGROUPS = '{{%usergroups}}';

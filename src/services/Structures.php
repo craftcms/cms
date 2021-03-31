@@ -126,7 +126,7 @@ class Structures extends Component
      */
     public function fillGapsInElements(array &$elements): void
     {
-        /** @var ElementInterface|null $prevElement */
+        /* @var ElementInterface|null $prevElement */
         $prevElement = null;
         $patchedElements = [];
 
@@ -258,7 +258,7 @@ class Structures extends Component
     public function getElementLevelDelta(int $structureId, ElementInterface $element): int
     {
         $elementRecord = $this->_getElementRecord($structureId, $element);
-        /** @var StructureElement $deepestDescendant */
+        /* @var StructureElement $deepestDescendant */
         $deepestDescendant = $elementRecord
             ->children()
             ->orderBy(['level' => SORT_DESC])

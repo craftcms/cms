@@ -134,7 +134,7 @@ class IndexAssetsController extends Controller
             $startAt = (is_numeric($startAt) && $startAt < count($fileList)) ? (int)$startAt : 0;
 
             $index = 0;
-            /** @var MissingAssetException[] $missingRecords */
+            /* @var MissingAssetException[] $missingRecords */
             $missingRecords = [];
             $missingRecordsByFilename = [];
 
@@ -195,7 +195,7 @@ class IndexAssetsController extends Controller
                         $maybes = true;
                         $maybePaths = [];
                         foreach ($missingRecordsByFilename[$filename] as $e) {
-                            /** @var MissingAssetException $e */
+                            /* @var MissingAssetException $e */
                             $maybePaths[] = "{$e->volume->name}/{$e->indexEntry->uri}";
                         }
                         $this->stdout(' (maybe ' . implode(', ', $maybePaths) . ')');

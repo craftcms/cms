@@ -82,7 +82,7 @@ class FormatDateTime extends Directive
     public static function apply($source, $value, array $arguments, ResolveInfo $resolveInfo)
     {
         if ($value instanceof \DateTime) {
-            /** @var \DateTime $value */
+            /* @var \DateTime $value */
             $format = $arguments['format'] ?? self::DEFAULT_FORMAT;
             $timezone = $arguments['timezone'] ?? self::DEFAULT_TIMEZONE;
 

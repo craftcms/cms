@@ -2,7 +2,7 @@
 
 namespace craft\test;
 
-/** @noinspection PhpIgnoredClassAliasDeclaration */
+/* @noinspection PhpIgnoredClassAliasDeclaration */
 class_alias(ActiveFixture::class, 'craft\test\Fixture');
 
 if (false) {

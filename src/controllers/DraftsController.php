@@ -35,13 +35,13 @@ class DraftsController extends Controller
         $this->requirePostRequest();
         $this->requireAcceptsJson();
 
-        /** @var ElementInterface|string $elementType */
+        /* @var ElementInterface|string $elementType */
         $elementType = $this->request->getRequiredBodyParam('elementType');
         $draftId = $this->request->getRequiredBodyParam('draftId');
         $siteId = $this->request->getBodyParam('siteId');
         $this->requireAuthorization('mergeDraftSourceChanges:' . $draftId);
 
-        /** @var ElementInterface|DraftBehavior $elementType */
+        /* @var ElementInterface|DraftBehavior $elementType */
         $draft = $elementType::find()
             ->draftId($draftId)
             ->siteId($siteId)

@@ -70,7 +70,7 @@ class DashboardController extends Controller
         $view->setNamespace('__NAMESPACE__');
 
         foreach ($widgetTypes as $widgetType) {
-            /** @var WidgetInterface $widgetType */
+            /* @var WidgetInterface $widgetType */
             if (!$widgetType::isSelectable()) {
                 continue;
             }

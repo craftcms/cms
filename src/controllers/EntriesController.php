@@ -82,11 +82,11 @@ class EntriesController extends BaseEntriesController
 
         $this->getView()->registerAssetBundle(EditEntryAsset::class);
 
-        /** @var Site $site */
+        /* @var Site $site */
         $site = $variables['site'];
-        /** @var Entry $entry */
+        /* @var Entry $entry */
         $entry = $variables['entry'];
-        /** @var Section $section */
+        /* @var Section $section */
         $section = $variables['section'];
 
         // Make sure they have permission to edit this entry
@@ -212,7 +212,7 @@ class EntriesController extends BaseEntriesController
             ];
 
             if ($section->type === Section::TYPE_STRUCTURE) {
-                /** @var Entry $ancestor */
+                /* @var Entry $ancestor */
                 foreach ($entry->getAncestors()->all() as $ancestor) {
                     $variables['crumbs'][] = [
                         'label' => $ancestor->title,
@@ -333,7 +333,7 @@ class EntriesController extends BaseEntriesController
                     $forceDisabled = true;
                 }
             } catch (InvalidElementException $e) {
-                /** @var Entry $clone */
+                /* @var Entry $clone */
                 $clone = $e->element;
 
                 if ($this->request->getAcceptsJson()) {
@@ -595,7 +595,7 @@ class EntriesController extends BaseEntriesController
         $siteIds = $this->editableSiteIds($variables['section']);
 
         if (empty($variables['site'])) {
-            /** @noinspection PhpUnhandledExceptionInspection */
+            /* @noinspection PhpUnhandledExceptionInspection */
             $variables['site'] = Craft::$app->getSites()->getCurrentSite();
 
             if (!in_array($variables['site']->id, $siteIds, false)) {
@@ -605,7 +605,7 @@ class EntriesController extends BaseEntriesController
             $site = $variables['site'];
         } else {
             // Make sure they were requesting a valid site
-            /** @var Site $site */
+            /* @var Site $site */
             $site = $variables['site'];
             if (!in_array($site->id, $siteIds, false)) {
                 throw new ForbiddenHttpException('User not permitted to edit content in this site');

@@ -80,7 +80,7 @@ class MailerHelper
      */
     public static function createTransportAdapter(string $type, ?array $settings = null): TransportAdapterInterface
     {
-        /** @var BaseTransportAdapter $adapter */
+        /* @var BaseTransportAdapter $adapter */
         $adapter = Component::createComponent([
             'type' => $type,
             'settings' => $settings,
@@ -161,7 +161,7 @@ class MailerHelper
 
         // Use the transport adapter settings if it was sent
         if ($transportAdapter !== null) {
-            /** @var BaseTransportAdapter $transportAdapter */
+            /* @var BaseTransportAdapter $transportAdapter */
             foreach ($transportAdapter->settingsAttributes() as $name) {
                 $transportSettings[$transportAdapter->getAttributeLabel($name)] = $transportAdapter->$name;
             }

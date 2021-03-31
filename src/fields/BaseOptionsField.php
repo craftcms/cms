@@ -300,7 +300,7 @@ abstract class BaseOptionsField extends Field implements PreviewableFieldInterfa
         if ($value instanceof MultiOptionsFieldData) {
             $serialized = [];
             foreach ($value as $selectedValue) {
-                /** @var OptionData $selectedValue */
+                /* @var OptionData $selectedValue */
                 $serialized[] = $selectedValue->value;
             }
             return $serialized;
@@ -358,7 +358,7 @@ abstract class BaseOptionsField extends Field implements PreviewableFieldInterfa
      */
     public function isValueEmpty($value, ElementInterface $element): bool
     {
-        /** @var MultiOptionsFieldData|SingleOptionFieldData $value */
+        /* @var MultiOptionsFieldData|SingleOptionFieldData $value */
         if ($value instanceof SingleOptionFieldData) {
             return $value->value === null || $value->value === '';
         }
@@ -372,7 +372,7 @@ abstract class BaseOptionsField extends Field implements PreviewableFieldInterfa
     public function getTableAttributeHtml($value, ElementInterface $element): string
     {
         if ($this->multi) {
-            /** @var MultiOptionsFieldData $value */
+            /* @var MultiOptionsFieldData $value */
             $labels = [];
 
             foreach ($value as $option) {
@@ -382,7 +382,7 @@ abstract class BaseOptionsField extends Field implements PreviewableFieldInterfa
             return implode(', ', $labels);
         }
 
-        /** @var SingleOptionFieldData $value */
+        /* @var SingleOptionFieldData $value */
         return Craft::t('site', (string)$value->label);
     }
 

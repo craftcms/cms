@@ -423,7 +423,7 @@ class Fields extends Component
      */
     public function deleteGroup(FieldGroup $group): bool
     {
-        /** @var FieldGroupRecord $groupRecord */
+        /* @var FieldGroupRecord $groupRecord */
         $groupRecord = FieldGroupRecord::find()
             ->where(['id' => $group->id])
             ->with('fields')
@@ -502,7 +502,7 @@ class Fields extends Component
         $fieldTypes = [];
 
         foreach ($this->getAllFieldTypes() as $fieldType) {
-            /** @var FieldInterface|string $fieldType */
+            /* @var FieldInterface|string $fieldType */
             if ($fieldType::hasContentColumn()) {
                 $fieldTypes[] = $fieldType;
             }
@@ -549,7 +549,7 @@ class Fields extends Component
                 continue;
             }
 
-            /** @var FieldInterface $tempField */
+            /* @var FieldInterface $tempField */
             $tempField = new $class();
             $tempFieldColumnType = $tempField->getContentColumnType();
 

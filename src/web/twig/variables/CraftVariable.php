@@ -83,7 +83,7 @@ class CraftVariable extends ServiceLocator
     public function __construct($config = [])
     {
         // Set the core components
-        /** @noinspection PhpDeprecationInspection */
+        /* @noinspection PhpDeprecationInspection */
         $components = [
             'cp' => Cp::class,
             'io' => Io::class,
@@ -105,9 +105,9 @@ class CraftVariable extends ServiceLocator
         ];
 
         if (Craft::$app->getEdition() === Craft::Pro) {
-            /** @noinspection PhpDeprecationInspection */
-            /** @noinspection PhpDeprecationInspection */
-            /** @noinspection SuspiciousAssignmentsInspection */
+            /* @noinspection PhpDeprecationInspection */
+            /* @noinspection PhpDeprecationInspection */
+            /* @noinspection SuspiciousAssignmentsInspection */
             $components = array_merge($components, [
                 'rebrand' => Rebrand::class,
 

@@ -42,7 +42,7 @@ class ApplyNewPropagationMethod extends BaseJob
      */
     public function execute($queue)
     {
-        /** @var string|ElementInterface $elementType */
+        /* @var string|ElementInterface $elementType */
         $elementType = $this->elementType;
         $query = $elementType::find()
             ->siteId('*')
@@ -89,7 +89,7 @@ class ApplyNewPropagationMethod extends BaseJob
                 while (!empty($otherSiteElements)) {
                     $otherSiteElement = array_pop($otherSiteElements);
                     try {
-                        /** @var Element $newElement */
+                        /* @var Element $newElement */
                         $newElement = $elementsService->duplicateElement($otherSiteElement);
                     } catch (UnsupportedSiteException $e) {
                         // Just log it and move along

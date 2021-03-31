@@ -433,7 +433,7 @@ class ElementQueryConditionBuilder extends Component
 
                     // If this a custom Craft content field
                     if ($craftContentField) {
-                        /** @var EagerLoadingFieldInterface $craftContentField */
+                        /* @var EagerLoadingFieldInterface $craftContentField */
                         $additionalArguments = $craftContentField->getEagerLoadingGqlConditions();
 
                         // Load additional requirements enforced by schema, enforcing permissions to see content
@@ -489,7 +489,7 @@ class ElementQueryConditionBuilder extends Component
 
                     // Add this to the eager loading list.
                     if (!$transformableAssetProperty) {
-                        /** @var InlineFragmentNode|FragmentDefinitionNode $wrappingFragment */
+                        /* @var InlineFragmentNode|FragmentDefinitionNode $wrappingFragment */
                         if ($wrappingFragment) {
                             // TODO: In Craft 4, get rid of all closures
                             $plan->when = function(Element $element) use ($wrappingFragment) {

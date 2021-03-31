@@ -123,9 +123,9 @@ class Search extends Component
         }
 
         // Figure out which fields to update, and which to ignore
-        /** @var FieldInterface[] $updateFields */
+        /* @var FieldInterface[] $updateFields */
         $updateFields = [];
-        /** @var string[] $ignoreFieldIds */
+        /* @var string[] $ignoreFieldIds */
         $ignoreFieldIds = [];
         if ($element::hasContent() && ($fieldLayout = $element->getFieldLayout()) !== null) {
             if ($fieldHandles !== null) {
@@ -378,7 +378,7 @@ SQL;
     {
         $attribute = strtolower($attribute);
 
-        /** @var Site $site */
+        /* @var Site $site */
         $site = Craft::$app->getSites()->getSiteById($siteId, true);
 
         // Clean 'em up
@@ -886,7 +886,7 @@ SQL;
         $cleanKeywordsLength = strlen($cleanKeywords);
 
         // Give ourselves a little wiggle room.
-        /** @noinspection CallableParameterUseCaseInTypeContextInspection */
+        /* @noinspection CallableParameterUseCaseInTypeContextInspection */
         $maxSize = ceil($maxSize * 0.95);
 
         if ($cleanKeywordsLength > $maxSize) {

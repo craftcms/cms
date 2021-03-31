@@ -478,7 +478,7 @@ abstract class Controller extends \yii\web\Controller
         return $this->redirect($url);
     }
 
-    /** @noinspection ArrayTypeOfParameterByDefaultValueInspection */
+    /* @noinspection ArrayTypeOfParameterByDefaultValueInspection */
     /**
      * Sets the response format of the given data as JSONP.
      *
@@ -495,7 +495,7 @@ abstract class Controller extends \yii\web\Controller
         return $this->response;
     }
 
-    /** @noinspection ArrayTypeOfParameterByDefaultValueInspection */
+    /* @noinspection ArrayTypeOfParameterByDefaultValueInspection */
     /**
      * Sets the response format of the given data as RAW.
      *

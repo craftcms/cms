@@ -749,7 +749,7 @@ abstract class Element extends Component implements ElementInterface
      */
     protected static function prepElementQueryForTableAttribute(ElementQueryInterface $elementQuery, string $attribute)
     {
-        /** @var ElementQuery $elementQuery */
+        /* @var ElementQuery $elementQuery */
         // Is this a custom field?
         if (preg_match('/^field:(\d+)$/', $attribute, $matches)) {
             $fieldId = $matches[1];
@@ -1848,7 +1848,7 @@ abstract class Element extends Component implements ElementInterface
      */
     public function validateCustomFieldAttribute(string $attribute, array $params = null)
     {
-        /** @var array|null $params */
+        /* @var array|null $params */
         [$field, $method, $fieldParams] = $params;
 
         if (is_string($method)) {
@@ -1975,7 +1975,7 @@ abstract class Element extends Component implements ElementInterface
      */
     public function getSourceId()
     {
-        /** @var DraftBehavior|RevisionBehavior|null $behavior */
+        /* @var DraftBehavior|RevisionBehavior|null $behavior */
         $behavior = $this->getBehavior('draft') ?: $this->getBehavior('revision');
         return $behavior->sourceId ?? $this->id;
     }
@@ -2533,7 +2533,7 @@ abstract class Element extends Component implements ElementInterface
     public function getPrevSibling()
     {
         if ($this->_prevSibling === null) {
-            /** @var ElementQuery $query */
+            /* @var ElementQuery $query */
             $query = $this->_prevSibling = static::find();
             $query->structureId = $this->structureId;
             $query->prevSiblingOf = $this;
@@ -2555,7 +2555,7 @@ abstract class Element extends Component implements ElementInterface
     public function getNextSibling()
     {
         if ($this->_nextSibling === null) {
-            /** @var ElementQuery $query */
+            /* @var ElementQuery $query */
             $query = $this->_nextSibling = static::find();
             $query->structureId = $this->structureId;
             $query->nextSiblingOf = $this;
@@ -2682,7 +2682,7 @@ abstract class Element extends Component implements ElementInterface
             return null;
         }
 
-        /** @var DraftBehavior $behavior */
+        /* @var DraftBehavior $behavior */
         $behavior = $this->getBehavior('draft');
         $modified = $behavior->isAttributeModified($attribute);
         $outdated = $behavior->isAttributeOutdated($attribute);
@@ -2841,7 +2841,7 @@ abstract class Element extends Component implements ElementInterface
             return null;
         }
 
-        /** @var DraftBehavior $behavior */
+        /* @var DraftBehavior $behavior */
         $behavior = $this->getBehavior('draft');
         $modified = $behavior->isFieldModified($fieldHandle);
         $outdated = $behavior->isFieldOutdated($fieldHandle);
@@ -3001,7 +3001,7 @@ abstract class Element extends Component implements ElementInterface
             return null;
         }
 
-        /** @var ElementInterface[] $elements */
+        /* @var ElementInterface[] $elements */
         $elements = $this->_eagerLoadedElements[$handle];
         ElementHelper::setNextPrevOnElements($elements);
         return $elements;
@@ -3020,13 +3020,13 @@ abstract class Element extends Component implements ElementInterface
                 $this->_currentRevision = $elements[0] ?? false;
                 break;
             case 'draftCreator':
-                /** @var DraftBehavior|null $behavior */
+                /* @var DraftBehavior|null $behavior */
                 if ($behavior = $this->getBehavior('draft')) {
                     $behavior->setCreator($elements[0] ?? null);
                 }
                 break;
             case 'revisionCreator':
-                /** @var RevisionBehavior|null $behavior */
+                /* @var RevisionBehavior|null $behavior */
                 if ($behavior = $this->getBehavior('revision')) {
                     $behavior->setCreator($elements[0] ?? null);
                 }
@@ -3527,7 +3527,7 @@ abstract class Element extends Component implements ElementInterface
      */
     protected static function findByCondition($criteria, bool $one)
     {
-        /** @var ElementQueryInterface $query */
+        /* @var ElementQueryInterface $query */
         $query = static::find();
 
         if ($criteria !== null) {
@@ -3624,7 +3624,7 @@ abstract class Element extends Component implements ElementInterface
         }
 
         if ($criteria instanceof ElementQueryInterface) {
-            /** @var ElementQuery $criteria */
+            /* @var ElementQuery $criteria */
             $query = clone $criteria;
         } else {
             $query = static::find()
@@ -3635,7 +3635,7 @@ abstract class Element extends Component implements ElementInterface
             }
         }
 
-        /** @var ElementQuery $query */
+        /* @var ElementQuery $query */
         $elementIds = $query->ids();
         $key = array_search($this->getSourceId(), $elementIds, false);
 
