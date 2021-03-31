@@ -124,7 +124,7 @@ class Globals extends Component
      */
     public function getAllSets(): array
     {
-        /** @noinspection PhpUnhandledExceptionInspection */
+        /* @noinspection PhpUnhandledExceptionInspection */
         return $this->_allSets(Craft::$app->getSites()->getCurrentSite()->id)->all();
     }
 
@@ -144,7 +144,7 @@ class Globals extends Component
      */
     public function getEditableSets(): array
     {
-        /** @noinspection PhpUnhandledExceptionInspection */
+        /* @noinspection PhpUnhandledExceptionInspection */
         $currentSiteId = Craft::$app->getSites()->getCurrentSite()->id;
 
         if (!isset($this->_editableGlobalSets[$currentSiteId])) {
@@ -214,7 +214,7 @@ class Globals extends Component
      */
     public function getSetById(int $globalSetId, int $siteId = null)
     {
-        /** @noinspection PhpUnhandledExceptionInspection */
+        /* @noinspection PhpUnhandledExceptionInspection */
         $currentSiteId = Craft::$app->getSites()->getCurrentSite()->id;
 
         if ($siteId === null) {
@@ -249,7 +249,7 @@ class Globals extends Component
      */
     public function getSetByHandle(string $globalSetHandle, int $siteId = null)
     {
-        /** @noinspection PhpUnhandledExceptionInspection */
+        /* @noinspection PhpUnhandledExceptionInspection */
         $currentSiteId = Craft::$app->getSites()->getCurrentSite()->id;
 
         if ($siteId === null) {

@@ -300,7 +300,7 @@ class Matrix extends Component
             // Make sure that alterations, if any, occur in the correct context.
             $contentService->fieldContext = 'matrixBlockType:' . $blockTypeUid;
             $contentService->fieldColumnPrefix = 'field_' . $blockTypeRecord->handle . '_';
-            /** @var MatrixField $matrixField */
+            /* @var MatrixField $matrixField */
             $matrixField = $fieldsService->getFieldById($blockTypeRecord->fieldId);
 
             // Ignore it, if the parent field is not a Matrix field.
@@ -427,7 +427,7 @@ class Matrix extends Component
             $fieldsService = Craft::$app->getFields();
             $originalContentTable = $contentService->contentTable;
 
-            /** @var MatrixField $matrixField */
+            /* @var MatrixField $matrixField */
             $matrixField = $fieldsService->getFieldById($blockType->fieldId);
 
             // Ignore it, if the parent field is not a Matrix field.
@@ -691,7 +691,7 @@ class Matrix extends Component
      */
     public function getBlockById(int $blockId, int $siteId = null)
     {
-        /** @noinspection PhpIncompatibleReturnTypeInspection */
+        /* @noinspection PhpIncompatibleReturnTypeInspection */
         return Craft::$app->getElements()->getElementById($blockId, MatrixBlock::class, $siteId);
     }
 
@@ -705,9 +705,9 @@ class Matrix extends Component
     public function saveField(MatrixField $field, ElementInterface $owner)
     {
         $elementsService = Craft::$app->getElements();
-        /** @var MatrixBlockQuery $query */
+        /* @var MatrixBlockQuery $query */
         $query = $owner->getFieldValue($field->handle);
-        /** @var MatrixBlock[] $blocks */
+        /* @var MatrixBlock[] $blocks */
         if (($blocks = $query->getCachedResult()) !== null) {
             $saveAll = false;
         } else {
@@ -848,9 +848,9 @@ class Matrix extends Component
     public function duplicateBlocks(MatrixField $field, ElementInterface $source, ElementInterface $target, bool $checkOtherSites = false)
     {
         $elementsService = Craft::$app->getElements();
-        /** @var MatrixBlockQuery $query */
+        /* @var MatrixBlockQuery $query */
         $query = $source->getFieldValue($field->handle);
-        /** @var MatrixBlock[] $blocks */
+        /* @var MatrixBlock[] $blocks */
         if (($blocks = $query->getCachedResult()) === null) {
             $blocksQuery = clone $query;
             $blocks = $blocksQuery->anyStatus()->all();
@@ -860,7 +860,7 @@ class Matrix extends Component
         $transaction = Craft::$app->getDb()->beginTransaction();
         try {
             foreach ($blocks as $block) {
-                /** @var MatrixBlock $newBlock */
+                /* @var MatrixBlock $newBlock */
                 $newBlock = $elementsService->duplicateElement($block, [
                     'ownerId' => $target->id,
                     'owner' => $target,
@@ -952,7 +952,7 @@ class Matrix extends Component
      */
     public function getSupportedSiteIds(string $propagationMethod, ElementInterface $owner): array
     {
-        /** @var Site[] $allSites */
+        /* @var Site[] $allSites */
         $allSites = ArrayHelper::index(Craft::$app->getSites()->getAllSites(), 'id');
         $ownerSiteIds = ArrayHelper::getColumn(ElementHelper::supportedSitesForElement($owner), 'siteId');
         $siteIds = [];

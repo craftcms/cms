@@ -429,7 +429,7 @@ class ElementHelper
      */
     public static function setNextPrevOnElements(array $elements)
     {
-        /** @var ElementInterface $lastElement */
+        /* @var ElementInterface $lastElement */
         $lastElement = null;
 
         foreach ($elements as $i => $element) {
@@ -458,7 +458,7 @@ class ElementHelper
      */
     public static function findSource(string $elementType, string $sourceKey, ?string $context = null)
     {
-        /** @var string|ElementInterface $elementType */
+        /* @var string|ElementInterface $elementType */
         $path = explode('/', $sourceKey);
         $sources = $elementType::sources($context);
 

@@ -134,7 +134,7 @@ class Template
      */
     public static function paginateQuery(QueryInterface $query): array
     {
-        /** @var Query $query */
+        /* @var Query $query */
         $paginatorQuery = clone $query;
         $paginator = new Paginator($paginatorQuery->limit(null), [
             'currentPage' => Craft::$app->getRequest()->getPageNum(),
@@ -325,7 +325,7 @@ class Template
         }
 
         $key = "DateTime::{$item}()";
-        /** @noinspection PhpUndefinedVariableInspection */
+        /* @noinspection PhpUndefinedVariableInspection */
         $message = "`DateTime::{$item}" . ($type === TwigTemplate::METHOD_CALL ? '()' : '') . "` is deprecated. Use the `|{$filter}` filter instead.";
 
         if ($item === 'iso8601') {
@@ -333,7 +333,7 @@ class Template
         }
 
         Craft::$app->getDeprecator()->log($key, $message);
-        /** @noinspection PhpUndefinedVariableInspection */
+        /* @noinspection PhpUndefinedVariableInspection */
         return $value;
     }
 

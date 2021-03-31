@@ -210,8 +210,8 @@ class MigrationManager extends Component
             return;
         }
 
-        /** @var \yii\db\Migration $migration */
-        /** @noinspection CallableParameterUseCaseInTypeContextInspection */
+        /* @var \yii\db\Migration $migration */
+        /* @noinspection CallableParameterUseCaseInTypeContextInspection */
         $migration = Instance::ensure($migration, MigrationInterface::class);
 
         // Clear the schema cache
@@ -271,8 +271,8 @@ class MigrationManager extends Component
             return;
         }
 
-        /** @var \yii\db\Migration $migration */
-        /** @noinspection CallableParameterUseCaseInTypeContextInspection */
+        /* @var \yii\db\Migration $migration */
+        /* @noinspection CallableParameterUseCaseInTypeContextInspection */
         $migration = Instance::ensure($migration, MigrationInterface::class);
 
         // Clear the schema cache

@@ -20,7 +20,7 @@ use craft\helpers\StringHelper;
  */
 abstract class RelationArgumentHandler extends ArgumentHandler
 {
-    /** @var array */
+    /* @var array */
     private $_memoizedValues = [];
 
     /**
@@ -35,7 +35,7 @@ abstract class RelationArgumentHandler extends ArgumentHandler
         $idSets = [];
 
         foreach ($criteriaList as $criteria) {
-            /** @var ElementQuery $elementQuery */
+            /* @var ElementQuery $elementQuery */
             $elementQuery = Craft::configure(Craft::$app->getElements()->createElementQuery($elementType), $criteria);
             $idSets[] = $elementQuery->ids();
         }

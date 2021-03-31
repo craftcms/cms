@@ -31,7 +31,7 @@ use yii\base\InvalidArgumentException;
  */
 class Asset extends ElementMutationResolver
 {
-    /** @inheritdoc */
+    /* @inheritdoc */
     protected $immutableAttributes = ['id', 'uid', 'volumeId', 'folderId'];
 
     /**
@@ -46,7 +46,7 @@ class Asset extends ElementMutationResolver
      */
     public function saveAsset($source, array $arguments, $context, ResolveInfo $resolveInfo)
     {
-        /** @var Volume $volume */
+        /* @var Volume $volume */
         $volume = $this->getResolutionData('volume');
         $canIdentify = !empty($arguments['id']) || !empty($arguments['uid']);
         $elementService = Craft::$app->getElements();
@@ -84,7 +84,7 @@ class Asset extends ElementMutationResolver
             ]);
         }
 
-        /** @var AssetElement $asset */
+        /* @var AssetElement $asset */
         if (empty($newFolderId)) {
             if (!$canIdentify) {
                 $asset->newFolderId = $assetService->getRootFolderByVolumeId($volume->id)->id;
@@ -120,7 +120,7 @@ class Asset extends ElementMutationResolver
         $assetId = $arguments['id'];
 
         $elementService = Craft::$app->getElements();
-        /** @var AssetElement $asset */
+        /* @var AssetElement $asset */
         $asset = $elementService->getElementById($assetId, AssetElement::class);
 
         if (!$asset) {
@@ -145,7 +145,7 @@ class Asset extends ElementMutationResolver
             unset($arguments['_file']);
         }
 
-        /** @var AssetElement $asset */
+        /* @var AssetElement $asset */
         $asset = parent::populateElementWithData($asset, $arguments);
 
         if (!empty($fileInformation) && $this->handleUpload($asset, $fileInformation)) {

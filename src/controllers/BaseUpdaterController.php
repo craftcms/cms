@@ -510,11 +510,11 @@ abstract class BaseUpdaterController extends Controller
         } catch (MigrateException $e) {
             $ownerName = $e->ownerName;
             $ownerHandle = $e->ownerHandle;
-            /** @var \Throwable $e */
+            /* @var \Throwable $e */
             $e = $e->getPrevious();
 
             if ($e instanceof MigrationException) {
-                /** @var \Throwable|null $previous */
+                /* @var \Throwable|null $previous */
                 $previous = $e->getPrevious();
                 $migration = $e->migration;
                 $output = $e->output;
@@ -596,10 +596,10 @@ abstract class BaseUpdaterController extends Controller
             $migration = $output = null;
 
             if ($e instanceof MigrateException) {
-                /** @var \Throwable $e */
+                /* @var \Throwable $e */
                 $e = $e->getPrevious();
                 if ($e instanceof MigrationException) {
-                    /** @var \Throwable|null $previous */
+                    /* @var \Throwable|null $previous */
                     $previous = $e->getPrevious();
                     $migration = $e->migration;
                     $output = $e->output;

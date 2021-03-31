@@ -353,7 +353,7 @@ class Gql
     {
         if (isset($resolveInfo->fieldNodes[0]->directives)) {
             foreach ($resolveInfo->fieldNodes[0]->directives as $directive) {
-                /** @var Directive $directiveEntity */
+                /* @var Directive $directiveEntity */
                 $directiveEntity = GqlEntityRegistry::getEntity($directive->name->value);
                 $arguments = [];
 
@@ -468,7 +468,7 @@ class Gql
         $fieldName = is_array($resolveInfo->path) ? array_slice($resolveInfo->path, -1)[0] : $resolveInfo->fieldName;
         $isAlias = $fieldName !== $resolveInfo->fieldName;
 
-        /** @var ElementQueryConditionBuilder $conditionBuilder */
+        /* @var ElementQueryConditionBuilder $conditionBuilder */
         $conditionBuilder = $context['conditionBuilder'] ?? null;
 
         if ($isAlias) {

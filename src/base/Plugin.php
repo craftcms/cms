@@ -81,7 +81,7 @@ class Plugin extends Module implements PluginInterface
 
         // Translation category
         $i18n = Craft::$app->getI18n();
-        /** @noinspection UnSafeIsSetOverArrayInspection */
+        /* @noinspection UnSafeIsSetOverArrayInspection */
         if (!isset($i18n->translations[$this->t9nCategory]) && !isset($i18n->translations[$this->t9nCategory . '*'])) {
             $i18n->translations[$this->t9nCategory] = [
                 'class' => PhpMessageSource::class,
@@ -217,7 +217,7 @@ class Plugin extends Module implements PluginInterface
         $settingsHtml = $this->settingsHtml();
         $view->setNamespace($namespace);
 
-        /** @var Controller $controller */
+        /* @var Controller $controller */
         $controller = Craft::$app->controller;
 
         return $controller->renderTemplate('settings/plugins/_settings', [
@@ -231,7 +231,7 @@ class Plugin extends Module implements PluginInterface
      */
     public function getMigrator(): MigrationManager
     {
-        /** @noinspection PhpIncompatibleReturnTypeInspection */
+        /* @noinspection PhpIncompatibleReturnTypeInspection */
         return $this->get('migrator');
     }
 

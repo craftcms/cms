@@ -14,10 +14,10 @@ use craft\web\AssetBundle;
  */
 class VueAsset extends AssetBundle
 {
-    /** @inheritdoc */
+    /* @inheritdoc */
     public $sourcePath = '@lib/vue';
 
-    /** @inheritdoc */
+    /* @inheritdoc */
     public $js = [
         'vue.js',
     ];

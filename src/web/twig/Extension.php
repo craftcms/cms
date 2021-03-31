@@ -312,11 +312,11 @@ class Extension extends AbstractExtension implements GlobalsInterface
     public function translateFilter($message, $category = null, $params = null, $language = null): string
     {
         // The front end site doesn't need to specify the category
-        /** @noinspection CallableParameterUseCaseInTypeContextInspection */
+        /* @noinspection CallableParameterUseCaseInTypeContextInspection */
         if (is_array($category)) {
-            /** @noinspection CallableParameterUseCaseInTypeContextInspection */
+            /* @noinspection CallableParameterUseCaseInTypeContextInspection */
             $language = $params;
-            /** @noinspection CallableParameterUseCaseInTypeContextInspection */
+            /* @noinspection CallableParameterUseCaseInTypeContextInspection */
             $params = $category;
             $category = 'site';
         } else if ($category === null) {
@@ -1037,7 +1037,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
             }
         }
 
-        /** @noinspection UnSafeIsSetOverArrayInspection - FP */
+        /* @noinspection UnSafeIsSetOverArrayInspection - FP */
         if (isset($index) && $index !== false) {
             return $index;
         }
@@ -1457,7 +1457,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
         // Only set these things when Craft is installed and not being updated
         if ($isInstalled && !Craft::$app->getUpdates()->getIsCraftDbMigrationNeeded()) {
             $globals['systemName'] = Craft::$app->getSystemName();
-            /** @noinspection PhpUnhandledExceptionInspection */
+            /* @noinspection PhpUnhandledExceptionInspection */
             $site = Craft::$app->getSites()->getCurrentSite();
             $globals['currentSite'] = $site;
             $globals['siteName'] = Craft::t('site', $site->getName());

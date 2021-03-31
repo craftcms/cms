@@ -270,7 +270,7 @@ class Cp extends Component
             $badgeCount = 0;
 
             foreach ($utilities as $class) {
-                /** @var UtilityInterface $class */
+                /* @var UtilityInterface $class */
                 $badgeCount += $class::badgeCount();
             }
 
@@ -553,12 +553,12 @@ class Cp extends Component
         });
 
         $iterator = new \RecursiveIteratorIterator($filter);
-        /** @var \SplFileInfo[] $files */
+        /* @var \SplFileInfo[] $files */
         $files = [];
         $pathLengths = [];
 
         foreach ($iterator as $file) {
-            /** @var \SplFileInfo $file */
+            /* @var \SplFileInfo $file */
             if (!$file->isDir() && $file->getFilename()[0] !== '.') {
                 $files[] = $file;
                 $pathLengths[] = strlen($file->getRealPath());

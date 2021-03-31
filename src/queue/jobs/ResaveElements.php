@@ -44,7 +44,7 @@ class ResaveElements extends BaseJob
      */
     public function execute($queue)
     {
-        /** @var ElementQuery $query */
+        /* @var ElementQuery $query */
         $query = $this->_query();
         $total = $query->count();
         if ($query->limit) {
@@ -71,9 +71,9 @@ class ResaveElements extends BaseJob
      */
     protected function defaultDescription(): string
     {
-        /** @var ElementQuery $query */
+        /* @var ElementQuery $query */
         $query = $this->_query();
-        /** @var ElementInterface $elementType */
+        /* @var ElementInterface $elementType */
         $elementType = $query->elementType;
         return Craft::t('app', 'Resaving {type}', [
             'type' => $elementType::pluralLowerDisplayName(),

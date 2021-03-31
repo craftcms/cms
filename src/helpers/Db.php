@@ -678,7 +678,7 @@ class Db
             $db = self::db();
         }
 
-        /** @var \craft\db\mysql\Schema|\craft\db\pgsql\Schema $schema */
+        /* @var \craft\db\mysql\Schema|\craft\db\pgsql\Schema $schema */
         $schema = $db->getSchema();
 
         return isset($schema->typeMap[$type]);

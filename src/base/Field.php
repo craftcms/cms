@@ -532,7 +532,7 @@ abstract class Field extends SavableComponent implements FieldInterface
                 return false;
             }
 
-            /** @var ElementQuery $query */
+            /* @var ElementQuery $query */
             $query->subQuery->andWhere(Db::parseParam('content.' . Craft::$app->getContent()->fieldColumnPrefix . $this->handle, $value));
         }
 
