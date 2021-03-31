@@ -1544,6 +1544,12 @@ abstract class Element extends Component implements ElementInterface
             return;
         }
 
+        // Is this is a field?
+        if ($this->fieldByHandle($name) !== null) {
+            $this->setFieldValue($name, $value);
+            return;
+        }
+
         parent::__set($name, $value);
     }
 
