@@ -1,5 +1,10 @@
 # Release Notes for Craft CMS 3.x
 
+## Unreleased
+
+### Fixed
+- Fixed a bug where restored entries could get deleted by garbage collection, if their `authorId` value was set to a soft-deleted author. ([#7751](https://github.com/craftcms/cms/issues/7751))
+
 ## 3.6.11.2 - 2021-03-29
 
 ### Fixed
