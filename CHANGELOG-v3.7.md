@@ -17,6 +17,7 @@
 ### Changed
 - Improved the UI of the Time Zone input in Settings → General.
 - Custom fields with a custom translation method are no longer labelled as translatable if the translation key is an empty string. ([#7647](https://github.com/craftcms/cms/issues/7647))
+- The `defaultCpLanguage` no longer affects console requests. ([#7747](https://github.com/craftcms/cms/issues/7747))
 - The `date()` Twig function now supports arrays with `date` and/or `time` keys. ([#7681](https://github.com/craftcms/cms/issues/7681))
 - Custom field column names now include a random string, preventing column name conflicts when deploying multiple project config changes at once. ([#6922](https://github.com/craftcms/cms/issues/6922))
 - Custom fields can now store data across multiple columns in the `content` table.

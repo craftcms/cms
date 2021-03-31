@@ -245,9 +245,7 @@ trait ApplicationTrait
         $this->_gettingLanguage = true;
 
         if ($useUserLanguage === null) {
-            /** @var WebRequest|ConsoleRequest $request */
-            $request = $this->getRequest();
-            $useUserLanguage = $request->getIsConsoleRequest() || $request->getIsCpRequest();
+            $useUserLanguage = $this->getRequest()->getIsCpRequest();
         }
 
         $this->language = $this->getTargetLanguage($useUserLanguage);
@@ -263,13 +261,29 @@ trait ApplicationTrait
     public function getTargetLanguage(bool $useUserLanguage = true): string
     {
         /** @var WebApplication|ConsoleApplication $this */
-        // Use the browser language if Craft isn't installed or is updating
-        if (!$this->getIsInstalled() || $this->getUpdates()->getIsCraftDbMigrationNeeded()) {
+        // Use the fallback language for console requests, or if Craft isn't installed or is updating
+        if (
+            $this instanceof ConsoleApplication ||
+            !$this->getIsInstalled() ||
+            $this->getUpdates()->getIsCraftDbMigrationNeeded()
+        ) {
             return $this->_getFallbackLanguage();
         }
 
         if ($useUserLanguage) {
-            return $this->_getUserLanguage();
+            // If the user is logged in *and* has a primary language set, use that
+            // (don't actually try to fetch the user, as plugins haven't been loaded yet)
+            $id = Session::get($this->getUser()->idParam);
+            if (
+                $id &&
+                ($language = $this->getUsers()->getUserPreference($id, 'language')) !== null &&
+                Craft::$app->getI18n()->validateAppLocaleId($language)
+            ) {
+                return $language;
+            }
+
+            // Fall back on the default CP language, if there is one, otherwise the browser language
+            return Craft::$app->getConfig()->getGeneral()->defaultCpLanguage ?? $this->_getFallbackLanguage();
         }
 
         /** @noinspection PhpUnhandledExceptionInspection */
@@ -1486,31 +1500,6 @@ trait ApplicationTrait
         }
         $info->maintenance = $value;
         return $this->saveInfo($info);
-    }
-
-    /**
-     * Tries to find a language match with the user's preferred language.
-     *
-     * @return string
-     */
-    private function _getUserLanguage(): string
-    {
-        /** @var WebApplication|ConsoleApplication $this */
-        // If the user is logged in *and* has a primary language set, use that
-        if ($this instanceof WebApplication) {
-            // Don't actually try to fetch the user, as plugins haven't been loaded yet.
-            $id = Session::get($this->getUser()->idParam);
-            if (
-                $id &&
-                ($language = $this->getUsers()->getUserPreference($id, 'language')) !== null &&
-                Craft::$app->getI18n()->validateAppLocaleId($language)
-            ) {
-                return $language;
-            }
-        }
-
-        // Fall back on the default CP language, if there is one, otherwise the browser language
-        return Craft::$app->getConfig()->getGeneral()->defaultCpLanguage ?? $this->_getFallbackLanguage();
     }
 
     /**
