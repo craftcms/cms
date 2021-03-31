@@ -1033,7 +1033,7 @@ class Fields extends Component
 
         if ($columnSuffix === null) {
             $column = ElementHelper::fieldColumn(null, $handle, null);
-            if ($db->columnExists($contentService->contentTable, $column)) {
+            if (!isset($newColumns[$column]) && $db->columnExists($contentService->contentTable, $column)) {
                 $db->createCommand()
                     ->dropColumn($contentService->contentTable, $column)
                     ->execute();
