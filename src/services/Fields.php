@@ -854,8 +854,10 @@ class Fields extends Component
             $field->translationKeyFormat = null;
         }
 
+        $isNew = $field->getIsNew();
+
         // Make sure it's got a UUID
-        if ($field->getIsNew()) {
+        if ($isNew) {
             if (empty($field->uid)) {
                 $field->uid = StringHelper::UUID();
             }
@@ -863,8 +865,12 @@ class Fields extends Component
             $field->uid = Db::uidById(Table::FIELDS, $field->id);
         }
 
-        // Make sure it has a column suffix
-        if (!$field->columnSuffix) {
+        // If this is a new field or it has multiple columns, make sure it has a column suffix
+        if (
+            $field::hasContentColumn() &&
+            !$field->columnSuffix &&
+            ($isNew || is_array($field->getContentColumnType()))
+        ) {
             $field->columnSuffix = StringHelper::randomString(8);
         }
 
