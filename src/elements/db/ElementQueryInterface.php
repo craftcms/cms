@@ -423,6 +423,40 @@ interface ElementQueryInterface extends QueryInterface, ArrayAccess, Arrayable, 
     public function uid($value);
 
     /**
+     * Narrows the query results based on the {elements}’ IDs in the `elements_sites` table.
+     *
+     * Possible values include:
+     *
+     * | Value | Fetches {elements}…
+     * | - | -
+     * | `1` | with an `elements_sites` ID of 1.
+     * | `'not 1'` | not with an `elements_sites` ID of 1.
+     * | `[1, 2]` | with an `elements_sites` ID of 1 or 2.
+     * | `['not', 1, 2]` | not with an `elements_sites` ID of 1 or 2.
+     *
+     * ---
+     *
+     * ```twig
+     * {# Fetch the {element} by its ID in the elements_sites table #}
+     * {% set {element-var} = {twig-method}
+     *     .siteSettingsId(1)
+     *     .one() %}
+     * ```
+     *
+     * ```php
+     * // Fetch the {element} by its ID in the elements_sites table
+     * ${element-var} = {php-method}
+     *     ->siteSettingsId(1)
+     *     ->one();
+     * ```
+     *
+     * @param int|int[]|null $value The property value
+     * @return static self reference
+     * @since 3.7.0
+     */
+    public function siteSettingsId($value);
+
+    /**
      * Causes the query results to be returned in the order specified by [[id()]].
      *
      * ---
