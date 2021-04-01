@@ -4527,6 +4527,82 @@ fieldset {
   }
 }
 
+/* radio */
+input.radio {
+  opacity: 0;
+  position: absolute;
+  width: $radioSize;
+  height: $radioSize;
+}
+
+input.radio + label,
+div.radio {
+  display: inline-block;
+  clear: none;
+  position: relative;
+  @include padding-left($radioSize+ 5);
+  height: 16px;
+  cursor: pointer;
+}
+
+input.radio:disabled + label,
+.disabled div.radio {
+  cursor: default;
+}
+
+input.radio + label:empty,
+div.radio:empty {
+  @include padding-left($radioSize);
+}
+
+/* fixes a RTL bug */
+input.radio + label:before,
+input.radio + label:after,
+div.radio:before,
+div.radio:after {
+  display: block;
+  position: absolute;
+  content: '';
+  box-sizing: border-box;
+  background-clip: padding-box;
+  border-radius: 100%;
+}
+
+input.radio + label:before,
+div.radio:before {
+  top: 0;
+  left: 0;
+  width: $radioSize;
+  height: $radioSize;
+  background-color: hsl(212, 50%, 99%);
+  border: 1px solid transparentize($inputColor, 0.6);
+}
+
+input.radio + label:after,
+div.radio:after {
+  top: 4px;
+  left: 4px;
+  width: $radioSize - 8;
+  height: $radioSize - 8;
+}
+
+input.radio:disabled + label,
+div.radio.disabled:before,
+div.radio.disabled + label {
+  opacity: 0.25;
+}
+
+input.radio:checked + label:after,
+div.radio.checked:after,
+.sel div.radio:after {
+  background: $grey900;
+}
+
+input.radio:focus + label:before,
+:focus div.radio:before {
+  @include input-focused-styles;
+}
+
 /* multiselect */
 .multiselect > select {
   color: $textColor;
