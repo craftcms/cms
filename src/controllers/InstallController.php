@@ -24,7 +24,7 @@ use yii\base\Exception;
 use yii\base\Response;
 use yii\web\BadRequestHttpException;
 
-/** @noinspection ClassOverridesFieldOfSuperClassInspection */
+/* @noinspection ClassOverridesFieldOfSuperClassInspection */
 
 /**
  * The InstallController class is a controller that directs all installation related tasks such as creating the database
@@ -143,13 +143,13 @@ class InstallController extends Controller
 
         if (empty($errors)) {
             // Test the connection
-            /** @var Connection $db */
+            /* @var Connection $db */
             $db = Craft::createObject(App::dbConfig($dbConfig));
 
             try {
                 $db->open();
             } catch (DbConnectException $e) {
-                /** @var \PDOException $pdoException */
+                /* @var \PDOException $pdoException */
                 $pdoException = $e->getPrevious()->getPrevious();
                 switch ($pdoException->getCode()) {
                     case 1045:

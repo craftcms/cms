@@ -134,7 +134,7 @@ class IndexAssetsController extends Controller
             $startAt = (is_numeric($startAt) && $startAt < count($fileList)) ? (int)$startAt : 0;
 
             $index = 0;
-            /** @var MissingAssetException[] $missingRecords */
+            /* @var MissingAssetException[] $missingRecords */
             $missingRecords = [];
             $missingRecordsByFilename = [];
 
@@ -181,30 +181,31 @@ class IndexAssetsController extends Controller
                 }
                 $this->stdout(PHP_EOL);
             }
+        }
 
-            $missingFiles = $assetIndexer->getMissingFiles($sessionId);
-            $maybes = false;
+        $missingFiles = $assetIndexer->getMissingFiles($sessionId);
+        $maybes = false;
 
-            if (!empty($missingFiles)) {
-                $totalMissing = count($missingFiles);
-                $this->stdout(($totalMissing === 1 ? 'One recorded asset is missing its file:' : "{$totalMissing} recorded assets are missing their files:") . PHP_EOL, Console::FG_YELLOW);
-                foreach ($missingFiles as $assetId => $path) {
-                    $this->stdout("- {$path} ({$assetId})");
-                    $filename = basename($path);
-                    if (isset($missingRecordsByFilename[$filename])) {
-                        $maybes = true;
-                        $maybePaths = [];
-                        foreach ($missingRecordsByFilename[$filename] as $e) {
-                            /** @var MissingAssetException $e */
-                            $maybePaths[] = "{$e->volume->name}/{$e->indexEntry->uri}";
-                        }
-                        $this->stdout(' (maybe ' . implode(', ', $maybePaths) . ')');
+        if (!empty($missingFiles)) {
+            $totalMissing = count($missingFiles);
+            $this->stdout(($totalMissing === 1 ? 'One recorded asset is missing its file:' : "{$totalMissing} recorded assets are missing their files:") . PHP_EOL, Console::FG_YELLOW);
+            foreach ($missingFiles as $assetId => $missingPath) {
+                $this->stdout("- {$missingPath} ({$assetId})");
+                $filename = basename($missingPath);
+                if (isset($missingRecordsByFilename[$filename])) {
+                    $maybes = true;
+                    $maybePaths = [];
+                    foreach ($missingRecordsByFilename[$filename] as $e) {
+                        /* @var MissingAssetException $e */
+                        $maybePaths[] = "{$e->volume->name}/{$e->indexEntry->uri}";
                     }
-                    $this->stdout(PHP_EOL);
+                    $this->stdout(' (maybe ' . implode(', ', $maybePaths) . ')');
                 }
                 $this->stdout(PHP_EOL);
             }
+            $this->stdout(PHP_EOL);
         }
+
 
         $remainingMissingFiles = $missingFiles;
 

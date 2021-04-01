@@ -17,6 +17,7 @@ use craft\helpers\ArrayHelper;
 use craft\helpers\Cp as CpHelper;
 use craft\helpers\StringHelper;
 use craft\helpers\UrlHelper;
+use DateTime;
 use yii\base\Component;
 use yii\base\InvalidConfigException;
 
@@ -270,7 +271,7 @@ class Cp extends Component
             $badgeCount = 0;
 
             foreach ($utilities as $class) {
-                /** @var UtilityInterface $class */
+                /* @var UtilityInterface $class */
                 $badgeCount += $class::badgeCount();
             }
 
@@ -512,6 +513,61 @@ class Cp extends Component
     }
 
     /**
+     * Returns all known time zones for a time zone input.
+     *
+     * @return array
+     * @since 3.7.0
+     */
+    public function getTimeZoneOptions(): array
+    {
+        // Assemble the timezone options array (Technique adapted from http://stackoverflow.com/a/7022536/1688568)
+        $options = [];
+
+        $utc = new DateTime();
+        $offsets = [];
+        $timezoneIds = [];
+
+        foreach (\DateTimeZone::listIdentifiers() as $timezoneId) {
+            $timezone = new \DateTimeZone($timezoneId);
+            $transition = $timezone->getTransitions($utc->getTimestamp(), $utc->getTimestamp());
+            $abbr = $transition[0]['abbr'];
+
+            $offset = round($timezone->getOffset($utc) / 60);
+
+            if ($offset) {
+                $hour = floor($offset / 60);
+                $minutes = floor(abs($offset) % 60);
+                $format = sprintf("%+03d:%02u", $hour, $minutes);
+            } else {
+                $format = '';
+            }
+
+            $label = "(GMT$format)";
+            if (preg_match('/^[A-Z]+$/', $abbr)) {
+                $label .= " $abbr";
+            }
+
+            if ($timezoneId !== 'UTC') {
+                [, $city] = explode('/', $timezoneId, 2);
+                // Cleanup, e.g. North_Dakota/New_Salem => New Salem, North Dakota
+                $city = str_replace('_', ' ', implode(', ', array_reverse(explode('/', $city))));
+                $label .= " – $city";
+            }
+
+            $offsets[] = $offset;
+            $timezoneIds[] = $timezoneId;
+            $options[] = [
+                'value' => $timezoneId,
+                'label' => $label,
+            ];
+        }
+
+        array_multisort($offsets, SORT_ASC, SORT_NUMERIC, $timezoneIds, $options);
+
+        return $options;
+    }
+
+    /**
      * Returns ASCII character mappings for the given language, if it differs from the application language.
      *
      * @param string $language
@@ -553,12 +609,12 @@ class Cp extends Component
         });
 
         $iterator = new \RecursiveIteratorIterator($filter);
-        /** @var \SplFileInfo[] $files */
+        /* @var \SplFileInfo[] $files */
         $files = [];
         $pathLengths = [];
 
         foreach ($iterator as $file) {
-            /** @var \SplFileInfo $file */
+            /* @var \SplFileInfo $file */
             if (!$file->isDir() && $file->getFilename()[0] !== '.') {
                 $files[] = $file;
                 $pathLengths[] = strlen($file->getRealPath());

@@ -22,7 +22,7 @@ use yii\web\NotFoundHttpException;
 use yii\web\Response;
 use yii\web\ServerErrorHttpException;
 
-/** @noinspection ClassOverridesFieldOfSuperClassInspection */
+/* @noinspection ClassOverridesFieldOfSuperClassInspection */
 
 /**
  * The TemplatesController class is a controller that handles various template rendering related tasks for both the
@@ -174,7 +174,7 @@ class TemplatesController extends Controller
      */
     public function actionRenderError(): Response
     {
-        /** @var $errorHandler \yii\web\ErrorHandler */
+        /* @var $errorHandler \yii\web\ErrorHandler */
         $errorHandler = Craft::$app->getErrorHandler();
         $exception = $errorHandler->exception;
 
@@ -202,7 +202,7 @@ class TemplatesController extends Controller
             }
         }
 
-        /** @noinspection UnSafeIsSetOverArrayInspection - FP */
+        /* @noinspection UnSafeIsSetOverArrayInspection - FP */
         if (!isset($template)) {
             $view = $this->getView();
             $view->setTemplateMode(View::TEMPLATE_MODE_CP);

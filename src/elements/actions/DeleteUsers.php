@@ -147,7 +147,7 @@ JS;
      */
     public function performAction(ElementQueryInterface $query): bool
     {
-        /** @var User[] $users */
+        /* @var User[] $users */
         $users = $query->all();
         $undeletableIds = $this->_getUndeletableUserIds();
 

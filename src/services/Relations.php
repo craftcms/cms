@@ -61,7 +61,7 @@ class Relations extends Component
             ->where($oldRelationConditions)
             ->all($db);
 
-        /** @var Command[] $updateCommands */
+        /* @var Command[] $updateCommands */
         $updateCommands = [];
         $deleteIds = [];
 

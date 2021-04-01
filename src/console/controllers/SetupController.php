@@ -343,7 +343,7 @@ EOD;
             // 1045: Access denied for user (username, password)
             // 1049: Unknown database (database)
             // 2002: Connection timed out (server)
-            /** @var \PDOException $pdoException */
+            /* @var \PDOException $pdoException */
             $pdoException = $e->getPrevious()->getPrevious() ?? $e->getPrevious() ?? $e;
             $this->stderr('failed: ' . $pdoException->getMessage() . PHP_EOL, Console::FG_RED);
 

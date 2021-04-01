@@ -38,7 +38,7 @@ class Asset extends Element
      */
     protected function resolve($source, $arguments, $context, ResolveInfo $resolveInfo)
     {
-        /** @var AssetElement $source */
+        /* @var AssetElement $source */
         $fieldName = $resolveInfo->fieldName;
 
         if (!empty($arguments) && in_array($fieldName, ['url', 'width', 'height'], true)) {

@@ -50,7 +50,7 @@ class UtilitiesController extends Controller
             array_splice($utilities, $key, 1);
         }
 
-        /** @var string|UtilityInterface $firstUtility */
+        /* @var string|UtilityInterface $firstUtility */
         $firstUtility = reset($utilities);
 
         return $this->redirect('utilities/' . $firstUtility::id());
@@ -73,7 +73,7 @@ class UtilitiesController extends Controller
             throw new NotFoundHttpException('Invalid utility ID: ' . $id);
         }
 
-        /** @var UtilityInterface $class */
+        /* @var UtilityInterface $class */
         if ($utilitiesService->checkAuthorization($class) === false) {
             throw new ForbiddenHttpException('User not permitted to access the "' . $class::displayName() . '".');
         }
@@ -243,7 +243,7 @@ class UtilitiesController extends Controller
                     'assetId' => $params['deleteAsset'],
                 ]);
 
-                /** @var Asset[] $assets */
+                /* @var Asset[] $assets */
                 $assets = Asset::find()
                     ->anyStatus()
                     ->id($params['deleteAsset'])
@@ -439,7 +439,7 @@ class UtilitiesController extends Controller
      */
     private function _getUtilityIconSvg(string $class): string
     {
-        /** @var UtilityInterface|string $class */
+        /* @var UtilityInterface|string $class */
         $iconPath = $class::iconPath();
 
         if ($iconPath === null) {
@@ -467,7 +467,7 @@ class UtilitiesController extends Controller
      */
     private function _getDefaultUtilityIconSvg(string $class): string
     {
-        /** @var UtilityInterface $class */
+        /* @var UtilityInterface $class */
         return $this->getView()->renderTemplate('_includes/defaulticon.svg', [
             'label' => $class::displayName(),
         ]);

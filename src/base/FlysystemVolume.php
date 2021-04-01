@@ -275,6 +275,12 @@ abstract class FlysystemVolume extends Volume
             }
         }
 
+        // Work around an edge case were empty folders would cause the containing folder to be deleted instead of renamed
+        if (empty($fileList)) {
+            $this->renameFile($path, $newPath . '/' . $newName);
+            return;
+        }
+
         // It's possible for a folder object to not exist on remote volumes, so to throw an exception
         // we must make sure that there are no files AS WELL as no folder.
         if (empty($fileList) && !$this->folderExists($path)) {

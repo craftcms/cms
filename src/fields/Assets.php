@@ -334,10 +334,10 @@ class Assets extends BaseRelationField
         $filenames = [];
 
         // Get all the value's assets' filenames
-        /** @var AssetQuery $value */
+        /* @var AssetQuery $value */
         $value = $element->getFieldValue($this->handle);
         foreach ($value->all() as $asset) {
-            /** @var Asset $asset */
+            /* @var Asset $asset */
             $filenames[] = $asset->filename;
         }
 
@@ -400,9 +400,9 @@ class Assets extends BaseRelationField
             $this->_uploadedDataFiles = ['data' => $value['data'], 'filename' => $value['filename']];
             unset($value['data'], $value['filename']);
 
-            /** @var Asset $class */
+            /* @var Asset $class */
             $class = static::elementType();
-            /** @var ElementQuery $query */
+            /* @var ElementQuery $query */
             $query = $class::find();
 
             $targetSite = $this->targetSiteId($element);
@@ -549,8 +549,8 @@ class Assets extends BaseRelationField
         }
 
         // Are there any related assets?
-        /** @var AssetQuery $query */
-        /** @var Asset[] $assets */
+        /* @var AssetQuery $query */
+        /* @var Asset[] $assets */
         $assets = $query->all();
 
         if (!empty($assets)) {

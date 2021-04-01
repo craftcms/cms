@@ -917,7 +917,7 @@ class StringHelper extends \yii\helpers\StringHelper
             $lines[$i] = $line;
         }
 
-        /** @var string[] $lines */
+        /* @var string[] $lines */
         return $lines;
     }
 

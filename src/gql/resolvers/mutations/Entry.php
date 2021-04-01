@@ -29,7 +29,7 @@ class Entry extends ElementMutationResolver
 {
     use StructureMutationTrait;
 
-    /** @inheritdoc */
+    /* @inheritdoc */
     protected $immutableAttributes = ['id', 'uid', 'draftId'];
 
     /**
@@ -102,7 +102,7 @@ class Entry extends ElementMutationResolver
     {
         $entryId = $arguments['id'];
 
-        /** @var EntryElement $entry */
+        /* @var EntryElement $entry */
         $entry = Craft::$app->getElements()->getElementById($entryId, EntryElement::class);
 
         if (!$entry) {
@@ -112,7 +112,7 @@ class Entry extends ElementMutationResolver
         $entryTypeUid = Db::uidById(Table::ENTRYTYPES, $entry->typeId);
         $this->requireSchemaAction('entrytypes.' . $entryTypeUid, 'save');
 
-        /** @var Entry $draft */
+        /* @var Entry $draft */
         $draft = Craft::$app->getDrafts()->createDraft($entry, $entry->authorId);
 
         return $draft->draftId;
@@ -139,7 +139,7 @@ class Entry extends ElementMutationResolver
         $entryTypeUid = Db::uidById(Table::ENTRYTYPES, $draft->typeId);
         $this->requireSchemaAction('entrytypes.' . $entryTypeUid, 'save');
 
-        /** @var Entry $draft */
+        /* @var Entry $draft */
         $draft = Craft::$app->getDrafts()->publishDraft($draft);
 
         return $draft->id;
@@ -154,8 +154,8 @@ class Entry extends ElementMutationResolver
      */
     protected function getEntryElement(array $arguments): EntryElement
     {
-        /** @var Section $section */
-        /** @var EntryType $entryType */
+        /* @var Section $section */
+        /* @var EntryType $entryType */
         $section = $this->getResolutionData('section');
         $entryType = $this->getResolutionData('entryType');
 
@@ -209,8 +209,8 @@ class Entry extends ElementMutationResolver
      */
     protected function identifyEntry(EntryQuery $entryQuery, array $arguments): EntryQuery
     {
-        /** @var Section $section */
-        /** @var EntryType $entryType */
+        /* @var Section $section */
+        /* @var EntryType $entryType */
         $section = $this->getResolutionData('section');
         $entryType = $this->getResolutionData('entryType');
 

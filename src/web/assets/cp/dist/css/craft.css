@@ -2358,9 +2358,9 @@ body.rtl .passwordwrapper .password-toggle { padding-left: 7px; }
 
 .datetimewrapper { display: -webkit-flex; display: flex; -webkit-flex-direction: row; flex-direction: row; -webkit-align-items: center; align-items: center; }
 
-body.ltr .datetimewrapper > .datewrapper + .timewrapper { margin-left: 5px; }
+body.ltr .datetimewrapper > .datewrapper + .timewrapper, body.ltr .datetimewrapper > .timewrapper + .timezone { margin-left: 5px; }
 
-body.rtl .datetimewrapper > .datewrapper + .timewrapper { margin-right: 5px; }
+body.rtl .datetimewrapper > .datewrapper + .timewrapper, body.rtl .datetimewrapper > .timewrapper + .timezone { margin-right: 5px; }
 
 .clear-btn { display: -webkit-flex; display: flex; -webkit-justify-content: center; justify-content: center; -webkit-align-items: center; align-items: center; width: 24px; cursor: pointer; color: rgba(123, 135, 147, 0.5); border: none; padding: 0; background: transparent; }
 
@@ -2496,6 +2496,9 @@ body .selectize-dropdown [data-selectable], body .selectize-dropdown .optgroup-h
 body .selectize-dropdown .optgroup-header { margin: 14px 0 3px; font-size: 10px; line-height: 1.2; color: #606d7b; text-transform: uppercase; font-weight: bold; margin: 0; padding: 4px 0; }
 
 body .selectize-dropdown .active { color: #3f4d5a; background-color: #f3f7fc; }
+
+/* time zones */
+.timezone { height: 34px; max-width: 25em; }
 
 /* datepicker */
 .ui-datepicker { position: fixed; top: -300px; -padding: 10px; width: 210px; height: 242px; z-index: 101 !important; }

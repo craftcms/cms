@@ -45,7 +45,7 @@ class Expanded extends ElementExporter
 
         $data = [];
 
-        /** @var ElementQuery $query */
+        /* @var ElementQuery $query */
         $query->with($eagerLoadableFields);
 
         foreach (Db::each($query) as $element) {

@@ -45,7 +45,7 @@ class PropagateElements extends BaseJob
      */
     public function execute($queue)
     {
-        /** @var ElementQuery $query */
+        /* @var ElementQuery $query */
         $query = $this->_query();
         $total = $query->count();
         $elementsService = Craft::$app->getElements();
@@ -69,9 +69,9 @@ class PropagateElements extends BaseJob
      */
     protected function defaultDescription(): string
     {
-        /** @var ElementQuery $query */
+        /* @var ElementQuery $query */
         $query = $this->_query();
-        /** @var ElementInterface $elementType */
+        /* @var ElementInterface $elementType */
         $elementType = $query->elementType;
         $total = $query->count();
         return Craft::t('app', 'Propagating {type}', [

@@ -353,7 +353,7 @@ class Tags extends Component
             return;
         }
 
-        /** @var TagGroup $tagGroup */
+        /* @var TagGroup $tagGroup */
         $tagGroup = $this->getTagGroupById($tagGroupRecord->id);
 
         // Fire a 'beforeApplyGroupDelete' event
@@ -459,7 +459,7 @@ class Tags extends Component
      */
     public function getTagById(int $tagId, int $siteId = null)
     {
-        /** @noinspection PhpIncompatibleReturnTypeInspection */
+        /* @noinspection PhpIncompatibleReturnTypeInspection */
         return Craft::$app->getElements()->getElementById($tagId, Tag::class, $siteId);
     }
 

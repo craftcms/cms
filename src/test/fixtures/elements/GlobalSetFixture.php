@@ -54,7 +54,7 @@ abstract class GlobalSetFixture extends BaseElementFixture
      */
     protected function saveElement(ElementInterface $element): bool
     {
-        /** @var GlobalSet $element */
+        /* @var GlobalSet $element */
         if (!parent::saveElement($element)) {
             return false;
         }

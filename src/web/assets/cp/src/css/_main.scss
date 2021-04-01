@@ -4698,7 +4698,8 @@ fieldset {
   flex-direction: row;
   align-items: center;
 
-  & > .datewrapper + .timewrapper {
+  & > .datewrapper + .timewrapper,
+  & > .timewrapper + .timezone {
     @include margin-left(5px);
   }
 }
@@ -4935,6 +4936,12 @@ body .selectize-dropdown .optgroup-header {
 
 body .selectize-dropdown .active {
   @include menu-option-active-styles;
+}
+
+/* time zones */
+.timezone {
+  height: 34px;
+  max-width: 25em;
 }
 
 /* datepicker */

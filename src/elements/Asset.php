@@ -265,7 +265,7 @@ class Asset extends Element
      */
     public static function gqlMutationNameByContext($context): string
     {
-        /** @var VolumeInterface $context */
+        /* @var VolumeInterface $context */
         return 'save_' . $context->handle . '_Asset';
     }
 

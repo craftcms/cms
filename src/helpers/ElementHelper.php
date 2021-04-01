@@ -12,6 +12,7 @@ use craft\base\BlockElementInterface;
 use craft\base\Element;
 use craft\base\ElementInterface;
 use craft\base\Field;
+use craft\base\FieldInterface;
 use craft\db\Query;
 use craft\db\Table;
 use craft\errors\OperationAbortedException;
@@ -441,7 +442,7 @@ class ElementHelper
      */
     public static function setNextPrevOnElements(array $elements)
     {
-        /** @var ElementInterface $lastElement */
+        /* @var ElementInterface $lastElement */
         $lastElement = null;
 
         foreach ($elements as $i => $element) {
@@ -470,7 +471,7 @@ class ElementHelper
      */
     public static function findSource(string $elementType, string $sourceKey, ?string $context = null)
     {
-        /** @var string|ElementInterface $elementType */
+        /* @var string|ElementInterface $elementType */
         $path = explode('/', $sourceKey);
         $sources = $elementType::sources($context);
 
@@ -555,5 +556,40 @@ class ElementHelper
                 }
                 return Craft::$app->getView()->renderObjectTemplate($translationKeyFormat, $element);
         }
+    }
+
+    /**
+     * Returns the content column name for a given field.
+     *
+     * @param FieldInterface $field
+     * @param string|null $columnKey
+     * @return string|null
+     * @since 3.7.0
+     */
+    public static function fieldColumnFromField(FieldInterface $field, ?string $columnKey = null): ?string
+    {
+        if ($field::hasContentColumn()) {
+            return static::fieldColumn($field->columnPrefix, $field->handle, $field->columnSuffix, $columnKey);
+        }
+
+        return null;
+    }
+
+    /**
+     * Returns the content column name based on the given field attributes.
+     *
+     * @param string|null $columnPrefix
+     * @param string $handle
+     * @param string|null $columnSuffix
+     * @param string|null $columnKey
+     * @return string
+     * @since 3.7.0
+     */
+    public static function fieldColumn(?string $columnPrefix, string $handle, ?string $columnSuffix, ?string $columnKey = null): string
+    {
+        return ($columnPrefix ?? Craft::$app->getContent()->fieldColumnPrefix) .
+            $handle .
+            ($columnKey ? "_$columnKey" : '') .
+            ($columnSuffix ? "_$columnSuffix" : '');
     }
 }
