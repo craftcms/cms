@@ -1262,7 +1262,7 @@ class Entry extends Element
         $section = $this->getSection();
 
         // The slug *might* not be set if this is a Draft and they've deleted it for whatever reason
-        $path = 'entries/' . $section->handle . '/' . $this->getSourceId() .
+        $path = 'entries/' . $section->handle . '/' . $this->getCanonicalId() .
             ($this->slug && strpos($this->slug, '__') !== 0 ? '-' . $this->slug : '');
 
         $params = [];

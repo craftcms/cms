@@ -571,6 +571,14 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
     /**
      * @inheritdoc
      */
+    public function copyValue(ElementInterface $from, ElementInterface $to): void
+    {
+        // We'll do it later from afterElementPropagate()
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function modifyElementsQuery(ElementQueryInterface $query, $value)
     {
         /* @var ElementQuery $query */
@@ -639,6 +647,23 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
             default:
                 return null;
         }
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getStatus(ElementInterface $element): ?array
+    {
+        // The only thing we need to actually present to the UI is whether it is outdated.
+        // Individual blocks will show their own field statuses.
+        if ($element->isFieldOutdated($this->handle)) {
+            return [
+                Element::ATTR_STATUS_OUTDATED,
+                Craft::t('app', 'This field was updated in the Current revision.'),
+            ];
+        }
+
+        return null;
     }
 
     /**
@@ -1013,13 +1038,8 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
             $resetValue = true;
         } else if ($element->isFieldDirty($this->handle) || !empty($element->newSiteIds)) {
             $matrixService->saveField($this, $element);
-        } else if (
-            ($status = $element->getFieldStatus($this->handle)) !== null &&
-            $status[0] === Element::ATTR_STATUS_OUTDATED
-        ) {
-            // This is just a temporary fix for merging Matrix field changes.
-            // Will be replaced with a more thorough solution in 3.7: https://github.com/craftcms/cms/pull/7710
-            $matrixService->duplicateBlocks($this, ElementHelper::sourceElement($element), $element, true);
+        } else if ($element->mergingCanonicalChanges) {
+            $matrixService->mergeCanonicalChanges($this, $element);
             $resetValue = true;
         }
 

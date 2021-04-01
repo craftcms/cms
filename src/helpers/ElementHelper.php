@@ -216,7 +216,7 @@ class ElementHelper
             if (strpos($uriFormat, '{id') !== false) {
                 $variables['id'] = $element->tempId;
             }
-            if (!$element->getSourceId() && strpos($uriFormat, '{sourceId') !== false) {
+            if (!$element->getCanonicalId() && strpos($uriFormat, '{sourceId') !== false) {
                 $variables['sourceId'] = $element->tempId;
             }
         }
@@ -259,7 +259,7 @@ class ElementHelper
             ]);
         }
 
-        if (($sourceId = $element->getSourceId()) !== null) {
+        if (($sourceId = $element->getCanonicalId()) !== null) {
             $query->andWhere([
                 'not', [
                     'elements.id' => $sourceId,
@@ -421,29 +421,17 @@ class ElementHelper
     }
 
     /**
-     * Returns the element, or if it’s a draft/revision, the source element.
+     * Returns the canonical version of an element.
      *
      * @param ElementInterface $element The source/draft/revision element
      * @param bool $anySite Whether the source element can be retrieved in any site
-     * @return ElementInterface|null
+     * @return ElementInterface
      * @since 3.3.0
+     * @deprecated in 3.7.0. Use [[ElementInterface::getCanonical()]] instead.
      */
-    public static function sourceElement(ElementInterface $element, bool $anySite = false)
+    public static function sourceElement(ElementInterface $element, bool $anySite = false): ElementInterface
     {
-        $sourceId = $element->getSourceId();
-        if ($sourceId === $element->id) {
-            return $element;
-        }
-
-        return $element::find()
-            ->id($sourceId)
-            ->siteId($anySite ? '*' : $element->siteId)
-            ->preferSites([$element->siteId])
-            ->structureId($element->structureId)
-            ->unique()
-            ->anyStatus()
-            ->ignorePlaceholders()
-            ->one();
+        return $element->getCanonical($anySite);
     }
 
     /**

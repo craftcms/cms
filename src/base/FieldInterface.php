@@ -127,6 +127,26 @@ interface FieldInterface extends SavableComponentInterface
     public function getTranslationKey(ElementInterface $element): string;
 
     /**
+     * Returns the status of the field for a given element.
+     *
+     * If the field has a known status, an array should be returned with two elements:
+     *
+     * - The status class (modified, outdated, or conflicted)
+     * - The status label
+     *
+     * For example:
+     *
+     * ```php
+     * return ['modified', 'The field has been modified.');
+     * ```
+     *
+     * @param ElementInterface $element
+     * @return array|null
+     * @since 3.7.0
+     */
+    public function getStatus(ElementInterface $element): ?array;
+
+    /**
      * Returns whether the field should use a `<fieldset>` + `<legend>` instead of a `<div>` + `<label>`.
      *
      * @return bool
@@ -325,6 +345,16 @@ interface FieldInterface extends SavableComponentInterface
      * @return mixed The serialized field value
      */
     public function serializeValue($value, ElementInterface $element = null);
+
+    /**
+     * Copies the field’s value from one element to another.
+     *
+     * @param ElementInterface $from
+     * @param ElementInterface $to
+     * @return void
+     * @since 3.7.0
+     */
+    public function copyValue(ElementInterface $from, ElementInterface $to): void;
 
     /**
      * Modifies an element query.

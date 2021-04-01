@@ -532,7 +532,7 @@ class Cp
 
         return Html::tag($fieldset ? 'fieldset' : 'div',
             ($status
-                ? Html::tag('div', Html::encode(mb_strtoupper($status[1][0])), [
+                ? Html::tag('div', '', [
                     'class' => ['status-badge', $status[0]],
                     'title' => $status[1],
                     'aria' => [

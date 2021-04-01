@@ -736,7 +736,7 @@ class ElementQuery extends Query implements ElementQueryInterface
     public function draftOf($value)
     {
         if ($value instanceof ElementInterface) {
-            $this->draftOf = $value->getSourceId();
+            $this->draftOf = $value->getCanonicalId();
         } else if (is_numeric($value) || $value === '*' || $value === false || $value === null) {
             $this->draftOf = $value;
         } else {
@@ -808,7 +808,7 @@ class ElementQuery extends Query implements ElementQueryInterface
     public function revisionOf($value)
     {
         if ($value instanceof ElementInterface) {
-            $this->revisionOf = $value->getSourceId();
+            $this->revisionOf = $value->getCanonicalId();
         } else if (is_numeric($value) || $value === null) {
             $this->revisionOf = $value;
         } else {
@@ -1871,28 +1871,21 @@ class ElementQuery extends Query implements ElementQueryInterface
         if ($this->drafts !== false) {
             if (!empty($row['draftId'])) {
                 $behaviors['draft'] = new DraftBehavior([
-                    'sourceId' => ArrayHelper::remove($row, 'draftSourceId'),
                     'creatorId' => ArrayHelper::remove($row, 'draftCreatorId'),
                     'draftName' => ArrayHelper::remove($row, 'draftName'),
                     'draftNotes' => ArrayHelper::remove($row, 'draftNotes'),
-                    'trackChanges' => (bool)ArrayHelper::remove($row, 'draftTrackChanges'),
-                    'dateLastMerged' => ArrayHelper::remove($row, 'draftDateLastMerged'),
                 ]);
             } else {
                 unset(
-                    $row['draftSourceId'],
                     $row['draftCreatorId'],
                     $row['draftName'],
                     $row['draftNotes'],
-                    $row['draftTrackChanges'],
-                    $row['draftDateLastMerged']
                 );
             }
         }
 
         if ($this->revisions) {
             $behaviors['revision'] = new RevisionBehavior([
-                'sourceId' => ArrayHelper::remove($row, 'revisionSourceId'),
                 'creatorId' => ArrayHelper::remove($row, 'revisionCreatorId'),
                 'revisionNum' => ArrayHelper::remove($row, 'revisionNum'),
                 'revisionNotes' => ArrayHelper::remove($row, 'revisionNotes'),
@@ -2189,7 +2182,7 @@ class ElementQuery extends Query implements ElementQueryInterface
                 $siteIds = array_flip((array)$this->siteId);
                 foreach ($placeholderElements as $element) {
                     if ($element instanceof $this->elementType && isset($siteIds[$element->siteId])) {
-                        $placeholderSourceIds[] = $element->getSourceId();
+                        $placeholderSourceIds[] = $element->getCanonicalId();
                     }
                 }
             }
@@ -2568,26 +2561,19 @@ class ElementQuery extends Query implements ElementQueryInterface
 
             $this->query->addSelect([
                 'elements.draftId',
-                'drafts.sourceId as draftSourceId',
                 'drafts.creatorId as draftCreatorId',
                 'drafts.name as draftName',
                 'drafts.notes as draftNotes',
             ]);
-
-            $schemaVersion = Craft::$app->getInstalledSchemaVersion();
-            if (version_compare($schemaVersion, '3.4.3', '>=')) {
-                $this->query->addSelect(['drafts.trackChanges as draftTrackChanges']);
-                $this->query->addSelect(['drafts.dateLastMerged as draftDateLastMerged']);
-            }
 
             if ($this->draftId) {
                 $this->subQuery->andWhere(['elements.draftId' => $this->draftId]);
             }
 
             if ($this->draftOf === '*') {
-                $this->subQuery->andWhere(['not', ['drafts.sourceId' => null]]);
+                $this->subQuery->andWhere(['not', ['elements.canonicalId' => null]]);
             } else if ($this->draftOf !== null) {
-                $this->subQuery->andWhere(['drafts.sourceId' => $this->draftOf ?: null]);
+                $this->subQuery->andWhere(['elements.canonicalId' => $this->draftOf ?: null]);
             }
 
             if ($this->draftCreator) {
@@ -2598,7 +2584,7 @@ class ElementQuery extends Query implements ElementQueryInterface
                 $this->subQuery->andWhere([
                     'or',
                     ['elements.draftId' => null],
-                    ['not', ['drafts.sourceId' => null]],
+                    ['not', ['elements.canonicalId' => null]],
                     ['drafts.saved' => true],
                 ]);
             }
@@ -2612,7 +2598,6 @@ class ElementQuery extends Query implements ElementQueryInterface
                 ->innerJoin(['revisions' => Table::REVISIONS], '[[revisions.id]] = [[elements.revisionId]]')
                 ->addSelect([
                     'elements.revisionId',
-                    'revisions.sourceId as revisionSourceId',
                     'revisions.creatorId as revisionCreatorId',
                     'revisions.num as revisionNum',
                     'revisions.notes as revisionNotes',
@@ -2623,7 +2608,7 @@ class ElementQuery extends Query implements ElementQueryInterface
             }
 
             if ($this->revisionOf) {
-                $this->subQuery->andWhere(['revisions.sourceId' => $this->revisionOf]);
+                $this->subQuery->andWhere(['elements.canonicalId' => $this->revisionOf]);
             }
 
             if ($this->revisionCreator) {
@@ -2853,6 +2838,12 @@ class ElementQuery extends Query implements ElementQueryInterface
                 'elements_sites.uri' => 'elements_sites.uri',
                 'enabledForSite' => 'elements_sites.enabled',
             ]);
+
+            // todo: remove this condition after the next breakpoint
+            if (Craft::$app->getDb()->columnExists(Table::ELEMENTS, 'canonicalId')) {
+                $select['elements.canonicalId'] = 'elements.canonicalId';
+                $select['elements.dateLastMerged'] = 'elements.dateLastMerged';
+            }
 
             // If the query includes soft-deleted elements, include the date deleted
             if ($this->trashed !== false) {

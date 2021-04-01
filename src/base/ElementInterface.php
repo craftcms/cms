@@ -540,20 +540,50 @@ interface ElementInterface extends ComponentInterface
     public function getIsRevision(): bool;
 
     /**
-     * Returns the element’s ID, or if it’s a draft/revision, its source element’s ID.
+     * Returns whether this is the canonical element.
      *
-     * @return int|null
-     * @since 3.2.0
+     * @return bool
+     * @since 3.7.0
      */
-    public function getSourceId();
+    public function getIsCanonical(): bool;
 
     /**
-     * Returns the element’s UUID, or if it’s a draft/revision, its source element’s UUID.
+     * Returns whether this is a derivative element, such as a draft or revision.
      *
-     * @return string
-     * @since 3.2.0
+     * @return bool
+     * @since 3.7.0
      */
-    public function getSourceUid(): string;
+    public function getIsDerivative(): bool;
+
+    /**
+     * Returns the canonical version of the element.
+     *
+     * If this is a draft or revision, the source element will be returned.
+     *
+     * @param bool $anySite Whether the canonical element can be retrieved in any site
+     * @return static
+     * @since 3.7.0
+     */
+    public function getCanonical(bool $anySite = false): ElementInterface;
+
+    /**
+     * Returns the element’s canonical ID.
+     *
+     * If this is a draft or revision, the source element’s ID will be returned.
+     *
+     * @return int|null
+     * @since 3.7.0
+     */
+    public function getCanonicalId(): ?int;
+
+    /**
+     * Sets the element’s canonical ID.
+     *
+     * @param int|null $canonicalId
+     * @return void
+     * @since 3.7.0
+     */
+    public function setCanonicalId(?int $canonicalId): void;
 
     /**
      * Returns whether the element is an unpublished draft.
@@ -562,6 +592,15 @@ interface ElementInterface extends ComponentInterface
      * @since 3.6.0
      */
     public function getIsUnpublishedDraft(): bool;
+
+    /**
+     * Merges changes from a given canonical element into this one.
+     *
+     * @return void
+     * @see \craft\services\Elements::mergeCanonicalChanges()
+     * @since 3.7.0
+     */
+    public function mergeCanonicalChanges(): void;
 
     /**
      * Returns the field layout used by this element.
@@ -954,6 +993,34 @@ interface ElementInterface extends ComponentInterface
      */
     public function getAttributeStatus(string $attribute);
 
+    /**]
+     * Returns the attribute names that have been updated on the canonical element since the last time it was
+     * merged into this element.
+     *
+     * @return string[]
+     * @since 3.7.0
+     */
+    public function getOutdatedAttributes(): array;
+
+    /**
+     * Returns whether an attribute value has fallen behind the canonical element’s value.
+     *
+     * @param string $name
+     * @return bool
+     * @since 3.7.0
+     */
+    public function isAttributeOutdated(string $name): bool;
+
+    /**
+     * Returns whether an attribute value has changed for this element, since the last time changes on the
+     * canonical element were merged in.
+     *
+     * @param string $name
+     * @return bool
+     * @since 3.7.0
+     */
+    public function isAttributeModified(string $name): bool;
+
     /**
      * Returns whether an attribute has changed since the element was first loaded.
      *
@@ -1065,13 +1132,32 @@ interface ElementInterface extends ComponentInterface
     public function setFieldValue(string $fieldHandle, $value);
 
     /**
-     * Returns the status of a given field.
+     * Returns the field handles that have been updated on the canonical element since the last time it was
+     * merged into this element.
+     *
+     * @return string[]
+     * @since 3.7.0
+     */
+    public function getOutdatedFields(): array;
+
+    /**
+     * Returns whether a field value has fallen behind the canonical element’s value.
      *
      * @param string $fieldHandle
-     * @return array|null
-     * @since 3.4.0
+     * @return bool
+     * @since 3.7.0
      */
-    public function getFieldStatus(string $fieldHandle);
+    public function isFieldOutdated(string $fieldHandle): bool;
+
+    /**
+     * Returns whether a field value has changed for this element, since the last time changes on the
+     * canonical element were merged in.
+     *
+     * @param string $fieldHandle
+     * @return bool
+     * @since 3.7.0
+     */
+    public function isFieldModified(string $fieldHandle): bool;
 
     /**
      * Returns whether a custom field value has changed since the element was first loaded.
