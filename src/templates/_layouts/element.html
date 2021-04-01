@@ -328,6 +328,15 @@
 {% endblock %}
 
 {% block details %}
+    {% if notices ?? false %}
+        <div class="meta read-only warning">
+            {% for notice in notices %}
+                <p>{{ notice }}</p>
+                {% if not loop.last %}<hr>{% endif %}
+            {% endfor %}
+        </div>
+    {% endif %}
+
     {% if settingsHtml %}
         <div id="settings" class="meta">
             {{ settingsHtml|raw }}
@@ -409,24 +418,6 @@
                 },
             },
         }) }}
-    {% endif %}
-
-    {% if isDraft and element.getIsOutdated() %}
-        {% do craft.app.session.authorize('mergeDraftSourceChanges:' ~ element.draftId) %}
-        <div class="meta read-only warning">
-            <p>{{ 'The source {type} has been updated recently.'|t('app', {type: element.lowerDisplayName()}) }}</p>
-            <div class="flex flex-nowrap">
-                {% if element.trackChanges %}
-                    {{ tag('button', {
-                        type: 'button',
-                        id: 'merge-changes-btn',
-                        class: ['btn'],
-                        text: 'Merge changes into this draft'|t('app'),
-                    }) }}
-                    <div id="merge-changes-spinner" class="spinner hidden"></div>
-                {% endif %}
-            </div>
-        </div>
     {% endif %}
 {% endblock %}
 

@@ -20,6 +20,7 @@ use yii\web\Response;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.4.0
+ * @deprecated in 3.7.0
  */
 class DraftsController extends Controller
 {

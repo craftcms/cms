@@ -132,6 +132,7 @@ abstract class Element extends Component implements ElementInterface
 
     const ATTR_STATUS_MODIFIED = 'modified';
     const ATTR_STATUS_OUTDATED = 'outdated';
+    /* @deprecated in 3.7.0 */
     const ATTR_STATUS_CONFLICTED = 'conflicted';
 
     // Events
@@ -2824,27 +2825,17 @@ abstract class Element extends Component implements ElementInterface
      */
     function getAttributeStatus(string $attribute)
     {
-        $modified = $this->isAttributeModified($attribute);
-        $outdated = $this->isAttributeOutdated($attribute);
-
-        if ($modified && !$outdated) {
+        if ($this->isAttributeModified($attribute)) {
             return [
                 self::ATTR_STATUS_MODIFIED,
                 Craft::t('app', 'This field was updated in this draft.'),
             ];
         }
 
-        if ($outdated && !$modified) {
+        if ($this->isAttributeOutdated($attribute)) {
             return [
                 self::ATTR_STATUS_OUTDATED,
                 Craft::t('app', 'This field was updated in the Current revision.'),
-            ];
-        }
-
-        if ($outdated && $modified) {
-            return [
-                self::ATTR_STATUS_CONFLICTED,
-                Craft::t('app', 'This field was updated in the Current revision and this draft. This draft’s value will be used when merged.'),
             ];
         }
 

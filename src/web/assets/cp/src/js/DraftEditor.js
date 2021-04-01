@@ -173,8 +173,6 @@ Craft.DraftEditor = Garnish.Base.extend({
             this.showStatusHud(this.$statusIcon);
         }.bind(this));
 
-        this.addListener($('#merge-changes-btn'), 'click', this.mergeChanges);
-
         if (Craft.autosaveDrafts) {
             this.listenForChanges();
         }
@@ -191,32 +189,6 @@ Craft.DraftEditor = Garnish.Base.extend({
                 });
             }, 0);
         }
-    },
-
-    mergeChanges: function() {
-        // Make sure there aren't any unsaved changes
-        this.checkForm();
-
-        // Make sure we aren't currently saving something
-        if (this.saving) {
-            this.queue.push(this.mergeChanges.bind(this));
-            return;
-        }
-
-        this.saving = true;
-        $('#merge-changes-spinner').removeClass('hidden');
-
-        Craft.postActionRequest('drafts/merge-source-changes', {
-            elementType: this.settings.elementType,
-            draftId: this.settings.draftId,
-            siteId: this.settings.siteId,
-        }, function(response, textStatus) {
-            if (textStatus === 'success') {
-                window.location.reload();
-            } else {
-                $('#merge-changes-spinner').addClass('hidden');
-            }
-        });
     },
 
     expandSiteStatuses: function() {

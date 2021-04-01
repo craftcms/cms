@@ -4338,10 +4338,6 @@ fieldset {
     &.outdated {
       background-color: $yellow300;
     }
-
-    &.conflicted {
-      background-color: $red600;
-    }
   }
 
   & > .heading {

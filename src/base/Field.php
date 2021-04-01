@@ -345,27 +345,17 @@ abstract class Field extends SavableComponent implements FieldInterface
      */
     public function getStatus(ElementInterface $element): ?array
     {
-        $modified = $element->isFieldModified($this->handle);
-        $outdated = $element->isFieldOutdated($this->handle);
-
-        if ($modified && !$outdated) {
+        if ($element->isFieldModified($this->handle)) {
             return [
                 Element::ATTR_STATUS_MODIFIED,
                 Craft::t('app', 'This field was updated in this draft.'),
             ];
         }
 
-        if ($outdated && !$modified) {
+        if ($element->isFieldOutdated($this->handle)) {
             return [
                 Element::ATTR_STATUS_OUTDATED,
                 Craft::t('app', 'This field was updated in the Current revision.'),
-            ];
-        }
-
-        if ($outdated && $modified) {
-            return [
-                Element::ATTR_STATUS_CONFLICTED,
-                Craft::t('app', 'This field was updated in the Current revision and this draft. This draft’s value will be used when merged.'),
             ];
         }
 
