@@ -4327,7 +4327,8 @@ fieldset {
     height: 100%;
     content: '';
     cursor: help;
-    border: 2px solid transparent;
+    border: solid transparent;
+    border-width: 0 2px;
     background-clip: content-box;
 
     &.modified {

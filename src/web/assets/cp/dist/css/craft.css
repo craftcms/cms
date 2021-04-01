@@ -2182,7 +2182,7 @@ body.rtl .chars-left { margin: -27px 0 0 7px ; }
 
 .flex > .field, .flex > fieldset { margin-top: 0; margin-bottom: 0; }
 
-.field > .status-badge { position: absolute; top: 0; width: 2px; height: 100%; content: ''; cursor: help; border: 2px solid transparent; background-clip: content-box; }
+.field > .status-badge { position: absolute; top: 0; width: 2px; height: 100%; content: ''; cursor: help; border: solid transparent; border-width: 0 2px; background-clip: content-box; }
 
 body.ltr .field > .status-badge { left: -26px; }
 
@@ -3273,17 +3273,19 @@ body.rtl #details { padding-right: 14px; }
 
 #details .meta > .field, #details .meta > .data { margin: 0 -24px !important; }
 
-#details .meta > .field:first-child, #details .meta > .data:first-child { border-top-left-radius: 5px; border-top-right-radius: 5px; }
+#details .meta > .field:first-child, #details .meta > .data:first-child { border-top-right-radius: 5px; }
 
-#details .meta > .field:last-child, #details .meta > .data:last-child { border-bottom-left-radius: 5px; border-bottom-right-radius: 5px; }
+#details .meta > .field:first-child, #details .meta > .field:first-child > .status-badge, #details .meta > .data:first-child, #details .meta > .data:first-child > .status-badge { border-top-left-radius: 5px; }
+
+#details .meta > .field:last-child, #details .meta > .data:last-child { border-bottom-right-radius: 5px; }
+
+#details .meta > .field:last-child, #details .meta > .field:last-child > .status-badge, #details .meta > .data:last-child, #details .meta > .data:last-child > .status-badge { border-bottom-left-radius: 5px; }
 
 #details .meta > .field > .heading > label, #details .meta > .field > .heading, #details .meta > .data > .heading > label, #details .meta > .data > .heading { color: #515f6c; }
 
-#details .meta > .field .status-badge { top: calc(50% - 8px); }
+body.ltr #details .meta > .field > .status-badge { left: -2px; }
 
-body.ltr #details .meta > .field .status-badge { left: 4px; }
-
-body.rtl #details .meta > .field .status-badge { right: 4px; }
+body.rtl #details .meta > .field > .status-badge { right: -2px; }
 
 #details .meta .text::-webkit-input-placeholder { color: #9aa5b1; }
 
