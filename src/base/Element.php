@@ -1582,18 +1582,21 @@ abstract class Element extends Component implements ElementInterface
     public function __set($name, $value)
     {
         // Is this the "field:handle" syntax?
-        if (strncmp($name, 'field:', 6) === 0) {
-            $this->setFieldValue(substr($name, 6), $value);
-            return;
+        if ($isField = (strncmp($name, 'field:', 6) === 0)) {
+            $name = substr($name, 6);
+        } else {
+            // Is this is a field?
+            try {
+                $isField = $this->fieldByHandle($name) !== null;
+            } catch (InvalidConfigException $e) {
+            }
         }
 
-        // Is this is a field?
-        if ($this->fieldByHandle($name) !== null) {
+        if ($isField) {
             $this->setFieldValue($name, $value);
-            return;
+        } else {
+            parent::__set($name, $value);
         }
-
-        parent::__set($name, $value);
     }
 
     /**
