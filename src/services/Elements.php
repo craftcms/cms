@@ -2455,12 +2455,18 @@ class Elements extends Component
             $element->setEnabledForSite(true);
         }
 
-        // Set a dummy title if there isn't one already and the element type has titles
-        if (!$runValidation && $element::hasContent() && $element::hasTitles() && !$element->validate(['title'])) {
-            if ($isNewElement) {
-                $element->title = Craft::t('app', 'New {type}', ['type' => $element::displayName()]);
-            } else {
-                $element->title = $element::displayName() . ' ' . $element->id;
+        // If we're skipping validation, at least make sure the title is valid
+        if (!$runValidation && $element::hasContent() && $element::hasTitles()) {
+            foreach ($element->getActiveValidators('title') as $validator) {
+                $validator->validateAttributes($element, ['title']);
+            }
+            if ($element->hasErrors('title')) {
+                // Set a default title
+                if ($isNewElement) {
+                    $element->title = Craft::t('app', 'New {type}', ['type' => $element::displayName()]);
+                } else {
+                    $element->title = $element::displayName() . ' ' . $element->id;
+                }
             }
         }
 
