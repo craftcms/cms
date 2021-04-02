@@ -358,6 +358,8 @@ return [
     'Craft Support' => 'Craft Support',
     'Craft isn’t installed yet.' => 'Craft isn’t installed yet.',
     'Create a draft' => 'Create a draft',
+    'Create a new entry before' => 'Create a new entry before',
+    'Create a new entry after' => 'Create a new entry after',
     'Create a new GraphQL Schema' => 'Create a new GraphQL Schema',
     'Create a new GraphQL token' => 'Create a new GraphQL token',
     'Create a new asset volume' => 'Create a new asset volume',
