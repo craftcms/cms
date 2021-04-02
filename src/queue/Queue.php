@@ -791,13 +791,13 @@ EOD;
      * MySQL's text column can only hold 65535 bytes, so let's truncate if the
      * error message is longer than that.
      *
-     * @param $message
+     * @param string $message
      * @return string
      */
-    private function _truncateErrorMessage($message): string
+    private function _truncateErrorMessage(string $message): string
     {
-        if (StringHelper::byteLength($message) > 65000 && Craft::$app->getDb()->getIsMysql()) {
-            return StringHelper::byteSubstr($message, 0, 65000);
+        if (strlen($message) > 65000 && Craft::$app->getDb()->getIsMysql()) {
+            return substr($message, 0, 65000);
         }
 
         return $message;
