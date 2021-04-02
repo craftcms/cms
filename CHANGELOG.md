@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+### Changed
+- Category indexes can now show a “Slug” column. ([#7760](https://github.com/craftcms/cms/issues/7760))
+
 ### Fixed
 - Fixed a bug where restored entries could get deleted by garbage collection, if their `authorId` value was set to a soft-deleted author. ([#7751](https://github.com/craftcms/cms/issues/7751))
 - Fixed a bug where indexing assets from the command line could work incorrectly in some cases. ([#7741](https://github.com/craftcms/cms/issues/7741))
