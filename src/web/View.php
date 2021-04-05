@@ -215,6 +215,16 @@ class View extends \yii\web\View
     private $_jsBuffers = [];
 
     /**
+     * @var array
+     */
+    private $_scriptBuffers = [];
+
+    /**
+     * @var array
+     */
+    private $_cssBuffers = [];
+
+    /**
      * @var array the registered generic `<script>` code blocks
      * @see registerScript()
      */
@@ -970,7 +980,7 @@ class View extends \yii\web\View
      * Starts a JavaScript buffer.
      *
      * JavaScript buffers work similarly to [output buffers](http://php.net/manual/en/intro.outcontrol.php) in PHP.
-     * Once you’ve started a JavaScript buffer, any JavaScript code included with [[registerJs()]] will be included
+     * Once you’ve started a JavaScript buffer, any JavaScript code registered with [[registerJs()]] will be included
      * in a buffer, and you will have the opportunity to fetch all of that code via [[clearJsBuffer()]] without
      * having it actually get output to the page.
      */
@@ -982,34 +992,106 @@ class View extends \yii\web\View
     }
 
     /**
-     * Clears and ends a JavaScript buffer, returning whatever JavaScript code was included while the buffer was active.
+     * Clears and ends a JavaScript buffer, returning whatever JavaScript code was registered while the buffer was active.
      *
-     * @param bool $scriptTag Whether the JavaScript code should be wrapped in a `<script>` tag. Defaults to `true`.
-     * @return string|false The JS code that was included in the active JS buffer, or `false` if there isn’t one
+     * @param bool $scriptTag Whether the JavaScript code should be wrapped in a `<script>` tag.
+     * @param bool $combine Whether the individually registered code snippets should be combined, losing the positions and keys
+     * @return string|array|false The JS code that was registered in the active JS buffer, or `false` if there isn’t one
      */
-    public function clearJsBuffer(bool $scriptTag = true)
+    public function clearJsBuffer(bool $scriptTag = true, $combine = true)
     {
         if (empty($this->_jsBuffers)) {
             return false;
         }
 
-        // Combine the JS
-        $js = '';
-
-        foreach ([self::POS_HEAD, self::POS_BEGIN, self::POS_END, self::POS_LOAD, self::POS_READY] as $pos) {
-            if (!empty($this->js[$pos])) {
-                $js .= implode("\n", $this->js[$pos]) . "\n";
-            }
-        }
+        $bufferedJs = $this->js;
 
         // Set the active queue to the last one
         $this->js = array_pop($this->_jsBuffers);
 
-        if ($scriptTag === true && !empty($js)) {
-            return Html::script($js, ['type' => 'text/javascript']);
+        if ($combine) {
+            $js = '';
+
+            foreach ([self::POS_HEAD, self::POS_BEGIN, self::POS_END, self::POS_LOAD, self::POS_READY] as $pos) {
+                if (!empty($bufferedJs[$pos])) {
+                    $js .= implode("\n", $bufferedJs[$pos]) . "\n";
+                }
+            }
+
+            if ($scriptTag && !empty($js)) {
+                return Html::script($js, ['type' => 'text/javascript']);
+            }
+
+            return $js;
         }
 
-        return $js;
+        if ($scriptTag) {
+            foreach ($bufferedJs as $pos => $js) {
+                $bufferedJs[$pos] = Html::script(implode("\n", $js), ['type' => 'text/javascript']);
+            }
+        }
+
+        return $bufferedJs;
+    }
+
+    /**
+     * Starts a buffer for any `<script>` tags registered with [[registerScript()]].
+     *
+     * @return void
+     * @since 3.7.0
+     */
+    public function startScriptBuffer(): void
+    {
+        // Save any currently queued <script> tags into a new buffer, and reset the active <script> queue
+        $this->_scriptBuffers[] = $this->_scripts;
+        $this->_scripts = [];
+    }
+
+    /**
+     * Clears and ends a `<script>` buffer, returning whatever `<script>` tags were registered while the buffer was active.
+     *
+     * @return array|false The `<script>` tags that were registered in the active buffer, grouped by position, or `false` if there isn’t one
+     * @since 3.7.0
+     */
+    public function clearScriptBuffer()
+    {
+        if (empty($this->_scriptBuffers)) {
+            return false;
+        }
+
+        $bufferedScripts = $this->_scripts;
+        $this->_scripts = array_pop($this->_scriptBuffers);
+        return $bufferedScripts;
+    }
+
+    /**
+     * Starts a buffer for any `<style>` tags registered with [[registerCss()]].
+     *
+     * @return void
+     * @since 3.7.0
+     */
+    public function startCssBuffer(): void
+    {
+        // Save any currently queued <style> tags into a new buffer, and reset the active <style> queue
+        $this->_cssBuffers[] = $this->css;
+        $this->css = [];
+    }
+
+    /**
+     * Clears and ends a `<style>` buffer, returning whatever `<style>` tags were registered while the buffer was active.
+     *
+     * @return array|false The `<style>` tags that were registered in the active buffer, grouped by position, or `false` if there isn’t one
+     * @since 3.7.0
+     */
+    public function clearCssBuffer()
+    {
+        if (empty($this->_cssBuffers)) {
+            return false;
+        }
+
+        $bufferedStyles = $this->css;
+        $this->css = array_pop($this->_cssBuffers);
+        return $bufferedStyles;
     }
 
     /**
