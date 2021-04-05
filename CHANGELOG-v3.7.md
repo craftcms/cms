@@ -29,12 +29,12 @@
 - Added `craft\helpers\ElementHelper::fieldColumnFromField()`.
 - Added `craft\helpers\ElementHelper::isDraft()`.
 - Added `craft\helpers\ElementHelper::isRevision()`.
-- Added `craft\web\twig\variables\Cp::getTimeZoneOptions()`.
-- Added `craft\services\Elements::EVENT_BEFORE_MERGE_CANONICAL_CHANGES`.
 - Added `craft\services\Elements::EVENT_AFTER_MERGE_CANONICAL_CHANGES`.
+- Added `craft\services\Elements::EVENT_BEFORE_MERGE_CANONICAL_CHANGES`.
 - Added `craft\services\Elements::mergeCanonicalChanges()`.
 - Added `craft\services\Elements::updateCanonicalElement()`.
 - Added `craft\services\Matrix::mergeCanonicalChanges()`.
+- Added `craft\web\twig\variables\Cp::getTimeZoneOptions()`.
 - Added the `timeZone` and `timeZoneField` macros to the `_includes/forms.html` control panel template.
 
 ### Changed
@@ -44,7 +44,7 @@
 - Improved the styling of field status indicators, when editing a draft that has preexisting changes.
 - Improved the UI of the Time Zone input in Settings → General.
 - Custom fields with a custom translation method are no longer labelled as translatable if the translation key is an empty string. ([#7647](https://github.com/craftcms/cms/issues/7647))
-- The `defaultCpLanguage` no longer affects console requests. ([#7747](https://github.com/craftcms/cms/issues/7747))
+- The `defaultCpLanguage` config setting no longer affects console requests. ([#7747](https://github.com/craftcms/cms/issues/7747))
 - The `date()` Twig function now supports arrays with `date` and/or `time` keys. ([#7681](https://github.com/craftcms/cms/issues/7681))
 - Custom field column names now include a random string, preventing column name conflicts when deploying multiple project config changes at once. ([#6922](https://github.com/craftcms/cms/issues/6922))
 - Custom fields can now store data across multiple columns in the `content` table.
