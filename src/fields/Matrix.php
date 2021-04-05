@@ -341,6 +341,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
                             'id' => is_numeric($fieldId) ? $fieldId : null,
                             'name' => $fieldConfig['name'],
                             'handle' => $fieldConfig['handle'],
+                            'columnSuffix' => $fieldConfig['columnSuffix'] ?? null,
                             'instructions' => $fieldConfig['instructions'],
                             'required' => (bool)$fieldConfig['required'],
                             'searchable' => (bool)$fieldConfig['searchable'],
