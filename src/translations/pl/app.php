@@ -411,6 +411,7 @@ return [
     'Default User Group' => 'Domyślna grupa użytkowników',
     'Default Value' => 'Domyślna wartość',
     'Default Values' => 'Wartości domyślne',
+    'Default' => 'Default',
     'Default?' => 'Domyślne?',
     'Define the available options.' => 'Zdefiniuj dostępne opcje.',
     'Define the columns your table should have.' => 'Zdefiniuj kolumny tabeli.',
