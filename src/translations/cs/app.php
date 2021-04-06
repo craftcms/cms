@@ -411,6 +411,7 @@ return [
     'Default User Group' => 'Výchozí skupina uživatelů',
     'Default Value' => 'Výchozí hodnota',
     'Default Values' => 'Výchozí hodnoty',
+    'Default' => 'Default',
     'Default?' => 'Výchozí?',
     'Define the available options.' => 'Definuje dostupné volby',
     'Define the columns your table should have.' => 'Určete sloupce, které má Vaše tabulka mít.',
