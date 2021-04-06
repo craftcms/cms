@@ -411,6 +411,7 @@ return [
     'Default User Group' => 'קבוצת משתמשים דיפולטית',
     'Default Value' => 'ערך ברירת מחדל',
     'Default Values' => 'ערכי ברירת מחדל',
+    'Default' => 'Default',
     'Default?' => 'ברירת מחדל?',
     'Define the available options.' => 'הגדר את האפשרויות הזמינות.',
     'Define the columns your table should have.' => 'הגדרת את העמודות הנחוצות לטבלה שלך.',
