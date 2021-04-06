@@ -411,6 +411,7 @@ return [
     'Default User Group' => 'Gruppo utente predefinito',
     'Default Value' => 'Valore predefinito',
     'Default Values' => 'Valori Predefiniti',
+    'Default' => 'Default',
     'Default?' => 'Ripristinare le impostazioni predefinite?',
     'Define the available options.' => 'Definisci le opzioni disponibili.',
     'Define the columns your table should have.' => 'Definisci le colonne della tua tabella.',
