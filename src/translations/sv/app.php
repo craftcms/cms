@@ -411,6 +411,7 @@ return [
     'Default User Group' => 'Förvald användargrupp',
     'Default Value' => 'Standardvärde',
     'Default Values' => 'Förinställda värden',
+    'Default' => 'Default',
     'Default?' => 'Standard?',
     'Define the available options.' => 'Definiera tillgängliga alternativ.',
     'Define the columns your table should have.' => 'Ange egenskaper för tabellkolumnerna.',
