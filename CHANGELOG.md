@@ -11,6 +11,7 @@
 - Fixed a bug where indexing assets from the command line could work incorrectly in some cases. ([#7741](https://github.com/craftcms/cms/issues/7741))
 - Fixed a MySQL error that could occur if a job in the queue failed and had a very long error message.
 - Fixed a bug where validation events would trigger when saving an element via `craft\services\Elements::saveElement()`, even if `$runValidation` was set to `false`. ([#7756](https://github.com/craftcms/cms/issues/7756))
+- Fixed a bug where `craft\helpers\Html::parseTag()` would parse child tags of `<script>` and `<style>` tags.
 
 ## 3.6.11.2 - 2021-03-29
 

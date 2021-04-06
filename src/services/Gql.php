@@ -154,8 +154,8 @@ class Gql extends Component
      * use GraphQL\Type\Definition\Type;
      *
      * Event::on(Gql::class, Gql::EVENT_REGISTER_GQL_MUTATIONS, function(RegisterGqlMutationsEvent $event) {
-     *     // Add my GraphQL queries
-     *     $event->queries['mutationPluginData'] =
+     *     // Add my GraphQL mutations
+     *     $event->mutations['mutationPluginData'] =
      *     [
      *         'type' => Type::listOf(MyType::getType()),
      *         'args' => MyArguments::getArguments(),
