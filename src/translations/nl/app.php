@@ -411,6 +411,7 @@ return [
     'Default User Group' => 'Standaard-gebruikersgroep',
     'Default Value' => 'Standaardwaarde',
     'Default Values' => 'Standaardwaardes',
+    'Default' => 'Default',
     'Default?' => 'Standaard?',
     'Define the available options.' => 'Beschikbare opties instellen.',
     'Define the columns your table should have.' => 'Tabel-kolommen instellen.',
