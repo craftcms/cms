@@ -411,6 +411,7 @@ return [
     'Default User Group' => '默认的用户组',
     'Default Value' => '默认值',
     'Default Values' => '默认值',
+    'Default' => 'Default',
     'Default?' => '默认？',
     'Define the available options.' => '定义可用的选项。',
     'Define the columns your table should have.' => '定义您的表格应有的列。',
