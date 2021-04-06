@@ -411,6 +411,7 @@ return [
     'Default User Group' => 'Groupe d’utilisateurs par défaut',
     'Default Value' => 'Valeur par défaut',
     'Default Values' => 'Valeurs par défaut',
+    'Default' => 'Default',
     'Default?' => 'Par défaut?',
     'Define the available options.' => 'Définir les options disponibles.',
     'Define the columns your table should have.' => 'Définissez les colonnes de votre tableau.',
