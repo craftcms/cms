@@ -411,6 +411,7 @@ return [
     'Default User Group' => 'گروه کاربری پیش فرض',
     'Default Value' => 'مقدار پیش فرض',
     'Default Values' => 'مقادیر پیش فرض',
+    'Default' => 'Default',
     'Default?' => 'به صورت پیش فرض؟',
     'Define the available options.' => 'تعریف گزینه های پیش فرض.',
     'Define the columns your table should have.' => 'ستون هایی که جدول شما باید داشته باشد تعریف نمایید.',
