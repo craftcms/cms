@@ -503,13 +503,15 @@ class Sections extends Component
             if (!$entryTypeExists) {
                 $entryType = new EntryType();
                 $entryType->sectionId = $section->id;
-                $entryType->name = $section->name;
-                $entryType->handle = $section->handle;
 
                 if ($section->type === Section::TYPE_SINGLE) {
+                    $entryType->name = $section->name;
+                    $entryType->handle = $section->handle;
                     $entryType->hasTitleField = false;
                     $entryType->titleFormat = '{section.name|raw}';
                 } else {
+                    $entryType->name = Craft::t('app', 'Default');
+                    $entryType->handle = 'default';
                     $entryType->hasTitleField = true;
                     $entryType->titleFormat = null;
                 }
