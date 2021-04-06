@@ -56,7 +56,9 @@ use craft\web\UploadedFile;
 use DateTime;
 use Twig\Markup;
 use yii\base\Event;
+use yii\base\InvalidCallException;
 use yii\base\InvalidConfigException;
+use yii\base\UnknownPropertyException;
 use yii\db\ExpressionInterface;
 use yii\validators\NumberValidator;
 use yii\validators\Validator;
@@ -1583,20 +1585,20 @@ abstract class Element extends Component implements ElementInterface
     public function __set($name, $value)
     {
         // Is this the "field:handle" syntax?
-        if ($isField = (strncmp($name, 'field:', 6) === 0)) {
-            $name = substr($name, 6);
-        } else {
-            // Is this is a field?
-            try {
-                $isField = $this->fieldByHandle($name) !== null;
-            } catch (InvalidConfigException $e) {
-            }
+        if (strncmp($name, 'field:', 6) === 0) {
+            parent::__set(substr($name, 6), $value);
+            return;
         }
 
-        if ($isField) {
-            $this->setFieldValue($name, $value);
-        } else {
+        try {
             parent::__set($name, $value);
+        } catch (InvalidCallException | UnknownPropertyException $e) {
+            // Is this is a field?
+            if ($this->fieldByHandle($name) !== null) {
+                $this->setFieldValue($name, $value);
+            } else {
+                throw $e;
+            }
         }
     }
 
