@@ -411,6 +411,7 @@ return [
     'Default User Group' => 'Группа пользователя по умолчанию',
     'Default Value' => 'Значение по умолчанию',
     'Default Values' => 'Значения по умолчанию',
+    'Default' => 'Default',
     'Default?' => 'По умолчанию?',
     'Define the available options.' => 'Определите возможные варианты.',
     'Define the columns your table should have.' => 'Определите столбцы, которые будут в вашей таблице.',
