@@ -411,6 +411,7 @@ return [
     'Default User Group' => 'Predvolená skupina používateľov',
     'Default Value' => 'Predvolená Hodnota',
     'Default Values' => 'Predvolené Hodnoty',
+    'Default' => 'Default',
     'Default?' => 'Predvolené?',
     'Define the available options.' => 'Definovať dostupné možnosti.',
     'Define the columns your table should have.' => 'Definovať stĺpce tabuľky.',
