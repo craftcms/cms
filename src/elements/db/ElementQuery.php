@@ -208,6 +208,13 @@ class ElementQuery extends Query implements ElementQueryInterface
     public $uid;
 
     /**
+     * @var int|int[]|null The element ID(s) in the `elements_sites` table. Prefix IDs with `'not '` to exclude them.
+     * @used-by siteSettingsId()
+     * @since 3.7.0
+     */
+    public $siteSettingsId;
+
+    /**
      * @var bool Whether results should be returned in the order specified by [[id]].
      * @used-by fixedOrder()
      */
@@ -858,6 +865,16 @@ class ElementQuery extends Query implements ElementQueryInterface
 
     /**
      * @inheritdoc
+     * @uses $siteSettingsId
+     */
+    public function siteSettingsId($value)
+    {
+        $this->siteSettingsId = $value;
+        return $this;
+    }
+
+    /**
+     * @inheritdoc
      * @uses $fixedOrder
      */
     public function fixedOrder(bool $value = true)
@@ -1425,6 +1442,10 @@ class ElementQuery extends Query implements ElementQueryInterface
 
         if ($this->uid) {
             $this->subQuery->andWhere(Db::parseParam('elements.uid', $this->uid));
+        }
+
+        if ($this->siteSettingsId) {
+            $this->subQuery->andWhere(Db::parseParam('elements_sites.id', $this->siteSettingsId));
         }
 
         if ($this->archived) {
