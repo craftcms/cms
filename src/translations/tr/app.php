@@ -411,6 +411,7 @@ return [
     'Default User Group' => 'Varsayılan Kullanıcı Grubu',
     'Default Value' => 'Varsayılan Değer',
     'Default Values' => 'Varsayılan Değerler',
+    'Default' => 'Default',
     'Default?' => 'Varsayılan?',
     'Define the available options.' => 'Kullanılabilir seçenekleri belirle.',
     'Define the columns your table should have.' => 'Tablonuzda olması gereken kolonları tanımlayınız.',
