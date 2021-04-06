@@ -411,6 +411,7 @@ return [
     'Default User Group' => 'Alapértelmezett felhasználói csoport',
     'Default Value' => 'Alapértelmezett érték',
     'Default Values' => 'Alapértelmezett értékek',
+    'Default' => 'Default',
     'Default?' => 'Alapértelmezett?',
     'Define the available options.' => 'Add meg az elérhető beállításokat.',
     'Define the columns your table should have.' => 'Add meg a oszlopokat, melyek a táblához tartoznak.',
