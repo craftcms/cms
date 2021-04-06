@@ -411,6 +411,7 @@ return [
     'Default User Group' => '기본 사용자 그룹',
     'Default Value' => '기본값',
     'Default Values' => '기본값',
+    'Default' => 'Default',
     'Default?' => '기본값?',
     'Define the available options.' => '유효한 옵션 정의하기',
     'Define the columns your table should have.' => '표에 포함되어야 하는 열 정의',
