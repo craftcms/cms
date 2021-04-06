@@ -411,6 +411,7 @@ return [
     'Default User Group' => 'مجموعة المستخدم الافتراضية',
     'Default Value' => 'القيمة الافتراضية',
     'Default Values' => 'القيم الافتراضية',
+    'Default' => 'Default',
     'Default?' => 'افتراضي؟',
     'Define the available options.' => 'حدد الخيارات المتاحة.',
     'Define the columns your table should have.' => 'حدد الأعمدة التي يلزم أن يحتوي عليها الجدول.',
