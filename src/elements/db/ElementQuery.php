@@ -208,7 +208,7 @@ class ElementQuery extends Query implements ElementQueryInterface
     public $uid;
 
     /**
-     * @var int|int[]|null The element ID(s) in the `site_settings` table. Prefix IDs with `'not '` to exclude them.
+     * @var int|int[]|null The element ID(s) in the `elements_sites` table. Prefix IDs with `'not '` to exclude them.
      * @used-by siteSettingsId()
      * @since 3.7.0
      */
