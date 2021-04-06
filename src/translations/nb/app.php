@@ -411,6 +411,7 @@ return [
     'Default User Group' => 'Standard brukergruppe',
     'Default Value' => 'Standardverdi',
     'Default Values' => 'Standardverdier',
+    'Default' => 'Default',
     'Default?' => 'Standard?',
     'Define the available options.' => 'Definer tilgjengelige valg.',
     'Define the columns your table should have.' => 'Angi hvilke kolonner tabellen din skal ha.',
