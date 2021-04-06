@@ -411,6 +411,7 @@ return [
     'Default User Group' => 'デフォルトのユーザーグループ',
     'Default Value' => '初期値',
     'Default Values' => '初期値',
+    'Default' => 'Default',
     'Default?' => 'デフォルト？',
     'Define the available options.' => '利用可能なオプションを定義してください。',
     'Define the columns your table should have.' => 'テーブルの欄を定義してください。',
