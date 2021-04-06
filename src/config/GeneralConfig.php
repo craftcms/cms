@@ -222,7 +222,6 @@ class GeneralConfig extends BaseObject
         'wmv',
         'xls',
         'xlsx',
-        'xml',
         'zip',
     ];
 

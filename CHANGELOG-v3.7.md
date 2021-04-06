@@ -83,3 +83,6 @@
 
 ### Removed
 - Removed support for the “Flash” file kind. ([#7626](https://github.com/craftcms/cms/issues/7626))
+
+### Security
+- The default `allowedFileExtensions` config setting value no longer includes `xml`.
