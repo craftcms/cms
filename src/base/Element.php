@@ -1586,7 +1586,7 @@ abstract class Element extends Component implements ElementInterface
     {
         // Is this the "field:handle" syntax?
         if (strncmp($name, 'field:', 6) === 0) {
-            parent::__set(substr($name, 6), $value);
+            $this->setFieldValue(substr($name, 6), $value);
             return;
         }
 
