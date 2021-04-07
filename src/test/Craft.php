@@ -14,6 +14,7 @@ use Codeception\Stub;
 use Codeception\TestInterface;
 use craft\base\ElementInterface;
 use craft\config\DbConfig;
+use craft\db\Command;
 use craft\db\Query;
 use craft\db\Table;
 use craft\elements\db\ElementQuery;
@@ -80,7 +81,7 @@ class Craft extends Yii2
         'dbSetup' => null,
         'projectConfig' => null,
         'fullMock' => false,
-        'edition' => \Craft::Solo
+        'edition' => \Craft::Solo,
     ];
 
     /**
@@ -134,6 +135,7 @@ class Craft extends Yii2
             $this->setupDb();
         }
 
+        TestSetup::removeProjectConfigFolders(CRAFT_CONFIG_PATH . DIRECTORY_SEPARATOR . 'project');
     }
 
     /**
@@ -344,7 +346,8 @@ class Craft extends Yii2
         $callback,
         string $eventInstance = '',
         array $eventValues = []
-    ) {
+    )
+    {
         // Add this event.
         $eventTriggered = false;
 
@@ -481,26 +484,51 @@ class Craft extends Yii2
     /**
      * @param Module $module
      * @param string $component
-     * @param array $methods
-     * @param array $constructParams
+     * @param array $params
+     * @param array $constructorParams
      * @throws InvalidConfigException
      */
-    public function mockMethods(Module $module, string $component, array $methods = [], array $constructParams = [])
+    public function mockMethods(Module $module, string $component, array $params = [], array $constructorParams = [])
     {
         $componentInstance = $module->get($component);
 
-        $module->set($component, Stub::construct(get_class($componentInstance), [$constructParams], $methods));
+        $module->set($component, Stub::construct(get_class($componentInstance), $constructorParams, $params));
     }
 
     /**
      * @param string $component
-     * @param array $methods
-     * @param array $constructParams
+     * @param array $params
+     * @param array $constructorParams
      * @throws InvalidConfigException
      */
-    public function mockCraftMethods(string $component, array $methods = [], array $constructParams = [])
+    public function mockCraftMethods(string $component, array $params = [], array $constructorParams = [])
     {
-        return $this->mockMethods(\Craft::$app, $component, $methods, $constructParams);
+        $this->mockMethods(\Craft::$app, $component, $params, $constructorParams);
+    }
+
+    /**
+     * @param array $params
+     * @return void
+     * @since 3.6.11
+     */
+    public function mockDbMethods(array $params = []): void
+    {
+        $db = \Craft::$app->getDb();
+        $this->mockCraftMethods('db', $params, [
+            [
+                'driverName' => $db->driverName,
+                'dsn' => $db->dsn,
+                'username' => $db->username,
+                'password' => $db->password,
+                'charset' => $db->charset,
+                'tablePrefix' => $db->tablePrefix,
+                'schemaMap' => $db->schemaMap,
+                'commandMap' => $db->commandMap,
+                'attributes' => $db->attributes,
+                'enableSchemaCache' => $db->enableSchemaCache,
+                'pdo' => $db->pdo,
+            ],
+        ]);
     }
 
     /**
@@ -664,7 +692,7 @@ class Craft extends Yii2
             'SCRIPT_NAME' => $entryScript,
             'SERVER_NAME' => parse_url($entryUrl, PHP_URL_HOST),
             'SERVER_PORT' => parse_url($entryUrl, PHP_URL_PORT) ?: '80',
-            'HTTPS' => parse_url($entryUrl, PHP_URL_SCHEME) === 'https'
+            'HTTPS' => parse_url($entryUrl, PHP_URL_SCHEME) === 'https',
         ]);
 
         $this->configureClient($this->_getConfig());

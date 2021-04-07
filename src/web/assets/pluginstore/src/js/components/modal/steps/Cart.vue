@@ -48,7 +48,17 @@
                                     </template>
 
                                     <td class="expiry-date">
-                                        <template v-if="item.lineItem.purchasable.type === 'cms-edition' || (item.lineItem.purchasable.type === 'plugin-edition' && item.lineItem.options.licenseKey.substr(0, 4) === 'new:')">
+                                        <template v-if="
+                                            item.lineItem.purchasable.type === 'cms-edition'
+                                            || (item.lineItem.purchasable.type === 'plugin-edition'
+                                            && (
+                                                item.lineItem.options.licenseKey.substr(0, 4) === 'new:'
+                                                || (
+                                                    pluginLicenseInfo(item.plugin.handle) &&
+                                                    pluginLicenseInfo(item.plugin.handle).isTrial
+                                                )
+                                            )
+                                        )">
                                             <dropdown v-model="selectedExpiryDates[itemKey]" :options="itemExpiryDateOptions(itemKey)" @input="onSelectedExpiryDateChange(itemKey)" />
                                         </template>
 
@@ -152,12 +162,12 @@
                 craftId: state => state.craft.craftId,
                 craftLogo: state => state.craft.craftLogo,
                 expiryDateOptions: state => state.pluginStore.expiryDateOptions,
-                pluginLicenseInfo: state => state.craft.pluginLicenseInfo,
             }),
 
             ...mapGetters({
                 cartItems: 'cart/cartItems',
                 cartItemsData: 'cart/cartItemsData',
+                getPluginLicenseInfo: 'craft/getPluginLicenseInfo',
             }),
 
             selectedExpiryDates: {
@@ -282,6 +292,10 @@
                 }
 
                 return true
+            },
+
+            pluginLicenseInfo(pluginHandle) {
+                return this.getPluginLicenseInfo(pluginHandle)
             },
         },
 

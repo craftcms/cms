@@ -118,6 +118,34 @@ class PlainText extends Field implements PreviewableFieldInterface, SortableFiel
     /**
      * @inheritdoc
      */
+    public function init()
+    {
+        parent::init();
+
+        if ($this->placeholder === '') {
+            $this->placeholder = null;
+        }
+
+        if ($this->placeholder !== null) {
+            $this->placeholder = LitEmoji::shortcodeToUnicode($this->placeholder);
+        }
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getSettings(): array
+    {
+        $settings = parent::getSettings();
+        if (isset($settings['placeholder'])) {
+            $settings['placeholder'] = LitEmoji::unicodeToShortcode($settings['placeholder']);
+        }
+        return $settings;
+    }
+
+    /**
+     * @inheritdoc
+     */
     protected function defineRules(): array
     {
         $rules = parent::defineRules();
@@ -151,7 +179,7 @@ class PlainText extends Field implements PreviewableFieldInterface, SortableFiel
     {
         return Craft::$app->getView()->renderTemplate('_components/fieldtypes/PlainText/settings',
             [
-                'field' => $this
+                'field' => $this,
             ]);
     }
 

@@ -55,7 +55,7 @@ class InstallController extends Controller
      */
     public $language;
 
-    /** @inheritdoc */
+    /* @inheritdoc */
     public $defaultAction = 'craft';
 
     /**

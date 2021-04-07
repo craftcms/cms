@@ -208,6 +208,13 @@ class ElementQuery extends Query implements ElementQueryInterface
     public $uid;
 
     /**
+     * @var int|int[]|null The element ID(s) in the `elements_sites` table. Prefix IDs with `'not '` to exclude them.
+     * @used-by siteSettingsId()
+     * @since 3.7.0
+     */
+    public $siteSettingsId;
+
+    /**
      * @var bool Whether results should be returned in the order specified by [[id]].
      * @used-by fixedOrder()
      */
@@ -604,7 +611,7 @@ class ElementQuery extends Query implements ElementQueryInterface
             return $exists;
         }
 
-        /** @noinspection ImplicitMagicMethodCallInspection */
+        /* @noinspection ImplicitMagicMethodCallInspection */
         return $this->__isset($name);
     }
 
@@ -620,7 +627,7 @@ class ElementQuery extends Query implements ElementQueryInterface
             return $element;
         }
 
-        /** @noinspection ImplicitMagicMethodCallInspection */
+        /* @noinspection ImplicitMagicMethodCallInspection */
         return $this->__get($name);
     }
 
@@ -637,7 +644,7 @@ class ElementQuery extends Query implements ElementQueryInterface
             throw new NotSupportedException('ElementQuery does not support setting an element using array syntax.');
         }
 
-        /** @noinspection ImplicitMagicMethodCallInspection */
+        /* @noinspection ImplicitMagicMethodCallInspection */
         $this->__set($name, $value);
     }
 
@@ -653,7 +660,7 @@ class ElementQuery extends Query implements ElementQueryInterface
             throw new NotSupportedException('ElementQuery does not support unsetting an element using array syntax.');
         }
 
-        /** @noinspection ImplicitMagicMethodCallInspection */
+        /* @noinspection ImplicitMagicMethodCallInspection */
         return $this->__unset($name);
     }
 
@@ -663,7 +670,7 @@ class ElementQuery extends Query implements ElementQueryInterface
     public function behaviors()
     {
         $behaviors = parent::behaviors();
-        /** @noinspection PhpUndefinedClassInspection */
+        /* @noinspection PhpUndefinedClassInspection */
         $behaviors['customFields'] = [
             'class' => CustomFieldBehavior::class,
             'hasMethods' => true,
@@ -736,7 +743,7 @@ class ElementQuery extends Query implements ElementQueryInterface
     public function draftOf($value)
     {
         if ($value instanceof ElementInterface) {
-            $this->draftOf = $value->getSourceId();
+            $this->draftOf = $value->getCanonicalId();
         } else if (is_numeric($value) || $value === '*' || $value === false || $value === null) {
             $this->draftOf = $value;
         } else {
@@ -808,7 +815,7 @@ class ElementQuery extends Query implements ElementQueryInterface
     public function revisionOf($value)
     {
         if ($value instanceof ElementInterface) {
-            $this->revisionOf = $value->getSourceId();
+            $this->revisionOf = $value->getCanonicalId();
         } else if (is_numeric($value) || $value === null) {
             $this->revisionOf = $value;
         } else {
@@ -853,6 +860,16 @@ class ElementQuery extends Query implements ElementQueryInterface
     public function uid($value)
     {
         $this->uid = $value;
+        return $this;
+    }
+
+    /**
+     * @inheritdoc
+     * @uses $siteSettingsId
+     */
+    public function siteSettingsId($value)
+    {
+        $this->siteSettingsId = $value;
         return $this;
     }
 
@@ -1081,6 +1098,31 @@ class ElementQuery extends Query implements ElementQueryInterface
     {
         $this->relatedTo = $value;
         return $this;
+    }
+
+    /**
+     * @inheritdoc
+     * @throws NotSupportedException
+     * @uses $relatedTo
+     */
+    public function andRelatedTo($value)
+    {
+        if ($this->relatedTo === null) {
+            return $this->relatedTo($value);
+        }
+
+        // Normalize so element/targetElement/sourceElement values get pushed down to the 2nd level
+        $relatedTo = ElementRelationParamParser::normalizeRelatedToParam($this->relatedTo);
+        $criteriaCount = count($relatedTo) - 1;
+
+        // Not possible to switch from `or` to `and` if there are multiple criteria
+        if ($relatedTo[0] === 'or' && $criteriaCount > 1) {
+            throw new NotSupportedException('It’s not possible to combine “or” and “and” relatedTo conditions.');
+        }
+
+        $relatedTo[0] = $criteriaCount > 0 ? 'and' : 'or';
+        $relatedTo[] = ElementRelationParamParser::normalizeRelatedToCriteria($value);
+        return $this->relatedTo($relatedTo);
     }
 
     /**
@@ -1336,7 +1378,7 @@ class ElementQuery extends Query implements ElementQueryInterface
         } catch (SiteNotFoundException $e) {
             // Fail silently if Craft isn't installed yet or is in the middle of updating
             if (Craft::$app->getIsInstalled() && !Craft::$app->getUpdates()->getIsCraftDbMigrationNeeded()) {
-                /** @noinspection PhpUnhandledExceptionInspection */
+                /* @noinspection PhpUnhandledExceptionInspection */
                 throw $e;
             }
             throw new QueryAbortedException($e->getMessage(), 0, $e);
@@ -1400,6 +1442,10 @@ class ElementQuery extends Query implements ElementQueryInterface
 
         if ($this->uid) {
             $this->subQuery->andWhere(Db::parseParam('elements.uid', $this->uid));
+        }
+
+        if ($this->siteSettingsId) {
+            $this->subQuery->andWhere(Db::parseParam('elements_sites.id', $this->siteSettingsId));
         }
 
         if ($this->archived) {
@@ -1692,7 +1738,7 @@ class ElementQuery extends Query implements ElementQueryInterface
         }
 
         // Add custom field properties
-        /** @var CustomFieldBehavior $behavior */
+        /* @var CustomFieldBehavior $behavior */
         $behavior = $this->getBehavior('customFields');
         foreach ((new \ReflectionClass($behavior))->getProperties(ReflectionProperty::IS_PUBLIC) as $property) {
             if (
@@ -1804,17 +1850,29 @@ class ElementQuery extends Query implements ElementQueryInterface
 
             if (!empty($this->customFields)) {
                 foreach ($this->customFields as $field) {
-                    if ($field->hasContentColumn()) {
+                    if (($column = $this->_fieldColumn($field)) !== null) {
                         // Account for results where multiple fields have the same handle, but from
                         // different columns e.g. two Matrix block types that each have a field with the
                         // same handle
-                        $colName = $this->_getFieldContentColumnName($field);
+                        $firstCol = is_string($column) ? $column : reset($column);
+                        $setValue = !isset($fieldValues[$field->handle]) || (empty($fieldValues[$field->handle]) && !empty($row[$firstCol]));
 
-                        if (!isset($fieldValues[$field->handle]) || (empty($fieldValues[$field->handle]) && !empty($row[$colName]))) {
-                            $fieldValues[$field->handle] = $row[$colName] ?? null;
+                        if (is_string($column)) {
+                            if ($setValue) {
+                                $fieldValues[$field->handle] = $row[$column] ?? null;
+                            }
+                            unset($row[$column]);
+                        } else {
+                            if ($setValue) {
+                                $fieldValues[$field->handle] = [];
+                                foreach ($column as $key => $col) {
+                                    $fieldValues[$field->handle][$key] = $row[$col] ?? null;
+                                }
+                            }
+                            foreach ($column as $col) {
+                                unset($row[$col]);
+                            }
                         }
-
-                        unset($row[$colName]);
                     }
                 }
             }
@@ -1834,28 +1892,21 @@ class ElementQuery extends Query implements ElementQueryInterface
         if ($this->drafts !== false) {
             if (!empty($row['draftId'])) {
                 $behaviors['draft'] = new DraftBehavior([
-                    'sourceId' => ArrayHelper::remove($row, 'draftSourceId'),
                     'creatorId' => ArrayHelper::remove($row, 'draftCreatorId'),
                     'draftName' => ArrayHelper::remove($row, 'draftName'),
                     'draftNotes' => ArrayHelper::remove($row, 'draftNotes'),
-                    'trackChanges' => (bool)ArrayHelper::remove($row, 'draftTrackChanges'),
-                    'dateLastMerged' => ArrayHelper::remove($row, 'draftDateLastMerged'),
                 ]);
             } else {
                 unset(
-                    $row['draftSourceId'],
                     $row['draftCreatorId'],
                     $row['draftName'],
                     $row['draftNotes'],
-                    $row['draftTrackChanges'],
-                    $row['draftDateLastMerged']
                 );
             }
         }
 
         if ($this->revisions) {
             $behaviors['revision'] = new RevisionBehavior([
-                'sourceId' => ArrayHelper::remove($row, 'revisionSourceId'),
                 'creatorId' => ArrayHelper::remove($row, 'revisionCreatorId'),
                 'revisionNum' => ArrayHelper::remove($row, 'revisionNum'),
                 'revisionNotes' => ArrayHelper::remove($row, 'revisionNotes'),
@@ -1869,7 +1920,7 @@ class ElementQuery extends Query implements ElementQueryInterface
         if ($this->hasEventHandlers(self::EVENT_AFTER_POPULATE_ELEMENT)) {
             $event = new PopulateElementEvent([
                 'element' => $element,
-                'row' => $row
+                'row' => $row,
             ]);
             $this->trigger(self::EVENT_AFTER_POPULATE_ELEMENT, $event);
             return $event->element;
@@ -2152,7 +2203,7 @@ class ElementQuery extends Query implements ElementQueryInterface
                 $siteIds = array_flip((array)$this->siteId);
                 foreach ($placeholderElements as $element) {
                     if ($element instanceof $this->elementType && isset($siteIds[$element->siteId])) {
-                        $placeholderSourceIds[] = $element->getSourceId();
+                        $placeholderSourceIds[] = $element->getCanonicalId();
                     }
                 }
             }
@@ -2180,7 +2231,7 @@ class ElementQuery extends Query implements ElementQueryInterface
      */
     private function _joinContentTable(string $class)
     {
-        /** @var ElementInterface|string $class */
+        /* @var ElementInterface|string $class */
         // Join in the content table on both queries
         $joinCondition = [
             'and',
@@ -2208,8 +2259,14 @@ class ElementQuery extends Query implements ElementQueryInterface
             $fieldAttributes = $this->getBehavior('customFields');
 
             foreach ($this->customFields as $field) {
-                if ($field->hasContentColumn()) {
-                    $this->query->addSelect(['content.' . $this->_getFieldContentColumnName($field)]);
+                if (($column = $this->_fieldColumn($field)) !== null) {
+                    if (is_string($column)) {
+                        $this->query->addSelect("content.$column");
+                    } else {
+                        foreach ($column as $c) {
+                            $this->query->addSelect("content.$c");
+                        }
+                    }
                 }
 
                 $handle = $field->handle;
@@ -2247,7 +2304,7 @@ class ElementQuery extends Query implements ElementQueryInterface
      */
     private function _applyStatusParam(string $class)
     {
-        /** @var string|ElementInterface $class */
+        /* @var string|ElementInterface $class */
         if (!$this->status || !$class::hasStatuses()) {
             return;
         }
@@ -2287,7 +2344,7 @@ class ElementQuery extends Query implements ElementQueryInterface
         }
 
         $parser = new ElementRelationParamParser([
-            'fields' => $this->customFields ? ArrayHelper::index($this->customFields, 'handle') : []
+            'fields' => $this->customFields ? ArrayHelper::index($this->customFields, 'handle') : [],
         ]);
         $condition = $parser->parse($this->relatedTo);
 
@@ -2353,12 +2410,12 @@ class ElementQuery extends Query implements ElementQueryInterface
             $this->query->innerJoin(['structureelements' => Table::STRUCTUREELEMENTS], [
                 'and',
                 '[[structureelements.elementId]] = [[subquery.elementsId]]',
-                ['structureelements.structureId' => $this->structureId]
+                ['structureelements.structureId' => $this->structureId],
             ]);
             $this->subQuery->innerJoin(['structureelements' => Table::STRUCTUREELEMENTS], [
                 'and',
                 '[[structureelements.elementId]] = [[elements.id]]',
-                ['structureelements.structureId' => $this->structureId]
+                ['structureelements.structureId' => $this->structureId],
             ]);
         } else {
             $this->query
@@ -2400,7 +2457,7 @@ class ElementQuery extends Query implements ElementQueryInterface
                 'and',
                 ['<', 'structureelements.lft', $ancestorOf->lft],
                 ['>', 'structureelements.rgt', $ancestorOf->rgt],
-                ['structureelements.root' => $ancestorOf->root]
+                ['structureelements.root' => $ancestorOf->root],
             ]);
 
             if ($this->ancestorDist) {
@@ -2415,7 +2472,7 @@ class ElementQuery extends Query implements ElementQueryInterface
                 'and',
                 ['>', 'structureelements.lft', $descendantOf->lft],
                 ['<', 'structureelements.rgt', $descendantOf->rgt],
-                ['structureelements.root' => $descendantOf->root]
+                ['structureelements.root' => $descendantOf->root],
             ]);
 
             if ($this->descendantDist) {
@@ -2436,7 +2493,7 @@ class ElementQuery extends Query implements ElementQueryInterface
                     'structureelements.level' => $siblingOf->level,
                     'structureelements.root' => $siblingOf->root,
                 ],
-                ['not', ['structureelements.elementId' => $siblingOf->id]]
+                ['not', ['structureelements.elementId' => $siblingOf->id]],
             ]);
 
             if ($siblingOf->level != 1) {
@@ -2449,7 +2506,7 @@ class ElementQuery extends Query implements ElementQueryInterface
                 $this->subQuery->andWhere([
                     'and',
                     ['>', 'structureelements.lft', $parent->lft],
-                    ['<', 'structureelements.rgt', $parent->rgt]
+                    ['<', 'structureelements.rgt', $parent->rgt],
                 ]);
             }
 
@@ -2477,7 +2534,7 @@ class ElementQuery extends Query implements ElementQueryInterface
             $this->subQuery->andWhere([
                 'and',
                 ['<', 'structureelements.lft', $positionedBefore->lft],
-                ['structureelements.root' => $positionedBefore->root]
+                ['structureelements.root' => $positionedBefore->root],
             ]);
         }
 
@@ -2525,26 +2582,19 @@ class ElementQuery extends Query implements ElementQueryInterface
 
             $this->query->addSelect([
                 'elements.draftId',
-                'drafts.sourceId as draftSourceId',
                 'drafts.creatorId as draftCreatorId',
                 'drafts.name as draftName',
                 'drafts.notes as draftNotes',
             ]);
-
-            $schemaVersion = Craft::$app->getInstalledSchemaVersion();
-            if (version_compare($schemaVersion, '3.4.3', '>=')) {
-                $this->query->addSelect(['drafts.trackChanges as draftTrackChanges']);
-                $this->query->addSelect(['drafts.dateLastMerged as draftDateLastMerged']);
-            }
 
             if ($this->draftId) {
                 $this->subQuery->andWhere(['elements.draftId' => $this->draftId]);
             }
 
             if ($this->draftOf === '*') {
-                $this->subQuery->andWhere(['not', ['drafts.sourceId' => null]]);
+                $this->subQuery->andWhere(['not', ['elements.canonicalId' => null]]);
             } else if ($this->draftOf !== null) {
-                $this->subQuery->andWhere(['drafts.sourceId' => $this->draftOf ?: null]);
+                $this->subQuery->andWhere(['elements.canonicalId' => $this->draftOf ?: null]);
             }
 
             if ($this->draftCreator) {
@@ -2555,8 +2605,8 @@ class ElementQuery extends Query implements ElementQueryInterface
                 $this->subQuery->andWhere([
                     'or',
                     ['elements.draftId' => null],
-                    ['not', ['drafts.sourceId' => null]],
-                    ['drafts.saved' => true]
+                    ['not', ['elements.canonicalId' => null]],
+                    ['drafts.saved' => true],
                 ]);
             }
         } else {
@@ -2569,7 +2619,6 @@ class ElementQuery extends Query implements ElementQueryInterface
                 ->innerJoin(['revisions' => Table::REVISIONS], '[[revisions.id]] = [[elements.revisionId]]')
                 ->addSelect([
                     'elements.revisionId',
-                    'revisions.sourceId as revisionSourceId',
                     'revisions.creatorId as revisionCreatorId',
                     'revisions.num as revisionNum',
                     'revisions.notes as revisionNotes',
@@ -2580,7 +2629,7 @@ class ElementQuery extends Query implements ElementQueryInterface
             }
 
             if ($this->revisionOf) {
-                $this->subQuery->andWhere(['revisions.sourceId' => $this->revisionOf]);
+                $this->subQuery->andWhere(['elements.canonicalId' => $this->revisionOf]);
             }
 
             if ($this->revisionCreator) {
@@ -2738,8 +2787,9 @@ class ElementQuery extends Query implements ElementQueryInterface
         if (is_array($this->customFields)) {
             // Add the field column prefixes
             foreach ($this->customFields as $field) {
-                if ($field::hasContentColumn()) {
-                    $orderColumnMap[$field->handle] = 'content.' . $this->_getFieldContentColumnName($field);
+                if (($column = $this->_fieldColumn($field)) !== null) {
+                    $firstCol = is_string($column) ? $column : reset($column);
+                    $orderColumnMap[$field->handle] = "content.$firstCol";
                 }
             }
         }
@@ -2809,6 +2859,12 @@ class ElementQuery extends Query implements ElementQueryInterface
                 'elements_sites.uri' => 'elements_sites.uri',
                 'enabledForSite' => 'elements_sites.enabled',
             ]);
+
+            // todo: remove this condition after the next breakpoint
+            if (Craft::$app->getDb()->columnExists(Table::ELEMENTS, 'canonicalId')) {
+                $select['elements.canonicalId'] = 'elements.canonicalId';
+                $select['elements.dateLastMerged'] = 'elements.dateLastMerged';
+            }
 
             // If the query includes soft-deleted elements, include the date deleted
             if ($this->trashed !== false) {
@@ -2885,7 +2941,7 @@ class ElementQuery extends Query implements ElementQueryInterface
             ->andWhere('[[subElements.id]] = [[tmpElements.id]]')
             ->orderBy([
                 new Expression($caseSql, $caseParams),
-                'elements_sites.id' => SORT_ASC
+                'elements_sites.id' => SORT_ASC,
             ])
             ->offset(0)
             ->limit(1)
@@ -2904,14 +2960,28 @@ class ElementQuery extends Query implements ElementQueryInterface
     }
 
     /**
-     * Returns a field’s corresponding content column name.
+     * Returns a field’s content column name(s).
      *
      * @param FieldInterface $field
-     * @return string
+     * @return string|string[]|null
      */
-    private function _getFieldContentColumnName(FieldInterface $field): string
+    private function _fieldColumn(FieldInterface $field)
     {
-        return ($field->columnPrefix ?: 'field_') . $field->handle;
+        if (!$field::hasContentColumn()) {
+            return null;
+        }
+
+        $type = $field->getContentColumnType();
+
+        if (is_array($type)) {
+            $columns = [];
+            foreach (array_keys($type) as $i => $key) {
+                $columns[$key] = ElementHelper::fieldColumnFromField($field, $i !== 0 ? $key : null);
+            }
+            return $columns;
+        }
+
+        return ElementHelper::fieldColumnFromField($field);
     }
 
     /**

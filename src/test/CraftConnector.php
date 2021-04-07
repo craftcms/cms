@@ -13,6 +13,7 @@ use Craft;
 use craft\base\PluginInterface;
 use craft\errors\InvalidPluginException;
 use craft\helpers\Db;
+use craft\helpers\Session;
 use craft\web\View;
 use yii\base\Module;
 use yii\mail\MessageInterface;
@@ -70,7 +71,7 @@ class CraftConnector extends Yii2
         $config['components']['mailer'] = array_merge($config['components']['mailer'], [
             'class' => TestMailer::class, 'callback' => function(MessageInterface $message) {
                 $this->emails[] = $message;
-            }
+            },
         ]);
 
         return $config;
@@ -120,5 +121,6 @@ class CraftConnector extends Yii2
     {
         parent::resetApplication($closeSession);
         Db::reset();
+        Session::reset();
     }
 }

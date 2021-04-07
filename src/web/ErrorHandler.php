@@ -9,6 +9,7 @@ namespace craft\web;
 
 use Craft;
 use craft\events\ExceptionEvent;
+use craft\log\Dispatcher;
 use Twig\Error\Error as TwigError;
 use Twig\Error\LoaderError as TwigLoaderError;
 use Twig\Error\RuntimeError as TwigRuntimeError;
@@ -40,7 +41,7 @@ class ErrorHandler extends \yii\web\ErrorHandler
         // Fire a 'beforeHandleException' event
         if ($this->hasEventHandlers(self::EVENT_BEFORE_HANDLE_EXCEPTION)) {
             $this->trigger(self::EVENT_BEFORE_HANDLE_EXCEPTION, new ExceptionEvent([
-                'exception' => $exception
+                'exception' => $exception,
             ]));
         }
 
@@ -52,11 +53,11 @@ class ErrorHandler extends \yii\web\ErrorHandler
         // If this is a 404 error, log to a special file
         if ($exception instanceof HttpException && $exception->statusCode === 404) {
             $logDispatcher = Craft::$app->getLog();
-
-            if (isset($logDispatcher->targets[0]) && $logDispatcher->targets[0] instanceof FileTarget) {
-                /** @var FileTarget $logTarget */
-                $logTarget = $logDispatcher->targets[0];
-                $logTarget->logFile = Craft::getAlias('@storage/logs/web-404s.log');
+            if (
+                isset($logDispatcher->targets[Dispatcher::TARGET_FILE]) &&
+                $logDispatcher->targets[Dispatcher::TARGET_FILE] instanceof FileTarget
+            ) {
+                $logDispatcher->targets[Dispatcher::TARGET_FILE]->logFile = Craft::getAlias('@storage/logs/web-404s.log');
             }
         }
 
@@ -199,7 +200,7 @@ class ErrorHandler extends \yii\web\ErrorHandler
             throw new Exception("Unable to determine template class in $traceFile");
         }
         $class = $match[1];
-        /** @var Template $template */
+        /* @var Template $template */
         $template = new $class(Craft::$app->getView()->getTwig());
         $src = $template->getSourceContext();
         //                $this->sourceCode = $src->getCode();

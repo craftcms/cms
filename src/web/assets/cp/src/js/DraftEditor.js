@@ -93,7 +93,7 @@ Craft.DraftEditor = Garnish.Base.extend({
         if (this.settings.draftId) {
             this.initForDraft();
         } else {
-            // If the "Save as a Draft" button is a secondary button, then add special handling for it
+            // If the "Create a draft" button is a secondary button, then add special handling for it
             this.addListener($('#save-draft-btn'), 'click', function(ev) {
                 ev.preventDefault();
                 this.createDraft();
@@ -173,8 +173,6 @@ Craft.DraftEditor = Garnish.Base.extend({
             this.showStatusHud(this.$statusIcon);
         }.bind(this));
 
-        this.addListener($('#merge-changes-btn'), 'click', this.mergeChanges);
-
         if (Craft.autosaveDrafts) {
             this.listenForChanges();
         }
@@ -191,32 +189,6 @@ Craft.DraftEditor = Garnish.Base.extend({
                 });
             }, 0);
         }
-    },
-
-    mergeChanges: function() {
-        // Make sure there aren't any unsaved changes
-        this.checkForm();
-
-        // Make sure we aren't currently saving something
-        if (this.saving) {
-            this.queue.push(this.mergeChanges.bind(this));
-            return;
-        }
-
-        this.saving = true;
-        $('#merge-changes-spinner').removeClass('hidden');
-
-        Craft.postActionRequest('drafts/merge-source-changes', {
-            elementType: this.settings.elementType,
-            draftId: this.settings.draftId,
-            siteId: this.settings.siteId,
-        }, function(response, textStatus) {
-            if (textStatus === 'success') {
-                window.location.reload();
-            } else {
-                $('#merge-changes-spinner').addClass('hidden');
-            }
-        });
     },
 
     expandSiteStatuses: function() {
@@ -812,7 +784,7 @@ Craft.DraftEditor = Garnish.Base.extend({
                         value: this.settings.saveDraftAction,
                     }).appendTo(Craft.cp.$primaryForm);
 
-                    // Remove the "Save as a Draft" and "Save" buttons
+                    // Remove the "Create a draft" and "Save" buttons
                     $('#save-draft-btn-container').remove();
                     $('#save-btn-container').remove();
 

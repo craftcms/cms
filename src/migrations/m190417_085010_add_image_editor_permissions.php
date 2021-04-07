@@ -80,7 +80,7 @@ class m190417_085010_add_image_editor_permissions extends Migration
                     foreach ($volumePermissions as $permission) {
                         $this->insert(Table::USERPERMISSIONS_USERGROUPS, [
                             'permissionId' => $permissionIdsByName[$permission],
-                            'groupId' => Db::idByUid(Table::USERGROUPS, $groupUid)
+                            'groupId' => Db::idByUid(Table::USERGROUPS, $groupUid),
                         ]);
                     }
                 }
@@ -99,13 +99,13 @@ class m190417_085010_add_image_editor_permissions extends Migration
                         ->innerJoin(['saveInVolume' => Table::USERPERMISSIONS], [
                             'and',
                             '[[saveInVolume.id]] = [[saveUserPermissions.permissionId]]',
-                            ['saveInVolume.name' => $savePermission]
+                            ['saveInVolume.name' => $savePermission],
                         ])
                         ->innerJoin(['deleteUserPermissions' => Table::USERPERMISSIONS_USERS], '[[deleteUserPermissions.userId]] = [[users.id]]')
                         ->innerJoin(['deleteInVolume' => Table::USERPERMISSIONS], [
                             'and',
                             '[[deleteInVolume.id]] = [[deleteUserPermissions.permissionId]]',
-                            ['deleteInVolume.name' => $deletePermission]
+                            ['deleteInVolume.name' => $deletePermission],
                         ])
                         ->column();
 

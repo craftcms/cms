@@ -5,7 +5,6 @@ namespace craft\migrations;
 use craft\db\Migration;
 use craft\db\Table;
 use craft\enums\LicenseKeyStatus;
-use yii\db\Expression;
 
 /**
  * m201124_003555_plugin_trials migration.
@@ -29,7 +28,7 @@ class m201124_003555_plugin_trials extends Migration
         if ($this->db->getIsPgsql()) {
             // Manually construct the SQL for Postgres
             $checkSql = '[[licenseKeyStatus]] in (' .
-                implode(',', array_map(function(string $status) {
+                implode(',', array_map(function (string $status) {
                     return $this->db->quoteValue($status);
                 }, $statuses)) .
                 ')';

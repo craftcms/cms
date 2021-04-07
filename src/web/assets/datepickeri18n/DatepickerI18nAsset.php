@@ -34,7 +34,7 @@ class DatepickerI18nAsset extends AssetBundle
             }
         }
 
-        /** @noinspection UnSafeIsSetOverArrayInspection */
+        /* @noinspection UnSafeIsSetOverArrayInspection */
         if (isset($datepickerLanguage)) {
             $this->sourcePath = '@lib/datepicker-i18n';
 

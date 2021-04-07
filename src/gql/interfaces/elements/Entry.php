@@ -73,7 +73,7 @@ class Entry extends Structure
             'sectionId' => [
                 'name' => 'sectionId',
                 'type' => Type::int(),
-                'description' => 'The ID of the section that contains the entry.'
+                'description' => 'The ID of the section that contains the entry.',
             ],
             'sectionHandle' => [
                 'name' => 'sectionHandle',
@@ -84,7 +84,7 @@ class Entry extends Structure
             'typeId' => [
                 'name' => 'typeId',
                 'type' => Type::int(),
-                'description' => 'The ID of the entry type that contains the entry.'
+                'description' => 'The ID of the entry type that contains the entry.',
             ],
             'typeHandle' => [
                 'name' => 'typeHandle',
@@ -95,26 +95,26 @@ class Entry extends Structure
             'postDate' => [
                 'name' => 'postDate',
                 'type' => DateTime::getType(),
-                'description' => 'The entry\'s post date.'
+                'description' => 'The entry\'s post date.',
             ],
             'expiryDate' => [
                 'name' => 'expiryDate',
                 'type' => DateTime::getType(),
-                'description' => 'The expiry date of the entry.'
+                'description' => 'The expiry date of the entry.',
             ],
             'children' => [
                 'name' => 'children',
                 'args' => EntryArguments::getArguments(),
                 'type' => Type::listOf(EntryInterface::getType()),
                 'description' => 'The entry’s children, if the section is a structure. Accepts the same arguments as the `entries` query.',
-                'complexity' => Gql::eagerLoadComplexity(),
+                'complexity' => Gql::relatedArgumentComplexity(GqlService::GRAPHQL_COMPLEXITY_EAGER_LOAD),
             ],
             'parent' => [
                 'name' => 'parent',
                 'args' => EntryArguments::getArguments(),
                 'type' => EntryInterface::getType(),
                 'description' => 'The entry’s parent, if the section is a structure.',
-                'complexity' => Gql::eagerLoadComplexity(),
+                'complexity' => Gql::relatedArgumentComplexity(GqlService::GRAPHQL_COMPLEXITY_EAGER_LOAD),
             ],
             'url' => [
                 'name' => 'url',
@@ -159,7 +159,7 @@ class Entry extends Structure
                 'authorId' => [
                     'name' => 'authorId',
                     'type' => Type::int(),
-                    'description' => 'The ID of the author of this entry.'
+                    'description' => 'The ID of the author of this entry.',
                 ],
                 'author' => [
                     'name' => 'author',

@@ -38,10 +38,19 @@ class ProjectConfigController extends Controller
     public $invert = false;
 
     /**
-     * @var array Keeps track of announced processed paths
-     * @since 3.6.0
+     * @var int Counter of the total paths that have been processed.
      */
-    protected $announcedPaths = [];
+    private $_pathCount = 0;
+
+    /**
+     * @var array The config paths that are currently being processed.
+     */
+    private $_processingPaths;
+
+    /**
+     * @var array The config paths that have finished being processed.
+     */
+    private $_completedPaths = [];
 
     /**
      * @inheritdoc
@@ -149,33 +158,85 @@ class ProjectConfigController extends Controller
             }
 
             $this->_uninstallPlugins(array_diff($loadedConfigPlugins, $yamlPlugins));
-            
-            $this->stdout("Applying changes from your project config files ... " . PHP_EOL);
+
+            $this->stdout('Applying changes from your project config files ...');
 
             try {
                 $forceUpdate = $projectConfig->forceUpdate;
                 $projectConfig->forceUpdate = $this->force;
+                $this->_processingPaths = [];
 
-                $projectConfig->on(ProjectConfigService::EVENT_ADD_ITEM, $this->_generateOutputFunction('adding '), null, false);
-                $projectConfig->on(ProjectConfigService::EVENT_REMOVE_ITEM, $this->_generateOutputFunction('removing '), null, false);
-                $projectConfig->on(ProjectConfigService::EVENT_UPDATE_ITEM, $this->_generateOutputFunction('updating '), null, false);
-
-                $projectConfig->on(ProjectConfigService::EVENT_ADD_ITEM, function () { $this->stdout(' ... '); $this->stdout('done' . PHP_EOL, Console::FG_GREEN);});
-                $projectConfig->on(ProjectConfigService::EVENT_REMOVE_ITEM, function () { $this->stdout(' ... '); $this->stdout('done' . PHP_EOL, Console::FG_GREEN);});
-                $projectConfig->on(ProjectConfigService::EVENT_UPDATE_ITEM, function () { $this->stdout(' ... '); $this->stdout('done' . PHP_EOL, Console::FG_GREEN);});
+                $projectConfig->on(ProjectConfigService::EVENT_ADD_ITEM, [$this, 'onStartProcessingItem'], ['label' => 'adding'], false);
+                $projectConfig->on(ProjectConfigService::EVENT_ADD_ITEM, [$this, 'onFinishProcessingItem'], ['label' => 'adding'], true);
+                $projectConfig->on(ProjectConfigService::EVENT_REMOVE_ITEM, [$this, 'onStartProcessingItem'], ['label' => 'removing'], false);
+                $projectConfig->on(ProjectConfigService::EVENT_REMOVE_ITEM, [$this, 'onFinishProcessingItem'], ['label' => 'removing'], true);
+                $projectConfig->on(ProjectConfigService::EVENT_UPDATE_ITEM, [$this, 'onStartProcessingItem'], ['label' => 'updating'], false);
+                $projectConfig->on(ProjectConfigService::EVENT_UPDATE_ITEM, [$this, 'onFinishProcessingItem'], ['label' => 'updating'], true);
 
                 $projectConfig->applyYamlChanges();
 
                 $projectConfig->forceUpdate = $forceUpdate;
             } catch (\Throwable $e) {
-                $this->stderr('error: ' . $e->getMessage() . PHP_EOL, Console::FG_RED);
+                $this->stderr("\nerror: " . $e->getMessage() . PHP_EOL, Console::FG_RED);
                 Craft::$app->getErrorHandler()->logException($e);
                 return ExitCode::UNSPECIFIED_ERROR;
             }
         }
 
-        $this->stdout('Finished applying changes' . PHP_EOL, Console::FG_GREEN);
+        $this->stdout("\nFinished applying changes\n", Console::FG_GREEN);
         return ExitCode::OK;
+    }
+
+    /**
+     * Called when a project config item has started getting processed.
+     *
+     * @param ConfigEvent $event
+     * @return void
+     * @since 3.6.10
+     */
+    public function onStartProcessingItem(ConfigEvent $event): void
+    {
+        if (isset($this->_processingPaths[$event->path]) || isset($this->_completedPaths[$event->path])) {
+            return;
+        }
+
+        $this->stdout("\n");
+
+        // Are we in the middle of processing another path(s)?
+        $otherPaths = count($this->_processingPaths);
+        if ($otherPaths !== 0) {
+            $this->stdout(str_repeat('  ', $otherPaths));
+        }
+
+        $this->stdout("- {$event->data['label']} ");
+        $this->stdout($event->path, Console::FG_CYAN);
+        $this->stdout(' ... ');
+
+        $this->_processingPaths[$event->path] = ++$this->_pathCount;
+    }
+
+    /**
+     * Called when a project config item has finished getting processed.
+     *
+     * @param ConfigEvent $event
+     * @return void
+     * @since 3.6.10
+     */
+    public function onFinishProcessingItem(ConfigEvent $event): void
+    {
+        if (!isset($this->_processingPaths[$event->path])) {
+            return;
+        }
+
+        // Have any other paths been processed since this one started?
+        if ($this->_processingPaths[$event->path] !== $this->_pathCount) {
+            $this->stdout("\n" . str_repeat('  ', count($this->_processingPaths) - 1) . '  ');
+        }
+
+        $this->stdout('done', Console::FG_GREEN);
+
+        unset($this->_processingPaths[$event->path]);
+        $this->_completedPaths[$event->path] = true;
     }
 
     /**
@@ -309,26 +370,5 @@ class ProjectConfigController extends Controller
         }
 
         return true;
-    }
-
-    /**
-     * Generate an output function for logging.
-     *
-     * @param $mode
-     * @return callable
-     */
-    private function _generateOutputFunction($mode): callable
-    {
-        return function (ConfigEvent $configEvent) use ($mode) {
-            $key = $mode . $configEvent->path;
-
-            if (isset($this->announcedPaths[$key])) {
-                return;
-            }
-            $this->announcedPaths[$key] = true;
-
-            $this->stdout(' - ' . $mode);
-            $this->stdout($configEvent->path, Console::FG_CYAN);
-        };
     }
 }

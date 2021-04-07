@@ -4321,30 +4321,22 @@ fieldset {
 .field {
   & > .status-badge {
     position: absolute;
-    top: -3px;
-    @include left(-19px);
-    font-size: 9px;
-    font-weight: bold;
-    line-height: 15px;
-    width: 15px;
-    text-align: center;
-    cursor: default;
-    border-radius: $smallBorderRadius;
+    top: 0;
+    @include left(-26px);
+    width: 2px;
+    height: 100%;
+    content: '';
+    cursor: help;
+    border: solid transparent;
+    border-width: 0 2px;
+    background-clip: content-box;
 
     &.modified {
       background-color: $blue600;
-      color: $white;
-      @include light-on-dark-text;
     }
 
     &.outdated {
       background-color: $yellow300;
-    }
-
-    &.conflicted {
-      background-color: $red600;
-      color: $white;
-      @include light-on-dark-text;
     }
   }
 
@@ -4703,7 +4695,8 @@ fieldset {
   flex-direction: row;
   align-items: center;
 
-  & > .datewrapper + .timewrapper {
+  & > .datewrapper + .timewrapper,
+  & > .timewrapper + .timezone {
     @include margin-left(5px);
   }
 }
@@ -4940,6 +4933,12 @@ body .selectize-dropdown .optgroup-header {
 
 body .selectize-dropdown .active {
   @include menu-option-active-styles;
+}
+
+/* time zones */
+.timezone {
+  height: 34px;
+  max-width: 25em;
 }
 
 /* datepicker */
@@ -5523,12 +5522,10 @@ $titlebarBorderRadius: $largeBorderRadius - 1;
   &:not(.static) {
     & > .fields {
       padding-top: 14px;
-    }
-  }
 
-  & > .fields {
-    & > .field {
-      margin: 15px 0;
+      & > .flex-fields > .field > .status-badge {
+        @include left(-17px);
+      }
     }
   }
 

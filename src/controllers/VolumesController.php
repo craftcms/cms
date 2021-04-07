@@ -91,7 +91,7 @@ class VolumesController extends Controller
             }
         }
 
-        /** @var string[]|VolumeInterface[] $allVolumeTypes */
+        /* @var string[]|VolumeInterface[] $allVolumeTypes */
         $allVolumeTypes = $volumes->getAllVolumeTypes();
 
         // Make sure the selected volume class is in there
@@ -108,7 +108,7 @@ class VolumesController extends Controller
 
                 $volumeTypeOptions[] = [
                     'value' => $class,
-                    'label' => $class::displayName()
+                    'label' => $class::displayName(),
                 ];
             }
         }
@@ -127,15 +127,15 @@ class VolumesController extends Controller
         $crumbs = [
             [
                 'label' => Craft::t('app', 'Settings'),
-                'url' => UrlHelper::url('settings')
+                'url' => UrlHelper::url('settings'),
             ],
             [
                 'label' => Craft::t('app', 'Assets'),
-                'url' => UrlHelper::url('settings/assets')
+                'url' => UrlHelper::url('settings/assets'),
             ],
             [
                 'label' => Craft::t('app', 'Volumes'),
-                'url' => UrlHelper::url('settings/assets')
+                'url' => UrlHelper::url('settings/assets'),
             ],
         ];
 
@@ -188,7 +188,7 @@ class VolumesController extends Controller
             'url' => $this->request->getBodyParam('url'),
             'titleTranslationMethod' => $this->request->getBodyParam('titleTranslationMethod'),
             'titleTranslationKeyFormat' => $this->request->getBodyParam('titleTranslationKeyFormat'),
-            'settings' => $this->request->getBodyParam('types.' . $type)
+            'settings' => $this->request->getBodyParam('types.' . $type),
         ]);
 
         // Set the field layout
@@ -201,7 +201,7 @@ class VolumesController extends Controller
 
             // Send the volume back to the template
             Craft::$app->getUrlManager()->setRouteParams([
-                'volume' => $volume
+                'volume' => $volume,
             ]);
 
             return null;

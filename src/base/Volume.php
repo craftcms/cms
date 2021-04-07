@@ -14,6 +14,7 @@ use craft\elements\Asset;
 use craft\records\Volume as VolumeRecord;
 use craft\validators\HandleValidator;
 use craft\validators\UniqueValidator;
+use yii\base\NotSupportedException;
 
 /**
  * Volume is the base class for classes representing volumes in terms of objects.
@@ -66,8 +67,8 @@ abstract class Volume extends SavableComponent implements VolumeInterface
                 'dateCreated',
                 'dateUpdated',
                 'uid',
-                'title'
-            ]
+                'title',
+            ],
         ];
 
         // Require URLs for public Volumes.
@@ -84,7 +85,7 @@ abstract class Volume extends SavableComponent implements VolumeInterface
      */
     public function getFieldLayout()
     {
-        /** @var FieldLayoutBehavior $behavior */
+        /* @var FieldLayoutBehavior $behavior */
         $behavior = $this->getBehavior('fieldLayout');
         return $behavior->getFieldLayout();
     }
@@ -99,5 +100,83 @@ abstract class Volume extends SavableComponent implements VolumeInterface
         }
 
         return rtrim(Craft::parseEnv($this->url), '/') . '/';
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function createDirectory(string $path)
+    {
+        $this->createDir($path);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function deleteDirectory(string $path)
+    {
+        $this->deleteDir($path);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function renameDirectory(string $path, string $newName)
+    {
+        $this->renameDir($path, $newName);
+    }
+    
+    /**
+     * @inheritDoc
+     */
+    public function directoryExists(string $path): bool
+    {
+        return $this->folderExists($path);
+    }
+
+    /**
+     * Creates a directory.
+     *
+     * @param string $path The path of the directory, relative to the source’s root
+     * @deprecated in 3.6.0. Use [[createDirectory()]] instead.
+     */
+    public function createDir(string $path)
+    {
+        throw new NotSupportedException('createDir() has not been implemented.');
+    }
+
+    /**
+     * Deletes a directory.
+     *
+     * @param string $path The path of the directory, relative to the source’s root
+     * @deprecated in 3.6.0. Use [[deleteDirectory()]] instead.
+     */
+    public function deleteDir(string $path)
+    {
+        throw new NotSupportedException('deleteDir() has not been implemented.');
+    }
+
+    /**
+     * Renames a directory.
+     *
+     * @param string $path The path of the directory, relative to the source’s root
+     * @param string $newName The new path of the directory, relative to the source’s root
+     * @deprecated in 3.6.0. Use [[renameDirectory()]] instead.
+     */
+    public function renameDir(string $path, string $newName)
+    {
+        throw new NotSupportedException('renameDir() has not been implemented.');
+    }
+
+    /**
+     * Returns whether a folder exists at the given path.
+     *
+     * @param string $path The folder path to check
+     * @return bool
+     * @deprecated in 3.7.0. Use [[directoryExists()]] instead.
+     */
+    public function folderExists(string $path): bool
+    {
+        throw new NotSupportedException('folderExists() has not been implemented.');
     }
 }

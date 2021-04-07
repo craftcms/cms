@@ -7,7 +7,6 @@
 
 namespace craft\gql\handlers;
 
-use Craft;
 use craft\elements\Tag;
 use craft\gql\base\RelationArgumentHandler;
 
@@ -27,6 +26,6 @@ class RelatedTags extends RelationArgumentHandler
     protected function handleArgument($argumentValue)
     {
         $argumentValue = parent::handleArgument($argumentValue);
-        return $this->getIds(Craft::$app->getElements()->createElementQuery(Tag::class), $argumentValue);
+        return $this->getIds(Tag::class, $argumentValue);
     }
 }

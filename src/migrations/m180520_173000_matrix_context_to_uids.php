@@ -39,9 +39,9 @@ class m180520_173000_matrix_context_to_uids extends Migration
             }
 
             $this->update(Table::FIELDS, [
-                'context' => 'matrixBlockType:' . $blockTypeUids[$blockTypeId]
+                'context' => 'matrixBlockType:' . $blockTypeUids[$blockTypeId],
             ], [
-                'id' => $field['id']
+                'id' => $field['id'],
             ], [], false);
         }
     }

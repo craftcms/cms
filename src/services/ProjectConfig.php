@@ -363,6 +363,11 @@ class ProjectConfig extends Component
     private $_sortedChangeEventHandlers = [];
 
     /**
+     * @var array A list of updated project config name changes.
+     */
+    private $_projectConfigNameChanges = [];
+
+    /**
      * @inheritdoc
      */
     public function __construct($config = [])
@@ -453,12 +458,14 @@ class ProjectConfig extends Component
      * @param mixed $value The config item value
      * @param string|null $message The message describing changes.
      * @param bool $updateTimestamp Whether the `dateModified` value should be updated, if it hasn’t been updated yet for this request
-     * @throws NotSupportedException if the service is set to read-only mode
+     * @param bool $rebuilding Whether the change should always be processed. This should only used when rebuilding.
      * @throws ErrorException
      * @throws Exception
+     * @throws NotSupportedException if the service is set to read-only mode
      * @throws ServerErrorHttpException
+     * @throws \yii\base\InvalidConfigException
      */
-    public function set(string $path, $value, string $message = null, bool $updateTimestamp = true)
+    public function set(string $path, $value, string $message = null, bool $updateTimestamp = true, $rebuilding = false)
     {
         // If we haven't yet pulled in the YAML changes, then anything in there should be discarded
         if (empty($this->_appliedConfig)) {
@@ -469,9 +476,9 @@ class ProjectConfig extends Component
             $value = ProjectConfigHelper::cleanupConfig($value);
         }
 
-        $valueChanged = false;
+        $valueChanged = $rebuilding;
 
-        if ($value !== $this->get($path)) {
+        if (!$rebuilding && $value !== $this->get($path)) {
             if ($this->readOnly) {
                 // If we're applying yaml changes that are coming in via `project.yaml`, anyway, bail silently.
                 if ($this->getIsApplyingYamlChanges() && $value === $this->get($path, true)) {
@@ -560,9 +567,13 @@ class ProjectConfig extends Component
         $changes = $this->_getPendingChanges();
 
         $this->_applyChanges($changes);
+        $anyChangesApplied = (bool)(count($changes['newItems']) + count($changes['removedItems']) + count($changes['changedItems']));
 
         // Kill the cached config data
         $cache->delete(self::STORED_CACHE_KEY);
+        if ($anyChangesApplied) {
+            $this->_updateConfigVersion();
+        }
 
         $mutex->release($lockName);
     }
@@ -718,6 +729,12 @@ class ProjectConfig extends Component
         $newValue = $this->get($path, true);
         $valueChanged = $triggerUpdate || $this->forceUpdate || $this->encodeValueAsString($oldValue) !== $this->encodeValueAsString($newValue);
 
+        if ($newValue === null && is_array($oldValue)) {
+            $this->_removeContainedProjectConfigNames(pathinfo($path, PATHINFO_EXTENSION), $oldValue);
+        } else if (is_array($newValue)) {
+            $this->_setContainedProjectConfigNames(pathinfo($path, PATHINFO_EXTENSION), $newValue);
+        }
+
         if ($valueChanged && !$this->muteEvents) {
             $event = new ConfigEvent(compact('path', 'oldValue', 'newValue'));
             if ($newValue === null && $oldValue !== null) {
@@ -812,6 +829,8 @@ class ProjectConfig extends Component
      */
     public function saveModifiedConfigData(bool $writeYaml = null)
     {
+        $this->_processProjectConfigNameChanges();
+
         if ($this->_isConfigModified) {
             $this->_updateConfigVersion();
 
@@ -827,7 +846,7 @@ class ProjectConfig extends Component
         if (!empty($this->_appliedChanges)) {
             $deltaEntry = [
                 'dateApplied' => date('Y-m-d H:i:s'),
-                'changes' => []
+                'changes' => [],
             ];
 
             $db = Craft::$app->getDb();
@@ -876,7 +895,7 @@ class ProjectConfig extends Component
 
                             if ($changeSet['removed'][$key] === $value) {
                                 unset($changeSet['removed'][$key], $changeSet['added'][$key]);
-                            } elseif (array_key_exists($key, $changeSet['removed'])) {
+                            } else if (array_key_exists($key, $changeSet['removed'])) {
                                 $changeSet['changed'][$key] = [
                                     'from' => $changeSet['removed'][$key],
                                     'to' => $changeSet['added'][$key],
@@ -968,7 +987,7 @@ class ProjectConfig extends Component
             $issues[] = [
                 'cause' => 'Craft CMS',
                 'existing' => $existingSchema,
-                'incoming' => $incomingSchema
+                'incoming' => $incomingSchema,
             ];
         }
 
@@ -983,7 +1002,7 @@ class ProjectConfig extends Component
                 $issues[] = [
                     'cause' => $plugin->name,
                     'existing' => $existingSchema,
-                    'incoming' => $incomingSchema
+                    'incoming' => $incomingSchema,
                 ];
             }
         }
@@ -1200,6 +1219,7 @@ class ProjectConfig extends Component
     public function rebuild()
     {
         $this->reset();
+        $this->_discardProjectConfigNames();
 
         $config = $this->get();
         $config['dateModified'] = DateTimeHelper::currentTimeStamp();
@@ -1230,17 +1250,18 @@ class ProjectConfig extends Component
         $readOnly = $this->readOnly;
         $this->readOnly = false;
 
-        // Flush it out to yaml files first.
+        // Process the changes
+        foreach ($event->config as $path => $value) {
+            $this->set($path, $value, 'Project config rebuild', false, true);
+        }
+
+        // Flush it out to yaml files.
         $this->_saveConfig($event->config);
         $this->_updateConfigVersion();
 
         if ($this->writeYamlAutomatically) {
+            $this->_processProjectConfigNameChanges();
             $this->_updateYamlFiles();
-        }
-
-        // Now we can process the changes
-        foreach ($event->config as $path => $value) {
-            $this->set($path, $value, 'Project config rebuild');
         }
 
         // And now ensure that Project Config doesn't attempt to save to yaml files again
@@ -1298,9 +1319,9 @@ class ProjectConfig extends Component
                 throw new OperationAbortedException($message);
             }
 
-            /** @var ConfigEvent $event */
-            /** @var string[]|null $tokenMatches */
-            /** @var callable $handler */
+            /* @var ConfigEvent $event */
+            /* @var string[]|null $tokenMatches */
+            /* @var callable $handler */
             [$event, $tokenMatches, $handler] = array_shift($this->_deferredEvents);
             Craft::info('Re-triggering deferred event for ' . $event->path, __METHOD__);
             $event->tokenMatches = $tokenMatches;
@@ -1518,7 +1539,7 @@ class ProjectConfig extends Component
         }
         return FileHelper::findFiles($path, [
             'only' => ['*.yaml'],
-            'caseSensitive' => false
+            'caseSensitive' => false,
         ]);
     }
 
@@ -1673,11 +1694,37 @@ class ProjectConfig extends Component
                 'except' => ['.*', '.*/'],
             ]);
 
+            // todo: remove this condition after the next breakpoint
+            if (Craft::$app->getDb()->tableExists(Table::PROJECTCONFIGNAMES)) {
+                $projectConfigNames = (new Query())
+                    ->select(['uid', 'name'])
+                    ->from([Table::PROJECTCONFIGNAMES])
+                    ->pairs();
+            } else {
+                $projectConfigNames = [];
+            }
+
+            $uids = [];
+            $replacements = [];
+
+            if (!empty($projectConfigNames)) {
+                foreach ($projectConfigNames as $uid => $name) {
+                    $uids[] = '/^(.*' . preg_quote($uid) . '.*)$/mi';
+                    $replacements[] = '$1 # ' . $name;
+                }
+            }
+
             foreach ($config as $relativeFile => $configData) {
                 $configData = ProjectConfigHelper::cleanupConfig($configData);
                 ksort($configData);
                 $filePath = $basePath . DIRECTORY_SEPARATOR . $relativeFile;
-                FileHelper::writeToFile($filePath, Yaml::dump($configData, 20, 2));
+                $yamlContent = Yaml::dump($configData, 20, 2);
+
+                if (!empty($uids)) {
+                    $yamlContent = preg_replace($uids, $replacements, $yamlContent);
+                }
+
+                FileHelper::writeToFile($filePath, $yamlContent);
             }
         } catch (\Throwable $e) {
             Craft::$app->getCache()->set(self::FILE_ISSUES_CACHE_KEY, true, self::CACHE_DURATION);
@@ -1695,6 +1742,61 @@ class ProjectConfig extends Component
         }
 
         Craft::$app->getCache()->delete(self::FILE_ISSUES_CACHE_KEY);
+    }
+
+    /**
+     * Discard all project config names.
+     *
+     * @return void
+     * @throws \yii\db\Exception
+     */
+    private function _discardProjectConfigNames(): void
+    {
+        $this->_projectConfigNameChanges = [];
+
+        // todo: remove this condition after the next breakpoint
+        if (Craft::$app->getDb()->tableExists(Table::PROJECTCONFIGNAMES)) {
+            Db::truncateTable(Table::PROJECTCONFIGNAMES);
+        }
+    }
+
+    /**
+     * Process any queued up project config name changes.
+     *
+     * @return void
+     * @throws \yii\db\Exception
+     */
+    private function _processProjectConfigNameChanges(): void
+    {
+        if (!empty($this->_projectConfigNameChanges)) {
+            $remove = [];
+            $set = [];
+
+            foreach ($this->_projectConfigNameChanges as $uid => $name) {
+                if ($name === null) {
+                    $remove[] = $uid;
+                } else {
+                    $set[$uid] = $name;
+                }
+            }
+
+            // todo: remove this condition after the next breakpoint
+            if (Craft::$app->getDb()->tableExists(Table::PROJECTCONFIGNAMES)) {
+                if (!empty($remove)) {
+                    Db::delete(Table::PROJECTCONFIGNAMES, ['uid' => $remove]);
+                }
+
+                if (!empty($set)) {
+                    Db::delete(Table::PROJECTCONFIGNAMES, ['uid' => array_keys($set)]);
+                    array_walk($set, function(&$value, $key) {
+                        $value = [$key, $value];
+                    });
+                    Db::batchInsert(Table::PROJECTCONFIGNAMES, ['uid', 'name'], $set, false);
+                }
+            }
+
+            $this->_projectConfigNameChanges = [];
+        }
     }
 
     /**
@@ -2104,7 +2206,7 @@ class ProjectConfig extends Component
             'publicToken' => [
                 'enabled' => (bool)($publicToken->enabled ?? false),
                 'expiryDate' => ($publicToken->expiryDate ?? false) ? $publicToken->expiryDate->getTimestamp() : null,
-            ]
+            ],
         ];
 
         foreach ($gqlService->getSchemas() as $schema) {
@@ -2123,5 +2225,47 @@ class ProjectConfig extends Component
     protected function encodeValueAsString($value): string
     {
         return Json::encode($value, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_PRESERVE_ZERO_FRACTION);
+    }
+
+    /**
+     * Set all the contained project config names to the buffer.
+     *
+     * @param string $lastPathSegment
+     * @param array $data
+     * @return void
+     */
+    private function _setContainedProjectConfigNames(string $lastPathSegment, array $data): void
+    {
+        if (preg_match('/^' . StringHelper::UUID_PATTERN . '$/i', $lastPathSegment) && isset($data['name'])) {
+            $this->_projectConfigNameChanges[$lastPathSegment] = $data['name'];
+        }
+
+        foreach ($data as $key => $value) {
+            // Traverse further
+            if (is_array($value)) {
+                $this->_setContainedProjectConfigNames($key, $value);
+            }
+        }
+    }
+
+    /**
+     * Mark any contained project config names for removal.
+     *
+     * @param string $lastPathSegment
+     * @param array $data
+     * @return void
+     */
+    private function _removeContainedProjectConfigNames(string $lastPathSegment, array $data): void
+    {
+        if (preg_match('/^' . StringHelper::UUID_PATTERN . '$/i', $lastPathSegment)) {
+            $this->_projectConfigNameChanges[$lastPathSegment] = null;
+        }
+
+        foreach ($data as $key => $value) {
+            // Traverse further
+            if (is_array($value)) {
+                $this->_setContainedProjectConfigNames($key, $value);
+            }
+        }
     }
 }

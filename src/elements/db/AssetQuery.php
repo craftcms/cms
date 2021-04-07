@@ -815,6 +815,8 @@ class AssetQuery extends ElementQuery
      */
     protected function beforePrepare(): bool
     {
+        $this->_normalizeVolumeId();
+
         // See if 'volume' was set to an invalid handle
         if ($this->volumeId === []) {
             return false;
@@ -835,14 +837,13 @@ class AssetQuery extends ElementQuery
             'assets.focalPoint',
             'assets.keptFile',
             'assets.dateModified',
-            'volumeFolders.path AS folderPath'
+            'volumeFolders.path AS folderPath',
         ]);
 
         if (self::_supportsUploaderParam()) {
             $this->query->addSelect('assets.uploaderId');
         }
 
-        $this->_normalizeVolumeId();
         if ($this->volumeId) {
             if ($this->volumeId === ':empty:') {
                 $this->subQuery->andWhere(['assets.volumeId' => null]);
@@ -911,7 +912,7 @@ class AssetQuery extends ElementQuery
         }
 
         if (empty($this->volumeId)) {
-            $this->volumeId = null;
+            $this->volumeId = is_array($this->volumeId) ? [] : null;
         } else if (is_numeric($this->volumeId)) {
             $this->volumeId = [$this->volumeId];
         } else if (!is_array($this->volumeId) || !ArrayHelper::isNumeric($this->volumeId)) {

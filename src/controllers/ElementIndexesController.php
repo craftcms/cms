@@ -12,7 +12,6 @@ use craft\base\ElementAction;
 use craft\base\ElementActionInterface;
 use craft\base\ElementExporterInterface;
 use craft\base\ElementInterface;
-use craft\elements\actions\Delete;
 use craft\elements\actions\DeleteActionInterface;
 use craft\elements\actions\Restore;
 use craft\elements\db\ElementQuery;
@@ -181,7 +180,7 @@ class ElementIndexesController extends BaseElementsController
 
         // Find that action from the list of available actions for the source
         if (!empty($this->actions)) {
-            /** @var ElementAction $availableAction */
+            /* @var ElementAction $availableAction */
             foreach ($this->actions as $availableAction) {
                 if ($actionClass === get_class($availableAction)) {
                     $action = clone $availableAction;
@@ -190,7 +189,7 @@ class ElementIndexesController extends BaseElementsController
             }
         }
 
-        /** @noinspection UnSafeIsSetOverArrayInspection - FP */
+        /* @noinspection UnSafeIsSetOverArrayInspection - FP */
         if (!isset($action)) {
             throw new BadRequestHttpException('Element action is not supported by the element type');
         }
@@ -210,7 +209,7 @@ class ElementIndexesController extends BaseElementsController
         }
 
         // Perform the action
-        /** @var ElementQuery $actionCriteria */
+        /* @var ElementQuery $actionCriteria */
         $actionCriteria = clone $this->elementQuery;
         $actionCriteria->offset = 0;
         $actionCriteria->limit = null;
@@ -222,7 +221,7 @@ class ElementIndexesController extends BaseElementsController
         // Fire a 'beforePerformAction' event
         $event = new ElementActionEvent([
             'action' => $action,
-            'criteria' => $actionCriteria
+            'criteria' => $actionCriteria,
         ]);
 
         $elementsService->trigger($elementsService::EVENT_BEFORE_PERFORM_ACTION, $event);
@@ -235,7 +234,7 @@ class ElementIndexesController extends BaseElementsController
                 // Fire an 'afterPerformAction' event
                 $elementsService->trigger($elementsService::EVENT_AFTER_PERFORM_ACTION, new ElementActionEvent([
                     'action' => $action,
-                    'criteria' => $actionCriteria
+                    'criteria' => $actionCriteria,
                 ]));
             }
         } else {
@@ -275,8 +274,8 @@ class ElementIndexesController extends BaseElementsController
         return $this->asJson([
             'html' => $this->getView()->renderTemplate('_elements/sources', [
                 'elementType' => $this->elementType,
-                'sources' => $sources
-            ])
+                'sources' => $sources,
+            ]),
         ]);
     }
 
@@ -315,7 +314,7 @@ class ElementIndexesController extends BaseElementsController
                     break;
                 case Response::FORMAT_XML:
                     Craft::$app->language = 'en-US';
-                    /** @var string|ElementInterface $elementType */
+                    /* @var string|ElementInterface $elementType */
                     $elementType = $this->elementType;
                     $this->response->formatters[Response::FORMAT_XML]['rootTag'] = $elementType::pluralLowerDisplayName();
                     break;
@@ -418,7 +417,7 @@ class ElementIndexesController extends BaseElementsController
      */
     protected function elementQuery(): ElementQueryInterface
     {
-        /** @var string|ElementInterface $elementType */
+        /* @var string|ElementInterface $elementType */
         $elementType = $this->elementType;
         $query = $elementType::find();
 
@@ -500,7 +499,7 @@ class ElementIndexesController extends BaseElementsController
      */
     protected function elementResponseData(bool $includeContainer, bool $includeActions): array
     {
-        /** @var string|ElementInterface $elementType */
+        /* @var string|ElementInterface $elementType */
         $elementType = $this->elementType;
         $responseData = [];
         $view = $this->getView();
@@ -547,7 +546,7 @@ class ElementIndexesController extends BaseElementsController
             return null;
         }
 
-        /** @var string|ElementInterface $elementType */
+        /* @var string|ElementInterface $elementType */
         $elementType = $this->elementType;
         $actions = $elementType::actions($this->sourceKey);
 
@@ -580,7 +579,7 @@ class ElementIndexesController extends BaseElementsController
 
         if ($this->elementQuery->trashed) {
             // Make sure Restore goes first
-            usort($actions, function($a, $b): int {
+            usort($actions, function ($a, $b): int {
                 if ($a instanceof Restore) {
                     return -1;
                 }
@@ -606,7 +605,7 @@ class ElementIndexesController extends BaseElementsController
             return null;
         }
 
-        /** @var string|ElementInterface $elementType */
+        /* @var string|ElementInterface $elementType */
         $elementType = $this->elementType;
         $exporters = $elementType::exporters($this->sourceKey);
 
@@ -643,7 +642,7 @@ class ElementIndexesController extends BaseElementsController
 
         $actionData = [];
 
-        /** @var ElementAction $action */
+        /* @var ElementAction $action */
         foreach ($this->actions as $action) {
             $actionData[] = [
                 'type' => get_class($action),

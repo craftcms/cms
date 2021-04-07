@@ -64,7 +64,7 @@ class Checkboxes extends BaseOptionsField
      */
     protected function inputHtml($value, ElementInterface $element = null): string
     {
-        /** @var MultiOptionsFieldData $value */
+        /* @var MultiOptionsFieldData $value */
         if (ArrayHelper::contains($value, 'valid', false, true)) {
             Craft::$app->getView()->setInitialDeltaValue($this->handle, null);
         }

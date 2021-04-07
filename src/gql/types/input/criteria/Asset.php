@@ -27,7 +27,7 @@ class Asset extends InputObjectType
             'name' => $typeName,
             'fields' => function() {
                 return AssetArguments::getArguments();
-            }
+            },
         ]));
     }
 }

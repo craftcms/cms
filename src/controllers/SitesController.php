@@ -211,7 +211,7 @@ class SitesController extends Controller
         foreach ($allGroups as $group) {
             $groupOptions[] = [
                 'value' => $group->id,
-                'label' => $group->name
+                'label' => $group->name,
             ];
         }
 
@@ -222,12 +222,12 @@ class SitesController extends Controller
         $crumbs = [
             [
                 'label' => Craft::t('app', 'Settings'),
-                'url' => UrlHelper::url('settings')
+                'url' => UrlHelper::url('settings'),
             ],
             [
                 'label' => Craft::t('app', 'Sites'),
-                'url' => UrlHelper::url('settings/sites')
-            ]
+                'url' => UrlHelper::url('settings/sites'),
+            ],
         ];
 
         $languageOptions = [];
@@ -237,8 +237,8 @@ class SitesController extends Controller
                 'value' => $locale->id,
                 'label' => Craft::t('app', '{id} – {name}', [
                     'name' => $locale->getDisplayName(Craft::$app->language),
-                    'id' => $locale->id
-                ])
+                    'id' => $locale->id,
+                ]),
             ];
         }
 
@@ -291,7 +291,7 @@ class SitesController extends Controller
 
             // Send the site back to the template
             Craft::$app->getUrlManager()->setRouteParams([
-                'site' => $site
+                'site' => $site,
             ]);
 
             return null;

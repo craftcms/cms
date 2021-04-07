@@ -56,7 +56,7 @@ class RoutesController extends Controller
         return $this->asJson([
             'success' => true,
             'routeUid' => $routeUid,
-            'siteUid' => $siteUid
+            'siteUid' => $siteUid,
         ]);
     }
 

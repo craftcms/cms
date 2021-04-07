@@ -2182,17 +2182,17 @@ body.rtl .chars-left { margin: -27px 0 0 7px ; }
 
 .flex > .field, .flex > fieldset { margin-top: 0; margin-bottom: 0; }
 
-.field > .status-badge { position: absolute; top: -3px; font-size: 9px; font-weight: bold; line-height: 15px; width: 15px; text-align: center; cursor: default; border-radius: 3px; }
+.field > .status-badge { position: absolute; top: 0; width: 2px; height: 100%; content: ''; cursor: help; border: solid transparent; border-width: 0 2px; background-clip: content-box; }
 
-body.ltr .field > .status-badge { left: -19px; }
+body.ltr .field > .status-badge { left: -26px; }
 
-body.rtl .field > .status-badge { right: -19px; }
+body.rtl .field > .status-badge { right: -26px; }
 
-.field > .status-badge.modified { background-color: #1992D4; color: #fff; -moz-osx-font-smoothing: grayscale; -webkit-font-smoothing: antialiased; font-weight: 500; }
+.field > .status-badge.modified { background-color: #1992D4; }
 
 .field > .status-badge.outdated { background-color: #FADB5F; }
 
-.field > .status-badge.conflicted { background-color: #CF1124; color: #fff; -moz-osx-font-smoothing: grayscale; -webkit-font-smoothing: antialiased; font-weight: 500; }
+.field > .status-badge.conflicted { background-color: #CF1124; }
 
 .field > .heading { display: -webkit-flex; display: flex; -webkit-flex-wrap: wrap; flex-wrap: wrap; -webkit-align-items: center; align-items: center; position: relative; margin-top: -5px; margin-bottom: 5px; }
 
@@ -2358,9 +2358,9 @@ body.rtl .passwordwrapper .password-toggle { padding-left: 7px; }
 
 .datetimewrapper { display: -webkit-flex; display: flex; -webkit-flex-direction: row; flex-direction: row; -webkit-align-items: center; align-items: center; }
 
-body.ltr .datetimewrapper > .datewrapper + .timewrapper { margin-left: 5px; }
+body.ltr .datetimewrapper > .datewrapper + .timewrapper, body.ltr .datetimewrapper > .timewrapper + .timezone { margin-left: 5px; }
 
-body.rtl .datetimewrapper > .datewrapper + .timewrapper { margin-right: 5px; }
+body.rtl .datetimewrapper > .datewrapper + .timewrapper, body.rtl .datetimewrapper > .timewrapper + .timezone { margin-right: 5px; }
 
 .clear-btn { display: -webkit-flex; display: flex; -webkit-justify-content: center; justify-content: center; -webkit-align-items: center; align-items: center; width: 24px; cursor: pointer; color: rgba(123, 135, 147, 0.5); border: none; padding: 0; background: transparent; }
 
@@ -2496,6 +2496,9 @@ body .selectize-dropdown [data-selectable], body .selectize-dropdown .optgroup-h
 body .selectize-dropdown .optgroup-header { margin: 14px 0 3px; font-size: 10px; line-height: 1.2; color: #606d7b; text-transform: uppercase; font-weight: bold; margin: 0; padding: 4px 0; }
 
 body .selectize-dropdown .active { color: #3f4d5a; background-color: #f3f7fc; }
+
+/* time zones */
+.timezone { height: 34px; max-width: 25em; }
 
 /* datepicker */
 .ui-datepicker { position: fixed; top: -300px; -padding: 10px; width: 210px; height: 242px; z-index: 101 !important; }
@@ -2793,7 +2796,9 @@ body.rtl .matrixblock > .actions a.settings:after { margin-right: 3px; }
 
 .matrixblock:not(.static) > .fields { padding-top: 14px; }
 
-.matrixblock > .fields > .field { margin: 15px 0; }
+body.ltr .matrixblock:not(.static) > .fields > .flex-fields > .field > .status-badge { left: -17px; }
+
+body.rtl .matrixblock:not(.static) > .fields > .flex-fields > .field > .status-badge { right: -17px; }
 
 .matrixblock > .buttons { margin-top: 0; height: 30px; }
 
@@ -3268,17 +3273,19 @@ body.rtl #details { padding-right: 14px; }
 
 #details .meta > .field, #details .meta > .data { margin: 0 -24px !important; }
 
-#details .meta > .field:first-child, #details .meta > .data:first-child { border-top-left-radius: 5px; border-top-right-radius: 5px; }
+#details .meta > .field:first-child, #details .meta > .data:first-child { border-top-right-radius: 5px; }
 
-#details .meta > .field:last-child, #details .meta > .data:last-child { border-bottom-left-radius: 5px; border-bottom-right-radius: 5px; }
+#details .meta > .field:first-child, #details .meta > .field:first-child > .status-badge, #details .meta > .data:first-child, #details .meta > .data:first-child > .status-badge { border-top-left-radius: 5px; }
+
+#details .meta > .field:last-child, #details .meta > .data:last-child { border-bottom-right-radius: 5px; }
+
+#details .meta > .field:last-child, #details .meta > .field:last-child > .status-badge, #details .meta > .data:last-child, #details .meta > .data:last-child > .status-badge { border-bottom-left-radius: 5px; }
 
 #details .meta > .field > .heading > label, #details .meta > .field > .heading, #details .meta > .data > .heading > label, #details .meta > .data > .heading { color: #515f6c; }
 
-#details .meta > .field .status-badge { top: calc(50% - 8px); }
+body.ltr #details .meta > .field > .status-badge { left: -2px; }
 
-body.ltr #details .meta > .field .status-badge { left: 4px; }
-
-body.rtl #details .meta > .field .status-badge { right: 4px; }
+body.rtl #details .meta > .field > .status-badge { right: -2px; }
 
 #details .meta .text::-webkit-input-placeholder { color: #9aa5b1; }
 

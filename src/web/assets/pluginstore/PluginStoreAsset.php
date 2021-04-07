@@ -62,7 +62,7 @@ class PluginStoreAsset extends AssetBundle
             'manifest' => [
                 'legacy' => 'manifest.json',
                 'modern' => 'manifest.json',
-            ]
+            ],
         ];
 
         $this->css = [

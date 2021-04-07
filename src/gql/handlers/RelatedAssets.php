@@ -7,7 +7,6 @@
 
 namespace craft\gql\handlers;
 
-use Craft;
 use craft\elements\Asset;
 use craft\gql\base\RelationArgumentHandler;
 
@@ -27,6 +26,6 @@ class RelatedAssets extends RelationArgumentHandler
     protected function handleArgument($argumentValue)
     {
         $argumentValue = parent::handleArgument($argumentValue);
-        return $this->getIds(Craft::$app->getElements()->createElementQuery(Asset::class), $argumentValue);
+        return $this->getIds(Asset::class, $argumentValue);
     }
 }

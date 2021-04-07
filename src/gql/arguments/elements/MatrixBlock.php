@@ -28,19 +28,35 @@ class MatrixBlock extends ElementArguments
             'fieldId' => [
                 'name' => 'fieldId',
                 'type' => Type::listOf(QueryArgument::getType()),
-                'description' => 'Narrows the query results based on the field the Matrix blocks belong to, per the fields’ IDs.'
+                'description' => 'Narrows the query results based on the field the Matrix blocks belong to, per the fields’ IDs.',
             ],
             'ownerId' => [
                 'name' => 'ownerId',
                 'type' => Type::listOf(QueryArgument::getType()),
-                'description' => ' Narrows the query results based on the owner element of the Matrix blocks, per the owners’ IDs.'
+                'description' => ' Narrows the query results based on the owner element of the Matrix blocks, per the owners’ IDs.',
             ],
             'typeId' => Type::listOf(QueryArgument::getType()),
             'type' => [
                 'name' => 'type',
                 'type' => Type::listOf(Type::string()),
-                'description' => 'Narrows the query results based on the Matrix blocks’ block type handles.'
+                'description' => 'Narrows the query results based on the Matrix blocks’ block type handles.',
             ],
         ]);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public static function getDraftArguments(): array
+    {
+        return [];
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public static function getRevisionArguments(): array
+    {
+        return [];
     }
 }

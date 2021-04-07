@@ -70,7 +70,7 @@ class DashboardController extends Controller
         $view->setNamespace('__NAMESPACE__');
 
         foreach ($widgetTypes as $widgetType) {
-            /** @var WidgetInterface $widgetType */
+            /* @var WidgetInterface $widgetType */
             if (!$widgetType::isSelectable()) {
                 continue;
             }
@@ -349,7 +349,7 @@ class DashboardController extends Controller
             return $this->renderTemplate('_components/widgets/CraftSupport/response', [
                 'widgetId' => $widgetId,
                 'success' => false,
-                'errors' => $getHelpModel->getErrors()
+                'errors' => $getHelpModel->getErrors(),
             ]);
         }
 
@@ -415,7 +415,7 @@ class DashboardController extends Controller
                 FileHelper::addFilesToZip($zip, $logPath, 'logs', [
                     'only' => ['*.log'],
                     'except' => ['web-404s.log'],
-                    'recursive' => false
+                    'recursive' => false,
                 ]);
             }
 
@@ -481,15 +481,15 @@ class DashboardController extends Controller
                 'widgetId' => $widgetId,
                 'success' => false,
                 'errors' => [
-                    'Support' => [$requestException->getMessage()]
-                ]
+                    'Support' => [$requestException->getMessage()],
+                ],
             ]);
         }
 
         return $this->renderTemplate('_components/widgets/CraftSupport/response', [
             'widgetId' => $widgetId,
             'success' => true,
-            'errors' => []
+            'errors' => [],
         ]);
     }
 
@@ -581,7 +581,7 @@ class DashboardController extends Controller
         }
 
         return $this->asJson([
-            'errors' => $allErrors
+            'errors' => $allErrors,
         ]);
     }
 
