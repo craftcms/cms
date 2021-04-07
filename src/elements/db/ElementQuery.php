@@ -1900,7 +1900,7 @@ class ElementQuery extends Query implements ElementQueryInterface
                 unset(
                     $row['draftCreatorId'],
                     $row['draftName'],
-                    $row['draftNotes'],
+                    $row['draftNotes']
                 );
             }
         }
