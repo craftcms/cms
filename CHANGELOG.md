@@ -16,7 +16,7 @@
 
 ### Removed
 - Removed the `suppressTemplateErrors` config setting.
-- Removed `craft\web\twig\Template`.
 - Removed `craft\web\View::$minifyCss`.
 - Removed `craft\web\View::$minifyJs`.
 - Removed `craft\web\View::renderTemplateMacro()`.
+- Removed `craft\web\twig\Template`.
