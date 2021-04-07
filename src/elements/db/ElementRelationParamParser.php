@@ -96,7 +96,7 @@ class ElementRelationParamParser extends BaseObject
                     && $relCriteria['field'] === null &&
                     $relCriteria['sourceSite'] === null
                 ) {
-                    ArrayHelper::append($orElements, ...array_slice($relCriteria['element'], 1));
+                    array_push($orElements, ...array_slice($relCriteria['element'], 1));
                     unset($relatedToParam[$i]);
                 }
             }
