@@ -7,6 +7,7 @@
 - Relational fields now load elements in the current site rather than the primary site, if the source element isn’t localizable. ([#7048](https://github.com/craftcms/cms/issues/7048))
 - `craft\base\Model::setAttributes()` now normalizes date attributes into `DateTime` objects.
 - `craft\base\Model::datetimeAttributes()` is now called from the constructor, instead of the `init()` method.
+- `craft\services\UserPermissions::getAllPermissions()` and `getAssignablePermissions()` now return permission groups as arrays with `heading` and `permission` sub-keys, fixing a bug where two groups with the same heading would conflict with each other. ([#7771](https://github.com/craftcms/cms/issues/7771))
 - Updated Twig to 3.3.
 - Updated vue-autosuggest to 2.2.0.
 
