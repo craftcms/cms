@@ -29,24 +29,9 @@ use yii\di\ServiceLocator;
 /**
  * Craft defines the `craft` global template variable.
  *
- * @property Config $config
- * @property ElementIndexes $elementIndexes
- * @property CategoryGroups $categoryGroups
  * @property Cp $cp
- * @property Deprecator $deprecator
- * @property Fields $fields
- * @property Feeds $feeds
- * @property Globals $globals
- * @property Request $request
  * @property Routes $routes
- * @property Sections $sections
- * @property SystemSettings $systemSettings
- * @property UserSession $session
- * @property I18n $i18n
  * @property Io $io
- * @property UserGroups $userGroups
- * @property UserPermissions $userPermissions
- * @property EmailMessages $emailMessages
  * @property Rebrand $rebrand
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
@@ -83,38 +68,15 @@ class CraftVariable extends ServiceLocator
     public function __construct($config = [])
     {
         // Set the core components
-        /* @noinspection PhpDeprecationInspection */
         $components = [
             'cp' => Cp::class,
             'io' => Io::class,
             'routes' => Routes::class,
-
-            // Deprecated
-            'categoryGroups' => CategoryGroups::class,
-            'config' => Config::class,
-            'deprecator' => Deprecator::class,
-            'elementIndexes' => ElementIndexes::class,
-            'feeds' => Feeds::class,
-            'fields' => Fields::class,
-            'globals' => Globals::class,
-            'i18n' => I18N::class,
-            'request' => Request::class,
-            'sections' => Sections::class,
-            'systemSettings' => SystemSettings::class,
-            'session' => UserSession::class,
         ];
 
         if (Craft::$app->getEdition() === Craft::Pro) {
-            /* @noinspection PhpDeprecationInspection */
-            /* @noinspection PhpDeprecationInspection */
-            /* @noinspection SuspiciousAssignmentsInspection */
             $components = array_merge($components, [
                 'rebrand' => Rebrand::class,
-
-                // Deprecated
-                'emailMessages' => EmailMessages::class,
-                'userGroups' => UserGroups::class,
-                'userPermissions' => UserPermissions::class,
             ]);
         }
 

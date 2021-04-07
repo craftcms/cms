@@ -16,7 +16,37 @@
 
 ### Removed
 - Removed the `suppressTemplateErrors` config setting.
+- Removed the `craft.categoryGroups` Twig variable.
+- Removed the `craft.config` Twig variable.
+- Removed the `craft.deprecator` Twig variable.
+- Removed the `craft.elementIndexes` Twig variable.
+- Removed the `craft.emailMessages` Twig variable.
+- Removed the `craft.feeds` Twig variable.
+- Removed the `craft.fields` Twig variable.
+- Removed the `craft.globals` Twig variable.
+- Removed the `craft.i18n` Twig variable.
+- Removed the `craft.request` Twig variable.
+- Removed the `craft.sections` Twig variable.
+- Removed the `craft.session` Twig variable.
+- Removed the `craft.systemSettings` Twig variable.
+- Removed the `craft.userGroups` Twig variable.
+- Removed the `craft.userPermissions` Twig variable.
 - Removed `craft\web\View::$minifyCss`.
 - Removed `craft\web\View::$minifyJs`.
 - Removed `craft\web\View::renderTemplateMacro()`.
 - Removed `craft\web\twig\Template`.
+- Removed `craft\web\twig\variables\CategoryGroups`.
+- Removed `craft\web\twig\variables\Config`.
+- Removed `craft\web\twig\variables\Deprecator`.
+- Removed `craft\web\twig\variables\ElementIndexes`.
+- Removed `craft\web\twig\variables\EmailMessages`.
+- Removed `craft\web\twig\variables\Feeds`.
+- Removed `craft\web\twig\variables\Fields`.
+- Removed `craft\web\twig\variables\Globals`.
+- Removed `craft\web\twig\variables\I18N`.
+- Removed `craft\web\twig\variables\Request`.
+- Removed `craft\web\twig\variables\Sections`.
+- Removed `craft\web\twig\variables\SystemSettings`.
+- Removed `craft\web\twig\variables\UserGroups`.
+- Removed `craft\web\twig\variables\UserPermissions`.
+- Removed `craft\web\twig\variables\UserSession`.
