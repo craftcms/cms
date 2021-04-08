@@ -52,6 +52,7 @@ use craft\services\Volumes;
 use craft\web\Application as WebApplication;
 use craft\web\AssetManager;
 use craft\web\Request as WebRequest;
+use craft\web\User;
 use craft\web\View;
 use yii\base\Application;
 use yii\base\ErrorHandler;
@@ -76,6 +77,7 @@ use yii\web\ServerErrorHttpException;
  * @property-read \craft\i18n\Locale $locale The Locale object for the target language
  * @property-read \craft\mail\Mailer $mailer The mailer component
  * @property-read \craft\services\Api $api The API service
+ * @property-read \craft\services\Authentication $authentication The Authentication service
  * @property-read \craft\services\AssetIndexer $assetIndexer The asset indexer service
  * @property-read \craft\services\Assets $assets The assets service
  * @property-read \craft\services\AssetTransforms $assetTransforms The asset transforms service
@@ -846,6 +848,17 @@ trait ApplicationTrait
     }
 
     /**
+     * Returns the Authentication service.
+     *
+     * @return \craft\services\Authentication The Authentication service
+     */
+    public function getAuthentication()
+    {
+        /** @var WebApplication|ConsoleApplication $this */
+        return $this->get('authentication');
+    }
+
+    /**
      * Returns the assets service.
      *
      * @return \craft\services\Assets The assets service
@@ -1430,6 +1443,8 @@ trait ApplicationTrait
         // Load the plugins
         $this->getPlugins()->loadPlugins();
 
+        $this->_registerLogoutListeners();
+
         $this->_isInitialized = true;
 
         // Fire an 'init' event
@@ -1544,6 +1559,14 @@ trait ApplicationTrait
                     break;
             }
         });
+    }
+
+    /**
+     * Invalidate authentication chains on logout.
+     */
+    private function _registerLogoutListeners()
+    {
+        Event::on(User::class, User::EVENT_AFTER_LOGOUT, [$this->getAuthentication(), 'invalidateAuthenticationState']);
     }
 
     /**

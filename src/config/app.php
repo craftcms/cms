@@ -14,6 +14,9 @@ return [
         'api' => [
             'class' => craft\services\Api::class,
         ],
+        'authentication' => [
+            'class' => craft\services\Authentication::class,
+        ],
         'assets' => [
             'class' => craft\services\Assets::class,
         ],
