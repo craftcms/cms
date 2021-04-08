@@ -10,7 +10,7 @@ namespace craft\services;
 
 use Craft;
 use craft\authentication\Chain;
-use craft\authentication\step\Craft2FA;
+use craft\authentication\step\EmailCode;
 use craft\authentication\step\Credentials;
 use craft\authentication\step\IpAddress;
 use craft\models\AuthenticationState;
@@ -87,6 +87,8 @@ class Authentication extends Component
         switch ($scenario) {
             case 'craftLogin':
                 return [Credentials::class];
+            case 'craft2FA':
+                return [Credentials::class, IpAddress::class, EmailCode::class];
         }
 
         return null;
