@@ -50,11 +50,17 @@ class DbController extends Controller
     /**
      * Creates a new database backup.
      *
+     * Example:
+     *
+     * ```
+     * php craft db/backup ./my-backups/
+     * ```
+     *
      * @param string|null $path The path the database backup should be created at.
      * Can be any of the following:
      *
      * - A full file path
-     * - A folder path (backup will be saved in there with a dynamically-generated name)
+     * - An existing folder path (backup will be saved in there with a dynamically-generated name)
      * - A filename (backup will be saved in the working directory with the given name)
      * - Blank (backup will be saved to the config/backups/ folder with a dynamically-generated name)
      *
@@ -183,8 +189,10 @@ class DbController extends Controller
     /**
      * Converts tables’ character sets and collations. (MySQL only)
      *
-     * @param string|null $charset The character set
-     * @param string|null $collation
+     * Prompts for charset and collation settings if they’re not provided as arguments.
+     *
+     * @param string|null $charset The desired character set.
+     * @param string|null $collation The desired collation.
      * @return int
      */
     public function actionConvertCharset(?string $charset = null, ?string $collation = null): int
