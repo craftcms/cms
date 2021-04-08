@@ -47,7 +47,7 @@ class Credentials extends Step
      */
     protected function failToAuthenticate(): AuthenticationState
     {
-        $this->state->setAuthenticationMessage(UserHelper::getLoginFailureMessage(User::AUTH_INVALID_CREDENTIALS));
+        Craft::$app->getSession()->setError(UserHelper::getLoginFailureMessage(User::AUTH_INVALID_CREDENTIALS));
         return $this->state;
     }
 }

@@ -38,8 +38,6 @@ class AuthenticationState extends Model
      */
     protected ?int $resolvedUserId = null;
 
-    protected ?string $authenticationMessage = null;
-
     /**
      * Get the authentication scenario.
      *
@@ -81,26 +79,6 @@ class AuthenticationState extends Model
     }
 
     /**
-     * Get the authentication message.
-     *
-     * @return string|null
-     */
-    public function getAuthenticationMessage(): ?string
-    {
-        return $this->authenticationMessage;
-    }
-
-    /**
-     * Set the authentication message.
-     *
-     * @param string|null $message
-     */
-    public function setAuthenticationMessage(string $message = null): void
-    {
-        $this->authenticationMessage = $message;
-    }
-
-    /**
      * Export the current authentication state.
      *
      * @return array
@@ -111,7 +89,6 @@ class AuthenticationState extends Model
             'authenticationScenario' => $this->authenticationScenario,
             'lastCompletedStep' => $this->lastCompletedStep,
             'resolvedUserId' => $this->resolvedUserId,
-            'authenticationMessage' => $this->authenticationMessage
         ];
     }
 

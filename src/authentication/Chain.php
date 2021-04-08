@@ -65,7 +65,7 @@ class Chain
                 // Prepare the next step.
                 /** @var StepInterface $nextStep */
                 $nextStep = $this->getNextAuthenticationStep();
-                $nextStep->prepareForAuthentication();
+                $nextStep->prepareForAuthentication($this->_getResolvedUser());
 
                 // If next step is not interactive, repeat
                 if (!$nextStep->getRequiresInput()) {
@@ -73,16 +73,6 @@ class Chain
                 }
             }
         }
-    }
-
-    /**
-     * Get the authentication message passed back from the authentication step.
-     *
-     * @return string|null
-     */
-    public function getChainAuthenticationMessage(): ?string
-    {
-        return $this->_state->getAuthenticationMessage();
     }
 
     /**

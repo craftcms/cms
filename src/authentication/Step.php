@@ -16,7 +16,7 @@ abstract class Step extends Component implements StepInterface
     /**
      * @inheritdoc
      */
-    public function prepareForAuthentication(): void
+    public function prepareForAuthentication(User $user = null): void
     {
         // Do nothing.
     }
