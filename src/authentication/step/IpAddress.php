@@ -13,18 +13,18 @@ class IpAddress extends Step
     /**
      * @var string[] A list of allowed IP addresses, if `permissive` is set to `false`
      */
-    protected array $allowed = [];
+    public array $allowed = [];
 
     /**
      * @var string[] A list of denied IP addresses, if `permissive` is set to `true`.
      */
-    protected array $denied = [];
+    public array $denied = [];
 
     /**
      * @var bool If set to `true`, will check the IP address against the `denied` list, otherwise will check whether the
      * IP address is in the `allowed` list. Defaults to `false`.
      */
-    protected bool $permissive = false;
+    public bool $permissive = false;
 
     /**
      * @inheritdoc
@@ -51,7 +51,6 @@ class IpAddress extends Step
     {
         if (is_null($address)) {
             return false;
-
         }
         if ($this->permissive) {
             return !in_array($address, $this->denied, true);
