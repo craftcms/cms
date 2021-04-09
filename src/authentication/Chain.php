@@ -32,7 +32,7 @@ class Chain
      */
     public function getIsComplete(): bool
     {
-        return $this->_state->getLastCompletedStep() === end($this->_steps);
+        return $this->_state->getLastCompletedStep() === (end($this->_steps)['step'] ?? null);
     }
 
     /**
@@ -91,18 +91,14 @@ class Chain
 
         // If no steps performed, return the first one
         if (!$lastCompleted) {
-            /** @var StepInterface $nextStep */
-            $nextStep = Craft::createObject(reset($this->_steps), [['state' => $this->_state]]);
-            return $nextStep;
+            return $this->_createStepFromConfig(reset($this->_steps));
         }
 
         foreach ($this->_steps as $index => $authenticationStep) {
             // If the current step was the last completed
-            if ($authenticationStep === $lastCompleted) {
+            if ($authenticationStep['step'] === $lastCompleted) {
                 // Return the next step. This should never be false, as it's covered by checking if chain is complete
-                /** @var StepInterface $nextStep */
-                $nextStep = Craft::createObject($this->_steps[$index + 1], [['state' => $this->_state]]);
-                return $nextStep;
+                return $this->_createStepFromConfig($this->_steps[$index + 1]);
             }
         }
 
@@ -127,5 +123,21 @@ class Chain
     private function _getResolvedUser(): ?User
     {
         return $this->_state->getResolvedUser();
+    }
+
+    /**
+     * Create an authentication step from the config.
+     *
+     * @param $stepConfig
+     * @return StepInterface
+     * @throws InvalidConfigException
+     */
+    private function _createStepFromConfig(array $stepConfig): StepInterface
+    {
+        $class = $stepConfig['step'];
+        $settings = array_merge($stepConfig['settings'] ?? [], ['state' => $this->_state]);
+        /** @var StepInterface $step */
+        $step = Craft::createObject($class, [$settings]);
+        return $step;
     }
 }

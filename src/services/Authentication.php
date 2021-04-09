@@ -42,6 +42,19 @@ class Authentication extends Component
     }
 
     /**
+     * Get scenario steps for a give scenario.
+     *
+     * @param string $scenario
+     * @return array|null
+     */
+    public function getScenarioSteps(string $scenario): ?array
+    {
+        $scenarios = Craft::$app->getProjectConfig()->get('authentication-chains');
+
+        return $scenarios[$scenario] ?? null;
+    }
+
+    /**
      * Get the current authentication state for a scenario.
      *
      * @param string $scenario
@@ -79,18 +92,5 @@ class Authentication extends Component
     public function invalidateAuthenticationState(): void
     {
         Craft::$app->getSession()->remove(self::AUTHENTICATION_STATE_KEY);
-    }
-
-    // TODO this is moving to a different home. Maybe database, as benefit for per-environment settings.
-    public function getScenarioSteps(string $scenario): ?array
-    {
-        switch ($scenario) {
-            case 'craftLogin':
-                return [Credentials::class];
-            case 'craft2FA':
-                return [Credentials::class, IpAddress::class, EmailCode::class];
-        }
-
-        return null;
     }
 }
