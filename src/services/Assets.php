@@ -632,7 +632,7 @@ class Assets extends Component
 
         if ($this->generatePendingTransformsViaQueue && !$this->_queuedGeneratePendingTransformsJob) {
             // Queue up a new Generate Pending Transforms job
-            Queue::push(new GeneratePendingTransforms());
+            Queue::push(new GeneratePendingTransforms(), 2048);
             $this->_queuedGeneratePendingTransformsJob = true;
         }
 

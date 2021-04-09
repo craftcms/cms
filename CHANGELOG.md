@@ -4,6 +4,7 @@
 
 ### Changed
 - Category indexes can now show a “Slug” column. ([#7760](https://github.com/craftcms/cms/issues/7760))
+- “Generating pending image transforms” jobs are now deprioritized. ([#7778](https://github.com/craftcms/cms/issues/7778))
 - Updated Composer to 2.0.12.
 
 ### Fixed
