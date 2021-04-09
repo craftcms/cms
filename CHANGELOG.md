@@ -13,6 +13,7 @@
 - Fixed a bug where validation events would trigger when saving an element via `craft\services\Elements::saveElement()`, even if `$runValidation` was set to `false`. ([#7756](https://github.com/craftcms/cms/issues/7756))
 - Fixed a bug where `craft\helpers\Html::parseTag()` would parse child tags of `<script>` and `<style>` tags.
 - Fixed a bug where pagination labels below Vue admin tables weren’t using the translatable pagination message.
+- Fixed a bug where Craft would place the `beginBody()` tag incorrectly if a template’s `<body>` tag included an inline arrow function (`=>`). ([#7779](https://github.com/craftcms/cms/issues/7779))
 
 ## 3.6.11.2 - 2021-03-29
 
