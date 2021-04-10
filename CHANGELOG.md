@@ -4,6 +4,8 @@
 
 ### Changed
 - Category indexes can now show a “Slug” column. ([#7760](https://github.com/craftcms/cms/issues/7760))
+- “Generating pending image transforms” jobs are now deprioritized. ([#7778](https://github.com/craftcms/cms/issues/7778))
+- Improved the performance of Recent Entries widgets. ([#6655](https://github.com/craftcms/cms/pull/6655))
 - Updated Composer to 2.0.12.
 
 ### Fixed
@@ -13,6 +15,7 @@
 - Fixed a bug where validation events would trigger when saving an element via `craft\services\Elements::saveElement()`, even if `$runValidation` was set to `false`. ([#7756](https://github.com/craftcms/cms/issues/7756))
 - Fixed a bug where `craft\helpers\Html::parseTag()` would parse child tags of `<script>` and `<style>` tags.
 - Fixed a bug where pagination labels below Vue admin tables weren’t using the translatable pagination message.
+- Fixed a bug where Craft would place the `beginBody()` tag incorrectly if a template’s `<body>` tag included an inline arrow function (`=>`). ([#7779](https://github.com/craftcms/cms/issues/7779))
 
 ## 3.6.11.2 - 2021-03-29
 
