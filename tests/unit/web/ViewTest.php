@@ -429,12 +429,10 @@ class ViewTest extends TestCase
 <head>
 </head>
 <body
-    x-init="\$watch('modalOpen', (newValue) => {
-      // do something
-      })"
-    >
-  </body>    Hello World
-  
+  x-data="testing"
+  x-init=" () => { data.match(/<(.*?)>/) ? alert('wat') }"
+>Hello World
+</body>
 </html>
 
 TWIG;

@@ -34,6 +34,7 @@
 - Added `craft\services\Elements::EVENT_BEFORE_MERGE_CANONICAL_CHANGES`.
 - Added `craft\services\Elements::mergeCanonicalChanges()`.
 - Added `craft\services\Elements::updateCanonicalElement()`.
+- Added `craft\helpers\Html::parseTagAttribute()`.
 - Added `craft\services\Matrix::mergeCanonicalChanges()`.
 - Added `craft\web\View::clearCssBuffer()`.
 - Added `craft\web\View::clearScriptBuffer()`.
@@ -85,6 +86,9 @@
 
 ### Removed
 - Removed support for the “Flash” file kind. ([#7626](https://github.com/craftcms/cms/issues/7626))
+
+### Fixed
+- Fixed a bug where Craft would place the `beginBody()` tag incorrectly if a template’s `<body>` tag had attribute values that included `>` characters. ([#7779](https://github.com/craftcms/cms/issues/7779))
 
 ### Security
 - The default `allowedFileExtensions` config setting value no longer includes `xml`.
