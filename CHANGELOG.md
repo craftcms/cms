@@ -6,6 +6,7 @@
 - Category indexes can now show a “Slug” column. ([#7760](https://github.com/craftcms/cms/issues/7760))
 - “Generating pending image transforms” jobs are now deprioritized. ([#7778](https://github.com/craftcms/cms/issues/7778))
 - Improved the performance of Recent Entries widgets. ([#6655](https://github.com/craftcms/cms/pull/6655))
+- `craft\helpers\UrlHelper::actionUrl()` now has a `$showScriptName` argument, which can be set to `false` to prevent the script name (`index.php`) from being included in the generated URL. (Only recommended for URLs that will be used by GET requests.)
 - Updated Composer to 2.0.12.
 
 ### Fixed
@@ -16,6 +17,7 @@
 - Fixed a bug where `craft\helpers\Html::parseTag()` would parse child tags of `<script>` and `<style>` tags.
 - Fixed a bug where pagination labels below Vue admin tables weren’t using the translatable pagination message.
 - Fixed a bug where Craft would place the `beginBody()` tag incorrectly if a template’s `<body>` tag included an inline arrow function (`=>`). ([#7779](https://github.com/craftcms/cms/issues/7779))
+- Fixed a bug where action URLs were based on the current request’s host name rather than the control panel URL when running Craft in headless mode, unless the `pathParam` config setting had been set to `null`. ([#7783](https://github.com/craftcms/cms/issues/7783))
 
 ## 3.6.11.2 - 2021-03-29
 

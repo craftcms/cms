@@ -637,7 +637,7 @@ class Assets extends Component
         }
 
         // Return the temporary transform URL
-        return UrlHelper::actionUrl('assets/generate-transform', ['transformId' => $index->id]);
+        return UrlHelper::actionUrl('assets/generate-transform', ['transformId' => $index->id], null, false);
     }
 
     /**
@@ -680,7 +680,7 @@ class Assets extends Component
             'width' => $width,
             'height' => $height,
             'v' => $asset->dateModified->getTimestamp(),
-        ]);
+        ], null, false);
     }
 
     /**
