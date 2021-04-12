@@ -4716,6 +4716,7 @@ input.radio:focus + label:before,
     border: none;
     background: transparent;
     padding-right: 4rem;
+    box-shadow: none;
   }
 
   .password-toggle {

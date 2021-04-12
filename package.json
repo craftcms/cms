@@ -14,7 +14,7 @@
     "axios": "^0.21.1",
     "babel-loader": "^8.2.2",
     "blueimp-file-upload": "^10.31.0",
-    "craftcms-sass": "^3.5.5",
+    "craftcms-sass": "^3.5.6",
     "d3": "^4.11.0",
     "d3-format": "^1.4.4",
     "d3-time-format": "^2.2.3",

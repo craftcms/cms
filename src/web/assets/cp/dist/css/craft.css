@@ -2104,7 +2104,7 @@ table.shadow-box thead:last-child tr:last-child th:last-child, table.shadow-box 
 
 .text:not(.selectize-text), .passwordwrapper, .border-box, .matrix-configurator > .field > .input, .selectize-text > .selectize-control > .selectize-input, .multiselect > select, .selectize.multiselect .selectize-control.multi .selectize-input { border-radius: 3px; border: 1px solid rgba(96, 125, 159, 0.25); background-color: #fbfcfe; background-clip: padding-box; }
 
-.text.focus, .text:focus, .passwordwrapper.focus, .passwordwrapper:focus, .border-box.focus, .border-box:focus, .selectize-text > .selectize-control > .selectize-input.focus, .selectize-text > .selectize-control > .selectize-input:focus { box-shadow: 0 0 0 1px #127FBF, 0 0 0 3px rgba(18, 127, 191, 0.5); }
+.text.focus, .text:focus, .passwordwrapper.focus, .passwordwrapper:focus, .border-box.focus, .border-box:focus, .selectize-text > .selectize-control > .selectize-input.focus, .selectize-text > .selectize-control > .selectize-input:focus { border-color: #127FBF; box-shadow: 0 0 0 2px rgba(18, 127, 191, 0.5); }
 
 input.text, textarea.text, .text > input, .text > textarea, table.editable textarea, .selectize-text > .selectize-control > .selectize-input { font-size: 14px; line-height: 20px; color: #3f4d5a; min-height: 3px; box-sizing: border-box; -webkit-appearance: none; appearance: none; }
 
@@ -2265,7 +2265,7 @@ input.checkbox:checked:not(:indeterminate) + label:before, div.checkbox.checked:
 
 input.checkbox:indeterminate + label:before, div.checkbox.indeterminate:before { content: 'minus'; font-size: 7px; text-align: center; }
 
-input.checkbox:focus + label:before, :focus div.checkbox:before { box-shadow: 0 0 0 1px #127FBF, 0 0 0 3px rgba(18, 127, 191, 0.5); }
+input.checkbox:focus + label:before, :focus div.checkbox:before { border-color: #127FBF; box-shadow: 0 0 0 2px rgba(18, 127, 191, 0.5); }
 
 fieldset .checkboxfield { margin: 5px 0; }
 
@@ -2301,12 +2301,12 @@ input.radio:disabled + label, div.radio.disabled:before, div.radio.disabled + la
 
 input.radio:checked + label:after, div.radio.checked:after, .sel div.radio:after { background: #1f2933; }
 
-input.radio:focus + label:before, :focus div.radio:before { box-shadow: 0 0 0 1px #127FBF, 0 0 0 3px rgba(18, 127, 191, 0.5); }
+input.radio:focus + label:before, :focus div.radio:before { border-color: #127FBF; box-shadow: 0 0 0 2px rgba(18, 127, 191, 0.5); }
 
 /* multiselect */
 .multiselect > select { color: #3f4d5a; font-size: 14px; -webkit-appearance: none; appearance: none; }
 
-.multiselect > select:focus { box-shadow: 0 0 0 1px #127FBF, 0 0 0 3px rgba(18, 127, 191, 0.5); }
+.multiselect > select:focus { border-color: #127FBF; box-shadow: 0 0 0 2px rgba(18, 127, 191, 0.5); }
 
 .multiselect > select option { padding: 1px 8px; }
 
@@ -2356,7 +2356,7 @@ body.rtl .texticon .clear { left: 9px; }
 
 .passwordwrapper { position: relative; }
 
-.passwordwrapper .password { border: none; background: transparent; padding-right: 4rem; }
+.passwordwrapper .password { border: none; background: transparent; padding-right: 4rem; box-shadow: none; }
 
 .passwordwrapper .password-toggle { color: #0B69A3; position: absolute; top: 0; right: 0; bottom: 0; }
 
@@ -2486,7 +2486,7 @@ body.rtl .selectize.select .selectize-control .selectize-input { padding: 7px 10
 .selectize.multiselect .selectize-control.plugin-remove_button [data-value] .remove { padding: 0; }
 
 /* shared styles */
-.selectize .selectize-control .selectize-input.focus { box-shadow: 0 0 0 1px #127FBF, 0 0 0 3px rgba(18, 127, 191, 0.5); }
+.selectize .selectize-control .selectize-input.focus { border-color: #127FBF; box-shadow: 0 0 0 2px rgba(18, 127, 191, 0.5); }
 
 /* menu styles */
 body .selectize-dropdown { z-index: 100; border-radius: 4px; padding: 0 14px; overflow: auto; background: #fff; -webkit-user-select: none; user-select: none; box-shadow: 0 0 0 1px rgba(31, 41, 51, 0.1), 0 5px 20px rgba(31, 41, 51, 0.25); margin-top: 1px; padding: 0; }

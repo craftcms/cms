@@ -18,7 +18,7 @@ body {
 *:focus {
   outline-style: solid;
   outline-color: transparent;
-  @include input-focused-styles;
+  box-shadow: $darkFocusRing;
 }
 
 #global-container {
