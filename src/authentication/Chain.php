@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace craft\authentication;
 
 use Craft;
+use craft\authentication\base\StepInterface;
 use craft\elements\User;
 use craft\models\AuthenticationState;
 use yii\base\InvalidConfigException;

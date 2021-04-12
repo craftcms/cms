@@ -4,7 +4,7 @@ declare(strict_types=1);
 namespace craft\authentication\step;
 
 use Craft;
-use craft\authentication\Step;
+use craft\authentication\base\Step;
 use craft\elements\User;
 use craft\models\AuthenticationState;
 

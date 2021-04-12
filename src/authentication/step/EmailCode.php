@@ -4,14 +4,14 @@ declare(strict_types=1);
 namespace craft\authentication\step;
 
 use Craft;
-use craft\authentication\Step;
+use craft\authentication\base\Step;
 use craft\elements\User;
 use craft\helpers\StringHelper;
 use craft\models\AuthenticationState;
 
 class EmailCode extends Step
 {
-    const CODE_KEY = 'craft.authentication.data.emailCode';
+    protected const CODE_KEY = 'craft.authentication.data.emailCode';
 
     /**
      * @inheritdoc
@@ -21,6 +21,9 @@ class EmailCode extends Step
         return ['verification-code'];
     }
 
+    /**
+     * @inheritdoc
+     */
     public function prepareForAuthentication(User $user = null): void
     {
         $code = StringHelper::randomString(4).'-'.StringHelper::randomString(4).'-'.StringHelper::randomString(4);

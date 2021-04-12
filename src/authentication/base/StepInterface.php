@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 
-namespace craft\authentication;
+namespace craft\authentication\base;
 
 use craft\elements\User;
 use craft\models\AuthenticationState;

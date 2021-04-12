@@ -1,13 +1,12 @@
 <?php
 declare(strict_types=1);
 
-namespace craft\authentication;
+namespace craft\authentication\base;
 
 use Craft;
 use craft\base\Component;
 use craft\elements\User;
 use craft\models\AuthenticationState;
-use yii\base\InvalidConfigException;
 
 abstract class Step extends Component implements StepInterface
 {
