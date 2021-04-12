@@ -85,7 +85,7 @@ class EventTagAdder extends BaseEventTagVisitor
             // We haven't found any part of `<body>` yet, right?
             if ($this->_findingBeginBody === false) {
                 // Did we just find `<body(>)`?
-                if (preg_match('/(<body\b[^>]*)(>)?/', $data, $matches, PREG_OFFSET_CAPTURE) === 1) {
+                if (preg_match('/(<body\b[^>]*)((?<!=)>)?/', $data, $matches, PREG_OFFSET_CAPTURE) === 1) {
                     // Did it include the `>`?
                     if (!empty($matches[2][0])) {
                         static::$foundBeginBody = true;

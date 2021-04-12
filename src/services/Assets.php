@@ -632,12 +632,12 @@ class Assets extends Component
 
         if ($this->generatePendingTransformsViaQueue && !$this->_queuedGeneratePendingTransformsJob) {
             // Queue up a new Generate Pending Transforms job
-            Queue::push(new GeneratePendingTransforms());
+            Queue::push(new GeneratePendingTransforms(), 2048);
             $this->_queuedGeneratePendingTransformsJob = true;
         }
 
         // Return the temporary transform URL
-        return UrlHelper::actionUrl('assets/generate-transform', ['transformId' => $index->id]);
+        return UrlHelper::actionUrl('assets/generate-transform', ['transformId' => $index->id], null, false);
     }
 
     /**
@@ -680,7 +680,7 @@ class Assets extends Component
             'width' => $width,
             'height' => $height,
             'v' => $asset->dateModified->getTimestamp(),
-        ]);
+        ], null, false);
     }
 
     /**

@@ -34,7 +34,7 @@ class Image extends AssetPreviewHandler
                 'uid' => $this->asset->uid,
                 'width' => $this->asset->getWidth(),
                 'height' => $this->asset->getHeight(),
-            ]);
+            ], null, false);
         }
 
         return Craft::$app->getView()->renderTemplate('assets/_previews/image', [
