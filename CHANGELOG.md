@@ -4,6 +4,7 @@
 
 ### Changed
 - Improved the focus styles throughout the control panel. ([#6886](https://github.com/craftcms/cms/issues/6886))
+- User activation and password reset links now point to the control panel when running Craft in headless mode. ([#6226](https://github.com/craftcms/cms/issues/6226))
 - Category indexes can now show a “Slug” column. ([#7760](https://github.com/craftcms/cms/issues/7760))
 - “Generating pending image transforms” jobs are now deprioritized. ([#7778](https://github.com/craftcms/cms/issues/7778))
 - Improved the performance of Recent Entries widgets. ([#6655](https://github.com/craftcms/cms/pull/6655))
