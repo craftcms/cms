@@ -10,6 +10,7 @@
 - Fixed a bug where `craft\helpers\Html::parseTag()` would parse child tags of `<script>` and `<style>` tags.
 - Fixed a bug where pagination labels below Vue admin tables weren’t using the translatable pagination message.
 - Fixed a bug where Craft would place the `beginBody()` tag incorrectly if a template’s `<body>` tag included an inline arrow function (`=>`). ([#7779](https://github.com/craftcms/cms/issues/7779))
+- Fixed a bug where the `utils/repair/section-structure` or `utils/repair/category-group-structure` commands could reposition elements in the wrong order. ([#7784](https://github.com/craftcms/cms/issues/7784))
 
 ## 3.6.11.2 - 2021-03-29
 
