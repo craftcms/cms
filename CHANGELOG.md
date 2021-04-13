@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 3.x
 
-## Unreleased
+## 3.6.12 - 2021-04-13
 
 ### Changed
 - Improved the focus styles throughout the control panel. ([#6886](https://github.com/craftcms/cms/issues/6886))
