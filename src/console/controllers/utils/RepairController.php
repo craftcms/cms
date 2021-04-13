@@ -122,8 +122,8 @@ class RepairController extends Controller
             ])
             ->orderBy([
                 new Expression('CASE WHEN [[structureelements.lft]] IS NOT NULL THEN 0 ELSE 1 END ASC'),
-                'elements.dateCreated' => SORT_ASC,
                 'structureelements.lft' => SORT_ASC,
+                'elements.dateCreated' => SORT_ASC,
             ])
             ->all();
 
