@@ -854,6 +854,8 @@ class GeneralConfig extends BaseObject
      *
      * This can be set to `false` to disable front-end login.
      *
+     * Note that this config setting is ignored when <config3:headlessMode> is enabled.
+     *
      * See [[ConfigHelper::localizedValue()]] for a list of supported value types.
      *
      * @see getLoginPath()
@@ -865,6 +867,8 @@ class GeneralConfig extends BaseObject
      * @var mixed The URI Craft should use for user logout on the front end.
      *
      * This can be set to `false` to disable front-end logout.
+     *
+     * Note that this config setting is ignored when <config3:headlessMode> is enabled.
      *
      * See [[ConfigHelper::localizedValue()]] for a list of supported value types.
      *
@@ -1320,6 +1324,9 @@ class GeneralConfig extends BaseObject
     /**
      * @var mixed The URI Craft should use for Set Password forms on the front end.
      *
+     * Note that this config setting is ignored when <config3:headlessMode> is enabled, as password reset
+     * links will point to the control panel.
+     *
      * See [[ConfigHelper::localizedValue()]] for a list of supported value types.
      *
      * ::: tip
@@ -1626,6 +1633,9 @@ class GeneralConfig extends BaseObject
 
     /**
      * @var mixed The URI Craft should use for email verification links on the front end.
+     *
+     * Note that this config setting is ignored when <config3:headlessMode> is enabled, as verification links
+     * will point to the control panel.
      *
      * See [[ConfigHelper::localizedValue()]] for a list of supported value types.
      *

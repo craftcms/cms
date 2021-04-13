@@ -1,8 +1,10 @@
 # Release Notes for Craft CMS 3.x
 
-## Unreleased
+## 3.6.12 - 2021-04-13
 
 ### Changed
+- Improved the focus styles throughout the control panel. ([#6886](https://github.com/craftcms/cms/issues/6886))
+- User activation and password reset links now point to the control panel when running Craft in headless mode. ([#6226](https://github.com/craftcms/cms/issues/6226))
 - Category indexes can now show a “Slug” column. ([#7760](https://github.com/craftcms/cms/issues/7760))
 - “Generating pending image transforms” jobs are now deprioritized. ([#7778](https://github.com/craftcms/cms/issues/7778))
 - Improved the performance of Recent Entries widgets. ([#6655](https://github.com/craftcms/cms/pull/6655))
@@ -18,6 +20,7 @@
 - Fixed a bug where pagination labels below Vue admin tables weren’t using the translatable pagination message.
 - Fixed a bug where Craft would place the `beginBody()` tag incorrectly if a template’s `<body>` tag included an inline arrow function (`=>`). ([#7779](https://github.com/craftcms/cms/issues/7779))
 - Fixed a bug where action URLs were based on the current request’s host name rather than the control panel URL when running Craft in headless mode, unless the `pathParam` config setting had been set to `null`. ([#7783](https://github.com/craftcms/cms/issues/7783))
+- Fixed a bug where the `utils/repair/section-structure` or `utils/repair/category-group-structure` commands could reposition elements in the wrong order. ([#7784](https://github.com/craftcms/cms/issues/7784))
 
 ## 3.6.11.2 - 2021-03-29
 
