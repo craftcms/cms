@@ -2,6 +2,15 @@
 
 ## Unreleased
 
+### Changed
+- Improved the focus styles throughout the control panel. ([#6886](https://github.com/craftcms/cms/issues/6886))
+- User activation and password reset links now point to the control panel when running Craft in headless mode. ([#6226](https://github.com/craftcms/cms/issues/6226))
+- Category indexes can now show a “Slug” column. ([#7760](https://github.com/craftcms/cms/issues/7760))
+- “Generating pending image transforms” jobs are now deprioritized. ([#7778](https://github.com/craftcms/cms/issues/7778))
+- Improved the performance of Recent Entries widgets. ([#6655](https://github.com/craftcms/cms/pull/6655))
+- `craft\helpers\UrlHelper::actionUrl()` now has a `$showScriptName` argument, which can be set to `false` to prevent the script name (`index.php`) from being included in the generated URL. (Only recommended for URLs that will be used by GET requests.)
+- Updated Composer to 2.0.12.
+
 ### Fixed
 - Fixed a bug where restored entries could get deleted by garbage collection, if their `authorId` value was set to a soft-deleted author. ([#7751](https://github.com/craftcms/cms/issues/7751))
 - Fixed a bug where indexing assets from the command line could work incorrectly in some cases. ([#7741](https://github.com/craftcms/cms/issues/7741))
@@ -10,6 +19,7 @@
 - Fixed a bug where `craft\helpers\Html::parseTag()` would parse child tags of `<script>` and `<style>` tags.
 - Fixed a bug where pagination labels below Vue admin tables weren’t using the translatable pagination message.
 - Fixed a bug where Craft would place the `beginBody()` tag incorrectly if a template’s `<body>` tag included an inline arrow function (`=>`). ([#7779](https://github.com/craftcms/cms/issues/7779))
+- Fixed a bug where action URLs were based on the current request’s host name rather than the control panel URL when running Craft in headless mode, unless the `pathParam` config setting had been set to `null`. ([#7783](https://github.com/craftcms/cms/issues/7783))
 - Fixed a bug where the `utils/repair/section-structure` or `utils/repair/category-group-structure` commands could reposition elements in the wrong order. ([#7784](https://github.com/craftcms/cms/issues/7784))
 
 ## 3.6.11.2 - 2021-03-29

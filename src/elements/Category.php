@@ -331,6 +331,7 @@ class Category extends Element
     {
         return [
             'title' => ['label' => Craft::t('app', 'Title')],
+            'slug' => ['label' => Craft::t('app', 'Slug')],
             'uri' => ['label' => Craft::t('app', 'URI')],
             'link' => ['label' => Craft::t('app', 'Link'), 'icon' => 'world'],
             'id' => ['label' => Craft::t('app', 'ID')],

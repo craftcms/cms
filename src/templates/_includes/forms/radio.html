@@ -1,16 +1,13 @@
 {% set id = id ?? "radio#{random()}" %}
 {% set label = radioLabel ?? label ?? null %}
 
-{% set containerAttributes = containerAttributes ?? [] %}
-
-{%- if block('attr') is defined %}
-    {%- set containerAttributes = containerAttributes|merge(('<div ' ~ block('attr') ~ '>')|parseAttr, recursive=true) %}
-{% endif %}
-
 {% set inputAttributes = {
     type: 'radio',
     id: id,
     class: (class ?? [])|explodeClass,
+       class: (class ?? [])|explodeClass|merge([
+        'radio'
+    ]|filter),
     name: name ?? false,
     value: value ?? '1',
     checked: checked ?? false,
@@ -21,7 +18,8 @@
     },
 }|merge(inputAttributes ?? [], recursive=true) %}
 
-{% tag 'label' with containerAttributes %}
-    {{ tag('input', inputAttributes) }}
+{{ tag('input', inputAttributes) }}
+
+<label for="{{ id }}">
     {{ label|raw }}
-{% endtag %}
+</label>
