@@ -917,7 +917,7 @@ ul.icons {
   flex-wrap: wrap;
 
   li {
-    margin: 0 0 10px;
+    margin: 0 4px 10px 0;
 
     a {
       display: block;
@@ -962,6 +962,10 @@ ul.icons {
         .icon.icon-mask svg {
           @include svg-mask($linkColor);
         }
+      }
+
+      &:focus {
+        @include input-focused-styles;
       }
     }
   }

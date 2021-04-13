@@ -507,7 +507,7 @@ body.rtl .customize-sources-table-column .move { margin-left: 10px; }
 /* ----------------------------------------*/
 ul.icons { margin-top: 20px; display: -webkit-flex; display: flex; -webkit-flex-wrap: wrap; flex-wrap: wrap; }
 
-ul.icons li { margin: 0 0 10px; }
+ul.icons li { margin: 0 4px 10px 0; }
 
 ul.icons li a { display: block; position: relative; padding: 60px 5px 10px; width: 110px; text-align: center; color: #3f4d5a; border-radius: 4px; border: 1px solid #fff; }
 
@@ -520,6 +520,8 @@ ul.icons li a .icon.icon-mask svg rect, ul.icons li a .icon.icon-mask svg circle
 ul.icons li a:hover { text-decoration: none; background-color: #f3f7fc; border-color: #e4edf6; }
 
 ul.icons li a:hover .icon.icon-mask svg rect, ul.icons li a:hover .icon.icon-mask svg circle, ul.icons li a:hover .icon.icon-mask svg ellipse, ul.icons li a:hover .icon.icon-mask svg line, ul.icons li a:hover .icon.icon-mask svg polyline, ul.icons li a:hover .icon.icon-mask svg polygon, ul.icons li a:hover .icon.icon-mask svg path, ul.icons li a:hover .icon.icon-mask svg text { fill: #0B69A3; stroke-width: 0; -o-transition: fill linear 100ms; transition: fill linear 100ms; }
+
+ul.icons li a:focus { border-color: #127FBF; box-shadow: 0 0 0 2px rgba(18, 127, 191, 0.5); }
 
 @media only screen and (max-width: 380px) { ul.icons li a { width: 96px; } }
 
