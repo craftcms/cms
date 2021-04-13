@@ -46,7 +46,7 @@ use yii\web\NotFoundHttpException;
 use yii\web\Response;
 use yii\web\ServerErrorHttpException;
 
-/** @noinspection ClassOverridesFieldOfSuperClassInspection */
+/* @noinspection ClassOverridesFieldOfSuperClassInspection */
 
 /**
  * The UsersController class is a controller that handles various user account related tasks such as logging-in,
@@ -333,7 +333,7 @@ class UsersController extends Controller
         $this->requireAcceptsJson();
 
         $userSession = Craft::$app->getUser();
-        /** @var User|null $user */
+        /* @var User|null $user */
         $user = $userSession->getIdentity();
 
         $return = [
@@ -454,7 +454,7 @@ class UsersController extends Controller
             }
         }
 
-        /** @noinspection UnSafeIsSetOverArrayInspection - FP */
+        /* @noinspection UnSafeIsSetOverArrayInspection - FP */
         if (!isset($user)) {
             $loginName = $this->request->getBodyParam('loginName');
 
@@ -533,9 +533,9 @@ class UsersController extends Controller
                 return $info;
             }
 
-            /** @var User $user */
-            /** @var string $uid */
-            /** @var string $code */
+            /* @var User $user */
+            /* @var string $uid */
+            /* @var string $code */
             [$user, $uid, $code] = $info;
 
             Craft::$app->getUser()->sendUsernameCookie($user);
@@ -629,7 +629,7 @@ class UsersController extends Controller
             return $info;
         }
 
-        /** @var User $user */
+        /* @var User $user */
         [$user] = $info;
         $pending = $user->pending;
         $usersService = Craft::$app->getUsers();
@@ -725,7 +725,7 @@ class UsersController extends Controller
             }
         }
 
-        /** @var User $user */
+        /* @var User $user */
         $isNewUser = !$user->id;
 
         // Make sure they have permission to edit this user
@@ -958,7 +958,7 @@ class UsersController extends Controller
         // ---------------------------------------------------------------------
 
         if ($isCurrentUser) {
-            /** @var Locale[] $allLocales */
+            /* @var Locale[] $allLocales */
             $allLocales = ArrayHelper::index(Craft::$app->getI18n()->getAppLocales(), 'id');
             ArrayHelper::multisort($allLocales, 'displayName');
             $localeOptions = [];
@@ -1079,7 +1079,7 @@ class UsersController extends Controller
                 throw new NotFoundHttpException('User not found');
             }
 
-            /** @var User $user */
+            /* @var User $user */
             if (!$user->getIsCurrent()) {
                 // Make sure they have permission to edit other users
                 $this->requirePermission('editUsers');
@@ -1500,7 +1500,7 @@ class UsersController extends Controller
         }
 
         // Only allow activation emails to be send to pending users.
-        /** @var User $user */
+        /* @var User $user */
         if ($user->getStatus() !== User::STATUS_PENDING) {
             throw new BadRequestHttpException('Activation emails can only be sent to pending users');
         }
@@ -2048,7 +2048,7 @@ class UsersController extends Controller
             $groupIds = [];
         }
 
-        /** @var UserGroup[] $allGroups */
+        /* @var UserGroup[] $allGroups */
         $allGroups = ArrayHelper::index(Craft::$app->getUserGroups()->getAllGroups(), 'id');
 
         // See if there are any new groups in here
@@ -2088,7 +2088,7 @@ class UsersController extends Controller
         $uid = $this->request->getRequiredParam('id');
         $code = $this->request->getRequiredParam('code');
 
-        /** @var User|null $user */
+        /* @var User|null $user */
         $user = User::find()
             ->uid($uid)
             ->anyStatus()
@@ -2245,7 +2245,7 @@ class UsersController extends Controller
     private function _handleSendPasswordResetError(array $errors, string $loginName = null)
     {
         if ($this->request->getAcceptsJson()) {
-            /** @noinspection CallableParameterUseCaseInTypeContextInspection */
+            /* @noinspection CallableParameterUseCaseInTypeContextInspection */
             $errors = implode(', ', $errors);
 
             return $this->asErrorJson($errors);

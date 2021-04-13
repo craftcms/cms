@@ -259,9 +259,9 @@ class CategoriesController extends Controller
 
         $this->_prepEditCategoryVariables($variables);
 
-        /** @var Site $site */
+        /* @var Site $site */
         $site = $variables['site'];
-        /** @var Category $category */
+        /* @var Category $category */
         $category = $variables['category'];
 
         $this->_enforceEditCategoryPermissions($category);
@@ -354,7 +354,7 @@ class CategoriesController extends Controller
             ],
         ];
 
-        /** @var Category $ancestor */
+        /* @var Category $ancestor */
         foreach ($category->getAncestors()->all() as $ancestor) {
             $variables['crumbs'][] = [
                 'label' => $ancestor->title,
@@ -388,11 +388,10 @@ class CategoriesController extends Controller
                 if ($category->getStatus() === Element::STATUS_ENABLED) {
                     $variables['shareUrl'] = $category->getUrl();
                 } else {
-                    $variables['shareUrl'] = UrlHelper::actionUrl('categories/share-category',
-                        [
-                            'categoryId' => $category->id,
-                            'siteId' => $category->siteId,
-                        ]);
+                    $variables['shareUrl'] = UrlHelper::actionUrl('categories/share-category', [
+                        'categoryId' => $category->id,
+                        'siteId' => $category->siteId,
+                    ], null, false);
                 }
             }
         }
@@ -456,7 +455,7 @@ class CategoriesController extends Controller
             try {
                 $category = Craft::$app->getElements()->duplicateElement($category);
             } catch (InvalidElementException $e) {
-                /** @var Category $clone */
+                /* @var Category $clone */
                 $clone = $e->element;
 
                 if ($this->request->getAcceptsJson()) {
@@ -660,7 +659,7 @@ class CategoriesController extends Controller
             // Only use the sites that the user has access to
             $variables['siteIds'] = Craft::$app->getSites()->getEditableSiteIds();
         } else {
-            /** @noinspection PhpUnhandledExceptionInspection */
+            /* @noinspection PhpUnhandledExceptionInspection */
             $variables['siteIds'] = [Craft::$app->getSites()->getPrimarySite()->id];
         }
 
@@ -669,7 +668,7 @@ class CategoriesController extends Controller
         }
 
         if (empty($variables['site'])) {
-            /** @noinspection PhpUnhandledExceptionInspection */
+            /* @noinspection PhpUnhandledExceptionInspection */
             $variables['site'] = Craft::$app->getSites()->getCurrentSite();
 
             if (!in_array($variables['site']->id, $variables['siteIds'], false)) {
@@ -679,7 +678,7 @@ class CategoriesController extends Controller
             $site = $variables['site'];
         } else {
             // Make sure they were requesting a valid site
-            /** @var Site $site */
+            /* @var Site $site */
             $site = $variables['site'];
             if (!in_array($site->id, $variables['siteIds'], false)) {
                 throw new ForbiddenHttpException('User not permitted to edit content in this site');

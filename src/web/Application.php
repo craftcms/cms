@@ -434,7 +434,7 @@ class Application extends \yii\web\Application
                 'mail' => MailPanel::class,
             ],
         ]);
-        /** @var DebugModule $module */
+        /* @var DebugModule $module */
         $module = $this->getModule('debug');
         $module->bootstrap($this);
     }

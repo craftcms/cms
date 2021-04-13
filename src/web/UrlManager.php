@@ -105,7 +105,7 @@ class UrlManager extends \yii\web\UrlManager
      */
     public function parseRequest($request)
     {
-        /** @var Request $request */
+        /* @var Request $request */
         // Just in case...
         if ($request->getIsConsoleRequest()) {
             return false;
@@ -142,7 +142,7 @@ class UrlManager extends \yii\web\UrlManager
         $route = trim($params[0], '/');
         unset($params[0]);
 
-        return UrlHelper::actionUrl($route, $params);
+        return UrlHelper::actionUrl($route, $params, null, false);
     }
 
     /**
@@ -310,7 +310,7 @@ class UrlManager extends \yii\web\UrlManager
         // Load the config file rules
         if ($request->getIsCpRequest()) {
             $baseCpRoutesPath = Craft::$app->getBasePath() . DIRECTORY_SEPARATOR . 'config' . DIRECTORY_SEPARATOR . 'cproutes';
-            /** @var array $rules */
+            /* @var array $rules */
             $rules = require $baseCpRoutesPath . DIRECTORY_SEPARATOR . 'common.php';
 
             if (Craft::$app->getEdition() === Craft::Pro) {
@@ -421,7 +421,7 @@ class UrlManager extends \yii\web\UrlManager
     private function _getMatchedUrlRoute(Request $request)
     {
         // Code adapted from \yii\web\UrlManager::parseRequest()
-        /** @var $rule YiiUrlRule */
+        /* @var $rule YiiUrlRule */
         foreach ($this->rules as $rule) {
             $route = $rule->parseRequest($this, $request);
 

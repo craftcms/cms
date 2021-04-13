@@ -24,7 +24,7 @@ use GraphQL\Type\Definition\ResolveInfo;
  */
 class Tag extends ElementMutationResolver
 {
-    /** @inheritdoc */
+    /* @inheritdoc */
     protected $immutableAttributes = ['id', 'uid', 'groupId'];
 
     /**
@@ -39,7 +39,7 @@ class Tag extends ElementMutationResolver
      */
     public function saveTag($source, array $arguments, $context, ResolveInfo $resolveInfo)
     {
-        /** @var TagGroup $tagGroup */
+        /* @var TagGroup $tagGroup */
         $tagGroup = $this->getResolutionData('tagGroup');
         $canIdentify = !empty($arguments['id']) || !empty($arguments['uid']);
         $elementService = Craft::$app->getElements();

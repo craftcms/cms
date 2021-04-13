@@ -90,7 +90,7 @@ class RegisterResourceTokenParser extends AbstractTokenParser
         }
 
         $lineno = $token->getLine();
-        /** @var Parser $parser */
+        /* @var Parser $parser */
         $parser = $this->parser;
         $stream = $parser->getStream();
         $expressionParser = $parser->getExpressionParser();

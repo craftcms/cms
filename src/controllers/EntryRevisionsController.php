@@ -109,7 +109,7 @@ class EntryRevisionsController extends BaseEntriesController
             $enabled = $status === 'enabled';
         } else {
             // Set the default status based on the section's settings
-            /** @var Section_SiteSettings $siteSettings */
+            /* @var Section_SiteSettings $siteSettings */
             $siteSettings = ArrayHelper::firstWhere($section->getSiteSettings(), 'siteId', $entry->siteId);
             $enabled = $siteSettings->enabledByDefault;
         }
@@ -216,7 +216,7 @@ class EntryRevisionsController extends BaseEntriesController
             }
 
             $entry->enabled = $enabled;
-            /** @var Entry|DraftBehavior $draft */
+            /* @var Entry|DraftBehavior $draft */
             $draft = Craft::$app->getDrafts()->createDraft($entry, Craft::$app->getUser()->getId());
         } else {
             $transaction = null;
@@ -247,7 +247,7 @@ class EntryRevisionsController extends BaseEntriesController
                 // Create the draft in a transaction so we can undo it if something goes wrong
                 $transaction = Craft::$app->getDb()->beginTransaction();
 
-                /** @var Entry|DraftBehavior $draft */
+                /* @var Entry|DraftBehavior $draft */
                 $draft = Craft::$app->getDrafts()->createDraft($entry, Craft::$app->getUser()->getId());
             }
 
@@ -287,7 +287,7 @@ class EntryRevisionsController extends BaseEntriesController
         // Make sure the user is authorized to preview the draft
         Craft::$app->getSession()->authorize('previewDraft:' . $draft->draftId);
 
-        /** @var ElementInterface|DraftBehavior */
+        /* @var ElementInterface|DraftBehavior */
         if ($this->request->getAcceptsJson()) {
             $creator = $draft->getCreator();
             return $this->asJson([
@@ -320,7 +320,7 @@ class EntryRevisionsController extends BaseEntriesController
 
         $draftId = $this->request->getBodyParam('draftId');
 
-        /** @var Entry|DraftBehavior $draft */
+        /* @var Entry|DraftBehavior $draft */
         $draft = Entry::find()
             ->draftId($draftId)
             ->siteId('*')
@@ -370,7 +370,7 @@ class EntryRevisionsController extends BaseEntriesController
             ->where(['elements.draftId' => $draftId])
             ->scalar();
 
-        /** @var Entry|DraftBehavior|null $draft */
+        /* @var Entry|DraftBehavior|null $draft */
         $draft = Entry::find()
             ->draftId($draftId)
             ->siteId($siteId)
@@ -383,7 +383,7 @@ class EntryRevisionsController extends BaseEntriesController
         }
 
         // Permission enforcement
-        /** @var Entry|null $entry */
+        /* @var Entry|null $entry */
         $this->enforceSitePermission($draft->getSite());
         $entry = ElementHelper::sourceElement($draft, true);
         $this->enforceEditEntryPermissions($entry);
@@ -484,7 +484,7 @@ class EntryRevisionsController extends BaseEntriesController
         }
 
         // Permission enforcement
-        /** @var Entry $entry */
+        /* @var Entry $entry */
         $entry = ElementHelper::sourceElement($revision);
 
         $this->enforceSitePermission($entry->getSite());
@@ -518,7 +518,7 @@ class EntryRevisionsController extends BaseEntriesController
      */
     private function _setDraftAttributesFromPost(Entry $draft)
     {
-        /** @var Entry|DraftBehavior $draft */
+        /* @var Entry|DraftBehavior $draft */
         $draft->typeId = $this->request->getBodyParam('typeId');
         // Prevent the last entry type's field layout from being used
         $draft->fieldLayoutId = null;
@@ -568,7 +568,7 @@ class EntryRevisionsController extends BaseEntriesController
         }
 
         // Draft meta
-        /** @var Entry|DraftBehavior $draft */
+        /* @var Entry|DraftBehavior $draft */
         $draft->draftName = $this->request->getBodyParam('draftName') ?? $draft->draftName;
         $draft->draftNotes = $this->request->getBodyParam('notes') ?? $draft->draftNotes;
     }

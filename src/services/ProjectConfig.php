@@ -1319,9 +1319,9 @@ class ProjectConfig extends Component
                 throw new OperationAbortedException($message);
             }
 
-            /** @var ConfigEvent $event */
-            /** @var string[]|null $tokenMatches */
-            /** @var callable $handler */
+            /* @var ConfigEvent $event */
+            /* @var string[]|null $tokenMatches */
+            /* @var callable $handler */
             [$event, $tokenMatches, $handler] = array_shift($this->_deferredEvents);
             Craft::info('Re-triggering deferred event for ' . $event->path, __METHOD__);
             $event->tokenMatches = $tokenMatches;

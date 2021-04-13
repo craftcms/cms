@@ -177,9 +177,9 @@ class Formatter extends \yii\i18n\Formatter
      */
     public function asTimestamp($value, string $format = null, bool $withPreposition = false): string
     {
-        /** @var DateTime $timestamp */
-        /** @var bool $hasTimeInfo */
-        /** @var bool $hasDateInfo */
+        /* @var DateTime $timestamp */
+        /* @var bool $hasTimeInfo */
+        /* @var bool $hasDateInfo */
         [$timestamp, $hasTimeInfo, $hasDateInfo] = $this->normalizeDatetimeValue($value, true);
 
         // If it's today or missing date info, just return the local time.

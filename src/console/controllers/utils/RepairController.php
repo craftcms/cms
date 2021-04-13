@@ -122,12 +122,12 @@ class RepairController extends Controller
             ])
             ->orderBy([
                 new Expression('CASE WHEN [[structureelements.lft]] IS NOT NULL THEN 0 ELSE 1 END ASC'),
-                'elements.dateCreated' => SORT_ASC,
                 'structureelements.lft' => SORT_ASC,
+                'elements.dateCreated' => SORT_ASC,
             ])
             ->all();
 
-        /** @var string|ElementInterface $elementType */
+        /* @var string|ElementInterface $elementType */
         $elementType = $query->elementType;
         $displayName = $elementType::pluralLowerDisplayName();
 
@@ -154,7 +154,7 @@ class RepairController extends Controller
             }
 
             foreach ($elements as $element) {
-                /** @var ElementInterface $element */
+                /* @var ElementInterface $element */
                 if (!$element->level) {
                     $issue = 'was missing from structure';
                     if (!$this->dryRun) {

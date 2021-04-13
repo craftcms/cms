@@ -10,7 +10,7 @@
             class="page-link next-page"
             :class="[isOnLastPage ? 'disabled' : '']"
             title="Next Page"></div>
-    <div v-show="tablePagination" class="page-info">{{tablePagination.from}}-{{tablePagination.to}} of {{paginationTotal}} {{countWording}}</div>
+    <div v-show="tablePagination" class="page-info">{{paginationLabel}}</div>
   </div>
 </template>
 
@@ -33,15 +33,14 @@
           }
         },
         computed: {
-            countWording() {
-                return this.tablePagination.total == 1 ? this.itemLabels.singular : this.itemLabels.plural;
-            },
-            paginationTotal() {
-                if (this.tablePagination && this.tablePagination.total) {
-                  return Craft.formatNumber(this.tablePagination.total);
-                }
-
-                return 0;
+            paginationLabel() {
+                return Craft.t('app', '{first, number}-{last, number} of {total, number} {total, plural, =1{{item}} other{{items}}}', {
+                    first: this.tablePagination.from,
+                    last: this.tablePagination.to,
+                    total: this.tablePagination.total || 0,
+                    item: this.itemLabels.singular,
+                    items: this.itemLabels.plural,
+                });
             }
         }
     }

@@ -123,7 +123,7 @@ class Assets extends Component
      */
     public function getAssetById(int $assetId, int $siteId = null)
     {
-        /** @noinspection PhpIncompatibleReturnTypeInspection */
+        /* @noinspection PhpIncompatibleReturnTypeInspection */
         return Craft::$app->getElements()->getElementById($assetId, Asset::class, $siteId);
     }
 
@@ -487,7 +487,7 @@ class Assets extends Component
      */
     public function getAllDescendantFolders(VolumeFolder $parentFolder, string $orderBy = 'path'): array
     {
-        /** @var $query Query */
+        /* @var $query Query */
         $query = $this->_createFolderQuery()
             ->where([
                 'and',
@@ -632,12 +632,12 @@ class Assets extends Component
 
         if ($this->generatePendingTransformsViaQueue && !$this->_queuedGeneratePendingTransformsJob) {
             // Queue up a new Generate Pending Transforms job
-            Queue::push(new GeneratePendingTransforms());
+            Queue::push(new GeneratePendingTransforms(), 2048);
             $this->_queuedGeneratePendingTransformsJob = true;
         }
 
         // Return the temporary transform URL
-        return UrlHelper::actionUrl('assets/generate-transform', ['transformId' => $index->id]);
+        return UrlHelper::actionUrl('assets/generate-transform', ['transformId' => $index->id], null, false);
     }
 
     /**
@@ -680,7 +680,7 @@ class Assets extends Component
             'width' => $width,
             'height' => $height,
             'v' => $asset->dateModified->getTimestamp(),
-        ]);
+        ], null, false);
     }
 
     /**

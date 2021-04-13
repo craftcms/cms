@@ -505,7 +505,7 @@ class AssetIndexer extends Component
 
         $folderId = $folder->id;
 
-        /** @var Asset $asset */
+        /* @var Asset $asset */
         $asset = Asset::find()
             ->filename(Db::escapeParam($filename))
             ->folderId($folderId)

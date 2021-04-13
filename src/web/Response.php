@@ -146,7 +146,7 @@ class Response extends \yii\web\Response
             return;
         }
         foreach ($this->getRawCookies() as $cookie) {
-            /** @var Cookie $cookie */
+            /* @var Cookie $cookie */
             if (PHP_VERSION_ID >= 70300) {
                 setcookie($cookie->name, $cookie->value, [
                     'expires' => $cookie->expire,

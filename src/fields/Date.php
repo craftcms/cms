@@ -304,7 +304,7 @@ class Date extends Field implements PreviewableFieldInterface, SortableFieldInte
     public function modifyElementsQuery(ElementQueryInterface $query, $value)
     {
         if ($value !== null) {
-            /** @var ElementQuery $query */
+            /* @var ElementQuery $query */
             $query->subQuery->andWhere(Db::parseDateParam('content.' . Craft::$app->getContent()->fieldColumnPrefix . $this->handle, $value));
         }
     }

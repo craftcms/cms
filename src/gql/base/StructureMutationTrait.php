@@ -22,7 +22,7 @@ trait StructureMutationTrait
 {
     protected function performStructureOperations(ElementInterface $element, array $arguments)
     {
-        /** @var Element $element */
+        /* @var Element $element */
         $structureId = $element->structureId;
 
         if (empty($structureId)) {

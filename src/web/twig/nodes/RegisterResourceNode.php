@@ -99,13 +99,13 @@ class RegisterResourceNode extends Node implements NodeCaptureInterface
                 if ($positionOption) {
                     // Do we have to merge the position with other options?
                     if ($options !== null) {
-                        /** @noinspection PhpUndefinedVariableInspection */
+                        /* @noinspection PhpUndefinedVariableInspection */
                         $compiler
                             ->raw('array_merge(')
                             ->subcompile($options)
                             ->raw(", ['position' => $positionPhp])");
                     } else {
-                        /** @noinspection PhpUndefinedVariableInspection */
+                        /* @noinspection PhpUndefinedVariableInspection */
                         $compiler
                             ->raw("['position' => $positionPhp]");
                     }

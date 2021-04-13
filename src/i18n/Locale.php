@@ -952,19 +952,19 @@ class Locale extends BaseObject
             // Convert length to IntlDateFormatter constants
             switch ($length) {
                 case self::LENGTH_FULL:
-                    /** @noinspection CallableParameterUseCaseInTypeContextInspection */
+                    /* @noinspection CallableParameterUseCaseInTypeContextInspection */
                     $length = IntlDateFormatter::FULL;
                     break;
                 case self::LENGTH_LONG:
-                    /** @noinspection CallableParameterUseCaseInTypeContextInspection */
+                    /* @noinspection CallableParameterUseCaseInTypeContextInspection */
                     $length = IntlDateFormatter::LONG;
                     break;
                 case self::LENGTH_MEDIUM:
-                    /** @noinspection CallableParameterUseCaseInTypeContextInspection */
+                    /* @noinspection CallableParameterUseCaseInTypeContextInspection */
                     $length = IntlDateFormatter::MEDIUM;
                     break;
                 case self::LENGTH_SHORT:
-                    /** @noinspection CallableParameterUseCaseInTypeContextInspection */
+                    /* @noinspection CallableParameterUseCaseInTypeContextInspection */
                     $length = IntlDateFormatter::SHORT;
                     break;
                 default:

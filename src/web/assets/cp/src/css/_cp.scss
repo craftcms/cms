@@ -15,6 +15,12 @@ body {
   min-height: 100vh;
 }
 
+*:focus {
+  outline-style: solid;
+  outline-color: transparent;
+  box-shadow: $darkFocusRing;
+}
+
 #global-container {
   position: relative;
   display: flex;
@@ -39,6 +45,10 @@ $sidebarLinkSecondaryColor: $grey200;
   @include light-on-dark-text;
   background-color: $grey800;
 
+  *:focus {
+    box-shadow: $lightFocusRing;
+  }
+
   a {
     color: $sidebarLinkStaticColor;
     transition: color linear 100ms;
@@ -47,7 +57,6 @@ $sidebarLinkSecondaryColor: $grey200;
 
   & > a,
   *:not(.has-subnav) > a {
-    outline: none;
     transition: background-color linear 100ms;
 
     &[href] {
@@ -681,7 +690,6 @@ $toolbarIconColor: darken($inputColor, 10%);
 
   .text {
     border-radius: $largeBorderRadius;
-    box-shadow: none;
 
     &::-webkit-input-placeholder {
       color: $toolbarIconColor;
@@ -1032,7 +1040,6 @@ $toolbarIconColor: darken($inputColor, 10%);
   }
 
   & > .text {
-    box-shadow: none;
     border-radius: $largeBorderRadius;
     margin-bottom: 14px;
   }
@@ -1219,6 +1226,7 @@ $toolbarIconColor: darken($inputColor, 10%);
 /* grids */
 .grid {
   position: relative;
+  min-height: 1px; // Required for Grid.js to run
 
   &:after {
     @include clearafter;
@@ -1312,7 +1320,6 @@ $toolbarIconColor: darken($inputColor, 10%);
         box-sizing: border-box;
         color: $textColor;
         user-select: none;
-        outline: none;
         border-radius: $largeBorderRadius;
 
         .status {

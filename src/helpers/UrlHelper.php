@@ -320,7 +320,7 @@ class UrlHelper
         $path = trim($path, '/');
         $url = self::_createUrl($path, $params, $scheme, false);
 
-        /** @noinspection UnSafeIsSetOverArrayInspection - FP */
+        /* @noinspection UnSafeIsSetOverArrayInspection - FP */
         if (isset($currentSite)) {
             // Restore the original current site
             $sites->setCurrentSite($currentSite);
@@ -334,9 +334,11 @@ class UrlHelper
      * @param array|string|null $params
      * @param string|null $scheme The scheme to use ('http' or 'https'). If empty, the scheme used for the current
      * request will be used.
+     * @param bool $showScriptName Whether the script name (index.php) should be included in the URL. Note that
+     * it’s only safe to set this to `false` for URLs that will be used for GET requests.
      * @return string
      */
-    public static function actionUrl(string $path = '', $params = null, ?string $scheme = null): string
+    public static function actionUrl(string $path = '', $params = null, ?string $scheme = null, ?bool $showScriptName = null): string
     {
         $generalConfig = Craft::$app->getConfig()->getGeneral();
         $path = $generalConfig->actionTrigger . '/' . trim($path, '/');
@@ -355,7 +357,12 @@ class UrlHelper
             $scheme = 'https';
         }
 
-        return self::_createUrl($path, $params, $scheme, $cpUrl, (bool)$generalConfig->pathParam, false);
+        // Default to showing index.php if there's a pathParam
+        if ($showScriptName === null) {
+            $showScriptName = (bool)$generalConfig->pathParam;
+        }
+
+        return self::_createUrl($path, $params, $scheme, $cpUrl, $showScriptName, false);
     }
 
     /**

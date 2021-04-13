@@ -79,7 +79,7 @@ class Routes extends Component
             ) {
                 $siteRoutes = ArrayHelper::remove($routes, $site->handle);
 
-                /** @noinspection PhpUnhandledExceptionInspection */
+                /* @noinspection PhpUnhandledExceptionInspection */
                 if ($site->handle === $sitesService->getCurrentSite()->handle) {
                     // Merge them so that the localized routes come first
                     $routes = array_merge($siteRoutes, $routes);

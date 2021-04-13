@@ -200,7 +200,7 @@ class ErrorHandler extends \yii\web\ErrorHandler
             throw new Exception("Unable to determine template class in $traceFile");
         }
         $class = $match[1];
-        /** @var Template $template */
+        /* @var Template $template */
         $template = new $class(Craft::$app->getView()->getTwig());
         $src = $template->getSourceContext();
         //                $this->sourceCode = $src->getCode();

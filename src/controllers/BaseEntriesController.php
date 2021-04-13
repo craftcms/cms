@@ -88,7 +88,7 @@ abstract class BaseEntriesController extends Controller
 
         if ($entry->getIsDraft()) {
             // If it's another user's draft, make sure they have permission to edit those
-            /** @var Entry|DraftBehavior $entry */
+            /* @var Entry|DraftBehavior $entry */
             if ($entry->creatorId != $userId) {
                 $this->requirePermission('editPeerEntryDrafts' . $permissionSuffix);
             }
@@ -117,7 +117,7 @@ abstract class BaseEntriesController extends Controller
         $section = $entry->getSection();
 
         if ($entry->getIsDraft()) {
-            /** @var Entry|DraftBehavior $entry */
+            /* @var Entry|DraftBehavior $entry */
             if (!$entry->creatorId || $entry->creatorId != $currentUser->id) {
                 $this->requirePermission("deletePeerEntryDrafts:$section->uid");
             }
@@ -137,10 +137,10 @@ abstract class BaseEntriesController extends Controller
         $docTitle = $this->pageTitle($entry);
 
         if ($entry->getIsDraft()) {
-            /** @var Entry|DraftBehavior $entry */
+            /* @var Entry|DraftBehavior $entry */
             $docTitle .= ' (' . $entry->draftName . ')';
         } else if ($entry->getIsRevision()) {
-            /** @var Entry|RevisionBehavior $entry */
+            /* @var Entry|RevisionBehavior $entry */
             $docTitle .= ' (' . $entry->getRevisionLabel() . ')';
         }
 

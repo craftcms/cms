@@ -157,7 +157,7 @@ class SystemSettingsController extends Controller
         $transportTypeOptions = [];
 
         foreach ($allTransportAdapterTypes as $transportAdapterType) {
-            /** @var string|TransportAdapterInterface $transportAdapterType */
+            /* @var string|TransportAdapterInterface $transportAdapterType */
             if ($transportAdapterType === get_class($adapter) || $transportAdapterType::isSelectable()) {
                 $allTransportAdapters[] = MailerHelper::createTransportAdapter($transportAdapterType);
                 $transportTypeOptions[] = [
@@ -201,7 +201,7 @@ class SystemSettingsController extends Controller
         $settings = $this->_createMailSettingsFromPost();
         $settingsAreValid = $settings->validate();
 
-        /** @var BaseTransportAdapter $adapter */
+        /* @var BaseTransportAdapter $adapter */
         $adapter = MailerHelper::createTransportAdapter($settings->transportType, $settings->transportSettings);
         $adapterIsValid = $adapter->validate();
 
@@ -233,13 +233,13 @@ class SystemSettingsController extends Controller
         $settings = $this->_createMailSettingsFromPost();
         $settingsIsValid = $settings->validate();
 
-        /** @var BaseTransportAdapter $adapter */
+        /* @var BaseTransportAdapter $adapter */
         $adapter = MailerHelper::createTransportAdapter($settings->transportType, $settings->transportSettings);
         $adapterIsValid = $adapter->validate();
 
         if ($settingsIsValid && $adapterIsValid) {
             // Try to send the test email
-            /** @var Mailer $mailer */
+            /* @var Mailer $mailer */
             $mailer = Craft::createObject(App::mailerConfig($settings));
             $message = $mailer
                 ->composeFromKey('test_email', [

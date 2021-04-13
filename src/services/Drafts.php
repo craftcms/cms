@@ -259,8 +259,8 @@ class Drafts extends Component
      */
     public function mergeSourceChanges(ElementInterface $draft)
     {
-        /** @var ElementInterface|DraftBehavior $draft */
-        /** @var DraftBehavior $behavior */
+        /* @var ElementInterface|DraftBehavior $draft */
+        /* @var DraftBehavior $behavior */
         $behavior = $draft->getBehavior('draft');
 
         if (!$behavior->trackChanges) {
@@ -306,7 +306,7 @@ class Drafts extends Component
             }
 
             // Now the other sites
-            /** @var ElementInterface[]|DraftBehavior[] $otherSiteDrafts */
+            /* @var ElementInterface[]|DraftBehavior[] $otherSiteDrafts */
             $otherSiteDrafts = $draft::find()
                 ->drafts()
                 ->id($draft->id)
@@ -351,8 +351,8 @@ class Drafts extends Component
      */
     private function _mergeSourceChangesInternal(ElementInterface $source, ElementInterface $draft)
     {
-        /** @var ElementInterface|DraftBehavior $draft */
-        /** @var DraftBehavior $behavior */
+        /* @var ElementInterface|DraftBehavior $draft */
+        /* @var DraftBehavior $behavior */
         $behavior = $draft->getBehavior('draft');
 
         foreach ($behavior->getOutdatedAttributes() as $attribute) {
@@ -386,8 +386,8 @@ class Drafts extends Component
      */
     public function publishDraft(ElementInterface $draft): ElementInterface
     {
-        /** @var ElementInterface|DraftBehavior $draft */
-        /** @var DraftBehavior $behavior */
+        /* @var ElementInterface|DraftBehavior $draft */
+        /* @var DraftBehavior $behavior */
         $behavior = $draft->getBehavior('draft');
         $source = ElementHelper::sourceElement($draft, true);
 
@@ -537,7 +537,7 @@ class Drafts extends Component
         $elementsService = Craft::$app->getElements();
 
         foreach ($drafts as $draftInfo) {
-            /** @var ElementInterface|string $elementType */
+            /* @var ElementInterface|string $elementType */
             $elementType = $draftInfo['type'];
             $draft = $elementType::find()
                 ->draftId($draftInfo['draftId'])

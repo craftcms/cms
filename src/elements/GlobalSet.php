@@ -116,7 +116,7 @@ class GlobalSet extends Element
      */
     public static function gqlTypeNameByContext($context): string
     {
-        /** @var self $context */
+        /* @var self $context */
         return $context->handle . '_GlobalSet';
     }
 
@@ -126,7 +126,7 @@ class GlobalSet extends Element
      */
     public static function gqlScopesByContext($context): array
     {
-        /** @var self $context */
+        /* @var self $context */
         return ['globalsets.' . $context->uid];
     }
 
@@ -136,7 +136,7 @@ class GlobalSet extends Element
      */
     public static function gqlMutationNameByContext($context): string
     {
-        /** @var self $context */
+        /* @var self $context */
         return 'save_' . $context->handle . '_GlobalSet';
     }
 
@@ -203,7 +203,7 @@ class GlobalSet extends Element
      */
     public function getFieldLayout()
     {
-        /** @var FieldLayoutBehavior $behavior */
+        /* @var FieldLayoutBehavior $behavior */
         $behavior = $this->getBehavior('fieldLayout');
         return $behavior->getFieldLayout();
     }

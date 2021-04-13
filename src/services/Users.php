@@ -158,7 +158,7 @@ class Users extends Component
      */
     public function getUserById(int $userId)
     {
-        /** @noinspection PhpIncompatibleReturnTypeInspection */
+        /* @noinspection PhpIncompatibleReturnTypeInspection */
         return Craft::$app->getElements()->getElementById($userId, User::class);
     }
 
@@ -1299,7 +1299,8 @@ class Users extends Component
             'id' => $user->uid,
         ];
 
-        $cp = $user->can('accessCp');
+        $generalConfig = Craft::$app->getConfig()->getGeneral();
+        $cp = $generalConfig->headlessMode || $user->can('accessCp');
         $scheme = UrlHelper::getSchemeForTokenizedUrl($cp);
 
         if (!$cp) {
@@ -1308,7 +1309,7 @@ class Users extends Component
 
         // Only use cpUrl() if the base CP URL has been explicitly set,
         // so UrlHelper won't use HTTP_HOST
-        if (Craft::$app->getConfig()->getGeneral()->baseCpUrl) {
+        if ($generalConfig->baseCpUrl) {
             return UrlHelper::cpUrl($cpPath, $params, $scheme);
         }
 

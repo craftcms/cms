@@ -85,7 +85,7 @@ abstract class Volume extends SavableComponent implements VolumeInterface
      */
     public function getFieldLayout()
     {
-        /** @var FieldLayoutBehavior $behavior */
+        /* @var FieldLayoutBehavior $behavior */
         $behavior = $this->getBehavior('fieldLayout');
         return $behavior->getFieldLayout();
     }

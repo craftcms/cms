@@ -262,7 +262,7 @@ class Asset extends Element
      */
     public static function gqlMutationNameByContext($context): string
     {
-        /** @var VolumeInterface $context */
+        /* @var VolumeInterface $context */
         return 'save_' . $context->handle . '_Asset';
     }
 
@@ -1205,7 +1205,7 @@ class Asset extends Element
         } catch (VolumeObjectNotFoundException $e) {
             Craft::error("Could not determine asset's URL ($this->id): {$e->getMessage()}");
             Craft::$app->getErrorHandler()->logException($e);
-            return UrlHelper::actionUrl('not-found');
+            return UrlHelper::actionUrl('not-found', null, null, false);
         }
     }
 

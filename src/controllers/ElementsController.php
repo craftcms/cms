@@ -201,7 +201,7 @@ class ElementsController extends BaseElementsController
     {
         $categoryIds = $this->request->getParam('categoryIds', []);
 
-        /** @var Category[] $categories */
+        /* @var Category[] $categories */
         $categories = [];
 
         if (!empty($categoryIds)) {
@@ -276,7 +276,7 @@ class ElementsController extends BaseElementsController
         $elementsService = Craft::$app->getElements();
 
         $elementId = $this->request->getBodyParam('elementId');
-        /** @noinspection PhpUnhandledExceptionInspection */
+        /* @noinspection PhpUnhandledExceptionInspection */
         $siteId = $this->request->getBodyParam('siteId') ?: Craft::$app->getSites()->getCurrentSite()->id;
 
         // Determine the element type

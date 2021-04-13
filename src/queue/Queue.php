@@ -486,7 +486,7 @@ class Queue extends \yii\queue\cli\Queue implements QueueInterface
                 Db::update($this->tableName, [
                     'fail' => true,
                     'dateFailed' => Db::prepareDateForDb(new \DateTime()),
-                    'error' => $event->error ? $event->error->getMessage() : null,
+                    'error' => $event->error ? $this->_truncateErrorMessage($event->error->getMessage()) : null,
                 ], [
                     'id' => $event->id,
                 ], [], false, $this->db);
@@ -518,7 +518,7 @@ class Queue extends \yii\queue\cli\Queue implements QueueInterface
 
         // Include JS that tells the browser to fire an Ajax request to kick off a new queue runner
         // (Ajax request code adapted from http://www.quirksmode.org/js/xmlhttp.html - thanks ppk!)
-        $url = Json::encode(UrlHelper::actionUrl('queue/run'));
+        $url = Json::encode(UrlHelper::actionUrl('queue/run', null, null, false));
         $js = <<<EOD
 <script type="text/javascript">
 /*<![CDATA[*/
@@ -785,5 +785,21 @@ EOD;
             $this->mutex->release(__CLASS__ . "::$this->channel");
             $this->_locked = false;
         }
+    }
+
+    /**
+     * MySQL's text column can only hold 65535 bytes, so let's truncate if the
+     * error message is longer than that.
+     *
+     * @param string $message
+     * @return string
+     */
+    private function _truncateErrorMessage(string $message): string
+    {
+        if (strlen($message) > 65000 && Craft::$app->getDb()->getIsMysql()) {
+            return substr($message, 0, 65000);
+        }
+
+        return $message;
     }
 }

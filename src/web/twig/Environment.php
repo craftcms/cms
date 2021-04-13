@@ -37,7 +37,7 @@ class Environment extends TwigEnvironment
     public function loadTemplate($name, $index = null)
     {
         try {
-            /** @noinspection PhpInternalEntityUsedInspection */
+            /* @noinspection PhpInternalEntityUsedInspection */
             return parent::loadTemplate($name, $index);
         } catch (Error $e) {
             if (Craft::$app->getConfig()->getGeneral()->suppressTemplateErrors) {
@@ -69,7 +69,7 @@ class Environment extends TwigEnvironment
     public function setDefaultEscaperStrategy($strategy = null)
     {
         // don't have Twig escape HTML by default
-        /** @var EscaperExtension $ext */
+        /* @var EscaperExtension $ext */
         $ext = $this->getExtension(EscaperExtension::class);
         $ext->setDefaultStrategy($strategy ?? [$this, 'getDefaultEscaperStrategy']);
     }

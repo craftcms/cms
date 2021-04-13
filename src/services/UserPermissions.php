@@ -309,7 +309,7 @@ class UserPermissions extends Component
         // Filter out any orphaned permissions
         $permissions = $this->_filterOrphanedPermissions($permissions);
 
-        /** @var UserGroup $group */
+        /* @var UserGroup $group */
         $group = Craft::$app->getUserGroups()->getGroupById($groupId);
         $path = UserGroups::CONFIG_USERPGROUPS_KEY . '.' . $group->uid . '.permissions';
         Craft::$app->getProjectConfig()->set($path, $permissions, "Update permissions for user group “{$group->handle}”");
@@ -409,7 +409,7 @@ class UserPermissions extends Component
         $uid = $event->tokenMatches[0];
         $permissions = $event->newValue;
 
-        /** @var UserGroup $userGroup */
+        /* @var UserGroup $userGroup */
         $userGroup = Craft::$app->getUserGroups()->getGroupByUid($uid);
 
         // No group - no permissions to change.
@@ -624,7 +624,7 @@ class UserPermissions extends Component
         $permissions = [];
 
         foreach (Craft::$app->getUtilities()->getAllUtilityTypes() as $class) {
-            /** @var UtilityInterface $class */
+            /* @var UtilityInterface $class */
             // Admins only
             if (ProjectConfigUtility::id() === $class::id()) {
                 continue;

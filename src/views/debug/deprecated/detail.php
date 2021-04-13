@@ -3,7 +3,7 @@
 use craft\helpers\UrlHelper;
 use craft\models\DeprecationError;
 
-/** @var $panel craft\debug\DeprecatedPanel */
+/* @var $panel craft\debug\DeprecatedPanel */
 ?>
 <h1>Deprecation Warnings</h1>
 <?php
@@ -12,7 +12,7 @@ array_walk($panel->data, function(&$log) {
     $log = new DeprecationError($log);
 });
 
-/** @var DeprecationError[] $logs */
+/* @var DeprecationError[] $logs */
 $logs = $panel->data;
 
 ?>
