@@ -8,6 +8,7 @@
   "devDependencies": {
     "@babel/core": "^7.13.10",
     "@babel/preset-env": "^7.13.10",
+    "@babel/preset-typescript": "^7.13.0",
     "@benmajor/jquery-touch-events": "^2.0.3",
     "@pixelandtonic/craftui": "pixelandtonic/craftui#next",
     "@tailwindcss/jit": "^0.1.1",
@@ -30,9 +31,9 @@
     "dotenv": "^8.2.0",
     "dotenv-webpack": "^2.0.0",
     "element-resize-detector": "^1.2.2",
-    "event-stream": "3.3.4",
     "eslint": "^6.7.2",
     "eslint-plugin-vue": "^6.2.2",
+    "event-stream": "3.3.4",
     "fabric": "^1.7.19",
     "file-loader": "^6.0.0",
     "garnishjs": "^0.1.41",
