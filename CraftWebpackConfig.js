@@ -139,6 +139,11 @@ class CraftWebpackConfig {
                         parallel: true,
                         sourceMap: true,
                         terserOptions: {
+                            compress: {
+                                keep_classnames: true,
+                                keep_fnames: true,
+                                unused: false,
+                            },
                             mangle: false,
                             output: {
                                 comments: false,
