@@ -637,7 +637,7 @@ class Entry extends Element
     {
         switch ($attribute) {
             case 'author':
-                $elementQuery->andWith('author');
+                $elementQuery->andWith(['author', ['status' => null]]);
                 break;
             case 'revisionNotes':
                 $elementQuery->andWith('currentRevision');
