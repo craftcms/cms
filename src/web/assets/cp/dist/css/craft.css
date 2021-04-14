@@ -1089,11 +1089,11 @@ table.collapsed tbody [data-title] form { display: inline-block; }
 .datatablesorthelper tr:last-child th, .datatablesorthelper tr:last-child td { border-bottom: none !important; }
 
 /* elements */
-.element { position: relative; cursor: default; -webkit-user-select: none; user-select: none; font-weight: normal; }
+.element { position: relative; cursor: default; -webkit-user-select: none; user-select: none; font-weight: normal; border-radius: 3px; }
 
 .element:focus, li:focus .element { background-color: #f3f7fc; }
 
-.element.sel, li.sel .element { background-color: #cdd8e4 !important; border-radius: 3px; cursor: default; }
+.element.sel, li.sel .element { background-color: #cdd8e4 !important; cursor: default; }
 
 .element.sel:focus, li.sel .element:focus { background-color: #bdcbdb !important; }
 

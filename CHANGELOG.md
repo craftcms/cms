@@ -1,5 +1,10 @@
 # Release Notes for Craft CMS 3.x
 
+## Unreleased
+
+### Fixed
+- Fixed a bug where entry indexes weren’t showing the entries’ authors if they were pending or suspended.
+
 ## 3.6.12 - 2021-04-13
 
 ### Changed
