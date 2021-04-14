@@ -8,7 +8,6 @@ use craft\db\Migration;
 use craft\db\Table;
 use craft\fieldlayoutelements\AssetTitleField;
 use craft\fieldlayoutelements\TitleField;
-use craft\services\ProjectConfig;
 
 /**
  * m201116_190500_asset_title_translation_method migration.

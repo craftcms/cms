@@ -57,7 +57,7 @@ class CategoryType extends Generator implements GeneratorInterface, SingleGenera
      */
     public static function generateType($context): ObjectType
     {
-        /** @var CategoryGroup $categoryGroup */
+        /* @var CategoryGroup $categoryGroup */
         $typeName = CategoryElement::gqlTypeNameByContext($context);
         $contentFieldGqlTypes = self::getContentFields($context);
 
@@ -67,7 +67,7 @@ class CategoryType extends Generator implements GeneratorInterface, SingleGenera
             'name' => $typeName,
             'fields' => function() use ($categoryGroupFields) {
                 return $categoryGroupFields;
-            }
+            },
         ]));
     }
 }

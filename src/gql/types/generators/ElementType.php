@@ -46,7 +46,7 @@ class ElementType implements GeneratorInterface, SingleGeneratorInterface
             'name' => $typeName,
             'fields' => function() use ($elementFields) {
                 return $elementFields;
-            }
+            },
         ]));
     }
 }

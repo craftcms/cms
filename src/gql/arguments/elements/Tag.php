@@ -30,12 +30,12 @@ class Tag extends ElementArguments
             'group' => [
                 'name' => 'group',
                 'type' => Type::listOf(Type::string()),
-                'description' => 'Narrows the query results based on the tag groups the tags belong to per the group’s handles.'
+                'description' => 'Narrows the query results based on the tag groups the tags belong to per the group’s handles.',
             ],
             'groupId' => [
                 'name' => 'groupId',
                 'type' => Type::listOf(QueryArgument::getType()),
-                'description' => 'Narrows the query results based on the tag groups the tags belong to, per the groups’ IDs.'
+                'description' => 'Narrows the query results based on the tag groups the tags belong to, per the groups’ IDs.',
             ],
         ]);
     }
@@ -47,5 +47,21 @@ class Tag extends ElementArguments
     {
         $tagGroupFieldArguments = Craft::$app->getGql()->getContentArguments(Craft::$app->getTags()->getAllTagGroups(), TagElement::class);
         return array_merge(parent::getContentArguments(), $tagGroupFieldArguments);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public static function getDraftArguments(): array
+    {
+        return [];
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public static function getRevisionArguments(): array
+    {
+        return [];
     }
 }

@@ -37,7 +37,7 @@ trait RequestTrait
      */
     public function getScriptFilename(): string
     {
-        /** @var $this \craft\web\Request|\craft\console\Request */
+        /* @var $this \craft\web\Request|\craft\console\Request */
         return basename($this->getScriptFile());
     }
 }

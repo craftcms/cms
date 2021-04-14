@@ -158,7 +158,7 @@ class ImagesTest extends Unit
         ];
 
         foreach ($requiredValues as $key => $value) {
-            self::assertSame($value, $exifData[$key]);
+            self::assertSame($value, $exifData[$key] ?? null);
         }
     }
 

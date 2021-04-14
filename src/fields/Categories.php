@@ -19,7 +19,9 @@ use craft\helpers\ArrayHelper;
 use craft\helpers\Db;
 use craft\helpers\ElementHelper;
 use craft\helpers\Gql;
+use craft\helpers\Gql as GqlHelper;
 use craft\models\GqlSchema;
+use craft\services\Gql as GqlService;
 use GraphQL\Type\Definition\Type;
 
 /**
@@ -103,7 +105,7 @@ class Categories extends BaseRelationField
     public function normalizeValue($value, ElementInterface $element = null)
     {
         if (is_array($value)) {
-            /** @var Category[] $categories */
+            /* @var Category[] $categories */
             $categories = Category::find()
                 ->siteId($this->targetSiteId($element))
                 ->id(array_values(array_filter($value)))
@@ -172,7 +174,7 @@ class Categories extends BaseRelationField
             'type' => Type::listOf(CategoryInterface::getType()),
             'args' => CategoryArguments::getArguments(),
             'resolve' => CategoryResolver::class . '::resolve',
-            'complexity' => Gql::eagerLoadComplexity()
+            'complexity' => GqlHelper::relatedArgumentComplexity(GqlService::GRAPHQL_COMPLEXITY_EAGER_LOAD),
         ];
     }
 

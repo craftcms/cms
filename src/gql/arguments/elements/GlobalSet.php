@@ -29,7 +29,7 @@ class GlobalSet extends ElementArguments
             'handle' => [
                 'name' => 'handle',
                 'type' => Type::listOf(Type::string()),
-                'description' => 'Narrows the query results based on the global sets’ handles.'
+                'description' => 'Narrows the query results based on the global sets’ handles.',
             ],
         ]);
     }
@@ -41,5 +41,29 @@ class GlobalSet extends ElementArguments
     {
         $globalSetFieldArgument = Craft::$app->getGql()->getContentArguments(Craft::$app->getGlobals()->getAllSets(), GlobalSetElement::class);
         return array_merge(parent::getContentArguments(), $globalSetFieldArgument);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public static function getDraftArguments(): array
+    {
+        return [];
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public static function getRevisionArguments(): array
+    {
+        return [];
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public static function getStatusArguments(): array
+    {
+        return [];
     }
 }

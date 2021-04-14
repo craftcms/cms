@@ -182,7 +182,7 @@ class Svg extends Image
                     'right' => 'Max',
                     'top' => 'Min',
                     'bottom' => 'Max',
-                    '-' => 'Y'
+                    '-' => 'Y',
                 ]) . ' slice';
 
             // Add/modify aspect ratio information

@@ -212,12 +212,14 @@ class AssetsHelperTest extends Unit
     public function prepareAssetNameDataProvider(): array
     {
         return [
-            ['name.', 'name', true, false],
-            ['NAME.', 'NAME', true, false],
+            ['name', 'name', true, false],
+            ['NAME', 'NAME', true, false],
+
+            ['name', 'name.', true, false],
 
             ['te-@st.notaf ile', 'te !@#$%^&*()st.notaf ile', true, false],
             ['', '', false, false],
-            ['-.', '', true, false],
+            ['-', '', true, false],
 
             // Make sure the filenames are getting cut down to 255 chars
             [str_repeat('o', 251) . '.jpg', str_repeat('o', 252) . '.jpg', true, false],

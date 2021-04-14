@@ -50,15 +50,21 @@ class HtmlHelperTest extends Unit
             $this->expectException(InvalidArgumentException::class);
             Html::parseTag($tag);
         } else {
-            $info = Html::parseTag($tag);
-            self::assertSame($expected, [
-                $info['type'],
-                $info['attributes'],
-                isset($info['htmlStart'], $info['htmlEnd'])
-                    ? substr($tag, $info['htmlStart'], $info['htmlEnd'] - $info['htmlStart'])
-                    : null
-            ]);
+            self::assertSame($expected, $this->_normalizeParseTagInfo(Html::parseTag($tag)));
         }
+    }
+
+    private function _normalizeParseTagInfo(array $info): array
+    {
+        if ($info['type'] === 'text') {
+            return ['text', $info['value']];
+        }
+
+        return [
+            $info['type'],
+            $info['attributes'],
+            array_map([$this, '_normalizeParseTagInfo'], $info['children']),
+        ];
     }
 
     /**
@@ -234,11 +240,20 @@ class HtmlHelperTest extends Unit
     public function parseTagDataProvider(): array
     {
         return [
-            [['p', ['class' => ['foo']], 'Hello<br>there'], '<p class="foo">Hello<br>there</p>'],
-            [['div', [], '<div>Nested</div>'], '<div><div>Nested</div></div>'],
-            [['br', [], null], '<br>'],
-            [['br', [], null], '<br />'],
-            [['div', [], null], '<div />'],
+            [['p', ['class' => ['foo']], [
+                ['text', 'Hello'],
+                ['br', [], []],
+                ['text', 'there'],
+            ]], '<p class="foo">Hello<br>there</p>'],
+            [['div', [], [
+                ['div', [], [['text', 'Nested']]],
+            ]], '<div><div>Nested</div></div>'],
+            [['br', [], []], '<br>'],
+            [['br', [], []], '<br />'],
+            [['div', [], []], '<div />'],
+            [['script', ['type' => 'text/javascript'], [
+                ['text', "var \$p = $('<p>Hello</p>');\n"],
+            ]], "<script type=\"text/javascript\">var \$p = $('<p>Hello</p>');\n</script>"],
             [false, '<div>'],
         ];
     }

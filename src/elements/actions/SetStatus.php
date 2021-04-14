@@ -82,7 +82,7 @@ class SetStatus extends ElementAction
      */
     public function performAction(ElementQueryInterface $query): bool
     {
-        /** @var ElementInterface $elementType */
+        /* @var ElementInterface $elementType */
         $elementType = $this->elementType;
         $isLocalized = $elementType::isLocalized() && Craft::$app->getIsMultiSite();
         $elementsService = Craft::$app->getElements();

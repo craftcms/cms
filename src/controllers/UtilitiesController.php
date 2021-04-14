@@ -15,6 +15,7 @@ use craft\errors\MigrationException;
 use craft\helpers\Db;
 use craft\helpers\FileHelper;
 use craft\helpers\Queue;
+use craft\helpers\Session;
 use craft\queue\jobs\FindAndReplace;
 use craft\utilities\ClearCaches;
 use craft\utilities\Updates;
@@ -49,7 +50,7 @@ class UtilitiesController extends Controller
             array_splice($utilities, $key, 1);
         }
 
-        /** @var string|UtilityInterface $firstUtility */
+        /* @var string|UtilityInterface $firstUtility */
         $firstUtility = reset($utilities);
 
         return $this->redirect('utilities/' . $firstUtility::id());
@@ -72,7 +73,7 @@ class UtilitiesController extends Controller
             throw new NotFoundHttpException('Invalid utility ID: ' . $id);
         }
 
-        /** @var UtilityInterface $class */
+        /* @var UtilityInterface $class */
         if ($utilitiesService->checkAuthorization($class) === false) {
             throw new ForbiddenHttpException('User not permitted to access the "' . $class::displayName() . '".');
         }
@@ -103,11 +104,11 @@ class UtilitiesController extends Controller
 
         $logId = Craft::$app->request->getRequiredParam('logId');
         $html = $this->getView()->renderTemplate('_components/utilities/DeprecationErrors/traces_modal', [
-            'log' => Craft::$app->deprecator->getLogById($logId)
+            'log' => Craft::$app->deprecator->getLogById($logId),
         ]);
 
         return $this->asJson([
-            'html' => $html
+            'html' => $html,
         ]);
     }
 
@@ -126,7 +127,7 @@ class UtilitiesController extends Controller
         Craft::$app->deprecator->deleteAllLogs();
 
         return $this->asJson([
-            'success' => true
+            'success' => true,
         ]);
     }
 
@@ -146,7 +147,7 @@ class UtilitiesController extends Controller
         Craft::$app->deprecator->deleteLogById($logId);
 
         return $this->asJson([
-            'success' => true
+            'success' => true,
         ]);
     }
 
@@ -164,13 +165,13 @@ class UtilitiesController extends Controller
 
         // Initial request
         $assetIndexerService = Craft::$app->getAssetIndexer();
-        $userSession = Craft::$app->getSession();
+
         if (!empty($params['start'])) {
             $sessionId = $assetIndexerService->getIndexingSessionId();
 
             $response = [
                 'volumes' => [],
-                'sessionId' => $sessionId
+                'sessionId' => $sessionId,
             ];
 
             // Selection of volumes or all volumes?
@@ -205,9 +206,9 @@ class UtilitiesController extends Controller
                 ];
             }
 
-            $userSession->set('assetsVolumesBeingIndexed', $volumeIds);
-            $userSession->set('assetsMissingFolders', $missingFolders);
-            $userSession->set('assetsSkippedFiles', $skippedFiles);
+            Session::set('assetsVolumesBeingIndexed', $volumeIds);
+            Session::set('assetsMissingFolders', $missingFolders);
+            Session::set('assetsSkippedFiles', $skippedFiles);
 
             return $this->asJson([
                 'indexingData' => $response,
@@ -219,19 +220,19 @@ class UtilitiesController extends Controller
             $assetIndexerService->processIndexForVolume($params['sessionId'], $params['volumeId'], $params['cacheImages']);
 
             return $this->asJson([
-                'success' => true
+                'success' => true,
             ]);
         }
 
         if (!empty($params['overview'])) {
             $missingFiles = $assetIndexerService->getMissingFiles($params['sessionId']);
-            $missingFolders = $userSession->get('assetsMissingFolders', []);
-            $skippedFiles = $userSession->get('assetsSkippedFiles', []);
+            $missingFolders = Session::get('assetsMissingFolders') ?? [];
+            $skippedFiles = Session::get('assetsSkippedFiles') ?? [];
 
             if (!empty($missingFiles) || !empty($missingFolders) || !empty($skippedFiles)) {
                 return $this->asJson([
                     'confirm' => $this->getView()->renderTemplate('assets/_missing_items', compact('missingFiles', 'missingFolders', 'skippedFiles')),
-                    'showDelete' => !empty($missingFiles) || !empty($missingFolders)
+                    'showDelete' => !empty($missingFiles) || !empty($missingFolders),
                 ]);
             }
 
@@ -242,7 +243,7 @@ class UtilitiesController extends Controller
                     'assetId' => $params['deleteAsset'],
                 ]);
 
-                /** @var Asset[] $assets */
+                /* @var Asset[] $assets */
                 $assets = Asset::find()
                     ->anyStatus()
                     ->id($params['deleteAsset'])
@@ -260,7 +261,7 @@ class UtilitiesController extends Controller
         }
 
         return $this->asJson([
-            'finished' => 1
+            'finished' => 1,
         ]);
     }
 
@@ -300,7 +301,7 @@ class UtilitiesController extends Controller
         }
 
         return $this->asJson([
-            'success' => true
+            'success' => true,
         ]);
     }
 
@@ -324,7 +325,7 @@ class UtilitiesController extends Controller
         }
 
         return $this->asJson([
-            'success' => true
+            'success' => true,
         ]);
     }
 
@@ -382,7 +383,7 @@ class UtilitiesController extends Controller
         }
 
         return $this->asJson([
-            'success' => true
+            'success' => true,
         ]);
     }
 
@@ -438,7 +439,7 @@ class UtilitiesController extends Controller
      */
     private function _getUtilityIconSvg(string $class): string
     {
-        /** @var UtilityInterface|string $class */
+        /* @var UtilityInterface|string $class */
         $iconPath = $class::iconPath();
 
         if ($iconPath === null) {
@@ -466,9 +467,9 @@ class UtilitiesController extends Controller
      */
     private function _getDefaultUtilityIconSvg(string $class): string
     {
-        /** @var UtilityInterface $class */
+        /* @var UtilityInterface $class */
         return $this->getView()->renderTemplate('_includes/defaulticon.svg', [
-            'label' => $class::displayName()
+            'label' => $class::displayName(),
         ]);
     }
 }

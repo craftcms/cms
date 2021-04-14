@@ -70,17 +70,17 @@ class User extends Element
             'friendlyName' => [
                 'name' => 'friendlyName',
                 'type' => Type::string(),
-                'description' => 'The user\'s first name or username.'
+                'description' => 'The user\'s first name or username.',
             ],
             'fullName' => [
                 'name' => 'fullName',
                 'type' => Type::string(),
-                'description' => 'The user\'s full name.'
+                'description' => 'The user\'s full name.',
             ],
             'name' => [
                 'name' => 'name',
                 'type' => Type::string(),
-                'description' => 'The user\'s full name or username.'
+                'description' => 'The user\'s full name or username.',
             ],
             'preferences' => [
                 'name' => 'preferences',
@@ -97,22 +97,22 @@ class User extends Element
             'username' => [
                 'name' => 'username',
                 'type' => Type::string(),
-                'description' => 'The username.'
+                'description' => 'The username.',
             ],
             'firstName' => [
                 'name' => 'firstName',
                 'type' => Type::string(),
-                'description' => 'The user\'s first name.'
+                'description' => 'The user\'s first name.',
             ],
             'lastName' => [
                 'name' => 'lastName',
                 'type' => Type::string(),
-                'description' => 'The user\'s last name.'
+                'description' => 'The user\'s last name.',
             ],
             'email' => [
                 'name' => 'email',
                 'type' => Type::string(),
-                'description' => 'The user\'s email.'
+                'description' => 'The user\'s email.',
             ],
         ]), self::getName());
     }
@@ -131,7 +131,7 @@ class User extends Element
                     'type' => Asset::getType(),
                     'description' => 'The user\'s photo.',
                     'complexity' => Gql::eagerLoadComplexity(),
-                ]
+                ],
             ];
         }
 

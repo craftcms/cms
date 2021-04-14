@@ -242,7 +242,7 @@ class TestSetup
         $config = ArrayHelper::merge(
             [
                 'components' => [
-                    'config' => $configService
+                    'config' => $configService,
                 ],
             ],
             require $srcPath . '/config/app.php',
@@ -263,7 +263,7 @@ class TestSetup
             'class' => $class,
             'id' => 'craft-test',
             'env' => 'test',
-            'basePath' => $srcPath
+            'basePath' => $srcPath,
         ]);
     }
 

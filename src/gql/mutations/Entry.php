@@ -73,10 +73,13 @@ class Entry extends Mutation
             if ($createDeleteMutation) {
                 $mutationList['deleteEntry'] = [
                     'name' => 'deleteEntry',
-                    'args' => ['id' => Type::nonNull(Type::int())],
+                    'args' => [
+                        'id' => Type::nonNull(Type::int()),
+                        'siteId' => Type::int(),
+                    ],
                     'resolve' => [$resolver, 'deleteEntry'],
                     'description' => 'Delete an entry.',
-                    'type' => Type::boolean()
+                    'type' => Type::boolean(),
                 ];
             }
 
@@ -86,7 +89,7 @@ class Entry extends Mutation
                     'args' => ['id' => Type::nonNull(Type::int())],
                     'resolve' => [$resolver, 'createDraft'],
                     'description' => 'Create a draft for an entry and return the draft ID.',
-                    'type' => Type::id()
+                    'type' => Type::id(),
                 ];
 
                 $mutationList['publishDraft'] = [
@@ -94,7 +97,7 @@ class Entry extends Mutation
                     'args' => ['id' => Type::nonNull(Type::int())],
                     'resolve' => [$resolver, 'publishDraft'],
                     'description' => 'Publish a draft for the entry and return the entry ID.',
-                    'type' => Type::id()
+                    'type' => Type::id(),
                 ];
             }
         }
@@ -150,7 +153,7 @@ class Entry extends Mutation
             'description' => $description,
             'args' => $entryMutationArguments,
             'resolve' => [$resolver, 'saveEntry'],
-            'type' => $generatedType
+            'type' => $generatedType,
         ];
 
         // This gets created only if allowed to save entries
@@ -160,7 +163,7 @@ class Entry extends Mutation
                 'description' => $draftDescription,
                 'args' => $draftMutationArguments,
                 'resolve' => [$resolver, 'saveEntry'],
-                'type' => $generatedType
+                'type' => $generatedType,
             ];
         }
 

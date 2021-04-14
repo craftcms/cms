@@ -68,17 +68,30 @@ interface FieldInterface extends SavableComponentInterface
     public static function valueType(): string;
 
     /**
-     * Returns the column type that this field should get within the content table.
+     * Returns the column type(s) that this field should get within the content table.
      *
      * This method will only be called if [[hasContentColumn()]] returns true.
      *
-     * @return string The column type. [[\yii\db\QueryBuilder::getColumnType()]] will be called
+     * If the field type requires multiple columns, an array should be returned:
+     *
+     * ```php
+     * return [
+     *     'date' => 'datetime',
+     *     'tz' => 'string',
+     * ];
+     * ```
+     *
+     * When this is the case, all columns’ values will be passed to [[normalizeValue()]] as an associative
+     * array, whose keys match the keys returned by this method. The field type should also override
+     * [[serializeValue()]] to ensure values are being returned as associative arrays using the same keys.
+     *
+     * @return string|string[] The column type(s). [[\yii\db\QueryBuilder::getColumnType()]] will be called
      * to convert the give column type to the physical one. For example, `string` will be converted
      * as `varchar(255)` and `string(100)` becomes `varchar(100)`. `not null` will automatically be
      * appended as well.
      * @see \yii\db\QueryBuilder::getColumnType()
      */
-    public function getContentColumnType(): string;
+    public function getContentColumnType();
 
     /**
      * Returns whether the field should be shown as translatable in the UI.
@@ -112,6 +125,26 @@ interface FieldInterface extends SavableComponentInterface
      * @return string The translation key
      */
     public function getTranslationKey(ElementInterface $element): string;
+
+    /**
+     * Returns the status of the field for a given element.
+     *
+     * If the field has a known status, an array should be returned with two elements:
+     *
+     * - The status class (modified, outdated, or conflicted)
+     * - The status label
+     *
+     * For example:
+     *
+     * ```php
+     * return ['modified', 'The field has been modified.');
+     * ```
+     *
+     * @param ElementInterface $element
+     * @return array|null
+     * @since 3.7.0
+     */
+    public function getStatus(ElementInterface $element): ?array;
 
     /**
      * Returns whether the field should use a `<fieldset>` + `<legend>` instead of a `<div>` + `<label>`.
@@ -293,6 +326,8 @@ interface FieldInterface extends SavableComponentInterface
      *   `content` table column. (Or if the field doesn’t have a `content` table column per [[hasContentColumn()]],
      *   the value will be `null`.)
      *
+     * There are cases where a pre-normalized value could be passed in as well, so be sure to account for that.
+     *
      * @param mixed $value The raw field value
      * @param ElementInterface|null $element The element the field is associated with, if there is one
      * @return mixed The prepared field value
@@ -310,6 +345,16 @@ interface FieldInterface extends SavableComponentInterface
      * @return mixed The serialized field value
      */
     public function serializeValue($value, ElementInterface $element = null);
+
+    /**
+     * Copies the field’s value from one element to another.
+     *
+     * @param ElementInterface $from
+     * @param ElementInterface $to
+     * @return void
+     * @since 3.7.0
+     */
+    public function copyValue(ElementInterface $from, ElementInterface $to): void;
 
     /**
      * Modifies an element query.

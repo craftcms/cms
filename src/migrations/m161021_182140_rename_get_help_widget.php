@@ -19,10 +19,10 @@ class m161021_182140_rename_get_help_widget extends Migration
         $this->update(
             Table::WIDGETS,
             [
-                'type' => CraftSupport::class
+                'type' => CraftSupport::class,
             ],
             [
-                'type' => 'craft\widgets\GetHelp'
+                'type' => 'craft\widgets\GetHelp',
             ]);
     }
 

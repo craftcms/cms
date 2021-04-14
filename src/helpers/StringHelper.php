@@ -917,7 +917,7 @@ class StringHelper extends \yii\helpers\StringHelper
             $lines[$i] = $line;
         }
 
-        /** @var string[] $lines */
+        /* @var string[] $lines */
         return $lines;
     }
 
@@ -1652,7 +1652,7 @@ class StringHelper extends \yii\helpers\StringHelper
         $words = self::toWords($str, true, true);
         $string = implode('', array_map([
             static::class,
-            'upperCaseFirst'
+            'upperCaseFirst',
         ], $words));
 
         return $string;

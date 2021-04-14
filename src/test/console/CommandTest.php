@@ -143,7 +143,7 @@ class CommandTest
     {
         return $this->addEventChainItem([
             'type' => self::STD_OUT,
-            'desiredOutput' => $desiredOutput
+            'desiredOutput' => $desiredOutput,
         ]);
     }
 
@@ -157,7 +157,7 @@ class CommandTest
         return $this->addEventChainItem([
             'type' => self::OUTPUT_COMMAND,
             'desiredOutput' => $desiredOutput,
-            'withScriptName' => $withScriptName
+            'withScriptName' => $withScriptName,
         ]);
     }
 
@@ -169,7 +169,7 @@ class CommandTest
     {
         return $this->addEventChainItem([
             'type' => self::STD_ERR,
-            'desiredOutput' => $desiredOutput
+            'desiredOutput' => $desiredOutput,
         ]);
     }
 
@@ -185,7 +185,7 @@ class CommandTest
             'type' => self::PROMPT,
             'prompt' => $prompt,
             'options' => $options,
-            'returnValue' => $returnValue
+            'returnValue' => $returnValue,
         ]);
     }
 
@@ -201,7 +201,7 @@ class CommandTest
             'type' => self::CONFIRM,
             'message' => $message,
             'default' => $default,
-            'returnValue' => $returnValue
+            'returnValue' => $returnValue,
         ]);
     }
 
@@ -217,7 +217,7 @@ class CommandTest
             'type' => self::SELECT,
             'prompt' => $prompt,
             'options' => $options,
-            'returnValue' => $returnValue
+            'returnValue' => $returnValue,
         ]);
     }
 
@@ -246,7 +246,7 @@ class CommandTest
             'prompt' => $this->promptHandler(),
             'confirm' => $this->confirmHandler(),
             'select' => $this->selectHandler(),
-            'outputCommand' => $this->outputCommandHandler()
+            'outputCommand' => $this->outputCommandHandler(),
         ]);
 
         $this->controller = $stubController;

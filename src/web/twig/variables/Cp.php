@@ -9,6 +9,7 @@ namespace craft\web\twig\variables;
 
 use Craft;
 use craft\base\UtilityInterface;
+use craft\events\FormActionsEvent;
 use craft\events\RegisterCpNavItemsEvent;
 use craft\events\RegisterCpSettingsEvent;
 use craft\helpers\App;
@@ -16,6 +17,7 @@ use craft\helpers\ArrayHelper;
 use craft\helpers\Cp as CpHelper;
 use craft\helpers\StringHelper;
 use craft\helpers\UrlHelper;
+use DateTime;
 use yii\base\Component;
 use yii\base\InvalidConfigException;
 
@@ -27,6 +29,29 @@ use yii\base\InvalidConfigException;
  */
 class Cp extends Component
 {
+    /**
+     * @event FormActionsEvent The event that is triggered when preparing the page’s form actions.
+     *
+     * ```php
+     * use craft\events\FormActionsEvent;
+     * use craft\web\twig\variables\Cp;
+     * use yii\base\Event;
+     *
+     * Event::on(Cp::class, Cp::EVENT_REGISTER_FORM_ACTIONS, function(FormActionsEvent $event) {
+     *     if (Craft::$app->requestedRoute == 'entries/edit-entry') {
+     *         $event->formActions[] = [
+     *             'label' => 'Save and view entry',
+     *             'redirect' => Craft::$app->getSecurity()->hashData('{url}'),
+     *         ];
+     *     }
+     * });
+     * ```
+     *
+     * @see prepFormActions()
+     * @since 3.6.10
+     */
+    const EVENT_REGISTER_FORM_ACTIONS = 'registerFormActions';
+
     /**
      * @event RegisterCpNavItemsEvent The event that is triggered when registering control panel nav items.
      *
@@ -152,7 +177,7 @@ class Cp extends Component
             [
                 'label' => Craft::t('app', 'Dashboard'),
                 'url' => 'dashboard',
-                'fontIcon' => 'gauge'
+                'fontIcon' => 'gauge',
             ],
         ];
 
@@ -160,7 +185,7 @@ class Cp extends Component
             $navItems[] = [
                 'label' => Craft::t('app', 'Entries'),
                 'url' => 'entries',
-                'fontIcon' => 'section'
+                'fontIcon' => 'section',
             ];
         }
 
@@ -168,7 +193,7 @@ class Cp extends Component
             $navItems[] = [
                 'label' => Craft::t('app', 'Globals'),
                 'url' => 'globals',
-                'fontIcon' => 'globe'
+                'fontIcon' => 'globe',
             ];
         }
 
@@ -176,7 +201,7 @@ class Cp extends Component
             $navItems[] = [
                 'label' => Craft::t('app', 'Categories'),
                 'url' => 'categories',
-                'fontIcon' => 'categories'
+                'fontIcon' => 'categories',
             ];
         }
 
@@ -184,7 +209,7 @@ class Cp extends Component
             $navItems[] = [
                 'label' => Craft::t('app', 'Assets'),
                 'url' => 'assets',
-                'fontIcon' => 'assets'
+                'fontIcon' => 'assets',
             ];
         }
 
@@ -192,7 +217,7 @@ class Cp extends Component
             $navItems[] = [
                 'label' => Craft::t('app', 'Users'),
                 'url' => 'users',
-                'fontIcon' => 'users'
+                'fontIcon' => 'users',
             ];
         }
 
@@ -235,7 +260,7 @@ class Cp extends Component
                     'label' => Craft::t('app', 'GraphQL'),
                     'url' => 'graphql',
                     'icon' => '@appicons/graphql.svg',
-                    'subnav' => $subNavItems
+                    'subnav' => $subNavItems,
                 ];
             }
         }
@@ -246,7 +271,7 @@ class Cp extends Component
             $badgeCount = 0;
 
             foreach ($utilities as $class) {
-                /** @var UtilityInterface $class */
+                /* @var UtilityInterface $class */
                 $badgeCount += $class::badgeCount();
             }
 
@@ -254,7 +279,7 @@ class Cp extends Component
                 'url' => 'utilities',
                 'label' => Craft::t('app', 'Utilities'),
                 'fontIcon' => 'tool',
-                'badgeCount' => $badgeCount
+                'badgeCount' => $badgeCount,
             ];
         }
 
@@ -263,20 +288,20 @@ class Cp extends Component
                 $navItems[] = [
                     'url' => 'settings',
                     'label' => Craft::t('app', 'Settings'),
-                    'fontIcon' => 'settings'
+                    'fontIcon' => 'settings',
                 ];
             }
 
             $navItems[] = [
                 'url' => 'plugin-store',
                 'label' => Craft::t('app', 'Plugin Store'),
-                'fontIcon' => 'plugin'
+                'fontIcon' => 'plugin',
             ];
         }
 
         // Allow plugins to modify the nav
         $event = new RegisterCpNavItemsEvent([
-            'navItems' => $navItems
+            'navItems' => $navItems,
         ]);
         $this->trigger(self::EVENT_REGISTER_CP_NAV_ITEMS, $event);
         $navItems = $event->navItems;
@@ -333,58 +358,58 @@ class Cp extends Component
 
         $settings[$label]['general'] = [
             'iconMask' => '@appicons/sliders.svg',
-            'label' => Craft::t('app', 'General')
+            'label' => Craft::t('app', 'General'),
         ];
         $settings[$label]['sites'] = [
             'iconMask' => '@appicons/world.svg',
-            'label' => Craft::t('app', 'Sites')
+            'label' => Craft::t('app', 'Sites'),
         ];
 
         if (!Craft::$app->getConfig()->getGeneral()->headlessMode) {
             $settings[$label]['routes'] = [
                 'iconMask' => '@appicons/routes.svg',
-                'label' => Craft::t('app', 'Routes')
+                'label' => Craft::t('app', 'Routes'),
             ];
         }
 
         $settings[$label]['users'] = [
             'iconMask' => '@appicons/users.svg',
-            'label' => Craft::t('app', 'Users')
+            'label' => Craft::t('app', 'Users'),
         ];
         $settings[$label]['email'] = [
             'iconMask' => '@appicons/envelope.svg',
-            'label' => Craft::t('app', 'Email')
+            'label' => Craft::t('app', 'Email'),
         ];
         $settings[$label]['plugins'] = [
             'iconMask' => '@appicons/plugin.svg',
-            'label' => Craft::t('app', 'Plugins')
+            'label' => Craft::t('app', 'Plugins'),
         ];
 
         $label = Craft::t('app', 'Content');
 
         $settings[$label]['fields'] = [
             'iconMask' => '@appicons/field.svg',
-            'label' => Craft::t('app', 'Fields')
+            'label' => Craft::t('app', 'Fields'),
         ];
         $settings[$label]['sections'] = [
             'iconMask' => '@appicons/newspaper.svg',
-            'label' => Craft::t('app', 'Sections')
+            'label' => Craft::t('app', 'Sections'),
         ];
         $settings[$label]['assets'] = [
             'iconMask' => '@appicons/photo.svg',
-            'label' => Craft::t('app', 'Assets')
+            'label' => Craft::t('app', 'Assets'),
         ];
         $settings[$label]['globals'] = [
             'iconMask' => '@appicons/globe.svg',
-            'label' => Craft::t('app', 'Globals')
+            'label' => Craft::t('app', 'Globals'),
         ];
         $settings[$label]['categories'] = [
             'iconMask' => '@appicons/folder-open.svg',
-            'label' => Craft::t('app', 'Categories')
+            'label' => Craft::t('app', 'Categories'),
         ];
         $settings[$label]['tags'] = [
             'iconMask' => '@appicons/tags.svg',
-            'label' => Craft::t('app', 'Tags')
+            'label' => Craft::t('app', 'Tags'),
         ];
 
         $label = Craft::t('app', 'Plugins');
@@ -396,14 +421,14 @@ class Cp extends Component
                 $settings[$label][$plugin->id] = [
                     'url' => 'settings/plugins/' . $plugin->id,
                     'icon' => $pluginsService->getPluginIconSvg($plugin->id),
-                    'label' => $plugin->name
+                    'label' => $plugin->name,
                 ];
             }
         }
 
         // Allow plugins to modify the settings
         $event = new RegisterCpSettingsEvent([
-            'settings' => $settings
+            'settings' => $settings,
         ]);
         $this->trigger(self::EVENT_REGISTER_CP_SETTINGS, $event);
 
@@ -450,7 +475,7 @@ class Cp extends Component
             if (is_string($var) && is_string($env = App::env($var))) {
                 $envSuggestions[] = [
                     'name' => '$' . $var,
-                    'hint' => $security->redactIfSensitive($var, Craft::getAlias($env, false))
+                    'hint' => $security->redactIfSensitive($var, Craft::getAlias($env, false)),
                 ];
             }
         }
@@ -485,6 +510,61 @@ class Cp extends Component
         }
 
         return $suggestions;
+    }
+
+    /**
+     * Returns all known time zones for a time zone input.
+     *
+     * @return array
+     * @since 3.7.0
+     */
+    public function getTimeZoneOptions(): array
+    {
+        // Assemble the timezone options array (Technique adapted from http://stackoverflow.com/a/7022536/1688568)
+        $options = [];
+
+        $utc = new DateTime();
+        $offsets = [];
+        $timezoneIds = [];
+
+        foreach (\DateTimeZone::listIdentifiers() as $timezoneId) {
+            $timezone = new \DateTimeZone($timezoneId);
+            $transition = $timezone->getTransitions($utc->getTimestamp(), $utc->getTimestamp());
+            $abbr = $transition[0]['abbr'];
+
+            $offset = round($timezone->getOffset($utc) / 60);
+
+            if ($offset) {
+                $hour = floor($offset / 60);
+                $minutes = floor(abs($offset) % 60);
+                $format = sprintf("%+03d:%02u", $hour, $minutes);
+            } else {
+                $format = '';
+            }
+
+            $label = "(GMT$format)";
+            if (preg_match('/^[A-Z]+$/', $abbr)) {
+                $label .= " $abbr";
+            }
+
+            if ($timezoneId !== 'UTC') {
+                [, $city] = explode('/', $timezoneId, 2);
+                // Cleanup, e.g. North_Dakota/New_Salem => New Salem, North Dakota
+                $city = str_replace('_', ' ', implode(', ', array_reverse(explode('/', $city))));
+                $label .= " – $city";
+            }
+
+            $offsets[] = $offset;
+            $timezoneIds[] = $timezoneId;
+            $options[] = [
+                'value' => $timezoneId,
+                'label' => $label,
+            ];
+        }
+
+        array_multisort($offsets, SORT_ASC, SORT_NUMERIC, $timezoneIds, $options);
+
+        return $options;
     }
 
     /**
@@ -529,12 +609,12 @@ class Cp extends Component
         });
 
         $iterator = new \RecursiveIteratorIterator($filter);
-        /** @var \SplFileInfo[] $files */
+        /* @var \SplFileInfo[] $files */
         $files = [];
         $pathLengths = [];
 
         foreach ($iterator as $file) {
-            /** @var \SplFileInfo $file */
+            /* @var \SplFileInfo $file */
             if (!$file->isDir() && $file->getFilename()[0] !== '.') {
                 $files[] = $file;
                 $pathLengths[] = strlen($file->getRealPath());
@@ -592,7 +672,23 @@ class Cp extends Component
             [
                 'label' => Craft::t('app', 'Templates'),
                 'data' => $suggestions,
-            ]
+            ],
         ];
+    }
+
+    /**
+     * Prepares form actions
+     *
+     * @param array|null $formActions
+     * @return array|null
+     * @since 3.6.10
+     */
+    public function prepFormActions(?array $formActions): ?array
+    {
+        $event = new FormActionsEvent([
+            'formActions' => $formActions ?? [],
+        ]);
+        $this->trigger(self::EVENT_REGISTER_FORM_ACTIONS, $event);
+        return $event->formActions ?: null;
     }
 }

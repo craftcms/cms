@@ -68,12 +68,12 @@ class GlobalSet extends Element
             'name' => [
                 'name' => 'name',
                 'type' => Type::string(),
-                'description' => 'The name of the global set.'
+                'description' => 'The name of the global set.',
             ],
             'handle' => [
                 'name' => 'handle',
                 'type' => Type::string(),
-                'description' => 'The handle of the global set.'
+                'description' => 'The handle of the global set.',
             ],
         ]), self::getName());
     }

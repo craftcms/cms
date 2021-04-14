@@ -5,7 +5,7 @@ import '../../updates/src/UpdatesUtility.scss';
     /** global: Garnish */
     Craft.UpdatesUtility = Garnish.Base.extend({
         $body: null,
-        totalAvailableUpdates: 0,
+        showUpdates: false,
         criticalUpdateAvailable: false,
         allowUpdates: null,
         installableUpdates: null,
@@ -38,16 +38,18 @@ import '../../updates/src/UpdatesUtility.scss';
                     }
                 }
 
-                if (this.totalAvailableUpdates) {
+                if (this.showUpdates) {
                     $graphic.remove();
                     $status.remove();
 
-                    // Add the page title
-                    var headingText = Craft.t('app', '{num, number} {num, plural, =1{Available Update} other{Available Updates}}', {
-                        num: this.totalAvailableUpdates,
-                    });
+                    if (this.installableUpdates.length) {
+                        // Add the page title
+                        var headingText = Craft.t('app', '{num, number} {num, plural, =1{Available Update} other{Available Updates}}', {
+                            num: this.installableUpdates.length,
+                        });
 
-                    $('#header h1').text(headingText);
+                        $('#header h1').text(headingText);
+                    }
 
                     if (this.allowUpdates && this.installableUpdates.length > 1) {
                         this.createUpdateForm(Craft.t('app', 'Update all'), this.installableUpdates)
@@ -61,15 +63,12 @@ import '../../updates/src/UpdatesUtility.scss';
         },
 
         processUpdate: function(updateInfo, isPlugin) {
-            if (!updateInfo.releases.length) {
-                return;
-            }
-
-            this.totalAvailableUpdates++;
-
-            var update = new Update(this, updateInfo, isPlugin);
-            if (update.installable) {
-                this.installableUpdates.push(update);
+            if (updateInfo.releases.length || updateInfo.abandoned) {
+                this.showUpdates = true;
+                var update = new Update(this, updateInfo, isPlugin);
+                if (update.installable) {
+                    this.installableUpdates.push(update);
+                }
             }
         },
 
@@ -116,7 +115,7 @@ import '../../updates/src/UpdatesUtility.scss';
     var Update = Garnish.Base.extend({
         updateInfo: null,
         isPlugin: null,
-        installable: true,
+        installable: false,
 
         $container: null,
         $header: null,
@@ -132,14 +131,19 @@ import '../../updates/src/UpdatesUtility.scss';
             this.updatesPage = updatesPage;
             this.updateInfo = updateInfo;
             this.isPlugin = isPlugin;
+            this.installable = !!this.updateInfo.releases.length;
 
             this.createPane();
             this.initReleases();
             this.createHeading();
             this.createCta();
 
+            // Is the plugin abandoned?
+            if (this.updateInfo.abandoned) {
+                $('<blockquote class="note"><p>' + this.updateInfo.statusText + '</p></blockquote>').insertBefore(this.$releaseContainer);
+            }
             // Any ineligible releases?
-            if (this.updateInfo.status !== 'eligible') {
+            else if (this.updateInfo.status !== 'eligible') {
                 $('<blockquote class="note ineligible"><p>' + this.updateInfo.statusText + '</p></blockquote>').insertBefore(this.$releaseContainer);
 
                 if (this.updateInfo.status === 'expired' || this.updateInfo.latestVersion === null) {

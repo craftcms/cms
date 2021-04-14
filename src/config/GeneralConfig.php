@@ -89,11 +89,11 @@ class GeneralConfig extends BaseObject
     /**
      * @var bool Whether admins should be allowed to make administrative changes to the system.
      *
-     * If this is disabled, the Settings and Plugin Store sections will be hidden, the Craft edition and Craft/plugin versions will be locked,
+     * When this is disabled, the Settings and Plugin Store sections will be hidden, the Craft edition and Craft/plugin versions will be locked,
      * and the project config will become read-only.
      *
-     * Therefore you should only disable this in production environments when you have a deployment workflow that runs `composer install`
-     * automatically on deploy.
+     * It’s best to disable this in production environments with a deployment workflow that runs `composer install` and
+     * [propagates project config updates](../project-config.md#propagating-changes) on deploy.
      *
      * ::: warning
      * Don’t disable this setting until **all** environments have been updated to Craft 3.1.0 or later.
@@ -222,7 +222,6 @@ class GeneralConfig extends BaseObject
         'wmv',
         'xls',
         'xlsx',
-        'xml',
         'zip',
     ];
 
@@ -436,10 +435,8 @@ class GeneralConfig extends BaseObject
     public $defaultCookieDomain = '';
 
     /**
-     * @var string|null The default language the control panel should use for users who haven’t set a preferred language yet,
-     * as well as for console requests.
+     * @var string|null The default language the control panel should use for users who haven’t set a preferred language yet.
      * @group System
-     * @todo Rename to `defaultLanguage` in Craft 4, since it also determines the language for console requests
      */
     public $defaultCpLanguage;
 
@@ -761,9 +758,9 @@ class GeneralConfig extends BaseObject
      * - The <config3:loginPath>, <config3:logoutPath>, <config3:setPasswordPath>, and <config3:verifyEmailPath> settings will be ignored.
      *
      * ::: tip
-     * With Headless Mode enabled, users may only set passwords and verify email addresses via the control panel or controller
-     * actions. Be sure to grant “Access the control panel” permission to content editors and administrators that should be able to
-     * log into the control panel unless you’re providing your own auth forms.
+     * With Headless Mode enabled, users may only set passwords and verify email addresses via the control panel. Be sure to grant “Access the control
+     * panel” permission to all content editors and administrators. You’ll also need to set the <config3:baseCpUrl> config setting if the control
+     * panel is located on a different domain than your front end.
      * :::
      *
      * @since 3.3.0
@@ -1738,6 +1735,7 @@ class GeneralConfig extends BaseObject
         $this->elevatedSessionDuration = ConfigHelper::durationInSeconds($this->elevatedSessionDuration);
         $this->invalidLoginWindowDuration = ConfigHelper::durationInSeconds($this->invalidLoginWindowDuration);
         $this->purgePendingUsersDuration = ConfigHelper::durationInSeconds($this->purgePendingUsersDuration);
+        $this->purgeUnsavedDraftsDuration = ConfigHelper::durationInSeconds($this->purgeUnsavedDraftsDuration);
         $this->rememberUsernameDuration = ConfigHelper::durationInSeconds($this->rememberUsernameDuration);
         $this->rememberedUserSessionDuration = ConfigHelper::durationInSeconds($this->rememberedUserSessionDuration);
         $this->softDeleteDuration = ConfigHelper::durationInSeconds($this->softDeleteDuration);

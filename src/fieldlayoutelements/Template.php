@@ -115,7 +115,7 @@ class Template extends BaseUiElement
         $icon = Html::tag('span', '', [
             'data' => [
                 'icon' => 'alert',
-            ]
+            ],
         ]);
         $content = Html::tag('p', $icon . ' ' . Html::encode($error), [
             'class' => $errorClass,

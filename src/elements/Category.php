@@ -134,7 +134,7 @@ class Category extends Element
      */
     public static function gqlTypeNameByContext($context): string
     {
-        /** @var CategoryGroup $context */
+        /* @var CategoryGroup $context */
         return $context->handle . '_Category';
     }
 
@@ -144,7 +144,7 @@ class Category extends Element
      */
     public static function gqlScopesByContext($context): array
     {
-        /** @var CategoryGroup $context */
+        /* @var CategoryGroup $context */
         return ['categorygroups.' . $context->uid];
     }
 
@@ -154,7 +154,7 @@ class Category extends Element
      */
     public static function gqlMutationNameByContext($context): string
     {
-        /** @var CategoryGroup $context */
+        /* @var CategoryGroup $context */
         return 'save_' . $context->handle . '_Category';
     }
 
@@ -209,7 +209,7 @@ class Category extends Element
         // Get the selected site
         $controller = Craft::$app->controller;
         if ($controller instanceof ElementIndexesController) {
-            /** @var ElementQuery $elementQuery */
+            /* @var ElementQuery $elementQuery */
             $elementQuery = $controller->getElementQuery();
         } else {
             $elementQuery = null;
@@ -331,6 +331,7 @@ class Category extends Element
     {
         return [
             'title' => ['label' => Craft::t('app', 'Title')],
+            'slug' => ['label' => Craft::t('app', 'Slug')],
             'uri' => ['label' => Craft::t('app', 'URI')],
             'link' => ['label' => Craft::t('app', 'Link'), 'icon' => 'world'],
             'id' => ['label' => Craft::t('app', 'ID')],
@@ -356,7 +357,7 @@ class Category extends Element
     public $groupId;
 
     /**
-     * @var int|null New parent ID
+     * @var int|false|null New parent ID
      */
     public $newParentId;
 
@@ -388,7 +389,7 @@ class Category extends Element
     protected function defineRules(): array
     {
         $rules = parent::defineRules();
-        $rules[] = [['groupId', 'newParentId'], 'number', 'integerOnly' => true];
+        $rules[] = [['groupId'], 'number', 'integerOnly' => true];
         return $rules;
     }
 
@@ -435,8 +436,8 @@ class Category extends Element
                 'template' => (string)$categoryGroupSiteSettings[$siteId]->template,
                 'variables' => [
                     'category' => $this,
-                ]
-            ]
+                ],
+            ],
         ];
     }
 
@@ -673,7 +674,7 @@ class Category extends Element
                         $source['fieldId'],
                         $source['sourceId'],
                         $source['sourceSiteId'],
-                        $categoryId
+                        $categoryId,
                     ];
                 }
             }

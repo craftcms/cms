@@ -283,7 +283,7 @@ class MigrateController extends BaseMigrateController
             $content = $this->renderFile($templateFile, [
                 'isInstall' => $isInstall,
                 'namespace' => $this->getMigrator()->migrationNamespace,
-                'className' => $name
+                'className' => $name,
             ]);
 
             FileHelper::writeToFile($file, $content);

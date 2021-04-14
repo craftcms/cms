@@ -47,7 +47,7 @@ class m170223_224012_plain_text_settings extends Migration
             }
 
             $this->update(Table::FIELDS, [
-                'settings' => Json::encode($settings)
+                'settings' => Json::encode($settings),
             ], ['id' => $field['id']]);
         }
     }

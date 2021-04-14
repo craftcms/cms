@@ -7,8 +7,6 @@
 
 namespace craft\mutex;
 
-use yii\mutex\Mutex;
-
 /**
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.6.0

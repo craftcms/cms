@@ -36,7 +36,7 @@ class Entry extends Element
      */
     protected function resolve($source, $arguments, $context, ResolveInfo $resolveInfo)
     {
-        /** @var EntryElement $source */
+        /* @var EntryElement $source */
         $fieldName = $resolveInfo->fieldName;
 
         switch ($fieldName) {

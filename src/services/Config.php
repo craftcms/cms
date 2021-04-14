@@ -101,7 +101,7 @@ class Config extends Component
 
         // todo: remove this eventually
         if ($category === self::CATEGORY_GENERAL) {
-            /** @var GeneralConfig $config */
+            /* @var GeneralConfig $config */
             if ($config->securityKey === null) {
                 $keyPath = Craft::$app->getPath()->getRuntimePath() . DIRECTORY_SEPARATOR . 'validation.key';
                 if (file_exists($keyPath)) {

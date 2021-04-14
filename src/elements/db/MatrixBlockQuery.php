@@ -456,12 +456,14 @@ class MatrixBlockQuery extends ElementQuery
     protected function beforePrepare(): bool
     {
         $this->_normalizeFieldId();
+        $this->_normalizeOwnerId();
+
         $this->joinElementTable('matrixblocks');
 
         // Figure out which content table to use
         $this->contentTable = null;
         if ($this->fieldId && count($this->fieldId) === 1) {
-            /** @var MatrixField $matrixField */
+            /* @var MatrixField $matrixField */
             $matrixField = Craft::$app->getFields()->getFieldById(reset($this->fieldId));
             if ($matrixField) {
                 $this->contentTable = $matrixField->contentTable;
@@ -479,7 +481,6 @@ class MatrixBlockQuery extends ElementQuery
             $this->subQuery->andWhere(['matrixblocks.fieldId' => $this->fieldId]);
         }
 
-        $this->_normalizeOwnerId();
         if ($this->ownerId) {
             $this->subQuery->andWhere(['matrixblocks.ownerId' => $this->ownerId]);
         }
@@ -569,7 +570,7 @@ class MatrixBlockQuery extends ElementQuery
     protected function customFields(): array
     {
         // This method won't get called if $this->fieldId isn't set to a single int
-        /** @var MatrixField $matrixField */
+        /* @var MatrixField $matrixField */
         $matrixField = Craft::$app->getFields()->getFieldById(reset($this->fieldId));
         return $matrixField->getBlockTypeFields();
     }

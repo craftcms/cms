@@ -37,7 +37,7 @@ class NavItem_Node extends Node
             'value_target' => $valueTarget,
             'indent' => $indent,
             'outdent' => $outdent,
-            'lower_body' => $lowerBody
+            'lower_body' => $lowerBody,
         ], [], $lineno, $tag);
     }
 

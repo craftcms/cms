@@ -79,7 +79,7 @@ class Routes extends Component
             ) {
                 $siteRoutes = ArrayHelper::remove($routes, $site->handle);
 
-                /** @noinspection PhpUnhandledExceptionInspection */
+                /* @noinspection PhpUnhandledExceptionInspection */
                 if ($site->handle === $sitesService->getCurrentSite()->handle) {
                     // Merge them so that the localized routes come first
                     $routes = array_merge($siteRoutes, $routes);
@@ -201,7 +201,7 @@ class Routes extends Component
             'uriParts' => $uriParts,
             'uriPattern' => $uriPattern,
             'sortOrder' => (int)$sortOrder,
-            'siteUid' => $siteUid
+            'siteUid' => $siteUid,
         ];
 
         $projectConfig->set(self::CONFIG_ROUTES_KEY . '.' . $routeUid, $configData, 'Save route');

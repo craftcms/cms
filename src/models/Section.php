@@ -131,7 +131,7 @@ class Section extends Model
                         'type' => StringHelper::toLowerCase(Entry::displayName()),
                     ]),
                     'urlFormat' => '{url}',
-                ]
+                ],
             ];
         }
 
@@ -166,8 +166,8 @@ class Section extends Model
             ['type'], 'in', 'range' => [
                 self::TYPE_SINGLE,
                 self::TYPE_CHANNEL,
-                self::TYPE_STRUCTURE
-            ]
+                self::TYPE_STRUCTURE,
+            ],
         ];
         $rules[] = [
             ['propagationMethod'], 'in', 'range' => [
@@ -176,7 +176,7 @@ class Section extends Model
                 self::PROPAGATION_METHOD_LANGUAGE,
                 self::PROPAGATION_METHOD_ALL,
                 self::PROPAGATION_METHOD_CUSTOM,
-            ]
+            ],
         ];
         $rules[] = [['name', 'handle'], UniqueValidator::class, 'targetClass' => SectionRecord::class];
         $rules[] = [['name', 'handle', 'type', 'propagationMethod', 'siteSettings'], 'required'];

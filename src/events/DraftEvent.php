@@ -20,7 +20,8 @@ use yii\base\Event;
 class DraftEvent extends Event
 {
     /**
-     * @var ElementInterface|null The source element
+     * @var ElementInterface|null The canonical element
+     * @todo rename to canonical in v4
      */
     public $source;
 

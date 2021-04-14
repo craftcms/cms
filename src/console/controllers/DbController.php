@@ -9,12 +9,10 @@ namespace craft\console\controllers;
 
 use Craft;
 use craft\console\Controller;
-use craft\db\Query;
 use craft\helpers\Console;
 use craft\helpers\FileHelper;
 use craft\helpers\StringHelper;
 use yii\console\ExitCode;
-use yii\db\Exception;
 
 /**
  * Performs database operations.
@@ -52,7 +50,7 @@ class DbController extends Controller
     /**
      * Creates a new database backup.
      *
-     * @param string|null The path the database backup should be created at.
+     * @param string|null $path The path the database backup should be created at.
      * Can be any of the following:
      *
      * - A full file path

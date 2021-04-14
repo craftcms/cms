@@ -18,7 +18,7 @@ class m170630_161028_deprecation_changes extends Migration
     {
         $this->update(Table::DEPRECATIONERRORS, [
             'file' => new Expression('[[template]]'),
-            'line' => new Expression('[[templateLine]]')
+            'line' => new Expression('[[templateLine]]'),
         ], ['not', ['template' => null]]);
 
         $this->dropColumn(Table::DEPRECATIONERRORS, 'class');

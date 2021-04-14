@@ -211,23 +211,25 @@ class Html extends \yii\helpers\Html
             // Otherwise look for nested tags
             $htmlStart = $cursor = $end;
 
-            do {
-                try {
-                    $subtag = static::parseTag($tag, $cursor);
-                    // Did we skip some text to get there?
-                    if ($subtag['start'] > $cursor) {
-                        $children[] = [
-                            'type' => 'text',
-                            'value' => substr($tag, $cursor, $subtag['start'] - $cursor),
-                        ];
+            if (!in_array($type, ['script', 'style'])) {
+                do {
+                    try {
+                        $subtag = static::parseTag($tag, $cursor);
+                        // Did we skip some text to get there?
+                        if ($subtag['start'] > $cursor) {
+                            $children[] = [
+                                'type' => 'text',
+                                'value' => substr($tag, $cursor, $subtag['start'] - $cursor),
+                            ];
+                        }
+                        $children[] = $subtag;
+                        $cursor = $subtag['end'];
+                    } catch (InvalidArgumentException $e) {
+                        // We must have just reached the end
+                        break;
                     }
-                    $children[] = $subtag;
-                    $cursor = $subtag['end'];
-                } catch (InvalidArgumentException $e) {
-                    // We must have just reached the end
-                    break;
-                }
-            } while (true);
+                } while (true);
+            }
 
             // Find the closing tag
             if (($htmlEnd = stripos($tag, "</{$type}>", $cursor)) === false) {

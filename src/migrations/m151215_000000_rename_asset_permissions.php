@@ -27,11 +27,11 @@ class m151215_000000_rename_asset_permissions extends Migration
             $newName = str_replace([
                 'uploadtovolume',
                 'createsubfoldersinvolume',
-                'removefromvolume'
+                'removefromvolume',
             ], [
                 'saveassetinvolume',
                 'createfoldersinvolume',
-                'deletefilesandfoldersinvolume'
+                'deletefilesandfoldersinvolume',
             ], $permission['name']);
 
             $this->update(Table::USERPERMISSIONS, ['name' => $newName], ['id' => $permission['id']], [], false);

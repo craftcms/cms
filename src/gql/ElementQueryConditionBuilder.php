@@ -150,7 +150,7 @@ class ElementQueryConditionBuilder extends Component
 
         // Load up all eager loading rules.
         $extractedConditions = [
-            'with' => $this->_traversAndBuildPlans($startingNode, $rootPlan, $startingParentField, null, $startingParentField ? $startingParentField->context : 'global')
+            'with' => $this->_traversAndBuildPlans($startingNode, $rootPlan, $startingParentField, null, $startingParentField ? $startingParentField->context : 'global'),
         ];
 
         if (!empty($rootPlan->criteria['withTransforms'])) {
@@ -286,7 +286,7 @@ class ElementQueryConditionBuilder extends Component
 
             if ($this->hasEventHandlers(self::EVENT_REGISTER_GQL_EAGERLOADABLE_FIELDS)) {
                 $event = new RegisterGqlEagerLoadableFields([
-                    'fieldList' => $list
+                    'fieldList' => $list,
                 ]);
                 $this->trigger(self::EVENT_REGISTER_GQL_EAGERLOADABLE_FIELDS, $event);
 
@@ -433,7 +433,7 @@ class ElementQueryConditionBuilder extends Component
 
                     // If this a custom Craft content field
                     if ($craftContentField) {
-                        /** @var EagerLoadingFieldInterface $craftContentField */
+                        /* @var EagerLoadingFieldInterface $craftContentField */
                         $additionalArguments = $craftContentField->getEagerLoadingGqlConditions();
 
                         // Load additional requirements enforced by schema, enforcing permissions to see content
@@ -489,7 +489,7 @@ class ElementQueryConditionBuilder extends Component
 
                     // Add this to the eager loading list.
                     if (!$transformableAssetProperty) {
-                        /** @var InlineFragmentNode|FragmentDefinitionNode $wrappingFragment */
+                        /* @var InlineFragmentNode|FragmentDefinitionNode $wrappingFragment */
                         if ($wrappingFragment) {
                             // TODO: In Craft 4, get rid of all closures
                             $plan->when = function(Element $element) use ($wrappingFragment) {

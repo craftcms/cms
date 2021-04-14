@@ -53,9 +53,9 @@ class m181211_143040_fix_entry_type_uids extends Migration
                     $dbEntryType = $dbEntryTypes[$sectionUid][$handle];
                     if ($dbEntryType['uid'] !== $entryTypeUid) {
                         $this->update(Table::ENTRYTYPES, [
-                            'uid' => $entryTypeUid
+                            'uid' => $entryTypeUid,
                         ], [
-                            'id' => $dbEntryType['id']
+                            'id' => $dbEntryType['id'],
                         ], [], false);
                     }
                 } else if ($canMakeConfigChanges) {

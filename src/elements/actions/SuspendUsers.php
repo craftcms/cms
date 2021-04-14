@@ -68,14 +68,14 @@ JS;
      */
     public function performAction(ElementQueryInterface $query): bool
     {
-        /** @var ElementQuery $query */
+        /* @var ElementQuery $query */
         // Get the users that aren't already suspended
         $query->status = [
             User::STATUS_ACTIVE,
             User::STATUS_PENDING,
         ];
 
-        /** @var User[] $users */
+        /* @var User[] $users */
         $users = $query->all();
         $usersService = Craft::$app->getUsers();
 

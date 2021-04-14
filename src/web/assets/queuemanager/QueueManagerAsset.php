@@ -51,6 +51,7 @@ class QueueManagerAsset extends AssetBundle
 
         if ($view instanceof View) {
             $view->registerTranslations('app', [
+                'Delayed',
                 'Pending',
                 'Reserved',
                 'Finished',

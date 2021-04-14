@@ -139,7 +139,7 @@ class ArrayHelper extends \yii\helpers\ArrayHelper
 
         foreach ($array as $i => $element) {
             $elementValue = static::getValue($element, $key);
-            /** @noinspection TypeUnsafeComparisonInspection */
+            /* @noinspection TypeUnsafeComparisonInspection */
             if (($strict && $elementValue === $value) || (!$strict && $elementValue == $value)) {
                 if ($keepKeys) {
                     $result[$i] = $element;
@@ -256,7 +256,7 @@ class ArrayHelper extends \yii\helpers\ArrayHelper
     {
         foreach ($array as $i => $element) {
             $elementValue = static::getValue($element, $key);
-            /** @noinspection TypeUnsafeComparisonInspection */
+            /* @noinspection TypeUnsafeComparisonInspection */
             if (($strict && $elementValue === $value) || (!$strict && $elementValue == $value)) {
                 return $element;
             }
@@ -280,7 +280,7 @@ class ArrayHelper extends \yii\helpers\ArrayHelper
     {
         foreach ($array as $i => $element) {
             $elementValue = static::getValue($element, $key);
-            /** @noinspection TypeUnsafeComparisonInspection */
+            /* @noinspection TypeUnsafeComparisonInspection */
             if (($strict && $elementValue === $value) || (!$strict && $elementValue == $value)) {
                 return true;
             }
@@ -310,7 +310,7 @@ class ArrayHelper extends \yii\helpers\ArrayHelper
      */
     public static function firstKey(array $array)
     {
-        /** @noinspection LoopWhichDoesNotLoopInspection */
+        /* @noinspection LoopWhichDoesNotLoopInspection */
         foreach ($array as $key => $value) {
             return $key;
         }

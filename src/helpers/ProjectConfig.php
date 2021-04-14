@@ -176,39 +176,70 @@ class ProjectConfig
      */
     public static function cleanupConfig(array $config): array
     {
-        $remove = [];
+        $cleanConfig = [];
 
-        foreach ($config as $key => &$value) {
-            // Only scalars, arrays and simple objects allowed.
-            if ($value instanceof \StdClass) {
-                $value = (array)$value;
+        foreach ($config as $key => $value) {
+            $value = self::_cleanupConfigValue($value);
+
+            // Ignore empty arrays
+            if (!is_array($value) || !empty($value)) {
+                $cleanConfig[$key] = $value;
             }
+        }
 
-            if (!empty($value) && !is_scalar($value) && !is_array($value)) {
-                Craft::info('Unexpected data encountered in config data - ' . print_r($value, true));
+        ksort($cleanConfig, SORT_NATURAL);
+        return $cleanConfig;
+    }
 
-                throw new InvalidConfigException('Unexpected data encountered in config data');
-            }
+    /**
+     * Cleans a config value.
+     *
+     * @param mixed $value
+     * @return mixed
+     * @throws InvalidConfigException
+     */
+    private static function _cleanupConfigValue($value)
+    {
+        // Only scalars, arrays and simple objects allowed.
+        if ($value instanceof \StdClass) {
+            $value = (array)$value;
+        }
 
-            if (is_array($value)) {
-                $value = static::cleanupConfig($value);
+        if (!empty($value) && !is_scalar($value) && !is_array($value)) {
+            Craft::info('Unexpected data encountered in config data - ' . print_r($value, true));
+            throw new InvalidConfigException('Unexpected data encountered in config data');
+        }
 
-                if (empty($value)) {
-                    $remove[] = $key;
+        if (is_array($value)) {
+            // Is this a packed array?
+            if (isset($value[ProjectConfigService::CONFIG_ASSOC_KEY])) {
+                $cleanPackedArray = [];
+
+                foreach ($value[ProjectConfigService::CONFIG_ASSOC_KEY] as $pKey => $pArray) {
+                    // Make sure it has a value
+                    if (isset($pArray[1])) {
+                        $pArray[1] = self::_cleanupConfigValue($pArray[1]);
+
+                        // Ignore empty arrays
+                        if (!is_array($pArray[1]) || !empty($pArray[1])) {
+                            $cleanPackedArray[$pKey] = $pArray;
+                        }
+                    }
                 }
+
+                if (!empty($cleanPackedArray)) {
+                    ksort($cleanPackedArray, SORT_NATURAL);
+                    $value[ProjectConfigService::CONFIG_ASSOC_KEY] = $cleanPackedArray;
+                } else {
+                    // Set $value to an empty array so it doesn't make it into the final config
+                    $value = [];
+                }
+            } else {
+                $value = static::cleanupConfig($value);
             }
         }
 
-        unset($value);
-
-        // Remove empty stuff
-        foreach ($remove as $removeKey) {
-            unset($config[$removeKey]);
-        }
-
-        ksort($config);
-
-        return $config;
+        return $value;
     }
 
     /**
@@ -321,6 +352,10 @@ class ProjectConfig
             $associative = [];
             if (!empty($array[ProjectConfigService::CONFIG_ASSOC_KEY])) {
                 foreach ($array[ProjectConfigService::CONFIG_ASSOC_KEY] as $items) {
+                    if (!isset($items[0], $items[1])) {
+                        Craft::warning('Skipping incomplete packed associative array data', __METHOD__);
+                        continue;
+                    }
                     $associative[$items[0]] = $items[1];
                 }
             }

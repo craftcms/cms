@@ -241,8 +241,8 @@ class ResaveController extends Controller
      */
     public function saveElements(ElementQueryInterface $query): int
     {
-        /** @var ElementQuery $query */
-        /** @var ElementInterface $elementType */
+        /* @var ElementQuery $query */
+        /* @var ElementInterface $elementType */
         $elementType = $query->elementType;
 
         if ($this->drafts) {
