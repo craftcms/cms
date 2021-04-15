@@ -24,7 +24,6 @@ use craft\models\AssetIndexData;
 use craft\models\AssetIndexingSession;
 use craft\models\VolumeFolder;
 use craft\models\VolumeListing;
-use craft\records\AssetIndexData as AssetIndexDataRecord;
 use craft\records\AssetIndexingSession as AssetIndexingSessionRecord;
 use Generator;
 use yii\base\Component;
@@ -108,7 +107,7 @@ class AssetIndexer extends Component
     public function removeCliIndexingSessions(): int
     {
         return Db::delete(Table::ASSETINDEXINGSESSIONS, [
-            'isCli' => true
+            'isCli' => true,
         ]);
     }
 
@@ -272,7 +271,7 @@ class AssetIndexer extends Component
                 !$volumeListing->getIsDir() ? Db::prepareDateForDb(new \DateTime('@' . $volumeListing->getDateModified())) : null,
                 $volumeListing->getIsDir(),
                 false,
-                false
+                false,
             ];
         }
 
@@ -407,7 +406,7 @@ class AssetIndexer extends Component
 
         $missing = [
             'folders' => [],
-            'files' => []
+            'files' => [],
         ];
 
         foreach ($missingFolders as ['folderId' => $folderId, 'path' => $path, 'volumeName' => $volumeName]) {
@@ -447,7 +446,7 @@ class AssetIndexer extends Component
             ->where([
                 'sessionId' => $session->id,
                 'completed' => false,
-                'inProgress' => false
+                'inProgress' => false,
             ])
             ->orderBy(['id' => SORT_ASC])
             ->one();
@@ -492,7 +491,7 @@ class AssetIndexer extends Component
             'type' => 'file',
             'dateModified' => $volume->getDateModified($path),
             'fileSize' => $volume->getFileSize($path),
-            'volume' => $volume
+            'volume' => $volume,
         ]);
 
         return $this->indexFileByListing($listing, $sessionId, $cacheImages, $createIfMissing);
@@ -522,7 +521,7 @@ class AssetIndexer extends Component
             'recordId' => null,
             'inProgress' => true,
             'isSkipped' => null,
-            'completed' => false
+            'completed' => false,
         ]);
 
         return $this->indexFileByEntry($indexEntry, $cacheImages, $createIfMissing);
@@ -550,7 +549,7 @@ class AssetIndexer extends Component
             'recordId' => null,
             'inProgress' => true,
             'isSkipped' => null,
-            'completed' => false
+            'completed' => false,
         ]);
 
         return $this->indexFolderByEntry($indexEntry, $createIfMissing);
@@ -605,7 +604,7 @@ class AssetIndexer extends Component
         $folder = $assets->findFolder([
             'volumeId' => $indexEntry->volumeId,
             'path' => $path,
-            'parentId' => $parentId
+            'parentId' => $parentId,
         ]);
 
         if (!$folder) {
@@ -781,7 +780,7 @@ class AssetIndexer extends Component
                 'isCli',
                 'actionRequired',
                 'dateCreated',
-                'dateUpdated'
+                'dateUpdated',
             ])
             ->from(Table::ASSETINDEXINGSESSIONS);
     }

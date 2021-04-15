@@ -8,37 +8,14 @@
 namespace craft\controllers;
 
 use Craft;
-use craft\base\Element;
 use craft\elements\Asset;
 use craft\errors\AssetException;
-use craft\errors\AssetOperationException;
-use craft\errors\UploadFailedException;
-use craft\errors\VolumeException;
-use craft\fields\Assets as AssetsField;
-use craft\helpers\App;
-use craft\helpers\Assets;
-use craft\helpers\Db;
-use craft\helpers\Image;
 use craft\helpers\Json;
-use craft\helpers\StringHelper;
-use craft\helpers\UrlHelper;
-use craft\i18n\Formatter;
 use craft\i18n\Locale;
-use craft\image\Raster;
 use craft\models\AssetIndexingSession;
-use craft\models\VolumeFolder;
 use craft\web\Controller;
-use craft\web\UploadedFile;
-use yii\base\ErrorException;
-use yii\base\Exception;
-use yii\base\NotSupportedException;
 use yii\web\BadRequestHttpException;
-use yii\web\ForbiddenHttpException;
-use yii\web\HttpException;
-use yii\web\NotFoundHttpException;
 use yii\web\Response;
-use yii\web\ServerErrorHttpException;
-use ZipArchive;
 
 /** @noinspection ClassOverridesFieldOfSuperClassInspection */
 
@@ -102,7 +79,7 @@ class AssetIndexesController extends Controller
      */
     public function actionStopIndexingSession(): Response
     {
-        $sessionId = (int) Craft::$app->getRequest()->getRequiredBodyParam('sessionId');
+        $sessionId = (int)Craft::$app->getRequest()->getRequiredBodyParam('sessionId');
 
         if (empty($sessionId)) {
             return $this->asErrorJson(Craft::t('app', 'No indexing session specified'));
@@ -125,7 +102,7 @@ class AssetIndexesController extends Controller
      */
     public function actionProcessIndexingSession(): Response
     {
-        $sessionId = (int) Craft::$app->getRequest()->getRequiredBodyParam('sessionId');
+        $sessionId = (int)Craft::$app->getRequest()->getRequiredBodyParam('sessionId');
 
         if (empty($sessionId)) {
             return $this->asErrorJson(Craft::t('app', 'No indexing session specified'));
@@ -175,7 +152,7 @@ class AssetIndexesController extends Controller
      */
     public function actionIndexingSessionOverview(): Response
     {
-        $sessionId = (int) Craft::$app->getRequest()->getRequiredBodyParam('sessionId');
+        $sessionId = (int)Craft::$app->getRequest()->getRequiredBodyParam('sessionId');
 
         if (empty($sessionId)) {
             return $this->asErrorJson(Craft::t('app', 'No indexing session specified'));
@@ -202,7 +179,7 @@ class AssetIndexesController extends Controller
      */
     public function actionFinishIndexingSession(): Response
     {
-        $sessionId = (int) Craft::$app->getRequest()->getRequiredBodyParam('sessionId');
+        $sessionId = (int)Craft::$app->getRequest()->getRequiredBodyParam('sessionId');
 
         if (empty($sessionId)) {
             return $this->asErrorJson(Craft::t('app', 'No indexing session specified'));

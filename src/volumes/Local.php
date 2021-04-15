@@ -49,8 +49,8 @@ class Local extends Volume implements LocalVolumeInterface
         self::VISIBILITY_DIR => [
             self::VISIBILITY_DEFAULT => 0775,
             self::VISIBILITY_PUBLIC => 0775,
-            self::VISIBILITY_HIDDEN => 0700
-        ]
+            self::VISIBILITY_HIDDEN => 0700,
+        ],
     ];
 
     /**
@@ -156,7 +156,7 @@ class Local extends Volume implements LocalVolumeInterface
                 'type' => $listing->isDir() ? 'dir' : 'file',
                 'dateModified' => filemtime($listing->getRealPath()),
                 'fileSize' => !$listing->isDir() ? filesize($listing->getRealPath()) : null,
-                'volume' => $this
+                'volume' => $this,
             ]);
         }
     }

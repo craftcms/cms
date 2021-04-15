@@ -11,7 +11,6 @@ namespace craft\volumes;
 use craft\base\MissingComponentInterface;
 use craft\base\MissingComponentTrait;
 use craft\base\Volume;
-use craft\errors\VolumeException;
 use yii\base\NotSupportedException;
 
 /**

@@ -219,7 +219,7 @@ class Asset extends Element
 
             return [
                 'elementType' => User::class,
-                'map' => $map
+                'map' => $map,
             ];
         }
 
@@ -537,7 +537,7 @@ class Asset extends Element
                 'can-upload' => $folder->volumeId === null || $canUpload,
                 'can-move-to' => $canMoveTo,
                 'can-move-peer-files-to' => $canMovePeerFilesTo,
-            ]
+            ],
         ];
 
         if ($user) {
@@ -837,7 +837,7 @@ class Asset extends Element
     public function getCacheTags(): array
     {
         $tags = [
-            "volume:$this->_volumeId"
+            "volume:$this->_volumeId",
         ];
 
         // Did the volume just change?
@@ -1604,7 +1604,7 @@ class Asset extends Element
             }
             $value = [
                 'x' => (float)$value['x'],
-                'y' => (float)$value['y']
+                'y' => (float)$value['y'],
             ];
         } else if ($value !== null) {
             $focal = explode(';', $value);
@@ -1613,7 +1613,7 @@ class Asset extends Element
             }
             $value = [
                 'x' => (float)$focal[0],
-                'y' => (float)$focal[1]
+                'y' => (float)$focal[1],
             ];
         }
 
@@ -1801,7 +1801,7 @@ class Asset extends Element
         ) {
             $this->trigger(self::EVENT_BEFORE_HANDLE_FILE, new AssetEvent([
                 'asset' => $this,
-                'isNew' => !$this->id
+                'isNew' => !$this->id,
             ]));
         }
 
@@ -1834,7 +1834,7 @@ class Asset extends Element
         if (!$this->propagating) {
             $isCpRequest = Craft::$app->getRequest()->getIsCpRequest();
             $sanitizeCpImageUploads = Craft::$app->getConfig()->getGeneral()->sanitizeCpImageUploads;
-            
+
             if (
                 \in_array($this->getScenario(), [self::SCENARIO_REPLACE, self::SCENARIO_CREATE], true) &&
                 AssetsHelper::getFileKindByExtension($this->tempFilePath) === static::KIND_IMAGE &&

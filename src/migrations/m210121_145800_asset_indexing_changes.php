@@ -2,13 +2,8 @@
 
 namespace craft\migrations;
 
-use Craft;
-use craft\base\Field;
 use craft\db\Migration;
 use craft\db\Table;
-use craft\fieldlayoutelements\AssetTitleField;
-use craft\fieldlayoutelements\TitleField;
-use craft\services\ProjectConfig;
 
 /**
  * m210121_145800_asset_indexing_changes migration.

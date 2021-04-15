@@ -77,7 +77,7 @@ class AssetIndexes extends Utility
         return $view->renderTemplate('_components/utilities/AssetIndexes', [
             'existingSessions' => $existingIndexingSessions,
             'checkboxSelectHtml' => $checkboxSelectHtml,
-            'dateFormat' => $dateFormat
+            'dateFormat' => $dateFormat,
         ]);
     }
 }
