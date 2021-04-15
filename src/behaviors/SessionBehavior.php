@@ -82,26 +82,30 @@ class SessionBehavior extends Behavior
 
     /**
      * Retrieves a notice from the user’s flash data.
+     *
+     * @return string|null
      */
-    public function getNotice(): void
+    public function getNotice(): ?string
     {
         if (Craft::$app->getRequest()->getIsCpRequest()) {
-            $this->owner->getFlash('cp-notice');
-        } else {
-            $this->owner->getFlash('notice');
+            return $this->owner->getFlash('cp-notice');
         }
+
+        return $this->owner->getFlash('notice');
     }
 
     /**
      * Retrieves an error message from the user’s flash data.
+     *
+     * @return string|null
      */
-    public function getError(): void
+    public function getError(): ?string
     {
         if (Craft::$app->getRequest()->getIsCpRequest()) {
-            $this->owner->getFlash('cp-error');
-        } else {
-            $this->owner->getFlash('error');
+            return $this->owner->getFlash('cp-error');
         }
+
+        return $this->owner->getFlash('error');
     }
 
     /**
