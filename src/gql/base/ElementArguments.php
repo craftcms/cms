@@ -148,7 +148,7 @@ abstract class ElementArguments extends Arguments
             'siteSettingsId' => [
                 'name' => 'siteSettingsId',
                 'type' => Type::listOf(QueryArgument::getType()),
-                'description' => 'Narrows the query results based on the unique identifier for an element-site relation.'
+                'description' => 'Narrows the query results based on the unique identifier for an element-site relation.',
             ],
         ]);
     }

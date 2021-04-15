@@ -2059,14 +2059,14 @@ abstract class Element extends Component implements ElementInterface
 
         if ($this->_canonical === null) {
             $this->_canonical = static::find()
-                ->id($this->_canonicalId)
-                ->siteId($anySite ? '*' : $this->siteId)
-                ->preferSites([$this->siteId])
-                ->structureId($this->structureId)
-                ->unique()
-                ->anyStatus()
-                ->ignorePlaceholders()
-                ->one() ?? false;
+                    ->id($this->_canonicalId)
+                    ->siteId($anySite ? '*' : $this->siteId)
+                    ->preferSites([$this->siteId])
+                    ->structureId($this->structureId)
+                    ->unique()
+                    ->anyStatus()
+                    ->ignorePlaceholders()
+                    ->one() ?? false;
         }
 
         return $this->_canonical ?: $this;
