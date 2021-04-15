@@ -61,6 +61,7 @@ before_script:
 - mysql -e "SET GLOBAL sql_mode = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION';";
 - psql -U postgres -c 'CREATE DATABASE "craft_test";';
 - cp tests/.env.example.$DB tests/.env
+- env
 - |
   if [[ $PHP_8 == "false" ]]; then
     pear config-set preferred_state beta
@@ -71,7 +72,6 @@ before_script:
   if [[ $DB == "pgsql" ]]; then
     sed -i 's/DB_USER=root/DB_USER=postgres/' tests/.env
   fi
-- env
 script:
 - |
   if [[ $TASK_TESTS_COVERAGE != 1 ]]; then
