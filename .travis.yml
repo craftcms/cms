@@ -71,6 +71,7 @@ before_script:
   if [[ $DB == "pgsql" ]]; then
     sed -i 's/DB_USER=root/DB_USER=postgres/' tests/.env
   fi
+- env
 script:
 - |
   if [[ $TASK_TESTS_COVERAGE != 1 ]]; then
