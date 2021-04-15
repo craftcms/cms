@@ -125,7 +125,7 @@ abstract class Volume extends SavableComponent implements VolumeInterface
     {
         $this->renameDir($path, $newName);
     }
-    
+
     /**
      * @inheritDoc
      */

@@ -1396,26 +1396,6 @@ $.extend(Craft,
         },
 
         /**
-         * Prevents the outline when an element is focused by the mouse.
-         *
-         * @param elem Either an actual element or a jQuery collection.
-         */
-        preventOutlineOnMouseFocus: function(elem) {
-            var $elem = $(elem),
-                namespace = '.preventOutlineOnMouseFocus';
-
-            $elem.on('mousedown' + namespace, function() {
-                    $elem.addClass('no-outline');
-                    $elem.trigger('focus');
-                })
-                .on('keydown' + namespace + ' blur' + namespace, function(event) {
-                    if (event.keyCode !== Garnish.SHIFT_KEY && event.keyCode !== Garnish.CTRL_KEY && event.keyCode !== Garnish.CMD_KEY) {
-                        $elem.removeClass('no-outline');
-                    }
-                });
-        },
-
-        /**
          * Creates a validation error list.
          *
          * @param {object} errors

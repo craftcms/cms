@@ -292,10 +292,18 @@ class HtmlHelperTest extends Unit
     public function parseTagAttributesDataProvider(): array
     {
         return [
+            [[], '<div/>'],
+            [['x-foo' => true], '<div x-foo=>'],
+            [['x-foo' => true], '<div x-foo="">'],
+            [['x-foo' => true], "<div x-foo=''>"],
             [['type' => 'text', 'disabled' => true], '<input type="text" disabled>'],
             [['type' => 'text', 'disabled' => true], '<input type=text disabled />'],
             [['type' => 'text'], '<!-- comment --> <input type="text">'],
             [['type' => 'text'], '<?xml?> <input type="text">'],
+            [['type' => 'text'], "<input type='text'>"],
+            [['type' => 'text'], '<input type=text>'],
+            [['x-foo' => '<bar>'], '<div x-foo="<bar>">'],
+            [['x-foo' => '"<bar>"'], "<div x-foo='\"<bar>\"'>"],
             [['data' => ['foo' => '1', 'bar' => '2']], '<div data-foo="1" data-bar="2">'],
             [['data-ng' => ['foo' => '1', 'bar' => '2']], '<div data-ng-foo="1" data-ng-bar="2">'],
             [['ng' => ['foo' => '1', 'bar' => '2']], '<div ng-foo="1" ng-bar="2">'],
@@ -303,6 +311,8 @@ class HtmlHelperTest extends Unit
             [['class' => ['foo', 'bar']], '<div class="foo bar">'],
             [['style' => ['color' => 'black', 'background' => 'red']], '<div style="color: black; background: red">'],
             [false, '<div'],
+            [false, '<div x-foo=">'],
+            [false, "<div x-foo='>"],
             [false, '<!-- comment -->'],
             [false, '<?xml?>'],
         ];

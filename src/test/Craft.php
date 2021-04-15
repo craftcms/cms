@@ -14,7 +14,6 @@ use Codeception\Stub;
 use Codeception\TestInterface;
 use craft\base\ElementInterface;
 use craft\config\DbConfig;
-use craft\db\Command;
 use craft\db\Query;
 use craft\db\Table;
 use craft\elements\db\ElementQuery;

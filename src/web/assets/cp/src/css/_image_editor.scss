@@ -218,10 +218,6 @@ html.noscroll, html.noscroll body {
       margin: 0 4px;
       cursor: pointer;
 
-      &:focus {
-        outline: none;
-      }
-
       &[value="landscape"] {
         width: 30px;
         height: 20px;

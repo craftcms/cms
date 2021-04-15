@@ -419,6 +419,31 @@ class ViewTest extends TestCase
     }
 
     /**
+     * @return void
+     */
+    public function testEventTags(): void
+    {
+        // https://github.com/craftcms/cms/issues/7779
+        $expected = <<<TWIG
+<html>
+<head>
+</head>
+<body
+  x-data="testing"
+  x-init=" () => { data.match(/<(.*?)>/) ? alert('wat') }"
+>Hello World
+</body>
+</html>
+
+TWIG;
+
+        $view = Craft::$app->getView();
+        Craft::$app->set('view', $this->view);
+        $this->assertSame($expected, $this->view->renderPageTemplate('event-tags'));
+        Craft::$app->set('view', $view);
+    }
+
+    /**
      * @return array
      */
     public function normalizeObjectTemplateDataProvider(): array
