@@ -78,7 +78,7 @@ class Structures extends Component
             ->select([
                 'id',
                 'maxLevels',
-                'uid'
+                'uid',
             ])
             ->from([Table::STRUCTURES])
             ->where(['id' => $structureId]);
@@ -104,7 +104,7 @@ class Structures extends Component
             ->select([
                 'id',
                 'maxLevels',
-                'uid'
+                'uid',
             ])
             ->from([Table::STRUCTURES])
             ->where(['uid' => $structureUid]);
@@ -126,7 +126,7 @@ class Structures extends Component
      */
     public function fillGapsInElements(array &$elements): void
     {
-        /** @var ElementInterface|null $prevElement */
+        /* @var ElementInterface|null $prevElement */
         $prevElement = null;
         $patchedElements = [];
 
@@ -241,7 +241,7 @@ class Structures extends Component
 
         $affectedRows = Craft::$app->getDb()->createCommand()
             ->softDelete(Table::STRUCTURES, [
-                'id' => $structureId
+                'id' => $structureId,
             ])
             ->execute();
 
@@ -258,7 +258,7 @@ class Structures extends Component
     public function getElementLevelDelta(int $structureId, ElementInterface $element): int
     {
         $elementRecord = $this->_getElementRecord($structureId, $element);
-        /** @var StructureElement $deepestDescendant */
+        /* @var StructureElement $deepestDescendant */
         $deepestDescendant = $elementRecord
             ->children()
             ->orderBy(['level' => SORT_DESC])
@@ -412,7 +412,7 @@ class Structures extends Component
         if ($elementId) {
             return StructureElement::findOne([
                 'structureId' => $structureId,
-                'elementId' => $elementId
+                'elementId' => $elementId,
             ]);
         }
 

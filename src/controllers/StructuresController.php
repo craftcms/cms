@@ -66,7 +66,7 @@ class StructuresController extends Controller
             throw new NotFoundHttpException('Element not found');
         }
 
-        /** @var ElementInterface|string $elementType */
+        /* @var ElementInterface|string $elementType */
         $this->_element = $elementType::find()
             ->drafts(null)
             ->id($elementId)

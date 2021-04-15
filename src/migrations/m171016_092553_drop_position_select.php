@@ -54,7 +54,7 @@ class m171016_092553_drop_position_select extends Migration
                 'type' => Dropdown::class,
                 'settings' => Json::encode(['options' => $newOptions]),
             ], [
-                'id' => $field['id']
+                'id' => $field['id'],
             ]);
         }
     }

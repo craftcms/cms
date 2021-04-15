@@ -108,7 +108,7 @@ class Deprecator extends Component
             'file' => $file,
             'line' => $line,
             'message' => $message,
-            'traces' => $this->_cleanTraces($traces)
+            'traces' => $this->_cleanTraces($traces),
         ]);
     }
 

@@ -112,7 +112,7 @@ class GlobalSetQuery extends ElementQuery
         $this->query->select([
             'globalsets.name',
             'globalsets.handle',
-            'globalsets.uid'
+            'globalsets.uid',
         ]);
 
         if ($this->handle) {

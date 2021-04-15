@@ -125,7 +125,7 @@ class PhpInfo extends Utility
             $heading = substr($section, 0, strpos($section, '</h2>'));
 
             if (preg_match_all('#%S%(?:<td>(.*?)</td>)?(?:<td>(.*?)</td>)?(?:<td>(.*?)</td>)?%E%#', $section, $matches, PREG_SET_ORDER) !== 0) {
-                /** @var array[] $matches */
+                /* @var array[] $matches */
                 foreach ($matches as $row) {
                     if (!isset($row[2])) {
                         continue;

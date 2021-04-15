@@ -24,7 +24,7 @@ use yii\base\Exception;
 use yii\base\Response;
 use yii\web\BadRequestHttpException;
 
-/** @noinspection ClassOverridesFieldOfSuperClassInspection */
+/* @noinspection ClassOverridesFieldOfSuperClassInspection */
 
 /**
  * The InstallController class is a controller that directs all installation related tasks such as creating the database
@@ -129,12 +129,12 @@ class InstallController extends Controller
         if (!$dbConfig->port) {
             // Only possible if it was not numeric
             $errors['port'][] = Craft::t('yii', '{attribute} must be an integer.', [
-                'attribute' => Craft::t('app', 'Port')
+                'attribute' => Craft::t('app', 'Port'),
             ]);
         }
         if (!$dbConfig->database) {
             $errors['database'][] = Craft::t('yii', '{attribute} cannot be blank.', [
-                'attribute' => Craft::t('app', 'Database Name')
+                'attribute' => Craft::t('app', 'Database Name'),
             ]);
         }
         if (strlen(StringHelper::ensureRight($dbConfig->tablePrefix, '_')) > 6) {
@@ -143,13 +143,13 @@ class InstallController extends Controller
 
         if (empty($errors)) {
             // Test the connection
-            /** @var Connection $db */
+            /* @var Connection $db */
             $db = Craft::createObject(App::dbConfig($dbConfig));
 
             try {
                 $db->open();
             } catch (DbConnectException $e) {
-                /** @var \PDOException $pdoException */
+                /* @var \PDOException $pdoException */
                 $pdoException = $e->getPrevious()->getPrevious();
                 switch ($pdoException->getCode()) {
                     case 1045:
@@ -183,7 +183,8 @@ class InstallController extends Controller
         $this->requirePostRequest();
         $this->requireAcceptsJson();
 
-        $user = new User(['scenario' => User::SCENARIO_REGISTRATION]);
+        $user = new User();
+        $user->setScenario(User::SCENARIO_REGISTRATION);
         $user->email = $this->request->getBodyParam('email');
         $user->username = $this->request->getBodyParam('username', $user->email);
         $user->newPassword = $this->request->getBodyParam('password');

@@ -74,7 +74,7 @@ class PreviewController extends Controller
                 'siteId' => (int)$siteId,
                 'draftId' => (int)$draftId ?: null,
                 'revisionId' => (int)$revisionId ?: null,
-            ]
+            ],
         ];
 
         $token = Craft::$app->getTokens()->createToken($route);
@@ -103,7 +103,7 @@ class PreviewController extends Controller
         // Make sure a token was used to get here
         $this->requireToken();
 
-        /** @var ElementInterface $elementType */
+        /* @var ElementInterface $elementType */
         $query = $elementType::find()
             ->siteId($siteId)
             ->anyStatus();

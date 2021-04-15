@@ -55,7 +55,7 @@ class ApplyMatrixPropagationMethod extends BaseJob
 
         $callback = function(BatchElementActionEvent $e) use ($queue, $query, $total, $matrixService, $elementsService) {
             if ($e->query === $query) {
-                $this->setProgress($queue, ($e->position - 1) / $total, Craft::t('app', '{step} of {total}', [
+                $this->setProgress($queue, ($e->position - 1) / $total, Craft::t('app', '{step, number} of {total, number}', [
                     'step' => $e->position,
                     'total' => $total,
                 ]));
@@ -65,7 +65,7 @@ class ApplyMatrixPropagationMethod extends BaseJob
                     return;
                 }
 
-                /** @var MatrixBlock $block */
+                /* @var MatrixBlock $block */
                 $block = $e->element;
                 $owner = $block->getOwner();
 
@@ -86,7 +86,7 @@ class ApplyMatrixPropagationMethod extends BaseJob
                     // Duplicate those blocks so their content can live on
                     while (!empty($otherSiteBlocks)) {
                         $otherSiteBlock = array_pop($otherSiteBlocks);
-                        /** @var MatrixBlock $newBlock */
+                        /* @var MatrixBlock $newBlock */
                         $newBlock = $elementsService->duplicateElement($otherSiteBlock);
                         // This may support more than just the site it was saved in
                         $newBlockSiteIds = $matrixService->getSupportedSiteIds($this->newPropagationMethod, $newBlock->getOwner());

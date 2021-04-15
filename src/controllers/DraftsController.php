@@ -20,6 +20,7 @@ use yii\web\Response;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.4.0
+ * @deprecated in 3.7.0
  */
 class DraftsController extends Controller
 {
@@ -35,13 +36,13 @@ class DraftsController extends Controller
         $this->requirePostRequest();
         $this->requireAcceptsJson();
 
-        /** @var ElementInterface|string $elementType */
+        /* @var ElementInterface|string $elementType */
         $elementType = $this->request->getRequiredBodyParam('elementType');
         $draftId = $this->request->getRequiredBodyParam('draftId');
         $siteId = $this->request->getBodyParam('siteId');
         $this->requireAuthorization('mergeDraftSourceChanges:' . $draftId);
 
-        /** @var ElementInterface|DraftBehavior $elementType */
+        /* @var ElementInterface|DraftBehavior $elementType */
         $draft = $elementType::find()
             ->draftId($draftId)
             ->siteId($siteId)
@@ -52,7 +53,7 @@ class DraftsController extends Controller
             throw new BadRequestHttpException('Invalid draft ID: ' . $draftId);
         }
 
-        Craft::$app->getDrafts()->mergeSourceChanges($draft);
+        Craft::$app->getElements()->mergeCanonicalChanges($draft);
 
         // Redirect to the requested URL to reload the draft
         $this->setSuccessFlash(Craft::t('app', 'Recent {type} changes merged.', [

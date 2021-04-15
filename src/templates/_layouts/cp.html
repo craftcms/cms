@@ -88,6 +88,8 @@
     role: 'main',
 }|merge(mainAttributes ?? []) %}
 
+{% set formActions = craft.cp.prepFormActions(formActions ?? null) %}
+
 {% set mainFormAttributes = {
     id: 'main-form',
     method: 'post',

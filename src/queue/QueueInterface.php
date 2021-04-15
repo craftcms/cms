@@ -86,6 +86,7 @@ interface QueueInterface
      * The response array should have sub-arrays with the following keys:
      *
      * - `id` – the job ID
+     * - `delay` – the number of seconds remaining before the job will start
      * - `status` – the job status (1 = waiting, 2 = reserved, 3 = done, 4 = failed)
      * - `progress` – the job progress (0-100)
      * - `description` – the job description
@@ -101,6 +102,7 @@ interface QueueInterface
      *
      * The response array can contain the following keys:
      *
+     * - `delay` – the number of seconds remaining before the job will start
      * - `status` – the job status (1 = waiting, 2 = reserved, 3 = done, 4 = failed)
      * - `progress` – the job progress (0-100)
      * - `description` – the job description

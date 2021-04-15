@@ -135,6 +135,7 @@ abstract class BaseField extends FieldLayoutElement
         ]) : '';
 
         if ($label !== null) {
+            $label = Html::encode($label);
             $innerHtml .= Html::tag('div',
                 Html::tag('h4', $label, [
                     'title' => $label,
@@ -205,6 +206,7 @@ abstract class BaseField extends FieldLayoutElement
         }
 
         $statusClass = $this->statusClass($element, $static);
+        $label = $this->showLabel() ? $this->label() : null;
 
         return Cp::fieldHtml($inputHtml, [
             'fieldset' => $this->useFieldset(),
@@ -213,7 +215,7 @@ abstract class BaseField extends FieldLayoutElement
             'inputContainerAttributes' => $this->inputContainerAttributes($element, $static),
             'labelAttributes' => $this->labelAttributes($element, $static),
             'status' => $statusClass ? [$statusClass, $this->statusLabel($element, $static) ?? ucfirst($statusClass)] : null,
-            'label' => $this->showLabel() ? $this->label() : null,
+            'label' => $label !== null ? Html::encode($label) : null,
             'attribute' => $this->attribute(),
             'required' => !$static && $this->required,
             'instructions' => Html::encode($this->instructions ? Craft::t('site', $this->instructions) : $this->defaultInstructions($element, $static)),
@@ -293,7 +295,7 @@ abstract class BaseField extends FieldLayoutElement
     public function label()
     {
         if ($this->label !== null && $this->label !== '' && $this->label !== '__blank__') {
-            return Html::encode(Craft::t('site', $this->label));
+            return Craft::t('site', $this->label);
         }
         return $this->defaultLabel();
     }

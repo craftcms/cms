@@ -27,12 +27,12 @@ class PaginateTokenParser extends AbstractTokenParser
     public function parse(Token $token)
     {
         $lineno = $token->getLine();
-        /** @var Parser $parser */
+        /* @var Parser $parser */
         $parser = $this->parser;
         $stream = $parser->getStream();
 
         $nodes = [
-            'query' => $parser->getExpressionParser()->parseExpression()
+            'query' => $parser->getExpressionParser()->parseExpression(),
         ];
         $stream->expect('as');
         $targets = $parser->getExpressionParser()->parseAssignmentExpression();

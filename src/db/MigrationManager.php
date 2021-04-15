@@ -210,8 +210,8 @@ class MigrationManager extends Component
             return;
         }
 
-        /** @var \yii\db\Migration $migration */
-        /** @noinspection CallableParameterUseCaseInTypeContextInspection */
+        /* @var \yii\db\Migration $migration */
+        /* @noinspection CallableParameterUseCaseInTypeContextInspection */
         $migration = Instance::ensure($migration, MigrationInterface::class);
 
         // Clear the schema cache
@@ -271,8 +271,8 @@ class MigrationManager extends Component
             return;
         }
 
-        /** @var \yii\db\Migration $migration */
-        /** @noinspection CallableParameterUseCaseInTypeContextInspection */
+        /* @var \yii\db\Migration $migration */
+        /* @noinspection CallableParameterUseCaseInTypeContextInspection */
         $migration = Instance::ensure($migration, MigrationInterface::class);
 
         // Clear the schema cache
@@ -472,7 +472,19 @@ class MigrationManager extends Component
             if ($this->track === 'craft') {
                 $query->where(['pluginId' => null]);
             } else {
-                $query->where(new Expression('1 = 0'));
+                $pluginId = null;
+                if (strpos($this->track, 'plugin:') === 0) {
+                    $pluginId = (new Query())
+                        ->select(['id'])
+                        ->from([Table::PLUGINS])
+                        ->where(['handle' => substr($this->track, 7)])
+                        ->scalar();
+                }
+                if ($pluginId) {
+                    $query->where(['pluginId' => $pluginId]);
+                } else {
+                    $query->where(new Expression('1 = 0'));
+                }
             }
 
             return $query;
@@ -488,7 +500,19 @@ class MigrationManager extends Component
             if ($this->track === 'craft') {
                 $query->where(['type' => 'app']);
             } else {
-                $query->where(new Expression('1 = 0'));
+                $pluginId = null;
+                if (strpos($this->track, 'plugin:') === 0) {
+                    $pluginId = (new Query())
+                        ->select(['id'])
+                        ->from([Table::PLUGINS])
+                        ->where(['handle' => substr($this->track, 7)])
+                        ->scalar();
+                }
+                if ($pluginId) {
+                    $query->where(['pluginId' => $pluginId]);
+                } else {
+                    $query->where(new Expression('1 = 0'));
+                }
             }
 
             return $query;

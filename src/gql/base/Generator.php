@@ -38,7 +38,7 @@ abstract class Generator
         $contentFields = $context->getFields();
         $contentFieldGqlTypes = [];
 
-        /** @var Field $contentField */
+        /* @var Field $contentField */
         foreach ($contentFields as $contentField) {
             if ($contentField->includeInGqlSchema($schema)) {
                 $contentFieldGqlTypes[$contentField->handle] = $contentField->getContentGqlType();

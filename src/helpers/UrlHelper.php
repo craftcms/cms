@@ -151,15 +151,16 @@ class UrlHelper
      *
      * @param string $url
      * @param string $token
+     * @param bool $cp Whether this is for a control panel URL
      * @return string
      */
-    public static function urlWithToken(string $url, string $token): string
+    public static function urlWithToken(string $url, string $token, bool $cp = false): string
     {
-        $scheme = static::getSchemeForTokenizedUrl();
+        $scheme = static::getSchemeForTokenizedUrl($cp);
         $url = static::urlWithScheme($url, $scheme);
 
         return static::urlWithParams($url, [
-            Craft::$app->getConfig()->getGeneral()->tokenParam => $token
+            Craft::$app->getConfig()->getGeneral()->tokenParam => $token,
         ]);
     }
 
@@ -319,7 +320,7 @@ class UrlHelper
         $path = trim($path, '/');
         $url = self::_createUrl($path, $params, $scheme, false);
 
-        /** @noinspection UnSafeIsSetOverArrayInspection - FP */
+        /* @noinspection UnSafeIsSetOverArrayInspection - FP */
         if (isset($currentSite)) {
             // Restore the original current site
             $sites->setCurrentSite($currentSite);
@@ -382,9 +383,10 @@ class UrlHelper
      * for any tokenized URLs in Craft (email verification links, password reset
      * urls, share entry URLs, etc.
      *
+     * @param bool $cp Whether this is for a control panel URL
      * @return string
      */
-    public static function getSchemeForTokenizedUrl(): string
+    public static function getSchemeForTokenizedUrl(bool $cp = false): string
     {
         $useSslOnTokenizedUrls = Craft::$app->getConfig()->getGeneral()->useSslOnTokenizedUrls;
 
@@ -398,13 +400,16 @@ class UrlHelper
             return 'http';
         }
 
-        // Let's auto-detect.
+        // Is the base URL set to https?
+        $baseUrl = $cp ? static::baseCpUrl() : static::baseSiteUrl();
+        $scheme = parse_url($baseUrl, PHP_URL_SCHEME);
+        if ($scheme !== false && strtolower($scheme) === 'https') {
+            return 'https';
+        }
 
-        // If the siteUrl is https or the current request is https, use it.
-        $scheme = parse_url(static::baseSiteUrl(), PHP_URL_SCHEME);
-
+        // Is the current request over SSL?
         $request = Craft::$app->getRequest();
-        if (($scheme !== false && strtolower($scheme) === 'https') || (!$request->getIsConsoleRequest() && $request->getIsSecureConnection())) {
+        if (!$request->getIsConsoleRequest() && $request->getIsSecureConnection()) {
             return 'https';
         }
 

@@ -137,7 +137,7 @@ class UpdateController extends Controller
      * @param string $handle
      * The update handle (`all`, `craft`, or a plugin handle). You can pass
      * multiple handles separated by spaces, and you can update to a specific
-     * version using the syntax <handle>:<version>`.
+     * version using the syntax `<handle>:<version>`.
      * @return int
      */
     public function actionUpdate(string $handle = null): int
@@ -415,7 +415,7 @@ class UpdateController extends Controller
 
         $this->stdout('Applying new migrations ... ', Console::FG_YELLOW);
 
-        $process = new Process([$script, 'migrate/all', '--no-backup', '--no-content']);
+        $process = new Process([PHP_BINARY, $script, 'migrate/all', '--no-backup', '--no-content']);
         $process->setTimeout(null);
         try {
             $process->mustRun();
@@ -506,7 +506,7 @@ class UpdateController extends Controller
 
         $this->stdout('Reverting Composer changes ... ', Console::FG_YELLOW);
 
-        $process = new Process([$script, 'update/composer-install']);
+        $process = new Process([PHP_BINARY, $script, 'update/composer-install']);
         $process->setTimeout(null);
         try {
             $process->mustRun();
@@ -578,7 +578,7 @@ class UpdateController extends Controller
                 $email = $this->prompt('Enter your email address to request a new license key:', [
                     'validator' => function(string $input, string &$error = null) {
                         return (new EmailValidator())->validate($input, $error);
-                    }
+                    },
                 ]);
                 $session->setIdentity(new User([
                     'email' => $email,

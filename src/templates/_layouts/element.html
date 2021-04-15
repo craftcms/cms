@@ -29,6 +29,8 @@
 {% extends '_layouts/cp' %}
 {% import '_includes/forms' as forms %}
 
+{% set generalConfig = craft.app.config.general %}
+
 {% set saveSourceAction = saveSourceAction ?? null %}
 {% set duplicateSourceAction = duplicateSourceAction ?? null %}
 {% set deleteSourceAction = deleteSourceAction ?? null %}
@@ -64,7 +66,7 @@
 {% endif %}
 
 {% set previewTargets = element.getPreviewTargets() %}
-{% set enablePreview = previewTargets and not craft.app.request.isMobileBrowser(true) %}
+{% set enablePreview = previewTargets and not craft.app.request.isMobileBrowser(true) and generalConfig.autosaveDrafts %}
 
 {% set canDeleteDraft = isDraft and ((canDeleteDraft ?? false) or element.creatorId == currentUser.id) and deleteDraftAction %}
 {% set canUpdateSource = canUpdateSource ?? false %}
@@ -76,7 +78,7 @@
     ((isCurrent and canDeleteSource) or (isDraft and canDeleteDraft and isNewlySupportedSite)) %}
 {% set canEdit = canEdit ?? (canUpdateSource or canDuplicateSource or canAddAnother or saveDraftAction) %}
 
-{% set redirectUrl = redirectUrl ?? craft.app.config.general.getPostCpLoginRedirect() %}
+{% set redirectUrl = redirectUrl ?? generalConfig.getPostCpLoginRedirect() %}
 {% set addAnotherRedirectUrl = addAnotherRedirectUrl ?? null %}
 {% set hashedCpEditUrl = '{cpEditUrl}'|hash %}
 
@@ -212,52 +214,6 @@
         {{ block('contextMenu') }}
     </div>
     <div class="flex" id="action-buttons">
-        {% if previewTargets %}
-            <div class="btngroup">
-                {% if enablePreview %}
-                    <button type="button" id="preview-btn" class="btn">{{ "Preview"|t('app') }}</button>
-                {% endif %}
-                <button type="button" id="share-btn" class="btn">{{ 'View'|t('app') }}</button>
-            </div>
-        {% endif %}
-
-        {% if isCurrent and saveDraftAction %}
-            <div id="save-draft-btn-container">
-                {% if canUpdateSource and saveSourceAction %}
-                    <button type="button" id="save-draft-btn" class="btn">{{ 'Save as a draft'|t('app') }}</button>
-                {% else %}
-                    <button type="submit" id="save-draft-btn" class="btn submit">{{ 'Save as a draft'|t('app') }}</button>
-                    {% if formActions|length %}
-                        <button type="button" class="btn menubtn" aria-label="{{ 'Actions'|t('app') }}" data-icon="settings"></button>
-                        {% include '_layouts/components/form-action-menu' %}
-                    {% endif %}
-                {% endif %}
-            </div>
-        {% elseif isDraft and canUpdateSource and publishDraftAction %}
-            <div id="publish-draft-btn-container">
-                {{ tag('button', {
-                    type: 'button',
-                    class: ['btn', 'secondary', 'formsubmit'],
-                    text: 'Publish draft'|t('app'),
-                    title: forms.shortcutText('S', false, true),
-                    data: {
-                        action: publishDraftAction,
-                        redirect: hashedCpEditUrl,
-                    },
-                }) }}
-            </div>
-        {% elseif isRevision and canUpdateSource and revertSourceAction %}
-            <form method="post" accept-charset="UTF-8">
-                {{ csrfInput() }}
-                {{ actionInput(revertSourceAction) }}
-                {{ redirectInput('{cpEditUrl}') }}
-                {{ hiddenInput('revisionId', element.revisionId) }}
-                <div class="secondary-buttons">
-                    <button type="button" class="btn secondary formsubmit">{{ 'Revert {type} to this revision'|t('app', { type: element.lowerDisplayName() }) }}</button>
-                </div>
-            </form>
-        {% endif %}
-
         {{ block('actionButton') }}
     </div>
 {% endblock %}
@@ -272,17 +228,51 @@
 {% endblock %}
 
 {% block actionButton %}
-    {% if isCurrent and canUpdateSource and saveSourceAction %}
-        <div id="save-btn-container" class="btngroup submit">
-            {{ tag('button', {
-                type: 'submit',
-                class: ['btn', 'submit'],
-                text: 'Save'|t('app'),
-            }) }}
-            <button type="button" class="btn submit menubtn"></button>
-            {% include '_layouts/components/form-action-menu' %}
+    {% if previewTargets %}
+        <div class="btngroup">
+            {% if enablePreview %}
+                <button type="button" id="preview-btn" class="btn">{{ "Preview"|t('app') }}</button>
+            {% endif %}
+            <button type="button" id="share-btn" class="btn">{{ 'View'|t('app') }}</button>
         </div>
+    {% endif %}
+
+    {% if isCurrent %}
+        {% if saveDraftAction %}
+            <div id="save-draft-btn-container">
+                {% if canUpdateSource and saveSourceAction %}
+                    <button type="button" id="save-draft-btn" class="btn">{{ 'Create a draft'|t('app') }}</button>
+                {% else %}
+                    <button type="submit" id="save-draft-btn" class="btn submit">{{ 'Create a draft'|t('app') }}</button>
+                    {% if formActions|length %}
+                        <button type="button" class="btn menubtn" aria-label="{{ 'Actions'|t('app') }}" data-icon="settings"></button>
+                        {% include '_layouts/components/form-action-menu' %}
+                    {% endif %}
+                {% endif %}
+            </div>
+        {% endif %}
+        {% if canUpdateSource and saveSourceAction %}
+            <div id="save-btn-container" class="btngroup submit">
+                <button type="submit" class="btn submit">{{ 'Save'|t('app') }}</button>
+                <button type="button" class="btn submit menubtn"></button>
+                {% include '_layouts/components/form-action-menu' %}
+            </div>
+        {% endif %}
     {% elseif isDraft %}
+        {% if canUpdateSource and publishDraftAction %}
+            <div id="publish-draft-btn-container">
+                {{ tag('button', {
+                    type: 'button',
+                    class: ['btn', 'secondary', 'formsubmit'],
+                    text: 'Publish draft'|t('app'),
+                    title: forms.shortcutText('S', false, true),
+                    data: {
+                        action: publishDraftAction,
+                        redirect: hashedCpEditUrl,
+                    },
+                }) }}
+            </div>
+        {% endif %}
         <div id="save-btn-container" class="btngroup submit">
             <button type="submit" class="btn submit">{{ 'Save draft'|t('app') }}</button>
             {% if canDeleteDraft %}
@@ -290,6 +280,16 @@
                 {% include '_layouts/components/form-action-menu' %}
             {% endif %}
         </div>
+    {% elseif isRevision and canUpdateSource and revertSourceAction %}
+        <form method="post" accept-charset="UTF-8">
+            {{ csrfInput() }}
+            {{ actionInput(revertSourceAction) }}
+            {{ redirectInput('{cpEditUrl}') }}
+            {{ hiddenInput('revisionId', element.revisionId) }}
+            <div class="secondary-buttons">
+                <button type="button" class="btn secondary formsubmit">{{ 'Revert {type} to this revision'|t('app', { type: element.lowerDisplayName() }) }}</button>
+            </div>
+        </form>
     {% endif %}
 {% endblock %}
 
@@ -330,6 +330,15 @@
 {% endblock %}
 
 {% block details %}
+    {% if notices ?? false %}
+        <div class="meta read-only warning">
+            {% for notice in notices %}
+                <p>{{ notice }}</p>
+                {% if not loop.last %}<hr>{% endif %}
+            {% endfor %}
+        </div>
+    {% endif %}
+
     {% if settingsHtml %}
         <div id="settings" class="meta">
             {{ settingsHtml|raw }}
@@ -411,24 +420,6 @@
                 },
             },
         }) }}
-    {% endif %}
-
-    {% if isDraft and element.getIsOutdated() %}
-        {% do craft.app.session.authorize('mergeDraftSourceChanges:' ~ element.draftId) %}
-        <div class="meta read-only warning">
-            <p>{{ 'The source {type} has been updated recently.'|t('app', {type: element.lowerDisplayName()}) }}</p>
-            <div class="flex flex-nowrap">
-                {% if element.trackChanges %}
-                    {{ tag('button', {
-                        type: 'button',
-                        id: 'merge-changes-btn',
-                        class: ['btn'],
-                        text: 'Merge changes into draft'|t('app'),
-                    }) }}
-                    <div id="merge-changes-spinner" class="spinner hidden"></div>
-                {% endif %}
-            </div>
-        </div>
     {% endif %}
 {% endblock %}
 

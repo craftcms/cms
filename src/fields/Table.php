@@ -75,8 +75,8 @@ class Table extends Field
         'col1' => [
             'heading' => '',
             'handle' => '',
-            'type' => 'singleline'
-        ]
+            'type' => 'singleline',
+        ],
     ];
 
     /**
@@ -237,18 +237,18 @@ class Table extends Field
             'heading' => [
                 'heading' => Craft::t('app', 'Column Heading'),
                 'type' => 'singleline',
-                'autopopulate' => 'handle'
+                'autopopulate' => 'handle',
             ],
             'handle' => [
                 'heading' => Craft::t('app', 'Handle'),
                 'code' => true,
-                'type' => 'singleline'
+                'type' => 'singleline',
             ],
             'width' => [
                 'heading' => Craft::t('app', 'Width'),
                 'code' => true,
                 'type' => 'singleline',
-                'width' => 50
+                'width' => 50,
             ],
             'type' => [
                 'heading' => Craft::t('app', 'Type'),
@@ -467,7 +467,7 @@ class Table extends Field
             'name' => $typeName,
             'fields' => function() use ($contentFields) {
                 return $contentFields;
-            }
+            },
         ]));
 
         return Type::listOf($argumentType);
@@ -536,7 +536,7 @@ class Table extends Field
 
         switch ($type) {
             case 'color':
-                /** @var ColorData $value */
+                /* @var ColorData $value */
                 $value = $value->getHex();
                 $validator = new ColorValidator();
                 break;

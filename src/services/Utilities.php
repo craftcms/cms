@@ -90,7 +90,7 @@ class Utilities extends Component
         $utilityTypes[] = Migrations::class;
 
         $event = new RegisterComponentTypesEvent([
-            'types' => $utilityTypes
+            'types' => $utilityTypes,
         ]);
         $this->trigger(self::EVENT_REGISTER_UTILITY_TYPES, $event);
 
@@ -123,7 +123,7 @@ class Utilities extends Component
      */
     public function checkAuthorization(string $class): bool
     {
-        /** @var string|UtilityInterface $class */
+        /* @var string|UtilityInterface $class */
         $utilityId = $class::id();
         $user = Craft::$app->getUser();
 
@@ -139,7 +139,7 @@ class Utilities extends Component
     public function getUtilityTypeById(string $id)
     {
         foreach ($this->getAllUtilityTypes() as $class) {
-            /** @var UtilityInterface $class */
+            /* @var UtilityInterface $class */
             if ($class::id() === $id) {
                 return $class;
             }

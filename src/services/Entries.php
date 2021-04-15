@@ -51,7 +51,7 @@ class Entries extends Component
                 ->scalar();
         }
 
-        /** @noinspection PhpIncompatibleReturnTypeInspection */
+        /* @noinspection PhpIncompatibleReturnTypeInspection */
         return Craft::$app->getElements()->getElementById($entryId, Entry::class, $siteId, $criteria);
     }
 }

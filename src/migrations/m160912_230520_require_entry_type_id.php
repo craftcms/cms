@@ -29,7 +29,7 @@ class m160912_230520_require_entry_type_id extends Migration
         $results = (new Query())
             ->select([
                 'sectionId' => 's.id',
-                'typeId' => $subQuery
+                'typeId' => $subQuery,
             ])
             ->from(['s' => Table::SECTIONS])
             ->all($this->db);

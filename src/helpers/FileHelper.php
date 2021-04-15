@@ -154,7 +154,7 @@ class FileHelper extends \yii\helpers\FileHelper
             '`',
             '!',
             '{',
-            '}'
+            '}',
         ];
 
         // Replace any control characters in the name with a space.

@@ -11,6 +11,7 @@ use Craft;
 use craft\db\Query;
 use craft\db\Table;
 use craft\elements\User;
+use craft\helpers\Session;
 use craft\helpers\StringHelper;
 use craft\services\Users;
 use craft\test\TestCase;
@@ -79,7 +80,12 @@ class UserElementTest extends TestCase
      */
     public function testGetAuthKey()
     {
+        Session::reset();
+
         $this->tester->mockCraftMethods('session', [
+            'getHasSessionId' => function() {
+                return true;
+            },
             'get' => function($tokenParam) {
                 self::assertSame(Craft::$app->getUser()->tokenParam, $tokenParam);
 
@@ -95,6 +101,8 @@ class UserElementTest extends TestCase
             '["TOKEN",null,"Mozilla/5.0 (iPad; U; CPU OS 3_2_1 like Mac OS X; en-us)"]',
             $this->activeUser->getAuthKey()
         );
+
+        Session::reset();
     }
 
     /**

@@ -76,7 +76,7 @@ class SystemMessages extends Component
 
         // Give plugins a chance to add additional messages
         $event = new RegisterEmailMessagesEvent([
-            'messages' => $messages
+            'messages' => $messages,
         ]);
         $this->trigger(self::EVENT_REGISTER_MESSAGES, $event);
 

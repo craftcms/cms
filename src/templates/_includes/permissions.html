@@ -58,11 +58,10 @@
 {% from _self import permissionList %}
 
 {% set user = userOrGroup and className(userOrGroup) == 'craft\elements\User' ? userOrGroup : null %}
-{% for category, catPermissions in craft.app.userPermissions.getAssignablePermissions(user) %}
+{% for group in craft.app.userPermissions.getAssignablePermissions(user) %}
     <div class="user-permissions">
-        <h3>{{ category }}</h3>
+        <h3>{{ group.heading }}</h3>
         <div class="select-all"></div>
-
-        {{ permissionList(_context, catPermissions) }}
+        {{ permissionList(_context, group.permissions) }}
     </div>
 {% endfor %}

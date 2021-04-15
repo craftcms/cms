@@ -78,27 +78,33 @@ class Revisions extends Component
             throw new Exception('Could not acquire a lock to save a revision for element ' . $source->id);
         }
 
+        $db = Craft::$app->getDb();
+
         $num = ArrayHelper::remove($newAttributes, 'revisionNum');
 
         if (!$force || !$num) {
             // Find the source's last revision number, if it has one
-            $lastRevisionNum = (new Query())
-                ->select(['num'])
-                ->from([Table::REVISIONS])
-                ->where(['sourceId' => $source->id])
-                ->orderBy(['num' => SORT_DESC])
-                ->limit(1)
-                ->scalar();
+            $lastRevisionNum = $db->usePrimary(function() use ($source) {
+                return (new Query())
+                    ->select(['num'])
+                    ->from([Table::REVISIONS])
+                    ->where(['sourceId' => $source->id])
+                    ->orderBy(['num' => SORT_DESC])
+                    ->limit(1)
+                    ->scalar();
+            });
 
             if (!$force && $lastRevisionNum) {
                 // Get the revision, if it exists for the source's site
-                /** @var ElementInterface|RevisionBehavior|null $lastRevision */
-                $lastRevision = $source::find()
-                    ->revisionOf($source)
-                    ->siteId($source->siteId)
-                    ->anyStatus()
-                    ->andWhere(['revisions.num' => $lastRevisionNum])
-                    ->one();
+                /* @var ElementInterface|RevisionBehavior|null $lastRevision */
+                $lastRevision = $db->usePrimary(function() use ($source, $lastRevisionNum) {
+                    return $source::find()
+                        ->revisionOf($source)
+                        ->siteId($source->siteId)
+                        ->anyStatus()
+                        ->andWhere(['revisions.num' => $lastRevisionNum])
+                        ->one();
+                });
 
                 // If the source hasn't been updated since the revision's creation date,
                 // there's no need to create a new one
@@ -109,7 +115,11 @@ class Revisions extends Component
             }
 
             // Get the next revision number for this element
-            $num = ($lastRevisionNum ?: 0) + 1;
+            if ($lastRevisionNum) {
+                $num = $lastRevisionNum + 1;
+            } else {
+                $num = 1;
+            }
         }
 
         if ($creatorId === null) {
@@ -131,20 +141,21 @@ class Revisions extends Component
 
         $elementsService = Craft::$app->getElements();
 
-        $transaction = Craft::$app->getDb()->beginTransaction();
+        $transaction = $db->beginTransaction();
         try {
             // Create the revision row
             Db::insert(Table::REVISIONS, [
-                'sourceId' => $source->id,
+                'sourceId' => $source->id, // todo: remove in v4
                 'creatorId' => $creatorId,
                 'num' => $num,
                 'notes' => $notes,
             ], false);
 
-            $newAttributes['revisionId'] = Craft::$app->getDb()->getLastInsertID(Table::REVISIONS);
+            // Duplicate the element
+            $newAttributes['canonicalId'] = $source->id;
+            $newAttributes['revisionId'] = $db->getLastInsertID(Table::REVISIONS);
             $newAttributes['behaviors']['revision'] = [
                 'class' => RevisionBehavior::class,
-                'sourceId' => $source->id,
                 'creatorId' => $creatorId,
                 'revisionNum' => $num,
                 'revisionNotes' => $notes,
@@ -154,7 +165,6 @@ class Revisions extends Component
                 $newAttributes['dateCreated'] = $source->dateUpdated;
             }
 
-            // Duplicate the element
             $revision = $elementsService->duplicateElement($source, $newAttributes);
 
             $transaction->commit();
@@ -200,13 +210,13 @@ class Revisions extends Component
      */
     public function revertToRevision(ElementInterface $revision, int $creatorId): ElementInterface
     {
-        /** @var ElementInterface|RevisionBehavior $revision */
-        $source = ElementHelper::sourceElement($revision);
+        /* @var ElementInterface|RevisionBehavior $revision */
+        $canonical = $revision->getCanonical();
 
         // Fire a 'beforeRevertToRevision' event
         if ($this->hasEventHandlers(self::EVENT_BEFORE_REVERT_TO_REVISION)) {
             $this->trigger(self::EVENT_BEFORE_REVERT_TO_REVISION, new RevisionEvent([
-                'source' => $source,
+                'source' => $canonical,
                 'creatorId' => $creatorId,
                 'revisionNum' => $revision->revisionNum,
                 'revisionNotes' => $revision->revisionNotes,
@@ -214,26 +224,11 @@ class Revisions extends Component
             ]));
         }
 
-        $transaction = Craft::$app->getDb()->beginTransaction();
-        try {
-            // "Duplicate" the revision with the source element's ID, UID, and content ID
-            $newSource = Craft::$app->getElements()->duplicateElement($revision, [
-                'id' => $source->id,
-                'uid' => $source->uid,
-                'root' => $source->root,
-                'lft' => $source->lft,
-                'rgt' => $source->rgt,
-                'level' => $source->level,
-                'revisionId' => null,
-                'revisionCreatorId' => $creatorId,
-                'revisionNotes' => Craft::t('app', 'Reverted to revision {num}.', ['num' => $revision->revisionNum]),
-            ]);
-
-            $transaction->commit();
-        } catch (\Throwable $e) {
-            $transaction->rollBack();
-            throw $e;
-        }
+        // "Duplicate" the revision with the source element's ID, UID, and content ID
+        $newSource = Craft::$app->getElements()->updateCanonicalElement($revision, [
+            'revisionCreatorId' => $creatorId,
+            'revisionNotes' => Craft::t('app', 'Reverted to revision {num}.', ['num' => $revision->revisionNum]),
+        ]);
 
         // Fire an 'afterRevertToRevision' event
         if ($this->hasEventHandlers(self::EVENT_AFTER_REVERT_TO_REVISION)) {

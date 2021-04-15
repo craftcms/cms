@@ -66,7 +66,7 @@ class m190312_152740_element_revisions extends Migration
         $this->addForeignKey(null, '{{%entryversionerrors}}', ['versionId'], Table::ENTRYVERSIONS, ['id'], 'CASCADE');
 
         // Queue up a ConvertEntryRevisions job
-        Queue::push(new ConvertEntryRevisions());
+        Queue::push(new ConvertEntryRevisions(), null, null, 3600);
     }
 
     /**

@@ -98,7 +98,7 @@ class NewUsers extends Widget
     {
         return Craft::$app->getView()->renderTemplate('_components/widgets/NewUsers/settings',
             [
-                'widget' => $this
+                'widget' => $this,
             ]);
     }
 }

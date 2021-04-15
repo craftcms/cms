@@ -315,7 +315,7 @@ class GraphqlController extends Controller
         return $this->renderTemplate('graphql/graphiql', [
             'url' => UrlHelper::actionUrl('graphql/api'),
             'schemas' => $schemas,
-            'selectedSchema' => $selectedSchema
+            'selectedSchema' => $selectedSchema,
         ]);
     }
 
@@ -399,7 +399,7 @@ class GraphqlController extends Controller
             if (!$publicSchema || $schema->id !== $publicSchema->id) {
                 $schemaOptions[] = [
                     'label' => $schema->name,
-                    'value' => $schema->id
+                    'value' => $schema->id,
                 ];
             }
         }
@@ -462,7 +462,7 @@ class GraphqlController extends Controller
 
             // Send the token back to the template
             Craft::$app->getUrlManager()->setRouteParams([
-                'token' => $token
+                'token' => $token,
             ]);
 
             return null;
@@ -591,7 +591,7 @@ class GraphqlController extends Controller
 
             // Send the schema back to the template
             Craft::$app->getUrlManager()->setRouteParams([
-                'schema' => $schema
+                'schema' => $schema,
             ]);
 
             return null;
@@ -650,7 +650,7 @@ class GraphqlController extends Controller
 
             // Send the schema back to the template
             Craft::$app->getUrlManager()->setRouteParams([
-                'schema' => $schema
+                'schema' => $schema,
             ]);
 
             return null;

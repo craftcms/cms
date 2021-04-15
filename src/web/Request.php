@@ -12,6 +12,7 @@ use craft\base\RequestTrait;
 use craft\config\GeneralConfig;
 use craft\errors\SiteNotFoundException;
 use craft\helpers\ArrayHelper;
+use craft\helpers\Session as SessionHelper;
 use craft\helpers\StringHelper;
 use craft\models\Site;
 use craft\services\Sites;
@@ -23,7 +24,7 @@ use yii\web\Cookie;
 use yii\web\CookieCollection;
 use yii\web\NotFoundHttpException;
 
-/** @noinspection ClassOverridesFieldOfSuperClassInspection */
+/* @noinspection ClassOverridesFieldOfSuperClassInspection */
 
 /**
  * @inheritdoc
@@ -243,7 +244,7 @@ class Request extends \yii\web\Request
         } catch (SiteNotFoundException $e) {
             // Fail silently if Craft isn't installed yet or is in the middle of updating
             if (Craft::$app->getIsInstalled() && !Craft::$app->getUpdates()->getIsCraftDbMigrationNeeded()) {
-                /** @noinspection PhpUnhandledExceptionInspection */
+                /* @noinspection PhpUnhandledExceptionInspection */
                 throw $e;
             }
         }
@@ -1315,7 +1316,7 @@ class Request extends \yii\web\Request
 
         [$route, $params] = $result;
 
-        /** @noinspection AdditionOperationOnArraysInspection */
+        /* @noinspection AdditionOperationOnArraysInspection */
         return [$route, $params + $this->getQueryParams()];
     }
 
@@ -1362,7 +1363,7 @@ class Request extends \yii\web\Request
             $cookie = $this->createCsrfCookie($token);
             Craft::$app->getResponse()->getCookies()->add($cookie);
         } else {
-            Craft::$app->getSession()->set($this->csrfParam, $token);
+            SessionHelper::set($this->csrfParam, $token);
         }
 
         return $token;
@@ -1614,6 +1615,9 @@ class Request extends \yii\web\Request
                 $actionParam = $this->getQueryParam('action');
             }
             $hasActionParam = $actionParam !== null;
+            if ($hasActionParam && !is_string($actionParam)) {
+                throw new BadRequestHttpException('Invalid action param');
+            }
             $hasSpecialPath = $checkSpecialPaths && in_array($this->_path, [
                     $loginPath,
                     $logoutPath,

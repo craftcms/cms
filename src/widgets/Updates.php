@@ -73,7 +73,7 @@ class Updates extends Widget
         if ($cached) {
             return $view->renderTemplate('_components/widgets/Updates/body',
                 [
-                    'total' => Craft::$app->getUpdates()->getTotalAvailableUpdates()
+                    'total' => Craft::$app->getUpdates()->getTotalAvailableUpdates(),
                 ]);
         }
 
