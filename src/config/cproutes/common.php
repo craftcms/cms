@@ -22,7 +22,7 @@ return [
     'globals/<siteHandle:{handle}>/<globalSetHandle:{handle}>' => 'globals/edit-content',
     'myaccount' => [
         'route' => 'users/edit-user',
-        'defaults' => ['userId' => 'current']
+        'defaults' => ['userId' => 'current'],
     ],
     'update' => 'updater',
     'settings/assets' => 'volumes/volume-index',
@@ -55,8 +55,8 @@ return [
                 'slug' => '[^\/]+',
                 'tag' => '[^\/]+',
                 '*' => '[^\/]+',
-            ]
-        ]
+            ],
+        ],
     ],
     'settings/sections' => 'sections/index',
     'settings/sections/new' => 'sections/edit-section',

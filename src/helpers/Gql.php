@@ -353,7 +353,7 @@ class Gql
     {
         if (isset($resolveInfo->fieldNodes[0]->directives)) {
             foreach ($resolveInfo->fieldNodes[0]->directives as $directive) {
-                /** @var Directive $directiveEntity */
+                /* @var Directive $directiveEntity */
                 $directiveEntity = GqlEntityRegistry::getEntity($directive->name->value);
                 $arguments = [];
 
@@ -397,6 +397,45 @@ class Gql
     }
 
     /**
+     * Return true if active schema can query for drafts.
+     *
+     * @param GqlSchema|null $schema The GraphQL schema. If none is provided, the active schema will be used.
+     * @return bool
+     * @since 3.6.8
+     */
+    public static function canQueryDrafts(?GqlSchema $schema = null): bool
+    {
+        $allowedEntities = self::extractAllowedEntitiesFromSchema('read', $schema);
+        return isset($allowedEntities['elements']) && is_array($allowedEntities['elements']) && in_array('drafts', $allowedEntities['elements'], true);
+    }
+
+    /**
+     * Return true if active schema can query for revisions.
+     *
+     * @param GqlSchema|null $schema The GraphQL schema. If none is provided, the active schema will be used.
+     * @return bool
+     * @since 3.6.8
+     */
+    public static function canQueryRevisions(?GqlSchema $schema = null): bool
+    {
+        $allowedEntities = self::extractAllowedEntitiesFromSchema('read', $schema);
+        return isset($allowedEntities['elements']) && is_array($allowedEntities['elements']) && in_array('revisions', $allowedEntities['elements'], true);
+    }
+
+    /**
+     * Return true if active schema can query for inactive elements.
+     *
+     * @param GqlSchema|null $schema The GraphQL schema. If none is provided, the active schema will be used.
+     * @return bool
+     * @since 3.6.8
+     */
+    public static function canQueryInactiveElements(?GqlSchema $schema = null): bool
+    {
+        $allowedEntities = self::extractAllowedEntitiesFromSchema('read', $schema);
+        return isset($allowedEntities['elements']) && is_array($allowedEntities['elements']) && in_array('inactive', $allowedEntities['elements'], true);
+    }
+
+    /**
      * @param ValueNode|VariableNode $value
      * @param array $variableValues
      * @return array|array[]|mixed
@@ -429,7 +468,7 @@ class Gql
         $fieldName = is_array($resolveInfo->path) ? array_slice($resolveInfo->path, -1)[0] : $resolveInfo->fieldName;
         $isAlias = $fieldName !== $resolveInfo->fieldName;
 
-        /** @var ElementQueryConditionBuilder $conditionBuilder */
+        /* @var ElementQueryConditionBuilder $conditionBuilder */
         $conditionBuilder = $context['conditionBuilder'] ?? null;
 
         if ($isAlias) {
@@ -467,6 +506,37 @@ class Gql
     {
         return static function($childComplexity) {
             return $childComplexity + GqlService::GRAPHQL_COMPLEXITY_QUERY;
+        };
+    }
+
+    /**
+     * Shorthand for returning the complexity function for a field that will add a single query to execution.
+     *
+     * @param int $baseComplexity The base complexity to use. Defaults to a single query.
+     *
+     * @return callable
+     * @since 3.6.7
+     */
+    public static function relatedArgumentComplexity(int $baseComplexity = GqlService::GRAPHQL_COMPLEXITY_QUERY): callable
+    {
+        return static function($childComplexity, $args) use ($baseComplexity) {
+            $complexityScore = $childComplexity + $baseComplexity;
+            $relatedArguments = ['relatedToAssets', 'relatedToEntries', 'relatedToUsers', 'relatedToCategories', 'relatedToTags'];
+
+            foreach ($relatedArguments as $argumentName) {
+                if (!empty($args[$argumentName])) {
+                    $complexityScore += GqlService::GRAPHQL_COMPLEXITY_QUERY * count((array)$args[$argumentName]);
+                }
+            }
+
+            if (!empty($args['relatedTo'])) {
+                $complexityScore += GqlService::GRAPHQL_COMPLEXITY_QUERY;
+            }
+            if (!empty($args['relatedToAll'])) {
+                $complexityScore += GqlService::GRAPHQL_COMPLEXITY_QUERY;
+            }
+
+            return $complexityScore;
         };
     }
 

@@ -241,7 +241,9 @@ class Url extends Field implements PreviewableFieldInterface
         ]);
 
         if (count($this->types) === 1) {
-            return $input;
+            return
+                Html::hiddenInput("$this->handle[type]", $valueType) .
+                $input;
         }
 
         $view = Craft::$app->getView();

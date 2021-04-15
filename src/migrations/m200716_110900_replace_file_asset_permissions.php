@@ -23,7 +23,7 @@ class m200716_110900_replace_file_asset_permissions extends Migration
         foreach (Craft::$app->getVolumes()->getAllVolumes() as $volume) {
             $suffix = ":{$volume->uid}";
             $permissionConditions += [
-                "replacefilesinvolume{$suffix}" => ["saveassetinvolume{$suffix}", "deletefilesandfoldersinvolume{$suffix}"]
+                "replacefilesinvolume{$suffix}" => ["saveassetinvolume{$suffix}", "deletefilesandfoldersinvolume{$suffix}"],
             ];
         }
 

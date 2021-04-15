@@ -9,7 +9,6 @@ namespace craft\elements\actions;
 
 use Craft;
 use craft\base\ElementAction;
-use craft\base\ElementInterface;
 use craft\elements\db\ElementQueryInterface;
 use craft\elements\User;
 use craft\helpers\Json;
@@ -148,7 +147,7 @@ JS;
      */
     public function performAction(ElementQueryInterface $query): bool
     {
-        /** @var User[] $users */
+        /* @var User[] $users */
         $users = $query->all();
         $undeletableIds = $this->_getUndeletableUserIds();
 

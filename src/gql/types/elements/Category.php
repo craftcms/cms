@@ -36,7 +36,7 @@ class Category extends Element
      */
     protected function resolve($source, $arguments, $context, ResolveInfo $resolveInfo)
     {
-        /** @var CategoryElement $source */
+        /* @var CategoryElement $source */
         $fieldName = $resolveInfo->fieldName;
 
         switch ($fieldName) {

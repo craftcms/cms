@@ -211,7 +211,7 @@ class Feeds extends Component
         $timezone = new \DateTimeZone(Craft::$app->getTimeZone());
 
         foreach ($feed as $item) {
-            /** @var EntryInterface $item */
+            /* @var EntryInterface $item */
             // Validate the permalink
             $permalink = $item->getPermalink();
 

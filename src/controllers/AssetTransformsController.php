@@ -144,7 +144,7 @@ class AssetTransformsController extends Controller
         if (!$success) {
             // Send the transform back to the template
             Craft::$app->getUrlManager()->setRouteParams([
-                'transform' => $transform
+                'transform' => $transform,
             ]);
 
             return null;

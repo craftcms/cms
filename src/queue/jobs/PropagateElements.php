@@ -45,14 +45,14 @@ class PropagateElements extends BaseJob
      */
     public function execute($queue)
     {
-        /** @var ElementQuery $query */
+        /* @var ElementQuery $query */
         $query = $this->_query();
         $total = $query->count();
         $elementsService = Craft::$app->getElements();
 
         $callback = function(BatchElementActionEvent $e) use ($queue, $query, $total) {
             if ($e->query === $query) {
-                $this->setProgress($queue, ($e->position - 1) / $total, Craft::t('app', '{step} of {total}', [
+                $this->setProgress($queue, ($e->position - 1) / $total, Craft::t('app', '{step, number} of {total, number}', [
                     'step' => $e->position,
                     'total' => $total,
                 ]));
@@ -69,9 +69,9 @@ class PropagateElements extends BaseJob
      */
     protected function defaultDescription(): string
     {
-        /** @var ElementQuery $query */
+        /* @var ElementQuery $query */
         $query = $this->_query();
-        /** @var ElementInterface $elementType */
+        /* @var ElementInterface $elementType */
         $elementType = $query->elementType;
         $total = $query->count();
         return Craft::t('app', 'Propagating {type}', [

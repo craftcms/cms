@@ -78,7 +78,7 @@ class ElementIndexes extends Component
      */
     public function saveSettings(string $elementType, array $newSettings): bool
     {
-        /** @var string|ElementInterface $elementType */
+        /* @var string|ElementInterface $elementType */
         // Get the currently saved settings
         $settings = $this->getSettings($elementType);
         $baseSources = $this->_normalizeSources($elementType::sources('index'));
@@ -161,7 +161,7 @@ class ElementIndexes extends Component
      */
     public function getSources(string $elementType, string $context = 'index'): array
     {
-        /** @var string|ElementInterface $elementType */
+        /* @var string|ElementInterface $elementType */
         $settings = $this->getSettings($elementType);
         $baseSources = $this->_normalizeSources($elementType::sources($context));
         $sources = [];
@@ -215,7 +215,7 @@ class ElementIndexes extends Component
      */
     public function getAvailableTableAttributes(string $elementType): array
     {
-        /** @var string|ElementInterface $elementType */
+        /* @var string|ElementInterface $elementType */
         $attributes = $elementType::tableAttributes();
 
         // Normalize
@@ -239,7 +239,7 @@ class ElementIndexes extends Component
      */
     public function getTableAttributes(string $elementType, string $sourceKey): array
     {
-        /** @var ElementInterface|string $elementType */
+        /* @var ElementInterface|string $elementType */
         // If this is a source path, use the first segment
         if (($slash = strpos($sourceKey, '/')) !== false) {
             $sourceKey = substr($sourceKey, 0, $slash);
@@ -301,7 +301,7 @@ class ElementIndexes extends Component
     public function getFieldLayoutsForSource(string $elementType, string $sourceKey): array
     {
         if (!isset($this->_fieldLayouts[$elementType][$sourceKey])) {
-            /** @var string|ElementInterface $elementType */
+            /* @var string|ElementInterface $elementType */
             $this->_fieldLayouts[$elementType][$sourceKey] = $elementType::fieldLayouts($sourceKey);
         }
         return $this->_fieldLayouts[$elementType][$sourceKey];
@@ -388,7 +388,7 @@ class ElementIndexes extends Component
      */
     public function getAvailableTableFields(string $elementType): array
     {
-        /** @var string|ElementInterface $elementType */
+        /* @var string|ElementInterface $elementType */
         $fields = Craft::$app->getFields()->getFieldsByElementType($elementType);
         $availableFields = [];
 

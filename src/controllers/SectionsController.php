@@ -68,7 +68,7 @@ class SectionsController extends Controller
     {
         $variables = [
             'sectionId' => $sectionId,
-            'brandNewSection' => false
+            'brandNewSection' => false,
         ];
 
         if ($sectionId !== null) {
@@ -177,7 +177,7 @@ class SectionsController extends Controller
 
             // Send the section back to the template
             Craft::$app->getUrlManager()->setRouteParams([
-                'section' => $section
+                'section' => $section,
             ]);
 
             return null;
@@ -276,19 +276,19 @@ class SectionsController extends Controller
         $crumbs = [
             [
                 'label' => Craft::t('app', 'Settings'),
-                'url' => UrlHelper::url('settings')
+                'url' => UrlHelper::url('settings'),
             ],
             [
                 'label' => Craft::t('app', 'Sections'),
-                'url' => UrlHelper::url('settings/sections')
+                'url' => UrlHelper::url('settings/sections'),
             ],
             [
                 'label' => $section->name,
-                'url' => UrlHelper::url('settings/sections/' . $section->id)
+                'url' => UrlHelper::url('settings/sections/' . $section->id),
             ],
             [
                 'label' => Craft::t('app', 'Entry Types'),
-                'url' => UrlHelper::url('settings/sections/' . $sectionId . '/entrytypes')
+                'url' => UrlHelper::url('settings/sections/' . $sectionId . '/entrytypes'),
             ],
         ];
 
@@ -346,7 +346,7 @@ class SectionsController extends Controller
 
             // Send the entry type back to the template
             Craft::$app->getUrlManager()->setRouteParams([
-                'entryType' => $entryType
+                'entryType' => $entryType,
             ]);
 
             return null;

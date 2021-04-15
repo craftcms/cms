@@ -20,6 +20,8 @@ use craft\elements\actions\Delete;
 use craft\elements\actions\Duplicate;
 use craft\elements\actions\Edit;
 use craft\elements\actions\NewChild;
+use craft\elements\actions\NewSiblingAfter;
+use craft\elements\actions\NewSiblingBefore;
 use craft\elements\actions\Restore;
 use craft\elements\actions\SetStatus;
 use craft\elements\actions\View;
@@ -34,7 +36,6 @@ use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
 use craft\helpers\ElementHelper;
 use craft\helpers\Html;
-use craft\helpers\Json;
 use craft\helpers\UrlHelper;
 use craft\models\EntryType;
 use craft\models\Section;
@@ -166,7 +167,7 @@ class Entry extends Element
             self::STATUS_LIVE => Craft::t('app', 'Live'),
             self::STATUS_PENDING => Craft::t('app', 'Pending'),
             self::STATUS_EXPIRED => Craft::t('app', 'Expired'),
-            self::STATUS_DISABLED => Craft::t('app', 'Disabled')
+            self::STATUS_DISABLED => Craft::t('app', 'Disabled'),
         ];
     }
 
@@ -212,10 +213,10 @@ class Entry extends Element
                 'label' => Craft::t('app', 'All entries'),
                 'criteria' => [
                     'sectionId' => $sectionIds,
-                    'editable' => $editable
+                    'editable' => $editable,
                 ],
-                'defaultSort' => ['postDate', 'desc']
-            ]
+                'defaultSort' => ['postDate', 'desc'],
+            ],
         ];
 
         if (!empty($singleSectionIds)) {
@@ -224,15 +225,15 @@ class Entry extends Element
                 'label' => Craft::t('app', 'Singles'),
                 'criteria' => [
                     'sectionId' => $singleSectionIds,
-                    'editable' => $editable
+                    'editable' => $editable,
                 ],
-                'defaultSort' => ['title', 'asc']
+                'defaultSort' => ['title', 'asc'],
             ];
         }
 
         $sectionTypes = [
             Section::TYPE_CHANNEL => Craft::t('app', 'Channels'),
-            Section::TYPE_STRUCTURE => Craft::t('app', 'Structures')
+            Section::TYPE_STRUCTURE => Craft::t('app', 'Structures'),
         ];
 
         foreach ($sectionTypes as $type => $heading) {
@@ -240,19 +241,19 @@ class Entry extends Element
                 $sources[] = ['heading' => $heading];
 
                 foreach ($sectionsByType[$type] as $section) {
-                    /** @var Section $section */
+                    /* @var Section $section */
                     $source = [
                         'key' => 'section:' . $section->uid,
                         'label' => Craft::t('site', $section->name),
                         'sites' => $section->getSiteIds(),
                         'data' => [
                             'type' => $type,
-                            'handle' => $section->handle
+                            'handle' => $section->handle,
                         ],
                         'criteria' => [
                             'sectionId' => $section->id,
-                            'editable' => $editable
-                        ]
+                            'editable' => $editable,
+                        ],
                     ];
 
                     if ($type == Section::TYPE_STRUCTURE) {
@@ -307,7 +308,7 @@ class Entry extends Element
         // Get the selected site
         $controller = Craft::$app->controller;
         if ($controller instanceof ElementIndexesController) {
-            /** @var ElementQuery $elementQuery */
+            /* @var ElementQuery $elementQuery */
             $elementQuery = $controller->getElementQuery();
         } else {
             $elementQuery = null;
@@ -340,7 +341,7 @@ class Entry extends Element
         $actions = [];
         $elementsService = Craft::$app->getElements();
 
-        /** @var Section[] $sections */
+        /* @var Section[] $sections */
         if (!empty($sections)) {
             $userSession = Craft::$app->getUser();
             $canSetStatus = true;
@@ -411,17 +412,29 @@ class Entry extends Element
                     $structure = Craft::$app->getStructures()->getStructureById($section->structureId);
 
                     if ($structure) {
-                        $newChildUrl = 'entries/' . $section->handle . '/new';
+                        $newEntryUrl = 'entries/' . $section->handle . '/new';
 
                         if (Craft::$app->getIsMultiSite()) {
-                            $newChildUrl .= '?site=' . $site->handle;
+                            $newEntryUrl .= '?site=' . $site->handle;
                         }
+
+                        $actions[] = $elementsService->createAction([
+                            'type' => NewSiblingBefore::class,
+                            'label' => Craft::t('app', 'Create a new entry before'),
+                            'newSiblingUrl' => $newEntryUrl,
+                        ]);
+
+                        $actions[] = $elementsService->createAction([
+                            'type' => NewSiblingAfter::class,
+                            'label' => Craft::t('app', 'Create a new entry after'),
+                            'newSiblingUrl' => $newEntryUrl,
+                        ]);
 
                         $actions[] = $elementsService->createAction([
                             'type' => NewChild::class,
                             'label' => Craft::t('app', 'Create a new child entry'),
                             'maxLevels' => $structure->maxLevels,
-                            'newChildUrl' => $newChildUrl,
+                            'newChildUrl' => $newEntryUrl,
                         ]);
                     }
                 }
@@ -480,7 +493,7 @@ class Entry extends Element
             'uri' => Craft::t('app', 'URI'),
             [
                 'label' => Craft::t('app', 'Post Date'),
-                'orderBy' => function (int $dir) {
+                'orderBy' => function(int $dir) {
                     if ($dir === SORT_ASC) {
                         if (Craft::$app->getDb()->getIsMysql()) {
                             return new Expression('[[postDate]] IS NOT NULL DESC, [[postDate]] ASC');
@@ -593,7 +606,7 @@ class Entry extends Element
 
             return [
                 'elementType' => User::class,
-                'map' => $map
+                'map' => $map,
             ];
         }
 
@@ -605,7 +618,7 @@ class Entry extends Element
      */
     public static function gqlTypeNameByContext($context): string
     {
-        /** @var EntryType $context */
+        /* @var EntryType $context */
         return self::_getGqlIdentifierByContext($context) . '_Entry';
     }
 
@@ -615,7 +628,7 @@ class Entry extends Element
      */
     public static function gqlMutationNameByContext($context): string
     {
-        /** @var EntryType $context */
+        /* @var EntryType $context */
         return 'save_' . self::_getGqlIdentifierByContext($context) . '_Entry';
     }
 
@@ -624,7 +637,7 @@ class Entry extends Element
      */
     public static function gqlScopesByContext($context): array
     {
-        /** @var EntryType $context */
+        /* @var EntryType $context */
         return [
             'sections.' . $context->getSection()->uid,
             'entrytypes.' . $context->uid,
@@ -719,7 +732,7 @@ class Entry extends Element
     public $expiryDate;
 
     /**
-     * @var int|null New parent ID
+     * @var int|false|null New parent ID
      * @internal
      */
     public $newParentId;
@@ -795,7 +808,7 @@ class Entry extends Element
     protected function defineRules(): array
     {
         $rules = parent::defineRules();
-        $rules[] = [['sectionId', 'typeId', 'authorId', 'newParentId'], 'number', 'integerOnly' => true];
+        $rules[] = [['sectionId', 'typeId', 'authorId'], 'number', 'integerOnly' => true];
         $rules[] = [['postDate', 'expiryDate'], DateTimeValidator::class];
 
         if ($this->getSection()->type !== Section::TYPE_SINGLE) {
@@ -811,7 +824,7 @@ class Entry extends Element
     public function getSupportedSites(): array
     {
         $section = $this->getSection();
-        /** @var Site[] $allSites */
+        /* @var Site[] $allSites */
         $allSites = ArrayHelper::index(Craft::$app->getSites()->getAllSites(), 'id');
         $sites = [];
 
@@ -883,7 +896,7 @@ class Entry extends Element
                 $sites[] = [
                     'siteId' => $siteSettings->siteId,
                     'propagate' => $propagate,
-                    'enabledByDefault' => $siteSettings->enabledByDefault
+                    'enabledByDefault' => $siteSettings->enabledByDefault,
                 ];
             }
         }
@@ -948,8 +961,8 @@ class Entry extends Element
                 'template' => (string)$sectionSiteSettings[$siteId]->template,
                 'variables' => [
                     'entry' => $this,
-                ]
-            ]
+                ],
+            ],
         ];
     }
 
@@ -970,7 +983,7 @@ class Entry extends Element
      */
     protected function previewTargets(): array
     {
-        return array_map(function ($previewTarget) {
+        return array_map(function($previewTarget) {
             $previewTarget['label'] = Craft::t('site', $previewTarget['label']);
             return $previewTarget;
         }, $this->getSection()->previewTargets);
@@ -1263,7 +1276,7 @@ class Entry extends Element
         $section = $this->getSection();
 
         // The slug *might* not be set if this is a Draft and they've deleted it for whatever reason
-        $path = 'entries/' . $section->handle . '/' . $this->getSourceId() .
+        $path = 'entries/' . $section->handle . '/' . $this->getCanonicalId() .
             ($this->slug && strpos($this->slug, '__') !== 0 ? '-' . $this->slug : '');
 
         $params = [];
@@ -1319,8 +1332,8 @@ class Entry extends Element
                 }
 
             case 'revisionNotes':
-                /** @var Entry|null $revision */
-                /** @var RevisionBehavior|null $behavior */
+                /* @var Entry|null $revision */
+                /* @var RevisionBehavior|null $behavior */
                 if (
                     ($revision = $this->getCurrentRevision()) === null ||
                     ($behavior = $revision->getBehavior('revision')) === null
@@ -1330,8 +1343,8 @@ class Entry extends Element
                 return Html::encode($behavior->revisionNotes);
 
             case 'revisionCreator':
-                /** @var Entry|null $revision */
-                /** @var RevisionBehavior|null $behavior */
+                /* @var Entry|null $revision */
+                /* @var RevisionBehavior|null $behavior */
                 if (
                     ($revision = $this->getCurrentRevision()) === null ||
                     ($behavior = $revision->getBehavior('revision')) === null ||
@@ -1349,7 +1362,7 @@ class Entry extends Element
                 $drafts = $this->getEagerLoadedElements('drafts');
 
                 foreach ($drafts as $draft) {
-                    /** @var ElementInterface|DraftBehavior $draft */
+                    /* @var ElementInterface|DraftBehavior $draft */
                     $draft->setUiLabel($draft->draftName);
                 }
 
@@ -1377,7 +1390,7 @@ class Entry extends Element
                 foreach ($entryTypes as $entryType) {
                     $entryTypeOptions[] = [
                         'label' => Craft::t('site', $entryType->name),
-                        'value' => $entryType->id
+                        'value' => $entryType->id,
                     ];
                 }
 

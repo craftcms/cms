@@ -98,7 +98,7 @@ class Dashboard extends Component
         ];
 
         $event = new RegisterComponentTypesEvent([
-            'types' => $widgetTypes
+            'types' => $widgetTypes,
         ]);
         $this->trigger(self::EVENT_REGISTER_WIDGET_TYPES, $event);
 
@@ -378,7 +378,7 @@ class Dashboard extends Component
         $this->saveWidget($this->createWidget([
             'type' => FeedWidget::class,
             'url' => 'https://craftcms.com/news.rss',
-            'title' => 'Craft News'
+            'title' => 'Craft News',
         ]));
 
         // Update the user record
@@ -403,7 +403,7 @@ class Dashboard extends Component
         if ($widgetId !== null) {
             $widgetRecord = WidgetRecord::findOne([
                 'id' => $widgetId,
-                'userId' => $userId
+                'userId' => $userId,
             ]);
 
             if (!$widgetRecord) {

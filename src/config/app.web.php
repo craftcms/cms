@@ -9,7 +9,7 @@ return [
         },
         'request' => function() {
             $config = craft\helpers\App::webRequestConfig();
-            /** @var craft\web\Request $request */
+            /* @var craft\web\Request $request */
             $request = Craft::createObject($config);
             $request->csrfCookie = Craft::cookieConfig([], $request);
             return $request;
@@ -28,8 +28,8 @@ return [
         },
         'errorHandler' => [
             'class' => craft\web\ErrorHandler::class,
-            'errorAction' => 'templates/render-error'
-        ]
+            'errorAction' => 'templates/render-error',
+        ],
     ],
     'controllerNamespace' => 'craft\\controllers',
 ];

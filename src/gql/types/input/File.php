@@ -29,7 +29,7 @@ class File extends InputObjectType
                 'fileData' => [
                     'name' => 'fileData',
                     'type' => Type::string(),
-                    'description' => 'The contents of the file in Base64 format. If provided, takes precedence over the URL.'
+                    'description' => 'The contents of the file in Base64 format. If provided, takes precedence over the URL.',
                 ],
                 'filename' => [
                     'name' => 'filename',
@@ -39,9 +39,9 @@ class File extends InputObjectType
                 'url' => [
                     'name' => 'url',
                     'type' => Type::string(),
-                    'description' => 'The URL of the file.'
+                    'description' => 'The URL of the file.',
                 ],
-            ]
+            ],
         ]));
     }
 }

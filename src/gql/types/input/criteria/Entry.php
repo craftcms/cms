@@ -27,7 +27,7 @@ class Entry extends InputObjectType
             'name' => $typeName,
             'fields' => function() {
                 return EntryArguments::getArguments();
-            }
+            },
         ]));
     }
 }

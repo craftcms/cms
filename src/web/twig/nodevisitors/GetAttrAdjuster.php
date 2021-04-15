@@ -34,7 +34,7 @@ class GetAttrAdjuster implements NodeVisitorInterface
         // Swap it with our custom GetAttrNode
         $nodes = [
             'node' => $node->getNode('node'),
-            'attribute' => $node->getNode('attribute')
+            'attribute' => $node->getNode('attribute'),
         ];
 
         if ($node->hasNode('arguments')) {

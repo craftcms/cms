@@ -25,7 +25,7 @@ class m170217_044740_category_branch_limits extends Migration
             ->where([
                 'and',
                 ['type' => Categories::class],
-                ['not', ['settings' => null]]
+                ['not', ['settings' => null]],
             ])
             ->all($this->db);
 
@@ -34,7 +34,7 @@ class m170217_044740_category_branch_limits extends Migration
             if (array_key_exists('limit', $settings)) {
                 $settings['branchLimit'] = ArrayHelper::remove($settings, 'limit');
                 $this->update(Table::FIELDS, [
-                    'settings' => Json::encode($settings)
+                    'settings' => Json::encode($settings),
                 ], ['id' => $field['id']]);
             }
         }

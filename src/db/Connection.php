@@ -282,7 +282,7 @@ class Connection extends \yii\db\Connection
         // Fire an 'afterCreateBackup' event
         if ($this->hasEventHandlers(self::EVENT_AFTER_CREATE_BACKUP)) {
             $this->trigger(self::EVENT_AFTER_CREATE_BACKUP, new BackupEvent([
-                'file' => $filePath
+                'file' => $filePath,
             ]));
         }
 
@@ -321,7 +321,7 @@ class Connection extends \yii\db\Connection
         // Fire a 'beforeRestoreBackup' event
         if ($this->hasEventHandlers(self::EVENT_BEFORE_RESTORE_BACKUP)) {
             $this->trigger(self::EVENT_BEFORE_RESTORE_BACKUP, new RestoreEvent([
-                'file' => $filePath
+                'file' => $filePath,
             ]));
         }
 
@@ -345,7 +345,7 @@ class Connection extends \yii\db\Connection
         // Fire an 'afterRestoreBackup' event
         if ($this->hasEventHandlers(self::EVENT_AFTER_RESTORE_BACKUP)) {
             $this->trigger(self::EVENT_AFTER_RESTORE_BACKUP, new BackupEvent([
-                'file' => $filePath
+                'file' => $filePath,
             ]));
         }
     }

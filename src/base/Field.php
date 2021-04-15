@@ -26,6 +26,7 @@ use craft\validators\UniqueValidator;
 use GraphQL\Type\Definition\Type;
 use yii\base\Arrayable;
 use yii\base\ErrorHandler;
+use yii\base\NotSupportedException;
 use yii\db\Schema;
 
 /**
@@ -207,8 +208,8 @@ abstract class Field extends SavableComponent implements FieldInterface
     {
         $rules = parent::defineRules();
 
-        // Make sure the column name is under the databases maximum column length allowed.
-        $maxHandleLength = Craft::$app->getDb()->getSchema()->maxObjectNameLength - strlen(Craft::$app->getContent()->fieldColumnPrefix);
+        // Make sure the column name is under the databases maximum column length allowed, including the column prefix/suffix lengths
+        $maxHandleLength = Craft::$app->getDb()->getSchema()->maxObjectNameLength - strlen(Craft::$app->getContent()->fieldColumnPrefix) - 9;
 
         $rules[] = [['name'], 'string', 'max' => 255];
         $rules[] = [['handle'], 'string', 'max' => $maxHandleLength];
@@ -222,8 +223,8 @@ abstract class Field extends SavableComponent implements FieldInterface
                 self::TRANSLATION_METHOD_SITE,
                 self::TRANSLATION_METHOD_SITE_GROUP,
                 self::TRANSLATION_METHOD_LANGUAGE,
-                self::TRANSLATION_METHOD_CUSTOM
-            ]
+                self::TRANSLATION_METHOD_CUSTOM,
+            ],
         ];
         $rules[] = [
             ['handle'],
@@ -278,7 +279,7 @@ abstract class Field extends SavableComponent implements FieldInterface
                 'uri',
                 'url',
                 'username', // user-specific
-            ]
+            ],
         ];
         $rules[] = [
             ['handle'],
@@ -303,7 +304,7 @@ abstract class Field extends SavableComponent implements FieldInterface
     /**
      * @inheritdoc
      */
-    public function getContentColumnType(): string
+    public function getContentColumnType()
     {
         return Schema::TYPE_STRING;
     }
@@ -313,7 +314,10 @@ abstract class Field extends SavableComponent implements FieldInterface
      */
     public function getIsTranslatable(ElementInterface $element = null): bool
     {
-        return ($this->translationMethod !== self::TRANSLATION_METHOD_NONE);
+        if ($this->translationMethod === self::TRANSLATION_METHOD_CUSTOM) {
+            return $element === null || $this->getTranslationKey($element) !== '';
+        }
+        return $this->translationMethod !== self::TRANSLATION_METHOD_NONE;
     }
 
     /**
@@ -334,6 +338,28 @@ abstract class Field extends SavableComponent implements FieldInterface
     public function getTranslationKey(ElementInterface $element): string
     {
         return ElementHelper::translationKey($element, $this->translationMethod, $this->translationKeyFormat);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getStatus(ElementInterface $element): ?array
+    {
+        if ($element->isFieldModified($this->handle)) {
+            return [
+                Element::ATTR_STATUS_MODIFIED,
+                Craft::t('app', 'This field was updated in this draft.'),
+            ];
+        }
+
+        if ($element->isFieldOutdated($this->handle)) {
+            return [
+                Element::ATTR_STATUS_OUTDATED,
+                Craft::t('app', 'This field was updated in the Current revision.'),
+            ];
+        }
+
+        return null;
     }
 
     /**
@@ -490,9 +516,18 @@ abstract class Field extends SavableComponent implements FieldInterface
      */
     public function getSortOption(): array
     {
+        $column = ElementHelper::fieldColumnFromField($this);
+
+        if ($column === null) {
+            throw new NotSupportedException('getSortOption() not supported by ' . $this->name);
+        }
+
         return [
             'label' => Craft::t('site', $this->name),
-            'orderBy' => ($this->columnPrefix ?: 'field_') . $this->handle . ', elements.id',
+            'orderBy' => [
+                $column => SORT_ASC,
+                'elements.id' => SORT_ASC,
+            ],
             'attribute' => 'field:' . $this->id,
         ];
     }
@@ -523,17 +558,28 @@ abstract class Field extends SavableComponent implements FieldInterface
     /**
      * @inheritdoc
      */
+    public function copyValue(ElementInterface $from, ElementInterface $to): void
+    {
+        $value = $this->serializeValue($from->getFieldValue($this->handle));
+        $to->setFieldValue($this->handle, $value);
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function modifyElementsQuery(ElementQueryInterface $query, $value)
     {
+        /* @var ElementQuery $query */
         if ($value !== null) {
+            $column = ElementHelper::fieldColumnFromField($this);
+
             // If the field type doesn't have a content column, it *must* override this method
             // if it wants to support a custom query criteria attribute
-            if (!static::hasContentColumn()) {
+            if ($column === null) {
                 return false;
             }
 
-            /** @var ElementQuery $query */
-            $query->subQuery->andWhere(Db::parseParam('content.' . Craft::$app->getContent()->fieldColumnPrefix . $this->handle, $value));
+            $query->subQuery->andWhere(Db::parseParam("content.$column", $value));
         }
 
         return null;
@@ -602,7 +648,7 @@ abstract class Field extends SavableComponent implements FieldInterface
     {
         return [
             'name' => $this->handle,
-            'type' => Type::listOf(QueryArgument::getType())
+            'type' => Type::listOf(QueryArgument::getType()),
         ];
     }
 

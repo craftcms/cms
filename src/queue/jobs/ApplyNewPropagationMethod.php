@@ -42,7 +42,7 @@ class ApplyNewPropagationMethod extends BaseJob
      */
     public function execute($queue)
     {
-        /** @var string|ElementInterface $elementType */
+        /* @var string|ElementInterface $elementType */
         $elementType = $this->elementType;
         $query = $elementType::find()
             ->siteId('*')
@@ -59,7 +59,7 @@ class ApplyNewPropagationMethod extends BaseJob
 
         $callback = function(BatchElementActionEvent $e) use ($elementType, $queue, $query, $total, $elementsService, $allSiteIds) {
             if ($e->query === $query) {
-                $this->setProgress($queue, ($e->position - 1) / $total, Craft::t('app', '{step} of {total}', [
+                $this->setProgress($queue, ($e->position - 1) / $total, Craft::t('app', '{step, number} of {total, number}', [
                     'step' => $e->position,
                     'total' => $total,
                 ]));
@@ -89,7 +89,7 @@ class ApplyNewPropagationMethod extends BaseJob
                 while (!empty($otherSiteElements)) {
                     $otherSiteElement = array_pop($otherSiteElements);
                     try {
-                        /** @var Element $newElement */
+                        /* @var Element $newElement */
                         $newElement = $elementsService->duplicateElement($otherSiteElement);
                     } catch (UnsupportedSiteException $e) {
                         // Just log it and move along

@@ -9,7 +9,6 @@ namespace craft\gql\base;
 
 use Craft;
 use craft\elements\db\ElementQuery;
-use craft\elements\db\ElementQueryInterface;
 use craft\helpers\ArrayHelper;
 use craft\helpers\StringHelper;
 
@@ -21,22 +20,27 @@ use craft\helpers\StringHelper;
  */
 abstract class RelationArgumentHandler extends ArgumentHandler
 {
-    /** @var array */
+    /* @var array */
     private $_memoizedValues = [];
 
     /**
      * Get the IDs of elements returned by configuring the provided element query with given criteria.
      *
-     * @param ElementQueryInterface $elementQuery
-     * @param array $criteria
+     * @param string $elementType
+     * @param array $criteriaList
      * @return int[]
      */
-    protected function getIds(ElementQueryInterface $elementQuery, array $criteria = []): array
+    protected function getIds(string $elementType, array $criteriaList = []): array
     {
-        /** @var ElementQuery $elementQuery */
-        $elementQuery = Craft::configure($elementQuery, $criteria);
+        $idSets = [];
 
-        return $elementQuery->ids();
+        foreach ($criteriaList as $criteria) {
+            /* @var ElementQuery $elementQuery */
+            $elementQuery = Craft::configure(Craft::$app->getElements()->createElementQuery($elementType), $criteria);
+            $idSets[] = $elementQuery->ids();
+        }
+
+        return $idSets;
     }
 
     /**
@@ -56,11 +60,11 @@ abstract class RelationArgumentHandler extends ArgumentHandler
             $this->_memoizedValues[$hash] = $this->handleArgument($argumentValue);
         }
 
-        $ids = $this->_memoizedValues[$hash];
+        $idSets = $this->_memoizedValues[$hash];
 
         // Enforce no matches, if no matches. Doh.
-        if (empty($ids)) {
-            $ids = [0];
+        if (empty($idSets)) {
+            $idSets = [[0]];
         }
 
         $relatedTo = $this->prepareRelatedTo($argumentList['relatedTo'] ?? []);
@@ -69,7 +73,9 @@ abstract class RelationArgumentHandler extends ArgumentHandler
             $relatedTo = ['and'];
         }
 
-        $relatedTo[] = ['element' => $ids];
+        foreach ($idSets as $idSet) {
+            $relatedTo[] = ['element' => $idSet];
+        }
 
         $argumentList['relatedTo'] = $relatedTo;
         unset($argumentList[$this->argumentName]);

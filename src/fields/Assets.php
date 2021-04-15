@@ -14,7 +14,6 @@ use craft\db\Table as DbTable;
 use craft\elements\Asset;
 use craft\elements\db\AssetQuery;
 use craft\elements\db\ElementQuery;
-use craft\elements\db\ElementQueryInterface;
 use craft\errors\InvalidSubpathException;
 use craft\errors\InvalidVolumeException;
 use craft\errors\VolumeObjectNotFoundException;
@@ -28,8 +27,10 @@ use craft\helpers\Db;
 use craft\helpers\ElementHelper;
 use craft\helpers\FileHelper;
 use craft\helpers\Gql;
+use craft\helpers\Gql as GqlHelper;
 use craft\helpers\Html;
 use craft\models\GqlSchema;
+use craft\services\Gql as GqlService;
 use craft\web\UploadedFile;
 use GraphQL\Type\Definition\Type;
 use yii\base\InvalidConfigException;
@@ -226,7 +227,7 @@ class Assets extends BaseRelationField
         $rules[] = [
             ['allowedKinds'], 'required', 'when' => function(self $field): bool {
                 return (bool)$field->restrictFiles;
-            }
+            },
         ];
 
         $rules[] = [['previewMode'], 'in', 'range' => [self::PREVIEW_MODE_FULL, self::PREVIEW_MODE_THUMBS], 'skipOnEmpty' => false];
@@ -245,7 +246,7 @@ class Assets extends BaseRelationField
             if (!isset($volume['heading'])) {
                 $sourceOptions[] = [
                     'label' => $volume['label'],
-                    'value' => $volume['key']
+                    'value' => $volume['key'],
                 ];
             }
         }
@@ -278,7 +279,7 @@ class Assets extends BaseRelationField
             return parent::inputHtml($value, $element);
         } catch (InvalidSubpathException $e) {
             return Html::tag('p', Craft::t('app', 'This field’s target subfolder path is invalid: {path}', [
-                'path' => '<code>' . $this->singleUploadLocationSubpath . '</code>'
+                'path' => '<code>' . $this->singleUploadLocationSubpath . '</code>',
             ]), [
                 'class' => ['warning', 'with-icon'],
             ]);
@@ -333,10 +334,10 @@ class Assets extends BaseRelationField
         $filenames = [];
 
         // Get all the value's assets' filenames
-        /** @var AssetQuery $value */
+        /* @var AssetQuery $value */
         $value = $element->getFieldValue($this->handle);
         foreach ($value->all() as $asset) {
-            /** @var Asset $asset */
+            /* @var Asset $asset */
             $filenames[] = $asset->filename;
         }
 
@@ -351,7 +352,7 @@ class Assets extends BaseRelationField
         foreach ($filenames as $filename) {
             if (!in_array(mb_strtolower(pathinfo($filename, PATHINFO_EXTENSION)), $allowedExtensions, true)) {
                 $element->addError($this->handle, Craft::t('app', '“{filename}” is not allowed in this field.', [
-                    'filename' => $filename
+                    'filename' => $filename,
                 ]));
             }
         }
@@ -384,7 +385,7 @@ class Assets extends BaseRelationField
 
         foreach ($filenames as $filename) {
             $element->addError($this->handle, Craft::t('app', '“{filename}” is too large.', [
-                'filename' => $filename
+                'filename' => $filename,
             ]));
         }
     }
@@ -399,9 +400,9 @@ class Assets extends BaseRelationField
             $this->_uploadedDataFiles = ['data' => $value['data'], 'filename' => $value['filename']];
             unset($value['data'], $value['filename']);
 
-            /** @var Asset $class */
+            /* @var Asset $class */
             $class = static::elementType();
-            /** @var ElementQuery $query */
+            /* @var ElementQuery $query */
             $query = $class::find();
 
             $targetSite = $this->targetSiteId($element);
@@ -469,7 +470,7 @@ class Assets extends BaseRelationField
             'type' => Type::listOf(AssetInterface::getType()),
             'args' => AssetArguments::getArguments(),
             'resolve' => AssetResolver::class . '::resolve',
-            'complexity' => Gql::eagerLoadComplexity()
+            'complexity' => GqlHelper::relatedArgumentComplexity(GqlService::GRAPHQL_COMPLEXITY_EAGER_LOAD),
         ];
     }
 
@@ -548,8 +549,8 @@ class Assets extends BaseRelationField
         }
 
         // Are there any related assets?
-        /** @var AssetQuery $query */
-        /** @var Asset[] $assets */
+        /* @var AssetQuery $query */
+        /* @var Asset[] $assets */
         $assets = $query->all();
 
         if (!empty($assets)) {
@@ -714,7 +715,7 @@ class Assets extends BaseRelationField
     {
         $uploadedFiles = [];
 
-        if (ElementHelper::rootElement($element)->getIsRevision()) {
+        if (ElementHelper::isRevision($element)) {
             return $uploadedFiles;
         }
 
@@ -745,7 +746,7 @@ class Assets extends BaseRelationField
                     $uploadedFiles[] = [
                         'filename' => $filename,
                         'data' => $data,
-                        'type' => 'data'
+                        'type' => 'data',
                     ];
                 }
             }
@@ -761,7 +762,7 @@ class Assets extends BaseRelationField
                 $uploadedFiles[] = [
                     'filename' => $file->name,
                     'location' => $file->tempName,
-                    'type' => 'upload'
+                    'type' => 'upload',
                 ];
             }
         }
@@ -821,14 +822,14 @@ class Assets extends BaseRelationField
             $generalConfig = Craft::$app->getConfig()->getGeneral();
             $segments = array_map(function(string $segment) use ($generalConfig): string {
                 return FileHelper::sanitizeFilename($segment, [
-                    'asciiOnly' => $generalConfig->convertFilenamesToAscii
+                    'asciiOnly' => $generalConfig->convertFilenamesToAscii,
                 ]);
             }, $segments);
             $subpath = implode('/', $segments);
 
             $folder = $assetsService->findFolder([
                 'volumeId' => $volumeId,
-                'path' => $subpath . '/'
+                'path' => $subpath . '/',
             ]);
 
             // Ensure that the folder exists

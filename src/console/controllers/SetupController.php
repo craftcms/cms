@@ -247,7 +247,7 @@ EOD;
             'default' => $this->port ?: ($this->driver === Connection::DRIVER_MYSQL ? 3306 : 5432),
             'validator' => function(string $input): bool {
                 return is_numeric($input);
-            }
+            },
         ]);
 
         userCredentials:
@@ -299,7 +299,7 @@ EOD;
                     return false;
                 }
                 return true;
-            }
+            },
         ]);
         if ($this->tablePrefix && $this->tablePrefix !== 'none') {
             $this->tablePrefix = StringHelper::ensureRight($this->tablePrefix, '_');
@@ -343,7 +343,7 @@ EOD;
             // 1045: Access denied for user (username, password)
             // 1049: Unknown database (database)
             // 2002: Connection timed out (server)
-            /** @var \PDOException $pdoException */
+            /* @var \PDOException $pdoException */
             $pdoException = $e->getPrevious()->getPrevious() ?? $e->getPrevious() ?? $e;
             $this->stderr('failed: ' . $pdoException->getMessage() . PHP_EOL, Console::FG_RED);
 

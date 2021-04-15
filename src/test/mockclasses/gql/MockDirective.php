@@ -21,7 +21,7 @@ class MockDirective extends Directive
             'name' => static::name(),
             'locations' => [
                 DirectiveLocation::FIELD,
-            ]
+            ],
         ]);
     }
 

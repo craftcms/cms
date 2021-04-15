@@ -27,7 +27,7 @@ class Tag extends InputObjectType
             'name' => $typeName,
             'fields' => function() {
                 return TagArguments::getArguments();
-            }
+            },
         ]));
     }
 }

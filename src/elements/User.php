@@ -24,6 +24,7 @@ use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
 use craft\helpers\Html;
 use craft\helpers\Json;
+use craft\helpers\Session;
 use craft\helpers\StringHelper;
 use craft\helpers\UrlHelper;
 use craft\i18n\Locale;
@@ -193,8 +194,8 @@ class User extends Element implements IdentityInterface
             [
                 'key' => '*',
                 'label' => Craft::t('app', 'All users'),
-                'hasThumbs' => true
-            ]
+                'hasThumbs' => true,
+            ],
         ];
 
         if (Craft::$app->getEdition() === Craft::Pro) {
@@ -203,7 +204,7 @@ class User extends Element implements IdentityInterface
                 'key' => 'admins',
                 'label' => Craft::t('app', 'Admins'),
                 'criteria' => ['admin' => true],
-                'hasThumbs' => true
+                'hasThumbs' => true,
             ];
 
             $groups = Craft::$app->getUserGroups()->getAllGroups();
@@ -216,7 +217,7 @@ class User extends Element implements IdentityInterface
                         'key' => 'group:' . $group->uid,
                         'label' => Craft::t('site', $group->name),
                         'criteria' => ['groupId' => $group->id],
-                        'hasThumbs' => true
+                        'hasThumbs' => true,
                     ];
                 }
             }
@@ -379,7 +380,7 @@ class User extends Element implements IdentityInterface
      */
     protected static function prepElementQueryForTableAttribute(ElementQueryInterface $elementQuery, string $attribute)
     {
-        /** @var UserQuery $elementQuery */
+        /* @var UserQuery $elementQuery */
         if ($attribute === 'groups') {
             $elementQuery->withGroups();
         } else {
@@ -405,7 +406,7 @@ class User extends Element implements IdentityInterface
 
             return [
                 'elementType' => Asset::class,
-                'map' => $map
+                'map' => $map,
             ];
         }
 
@@ -439,19 +440,19 @@ class User extends Element implements IdentityInterface
             return null;
         }
 
-        /** @var static $user */
+        /* @var static $user */
         if ($user->getStatus() === self::STATUS_ACTIVE) {
             return $user;
         }
 
         // If the current user is being impersonated by an admin, ignore their status
-        if ($previousUserId = Craft::$app->getSession()->get(self::IMPERSONATE_KEY)) {
+        if ($previousUserId = Session::get(self::IMPERSONATE_KEY)) {
             $previousUser = static::find()
                 ->id($previousUserId)
-                ->admin()
+                ->anyStatus()
                 ->one();
 
-            if ($previousUser) {
+            if ($previousUser && $previousUser->can('impersonateUsers')) {
                 return $user;
             }
         }
@@ -762,7 +763,7 @@ class User extends Element implements IdentityInterface
                 if (strpos($this->$attribute, '://') !== false) {
                     $validator->addError($this, $attribute, Craft::t('app', 'Invalid value “{value}”.'));
                 }
-            }
+            },
         ];
 
         return $rules;
@@ -825,7 +826,7 @@ class User extends Element implements IdentityInterface
      */
     public function getAuthKey()
     {
-        $token = Craft::$app->getSession()->get(Craft::$app->getUser()->tokenParam);
+        $token = Craft::$app->getUser()->getToken();
 
         if ($token === null) {
             throw new Exception('No user session token exists.');
@@ -858,13 +859,25 @@ class User extends Element implements IdentityInterface
             return false;
         }
 
-        return (new Query())
+        $tokenId = (new Query())
+            ->select(['id'])
             ->from([Table::SESSIONS])
             ->where([
                 'token' => $token,
-                'userId' => $this->id
+                'userId' => $this->id,
             ])
-            ->exists();
+            ->scalar();
+
+        if (!$tokenId) {
+            return false;
+        }
+
+        // Update the session row's dateUpdated value so it doesn't get GC'd
+        Db::update(Table::SESSIONS, [
+            'dateUpdated' => Db::prepareDateForDb(new \DateTime()),
+        ], ['id' => $tokenId]);
+
+        return true;
     }
 
     /**
@@ -1059,7 +1072,7 @@ class User extends Element implements IdentityInterface
         if ($photo) {
             return $photo->getUrl([
                 'width' => $size,
-                'height' => $size
+                'height' => $size,
             ]);
         }
 
@@ -1459,15 +1472,12 @@ class User extends Element implements IdentityInterface
         parent::afterSave($isNew);
 
         if (!$isNew && $changePassword) {
-            // Destroy all sessions for this user
-            Db::delete(Table::SESSIONS, [
-                'userId' => $this->id,
-            ]);
-
-            // If this is for the current user, generate a new user session token for them
-            if ($this->getIsCurrent()) {
-                Craft::$app->getUser()->generateToken($this->id);
+            // Destroy all other sessions for this user
+            $condition = ['userId' => $this->id];
+            if ($this->getIsCurrent() && $token = Craft::$app->getUser()->getToken()) {
+                $condition = ['and', $condition, ['not', ['token' => $token]]];
             }
+            Db::delete(Table::SESSIONS, $condition);
         }
     }
 
@@ -1500,7 +1510,7 @@ class User extends Element implements IdentityInterface
 
                 foreach ($userRefs as $table => $column) {
                     Db::update($table, [
-                        $column => $this->inheritorOnDelete->id
+                        $column => $this->inheritorOnDelete->id,
                     ], [
                         $column => $this->id,
                     ], [], false);
@@ -1513,7 +1523,7 @@ class User extends Element implements IdentityInterface
                     ->authorId($this->id)
                     ->anyStatus();
 
-                foreach ($entryQuery->each() as $entry) {
+                foreach (Db::each($entryQuery) as $entry) {
                     $elementsService->deleteElement($entry);
                 }
             }

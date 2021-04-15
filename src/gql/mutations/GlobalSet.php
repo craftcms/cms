@@ -69,7 +69,7 @@ class GlobalSet extends Mutation
             'description' => 'Update the ”' . $globalSet . '“ global set.',
             'args' => $mutationArguments,
             'resolve' => [$resolver, 'saveGlobalSet'],
-            'type' => $generatedType
+            'type' => $generatedType,
         ];
     }
 }

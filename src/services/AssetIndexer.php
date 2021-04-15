@@ -734,7 +734,6 @@ class AssetIndexer extends Component
         }
 
         $folder = Craft::$app->getAssets()->ensureFolderByFullPathAndVolume($indexEntry->uri, $volume);
-        $this->updateIndexEntry($indexEntry->id, ['completed' => true, 'inProgress' => false, 'recordId' => $folder->id]);
 
         return $folder;
     }

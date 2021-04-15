@@ -33,7 +33,7 @@ class SingleSectionUriValidator extends UriFormatValidator
 
         parent::validateAttribute($model, $attribute);
 
-        /** @var Section_SiteSettings $model */
+        /* @var Section_SiteSettings $model */
         // Make sure it's a valid URI
         if (!(new UriValidator())->validate($model->uriFormat)) {
             $this->addError($model, $attribute, Craft::t('app', '{attribute} is not a valid URI'));

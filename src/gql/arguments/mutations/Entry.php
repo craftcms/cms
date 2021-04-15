@@ -28,27 +28,27 @@ class Entry extends ElementMutationArguments
             'authorId' => [
                 'name' => 'authorId',
                 'type' => Type::id(),
-                'description' => 'The ID of the user that created this entry.'
+                'description' => 'The ID of the user that created this entry.',
             ],
             'postDate' => [
                 'name' => 'postDate',
                 'type' => DateTime::getType(),
-                'description' => 'When should the entry be posted.'
+                'description' => 'When should the entry be posted.',
             ],
             'expiryDate' => [
                 'name' => 'expiryDate',
                 'type' => DateTime::getType(),
-                'description' => 'When should the entry expire.'
+                'description' => 'When should the entry expire.',
             ],
             'slug' => [
                 'name' => 'slug',
                 'type' => Type::string(),
-                'description' => 'Narrows the query results based on the elements’ slugs.'
+                'description' => 'Narrows the query results based on the elements’ slugs.',
             ],
             'siteId' => [
                 'name' => 'siteId',
                 'type' => Type::int(),
-                'description' => 'Determines which site(s) the elements should be saved to. Defaults to the primary site.'
+                'description' => 'Determines which site(s) the elements should be saved to. Defaults to the primary site.',
             ],
         ]);
     }

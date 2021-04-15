@@ -11,7 +11,7 @@ use yii\base\ArrayableTrait;
 use yii\base\BaseObject;
 
 /**
- * FieldLayoutElementInterface defines the common interface to be implemented by field layout element  classes.
+ * FieldLayoutElement is the base class for classes representing field layout elements in terms of objects.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.5.0

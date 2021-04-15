@@ -14,10 +14,10 @@ use craft\web\AssetBundle;
  */
 class AxiosAsset extends AssetBundle
 {
-    /** @inheritdoc */
+    /* @inheritdoc */
     public $sourcePath = '@lib/axios';
 
-    /** @inheritdoc */
+    /* @inheritdoc */
     public $js = [
         'axios.min.js',
     ];

@@ -124,7 +124,7 @@ class Assets extends Component
      */
     public function getAssetById(int $assetId, int $siteId = null): ?Asset
     {
-        /** @noinspection PhpIncompatibleReturnTypeInspection */
+        /* @noinspection PhpIncompatibleReturnTypeInspection */
         return Craft::$app->getElements()->getElementById($assetId, Asset::class, $siteId);
     }
 
@@ -164,7 +164,7 @@ class Assets extends Component
             $event = new ReplaceAssetEvent([
                 'asset' => $asset,
                 'replaceWith' => $pathOnServer,
-                'filename' => $filename
+                'filename' => $filename,
             ]);
             $this->trigger(self::EVENT_BEFORE_REPLACE_ASSET, $event);
             $filename = $event->filename;
@@ -181,7 +181,7 @@ class Assets extends Component
         if ($this->hasEventHandlers(self::EVENT_AFTER_REPLACE_ASSET)) {
             $this->trigger(self::EVENT_AFTER_REPLACE_ASSET, new ReplaceAssetEvent([
                 'asset' => $asset,
-                'filename' => $filename
+                'filename' => $filename,
             ]));
         }
     }
@@ -222,7 +222,7 @@ class Assets extends Component
 
         $existingFolder = $this->findFolder([
             'parentId' => $folder->parentId,
-            'name' => $folder->name
+            'name' => $folder->name,
         ]);
 
         if ($existingFolder && (!$folder->id || $folder->id !== $existingFolder->id)) {
@@ -267,7 +267,7 @@ class Assets extends Component
 
         $conflictingFolder = $this->findFolder([
             'parentId' => $folder->parentId,
-            'name' => $newName
+            'name' => $newName,
         ]);
 
         if ($conflictingFolder) {
@@ -346,7 +346,7 @@ class Assets extends Component
             // Add additional criteria but prevent overriding volumeId and order.
             $criteria = array_merge($additionalCriteria, [
                 'volumeId' => $volumeId,
-                'order' => 'path'
+                'order' => 'path',
             ]);
             $cacheKey = md5(Json::encode($criteria));
 
@@ -477,13 +477,13 @@ class Assets extends Component
      */
     public function getAllDescendantFolders(VolumeFolder $parentFolder, string $orderBy = 'path'): array
     {
-        /** @var $query Query */
+        /* @var $query Query */
         $query = $this->_createFolderQuery()
             ->where([
                 'and',
                 ['like', 'path', $parentFolder->path . '%', false],
                 ['volumeId' => $parentFolder->volumeId],
-                ['not', ['parentId' => null]]
+                ['not', ['parentId' => null]],
             ]);
 
         if ($orderBy) {
@@ -534,7 +534,7 @@ class Assets extends Component
     {
         return $this->findFolder([
             'volumeId' => $volumeId,
-            'parentId' => ':empty:'
+            'parentId' => ':empty:',
         ]);
     }
 
@@ -908,7 +908,7 @@ class Assets extends Component
 
                 $parameters = new FolderCriteria([
                     'path' => $path,
-                    'volumeId' => $volume->id
+                    'volumeId' => $volume->id,
                 ]);
 
                 // Create the record for current segment if needed.
@@ -1008,7 +1008,7 @@ class Assets extends Component
 
         $volumeTopFolder = $this->findFolder([
             'volumeId' => ':empty:',
-            'parentId' => ':empty:'
+            'parentId' => ':empty:',
         ]);
 
         // Unlikely, but would be very awkward if this happened without any contingency plans in place.
@@ -1021,7 +1021,7 @@ class Assets extends Component
 
         $folder = $this->findFolder([
             'name' => $folderName,
-            'parentId' => $volumeTopFolder->id
+            'parentId' => $volumeTopFolder->id,
         ]);
 
         if (!$folder) {

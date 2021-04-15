@@ -171,7 +171,7 @@ class m160804_110002_userphotos_to_assets extends Migration
                 ->where([
                     'or',
                     ['handle' => $handle],
-                    ['name' => $name]
+                    ['name' => $name],
                 ])
                 ->one($this->db);
         }
@@ -189,7 +189,7 @@ class m160804_110002_userphotos_to_assets extends Migration
             'url' => null,
             'settings' => Json::encode(['path' => '@storage/userphotos']),
             'fieldLayoutId' => null,
-            'sortOrder' => $maxSortOrder + 1
+            'sortOrder' => $maxSortOrder + 1,
         ];
 
         $db = Craft::$app->getDb();
@@ -201,7 +201,7 @@ class m160804_110002_userphotos_to_assets extends Migration
             'parentId' => null,
             'volumeId' => $volumeId,
             'name' => $name,
-            'path' => null
+            'path' => null,
         ];
         Db::insert(Table::VOLUMEFOLDERS, $folderData);
 
@@ -251,7 +251,7 @@ class m160804_110002_userphotos_to_assets extends Migration
             ->from([Table::VOLUMEFOLDERS])
             ->where([
                 'parentId' => null,
-                'volumeId' => $volumeId
+                'volumeId' => $volumeId,
             ])
             ->scalar($this->db);
 
@@ -266,7 +266,7 @@ class m160804_110002_userphotos_to_assets extends Migration
                 ->innerJoin(['volumefolders' => Table::VOLUMEFOLDERS], '[[volumefolders.id]] = [[assets.folderId]]')
                 ->where([
                     'assets.folderId' => $folderId,
-                    'filename' => $user['photo']
+                    'filename' => $user['photo'],
                 ])
                 ->exists($this->db);
 
@@ -274,7 +274,7 @@ class m160804_110002_userphotos_to_assets extends Migration
                 $elementData = [
                     'type' => Asset::class,
                     'enabled' => 1,
-                    'archived' => 0
+                    'archived' => 0,
                 ];
                 Db::insert(Table::ELEMENTS, $elementData);
 
@@ -286,14 +286,14 @@ class m160804_110002_userphotos_to_assets extends Migration
                         'locale' => $locale,
                         'slug' => ElementHelper::generateSlug($user['photo']),
                         'uri' => null,
-                        'enabled' => 1
+                        'enabled' => 1,
                     ];
                     Db::insert('{{%elements_i18n}}', $elementI18nData);
 
                     $contentData = [
                         'elementId' => $elementId,
                         'locale' => $locale,
-                        'title' => AssetsHelper::filename2Title(pathinfo($user['photo'], PATHINFO_FILENAME))
+                        'title' => AssetsHelper::filename2Title(pathinfo($user['photo'], PATHINFO_FILENAME)),
                     ];
                     Db::insert(Table::CONTENT, $contentData);
                 }
@@ -308,7 +308,7 @@ class m160804_110002_userphotos_to_assets extends Migration
                     'size' => filesize($filePath),
                     'width' => $imageSize[0],
                     'height' => $imageSize[1],
-                    'dateModified' => Db::prepareDateForDb(filemtime($filePath))
+                    'dateModified' => Db::prepareDateForDb(filemtime($filePath)),
                 ];
                 Db::insert(Table::ASSETS, $assetData);
 

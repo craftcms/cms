@@ -74,18 +74,18 @@ class Command extends \yii\queue\cli\Command
      */
     public function actionRun(): int
     {
-        $this->queue->run();
-        return ExitCode::OK;
+        return $this->queue->run() ?? ExitCode::OK;
     }
 
     /**
      * Listens for new jobs added to the queue and runs them
      *
-     * @param int $delay Number of seconds for waiting new job
+     * @param int $timeout The number of seconds to wait between cycles
+     * @return int
      */
-    public function actionListen($delay = 3)
+    public function actionListen(int $timeout = 3): int
     {
-        $this->queue->listen($delay);
+        return $this->queue->run(true, $timeout) ?? ExitCode::OK;
     }
 
     /**

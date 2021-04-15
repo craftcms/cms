@@ -37,7 +37,7 @@ class ExampleArrayble implements Arrayable
     public function extraFields(): array
     {
         return [
-            'extraField'
+            'extraField',
         ];
     }
 }

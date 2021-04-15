@@ -21,7 +21,6 @@
         {%- endif %}
         <div>
             {% include "_includes/forms/checkbox" with {
-                id: loop.first ? (id ?? null) : null,
                 instructionsId: instructionsId ?? false,
                 name: optionName,
                 checked: (option.value is defined and option.value in values),
