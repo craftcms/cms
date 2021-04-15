@@ -11,10 +11,11 @@ namespace craft\base;
 use Craft;
 use craft\behaviors\FieldLayoutBehavior;
 use craft\elements\Asset;
+use craft\helpers\Assets;
+use craft\models\FieldLayout;
 use craft\records\Volume as VolumeRecord;
 use craft\validators\HandleValidator;
 use craft\validators\UniqueValidator;
-use yii\base\NotSupportedException;
 
 /**
  * Volume is the base class for classes representing volumes in terms of objects.
@@ -25,10 +26,22 @@ abstract class Volume extends SavableComponent implements VolumeInterface
 {
     use VolumeTrait;
 
+    /* @since 4.0.0 */
+    public const CONFIG_MIMETYPE = 'mimetype';
+    /* @since 4.0.0 */
+    public const CONFIG_VISIBILITY = 'visibility';
+
+    /* @since 4.0.0 */
+    public const VISIBILITY_DEFAULT = 'default';
+    /* @since 4.0.0 */
+    public const VISIBILITY_HIDDEN = 'hidden';
+    /* @since 4.0.0 */
+    public const VISIBILITY_PUBLIC = 'public';
+
     /**
      * @inheritdoc
      */
-    public function behaviors()
+    public function behaviors(): array
     {
         $behaviors = parent::behaviors();
         $behaviors['fieldLayout'] = [
@@ -41,7 +54,7 @@ abstract class Volume extends SavableComponent implements VolumeInterface
     /**
      * @inheritdoc
      */
-    public function attributeLabels()
+    public function attributeLabels(): array
     {
         return [
             'url' => Craft::t('app', 'URL'),
@@ -83,9 +96,9 @@ abstract class Volume extends SavableComponent implements VolumeInterface
      * @inheritdoc
      * @since 3.5.0
      */
-    public function getFieldLayout()
+    public function getFieldLayout(): ?FieldLayout
     {
-        /* @var FieldLayoutBehavior $behavior */
+        /** @var FieldLayoutBehavior $behavior */
         $behavior = $this->getBehavior('fieldLayout');
         return $behavior->getFieldLayout();
     }
@@ -105,78 +118,24 @@ abstract class Volume extends SavableComponent implements VolumeInterface
     /**
      * @inheritdoc
      */
-    public function createDirectory(string $path)
+    public function saveFileLocally(string $uriPath, string $targetPath): int
     {
-        $this->createDir($path);
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function deleteDirectory(string $path)
-    {
-        $this->deleteDir($path);
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function renameDirectory(string $path, string $newName)
-    {
-        $this->renameDir($path, $newName);
+        return Assets::downloadFile($this, $uriPath, $targetPath);
     }
 
     /**
      * @inheritDoc
      */
-    public function directoryExists(string $path): bool
+    public function createFileByStream(string $path, $stream, array $config): void
     {
-        return $this->folderExists($path);
+        $this->writeFileFromStream($path, $stream, $config);
     }
 
     /**
-     * Creates a directory.
-     *
-     * @param string $path The path of the directory, relative to the source’s root
-     * @deprecated in 3.6.0. Use [[createDirectory()]] instead.
+     * @inheritDoc
      */
-    public function createDir(string $path)
+    public function updateFileByStream(string $path, $stream, array $config): void
     {
-        throw new NotSupportedException('createDir() has not been implemented.');
-    }
-
-    /**
-     * Deletes a directory.
-     *
-     * @param string $path The path of the directory, relative to the source’s root
-     * @deprecated in 3.6.0. Use [[deleteDirectory()]] instead.
-     */
-    public function deleteDir(string $path)
-    {
-        throw new NotSupportedException('deleteDir() has not been implemented.');
-    }
-
-    /**
-     * Renames a directory.
-     *
-     * @param string $path The path of the directory, relative to the source’s root
-     * @param string $newName The new path of the directory, relative to the source’s root
-     * @deprecated in 3.6.0. Use [[renameDirectory()]] instead.
-     */
-    public function renameDir(string $path, string $newName)
-    {
-        throw new NotSupportedException('renameDir() has not been implemented.');
-    }
-
-    /**
-     * Returns whether a folder exists at the given path.
-     *
-     * @param string $path The folder path to check
-     * @return bool
-     * @deprecated in 3.7.0. Use [[directoryExists()]] instead.
-     */
-    public function folderExists(string $path): bool
-    {
-        throw new NotSupportedException('folderExists() has not been implemented.');
+        $this->writeFileFromStream($path, $stream, $config);
     }
 }

@@ -8,18 +8,18 @@
 namespace craft\errors;
 
 /**
- * Class AssetLogicException
+ * Class AssetNotIndexableException
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0.0
+ * @since 4.0.0
  */
-class AssetLogicException extends AssetException
+class AssetNotIndexableException extends AssetException
 {
     /**
      * @return string the user-friendly name of this exception
      */
     public function getName()
     {
-        return 'Asset Logic Error';
+        return 'Asset or folder not indexable';
     }
 }

@@ -7,11 +7,11 @@
 
 namespace craft\base;
 
-use craft\errors\AssetException;
 use craft\errors\VolumeException;
-use craft\errors\VolumeObjectExistsException;
 use craft\errors\VolumeObjectNotFoundException;
 use craft\models\FieldLayout;
+use craft\models\VolumeListing;
+use Generator;
 
 /**
  * VolumeInterface defines the common interface to be implemented by volume classes.
@@ -29,7 +29,7 @@ interface VolumeInterface extends SavableComponentInterface
      * @return FieldLayout|null
      * @since 3.5.0
      */
-    public function getFieldLayout();
+    public function getFieldLayout(): ?FieldLayout;
 
     /**
      * Returns the URL to the source, if it’s accessible via HTTP traffic.
@@ -44,68 +44,70 @@ interface VolumeInterface extends SavableComponentInterface
      * List files.
      *
      * @param string $directory The path of the directory to list files of
-     * @param bool $recursive whether to fetch file list recursively
-     * @return array
+     * @param bool $recursive whether to fetch file list recursively, defaults to true
+     * @return Generator|VolumeListing[]
+     * @throws VolumeException
      */
-    public function getFileList(string $directory, bool $recursive): array;
+    public function getFileList(string $directory = '', bool $recursive = true): Generator;
 
     /**
-     * Return the metadata about a file.
-     *
-     * @param string $uri URI to the file on the volume
-     * @return array
-     * @throws VolumeObjectNotFoundException if the file cannot be found
-     * @deprecated in Craft 3.6.0. Use [[getFileSize()]] and [[getDateModified()]] instead.
-     */
-    public function getFileMetadata(string $uri): array;
-
-    /**
-     * Returns the file size.
+     * Return the file size.
      *
      * @param string $uri
-     * @return int|null
-     * @throws VolumeObjectNotFoundException if the file cannot be found
+     * @return int
+     * @throws VolumeException
      * @since 3.6.0
      */
-    public function getFileSize(string $uri): ?int;
+    public function getFileSize(string $uri): int;
 
     /**
      * Returns the last time the file was modified.
      *
      * @param string $uri
-     * @return int|null
-     * @throws VolumeObjectNotFoundException if the file cannot be found
+     * @return int
+     * @throws VolumeException
      * @since 3.6.0
      */
-    public function getDateModified(string $uri): ?int;
+    public function getDateModified(string $uri): int;
 
     /**
      * Creates a file.
      *
      * @param string $path The path of the file, relative to the source’s root
      * @param resource $stream The stream to file
-     * @param array $config Additional config options to pass to the adapter
-     * @throws VolumeObjectExistsException if a file already exists at the path on the Volume
-     * @throws VolumeException if something else goes wrong
+     * @param array $config Additional config options to pass on
+     * @throws VolumeException
+     * @deprecated in 4.0.0. Use [[writeFileFromStream()]] instead.
      */
-    public function createFileByStream(string $path, $stream, array $config);
+    public function createFileByStream(string $path, $stream, array $config): void;
 
     /**
      * Updates a file.
      *
      * @param string $path The path of the file, relative to the source’s root
      * @param resource $stream The new contents of the file as a stream
-     * @param array $config Additional config options to pass to the adapter
-     * @throws VolumeObjectNotFoundException if the file to be updated cannot be found
-     * @throws VolumeException if something else goes wrong
+     * @param array $config Additional config options to pass on
+     * @throws VolumeException
+     * @deprecated in 4.0.0.  Use [[writeFileFromStream()]] instead.
      */
-    public function updateFileByStream(string $path, $stream, array $config);
+    public function updateFileByStream(string $path, $stream, array $config): void;
+
+    /**
+     * Writes a file to a volume from a given stream.
+     *
+     * @param string $path The path of the file, relative to the source’s root
+     * @param resource $stream The new contents of the file as a stream
+     * @param array $config Additional config options to pass on
+     * @throws VolumeException
+     */
+    public function writeFileFromStream(string $path, $stream, array $config = []): void;
 
     /**
      * Returns whether a file exists.
      *
      * @param string $path The path of the file, relative to the source’s root
      * @return bool
+     * @throws VolumeException
      */
     public function fileExists(string $path): bool;
 
@@ -113,31 +115,26 @@ interface VolumeInterface extends SavableComponentInterface
      * Deletes a file.
      *
      * @param string $path The path of the file, relative to the source’s root
-     * @throws VolumeException if something goes wrong
      */
-    public function deleteFile(string $path);
+    public function deleteFile(string $path): void;
 
     /**
      * Renames a file.
      *
      * @param string $path The old path of the file, relative to the source’s root
      * @param string $newPath The new path of the file, relative to the source’s root
-     * @throws VolumeObjectExistsException if a file with such a name exists already
-     * @throws VolumeObjectNotFoundException if the file to be renamed cannot be found
-     * @throws VolumeException if something else goes wrong
+     * @throws VolumeException
      */
-    public function renameFile(string $path, string $newPath);
+    public function renameFile(string $path, string $newPath): void;
 
     /**
      * Copies a file.
      *
      * @param string $path The path of the file, relative to the source’s root
      * @param string $newPath The path of the new file, relative to the source’s root
-     * @throws VolumeObjectExistsException if a file with such a name exists already
-     * @throws VolumeObjectNotFoundException if the file to be renamed cannot be found
-     * @throws VolumeException if something else goes wrong
+     * @throws VolumeException
      */
-    public function copyFile(string $path, string $newPath);
+    public function copyFile(string $path, string $newPath): void;
 
     /**
      * Save a file from the source's uriPath to a local target path.
@@ -145,6 +142,7 @@ interface VolumeInterface extends SavableComponentInterface
      * @param string $uriPath
      * @param string $targetPath
      * @return int amount of bytes copied
+     * @deprecated in 4.0.0. Use [[\craft\helpers\Assets::downloadFile()]] instead.
      */
     public function saveFileLocally(string $uriPath, string $targetPath): int;
 
@@ -153,15 +151,16 @@ interface VolumeInterface extends SavableComponentInterface
      *
      * @param string $uriPath
      * @return resource
-     * @throws AssetException if a stream cannot be created
+     * @throws VolumeException if a stream cannot be created
      */
     public function getFileStream(string $uriPath);
 
     /**
      * Returns whether a directory exists at the given path.
      *
-     * @param string $path The folder path to check
+     * @param string $path The directory path to check
      * @return bool
+     * @throws VolumeException
      */
     public function directoryExists(string $path): bool;
 
@@ -169,27 +168,25 @@ interface VolumeInterface extends SavableComponentInterface
      * Creates a directory.
      *
      * @param string $path The path of the directory, relative to the source’s root
-     * @throws VolumeObjectExistsException if a directory with such name already exists
-     * @throws VolumeException if something else goes wrong
+     * @param array $config The config to use
+     * @throws VolumeException
      */
-    public function createDirectory(string $path);
+    public function createDirectory(string $path, array $config = []): void;
 
     /**
      * Deletes a directory.
      *
      * @param string $path The path of the directory, relative to the source’s root
-     * @throws VolumeException if something goes wrong
+     * @throws VolumeException
      */
-    public function deleteDirectory(string $path);
+    public function deleteDirectory(string $path): void;
 
     /**
      * Renames a directory.
      *
      * @param string $path The path of the directory, relative to the source’s root
      * @param string $newName The new path of the directory, relative to the source’s root
-     * @throws VolumeObjectNotFoundException if a directory with such name already exists
-     * @throws VolumeObjectExistsException if a directory with such name already exists
-     * @throws VolumeException if something else goes wrong
+     * @throws VolumeObjectNotFoundException if directory cannot be found
      */
-    public function renameDirectory(string $path, string $newName);
+    public function renameDirectory(string $path, string $newName): void;
 }

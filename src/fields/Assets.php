@@ -839,7 +839,7 @@ class Assets extends BaseRelationField
                 }
 
                 $volume = Craft::$app->getVolumes()->getVolumeById($volumeId);
-                $folderId = $assetsService->ensureFolderByFullPathAndVolume($subpath, $volume);
+                $folderId = $assetsService->ensureFolderByFullPathAndVolume($subpath, $volume)->id;
             } else {
                 $folderId = $folder->id;
             }
@@ -912,7 +912,7 @@ class Assets extends BaseRelationField
             // If this is a static path, go ahead and create it
             if (!preg_match('/\{|\}/', $subpath)) {
                 $volumeId = $this->_volumeIdBySourceKey($uploadVolume);
-                $folderId = $assets->ensureFolderByFullPathAndVolume($subpath, Craft::$app->getVolumes()->getVolumeById($volumeId), false);
+                $folderId = $assets->ensureFolderByFullPathAndVolume($subpath, Craft::$app->getVolumes()->getVolumeById($volumeId), false)->id;
             }
 
             // If this is a new/disabled element, the subpath probably just contained a token that returned null, like {id}

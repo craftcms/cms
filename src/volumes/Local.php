@@ -1,18 +1,22 @@
 <?php
+declare(strict_types=1);
 
 namespace craft\volumes;
 
 use Craft;
-use craft\base\FlysystemVolume;
 use craft\base\LocalVolumeInterface;
+use craft\base\Volume;
 use craft\errors\VolumeException;
-use craft\errors\VolumeObjectExistsException;
 use craft\errors\VolumeObjectNotFoundException;
 use craft\helpers\FileHelper;
-use League\Flysystem\Adapter\Local as LocalAdapter;
-use League\Flysystem\FileExistsException;
-use League\Flysystem\FileNotFoundException;
-use yii\validators\InlineValidator;
+use craft\helpers\Path;
+use craft\helpers\StringHelper;
+use craft\models\VolumeListing;
+use DirectoryIterator;
+use FilesystemIterator;
+use Generator;
+use RecursiveDirectoryIterator;
+use RecursiveIteratorIterator;
 
 /**
  * The local volume class. Handles the implementation of the local filesystem as a volume in
@@ -24,9 +28,34 @@ use yii\validators\InlineValidator;
  * @see http://craftcms.com
  * @package craft.app.volumes
  * @since 3.0.0
+ *
+ * @property-read mixed $settingsHtml
+ * @property-read string $rootPath
  */
-class Local extends FlysystemVolume implements LocalVolumeInterface
+class Local extends Volume implements LocalVolumeInterface
 {
+    /* @since 4.0.0 */
+    public const VISIBILITY_FILE = 'file';
+    /* @since 4.0.0 */
+    public const VISIBILITY_DIR = 'dir';
+
+    /**
+     * @var int[][] Visibility map
+     * @since 4.0.0
+     */
+    protected array $visibilityMap = [
+        self::VISIBILITY_FILE => [
+            self::VISIBILITY_DEFAULT => 0644,
+            self::VISIBILITY_PUBLIC => 0644,
+            self::VISIBILITY_HIDDEN => 0600,
+        ],
+        self::VISIBILITY_DIR => [
+            self::VISIBILITY_DEFAULT => 0775,
+            self::VISIBILITY_PUBLIC => 0775,
+            self::VISIBILITY_HIDDEN => 0700,
+        ],
+    ];
+
     /**
      * @inheritdoc
      */
@@ -38,7 +67,7 @@ class Local extends FlysystemVolume implements LocalVolumeInterface
     /**
      * @var string|null Path to the root of this sources local folder.
      */
-    public $path;
+    public ?string $path = null;
 
     /**
      * @inheritdoc
@@ -50,6 +79,16 @@ class Local extends FlysystemVolume implements LocalVolumeInterface
         if ($this->path !== null) {
             $this->path = str_replace('\\', '/', $this->path);
         }
+
+        $generalConfig = Craft::$app->getConfig()->getGeneral();
+
+        if ($generalConfig->defaultFileMode) {
+            $this->visibilityMap[self::VISIBILITY_FILE][self::VISIBILITY_DEFAULT] = $generalConfig->defaultFileMode;
+        }
+
+        if ($generalConfig->defaultFileMode) {
+            $this->visibilityMap[self::VISIBILITY_DIR][self::VISIBILITY_DEFAULT] = $generalConfig->defaultDirMode;
+        }
     }
 
     /**
@@ -59,60 +98,7 @@ class Local extends FlysystemVolume implements LocalVolumeInterface
     {
         $rules = parent::defineRules();
         $rules[] = [['path'], 'required'];
-        $rules[] = [['path'], 'validatePath'];
         return $rules;
-    }
-
-    /**
-     * @param string $attribute
-     * @param array|null $params
-     * @param InlineValidator $validator
-     * @return void
-     * @since 3.6.7
-     */
-    public function validatePath(string $attribute, ?array $params, InlineValidator $validator): void
-    {
-        // If the folder doesn't exist yet, create it with a .gitignore file
-        $path = $this->getRootPath();
-        if ($created = !file_exists($path)) {
-            FileHelper::createDirectory($path);
-            FileHelper::writeGitignoreFile($path);
-        }
-
-        // Make sure it’s not within any of the system directories
-        $path = realpath($path);
-        if ($path === false) {
-            return;
-        }
-
-        $pathService = Craft::$app->getPath();
-        $systemDirs = [
-            Craft::getAlias('@contentMigrations'),
-            Craft::getAlias('@lib'),
-            $pathService->getComposerBackupsPath(false),
-            $pathService->getConfigBackupPath(false),
-            $pathService->getConfigDeltaPath(false),
-            $pathService->getConfigPath(),
-            $pathService->getDbBackupPath(false),
-            $pathService->getLogPath(false),
-            $pathService->getRebrandPath(false),
-            $pathService->getRuntimePath(false),
-            $pathService->getSiteTemplatesPath(),
-            $pathService->getSiteTranslationsPath(),
-            $pathService->getTestsPath(),
-            $pathService->getVendorPath(),
-        ];
-
-        foreach ($systemDirs as $dir) {
-            $dir = realpath($dir);
-            if ($dir !== false && strpos($path . DIRECTORY_SEPARATOR, $dir . DIRECTORY_SEPARATOR) === 0) {
-                $validator->addError($this, $attribute, Craft::t('app', 'Local volumes cannot be located within system directories.'));
-                if ($created) {
-                    FileHelper::removeDirectory($path);
-                }
-                break;
-            }
-        }
     }
 
     /**
@@ -128,6 +114,23 @@ class Local extends FlysystemVolume implements LocalVolumeInterface
 
     /**
      * @inheritdoc
+     * @since 3.4.0
+     */
+    public function afterSave(bool $isNew)
+    {
+        // If the folder doesn't exist yet, create it with a .gitignore file
+        $path = $this->getRootPath();
+
+        if (!is_dir($path)) {
+            FileHelper::createDirectory($path);
+            FileHelper::writeGitignoreFile($path);
+        }
+
+        parent::afterSave($isNew);
+    }
+
+    /**
+     * @inheritdoc
      */
     public function getRootPath(): string
     {
@@ -137,37 +140,220 @@ class Local extends FlysystemVolume implements LocalVolumeInterface
     /**
      * @inheritdoc
      */
-    public function renameDir(string $path, string $newName)
+    public function getFileList(string $directory = '', bool $recursive = true): Generator
     {
-        $parentDir = dirname($path);
-        $newPath = ($parentDir && $parentDir !== '.' ? $parentDir . '/' : '') . $newName;
+        $targetDir = $this->prefixPath($directory);
+        $iterator = $recursive ? $this->getRecursiveIterator($targetDir) : new DirectoryIterator($targetDir);
 
-        try {
-            if (!$this->filesystem()->rename($path, $newPath)) {
-                throw new VolumeException('Couldn’t rename ' . $path);
+        /** @var DirectoryIterator $listing */
+        foreach ($iterator as $listing) {
+            if ($listing->isDir() && $listing->isDot()) {
+                continue;
             }
-        } catch (FileExistsException $exception) {
-            throw new VolumeObjectExistsException($exception->getMessage());
-        } catch (FileNotFoundException $exception) {
-            throw new VolumeObjectNotFoundException(Craft::t('app', 'Folder was not found while attempting to rename {path}!', ['path' => $path]));
+
+            $filePath = StringHelper::removeLeft($listing->getRealPath(), $this->prefixPath());
+
+            yield new VolumeListing([
+                'dirname' => pathinfo($filePath, PATHINFO_DIRNAME),
+                'basename' => $listing->getFilename(),
+                'type' => $listing->isDir() ? 'dir' : 'file',
+                'dateModified' => filemtime($listing->getRealPath()),
+                'fileSize' => !$listing->isDir() ? filesize($listing->getRealPath()) : null,
+                'volume' => $this,
+            ]);
         }
     }
 
     /**
      * @inheritdoc
-     * @return LocalAdapter
      */
-    protected function createAdapter(): LocalAdapter
+    public function getFileSize(string $uri): int
     {
-        $generalConfig = Craft::$app->getConfig()->getGeneral();
+        $targetPath = $this->prefixPath($uri);
+        clearstatcache();
+        $fileSize = is_file($targetPath) ? filesize($targetPath) : false;
 
-        return new LocalAdapter($this->getRootPath(), LOCK_EX, LocalAdapter::DISALLOW_LINKS, [
-            'file' => [
-                'public' => $generalConfig->defaultFileMode ?: 0644,
-            ],
-            'dir' => [
-                'public' => $generalConfig->defaultDirMode ?: 0755,
-            ],
-        ]);
+        if ($fileSize === false) {
+            throw new VolumeException("Unable to get file size for “{$uri}”");
+        }
+
+        return $fileSize;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getDateModified(string $uri): int
+    {
+        $targetPath = $this->prefixPath($uri);
+        clearstatcache();
+        $dateModified = filemtime($targetPath);
+
+        if ($dateModified === false) {
+            throw new VolumeException("Unable to get date modified for “{$uri}”");
+        }
+
+        return $dateModified;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function writeFileFromStream(string $path, $stream, array $config = []): void
+    {
+        $this->createDirectory(pathinfo($path, PATHINFO_DIRNAME), []);
+        $fullPath = $this->prefixPath($path);
+
+        $targetStream = @fopen($fullPath, 'w+b');
+
+        if (!@stream_copy_to_stream($stream, $targetStream)) {
+            throw new VolumeException("Unable to copy stream to `$fullPath`");
+        }
+
+        fclose($targetStream);
+
+        $visibility = $this->resolveVisibility(self::VISIBILITY_FILE, $config);
+
+        if ($visibility) {
+            @chmod($fullPath, $visibility);
+        }
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function fileExists(string $path): bool
+    {
+        try {
+            return file_exists($this->prefixPath($path));
+        } catch (VolumeException $exception) {
+            Craft::$app->getErrorHandler()->logException($exception);
+        }
+
+        return false;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function deleteFile(string $path): void
+    {
+        if (!$this->fileExists($path)) {
+            return;
+        }
+
+        if (!unlink($this->prefixPath($path))) {
+            Craft::warning("Tried to delete `$path`, but could not.");
+        }
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function renameFile(string $path, string $newPath): void
+    {
+        $this->createDirectory($newPath);
+        @rename($this->prefixPath($path), $this->prefixPath($newPath));
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function copyFile(string $path, string $newPath): void
+    {
+        $this->createDirectory($newPath);
+        @copy($this->prefixPath($path), $this->prefixPath($newPath));
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getFileStream(string $uriPath)
+    {
+        return @fopen($this->prefixPath($uriPath), 'rb');
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function directoryExists(string $path): bool
+    {
+        return is_dir($this->prefixPath($path));
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function createDirectory(string $path, array $config = []): void
+    {
+        $dirPath = StringHelper::removeRight($this->prefixPath($path), '.');
+        FileHelper::createDirectory($dirPath, $this->resolveVisibility(self::VISIBILITY_DIR, $config), true);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function deleteDirectory(string $path): void
+    {
+        FileHelper::removeDirectory($this->prefixPath($path));
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function renameDirectory(string $path, string $newName): void
+    {
+        if (!is_dir($this->prefixPath($path))) {
+            throw new VolumeObjectNotFoundException('No folder exists at path: ' . $path);
+        }
+
+        @rename($path, $this->prefixPath($path));
+    }
+
+    /**
+     * Create the recursive iterator for traversing file system.
+     *
+     * @param string $targetDir
+     * @return RecursiveIteratorIterator
+     */
+    protected function getRecursiveIterator(string $targetDir): RecursiveIteratorIterator
+    {
+        $directoryMode = FilesystemIterator::FOLLOW_SYMLINKS | FilesystemIterator::SKIP_DOTS | FilesystemIterator::CURRENT_AS_SELF;
+        $recursiveIteratorMode = RecursiveIteratorIterator::SELF_FIRST;
+
+        $recursiveDirectoryIterator = new RecursiveDirectoryIterator($targetDir, $directoryMode);
+        return new RecursiveIteratorIterator($recursiveDirectoryIterator, $recursiveIteratorMode);
+    }
+
+    /**
+     * Prefix the path with the root path.
+     *
+     * @param string $path
+     * @return string
+     * @throws VolumeException if path is not contained.
+     */
+    protected function prefixPath(string $path = ''): string
+    {
+        if (!Path::ensurePathIsContained($path)) {
+            throw new VolumeException("The path `$path` is not contained.");
+        }
+
+        return $this->getRootPath() . DIRECTORY_SEPARATOR . $path;
+    }
+
+    /**
+     * Resolve visibility by a config array and type.
+     *
+     * @param string $type
+     * @param array $config
+     * @return int
+     */
+    protected function resolveVisibility(string $type, array $config = []): int
+    {
+        if (empty($config[self::CONFIG_VISIBILITY])) {
+            return $this->visibilityMap[$type][self::VISIBILITY_DEFAULT];
+        }
+
+        return $this->visibilityMap[$type][$config[self::CONFIG_VISIBILITY]];
     }
 }

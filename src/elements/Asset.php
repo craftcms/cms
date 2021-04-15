@@ -11,6 +11,7 @@ use Craft;
 use craft\base\Element;
 use craft\base\Field;
 use craft\base\LocalVolumeInterface;
+use craft\base\Volume;
 use craft\base\VolumeInterface;
 use craft\db\Query;
 use craft\db\Table;
@@ -28,6 +29,7 @@ use craft\elements\db\ElementQueryInterface;
 use craft\errors\AssetException;
 use craft\errors\AssetTransformException;
 use craft\errors\FileException;
+use craft\errors\VolumeException;
 use craft\errors\VolumeObjectNotFoundException;
 use craft\events\AssetEvent;
 use craft\helpers\ArrayHelper;
@@ -110,9 +112,6 @@ class Asset extends Element
     const KIND_CAPTIONS_SUBTITLES = 'captionsSubtitles';
     const KIND_COMPRESSED = 'compressed';
     const KIND_EXCEL = 'excel';
-    /**
-     * @deprecated in 3.7.0
-     */
     const KIND_FLASH = 'flash';
     const KIND_HTML = 'html';
     const KIND_ILLUSTRATOR = 'illustrator';
@@ -265,7 +264,7 @@ class Asset extends Element
      */
     public static function gqlMutationNameByContext($context): string
     {
-        /* @var VolumeInterface $context */
+        /** @var VolumeInterface $context */
         return 'save_' . $context->handle . '_Asset';
     }
 
@@ -1253,7 +1252,7 @@ class Asset extends Element
             [$width * 2, $height * 2],
         ];
         foreach ($thumbSizes as [$width, $height]) {
-            $thumbUrl = $assetsService->getThumbUrl($this, $width, $height, false, false);
+            $thumbUrl = $assetsService->getThumbUrl($this, $width, $height, false);
             $srcsets[] = $thumbUrl . ' ' . $width . 'w';
         }
 
@@ -1472,12 +1471,14 @@ class Asset extends Element
      * Get a temporary copy of the actual file.
      *
      * @return string
+     * @throws VolumeException If unable to fetch file from volume.
+     * @throws InvalidConfigException If no volume can be found.
      */
     public function getCopyOfFile(): string
     {
         $tempFilename = uniqid(pathinfo($this->filename, PATHINFO_FILENAME), true) . '.' . $this->getExtension();
         $tempPath = Craft::$app->getPath()->getTempPath() . DIRECTORY_SEPARATOR . $tempFilename;
-        $this->getVolume()->saveFileLocally($this->getPath(), $tempPath);
+        Assets::downloadFile($this->getVolume(), $this->getPath(), $tempPath);
 
         return $tempPath;
     }
@@ -1487,7 +1488,7 @@ class Asset extends Element
      *
      * @return resource
      * @throws InvalidConfigException if [[volumeId]] is missing or invalid
-     * @throws AssetException if a stream could not be created
+     * @throws VolumeException if a stream cannot be created
      */
     public function getStream()
     {
@@ -2044,9 +2045,10 @@ class Asset extends Element
     /**
      * Relocates the file after the element has been saved.
      *
-     * @throws FileException if the file is being moved but cannot be read
+     * @throws VolumeException if a file operation errored
+     * @throws Exception if something else goes wrong
      */
-    private function _relocateFile()
+    private function _relocateFile(): void
     {
         $assetsService = Craft::$app->getAssets();
 
@@ -2081,7 +2083,7 @@ class Asset extends Element
             } else {
                 $tempFilename = uniqid(pathinfo($filename, PATHINFO_FILENAME), true) . '.' . pathinfo($filename, PATHINFO_EXTENSION);
                 $tempPath = Craft::$app->getPath()->getTempPath() . DIRECTORY_SEPARATOR . $tempFilename;
-                $oldVolume->saveFileLocally($oldPath, $tempPath);
+                Assets::downloadFile($oldVolume, $oldPath, $tempPath);
             }
 
             // Try to open a file stream
@@ -2095,14 +2097,25 @@ class Asset extends Element
                 $oldVolume->deleteFile($oldPath);
             }
 
-            // Upload the file to the new location
-            $newVolume->createFileByStream($newPath, $stream, [
-                'mimetype' => FileHelper::getMimeType($tempPath),
-            ]);
+            $exception = null;
 
-            // Rackspace will disconnect the stream automatically
-            if (is_resource($stream)) {
-                fclose($stream);
+            // Upload the file to the new location
+            try {
+                $newVolume->writeFileFromStream($newPath, $stream, [
+                    Volume::CONFIG_MIMETYPE => FileHelper::getMimeType($tempPath),
+                ]);
+            } catch (VolumeException $exception) {
+                Craft::$app->getErrorHandler()->logException($exception);
+            } finally {
+                // If the volume has not already disconnected the stream, clean it up.
+                if (is_resource($stream)) {
+                    fclose($stream);
+                }
+            }
+
+            // Re-throw it, after we've made sure that the stream is disconnected.
+            if ($exception !== null) {
+                throw $exception;
             }
         }
 
@@ -2130,7 +2143,8 @@ class Asset extends Element
             }
 
             $this->size = filesize($tempPath);
-            $this->dateModified = new DateTime('@' . filemtime($tempPath));
+            $mtime = filemtime($tempPath);
+            $this->dateModified = $mtime ? new DateTime('@' . $mtime) : null;
 
             // Delete the temp file
             FileHelper::unlink($tempPath);

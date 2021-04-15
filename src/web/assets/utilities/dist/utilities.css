@@ -30,6 +30,6 @@ body.ltr form.utility .utility-status .progressbar-status { padding-left: 10px; 
 body.rtl form.utility .utility-status .progressbar-status { padding-right: 10px; }
 
 /* Asset Index */
-.confirmmodal .body { max-height: 200px; overflow: auto; }
+.confirmmodal .body { max-height: 400px; overflow: auto; }
 
 /*# sourceMappingURL=utilities.css.map */
