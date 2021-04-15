@@ -579,7 +579,7 @@ class ElementIndexesController extends BaseElementsController
 
         if ($this->elementQuery->trashed) {
             // Make sure Restore goes first
-            usort($actions, function ($a, $b): int {
+            usort($actions, function($a, $b): int {
                 if ($a instanceof Restore) {
                     return -1;
                 }

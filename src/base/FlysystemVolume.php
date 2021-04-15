@@ -277,7 +277,7 @@ abstract class FlysystemVolume extends Volume
 
         // Work around an edge case were empty folders would cause the containing folder to be deleted instead of renamed
         if (empty($fileList)) {
-            $this->renameFile($path, $newPath . '/' . $newName);
+            $this->renameFile($path, $newPath);
             return;
         }
 
