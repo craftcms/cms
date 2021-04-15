@@ -14,7 +14,6 @@ use craft\elements\Category;
 use craft\elements\db\ElementQuery;
 use craft\elements\Entry;
 use craft\helpers\Console;
-use craft\helpers\ProjectConfig as ProjectConfigHelper;
 use craft\models\Section;
 use craft\records\StructureElement;
 use craft\services\ProjectConfig;
@@ -122,8 +121,8 @@ class RepairController extends Controller
             ])
             ->orderBy([
                 new Expression('CASE WHEN [[structureelements.lft]] IS NOT NULL THEN 0 ELSE 1 END ASC'),
-                'elements.dateCreated' => SORT_ASC,
                 'structureelements.lft' => SORT_ASC,
+                'elements.dateCreated' => SORT_ASC,
             ])
             ->all();
 

@@ -132,7 +132,7 @@ class Assets
             $baseName = pathinfo($name, PATHINFO_FILENAME);
             $extension = pathinfo($name, PATHINFO_EXTENSION);
             if ($extension) {
-                $extension = '.'.$extension;
+                $extension = '.' . $extension;
             }
         } else {
             $baseName = $name;

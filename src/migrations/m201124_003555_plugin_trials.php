@@ -28,7 +28,7 @@ class m201124_003555_plugin_trials extends Migration
         if ($this->db->getIsPgsql()) {
             // Manually construct the SQL for Postgres
             $checkSql = '[[licenseKeyStatus]] in (' .
-                implode(',', array_map(function (string $status) {
+                implode(',', array_map(function(string $status) {
                     return $this->db->quoteValue($status);
                 }, $statuses)) .
                 ')';
