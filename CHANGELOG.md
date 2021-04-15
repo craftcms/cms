@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+### Changed
+- The `setPasswordPath` and `verifyEmailPath` config settings can now be set to absolute URLs, which will cause them to be respected when running Craft in headless mode. ([#6226](https://github.com/craftcms/cms/issues/6226))
+
 ### Fixed
 - Fixed a bug where entry indexes weren’t showing the entries’ authors if they were pending or suspended.
 - Fixed a bug where renaming an empty volume folder would create a subfolder inside it. ([#7721](https://github.com/craftcms/cms/issues/7721))
