@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Added
+- Added `craft\behaviors\SessionBehavior::getError()`.
+- Added `craft\behaviors\SessionBehavior::getNotice()`.
+
 ### Changed
 - Craft now requires PHP 7.4 or later.
 - Relational fields now load elements in the current site rather than the primary site, if the source element isn’t localizable. ([#7048](https://github.com/craftcms/cms/issues/7048))
