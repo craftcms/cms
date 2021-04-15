@@ -57,6 +57,6 @@ class MissingVolumeFolderException extends VolumeException
      */
     public function getName(): string
     {
-        return 'Missing asset';
+        return 'Missing volume folder';
     }
 }

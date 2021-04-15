@@ -50,6 +50,7 @@ class AssetIndexData extends Model
 
     /**
      * @var bool|null Whether the path was skipped
+     * @since 4.0.0
      */
     public ?bool $isSkipped;
 

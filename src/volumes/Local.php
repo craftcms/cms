@@ -34,11 +34,14 @@ use RecursiveIteratorIterator;
  */
 class Local extends Volume implements LocalVolumeInterface
 {
+    /* @since 4.0.0 */
     public const VISIBILITY_FILE = 'file';
+    /* @since 4.0.0 */
     public const VISIBILITY_DIR = 'dir';
 
     /**
      * @var int[][] Visibility map
+     * @since 4.0.0
      */
     protected array $visibilityMap = [
         self::VISIBILITY_FILE => [

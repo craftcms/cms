@@ -61,7 +61,7 @@ interface VolumeInterface extends SavableComponentInterface
     public function getFileSize(string $uri): int;
 
     /**
-     * Return the last time the file was modified.
+     * Returns the last time the file was modified.
      *
      * @param string $uri
      * @return int
@@ -76,8 +76,8 @@ interface VolumeInterface extends SavableComponentInterface
      * @param string $path The path of the file, relative to the source’s root
      * @param resource $stream The stream to file
      * @param array $config Additional config options to pass on
-     * @throws VolumeException if something else goes wrong
-     * @deprecated in 4.0.0. Use `writeFileFromStream()` instead.
+     * @throws VolumeException
+     * @deprecated in 4.0.0. Use [[writeFileFromStream()]] instead.
      */
     public function createFileByStream(string $path, $stream, array $config): void;
 
@@ -87,18 +87,18 @@ interface VolumeInterface extends SavableComponentInterface
      * @param string $path The path of the file, relative to the source’s root
      * @param resource $stream The new contents of the file as a stream
      * @param array $config Additional config options to pass on
-     * @throws VolumeException if something else goes wrong
-     * @deprecated in 4.0.0.  Use `writeFileFromStream()` instead.
+     * @throws VolumeException
+     * @deprecated in 4.0.0.  Use [[writeFileFromStream()]] instead.
      */
     public function updateFileByStream(string $path, $stream, array $config): void;
 
     /**
-     * Write a file to volume from a stream.
+     * Writes a file to a volume from a given stream.
      *
      * @param string $path The path of the file, relative to the source’s root
      * @param resource $stream The new contents of the file as a stream
      * @param array $config Additional config options to pass on
-     * @throws VolumeException if something else goes wrong
+     * @throws VolumeException
      */
     public function writeFileFromStream(string $path, $stream, array $config = []): void;
 
@@ -107,7 +107,7 @@ interface VolumeInterface extends SavableComponentInterface
      *
      * @param string $path The path of the file, relative to the source’s root
      * @return bool
-     * @throws VolumeException if something else goes wrong
+     * @throws VolumeException
      */
     public function fileExists(string $path): bool;
 
@@ -123,7 +123,7 @@ interface VolumeInterface extends SavableComponentInterface
      *
      * @param string $path The old path of the file, relative to the source’s root
      * @param string $newPath The new path of the file, relative to the source’s root
-     * @throws VolumeException if something goes wrong
+     * @throws VolumeException
      */
     public function renameFile(string $path, string $newPath): void;
 
@@ -132,7 +132,7 @@ interface VolumeInterface extends SavableComponentInterface
      *
      * @param string $path The path of the file, relative to the source’s root
      * @param string $newPath The path of the new file, relative to the source’s root
-     * @throws VolumeException if something goes wrong
+     * @throws VolumeException
      */
     public function copyFile(string $path, string $newPath): void;
 
@@ -142,7 +142,7 @@ interface VolumeInterface extends SavableComponentInterface
      * @param string $uriPath
      * @param string $targetPath
      * @return int amount of bytes copied
-     * @deprecated in 4.0.0. Use `\craft\helpers\Assets::downloadFile()` instead.
+     * @deprecated in 4.0.0. Use [[\craft\helpers\Assets::downloadFile()]] instead.
      */
     public function saveFileLocally(string $uriPath, string $targetPath): int;
 
@@ -156,11 +156,11 @@ interface VolumeInterface extends SavableComponentInterface
     public function getFileStream(string $uriPath);
 
     /**
-     * Returns whether a folder exists at the given path.
+     * Returns whether a directory exists at the given path.
      *
-     * @param string $path The folder path to check
+     * @param string $path The directory path to check
      * @return bool
-     * @throws VolumeException if something goes wrong
+     * @throws VolumeException
      */
     public function directoryExists(string $path): bool;
 
@@ -169,7 +169,7 @@ interface VolumeInterface extends SavableComponentInterface
      *
      * @param string $path The path of the directory, relative to the source’s root
      * @param array $config The config to use
-     * @throws VolumeException if something goes wrong
+     * @throws VolumeException
      */
     public function createDirectory(string $path, array $config = []): void;
 
@@ -177,7 +177,7 @@ interface VolumeInterface extends SavableComponentInterface
      * Deletes a directory.
      *
      * @param string $path The path of the directory, relative to the source’s root
-     * @throws VolumeException if something goes wrong
+     * @throws VolumeException
      */
     public function deleteDirectory(string $path): void;
 

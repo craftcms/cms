@@ -3,6 +3,7 @@
 ## Unreleased
 
 ### Added
+- Added the `index-assets/cleanup` command.
 - Added `craft\base\Volume::CONFIG_MIMETYPE`.
 - Added `craft\base\Volume::CONFIG_VISIBILITY`.
 - Added `craft\base\Volume::VISIBILITY_DEFAULT`.
@@ -30,18 +31,17 @@
 - Added `craft\services\AssetIndexer::startIndexingSession()`.
 - Added `craft\services\AssetIndexer::stopIndexingSession()`.
 - Added `craft\services\AssetTransforms::deleteTransformIndexDataByAssetIds()`.
-- Added the `index-assets/cleanup` command that cleans up any leftover CLI indexing sessions.
 
 ### Changed
 - Craft now requires PHP 7.4 or later.
 - Relational fields now load elements in the current site rather than the primary site, if the source element isn’t localizable. ([#7048](https://github.com/craftcms/cms/issues/7048))
-- Local Volume no longer uses the FlySystem library.
-- Asset Indexing sessions ar IDs are integers now, instead of being a string.
 - `craft\base\Model::datetimeAttributes()` is now called from the constructor, instead of the `init()` method.
+- `craft\base\Model::setAttributes()` now normalizes date attributes into `DateTime` objects.
+- `craft\services\AssetIndexer::storeIndexList()` now expects the first argument to be a generator that returns `craft\models\VolumeListing` objects.
+- `craft\services\Assets::ensureFolderByFullPathAndVolume()` now returns a `craft\models\VolumeFolder` object rather than a folder ID.
+- `craft\services\Assets::ensureTopFolder()` now returns a `craft\models\VolumeFolder` object rather than a folder ID.
 - `craft\services\UserPermissions::getAllPermissions()` and `getAssignablePermissions()` now return permission groups as arrays with `heading` and `permission` sub-keys, fixing a bug where two groups with the same heading would conflict with each other. ([#7771](https://github.com/craftcms/cms/issues/7771))
-- `craft\services\AssetIndexer::storeIndexList()` now expects the first argument to be a Generator of `craft\models\VolumeListing` items.
-- `craft\services\Assets::ensureFolderByFullPathAndVolume()` now returns an instance of `craft\models\VolumeFolder` instead of the folder id.
-- `craft\services\Assets::ensureTopFolder()` now returns an instance of `craft\models\VolumeFolder` instead of the folder id.
+- Local volumes no longer use Flysystem.
 - Updated Twig to 3.3.
 - Updated vue-autosuggest to 2.2.0.
 
@@ -69,17 +69,18 @@
 - Removed the `craft.systemSettings` Twig variable.
 - Removed the `craft.userGroups` Twig variable.
 - Removed the `craft.userPermissions` Twig variable.
-- Removed `craft\base\VolumeInterface::createDir()`.
-- Removed `craft\base\VolumeInterface::deleteDir()`.
-- Removed `craft\base\VolumeInterface::getFileMetadata()`.
-- Removed `craft\base\VolumeInterface::renameDir()`.
+- Removed `craft\base\FlysystemVolume`.
+- Removed `craft\base\VolumeInterface::createDir()`. `createDirectory()` can be used instead.
+- Removed `craft\base\VolumeInterface::deleteDir()`. `deleteDirectory()` can be used instead.
+- Removed `craft\base\VolumeInterface::getFileMetadata()`. `getFileSize()` and `getDateModified()` can be used instead.
+- Removed `craft\base\VolumeInterface::renameDir()`. `renameDirectory()` can be used instead.
 - Removed `craft\controllers\UtilitiesController::actionAssetIndexPerformAction()`.
 - Removed `craft\services\AssetIndexer::deleteStaleIndexingData()`.
-- Removed `craft\services\AssetIndexer::extractFolderItemsFromIndexList`.
-- Removed `craft\services\AssetIndexer::extractSkippedItemsFromIndexList`.
+- Removed `craft\services\AssetIndexer::extractFolderItemsFromIndexList()`.
+- Removed `craft\services\AssetIndexer::extractSkippedItemsFromIndexList()`.
 - Removed `craft\services\AssetIndexer::getIndexingSessionId()`.
-- Removed `craft\services\AssetIndexer::getMissingFiles`.
-- Removed `craft\services\AssetIndexer::prepareIndexList`.
+- Removed `craft\services\AssetIndexer::getMissingFiles()`.
+- Removed `craft\services\AssetIndexer::prepareIndexList()`.
 - Removed `craft\services\AssetIndexer::processIndexForVolume()`.
 - Removed `craft\web\View::$minifyCss`.
 - Removed `craft\web\View::$minifyJs`.
@@ -100,3 +101,4 @@
 - Removed `craft\web\twig\variables\UserGroups`.
 - Removed `craft\web\twig\variables\UserPermissions`.
 - Removed `craft\web\twig\variables\UserSession`.
+- Removed the Flysystem library. The `craftcms/flysystem-adapter` package now provides a base Flysystem adapter class.
