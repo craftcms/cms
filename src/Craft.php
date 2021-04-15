@@ -285,7 +285,7 @@ EOD;
             $basename = basename($filePath);
             $time = time() - 10;
             FileHelper::clearDirectory($dir, [
-                'filter' => function (string $path) use ($basename, $time): bool {
+                'filter' => function(string $path) use ($basename, $time): bool {
                     $b = basename($path);
                     return (
                         $b !== $basename &&

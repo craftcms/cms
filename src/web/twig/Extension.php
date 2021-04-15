@@ -134,7 +134,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
                 'allowRuntimePosition' => true,
                 'allowOptions' => true,
             ]),
-            new RegisterResourceTokenParser('script',  'Craft::$app->getView()->registerScript', [
+            new RegisterResourceTokenParser('script', 'Craft::$app->getView()->registerScript', [
                 'allowTagPair' => true,
                 'allowPosition' => true,
                 'allowOptions' => true,
