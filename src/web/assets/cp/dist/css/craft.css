@@ -2192,8 +2192,6 @@ body.rtl .field > .status-badge { right: -26px; }
 
 .field > .status-badge.outdated { background-color: #FADB5F; }
 
-.field > .status-badge.conflicted { background-color: #CF1124; }
-
 .field > .heading { display: -webkit-flex; display: flex; -webkit-flex-wrap: wrap; flex-wrap: wrap; -webkit-align-items: center; align-items: center; position: relative; margin-top: -5px; margin-bottom: 5px; }
 
 .field > .heading > label, .field > .heading > legend { font-weight: bold; color: #596673; }

@@ -64,4 +64,9 @@ class EmailCode extends Step
 
         return $this->completeStep($user);
     }
+
+    public function getFieldHtml(): string
+    {
+        return Craft::$app->getView()->renderTemplate('_components/authenticationsteps/EmailCode/input');
+    }
 }

@@ -63,4 +63,6 @@ abstract class Step extends Component implements StepInterface
     {
         return $this->getFields() !== null;
     }
+
+    abstract public function getFieldHtml(): string;
 }

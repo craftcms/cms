@@ -1,0 +1,20 @@
+{% import "_includes/forms" as forms %}
+
+{% do view.registerAssetBundle("craft\\web\\assets\\emailCode\\EmailCodeAsset") %}
+
+<div id="login-form-top">
+
+    {% set label = 'Verification code'|t('app') %}
+
+    {{ forms.textField({
+        id: 'verificationCode',
+        name: 'verification-code',
+        placeholder: label,
+        inputAttributes: {
+            aria: {
+                label: label,
+                required: 'true',
+            },
+        },
+    }) }}
+</div>

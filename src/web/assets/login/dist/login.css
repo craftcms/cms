@@ -56,6 +56,8 @@ body.rtl #rememberMe-field { margin-left: 14px; }
 
 #login-errors { text-align: center; color: #CF1124; margin-top: 1em; }
 
+#login-messages { text-align: center; color: #0B69A3; margin-top: 1em; }
+
 #poweredby { display: block; text-align: center; margin-top: 70px; margin-bottom: 48px; opacity: .8; }
 
 #poweredby:hover, #poweredby:focus, #poweredby:active { opacity: 1; }

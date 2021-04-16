@@ -16,7 +16,7 @@ class Credentials extends Step
      */
     public function getFields(): array
     {
-        return ['username', 'password'];
+        return ['loginName', 'password'];
     }
 
     /**
@@ -24,7 +24,7 @@ class Credentials extends Step
      */
     public function authenticate(array $credentials, User $user = null): AuthenticationState
     {
-        $potentialUser = Craft::$app->getUsers()->getUserByUsernameOrEmail($credentials['username']);
+        $potentialUser = Craft::$app->getUsers()->getUserByUsernameOrEmail($credentials['loginName']);
 
         if (!$potentialUser || $potentialUser->password === null) {
             // Delay again to match $user->authenticate()'s delay
@@ -49,5 +49,10 @@ class Credentials extends Step
     {
         Craft::$app->getSession()->setError(UserHelper::getLoginFailureMessage(User::AUTH_INVALID_CREDENTIALS));
         return $this->state;
+    }
+
+    public function getFieldHtml(): string
+    {
+        return Craft::$app->getView()->renderTemplate('_components/authenticationsteps/Credentials/input');
     }
 }

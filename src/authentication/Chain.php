@@ -50,9 +50,10 @@ class Chain
      * Perform an authentication step.
      *
      * @param array $credentials
+     * @return bool `true`, if at least one step was sucessfully performed.
      * @throws InvalidConfigException If unable to determine the next authentication step and chain is not complete.
      */
-    public function performAuthenticationStep(array $credentials = []): void
+    public function performAuthenticationStep(array $credentials = []): bool
     {
         /** @var StepInterface $nextStep */
         if ($nextStep = $this->getNextAuthenticationStep()) {
@@ -62,7 +63,9 @@ class Chain
             Craft::$app->getAuthentication()->storeAuthenticationState($this->_state);
 
             // If advanced in chain
-            if (($this->_getLastCompletedStep() === get_class($nextStep)) && !$this->getIsComplete()) {
+            $success = $this->_getLastCompletedStep() === get_class($nextStep);
+
+            if ($success && !$this->getIsComplete()) {
                 // Prepare the next step.
                 /** @var StepInterface $nextStep */
                 $nextStep = $this->getNextAuthenticationStep();
@@ -70,9 +73,12 @@ class Chain
 
                 // If next step is not interactive, repeat
                 if (!$nextStep->getRequiresInput()) {
+                    // Intentionally not use the return result
                     $this->performAuthenticationStep();
                 }
             }
+
+            return $success;
         }
     }
 

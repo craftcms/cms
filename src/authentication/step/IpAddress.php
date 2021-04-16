@@ -58,4 +58,16 @@ class IpAddress extends Step
 
         return in_array($address, $this->allowed, true);
     }
+
+    /**
+     * No fields for this step.
+     *
+     * @return string
+     */
+    public function getFieldHtml(): string
+    {
+        return '';
+    }
+
+
 }

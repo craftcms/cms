@@ -21,6 +21,9 @@ class Authentication extends Component
 {
     public const AUTHENTICATION_STATE_KEY = 'craft.authentication.state';
 
+    public const CONFIG_AUTH_CHAINS = 'authentication-chains';
+    public const CP_AUTHENTICATION_CHAIN = 'cpLogin';
+
     /**
      * Return an authentication chain based on a scenario.
      *
@@ -41,6 +44,10 @@ class Authentication extends Component
         return $chain;
     }
 
+    public function getCpAuthenticationChain(): Chain
+    {
+        return $this->getAuthenticationChain(self::CP_AUTHENTICATION_CHAIN);
+    }
     /**
      * Get scenario steps for a give scenario.
      *
@@ -49,7 +56,7 @@ class Authentication extends Component
      */
     public function getScenarioSteps(string $scenario): ?array
     {
-        $scenarios = Craft::$app->getProjectConfig()->get('authentication-chains');
+        $scenarios = Craft::$app->getProjectConfig()->get(self::CONFIG_AUTH_CHAINS);
 
         return $scenarios[$scenario] ?? null;
     }

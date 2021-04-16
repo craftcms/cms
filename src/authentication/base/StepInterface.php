@@ -15,7 +15,7 @@ interface StepInterface
     /**
      * Return a list of field names available for this authorization step.
      *
-     * @return string[]|null
+     * @return array|null
      */
     public function getFields(): ?array;
 
