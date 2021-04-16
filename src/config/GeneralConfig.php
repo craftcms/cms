@@ -47,6 +47,7 @@ class GeneralConfig extends BaseObject
      *
      * The array can contain the following keys:
      *
+     * - `reduceFocusVisibility` - Whether focus visibility styles should be reduced
      * - `useShapes` – Whether shapes should be used to represent statuses
      * - `underlineLinks` – Whether links should be underlined
      *
@@ -54,6 +55,7 @@ class GeneralConfig extends BaseObject
      * @group System
      */
     public $accessibilityDefaults = [
+        'reduceFocusVisibility' => false,
         'useShapes' => false,
         'underlineLinks' => false,
     ];
