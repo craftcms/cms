@@ -14,6 +14,7 @@ class Credentials {
         });
         this.$loginNameInput.on('input', this.onInput.bind(this));
         this.$passwordInput.on('input', this.onInput.bind(this));
+        // TODO this class must handle forgotten password functionality.
     }
     validate() {
         const loginNameVal = this.$loginNameInput.val();

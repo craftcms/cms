@@ -12,6 +12,7 @@ class LoginForm {
         this.$forgotPassword = $('#forgot-password');
         this.$rememberPassword = $('#remember-password');
         this.$loginForm.on('submit', this.invokeStepHandler.bind(this));
+        // TODO this form must handle "remember me" functionality.
         // this.$forgotPassword.on('click', 'onSwitchForm');
         // this.$rememberPassword.on('click', 'onSwitchForm');
     }

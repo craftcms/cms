@@ -68,6 +68,7 @@ class AuthenticationController extends Controller
             $output['html'] = $step->getFieldHtml();
         }
 
+        // TODO any step handle JS should be shipped here.
         return $this->asJson($output);
     }
 }
