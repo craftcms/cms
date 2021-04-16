@@ -103,7 +103,7 @@
 ## 3.6.9 - 2021-03-05
 
 ### Added
-- Added `craft\helpers\Session`, which provides methods for working with PHP session variables, without creating a new PHP session if owelne didn’t need to exist.
+- Added `craft\helpers\Session`, which provides methods for working with PHP session variables, without creating a new PHP session if one didn’t need to exist.
 
 ### Changed
 - Updated Yii to 2.0.41.
