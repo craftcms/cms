@@ -6,6 +6,7 @@
 - Fixed a bug where entry indexes weren’t showing the entries’ authors if they were pending or suspended.
 - Fixed a bug where renaming an empty volume folder would create a subfolder inside it. ([#7721](https://github.com/craftcms/cms/issues/7721))
 - Fixed a bug where simultaneously-executed MySQL backups could result in a `my.cnf` conflict. ([#7801](https://github.com/craftcms/cms/issues/7801))
+- Fixed a bug where radio button labels weren’t including custom container attributes passed to the input.
 
 ## 3.6.12 - 2021-04-13
 
