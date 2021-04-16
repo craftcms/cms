@@ -13,12 +13,16 @@ html {
 
 body {
   min-height: 100vh;
-}
 
-*:focus {
-  outline-style: solid;
-  outline-color: transparent;
-  box-shadow: $darkFocusRing;
+  :focus {
+    outline-style: solid;
+    outline-color: transparent;
+  }
+
+  &:not(.reduce-focus-visibility) :focus,
+  &.reduce-focus-visibility :focus-visible {
+    box-shadow: $darkFocusRing;
+  }
 }
 
 #global-container {
@@ -45,8 +49,16 @@ $sidebarLinkSecondaryColor: $grey200;
   @include light-on-dark-text;
   background-color: $grey800;
 
-  *:focus {
-    box-shadow: $lightFocusRing;
+  body:not(.reduce-focus-visibility) & {
+    :focus {
+      box-shadow: $lightFocusRing;
+    }
+  }
+
+  body.reduce-focus-visibility & {
+    :focus-visible {
+      box-shadow: $lightFocusRing;
+    }
   }
 
   a {
