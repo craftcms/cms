@@ -34,6 +34,9 @@ Craft.ColorInput = Garnish.Base.extend({
         this.$colorContainer.removeClass('static');
         this.$colorInput = $(input)
             .addClass('color-preview-input')
+            .attr({
+                'aria-controls': this.$input.attr('id'),
+            })
             .appendTo(this.$colorPreview);
 
         this.addListener(this.$colorInput, 'click', function (ev) {
