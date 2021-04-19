@@ -253,11 +253,11 @@ class ElementRelationParamParser extends BaseObject
                         }
                     } else if ($element instanceof ElementInterface) {
                         if ($elementParam === 'targetElement') {
-                            $relElementIds[] = $element->getSourceId();
+                            $relElementIds[] = $element->getCanonicalId();
                         } else {
                             $relElementIds[] = $element->id;
                             if ($elementParam === 'element') {
-                                $relSourceElementIds[] = $element->getSourceId();
+                                $relSourceElementIds[] = $element->getCanonicalId();
                             }
                         }
                     } else if ($element instanceof ElementQueryInterface) {

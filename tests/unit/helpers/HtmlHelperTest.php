@@ -292,6 +292,10 @@ class HtmlHelperTest extends Unit
     public function parseTagAttributesDataProvider(): array
     {
         return [
+            [[], '<div/>'],
+            [['x-foo' => true], '<div x-foo=>'],
+            [['x-foo' => true], '<div x-foo="">'],
+            [['x-foo' => true], "<div x-foo=''>"],
             [['type' => 'text', 'disabled' => true], '<input type="text" disabled>'],
             [['type' => 'text', 'disabled' => true], '<input type=text disabled />'],
             [['type' => 'text'], '<!-- comment --> <input type="text">'],
@@ -307,6 +311,8 @@ class HtmlHelperTest extends Unit
             [['class' => ['foo', 'bar']], '<div class="foo bar">'],
             [['style' => ['color' => 'black', 'background' => 'red']], '<div style="color: black; background: red">'],
             [false, '<div'],
+            [false, '<div x-foo=">'],
+            [false, "<div x-foo='>"],
             [false, '<!-- comment -->'],
             [false, '<?xml?>'],
         ];

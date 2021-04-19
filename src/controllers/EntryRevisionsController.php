@@ -162,12 +162,28 @@ class EntryRevisionsController extends BaseEntriesController
             }
         }
 
-        // Save it and redirect to its edit page
+        // Save it
         $entry->setScenario(Element::SCENARIO_ESSENTIALS);
         if (!Craft::$app->getDrafts()->saveElementAsDraft($entry, Craft::$app->getUser()->getId(), null, null, false)) {
             throw new Exception('Unable to save entry as a draft: ' . implode(', ', $entry->getErrorSummary(true)));
         }
 
+        // Set its position in the structure if a before/after parma was passed
+        if ($section->type === Section::TYPE_STRUCTURE) {
+            if ($nextId = $this->request->getParam('before')) {
+                $nextEntry = Craft::$app->getEntries()->getEntryById($nextId, $site->id, [
+                    'structureId' => $section->structureId,
+                ]);
+                Craft::$app->getStructures()->moveBefore($section->structureId, $entry, $nextEntry);
+            } else if ($prevId = $this->request->getParam('after')) {
+                $prevEntry = Craft::$app->getEntries()->getEntryById($prevId, $site->id, [
+                    'structureId' => $section->structureId,
+                ]);
+                Craft::$app->getStructures()->moveAfter($section->structureId, $entry, $prevEntry);
+            }
+        }
+
+        // Redirect to its edit page
         return $this->redirect(UrlHelper::url($entry->getCpEditUrl(), [
             'draftId' => $entry->draftId,
             'fresh' => 1,
@@ -291,7 +307,7 @@ class EntryRevisionsController extends BaseEntriesController
         if ($this->request->getAcceptsJson()) {
             $creator = $draft->getCreator();
             return $this->asJson([
-                'sourceId' => $draft->sourceId,
+                'sourceId' => $draft->getCanonicalId(),
                 'draftId' => $draft->draftId,
                 'timestamp' => Craft::$app->getFormatter()->asTimestamp($draft->dateUpdated, 'short', true),
                 'creator' => $creator ? $creator->getName() : null,
@@ -385,7 +401,7 @@ class EntryRevisionsController extends BaseEntriesController
         // Permission enforcement
         /* @var Entry|null $entry */
         $this->enforceSitePermission($draft->getSite());
-        $entry = ElementHelper::sourceElement($draft, true);
+        $entry = $draft->getCanonical(true);
         $this->enforceEditEntryPermissions($entry);
         $section = $entry->getSection();
 
@@ -484,8 +500,7 @@ class EntryRevisionsController extends BaseEntriesController
         }
 
         // Permission enforcement
-        /* @var Entry $entry */
-        $entry = ElementHelper::sourceElement($revision);
+        $entry = $revision->getCanonical();
 
         $this->enforceSitePermission($entry->getSite());
         $this->enforceEditEntryPermissions($entry);

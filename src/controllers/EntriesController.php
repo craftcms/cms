@@ -9,6 +9,8 @@ namespace craft\controllers;
 
 use Craft;
 use craft\base\Element;
+use craft\behaviors\DraftBehavior;
+use craft\behaviors\RevisionBehavior;
 use craft\db\Table;
 use craft\elements\Entry;
 use craft\elements\User;
@@ -16,7 +18,6 @@ use craft\errors\InvalidElementException;
 use craft\errors\UnsupportedSiteException;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
-use craft\helpers\ElementHelper;
 use craft\helpers\UrlHelper;
 use craft\models\Section;
 use craft\models\Site;
@@ -133,7 +134,7 @@ class EntriesController extends BaseEntriesController
                 ->descendantOf($entry)
                 ->anyStatus()
                 ->ids();
-            $excludeIds[] = $entry->getSourceId();
+            $excludeIds[] = $entry->getCanonicalId();
 
             $variables['parentOptionCriteria'] = [
                 'siteId' => $site->id,
@@ -512,8 +513,7 @@ class EntriesController extends BaseEntriesController
 
         if ($draftId) {
             // Redirect to the same draft in the fetched site
-            $source = ElementHelper::sourceElement($entry) ?? $entry;
-            return $this->redirect(UrlHelper::url($source->getCpEditUrl(), [
+            return $this->redirect(UrlHelper::url($entry->getCanonical()->getCpEditUrl(), [
                 'siteId' => $entry->siteId,
                 'draftId' => $draftId,
             ]));
@@ -651,6 +651,15 @@ class EntriesController extends BaseEntriesController
             }
         }
 
+        /* @var Entry|DraftBehavior|RevisionBehavior $entry */
+        $entry = $variables['entry'];
+
+        // If this is an outdated draft, merge in the latest canonical changes
+        if ($entry->getIsDraft() && $entry->getIsDerivative() && $entry->getIsOutdated()) {
+            Craft::$app->getElements()->mergeCanonicalChanges($entry);
+            $variables['notices'][] = Craft::t('app', 'Recent changes to the Current revision have been merged into this draft.');
+        }
+
         // Determine whether we're showing the site label & site-specific entry status
         // ---------------------------------------------------------------------
 
@@ -663,7 +672,7 @@ class EntriesController extends BaseEntriesController
 
         $variables['isMultiSiteEntry'] = (
             Craft::$app->getIsMultiSite() &&
-            count($variables['entry']->getSupportedSites()) > 1
+            count($entry->getSupportedSites()) > 1
         );
 
         // Get the entry type
@@ -674,14 +683,14 @@ class EntriesController extends BaseEntriesController
 
         if (!$typeId) {
             // Default to the section's first entry type
-            $typeId = $variables['entry']->typeId ?? $variables['entry']->getAvailableEntryTypes()[0]->id;
+            $typeId = $entry->typeId ?? $entry->getAvailableEntryTypes()[0]->id;
         }
 
-        $variables['entry']->typeId = $typeId;
-        $variables['entryType'] = $variables['entry']->getType();
+        $entry->typeId = $typeId;
+        $variables['entryType'] = $entry->getType();
 
         // Prevent the last entry type's field layout from being used
-        $variables['entry']->fieldLayoutId = null;
+        $entry->fieldLayoutId = null;
 
         return null;
     }

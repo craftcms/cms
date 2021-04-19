@@ -177,7 +177,7 @@ class CustomField extends BaseField
      */
     protected function statusClass(ElementInterface $element = null, bool $static = false)
     {
-        if ($element && ($status = $element->getFieldStatus($this->_field->handle))) {
+        if ($element && ($status = $this->_field->getStatus($element))) {
             return $status[0];
         }
         return null;
@@ -188,7 +188,7 @@ class CustomField extends BaseField
      */
     protected function statusLabel(ElementInterface $element = null, bool $static = false)
     {
-        if ($element && ($status = $element->getFieldStatus($this->_field->handle))) {
+        if ($element && ($status = $this->_field->getStatus($element))) {
             return $status[1];
         }
         return null;

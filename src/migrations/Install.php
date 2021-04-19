@@ -234,7 +234,7 @@ class Install extends Migration
         ]);
         $this->createTable(Table::DRAFTS, [
             'id' => $this->primaryKey(),
-            'sourceId' => $this->integer(),
+            'sourceId' => $this->integer(), // todo: remove this in v4
             'creatorId' => $this->integer(),
             'name' => $this->string()->notNull(),
             'notes' => $this->text(),
@@ -252,6 +252,7 @@ class Install extends Migration
         ]);
         $this->createTable(Table::ELEMENTS, [
             'id' => $this->primaryKey(),
+            'canonicalId' => $this->integer(),
             'draftId' => $this->integer(),
             'revisionId' => $this->integer(),
             'fieldLayoutId' => $this->integer(),
@@ -260,6 +261,7 @@ class Install extends Migration
             'archived' => $this->boolean()->notNull()->defaultValue(false),
             'dateCreated' => $this->dateTime()->notNull(),
             'dateUpdated' => $this->dateTime()->notNull(),
+            'dateLastMerged' => $this->dateTime()->null(),
             'dateDeleted' => $this->dateTime()->null(),
             'uid' => $this->uid(),
         ]);
@@ -281,7 +283,7 @@ class Install extends Migration
         ]);
         $this->createTable(Table::REVISIONS, [
             'id' => $this->primaryKey(),
-            'sourceId' => $this->integer()->notNull(),
+            'sourceId' => $this->integer()->notNull(), // todo: remove this in v4
             'creatorId' => $this->integer(),
             'num' => $this->integer()->notNull(),
             'notes' => $this->text(),
@@ -374,6 +376,7 @@ class Install extends Migration
             'name' => $this->string()->notNull(),
             'handle' => $this->string(64)->notNull(),
             'context' => $this->string()->notNull()->defaultValue('global'),
+            'columnSuffix' => $this->char(8),
             'instructions' => $this->text(),
             'searchable' => $this->boolean()->notNull()->defaultValue(true),
             'translationMethod' => $this->string()->notNull()->defaultValue(Field::TRANSLATION_METHOD_NONE),
@@ -982,6 +985,7 @@ class Install extends Migration
         $this->addForeignKey(null, Table::CONTENT, ['siteId'], Table::SITES, ['id'], 'CASCADE', 'CASCADE');
         $this->addForeignKey(null, Table::DRAFTS, ['creatorId'], Table::USERS, ['id'], 'SET NULL', null);
         $this->addForeignKey(null, Table::DRAFTS, ['sourceId'], Table::ELEMENTS, ['id'], 'CASCADE', null);
+        $this->addForeignKey(null, Table::ELEMENTS, ['canonicalId'], Table::ELEMENTS, ['id'], 'SET NULL');
         $this->addForeignKey(null, Table::ELEMENTS, ['draftId'], Table::DRAFTS, ['id'], 'CASCADE', null);
         $this->addForeignKey(null, Table::ELEMENTS, ['revisionId'], Table::REVISIONS, ['id'], 'CASCADE', null);
         $this->addForeignKey(null, Table::ELEMENTS, ['fieldLayoutId'], Table::FIELDLAYOUTS, ['id'], 'SET NULL', null);

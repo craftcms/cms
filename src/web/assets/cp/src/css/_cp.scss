@@ -1005,12 +1005,18 @@ $toolbarIconColor: darken($inputColor, 10%);
       margin: 0 -24px !important;
 
       &:first-child {
-        border-top-left-radius: $largeBorderRadius;
+        &,
+        & > .status-badge {
+          border-top-left-radius: $largeBorderRadius;
+        }
         border-top-right-radius: $largeBorderRadius;
       }
 
       &:last-child {
-        border-bottom-left-radius: $largeBorderRadius;
+        &,
+        & > .status-badge {
+          border-bottom-left-radius: $largeBorderRadius;
+        }
         border-bottom-right-radius: $largeBorderRadius;
       }
 
@@ -1020,11 +1026,8 @@ $toolbarIconColor: darken($inputColor, 10%);
       }
     }
 
-    & > .field {
-      .status-badge {
-        @include left(4px);
-        top: calc(50% - 8px);
-      }
+    & > .field  > .status-badge {
+      @include left(-2px);
     }
 
     .text::placeholder,

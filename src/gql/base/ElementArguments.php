@@ -145,6 +145,11 @@ abstract class ElementArguments extends Arguments
                 'type' => Type::string(),
                 'description' => 'Sets the field the returned elements should be ordered by',
             ],
+            'siteSettingsId' => [
+                'name' => 'siteSettingsId',
+                'type' => Type::listOf(QueryArgument::getType()),
+                'description' => 'Narrows the query results based on the unique identifier for an element-site relation.',
+            ],
         ]);
     }
 

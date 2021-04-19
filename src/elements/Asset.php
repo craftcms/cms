@@ -110,6 +110,9 @@ class Asset extends Element
     const KIND_CAPTIONS_SUBTITLES = 'captionsSubtitles';
     const KIND_COMPRESSED = 'compressed';
     const KIND_EXCEL = 'excel';
+    /**
+     * @deprecated in 3.7.0
+     */
     const KIND_FLASH = 'flash';
     const KIND_HTML = 'html';
     const KIND_ILLUSTRATOR = 'illustrator';

@@ -23,7 +23,6 @@ Craft.DraftEditor = Garnish.Base.extend({
     siteIds: null,
     newSiteIds: null,
 
-    enableAutosave: null,
     lastSerializedValue: null,
     listeningForChanges: false,
     pauseLevel: 0,
@@ -46,7 +45,6 @@ Craft.DraftEditor = Garnish.Base.extend({
 
         this.queue = [];
         this.duplicatedElements = {};
-        this.enableAutosave = Craft.autosaveDrafts;
 
         this.siteIds = Object.keys(this.settings.siteStatuses).map(siteId => {
             return parseInt(siteId)
@@ -114,7 +112,7 @@ Craft.DraftEditor = Garnish.Base.extend({
     },
 
     listenForChanges: function() {
-        if (this.listeningForChanges || this.pauseLevel > 0 || !this.enableAutosave) {
+        if (this.listeningForChanges || this.pauseLevel > 0 || !Craft.autosaveDrafts) {
             return;
         }
 
@@ -158,7 +156,7 @@ Craft.DraftEditor = Garnish.Base.extend({
         // number of times that pause() was called
         this.pauseLevel--;
         if (this.pauseLevel === 0) {
-            if (this.enableAutosave) {
+            if (Craft.autosaveDrafts) {
                 this.checkForm();
             }
             this.listenForChanges();
@@ -172,8 +170,6 @@ Craft.DraftEditor = Garnish.Base.extend({
         this.addListener(this.$statusIcon, 'click', function() {
             this.showStatusHud(this.$statusIcon);
         }.bind(this));
-
-        this.addListener($('#merge-changes-btn'), 'click', this.mergeChanges);
 
         if (Craft.autosaveDrafts) {
             this.listenForChanges();
@@ -191,32 +187,6 @@ Craft.DraftEditor = Garnish.Base.extend({
                 });
             }, 0);
         }
-    },
-
-    mergeChanges: function() {
-        // Make sure there aren't any unsaved changes
-        this.checkForm();
-
-        // Make sure we aren't currently saving something
-        if (this.saving) {
-            this.queue.push(this.mergeChanges.bind(this));
-            return;
-        }
-
-        this.saving = true;
-        $('#merge-changes-spinner').removeClass('hidden');
-
-        Craft.postActionRequest('drafts/merge-source-changes', {
-            elementType: this.settings.elementType,
-            draftId: this.settings.draftId,
-            siteId: this.settings.siteId,
-        }, function(response, textStatus) {
-            if (textStatus === 'success') {
-                window.location.reload();
-            } else {
-                $('#merge-changes-spinner').addClass('hidden');
-            }
-        });
     },
 
     expandSiteStatuses: function() {
@@ -542,22 +512,12 @@ Craft.DraftEditor = Garnish.Base.extend({
         if (!this.preview) {
             this.preview = new Craft.Preview(this);
             this.preview.on('open', function() {
-                if (!this.settings.draftId || !Craft.autosaveDrafts) {
-                    if (!Craft.autosaveDrafts) {
-                        this.enableAutosave = true;
-                    }
+                if (!this.settings.draftId) {
                     this.listenForChanges();
                 }
             }.bind(this));
             this.preview.on('close', function() {
-                if (!this.settings.draftId || !Craft.autosaveDrafts) {
-                    if (!Craft.autosaveDrafts) {
-                        this.enableAutosave = false;
-                        const $statusIcons = this.statusIcons();
-                        if ($statusIcons.hasClass('checkmark-icon')) {
-                            $statusIcons.addClass('hidden');
-                        }
-                    }
+                if (!this.settings.draftId) {
                     this.stopListeningForChanges();
                 }
 
@@ -1076,7 +1036,7 @@ Craft.DraftEditor = Garnish.Base.extend({
             .addClass('checkmark-icon')
             .attr('title', Craft.t('app', 'The draft has been saved.'));
 
-        if (!this.enableAutosave) {
+        if (!Craft.autosaveDrafts) {
             // Fade the icon out after a couple seconds, since it won't be accurate as content continues to change
             $statusIcons
                 .velocity('stop')

@@ -20,6 +20,8 @@ use craft\elements\actions\Delete;
 use craft\elements\actions\Duplicate;
 use craft\elements\actions\Edit;
 use craft\elements\actions\NewChild;
+use craft\elements\actions\NewSiblingAfter;
+use craft\elements\actions\NewSiblingBefore;
 use craft\elements\actions\Restore;
 use craft\elements\actions\SetStatus;
 use craft\elements\actions\View;
@@ -410,17 +412,29 @@ class Entry extends Element
                     $structure = Craft::$app->getStructures()->getStructureById($section->structureId);
 
                     if ($structure) {
-                        $newChildUrl = 'entries/' . $section->handle . '/new';
+                        $newEntryUrl = 'entries/' . $section->handle . '/new';
 
                         if (Craft::$app->getIsMultiSite()) {
-                            $newChildUrl .= '?site=' . $site->handle;
+                            $newEntryUrl .= '?site=' . $site->handle;
                         }
+
+                        $actions[] = $elementsService->createAction([
+                            'type' => NewSiblingBefore::class,
+                            'label' => Craft::t('app', 'Create a new entry before'),
+                            'newSiblingUrl' => $newEntryUrl,
+                        ]);
+
+                        $actions[] = $elementsService->createAction([
+                            'type' => NewSiblingAfter::class,
+                            'label' => Craft::t('app', 'Create a new entry after'),
+                            'newSiblingUrl' => $newEntryUrl,
+                        ]);
 
                         $actions[] = $elementsService->createAction([
                             'type' => NewChild::class,
                             'label' => Craft::t('app', 'Create a new child entry'),
                             'maxLevels' => $structure->maxLevels,
-                            'newChildUrl' => $newChildUrl,
+                            'newChildUrl' => $newEntryUrl,
                         ]);
                     }
                 }
@@ -1262,7 +1276,7 @@ class Entry extends Element
         $section = $this->getSection();
 
         // The slug *might* not be set if this is a Draft and they've deleted it for whatever reason
-        $path = 'entries/' . $section->handle . '/' . $this->getSourceId() .
+        $path = 'entries/' . $section->handle . '/' . $this->getCanonicalId() .
             ($this->slug && strpos($this->slug, '__') !== 0 ? '-' . $this->slug : '');
 
         $params = [];

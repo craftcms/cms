@@ -715,7 +715,7 @@ class Assets extends BaseRelationField
     {
         $uploadedFiles = [];
 
-        if (ElementHelper::rootElement($element)->getIsRevision()) {
+        if (ElementHelper::isRevision($element)) {
             return $uploadedFiles;
         }
 

@@ -29,6 +29,8 @@
 {% extends '_layouts/cp' %}
 {% import '_includes/forms' as forms %}
 
+{% set generalConfig = craft.app.config.general %}
+
 {% set saveSourceAction = saveSourceAction ?? null %}
 {% set duplicateSourceAction = duplicateSourceAction ?? null %}
 {% set deleteSourceAction = deleteSourceAction ?? null %}
@@ -64,7 +66,7 @@
 {% endif %}
 
 {% set previewTargets = element.getPreviewTargets() %}
-{% set enablePreview = previewTargets and not craft.app.request.isMobileBrowser(true) %}
+{% set enablePreview = previewTargets and not craft.app.request.isMobileBrowser(true) and generalConfig.autosaveDrafts %}
 
 {% set canDeleteDraft = isDraft and ((canDeleteDraft ?? false) or element.creatorId == currentUser.id) and deleteDraftAction %}
 {% set canUpdateSource = canUpdateSource ?? false %}
@@ -76,7 +78,7 @@
     ((isCurrent and canDeleteSource) or (isDraft and canDeleteDraft and isNewlySupportedSite)) %}
 {% set canEdit = canEdit ?? (canUpdateSource or canDuplicateSource or canAddAnother or saveDraftAction) %}
 
-{% set redirectUrl = redirectUrl ?? craft.app.config.general.getPostCpLoginRedirect() %}
+{% set redirectUrl = redirectUrl ?? generalConfig.getPostCpLoginRedirect() %}
 {% set addAnotherRedirectUrl = addAnotherRedirectUrl ?? null %}
 {% set hashedCpEditUrl = '{cpEditUrl}'|hash %}
 
@@ -328,6 +330,15 @@
 {% endblock %}
 
 {% block details %}
+    {% if notices ?? false %}
+        <div class="meta read-only warning">
+            {% for notice in notices %}
+                <p>{{ notice }}</p>
+                {% if not loop.last %}<hr>{% endif %}
+            {% endfor %}
+        </div>
+    {% endif %}
+
     {% if settingsHtml %}
         <div id="settings" class="meta">
             {{ settingsHtml|raw }}
@@ -409,24 +420,6 @@
                 },
             },
         }) }}
-    {% endif %}
-
-    {% if isDraft and element.getIsOutdated() %}
-        {% do craft.app.session.authorize('mergeDraftSourceChanges:' ~ element.draftId) %}
-        <div class="meta read-only warning">
-            <p>{{ 'The source {type} has been updated recently.'|t('app', {type: element.lowerDisplayName()}) }}</p>
-            <div class="flex flex-nowrap">
-                {% if element.trackChanges %}
-                    {{ tag('button', {
-                        type: 'button',
-                        id: 'merge-changes-btn',
-                        class: ['btn'],
-                        text: 'Merge changes into draft'|t('app'),
-                    }) }}
-                    <div id="merge-changes-spinner" class="spinner hidden"></div>
-                {% endif %}
-            </div>
-        </div>
     {% endif %}
 {% endblock %}
 

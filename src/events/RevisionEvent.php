@@ -20,7 +20,8 @@ use yii\base\Event;
 class RevisionEvent extends Event
 {
     /**
-     * @var ElementInterface The source element
+     * @var ElementInterface The canonical element
+     * @todo rename to canonical in v4
      */
     public $source;
 

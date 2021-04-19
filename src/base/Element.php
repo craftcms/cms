@@ -56,7 +56,9 @@ use craft\web\UploadedFile;
 use DateTime;
 use Twig\Markup;
 use yii\base\Event;
+use yii\base\InvalidCallException;
 use yii\base\InvalidConfigException;
+use yii\base\UnknownPropertyException;
 use yii\db\ExpressionInterface;
 use yii\validators\NumberValidator;
 use yii\validators\Validator;
@@ -64,6 +66,10 @@ use yii\validators\Validator;
 /**
  * Element is the base class for classes representing elements in terms of objects.
  *
+ * @property int|null $canonicalId The element’s canonical ID
+ * @property-read string $canonicalUid The element’s canonical UID
+ * @property-read $isCanonical Whether this is the canonical element
+ * @property-read $isDerivative Whether this is a derivative element, such as a draft or revision
  * @property ElementQueryInterface $ancestors The element’s ancestors
  * @property ElementQueryInterface $children The element’s children
  * @property string $contentTable The name of the table this element’s content is stored in
@@ -128,6 +134,7 @@ abstract class Element extends Component implements ElementInterface
 
     const ATTR_STATUS_MODIFIED = 'modified';
     const ATTR_STATUS_OUTDATED = 'outdated';
+    /* @deprecated in 3.7.0 */
     const ATTR_STATUS_CONFLICTED = 'conflicted';
 
     // Events
@@ -1358,6 +1365,45 @@ abstract class Element extends Component implements ElementInterface
     protected $revisionNotes;
 
     /**
+     * @var int|null
+     * @see getCanonicalId()
+     * @see setCanonicalId()
+     * @see getIsCanonical()
+     * @see getIsDerivative()
+     */
+    private $_canonicalId;
+
+    /**
+     * @var static|null
+     * @see getCanonical()
+     */
+    private $_canonical;
+
+    /**
+     * @var array|null
+     * @see _outdatedAttributes()
+     */
+    private $_outdatedAttributes;
+
+    /**
+     * @var array|null
+     * @see _modifiedAttributes()
+     */
+    private $_modifiedAttributes;
+
+    /**
+     * @var array|null
+     * @see _outdatedFields()
+     */
+    private $_outdatedFields;
+
+    /**
+     * @var array|null
+     * @see _modifiedFields()
+     */
+    private $_modifiedFields;
+
+    /**
      * @var bool
      */
     private $_initialized = false;
@@ -1544,7 +1590,16 @@ abstract class Element extends Component implements ElementInterface
             return;
         }
 
-        parent::__set($name, $value);
+        try {
+            parent::__set($name, $value);
+        } catch (InvalidCallException | UnknownPropertyException $e) {
+            // Is this is a field?
+            if ($this->fieldByHandle($name) !== null) {
+                $this->setFieldValue($name, $value);
+            } else {
+                throw $e;
+            }
+        }
     }
 
     /**
@@ -1627,9 +1682,12 @@ abstract class Element extends Component implements ElementInterface
         ArrayHelper::removeValue($names, 'newSiteIds');
         ArrayHelper::removeValue($names, 'resaving');
         ArrayHelper::removeValue($names, 'duplicateOf');
+        ArrayHelper::removeValue($names, 'mergingCanonicalChanges');
+        ArrayHelper::removeValue($names, 'updatingFromDerivative');
         ArrayHelper::removeValue($names, 'previewing');
         ArrayHelper::removeValue($names, 'hardDelete');
 
+        $names[] = 'canonicalId';
         $names[] = 'ref';
         $names[] = 'status';
         $names[] = 'structureId';
@@ -1773,6 +1831,16 @@ abstract class Element extends Component implements ElementInterface
     }
 
     /**
+     * @inheritdoc
+     */
+    public function datetimeAttributes(): array
+    {
+        $attributes = parent::datetimeAttributes();
+        $attributes[] = 'dateLastMerged';
+        return $attributes;
+    }
+
+    /**
      * Normalizes a field’s validation rule.
      *
      * @param string $attribute
@@ -1876,13 +1944,32 @@ abstract class Element extends Component implements ElementInterface
     {
         $field = $this->fieldByHandle($attribute);
         $columnType = $field->getContentColumnType();
+        $value = $field->serializeValue($this->getFieldValue($attribute), $this);
+
+        if (is_array($columnType)) {
+            foreach ($columnType as $key => $type) {
+                $this->_validateCustomFieldContentSizeInternal($attribute, $type, $value[$key] ?? null);
+            }
+        } else {
+            $this->_validateCustomFieldContentSizeInternal($attribute, $columnType, $value);
+        }
+    }
+
+    /**
+     * @param string $attribute
+     * @param string $columnType
+     * @param mixed $value
+     * @return void
+     */
+    private function _validateCustomFieldContentSizeInternal(string $attribute, string $columnType, $value): void
+    {
         $simpleColumnType = Db::getSimplifiedColumnType($columnType);
 
         if (!in_array($simpleColumnType, [Db::SIMPLE_TYPE_NUMERIC, Db::SIMPLE_TYPE_TEXTUAL], true)) {
             return;
         }
 
-        $value = Db::prepareValueForDb($field->serializeValue($this->getFieldValue($attribute), $this));
+        $value = Db::prepareValueForDb($value);
 
         // Ignore empty values
         if ($value === null || $value === '') {
@@ -1948,24 +2035,91 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @inheritdoc
      */
-    public function getSourceId()
+    public function getIsCanonical(): bool
     {
-        /* @var DraftBehavior|RevisionBehavior|null $behavior */
-        $behavior = $this->getBehavior('draft') ?: $this->getBehavior('revision');
-        return $behavior->sourceId ?? $this->id;
+        return $this->_canonicalId === null;
     }
 
     /**
      * @inheritdoc
      */
+    public function getIsDerivative(): bool
+    {
+        return !$this->getIsCanonical();
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getCanonical(bool $anySite = false): ElementInterface
+    {
+        if ($this->getIsCanonical()) {
+            return $this;
+        }
+
+        if ($this->_canonical === null) {
+            $this->_canonical = static::find()
+                    ->id($this->_canonicalId)
+                    ->siteId($anySite ? '*' : $this->siteId)
+                    ->preferSites([$this->siteId])
+                    ->structureId($this->structureId)
+                    ->unique()
+                    ->anyStatus()
+                    ->ignorePlaceholders()
+                    ->one() ?? false;
+        }
+
+        return $this->_canonical ?: $this;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getCanonicalId(): ?int
+    {
+        return $this->getSourceId();
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function setCanonicalId(?int $canonicalId): void
+    {
+        if ($canonicalId != $this->id) {
+            $this->_canonicalId = $canonicalId;
+        } else {
+            $this->_canonicalId = null;
+        }
+
+        $this->_canonical = null;
+    }
+
+    /**
+     * Returns the element’s canonical ID.
+     *
+     * @return int|null
+     * @since 3.2.0
+     * @deprecated in 3.7.0. Use [[getCanonicalId()]] instead.
+     */
+    public function getSourceId()
+    {
+        return $this->_canonicalId ?? $this->id;
+    }
+
+    /**
+     * Returns the element’s canonical UID.
+     *
+     * @return string
+     * @since 3.2.0
+     * @deprecated in 3.7.0. Use [[getCanonical()]] instead.
+     */
     public function getSourceUid(): string
     {
-        $sourceId = $this->getSourceId();
-        if ($sourceId === $this->id) {
+        if ($this->getIsCanonical()) {
             return $this->uid;
         }
         return static::find()
-            ->id($sourceId)
+            ->id($this->_canonicalId)
             ->siteId($this->siteId)
             ->anyStatus()
             ->select(['elements.uid'])
@@ -1989,11 +2143,31 @@ abstract class Element extends Component implements ElementInterface
      */
     public function getIsUnsavedDraft(): bool
     {
-        if (!$this->getIsDraft()) {
-            return false;
+        return $this->getIsDraft() && $this->getIsCanonical();
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function mergeCanonicalChanges(): void
+    {
+        if (($canonical = $this->getCanonical()) === null) {
+            return;
         }
-        $sourceId = $this->getSourceId();
-        return !$sourceId || $sourceId == $this->id;
+
+        // Update any attributes that were modified upstream
+        foreach ($this->getOutdatedAttributes() as $attribute) {
+            if (!$this->isAttributeModified($attribute)) {
+                $this->$attribute = $canonical->$attribute;
+            }
+        }
+
+        foreach ($this->getOutdatedFields() as $fieldHandle) {
+            if (!$this->isFieldModified($fieldHandle)) {
+                $field = $this->fieldByHandle($fieldHandle);
+                $field->copyValue($canonical, $this);
+            }
+        }
     }
 
     /**
@@ -2473,7 +2647,7 @@ abstract class Element extends Component implements ElementInterface
 
         return static::find()
             ->structureId($this->structureId)
-            ->descendantOf(ElementHelper::sourceElement($this))
+            ->descendantOf($this->getCanonical())
             ->siteId($this->siteId)
             ->descendantDist($dist);
     }
@@ -2575,8 +2749,8 @@ abstract class Element extends Component implements ElementInterface
      */
     public function isAncestorOf(ElementInterface $element): bool
     {
-        $source = ElementHelper::sourceElement($this);
-        return ($source->root == $element->root && $source->lft < $element->lft && $source->rgt > $element->rgt);
+        $canonical = $this->getCanonical();
+        return ($canonical->root == $element->root && $canonical->lft < $element->lft && $canonical->rgt > $element->rgt);
     }
 
     /**
@@ -2592,8 +2766,8 @@ abstract class Element extends Component implements ElementInterface
      */
     public function isParentOf(ElementInterface $element): bool
     {
-        $source = ElementHelper::sourceElement($this);
-        return ($source->root == $element->root && $source->level == $element->level - 1 && $source->isAncestorOf($element));
+        $canonical = $this->getCanonical();
+        return ($canonical->root == $element->root && $canonical->level == $element->level - 1 && $canonical->isAncestorOf($element));
     }
 
     /**
@@ -2653,32 +2827,98 @@ abstract class Element extends Component implements ElementInterface
      */
     function getAttributeStatus(string $attribute)
     {
-        if (!$this->getIsDraft()) {
-            return null;
+        if ($this->isAttributeModified($attribute)) {
+            return [
+                self::ATTR_STATUS_MODIFIED,
+                Craft::t('app', 'This field was updated in this draft.'),
+            ];
         }
 
-        /* @var DraftBehavior $behavior */
-        $behavior = $this->getBehavior('draft');
-        $modified = $behavior->isAttributeModified($attribute);
-        $outdated = $behavior->isAttributeOutdated($attribute);
-        if ($modified && !$outdated) {
-            return [self::ATTR_STATUS_MODIFIED, Craft::t('app', 'Modified in draft')];
-        }
-        if ($outdated && !$modified) {
+        if ($this->isAttributeOutdated($attribute)) {
             return [
-                self::ATTR_STATUS_OUTDATED, Craft::t('app', 'Modified in source {type}', [
-                    'type' => static::lowerDisplayName(),
-                ]),
+                self::ATTR_STATUS_OUTDATED,
+                Craft::t('app', 'This field was updated in the Current revision.'),
             ];
         }
-        if ($outdated && $modified) {
-            return [
-                self::ATTR_STATUS_CONFLICTED, Craft::t('app', 'Modified in draft and source {type}', [
-                    'type' => static::lowerDisplayName(),
-                ]),
-            ];
-        }
+
         return null;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getOutdatedAttributes(): array
+    {
+        return array_keys($this->_outdatedAttributes());
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function isAttributeOutdated(string $name): bool
+    {
+        return isset($this->_outdatedAttributes()[$name]);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function isAttributeModified(string $name): bool
+    {
+        return isset($this->_modifiedAttributes()[$name]);
+    }
+
+    /**
+     * @return array The attribute names that have been modified for this element
+     */
+    private function _outdatedAttributes(): array
+    {
+        if (!static::trackChanges() || $this->getIsCanonical()) {
+            return [];
+        }
+
+        if ($this->_outdatedAttributes === null) {
+            $query = (new Query())
+                ->select(['attribute'])
+                ->from([Table::CHANGEDATTRIBUTES])
+                ->where([
+                    'elementId' => $this->getCanonicalId(),
+                    'siteId' => $this->siteId,
+                ]);
+
+            if ($this->dateLastMerged) {
+                $query->andWhere(['>=', 'dateUpdated', Db::prepareDateForDb($this->dateLastMerged)]);
+            } else {
+                $query->andWhere(['>=', 'dateUpdated', Db::prepareDateForDb($this->dateCreated)]);
+            }
+
+            $this->_outdatedAttributes = array_flip($query->column());
+        }
+
+        return $this->_outdatedAttributes;
+    }
+
+    /**
+     * @return array The attribute names that have been modified for this element
+     */
+    private function _modifiedAttributes(): array
+    {
+        if (!static::trackChanges() || $this->getIsCanonical()) {
+            return [];
+        }
+
+        if ($this->_modifiedAttributes === null) {
+            $this->_modifiedAttributes = array_flip((new Query())
+                ->select(['attribute'])
+                ->from([Table::CHANGEDATTRIBUTES])
+                ->where([
+                    'elementId' => $this->id,
+                    'siteId' => $this->siteId,
+                ])
+                ->column());
+        }
+
+        return $this->_modifiedAttributes;
     }
 
     /**
@@ -2808,36 +3048,98 @@ abstract class Element extends Component implements ElementInterface
     }
 
     /**
-     * @inheritdoc
+     * Returns the status of a given field.
+     *
+     * @param string $fieldHandle
+     * @return array|null
+     * @since 3.4.0
+     * @deprecated in 3.7.0. Use [[FieldInterface::getStatus()]] instead.
      */
     function getFieldStatus(string $fieldHandle)
     {
-        if (!$this->getIsDraft()) {
-            return null;
-        }
-
-        /* @var DraftBehavior $behavior */
-        $behavior = $this->getBehavior('draft');
-        $modified = $behavior->isFieldModified($fieldHandle);
-        $outdated = $behavior->isFieldOutdated($fieldHandle);
-        if ($modified && !$outdated) {
-            return [self::ATTR_STATUS_MODIFIED, Craft::t('app', 'Modified in draft')];
-        }
-        if ($outdated && !$modified) {
-            return [
-                self::ATTR_STATUS_OUTDATED, Craft::t('app', 'Modified in source {type}', [
-                    'type' => static::lowerDisplayName(),
-                ]),
-            ];
-        }
-        if ($outdated && $modified) {
-            return [
-                self::ATTR_STATUS_CONFLICTED, Craft::t('app', 'Modified in draft and source {type}', [
-                    'type' => static::lowerDisplayName(),
-                ]),
-            ];
+        if (($field = $this->fieldByHandle($fieldHandle)) !== null) {
+            return $field->getStatus($this);
         }
         return null;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getOutdatedFields(): array
+    {
+        return array_keys($this->_outdatedFields());
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function isFieldOutdated(string $fieldHandle): bool
+    {
+        return isset($this->_outdatedFields()[$fieldHandle]);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function isFieldModified(string $fieldHandle): bool
+    {
+        return isset($this->_modifiedFields()[$fieldHandle]);
+    }
+
+    /**
+     * @return array The field handles that have been modified for this element
+     */
+    private function _outdatedFields(): array
+    {
+        if (!static::trackChanges() || $this->getIsCanonical()) {
+            return [];
+        }
+
+        if ($this->_outdatedFields === null) {
+            $query = (new Query())
+                ->select(['f.handle'])
+                ->from(['f' => Table::FIELDS])
+                ->innerJoin(['cf' => Table::CHANGEDFIELDS], '[[cf.fieldId]] = [[f.id]]')
+                ->where([
+                    'cf.elementId' => $this->getCanonicalId(),
+                    'cf.siteId' => $this->siteId,
+                ]);
+
+            if ($this->dateLastMerged) {
+                $query->andWhere(['>=', 'cf.dateUpdated', Db::prepareDateForDb($this->dateLastMerged)]);
+            } else {
+                $query->andWhere(['>=', 'cf.dateUpdated', Db::prepareDateForDb($this->dateCreated)]);
+            }
+
+            $this->_outdatedFields = array_flip($query->column());
+        }
+
+        return $this->_outdatedFields;
+    }
+
+    /**
+     * @return array The field handles that have been modified for this element
+     */
+    private function _modifiedFields(): array
+    {
+        if (!static::trackChanges() || $this->getIsCanonical()) {
+            return [];
+        }
+
+        if ($this->_modifiedFields === null) {
+            $this->_modifiedFields = array_flip((new Query())
+                ->select(['f.handle'])
+                ->from(['f' => Table::FIELDS])
+                ->innerJoin(['cf' => Table::CHANGEDFIELDS], '[[cf.fieldId]] = [[f.id]]')
+                ->where([
+                    'cf.elementId' => $this->id,
+                    'cf.siteId' => $this->siteId,
+                ])
+                ->column());
+        }
+
+        return $this->_modifiedFields;
     }
 
     /**
@@ -3070,10 +3372,10 @@ abstract class Element extends Component implements ElementInterface
         }
 
         if ($this->_currentRevision === null) {
-            $source = ElementHelper::sourceElement($this, true);
+            $canonical = $this->getCanonical(true);
             $this->_currentRevision = static::find()
-                ->revisionOf($source->id)
-                ->dateCreated($source->dateUpdated)
+                ->revisionOf($canonical->id)
+                ->dateCreated($canonical->dateUpdated)
                 ->anyStatus()
                 ->orderBy(['num' => SORT_DESC])
                 ->one() ?: false;
@@ -3612,7 +3914,7 @@ abstract class Element extends Component implements ElementInterface
 
         /* @var ElementQuery $query */
         $elementIds = $query->ids();
-        $key = array_search($this->getSourceId(), $elementIds, false);
+        $key = array_search($this->getCanonicalId(), $elementIds, false);
 
         if ($key === false || !isset($elementIds[$key + $dir])) {
             return null;
