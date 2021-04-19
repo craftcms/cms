@@ -46,6 +46,17 @@
                     {% endif %}
                 </div>
 
+                {% if chain.isNew %}
+                    <div id="login-form-bottom">
+                        {% if showRememberMe %}
+                            {{ forms.checkboxField({ id: 'rememberMe', label: 'Keep me logged in'|t('app') }) }}
+                        {% endif %}
+
+                        <button id="forgot-password" type="button">{{ 'Forgot your password?'|t('app') }}</button>
+                        <button id="remember-password" type="button">{{ 'Remember your password?'|t('app') }}</button>
+                    </div>
+                {% endif %}
+
                 <div class="buttons">
                     <button id="submit" class="btn submit" type="submit">{{ 'Login'|t('app') }}</button>
                     <div id="spinner" class="spinner over-bg hidden"></div>
