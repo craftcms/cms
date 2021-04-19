@@ -10,6 +10,9 @@
 - Fixed a bug where renaming an empty volume folder would create a subfolder inside it. ([#7721](https://github.com/craftcms/cms/issues/7721))
 - Fixed a race condition that might occur when multiple Craft installations performed a database backup simultaneously on a server using MySQL. ([#7801](https://github.com/craftcms/cms/issues/7801)) 
 
+### Security
+- Craft now sets a `Permission-Policy: interest-cohort=()` header for all requests, opting out of FLoC tracking due to security and privacy concerns.
+
 ## 3.6.12 - 2021-04-13
 
 ### Changed
