@@ -963,10 +963,6 @@ ul.icons {
           @include svg-mask($linkColor);
         }
       }
-
-      &:focus {
-        @include input-focused-styles;
-      }
     }
   }
 }
@@ -4166,9 +4162,21 @@ table.editable {
 .passwordwrapper,
 .border-box,
 .selectize-text > .selectize-control > .selectize-input {
-  &.focus,
-  &:focus {
+
+  &.focus {
     @include input-focused-styles;
+  }
+
+  body:not(.reduce-focus-visibility) & {
+    &:focus {
+      @include input-focused-styles;
+    }
+  }
+
+  body.reduce-focus-visibility & {
+    &:focus-visible {
+      @include input-focused-styles;
+    }
   }
 }
 
@@ -4503,9 +4511,18 @@ div.checkbox.indeterminate:before {
   text-align: center;
 }
 
-input.checkbox:focus + label:before,
-:focus div.checkbox:before {
-  @include input-focused-styles;
+body:not(.reduce-focus-visibility) {
+  input.checkbox:focus + label:before,
+  :focus div.checkbox:before {
+    @include input-focused-styles;
+  }
+}
+
+body.reduce-focus-visibility {
+  input.checkbox:focus-visible + label:before,
+  :focus-visible div.checkbox:before {
+    @include input-focused-styles;
+  }
 }
 
 fieldset {
@@ -4594,9 +4611,18 @@ div.radio.checked:after,
   background: $grey900;
 }
 
-input.radio:focus + label:before,
-:focus div.radio:before {
-  @include input-focused-styles;
+body:not(.reduce-focus-visibility) {
+  input.radio:focus + label:before,
+  :focus div.radio:before {
+    @include input-focused-styles;
+  }
+}
+
+body.reduce-focus-visibility {
+  input.radio:focus-visible + label:before,
+  :focus-visible div.radio:before {
+    @include input-focused-styles;
+  }
 }
 
 /* multiselect */
@@ -4605,8 +4631,16 @@ input.radio:focus + label:before,
   font-size: 14px;
   appearance: none;
 
-  &:focus {
-    @include input-focused-styles;
+  body:not(.reduce-focus-visibility) & {
+    &:focus {
+      @include input-focused-styles;
+    }
+  }
+
+  body.reduce-focus-visibility & {
+    &:focus-visible {
+      @include input-focused-styles;
+    }
   }
 
   option {
@@ -4859,9 +4893,20 @@ input.radio:focus + label:before,
 }
 
 .select:not(.selectize) select {
-  &:hover,
-  &:focus {
+  &:hover {
     @include select-input-focused-styles;
+  }
+
+  body:not(.reduce-focus-visibility) & {
+    &:focus {
+      @include select-input-focused-styles;
+    }
+  }
+
+  body.reduce-focus-visibility & {
+    &:focus-visible {
+      @include select-input-focused-styles;
+    }
   }
 }
 

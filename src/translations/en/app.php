@@ -1052,6 +1052,7 @@ return [
     'Recent {section} Entries' => 'Recent {section} Entries',
     'Recent {type} changes merged.' => 'Recent {type} changes merged.',
     'Record of generated image transforms' => 'Record of generated image transforms',
+    'Reduce focus visibility' => 'Reduce focus visibility',
     'Refresh' => 'Refresh',
     'Regenerate' => 'Regenerate',
     'Regenerating project config YAML files from the loaded project config…' => 'Regenerating project config YAML files from the loaded project config…',

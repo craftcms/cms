@@ -1284,6 +1284,7 @@ class UsersController extends Controller
             'language' => $this->request->getBodyParam('preferredLanguage', $user->getPreference('language')),
             'locale' => $this->request->getBodyParam('preferredLocale', $user->getPreference('locale')) ?: null,
             'weekStartDay' => $this->request->getBodyParam('weekStartDay', $user->getPreference('weekStartDay')),
+            'reduceFocusVisibility' => (bool)$this->request->getBodyParam('reduceFocusVisibility', $user->getPreference('reduceFocusVisibility')),
             'useShapes' => (bool)$this->request->getBodyParam('useShapes', $user->getPreference('useShapes')),
             'underlineLinks' => (bool)$this->request->getBodyParam('underlineLinks', $user->getPreference('underlineLinks')),
         ];

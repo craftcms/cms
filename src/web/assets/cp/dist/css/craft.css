@@ -521,8 +521,6 @@ ul.icons li a:hover { text-decoration: none; background-color: #f3f7fc; border-c
 
 ul.icons li a:hover .icon.icon-mask svg rect, ul.icons li a:hover .icon.icon-mask svg circle, ul.icons li a:hover .icon.icon-mask svg ellipse, ul.icons li a:hover .icon.icon-mask svg line, ul.icons li a:hover .icon.icon-mask svg polyline, ul.icons li a:hover .icon.icon-mask svg polygon, ul.icons li a:hover .icon.icon-mask svg path, ul.icons li a:hover .icon.icon-mask svg text { fill: #0B69A3; stroke-width: 0; -o-transition: fill linear 100ms; transition: fill linear 100ms; }
 
-ul.icons li a:focus { border-color: #127FBF; box-shadow: 0 0 0 2px rgba(18, 127, 191, 0.5); }
-
 @media only screen and (max-width: 380px) { ul.icons li a { width: 96px; } }
 
 @media only screen and (max-width: 320px) { ul.icons li a { width: 75px; } }
@@ -2106,7 +2104,11 @@ table.shadow-box thead:last-child tr:last-child th:last-child, table.shadow-box 
 
 .text:not(.selectize-text), .passwordwrapper, .border-box, .matrix-configurator > .field > .input, .selectize-text > .selectize-control > .selectize-input, .multiselect > select, .selectize.multiselect .selectize-control.multi .selectize-input { border-radius: 3px; border: 1px solid rgba(96, 125, 159, 0.25); background-color: #fbfcfe; background-clip: padding-box; }
 
-.text.focus, .text:focus, .passwordwrapper.focus, .passwordwrapper:focus, .border-box.focus, .border-box:focus, .selectize-text > .selectize-control > .selectize-input.focus, .selectize-text > .selectize-control > .selectize-input:focus { border-color: #127FBF; box-shadow: 0 0 0 2px rgba(18, 127, 191, 0.5); }
+.text.focus, .passwordwrapper.focus, .border-box.focus, .selectize-text > .selectize-control > .selectize-input.focus { border-color: #127FBF; box-shadow: 0 0 0 2px rgba(18, 127, 191, 0.5); }
+
+body:not(.reduce-focus-visibility) .text:focus, body:not(.reduce-focus-visibility) .passwordwrapper:focus, body:not(.reduce-focus-visibility) .border-box:focus, body:not(.reduce-focus-visibility) .selectize-text > .selectize-control > .selectize-input:focus { border-color: #127FBF; box-shadow: 0 0 0 2px rgba(18, 127, 191, 0.5); }
+
+body.reduce-focus-visibility .text:focus-visible, body.reduce-focus-visibility .passwordwrapper:focus-visible, body.reduce-focus-visibility .border-box:focus-visible, body.reduce-focus-visibility .selectize-text > .selectize-control > .selectize-input:focus-visible { border-color: #127FBF; box-shadow: 0 0 0 2px rgba(18, 127, 191, 0.5); }
 
 input.text, textarea.text, .text > input, .text > textarea, table.editable textarea, .selectize-text > .selectize-control > .selectize-input { font-size: 14px; line-height: 20px; color: #3f4d5a; min-height: 3px; box-sizing: border-box; -webkit-appearance: none; appearance: none; }
 
@@ -2265,7 +2267,9 @@ input.checkbox:checked:not(:indeterminate) + label:before, div.checkbox.checked:
 
 input.checkbox:indeterminate + label:before, div.checkbox.indeterminate:before { content: 'minus'; font-size: 7px; text-align: center; }
 
-input.checkbox:focus + label:before, :focus div.checkbox:before { border-color: #127FBF; box-shadow: 0 0 0 2px rgba(18, 127, 191, 0.5); }
+body:not(.reduce-focus-visibility) input.checkbox:focus + label:before, body:not(.reduce-focus-visibility) :focus div.checkbox:before { border-color: #127FBF; box-shadow: 0 0 0 2px rgba(18, 127, 191, 0.5); }
+
+body.reduce-focus-visibility input.checkbox:focus-visible + label:before, body.reduce-focus-visibility :focus-visible div.checkbox:before { border-color: #127FBF; box-shadow: 0 0 0 2px rgba(18, 127, 191, 0.5); }
 
 fieldset .checkboxfield { margin: 5px 0; }
 
@@ -2301,12 +2305,16 @@ input.radio:disabled + label, div.radio.disabled:before, div.radio.disabled + la
 
 input.radio:checked + label:after, div.radio.checked:after, .sel div.radio:after { background: #1f2933; }
 
-input.radio:focus + label:before, :focus div.radio:before { border-color: #127FBF; box-shadow: 0 0 0 2px rgba(18, 127, 191, 0.5); }
+body:not(.reduce-focus-visibility) input.radio:focus + label:before, body:not(.reduce-focus-visibility) :focus div.radio:before { border-color: #127FBF; box-shadow: 0 0 0 2px rgba(18, 127, 191, 0.5); }
+
+body.reduce-focus-visibility input.radio:focus-visible + label:before, body.reduce-focus-visibility :focus-visible div.radio:before { border-color: #127FBF; box-shadow: 0 0 0 2px rgba(18, 127, 191, 0.5); }
 
 /* multiselect */
 .multiselect > select { color: #3f4d5a; font-size: 14px; -webkit-appearance: none; appearance: none; }
 
-.multiselect > select:focus { border-color: #127FBF; box-shadow: 0 0 0 2px rgba(18, 127, 191, 0.5); }
+body:not(.reduce-focus-visibility) .multiselect > select:focus { border-color: #127FBF; box-shadow: 0 0 0 2px rgba(18, 127, 191, 0.5); }
+
+body.reduce-focus-visibility .multiselect > select:focus-visible { border-color: #127FBF; box-shadow: 0 0 0 2px rgba(18, 127, 191, 0.5); }
 
 .multiselect > select option { padding: 1px 8px; }
 
@@ -2440,7 +2448,11 @@ body.rtl .select:not(.selectize) select { padding: 7px 10px 7px 22px ; }
 
 .select:not(.selectize).fullwidth select { min-width: 100%; }
 
-.select:not(.selectize) select:hover, .select:not(.selectize) select:focus { outline-color: transparent; background-color: rgba(96, 125, 159, 0.5); }
+.select:not(.selectize) select:hover { outline-color: transparent; background-color: rgba(96, 125, 159, 0.5); }
+
+body:not(.reduce-focus-visibility) .select:not(.selectize) select:focus { outline-color: transparent; background-color: rgba(96, 125, 159, 0.5); }
+
+body.reduce-focus-visibility .select:not(.selectize) select:focus-visible { outline-color: transparent; background-color: rgba(96, 125, 159, 0.5); }
 
 .select:not(.selectize).small:after { top: 9px; }
 
@@ -2895,14 +2907,18 @@ html { -webkit-text-size-adjust: 100%; min-height: 100vh; }
 
 body { min-height: 100vh; }
 
-*:focus { outline-style: solid; outline-color: transparent; box-shadow: 0 0 0 1px #127FBF, 0 0 0 3px rgba(18, 127, 191, 0.5); }
+body :focus { outline-style: solid; outline-color: transparent; }
+
+body:not(.reduce-focus-visibility) :focus, body.reduce-focus-visibility :focus-visible { box-shadow: 0 0 0 1px #127FBF, 0 0 0 3px rgba(18, 127, 191, 0.5); }
 
 #global-container { position: relative; display: -webkit-flex; display: flex; -webkit-flex-direction: column; flex-direction: column; min-height: 100vh; }
 
 /* global sidebar */
 #global-sidebar { position: fixed; z-index: 100; display: -webkit-flex; display: flex; -webkit-flex-direction: column; flex-direction: column; height: 100vh; padding: 0; overflow-y: auto; overflow-x: hidden; -webkit-overflow-scrolling: touch; -moz-osx-font-smoothing: grayscale; -webkit-font-smoothing: antialiased; font-weight: 500; background-color: #33404d; }
 
-#global-sidebar *:focus { box-shadow: 0 0 0 1px #1992D4, 0 0 0 3px rgba(25, 146, 212, 0.5); }
+body:not(.reduce-focus-visibility) #global-sidebar :focus { box-shadow: 0 0 0 1px #1992D4, 0 0 0 3px rgba(25, 146, 212, 0.5); }
+
+body.reduce-focus-visibility #global-sidebar :focus-visible { box-shadow: 0 0 0 1px #1992D4, 0 0 0 3px rgba(25, 146, 212, 0.5); }
 
 #global-sidebar a { color: #e4edf6; -o-transition: color linear 100ms; transition: color linear 100ms; text-decoration: none; }
 
