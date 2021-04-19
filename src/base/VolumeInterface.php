@@ -171,6 +171,7 @@ interface VolumeInterface extends SavableComponentInterface
      * @param string $path The path of the directory, relative to the source’s root
      * @throws VolumeObjectExistsException if a directory with such name already exists
      * @throws VolumeException if something else goes wrong
+     * @since 3.6.0
      */
     public function createDirectory(string $path);
 
@@ -179,6 +180,7 @@ interface VolumeInterface extends SavableComponentInterface
      *
      * @param string $path The path of the directory, relative to the source’s root
      * @throws VolumeException if something goes wrong
+     * @since 3.6.0
      */
     public function deleteDirectory(string $path);
 
@@ -190,6 +192,7 @@ interface VolumeInterface extends SavableComponentInterface
      * @throws VolumeObjectNotFoundException if a directory with such name already exists
      * @throws VolumeObjectExistsException if a directory with such name already exists
      * @throws VolumeException if something else goes wrong
+     * @since 3.6.0
      */
     public function renameDirectory(string $path, string $newName);
 }
