@@ -37,6 +37,16 @@ class Chain
     }
 
     /**
+     * Returns `true` whether no steps have been completed yet.
+     *
+     * @return bool
+     */
+    public function getIsNew(): bool
+    {
+        return $this->_state->getLastCompletedStep() === null;
+    }
+
+    /**
      * Returns the authenticated user if the chain is complete.
      *
      * @return User|null
