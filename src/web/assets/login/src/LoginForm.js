@@ -55,7 +55,7 @@ class LoginForm {
                     }
                     // Just in case this was the first step, remove all the misc things.
                     if (response.stepComplete) {
-                        this.$rememberMeCheckbox.remove();
+                        this.$rememberMeCheckbox.parent().remove();
                         this.$forgotPassword.remove();
                         this.$rememberPassword.remove();
                     }

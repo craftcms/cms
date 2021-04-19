@@ -79,6 +79,7 @@ class AuthenticationController extends Controller
             }
 
             Craft::$app->getUser()->login($chain->getAuthenticatedUser(), $duration);
+            $session->remove(self::REMEMBER_ME);
 
             $userSession = Craft::$app->getUser();
             $returnUrl = $userSession->getReturnUrl();
