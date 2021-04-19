@@ -7,11 +7,15 @@ class LoginForm {
         this.$errors = $('#login-errors');
         this.$messages = $('#login-messages');
         this.$spinner = $('#spinner');
+        this.$pendingSpinner = $('#spinner-pending');
         this.$submit = $('#submit');
         this.$rememberMeCheckbox = $('#rememberMe');
         this.$forgotPassword = $('#forgot-password');
         this.$rememberPassword = $('#remember-password');
         this.$loginForm.on('submit', this.invokeStepHandler.bind(this));
+        if (this.$pendingSpinner.length) {
+            this.$loginForm.trigger('submit');
+        }
         // TODO this form must handle "remember me" functionality.
         // this.$forgotPassword.on('click', 'onSwitchForm');
         // this.$rememberPassword.on('click', 'onSwitchForm');
@@ -24,9 +28,12 @@ class LoginForm {
      */
     performAuthentication(request) {
         request.scenario = Craft.cpLoginChain;
+        if (this.$rememberMeCheckbox.prop('checked')) {
+            request.rememberMe = true;
+        }
+        this.clearMessages();
+        this.clearErrors();
         Craft.postActionRequest(this.authenticationTarget, request, (response, textStatus) => {
-            this.clearMessages();
-            this.clearErrors();
             if (textStatus == 'success') {
                 if (response.success) {
                     window.location.href = response.returnUrl;
@@ -45,6 +52,12 @@ class LoginForm {
                     }
                     if (response.footHtml) {
                         Craft.appendFootHtml(response.footHtml);
+                    }
+                    // Just in case this was the first step, remove all the misc things.
+                    if (response.stepComplete) {
+                        this.$rememberMeCheckbox.remove();
+                        this.$forgotPassword.remove();
+                        this.$rememberPassword.remove();
                     }
                 }
             }
@@ -95,6 +108,9 @@ class LoginForm {
             else {
                 this.showError(data);
             }
+        }
+        else {
+            this.performAuthentication({});
         }
         return false;
     }

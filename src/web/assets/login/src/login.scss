@@ -134,6 +134,16 @@ body {
   margin-left: -12px;
 }
 
+#spinner-pending {
+  top: 0;
+  margin-left: -24px;
+  left: 50%;
+  position: absolute;
+}
+
+#authentication-container {
+  position: relative;
+}
 #login-errors {
   text-align: center;
   color: $errorColor;

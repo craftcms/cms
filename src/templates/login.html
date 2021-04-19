@@ -43,6 +43,8 @@
 
                     {% if not chain.isComplete %}
                         {{ chain.nextAuthenticationStep.fieldHtml|raw }}
+                    {% else %}
+                        <div id="spinner-pending" class="spinner big over-bg"></div>
                     {% endif %}
                 </div>
 
@@ -58,8 +60,10 @@
                 {% endif %}
 
                 <div class="buttons">
-                    <button id="submit" class="btn submit" type="submit">{{ 'Login'|t('app') }}</button>
-                    <div id="spinner" class="spinner over-bg hidden"></div>
+                    {% if not chain.isComplete %}
+                        <button id="submit" class="btn submit" type="submit">{{ 'Login'|t('app') }}</button>
+                        <div id="spinner" class="spinner over-bg hidden"></div>
+                    {% endif %}
                 </div>
 
             </form>

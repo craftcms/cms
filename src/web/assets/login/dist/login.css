@@ -54,6 +54,10 @@ body.rtl #rememberMe-field { margin-left: 14px; }
 
 #spinner { position: absolute; top: 58px; left: 50%; margin-left: -12px; }
 
+#spinner-pending { top: 0; margin-left: -24px; left: 50%; position: absolute; }
+
+#authentication-container { position: relative; }
+
 #login-errors { text-align: center; color: #CF1124; margin-top: 1em; }
 
 #login-messages { text-align: center; color: #0B69A3; margin-top: 1em; }

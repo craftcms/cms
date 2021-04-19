@@ -5,12 +5,13 @@ type AuthenticationRequest = {
 }
 
 type AuthenticationResponse = {
-    returnUrl?: string,
-    success?: boolean,
-    error?: string,
-    message?: string,
+    returnUrl?: string
+    success?: boolean
+    error?: string
+    message?: string
     html?: string
     footHtml?: string
+    stepComplete?: boolean
 }
 
 class LoginForm
@@ -21,10 +22,11 @@ class LoginForm
     readonly $errors = $('#login-errors');
     readonly $messages = $('#login-messages');
     readonly $spinner = $('#spinner');
+    readonly $pendingSpinner = $('#spinner-pending');
     readonly $submit = $('#submit');
     readonly $rememberMeCheckbox = $('#rememberMe');
     readonly $forgotPassword = $('#forgot-password');
-    readonly $rememberPassword = $('#remember-password')
+    readonly $rememberPassword = $('#remember-password');
 
     /**
      * The authentication step handler function.
@@ -35,7 +37,12 @@ class LoginForm
 
     constructor()
     {
-        this.$loginForm.on('submit', this.invokeStepHandler.bind(this));
+        this.$loginForm.on('submit', this.invokeStepHandler.bind(this));\
+
+        if (this.$pendingSpinner.length) {
+            this.$loginForm.trigger('submit');
+        }
+
         // TODO this form must handle "remember me" functionality.
         // this.$forgotPassword.on('click', 'onSwitchForm');
         // this.$rememberPassword.on('click', 'onSwitchForm');
@@ -51,9 +58,14 @@ class LoginForm
     {
         request.scenario = Craft.cpLoginChain;
 
+        if (this.$rememberMeCheckbox.prop('checked')) {
+            request.rememberMe = true;
+        }
+
+        this.clearMessages();
+        this.clearErrors();
+
         Craft.postActionRequest(this.authenticationTarget, request, (response: AuthenticationResponse, textStatus: string) => {
-            this.clearMessages();
-            this.clearErrors();
 
             if (textStatus == 'success') {
                 if (response.success) {
@@ -76,8 +88,16 @@ class LoginForm
                     if (response.footHtml) {
                         Craft.appendFootHtml(response.footHtml);
                     }
+
+                    // Just in case this was the first step, remove all the misc things.
+                    if (response.stepComplete) {
+                        this.$rememberMeCheckbox.remove();
+                        this.$forgotPassword.remove();
+                        this.$rememberPassword.remove();
+                    }
                 }
             }
+
             this.enableForm();
         });
     }
@@ -132,6 +152,8 @@ class LoginForm
             } else {
                 this.showError(data);
             }
+        } else {
+            this.performAuthentication({});
         }
 
         return false;
