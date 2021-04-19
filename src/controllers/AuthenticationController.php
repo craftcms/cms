@@ -56,7 +56,6 @@ class AuthenticationController extends Controller
             ]);
         }
 
-
         $output = [
             'message' => Craft::$app->getSession()->getNotice(),
             'error' => Craft::$app->getSession()->getError(),
@@ -66,9 +65,9 @@ class AuthenticationController extends Controller
             /** @var Step $step */
             $step = $chain->getNextAuthenticationStep();
             $output['html'] = $step->getFieldHtml();
+            $output['footHtml'] = Craft::$app->getView()->getBodyHtml();
         }
 
-        // TODO any step handle JS should be shipped here.
         return $this->asJson($output);
     }
 }
