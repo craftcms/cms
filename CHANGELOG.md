@@ -8,7 +8,8 @@
 ### Fixed
 - Fixed a bug where entry indexes weren’t showing the entries’ authors if they were pending or suspended.
 - Fixed a bug where renaming an empty volume folder would create a subfolder inside it. ([#7721](https://github.com/craftcms/cms/issues/7721))
-- Fixed a race condition that might occur when multiple Craft installations performed a database backup simultaneously on a server using MySQL. ([#7801](https://github.com/craftcms/cms/issues/7801)) 
+- Fixed a bug where simultaneously-executed MySQL backups could result in a `my.cnf` conflict. ([#7801](https://github.com/craftcms/cms/issues/7801))
+- Fixed a bug where radio button labels weren’t including custom container attributes passed to the input.
 
 ### Security
 - Craft now sets a `Permission-Policy: interest-cohort=()` header for all requests, opting out of FLoC tracking due to security and privacy concerns.
@@ -109,7 +110,7 @@
 ## 3.6.9 - 2021-03-05
 
 ### Added
-- Added `craft\helpers\Session`, which provides methods for working with PHP session variables, without creating a new PHP session if owelne didn’t need to exist.
+- Added `craft\helpers\Session`, which provides methods for working with PHP session variables, without creating a new PHP session if one didn’t need to exist.
 
 ### Changed
 - Updated Yii to 2.0.41.
