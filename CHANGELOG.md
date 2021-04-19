@@ -2,11 +2,17 @@
 
 ## Unreleased
 
+### Changed
+- The `setPasswordPath` and `verifyEmailPath` config settings can now be set to absolute URLs, which will cause them to be respected when running Craft in headless mode. ([#6226](https://github.com/craftcms/cms/issues/6226))
+
 ### Fixed
 - Fixed a bug where entry indexes weren’t showing the entries’ authors if they were pending or suspended.
 - Fixed a bug where renaming an empty volume folder would create a subfolder inside it. ([#7721](https://github.com/craftcms/cms/issues/7721))
 - Fixed a bug where simultaneously-executed MySQL backups could result in a `my.cnf` conflict. ([#7801](https://github.com/craftcms/cms/issues/7801))
 - Fixed a bug where radio button labels weren’t including custom container attributes passed to the input.
+
+### Security
+- Craft now sets a `Permission-Policy: interest-cohort=()` header for all requests, opting out of FLoC tracking due to security and privacy concerns.
 
 ## 3.6.12 - 2021-04-13
 
