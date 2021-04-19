@@ -18,7 +18,7 @@ class LoginForm
     readonly $loginForm = $('#login-form');
     readonly $authContainer = $('#authentication-container');
     readonly $errors = $('#login-errors');
-    readonly $messages = $('#messages');
+    readonly $messages = $('#login-messages');
     readonly $spinner = $('#spinner');
     readonly $submit = $('#submit');
     readonly $rememberMeCheckbox = $('#rememberMe');
