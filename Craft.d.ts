@@ -21,7 +21,8 @@ declare var Craft: {
     expandPostArray(arr: object): any,
     LoginForm: LoginForm,
     cpLoginChain: string,
-    PasswordInput: any
+    PasswordInput: any,
+    appendFootHtml: (html?: string) => void
 };
 
 declare var Garnish: any;

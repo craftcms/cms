@@ -5,7 +5,7 @@ class LoginForm {
         this.$loginForm = $('#login-form');
         this.$authContainer = $('#authentication-container');
         this.$errors = $('#login-errors');
-        this.$messages = $('#messages');
+        this.$messages = $('#login-messages');
         this.$spinner = $('#spinner');
         this.$submit = $('#submit');
         this.$rememberMeCheckbox = $('#rememberMe');
@@ -42,6 +42,9 @@ class LoginForm {
                     if (response.html) {
                         this.$authContainer.html(response.html);
                         this.stepHandler = undefined;
+                    }
+                    if (response.footHtml) {
+                        Craft.appendFootHtml(response.footHtml);
                     }
                 }
             }

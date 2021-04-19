@@ -10,6 +10,7 @@ type AuthenticationResponse = {
     error?: string,
     message?: string,
     html?: string
+    footHtml?: string
 }
 
 class LoginForm
@@ -70,6 +71,10 @@ class LoginForm
                     if (response.html) {
                         this.$authContainer.html(response.html)
                         this.stepHandler = undefined;
+                    }
+
+                    if (response.footHtml) {
+                        Craft.appendFootHtml(response.footHtml);
                     }
                 }
             }
