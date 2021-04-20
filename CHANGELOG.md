@@ -7,7 +7,7 @@
 - Fixed a bug where renaming an empty volume folder would create a subfolder inside it. ([#7721](https://github.com/craftcms/cms/issues/7721))
 - Fixed a bug where simultaneously-executed MySQL backups could result in a `my.cnf` conflict. ([#7801](https://github.com/craftcms/cms/issues/7801))
 - Fixed a bug where radio button labels weren’t including custom container attributes passed to the input.
-
+- Improved performance for asset query's that have a local volume attached, fixes ([#6140](https://github.com/craftcms/cms/issues/6140))
 ## 3.6.12 - 2021-04-13
 
 ### Changed
