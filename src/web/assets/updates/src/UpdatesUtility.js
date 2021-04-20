@@ -21,7 +21,7 @@
                 includeDetails: true
             };
 
-            Craft.cp.checkForUpdates(true, true, function(info) {
+            Craft.cp.checkForUpdates(true, true, info => {
                 this.allowUpdates = info.allowUpdates;
 
                 // Craft CMS update?
@@ -57,7 +57,7 @@
                     $graphic.addClass('success');
                     $status.text(Craft.t('app', 'You’re all up-to-date!'));
                 }
-            }.bind(this));
+            });
         },
 
         processUpdate: function(updateInfo, isPlugin) {

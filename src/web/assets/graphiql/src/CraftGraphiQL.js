@@ -74,9 +74,9 @@ class Item extends React.Component {
         return elem(GraphiQL.MenuItem, {
             label: this.props.name,
             title: this.props.name,
-            onSelect: function() {
+            onSelect: () => {
                 setSchema(this.props.uid)
-            }.bind(this)
+            },
         })
     }
 }
@@ -128,7 +128,7 @@ export class CraftGraphiQL extends React.Component {
     // Event handlers
     handleEditQuery(query) {
         // On query change, save it to state, so everyone knows about it.
-        this.setState({query: query});
+        this.setState({query});
         onEditQuery(query);
     }
 

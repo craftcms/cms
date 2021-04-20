@@ -9,8 +9,8 @@ Craft.EntryIndex = Craft.BaseElementIndex.extend({
     $newEntryBtn: null,
 
     init: function(elementType, $container, settings) {
-        this.on('selectSource', $.proxy(this, 'updateButton'));
-        this.on('selectSite', $.proxy(this, 'updateButton'));
+        this.on('selectSource', this.updateButton.bind(this));
+        this.on('selectSite', this.updateButton.bind(this));
         this.base(elementType, $container, settings);
     },
 
@@ -137,9 +137,9 @@ Craft.EntryIndex = Craft.BaseElementIndex.extend({
                 var menuBtn = new Garnish.MenuBtn($menuBtn);
 
                 if (this.settings.context !== 'index') {
-                    menuBtn.on('optionSelect', $.proxy(function(ev) {
+                    menuBtn.on('optionSelect', ev => {
                         this._openCreateEntryModal(ev.option.getAttribute('data-id'));
-                    }, this));
+                    });
                 }
             }
 
@@ -208,16 +208,16 @@ Craft.EntryIndex = Craft.BaseElementIndex.extend({
                 typeId: section.entryTypes[0].id,
                 enabled: section.canPublish ? 1 : 0,
             },
-            onBeginLoading: $.proxy(function() {
+            onBeginLoading: () => {
                 this.$newEntryBtn.addClass('loading');
-            }, this),
-            onEndLoading: $.proxy(function() {
+            },
+            onEndLoading: () => {
                 this.$newEntryBtn.removeClass('loading');
-            }, this),
-            onHideHud: $.proxy(function() {
+            },
+            onHideHud: () => {
                 this.$newEntryBtn.removeClass('inactive').text(newEntryBtnText);
-            }, this),
-            onSaveElement: $.proxy(function(response) {
+            },
+            onSaveElement: response => {
                 // Make sure the right section is selected
                 var sectionSourceKey = 'section:' + section.uid;
 
@@ -227,7 +227,7 @@ Craft.EntryIndex = Craft.BaseElementIndex.extend({
 
                 this.selectElementAfterUpdate(response.id);
                 this.updateElements();
-            }, this)
+            },
         });
     }
 });

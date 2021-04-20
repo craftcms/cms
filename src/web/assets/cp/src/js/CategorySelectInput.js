@@ -42,7 +42,7 @@ Craft.CategorySelectInput = Craft.BaseElementSelectInput.extend({
             selectionLabel: this.settings.selectionLabel
         };
 
-        Craft.postActionRequest('elements/get-categories-input-html', data, $.proxy(function(response, textStatus) {
+        Craft.postActionRequest('elements/get-categories-input-html', data, (response, textStatus) => {
             this.modal.enable();
             this.modal.enableCancelBtn();
             this.modal.enableSelectBtn();
@@ -72,7 +72,7 @@ Craft.CategorySelectInput = Craft.BaseElementSelectInput.extend({
                 this.modal.hide();
                 this.onSelectElements(filteredElements);
             }
-        }, this));
+        });
     },
 
     removeElement: function($element) {
@@ -93,7 +93,7 @@ Craft.CategorySelectInput = Craft.BaseElementSelectInput.extend({
 
         // Is this the last one?
         if (i === $allCategories.length - 1) {
-            callback = $.proxy(function() {
+            callback = () => {
                 var $li = $allCategories.first().parent().parent(),
                     $ul = $li.parent();
 
@@ -102,12 +102,12 @@ Craft.CategorySelectInput = Craft.BaseElementSelectInput.extend({
                 } else {
                     $ul.remove();
                 }
-            }, this);
+            };
         }
 
-        var func = $.proxy(function() {
+        var func = () => {
             this.animateElementAway($allCategories.eq(i), callback);
-        }, this);
+        };
 
         if (i === 0) {
             func();

@@ -38,7 +38,7 @@ Craft.AuthManager = Garnish.Base.extend({
             clearTimeout(this.checkRemainingSessionTimer);
         }
 
-        this.checkRemainingSessionTimer = setTimeout($.proxy(this, 'checkRemainingSessionTime'), seconds * 1000);
+        this.checkRemainingSessionTimer = setTimeout(this.checkRemainingSessionTime.bind(this), seconds * 1000);
     },
 
     /**
@@ -49,7 +49,7 @@ Craft.AuthManager = Garnish.Base.extend({
             url: Craft.getActionUrl('users/session-info', (extendSession ? null : 'dontExtendSession=1')),
             type: 'GET',
             dataType: 'json',
-            complete: $.proxy(function(jqXHR, textStatus) {
+            complete: (jqXHR, textStatus) => {
                 if (textStatus === 'success') {
                     if (typeof jqXHR.responseJSON.csrfTokenValue !== 'undefined' && typeof Craft.csrfTokenValue !== 'undefined') {
                         Craft.csrfTokenValue = jqXHR.responseJSON.csrfTokenValue;
@@ -60,7 +60,7 @@ Craft.AuthManager = Garnish.Base.extend({
                 } else {
                     this.updateRemainingSessionTime(-1);
                 }
-            }, this)
+            },
         });
     },
 
@@ -85,7 +85,7 @@ Craft.AuthManager = Garnish.Base.extend({
                         clearTimeout(this.showLoginModalTimer);
                     }
 
-                    this.showLoginModalTimer = setTimeout($.proxy(this, 'showLoginModal'), this.remainingSessionTime * 1000);
+                    this.showLoginModalTimer = setTimeout(this.showLoginModal.bind(this), this.remainingSessionTime * 1000);
                 }
             } else {
                 if (this.showingLoginModal) {
@@ -173,7 +173,7 @@ Craft.AuthManager = Garnish.Base.extend({
 
         this.updateLogoutWarningMessage();
 
-        this.decrementLogoutWarningInterval = setInterval($.proxy(this, 'decrementLogoutWarning'), 1000);
+        this.decrementLogoutWarningInterval = setInterval(this.decrementLogoutWarning.bind(this), 1000);
     },
 
     /**
@@ -256,23 +256,23 @@ Craft.AuthManager = Garnish.Base.extend({
                 hideOnEsc: false,
                 hideOnShadeClick: false,
                 shadeClass: 'modal-shade dark loginmodalshade',
-                onFadeIn: $.proxy(function() {
+                onFadeIn: () => {
                     if (!Garnish.isMobileBrowser(true)) {
                         // Auto-focus the password input
-                        setTimeout($.proxy(function() {
+                        setTimeout(() => {
                             this.$passwordInput.trigger('focus');
-                        }, this), 100);
+                        }, 100);
                     }
-                }, this),
-                onFadeOut: $.proxy(function() {
+                },
+                onFadeOut: () => {
                     this.$passwordInput.val('');
-                }, this)
+                },
             });
 
             new Craft.PasswordInput(this.$passwordInput, {
-                onToggleInput: $.proxy(function($newPasswordInput) {
+                onToggleInput: $newPasswordInput => {
                     this.$passwordInput = $newPasswordInput;
-                }, this)
+                },
             });
 
             this.addListener(this.$passwordInput, 'input', 'validatePassword');
@@ -305,9 +305,9 @@ Craft.AuthManager = Garnish.Base.extend({
         $.get({
             url: Craft.getActionUrl('users/logout'),
             dataType: 'json',
-            success: $.proxy(function() {
+            success: () => {
                 Craft.redirectTo('');
-            }, this)
+            },
         });
     },
 
@@ -356,7 +356,7 @@ Craft.AuthManager = Garnish.Base.extend({
             password: this.$passwordInput.val()
         };
 
-        Craft.postActionRequest('users/login', data, $.proxy(function(response, textStatus) {
+        Craft.postActionRequest('users/login', data, (response, textStatus) => {
             this.$passwordSpinner.addClass('hidden');
 
             if (textStatus === 'success') {
@@ -374,7 +374,7 @@ Craft.AuthManager = Garnish.Base.extend({
             } else {
                 this.showLoginError();
             }
-        }, this));
+        });
     },
 
     showLoginError: function(error) {

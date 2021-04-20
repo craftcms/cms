@@ -65,7 +65,7 @@ Craft.Preview = Garnish.Base.extend({
     init: function(draftEditor) {
         this.draftEditor = draftEditor;
 
-        this._updateIframeProxy = $.proxy(this, 'updateIframe');
+        this._updateIframeProxy = this.updateIframe.bind(this);
 
         this.$tempInput = $('<input/>', {type: 'hidden', name: '__PREVIEW_FIELDS__', value: '1'});
         this.$fieldPlaceholder = $('<div/>');
@@ -667,8 +667,7 @@ Craft.Preview = Garnish.Base.extend({
         if (this.deviceAnimationTimeout) {
             clearTimeout(this.deviceAnimationTimeout);
         }
-        this.deviceAnimationTimeout = setTimeout($.proxy(function() {
-
+        this.deviceAnimationTimeout = setTimeout(() => {
             // Then make the size change to the preview container
             if (this.deviceOrientation === 'landscape') {
                 this.$devicePreviewContainer.css({
@@ -693,7 +692,7 @@ Craft.Preview = Garnish.Base.extend({
             this.$iframeContainer.removeClass('lp-iframe-container--updating');
             this.isDeviceUpdating = false;
 
-        }, this), 300);
+        }, 300);
     },
 
     resetDevicePreview: function()

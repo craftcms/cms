@@ -808,7 +808,7 @@ $.extend(Craft,
                 }
                 request.responseType = 'blob';
 
-                request.onload = function() {
+                request.onload = () => {
                     // Only handle status code 200
                     if (request.status === 200) {
                         // Try to find out the filename from the content disposition `filename` value
@@ -830,7 +830,7 @@ $.extend(Craft,
                     } else {
                         reject();
                     }
-                }.bind(this);
+                };
 
                 request.send(body);
             });

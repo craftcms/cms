@@ -20,10 +20,10 @@ Craft.AssetEditor = Craft.BaseElementEditor.extend({
 
     showImageEditor: function() {
         new Craft.AssetImageEditor(this.$element.data('id'), {
-            onSave: function() {
+            onSave: () => {
                 this.reloadIndex = true;
                 this.reloadForm();
-            }.bind(this),
+            },
         });
     },
 

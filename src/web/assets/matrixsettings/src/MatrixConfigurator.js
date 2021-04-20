@@ -93,10 +93,10 @@
         },
 
         setContainerHeight: function() {
-            setTimeout($.proxy(function() {
+            setTimeout(() => {
                 var maxColHeight = Math.max(this.$blockTypesColumnContainer.height(), this.$fieldsColumnContainer.height(), this.$fieldSettingsColumnContainer.height(), 400);
                 this.$container.height(maxColHeight);
-            }, this), 1);
+            }, 1);
         },
 
         getFieldTypeInfo: function(type) {
@@ -112,7 +112,7 @@
 
             this.blockTypeSettingsModal.show();
 
-            this.blockTypeSettingsModal.onSubmit = $.proxy(function(name, handle) {
+            this.blockTypeSettingsModal.onSubmit = (name, handle) => {
                 this.totalNewBlockTypes++;
                 var id = 'new' + this.totalNewBlockTypes;
 
@@ -135,7 +135,7 @@
                 this.blockTypes[id].addField();
 
                 this.blockTypeSort.addItems($item);
-            }, this);
+            };
         },
 
         addFieldToSelectedBlockType: function() {
@@ -289,9 +289,9 @@
             this.displayErrors('handle', (errors ? errors.handle : null));
 
             if (!Garnish.isMobileBrowser()) {
-                setTimeout($.proxy(function() {
+                setTimeout(() => {
                     this.$nameInput.trigger('focus');
-                }, this), 100);
+                }, 100);
             }
 
             this.base();
@@ -398,7 +398,7 @@
             this.fieldSort = new Garnish.DragSort($fieldItems, {
                 handle: '.move',
                 axis: 'y',
-                onSortChange: $.proxy(function() {
+                onSortChange: () => {
                     // Adjust the field setting containers to match the new sort order
                     for (var i = 0; i < this.fieldSort.$items.length; i++) {
                         var $item = $(this.fieldSort.$items[i]),
@@ -407,7 +407,7 @@
 
                         field.$fieldSettingsContainer.appendTo(this.$fieldSettingsContainer);
                     }
-                }, this)
+                },
             });
         },
 
@@ -441,8 +441,8 @@
         showSettings: function() {
             var blockTypeSettingsModal = this.configurator.getBlockTypeSettingsModal();
             blockTypeSettingsModal.show(this.$nameHiddenInput.val(), this.$handleHiddenInput.val(), this.errors);
-            blockTypeSettingsModal.onSubmit = $.proxy(this, 'applySettings');
-            blockTypeSettingsModal.onDelete = $.proxy(this, 'selfDestruct');
+            blockTypeSettingsModal.onSubmit = this.applySettings.bind(this);
+            blockTypeSettingsModal.onDelete = this.selfDestruct.bind(this);
         },
 
         applySettings: function(name, handle) {
@@ -597,9 +597,9 @@
             this.blockType.selectedField = this;
 
             if (!Garnish.isMobileBrowser()) {
-                setTimeout($.proxy(function() {
+                setTimeout(() => {
                     this.$nameInput.trigger('focus');
-                }, this), 100);
+                }, 100);
             }
         },
 
