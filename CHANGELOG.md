@@ -7,6 +7,8 @@
 - Fixed a bug where renaming an empty volume folder would create a subfolder inside it. ([#7721](https://github.com/craftcms/cms/issues/7721))
 - Fixed a bug where simultaneously-executed MySQL backups could result in a `my.cnf` conflict. ([#7801](https://github.com/craftcms/cms/issues/7801))
 - Fixed a bug where radio button labels weren’t including custom container attributes passed to the input.
+- Fixed a bug where the `migrate/all` command was attempting to re-apply old content migrations when updating from Craft 3.4 or earlier. ([
+37818](https://github.com/craftcms/cms/issues/7818))
 
 ## 3.6.12 - 2021-04-13
 
