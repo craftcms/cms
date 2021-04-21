@@ -124,7 +124,7 @@ Craft.PreviewFileModal = Garnish.Modal.extend({
         this.$spinner.css({left: left, top: top, position: 'absolute'});
         this.requestId++;
 
-        Craft.postActionRequest('assets/preview-file', {assetId: assetId, requestId: this.requestId}, function(response, textStatus) {
+        Craft.postActionRequest('assets/preview-file', {assetId: assetId, requestId: this.requestId}, (response, textStatus) => {
             this.$container.removeClass('loading');
             this.$spinner.remove();
             this.loaded = true;
@@ -151,7 +151,7 @@ Craft.PreviewFileModal = Garnish.Modal.extend({
                     this.hide();
                 }
             }
-        }.bind(this));
+        });
     },
 
     /**

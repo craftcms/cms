@@ -53,16 +53,16 @@ Craft.BaseElementIndexView = Garnish.Base.extend({
                     handle: (this.settings.context === 'index' ? '.checkbox, .element:first' : null),
                     filter: ':not(a):not(.toggle)',
                     checkboxMode: this.settings.checkboxMode,
-                    onSelectionChange: $.proxy(this, 'onSelectionChange')
+                    onSelectionChange: this.onSelectionChange.bind(this)
                 });
 
-            this._handleEnableElements = $.proxy(function(ev) {
+            this._handleEnableElements = ev => {
                 this.elementSelect.addItems(ev.elements);
-            }, this);
+            };
 
-            this._handleDisableElements = $.proxy(function(ev) {
+            this._handleDisableElements = ev => {
                 this.elementSelect.removeItems(ev.elements);
-            }, this);
+            };
 
             this.elementIndex.on('enableElements', this._handleEnableElements);
             this.elementIndex.on('disableElements', this._handleDisableElements);
@@ -70,7 +70,7 @@ Craft.BaseElementIndexView = Garnish.Base.extend({
 
         // Enable inline element editing if this is an index page
         if (this.settings.context === 'index') {
-            this._handleElementEditing = $.proxy(function(ev) {
+            this._handleElementEditing = ev => {
                 var $target = $(ev.target);
 
                 if ($target.prop('nodeName') === 'A') {
@@ -93,7 +93,7 @@ Craft.BaseElementIndexView = Garnish.Base.extend({
                 if (Garnish.hasAttr($element, 'data-editable')) {
                     this.createElementEditor($element);
                 }
-            }, this);
+            };
 
             if (!this.elementIndex.trashed) {
                 this.addListener(this.$elementContainer, 'dblclick', this._handleElementEditing);
@@ -271,7 +271,7 @@ Craft.BaseElementIndexView = Garnish.Base.extend({
 
         var data = this.getLoadMoreParams();
 
-        Craft.postActionRequest(this.settings.loadMoreElementsAction, data, $.proxy(function(response, textStatus) {
+        Craft.postActionRequest(this.settings.loadMoreElementsAction, data, (response, textStatus) => {
             this.loadingMore = false;
             this.$loadingMoreSpinner.addClass('hidden');
 
@@ -294,7 +294,7 @@ Craft.BaseElementIndexView = Garnish.Base.extend({
                 this.addListener(this.$scroller, 'scroll', 'maybeLoadMore');
                 this.maybeLoadMore();
             }
-        }, this));
+        });
     },
 
     getLoadMoreParams: function() {

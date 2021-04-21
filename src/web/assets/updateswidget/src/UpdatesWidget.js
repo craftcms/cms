@@ -41,7 +41,7 @@
             }
 
             this.lookLikeWereChecking();
-            Craft.cp.checkForUpdates(forceRefresh, false, $.proxy(this, 'showUpdateInfo'));
+            Craft.cp.checkForUpdates(forceRefresh, false, this.showUpdateInfo.bind(this));
         },
 
         showUpdateInfo: function(info) {

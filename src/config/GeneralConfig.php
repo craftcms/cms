@@ -47,6 +47,7 @@ class GeneralConfig extends BaseObject
      *
      * The array can contain the following keys:
      *
+     * - `reduceFocusVisibility` - Whether focus visibility styles should be reduced
      * - `useShapes` – Whether shapes should be used to represent statuses
      * - `underlineLinks` – Whether links should be underlined
      *
@@ -54,6 +55,7 @@ class GeneralConfig extends BaseObject
      * @group System
      */
     public $accessibilityDefaults = [
+        'reduceFocusVisibility' => false,
         'useShapes' => false,
         'underlineLinks' => false,
     ];
@@ -1318,10 +1320,9 @@ class GeneralConfig extends BaseObject
     public $sendPoweredByHeader = true;
 
     /**
-     * @var mixed The URI Craft should use for Set Password forms on the front end.
+     * @var mixed The URI or URL that Craft should use for Set Password forms on the front end.
      *
-     * Note that this config setting is ignored when <config3:headlessMode> is enabled, as password reset
-     * links will point to the control panel.
+     * Note that this config setting is ignored when <config3:headlessMode> is enabled, unless it’s set to an absolute URL.
      *
      * See [[ConfigHelper::localizedValue()]] for a list of supported value types.
      *
@@ -1619,10 +1620,9 @@ class GeneralConfig extends BaseObject
     public $verificationCodeDuration = 86400;
 
     /**
-     * @var mixed The URI Craft should use for email verification links on the front end.
+     * @var mixed The URI or URL that Craft should use for email verification links on the front end.
      *
-     * Note that this config setting is ignored when <config3:headlessMode> is enabled, as verification links
-     * will point to the control panel.
+     * Note that this config setting is ignored when <config3:headlessMode> is enabled, unless it’s set to an absolute URL.
      *
      * See [[ConfigHelper::localizedValue()]] for a list of supported value types.
      *

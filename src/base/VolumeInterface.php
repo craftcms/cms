@@ -170,6 +170,7 @@ interface VolumeInterface extends SavableComponentInterface
      * @param string $path The path of the directory, relative to the source’s root
      * @param array $config The config to use
      * @throws VolumeException
+     * @since 3.6.0
      */
     public function createDirectory(string $path, array $config = []): void;
 
@@ -178,6 +179,7 @@ interface VolumeInterface extends SavableComponentInterface
      *
      * @param string $path The path of the directory, relative to the source’s root
      * @throws VolumeException
+     * @since 3.6.0
      */
     public function deleteDirectory(string $path): void;
 
@@ -187,6 +189,7 @@ interface VolumeInterface extends SavableComponentInterface
      * @param string $path The path of the directory, relative to the source’s root
      * @param string $newName The new path of the directory, relative to the source’s root
      * @throws VolumeObjectNotFoundException if directory cannot be found
+     * @since 3.6.0
      */
     public function renameDirectory(string $path, string $newName): void;
 }

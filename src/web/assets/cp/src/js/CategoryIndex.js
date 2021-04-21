@@ -9,8 +9,8 @@ Craft.CategoryIndex = Craft.BaseElementIndex.extend({
     $newCategoryBtn: null,
 
     init: function(elementType, $container, settings) {
-        this.on('selectSource', $.proxy(this, 'updateButton'));
-        this.on('selectSite', $.proxy(this, 'updateButton'));
+        this.on('selectSource', this.updateButton.bind(this));
+        this.on('selectSite', this.updateButton.bind(this));
         this.base(elementType, $container, settings);
     },
 
@@ -124,9 +124,9 @@ Craft.CategoryIndex = Craft.BaseElementIndex.extend({
                 var menuBtn = new Garnish.MenuBtn($menuBtn);
 
                 if (this.settings.context !== 'index') {
-                    menuBtn.on('optionSelect', $.proxy(function(ev) {
+                    menuBtn.on('optionSelect', ev => {
                         this._openCreateCategoryModal(ev.option.getAttribute('data-id'));
-                    }, this));
+                    });
                 }
             }
 
@@ -192,16 +192,16 @@ Craft.CategoryIndex = Craft.BaseElementIndex.extend({
             attributes: {
                 groupId: groupId
             },
-            onBeginLoading: $.proxy(function() {
+            onBeginLoading: () => {
                 this.$newCategoryBtn.addClass('loading');
-            }, this),
-            onEndLoading: $.proxy(function() {
+            },
+            onEndLoading: () => {
                 this.$newCategoryBtn.removeClass('loading');
-            }, this),
-            onHideHud: $.proxy(function() {
+            },
+            onHideHud: () => {
                 this.$newCategoryBtn.removeClass('inactive').text(newCategoryBtnText);
-            }, this),
-            onSaveElement: $.proxy(function(response) {
+            },
+            onSaveElement: response => {
                 // Make sure the right group is selected
                 var groupSourceKey = 'group:' + group.uid;
 
@@ -211,7 +211,7 @@ Craft.CategoryIndex = Craft.BaseElementIndex.extend({
 
                 this.selectElementAfterUpdate(response.id);
                 this.updateElements();
-            }, this)
+            },
         });
     }
 });

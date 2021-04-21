@@ -159,6 +159,11 @@ class Application extends \yii\web\Application
         $headers = $this->getResponse()->getHeaders();
         $generalConfig = $this->getConfig()->getGeneral();
 
+        // Don't allow FLoC due to security & privacy concerns:
+        // - https://www.theverge.com/2021/4/16/22387492/google-floc-ad-tech-privacy-browsers-brave-vivaldi-edge-mozilla-chrome-safari
+        // - https://www.bleepingcomputer.com/news/security/wordpress-may-automatically-disable-google-floc-on-websites/
+        $headers->set('Permission-Policy', 'interest-cohort=()');
+
         // Tell bots not to index/follow CP and tokenized pages
         if ($generalConfig->disallowRobots || $request->getIsCpRequest() || $request->getToken() !== null || $request->getIsActionRequest()) {
             $headers->set('X-Robots-Tag', 'none');
