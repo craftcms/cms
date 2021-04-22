@@ -212,6 +212,7 @@ return [
     'Channel' => 'Channel',
     'Channels' => 'Channels',
     'Characters' => 'Characters',
+    'Characters left:' => 'Characters left:',
     'Charts' => 'Charts',
     'Check again' => 'Check again',
     'Check for {onLabel}.' => 'Check for {onLabel}.',
