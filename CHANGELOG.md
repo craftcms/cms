@@ -11,6 +11,7 @@
 - Fixed a bug where assets could cause n+1 queries even when eager-loaded. ([#7812](https://github.com/craftcms/cms/pull/7812))
 - Fixed an error that occurred when executing a GraphQL query with nested `relatedTo*` arguments. ([#7824](https://github.com/craftcms/cms/issues/7824))
 - Fixed a bug where selected tabs in the control panel weren’t getting focus rings.
+- Fixed a bug where it wasn’t possible to select tabs in the overflow menu via the keyboard. ([#7813](https://github.com/craftcms/cms/issues/7813))
 
 ## 3.6.12 - 2021-04-13
 

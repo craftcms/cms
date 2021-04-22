@@ -331,16 +331,23 @@ Craft.CP = Garnish.Base.extend({
             new Garnish.MenuBtn(this.$overflowTabBtn);
         }
         this.$overflowTabList = this.$overflowTabBtn.data('menubtn').menu.$container.find('> ul');
-        var i, $tab, $a, href;
 
-        for (i = 0; i < this.$tabs.length; i++) {
-            $tab = this.$tabs.eq(i);
+        for (let i = 0; i < this.$tabs.length; i++) {
+            const $tab = this.$tabs.eq(i);
+            this.removeAllListeners($tab);
 
             // Does it link to an anchor?
-            $a = $tab.children('a');
-            href = $a.attr('href');
+            const $a = $tab.children('a');
+            const href = $a.attr('href');
             if (href && href.charAt(0) === '#') {
-                this.addListener($a, 'click', function(ev) {
+                this.addListener($a, 'keydown', ev => {
+                    if ([Garnish.SPACE_KEY, Garnish.RETURN_KEY].includes(ev.keyCode)) {
+                        ev.preventDefault();
+                        this.selectTab(ev.currentTarget);
+                        $a.focus();
+                    }
+                });
+                this.addListener($a, 'click', ev => {
                     ev.preventDefault();
                     this.selectTab(ev.currentTarget);
                 });
@@ -454,9 +461,10 @@ Craft.CP = Garnish.Base.extend({
             }
 
             if (i === this.selectedTabIndex || totalWidth <= maxWidth) {
-                $tab.find('> a').removeAttr('role');
+                $tab.find('> a').removeAttr('role').removeAttr('tabindex');
             } else {
-                $tab.appendTo(this.$overflowTabList).find('> a').attr('role', 'option');
+                const $a = $tab.appendTo(this.$overflowTabList).find('> a');
+                this.$overflowTabBtn.data('menubtn').menu.addOptions($a);
                 showOverflowMenu = true;
             }
         }
