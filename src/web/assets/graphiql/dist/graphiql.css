@@ -1632,8 +1632,6 @@ body,
     padding: 0 !important; }
     #graphiql .graphiql-container .graphiql-explorer-root > div:first-child {
       padding: 7px 14px; }
-      #graphiql .graphiql-container .graphiql-explorer-root > div:first-child div:focus {
-        outline: none; }
     #graphiql .graphiql-container .graphiql-explorer-root .graphiql-explorer-actions {
       margin: 0 !important;
       padding: 14px !important;
