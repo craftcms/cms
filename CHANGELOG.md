@@ -10,6 +10,7 @@
 - Fixed a bug where the `migrate/all` command was attempting to re-apply old content migrations when updating from Craft 3.4 or earlier. ([
  #7818](https://github.com/craftcms/cms/issues/7818))
  - Fixed a bug where Assets would cause n+1 queries even when eager-loaded on local volumes. ([#6140](https://github.com/craftcms/cms/issues/6140))
+ - Fixed a bug where nested `relatedTo` criteria would return an error. ([#7824](https://github.com/craftcms/cms/issues/7824))
 
 ## 3.6.12 - 2021-04-13
 
