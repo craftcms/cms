@@ -608,7 +608,7 @@ class Assets extends Component
         if ($index->fileExists) {
             // For local volumes, really make sure
             $volume = $asset->getVolume();
-            $transformPath = $asset->getFolder()->path . $assetTransforms->getTransformSubpath($asset, $index);
+            $transformPath = $asset->folderPath . $assetTransforms->getTransformSubpath($asset, $index);
 
             if ($volume instanceof LocalVolumeInterface && !$volume->fileExists($transformPath)) {
                 $index->fileExists = false;

@@ -8,7 +8,8 @@
 - Fixed a bug where simultaneously-executed MySQL backups could result in a `my.cnf` conflict. ([#7801](https://github.com/craftcms/cms/issues/7801))
 - Fixed a bug where radio button labels weren’t including custom container attributes passed to the input.
 - Fixed a bug where the `migrate/all` command was attempting to re-apply old content migrations when updating from Craft 3.4 or earlier. ([
-37818](https://github.com/craftcms/cms/issues/7818))
+ #7818](https://github.com/craftcms/cms/issues/7818))
+ - Fixed a bug where Assets would cause n+1 queries even when eager-loaded on local volumes. ([#6140](https://github.com/craftcms/cms/issues/6140))
 
 ## 3.6.12 - 2021-04-13
 
