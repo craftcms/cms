@@ -10,6 +10,7 @@
 - Fixed a bug where the `migrate/all` command was attempting to re-apply old content migrations when updating from Craft 3.4 or earlier. ([#7818](https://github.com/craftcms/cms/issues/7818))
 - Fixed a bug where assets could cause n+1 queries even when eager-loaded. ([#7812](https://github.com/craftcms/cms/pull/7812))
 - Fixed an error that occurred when executing a GraphQL query with nested `relatedTo*` arguments. ([#7824](https://github.com/craftcms/cms/issues/7824))
+- Fixed a bug where selected tabs in the control panel weren’t getting focus rings.
 
 ## 3.6.12 - 2021-04-13
 
