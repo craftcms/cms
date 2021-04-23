@@ -107,6 +107,7 @@ JS;
     {
         $view->registerTranslations('app', [
             '(blank)',
+            '<span class="visually-hidden">Characters left:</span> {chars, number}',
             'A server error occurred.',
             'Actions',
             'All',

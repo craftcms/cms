@@ -40,7 +40,6 @@
     {%- set inputAttributes = inputAttributes|merge({
         data: {
             'show-chars-left': showCharsLeft,
-            'chars-left-prefix': 'Characters left:'|t('app'),
         },
         style: {
             ("padding-#{craft.app.locale.getOrientation() == 'ltr' ? 'right' : 'left'}"): (maxlength ?? false) ? "#{7.2*maxlength|length+14}px",
