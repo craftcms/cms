@@ -91,6 +91,13 @@ abstract class RelationArgumentHandler extends ArgumentHandler
         // Recursively parse nested arguments.
         if (ArrayHelper::isAssociative($argumentValue)) {
             $argumentValue = $this->argumentManager->prepareArguments($argumentValue);
+        } else if (is_array($argumentValue)) {
+            // Entirely possible that this a list of relation arguments.
+            foreach ($argumentValue as &$nestedArgumentValue) {
+                if (ArrayHelper::isAssociative($nestedArgumentValue)) {
+                    $nestedArgumentValue = $this->argumentManager->prepareArguments($nestedArgumentValue);
+                }
+            }
         }
 
         return $argumentValue;

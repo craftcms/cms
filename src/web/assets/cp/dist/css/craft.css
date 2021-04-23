@@ -51,8 +51,6 @@ body.rtl .ltr .text, body.rtl .ltr table.editable textarea { text-align: left !i
 
 body.ltr .rtl .text, body.ltr .rtl table.editable textarea { text-align: right !important; direction: rtl !important; }
 
-textarea.nicetext { resize: none; }
-
 /* icons */
 .icon:before, .menu ul.padded li a.sel:before, .menu .flex.padded.sel:before, .texticon:before, .element:before, #help:before, .secure:before, .insecure:before, .go:after, .required:after, #preview-btn:before, #share-btn:before, [data-icon]:before, [data-icon-after]:after { font-family: 'Craft'; speak: none; -webkit-font-feature-settings: "liga", "dlig"; -ms-font-feature-settings: "liga", "dlig"; -o-font-feature-settings: "liga", "dlig"; font-feature-settings: "liga", "dlig"; text-rendering: optimizeLegibility; font-weight: normal; font-variant: normal; text-transform: none; line-height: 1; direction: ltr; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; display: inline-block; text-align: center; font-style: normal; vertical-align: middle; word-wrap: normal !important; -webkit-user-select: none; user-select: none; opacity: 0.8; }
 

@@ -3,15 +3,21 @@
 ## Unreleased
 
 ### Changed
+- Improved the accessibility of Plain Text fields. ([#6914](https://github.com/craftcms/cms/issues/6914))
 - The `setPasswordPath` and `verifyEmailPath` config settings can now be set to absolute URLs, which will cause them to be respected when running Craft in headless mode. ([#6226](https://github.com/craftcms/cms/issues/6226))
+- Matrix block type settings modals now have “Apply” buttons instead of “Save”. ([#7822](https://github.com/craftcms/cms/issues/7822))
 
 ### Fixed
 - Fixed a bug where entry indexes weren’t showing the entries’ authors if they were pending or suspended.
 - Fixed a bug where renaming an empty volume folder would create a subfolder inside it. ([#7721](https://github.com/craftcms/cms/issues/7721))
 - Fixed a bug where simultaneously-executed MySQL backups could result in a `my.cnf` conflict. ([#7801](https://github.com/craftcms/cms/issues/7801))
 - Fixed a bug where radio button labels weren’t including custom container attributes passed to the input.
-- Fixed a bug where the `migrate/all` command was attempting to re-apply old content migrations when updating from Craft 3.4 or earlier. ([
-37818](https://github.com/craftcms/cms/issues/7818))
+- Fixed a bug where the `migrate/all` command was attempting to re-apply old content migrations when updating from Craft 3.4 or earlier. ([#7818](https://github.com/craftcms/cms/issues/7818))
+- Fixed a bug where assets could cause n+1 queries even when eager-loaded. ([#7812](https://github.com/craftcms/cms/pull/7812))
+- Fixed an error that occurred when executing a GraphQL query with nested `relatedTo*` arguments. ([#7824](https://github.com/craftcms/cms/issues/7824))
+- Fixed a bug where selected tabs in the control panel weren’t getting focus rings.
+- Fixed a bug where it wasn’t possible to select tabs in the overflow menu via the keyboard. ([#7813](https://github.com/craftcms/cms/issues/7813))
+- Fixed a bug where `{% cache %}` tags’ `until` params weren’t being respected. ([#7826](https://github.com/craftcms/cms/issues/7826))
 
 ### Security
 - Craft now sets a `Permission-Policy: interest-cohort=()` header for all requests, opting out of FLoC tracking due to security and privacy concerns.
