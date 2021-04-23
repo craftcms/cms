@@ -3,6 +3,7 @@
 ## Unreleased
 
 ### Changed
+- Improved the accessibility of Plain Text fields. ([#6914](https://github.com/craftcms/cms/issues/6914))
 - The `setPasswordPath` and `verifyEmailPath` config settings can now be set to absolute URLs, which will cause them to be respected when running Craft in headless mode. ([#6226](https://github.com/craftcms/cms/issues/6226))
 
 ### Fixed
