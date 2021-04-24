@@ -13,6 +13,7 @@
 - Fixed a bug where selected tabs in the control panel weren’t getting focus rings.
 - Fixed a bug where it wasn’t possible to select tabs in the overflow menu via the keyboard. ([#7813](https://github.com/craftcms/cms/issues/7813))
 - Fixed a bug where `{% cache %}` tags’ `until` params weren’t being respected. ([#7826](https://github.com/craftcms/cms/issues/7826))
+- Fixed a bug where the control panel JavaScript was missing several ASCII character mappings. ([#7828](https://github.com/craftcms/cms/issues/7828))
 
 ## 3.6.12 - 2021-04-13
 
