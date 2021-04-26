@@ -106,4 +106,67 @@ class AuthenticationController extends Controller
 
         return $this->asJson($output);
     }
+
+    /**
+     * @return Response
+     * @throws BadRequestHttpException
+     * @throws InvalidConfigException
+     */
+    public function actionRecoverAccount(): Response
+    {
+        $this->requireAcceptsJson();
+
+        $scenario = Craft::$app->getRequest()->getRequiredBodyParam('scenario');
+        $authenticationService = Craft::$app->getAuthentication();
+        $authenticationChain = $authenticationService->getAuthenticationChain($scenario);
+        $recoveryChain = $authenticationChain->getRecoveryChain();
+
+        if (!$recoveryChain) {
+            throw new BadRequestHttpException('Unable to recover account');
+        }
+
+        try {
+            $step = $recoveryChain->getNextAuthenticationStep();
+        } catch (InvalidConfigException $exception) {
+            throw new BadRequestHttpException('Unable to recover account', 0, $exception);
+        }
+
+        $session = Craft::$app->getSession();
+        $success = false;
+
+        if ($step !== null) {
+            $data = [];
+
+            if ($fields = $step->getFields()) {
+                foreach ($fields as $fieldName) {
+                    if ($value = Craft::$app->getRequest()->getBodyParam($fieldName)) {
+                        $data[$fieldName] = $value;
+                    }
+                }
+
+            }
+
+            $success = $recoveryChain->performAuthenticationStep($data);
+        }
+
+        $output = [
+            'message' => $session->getNotice(),
+            'error' => $session->getError(),
+        ];
+
+        if ($recoveryChain->getIsComplete()) {
+            // If successfully completed recovery, invalidate the chain state.
+            $authenticationService->invalidateAuthenticationState($authenticationChain->getRecoveryScenario());
+
+            $output['success'] = true;
+        } else if ($success) {
+            /** @var Step $step */
+            $step = $recoveryChain->getNextAuthenticationStep();
+            $output['stepComplete'] = true;
+            $output['html'] = $step->getFieldHtml();
+            $output['footHtml'] = Craft::$app->getView()->getBodyHtml();
+        }
+
+        return $this->asJson($output);
+    }
 }

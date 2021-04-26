@@ -18,17 +18,11 @@ body { display: -webkit-flex; display: flex; -webkit-flex-direction: column; fle
 
 #loginName { margin: 0 -1px; width: calc(100% + 2px); padding: 14px 16px; border-radius: 5px; }
 
-#remember-password { display: none; }
-
 #login-form.remember-me:not(.reset-password) #login-form-bottom { -webkit-justify-content: space-between; justify-content: space-between; }
 
 #login-form:not(.reset-password) #loginName { margin: -1px -1px 0; border-radius: 5px 5px 0 0; border-bottom-width: 0; }
 
 #login-form:not(.reset-password) #loginName:focus { border-bottom-width: 1px; margin-bottom: -1px; }
-
-#login-form.reset-password #password-field, #login-form.reset-password #rememberMe-field, #login-form.reset-password #forgot-password { display: none; }
-
-#login-form.reset-password #remember-password { display: block; }
 
 .passwordwrapper { margin: 0 -1px -1px; border-radius: 0 0 5px 5px; }
 
@@ -46,9 +40,9 @@ body.ltr #rememberMe-field { margin-right: 14px; }
 
 body.rtl #rememberMe-field { margin-left: 14px; }
 
-#forgot-password, #remember-password { font-size: 11px; color: #596673; }
+#recover-account, #cancel-recover { font-size: 11px; color: #596673; }
 
-#forgot-password:hover, #forgot-password:focus, #remember-password:hover, #remember-password:focus { color: #0B69A3; }
+#recover-account:hover, #recover-account:focus, #cancel-recover:hover, #cancel-recover:focus { color: #0B69A3; }
 
 #login-form .submit { display: block; padding: 14px 16px; height: auto; width: 100%; }
 
@@ -57,6 +51,8 @@ body.rtl #rememberMe-field { margin-left: 14px; }
 #spinner-pending { top: 0; margin-left: -24px; left: 50%; position: absolute; }
 
 #authentication-container { position: relative; }
+
+#recovery-container { position: relative; }
 
 #login-errors { text-align: center; color: #CF1124; margin-top: 1em; }
 

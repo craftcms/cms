@@ -13,6 +13,7 @@ use craft\authentication\Chain;
 use craft\authentication\step\EmailCode;
 use craft\authentication\step\Credentials;
 use craft\authentication\step\IpAddress;
+use craft\models\AuthenticationChainConfiguration;
 use craft\models\AuthenticationState;
 use yii\base\Component;
 use yii\base\InvalidConfigException;
@@ -33,32 +34,41 @@ class Authentication extends Component
      */
     public function getAuthenticationChain(string $scenario): Chain
     {
-        if (!$steps = $this->getScenarioSteps($scenario)) {
+        $chainConfig = $this->getScenarioConfiguration($scenario);
+
+        if (!$chainConfig) {
             throw new InvalidConfigException("Unable to configure authentication chain for `$scenario`");
         }
 
         $state = $this->getAuthenticationState($scenario);
+
         /** @var Chain $chain */
-        $chain = Craft::createObject(Chain::class, [$state, $steps]);
+        $chain = Craft::createObject(Chain::class, [$state, $chainConfig->steps , $chainConfig->recoveryScenario]);
 
         return $chain;
     }
 
+    /**
+     * Get the authentication chain for control panel login.
+     *
+     * @return Chain
+     * @throws InvalidConfigException
+     */
     public function getCpAuthenticationChain(): Chain
     {
         return $this->getAuthenticationChain(self::CP_AUTHENTICATION_CHAIN);
     }
+
     /**
-     * Get scenario steps for a give scenario.
+     * Get scenario configuration for a give scenario.
      *
      * @param string $scenario
-     * @return array|null
+     * @return AuthenticationChainConfiguration|null
      */
-    public function getScenarioSteps(string $scenario): ?array
+    public function getScenarioConfiguration(string $scenario): ?AuthenticationChainConfiguration
     {
         $scenarios = Craft::$app->getProjectConfig()->get(self::CONFIG_AUTH_CHAINS);
-
-        return $scenarios[$scenario] ?? null;
+        return $scenarios[$scenario] ? new AuthenticationChainConfiguration($scenarios[$scenario]) :  null;
     }
 
     /**
@@ -69,7 +79,7 @@ class Authentication extends Component
      */
     public function getAuthenticationState(string $scenario): AuthenticationState
     {
-        $authStates = Craft::$app->getSession()->get(self::AUTHENTICATION_STATE_KEY, []);
+        $authStates = $this->getAllAuthenticationStates();
         $stateData = $authStates[$scenario] ?? ['authenticationScenario' => $scenario];
 
         /** @var AuthenticationState $state */
@@ -88,7 +98,7 @@ class Authentication extends Component
         $session = Craft::$app->getSession();
         $scenario = $state->getAuthenticationScenario();
 
-        $authStates = $session->get(self::AUTHENTICATION_STATE_KEY, []);
+        $authStates = $this->getAllAuthenticationStates();
         $authStates[$scenario] = $state->exportState();
         $session->set(self::AUTHENTICATION_STATE_KEY, $authStates);
     }
@@ -96,8 +106,30 @@ class Authentication extends Component
     /**
      * Invalidate all authentication states for the session.
      */
-    public function invalidateAuthenticationState(): void
+    public function invalidateAllAuthenticationState(): void
     {
         Craft::$app->getSession()->remove(self::AUTHENTICATION_STATE_KEY);
+    }
+
+    /**
+     * Invalidate an authentication state by scenario.
+     *
+     * @param string $scenario
+     */
+    public function invalidateAuthenticationState(string $scenario) : void
+    {
+        $states = $this->getAllAuthenticationStates();
+        unset($states[$scenario]);
+        Craft::$app->getSession()->set(self::AUTHENTICATION_STATE_KEY, $states);
+    }
+
+    /**
+     * Return all active authentication states.
+     *
+     * @return mixed
+     */
+    private function getAllAuthenticationStates(): array
+    {
+        return Craft::$app->getSession()->get(self::AUTHENTICATION_STATE_KEY, []);
     }
 }

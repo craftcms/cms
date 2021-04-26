@@ -1,0 +1,18 @@
+{% import "_includes/forms" as forms %}
+
+{% do view.registerAssetBundle("craft\\web\\assets\\authentication\\email\\EmailAsset") %}
+
+<div id="login-form-top">
+    {{ forms.textField({
+        id: 'email',
+        name: 'email',
+        placeholder: 'Email'|t('app'),
+        type: 'email',
+        inputAttributes: {
+            aria: {
+                label: 'Email'|t('app'),
+                required: 'true',
+            },
+        },
+    }) }}
+</div>

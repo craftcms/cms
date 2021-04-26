@@ -5,7 +5,7 @@
  * @license https://craftcms.github.io/license/
  */
 
-namespace craft\web\assets\credentials;
+namespace craft\web\assets\authentication\credentials;
 
 use Craft;
 use craft\validators\UserPasswordValidator;
@@ -14,7 +14,7 @@ use craft\web\assets\login\LoginAsset;
 use craft\web\View;
 
 /**
- * Asset bundle for the Login page
+ * Asset bundle for the Credential auth step
  */
 class CredentialsAsset extends AssetBundle
 {

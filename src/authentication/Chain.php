@@ -13,17 +13,20 @@ class Chain
 {
     private array $_steps;
     private AuthenticationState $_state;
+    private ?string $_recoveryScenario;
 
     /**
      * Authentication chain constructor.
      *
      * @param AuthenticationState $state
      * @param array $steps
+     * @param ?string $recoveryScenario
      */
-    public function __construct(AuthenticationState $state, array $steps)
+    public function __construct(AuthenticationState $state, array $steps, ?string $recoveryScenario)
     {
         $this->_steps = $steps;
         $this->_state = $state;
+        $this->_recoveryScenario = $recoveryScenario;
     }
 
     /**
@@ -54,6 +57,30 @@ class Chain
     public function getAuthenticatedUser(): ?User
     {
         return $this->getIsComplete() ? $this->_getResolvedUser() : null;
+    }
+
+    /**
+     * Return the name of the recovery scenario for this authentication chain.
+     *
+     * @return string|null
+     */
+    public function getRecoveryScenario(): ?string
+    {
+        return $this->_recoveryScenario;
+    }
+
+    /**
+     * Return the recovery chain, if configured.
+     *
+     * @return Chain|null
+     */
+    public function getRecoveryChain(): ?Chain
+    {
+        if (!$this->getRecoveryScenario()) {
+            return null;
+        }
+
+        return Craft::$app->getAuthentication()->getAuthenticationChain($this->getRecoveryScenario());
     }
 
     /**

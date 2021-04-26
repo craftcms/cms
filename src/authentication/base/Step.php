@@ -8,6 +8,9 @@ use craft\base\Component;
 use craft\elements\User;
 use craft\models\AuthenticationState;
 
+/**
+ * @property-read string $fieldHtml
+ */
 abstract class Step extends Component implements StepInterface
 {
     protected AuthenticationState $state;
@@ -64,5 +67,10 @@ abstract class Step extends Component implements StepInterface
         return $this->getFields() !== null;
     }
 
+    /**
+     * Return the field HTML.
+     *
+     * @return string
+     */
     abstract public function getFieldHtml(): string;
 }

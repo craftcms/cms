@@ -1,9 +1,13 @@
 ### Added
 - Added the concept of authentication chains to Craft, which allows chaining multiple authentication steps together to authenticate a Craft CMS user.
 - Added `craft\authentication\Chain`.
-- Added `craft\authentication\Step`.
+- Added `craft\authentication\base\StepInterface`.
+- Added `craft\authentication\base\Step`.
 - Added `craft\authentication\step\Credentials`.
+- Added `craft\authentication\step\EmailCode`.
+- Added `craft\authentication\step\Email`.
 - Added `craft\authentication\step\IpAddress`.
-- Added `craft\authentication\StepInterface`.
+- Added `craft\authentication\step\ResetPassword`.
+- Added `craft\models\AuthenticationChainConfiguration`.
 - Added `craft\models\AuthenticationState`.
 - Added `craft\services\Authentication`.

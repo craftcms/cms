@@ -2,40 +2,61 @@
 class LoginForm {
     constructor() {
         this.authenticationTarget = 'authentication/perform-authentication';
+        this.recoverTarget = 'authentication/recover-account';
         this.$loginForm = $('#login-form');
         this.$authContainer = $('#authentication-container');
+        this.$recoverContainer = $('#recovery-container');
         this.$errors = $('#login-errors');
         this.$messages = $('#login-messages');
         this.$spinner = $('#spinner');
         this.$pendingSpinner = $('#spinner-pending');
         this.$submit = $('#submit');
         this.$rememberMeCheckbox = $('#rememberMe');
-        this.$forgotPassword = $('#forgot-password');
-        this.$rememberPassword = $('#remember-password');
+        this.$cancelRecover = $('#cancel-recover');
+        this.$recoverAccount = $('#recover-account');
+        /**
+         * Whether currently the account recovery form is shown.
+         *
+         * @private
+         */
+        this.showingRecoverForm = false;
         this.$loginForm.on('submit', this.invokeStepHandler.bind(this));
         if (this.$pendingSpinner.length) {
             this.$loginForm.trigger('submit');
         }
-        // TODO this form must handle "remember me" functionality.
-        // this.$forgotPassword.on('click', 'onSwitchForm');
-        // this.$rememberPassword.on('click', 'onSwitchForm');
+        this.$recoverAccount.on('click', this.switchForm.bind(this));
+        this.$cancelRecover.on('click', this.switchForm.bind(this));
     }
     /**
-     * Perform the authentication against the endpoint.
+     * Perform the authentication step against the endpoint.
      *
      * @param request
      * @param cb
      */
-    performAuthentication(request) {
+    performStep(request) {
         request.scenario = Craft.cpLoginChain;
         if (this.$rememberMeCheckbox.prop('checked')) {
             request.rememberMe = true;
         }
         this.clearMessages();
         this.clearErrors();
-        Craft.postActionRequest(this.authenticationTarget, request, (response, textStatus) => {
+        let target;
+        let container;
+        let handler;
+        if (this.showingRecoverForm) {
+            target = this.recoverTarget;
+            container = this.$recoverContainer;
+            handler = "recoveryStepHandler";
+        }
+        else {
+            target = this.authenticationTarget;
+            container = this.$authContainer;
+            handler = "authenticationStepHandler";
+        }
+        Craft.postActionRequest(target, request, (response, textStatus) => {
+            var _a;
             if (textStatus == 'success') {
-                if (response.success) {
+                if (response.success && ((_a = response.returnUrl) === null || _a === void 0 ? void 0 : _a.length)) {
                     window.location.href = response.returnUrl;
                 }
                 else {
@@ -47,8 +68,8 @@ class LoginForm {
                         this.showMessage(response.message);
                     }
                     if (response.html) {
-                        this.$authContainer.html(response.html);
-                        this.stepHandler = undefined;
+                        container.html(response.html);
+                        this[handler] = undefined;
                     }
                     if (response.footHtml) {
                         Craft.appendFootHtml(response.footHtml);
@@ -56,8 +77,8 @@ class LoginForm {
                     // Just in case this was the first step, remove all the misc things.
                     if (response.stepComplete) {
                         this.$rememberMeCheckbox.parent().remove();
-                        this.$forgotPassword.remove();
-                        this.$rememberPassword.remove();
+                        this.$cancelRecover.remove();
+                        this.$recoverAccount.remove();
                     }
                 }
             }
@@ -94,23 +115,34 @@ class LoginForm {
      * If an empty string is returned, no action is taken.
      *
      * @param handler
+     * @param isRecoveryStep whether this is an account recovery step handler.
      */
-    registerStepHandler(handler) {
-        this.stepHandler = handler;
+    registerStepHandler(handler, isRecoveryStep = false) {
+        if (isRecoveryStep) {
+            this.recoveryStepHandler = handler;
+        }
+        else {
+            this.authenticationStepHandler = handler;
+        }
     }
+    /**
+     * Invoke the current authentication or recovery step handler.
+     * @param ev
+     */
     invokeStepHandler(ev) {
-        if (typeof this.stepHandler == "function") {
-            const data = this.stepHandler(ev);
+        const handler = this.showingRecoverForm ? this.recoveryStepHandler : this.authenticationStepHandler;
+        if (typeof handler == "function") {
+            const data = handler(ev);
             if (typeof data == "object") {
                 this.disableForm();
-                this.performAuthentication(data);
+                this.performStep(data);
             }
             else {
                 this.showError(data);
             }
         }
         else {
-            this.performAuthentication({});
+            this.performStep({});
         }
         return false;
     }
@@ -121,6 +153,18 @@ class LoginForm {
      */
     clearErrors() {
         this.$errors.empty();
+    }
+    /**
+     * Switch the displayed form between authentication and recovery.
+     *
+     * @protected
+     */
+    switchForm() {
+        this.$authContainer.toggleClass('hidden');
+        this.$recoverContainer.toggleClass('hidden');
+        this.$cancelRecover.toggleClass('hidden');
+        this.$recoverAccount.toggleClass('hidden');
+        this.showingRecoverForm = !this.showingRecoverForm;
     }
     /**
      * Clear all the messages.

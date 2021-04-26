@@ -50,10 +50,6 @@ body {
   border-radius: $largeBorderRadius;
 }
 
-#remember-password {
-  display: none;
-}
-
 #login-form.remember-me:not(.reset-password) #login-form-bottom {
   justify-content: space-between;
 }
@@ -68,19 +64,6 @@ body {
       border-bottom-width: 1px;
       margin-bottom: -1px;
     }
-  }
-}
-
-#login-form.reset-password {
-
-  #password-field,
-  #rememberMe-field,
-  #forgot-password {
-    display: none;
-  }
-
-  #remember-password {
-    display: block;
   }
 }
 
@@ -107,16 +90,16 @@ body {
   @include margin-right(14px);
 }
 
-#forgot-password,
-#remember-password {
+#recover-account,
+#cancel-recover {
   font-size: 11px;
   color: $mediumTextColor;
 }
 
-#forgot-password:hover,
-#forgot-password:focus,
-#remember-password:hover,
-#remember-password:focus {
+#recover-account:hover,
+#recover-account:focus,
+#cancel-recover:hover,
+#cancel-recover:focus {
   color: $linkColor;
 }
 
@@ -144,6 +127,11 @@ body {
 #authentication-container {
   position: relative;
 }
+
+#recovery-container {
+  position: relative;
+}
+
 #login-errors {
   text-align: center;
   color: $errorColor;

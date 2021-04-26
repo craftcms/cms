@@ -1565,7 +1565,7 @@ trait ApplicationTrait
      */
     private function _registerLogoutListeners()
     {
-        Event::on(User::class, User::EVENT_AFTER_LOGOUT, [$this->getAuthentication(), 'invalidateAuthenticationState']);
+        Event::on(User::class, User::EVENT_AFTER_LOGOUT, [$this->getAuthentication(), 'invalidateAllAuthenticationState']);
     }
 
     /**

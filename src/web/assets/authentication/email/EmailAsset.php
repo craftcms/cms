@@ -5,16 +5,16 @@
  * @license https://craftcms.github.io/license/
  */
 
-namespace craft\web\assets\emailcode;
+namespace craft\web\assets\authentication\email;
 
 use craft\web\AssetBundle;
 use craft\web\assets\login\LoginAsset;
 use craft\web\View;
 
 /**
- * Asset bundle for the email code auth step
+ * Asset bundle for the email only auth step
  */
-class EmailCodeAsset extends AssetBundle
+class EmailAsset extends AssetBundle
 {
     /**
      * @inheritdoc
@@ -32,7 +32,7 @@ class EmailCodeAsset extends AssetBundle
      * @inheritdoc
      */
     public $js = [
-        'EmailCode.min.js',
+        'Email.min.js',
     ];
 
     /**

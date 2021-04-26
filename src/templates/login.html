@@ -48,14 +48,26 @@
                     {% endif %}
                 </div>
 
+                {% if chain.recoveryScenario %}
+                    <div id="recovery-container" class="hidden">
+                        {% set recoveryChain = chain.recoveryChain %}
+
+                        {% if not recoveryChain.isComplete %}
+                            {{ recoveryChain.nextAuthenticationStep.fieldHtml|raw }}
+                        {% endif %}
+                    </div>
+                {% endif %}
+
                 {% if chain.isNew %}
                     <div id="login-form-bottom">
                         {% if showRememberMe %}
                             {{ forms.checkboxField({ id: 'rememberMe', label: 'Keep me logged in'|t('app') }) }}
                         {% endif %}
 
-                        <button id="forgot-password" type="button">{{ 'Forgot your password?'|t('app') }}</button>
-                        <button id="remember-password" type="button">{{ 'Remember your password?'|t('app') }}</button>
+                        {% if chain.recoveryScenario %}
+                            <button id="recover-account" type="button">{{ 'Trouble logging in?'|t('app') }}</button>
+                            <button id="cancel-recover"  class="hidden" type="button">{{ 'Back to login'|t('app') }}</button>
+                        {% endif %}
                     </div>
                 {% endif %}
 
@@ -65,7 +77,6 @@
                         <div id="spinner" class="spinner over-bg hidden"></div>
                     {% endif %}
                 </div>
-
             </form>
 
             <div id="login-errors" role="alert">
