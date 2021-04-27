@@ -24,6 +24,7 @@ Craft.CP = Garnish.Base.extend({
     $overflowTabList: null,
     $selectedTab: null,
     selectedTabIndex: null,
+    $focusableTab: null,
     $sidebarContainer: null,
     $sidebar: null,
     $contentContainer: null,
@@ -316,7 +317,7 @@ Craft.CP = Garnish.Base.extend({
     initTabs: function() {
         // Clear out all our old info in case the tabs were just replaced
         this.$tabsList = this.$tabs = this.$overflowTabBtn = this.$overflowTabList = this.$selectedTab =
-            this.selectedTabIndex = null;
+            this.selectedTabIndex = this.$focusableTab = null;
 
         this.$tabsContainer = $('#tabs');
         if (!this.$tabsContainer.length) {
@@ -331,68 +332,100 @@ Craft.CP = Garnish.Base.extend({
             new Garnish.MenuBtn(this.$overflowTabBtn);
         }
         this.$overflowTabList = this.$overflowTabBtn.data('menubtn').menu.$container.find('> ul');
-        var i, $tab, $a, href;
 
-        for (i = 0; i < this.$tabs.length; i++) {
-            $tab = this.$tabs.eq(i);
+        let $initialTab;
+
+        for (let i = 0; i < this.$tabs.length; i++) {
+            const $tab = this.$tabs.eq(i);
 
             // Does it link to an anchor?
-            $a = $tab.children('a');
-            href = $a.attr('href');
+            const $a = $tab.children('a');
+            const href = $a.attr('href');
             if (href && href.charAt(0) === '#') {
-                this.addListener($a, 'click', function(ev) {
+                this.addListener($a, 'keydown', ev => {
+                    if ([Garnish.SPACE_KEY, Garnish.RETURN_KEY].includes(ev.keyCode)) {
+                        ev.preventDefault();
+                        this.selectTab(ev.currentTarget);
+                    }
+                });
+                this.addListener($a, 'click', ev => {
                     ev.preventDefault();
-                    this.selectTab(ev.currentTarget);
+                    const $a = $(ev.currentTarget);
+                    this.selectTab($a);
+                    this._focusTab($a);
                 });
 
                 if (encodeURIComponent(href.substr(1)) === document.location.hash.substr(1)) {
-                    this.selectTab($a);
+                    $initialTab = $a;
                 }
             }
 
-            if (!this.$selectedTab && $a.hasClass('sel')) {
-                this._selectTab($a, i);
+            if (!$initialTab && $a.hasClass('sel')) {
+                this.$selectedTab = $initialTab = $a;
             }
+
+            this.addListener($a, 'keydown', ev => {
+                if (
+                    [Garnish.LEFT_KEY, Garnish.RIGHT_KEY].includes(ev.keyCode) &&
+                    $.contains(this.$tabsList[0], ev.currentTarget)
+                ) {
+                    let $tab;
+                    if (ev.keyCode === Garnish.LEFT_KEY) {
+                        $tab = $(ev.currentTarget).parent().prev('li').children('a');
+                    } else {
+                        $tab = $(ev.currentTarget).parent().next('li').children('a');
+                    }
+                    if ($tab.length) {
+                        this._focusTab($tab);
+                    }
+                }
+            });
+        }
+
+        if ($initialTab) {
+            this.selectTab($initialTab, true);
+            this._focusTab($initialTab, false);
         }
     },
 
-    selectTab: function(tab) {
+    /**
+     * @param {object} tab
+     * @param {bool} [force]
+     */
+    selectTab: function(tab, force) {
         var $tab = $(tab);
 
         if (this.$selectedTab) {
-            if (this.$selectedTab.get(0) === $tab.get(0)) {
+            if (!force && this.$selectedTab.get(0) === $tab.get(0)) {
                 return;
             }
             this.deselectTab();
         }
 
         $tab.addClass('sel');
-        var href = $tab.attr('href')
-        $(href).removeClass('hidden');
-        if (typeof history !== 'undefined') {
-            history.replaceState(undefined, undefined, href);
-        }
-        this._selectTab($tab, this.$tabs.index($tab.parent()));
-        this.updateTabs();
-        this.$overflowTabBtn.data('menubtn').menu.hide();
-    },
 
-    _selectTab: function($tab, index) {
-        if ($tab === this.$selectedTab) {
-            return;
-        }
-
+        const index = $tab ? this.$tabs.index($tab.parent()) : null;
         this.$selectedTab = $tab;
         this.selectedTabIndex = index;
+
         if (index === 0) {
             $('#content').addClass('square');
         } else {
             $('#content').removeClass('square');
         }
 
+        // Show its content area
+        if ($tab.attr('href').charAt(0) === '#') {
+            $(this.$selectedTab.attr('href')).removeClass('hidden');
+        }
+
+        // Trigger a resize event to update any UI components that are listening for it, including updateTabs()
         Garnish.$win.trigger('resize');
+
         // Fixes Redactor fixed toolbars on previously hidden panes
         Garnish.$doc.trigger('scroll');
+
+        this.$overflowTabBtn.data('menubtn').menu.hide();
 
         // If there is a revision menu, set its links to this tab ID
         let href = $tab && $tab.attr('href');
@@ -407,6 +440,31 @@ Craft.CP = Garnish.Base.extend({
                 }
             }
         }
+
+        if (typeof history !== 'undefined') {
+            history.replaceState(undefined, undefined, href);
+        }
+    },
+
+    /**
+     * @param {object} $tab
+     * @param {boolean} [setFocus]
+     * @private
+     */
+    _focusTab: function($tab, setFocus) {
+        if ($tab === this.$focusableTab) {
+            return;
+        }
+
+        if (this.$focusableTab) {
+            this.$focusableTab.attr('tabindex', '-1');
+        }
+
+        this.$focusableTab = $tab.attr('tabindex', '0');
+
+        if (focus !== false) {
+            this.$focusableTab.focus();
+        }
     },
 
     deselectTab: function() {
@@ -415,10 +473,11 @@ Craft.CP = Garnish.Base.extend({
         }
 
         this.$selectedTab.removeClass('sel');
+
+        // Hide its content area
         if (this.$selectedTab.attr('href').charAt(0) === '#') {
             $(this.$selectedTab.attr('href')).addClass('hidden');
         }
-        this._selectTab(null, null);
     },
 
     handleWindowResize: function() {
@@ -431,11 +490,13 @@ Craft.CP = Garnish.Base.extend({
             return;
         }
 
-        var maxWidth = Math.floor(this.$tabsContainer.width()) - 40;
-        var totalWidth = 0;
-        var showOverflowMenu = false;
-        var tabMargin = Garnish.$bod.width() >= 768 ? -12 : -7;
-        var $tab;
+        // Keep track of the focussed element in case it's one of the tabs
+        const activeElement = document.activeElement;
+
+        const maxWidth = Math.floor(this.$tabsContainer.width()) - 40;
+        const tabMargin = Garnish.$bod.width() >= 768 ? -12 : -7;
+        let totalWidth = 0;
+        let showOverflowMenu = false;
 
         // Start with the selected tab, because that needs to be visible
         if (this.$selectedTab) {
@@ -444,7 +505,8 @@ Craft.CP = Garnish.Base.extend({
         }
 
         for (var i = 0; i < this.$tabs.length; i++) {
-            $tab = this.$tabs.eq(i).appendTo(this.$tabsList);
+            const $tab = this.$tabs.eq(i);
+            $tab.appendTo(this.$tabsList);
             if (i !== this.selectedTabIndex) {
                 totalWidth += Math.ceil($tab.width());
                 // account for the negative margin
@@ -453,11 +515,19 @@ Craft.CP = Garnish.Base.extend({
                 }
             }
 
+            const $a = $tab.find('> a');
             if (i === this.selectedTabIndex || totalWidth <= maxWidth) {
-                $tab.find('> a').removeAttr('role');
+                $a
+                    .removeAttr('role')
+                    .attr('tabindex', this.$focusableTab && $a[0] === this.$focusableTab[0] ? '0' : '-1');
             } else {
-                $tab.appendTo(this.$overflowTabList).find('> a').attr('role', 'option');
+                $tab.appendTo(this.$overflowTabList);
+                this.$overflowTabBtn.data('menubtn').menu.addOptions($a);
                 showOverflowMenu = true;
+            }
+
+            if (document.activeElement !== activeElement) {
+                $(activeElement).focus();
             }
         }
 
