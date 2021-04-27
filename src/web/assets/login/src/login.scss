@@ -95,10 +95,19 @@ body {
   #password {
     @include padding(14px, 4rem, 14px, 16px);
     border-radius: inherit;
+
+    .rtl & {
+      @include padding(14px, 16px, 14px, 4rem);
+    }
   }
 
   .password-toggle {
     right: 14px;
+
+    .rtl & {
+      right: auto;
+      left: 14px;
+    }
   }
 }
 

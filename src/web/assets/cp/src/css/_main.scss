@@ -4721,6 +4721,10 @@ input.radio:focus + label:before,
     background: transparent;
     padding-right: 4rem;
     box-shadow: none;
+
+    .rtl & {
+      padding-left: 4rem;
+    }
   }
 
   .password-toggle {
@@ -4729,6 +4733,11 @@ input.radio:focus + label:before,
     top: 0;
     right: 0;
     bottom: 0;
+
+    &.rtl {
+      right: auto;
+      left: 0;
+    }
 
     &:hover {
       text-decoration: underline;
