@@ -1145,7 +1145,7 @@ class Asset extends Element
     /**
      * Sets the transform.
      *
-     * @param AssetTransform|string|array|null $transform The transform that should be applied, if any. Can either be the handle of a named transform, or an array that defines the transform settings.
+     * @param AssetTransform|string|array|null $transform A transform handle or configuration that should be applied to the image
      * @return Asset
      * @throws AssetTransformException if $transform is an invalid transform handle
      */
@@ -1159,9 +1159,9 @@ class Asset extends Element
     /**
      * Returns the element’s full URL.
      *
-     * @param string|array|null $transform The transform that should be applied, if any. Can either be the handle of a named transform, or an array
-     * that defines the transform settings. If an array is passed, it can optionally include a `transform` key that defines a base transform which
-     * the rest of the settings should be applied to.
+     * @param string|array|null $transform A transform handle or configuration that should be applied to the
+     * image If an array is passed, it can optionally include a `transform` key that defines a base transform
+     * which the rest of the settings should be applied to.
      * @param bool|null $generateNow Whether the transformed image should be generated immediately if it doesn’t exist. If `null`, it will be left
      * up to the `generateTransformsBeforePageLoad` config setting.
      * @return string|null
@@ -1308,7 +1308,7 @@ class Asset extends Element
     /**
      * Returns the image height.
      *
-     * @param AssetTransform|string|array|null $transform The transform that should be applied, if any. Can either be the handle of a named transform, or an array that defines the transform settings.
+     * @param AssetTransform|string|array|null $transform A transform handle or configuration that should be applied to the image
      * @return int|float|null
      */
 
@@ -1330,7 +1330,7 @@ class Asset extends Element
     /**
      * Returns the image width.
      *
-     * @param AssetTransform|string|array|null $transform The optional transform handle for which to get thumbnail.
+     * @param AssetTransform|string|array|null $transform A transform handle or configuration that should be applied to the image
      * @return int|float|null
      */
     public function getWidth($transform = null)
@@ -1754,7 +1754,7 @@ class Asset extends Element
     /**
      * Returns a copy of the asset with the given transform applied to it.
      *
-     * @param AssetTransform|string|array|null $transform
+     * @param AssetTransform|string|array|null $transform The transform handle or configuration that should be applied to the image
      * @return Asset
      * @throws AssetTransformException if $transform is an invalid transform handle
      */
