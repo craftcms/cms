@@ -782,7 +782,19 @@ body.rtl .btngroup .btn.dashed:not(:last-child) { margin-left: -1px; }
 .btn.dashed:not(.disabled):active, .btn.dashed:not(.disabled).active { background-color: rgba(205, 216, 228, 0.25) !important; }
 
 /* color inputs */
+.color-input-container { position: relative; }
+
+.color-input-container .color-hex-indicator { position: absolute; top: 0; width: 1em; line-height: 34px; text-align: center; -webkit-user-select: none; user-select: none; }
+
+body.ltr .color-input-container .color-hex-indicator { left: 7px; }
+
+body.rtl .color-input-container .color-hex-indicator { right: 7px; }
+
 .color-input { font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, Courier, monospace; font-size: 0.9em !important; }
+
+body.ltr .color-input { padding-left: calc(7px + 1em); }
+
+body.rtl .color-input { padding-right: calc(7px + 1em); }
 
 .color { display: inline-block; position: relative; vertical-align: middle; width: 34px; height: 34px; border-radius: 17px; padding: 0; }
 
@@ -797,6 +809,8 @@ body.rtl .btngroup .btn.dashed:not(:last-child) { margin-left: -1px; }
 body.ltr .color .color-preview { left: 0; }
 
 body.rtl .color .color-preview { right: 0; }
+
+.color .color-preview:focus-within { border-color: #127FBF; box-shadow: 0 0 0 2px rgba(18, 127, 191, 0.5); }
 
 .color .color-preview > .color-preview-input { position: absolute; width: 100%; height: 100%; margin: 0; padding: 0; border: none; opacity: 0; }
 
@@ -1478,7 +1492,7 @@ table.editable tbody textarea, table.editable tbody textarea.text, table.editabl
 
 table.editable tbody .color-container { display: block; position: relative; }
 
-table.editable tbody .color-container > .color, table.editable tbody .color-container > .color-input { margin-bottom: 0; }
+table.editable tbody .color-container > .color, table.editable tbody .color-container .color-input { margin-bottom: 0; }
 
 table.editable tbody .color-container > .color { position: absolute; top: 10px; }
 
@@ -1486,9 +1500,13 @@ body.ltr table.editable tbody .color-container > .color { left: 10px; }
 
 body.rtl table.editable tbody .color-container > .color { right: 10px; }
 
-body.ltr table.editable tbody .color-container > .color-input { padding-left: 35px; }
+body.ltr table.editable tbody .color-container .color-hex-indicator { left: 32px; }
 
-body.rtl table.editable tbody .color-container > .color-input { padding-right: 35px; }
+body.rtl table.editable tbody .color-container .color-hex-indicator { right: 32px; }
+
+body.ltr table.editable tbody .color-container .color-input { padding-left: calc(32px + 1em); }
+
+body.rtl table.editable tbody .color-container .color-input { padding-right: calc(32px + 1em); }
 
 table.editable tbody .datewrapper, table.editable tbody .timewrapper { display: block; width: 100%; }
 

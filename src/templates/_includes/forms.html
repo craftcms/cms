@@ -159,7 +159,10 @@
 
 
 {% macro colorField(config) %}
-    {% set config = config|merge({id: config.id ?? "color#{random()}"}) %}
+    {% set config = config|merge({
+        fieldset: true,
+        id: config.id ?? "color#{random()}"
+    }) %}
     {{ _self.field(config, 'template:_includes/forms/color') }}
 {% endmacro %}
 

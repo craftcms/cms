@@ -1576,8 +1576,23 @@ div.btn.submit input {
 }
 
 /* color inputs */
+.color-input-container {
+  position: relative;
+
+  .color-hex-indicator {
+    position: absolute;
+    top: 0;
+    @include left(7px);
+    width: 1em;
+    line-height: 34px;
+    text-align: center;
+    user-select: none;
+  }
+}
+
 .color-input {
   @include fixed-width-font;
+  @include padding-left(calc(7px + 1em));
 }
 
 .color {
@@ -2837,7 +2852,7 @@ table.editable {
       position: relative;
 
       & > .color,
-      & > .color-input {
+      .color-input {
         margin-bottom: 0;
       }
 
@@ -2847,8 +2862,12 @@ table.editable {
         @include left(10px);
       }
 
-      & > .color-input {
-        @include padding-left(35px);
+      .color-hex-indicator {
+        @include left(32px);
+      }
+
+      .color-input {
+        @include padding-left(calc(32px + 1em));
       }
     }
 

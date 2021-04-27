@@ -126,6 +126,8 @@ JS;
             'Clear',
             'Close Preview',
             'Close',
+            'Color hex value',
+            'Color picker',
             'Continue',
             'Copied to clipboard.',
             'Copy the URL',
