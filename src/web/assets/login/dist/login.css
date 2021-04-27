@@ -40,7 +40,9 @@ body.ltr .passwordwrapper #password { padding: 14px 4rem 14px 16px ; }
 
 body.rtl .passwordwrapper #password { padding: 14px 16px 14px 4rem ; }
 
-.passwordwrapper .password-toggle { right: 14px; }
+body.ltr .passwordwrapper .password-toggle { right: 14px; }
+
+body.rtl .passwordwrapper .password-toggle { left: 14px; }
 
 #login-form-bottom { margin-top: 24px; display: -webkit-flex; display: flex; -webkit-justify-content: center; justify-content: center; }
 

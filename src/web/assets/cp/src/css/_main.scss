@@ -4727,7 +4727,7 @@ input.radio:focus + label:before,
     color: $linkColor;
     position: absolute;
     top: 0;
-    right: 0;
+    @include right(0);
     bottom: 0;
 
     &:hover {
