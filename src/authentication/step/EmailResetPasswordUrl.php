@@ -8,17 +8,9 @@ use craft\authentication\base\Step;
 use craft\elements\User;
 use craft\models\AuthenticationState;
 
-class ResetPassword extends Step
+class EmailResetPasswordUrl extends Step
 {
-    /**
-     * @inheritdoc
-     */
-    public function getFields(): array
-    {
-        return [];
-    }
-
-    /**
+       /**
      * @inheritdoc
      */
     public function authenticate(array $credentials, User $user = null): AuthenticationState
