@@ -969,11 +969,12 @@ class Asset extends Element
      * ```
      *
      * @param string[] $sizes
+     * @param AssetTransform|string|array|null $transform A transform handle or configuration that should be applied to the image
      * @return string|false The `srcset` attribute value, or `false` if it can’t be determined
      * @throws InvalidArgumentException
      * @since 3.5.0
      */
-    public function getSrcset(array $sizes)
+    public function getSrcset(array $sizes, $transform = null)
     {
         if ($this->kind !== self::KIND_IMAGE) {
             return false;
@@ -981,8 +982,11 @@ class Asset extends Element
 
         $srcset = [];
 
-        if ($this->_transform && Image::canManipulateAsImage($this->getExtension())) {
-            $transform = Craft::$app->getAssetTransforms()->normalizeTransform($this->_transform);
+        if (
+            ($transform !== null || $this->_transform) &&
+            Image::canManipulateAsImage($this->getExtension())
+        ) {
+            $transform = Craft::$app->getAssetTransforms()->normalizeTransform($transform ?? $this->_transform);
         } else {
             $transform = null;
         }
@@ -995,7 +999,7 @@ class Asset extends Element
 
         foreach ($sizes as $size) {
             if ($size === '1x') {
-                $srcset[] = $this->getUrl();
+                $srcset[] = $this->getUrl($transform);
                 continue;
             }
 
