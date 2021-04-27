@@ -2376,7 +2376,11 @@ body.rtl .texticon .clear { left: 9px; }
 
 .passwordwrapper .password { border: none; background: transparent; padding-right: 4rem; box-shadow: none; }
 
-.passwordwrapper .password-toggle { color: #0B69A3; position: absolute; top: 0; right: 0; bottom: 0; }
+.passwordwrapper .password-toggle { color: #0B69A3; position: absolute; top: 0; bottom: 0; }
+
+body.ltr .passwordwrapper .password-toggle { right: 0; }
+
+body.rtl .passwordwrapper .password-toggle { left: 0; }
 
 .passwordwrapper .password-toggle:hover { text-decoration: underline; }
 
