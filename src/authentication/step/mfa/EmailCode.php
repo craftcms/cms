@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 
-namespace craft\authentication\step;
+namespace craft\authentication\step\mfa;
 
 use Craft;
 use craft\authentication\base\Step;
@@ -37,7 +37,7 @@ class EmailCode extends Step
             ->setTo($user);
 
         if ($message->send()) {
-            $session->setNotice(Craft::t('app', 'Verification email sent!'));
+            $session->setNotice(Craft::t('app', 'Verification email sent!' . $code));
         } else {
             $session->setError(Craft::t('app', 'Failed to send verification email.'));
         }
