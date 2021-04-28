@@ -5,7 +5,7 @@ class Email
 
     constructor()
     {
-        Craft.LoginForm.registerStepHandler(this.prepareData.bind(this), true);
+        Craft.LoginForm.registerStepHandler(this.prepareData.bind(this), this.$email.parents('#recovery-container').length > 0);
     }
 
     public validate()
