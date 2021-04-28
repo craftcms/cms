@@ -6,6 +6,7 @@ namespace craft\authentication;
 use Craft;
 use craft\authentication\base\StepInterface;
 use craft\elements\User;
+use craft\errors\AuthenticationException;
 use craft\models\AuthenticationState;
 use yii\base\InvalidConfigException;
 
@@ -103,6 +104,14 @@ class Chain
             $success = $this->_getLastCompletedStep() === get_class($nextStep);
 
             if ($success && !$this->getIsComplete()) {
+                $this->attemptToSkip();
+            }
+
+            if ($success && !$this->getIsComplete()) {
+
+                // Try to skip ahead.
+                $this->attemptToSkip();
+
                 // Prepare the next step.
                 /** @var StepInterface $nextStep */
                 $nextStep = $this->getNextAuthenticationStep();
@@ -116,6 +125,29 @@ class Chain
             }
 
             return $success;
+        }
+    }
+
+    /**
+     * Attempt to skip as many authentication steps as possible.
+     *
+     * @throws InvalidConfigException
+     */
+    protected function attemptToSkip(): void
+    {
+        $user = $this->_getResolvedUser();
+
+        if ($user) {
+            $nextStep = $this->getNextAuthenticationStep();
+
+            if ($nextStep && $nextStep->getIsSkippable($user)) {
+                try {
+                    $this->_state = $nextStep->skipStep($user);
+                    $this->attemptToSkip();
+                } catch (AuthenticationException $e) {
+                    Craft::$app->getErrorHandler()->logException($e);
+                }
+            }
         }
     }
 

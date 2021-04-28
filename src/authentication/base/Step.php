@@ -6,6 +6,7 @@ namespace craft\authentication\base;
 use Craft;
 use craft\base\Component;
 use craft\elements\User;
+use craft\errors\AuthenticationException;
 use craft\models\AuthenticationState;
 
 /**
@@ -66,6 +67,27 @@ abstract class Step extends Component implements StepInterface
     {
         return $this->getFields() !== null;
     }
+
+    /**
+     * @inheritdoc
+     */
+    public function getIsSkippable(User $user): bool
+    {
+        return false;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function skipStep(User $user): AuthenticationState
+    {
+        if (!$this->getIsSkippable($user)) {
+            throw new AuthenticationException('Unable to skip this authentication step');
+        }
+
+        return $this->completeStep($user);
+    }
+
 
     /**
      * Return the field HTML.

@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace craft\authentication\base;
 
 use craft\elements\User;
+use craft\errors\AuthenticationException;
 use craft\models\AuthenticationState;
 
 /**
@@ -42,4 +43,21 @@ interface StepInterface
      * @return bool
      */
     public function getRequiresInput(): bool;
+
+    /**
+     * Return true if a step is skippable for the currently identified user.
+     *
+     * @param User $user
+     * @return bool
+     */
+    public function getIsSkippable(User $user): bool;
+
+    /**
+     * Skip an authentication step.
+     *
+     * @param User $user
+     * @return AuthenticationState
+     * @throws AuthenticationException if unskippable step.
+     */
+    public function skipStep(User $user): AuthenticationState;
 }
