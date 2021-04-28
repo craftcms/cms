@@ -4,7 +4,7 @@ class Credentials {
         this.$loginNameInput = $('#loginName');
         this.$passwordInput = $('#password');
         this.validateOnInput = false;
-        Craft.LoginForm.registerStepHandler(this.prepareData.bind(this));
+        Craft.LoginForm.registerStepHandler(this.prepareData.bind(this), this.$loginNameInput.parents('#recovery-container').length > 0);
         new Craft.PasswordInput(this.$passwordInput, {
             onToggleInput: ($newPasswordInput) => {
                 this.$passwordInput.off('input');
@@ -14,7 +14,6 @@ class Credentials {
         });
         this.$loginNameInput.on('input', this.onInput.bind(this));
         this.$passwordInput.on('input', this.onInput.bind(this));
-        // TODO this class must handle forgotten password functionality.
     }
     validate() {
         const loginNameVal = this.$loginNameInput.val();

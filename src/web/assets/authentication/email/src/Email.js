@@ -3,7 +3,7 @@ class Email {
     constructor() {
         this.$email = $('#email');
         this.validateOnInput = false;
-        Craft.LoginForm.registerStepHandler(this.prepareData.bind(this), true);
+        Craft.LoginForm.registerStepHandler(this.prepareData.bind(this), this.$email.parents('#recovery-container').length > 0);
     }
     validate() {
         const verificationCode = this.$email.val();
