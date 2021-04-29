@@ -248,6 +248,8 @@ return [
     'Close' => 'Sluiten',
     'Cloud Storage Integration' => 'Cloud-opslagintegratie',
     'Collapse' => 'Inklappen',
+    'Color hex value' => 'Color hex value',
+    'Color picker' => 'Color picker',
     'Color' => 'Kleur',
     'Column Heading' => 'Kop van de kolom',
     'Column Type' => 'Kolomtype',
