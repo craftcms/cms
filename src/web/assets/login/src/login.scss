@@ -98,7 +98,7 @@ body {
   }
 
   .password-toggle {
-    right: 14px;
+    @include right(14px);
   }
 }
 

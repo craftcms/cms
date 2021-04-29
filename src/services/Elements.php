@@ -507,16 +507,29 @@ class Elements extends Component
         if (!$elementId) {
             return null;
         }
-
-        if ($elementType === null) {
-            $elementType = $this->_elementTypeById($property, $elementId);
-
-            if ($elementType === null) {
+        
+        try {
+            $data = (new Query())
+                ->select(['draftId', 'revisionId', 'type'])
+                ->from([Table::ELEMENTS])
+                ->where([$property => $elementId])
+                ->one();
+            
+            if (!$data) {
                 return null;
+            }
+            
+            if ($elementType === null) {
+                $elementType = $data['type'];
+            }
+        } catch (DbException $e) {
+            // Not on schema 3.2.6+ yet
+            if ($elementType === null) {
+                $elementType = $this->_elementTypeById($property, $elementId);
             }
         }
 
-        if (!class_exists($elementType)) {
+        if ($elementType === null || !class_exists($elementType)) {
             return null;
         }
 
@@ -526,16 +539,6 @@ class Elements extends Component
         $query->anyStatus();
 
         // Is this a draft/revision?
-        try {
-            $data = (new Query())
-                ->select(['draftId', 'revisionId'])
-                ->from([Table::ELEMENTS])
-                ->where([$property => $elementId])
-                ->one();
-        } catch (DbException $e) {
-            // Not on schema 3.2.6+ yet
-        }
-
         if (!empty($data['draftId'])) {
             $query->draftId($data['draftId']);
         } else if (!empty($data['revisionId'])) {

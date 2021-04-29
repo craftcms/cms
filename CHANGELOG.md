@@ -4,8 +4,17 @@
 
 ### Changed
 - Improved the accessibility of Plain Text fields. ([#6914](https://github.com/craftcms/cms/issues/6914))
+- Improved the accessibility of color inputs. ([#7320](https://github.com/craftcms/cms/issues/7320))
+- Improved the tab focus behavior. ([#7140](https://github.com/craftcms/cms/issues/7140))
 - The `setPasswordPath` and `verifyEmailPath` config settings can now be set to absolute URLs, which will cause them to be respected when running Craft in headless mode. ([#6226](https://github.com/craftcms/cms/issues/6226))
 - Matrix block type settings modals now have “Apply” buttons instead of “Save”. ([#7822](https://github.com/craftcms/cms/issues/7822))
+- `craft\elements\Asset::getSrcset()` now accepts an optional `$transform` argument. ([#7839](https://github.com/craftcms/cms/issues/7839))
+- Improved the performance of `craft\services\Elements::getElementById()` and `getElementByUid()`. ([#7846](https://github.com/craftcms/cms/pull/7846))
+
+### Security
+- Craft now sets a `Permission-Policy: interest-cohort=()` header for all requests, opting out of FLoC tracking due to security and privacy concerns.
+
+## 3.6.12.1 - 2021-04-29
 
 ### Fixed
 - Fixed a bug where entry indexes weren’t showing the entries’ authors if they were pending or suspended.
@@ -18,9 +27,14 @@
 - Fixed a bug where selected tabs in the control panel weren’t getting focus rings.
 - Fixed a bug where it wasn’t possible to select tabs in the overflow menu via the keyboard. ([#7813](https://github.com/craftcms/cms/issues/7813))
 - Fixed a bug where `{% cache %}` tags’ `until` params weren’t being respected. ([#7826](https://github.com/craftcms/cms/issues/7826))
+- Fixed a bug where the control panel JavaScript was missing several ASCII character mappings. ([#7828](https://github.com/craftcms/cms/issues/7828))
+- Fixed a bug where Single sections wouldn’t validate if one of their URI values contained any spaces. ([#7834](https://github.com/craftcms/cms/issues/7834))
+- Fixed a bug where the “Show” link on password inputs wasn’t positioned correctly for RTL languages. ([#7835](https://github.com/craftcms/cms/issues/7835))
+- Fixed a bug where entry queries were not returning all entries created within the last minute. ([#7853](https://github.com/craftcms/cms/issues/7853))
+- Fixed a bug where the `searchindex` table wasn’t getting set to the MyISAM engine for fresh installs.
 
 ### Security
-- Craft now sets a `Permission-Policy: interest-cohort=()` header for all requests, opting out of FLoC tracking due to security and privacy concerns.
+- Updated Composer to 2.0.13, fixing a [command execution vulnerability](https://github.com/composer/composer/security/advisories/GHSA-h5h8-pc6h-jvvx).
 
 ## 3.6.12 - 2021-04-13
 
