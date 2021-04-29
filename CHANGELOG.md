@@ -11,6 +11,11 @@
 - `craft\elements\Asset::getSrcset()` now accepts an optional `$transform` argument. ([#7839](https://github.com/craftcms/cms/issues/7839))
 - Improved the performance of `craft\services\Elements::getElementById()` and `getElementByUid()`. ([#7846](https://github.com/craftcms/cms/pull/7846))
 
+### Security
+- Craft now sets a `Permission-Policy: interest-cohort=()` header for all requests, opting out of FLoC tracking due to security and privacy concerns.
+
+## 3.6.12.1 - 2021-04-29
+
 ### Fixed
 - Fixed a bug where entry indexes weren’t showing the entries’ authors if they were pending or suspended.
 - Fixed a bug where renaming an empty volume folder would create a subfolder inside it. ([#7721](https://github.com/craftcms/cms/issues/7721))
@@ -25,9 +30,11 @@
 - Fixed a bug where the control panel JavaScript was missing several ASCII character mappings. ([#7828](https://github.com/craftcms/cms/issues/7828))
 - Fixed a bug where Single sections wouldn’t validate if one of their URI values contained any spaces. ([#7834](https://github.com/craftcms/cms/issues/7834))
 - Fixed a bug where the “Show” link on password inputs wasn’t positioned correctly for RTL languages. ([#7835](https://github.com/craftcms/cms/issues/7835))
+- Fixed a bug where entry queries were not returning all entries created within the last minute. ([#7853](https://github.com/craftcms/cms/issues/7853))
+- Fixed a bug where the `searchindex` table wasn’t getting set to the MyISAM engine for fresh installs.
 
 ### Security
-- Craft now sets a `Permission-Policy: interest-cohort=()` header for all requests, opting out of FLoC tracking due to security and privacy concerns.
+- Updated Composer to 2.0.13, fixing a [command execution vulnerability](https://github.com/composer/composer/security/advisories/GHSA-h5h8-pc6h-jvvx).
 
 ## 3.6.12 - 2021-04-13
 
