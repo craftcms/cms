@@ -248,6 +248,8 @@ return [
     'Close' => 'Lukk',
     'Cloud Storage Integration' => 'Integrert skylagring',
     'Collapse' => 'Lukk',
+    'Color hex value' => 'Color hex value',
+    'Color picker' => 'Color picker',
     'Color' => 'Fargevelger',
     'Column Heading' => 'Kolonnenavn',
     'Column Type' => 'Kolonnetype',
