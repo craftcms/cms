@@ -10,6 +10,7 @@ namespace craft\services;
 use Craft;
 use craft\base\ElementInterface;
 use craft\elements\db\ElementQuery;
+use craft\helpers\DateTimeHelper;
 use craft\helpers\StringHelper;
 use DateTime;
 use yii\base\Component;
@@ -121,7 +122,7 @@ class TemplateCaches extends Component
      * @param string $body The contents of the cache.
      * @throws \Throwable
      */
-    public function endTemplateCache(string $key, bool $global, string $duration = null, $expiration, string $body)
+    public function endTemplateCache(string $key, bool $global, ?string $duration, $expiration, string $body)
     {
         // Make sure template caching is enabled
         if ($this->_isTemplateCachingEnabled() === false) {
@@ -140,9 +141,15 @@ class TemplateCaches extends Component
         }
 
         $cacheKey = $this->_cacheKey($key, $global);
+
         if ($duration !== null) {
-            $duration = (new DateTime($duration))->getTimestamp() - time();
+            $expiration = (new DateTime($duration));
         }
+
+        if ($expiration !== null) {
+            $duration = DateTimeHelper::toDateTime($expiration)->getTimestamp() - time();
+        }
+
         Craft::$app->getCache()->set($cacheKey, [$body, $dep->tags], $duration, $dep);
     }
 

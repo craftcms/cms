@@ -499,20 +499,19 @@ class MigrationManager extends Component
 
             if ($this->track === 'craft') {
                 $query->where(['type' => 'app']);
-            } else {
-                $pluginId = null;
-                if (strpos($this->track, 'plugin:') === 0) {
-                    $pluginId = (new Query())
-                        ->select(['id'])
-                        ->from([Table::PLUGINS])
-                        ->where(['handle' => substr($this->track, 7)])
-                        ->scalar();
-                }
+            } else if (strpos($this->track, 'plugin:') === 0) {
+                $pluginId = (new Query())
+                    ->select(['id'])
+                    ->from([Table::PLUGINS])
+                    ->where(['handle' => substr($this->track, 7)])
+                    ->scalar();
                 if ($pluginId) {
                     $query->where(['pluginId' => $pluginId]);
                 } else {
                     $query->where(new Expression('1 = 0'));
                 }
+            } else {
+                $query->where(['type' => 'content']);
             }
 
             return $query;
