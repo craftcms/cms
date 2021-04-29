@@ -248,6 +248,8 @@ return [
     'Close' => 'Luk',
     'Cloud Storage Integration' => 'Skylagerintegration',
     'Collapse' => 'Minimer',
+    'Color hex value' => 'Color hex value',
+    'Color picker' => 'Color picker',
     'Color' => 'Farve',
     'Column Heading' => 'Kolonneoverskrift',
     'Column Type' => 'Kolonne type',
