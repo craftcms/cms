@@ -248,6 +248,8 @@ return [
     'Close' => 'Fermer',
     'Cloud Storage Integration' => 'Intégration dans le stockage dans le Cloud',
     'Collapse' => 'Réduire',
+    'Color hex value' => 'Color hex value',
+    'Color picker' => 'Color picker',
     'Color' => 'Couleur',
     'Column Heading' => 'Titre de colonne',
     'Column Type' => 'Type de colonne',

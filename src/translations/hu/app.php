@@ -248,6 +248,8 @@ return [
     'Close' => 'Bezárás',
     'Cloud Storage Integration' => 'Felhőtár integráció',
     'Collapse' => 'Bezárás',
+    'Color hex value' => 'Color hex value',
+    'Color picker' => 'Color picker',
     'Color' => 'Szín',
     'Column Heading' => 'Oszlop Cím',
     'Column Type' => 'Oszlop típus',

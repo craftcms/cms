@@ -248,6 +248,8 @@ return [
     'Close' => 'Stäng',
     'Cloud Storage Integration' => 'Integrering av molnlagring',
     'Collapse' => 'Minimera',
+    'Color hex value' => 'Color hex value',
+    'Color picker' => 'Color picker',
     'Color' => 'Färg',
     'Column Heading' => 'Kolumnrubrik',
     'Column Type' => 'Kolumntyp',

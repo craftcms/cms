@@ -248,6 +248,8 @@ return [
     'Close' => '关闭',
     'Cloud Storage Integration' => '云存储集成',
     'Collapse' => '折叠',
+    'Color hex value' => 'Color hex value',
+    'Color picker' => 'Color picker',
     'Color' => '颜色',
     'Column Heading' => '列标题',
     'Column Type' => '列类型',

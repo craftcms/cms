@@ -248,6 +248,8 @@ return [
     'Close' => 'Kapat',
     'Cloud Storage Integration' => 'Bulut Depolama Entegrasyonu',
     'Collapse' => 'Daralt',
+    'Color hex value' => 'Color hex value',
+    'Color picker' => 'Color picker',
     'Color' => 'Renk',
     'Column Heading' => 'Kolon Başlığı',
     'Column Type' => 'Kolon Tipi',

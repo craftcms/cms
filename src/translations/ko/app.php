@@ -248,6 +248,8 @@ return [
     'Close' => '닫기',
     'Cloud Storage Integration' => '클라우드 스토리지 통합',
     'Collapse' => '축소',
+    'Color hex value' => 'Color hex value',
+    'Color picker' => 'Color picker',
     'Color' => '색상',
     'Column Heading' => '열 제목',
     'Column Type' => '열 유형',
