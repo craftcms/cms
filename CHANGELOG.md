@@ -17,6 +17,7 @@
 - Fixed a bug where Single sections wouldn’t validate if one of their URI values contained any spaces. ([#7834](https://github.com/craftcms/cms/issues/7834))
 - Fixed a bug where the “Show” link on password inputs wasn’t positioned correctly for RTL languages. ([#7835](https://github.com/craftcms/cms/issues/7835))
 - Fixed a bug where entry queries were not returning all entries created within the last minute. ([#7853](https://github.com/craftcms/cms/issues/7853))
+- Fixed a bug where the `searchindex` table wasn’t getting set to the MyISAM engine for fresh installs.
 
 ## 3.6.12 - 2021-04-13
 
