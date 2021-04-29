@@ -971,11 +971,12 @@ class Asset extends Element
      * ```
      *
      * @param string[] $sizes
+     * @param AssetTransform|string|array|null $transform A transform handle or configuration that should be applied to the image
      * @return string|false The `srcset` attribute value, or `false` if it can’t be determined
      * @throws InvalidArgumentException
      * @since 3.5.0
      */
-    public function getSrcset(array $sizes)
+    public function getSrcset(array $sizes, $transform = null)
     {
         if ($this->kind !== self::KIND_IMAGE) {
             return false;
@@ -983,8 +984,11 @@ class Asset extends Element
 
         $srcset = [];
 
-        if ($this->_transform && Image::canManipulateAsImage($this->getExtension())) {
-            $transform = Craft::$app->getAssetTransforms()->normalizeTransform($this->_transform);
+        if (
+            ($transform !== null || $this->_transform) &&
+            Image::canManipulateAsImage($this->getExtension())
+        ) {
+            $transform = Craft::$app->getAssetTransforms()->normalizeTransform($transform ?? $this->_transform);
         } else {
             $transform = null;
         }
@@ -997,7 +1001,7 @@ class Asset extends Element
 
         foreach ($sizes as $size) {
             if ($size === '1x') {
-                $srcset[] = $this->getUrl();
+                $srcset[] = $this->getUrl($transform);
                 continue;
             }
 
@@ -1147,7 +1151,7 @@ class Asset extends Element
     /**
      * Sets the transform.
      *
-     * @param AssetTransform|string|array|null $transform The transform that should be applied, if any. Can either be the handle of a named transform, or an array that defines the transform settings.
+     * @param AssetTransform|string|array|null $transform A transform handle or configuration that should be applied to the image
      * @return Asset
      * @throws AssetTransformException if $transform is an invalid transform handle
      */
@@ -1161,9 +1165,9 @@ class Asset extends Element
     /**
      * Returns the element’s full URL.
      *
-     * @param string|array|null $transform The transform that should be applied, if any. Can either be the handle of a named transform, or an array
-     * that defines the transform settings. If an array is passed, it can optionally include a `transform` key that defines a base transform which
-     * the rest of the settings should be applied to.
+     * @param string|array|null $transform A transform handle or configuration that should be applied to the
+     * image If an array is passed, it can optionally include a `transform` key that defines a base transform
+     * which the rest of the settings should be applied to.
      * @param bool|null $generateNow Whether the transformed image should be generated immediately if it doesn’t exist. If `null`, it will be left
      * up to the `generateTransformsBeforePageLoad` config setting.
      * @return string|null
@@ -1310,7 +1314,7 @@ class Asset extends Element
     /**
      * Returns the image height.
      *
-     * @param AssetTransform|string|array|null $transform The transform that should be applied, if any. Can either be the handle of a named transform, or an array that defines the transform settings.
+     * @param AssetTransform|string|array|null $transform A transform handle or configuration that should be applied to the image
      * @return int|float|null
      */
 
@@ -1332,7 +1336,7 @@ class Asset extends Element
     /**
      * Returns the image width.
      *
-     * @param AssetTransform|string|array|null $transform The optional transform handle for which to get thumbnail.
+     * @param AssetTransform|string|array|null $transform A transform handle or configuration that should be applied to the image
      * @return int|float|null
      */
     public function getWidth($transform = null)
@@ -1758,7 +1762,7 @@ class Asset extends Element
     /**
      * Returns a copy of the asset with the given transform applied to it.
      *
-     * @param AssetTransform|string|array|null $transform
+     * @param AssetTransform|string|array|null $transform The transform handle or configuration that should be applied to the image
      * @return Asset
      * @throws AssetTransformException if $transform is an invalid transform handle
      */

@@ -6,6 +6,7 @@ return [
     '/path/to/folder' => '/klasöre/giden/yol',
     '1 job' => '1 iş',
     '<a>Renew now</a> for another year of updates.' => 'Farklı bir güncelleme yılı için <a>şimdi yenileyin</a>.',
+    '<span class="visually-hidden">Characters left:</span> {chars, number}' => '<span class="visually-hidden">Characters left:</span> {chars, number}',
     '<strong>Your license has expired!</strong> Renew your {name} license for another year of amazing updates.' => '<strong>Lisansınızın süresi doldu!</strong> Harika güncellemelerle dolu bir yıl daha geçirmek için {name} lisansınızı güncelleyin.',
     '<strong>You’ve reached a breakpoint!</strong> More updates will become available after you install {update}.' => '<strong>Bir ara noktaya ulaştınız!</strong> Siz {update} yükledikten sonra daha fazla güncelleme sunulacak.',
     'A critical update is available.' => 'Kritik bir güncelleme var.',

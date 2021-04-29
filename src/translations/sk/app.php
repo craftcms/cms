@@ -6,6 +6,7 @@ return [
     '/path/to/folder' => '/cesta/k/priečinku',
     '1 job' => '1 úloha',
     '<a>Renew now</a> for another year of updates.' => '<a>Obnoviť teraz</a> pre ďalší rok aktualizácií.',
+    '<span class="visually-hidden">Characters left:</span> {chars, number}' => '<span class="visually-hidden">Characters left:</span> {chars, number}',
     '<strong>Your license has expired!</strong> Renew your {name} license for another year of amazing updates.' => '<strong>Platnosť licencie vypršala.</strong> Obnovte licenciu {name} na ďalší rok a získate úžasné aktualizácie.',
     '<strong>You’ve reached a breakpoint!</strong> More updates will become available after you install {update}.' => '<strong>Dosiahli ste zlomový bod!</strong> Ďalšie aktualizácie sa sprístupnia po inštalácii aktualizácie {update}.',
     'A critical update is available.' => 'Je k dispozícii dôležitá aktualizácia.',

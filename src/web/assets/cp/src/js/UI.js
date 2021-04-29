@@ -444,43 +444,57 @@ Craft.ui =
         },
 
         createColorInput: function(config) {
-            var id = (config.id || 'color' + Math.floor(Math.random() * 1000000000));
-            var containerId = config.containerId || id + '-container';
-            var name = config.name || null;
-            var value = config.value || null;
-            var small = config.small || false;
-            var autofocus = config.autofocus && Garnish.isMobileBrowser(true);
-            var disabled = config.disabled || false;
+            const id = (config.id || 'color' + Math.floor(Math.random() * 1000000000));
+            const containerId = config.containerId || id + '-container';
+            const name = config.name || null;
+            const value = config.value || null;
+            const small = config.small || false;
+            const autofocus = config.autofocus && Garnish.isMobileBrowser(true);
+            const disabled = config.disabled || false;
 
-            var $container = $('<div/>', {
+            const $container = $('<div/>', {
                 id: containerId,
-                'class': 'flex color-container'
+                class: 'flex color-container'
             });
 
-            var $colorPreviewContainer = $('<div/>', {
-                'class': 'color static' + (small ? ' small' : '')
+            const $colorPreviewContainer = $('<div/>', {
+                class: 'color static' + (small ? ' small' : '')
             }).appendTo($container);
 
-            var $colorPreview = $('<div/>', {
-                'class': 'color-preview',
+            const $colorPreview = $('<div/>', {
+                class: 'color-preview',
                 style: config.value ? {backgroundColor: config.value} : null
             }).appendTo($colorPreviewContainer);
 
-            var $input = this.createTextInput({
+            const $inputContainer = $('<div/>', {
+                class: 'color-input-container',
+            })
+                .append(
+                    $('<div/>', {
+                        class: 'color-hex-indicator light code',
+                        'aria-hidden': 'true',
+                        text: '#',
+                    })
+                )
+                .appendTo($container);
+
+            const $input = this.createTextInput({
                 id: id,
                 name: name,
-                value: value,
+                value: Craft.ltrim(value, '#'),
                 size: 10,
                 'class': 'color-input',
                 autofocus: autofocus,
-                disabled: disabled
-            }).appendTo($container);
+                disabled: disabled,
+                'aria-label': Craft.t('app', 'Color hex value'),
+            }).appendTo($inputContainer);
 
             new Craft.ColorInput($container);
             return $container;
         },
 
         createColorField: function(config) {
+            config.fieldset = true;o
             if (!config.id) {
                 config.id = 'color' + Math.floor(Math.random() * 1000000000);
             }

@@ -2062,6 +2062,13 @@ $.extend($.fn,
         },
     });
 
+// Override Garnish.NiceText.charsLeftHtml() to be more accessible
+Garnish.NiceText.charsLeftHtml = charsLeft => {
+    return Craft.t('app', '<span class="visually-hidden">Characters left:</span> {chars, number}', {
+        chars: charsLeft,
+    });
+};
+
 Garnish.$doc.ready(function() {
     Craft.initUiElements();
 });

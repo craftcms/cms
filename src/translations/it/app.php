@@ -6,6 +6,7 @@ return [
     '/path/to/folder' => '/path/to/folder',
     '1 job' => '1 attività',
     '<a>Renew now</a> for another year of updates.' => '<a>Rinnova ora</a> per un altro anno di aggiornamenti.',
+    '<span class="visually-hidden">Characters left:</span> {chars, number}' => '<span class="visually-hidden">Characters left:</span> {chars, number}',
     '<strong>Your license has expired!</strong> Renew your {name} license for another year of amazing updates.' => '<strong>La licenza è scaduta.</strong> Rinnova la licenza {name} per usufruire degli straordinari aggiornamenti per un altro anno.',
     '<strong>You’ve reached a breakpoint!</strong> More updates will become available after you install {update}.' => '<strong>Hai raggiunto un breakpoint!</strong> altri aggiornamenti saranno disponibili dopo l\'installazione di {update}.',
     'A critical update is available.' => 'È disponibile un aggiornamento critico.',

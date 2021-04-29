@@ -127,33 +127,25 @@ class StringHelper extends \yii\helpers\StringHelper
             return self::$_asciiCharMaps[$key];
         }
 
-        $map = (new Stringy())->getAsciiCharMap();
+        $map = ASCII::charsArrayWithSingleLanguageValues(false, false);
+        if ($language !== null) {
+            $langSpecific = ASCII::charsArrayWithOneLanguage($language, false, false);
+            if ($langSpecific !== []) {
+                $map = array_merge($map, $langSpecific);
+            }
+        }
 
-        if (!$flat) {
+        if ($flat) {
             return self::$_asciiCharMaps[$key] = $map;
         }
 
-        $flatMap = [];
-        foreach ($map as $ascii => $chars) {
-            foreach ($chars as $char) {
-                $flatMap[$char] = $ascii;
-            }
+        $byAscii = [];
+
+        foreach ($map as $char => $ascii) {
+            $byAscii[$ascii][] = $char;
         }
 
-        // Include language specific replacements (unless the ASCII chars have custom mappings)
-        if ($language !== null) {
-            $langSpecific = ASCII::charsArrayWithOneLanguage($language);
-            $generalConfig = Craft::$app->getConfig()->getGeneral();
-            $customChars = !empty($generalConfig->customAsciiCharMappings) ? call_user_func_array('array_merge', $generalConfig->customAsciiCharMappings) : [];
-            $customChars = array_flip($customChars);
-            foreach ($langSpecific['orig'] as $i => $char) {
-                if (!isset($customChars[$char])) {
-                    $flatMap[$char] = $langSpecific['replace'][$i];
-                }
-            }
-        }
-
-        return self::$_asciiCharMaps[$key] = $flatMap;
+        return self::$_asciiCharMaps[$key] = $byAscii;
     }
 
     /**
