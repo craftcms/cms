@@ -248,6 +248,8 @@ return [
     'Close' => 'بستن',
     'Cloud Storage Integration' => 'یکپارچگی با حافظه ابری',
     'Collapse' => 'باز شدن',
+    'Color hex value' => 'Color hex value',
+    'Color picker' => 'Color picker',
     'Color' => 'رنگ',
     'Column Heading' => 'سر ستون',
     'Column Type' => 'نوع ستون',
