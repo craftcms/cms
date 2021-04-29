@@ -19,6 +19,9 @@
 - Fixed a bug where entry queries were not returning all entries created within the last minute. ([#7853](https://github.com/craftcms/cms/issues/7853))
 - Fixed a bug where the `searchindex` table wasn’t getting set to the MyISAM engine for fresh installs.
 
+### Security
+- Updated Composer to 2.0.13, fixing a [command execution vulnerability](https://github.com/composer/composer/security/advisories/GHSA-h5h8-pc6h-jvvx).
+
 ## 3.6.12 - 2021-04-13
 
 ### Changed
