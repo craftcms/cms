@@ -248,6 +248,8 @@ return [
     'Close' => 'Закрыть',
     'Cloud Storage Integration' => 'Интеграция облачного хранилища данных',
     'Collapse' => 'Свернуть',
+    'Color hex value' => 'Color hex value',
+    'Color picker' => 'Color picker',
     'Color' => 'Цвет',
     'Column Heading' => 'Заголовок столбца',
     'Column Type' => 'Тип столбца',

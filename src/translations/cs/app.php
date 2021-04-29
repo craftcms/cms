@@ -248,6 +248,8 @@ return [
     'Close' => 'Zavřít',
     'Cloud Storage Integration' => 'Integrace cloudového úložiště',
     'Collapse' => 'Sbalit',
+    'Color hex value' => 'Color hex value',
+    'Color picker' => 'Color picker',
     'Color' => 'Barva',
     'Column Heading' => 'Nadpis sloupce',
     'Column Type' => 'Typ sloupce',

@@ -248,6 +248,8 @@ return [
     'Close' => '閉じる',
     'Cloud Storage Integration' => 'クラウドストレージ統合',
     'Collapse' => '折りたたむ',
+    'Color hex value' => 'Color hex value',
+    'Color picker' => 'Color picker',
     'Color' => '色',
     'Column Heading' => '列の見出し',
     'Column Type' => '列タイプ',

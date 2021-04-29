@@ -248,6 +248,8 @@ return [
     'Close' => 'Жабык',
     'Cloud Storage Integration' => 'Cloud Storage Integration',
     'Collapse' => 'Collapse',
+    'Color hex value' => 'Color hex value',
+    'Color picker' => 'Color picker',
     'Color' => 'Түс',
     'Column Heading' => 'Column Heading',
     'Column Type' => 'Column Type',
