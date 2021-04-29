@@ -248,6 +248,8 @@ return [
     'Close' => 'סגור',
     'Cloud Storage Integration' => 'שילוב אחסון ענן',
     'Collapse' => 'כווץ',
+    'Color hex value' => 'Color hex value',
+    'Color picker' => 'Color picker',
     'Color' => 'צבע',
     'Column Heading' => 'כותרת עמודה',
     'Column Type' => 'סוג עמודה',
