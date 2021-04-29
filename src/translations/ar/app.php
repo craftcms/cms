@@ -248,6 +248,8 @@ return [
     'Close' => 'إغلاق',
     'Cloud Storage Integration' => 'دمج التخزين السحابي',
     'Collapse' => 'طي',
+    'Color hex value' => 'Color hex value',
+    'Color picker' => 'Color picker',
     'Color' => 'اللون',
     'Column Heading' => 'عنوان العمود',
     'Column Type' => 'نوع العمود',
