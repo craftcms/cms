@@ -130,6 +130,7 @@ class Db
      * @param mixed $date The date to be prepared
      * @param bool $stripSeconds Whether the seconds should be omitted from the formatted string
      * @return string|null The prepped date, or `null` if it could not be prepared
+     * @todo Remove the $stripSeconds argument in Craft 4
      */
     public static function prepareDateForDb($date, bool $stripSeconds = false)
     {

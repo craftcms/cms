@@ -16,6 +16,7 @@
 - Fixed a bug where the control panel JavaScript was missing several ASCII character mappings. ([#7828](https://github.com/craftcms/cms/issues/7828))
 - Fixed a bug where Single sections wouldn’t validate if one of their URI values contained any spaces. ([#7834](https://github.com/craftcms/cms/issues/7834))
 - Fixed a bug where the “Show” link on password inputs wasn’t positioned correctly for RTL languages. ([#7835](https://github.com/craftcms/cms/issues/7835))
+- Fixed a bug where entry queries were not returning all entries created within the last minute. ([#7853](https://github.com/craftcms/cms/issues/7853))
 
 ## 3.6.12 - 2021-04-13
 
