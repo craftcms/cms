@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace craft\authentication\step\mfa;
 
 use Craft;
+use craft\authentication\base\MfaInterface;
 use craft\authentication\base\Step;
 use craft\elements\User;
 use craft\helpers\StringHelper;
@@ -16,11 +17,27 @@ class EmailCode extends Step
     /**
      * @inheritdoc
      */
-    public function getFields(): array
+    public function getName(): string
+    {
+        return Craft::t('app', 'Email code');
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getDescription(): string
+    {
+        return Craft::t('app', 'Send an email with the verification code');
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getFields(): ?array
     {
         return ['verification-code'];
     }
-
+    
     /**
      * @inheritdoc
      */
@@ -60,6 +77,7 @@ class EmailCode extends Step
             $session->setError(Craft::t('app', 'The verification code is incorrect.'));
             return $this->state;
         }
+
         $session->remove(static::CODE_KEY);
 
         return $this->completeStep($user);
