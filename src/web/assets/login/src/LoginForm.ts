@@ -16,8 +16,8 @@ type AuthenticationResponse = {
 
 class LoginForm
 {
-    readonly authenticationTarget = 'authentication/perform-authentication';
-    readonly recoverTarget = 'authentication/recover-account';
+    readonly authenticationEndpoint = 'authentication/perform-authentication';
+    readonly recoverEndpoint = 'authentication/recover-account';
     readonly $loginForm = $('#login-form');
     readonly $authContainer = $('#authentication-container');
     readonly $recoverContainer = $('#recovery-container');
@@ -82,21 +82,21 @@ class LoginForm
         this.clearMessages();
         this.clearErrors();
 
-        let target: string;
         let container: JQuery;
         let handler: "recoveryStepHandler" | "authenticationStepHandler";
+        let endpoint: string;
 
         if (this.showingRecoverForm) {
-            target = this.recoverTarget;
+            endpoint = this.recoverEndpoint;
             container = this.$recoverContainer;
             handler = "recoveryStepHandler";
         } else {
-            target = this.authenticationTarget;
+            endpoint = this.authenticationEndpoint;
             container = this.$authContainer;
             handler = "authenticationStepHandler";
         }
 
-        Craft.postActionRequest(target, request, (response: AuthenticationResponse, textStatus: string) => {
+        Craft.postActionRequest(endpoint, request, (response: AuthenticationResponse, textStatus: string) => {
 
             if (textStatus == 'success') {
                 if (response.success && response.returnUrl?.length) {

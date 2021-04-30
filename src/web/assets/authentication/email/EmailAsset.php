@@ -34,18 +34,4 @@ class EmailAsset extends AssetBundle
     public $js = [
         'Email.min.js',
     ];
-
-    /**
-     * @inheritdoc
-     */
-    public function registerAssetFiles($view)
-    {
-        parent::registerAssetFiles($view);
-
-        if ($view instanceof View) {
-            $view->registerTranslations('app', [
-                'Please enter a verification code',
-            ]);
-        }
-    }
 }

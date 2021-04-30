@@ -10,8 +10,8 @@ class Email
 
     public validate()
     {
-        const verificationCode = this.$email.val() as string;
-        if (verificationCode.length === 0) {
+        const emailAddress = this.$email.val() as string;
+        if (emailAddress.length === 0) {
             return Craft.t('app', 'Please enter a valid email address');
         }
 

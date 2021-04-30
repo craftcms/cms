@@ -1,8 +1,8 @@
 "use strict";
 class LoginForm {
     constructor() {
-        this.authenticationTarget = 'authentication/perform-authentication';
-        this.recoverTarget = 'authentication/recover-account';
+        this.authenticationEndpoint = 'authentication/perform-authentication';
+        this.recoverEndpoint = 'authentication/recover-account';
         this.$loginForm = $('#login-form');
         this.$authContainer = $('#authentication-container');
         this.$recoverContainer = $('#recovery-container');
@@ -40,20 +40,20 @@ class LoginForm {
         }
         this.clearMessages();
         this.clearErrors();
-        let target;
         let container;
         let handler;
+        let endpoint;
         if (this.showingRecoverForm) {
-            target = this.recoverTarget;
+            endpoint = this.recoverEndpoint;
             container = this.$recoverContainer;
             handler = "recoveryStepHandler";
         }
         else {
-            target = this.authenticationTarget;
+            endpoint = this.authenticationEndpoint;
             container = this.$authContainer;
             handler = "authenticationStepHandler";
         }
-        Craft.postActionRequest(target, request, (response, textStatus) => {
+        Craft.postActionRequest(endpoint, request, (response, textStatus) => {
             var _a;
             if (textStatus == 'success') {
                 if (response.success && ((_a = response.returnUrl) === null || _a === void 0 ? void 0 : _a.length)) {

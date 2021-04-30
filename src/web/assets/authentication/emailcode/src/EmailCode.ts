@@ -25,6 +25,11 @@ class EmailCode
         }
     }
 
+    /**
+     * Prepare the request data.
+     *
+     * @param ev
+     */
     public prepareData(ev: any): AuthenticationRequest | string
     {
         const error = this.validate();

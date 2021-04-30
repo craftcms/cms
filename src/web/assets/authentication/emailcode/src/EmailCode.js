@@ -17,6 +17,11 @@ class EmailCode {
             Craft.LoginForm.clearErrors();
         }
     }
+    /**
+     * Prepare the request data.
+     *
+     * @param ev
+     */
     prepareData(ev) {
         const error = this.validate();
         if (error !== true) {

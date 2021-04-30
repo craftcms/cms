@@ -6,8 +6,8 @@ class Email {
         Craft.LoginForm.registerStepHandler(this.prepareData.bind(this), this.$email.parents('#recovery-container').length > 0);
     }
     validate() {
-        const verificationCode = this.$email.val();
-        if (verificationCode.length === 0) {
+        const emailAddress = this.$email.val();
+        if (emailAddress.length === 0) {
             return Craft.t('app', 'Please enter a valid email address');
         }
         return true;
