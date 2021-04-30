@@ -10,11 +10,16 @@ use craft\errors\AuthenticationException;
 use craft\models\AuthenticationState;
 
 /**
+ * Authentication step type base class. This class must be implemented for all steps indented to be used in Craft CP.
+ *
+ * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ * @since 4.0.0
+ *
  * @property-read string $description
  * @property-read string $name
  * @property-read string $fieldHtml
  */
-abstract class Step extends Component implements StepInterface
+abstract class Type extends Component implements TypeInterface
 {
     protected AuthenticationState $state;
 
@@ -98,7 +103,7 @@ abstract class Step extends Component implements StepInterface
         /** @var AuthenticationState $state */
         $state = Craft::createObject(AuthenticationState::class, [[
             'resolvedUserId' => $user->id ?? null,
-            'lastCompletedStep' => static::class,
+            'lastCompletedStepType' => static::class,
             'authenticationScenario' => $this->state->getAuthenticationScenario()
         ]]);
 

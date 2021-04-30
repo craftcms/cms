@@ -4,11 +4,17 @@ declare(strict_types=1);
 namespace craft\authentication\type;
 
 use Craft;
-use craft\authentication\base\Step;
+use craft\authentication\base\Type;
 use craft\elements\User;
 use craft\models\AuthenticationState;
 
-class IpAddress extends Step
+/**
+ * This step type checks if the IP address matches the defined rules.
+ *
+ * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ * @since 4.0.0
+ */
+class IpAddress extends Type
 {
     /**
      * @var string[] A list of allowed IP addresses, if `permissive` is set to `false`

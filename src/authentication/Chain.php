@@ -4,7 +4,7 @@ declare(strict_types=1);
 namespace craft\authentication;
 
 use Craft;
-use craft\authentication\base\StepInterface;
+use craft\authentication\base\TypeInterface;
 use craft\elements\User;
 use craft\errors\AuthenticationException;
 use craft\helpers\Authentication;
@@ -20,9 +20,9 @@ class Chain
     /**
      * Authentication chain constructor.
      *
-     * @param AuthenticationState $state
-     * @param array $steps
-     * @param ?string $recoveryScenario
+     * @param AuthenticationState $state Current state of authentication
+     * @param array $steps A list of steps that have to be completed.
+     * @param ?string $recoveryScenario A recovery scenario, if there is one.
      */
     public function __construct(AuthenticationState $state, array $steps, ?string $recoveryScenario)
     {
@@ -38,17 +38,17 @@ class Chain
      */
     public function getIsComplete(): bool
     {
-        return $this->_state->getLastCompletedStep() === (end($this->_steps)['type'] ?? null);
+        return $this->_getLastCompletedStepType() === (end($this->_steps)['type'] ?? null);
     }
 
     /**
-     * Returns `true` whether no steps have been completed yet.
+     * Returns `true` if no steps have been completed yet.
      *
      * @return bool
      */
     public function getIsNew(): bool
     {
-        return $this->_state->getLastCompletedStep() === null;
+        return $this->_getLastCompletedStepType() === null;
     }
 
     /**
@@ -89,12 +89,12 @@ class Chain
      * Perform an authentication step.
      *
      * @param array $credentials
-     * @return bool `true`, if at least one step was sucessfully performed.
+     * @return bool `true`, if at least one step was successfully performed.
      * @throws InvalidConfigException If unable to determine the next authentication step and chain is not complete.
      */
     public function performAuthenticationStep(array $credentials = []): bool
     {
-        /** @var StepInterface $nextStep */
+        /** @var TypeInterface $nextStep */
         if ($nextStep = $this->getNextAuthenticationStep()) {
             $this->_state = $nextStep->authenticate($credentials, $this->_getResolvedUser());
 
@@ -102,19 +102,15 @@ class Chain
             Craft::$app->getAuthentication()->storeAuthenticationState($this->_state);
 
             // If advanced in chain
-            $success = $this->_getLastCompletedStep() === get_class($nextStep);
+            $success = $this->_getLastCompletedStepType() === get_class($nextStep);
 
             if ($success && !$this->getIsComplete()) {
                 $this->attemptToSkip();
             }
 
             if ($success && !$this->getIsComplete()) {
-
-                // Try to skip ahead.
-                $this->attemptToSkip();
-
                 // Prepare the next step.
-                /** @var StepInterface $nextStep */
+                /** @var TypeInterface $nextStep */
                 $nextStep = $this->getNextAuthenticationStep();
                 $nextStep->prepareForAuthentication($this->_getResolvedUser());
 
@@ -127,44 +123,23 @@ class Chain
 
             return $success;
         }
-    }
 
-    /**
-     * Attempt to skip as many authentication steps as possible.
-     *
-     * @throws InvalidConfigException
-     */
-    protected function attemptToSkip(): void
-    {
-        $user = $this->_getResolvedUser();
-
-        if ($user) {
-            $nextStep = $this->getNextAuthenticationStep();
-
-            if ($nextStep && $nextStep->getIsApplicable($user)) {
-                try {
-                    $this->_state = $nextStep->skipStep($user);
-                    $this->attemptToSkip();
-                } catch (AuthenticationException $e) {
-                    Craft::$app->getErrorHandler()->logException($e);
-                }
-            }
-        }
+        return true;
     }
 
     /**
      * Get next authentication step.
      *
-     * @return StepInterface|null
+     * @return TypeInterface|null
      * @throws InvalidConfigException if chain is not complete, yet all the steps are done.
      */
-    public function getNextAuthenticationStep(): ?StepInterface
+    public function getNextAuthenticationStep(): ?TypeInterface
     {
         if ($this->getIsComplete()) {
             return null;
         }
 
-        $lastCompleted = $this->_getLastCompletedStep();
+        $lastCompleted = $this->_getLastCompletedStepType();
 
         // If no steps performed, return the first one
         if (!$lastCompleted) {
@@ -173,13 +148,13 @@ class Chain
 
         foreach ($this->_steps as $index => $authenticationStep) {
             // If the current step was the last completed
-            if ($authenticationStep['step'] === $lastCompleted) {
+            if ($authenticationStep['type'] === $lastCompleted) {
                 // Return the next step. This should never be false, as it's covered by checking if chain is complete
                 return Authentication::createTypeFromConfig($this->_steps[$index + 1], $this->_state);
             }
         }
 
-        throw new InvalidConfigException("Unterminated authentication chain - {$this->_state->getAuthenticationScenario()}, last completed step - {$this->_getLastCompletedStep()}");
+        throw new InvalidConfigException("Unterminated authentication chain - {$this->_state->getAuthenticationScenario()}, last completed step - {$this->_getLastCompletedStepType()}");
     }
 
     /**
@@ -187,9 +162,9 @@ class Chain
      *
      * @return string|null
      */
-    private function _getLastCompletedStep(): ?string
+    private function _getLastCompletedStepType(): ?string
     {
-        return $this->_state->getLastCompletedStep();
+        return $this->_state->getLastCompletedStepType();
     }
 
     /**

@@ -4,12 +4,17 @@ declare(strict_types=1);
 namespace craft\authentication\type;
 
 use Craft;
-use craft\authentication\base\Step;
+use craft\authentication\base\Type;
 use craft\elements\User;
-use craft\helpers\StringHelper;
 use craft\models\AuthenticationState;
 
-class Email extends Step
+/**
+ * This step type authenticates a user by an email address.
+ *
+ * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ * @since 4.0.0
+ */
+class Email extends Type
 {
     /**
      * @inheritdoc

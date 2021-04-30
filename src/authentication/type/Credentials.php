@@ -4,12 +4,18 @@ declare(strict_types=1);
 namespace craft\authentication\type;
 
 use Craft;
-use craft\authentication\base\Step;
+use craft\authentication\base\Type;
 use craft\elements\User;
 use craft\helpers\User as UserHelper;
 use craft\models\AuthenticationState;
 
-class Credentials extends Step
+/**
+ * This step type identifies a user by a username/email and password combination.
+ *
+ * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ * @since 4.0.0
+ */
+class Credentials extends Type
 {
     /**
      * @inheritdoc
@@ -67,6 +73,9 @@ class Credentials extends Step
         return $this->state;
     }
 
+    /**
+     * @inheritdoc
+     */
     public function getFieldHtml(): string
     {
         return Craft::$app->getView()->renderTemplate('_components/authenticationsteps/Credentials/input');

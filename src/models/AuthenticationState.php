@@ -8,9 +8,9 @@ declare(strict_types=1);
 
 namespace craft\models;
 
+use Craft;
 use craft\base\Model;
 use craft\elements\User;
-use Craft;
 
 /**
  * Authentication state model class
@@ -19,6 +19,7 @@ use Craft;
  * @since 4.0.0
  *
  * @property-read User|null $resolvedUser
+ * @property-write null|string $lastCompletedStep
  * @property-read bool $isNew
  */
 class AuthenticationState extends Model
@@ -29,9 +30,9 @@ class AuthenticationState extends Model
     protected string $authenticationScenario;
 
     /**
-     * @var string|null Last step performed in the chain.
+     * @var string|null Last step type performed in the chain.
      */
-    protected ?string $lastCompletedStep = null;
+    protected ?string $lastCompletedStepType = null;
 
     /**
      * @var int|null The resolved user id
@@ -49,13 +50,13 @@ class AuthenticationState extends Model
     }
 
     /**
-     * Get the last completed authentication step.
+     * Get the last completed authentication step type.
      *
      * @return string|null
      */
-    public function getLastCompletedStep(): ?string
+    public function getLastCompletedStepType(): ?string
     {
-        return $this->lastCompletedStep;
+        return $this->lastCompletedStepType;
     }
 
     /**
@@ -87,23 +88,38 @@ class AuthenticationState extends Model
     {
         return [
             'authenticationScenario' => $this->authenticationScenario,
-            'lastCompletedStep' => $this->lastCompletedStep,
+            'lastCompletedStepType' => $this->lastCompletedStepType,
             'resolvedUserId' => $this->resolvedUserId,
         ];
     }
 
+    /**
+     * Set the scenario value.
+     *
+     * @param string $scenario
+     */
     protected function setAuthenticationScenario(string $scenario): void
     {
         $this->authenticationScenario = $scenario;
     }
 
+    /**
+     * Set the resolved user id value.
+     *
+     * @param ?int $userId
+     */
     protected function setResolvedUserId(int $userId = null): void
     {
         $this->resolvedUserId = $userId;
     }
 
-    protected function setLastCompletedStep(string $step = null): void
+    /**
+     * Set the last completed step type value.
+     *
+     * @param ?string $stepType
+     */
+    protected function setLastCompletedStep(string $stepType = null): void
     {
-        $this->lastCompletedStep = $step;
+        $this->lastCompletedStepType = $stepType;
     }
 }

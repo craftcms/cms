@@ -9,7 +9,7 @@ declare(strict_types=1);
 namespace craft\controllers;
 
 use Craft;
-use craft\authentication\base\Step;
+use craft\authentication\base\Type;
 use craft\web\Controller;
 use yii\base\InvalidConfigException;
 use yii\web\BadRequestHttpException;
@@ -97,7 +97,7 @@ class AuthenticationController extends Controller
         ];
 
         if ($success) {
-            /** @var Step $step */
+            /** @var Type $step */
             $step = $chain->getNextAuthenticationStep();
             $output['stepComplete'] = true;
             $output['html'] = $step->getFieldHtml();
@@ -169,7 +169,7 @@ class AuthenticationController extends Controller
 
             $output['success'] = true;
         } else if ($success) {
-            /** @var Step $step */
+            /** @var Type $step */
             $step = $recoveryChain->getNextAuthenticationStep();
             $output['stepComplete'] = true;
             $output['html'] = $step->getFieldHtml();

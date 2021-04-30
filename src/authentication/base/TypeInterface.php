@@ -9,10 +9,15 @@ use craft\models\AuthenticationState;
 use yii\base\InvalidConfigException;
 
 /**
+ * Authentication step type interface class. This interface must be implemented by all valid steps in authentication chains.
+ *
+ * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ * @since 4.0.0
+ *
  * @property-read bool $requiresInput
  * @property-read string[] $fields
  */
-interface StepInterface
+interface TypeInterface
 {
     /**
      * Return a list of field names available for this authorization step.
@@ -30,7 +35,7 @@ interface StepInterface
     public function prepareForAuthentication(User $user = null): void;
 
     /**
-     * Given a set of credentials, perform authorization and return an Identity
+     * Given a set of credentials, perform authorization and return the new AuthenticationState
      *
      * @param array $credentials
      * @param User|null $user
@@ -47,7 +52,7 @@ interface StepInterface
     public function getRequiresInput(): bool;
 
     /**
-     * Return true if a step is skippable for the currently identified user.
+     * Return true if a step is applicable for the currently identified user.
      *
      * @param User $user
      * @return bool
