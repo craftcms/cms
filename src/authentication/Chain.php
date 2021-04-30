@@ -6,7 +6,6 @@ namespace craft\authentication;
 use Craft;
 use craft\authentication\base\TypeInterface;
 use craft\elements\User;
-use craft\errors\AuthenticationException;
 use craft\helpers\Authentication;
 use craft\models\AuthenticationState;
 use yii\base\InvalidConfigException;
@@ -103,10 +102,6 @@ class Chain
 
             // If advanced in chain
             $success = $this->_getLastCompletedStepType() === get_class($nextStep);
-
-            if ($success && !$this->getIsComplete()) {
-                $this->attemptToSkip();
-            }
 
             if ($success && !$this->getIsComplete()) {
                 // Prepare the next step.

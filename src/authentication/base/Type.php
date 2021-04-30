@@ -6,7 +6,6 @@ namespace craft\authentication\base;
 use Craft;
 use craft\base\Component;
 use craft\elements\User;
-use craft\errors\AuthenticationException;
 use craft\models\AuthenticationState;
 
 /**
@@ -101,6 +100,7 @@ abstract class Type extends Component implements TypeInterface
     protected function completeStep(User $user = null): AuthenticationState
     {
         /** @var AuthenticationState $state */
+        /** @noinspection PhpUnnecessaryLocalVariableInspection */
         $state = Craft::createObject(AuthenticationState::class, [[
             'resolvedUserId' => $user->id ?? null,
             'lastCompletedStepType' => static::class,

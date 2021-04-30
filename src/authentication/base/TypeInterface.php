@@ -4,7 +4,6 @@ declare(strict_types=1);
 namespace craft\authentication\base;
 
 use craft\elements\User;
-use craft\errors\AuthenticationException;
 use craft\models\AuthenticationState;
 use yii\base\InvalidConfigException;
 
