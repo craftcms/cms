@@ -10,9 +10,15 @@
 - Matrix block type settings modals now have “Apply” buttons instead of “Save”. ([#7822](https://github.com/craftcms/cms/issues/7822))
 - `craft\elements\Asset::getSrcset()` now accepts an optional `$transform` argument. ([#7839](https://github.com/craftcms/cms/issues/7839))
 - Improved the performance of `craft\services\Elements::getElementById()` and `getElementByUid()`. ([#7846](https://github.com/craftcms/cms/pull/7846))
+- `craft\services\TemplateCaches::getTemplateCache()`, `endTemplateCache()`, and `deleteCachesByKey()` now throw an exception on console requests, if `$global` isn’t `true`. ([#7862](https://github.com/craftcms/cms/issues/7862))
+
+### Fixed
+- Fixed a bug where Matrix fields’ Configuration settings weren’t expanding when nested field settings got taller. ([#7827](https://github.com/craftcms/cms/issues/7827))
+- Fixed an error that occurred when attempting to create a new entry, if a unique URI for the entry could not be generated per its URI format. ([#7863](https://github.com/craftcms/cms/issues/7863))
 
 ### Security
 - Craft now sets a `Permission-Policy: interest-cohort=()` header for all requests, opting out of FLoC tracking due to security and privacy concerns.
+- Fixed an XSS vulnerability.
 
 ## 3.6.12.1 - 2021-04-29
 
