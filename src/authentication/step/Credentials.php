@@ -14,7 +14,23 @@ class Credentials extends Step
     /**
      * @inheritdoc
      */
-    public function getFields(): array
+    public function getName(): string
+    {
+        return Craft::t('app', 'Credentials');
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getDescription(): string
+    {
+        return Craft::t('app', 'Authenticate using username or email, and password.');
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getFields(): ?array
     {
         return ['loginName', 'password'];
     }

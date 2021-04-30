@@ -29,6 +29,22 @@ class IpAddress extends Step
     /**
      * @inheritdoc
      */
+    public function getName(): string
+    {
+        return Craft::t('app', 'IP address filter');
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getDescription(): string
+    {
+        return Craft::t('app', 'Filter by user IP address');
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function authenticate(array $credentials, User $user = null): AuthenticationState
     {
         $ip = Craft::$app->getRequest()->getUserIP();
@@ -69,5 +85,11 @@ class IpAddress extends Step
         return '';
     }
 
-
+    /**
+     * @inheritdoc
+     */
+    public function getRequiresInput(): bool
+    {
+        return false;
+    }
 }

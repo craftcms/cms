@@ -6,6 +6,7 @@ namespace craft\authentication\base;
 use craft\elements\User;
 use craft\errors\AuthenticationException;
 use craft\models\AuthenticationState;
+use yii\base\InvalidConfigException;
 
 /**
  * @property-read bool $requiresInput
@@ -34,6 +35,7 @@ interface StepInterface
      * @param array $credentials
      * @param User|null $user
      * @return AuthenticationState
+     * @throws InvalidConfigException If something went wrong while createing authentication chain.
      */
     public function authenticate(array $credentials, User $user = null): AuthenticationState;
 
@@ -50,14 +52,5 @@ interface StepInterface
      * @param User $user
      * @return bool
      */
-    public function getIsSkippable(User $user): bool;
-
-    /**
-     * Skip an authentication step.
-     *
-     * @param User $user
-     * @return AuthenticationState
-     * @throws AuthenticationException if unskippable step.
-     */
-    public function skipStep(User $user): AuthenticationState;
+    public function getIsApplicable(User $user): bool;
 }

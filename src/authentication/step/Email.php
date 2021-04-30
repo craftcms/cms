@@ -14,7 +14,23 @@ class Email extends Step
     /**
      * @inheritdoc
      */
-    public function getFields(): array
+    public function getName(): string
+    {
+        return Craft::t('app', 'Email');
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getDescription(): string
+    {
+        return Craft::t('app', 'Authenticate with email');
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getFields(): ?array
     {
         return ['email'];
     }
@@ -29,7 +45,6 @@ class Email extends Step
 
         if (!$potentialUser) {
             if (Craft::$app->getConfig()->getGeneral()->preventUserEnumeration) {
-                // Fake it
                 return $this->completeStep(new User);
             }
 

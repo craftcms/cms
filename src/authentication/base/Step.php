@@ -10,11 +10,48 @@ use craft\errors\AuthenticationException;
 use craft\models\AuthenticationState;
 
 /**
+ * @property-read string $description
+ * @property-read string $name
  * @property-read string $fieldHtml
  */
 abstract class Step extends Component implements StepInterface
 {
     protected AuthenticationState $state;
+
+    /**
+     * Return the field HTML.
+     *
+     * @return string
+     */
+    abstract public function getFieldHtml(): string;
+
+    /**
+     * @inheritdoc
+     */
+    public function getFields(): ?array
+    {
+        return null;
+    }
+
+    /**
+     * Return the name of the authentication step.
+     *
+     * @return string
+     */
+    public function getName(): string
+    {
+        return self::displayName();
+    }
+
+    /**
+     * Return the description of the authentication step.
+     *
+     * @return string
+     */
+    public function getDescription(): string
+    {
+        return '';
+    }
 
     /**
      * @inheritdoc
@@ -27,9 +64,27 @@ abstract class Step extends Component implements StepInterface
     /**
      * @inheritdoc
      */
-    public function getFields(): ?array
+    public function getRequiresInput(): bool
     {
-        return null;
+        return true;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getIsApplicable(User $user): bool
+    {
+        return false;
+    }
+
+    /**
+     * Setter for the Authentication state. Protected, to avoid exposing state.
+     *
+     * @param AuthenticationState $state
+     */
+    protected function setState(AuthenticationState $state): void
+    {
+        $this->state = $state;
     }
 
     /**
@@ -49,50 +104,4 @@ abstract class Step extends Component implements StepInterface
 
         return $state;
     }
-
-    /**
-     * Setter for the Authentication state. Protected, to avoid exposing state.
-     *
-     * @param AuthenticationState $state
-     */
-    protected function setState(AuthenticationState $state): void
-    {
-        $this->state = $state;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getRequiresInput(): bool
-    {
-        return $this->getFields() !== null;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getIsSkippable(User $user): bool
-    {
-        return false;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function skipStep(User $user): AuthenticationState
-    {
-        if (!$this->getIsSkippable($user)) {
-            throw new AuthenticationException('Unable to skip this authentication step');
-        }
-
-        return $this->completeStep($user);
-    }
-
-
-    /**
-     * Return the field HTML.
-     *
-     * @return string
-     */
-    abstract public function getFieldHtml(): string;
 }
