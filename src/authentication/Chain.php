@@ -7,6 +7,7 @@ use Craft;
 use craft\authentication\base\StepInterface;
 use craft\elements\User;
 use craft\errors\AuthenticationException;
+use craft\helpers\Authentication;
 use craft\models\AuthenticationState;
 use yii\base\InvalidConfigException;
 
@@ -37,7 +38,7 @@ class Chain
      */
     public function getIsComplete(): bool
     {
-        return $this->_state->getLastCompletedStep() === (end($this->_steps)['step'] ?? null);
+        return $this->_state->getLastCompletedStep() === (end($this->_steps)['type'] ?? null);
     }
 
     /**
@@ -140,7 +141,7 @@ class Chain
         if ($user) {
             $nextStep = $this->getNextAuthenticationStep();
 
-            if ($nextStep && $nextStep->getIsSkippable($user)) {
+            if ($nextStep && $nextStep->getIsApplicable($user)) {
                 try {
                     $this->_state = $nextStep->skipStep($user);
                     $this->attemptToSkip();

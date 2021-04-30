@@ -10,9 +10,9 @@ namespace craft\services;
 
 use Craft;
 use craft\authentication\Chain;
-use craft\authentication\step\EmailCode;
-use craft\authentication\step\Credentials;
-use craft\authentication\step\IpAddress;
+use craft\authentication\type\EmailCode;
+use craft\authentication\type\Credentials;
+use craft\authentication\type\IpAddress;
 use craft\models\AuthenticationChainConfiguration;
 use craft\models\AuthenticationState;
 use yii\base\Component;

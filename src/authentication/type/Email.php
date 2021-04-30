@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 
-namespace craft\authentication\step;
+namespace craft\authentication\type;
 
 use Craft;
 use craft\authentication\base\Step;

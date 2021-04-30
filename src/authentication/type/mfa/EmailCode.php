@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 
-namespace craft\authentication\step\mfa;
+namespace craft\authentication\type\mfa;
 
 use Craft;
 use craft\authentication\base\MfaInterface;
@@ -37,7 +37,7 @@ class EmailCode extends Step
     {
         return ['verification-code'];
     }
-    
+
     /**
      * @inheritdoc
      */
