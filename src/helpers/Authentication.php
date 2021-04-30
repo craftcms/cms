@@ -8,20 +8,9 @@
 namespace craft\helpers;
 
 use Craft;
-use craft\base\ElementInterface;
-use craft\errors\GqlException;
-use craft\gql\base\Directive;
-use craft\gql\ElementQueryConditionBuilder;
-use craft\gql\GqlEntityRegistry;
-use craft\models\GqlSchema;
-use craft\services\Gql as GqlService;
-use GraphQL\Language\AST\ListValueNode;
-use GraphQL\Language\AST\ValueNode;
-use GraphQL\Language\AST\VariableNode;
-use GraphQL\Type\Definition\NonNull;
-use GraphQL\Type\Definition\ResolveInfo;
-use GraphQL\Type\Definition\Type;
-use GraphQL\Type\Definition\UnionType;
+use craft\authentication\base\TypeInterface;
+use craft\models\AuthenticationState;
+use yii\base\InvalidConfigException;
 
 /**
  * Class Authentication
@@ -31,5 +20,26 @@ use GraphQL\Type\Definition\UnionType;
  */
 class Authentication
 {
+    /**
+     * Create an authentication type based on a config.
+     *
+     * @param array $typeConfig
+     * @param AuthenticationState $state
+     * @return TypeInterface
+     * @throws InvalidConfigException
+     */
+    public static function createTypeFromConfig(array $typeConfig, AuthenticationState $state): TypeInterface
+    {
+        $class = $typeConfig['type'];
 
+        if (!is_subclass_of($class, TypeInterface::class)) {
+            throw new InvalidConfigException('Impossible to create authentication type.');
+        }
+
+        $settings = array_merge($typeConfig['settings'] ?? [], ['state' => $state]);
+
+        /** @var TypeInterface $type */
+        $type = Craft::createObject($class, [$settings]);
+        return $type;
+    }
 }
