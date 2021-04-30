@@ -5,6 +5,9 @@
 ### Fixed
 - Fixed a bug where Matrix fields’ Configuration settings weren’t expanding when nested field settings got taller. ([#7827](https://github.com/craftcms/cms/issues/7827))
 
+### Security
+- Fixed an XSS vulnerability.
+
 ## 3.6.12.1 - 2021-04-29
 
 ### Fixed
