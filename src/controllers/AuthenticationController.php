@@ -116,6 +116,7 @@ class AuthenticationController extends Controller
     {
         $this->requireAcceptsJson();
 
+        // Set up the recovery chain
         $scenario = Craft::$app->getRequest()->getRequiredBodyParam('scenario');
         $authenticationService = Craft::$app->getAuthentication();
         $authenticationChain = $authenticationService->getAuthenticationChain($scenario);
@@ -149,12 +150,20 @@ class AuthenticationController extends Controller
             $success = $recoveryChain->performAuthenticationStep($data);
         }
 
-        $output = [
-            'message' => $session->getNotice(),
-            'error' => $session->getError(),
-        ];
+        $output = [];
 
         if ($recoveryChain->getIsComplete()) {
+            $user = $recoveryChain->getAuthenticatedUser();
+            $session->setNotice(Craft::t('app', 'Password reset email sent.'));
+
+            if ($user) {
+                $sendResult = Craft::$app->getUsers()->sendPasswordResetEmail($user);
+
+                if (!$sendResult) {
+                    $session->setError(Craft::t('app', 'There was a problem sending the password reset email.'));
+                }
+            }
+
             // If successfully completed recovery, invalidate the chain state.
             $authenticationService->invalidateAuthenticationState($authenticationChain->getRecoveryScenario());
 
