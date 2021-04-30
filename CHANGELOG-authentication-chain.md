@@ -7,7 +7,6 @@
 - Added `craft\authentication\step\Email`.
 - Added `craft\authentication\step\IpAddress`.
 - Added `craft\authentication\step\mfa\EmailCode`.
-- Added `craft\authentication\step\recovery\EmailResetPasswordUrl`.
 - Added `craft\errors\AuthenticationException`.
 - Added `craft\models\AuthenticationChainConfiguration`.
 - Added `craft\models\AuthenticationState`.
