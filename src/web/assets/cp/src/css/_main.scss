@@ -5252,37 +5252,14 @@ ul.errors li {
     max-width: none;
 
     & > .input {
-      position: relative;
-      @include padding-left(440px);
+      display: flex;
+      align-items: stretch;
       background-color: $grey050;
-      overflow: hidden;
       box-shadow: none;
-
-      &:after {
-        display: block;
-        position: absolute;
-        z-index: 1;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        visibility: visible;
-        content: '';
-        font-size: 0;
-        border-radius: $smallBorderRadius;
-        box-shadow: inset 0 1px 3px -1px darken($grey200, 10%);
-        user-select: none;
-        pointer-events: none;
-      }
     }
   }
 
   .mc-sidebar {
-    position: absolute;
-    top: 0;
-    margin: 0;
-    border: none;
-    height: 100%;
     box-sizing: border-box;
 
     .mc-col-items {
@@ -5291,22 +5268,28 @@ ul.errors li {
     }
 
     &.block-types {
-      @include left(0);
       width: 200px;
+      @include border-top-left-radius($smallBorderRadius);
+      @include border-bottom-left-radius($smallBorderRadius);
 
-      .mc-col-items {
-        .btn {
-          margin: 14px;
+      & > .mc-col-inner-container {
+        & > .mc-col-heading {
+          @include border-top-left-radius($smallBorderRadius);
+        }
+
+        & > .mc-col-items {
+          .btn {
+            margin: 14px;
+          }
         }
       }
     }
 
     &.mc-fields {
-      @include left(200px);
       width: 240px;
       z-index: 1;
       background: #fff;
-      box-shadow: 0 0 0 1px transparentize($grey900, 0.9), 0 2px 5px -2px transparentize($grey900, 0.8);
+      box-shadow: -1px 0 0 0 transparentize($grey900, 0.9), 1px 0 0 0 transparentize($grey900, 0.9);
 
       .mc-col-items {
         padding: 14px;
@@ -5332,12 +5315,14 @@ ul.errors li {
   .mc-field-settings {
     flex: 1;
     position: relative;
-    height: 100%;
+    @include border-top-right-radius($smallBorderRadius);
+    @include border-bottom-right-radius($smallBorderRadius);
 
     & > .mc-col-inner-container {
       & > .mc-col-heading {
         padding-left: 24px;
         padding-right: 24px;
+        @include border-top-right-radius($smallBorderRadius);
       }
 
       & > .mc-col-items {

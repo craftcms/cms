@@ -2674,31 +2674,29 @@ body.rtl .message-container { right: 0; }
 /* ----------------------------------------*/
 .matrix-configurator > .field { max-width: none; }
 
-.matrix-configurator > .field > .input { position: relative; background-color: #f3f7fc; overflow: hidden; box-shadow: none; }
+.matrix-configurator > .field > .input { display: -webkit-flex; display: flex; -webkit-align-items: stretch; align-items: stretch; background-color: #f3f7fc; box-shadow: none; }
 
-body.ltr .matrix-configurator > .field > .input { padding-left: 440px; }
-
-body.rtl .matrix-configurator > .field > .input { padding-right: 440px; }
-
-.matrix-configurator > .field > .input:after { display: block; position: absolute; z-index: 1; top: 0; left: 0; width: 100%; height: 100%; visibility: visible; content: ''; font-size: 0; border-radius: 3px; box-shadow: inset 0 1px 3px -1px #acbed2; -webkit-user-select: none; user-select: none; pointer-events: none; }
-
-.matrix-configurator .mc-sidebar { position: absolute; top: 0; margin: 0; border: none; height: 100%; box-sizing: border-box; }
+.matrix-configurator .mc-sidebar { box-sizing: border-box; }
 
 .matrix-configurator .mc-sidebar .mc-col-items { margin-top: -1px; padding-top: 1px; }
 
 .matrix-configurator .mc-sidebar.block-types { width: 200px; }
 
-body.ltr .matrix-configurator .mc-sidebar.block-types { left: 0; }
+body.ltr .matrix-configurator .mc-sidebar.block-types { border-top-left-radius: 3px; }
 
-body.rtl .matrix-configurator .mc-sidebar.block-types { right: 0; }
+body.rtl .matrix-configurator .mc-sidebar.block-types { border-top-right-radius: 3px; }
 
-.matrix-configurator .mc-sidebar.block-types .mc-col-items .btn { margin: 14px; }
+body.ltr .matrix-configurator .mc-sidebar.block-types { border-bottom-left-radius: 3px; }
 
-.matrix-configurator .mc-sidebar.mc-fields { width: 240px; z-index: 1; background: #fff; box-shadow: 0 0 0 1px rgba(31, 41, 51, 0.1), 0 2px 5px -2px rgba(31, 41, 51, 0.2); }
+body.rtl .matrix-configurator .mc-sidebar.block-types { border-bottom-right-radius: 3px; }
 
-body.ltr .matrix-configurator .mc-sidebar.mc-fields { left: 200px; }
+body.ltr .matrix-configurator .mc-sidebar.block-types > .mc-col-inner-container > .mc-col-heading { border-top-left-radius: 3px; }
 
-body.rtl .matrix-configurator .mc-sidebar.mc-fields { right: 200px; }
+body.rtl .matrix-configurator .mc-sidebar.block-types > .mc-col-inner-container > .mc-col-heading { border-top-right-radius: 3px; }
+
+.matrix-configurator .mc-sidebar.block-types > .mc-col-inner-container > .mc-col-items .btn { margin: 14px; }
+
+.matrix-configurator .mc-sidebar.mc-fields { width: 240px; z-index: 1; background: #fff; box-shadow: -1px 0 0 0 rgba(31, 41, 51, 0.1), 1px 0 0 0 rgba(31, 41, 51, 0.1); }
 
 .matrix-configurator .mc-sidebar.mc-fields .mc-col-items { padding: 14px; }
 
@@ -2706,9 +2704,21 @@ body.rtl .matrix-configurator .mc-sidebar.mc-fields { right: 200px; }
 
 .matrix-configurator .mc-sidebar > .mc-col-inner-container > .mc-col-heading, .matrix-configurator .mc-field-settings > .mc-col-inner-container > .mc-col-heading { margin: 0; padding: 7px 14px 6px; border-bottom: 1px solid rgba(51, 64, 77, 0.1); background-color: #f3f7fc; background-image: -o-linear-gradient(rgba(51, 64, 77, 0), rgba(51, 64, 77, 0.05)); background-image: linear-gradient(rgba(51, 64, 77, 0), rgba(51, 64, 77, 0.05)); }
 
-.matrix-configurator .mc-field-settings { -webkit-flex: 1; flex: 1; position: relative; height: 100%; }
+.matrix-configurator .mc-field-settings { -webkit-flex: 1; flex: 1; position: relative; }
+
+body.ltr .matrix-configurator .mc-field-settings { border-top-right-radius: 3px; }
+
+body.rtl .matrix-configurator .mc-field-settings { border-top-left-radius: 3px; }
+
+body.ltr .matrix-configurator .mc-field-settings { border-bottom-right-radius: 3px; }
+
+body.rtl .matrix-configurator .mc-field-settings { border-bottom-left-radius: 3px; }
 
 .matrix-configurator .mc-field-settings > .mc-col-inner-container > .mc-col-heading { padding-left: 24px; padding-right: 24px; }
+
+body.ltr .matrix-configurator .mc-field-settings > .mc-col-inner-container > .mc-col-heading { border-top-right-radius: 3px; }
+
+body.rtl .matrix-configurator .mc-field-settings > .mc-col-inner-container > .mc-col-heading { border-top-left-radius: 3px; }
 
 .matrix-configurator .mc-field-settings > .mc-col-inner-container > .mc-col-items { padding: 24px; }
 

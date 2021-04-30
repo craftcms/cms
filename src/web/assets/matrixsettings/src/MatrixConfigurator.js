@@ -53,8 +53,6 @@
             this.$fieldItemsOuterContainer = this.$fieldsColumnContainer.children('.mc-col-items');
             this.$fieldSettingItemsContainer = this.$fieldSettingsColumnContainer.children('.mc-col-items');
 
-            this.setContainerHeight();
-
             this.$newBlockTypeBtn = this.$blockTypeItemsOuterContainer.children('.btn');
             this.$newFieldBtn = this.$fieldItemsOuterContainer.children('.btn');
 
@@ -86,17 +84,6 @@
 
             this.addListener(this.$newBlockTypeBtn, 'click', 'addBlockType');
             this.addListener(this.$newFieldBtn, 'click', 'addFieldToSelectedBlockType');
-
-            this.addListener(this.$blockTypesColumnContainer, 'resize', 'setContainerHeight');
-            this.addListener(this.$fieldsColumnContainer, 'resize', 'setContainerHeight');
-            this.addListener(this.$fieldSettingsColumnContainer, 'resize', 'setContainerHeight');
-        },
-
-        setContainerHeight: function() {
-            setTimeout($.proxy(function() {
-                var maxColHeight = Math.max(this.$blockTypesColumnContainer.height(), this.$fieldsColumnContainer.height(), this.$fieldSettingsColumnContainer.height(), 400);
-                this.$container.height(maxColHeight);
-            }, this), 1);
         },
 
         getFieldTypeInfo: function(type) {

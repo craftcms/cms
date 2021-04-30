@@ -11,8 +11,12 @@
 - `craft\elements\Asset::getSrcset()` now accepts an optional `$transform` argument. ([#7839](https://github.com/craftcms/cms/issues/7839))
 - Improved the performance of `craft\services\Elements::getElementById()` and `getElementByUid()`. ([#7846](https://github.com/craftcms/cms/pull/7846))
 
+### Fixed
+- Fixed a bug where Matrix fields’ Configuration settings weren’t expanding when nested field settings got taller. ([#7827](https://github.com/craftcms/cms/issues/7827))
+
 ### Security
 - Craft now sets a `Permission-Policy: interest-cohort=()` header for all requests, opting out of FLoC tracking due to security and privacy concerns.
+- Fixed an XSS vulnerability.
 
 ## 3.6.12.1 - 2021-04-29
 
