@@ -702,7 +702,7 @@ class Elements extends Component
         return (new Query())
             ->select(['siteId'])
             ->from([Table::ELEMENTS_SITES])
-            ->where(['elementId' => $elementId, 'enabled' => 1])
+            ->where(['elementId' => $elementId, 'enabled' => true])
             ->column();
     }
 
@@ -2342,7 +2342,7 @@ class Elements extends Component
                 // Pass the instantiated elements to afterPopulate()
                 if (!empty($targetElements)) {
                     $query->asArray = false;
-                    $query->afterPopulate(array_merge(...$targetElements));
+                    $query->afterPopulate(array_merge(...array_values($targetElements)));
                 }
 
                 // Now eager-load any sub paths

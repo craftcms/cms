@@ -3153,7 +3153,7 @@ body.rtl #user-info { margin-left: 14px; }
 /* main container */
 #main-container { position: relative; -webkit-flex-grow: 1; flex-grow: 1; }
 
-#notifications { position: fixed; top: 0; width: 100%; z-index: 101; display: -webkit-flex; display: flex; -webkit-justify-content: center; justify-content: center; -webkit-align-items: flex-start; align-items: flex-start; }
+#notifications { position: fixed; top: 0; width: 100%; z-index: 101; display: -webkit-flex; display: flex; -webkit-justify-content: center; justify-content: center; -webkit-align-items: flex-start; align-items: flex-start; pointer-events: none; }
 
 @media only screen and (min-width: 1200px) { #notifications { width: calc(100% - 226px); } }
 

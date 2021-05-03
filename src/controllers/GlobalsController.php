@@ -246,7 +246,8 @@ class GlobalsController extends Controller
             $this->requirePermission('editSite:' . $site->uid);
         }
 
-        $globalSet->setFieldValuesFromRequest('fields');
+        $fieldsLocation = $this->request->getParam('fieldsLocation', 'fields');
+        $globalSet->setFieldValuesFromRequest($fieldsLocation);
         $globalSet->setScenario(Element::SCENARIO_LIVE);
 
         if (!Craft::$app->getElements()->saveElement($globalSet)) {

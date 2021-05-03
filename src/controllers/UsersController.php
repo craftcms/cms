@@ -1222,7 +1222,8 @@ class UsersController extends Controller
         }
 
         // If this is Craft Pro, grab any profile content from post
-        $user->setFieldValuesFromRequest('fields');
+        $fieldsLocation = $this->request->getParam('fieldsLocation', 'fields');
+        $user->setFieldValuesFromRequest($fieldsLocation);
 
         // Validate and save!
         // ---------------------------------------------------------------------
