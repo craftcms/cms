@@ -7,6 +7,7 @@
 - Fixed an error that occurred when attempting to create a new entry, if a unique URI for the entry could not be generated per its URI format. ([#7863](https://github.com/craftcms/cms/issues/7863))
 - Fixed a bug where it wasn’t possible to delete a volume folder if the physical directory didn’t exist. ([#7868](https://github.com/craftcms/cms/issues/7868))
 - Fixed a race condition that could result in two assets getting saved with conflicting filenames if they were both moved to the same directory at the same time. ([#7866](https://github.com/craftcms/cms/issues/7866))
+- Fixed an error that occurred on PHP 8. ([#7848](https://github.com/craftcms/cms/issues/7848))
 
 ### Security
 - Fixed an XSS vulnerability.
