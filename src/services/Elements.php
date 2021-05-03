@@ -1177,6 +1177,7 @@ class Elements extends Component
      * @param bool $updateOtherSites Whether the element’s other sites should also be updated.
      * @param bool $updateDescendants Whether the element’s descendants should also be updated.
      * @param bool $queue Whether the element’s slug and URI should be updated via a job in the queue.
+     * @throws OperationAbortedException if a unique URI can’t be generated based on the element’s URI format
      */
     public function updateElementSlugAndUri(ElementInterface $element, bool $updateOtherSites = true, bool $updateDescendants = true, bool $queue = false)
     {

@@ -10,13 +10,13 @@ body { display: -webkit-flex; display: flex; -webkit-flex-direction: column; fle
 
 #login-form-top { padding: 1px; }
 
-#login-form-top .text { box-shadow: none; }
-
 #login-form .field { margin: 0; }
 
 #login-form .btn { display: block; }
 
 #loginName { margin: 0 -1px; width: calc(100% + 2px); padding: 14px 16px; border-radius: 5px; }
+
+#loginName-field { z-index: 1; }
 
 #remember-password { display: none; }
 
@@ -32,13 +32,17 @@ body { display: -webkit-flex; display: flex; -webkit-flex-direction: column; fle
 
 .passwordwrapper { margin: 0 -1px -1px; border-radius: 0 0 5px 5px; }
 
-body.ltr .passwordwrapper #password { padding: 14px 7px 14px 16px ; }
+.passwordwrapper.focus { z-index: 1; }
 
-body.rtl .passwordwrapper #password { padding: 14px 16px 14px 7px ; }
+.passwordwrapper #password { border-radius: inherit; }
 
-body.ltr .passwordwrapper .password-toggle { padding-right: 14px; }
+body.ltr .passwordwrapper #password { padding: 14px 4rem 14px 16px ; }
 
-body.rtl .passwordwrapper .password-toggle { padding-left: 14px; }
+body.rtl .passwordwrapper #password { padding: 14px 16px 14px 4rem ; }
+
+body.ltr .passwordwrapper .password-toggle { right: 14px; }
+
+body.rtl .passwordwrapper .password-toggle { left: 14px; }
 
 #login-form-bottom { margin-top: 24px; display: -webkit-flex; display: flex; -webkit-justify-content: center; justify-content: center; }
 

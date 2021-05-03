@@ -608,7 +608,7 @@ class Assets extends Component
         if ($index->fileExists) {
             // For local volumes, really make sure
             $volume = $asset->getVolume();
-            $transformPath = $asset->getFolder()->path . $assetTransforms->getTransformSubpath($asset, $index);
+            $transformPath = $asset->folderPath . $assetTransforms->getTransformSubpath($asset, $index);
 
             if ($volume instanceof LocalVolumeInterface && !$volume->fileExists($transformPath)) {
                 $index->fileExists = false;
@@ -632,12 +632,12 @@ class Assets extends Component
 
         if ($this->generatePendingTransformsViaQueue && !$this->_queuedGeneratePendingTransformsJob) {
             // Queue up a new Generate Pending Transforms job
-            Queue::push(new GeneratePendingTransforms());
+            Queue::push(new GeneratePendingTransforms(), 2048);
             $this->_queuedGeneratePendingTransformsJob = true;
         }
 
         // Return the temporary transform URL
-        return UrlHelper::actionUrl('assets/generate-transform', ['transformId' => $index->id]);
+        return UrlHelper::actionUrl('assets/generate-transform', ['transformId' => $index->id], null, false);
     }
 
     /**
@@ -680,7 +680,7 @@ class Assets extends Component
             'width' => $width,
             'height' => $height,
             'v' => $asset->dateModified->getTimestamp(),
-        ]);
+        ], null, false);
     }
 
     /**
@@ -863,6 +863,9 @@ class Assets extends Component
             $timestamp = DateTimeHelper::currentUTCDateTime()->format('Y-m-d-His');
             $base = $baseFileName . '_' . $timestamp;
         }
+
+        // Append a random string at the end too, to avoid race-conditions
+        $base .= '_'.StringHelper::randomString(4);
 
         $increment = 0;
 

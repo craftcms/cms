@@ -36,12 +36,26 @@ class StringHelperTest extends Unit
      */
     public function testAsciiCharMap()
     {
-        $theArray = ['ä', 'ö', 'ü', 'Ä', 'Ö', 'Ü'];
-        self::assertArrayNotHasKey('de', StringHelper::asciiCharMap(false, 'de'));
-        $theMap = StringHelper::asciiCharMap(true, 'de');
+        $expected = [
+            'ä' => 'ae',
+            'ö' => 'oe',
+            'ü' => 'ue',
+            'Ä' => 'Ae',
+            'Ö' => 'Oe',
+            'Ü' => 'Ue',
+            'é' => 'e',
+        ];
 
-        foreach ($theArray as $theChar) {
-            self::assertArrayHasKey($theChar, $theMap);
+        $mapByAscii =  StringHelper::asciiCharMap(false, 'de');
+        foreach ($expected as $char => $ascii) {
+            self::assertArrayHasKey($ascii, $mapByAscii);
+            self::assertContains($char, $mapByAscii[$ascii]);
+        }
+
+        $mapByChar =  StringHelper::asciiCharMap(true, 'de');
+        foreach ($expected as $char => $ascii) {
+            self::assertArrayHasKey($char, $mapByChar);
+            self::assertSame($ascii, $mapByChar[$char]);
         }
     }
 

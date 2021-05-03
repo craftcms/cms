@@ -474,6 +474,7 @@ class Users extends Component
         }
 
         $photo->setScenario(Asset::SCENARIO_FILEOPS);
+        $photo->avoidFilenameConflicts = true;
         $photo->newFolderId = $folderId;
         Craft::$app->getElements()->saveElement($photo);
     }
@@ -1299,7 +1300,8 @@ class Users extends Component
             'id' => $user->uid,
         ];
 
-        $cp = $user->can('accessCp');
+        $generalConfig = Craft::$app->getConfig()->getGeneral();
+        $cp = $generalConfig->headlessMode || $user->can('accessCp');
         $scheme = UrlHelper::getSchemeForTokenizedUrl($cp);
 
         if (!$cp) {
@@ -1308,7 +1310,7 @@ class Users extends Component
 
         // Only use cpUrl() if the base CP URL has been explicitly set,
         // so UrlHelper won't use HTTP_HOST
-        if (Craft::$app->getConfig()->getGeneral()->baseCpUrl) {
+        if ($generalConfig->baseCpUrl) {
             return UrlHelper::cpUrl($cpPath, $params, $scheme);
         }
 

@@ -540,7 +540,11 @@ class Connection extends \yii\db\Connection
 
         // Nuke any temp connection files that might have been created.
         try {
-            @unlink(FileHelper::normalizePath(sys_get_temp_dir()) . DIRECTORY_SEPARATOR . 'my.cnf');
+            if ($this->getIsMysql()) {
+                /** @var craft\db\mysql\Schema $schema */
+                $schema = $this->getSchema();
+                @unlink($schema->tempMyCnfPath);
+            }
         } catch (InvalidArgumentException $e) {
             // the directory doesn't exist
         }

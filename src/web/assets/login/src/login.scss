@@ -29,10 +29,6 @@ body {
 
 #login-form-top {
   padding: 1px;
-
-  .text {
-    box-shadow: none;
-  }
 }
 
 #login-form .field {
@@ -48,6 +44,10 @@ body {
   width: calc(100% + 2px);
   padding: 14px 16px;
   border-radius: $largeBorderRadius;
+}
+
+#loginName-field {
+  z-index: 1;
 }
 
 #remember-password {
@@ -88,12 +88,17 @@ body {
   margin: 0 -1px -1px;
   border-radius: 0 0 $largeBorderRadius $largeBorderRadius;
 
+  &.focus {
+    z-index: 1;
+  }
+
   #password {
-    @include padding(14px, 7px, 14px, 16px);
+    @include padding(14px, 4rem, 14px, 16px);
+    border-radius: inherit;
   }
 
   .password-toggle {
-    @include padding-right(14px);
+    @include right(14px);
   }
 }
 

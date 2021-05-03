@@ -39,6 +39,15 @@
             this.addListener(this.$forgotPasswordLink, 'click', 'onSwitchForm');
             this.addListener(this.$rememberPasswordLink, 'click', 'onSwitchForm');
             this.addListener(this.$form, 'submit', 'onSubmit');
+
+            // Focus first empty field in form
+            if (!Garnish.isMobileBrowser()) {
+                if (this.$loginNameInput.val()) {
+                    this.$passwordInput.focus();
+                } else {
+                    this.$loginNameInput.focus();
+                }
+            }
         },
 
         validate: function() {
