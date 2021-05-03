@@ -8,6 +8,8 @@
 - Improved the tab focus behavior. ([#7140](https://github.com/craftcms/cms/issues/7140))
 - The `setPasswordPath` and `verifyEmailPath` config settings can now be set to absolute URLs, which will cause them to be respected when running Craft in headless mode. ([#6226](https://github.com/craftcms/cms/issues/6226))
 - Matrix block type settings modals now have “Apply” buttons instead of “Save”. ([#7822](https://github.com/craftcms/cms/issues/7822))
+- The `globals/save-content` action now accepts a `fieldsLocation` param. ([#7870](https://github.com/craftcms/cms/pull/7870))
+- The `users/save-user` action now accepts a `fieldsLocation` param. ([#7870](https://github.com/craftcms/cms/pull/7870))
 - `craft\elements\Asset::getSrcset()` now accepts an optional `$transform` argument. ([#7839](https://github.com/craftcms/cms/issues/7839))
 - Improved the performance of `craft\services\Elements::getElementById()` and `getElementByUid()`. ([#7846](https://github.com/craftcms/cms/pull/7846))
 - `craft\services\TemplateCaches::getTemplateCache()`, `endTemplateCache()`, and `deleteCachesByKey()` now throw an exception on console requests, if `$global` isn’t `true`. ([#7862](https://github.com/craftcms/cms/issues/7862))
