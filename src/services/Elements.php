@@ -2225,7 +2225,7 @@ class Elements extends Component
                 // Pass the instantiated elements to afterPopulate()
                 if (!empty($targetElements)) {
                     $query->asArray = false;
-                    $query->afterPopulate(array_merge(...$targetElements));
+                    $query->afterPopulate(array_merge(...array_values($targetElements)));
                 }
 
                 // Now eager-load any sub paths

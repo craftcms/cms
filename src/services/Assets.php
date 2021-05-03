@@ -864,6 +864,9 @@ class Assets extends Component
             $base = $baseFileName . '_' . $timestamp;
         }
 
+        // Append a random string at the end too, to avoid race-conditions
+        $base .= '_'.StringHelper::randomString(4);
+
         $increment = 0;
 
         while (true) {
