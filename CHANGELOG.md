@@ -5,8 +5,8 @@
 ### Fixed
 - Fixed a bug where Matrix fields’ Configuration settings weren’t expanding when nested field settings got taller. ([#7827](https://github.com/craftcms/cms/issues/7827))
 - Fixed an error that occurred when attempting to create a new entry, if a unique URI for the entry could not be generated per its URI format. ([#7863](https://github.com/craftcms/cms/issues/7863))
-- Fixed a bug where Craft wouldn’t delete an asset folder if the directory on the volume was missing. ([#7868](https://github.com/craftcms/cms/issues/7868))
-- Fixed a possible race-condition when resolving conflicts for Assets. ([#7866](https://github.com/craftcms/cms/issues/7866))
+- Fixed a bug where it wasn’t possible to delete a volume folder if the physical directory didn’t exist. ([#7868](https://github.com/craftcms/cms/issues/7868))
+- Fixed a race condition that could result in two assets getting saved with conflicting filenames if they were both moved to the same directory at the same time. ([#7866](https://github.com/craftcms/cms/issues/7866))
 
 ### Security
 - Fixed an XSS vulnerability.
