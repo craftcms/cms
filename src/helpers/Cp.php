@@ -647,6 +647,7 @@ class Cp
     public static function colorFieldHtml(array $config): string
     {
         $config['id'] = $config['id'] ?? 'color' . mt_rand();
+        $config['fieldset'] = true;
         return static::fieldHtml('template:_includes/forms/color', $config);
     }
 
