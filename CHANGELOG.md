@@ -17,6 +17,7 @@
 ### Fixed
 - Fixed a bug where Matrix fields’ Configuration settings weren’t expanding when nested field settings got taller. ([#7827](https://github.com/craftcms/cms/issues/7827))
 - Fixed an error that occurred when attempting to create a new entry, if a unique URI for the entry could not be generated per its URI format. ([#7863](https://github.com/craftcms/cms/issues/7863))
+- Fixed a bug where it wasn’t possible to click on breadcrumb links when a flash notice was present. ([#7572](https://github.com/craftcms/cms/issues/7572))
 
 ### Security
 - Craft now sets a `Permission-Policy: interest-cohort=()` header for all requests, opting out of FLoC tracking due to security and privacy concerns.
