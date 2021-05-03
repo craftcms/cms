@@ -243,7 +243,7 @@ abstract class FlysystemVolume extends Volume
         }
 
         if (!$success) {
-            throw new VolumeException('Couldn’t delete ' . $path);
+            Craft::warning('Failed to delete the “' . $path . '” directory');
         }
     }
 
