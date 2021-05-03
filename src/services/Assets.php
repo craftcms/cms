@@ -309,7 +309,12 @@ class Assets extends Component
 
             if ($folder && $deleteDir) {
                 $volume = $folder->getVolume();
-                $volume->deleteDirectory($folder->path);
+                try {
+                    $volume->deleteDirectory($folder->path);
+                } catch (VolumeException $exception) {
+                    Craft::$app->getErrorHandler()->logException($exception);
+                    // Carry on.
+                }
             }
         }
 
