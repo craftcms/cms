@@ -242,40 +242,40 @@
 
                 <hr>
 
-                <fieldset>
-                    {% embed '_includes/forms/field' with {
-                        label: 'Accessibility'|t('app'),
-                    } %}
-                        {% set a11yDefaults = craft.app.config.general.accessibilityDefaults %}
-                        {% block input %}
-                            {% from '_includes/forms' import checkboxField, textField %}
-                            {{ checkboxField({
-                                label: 'Use shapes to represent statuses'|t('app'),
-                                name: 'useShapes',
-                                id: 'useShapes',
-                                checked: user.getPreference('useShapes') ?? a11yDefaults['useShapes'] ?? false,
-                            }) }}
-                            {{ checkboxField({
-                                label: 'Underline links'|t('app'),
-                                name: 'underlineLinks',
-                                id: 'underlineLinks',
-                                checked: user.getPreference('underlineLinks') ?? a11yDefaults['underlineLinks'] ?? false,
-                            }) }}
+                {% embed '_includes/forms/field' with {
+                    label: 'Accessibility'|t('app'),
+                    fieldset: true,
+                } %}
+                    {% set a11yDefaults = craft.app.config.general.accessibilityDefaults %}
+                    {% block input %}
+                        {% from '_includes/forms' import checkboxField, textField %}
+                        {{ checkboxField({
+                            label: 'Use shapes to represent statuses'|t('app'),
+                            name: 'useShapes',
+                            id: 'useShapes',
+                            checked: user.getPreference('useShapes') ?? a11yDefaults['useShapes'] ?? false,
+                        }) }}
+                        {{ checkboxField({
+                            label: 'Underline links'|t('app'),
+                            name: 'underlineLinks',
+                            id: 'underlineLinks',
+                            checked: user.getPreference('underlineLinks') ?? a11yDefaults['underlineLinks'] ?? false,
+                        }) }}
 
-                            {{ textField({
-                                label: "Notification duration"|t('app'),
-                                instructions: 'Number of seconds to display notification messages.'|t('app'),
-                                id: 'notificationDuration',
-                                name: 'notificationDuration',
-                                value: 5,
-                                min: 5,
-                                size: 2,
-                                required: true,
-                                type: 'number',
-                            }) }}
-                        {% endblock %}
-                    {% endembed %}
-                </fieldset>
+                        {{ textField({
+                            label: "Notification duration"|t('app'),
+                            instructions: 'Number of seconds to display notification messages.'|t('app'),
+                            id: 'notificationDuration',
+                            name: 'notificationDuration',
+                            value: 5,
+                            min: 5,
+                            size: 2,
+                            required: true,
+                            type: 'number',
+                            unit: 'seconds',
+                        }) }}
+                    {% endblock %}
+                {% endembed %}
 
                 {% if user.admin %}
                     <fieldset>
