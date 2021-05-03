@@ -13,6 +13,7 @@
 - `craft\elements\Asset::getSrcset()` now accepts an optional `$transform` argument. ([#7839](https://github.com/craftcms/cms/issues/7839))
 - Improved the performance of `craft\services\Elements::getElementById()` and `getElementByUid()`. ([#7846](https://github.com/craftcms/cms/pull/7846))
 - `craft\services\TemplateCaches::getTemplateCache()`, `endTemplateCache()`, and `deleteCachesByKey()` now throw an exception on console requests, if `$global` isn’t `true`. ([#7862](https://github.com/craftcms/cms/issues/7862))
+- `@method` tags in `CustomFieldBehavior` now use `$this` as the return type instead of `static`. ([#7873](https://github.com/craftcms/cms/issues/7873))
 
 ### Fixed
 - Fixed a bug where Matrix fields’ Configuration settings weren’t expanding when nested field settings got taller. ([#7827](https://github.com/craftcms/cms/issues/7827))
