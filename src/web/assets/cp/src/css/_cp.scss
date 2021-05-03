@@ -548,6 +548,7 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
   display: flex;
   justify-content: center;
   align-items: flex-start;
+  pointer-events: none;
 
   @media only screen and (min-width: $minFullUiWidth) {
     width: calc(100% - #{$sidebarWidth});
