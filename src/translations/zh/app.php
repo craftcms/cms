@@ -932,6 +932,7 @@ return [
     'Notes' => '注释',
     'Nothing selected.' => '未选择任何内容。',
     'Nothing to update.' => '没有更新。',
+    'Notice' => 'Notice',
     'Number' => '数字',
     'OFF Label' => '关闭标签',
     'OK' => '确定',
