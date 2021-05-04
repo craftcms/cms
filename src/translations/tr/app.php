@@ -932,6 +932,7 @@ return [
     'Notes' => 'Notlar',
     'Nothing selected.' => 'Hiçbirşey seçili değil.',
     'Nothing to update.' => 'Güncellenecek bir şey yok.',
+    'Notice' => 'Notice',
     'Number' => 'Sayı',
     'OFF Label' => 'KAPALI Etiketi',
     'OK' => 'Tamam',
