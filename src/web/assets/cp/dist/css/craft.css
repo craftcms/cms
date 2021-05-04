@@ -3049,23 +3049,17 @@ body.ltr #page-container { padding-left: 226px; }
 
 body.rtl #page-container { padding-right: 226px; }
 
-#alerts { background-color: #CF1124; padding: 11px 0; text-align: center; color: #fff; }
+#alerts { background-color: #FFE3E3; border-left: 5px solid #CF1124; padding: 11px 0; text-align: center; color: #CF1124; }
 
 #alerts li { padding: 4px 24px; }
 
-#alerts li:before { font-family: 'Craft'; speak: none; -webkit-font-feature-settings: "liga", "dlig"; -ms-font-feature-settings: "liga", "dlig"; -o-font-feature-settings: "liga", "dlig"; font-feature-settings: "liga", "dlig"; text-rendering: optimizeLegibility; font-weight: normal; font-variant: normal; text-transform: none; line-height: 1; direction: ltr; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; display: inline-block; text-align: center; font-style: normal; vertical-align: middle; word-wrap: normal !important; -webkit-user-select: none; user-select: none; opacity: 0.8; content: 'alert'; font-size: 16px; }
+#alerts li a { color: #CF1124; text-decoration: underline; }
 
-body.ltr #alerts li:before { margin: -1px 3px 0 0 ; }
+#alerts li a.go { text-decoration: none; white-space: nowrap; border: 1px solid rgba(207, 17, 36, 0.5); border-radius: 4px; padding: 3px 5px; margin: 0 2px; }
 
-body.rtl #alerts li:before { margin: -1px 0 0 3px ; }
+#alerts li a.go:after { color: #CF1124; }
 
-#alerts li a { color: #fff; text-decoration: underline; }
-
-#alerts li a.go { text-decoration: none; white-space: nowrap; border: 1px solid rgba(255, 255, 255, 0.5); border-radius: 4px; padding: 3px 5px; margin: 0 2px; }
-
-#alerts li a.go:after { color: #fff; }
-
-#alerts li a.go:hover { border-color: #fff; -o-transition: border-color linear 100ms; transition: border-color linear 100ms; }
+#alerts li a.go:hover { border-color: #CF1124; -o-transition: border-color linear 100ms; transition: border-color linear 100ms; }
 
 #global-header { margin-bottom: 14px; background: #fff; box-shadow: 0 0 0 1px rgba(205, 216, 228, 0.25), 0 2px 12px rgba(205, 216, 228, 0.5); background: #f3f7fc; }
 
