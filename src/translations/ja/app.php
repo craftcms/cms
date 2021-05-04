@@ -932,6 +932,7 @@ return [
     'Notes' => '通知',
     'Nothing selected.' => '選択なし',
     'Nothing to update.' => 'アップデートはありません。',
+    'Notice' => 'Notice',
     'Number' => '数字',
     'OFF Label' => 'オフのラベル',
     'OK' => 'OK',
