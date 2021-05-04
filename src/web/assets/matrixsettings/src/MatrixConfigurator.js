@@ -269,7 +269,7 @@
                 this.$submitBtn.text(Craft.t('app', 'Create'));
             } else {
                 this.$deleteBtn.removeClass('hidden');
-                this.$submitBtn.text(Craft.t('app', 'Save'));
+                this.$submitBtn.text(Craft.t('app', 'Apply'));
             }
 
             this.displayErrors('name', (errors ? errors.name : null));
