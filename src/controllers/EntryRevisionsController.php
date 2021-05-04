@@ -129,7 +129,7 @@ class EntryRevisionsController extends BaseEntriesController
             // Get the initially selected parent
             $entry->newParentId = $this->request->getParam('parentId');
             if (is_array($entry->newParentId)) {
-                $entry->newParentId = reset($parentId) ?: null;
+                $entry->newParentId = reset($entry->newParentId) ?: null;
             }
         }
 
