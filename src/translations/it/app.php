@@ -932,6 +932,7 @@ return [
     'Notes' => 'Note',
     'Nothing selected.' => 'Non è stato selezionato nulla.',
     'Nothing to update.' => 'Nessun elemento da aggiornare.',
+    'Notice' => 'Notice',
     'Number' => 'Numero',
     'OFF Label' => 'Etichetta OFF',
     'OK' => 'OK',
