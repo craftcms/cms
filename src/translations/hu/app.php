@@ -932,6 +932,7 @@ return [
     'Notes' => 'Jegyzetek',
     'Nothing selected.' => 'Nem lett kiválasztva semmi sem.',
     'Nothing to update.' => 'Nincs frissítendő elem.',
+    'Notice' => 'Notice',
     'Number' => 'Szám',
     'OFF Label' => 'KI címke',
     'OK' => 'OK',
