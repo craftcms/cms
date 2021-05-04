@@ -102,7 +102,7 @@ class m160807_144858_sites extends Migration
                 'name' => "{$siteInfo['siteName']} ({$language})",
                 'handle' => $siteHandle,
                 'language' => $language,
-                'hasUrls' => 1,
+                'hasUrls' => true,
                 'baseUrl' => $siteInfo['siteUrl'],
                 'sortOrder' => ++$sortOrder,
                 'uid' => $uid,

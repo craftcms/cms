@@ -494,16 +494,29 @@ class Elements extends Component
         if (!$elementId) {
             return null;
         }
-
-        if ($elementType === null) {
-            $elementType = $this->_elementTypeById($property, $elementId);
-
-            if ($elementType === null) {
+        
+        try {
+            $data = (new Query())
+                ->select(['draftId', 'revisionId', 'type'])
+                ->from([Table::ELEMENTS])
+                ->where([$property => $elementId])
+                ->one();
+            
+            if (!$data) {
                 return null;
+            }
+            
+            if ($elementType === null) {
+                $elementType = $data['type'];
+            }
+        } catch (DbException $e) {
+            // Not on schema 3.2.6+ yet
+            if ($elementType === null) {
+                $elementType = $this->_elementTypeById($property, $elementId);
             }
         }
 
-        if (!class_exists($elementType)) {
+        if ($elementType === null || !class_exists($elementType)) {
             return null;
         }
 
@@ -513,16 +526,6 @@ class Elements extends Component
         $query->anyStatus();
 
         // Is this a draft/revision?
-        try {
-            $data = (new Query())
-                ->select(['draftId', 'revisionId'])
-                ->from([Table::ELEMENTS])
-                ->where([$property => $elementId])
-                ->one();
-        } catch (DbException $e) {
-            // Not on schema 3.2.6+ yet
-        }
-
         if (!empty($data['draftId'])) {
             $query->draftId($data['draftId']);
         } else if (!empty($data['revisionId'])) {
@@ -686,7 +689,7 @@ class Elements extends Component
         return (new Query())
             ->select(['siteId'])
             ->from([Table::ELEMENTS_SITES])
-            ->where(['elementId' => $elementId, 'enabled' => 1])
+            ->where(['elementId' => $elementId, 'enabled' => true])
             ->column();
     }
 
@@ -1177,6 +1180,7 @@ class Elements extends Component
      * @param bool $updateOtherSites Whether the element’s other sites should also be updated.
      * @param bool $updateDescendants Whether the element’s descendants should also be updated.
      * @param bool $queue Whether the element’s slug and URI should be updated via a job in the queue.
+     * @throws OperationAbortedException if a unique URI can’t be generated based on the element’s URI format
      */
     public function updateElementSlugAndUri(ElementInterface $element, bool $updateOtherSites = true, bool $updateDescendants = true, bool $queue = false)
     {
@@ -2221,7 +2225,7 @@ class Elements extends Component
                 // Pass the instantiated elements to afterPopulate()
                 if (!empty($targetElements)) {
                     $query->asArray = false;
-                    $query->afterPopulate(array_merge(...$targetElements));
+                    $query->afterPopulate(array_merge(...array_values($targetElements)));
                 }
 
                 // Now eager-load any sub paths

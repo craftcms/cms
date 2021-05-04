@@ -79,6 +79,14 @@ class Color extends Field implements PreviewableFieldInterface
     /**
      * @inheritdoc
      */
+    public function useFieldset(): bool
+    {
+        return true;
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function normalizeValue($value, ElementInterface $element = null)
     {
         if ($value instanceof ColorData) {
@@ -89,6 +97,8 @@ class Color extends Field implements PreviewableFieldInterface
         if ($value === null && $this->isFresh($element) && $this->defaultColor) {
             $value = $this->defaultColor;
         }
+
+        $value = trim($value);
 
         if (!$value || $value === '#') {
             return null;
