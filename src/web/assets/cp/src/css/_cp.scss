@@ -556,10 +556,7 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
     pointer-events: auto;
     @include light-on-dark-text;
     @include shadow;
-
-    &.notice {
-      background-color: $noticeColor;
-    }
+    background-color: $noticeColor;
 
     &.error {
       background-color: $primaryColor;
