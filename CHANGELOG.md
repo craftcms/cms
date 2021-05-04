@@ -8,7 +8,7 @@
 - Fixed a bug where it wasn’t possible to delete a volume folder if the physical directory didn’t exist. ([#7868](https://github.com/craftcms/cms/issues/7868))
 - Fixed a race condition that could result in two assets getting saved with conflicting filenames if they were both moved to the same directory at the same time. ([#7866](https://github.com/craftcms/cms/issues/7866))
 - Fixed an error that occurred on PHP 8. ([#7848](https://github.com/craftcms/cms/issues/7848))
-- Fixed a SQL error when using PHP 7.4.18 or 8.0.3 and PostgreSQL. ([#7874](https://github.com/craftcms/cms/issues/7874))
+- Fixed a SQL error when using PHP 7.4.18 or 8.0.5 and PostgreSQL. ([#7874](https://github.com/craftcms/cms/issues/7874))
 
 ### Security
 - Fixed an XSS vulnerability.
