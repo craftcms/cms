@@ -932,6 +932,7 @@ return [
     'Notes' => 'یادداشت ها',
     'Nothing selected.' => 'چیزی انتخاب نشده است.',
     'Nothing to update.' => 'چیزی برای بروزرسانی موجود نیست.',
+    'Notice' => 'Notice',
     'Number' => 'عدد',
     'OFF Label' => 'برچسب «خاموش»',
     'OK' => 'تایید',
