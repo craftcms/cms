@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 3.x
 
-## Unreleased
+## 3.6.13 - 2021-05-04
 
 ### Changed
 - Improved the accessibility of Plain Text fields. ([#6914](https://github.com/craftcms/cms/issues/6914))
