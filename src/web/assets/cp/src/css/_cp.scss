@@ -393,39 +393,33 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
 }
 
 #alerts {
-  background-color: $errorColor;
+  background-color: $red050;
+  border-left: 5px solid $errorColor;
   padding: 11px 0;
   text-align: center;
-  color: $white;
+  color: $errorColor;
 
   li {
     padding: 4px 24px;
 
-    &:before {
-      @include icon;
-      @include margin(-1px, 3px, 0, 0);
-      content: 'alert';
-      font-size: 16px;
-    }
-
     a {
-      color: $white;
+      color: $errorColor;
       text-decoration: underline;
 
       &.go {
         text-decoration: none;
         white-space: nowrap;
-        border: 1px solid transparentize($white, 0.5);
+        border: 1px solid transparentize($errorColor, 0.5);
         border-radius: $mediumBorderRadius;
         padding: 3px 5px;
         margin: 0 2px;
 
         &:after {
-          color: $white;
+          color: $errorColor;
         }
 
         &:hover {
-          border-color: $white;
+          border-color: $errorColor;
           transition: border-color linear 100ms;
         }
       }
@@ -548,6 +542,7 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
   display: flex;
   justify-content: center;
   align-items: flex-start;
+  pointer-events: none;
 
   @media only screen and (min-width: $minFullUiWidth) {
     width: calc(100% - #{$sidebarWidth});
@@ -561,10 +556,7 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
     pointer-events: auto;
     @include light-on-dark-text;
     @include shadow;
-
-    &.notice {
-      background-color: $noticeColor;
-    }
+    background-color: $noticeColor;
 
     &.error {
       background-color: $primaryColor;

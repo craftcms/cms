@@ -1520,6 +1520,10 @@ body,
     background: #fff;
     box-shadow: 0 0 0 1px rgba(205, 216, 228, 0.25), 0 2px 12px rgba(205, 216, 228, 0.5);
     overflow: hidden; }
+    #graphiql .queryWrap:focus,
+    #graphiql .docExplorerWrap:focus,
+    #graphiql .historyPaneWrap:focus {
+      box-shadow: 0 0 0 1px #127FBF, 0 0 0 3px rgba(18, 127, 191, 0.5); }
   #graphiql .docExplorerWrap {
     z-index: 8 !important; }
     #graphiql .docExplorerWrap .doc-explorer-contents {
@@ -1632,8 +1636,6 @@ body,
     padding: 0 !important; }
     #graphiql .graphiql-container .graphiql-explorer-root > div:first-child {
       padding: 7px 14px; }
-      #graphiql .graphiql-container .graphiql-explorer-root > div:first-child div:focus {
-        outline: none; }
     #graphiql .graphiql-container .graphiql-explorer-root .graphiql-explorer-actions {
       margin: 0 !important;
       padding: 14px !important;
