@@ -624,11 +624,21 @@ Craft.CP = Garnish.Base.extend({
     displayNotification: function(type, message) {
         var notificationDuration = Craft.CP.notificationDuration;
 
-        if (type === 'error') {
+        if (['cp-error', 'error'].includes(type)) {
             notificationDuration *= 2;
+            icon = 'alert';
+            label = Craft.t('app', 'Error');
+        } else {
+            icon = 'info';
+            label = Craft.t('app', 'Notice');
         }
 
-        var $notification = $('<div class="notification ' + type + '">' + message + '</div>')
+        var $notification = $(`
+            <div class="notification ${ type.replace('cp-', '') }">
+                <span data-icon="${ icon }" aria-label="${ label }"></span>
+                ${ message }
+            </div>
+            `)
             .appendTo(this.$notificationContainer);
 
         var fadedMargin = -($notification.outerWidth() / 2) + 'px';
@@ -687,7 +697,7 @@ Craft.CP = Garnish.Base.extend({
             this.$alerts = $('<ul id="alerts"/>').prependTo($('#page-container'));
 
             for (var i = 0; i < alerts.length; i++) {
-                $('<li>' + alerts[i] + '</li>').appendTo(this.$alerts);
+                $(`<li><span data-icon="alert" aria-label="${ Craft.t('app', 'Error') }"></span> ${ alerts[i] }</li>`).appendTo(this.$alerts);
             }
 
             var height = this.$alerts.outerHeight();

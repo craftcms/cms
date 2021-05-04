@@ -1,13 +1,15 @@
 # Release Notes for Craft CMS 3.x
 
-## Unreleased
+## 3.6.13 - 2021-05-04
 
 ### Changed
 - Improved the accessibility of Plain Text fields. ([#6914](https://github.com/craftcms/cms/issues/6914))
 - Improved the accessibility of color inputs. ([#7320](https://github.com/craftcms/cms/issues/7320))
+- Improved the accessibility of flash notices. ([#7879](https://github.com/craftcms/cms/pull/7879))
 - Improved the tab focus behavior. ([#7140](https://github.com/craftcms/cms/issues/7140))
 - The `setPasswordPath` and `verifyEmailPath` config settings can now be set to absolute URLs, which will cause them to be respected when running Craft in headless mode. ([#6226](https://github.com/craftcms/cms/issues/6226))
 - Matrix block type settings modals now have “Apply” buttons instead of “Save”. ([#7822](https://github.com/craftcms/cms/issues/7822))
+- Nag alerts now have a light red background color, improving the visibility of error notices that may show up on top of them. ([#7627](https://github.com/craftcms/cms/issues/7627))
 - The `globals/save-content` action now accepts a `fieldsLocation` param. ([#7870](https://github.com/craftcms/cms/pull/7870))
 - The `users/save-user` action now accepts a `fieldsLocation` param. ([#7870](https://github.com/craftcms/cms/pull/7870))
 - `craft\elements\Asset::getSrcset()` now accepts an optional `$transform` argument. ([#7839](https://github.com/craftcms/cms/issues/7839))
@@ -22,7 +24,7 @@
 - Fixed a bug where it wasn’t possible to delete a volume folder if the physical directory didn’t exist. ([#7868](https://github.com/craftcms/cms/issues/7868))
 - Fixed a race condition that could result in two assets getting saved with conflicting filenames if they were both moved to the same directory at the same time. ([#7866](https://github.com/craftcms/cms/issues/7866))
 - Fixed an error that occurred on PHP 8. ([#7848](https://github.com/craftcms/cms/issues/7848))
-- Fixed a SQL error when using PHP 7.4.18 or 8.0.3 and PostgreSQL. ([#7874](https://github.com/craftcms/cms/issues/7874))
+- Fixed a SQL error when using PHP 7.4.18 or 8.0.5 and PostgreSQL. ([#7874](https://github.com/craftcms/cms/issues/7874))
 
 ### Security
 - Craft now sets a `Permission-Policy: interest-cohort=()` header for all requests, opting out of FLoC tracking due to security and privacy concerns.
