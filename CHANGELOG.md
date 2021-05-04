@@ -1,5 +1,10 @@
 # Release Notes for Craft CMS 3.x
 
+## Unreleased
+
+### Fixed
+- Fixed an error that could occur if `craft\web\View::registerAssetFlashes()` was called after the PHP session had closed.
+
 ## 3.6.13 - 2021-05-04
 
 ### Changed
