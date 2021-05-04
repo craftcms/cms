@@ -624,9 +624,9 @@ Craft.CP = Garnish.Base.extend({
     displayNotification: function(type, message) {
         var notificationDuration = Craft.CP.notificationDuration;
 
-        if (type === 'cp-error') {
+        if (['cp-error', 'error'].includes(type)) {
             notificationDuration *= 2;
-            icon = 'error';
+            icon = 'alert';
             label = Craft.t('app', 'Error');
         } else {
             icon = 'info';
@@ -634,7 +634,7 @@ Craft.CP = Garnish.Base.extend({
         }
 
         var $notification = $(`
-            <div class="notification ${ type }">
+            <div class="notification ${ type.replace('cp-', '') }">
                 <span data-icon="${ icon }" aria-label="${ label }"></span>
                 ${ message }
             </div>
