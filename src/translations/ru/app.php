@@ -932,6 +932,7 @@ return [
     'Notes' => 'Примечания',
     'Nothing selected.' => 'Ничего не выбрано.',
     'Nothing to update.' => 'Обновлять нечего.',
+    'Notice' => 'Notice',
     'Number' => 'Число',
     'OFF Label' => 'Метка ВЫКЛ',
     'OK' => 'OK',

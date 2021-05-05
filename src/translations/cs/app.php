@@ -932,6 +932,7 @@ return [
     'Notes' => 'Poznámky',
     'Nothing selected.' => 'Nic není vybráno.',
     'Nothing to update.' => 'Nic k aktualizaci.',
+    'Notice' => 'Notice',
     'Number' => 'Číslo',
     'OFF Label' => 'Nálepka OFF (VYP.)',
     'OK' => 'OK',

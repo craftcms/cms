@@ -933,6 +933,7 @@ return [
     'Notes' => 'Noter',
     'Nothing selected.' => 'Intet valgt.',
     'Nothing to update.' => 'Intet at opdatere.',
+    'Notice' => 'Notice',
     'Number' => 'Nummer',
     'OFF Label' => 'FRA-etiket',
     'OK' => 'OK',

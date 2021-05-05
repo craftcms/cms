@@ -932,6 +932,7 @@ return [
     'Notes' => 'Notater',
     'Nothing selected.' => 'Ingenting valgt',
     'Nothing to update.' => 'Ingenting å oppdatere.',
+    'Notice' => 'Notice',
     'Number' => 'Tall',
     'OFF Label' => 'AV-merkelapp',
     'OK' => 'OK',

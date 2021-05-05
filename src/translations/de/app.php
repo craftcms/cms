@@ -932,6 +932,7 @@ return [
     'Notes' => 'Anmerkungen',
     'Nothing selected.' => 'Nichts ausgewählt.',
     'Nothing to update.' => 'Keine aktualisierbaren Dateien vorhanden.',
+    'Notice' => 'Notice',
     'Number' => 'Zahl',
     'OFF Label' => 'OFF-Beschriftung',
     'OK' => 'OK',
