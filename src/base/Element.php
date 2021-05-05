@@ -1948,20 +1948,21 @@ abstract class Element extends Component implements ElementInterface
 
         if (is_array($columnType)) {
             foreach ($columnType as $key => $type) {
-                $this->_validateCustomFieldContentSizeInternal($attribute, $type, $value[$key] ?? null);
+                $this->_validateCustomFieldContentSizeInternal($attribute, $field, $type, $value[$key] ?? null);
             }
         } else {
-            $this->_validateCustomFieldContentSizeInternal($attribute, $columnType, $value);
+            $this->_validateCustomFieldContentSizeInternal($attribute, $field, $columnType, $value);
         }
     }
 
     /**
      * @param string $attribute
+     * @param FieldInterface $field
      * @param string $columnType
      * @param mixed $value
      * @return void
      */
-    private function _validateCustomFieldContentSizeInternal(string $attribute, string $columnType, $value): void
+    private function _validateCustomFieldContentSizeInternal(string $attribute, FieldInterface $field, string $columnType, $value): void
     {
         $simpleColumnType = Db::getSimplifiedColumnType($columnType);
 
