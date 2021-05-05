@@ -51,7 +51,6 @@ class LoginForm
      */
     private showingRecoverForm = false;
 
-
     constructor()
     {
         this.$loginForm.on('submit', this.invokeStepHandler.bind(this));
@@ -117,7 +116,20 @@ class LoginForm
                     }
 
                     if (response.footHtml) {
-                        Craft.appendFootHtml(response.footHtml);
+                        const jsFiles = response.footHtml.match(/([^"']+\.js)/gm);
+                        
+                        // For some reason, Chrome will fail to load sourcemap properly when jQuery append is used
+                        // So roll our own JS file append-thing.
+                        if (jsFiles) {
+                            for (const jsFile of jsFiles) {
+                                let node = document.createElement('script');
+                                node.setAttribute('src', jsFile)
+                                document.body.appendChild(node);
+                            }
+                        // If that fails, use Craft's thing.
+                        } else {
+                            Craft.appendFootHtml(response.footHtml);
+                        }
                     }
 
                     // Just in case this was the first step, remove all the misc things.
