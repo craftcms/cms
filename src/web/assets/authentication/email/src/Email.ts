@@ -1,14 +1,18 @@
-class Email
+class Email extends AuthenticationStep
 {
     private $email = $('#email');
-    private validateOnInput = false;
+    protected stepType = "craft\\authentication\\type\\Email";
 
     constructor()
     {
-        Craft.LoginForm.registerStepHandler(this.prepareData.bind(this), this.$email.parents('#recovery-container').length > 0);
+        super();
+        const isRecoveryStep = this.$email.parents('#recovery-container').length > 0;
+        Craft.LoginForm.registerStepHandler(this.prepareData.bind(this), isRecoveryStep);
+
+        this.$email.on('input', this.onInput.bind(this));
     }
 
-    public validate()
+    protected validate()
     {
         const emailAddress = this.$email.val() as string;
         if (emailAddress.length === 0) {
@@ -18,23 +22,8 @@ class Email
         return true;
     }
 
-    public onInput(ev: any) : void
+    protected returnFormData(): AuthenticationRequest
     {
-        if (this.validateOnInput && this.validate() === true) {
-            Craft.LoginForm.clearErrors();
-        }
-    }
-
-    public prepareData(ev: any): AuthenticationRequest | string
-    {
-        const error = this.validate();
-        if (error !== true) {
-            this.validateOnInput = true;
-            return error;
-        }
-
-        this.validateOnInput = false;
-
         return {
             "email": this.$email.val(),
         };

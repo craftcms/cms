@@ -1,11 +1,15 @@
-class EmailCode
+class EmailCode extends AuthenticationStep
 {
     private $verificationCode = $('#verificationCode');
-    private validateOnInput = false;
+    protected stepType = "craft\\authentication\\type\\mfa\\EmailCode";
 
     constructor()
     {
-        Craft.LoginForm.registerStepHandler(this.prepareData.bind(this));
+        super();
+        const isRecoveryStep = this.$verificationCode.parents('#recovery-container').length > 0;
+        Craft.LoginForm.registerStepHandler(this.prepareData.bind(this), isRecoveryStep);
+
+        this.$verificationCode.on('input', this.onInput.bind(this));
     }
 
     public validate()
@@ -18,28 +22,8 @@ class EmailCode
         return true;
     }
 
-    public onInput(ev: any) : void
+    protected returnFormData(): AuthenticationRequest
     {
-        if (this.validateOnInput && this.validate() === true) {
-            Craft.LoginForm.clearErrors();
-        }
-    }
-
-    /**
-     * Prepare the request data.
-     *
-     * @param ev
-     */
-    public prepareData(ev: any): AuthenticationRequest | string
-    {
-        const error = this.validate();
-        if (error !== true) {
-            this.validateOnInput = true;
-            return error;
-        }
-
-        this.validateOnInput = false;
-
         return {
             "verification-code": this.$verificationCode.val(),
         };

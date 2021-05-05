@@ -1,10 +1,12 @@
 "use strict";
-class Credentials {
+class Credentials extends AuthenticationStep {
     constructor() {
+        super();
         this.$loginNameInput = $('#loginName');
         this.$passwordInput = $('#password');
-        this.validateOnInput = false;
-        Craft.LoginForm.registerStepHandler(this.prepareData.bind(this), this.$loginNameInput.parents('#recovery-container').length > 0);
+        this.stepType = "craft\\authentication\\type\\Credentials";
+        const isRecoveryStep = this.$loginNameInput.parents('#recovery-container').length > 0;
+        Craft.LoginForm.registerStepHandler(this.prepareData.bind(this), isRecoveryStep);
         new Craft.PasswordInput(this.$passwordInput, {
             onToggleInput: ($newPasswordInput) => {
                 this.$passwordInput.off('input');
@@ -47,18 +49,7 @@ class Credentials {
         }
         return true;
     }
-    onInput(ev) {
-        if (this.validateOnInput && this.validate() === true) {
-            Craft.LoginForm.clearErrors();
-        }
-    }
-    prepareData(ev) {
-        const error = this.validate();
-        if (error !== true) {
-            this.validateOnInput = true;
-            return error;
-        }
-        this.validateOnInput = false;
+    returnFormData() {
         return {
             loginName: this.$loginNameInput.val(),
             password: this.$passwordInput.val(),

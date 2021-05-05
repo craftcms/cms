@@ -1,12 +1,14 @@
-class Credentials
+class Credentials extends AuthenticationStep
 {
     private $loginNameInput = $('#loginName');
     private $passwordInput = $('#password');
-    private validateOnInput = false;
+    protected stepType = "craft\\authentication\\type\\Credentials";
 
     constructor()
     {
-        Craft.LoginForm.registerStepHandler(this.prepareData.bind(this), this.$loginNameInput.parents('#recovery-container').length > 0);
+        super();
+        const isRecoveryStep = this.$loginNameInput.parents('#recovery-container').length > 0;
+        Craft.LoginForm.registerStepHandler(this.prepareData.bind(this), isRecoveryStep);
 
         new Craft.PasswordInput(this.$passwordInput, {
             onToggleInput: ($newPasswordInput: JQuery): void => {
@@ -59,23 +61,8 @@ class Credentials
         return true;
     }
 
-    public onInput(ev: any) : void
+    protected returnFormData(): AuthenticationRequest
     {
-        if (this.validateOnInput && this.validate() === true) {
-            Craft.LoginForm.clearErrors();
-        }
-    }
-
-    public prepareData(ev: any): AuthenticationRequest | string
-    {
-        const error = this.validate();
-        if (error !== true) {
-            this.validateOnInput = true;
-            return error;
-        }
-
-        this.validateOnInput = false;
-
         return {
             loginName: this.$loginNameInput.val(),
             password: this.$passwordInput.val(),

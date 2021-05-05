@@ -1,9 +1,12 @@
 "use strict";
-class Email {
+class Email extends AuthenticationStep {
     constructor() {
+        super();
         this.$email = $('#email');
-        this.validateOnInput = false;
-        Craft.LoginForm.registerStepHandler(this.prepareData.bind(this), this.$email.parents('#recovery-container').length > 0);
+        this.stepType = "craft\\authentication\\type\\Email";
+        const isRecoveryStep = this.$email.parents('#recovery-container').length > 0;
+        Craft.LoginForm.registerStepHandler(this.prepareData.bind(this), isRecoveryStep);
+        this.$email.on('input', this.onInput.bind(this));
     }
     validate() {
         const emailAddress = this.$email.val();
@@ -12,18 +15,7 @@ class Email {
         }
         return true;
     }
-    onInput(ev) {
-        if (this.validateOnInput && this.validate() === true) {
-            Craft.LoginForm.clearErrors();
-        }
-    }
-    prepareData(ev) {
-        const error = this.validate();
-        if (error !== true) {
-            this.validateOnInput = true;
-            return error;
-        }
-        this.validateOnInput = false;
+    returnFormData() {
         return {
             "email": this.$email.val(),
         };

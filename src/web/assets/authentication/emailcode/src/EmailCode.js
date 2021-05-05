@@ -1,9 +1,12 @@
 "use strict";
-class EmailCode {
+class EmailCode extends AuthenticationStep {
     constructor() {
+        super();
         this.$verificationCode = $('#verificationCode');
-        this.validateOnInput = false;
-        Craft.LoginForm.registerStepHandler(this.prepareData.bind(this));
+        this.stepType = "craft\\authentication\\type\\mfa\\EmailCode";
+        const isRecoveryStep = this.$verificationCode.parents('#recovery-container').length > 0;
+        Craft.LoginForm.registerStepHandler(this.prepareData.bind(this), isRecoveryStep);
+        this.$verificationCode.on('input', this.onInput.bind(this));
     }
     validate() {
         const verificationCode = this.$verificationCode.val();
@@ -12,23 +15,7 @@ class EmailCode {
         }
         return true;
     }
-    onInput(ev) {
-        if (this.validateOnInput && this.validate() === true) {
-            Craft.LoginForm.clearErrors();
-        }
-    }
-    /**
-     * Prepare the request data.
-     *
-     * @param ev
-     */
-    prepareData(ev) {
-        const error = this.validate();
-        if (error !== true) {
-            this.validateOnInput = true;
-            return error;
-        }
-        this.validateOnInput = false;
+    returnFormData() {
         return {
             "verification-code": this.$verificationCode.val(),
         };

@@ -39,5 +39,6 @@ class LoginAsset extends AssetBundle
      */
     public $js = [
         'LoginForm.min.js',
+        'AuthenticationStep.min.js',
     ];
 }
