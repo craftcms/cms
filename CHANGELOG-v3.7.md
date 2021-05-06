@@ -6,6 +6,7 @@
 - Date fields now have a “Show Time Zone” setting, allowing authors to choose which time zone the date is set to, rather than using the system time zone.
 - Matrix fields can now be set to custom propagation methods, based on a propagation key template. ([#7610](https://github.com/craftcms/cms/issues/7610))
 - Added the `siteSettingsId` element query and GraphQL API query parameter for all elements.
+- Added `craft\base\Element::cpEditUrl()`, which should be overridden rather than `getCpEditUrl()`.
 - Added `craft\base\Element::getCanonical()`.
 - Added `craft\base\Element::getCanonicalId()`.
 - Added `craft\base\Element::getIsCanonical()`.
@@ -59,6 +60,7 @@
 - Custom fields can now store data across multiple columns in the `content` table.
 - Channel and Structure sections’ initial entry types are now named “Default” by default. ([#7078](https://github.com/craftcms/cms/issues/7078))
 - `craft\base\Element::__set()` now detects whether a custom field value is being set, and if so, passes the value through `setFieldValue()`. ([#7726](https://github.com/craftcms/cms/issues/7726))
+- `craft\base\Element::getCpEditUrl()` now includes a `draftId`/`revisionId` query string param in the returned URL if the element is a draft or revision. ([#7832](https://github.com/craftcms/cms/issues/7832))
 - `craft\base\FieldInterface::getContentColumnType()` can now return an array, if the field stores content across multiple columns.
 - `craft\web\View::clearJsBuffer()` now has a `$combine` argument.
 

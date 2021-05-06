@@ -41,7 +41,10 @@
 {% set isRevision = element.getIsRevision() %}
 {% set showSiteLabel = showSiteLabel ?? isMultiSiteElement %}
 {% set showRevisionLabel = showRevisionLabel ?? (canHaveDrafts or revisions|length) %}
-{% set cpEditUrl = element.getCpEditUrl() %}
+{% set cpEditUrl = cpUrl(element.getCpEditUrl(), {
+    draftId: null,
+    revisionId: null,
+}) %}
 {% if isDraft %}
     {% set baseUrl = url(cpEditUrl, baseParams|merge({ draftId: element.draftId })) %}
 {% elseif isRevision %}

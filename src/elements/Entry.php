@@ -1271,7 +1271,7 @@ class Entry extends Element
      * {% endif %}
      * ```
      */
-    public function getCpEditUrl()
+    protected function cpEditUrl(): ?string
     {
         $section = $this->getSection();
 

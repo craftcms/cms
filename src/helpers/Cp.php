@@ -391,12 +391,6 @@ class Cp
                 !$element->trashed &&
                 ($cpEditUrl = $element->getCpEditUrl())
             ) {
-                if ($isDraft) {
-                    $cpEditUrl = UrlHelper::urlWithParams($cpEditUrl, ['draftId' => $element->draftId]);
-                } else if ($isRevision) {
-                    $cpEditUrl = UrlHelper::urlWithParams($cpEditUrl, ['revisionId' => $element->revisionId]);
-                }
-
                 $html .= Html::a($encodedLabel, $cpEditUrl);
             } else {
                 $html .= $encodedLabel;

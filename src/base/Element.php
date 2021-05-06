@@ -2363,6 +2363,27 @@ abstract class Element extends Component implements ElementInterface
      */
     public function getCpEditUrl()
     {
+        $cpEditUrl = $this->cpEditUrl();
+
+        if ($cpEditUrl !== null) {
+            if ($this->getIsDraft()) {
+                $cpEditUrl = UrlHelper::urlWithParams($cpEditUrl, ['draftId' => $this->draftId]);
+            } else if ($this->getIsRevision()) {
+                $cpEditUrl = UrlHelper::urlWithParams($cpEditUrl, ['revisionId' => $this->revisionId]);
+            }
+        }
+
+        return $cpEditUrl;
+    }
+
+    /**
+     * Returns the element’s edit URL in the control panel.
+     *
+     * @return string|null
+     * @since 3.7.0
+     */
+    protected function cpEditUrl(): ?string
+    {
         return null;
     }
 

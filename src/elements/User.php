@@ -1206,7 +1206,7 @@ class User extends Element implements IdentityInterface
     /**
      * @inheritdoc
      */
-    public function getCpEditUrl()
+    protected function cpEditUrl(): ?string
     {
         if (Craft::$app->getRequest()->getIsCpRequest() && $this->getIsCurrent()) {
             return UrlHelper::cpUrl('myaccount');

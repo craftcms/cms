@@ -452,7 +452,7 @@ class Category extends Element
     /**
      * @inheritdoc
      */
-    public function getCpEditUrl()
+    protected function cpEditUrl(): ?string
     {
         $group = $this->getGroup();
 

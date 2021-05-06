@@ -894,7 +894,7 @@ class Asset extends Element
      * ```
      * @since 3.4.0
      */
-    public function getCpEditUrl()
+    protected function cpEditUrl(): ?string
     {
         $volume = $this->getVolume();
         if ($volume instanceof Temp) {
