@@ -236,6 +236,7 @@ class Install extends Migration
             'id' => $this->primaryKey(),
             'sourceId' => $this->integer(), // todo: remove this in v4
             'creatorId' => $this->integer(),
+            'provisional' => $this->boolean()->notNull()->defaultValue(false),
             'name' => $this->string()->notNull(),
             'notes' => $this->text(),
             'trackChanges' => $this->boolean()->notNull()->defaultValue(false),
@@ -795,6 +796,7 @@ class Install extends Migration
         $this->createIndex(null, Table::CONTENT, ['siteId'], false);
         $this->createIndex(null, Table::CONTENT, ['title'], false);
         $this->createIndex(null, Table::DEPRECATIONERRORS, ['key', 'fingerprint'], true);
+        $this->createIndex(null, Table::DRAFTS, ['creatorId', 'provisional'], false);
         $this->createIndex(null, Table::DRAFTS, ['saved'], false);
         $this->createIndex(null, Table::ELEMENTINDEXSETTINGS, ['type'], true);
         $this->createIndex(null, Table::ELEMENTS, ['dateDeleted'], false);

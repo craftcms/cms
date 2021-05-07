@@ -40,6 +40,12 @@ trait ElementTrait
     public $revisionId;
 
     /**
+     * @var bool Whether this is a provisional draft.
+     * @since 3.7.0
+     */
+    public $isProvisionalDraft = false;
+
+    /**
      * @var string|null The element’s UID
      */
     public $uid;

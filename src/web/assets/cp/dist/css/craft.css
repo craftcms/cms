@@ -196,6 +196,34 @@ p .checkmark-icon { display: inline-block; }
 
 .alert-icon:before { content: 'alert'; color: #CF1124; }
 
+#revision-menu { padding: 10px 24px; }
+
+#revision-menu hr { margin: 10px -24px; }
+
+#revision-menu ul li.sel { margin: 0 -14px; padding: 0 14px; background: #f3f7fc; border-radius: 5px; }
+
+#revision-menu ul li.sel .edited-desc { display: -webkit-flex; display: flex; -webkit-align-items: center; align-items: center; border-top: 1px solid rgba(51, 64, 77, 0.1); padding: 10px 0; color: #606d7b; white-space: normal; }
+
+body.ltr #revision-menu ul li.sel .edited-desc { margin-left: 10px; }
+
+body.rtl #revision-menu ul li.sel .edited-desc { margin-right: 10px; }
+
+#revision-menu ul li.sel .edited-desc p { margin: 0; }
+
+#revision-menu ul li.sel .edited-desc .btn { color: #3f4d5a !important; background-color: #FADB5F; }
+
+body.ltr #revision-menu ul li.sel .edited-desc .btn { margin-left: 14px; }
+
+body.rtl #revision-menu ul li.sel .edited-desc .btn { margin-right: 14px; }
+
+#revision-menu ul li.sel .edited-desc .btn:hover, #revision-menu ul li.sel .edited-desc .btn:focus { background-color: #f8d02e; }
+
+#revision-menu ul li.sel .edited-desc .btn:active { background-color: #f8ca15; }
+
+#revision-menu ul li a { padding-top: 7px; border-radius: 5px; }
+
+#revision-menu .extralight { margin-top: 2px; }
+
 /* toggles */
 button.toggle { -webkit-appearance: none; appearance: none; color: inherit; background: none; border: none; padding: 0; }
 
@@ -2067,9 +2095,9 @@ body.rtl .menubtn span.icon, body.rtl .menu span.icon { margin-left: 10px; }
 
 .menu ul li a:not(.sel):not(.disabled):hover, .menu ul li a:not(.sel):not(.disabled):hover .light, .menu:not(:hover) ul li a:not(.disabled).hover, .menu:not(:hover) ul li a:not(.sel):not(.disabled).hover .light { color: #3f4d5a; background-color: #f3f7fc; }
 
-body.ltr .menu hr.padded { margin-left: 10px; }
+body.ltr .menu hr.padded, body.ltr .menu h6.padded { margin-left: 10px; }
 
-body.rtl .menu hr.padded { margin-right: 10px; }
+body.rtl .menu hr.padded, body.rtl .menu h6.padded { margin-right: 10px; }
 
 /* tag select fields */
 .tagselect .elements { display: inline; }
@@ -3319,7 +3347,7 @@ body.rtl #details { padding-right: 14px; }
 
 #details .meta.read-only { padding-top: 14px; padding-bottom: 14px; background-color: #cdd8e4; }
 
-#details .meta.warning { border: 2px solid #FADB5F; padding: 19px 22px; background: #f3f7fc; color: #3f4d5a !important; }
+#details .meta.warning { border: 2px solid #FADB5F; padding: 19px 22px; background: #fff; color: #3f4d5a !important; }
 
 #details .meta.warning p { margin-bottom: 5px; }
 

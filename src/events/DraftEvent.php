@@ -31,6 +31,11 @@ class DraftEvent extends Event
     public $creatorId;
 
     /**
+     * @var bool Whether this is a provisional draft
+     */
+    public $provisional = false;
+
+    /**
      * @var string|null The draft name
      */
     public $draftName;

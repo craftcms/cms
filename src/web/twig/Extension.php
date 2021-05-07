@@ -276,6 +276,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
             new TwigFilter('unshift', [$this, 'unshiftFilter']),
             new TwigFilter('values', 'array_values'),
             new TwigFilter('where', [ArrayHelper::class, 'where']),
+            new TwigFilter('widont', [$this, 'widontFilter'], ['is_safe' => ['html']]),
             new TwigFilter('without', [$this, 'withoutFilter']),
             new TwigFilter('withoutKey', [$this, 'withoutKeyFilter']),
         ];
@@ -579,6 +580,18 @@ class Extension extends AbstractExtension implements GlobalsInterface
         }
 
         return json_encode($value, $options, $depth);
+    }
+
+    /**
+     * Inserts a non-breaking space between the last two words of a string.
+     *
+     * @param string $string
+     * @return string
+     * @since 3.7.0
+     */
+    public function widontFilter(string $string): string
+    {
+        return preg_replace('/(?<=\S)\s+(\S+\s*)$/', '&nbsp;$1', $string);
     }
 
     /**

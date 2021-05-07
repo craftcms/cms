@@ -189,10 +189,6 @@ class EntriesController extends BaseEntriesController
         // Body class
         $variables['bodyClass'] = 'edit-entry site--' . $site->handle;
 
-        // Page title
-        $variables['docTitle'] = $this->docTitle($entry);
-        $variables['title'] = $this->pageTitle($entry);
-
         // Breadcrumbs
         $variables['crumbs'] = [
             [
@@ -468,6 +464,7 @@ class EntriesController extends BaseEntriesController
         // Get the entry in any but the to-be-deleted site -- preferably one the user has access to edit
         $draftId = $this->request->getBodyParam('draftId');
         $entryId = $this->request->getBodyParam('sourceId');
+        $provisional = (bool)($this->request->getBodyParam('provisional') ?? false);
         $editableSiteIds = $sitesService->getEditableSiteIds();
 
         $query = Entry::find()
@@ -477,7 +474,9 @@ class EntriesController extends BaseEntriesController
             ->anyStatus();
 
         if ($draftId) {
-            $query->draftId($draftId);
+            $query
+                ->draftId($draftId)
+                ->provisionalDrafts($provisional);
         } else {
             $query->id($entryId);
         }
@@ -500,7 +499,7 @@ class EntriesController extends BaseEntriesController
         $entry->setScenario(Element::SCENARIO_ESSENTIALS);
         Craft::$app->getElements()->saveElement($entry);
 
-        if ($draftId) {
+        if ($draftId && !$provisional) {
             $this->setSuccessFlash(Craft::t('app', 'Draft deleted for site.'));
         } else {
             $this->setSuccessFlash(Craft::t('app', 'Entry deleted for site.'));
@@ -629,7 +628,7 @@ class EntriesController extends BaseEntriesController
             );
 
             if (!$variables['entry']) {
-                // If they're attempting to access adraft/revision, or if the entry may be available in another
+                // If they're attempting to access a draft/revision, or if the entry may be available in another
                 // site, try to redirect them
                 if (
                     count($siteIds) > 1 ||
@@ -722,12 +721,29 @@ class EntriesController extends BaseEntriesController
                 ->anyStatus()
                 ->one();
         } else {
+            // First check if there's a provisional draft
             $entry = Entry::find()
-                ->id($entryId)
-                ->structureId($section->structureId)
+                ->provisionalDrafts()
+                ->draftOf($entryId)
+                ->draftCreator(Craft::$app->getUser()->getIdentity())
                 ->siteId($site->id)
                 ->anyStatus()
                 ->one();
+
+            if ($entry) {
+                /** @var Entry|DraftBehavior $entry */
+                if ($entry->getIsOutdated()) {
+                    Craft::$app->getElements()->mergeCanonicalChanges($entry);
+                }
+            } else {
+                // Otherwise load the real Current revision
+                $entry = Entry::find()
+                    ->id($entryId)
+                    ->structureId($section->structureId)
+                    ->siteId($site->id)
+                    ->anyStatus()
+                    ->one();
+            }
         }
 
         if ($entry) {
@@ -776,7 +792,7 @@ class EntriesController extends BaseEntriesController
      */
     private function _getEntryModel(): Entry
     {
-        $entryId = $this->request->getBodyParam('draftId') ?? $this->request->getBodyParam('sourceId') ?? $this->request->getBodyParam('entryId');
+        $entryId = $this->request->getBodyParam('sourceId') ?? $this->request->getBodyParam('entryId');
         $siteId = $this->request->getBodyParam('siteId');
 
         if ($entryId) {

@@ -38,7 +38,7 @@ Craft.DraftEditor = Garnish.Base.extend({
     openingPreview: false,
     preview: null,
     previewToken: null,
-    createdDraftInPreview: false,
+    createdProvisionalDraft: false,
 
     init: function(settings) {
         this.setSettings(settings, Craft.DraftEditor.defaults);
@@ -86,27 +86,28 @@ Craft.DraftEditor = Garnish.Base.extend({
 
         this.addListener(Craft.cp.$primaryForm, 'submit', 'handleFormSubmit');
 
-        if (this.settings.draftId) {
+        if (this.settings.isProvisionalDraft) {
+            this.initForProvisionalDraft();
+        } else if (this.settings.draftId && !this.settings.isUnpublishedDraft) {
             this.initForDraft();
-        } else {
-            // If the "Create a draft" button is a secondary button, then add special handling for it
-            this.addListener($('#save-draft-btn'), 'click', ev => {
-                ev.preventDefault();
-                this.createDraft();
-                this.removeListener(Craft.cp.$primaryForm, 'submit.saveShortcut');
+        } else if (!this.settings.canUpdateSource) {
+            // Override the save shortcut to create a draft too
+            this.addListener(Craft.cp.$primaryForm, 'submit.saveShortcut', ev => {
+                if (ev.saveShortcut) {
+                    ev.preventDefault();
+                    this.createDraft();
+                    this.removeListener(Craft.cp.$primaryForm, 'submit.saveShortcut');
+                }
             });
-
-            // If they're not allowed to update the source element, override the save shortcut to create a draft too
-            if (!this.settings.canUpdateSource) {
-                this.addListener(Craft.cp.$primaryForm, 'submit.saveShortcut', ev => {
-                    if (ev.saveShortcut) {
-                        ev.preventDefault();
-                        this.createDraft();
-                        this.removeListener(Craft.cp.$primaryForm, 'submit.saveShortcut');
-                    }
-                });
-            }
         }
+
+        if (Craft.autosaveDrafts) {
+            this.listenForChanges();
+        }
+
+        this.addListener(this.$statusIcon, 'click', () => {
+            this.showStatusHud(this.$statusIcon);
+        });
     },
 
     listenForChanges: function() {
@@ -161,17 +162,30 @@ Craft.DraftEditor = Garnish.Base.extend({
         }
     },
 
+    initForProvisionalDraft: function() {
+        let $button = $('#discard-changes');
+        if (!$button.length) {
+            $button = this.$revisionBtn.data('menubtn') ? this.$revisionBtn.data('menubtn').menu.$container.find('#discard-changes') : null;
+        }
+        if ($button && $button.length) {
+            this.addListener($button, 'click', () => {
+                if (confirm(Craft.t('app', 'Are you sure you want to discard your changes?'))) {
+                    Craft.submitForm(Craft.cp.$primaryForm, {
+                        action: this.settings.deleteDraftAction,
+                        redirect: this.settings.hashedCpEditUrl,
+                        params: {
+                            draftId: this.settings.draftId,
+                            provisional: this.settings.isProvisionalDraft,
+                        },
+                    });
+                }
+            });
+        }
+    },
+
     initForDraft: function() {
         // Create the edit draft button
         this.createEditMetaBtn();
-
-        this.addListener(this.$statusIcon, 'click', () => {
-            this.showStatusHud(this.$statusIcon);
-        });
-
-        if (Craft.autosaveDrafts) {
-            this.listenForChanges();
-        }
 
         if (this.settings.canUpdateSource) {
             Garnish.shortcutManager.registerShortcut({
@@ -394,9 +408,9 @@ Craft.DraftEditor = Garnish.Base.extend({
         let bodyHtml;
 
         if (this.errors === null) {
-            bodyHtml = '<p>' + Craft.t('app', 'The draft has been saved.') + '</p>';
+            bodyHtml = `<p>${this._saveSuccessMessage()}</p>`;
         } else {
-            bodyHtml = '<p class="error">' + Craft.t('app', 'The draft could not be saved.') + '</p>';
+            bodyHtml = `<p class="error">${this._saveFailMessage()}</p>`;
 
             if (this.errors.length) {
                 bodyHtml += '<ul class="errors">' +
@@ -410,6 +424,24 @@ Craft.DraftEditor = Garnish.Base.extend({
                 hud.destroy();
             }
         });
+    },
+
+    /**
+     * @return {string}
+     */
+    _saveSuccessMessage: function() {
+        return (this.settings.isProvisionalDraft || this.settings.isUnpublishedDraft)
+            ? Craft.t('app', 'Your changes have been stored.')
+            : Craft.t('app', 'The draft has been saved.');
+    },
+
+    /**
+     * @return {string}
+     */
+    _saveFailMessage: function() {
+        return (this.settings.isProvisionalDraft || this.settings.isUnpublishedDraft)
+            ? Craft.t('app', 'Your changes could not be stored.')
+            : Craft.t('app', 'The draft could not be saved.');
     },
 
     spinners: function() {
@@ -457,20 +489,19 @@ Craft.DraftEditor = Garnish.Base.extend({
                 return;
             }
 
-            Craft.postActionRequest('preview/create-token', {
-                elementType: this.settings.elementType,
-                sourceId: this.settings.sourceId,
-                siteId: this.settings.siteId,
-                draftId: this.settings.draftId,
-                revisionId: this.settings.revisionId,
-            }, (response, textStatus) => {
-                if (textStatus === 'success') {
-                    this.previewToken = response.token;
-                    resolve(this.previewToken);
-                } else {
-                    reject();
-                }
-            });
+            Craft.sendActionRequest('POST', 'preview/create-token', {
+                data: {
+                    elementType: this.settings.elementType,
+                    sourceId: this.settings.sourceId,
+                    siteId: this.settings.siteId,
+                    draftId: this.settings.draftId,
+                    revisionId: this.settings.revisionId,
+                    provisional: this.settings.isProvisionalDraft,
+                },
+            }).then(response => {
+                this.previewToken = response.data.token;
+                resolve(this.previewToken);
+            }).catch(reject);
         });
     },
 
@@ -509,72 +540,8 @@ Craft.DraftEditor = Garnish.Base.extend({
     getPreview: function() {
         if (!this.preview) {
             this.preview = new Craft.Preview(this);
-            this.preview.on('open', () => {
-                if (!this.settings.draftId) {
-                    this.listenForChanges();
-                }
-            });
-            this.preview.on('close', () => {
-                if (!this.settings.draftId) {
-                    this.stopListeningForChanges();
-                }
-
-                // did we just create a draft?
-                if (this.createdDraftInPreview) {
-                    setTimeout(() => {
-                        this.createDraftNoticeHud();
-                        this.createdDraftInPreview = false;
-                    }, 750);
-                }
-            });
         }
         return this.preview;
-    },
-
-    createDraftNoticeHud: function() {
-        const $closeBtn = $('<button/>', {
-            class: 'btn',
-            type: 'button',
-            text: Craft.t('app', 'Keep it'),
-        });
-        const $deleteBtn = $('<button/>', {
-            class: 'btn caution',
-            type: 'button',
-            text: Craft.t('app', 'Delete it'),
-        });
-
-        const hud = new Garnish.HUD(
-            $('#context-btngroup'),
-            $('<div/>', {class: 'readable centeralign'})
-                .append(
-                    $('<p/>', {
-                        text: Craft.t('app', 'You’re now editing a draft.'),
-                    })
-                )
-                .append(
-                    $('<div/>', {class: 'flex flex-nowrap'})
-                        .append($closeBtn)
-                        .append($deleteBtn)
-                ),
-            {
-                hideOnEsc: false,
-                hideOnShadeClick: false,
-            }
-        );
-
-        $closeBtn.on('click', () => {
-            hud.hide();
-            hud.destroy();
-        });
-
-        $deleteBtn.on('click', () => {
-            if (confirm(Craft.t('app', 'Are you sure you want to delete this draft?'))) {
-                Craft.submitForm(Craft.cp.$primaryForm, {
-                    action: this.settings.deleteDraftAction,
-                    redirect: this.settings.hashedCpEditUrl,
-                });
-            }
-        })
     },
 
     openPreview: function() {
@@ -629,11 +596,7 @@ Craft.DraftEditor = Garnish.Base.extend({
 
     checkForm: function(force) {
         // If this isn't a draft and there's no active preview, then there's nothing to check
-        if (
-            this.settings.revisionId ||
-            (!this.settings.draftId && !this.isPreviewActive()) ||
-            this.pauseLevel > 0
-        ) {
+        if (this.settings.revisionId || this.pauseLevel > 0) {
             return;
         }
         clearTimeout(this.timeout);
@@ -642,7 +605,8 @@ Craft.DraftEditor = Garnish.Base.extend({
         // Has anything changed?
         const data = this.serializeForm(true);
         if (force || data !== (this.lastSerializedValue || Craft.cp.$primaryForm.data('initialSerializedValue'))) {
-            this.saveDraft(data);
+            const provisional = (!this.settings.draftId || this.settings.isProvisionalDraft) && !this.settings.revisionId;
+            this.saveDraft(data, provisional);
         }
     },
 
@@ -658,6 +622,10 @@ Craft.DraftEditor = Garnish.Base.extend({
         });
     },
 
+    /**
+     * @param {object} data
+     * @returns {Promise<unknown>}
+     */
     saveDraft: function(data) {
         return new Promise((resolve, reject) => {
             // Ignore if we're already submitting the main form
@@ -687,8 +655,14 @@ Craft.DraftEditor = Garnish.Base.extend({
             this.errors = null;
 
             const url = Craft.getActionUrl(this.settings.saveDraftAction);
+            let preparedData = this.prepareData(data);
 
-            this.saveXhr = Craft.postActionRequest(url, this.prepareData(data), (response, textStatus) => {
+            // Are we saving a provisional draft?
+            if (this.settings.isProvisionalDraft || !this.settings.draftId) {
+                preparedData += '&provisional=1';
+            }
+
+            this.saveXhr = Craft.postActionRequest(url, preparedData, (response, textStatus) => {
                 $spinners.addClass('hidden');
                 if (this.$saveMetaBtn) {
                     this.$saveMetaBtn.removeClass('active');
@@ -706,9 +680,16 @@ Craft.DraftEditor = Garnish.Base.extend({
                         .css('opacity', '')
                         .removeClass('hidden checkmark-icon')
                         .addClass('alert-icon')
-                        .attr('title', Craft.t('app', 'The draft could not be saved.'));
+                        .attr('title', this._saveFailMessage());
                     reject();
                     return;
+                }
+
+                const createdProvisionalDraft = !this.settings.draftId;
+
+                if (createdProvisionalDraft) {
+                    this.settings.isProvisionalDraft = true;
+                    this.createdProvisionalDraft = true;
                 }
 
                 if (response.title) {
@@ -719,9 +700,19 @@ Craft.DraftEditor = Garnish.Base.extend({
                     document.title = response.docTitle;
                 }
 
-                this.$revisionLabel.text(response.draftName);
-
-                this.settings.draftName = response.draftName;
+                if (this.settings.isProvisionalDraft) {
+                    if (createdProvisionalDraft) {
+                        this.$revisionLabel.append(
+                            $('<span/>', {
+                                class: 'extralight',
+                                text: ` — ${Craft.t('app', 'Edited')}`,
+                            })
+                        );
+                    }
+                } else {
+                    this.$revisionLabel.text(response.draftName);
+                    this.settings.draftName = response.draftName;
+                }
 
                 let revisionMenu = this.$revisionBtn.data('menubtn') ? this.$revisionBtn.data('menubtn').menu : null;
 
@@ -744,190 +735,48 @@ Craft.DraftEditor = Garnish.Base.extend({
                     this.newSiteIds = null;
                 }
 
-                // Did we just create a draft?
-                const draftCreated = !this.settings.draftId;
-                if (draftCreated) {
-                    // Update the document location HREF
-                    let newHref;
-                    const anchorPos = document.location.href.search('#');
-                    if (anchorPos !== -1) {
-                        newHref = document.location.href.substr(0, anchorPos);
-                    } else {
-                        newHref = document.location.href;
-                    }
-                    newHref += (newHref.match(/\?/) ? '&' : '?') + 'draftId=' + response.draftId;
-                    if (anchorPos !== -1) {
-                        newHref += document.location.href.substr(anchorPos);
-                    }
-                    history.replaceState({}, '', newHref);
+                if (this.settings.isProvisionalDraft) {
+                    if (createdProvisionalDraft) {
+                        // Replace the action
+                        const $actionInput = $('#action').attr('value', this.settings.publishDraftAction);
 
-                    // Replace the action input
-                    $('#action').remove();
-                    $('<input/>', {
-                        id: 'action',
-                        type: 'hidden',
-                        name: 'action',
-                        value: this.settings.saveDraftAction,
-                    }).appendTo(Craft.cp.$primaryForm);
+                        // Update the editor settings
+                        this.settings.draftId = response.draftId;
+                        this.settings.isLive = false;
+                        this.previewToken = null;
 
-                    // Remove the "Create a draft" and "Save" buttons
-                    $('#save-draft-btn-container').remove();
-                    $('#save-btn-container').remove();
-
-                    const $actionButtonContainer = $('#action-buttons');
-
-                    // If they're allowed to update the source, add a "Publish draft" button
-                    if (this.settings.canUpdateSource) {
-                        $('<button/>', {
-                            type: 'button',
-                            class: 'btn secondary formsubmit',
-                            text: Craft.t('app', 'Publish draft'),
-                            title: Craft.shortcutText('S', false, true),
-                            data: {
-                                action: this.settings.publishDraftAction,
-                                redirect: this.settings.hashedCpEditUrl,
-                            },
-                        }).appendTo($actionButtonContainer).formsubmit();
-                    }
-
-                    // Add a "Save draft" button
-                    const $saveBtnContainer = $('<div/>', {
-                        id: 'save-btn-container',
-                        class: 'btngroup submit',
-                    }).appendTo($actionButtonContainer);
-
-                    $('<button/>', {
-                        type: 'submit',
-                        class: 'btn submit',
-                        text: Craft.t('app', 'Save draft'),
-                    }).appendTo($saveBtnContainer);
-
-                    if (this.settings.saveDraftAction || this.settings.deleteDraftAction) {
-                        const $menuBtn = $('<button/>', {
-                            type: 'button',
-                            class: 'btn submit menubtn',
-                        }).appendTo($saveBtnContainer);
-                        const $menu = $('<div/>', {
-                            class: 'menu',
-                            attr: {
-                                'data-align': 'right',
-                            },
-                        }).appendTo($saveBtnContainer);
-
-                        if (this.settings.saveDraftAction) {
-                            const $ul = $('<ul/>')
-                                .appendTo($menu)
-                                .append(
-                                    $('<li/>')
-                                        .append(
-                                            $('<a/>', {
-                                                class: 'formsubmit',
-                                                data: {
-                                                    action: this.settings.saveDraftAction,
-                                                },
-                                                text: Craft.t('app', 'Save and continue editing'),
-                                            })
-                                                .prepend(
-                                                    $('<span/>', {
-                                                        class: 'shortcut',
-                                                        text: Craft.shortcutText('S'),
-                                                    })
-                                                )
-                                        )
-                                );
-                            if (this.settings.canUpdateSource && this.settings.hashedAddAnotherRedirectUrl) {
-                                $ul.append(
-                                    $('<li/>')
-                                        .append(
-                                            $('<a/>', {
-                                                class: 'formsubmit',
-                                                data: {
-                                                    action: this.settings.publishDraftAction,
-                                                    redirect: this.settings.hashedAddAnotherRedirectUrl,
-                                                },
-                                                text: Craft.t('app', 'Publish and add another'),
-                                            })
-                                        )
-                                );
-                            }
-                            if (this.settings.deleteDraftAction) {
-                                $('<hr/>').appendTo($menu);
-                            }
-                        }
-
-                        if (this.settings.deleteDraftAction) {
-                            $('<ul/>')
-                                .appendTo($menu)
-                                .append(
-                                    $('<li/>')
-                                        .append(
-                                            $('<a/>', {
-                                                class: 'formsubmit error',
-                                                data: {
-                                                    action: this.settings.deleteDraftAction,
-                                                    redirect: this.settings.hashedCpEditUrl,
-                                                    confirm: Craft.t('app', 'Are you sure you want to delete this draft?'),
-                                                },
-                                                text: Craft.t('app', 'Delete draft'),
-                                            })
-                                        )
+                        if (revisionMenu) {
+                            // Add edited description to the “Current” option
+                            revisionMenu.$container.find('#current-revision').append(
+                                $('<div/>', {
+                                    class: 'edited-desc',
+                                }).append(
+                                    $('<p/>', {
+                                        text: Craft.t('app', 'Showing your unsaved changes.'),
+                                    })
+                                ).append(
+                                    $('<button/>', {
+                                        id: 'discard-changes',
+                                        class: 'btn',
+                                        text: Craft.t('app', 'Discard changes'),
+                                    })
                                 )
+                            );
                         }
+
+                        this.initForProvisionalDraft();
                     }
-
-                    Craft.initUiElements($saveBtnContainer);
-
-                    // Update the editor settings
-                    this.settings.draftId = response.draftId;
-                    this.settings.isLive = false;
-                    this.previewToken = null;
-                    this.initForDraft();
-
-                    // Add the draft to the revision menu
-                    if (revisionMenu) {
-                        revisionMenu.$options.filter(':not(.site-option)').removeClass('sel');
-                        let $draftsUl = revisionMenu.$container.find('.revision-group-drafts');
-                        if (!$draftsUl.length) {
-                            const $draftHeading = $('<h6/>', {
-                                text: Craft.t('app', 'Drafts'),
-                            }).insertAfter(revisionMenu.$container.find('.revision-group-current'));
-                            $draftsUl = $('<ul/>', {
-                                'class': 'padded revision-group-drafts',
-                            }).insertAfter($draftHeading);
-                        }
-                        const $draftLi = $('<li/>').prependTo($draftsUl);
-                        const $draftA = $('<a/>', {
-                            'class': 'sel',
-                            html: '<span class="draft-name"></span> <span class="draft-meta light"></span>',
-                        }).appendTo($draftLi);
-                        revisionMenu.addOptions($draftA);
-                        revisionMenu.selectOption($draftA);
-
-                        // Update the site URLs
-                        const $siteOptions = revisionMenu.$options.filter('.site-option[href]');
-                        for (let i = 0; i < $siteOptions.length; i++) {
-                            const $siteOption = $siteOptions.eq(i);
-                            $siteOption.attr('href', Craft.getUrl($siteOption.attr('href'), {draftId: response.draftId}));
-                        }
-                    }
-
-                    // is Live Preview currently active?
-                    if (this.openingPreview || (this.preview && this.preview.isActive)) {
-                        this.createdDraftInPreview = true;
-                    }
-                }
-
-                if (revisionMenu) {
+                } else if (revisionMenu) {
                     revisionMenu.$options.filter('.sel').find('.draft-name').text(response.draftName);
-                    revisionMenu.$options.filter('.sel').find('.draft-meta').text('– ' + (response.creator
-                            ? Craft.t('app', 'saved {timestamp} by {creator}', {
-                                timestamp: response.timestamp,
-                                creator: response.creator
-                            })
-                            : Craft.t('app', 'updated {timestamp}', {
-                                timestamp: response.timestamp,
-                            })
-                    ));
+                    revisionMenu.$options.filter('.sel').find('.draft-meta').text(response.creator
+                        ? Craft.t('app', 'Saved {timestamp} by {creator}', {
+                            timestamp: response.timestamp,
+                            creator: response.creator
+                        })
+                        : Craft.t('app', 'Saved {timestamp}', {
+                            timestamp: response.timestamp,
+                        })
+                    );
                 }
 
                 // Did the controller send us updated preview targets?
@@ -940,8 +789,8 @@ Craft.DraftEditor = Garnish.Base.extend({
 
                 this.afterUpdate(data);
 
-                if (draftCreated) {
-                    this.trigger('createDraft');
+                if (createdProvisionalDraft) {
+                    this.trigger('createProvisionalDraft');
                 }
 
                 if (this.$nameTextInput) {
@@ -959,6 +808,10 @@ Craft.DraftEditor = Garnish.Base.extend({
         });
     },
 
+    /**
+     * @param {string} data
+     * @returns {string}
+     */
     prepareData: function(data) {
         // Swap out element IDs with their duplicated ones
         data = this.swapDuplicatedElementIds(data);
@@ -966,6 +819,9 @@ Craft.DraftEditor = Garnish.Base.extend({
         // Add the draft info
         if (this.settings.draftId) {
             data += `&draftId=${this.settings.draftId}`;
+            if (this.settings.isProvisionalDraft) {
+                data += '&provisional=1';
+            }
         }
 
         if (this.settings.draftName !== null) {
@@ -977,6 +833,10 @@ Craft.DraftEditor = Garnish.Base.extend({
         return Craft.findDeltaData(initialData, data, this.getDeltaNames());
     },
 
+    /**
+     * @param {string} data
+     * @returns {string}
+     */
     swapDuplicatedElementIds: function(data) {
         const idsRE = Object.keys(this.duplicatedElements).join('|');
         if (idsRE === '') {
@@ -1032,7 +892,7 @@ Craft.DraftEditor = Garnish.Base.extend({
             .css('opacity', '')
             .removeClass('hidden')
             .addClass('checkmark-icon')
-            .attr('title', Craft.t('app', 'The draft has been saved.'));
+            .attr('title', this._saveSuccessMessage());
 
         if (!Craft.autosaveDrafts) {
             // Fade the icon out after a couple seconds, since it won't be accurate as content continues to change
@@ -1154,6 +1014,7 @@ Craft.DraftEditor = Garnish.Base.extend({
         // then trigger an autosave
         if (
             this.settings.draftId &&
+            !this.settings.isProvisionalDraft &&
             (typeof ev.autosave === 'undefined' || ev.autosave) &&
             (ev.saveShortcut || (ev.customTrigger && ev.customTrigger.data('action') === this.settings.saveDraftAction))
         ) {
@@ -1186,6 +1047,7 @@ Craft.DraftEditor = Garnish.Base.extend({
         enabled: false,
         enabledForSite: false,
         isLive: false,
+        isProvisionalDraft: false,
         siteStatuses: null,
         addlSiteIds: [],
         cpEditUrl: null,
