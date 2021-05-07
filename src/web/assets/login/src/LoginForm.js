@@ -34,7 +34,6 @@ class LoginForm {
      */
     performStep(request) {
         const $container = this.getActiveContainer();
-        request.scenario = Craft.cpLoginChain;
         if (this.$rememberMeCheckbox.prop('checked')) {
             request.rememberMe = true;
         }
@@ -173,7 +172,7 @@ class LoginForm {
         this.$cancelRecover.toggleClass('hidden');
         this.$recoverAccount.toggleClass('hidden');
         for (const containerId of Object.keys(this.endpoints)) {
-            $(containerId).toggleClass('hidden');
+            $('#' + containerId).toggleClass('hidden');
         }
     }
     /**
