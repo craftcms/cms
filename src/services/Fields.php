@@ -1732,7 +1732,7 @@ class Fields extends Component
             $fieldRecord->name = $data['name'];
             $fieldRecord->handle = $data['handle'];
             $fieldRecord->context = $context;
-            $fieldRecord->columnSuffix = $data['columnSuffix'];
+            $fieldRecord->columnSuffix = $data['columnSuffix'] ?? null;
             $fieldRecord->instructions = $data['instructions'];
             $fieldRecord->searchable = $data['searchable'] ?? false;
             $fieldRecord->translationMethod = $data['translationMethod'];
@@ -1906,7 +1906,6 @@ class Fields extends Component
                 'fields.name',
                 'fields.handle',
                 'fields.context',
-                'fields.columnSuffix',
                 'fields.instructions',
                 'fields.translationMethod',
                 'fields.translationKeyFormat',
@@ -1921,6 +1920,9 @@ class Fields extends Component
         $schemaVersion = Craft::$app->getInstalledSchemaVersion();
         if (version_compare($schemaVersion, '3.1.0', '>=')) {
             $query->addSelect(['fields.searchable']);
+        }
+        if (version_compare($schemaVersion, '3.7.0', '>=')) {
+            $query->addSelect(['fields.columnSuffix']);
         }
 
         return $query;
