@@ -507,18 +507,18 @@ class Elements extends Component
         if (!$elementId) {
             return null;
         }
-        
+
         try {
             $data = (new Query())
                 ->select(['draftId', 'revisionId', 'type'])
                 ->from([Table::ELEMENTS])
                 ->where([$property => $elementId])
                 ->one();
-            
+
             if (!$data) {
                 return null;
             }
-            
+
             if ($elementType === null) {
                 $elementType = $data['type'];
             }

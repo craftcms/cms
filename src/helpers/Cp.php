@@ -109,13 +109,13 @@ class Cp
                 $issuePlugins = [];
                 foreach ($pluginsService->getAllPlugins() as $pluginHandle => $plugin) {
                     if ($pluginsService->hasIssues($pluginHandle)) {
-                        $issuePlugins[] = $plugin->name;
+                        $issuePlugins[] = [$plugin->name, $plugin->handle];
                     }
                 }
                 if (!empty($issuePlugins)) {
                     if (count($issuePlugins) === 1) {
                         $message = Craft::t('app', 'There’s a licensing issue with the {name} plugin.', [
-                            'name' => reset($issuePlugins),
+                            'name' => reset($issuePlugins)[0],
                         ]);
                     } else {
                         $message = Craft::t('app', '{num} plugins have licensing issues.', [
@@ -136,8 +136,8 @@ class Cp
                     $licenseAlerts[] = $message;
 
                     // Is this reconcilable?
-                    foreach ($issuePlugins as $pluginHandle) {
-                        if (!$pluginsService->getPluginLicenseKeyStatus($pluginHandle) === LicenseKeyStatus::Trial) {
+                    foreach ($issuePlugins as [$pluginName, $pluginHandle]) {
+                        if ($pluginsService->getPluginLicenseKeyStatus($pluginHandle) !== LicenseKeyStatus::Trial) {
                             $canSettleUp = false;
                             break;
                         }

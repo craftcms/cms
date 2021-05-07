@@ -1058,7 +1058,7 @@ class GeneralConfig extends BaseObject
     public $postLogoutRedirect = '';
 
     /**
-     * @var bool Whether the <config3:gqlTypePrefix> config setting should have an impact on `query`, `mutation`, and `subscirption` types.
+     * @var bool Whether the <config3:gqlTypePrefix> config setting should have an impact on `query`, `mutation`, and `subscription` types.
      * @since 3.6.6
      * @group GraphQL
      */
