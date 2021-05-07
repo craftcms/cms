@@ -377,7 +377,7 @@ SQL;
      */
     private function _createDumpConfigFile(): string
     {
-        $this->tempMyCnfPath = FileHelper::normalizePath(sys_get_temp_dir()) . DIRECTORY_SEPARATOR . StringHelper::randomString(12).'.cnf';
+        $this->tempMyCnfPath = FileHelper::normalizePath(sys_get_temp_dir()) . DIRECTORY_SEPARATOR . StringHelper::randomString(12) . '.cnf';
 
         $parsed = Db::parseDsn($this->db->dsn);
         $username = $this->db->getIsPgsql() && !empty($parsed['user']) ? $parsed['user'] : $this->db->username;
