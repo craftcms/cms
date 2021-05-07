@@ -92,6 +92,7 @@
 
 ### Fixed
 - Fixed a bug where Craft would place the `beginBody()` tag incorrectly if a template’s `<body>` tag had attribute values that included `>` characters. ([#7779](https://github.com/craftcms/cms/issues/7779))
+- Fixed a bug where updated attributes and fields weren’t getting tracked when publishing a draft or reverting an entry to a revision. 
 
 ### Security
 - The default `allowedFileExtensions` config setting value no longer includes `xml`.

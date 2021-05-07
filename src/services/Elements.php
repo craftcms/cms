@@ -871,7 +871,48 @@ class Elements extends Component
             'updatingFromDerivative' => true,
         ];
 
-        return $this->duplicateElement($element, $newAttributes);
+        $updatedCanonical = $this->duplicateElement($element, $newAttributes);
+
+        // Update change tracking for the canonical element
+        $timestamp = Db::prepareDateForDb($updatedCanonical->dateUpdated);
+
+        $attributes = (new Query())
+            ->select(['siteId', 'attribute', 'propagated', 'userId'])
+            ->from([Table::CHANGEDATTRIBUTES])
+            ->where(['elementId' => $element->id])
+            ->all();
+
+        foreach ($attributes as $attribute) {
+            Db::upsert(Table::CHANGEDATTRIBUTES, [
+                'elementId' => $canonical->id,
+                'siteId' => $attribute['siteId'],
+                'attribute' => $attribute['attribute'],
+            ], [
+                'dateUpdated' => $timestamp,
+                'propagated' => $attribute['propagated'],
+                'userId' => $attribute['userId'],
+            ], [], false);
+        }
+
+        $fields = (new Query())
+            ->select(['siteId', 'fieldId', 'propagated', 'userId'])
+            ->from([Table::CHANGEDFIELDS])
+            ->where(['elementId' => $element->id])
+            ->all();
+
+        foreach ($fields as $field) {
+            Db::upsert(Table::CHANGEDFIELDS, [
+                'elementId' => $canonical->id,
+                'siteId' => $field['siteId'],
+                'fieldId' => $field['fieldId'],
+            ], [
+                'dateUpdated' => $timestamp,
+                'propagated' => $field['propagated'],
+                'userId' => $field['userId'],
+            ], [], false);
+        }
+
+        return $updatedCanonical;
     }
 
     /**
