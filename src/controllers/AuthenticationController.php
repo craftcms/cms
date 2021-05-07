@@ -10,6 +10,7 @@ namespace craft\controllers;
 
 use Craft;
 use craft\authentication\base\Type;
+use craft\services\Authentication;
 use craft\web\Controller;
 use yii\base\InvalidConfigException;
 use yii\web\BadRequestHttpException;
@@ -38,8 +39,7 @@ class AuthenticationController extends Controller
     public function actionPerformAuthentication(): Response
     {
         $this->requireAcceptsJson();
-
-        $scenario = Craft::$app->getRequest()->getRequiredBodyParam('scenario');
+        $scenario = Authentication::CP_AUTHENTICATION_CHAIN;
         $stepType = Craft::$app->getRequest()->getRequiredBodyParam('stepType');
         $chain = Craft::$app->getAuthentication()->getAuthenticationChain($scenario);
 
@@ -119,11 +119,10 @@ class AuthenticationController extends Controller
         $this->requireAcceptsJson();
 
         // Set up the recovery chain
-        $scenario = Craft::$app->getRequest()->getRequiredBodyParam('scenario');
+        $scenario = Authentication::CP_RECOVERY_CHAIN;
         $stepType = Craft::$app->getRequest()->getRequiredBodyParam('stepType');
         $authenticationService = Craft::$app->getAuthentication();
-        $authenticationChain = $authenticationService->getAuthenticationChain($scenario);
-        $recoveryChain = $authenticationChain->getRecoveryChain();
+        $recoveryChain = $authenticationService->getAuthenticationChain($scenario);
 
         if (!$recoveryChain) {
             throw new BadRequestHttpException('Unable to recover account');
@@ -167,7 +166,8 @@ class AuthenticationController extends Controller
             }
 
             // If successfully completed recovery, invalidate the chain state.
-            $authenticationService->invalidateAuthenticationState($authenticationChain->getRecoveryScenario());
+            // TODO track only one chain per session
+            $authenticationService->invalidateAuthenticationState(Authentication::CP_RECOVERY_CHAIN);
 
             $output['success'] = true;
         } else if ($success) {
@@ -177,6 +177,29 @@ class AuthenticationController extends Controller
             $output['html'] = $step->getFieldHtml();
             $output['footHtml'] = Craft::$app->getView()->getBodyHtml();
         }
+
+        $output['message'] = $session->getNotice();
+        $output['error'] = $session->getError();
+
+        return $this->asJson($output);
+    }
+
+    public function actionSwitchAuthenticationStep(): Response
+    {
+        $this->requireAcceptsJson();
+        $scenario = Craft::$app->getRequest()->getRequiredBodyParam('scenario');
+        $stepType = Craft::$app->getRequest()->getRequiredBodyParam('stepType');
+        $authenticationService = Craft::$app->getAuthentication();
+        $authenticationChain = $authenticationService->getAuthenticationChain($scenario);
+
+        /** @var Type $step */
+        $step = $authenticationChain->getNextAuthenticationStep($stepType);
+
+        $output = [
+            'html' => $step->getFieldHtml(),
+            'footHtml' => Craft::$app->getView()->getBodyHtml(),
+            'alternatives' => $authenticationChain->getAlternativeSteps(get_class($step))
+        ];
 
         return $this->asJson($output);
     }
