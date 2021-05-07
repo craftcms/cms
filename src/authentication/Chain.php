@@ -109,6 +109,25 @@ class Chain
     }
 
     /**
+     * Switch to an alternative step.
+     *
+     * @param string $stepType
+     * @return TypeInterface
+     * @throws InvalidConfigException if invalid switch attempted.
+     */
+    public function switchStep(string $stepType): TypeInterface
+    {
+        $switchedStep = $this->getNextAuthenticationStep($stepType);
+
+        if (!$switchedStep) {
+            throw new InvalidConfigException("Invalid authentication chain configuration. {$stepType} type requested, but not available at this point of the chain.");
+        }
+
+        $switchedStep->prepareForAuthentication($this->_getResolvedUser());
+        return $switchedStep;
+    }
+
+    /**
      * For a given step return a list of alternative steps that can be performed.
      * @param string $chosenStep
      * @return array

@@ -10,6 +10,7 @@ namespace craft\controllers;
 
 use Craft;
 use craft\authentication\base\Type;
+use craft\authentication\Chain;
 use craft\services\Authentication;
 use craft\web\Controller;
 use yii\base\InvalidConfigException;
@@ -40,8 +41,14 @@ class AuthenticationController extends Controller
     {
         $this->requireAcceptsJson();
         $scenario = Authentication::CP_AUTHENTICATION_CHAIN;
-        $stepType = Craft::$app->getRequest()->getRequiredBodyParam('stepType');
+        $request = Craft::$app->getRequest();
+        $stepType = $request->getRequiredBodyParam('stepType');
         $chain = Craft::$app->getAuthentication()->getAuthenticationChain($scenario);
+        $switch = !empty($request->getBodyParam('switch'));
+
+        if ($switch) {
+            return $this->_switchStep($chain, $stepType);
+        }
 
         try {
             $step = $chain->getNextAuthenticationStep($stepType);
@@ -57,7 +64,7 @@ class AuthenticationController extends Controller
 
             if ($fields = $step->getFields()) {
                 foreach ($fields as $fieldName) {
-                    if ($value = Craft::$app->getRequest()->getBodyParam($fieldName)) {
+                    if ($value = $request->getBodyParam($fieldName)) {
                         $data[$fieldName] = $value;
                     }
                 }
@@ -65,7 +72,7 @@ class AuthenticationController extends Controller
 
             $success = $chain->performAuthenticationStep($stepType, $data);
 
-            if ($success && Craft::$app->getRequest()->getBodyParam('rememberMe')) {
+            if ($success && $request->getBodyParam('rememberMe')) {
                 $session->set(self::REMEMBER_ME, true);
             }
         }
@@ -102,9 +109,10 @@ class AuthenticationController extends Controller
             $step = $chain->getNextAuthenticationStep();
             $output['stepComplete'] = true;
             $output['html'] = $step->getFieldHtml();
-            $output['alternatives'] = $chain->getAlternativeSteps(get_class($step));
             $output['footHtml'] = Craft::$app->getView()->getBodyHtml();
         }
+
+        $output['alternatives'] = $chain->getAlternativeSteps(get_class($step));
 
         return $this->asJson($output);
     }
@@ -120,9 +128,15 @@ class AuthenticationController extends Controller
 
         // Set up the recovery chain
         $scenario = Authentication::CP_RECOVERY_CHAIN;
-        $stepType = Craft::$app->getRequest()->getRequiredBodyParam('stepType');
+        $request = Craft::$app->getRequest();
+        $stepType = $request->getRequiredBodyParam('stepType');
         $authenticationService = Craft::$app->getAuthentication();
         $recoveryChain = $authenticationService->getAuthenticationChain($scenario);
+        $switch = !empty($request->getBodyParam('switch'));
+
+        if ($switch) {
+            return $this->_switchStep($recoveryChain, $stepType);
+        }
 
         if (!$recoveryChain) {
             throw new BadRequestHttpException('Unable to recover account');
@@ -142,7 +156,7 @@ class AuthenticationController extends Controller
 
             if ($fields = $step->getFields()) {
                 foreach ($fields as $fieldName) {
-                    if ($value = Craft::$app->getRequest()->getBodyParam($fieldName)) {
+                    if ($value = $request->getBodyParam($fieldName)) {
                         $data[$fieldName] = $value;
                     }
                 }
@@ -184,21 +198,25 @@ class AuthenticationController extends Controller
         return $this->asJson($output);
     }
 
-    public function actionSwitchAuthenticationStep(): Response
+    /**
+     * Switch to an alternative step on the auth chain.
+     *
+     * @param Chain $authenticationChain
+     * @param string $stepType
+     * @return Response
+     * @throws InvalidConfigException
+     */
+    private function _switchStep(Chain $authenticationChain, string $stepType): Response
     {
-        $this->requireAcceptsJson();
-        $scenario = Craft::$app->getRequest()->getRequiredBodyParam('scenario');
-        $stepType = Craft::$app->getRequest()->getRequiredBodyParam('stepType');
-        $authenticationService = Craft::$app->getAuthentication();
-        $authenticationChain = $authenticationService->getAuthenticationChain($scenario);
-
-        /** @var Type $step */
-        $step = $authenticationChain->getNextAuthenticationStep($stepType);
+        $step = $authenticationChain->switchStep($stepType);
+        $session = Craft::$app->getSession();
 
         $output = [
             'html' => $step->getFieldHtml(),
             'footHtml' => Craft::$app->getView()->getBodyHtml(),
-            'alternatives' => $authenticationChain->getAlternativeSteps(get_class($step))
+            'alternatives' => $authenticationChain->getAlternativeSteps(get_class($step)),
+            'message' => $session->getNotice(),
+            'error' => $session->getError(),
         ];
 
         return $this->asJson($output);

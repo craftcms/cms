@@ -33,16 +33,20 @@ class LoginForm {
      * @param cb
      */
     performStep(request) {
-        const $container = this.getActiveContainer();
         if (this.$rememberMeCheckbox.prop('checked')) {
             request.rememberMe = true;
         }
         this.clearMessages();
         this.clearErrors();
-        Craft.postActionRequest($container.data('endpoint'), request, this.processResponse.bind(this));
+        Craft.postActionRequest(this.getActiveContainer().data('endpoint'), request, this.processResponse.bind(this));
     }
+    /**
+     * Switch the current authentication step to an alternative.
+     *
+     * @param stepType
+     */
     switchStep(stepType) {
-        Craft.postActionRequest(this.switchEndpoint, { stepType: stepType, }, this.processResponse.bind(this));
+        Craft.postActionRequest(this.getActiveContainer().data('endpoint'), { stepType: stepType, switch: true }, this.processResponse.bind(this));
     }
     /**
      * Process authentication response.
@@ -125,7 +129,7 @@ class LoginForm {
     }
     showAlternatives(alternatives) {
         this.$alternatives.removeClass('hidden');
-        const $ul = this.$alternatives.find('ul');
+        const $ul = this.$alternatives.find('ul').empty();
         for (const [stepType, description] of Object.entries(alternatives)) {
             $ul.append($(`<li rel="${stepType}">${description}</li>`));
         }

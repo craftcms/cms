@@ -66,8 +66,6 @@ class LoginForm
      */
     public performStep(request: AuthenticationRequest): void
     {
-        const $container = this.getActiveContainer();
-
         if (this.$rememberMeCheckbox.prop('checked')) {
             request.rememberMe = true;
         }
@@ -75,12 +73,17 @@ class LoginForm
         this.clearMessages();
         this.clearErrors();
 
-        Craft.postActionRequest($container.data('endpoint'), request, this.processResponse.bind(this));
+        Craft.postActionRequest(this.getActiveContainer().data('endpoint'), request, this.processResponse.bind(this));
     }
 
+    /**
+     * Switch the current authentication step to an alternative.
+     *
+     * @param stepType
+     */
     public switchStep(stepType: string)
     {
-        Craft.postActionRequest(this.switchEndpoint, {stepType: stepType, }, this.processResponse.bind(this));
+        Craft.postActionRequest(this.getActiveContainer().data('endpoint'), {stepType: stepType, switch: true}, this.processResponse.bind(this));
     }
 
     /**
@@ -175,7 +178,7 @@ class LoginForm
     public showAlternatives(alternatives: AuthenticationAlternatives)
     {
         this.$alternatives.removeClass('hidden');
-        const $ul = this.$alternatives.find('ul');
+        const $ul = this.$alternatives.find('ul').empty();
 
         for (const [stepType, description] of Object.entries(alternatives)) {
             $ul.append($(`<li rel="${stepType}">${description}</li>`));

@@ -176,3 +176,7 @@ body {
   font-size: 30px;
   color: $linkColor;
 }
+
+#alternatives li {
+  cursor: pointer;
+}

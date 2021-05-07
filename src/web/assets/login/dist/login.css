@@ -74,4 +74,6 @@ body.ltr .modal.email-sent .body:before { left: 24px; }
 
 body.rtl .modal.email-sent .body:before { right: 24px; }
 
+#alternatives li { cursor: pointer; }
+
 /*# sourceMappingURL=login.css.map */
