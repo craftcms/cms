@@ -395,6 +395,64 @@ li.sel a {
   }
 }
 
+#revision-menu {
+  padding: 10px 24px;
+
+  hr {
+    margin: 10px -24px;
+  }
+
+  ul {
+    li {
+      &.sel {
+        margin: 0 -14px;
+        padding: 0 14px;
+        background: $grey050;
+        border-radius: $largeBorderRadius;
+
+        .edited-desc {
+          display: flex;
+          align-items: center;
+          @include margin-left(10px);
+          border-top: 1px solid $hairlineColor;
+          padding: 10px 0;
+          color: $lightTextColor;
+          white-space: normal;
+
+          p {
+            margin: 0;
+          }
+
+          .btn {
+            @include margin-left(14px);
+            color: $textColor !important;
+            background-color: $yellow300;
+
+            &:hover,
+            &:focus {
+              background-color: darken($yellow300, 10%);
+            }
+
+            &:active {
+              background-color: darken($yellow300, 15%);
+            }
+          }
+        }
+      }
+
+      a {
+        padding-top: 7px;
+        border-radius: $largeBorderRadius;
+      }
+
+    }
+  }
+
+  .extralight {
+    margin-top: 2px;
+  }
+}
+
 /* toggles */
 button.toggle {
   appearance: none;
@@ -4056,8 +4114,11 @@ ul.tree,
   @include menu-option-active-styles;
 }
 
-.menu hr.padded {
-  @include margin-left(10px);
+.menu {
+  hr.padded,
+  h6.padded {
+    @include margin-left(10px);
+  }
 }
 
 /* tag select fields */

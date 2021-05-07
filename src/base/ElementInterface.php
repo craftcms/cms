@@ -532,6 +532,14 @@ interface ElementInterface extends ComponentInterface
     public function getIsDraft(): bool;
 
     /**
+     * Returns whether this is a provisional draft.
+     *
+     * @return bool
+     * @since 3.7.0
+     */
+    public function getIsProvisionalDraft(): bool;
+
+    /**
      * Returns whether this is a revision.
      *
      * @return bool
@@ -565,6 +573,15 @@ interface ElementInterface extends ComponentInterface
      * @since 3.7.0
      */
     public function getCanonical(bool $anySite = false): ElementInterface;
+
+    /**
+     * Sets the canonical version of the element.
+     *
+     * @param static $element
+     * @return void
+     * @since 3.7.0
+     */
+    public function setCanonical(ElementInterface $element): void;
 
     /**
      * Returns the element’s canonical ID.

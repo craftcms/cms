@@ -41,8 +41,11 @@
 {% set deleteDraftAction = deleteDraftAction ?? null %}
 
 {% set isDraft = element.getIsDraft() %}
+{% set isProvisionalDraft = element.getIsProvisionalDraft() %}
 {% set isRevision = element.getIsRevision() %}
 {% set isCurrent = not isDraft and not isRevision %}
+{% set isLikeCurrent = isCurrent or isProvisionalDraft %}
+
 {% set allSites = craft.app.isMultiSite ? element.getSupportedSites() : [element.siteId] %}
 {% set allEditableSiteIds = craft.app.sites.getEditableSiteIds() %}
 {% set propSiteIds = allSites|filter(s => s.propagate ?? true)|column(s => s.siteId ?? s) %}
@@ -68,14 +71,19 @@
 {% set previewTargets = element.getPreviewTargets() %}
 {% set enablePreview = previewTargets and not craft.app.request.isMobileBrowser(true) and generalConfig.autosaveDrafts %}
 
-{% set canDeleteDraft = isDraft and ((canDeleteDraft ?? false) or element.creatorId == currentUser.id) and deleteDraftAction %}
+{% set canDeleteDraft = (
+    isDraft and
+    not isProvisionalDraft and
+    ((canDeleteDraft ?? false) or element.creatorId == currentUser.id) and
+    deleteDraftAction
+) %}
 {% set canUpdateSource = canUpdateSource ?? false %}
 {% set canDuplicateSource = canDuplicateSource ?? false %}
 {% set canAddAnother = canAddAnother ?? false %}
 {% set canDeleteSource = canDeleteSource ?? false %}
 {% set canDeleteForSite = (canDeleteForSite ?? false) and deleteForSiteAction and
-    canDeleteForSite and isMultiSiteElement and propSiteIds|length > 1 and
-    ((isCurrent and canDeleteSource) or (isDraft and canDeleteDraft and isNewlySupportedSite)) %}
+    isMultiSiteElement and propSiteIds|length > 1 and
+    ((isLikeCurrent and canDeleteSource) or (isDraft and canDeleteDraft and isNewlySupportedSite)) %}
 {% set canEdit = canEdit ?? (canUpdateSource or canDuplicateSource or canAddAnother or saveDraftAction) %}
 
 {% set redirectUrl = redirectUrl ?? generalConfig.getPostCpLoginRedirect() %}
@@ -100,7 +108,7 @@
     element.hasStatuses() and
     (not isUnpublishedDraft or canUpdateSource) %}
 
-{% if not isDraft and not canUpdateSource %}
+{% if (not isDraft or isProvisionalDraft) and not canUpdateSource %}
     {% set saveShortcut = false %}
 {% elseif isCurrent and canUpdateSource %}
     {% set saveShortcutRedirect = '{cpEditUrl}' %}
@@ -115,7 +123,8 @@
 {% set settingsHtml = (block('settings') ?? '')|trim %}
 
 {% set formActions = [] %}
-{% if isCurrent %}
+
+{% if isLikeCurrent %}
     {% if canUpdateSource and saveSourceAction %}
         {% set formActions = formActions|push({
             label: 'Save and continue editing'|t('app'),
@@ -208,6 +217,8 @@
     {% endif %}
 {% endif %}
 
+{% hook 'cp.elements.edit' %}
+
 {% block header %}
     <div class="flex flex-nowrap">
         {{ block('pageTitle') }}
@@ -237,13 +248,23 @@
         </div>
     {% endif %}
 
-    {% if isCurrent %}
+    {% if isLikeCurrent %}
         {% if saveDraftAction %}
             <div id="save-draft-btn-container">
                 {% if canUpdateSource and saveSourceAction %}
-                    <button type="button" id="save-draft-btn" class="btn">{{ 'Create a draft'|t('app') }}</button>
+                    {{ tag('button', {
+                        type: 'button',
+                        class: 'btn formsubmit',
+                        text: 'Create a draft'|t('app'),
+                        data: {
+                            action: saveDraftAction,
+                            redirect: hashedCpEditUrl,
+                            param: 'dropProvisional',
+                            value: 1,
+                        },
+                    }) }}
                 {% else %}
-                    <button type="submit" id="save-draft-btn" class="btn submit">{{ 'Create a draft'|t('app') }}</button>
+                    <button type="submit" class="btn submit">{{ 'Create a draft'|t('app') }}</button>
                     {% if formActions|length %}
                         <button type="button" class="btn menubtn" aria-label="{{ 'Actions'|t('app') }}" data-icon="settings"></button>
                         {% include '_layouts/components/form-action-menu' %}
@@ -296,9 +317,14 @@
 {% block main %}
     {% if not isRevision %}
         {# action and redirect params #}
-        {% if isCurrent and canUpdateSource and saveSourceAction %}
-            {# current revision -- user can update source #}
-            {{ actionInput(saveSourceAction, {id: 'action'}) }}
+        {% if isProvisionalDraft %}
+            {% if canUpdateSource and publishDraftAction %}
+                {{ actionInput(publishDraftAction, {id: 'action'}) }}
+            {% endif %}
+        {% elseif isCurrent %}
+            {% if canUpdateSource and saveSourceAction %}
+                {{ actionInput(saveSourceAction, {id: 'action'}) }}
+            {% endif %}
         {% elseif isDraft and saveDraftAction %}
             {{ actionInput(saveDraftAction, {id: 'action'}) }}
         {% endif %}
@@ -368,6 +394,7 @@
 
     <div id="meta-details" class="meta read-only">
         {% block meta %}
+            {% set metaElement = isProvisionalDraft ? element.getCanonical(true) : element %}
             {% if element.hasStatuses() %}
                 {% if isUnpublishedDraft %}
                     {% set statusColor = 'white' %}
@@ -385,16 +412,16 @@
             {% endif %}
             <div class="data">
                 <h5 class="heading">{{ "Created at"|t('app') }}</h5>
-                <div id="date-created-value" class="value">{{ element.dateCreated|datetime('short') }}</div>
+                <div id="date-created-value" class="value">{{ metaElement.dateCreated|datetime('short') }}</div>
             </div>
             <div class="data">
                 <h5 class="heading">{{ "Updated at"|t('app') }}</h5>
-                <div id="date-updated-value" class="value">{{ element.dateUpdated|datetime('short') }}</div>
+                <div id="date-updated-value" class="value">{{ metaElement.dateUpdated|datetime('short') }}</div>
             </div>
             {% if isRevision %}
                 {% set revisionNotes = element.revisionNotes %}
-            {% elseif not isDraft and element.currentRevision %}
-                {% set revisionNotes = element.currentRevision.revisionNotes %}
+            {% elseif isLikeCurrent and metaElement.currentRevision %}
+                {% set revisionNotes = metaElement.currentRevision.revisionNotes %}
             {% else %}
                 {% set revisionNotes = null %}
             {% endif %}
@@ -407,7 +434,7 @@
         {% endblock %}
     </div>
 
-    {% if (isCurrent and (hasRevisions ?? false)) or isDraft %}
+    {% if (isLikeCurrent and (hasRevisions ?? false)) or isDraft %}
         {{ forms.textarea({
             id: 'notes',
             class: ['nicetext'],
@@ -444,7 +471,9 @@
         .siteId(propEditableSiteIds)
         .anyStatus()
         .asArray() %}
-    {% if isDraft %}
+    {% if isProvisionalDraft %}
+        {% do siteStatusesQuery.provisionalDrafts() %}
+    {% elseif isDraft %}
         {% do siteStatusesQuery.drafts() %}
     {% elseif isRevision %}
         {% do siteStatusesQuery.revisions() %}
@@ -471,6 +500,7 @@
     enabled: element.enabled ? true : false,
     enabledForSite: element.enabled and element.getEnabledForSite(),
     isLive: isCurrent and element.enabled and element.getEnabledForSite() and element.getRoute(),
+    isProvisionalDraft: isProvisionalDraft,
     siteStatuses: siteStatuses,
     addlSiteIds: addlEditableSiteIds|values,
     cpEditUrl: element.cpEditUrl,

@@ -8,6 +8,7 @@
 namespace craft\web;
 
 use Craft;
+use craft\base\ElementInterface;
 use craft\events\RegisterTemplateRootsEvent;
 use craft\events\TemplateEvent;
 use craft\helpers\Cp;
@@ -284,8 +285,9 @@ class View extends \yii\web\View
             $this->setTemplateMode(self::TEMPLATE_MODE_SITE);
         }
 
-        // Register the cp.elements.element hook
+        // Register the CP hooks
         $this->hook('cp.elements.element', [$this, '_getCpElementHtml']);
+        $this->hook('cp.elements.edit', [$this, '_prepEditElementVariables']);
     }
 
     /**
@@ -2071,10 +2073,10 @@ JS;
     /**
      * Returns the HTML for an element in the control panel.
      *
-     * @param array &$context
+     * @param array $context
      * @return string|null
      */
-    private function _getCpElementHtml(array &$context)
+    private function _getCpElementHtml(array &$context): ?string
     {
         if (!isset($context['element'])) {
             return null;
@@ -2092,5 +2094,22 @@ JS;
             $size,
             $context['name'] ?? null
         );
+    }
+
+    /**
+     * Returns the HTML for an element in the control panel.
+     *
+     * @param array $context
+     * @return void
+     */
+    private function _prepEditElementVariables(array &$context): void
+    {
+        /** @var ElementInterface $element */
+        $element = $context['element'];
+
+        [$docTitle, $title] = Cp::editElementTitles($element);
+
+        $context['docTitle'] = $docTitle;
+        $context['title'] = $title;
     }
 }

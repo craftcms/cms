@@ -540,7 +540,9 @@ class Elements extends Component
 
         // Is this a draft/revision?
         if (!empty($data['draftId'])) {
-            $query->draftId($data['draftId']);
+            $query
+                ->draftId($data['draftId'])
+                ->provisionalDrafts(null);
         } else if (!empty($data['revisionId'])) {
             $query->revisionId($data['revisionId']);
         }
@@ -814,6 +816,7 @@ class Elements extends Component
             // Now the other sites
             $siteElements = $element::find()
                 ->drafts(null)
+                ->provisionalDrafts(null)
                 ->id($element->id)
                 ->siteId(ArrayHelper::withoutValue($supportedSiteIds, $element->id))
                 ->anyStatus()
@@ -1250,7 +1253,9 @@ class Elements extends Component
                         ->anyStatus();
 
                     if ($element->getIsDraft()) {
-                        $siteQuery->drafts();
+                        $siteQuery
+                            ->drafts()
+                            ->provisionalDrafts(null);
                     } else if ($element->getIsRevision()) {
                         $siteQuery->revisions();
                     }

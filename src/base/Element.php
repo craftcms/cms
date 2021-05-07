@@ -58,6 +58,7 @@ use Twig\Markup;
 use yii\base\Event;
 use yii\base\InvalidCallException;
 use yii\base\InvalidConfigException;
+use yii\base\NotSupportedException;
 use yii\base\UnknownPropertyException;
 use yii\db\ExpressionInterface;
 use yii\validators\NumberValidator;
@@ -2028,6 +2029,14 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @inheritdoc
      */
+    public function getIsProvisionalDraft(): bool
+    {
+        return $this->isProvisionalDraft;
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function getIsRevision(): bool
     {
         return !empty($this->revisionId);
@@ -2071,6 +2080,18 @@ abstract class Element extends Component implements ElementInterface
         }
 
         return $this->_canonical ?: $this;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function setCanonical(ElementInterface $element): void
+    {
+        if ($this->getIsCanonical()) {
+            throw new NotSupportedException('setCanonical() can only be called on a derivative element.');
+        }
+
+        $this->_canonical = $element;
     }
 
     /**
@@ -2366,7 +2387,7 @@ abstract class Element extends Component implements ElementInterface
         $cpEditUrl = $this->cpEditUrl();
 
         if ($cpEditUrl !== null) {
-            if ($this->getIsDraft()) {
+            if ($this->getIsDraft() && !$this->getIsProvisionalDraft()) {
                 $cpEditUrl = UrlHelper::urlWithParams($cpEditUrl, ['draftId' => $this->draftId]);
             } else if ($this->getIsRevision()) {
                 $cpEditUrl = UrlHelper::urlWithParams($cpEditUrl, ['revisionId' => $this->revisionId]);
@@ -2543,6 +2564,7 @@ abstract class Element extends Component implements ElementInterface
             ->structureId($this->structureId)
             ->siteId(['not', $this->siteId])
             ->drafts($this->getIsDraft())
+            ->provisionalDrafts($this->getIsProvisionalDraft())
             ->revisions($this->getIsRevision());
     }
 
@@ -2852,7 +2874,7 @@ abstract class Element extends Component implements ElementInterface
         if ($this->isAttributeModified($attribute)) {
             return [
                 self::ATTR_STATUS_MODIFIED,
-                Craft::t('app', 'This field was updated in this draft.'),
+                Craft::t('app', 'This field has been modified.'),
             ];
         }
 

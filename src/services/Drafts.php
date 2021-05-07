@@ -130,11 +130,18 @@ class Drafts extends Component
      * @param string|null $name The draft name
      * @param string|null $notes The draft notes
      * @param array $newAttributes any attributes to apply to the draft
+     * @param bool $provisional Whether to create a provisional draft
      * @return ElementInterface The new draft
      * @throws \Throwable
      */
-    public function createDraft(ElementInterface $source, int $creatorId, string $name = null, string $notes = null, array $newAttributes = []): ElementInterface
-    {
+    public function createDraft(
+        ElementInterface $source,
+        int $creatorId,
+        string $name = null,
+        string $notes = null,
+        array $newAttributes = [],
+        bool $provisional = false
+    ): ElementInterface {
         // Make sure the source isn't a draft or revision
         if ($source->getIsDraft() || $source->getIsRevision()) {
             throw new InvalidArgumentException('Cannot create a draft from another draft or revision.');
@@ -144,6 +151,7 @@ class Drafts extends Component
         $event = new DraftEvent([
             'source' => $source,
             'creatorId' => $creatorId,
+            'provisional' => $provisional,
             'draftName' => $name,
             'draftNotes' => $notes,
         ]);
@@ -158,9 +166,10 @@ class Drafts extends Component
         $transaction = $this->db->beginTransaction();
         try {
             // Create the draft row
-            $draftId = $this->insertDraftRow($name, $notes, $creatorId, $source->id, $source::trackChanges());
+            $draftId = $this->insertDraftRow($name, $notes, $creatorId, $source->id, $source::trackChanges(), $provisional);
 
             // Duplicate the element
+            $newAttributes['isProvisionalDraft'] = $provisional;
             $newAttributes['canonicalId'] = $source->id;
             $newAttributes['draftId'] = $draftId;
             $newAttributes['behaviors']['draft'] = [
@@ -184,6 +193,7 @@ class Drafts extends Component
             $this->trigger(self::EVENT_AFTER_CREATE_DRAFT, new DraftEvent([
                 'source' => $source,
                 'creatorId' => $creatorId,
+                'provisional' => $provisional,
                 'draftName' => $name,
                 'draftNotes' => $notes,
                 'draft' => $draft,
@@ -285,6 +295,7 @@ class Drafts extends Component
         if ($canonical->siteId != $draft->siteId) {
             $draft = $draft::find()
                 ->drafts()
+                ->provisionalDrafts(null)
                 ->id($draft->id)
                 ->siteId($canonical->siteId)
                 ->structureId($canonical->structureId)
@@ -446,15 +457,23 @@ class Drafts extends Component
      * @param int|null $creatorId
      * @param int|null $sourceId
      * @param bool $trackChanges
+     * @param bool $provisional
      * @return int The new draft ID
      * @throws DbException
      * @since 3.6.4
      */
-    public function insertDraftRow(?string $name, ?string $notes = null, int $creatorId = null, ?int $sourceId = null, bool $trackChanges = false): int
-    {
+    public function insertDraftRow(
+        ?string $name,
+        ?string $notes = null,
+        int $creatorId = null,
+        ?int $sourceId = null,
+        bool $trackChanges = false,
+        bool $provisional = false
+    ): int {
         Db::insert(Table::DRAFTS, [
             'sourceId' => $sourceId, // todo: remove this in v4
             'creatorId' => $creatorId,
+            'provisional' => $provisional,
             'name' => $name,
             'notes' => $notes,
             'trackChanges' => $trackChanges,
