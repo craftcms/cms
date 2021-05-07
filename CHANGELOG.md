@@ -6,6 +6,9 @@
 - Fixed an error that could occur if `craft\web\View::registerAssetFlashes()` was called after the PHP session had closed.
 - Fixed a bug where the control panel could show the wrong nag alert message for plugin licensing issues.
 
+### Security
+- Fixed an XSS vulnerability.
+
 ## 3.6.13 - 2021-05-04
 
 ### Changed
