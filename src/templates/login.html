@@ -38,41 +38,48 @@
             </h1>
 
             <form {{ attr(formAttributes) }}>
-                <div id="authentication-container">
-                    {% set chain = craft.app.authentication.cpAuthenticationChain %}
-
-                    {% if not chain.isComplete %}
-                        {{ chain.nextAuthenticationStep.fieldHtml|raw }}
+                {% set authenticationChain = craft.app.authentication.cpAuthenticationChain %}
+                <div class="authentication-chain" id="authentication" data-endpoint="authentication/perform-authentication">
+                    {% if not authenticationChain.isComplete %}
+                        {{ authenticationChain.nextAuthenticationStep.fieldHtml|raw }}
                     {% else %}
                         <div id="spinner-pending" class="spinner big over-bg"></div>
                     {% endif %}
                 </div>
 
-                {% if chain.recoveryScenario %}
-                    <div id="recovery-container" class="hidden">
-                        {% set recoveryChain = chain.recoveryChain %}
-
+                {% if authenticationChain.isNew %}
+                    {% set recoveryChain = craft.app.authentication.getCpRecoveryChain(true) %}
+                    <div class="authentication-chain hidden" id="recovery" data-endpoint="authentication/recover-account">
                         {% if not recoveryChain.isComplete %}
                             {{ recoveryChain.nextAuthenticationStep.fieldHtml|raw }}
                         {% endif %}
                     </div>
                 {% endif %}
 
-                {% if chain.isNew %}
+                {% set alternativeSteps = authenticationChain.alternativeSteps %}
+
+                <div id="alternatives" class="{{ (alternativeSteps|length == 0) ? 'hidden' : '' }}" >
+                    <label>Other options:</label>
+                    <ul>
+                        {% for type, name in authenticationChain.alternativeSteps %}
+                            <li rel="{{ type }}">{{ name }}</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+
+                {% if authenticationChain.isNew %}
                     <div id="login-form-bottom">
                         {% if showRememberMe %}
                             {{ forms.checkboxField({ id: 'rememberMe', label: 'Keep me logged in'|t('app') }) }}
                         {% endif %}
 
-                        {% if chain.recoveryScenario %}
-                            <button id="recover-account" type="button">{{ 'Trouble logging in?'|t('app') }}</button>
-                            <button id="cancel-recover"  class="hidden" type="button">{{ 'Back to login'|t('app') }}</button>
-                        {% endif %}
+                        <button id="recover-account" rel="recovery" type="button">{{ 'Trouble logging in?'|t('app') }}</button>
+                        <button id="cancel-recover" rel="authentication"   class="hidden" type="button">{{ 'Back to login'|t('app') }}</button>
                     </div>
                 {% endif %}
 
                 <div class="buttons">
-                    {% if not chain.isComplete %}
+                    {% if not authenticationChain.isComplete %}
                         <button id="submit" class="btn submit" type="submit">{{ 'Submit'|t('app') }}</button>
                         <div id="spinner" class="spinner over-bg hidden"></div>
                     {% endif %}
@@ -94,6 +101,9 @@
     </main>
 {% endset %}
 
+{% js %}
+    Craft.LoginForm = new LoginForm($('.authentication-chain'));
+{% endjs %}
 {% set noCookiesHtml %}
     <main>
         <div class="message-container no-access">

@@ -38,7 +38,8 @@ class LoginAsset extends AssetBundle
      * @inheritdoc
      */
     public $js = [
-        'LoginForm.min.js',
         'AuthenticationStep.min.js',
+        'LoginForm.min.js',
+        'VerificationCode.min.js',
     ];
 }

@@ -5,8 +5,7 @@ class Credentials extends AuthenticationStep {
         this.$loginNameInput = $('#loginName');
         this.$passwordInput = $('#password');
         this.stepType = "craft\\authentication\\type\\Credentials";
-        const isRecoveryStep = this.$loginNameInput.parents('#recovery-container').length > 0;
-        Craft.LoginForm.registerStepHandler(this.prepareData.bind(this), isRecoveryStep);
+        this.$loginNameInput.parents('.authentication-chain').data('handler', this.prepareData.bind(this));
         new Craft.PasswordInput(this.$passwordInput, {
             onToggleInput: ($newPasswordInput) => {
                 this.$passwordInput.off('input');

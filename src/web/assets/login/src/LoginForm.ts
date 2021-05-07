@@ -4,6 +4,10 @@ type AuthenticationRequest = {
     [key: string]: any
 }
 
+type AuthenticationAlternatives = {
+    [key: string]: any
+}
+
 type AuthenticationResponse = {
     returnUrl?: string
     success?: boolean
@@ -12,15 +16,14 @@ type AuthenticationResponse = {
     html?: string
     footHtml?: string
     stepComplete?: boolean
+    alternatives?: AuthenticationAlternatives
 }
 
 class LoginForm
 {
-    readonly authenticationEndpoint = 'authentication/perform-authentication';
-    readonly recoverEndpoint = 'authentication/recover-account';
+   readonly switchEndpoint = 'authentication/switch-authentication-step';
+
     readonly $loginForm = $('#login-form');
-    readonly $authContainer = $('#authentication-container');
-    readonly $recoverContainer = $('#recovery-container');
     readonly $errors = $('#login-errors');
     readonly $messages = $('#login-messages');
     readonly $spinner = $('#spinner');
@@ -29,39 +32,30 @@ class LoginForm
     readonly $rememberMeCheckbox = $('#rememberMe');
     readonly $cancelRecover = $('#cancel-recover');
     readonly $recoverAccount = $('#recover-account');
+    readonly $alternatives = $('#alternatives');
 
-    /**
-     * The authentication step handler function.
-     *
-     * @private
-     */
-    private authenticationStepHandler?: AuthenticationStepHandler;
+    private endpoints: {
+        [key:string]: string
+    } = {};
 
-    /**
-     * The recovery authentication step handler function.
-     *
-     * @private
-     */
-    private recoveryStepHandler?: AuthenticationStepHandler;
-
-    /**
-     * Whether currently the account recovery form is shown.
-     *
-     * @private
-     */
-    private showingRecoverForm = false;
-
-    constructor()
+    constructor($chainContainers: JQuery)
     {
+        for (const container of $chainContainers) {
+            this.endpoints[container.id] = $(container).data('endpoint');
+        }
+
         this.$loginForm.on('submit', this.invokeStepHandler.bind(this));
 
         if (this.$pendingSpinner.length) {
             this.$loginForm.trigger('submit');
         }
 
-
         this.$recoverAccount.on('click', this.switchForm.bind(this));
         this.$cancelRecover.on('click', this.switchForm.bind(this));
+
+        this.$alternatives.on('click', 'li', (ev) => {
+            this.switchStep($(ev.target).attr('rel')!);
+        });
     }
 
     /**
@@ -72,6 +66,7 @@ class LoginForm
      */
     public performStep(request: AuthenticationRequest): void
     {
+        const $container = this.getActiveContainer();
         request.scenario = Craft.cpLoginChain;
 
         if (this.$rememberMeCheckbox.prop('checked')) {
@@ -81,68 +76,73 @@ class LoginForm
         this.clearMessages();
         this.clearErrors();
 
-        let container: JQuery;
-        let handler: "recoveryStepHandler" | "authenticationStepHandler";
-        let endpoint: string;
+        Craft.postActionRequest($container.data('endpoint'), request, this.processResponse.bind(this));
+    }
 
-        if (this.showingRecoverForm) {
-            endpoint = this.recoverEndpoint;
-            container = this.$recoverContainer;
-            handler = "recoveryStepHandler";
-        } else {
-            endpoint = this.authenticationEndpoint;
-            container = this.$authContainer;
-            handler = "authenticationStepHandler";
-        }
+    public switchStep(stepType: string)
+    {
+        Craft.postActionRequest(this.switchEndpoint, {stepType: stepType, }, this.processResponse.bind(this));
+    }
 
-        Craft.postActionRequest(endpoint, request, (response: AuthenticationResponse, textStatus: string) => {
+    /**
+     * Process authentication response.
+     * @param response
+     * @param textStatus
+     * @protected
+     */
+    protected processResponse (response: AuthenticationResponse, textStatus: string)
+    {
+        if (textStatus == 'success') {
+            if (response.success && response.returnUrl?.length) {
+                window.location.href = response.returnUrl;
+            } else {
+                if (response.error) {
+                    this.showError(response.error);
+                    Garnish.shake(this.$loginForm);
+                }
 
-            if (textStatus == 'success') {
-                if (response.success && response.returnUrl?.length) {
-                    window.location.href = response.returnUrl;
+                if (response.message) {
+                    this.showMessage(response.message);
+                }
+
+                if (response.html) {
+                    this.getActiveContainer().html(response.html)
+                }
+
+                if (response.alternatives) {
+                    this.showAlternatives(response.alternatives);
                 } else {
-                    if (response.error) {
-                        this.showError(response.error);
-                        Garnish.shake(this.$loginForm);
-                    }
+                    this.hideAlternatives();
+                }
 
-                    if (response.message) {
-                        this.showMessage(response.message);
-                    }
 
-                    if (response.html) {
-                        container.html(response.html)
-                        this[handler] = undefined;
-                    }
+                if (response.footHtml) {
+                    const jsFiles = response.footHtml.match(/([^"']+\.js)/gm);
 
-                    if (response.footHtml) {
-                        const jsFiles = response.footHtml.match(/([^"']+\.js)/gm);
-
-                        // For some reason, Chrome will fail to load sourcemap properly when jQuery append is used
-                        // So roll our own JS file append-thing.
-                        if (jsFiles) {
-                            for (const jsFile of jsFiles) {
-                                let node = document.createElement('script');
-                                node.setAttribute('src', jsFile)
-                                document.body.appendChild(node);
-                            }
-                        // If that fails, use Craft's thing.
-                        } else {
-                            Craft.appendFootHtml(response.footHtml);
+                    // For some reason, Chrome will fail to load sourcemap properly when jQuery append is used
+                    // So roll our own JS file append-thing.
+                    if (jsFiles) {
+                        for (const jsFile of jsFiles) {
+                            let node = document.createElement('script');
+                            node.setAttribute('src', jsFile)
+                            document.body.appendChild(node);
                         }
-                    }
-
-                    // Just in case this was the first step, remove all the misc things.
-                    if (response.stepComplete) {
-                        this.$rememberMeCheckbox.parent().remove();
-                        this.$cancelRecover.remove();
-                        this.$recoverAccount.remove();
+                        // If that fails, use Craft's thing.
+                    } else {
+                        Craft.appendFootHtml(response.footHtml);
                     }
                 }
-            }
 
-            this.enableForm();
-        });
+                // Just in case this was the first step, remove all the misc things.
+                if (response.stepComplete) {
+                    this.$rememberMeCheckbox.parent().remove();
+                    this.$cancelRecover.remove();
+                    this.$recoverAccount.remove();
+                }
+            }
+        }
+
+        this.enableForm();
     }
 
     /**
@@ -173,30 +173,29 @@ class LoginForm
             .velocity('fadeIn');
     }
 
-    /**
-     * Register an authentication step handler function that performs validation and data preparation.
-     * It must return either a hash of data to be submitted for authentication or a string which is then interpreted as an error message.
-     * If an empty string is returned, no action is taken.
-     *
-     * @param handler
-     * @param isRecoveryStep whether this is an account recovery step handler.
-     */
-    public registerStepHandler(handler: AuthenticationStepHandler, isRecoveryStep = false): void
+    public showAlternatives(alternatives: AuthenticationAlternatives)
     {
-        if (isRecoveryStep) {
-            this.recoveryStepHandler = handler;
-        } else {
-            this.authenticationStepHandler = handler;
+        this.$alternatives.removeClass('hidden');
+        const $ul = this.$alternatives.find('ul');
+
+        for (const [stepType, description] of Object.entries(alternatives)) {
+            $ul.append($(`<li rel="${stepType}">${description}</li>`));
         }
     }
 
+    public hideAlternatives()
+    {
+        this.$alternatives.addClass('hidden');
+        this.$alternatives.find('ul').empty();
+    }
+
     /**
-     * Invoke the current authentication or recovery step handler.
+     * Invoke the current step handler bound to the authentication container
      * @param ev
      */
     protected invokeStepHandler(ev: any): boolean
     {
-        const handler = this.showingRecoverForm ? this.recoveryStepHandler : this.authenticationStepHandler;
+        const handler = this.getActiveContainer().data('handler');
 
         if (typeof handler == "function") {
             const data = handler(ev);
@@ -230,12 +229,12 @@ class LoginForm
      */
     protected switchForm()
     {
-        this.$authContainer.toggleClass('hidden');
-        this.$recoverContainer.toggleClass('hidden');
         this.$cancelRecover.toggleClass('hidden');
         this.$recoverAccount.toggleClass('hidden');
 
-        this.showingRecoverForm = !this.showingRecoverForm;
+        for (const containerId of Object.keys(this.endpoints)) {
+            $(containerId).toggleClass('hidden');
+        }
     }
 
     /**
@@ -259,6 +258,9 @@ class LoginForm
         this.$submit.removeClass('active');
         this.$spinner.removeClass('hidden');
     }
-}
 
-Craft.LoginForm = new LoginForm();
+    protected getActiveContainer(): JQuery
+    {
+        return $('.authentication-chain').not('.hidden');
+    }
+}

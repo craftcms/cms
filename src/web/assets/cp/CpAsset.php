@@ -330,6 +330,7 @@ JS;
             'clientOs' => $request->getClientOs(),
             'cpTrigger' => $generalConfig->cpTrigger,
             'cpLoginChain' => Authentication::CP_AUTHENTICATION_CHAIN,
+            'cpRecoveryChain' => Authentication::CP_RECOVERY_CHAIN,
             'datepickerOptions' => $this->_datepickerOptions($formattingLocale, $locale, $currentUser, $generalConfig),
             'defaultCookieOptions' => $this->_defaultCookieOptions(),
             'defaultIndexCriteria' => [],

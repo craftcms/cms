@@ -21,6 +21,7 @@ class Authentication extends Component
 
     public const CONFIG_AUTH_CHAINS = 'authentication-chains';
     public const CP_AUTHENTICATION_CHAIN = 'cpLogin';
+    public const CP_RECOVERY_CHAIN = 'cpRecovery';
 
     /**
      * Return an authentication chain based on a scenario.
@@ -29,7 +30,7 @@ class Authentication extends Component
      * @return Chain
      * @throws InvalidConfigException
      */
-    public function getAuthenticationChain(string $scenario): Chain
+    public function getAuthenticationChain(string $scenario, $forceNew = false): Chain
     {
         $chainConfig = $this->getScenarioConfiguration($scenario);
 
@@ -37,10 +38,10 @@ class Authentication extends Component
             throw new InvalidConfigException("Unable to configure authentication chain for `$scenario`");
         }
 
-        $state = $this->getAuthenticationState($scenario);
+        $state = $forceNew ? Craft::createObject(AuthenticationState::class, [['authenticationScenario' => $scenario]]) : $this->getAuthenticationState($scenario);
 
         /** @var Chain $chain */
-        $chain = Craft::createObject(Chain::class, [$state, $chainConfig->steps , $chainConfig->recoveryScenario]);
+        $chain = Craft::createObject(Chain::class, [$state, $chainConfig->steps]);
 
         return $chain;
     }
@@ -48,12 +49,25 @@ class Authentication extends Component
     /**
      * Get the authentication chain for control panel login.
      *
+     * @param bool $forceNew whether a new state should be forced.
      * @return Chain
      * @throws InvalidConfigException
      */
-    public function getCpAuthenticationChain(): Chain
+    public function getCpAuthenticationChain($forceNew = false): Chain
     {
-        return $this->getAuthenticationChain(self::CP_AUTHENTICATION_CHAIN);
+        return $this->getAuthenticationChain(self::CP_AUTHENTICATION_CHAIN, $forceNew);
+    }
+
+    /**
+     * Get the recovery chain for control panel login.
+     *
+     * @param bool $forceNew whether a new state should be forced.
+     * @return Chain
+     * @throws InvalidConfigException
+     */
+    public function getCpRecoveryChain($forceNew = false): Chain
+    {
+        return $this->getAuthenticationChain(self::CP_RECOVERY_CHAIN, $forceNew);
     }
 
     /**

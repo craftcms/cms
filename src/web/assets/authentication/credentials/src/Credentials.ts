@@ -7,8 +7,8 @@ class Credentials extends AuthenticationStep
     constructor()
     {
         super();
-        const isRecoveryStep = this.$loginNameInput.parents('#recovery-container').length > 0;
-        Craft.LoginForm.registerStepHandler(this.prepareData.bind(this), isRecoveryStep);
+
+        this.$loginNameInput.parents('.authentication-chain').data('handler', this.prepareData.bind(this));
 
         new Craft.PasswordInput(this.$passwordInput, {
             onToggleInput: ($newPasswordInput: JQuery): void => {

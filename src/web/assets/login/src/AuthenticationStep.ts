@@ -1,3 +1,5 @@
+import SubmitEvent = JQuery.SubmitEvent;
+
 abstract class AuthenticationStep
 {
     protected validateOnInput = false;
@@ -18,7 +20,7 @@ abstract class AuthenticationStep
         }
     }
 
-    public prepareData(ev: any): AuthenticationRequest | string
+    public prepareData(ev: SubmitEvent): AuthenticationRequest | string
     {
         const error = this.validate();
 

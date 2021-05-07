@@ -4,8 +4,7 @@ class Email extends AuthenticationStep {
         super();
         this.$email = $('#email');
         this.stepType = "craft\\authentication\\type\\Email";
-        const isRecoveryStep = this.$email.parents('#recovery-container').length > 0;
-        Craft.LoginForm.registerStepHandler(this.prepareData.bind(this), isRecoveryStep);
+        this.$email.parents('.authentication-chain').data('handler', this.prepareData.bind(this));
         this.$email.on('input', this.onInput.bind(this));
     }
     validate() {
