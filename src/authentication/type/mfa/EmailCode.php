@@ -63,7 +63,7 @@ class EmailCode extends Type
             ->setTo($user);
 
         if ($message->send()) {
-            $session->setNotice(Craft::t('app', 'Verification email sent!' . $code));
+            $session->setNotice(Craft::t('app', 'Verification email sent!'));
         } else {
             $session->setError(Craft::t('app', 'Failed to send verification email.'));
         }
