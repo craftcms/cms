@@ -488,7 +488,7 @@ class EntryRevisionsController extends BaseEntriesController
             ]);
         }
 
-        if ($draft->getIsProvisionalDraft()) {
+        if ($draft->getIsProvisionalDraft() || $draft->getIsUnpublishedDraft()) {
             $this->setSuccessFlash(Craft::t('app', 'Entry saved.'));
         } else {
             $this->setSuccessFlash(Craft::t('app', 'Draft published.'));

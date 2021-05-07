@@ -42,9 +42,10 @@
 
 {% set isDraft = element.getIsDraft() %}
 {% set isProvisionalDraft = element.getIsProvisionalDraft() %}
+{% set isUnpublishedDraft = element.getIsUnpublishedDraft() %}
 {% set isRevision = element.getIsRevision() %}
 {% set isCurrent = not isDraft and not isRevision %}
-{% set isLikeCurrent = isCurrent or isProvisionalDraft %}
+{% set isLikeCurrent = isCurrent or isProvisionalDraft or isUnpublishedDraft %}
 
 {% set allSites = craft.app.isMultiSite ? element.getSupportedSites() : [element.siteId] %}
 {% set allEditableSiteIds = craft.app.sites.getEditableSiteIds() %}
@@ -53,7 +54,6 @@
 {% set isMultiSiteElement = craft.app.isMultiSite and allSites|length > 1 %}
 {% set addlEditableSiteIds = allSites|column(s => s.siteId ?? s)|diff(propSiteIds)|intersect(allEditableSiteIds) %}
 {% set canEditMultipleSites = isMultiSiteElement and (propEditableSiteIds|length > 1 or addlEditableSiteIds|length) %}
-{% set isUnpublishedDraft = element.getIsUnpublishedDraft() %}
 
 {# See if this is a new site that isn’t supported by the source element yet #}
 {% if isUnpublishedDraft %}
@@ -131,16 +131,23 @@
             redirect: hashedCpEditUrl,
             shortcut: true,
             retainScroll: true,
+            data: {
+                autosave: false,
+            },
         }) %}
         {% if addAnotherRedirectUrl %}
             {% set formActions = formActions|push({
                 label: 'Save and add another'|t('app'),
+                action: isUnpublishedDraft ? publishDraftAction : null,
                 redirect: addAnotherRedirectUrl|hash,
                 shortcut: true,
                 shift: true,
+                data: {
+                    autosave: false,
+                },
             }) %}
         {% endif %}
-        {% if canDuplicateSource and duplicateSourceAction %}
+        {% if not isUnpublishedDraft and canDuplicateSource and duplicateSourceAction %}
             {% set formActions = formActions|push({
                 label: 'Save as a new {type}'|t('app', {
                     type: element.lowerDisplayName(),
@@ -163,13 +170,16 @@
             }),
         }) %}
     {% endif %}
-    {% if canDeleteSource and deleteSourceAction %}
+    {% if (
+        (isUnpublishedDraft and canDeleteDraft and deleteDraftAction) or
+        (not isUnpublishedDraft and canDeleteSource and deleteSourceAction)
+    ) %}
         {% set formActions = formActions|push({
             destructive: true,
             label: 'Delete {type}'|t('app', {
                 type: element.lowerDisplayName()
             }),
-            action: deleteSourceAction,
+            action: isUnpublishedDraft ? deleteDraftAction : deleteSourceAction,
             redirect: (redirectUrl ~ '#')|hash,
             confirm: 'Are you sure you want to delete this {type}?'|t('app', {
                 type: element.lowerDisplayName(),
@@ -211,7 +221,7 @@
             destructive: true,
             label: 'Delete draft'|t('app'),
             action: deleteDraftAction,
-            redirect: isUnpublishedDraft ? redirectUrl|hash : hashedCpEditUrl,
+            redirect: hashedCpEditUrl,
             confirm: 'Are you sure you want to delete this draft?'|t('app'),
         }) %}
     {% endif %}
@@ -233,7 +243,7 @@
     {% if isMultiSiteElement or saveDraftAction or element.find().revisionOf(element).exists() %}
         {% include "_includes/revisionmenu" with {
             supportedSiteIds: propSiteIds,
-            canHaveDrafts: saveDraftAction is not empty,
+            canHaveDrafts: not isUnpublishedDraft and saveDraftAction is not empty,
         } %}
     {% endif %}
 {% endblock %}
@@ -249,7 +259,7 @@
     {% endif %}
 
     {% if isLikeCurrent %}
-        {% if saveDraftAction %}
+        {% if not isUnpublishedDraft and saveDraftAction %}
             <div id="save-draft-btn-container">
                 {% if canUpdateSource and saveSourceAction %}
                     {{ tag('button', {
@@ -317,7 +327,7 @@
 {% block main %}
     {% if not isRevision %}
         {# action and redirect params #}
-        {% if isProvisionalDraft %}
+        {% if isProvisionalDraft or isUnpublishedDraft %}
             {% if canUpdateSource and publishDraftAction %}
                 {{ actionInput(publishDraftAction, {id: 'action'}) }}
             {% endif %}

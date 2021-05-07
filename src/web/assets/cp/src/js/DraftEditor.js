@@ -88,7 +88,7 @@ Craft.DraftEditor = Garnish.Base.extend({
 
         if (this.settings.isProvisionalDraft) {
             this.initForProvisionalDraft();
-        } else if (this.settings.draftId) {
+        } else if (this.settings.draftId && !this.settings.isUnpublishedDraft) {
             this.initForDraft();
         } else if (!this.settings.canUpdateSource) {
             // Override the save shortcut to create a draft too
@@ -430,7 +430,7 @@ Craft.DraftEditor = Garnish.Base.extend({
      * @return {string}
      */
     _saveSuccessMessage: function() {
-        return this.settings.isProvisionalDraft
+        return (this.settings.isProvisionalDraft || this.settings.isUnpublishedDraft)
             ? Craft.t('app', 'Your changes have been stored.')
             : Craft.t('app', 'The draft has been saved.');
     },
@@ -439,7 +439,7 @@ Craft.DraftEditor = Garnish.Base.extend({
      * @return {string}
      */
     _saveFailMessage: function() {
-        return this.settings.isProvisionalDraft
+        return (this.settings.isProvisionalDraft || this.settings.isUnpublishedDraft)
             ? Craft.t('app', 'Your changes could not be stored.')
             : Craft.t('app', 'The draft could not be saved.');
     },
