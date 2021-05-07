@@ -137,6 +137,7 @@ class ResaveController extends Controller
                 $options[] = 'section';
                 $options[] = 'type';
                 $options[] = 'drafts';
+                $options[] = 'provisionalDrafts';
                 break;
             case 'matrix-blocks':
                 $options[] = 'field';
