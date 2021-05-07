@@ -28,7 +28,7 @@ class Authentication
      * @return TypeInterface
      * @throws InvalidConfigException
      */
-    public static function createTypeFromConfig(array $typeConfig, AuthenticationState $state): TypeInterface
+    public static function createStepFromConfig(array $typeConfig, AuthenticationState $state): TypeInterface
     {
         $class = $typeConfig['type'];
 

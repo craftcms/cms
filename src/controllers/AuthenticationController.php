@@ -40,10 +40,11 @@ class AuthenticationController extends Controller
         $this->requireAcceptsJson();
 
         $scenario = Craft::$app->getRequest()->getRequiredBodyParam('scenario');
+        $stepType = Craft::$app->getRequest()->getRequiredBodyParam('stepType');
         $chain = Craft::$app->getAuthentication()->getAuthenticationChain($scenario);
 
         try {
-            $step = $chain->getNextAuthenticationStep();
+            $step = $chain->getNextAuthenticationStep($stepType);
         } catch (InvalidConfigException $exception) {
             throw new BadRequestHttpException('Unable to authenticate', 0, $exception);
         }
@@ -62,7 +63,7 @@ class AuthenticationController extends Controller
                 }
             }
 
-            $success = $chain->performAuthenticationStep($data);
+            $success = $chain->performAuthenticationStep($stepType, $data);
 
             if ($success && Craft::$app->getRequest()->getBodyParam('rememberMe')) {
                 $session->set(self::REMEMBER_ME, true);
@@ -101,6 +102,7 @@ class AuthenticationController extends Controller
             $step = $chain->getNextAuthenticationStep();
             $output['stepComplete'] = true;
             $output['html'] = $step->getFieldHtml();
+            $output['alternatives'] = $chain->getAlternativeSteps(get_class($step));
             $output['footHtml'] = Craft::$app->getView()->getBodyHtml();
         }
 
@@ -118,6 +120,7 @@ class AuthenticationController extends Controller
 
         // Set up the recovery chain
         $scenario = Craft::$app->getRequest()->getRequiredBodyParam('scenario');
+        $stepType = Craft::$app->getRequest()->getRequiredBodyParam('stepType');
         $authenticationService = Craft::$app->getAuthentication();
         $authenticationChain = $authenticationService->getAuthenticationChain($scenario);
         $recoveryChain = $authenticationChain->getRecoveryChain();
@@ -127,7 +130,7 @@ class AuthenticationController extends Controller
         }
 
         try {
-            $step = $recoveryChain->getNextAuthenticationStep();
+            $step = $recoveryChain->getNextAuthenticationStep($stepType);
         } catch (InvalidConfigException $exception) {
             throw new BadRequestHttpException('Unable to recover account', 0, $exception);
         }
@@ -144,10 +147,9 @@ class AuthenticationController extends Controller
                         $data[$fieldName] = $value;
                     }
                 }
-
             }
 
-            $success = $recoveryChain->performAuthenticationStep($data);
+            $success = $recoveryChain->performAuthenticationStep($stepType, $data);
         }
 
         $output = [];

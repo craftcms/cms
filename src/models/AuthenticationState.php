@@ -118,7 +118,7 @@ class AuthenticationState extends Model
      *
      * @param ?string $stepType
      */
-    protected function setLastCompletedStep(string $stepType = null): void
+    protected function setLastCompletedStepType(string $stepType = null): void
     {
         $this->lastCompletedStepType = $stepType;
     }

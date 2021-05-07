@@ -22,5 +22,4 @@ class AuthenticationChainConfiguration extends Model
 {
     public array $steps = [];
     public string $scenario = '';
-    public ?string $recoveryScenario = null;
 }

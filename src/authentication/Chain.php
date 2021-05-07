@@ -6,6 +6,7 @@ namespace craft\authentication;
 use Craft;
 use craft\authentication\base\TypeInterface;
 use craft\elements\User;
+use craft\helpers\ArrayHelper;
 use craft\helpers\Authentication;
 use craft\models\AuthenticationState;
 use yii\base\InvalidConfigException;
@@ -14,20 +15,25 @@ class Chain
 {
     private array $_steps;
     private AuthenticationState $_state;
-    private ?string $_recoveryScenario;
 
     /**
      * Authentication chain constructor.
      *
      * @param AuthenticationState $state Current state of authentication
      * @param array $steps A list of steps that have to be completed.
-     * @param ?string $recoveryScenario A recovery scenario, if there is one.
      */
-    public function __construct(AuthenticationState $state, array $steps, ?string $recoveryScenario)
+    public function __construct(AuthenticationState $state, array $steps)
     {
+        // Normalize all steps to be an array of types.
+        foreach ($steps as &$step) {
+            if (ArrayHelper::isAssociative($step)) {
+                $step = [$step];
+            }
+        }
+        unset ($step);
+
         $this->_steps = $steps;
         $this->_state = $state;
-        $this->_recoveryScenario = $recoveryScenario;
     }
 
     /**
@@ -37,7 +43,10 @@ class Chain
      */
     public function getIsComplete(): bool
     {
-        return $this->_getLastCompletedStepType() === (end($this->_steps)['type'] ?? null);
+        $lastCompletedStepType = $this->_getLastCompletedStepType();
+        $finalSteps = (array)end($this->_steps);
+
+        return $this->_isPossibleStepType((string)$lastCompletedStepType, $finalSteps);
     }
 
     /**
@@ -61,40 +70,17 @@ class Chain
     }
 
     /**
-     * Return the name of the recovery scenario for this authentication chain.
-     *
-     * @return string|null
-     */
-    public function getRecoveryScenario(): ?string
-    {
-        return $this->_recoveryScenario;
-    }
-
-    /**
-     * Return the recovery chain, if configured.
-     *
-     * @return Chain|null
-     */
-    public function getRecoveryChain(): ?Chain
-    {
-        if (!$this->getRecoveryScenario()) {
-            return null;
-        }
-
-        return Craft::$app->getAuthentication()->getAuthenticationChain($this->getRecoveryScenario());
-    }
-
-    /**
      * Perform an authentication step.
      *
+     * @param string $stepType The step type to be performed
      * @param array $credentials
      * @return bool `true`, if at least one step was successfully performed.
      * @throws InvalidConfigException If unable to determine the next authentication step and chain is not complete.
      */
-    public function performAuthenticationStep(array $credentials = []): bool
+    public function performAuthenticationStep(string $stepType, array $credentials = []): bool
     {
         /** @var TypeInterface $nextStep */
-        if ($nextStep = $this->getNextAuthenticationStep()) {
+        if ($nextStep = $this->getNextAuthenticationStep($stepType)) {
             $this->_state = $nextStep->authenticate($credentials, $this->_getResolvedUser());
 
             // Write it down
@@ -112,7 +98,7 @@ class Chain
                 // If next step is not interactive, repeat
                 if (!$nextStep->getRequiresInput()) {
                     // Intentionally not use the return result
-                    $this->performAuthenticationStep();
+                    $this->performAuthenticationStep(get_class($nextStep));
                 }
             }
 
@@ -123,33 +109,62 @@ class Chain
     }
 
     /**
+     * For a given step return a list of alternative steps that can be performed.
+     * @param string $chosenStep
+     * @return array
+     */
+    public function getAlternativeSteps(string $chosenStep = ''): array
+    {
+        if ($this->getIsComplete()) {
+            return [];
+        }
+
+        $availableTypes = $this->_getAvailableStepTypes();
+        $alternativeSteps = [];
+
+        if (empty($chosenStep)) {
+            $chosenStep = reset($availableTypes)['type'];
+        }
+        foreach ($availableTypes as $config) {
+            if ($config['type'] !== $chosenStep) {
+                $step = $config['type'];
+                $alternativeSteps[$step] = $step::displayName();
+            }
+        }
+
+        return $alternativeSteps;
+    }
+
+    /**
      * Get next authentication step.
      *
+     * @param string $stepType the step type to use, if multiple possible
      * @return TypeInterface|null
      * @throws InvalidConfigException if chain is not complete, yet all the steps are done.
      */
-    public function getNextAuthenticationStep(): ?TypeInterface
+    public function getNextAuthenticationStep(string $stepType = ''): ?TypeInterface
     {
         if ($this->getIsComplete()) {
             return null;
         }
 
-        $lastCompleted = $this->_getLastCompletedStepType();
+        $availableTypes = $this->_getAvailableStepTypes();
 
-        // If no steps performed, return the first one
-        if (!$lastCompleted) {
-            return Authentication::createTypeFromConfig(reset($this->_steps), $this->_state);
+        if (empty($availableTypes)) {
+            throw new InvalidConfigException("Unterminated authentication chain - {$this->_state->getAuthenticationScenario()}, last completed step - {$this->_getLastCompletedStepType()}");
         }
 
-        foreach ($this->_steps as $index => $authenticationStep) {
-            // If the current step was the last completed
-            if ($authenticationStep['type'] === $lastCompleted) {
-                // Return the next step. This should never be false, as it's covered by checking if chain is complete
-                return Authentication::createTypeFromConfig($this->_steps[$index + 1], $this->_state);
+        if (!empty($stepType)) {
+            foreach ($availableTypes as $availableType) {
+                if ($stepType === $availableType['type']) {
+                    return Authentication::createStepFromConfig($availableType, $this->_state);
+                }
             }
+
+            throw new InvalidConfigException("Invalid authentication chain configuration. {$stepType} type requested, but not available at this point of the chain.");
         }
 
-        throw new InvalidConfigException("Unterminated authentication chain - {$this->_state->getAuthenticationScenario()}, last completed step - {$this->_getLastCompletedStepType()}");
+        return Authentication::createStepFromConfig(reset($availableTypes), $this->_state);
     }
 
     /**
@@ -170,5 +185,51 @@ class Chain
     private function _getResolvedUser(): ?User
     {
         return $this->_state->getResolvedUser();
+    }
+
+    /**
+     * Given a step type and a list of step configurations, return true, if step type is part of the list.
+     *
+     * @param string $stepType
+     * @param array $availableStepConfigurations
+     * @return bool
+     */
+    private function _isPossibleStepType(string $stepType, array $availableStepConfigurations): bool
+    {
+        foreach ($availableStepConfigurations as $stepConfiguration) {
+            if ($stepType === $stepConfiguration['type']) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Get available step types for the current state.
+     *
+     * @return array
+     */
+    private function _getAvailableStepTypes(): array
+    {
+        $lastCompletedStepType = $this->_getLastCompletedStepType();
+        $availableTypes = [];
+
+        // If no steps performed, return the first one
+        if (!$lastCompletedStepType) {
+            $availableTypes = (array)reset($this->_steps);
+        } else {
+            foreach ($this->_steps as $index => $authenticationSteps) {
+                $authenticationSteps = (array)$authenticationSteps;
+
+                // If we hit a match, we're after the next step
+                if ($this->_isPossibleStepType($lastCompletedStepType, $authenticationSteps)) {
+                    $availableTypes = (array)$this->_steps[$index + 1];
+                    break;
+                }
+            }
+        }
+
+        return $availableTypes;
     }
 }
