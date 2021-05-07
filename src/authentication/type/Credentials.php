@@ -46,9 +46,9 @@ class Credentials extends Type
      */
     public function authenticate(array $credentials, User $user = null): AuthenticationState
     {
-        $potentialUser = Craft::$app->getUsers()->getUserByUsernameOrEmail($credentials['loginName']);
+        $potentialUser = !empty($credentials['loginName']) ? Craft::$app->getUsers()->getUserByUsernameOrEmail($credentials['loginName']) : null;
 
-        if (!$potentialUser || $potentialUser->password === null) {
+        if (!empty($credentials['password']) || !$potentialUser || $potentialUser->password === null) {
             // Delay again to match $user->authenticate()'s delay
             Craft::$app->getSecurity()->validatePassword('p@ss1w0rd', '$2y$13$nj9aiBeb7RfEfYP3Cum6Revyu14QelGGxwcnFUKXIrQUitSodEPRi');
             return $this->failToAuthenticate();

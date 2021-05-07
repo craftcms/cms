@@ -45,6 +45,10 @@ class Email extends Type
      */
     public function authenticate(array $credentials, User $user = null): AuthenticationState
     {
+        if (empty($credentials['email'])) {
+            return $this->state;
+        }
+
         $email = $credentials['email'];
         $potentialUser = User::find()->email($email)->one();
 

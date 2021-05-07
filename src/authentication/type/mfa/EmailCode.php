@@ -74,7 +74,7 @@ class EmailCode extends Type
      */
     public function authenticate(array $credentials, User $user = null): AuthenticationState
     {
-        if (is_null($user)) {
+        if (is_null($user) || empty($credentials['verification-code'])) {
             return $this->state;
         }
 
