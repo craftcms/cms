@@ -19,15 +19,15 @@ class Email extends Type
     /**
      * @inheritdoc
      */
-    public function getName(): string
+    public static function displayName(): string
     {
-        return Craft::t('app', 'Email');
+        return Craft::t('app', 'Authenticate by email');
     }
 
     /**
      * @inheritdoc
      */
-    public function getDescription(): string
+    public static function getDescription(): string
     {
         return Craft::t('app', 'Authenticate with email');
     }

@@ -20,15 +20,15 @@ class Credentials extends Type
     /**
      * @inheritdoc
      */
-    public function getName(): string
+    public static function displayName(): string
     {
-        return Craft::t('app', 'Credentials');
+        return Craft::t('app', 'Authenticate with credentials');
     }
 
     /**
      * @inheritdoc
      */
-    public function getDescription(): string
+    public static function getDescription(): string
     {
         return Craft::t('app', 'Authenticate using username or email, and password.');
     }

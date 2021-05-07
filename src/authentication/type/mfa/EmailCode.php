@@ -24,17 +24,17 @@ class EmailCode extends Type
     /**
      * @inheritdoc
      */
-    public function getName(): string
+    public static function displayName(): string
     {
-        return Craft::t('app', 'Email code');
+        return Craft::t('app', 'Authenticate with email');
     }
 
     /**
      * @inheritdoc
      */
-    public function getDescription(): string
+    public static function getDescription(): string
     {
-        return Craft::t('app', 'Send an email with the verification code');
+        return Craft::t('app', 'Receive an email with the verification code');
     }
 
     /**

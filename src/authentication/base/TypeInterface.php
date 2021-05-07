@@ -57,4 +57,11 @@ interface TypeInterface
      * @return bool
      */
     public function getIsApplicable(User $user): bool;
+
+    /**
+     * Return the description of the authentication step.
+     *
+     * @return string
+     */
+    public static function getDescription(): string;
 }

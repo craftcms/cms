@@ -35,7 +35,7 @@ class IpAddress extends Type
     /**
      * @inheritdoc
      */
-    public function getName(): string
+    public static function displayName(): string
     {
         return Craft::t('app', 'IP address filter');
     }
@@ -43,7 +43,7 @@ class IpAddress extends Type
     /**
      * @inheritdoc
      */
-    public function getDescription(): string
+    public static function getDescription(): string
     {
         return Craft::t('app', 'Filter by user IP address');
     }

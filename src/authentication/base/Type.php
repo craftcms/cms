@@ -48,16 +48,6 @@ abstract class Type extends Component implements TypeInterface
     }
 
     /**
-     * Return the description of the authentication step.
-     *
-     * @return string
-     */
-    public function getDescription(): string
-    {
-        return '';
-    }
-
-    /**
      * @inheritdoc
      */
     public function prepareForAuthentication(User $user = null): void
