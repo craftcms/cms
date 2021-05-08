@@ -46,6 +46,7 @@
 - Added `craft\services\Elements::mergeCanonicalChanges()`.
 - Added `craft\services\Elements::updateCanonicalElement()`.
 - Added `craft\services\Matrix::mergeCanonicalChanges()`.
+- Added `craft\web\Request::checkIfActionRequest()`.
 - Added `craft\web\View::clearCssBuffer()`.
 - Added `craft\web\View::clearScriptBuffer()`.
 - Added `craft\web\View::startCssBuffer()`.
@@ -102,6 +103,7 @@
 ### Fixed
 - Fixed a bug where Craft would place the `beginBody()` tag incorrectly if a template’s `<body>` tag had attribute values that included `>` characters. ([#7779](https://github.com/craftcms/cms/issues/7779))
 - Fixed a bug where updated attributes and fields weren’t getting tracked when publishing a draft or reverting an entry to a revision. 
+- Fixed a bug where it wasn’t easily possible to submit forms to controller actions from Live Preview pages. ([#7885](https://github.com/craftcms/cms/issues/7885))
 
 ### Security
 - The default `allowedFileExtensions` config setting value no longer includes `xml`.

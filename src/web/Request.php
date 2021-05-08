@@ -628,7 +628,7 @@ class Request extends \yii\web\Request
      */
     public function getIsActionRequest(): bool
     {
-        $this->_checkRequestType();
+        $this->checkIfActionRequest();
         return $this->_isActionRequest;
     }
 
@@ -640,7 +640,7 @@ class Request extends \yii\web\Request
      */
     public function getIsLoginRequest(): bool
     {
-        $this->_checkRequestType();
+        $this->checkIfActionRequest();
         return $this->_isLoginRequest;
     }
 
@@ -652,7 +652,7 @@ class Request extends \yii\web\Request
      */
     public function getIsSingleActionRequest(): bool
     {
-        $this->_checkRequestType();
+        $this->checkIfActionRequest();
         return $this->_isSingleActionRequest;
     }
 
@@ -663,8 +663,7 @@ class Request extends \yii\web\Request
      */
     public function getActionSegments()
     {
-        $this->_checkRequestType();
-
+        $this->checkIfActionRequest();
         return $this->_actionSegments;
     }
 
@@ -1575,15 +1574,28 @@ class Request extends \yii\web\Request
 
     /**
      * Checks to see if this is an action request.
+     *
+     * @param bool $force Whether to recheck even if we already know
+     * @param bool $ignoreToken Whether to ignore the token if there is one
+     * @return void
+     * @since 3.7.0
      */
-    private function _checkRequestType()
+    public function checkIfActionRequest(bool $force = false, bool $ignoreToken = false): void
     {
         if ($this->_checkedRequestType) {
-            return;
+            if (!$force) {
+                return;
+            }
+
+            // Reset
+            $this->_isActionRequest = false;
+            $this->_actionSegments = null;
+            $this->_isSingleActionRequest = false;
+            $this->_isLoginRequest = false;
         }
 
         // If there's a token on the request, then that should take precedence over everything else
-        if ($this->getToken() === null) {
+        if ($ignoreToken || $this->getToken() === null) {
             $firstSegment = $this->getSegment(1);
 
             // Is this an action request?
