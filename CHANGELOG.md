@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Changed
+- The `plugin/uninstall` console command now has a `--force` flag. ([#7907](https://github.com/craftcms/cms/pull/7907))
+- `craft\services\Plugins::uninstallPlugin()` now has a `$force` argument. ([#7907](https://github.com/craftcms/cms/pull/7907))
+
 ### Fixed
 - Fixed an error that could occur if `craft\web\View::registerAssetFlashes()` was called after the PHP session had closed.
 - Fixed a bug where the control panel could show the wrong nag alert message for plugin licensing issues.
