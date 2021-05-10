@@ -71,7 +71,7 @@ class LoginForm {
                 if (response.html) {
                     this.getActiveContainer().html(response.html);
                 }
-                if (response.alternatives) {
+                if (response.alternatives && response.alternatives.length > 0) {
                     this.showAlternatives(response.alternatives);
                 }
                 else {
