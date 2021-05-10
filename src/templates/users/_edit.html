@@ -261,14 +261,20 @@
                             id: 'underlineLinks',
                             checked: user.getPreference('underlineLinks') ?? a11yDefaults['underlineLinks'] ?? false,
                         }) }}
+                        {{ checkboxField({
+                            label: 'Manually close flash notification messages'|t('app'),
+                            name: 'manuallyCloseNotifications',
+                            id: 'manuallyCloseNotifications',
+                            checked: user.getPreference('manuallyCloseNotifications') ?? a11yDefaults['manuallyCloseNotifications'] ?? false,
+                        }) }}
 
                         {{ textField({
                             label: "Notification Duration"|t('app'),
                             instructions: 'The number of seconds to display flash notification messages.'|t('app'),
                             id: 'notificationDuration',
                             name: 'notificationDuration',
-                            value: 5,
-                            min: 5,
+                            value: user.getPreference('notificationDuration') ?? a11yDefaults['notificationDuration'] ?? 3,
+                            min: 3,
                             size: 2,
                             required: true,
                             type: 'number',

@@ -1287,6 +1287,8 @@ class UsersController extends Controller
             'weekStartDay' => $this->request->getBodyParam('weekStartDay', $user->getPreference('weekStartDay')),
             'useShapes' => (bool)$this->request->getBodyParam('useShapes', $user->getPreference('useShapes')),
             'underlineLinks' => (bool)$this->request->getBodyParam('underlineLinks', $user->getPreference('underlineLinks')),
+            'manuallyCloseNotifications' => (bool)$this->request->getBodyParam('manuallyCloseNotifications', $user->getPreference('manuallyCloseNotifications')),
+            'notificationDuration' => (bool)$this->request->getBodyParam('notificationDuration', $user->getPreference('notificationDuration')),
         ];
 
         if ($user->admin) {

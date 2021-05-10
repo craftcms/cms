@@ -56,6 +56,8 @@ class GeneralConfig extends BaseObject
     public $accessibilityDefaults = [
         'useShapes' => false,
         'underlineLinks' => false,
+        'manuallyCloseNotifications' => false,
+        'notificationDuration' => 3,
     ];
 
     /**
