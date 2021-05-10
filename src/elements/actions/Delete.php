@@ -198,6 +198,7 @@ JS;
                 Db::delete(Table::SEARCHINDEX, [
                     'elementId' => array_keys($deletedElementIds),
                 ]);
+            }
         }
 
         if ($this->successMessage !== null) {
