@@ -10,6 +10,7 @@
 - Fixed a bug where it wasn’t possible to index some volume folders with dots in their name. ([#7900](https://github.com/craftcms/cms/issues/7900))
 - Fixed a bug where editable tables within nested Matrix field settings were initially unresponsive when editing an existing Matrix field. ([#7911](https://github.com/craftcms/cms/issues/7911))
 - Fixed a bug where duplicated entries’ slugs and URIs could be incremented when changing a section’s propagation method. ([#7895](https://github.com/craftcms/cms/issues/7895))
+- Fixed a bug where the `Permissions-Policy` anti-FLoC header was being applied incorrectly. ([#7896](https://github.com/craftcms/cms/issues/7896))
 
 ### Security
 - Fixed an XSS vulnerability.
@@ -41,7 +42,7 @@
 - Fixed a SQL error when using PHP 7.4.18 or 8.0.5 and PostgreSQL. ([#7874](https://github.com/craftcms/cms/issues/7874))
 
 ### Security
-- Craft now sets a `Permission-Policy: interest-cohort=()` header for all requests, opting out of FLoC tracking due to security and privacy concerns.
+- Craft now sets a `Permissions-Policy: interest-cohort=()` header for all requests, opting out of FLoC tracking due to security and privacy concerns.
 - Fixed an XSS vulnerability.
 
 ## 3.6.12.1 - 2021-04-29
