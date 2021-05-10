@@ -191,13 +191,12 @@ JS;
         }
 
         if ($this->hard) {
-            $ids = $query->trashed()->ids();
-            if (!empty($ids)) {
+            if (!empty($deletedElementIds)) {
                 Db::delete(Table::ELEMENTS, [
-                    'id' => $ids,
+                    'id' => array_keys($deletedElementIds),
                 ]);
                 Db::delete(Table::SEARCHINDEX, [
-                    'elementId' => $ids,
+                    'elementId' => array_keys($deletedElementIds),
                 ]);
             }
         }
