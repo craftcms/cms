@@ -8,6 +8,7 @@
 - Fixed a bug where control panel pages would scroll down a bit on page load, if the location hash was set to a tab ID. ([#7888](https://github.com/craftcms/cms/issues/7888))
 - Fixed a bug where autofocused inputs in the control panel were losing focus on page load.
 - Fixed a bug where it wasn’t possible to index some volume folders with dots in their name. ([#7900](https://github.com/craftcms/cms/issues/7900))
+- Fixed a bug where editable tables within nested Matrix field settings were initially unresponsive when editing an existing Matrix field. ([#7911](https://github.com/craftcms/cms/issues/7911))
 
 ### Security
 - Fixed an XSS vulnerability.
