@@ -7,7 +7,7 @@
 - Fixed a bug where the control panel could show the wrong nag alert message for plugin licensing issues.
 - Fixed a bug where control panel pages would scroll down a bit on page load, if the location hash was set to a tab ID. ([#7888](https://github.com/craftcms/cms/issues/7888))
 - Fixed a bug where autofocused inputs in the control panel were losing focus on page load.
-- Fixed a bug where it was sometimes impossible to index a folder that had a dot in its name. ([#7900](https://github.com/craftcms/cms/issues/7900))
+- Fixed a bug where it wasn’t possible to index some volume folders with dots in their name. ([#7900](https://github.com/craftcms/cms/issues/7900))
 
 ### Security
 - Fixed an XSS vulnerability.
