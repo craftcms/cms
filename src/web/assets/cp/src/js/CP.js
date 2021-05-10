@@ -662,7 +662,11 @@ Craft.CP = Garnish.Base.extend({
      * @param {object} $notification
      */
     removeNotification: function($notification) {
-        var notificationDuration = Craft.CP.notificationDuration;
+        if (window.Craft.manuallyCloseNotifications) {
+            return;
+        }
+
+        var notificationDuration = window.Craft.notificationDuration * 1000;
         var fadedMargin = -($notification.outerWidth() / 2) + 'px';
 
         (function() {
@@ -1070,9 +1074,6 @@ Craft.CP = Garnish.Base.extend({
         });
     }
 }, {
-    //maxWidth: 1051, //1024,
-    notificationDuration: 2000,
-
     JOB_STATUS_WAITING: 1,
     JOB_STATUS_RESERVED: 2,
     JOB_STATUS_DONE: 3,

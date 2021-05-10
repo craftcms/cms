@@ -49,6 +49,8 @@ class GeneralConfig extends BaseObject
      *
      * - `useShapes` – Whether shapes should be used to represent statuses
      * - `underlineLinks` – Whether links should be underlined
+     * - `manuallyCloseNotifications` – Whether notifications should be closed manually
+     * - `notificationDuration` – Number of seconds notifications display
      *
      * @since 3.6.4
      * @group System
