@@ -355,7 +355,7 @@ Craft.CP = Garnish.Base.extend({
                     this._focusTab($a);
                 });
 
-                if (encodeURIComponent(href.substr(1)) === document.location.hash.substr(1)) {
+                if (href.substr(1) === window.LOCATION_HASH) {
                     $initialTab = $a;
                 }
             }
@@ -442,7 +442,10 @@ Craft.CP = Garnish.Base.extend({
         }
 
         if (typeof history !== 'undefined') {
-            history.replaceState(undefined, undefined, href);
+            // Delay changing the hash so it doesn't cause the browser to jump on page load
+            Garnish.requestAnimationFrame(() => {
+                history.replaceState(undefined, undefined, href);
+            });
         }
     },
 
@@ -462,7 +465,7 @@ Craft.CP = Garnish.Base.extend({
 
         this.$focusableTab = $tab.attr('tabindex', '0');
 
-        if (focus !== false) {
+        if (setFocus !== false) {
             this.$focusableTab.focus();
         }
     },

@@ -1,5 +1,22 @@
 # Release Notes for Craft CMS 3.x
 
+## Unreleased
+
+### Fixed
+- Fixed an error that could occur if `craft\web\View::registerAssetFlashes()` was called after the PHP session had closed.
+- Fixed a bug where the control panel could show the wrong nag alert message for plugin licensing issues.
+- Fixed a bug where control panel pages would scroll down a bit on page load, if the location hash was set to a tab ID. ([#7888](https://github.com/craftcms/cms/issues/7888))
+- Fixed a bug where autofocused inputs in the control panel were losing focus on page load.
+- Fixed a bug where it wasn’t possible to index some volume folders with dots in their name. ([#7900](https://github.com/craftcms/cms/issues/7900))
+- Fixed a bug where editable tables within nested Matrix field settings were initially unresponsive when editing an existing Matrix field. ([#7911](https://github.com/craftcms/cms/issues/7911))
+- Fixed a bug where duplicated entries’ slugs and URIs could be incremented when changing a section’s propagation method. ([#7895](https://github.com/craftcms/cms/issues/7895))
+- Fixed a bug where the `Permissions-Policy` anti-FLoC header was being applied incorrectly. ([#7896](https://github.com/craftcms/cms/issues/7896))
+- Fixed a bug  where `craft\elements\actions\Delete` wasn’t hard-deleting elements when `$hard` was set to `true`, if the element index wasn’t already set to query soft-deleted elements. ([#7901](https://github.com/craftcms/cms/issues/7901))
+- Fixed a bug where `craft\elements\actions\Delete` wasn’t clearing search indexes when `$hard` was set to `true` ([#7901](https://github.com/craftcms/cms/issues/7901))
+
+### Security
+- Fixed an XSS vulnerability.
+
 ## 3.6.13 - 2021-05-04
 
 ### Changed
@@ -27,7 +44,7 @@
 - Fixed a SQL error when using PHP 7.4.18 or 8.0.5 and PostgreSQL. ([#7874](https://github.com/craftcms/cms/issues/7874))
 
 ### Security
-- Craft now sets a `Permission-Policy: interest-cohort=()` header for all requests, opting out of FLoC tracking due to security and privacy concerns.
+- Craft now sets a `Permissions-Policy: interest-cohort=()` header for all requests, opting out of FLoC tracking due to security and privacy concerns.
 - Fixed an XSS vulnerability.
 
 ## 3.6.12.1 - 2021-04-29

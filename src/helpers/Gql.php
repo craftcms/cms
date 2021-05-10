@@ -269,7 +269,7 @@ class Gql
     }
 
     /**
-     * Get (and create if needed) a union type by name, included types and a resolver funcion.
+     * Get (and create if needed) a union type by name, included types and a resolver function.
      *
      * @param string $typeName The union type name.
      * @param array $includedTypes The type the union should include
