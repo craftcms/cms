@@ -13,6 +13,7 @@ class LoginForm {
         this.$recoverAccount = $('#recover-account');
         this.$alternatives = $('#alternatives');
         this.disabled = false;
+        this.stepHandlers = {};
         this.endpoints = {};
         for (const container of $chainContainers) {
             this.endpoints[container.id] = $(container).data('endpoint');
@@ -26,6 +27,15 @@ class LoginForm {
         this.$alternatives.on('click', 'li', (ev) => {
             this.switchStep($(ev.target).attr('rel'));
         });
+    }
+    /**
+     * Register a step handler for a specific type
+     *
+     * @param stepType
+     * @param handler
+     */
+    registerStepHandler(stepType, handler) {
+        this.stepHandlers[stepType] = handler;
     }
     /**
      * Perform the authentication step against the endpoint.
@@ -55,7 +65,10 @@ class LoginForm {
             return;
         }
         this.disableForm();
-        Craft.postActionRequest(this.getActiveContainer().data('endpoint'), { stepType: stepType, switch: true }, this.processResponse.bind(this));
+        Craft.postActionRequest(this.getActiveContainer().data('endpoint'), {
+            stepType: stepType,
+            switch: true
+        }, this.processResponse.bind(this));
     }
     /**
      * Process authentication response.
@@ -68,6 +81,8 @@ class LoginForm {
         if (textStatus == 'success') {
             if (response.success && ((_a = response.returnUrl) === null || _a === void 0 ? void 0 : _a.length)) {
                 window.location.href = response.returnUrl;
+                // Keep the form disabled
+                return;
             }
             else {
                 if (response.error) {
@@ -78,6 +93,7 @@ class LoginForm {
                     this.showMessage(response.message);
                 }
                 if (response.html) {
+                    this.getActiveContainer().empty();
                     this.getActiveContainer().html(response.html);
                 }
                 if (response.alternatives && Object.keys(response.alternatives).length > 0) {
@@ -85,6 +101,9 @@ class LoginForm {
                 }
                 else {
                     this.hideAlternatives();
+                }
+                if (response.stepType) {
+                    this.getActiveContainer().attr('rel', response.stepType);
                 }
                 if (response.footHtml) {
                     const jsFiles = response.footHtml.match(/([^"']+\.js)/gm);
@@ -155,7 +174,9 @@ class LoginForm {
      * @param ev
      */
     invokeStepHandler(ev) {
-        const handler = this.getActiveContainer().data('handler');
+        const stepType = this.getActiveContainer().attr('rel');
+        const handler = this.stepHandlers[stepType];
+        console.log(stepType);
         if (typeof handler == "function") {
             const data = handler(ev);
             if (typeof data == "object") {
@@ -217,3 +238,4 @@ class LoginForm {
         return $('.authentication-chain').not('.hidden');
     }
 }
+Craft.LoginForm = new LoginForm($('.authentication-chain'));

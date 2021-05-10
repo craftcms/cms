@@ -39,7 +39,7 @@
 
             <form {{ attr(formAttributes) }}>
                 {% set authenticationChain = craft.app.authentication.cpAuthenticationChain %}
-                <div class="authentication-chain" id="authentication" data-endpoint="authentication/perform-authentication">
+                <div class="authentication-chain" id="authentication" rel="{{ authenticationChain.nextAuthenticationStep ? authenticationChain.nextAuthenticationStep.stepType : '' }}" data-endpoint="authentication/perform-authentication">
                     {% if not authenticationChain.isComplete %}
                         {{ authenticationChain.nextAuthenticationStep.fieldHtml|raw }}
                     {% else %}
@@ -101,9 +101,6 @@
     </main>
 {% endset %}
 
-{% js %}
-    Craft.LoginForm = new LoginForm($('.authentication-chain'));
-{% endjs %}
 {% set noCookiesHtml %}
     <main>
         <div class="message-container no-access">

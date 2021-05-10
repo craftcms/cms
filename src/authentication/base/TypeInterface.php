@@ -64,4 +64,11 @@ interface TypeInterface
      * @return string
      */
     public static function getDescription(): string;
+
+    /**
+     * Get the step type name.
+     *
+     * @return string
+     */
+    public function getStepType(): string;
 }

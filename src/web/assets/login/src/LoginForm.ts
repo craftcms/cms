@@ -14,6 +14,7 @@ type AuthenticationResponse = {
     error?: string
     message?: string
     html?: string
+    stepType?: string
     footHtml?: string
     stepComplete?: boolean
     alternatives?: AuthenticationAlternatives
@@ -21,7 +22,7 @@ type AuthenticationResponse = {
 
 class LoginForm
 {
-   readonly switchEndpoint = 'authentication/switch-authentication-step';
+    readonly switchEndpoint = 'authentication/switch-authentication-step';
 
     readonly $loginForm = $('#login-form');
     readonly $errors = $('#login-errors');
@@ -35,8 +36,13 @@ class LoginForm
     readonly $alternatives = $('#alternatives');
 
     private disabled = false;
+
+    private stepHandlers: {
+        [key: string]: AuthenticationStepHandler
+    } = {};
+
     private endpoints: {
-        [key:string]: string
+        [key: string]: string
     } = {};
 
     constructor($chainContainers: JQuery)
@@ -57,6 +63,17 @@ class LoginForm
         this.$alternatives.on('click', 'li', (ev) => {
             this.switchStep($(ev.target).attr('rel')!);
         });
+    }
+
+    /**
+     * Register a step handler for a specific type
+     *
+     * @param stepType
+     * @param handler
+     */
+    public registerStepHandler(stepType: string, handler: AuthenticationStepHandler)
+    {
+        this.stepHandlers[stepType] = handler;
     }
 
     /**
@@ -94,7 +111,10 @@ class LoginForm
         }
         this.disableForm();
 
-        Craft.postActionRequest(this.getActiveContainer().data('endpoint'), {stepType: stepType, switch: true}, this.processResponse.bind(this));
+        Craft.postActionRequest(this.getActiveContainer().data('endpoint'), {
+            stepType: stepType,
+            switch: true
+        }, this.processResponse.bind(this));
     }
 
     /**
@@ -103,11 +123,13 @@ class LoginForm
      * @param textStatus
      * @protected
      */
-    protected processResponse (response: AuthenticationResponse, textStatus: string)
+    protected processResponse(response: AuthenticationResponse, textStatus: string)
     {
         if (textStatus == 'success') {
             if (response.success && response.returnUrl?.length) {
                 window.location.href = response.returnUrl;
+                // Keep the form disabled
+                return;
             } else {
                 if (response.error) {
                     this.showError(response.error);
@@ -119,6 +141,7 @@ class LoginForm
                 }
 
                 if (response.html) {
+                    this.getActiveContainer().empty();
                     this.getActiveContainer().html(response.html)
                 }
 
@@ -128,6 +151,9 @@ class LoginForm
                     this.hideAlternatives();
                 }
 
+                if (response.stepType){
+                    this.getActiveContainer().attr('rel', response.stepType);
+                }
 
                 if (response.footHtml) {
                     const jsFiles = response.footHtml.match(/([^"']+\.js)/gm);
@@ -212,8 +238,10 @@ class LoginForm
      */
     protected invokeStepHandler(ev: any): boolean
     {
-        const handler = this.getActiveContainer().data('handler');
+        const stepType = this.getActiveContainer().attr('rel')!;
+        const handler = this.stepHandlers[stepType]!;
 
+        console.log(stepType);
         if (typeof handler == "function") {
             const data = handler(ev);
             if (typeof data == "object") {
@@ -289,3 +317,5 @@ class LoginForm
         return $('.authentication-chain').not('.hidden');
     }
 }
+
+Craft.LoginForm = new LoginForm($('.authentication-chain'));

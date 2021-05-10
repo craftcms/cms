@@ -108,6 +108,7 @@ class AuthenticationController extends Controller
             /** @var Type $step */
             $step = $chain->getNextAuthenticationStep();
             $output['stepComplete'] = true;
+            $output['stepType'] = $step->getStepType();
             $output['html'] = $step->getFieldHtml();
             $output['footHtml'] = Craft::$app->getView()->getBodyHtml();
         }
@@ -188,6 +189,7 @@ class AuthenticationController extends Controller
             /** @var Type $step */
             $step = $recoveryChain->getNextAuthenticationStep();
             $output['stepComplete'] = true;
+            $output['stepType'] = $step->getStepType();
             $output['html'] = $step->getFieldHtml();
             $output['footHtml'] = Craft::$app->getView()->getBodyHtml();
         }
@@ -215,6 +217,7 @@ class AuthenticationController extends Controller
             'html' => $step->getFieldHtml(),
             'footHtml' => Craft::$app->getView()->getBodyHtml(),
             'alternatives' => $authenticationChain->getAlternativeSteps(get_class($step)),
+            'stepType' => $step->getStepType(),
             'message' => $session->getNotice(),
             'error' => $session->getError(),
         ];

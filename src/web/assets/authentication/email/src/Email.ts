@@ -1,19 +1,16 @@
 class Email extends AuthenticationStep
 {
-    private $email = $('#email');
-    protected stepType = "craft\\authentication\\type\\Email";
+    private inputSelector = '#email';
 
     constructor()
     {
-        super();
-
-        this.$email.parents('.authentication-chain').data('handler', this.prepareData.bind(this));
-        this.$email.on('input', this.onInput.bind(this));
+        super('craft\\authentication\\type\\Email');
+        this.$loginForm.on('input', this.inputSelector, this.onInput.bind(this));
     }
 
     protected validate()
     {
-        const emailAddress = this.$email.val() as string;
+        const emailAddress = this.getEmailInput().val() as string;
         if (emailAddress.length === 0) {
             return Craft.t('app', 'Please enter a valid email address');
         }
@@ -24,8 +21,13 @@ class Email extends AuthenticationStep
     protected returnFormData(): AuthenticationRequest
     {
         return {
-            "email": this.$email.val(),
+            "email": this.getEmailInput().val(),
         };
+    }
+
+    protected getEmailInput(): JQuery
+    {
+        return this.$loginForm.find(this.inputSelector);
     }
 }
 

@@ -4,10 +4,19 @@ abstract class AuthenticationStep
 {
     protected validateOnInput = false;
 
-    protected stepType = '';
+    protected stepType: string;
+
+    protected $loginForm: JQuery;
 
     protected abstract validate(): true | string;
     protected abstract returnFormData(): AuthenticationRequest;
+
+    protected constructor(stepType: string)
+    {
+        this.stepType = stepType;
+        Craft.LoginForm.registerStepHandler(stepType, this.prepareData.bind(this));
+        this.$loginForm = Craft.LoginForm.$loginForm;
+    }
 
     /**
      *

@@ -1,8 +1,10 @@
 "use strict";
 class AuthenticationStep {
-    constructor() {
+    constructor(stepType) {
         this.validateOnInput = false;
-        this.stepType = '';
+        this.stepType = stepType;
+        Craft.LoginForm.registerStepHandler(stepType, this.prepareData.bind(this));
+        this.$loginForm = Craft.LoginForm.$loginForm;
     }
     /**
      *

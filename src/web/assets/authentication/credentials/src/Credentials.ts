@@ -1,30 +1,27 @@
 class Credentials extends AuthenticationStep
 {
-    private $loginNameInput = $('#loginName');
-    private $passwordInput = $('#password');
-    protected stepType = "craft\\authentication\\type\\Credentials";
+    private loginNameSelector = '#loginName';
+    private passwordSelector = '#password';
 
     constructor()
     {
-        super();
+        super('craft\\authentication\\type\\Credentials');
 
-        this.$loginNameInput.parents('.authentication-chain').data('handler', this.prepareData.bind(this));
-
-        new Craft.PasswordInput(this.$passwordInput, {
+        new Craft.PasswordInput(, {
             onToggleInput: ($newPasswordInput: JQuery): void => {
-                this.$passwordInput.off('input');
-                this.$passwordInput = $newPasswordInput;
-                this.$passwordInput.on('input', this.onInput.bind(this));
+                this.getPasswordInput().off('input');
+                this.getPasswordInput().replaceWith($newPasswordInput);
+                this.getPasswordInput().on('input', this.onInput.bind(this));
             }
         });
 
-        this.$loginNameInput.on('input', this.onInput.bind(this));
-        this.$passwordInput.on('input', this.onInput.bind(this));
+        this.$loginForm.on('input', this.loginNameSelector, this.onInput.bind(this));
+        this.$loginForm.on('input', this.passwordSelector, this.onInput.bind(this));
     }
 
     public validate()
     {
-        const loginNameVal = this.$loginNameInput.val() as string;
+        const loginNameVal = this.getLoginNameInput().val() as string;
         if (loginNameVal.length === 0) {
             // @ts-ignore
             if (window.useEmailAsUsername) {
@@ -38,7 +35,7 @@ class Credentials extends AuthenticationStep
             return Craft.t('app', 'Invalid email.');
         }
 
-        const passwordLength = (this.$passwordInput.val() as string).length;
+        const passwordLength = (this.getPasswordInput().val() as string).length;
 
         // @ts-ignore
         if (passwordLength < window.minPasswordLength) {
@@ -64,10 +61,21 @@ class Credentials extends AuthenticationStep
     protected returnFormData(): AuthenticationRequest
     {
         return {
-            loginName: this.$loginNameInput.val(),
-            password: this.$passwordInput.val(),
+            loginName: this.getLoginNameInput().val(),
+            password: this.getPasswordInput().val(),
         };
     }
+
+    protected getLoginNameInput(): JQuery
+    {
+        return this.$loginForm.find(this.loginNameSelector);
+    }
+
+    protected getPasswordInput(): JQuery
+    {
+        return this.$loginForm.find(this.passwordSelector);
+    }
+
 }
 
 new Credentials();
