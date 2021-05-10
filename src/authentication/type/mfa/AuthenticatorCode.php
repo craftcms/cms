@@ -40,7 +40,7 @@ class AuthenticatorCode extends Type
      */
     public function getFields(): ?array
     {
-        return ['authenticator-code'];
+        return ['verification-code'];
     }
 
     /**
@@ -48,11 +48,11 @@ class AuthenticatorCode extends Type
      */
     public function authenticate(array $credentials, User $user = null): AuthenticationState
     {
-        if (is_null($user) || empty($credentials['authenticator-code'])) {
+        if (is_null($user) || empty($credentials['verification-code'])) {
             return $this->state;
         }
 
-        $code = $credentials['authenticator-code'];
+        $code = $credentials['verification-code'];
         $session = Craft::$app->getSession();
 
         if (empty($code) || $code !== '123-456') {
