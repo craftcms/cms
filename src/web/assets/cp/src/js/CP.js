@@ -97,12 +97,12 @@ Craft.CP = Garnish.Base.extend({
             this.addListener(Garnish.$win, 'resize', 'handleWindowResize');
             this.handleWindowResize();
 
-            // Fade the notification out two seconds after page load
-            var $errorNotifications = this.$notificationContainer.children('.error'),
-                $otherNotifications = this.$notificationContainer.children(':not(.error)');
+            // Remove notifications
+            var $notifications = this.$notificationContainer.children();
 
-            $errorNotifications.delay(Craft.CP.notificationDuration * 2).velocity('fadeOut');
-            $otherNotifications.delay(Craft.CP.notificationDuration).velocity('fadeOut');
+            for (let i = 0; i < $notifications.length; i++) {
+                this.removeNotification($($notifications[i]));
+            }
 
             // Wait a frame before initializing any confirm-unload forms,
             // so other JS that runs on ready() has a chance to initialize
@@ -625,9 +625,6 @@ Craft.CP = Garnish.Base.extend({
      * @param {string} message
      */
     displayNotification: function(type, message) {
-        var notificationDuration = Craft.CP.notificationDuration;
-
-
         if (['cp-error', 'error'].includes(type)) {
             icon = 'alert';
             label = Craft.t('app', 'Error');
@@ -650,6 +647,23 @@ Craft.CP = Garnish.Base.extend({
             .hide()
             .css({opacity: 0, 'margin-left': fadedMargin, 'margin-right': fadedMargin})
             .velocity({opacity: 1, 'margin-left': '2px', 'margin-right': '2px'}, {display: 'inline-block', duration: 'fast'});
+
+        this.removeNotification($notification);
+
+        this.trigger('displayNotification', {
+            notificationType: type,
+            message: message
+        });
+    },
+
+    /**
+     * Remove a notification
+     *
+     * @param {object} $notification
+     */
+    removeNotification: function($notification) {
+        var notificationDuration = Craft.CP.notificationDuration;
+        var fadedMargin = -($notification.outerWidth() / 2) + 'px';
 
         (function() {
             var timeRemaining = notificationDuration;
@@ -675,11 +689,6 @@ Craft.CP = Garnish.Base.extend({
                 }
             }, countdownTime);
         })();
-
-        this.trigger('displayNotification', {
-            notificationType: type,
-            message: message
-        });
     },
 
     /**
