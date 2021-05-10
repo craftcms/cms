@@ -80,18 +80,7 @@ class ConfigSyncController extends BaseUpdaterController
     public function actionUninstallPlugin(): Response
     {
         $handle = array_shift($this->data['uninstallPlugins']);
-
-        try {
-            Craft::$app->getPlugins()->uninstallPlugin($handle);
-        } catch (\Throwable $e) {
-            Craft::warning("Could not uninstall plugin \"$handle\" that was removed from your project config YAML files: " . $e->getMessage());
-
-            // Just remove the row
-            Db::delete(Table::PLUGINS, [
-                'handle' => $handle,
-            ]);
-        }
-
+        Craft::$app->getPlugins()->uninstallPlugin($handle, true);
         return $this->sendNextAction($this->_nextApplyYamlAction());
     }
 
