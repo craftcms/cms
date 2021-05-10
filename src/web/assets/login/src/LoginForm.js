@@ -12,6 +12,7 @@ class LoginForm {
         this.$cancelRecover = $('#cancel-recover');
         this.$recoverAccount = $('#recover-account');
         this.$alternatives = $('#alternatives');
+        this.disabled = false;
         this.endpoints = {};
         for (const container of $chainContainers) {
             this.endpoints[container.id] = $(container).data('endpoint');
@@ -33,6 +34,10 @@ class LoginForm {
      * @param cb
      */
     performStep(request) {
+        if (this.isDisabled()) {
+            return;
+        }
+        this.disableForm();
         if (this.$rememberMeCheckbox.prop('checked')) {
             request.rememberMe = true;
         }
@@ -46,6 +51,10 @@ class LoginForm {
      * @param stepType
      */
     switchStep(stepType) {
+        if (this.isDisabled()) {
+            return;
+        }
+        this.disableForm();
         Craft.postActionRequest(this.getActiveContainer().data('endpoint'), { stepType: stepType, switch: true }, this.processResponse.bind(this));
     }
     /**
@@ -79,13 +88,16 @@ class LoginForm {
                 }
                 if (response.footHtml) {
                     const jsFiles = response.footHtml.match(/([^"']+\.js)/gm);
+                    const existingSources = Array.from(document.scripts).map(node => node.getAttribute('src')).filter(val => val && val.length > 0);
                     // For some reason, Chrome will fail to load sourcemap properly when jQuery append is used
                     // So roll our own JS file append-thing.
                     if (jsFiles) {
                         for (const jsFile of jsFiles) {
-                            let node = document.createElement('script');
-                            node.setAttribute('src', jsFile);
-                            document.body.appendChild(node);
+                            if (!existingSources.includes(jsFile)) {
+                                let node = document.createElement('script');
+                                node.setAttribute('src', jsFile);
+                                document.body.appendChild(node);
+                            }
                         }
                         // If that fails, use Craft's thing.
                     }
@@ -147,7 +159,6 @@ class LoginForm {
         if (typeof handler == "function") {
             const data = handler(ev);
             if (typeof data == "object") {
-                this.disableForm();
                 this.performStep(data);
             }
             else {
@@ -190,10 +201,17 @@ class LoginForm {
     enableForm() {
         this.$submit.addClass('active');
         this.$spinner.addClass('hidden');
+        this.$loginForm.fadeTo(100, 1);
+        this.disabled = false;
     }
     disableForm() {
         this.$submit.removeClass('active');
         this.$spinner.removeClass('hidden');
+        this.$loginForm.fadeTo(100, 0.2);
+        this.disabled = true;
+    }
+    isDisabled() {
+        return this.disabled;
     }
     getActiveContainer() {
         return $('.authentication-chain').not('.hidden');
