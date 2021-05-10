@@ -597,7 +597,9 @@ class Plugins extends Component
             return true;
         }
 
-        if (!$force && !$this->isPluginEnabled($handle)) {
+        $enabled = $this->isPluginEnabled($handle);
+
+        if (!$enabled && !$force) {
             // Don't allow uninstalling disabled plugins, because that could be buggy
             // if the plugin was composer-updated while disabled, and its uninstall()
             // function is out of sync with what's actually in the database
@@ -623,7 +625,7 @@ class Plugins extends Component
         $transaction = Craft::$app->getDb()->beginTransaction();
         try {
             // Let the plugin uninstall itself first
-            if ($plugin && ($plugin->uninstall() === false) && !$force) {
+            if ($plugin && $enabled && ($plugin->uninstall() === false) && !$force) {
                 $transaction->rollBack();
                 return false;
             }
