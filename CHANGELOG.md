@@ -9,6 +9,7 @@
 - Fixed a bug where autofocused inputs in the control panel were losing focus on page load.
 - Fixed a bug where it wasn’t possible to index some volume folders with dots in their name. ([#7900](https://github.com/craftcms/cms/issues/7900))
 - Fixed a bug where editable tables within nested Matrix field settings were initially unresponsive when editing an existing Matrix field. ([#7911](https://github.com/craftcms/cms/issues/7911))
+- Fixed a bug where duplicated entries’ slugs and URIs could be incremented when changing a section’s propagation method. ([#7895](https://github.com/craftcms/cms/issues/7895))
 
 ### Security
 - Fixed an XSS vulnerability.
