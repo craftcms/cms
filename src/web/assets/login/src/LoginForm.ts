@@ -34,6 +34,7 @@ class LoginForm
     readonly $recoverAccount = $('#recover-account');
     readonly $alternatives = $('#alternatives');
 
+    private disabled = false;
     private endpoints: {
         [key:string]: string
     } = {};
@@ -66,6 +67,11 @@ class LoginForm
      */
     public performStep(request: AuthenticationRequest): void
     {
+        if (this.isDisabled()) {
+            return;
+        }
+        this.disableForm();
+
         if (this.$rememberMeCheckbox.prop('checked')) {
             request.rememberMe = true;
         }
@@ -83,6 +89,11 @@ class LoginForm
      */
     public switchStep(stepType: string)
     {
+        if (this.isDisabled()) {
+            return;
+        }
+        this.disableForm();
+
         Craft.postActionRequest(this.getActiveContainer().data('endpoint'), {stepType: stepType, switch: true}, this.processResponse.bind(this));
     }
 
@@ -206,7 +217,6 @@ class LoginForm
         if (typeof handler == "function") {
             const data = handler(ev);
             if (typeof data == "object") {
-                this.disableForm();
                 this.performStep(data);
             } else {
                 this.showError(data);
@@ -257,12 +267,21 @@ class LoginForm
     {
         this.$submit.addClass('active');
         this.$spinner.addClass('hidden');
+        this.$loginForm.fadeTo(100, 1);
+        this.disabled = false;
     }
 
     protected disableForm(): void
     {
         this.$submit.removeClass('active');
         this.$spinner.removeClass('hidden');
+        this.$loginForm.fadeTo(100, 0.2);
+        this.disabled = true;
+    }
+
+    public isDisabled(): boolean
+    {
+        return this.disabled;
     }
 
     protected getActiveContainer(): JQuery
