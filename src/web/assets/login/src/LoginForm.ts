@@ -121,13 +121,17 @@ class LoginForm
                 if (response.footHtml) {
                     const jsFiles = response.footHtml.match(/([^"']+\.js)/gm);
 
+                    const existingSources = Array.from(document.scripts).map(node => node.getAttribute('src')).filter(val => val && val.length > 0);
+
                     // For some reason, Chrome will fail to load sourcemap properly when jQuery append is used
                     // So roll our own JS file append-thing.
                     if (jsFiles) {
                         for (const jsFile of jsFiles) {
-                            let node = document.createElement('script');
-                            node.setAttribute('src', jsFile)
-                            document.body.appendChild(node);
+                            if (!existingSources.includes(jsFile)) {
+                                let node = document.createElement('script');
+                                node.setAttribute('src', jsFile)
+                                document.body.appendChild(node);
+                            }
                         }
                         // If that fails, use Craft's thing.
                     } else {
