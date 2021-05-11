@@ -1196,11 +1196,8 @@ class Asset extends Element
             if (isset($transform['height'])) {
                 $transform['height'] = round($transform['height']);
             }
-            if (isset($transform['transform'])) {
-                $assetTransformsService = Craft::$app->getAssetTransforms();
-                $baseTransform = $assetTransformsService->normalizeTransform(ArrayHelper::remove($transform, 'transform'));
-                $transform = $assetTransformsService->extendTransform($baseTransform, $transform);
-            }
+            $assetTransformsService = Craft::$app->getAssetTransforms();
+            $transform = $assetTransformsService->normalizeTransform($transform);
         }
 
         if ($transform === null && $this->_transform !== null) {

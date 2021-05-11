@@ -10,20 +10,11 @@ namespace crafttests\unit\elements;
 use Codeception\Stub\Expected;
 use Craft;
 use craft\base\Volume;
-use craft\db\Query;
-use craft\db\Table;
 use craft\elements\Asset;
-use craft\elements\User;
-use craft\helpers\StringHelper;
 use craft\models\AssetTransform;
-use craft\services\Users;
+use craft\services\AssetTransforms;
 use craft\test\TestCase;
-use DateInterval;
-use DateTime;
-use DateTimeZone;
 use UnitTester;
-use yii\base\Exception;
-use yii\validators\InlineValidator;
 
 /**
  * Unit tests for the User Element
@@ -60,5 +51,57 @@ class AssetElementTest extends TestCase
             'transform' => 'transformHandle',
             'width' => 200,
         ]);
+    }
+
+    /**
+     * @param $transformData
+     * @throws \yii\base\InvalidConfigException
+     * @dataProvider normalizingExtendsTransformProvider
+     */
+    public function testNormalizingExtendsTransform($methodName, $transformData, $expectExtension)
+    {
+        $asset = $this->make(Asset::class, [
+            'getVolume' => $this->make(Volume::class, [
+                'hasUrls' => true
+            ]),
+            'folderId' => 2,
+            'kind' => Asset::KIND_IMAGE,
+            'width' => 100,
+            'height' => 100,
+            'filename' => 'some.jpg'
+        ]);
+
+        $this->tester->mockCraftMethods('assets', [
+            'getAssetUrl' => 'http://url.com'
+        ]);
+
+        $extend = $expectExtension ? Expected::once(new AssetTransform()) : Expected::never(new AssetTransform());
+
+        $assetTransforms = $this->make(AssetTransforms::class, [
+            'getTransformByHandle' => new AssetTransform(),
+            'extendTransform' => $extend
+        ]);
+
+        Craft::$app->set('assetTransforms', $assetTransforms);
+
+        $result = $asset->{$methodName}($transformData);
+
+    }
+
+    public function normalizingExtendsTransformProvider()
+    {
+        return [
+            ['getUrl', ['width' => 200], false],
+            ['getUrl', ['width' => 200, 'transform' => 'someTransform'], true],
+            ['getHeight', ['width' => 200], false],
+            ['getHeight', ['width' => 200, 'transform' => 'someTransform'], true],
+            ['getWidth', ['width' => 200], false],
+            ['getWidth', ['width' => 200, 'transform' => 'someTransform'], true],
+            ['getImg', ['width' => 200], false],
+            ['getImg', ['width' => 200, 'transform' => 'someTransform'], true],
+            ['setTransform', ['width' => 200], false],
+            ['setTransform', ['width' => 200, 'transform' => 'someTransform'], true],
+            // Not testing `getImg()`, because that just invokes `setTransform` twice.
+        ];
     }
 }
