@@ -55,7 +55,7 @@ class AuthenticatorCode extends Type
         $code = $credentials['verification-code'];
         $session = Craft::$app->getSession();
 
-        if (empty($code) || $code !== '123-456') {
+        if (empty($code) || !$user->verifyAuthenticatorKey($code)) {
             $session->setError(Craft::t('app', 'The verification code is incorrect.'));
             return $this->state;
         }

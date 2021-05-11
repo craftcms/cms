@@ -23,6 +23,7 @@ use yii\db\ActiveQueryInterface;
  * @property string $lastName Last name
  * @property string $email Email
  * @property string $password Password
+ * @property int|null $authenticatorTimestamp Password
  * @property bool $admin Admin
  * @property bool $locked Locked
  * @property bool $suspended Suspended

@@ -651,6 +651,8 @@ class UserQuery extends ElementQuery
             //'users.photoId',
             'users.firstName',
             'users.lastName',
+            'users.authenticatorSecret',
+            'users.authenticatorTimestamp',
             'users.email',
             'users.unverifiedEmail',
             'users.admin',

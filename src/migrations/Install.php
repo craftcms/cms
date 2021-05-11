@@ -720,6 +720,8 @@ class Install extends Migration
             'lastName' => $this->string(100),
             'email' => $this->string()->notNull(),
             'password' => $this->string(),
+            'authenticatorSecret' => $this->char(32),
+            'authenticatorTimestamp' => $this->bigInteger(),
             'admin' => $this->boolean()->defaultValue(false)->notNull(),
             'locked' => $this->boolean()->defaultValue(false)->notNull(),
             'suspended' => $this->boolean()->defaultValue(false)->notNull(),

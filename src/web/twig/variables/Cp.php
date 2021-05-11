@@ -14,6 +14,7 @@ use craft\events\RegisterCpNavItemsEvent;
 use craft\events\RegisterCpSettingsEvent;
 use craft\helpers\App;
 use craft\helpers\ArrayHelper;
+use craft\helpers\Authentication;
 use craft\helpers\Cp as CpHelper;
 use craft\helpers\StringHelper;
 use craft\helpers\UrlHelper;
@@ -690,5 +691,15 @@ class Cp extends Component
         ]);
         $this->trigger(self::EVENT_REGISTER_FORM_ACTIONS, $event);
         return $event->formActions ?: null;
+    }
+
+    /**
+     * Returns `true` if Craft's control panel login supports authenticator.
+     *
+     * @return bool
+     */
+    public function loginSupportsAuthenticator(): bool
+    {
+        return Authentication::loginSupportsAuthenticator();
     }
 }

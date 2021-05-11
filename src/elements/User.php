@@ -20,6 +20,7 @@ use craft\elements\db\ElementQueryInterface;
 use craft\elements\db\UserQuery;
 use craft\events\AuthenticateUserEvent;
 use craft\helpers\ArrayHelper;
+use craft\helpers\Authentication;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
 use craft\helpers\Html;
@@ -55,6 +56,10 @@ use yii\web\IdentityInterface;
  * @property array $preferences the user’s preferences
  * @property string|null $preferredLanguage the user’s preferred language
  * @property string|null $preferredLocale the user’s preferred formatting locale
+ * @property-write null|string $authenticatorSecret
+ * @property-read string $gqlTypeName
+ * @property-read bool $hasRoundedThumb
+ * @property-read mixed $authKey
  * @property \DateInterval|null $remainingCooldownTime the remaining cooldown time for this user, if they've entered their password incorrectly too many times
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
@@ -499,6 +504,11 @@ class User extends Element implements IdentityInterface
     public $password;
 
     /**
+     * @var int|null timestamp for last used authenticator code.
+     */
+    public $authenticatorTimestamp;
+
+    /**
      * @var bool Admin
      */
     public $admin = false;
@@ -608,6 +618,11 @@ class User extends Element implements IdentityInterface
      * @var array|null The user’s preferences
      */
     private $_preferences;
+
+    /**
+     * @var string|null The authenticator secret key
+     */
+    private ?string $_authenticatorSecret = null;
 
     /**
      * @inheritdoc
@@ -959,6 +974,51 @@ class User extends Element implements IdentityInterface
         if (Craft::$app->getEdition() === Craft::Pro) {
             $this->_groups = $groups;
         }
+    }
+
+    /**
+     * Set the authenticator secret.
+     *
+     * @param string|null $secret
+     */
+    public function setAuthenticatorSecret(?string $secret): void {
+        $this->_authenticatorSecret = $secret;
+    }
+
+    /**
+     * Return `true` if the user has an authenticator secret set.
+     *
+     * @return bool
+     */
+    public function hasAuthenticatorSecret(): bool {
+        return !empty($this->_authenticatorSecret);
+    }
+
+    /**
+     * Verify an authenticator key for the user.
+     *
+     * @param string $key
+     * @return bool
+     */
+    public function verifyAuthenticatorKey(string $key): bool {
+        if (empty($this->_authenticatorSecret)) {
+            return false;
+        }
+
+        $authenticator = Authentication::getCodeAuthenticator();
+        try {
+            $result = $authenticator->verifyKeyNewer($this->_authenticatorSecret, $key, $this->authenticatorTimestamp);
+        } catch (\Throwable $exception) {
+            Craft::$app->getErrorHandler()->logException($exception);
+            return false;
+        }
+
+        if ($result) {
+            $this->authenticatorTimestamp = $result;
+            Craft::$app->getElements()->saveElement($this);
+        }
+
+        return (bool) $result;
     }
 
     /**
@@ -1438,6 +1498,7 @@ class User extends Element implements IdentityInterface
         $record->admin = $this->admin;
         $record->passwordResetRequired = $this->passwordResetRequired;
         $record->unverifiedEmail = $this->unverifiedEmail;
+        $record->authenticatorTimestamp = $this->authenticatorTimestamp;
 
         if ($changePassword = ($this->newPassword !== null)) {
             $hash = Craft::$app->getSecurity()->hashPassword($this->newPassword);

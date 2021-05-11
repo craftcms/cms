@@ -9,7 +9,9 @@ namespace craft\helpers;
 
 use Craft;
 use craft\authentication\base\TypeInterface;
+use craft\authentication\type\mfa\AuthenticatorCode;
 use craft\models\AuthenticationState;
+use PragmaRX\Google2FAQRCode\Google2FA;
 use yii\base\InvalidConfigException;
 
 /**
@@ -41,5 +43,26 @@ class Authentication
         /** @var TypeInterface $type */
         $type = Craft::createObject($class, [$settings]);
         return $type;
+    }
+
+    /**
+     * Returns `true` if Craft's control panel login supports authenticator.
+     *
+     * @return bool
+     */
+    public static function loginSupportsAuthenticator(): bool
+    {
+        $chain = Craft::$app->getAuthentication()->getCpAuthenticationChain();
+
+        return $chain->containsStepType(AuthenticatorCode::class);
+    }
+
+    public static function getCodeAuthenticator(): Google2FA
+    {
+        // TODO window as a config option
+        $authenticator = new Google2FA();
+        $authenticator->setWindow(2);
+
+        return $authenticator;
     }
 }
