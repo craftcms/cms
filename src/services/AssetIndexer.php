@@ -173,7 +173,7 @@ class AssetIndexer extends Component
                 return true;
             }
 
-            if (isset($entry['extension']) && !in_array(strtolower($entry['extension']), $allowedExtensions, true)) {
+            if ($entry['type'] !== 'dir' && isset($entry['extension']) && !in_array(strtolower($entry['extension']), $allowedExtensions, true)) {
                 return true;
             }
 

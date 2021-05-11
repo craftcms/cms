@@ -9,9 +9,11 @@ namespace craft\queue\jobs;
 
 use Craft;
 use craft\base\ElementInterface;
+use craft\db\Table;
 use craft\errors\UnsupportedSiteException;
 use craft\events\BatchElementActionEvent;
 use craft\helpers\ArrayHelper;
+use craft\helpers\Db;
 use craft\helpers\ElementHelper;
 use craft\queue\BaseJob;
 use craft\services\Elements;
@@ -85,11 +87,19 @@ class ApplyNewPropagationMethod extends BaseJob
                     ->indexBy('siteId')
                     ->all();
 
+                if (!empty($otherSiteElements)) {
+                    // Remove their URIs so the duplicated elements can retain them w/out needing to increment them
+                    Db::update(Table::ELEMENTS_SITES, [
+                        'uri' => null,
+                    ], [
+                        'id' => ArrayHelper::getColumn($otherSiteElements, 'siteSettingsId'),
+                    ], [], false);
+                }
+
                 // Duplicate those blocks so their content can live on
                 while (!empty($otherSiteElements)) {
                     $otherSiteElement = array_pop($otherSiteElements);
                     try {
-                        /* @var Element $newElement */
                         $newElement = $elementsService->duplicateElement($otherSiteElement);
                     } catch (UnsupportedSiteException $e) {
                         // Just log it and move along
