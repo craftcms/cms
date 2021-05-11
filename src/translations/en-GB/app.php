@@ -1602,7 +1602,7 @@ return [
     'Which group should this field be displayed in?' => 'Which group should this field be displayed in?',
     'Which group should this site belong to?' => 'Which group should this site belong to?',
     'Which section do you want to publish entries to?' => 'Which section do you want to publish entries to?',
-    'Which section do you want to pull recent entries from?' => 'Which section do you want to publish entries to?',
+    'Which section do you want to pull recent entries from?' => 'Which section do you want to pull recent entries from?',
     'Which site should {type} be related from?' => 'Which site should {type} be related from?',
     'Which sites should blocks be saved to?' => 'Which sites should blocks be saved to?',
     'Which source do you want to select {type} from?' => 'Which source do you want to select {type} from?',
