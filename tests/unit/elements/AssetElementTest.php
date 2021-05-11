@@ -101,7 +101,6 @@ class AssetElementTest extends TestCase
             ['getImg', ['width' => 200, 'transform' => 'someTransform'], true],
             ['setTransform', ['width' => 200], false],
             ['setTransform', ['width' => 200, 'transform' => 'someTransform'], true],
-            // Not testing `getImg()`, because that just invokes `setTransform` twice.
         ];
     }
 }
