@@ -3,6 +3,7 @@
 ## Unreleased
 
 ### Added
+- Added the `permissionsPolicyHeader` config setting. ([#7915](https://github.com/craftcms/cms/issues/7915))
 - Added `craft\helpers\App::defaultLogTargets()`.
 
 ### Changed

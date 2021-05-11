@@ -992,6 +992,19 @@ class GeneralConfig extends BaseObject
     public $pageTrigger = 'p';
 
     /**
+     * @var string|null The `Permissions-Policy` header that should be sent for web responses.
+     *
+     * The default value prevents FLoC tracking due to security & privacy concerns:
+     * - https://www.theverge.com/2021/4/16/22387492/google-floc-ad-tech-privacy-browsers-brave-vivaldi-edge-mozilla-chrome-safari
+     * - https://www.bleepingcomputer.com/news/security/wordpress-may-automatically-disable-google-floc-on-websites/
+     *
+     * This can be set to `null` to prevent the header from being sent.
+     *
+     * @since 3.6.14
+     */
+    public $permissionsPolicyHeader = 'interest-cohort=()';
+
+    /**
      * @var string|null The query string param that Craft will check when determining the request’s path.
      *
      * This can be set to `null` if your web server is capable of directing traffic to `index.php` without a query string param.
