@@ -5,6 +5,8 @@
 ### Changed
 - The `plugin/uninstall` console command now has a `--force` flag. ([#7907](https://github.com/craftcms/cms/pull/7907))
 - `craft\services\Plugins::uninstallPlugin()` now has a `$force` argument. ([#7907](https://github.com/craftcms/cms/pull/7907))
+- Updated Yii to 2.0.42.
+- Updated yii2-queue to 2.3.2. ([#7773](https://github.com/craftcms/cms/issues/7773))
 
 ### Fixed
 - Fixed an error that could occur if `craft\web\View::registerAssetFlashes()` was called after the PHP session had closed.
