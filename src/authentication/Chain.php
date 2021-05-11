@@ -187,6 +187,25 @@ class Chain
     }
 
     /**
+     * Returns true if chain contains a step of a given type.
+     *
+     * @param string $stepType
+     * @return bool
+     */
+    public function containsStepType(string $stepType): bool
+    {
+        foreach ($this->_steps as $stepList) {
+            foreach ($stepList as $step) {
+                if ($step['type'] === $stepType) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    /**
      * Get the last completed authentication step.
      *
      * @return string|null
