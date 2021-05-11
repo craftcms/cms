@@ -191,10 +191,12 @@ JS;
         }
 
         if ($this->hard) {
-            $ids = $query->ids();
-            if (!empty($ids)) {
+            if (!empty($deletedElementIds)) {
                 Db::delete(Table::ELEMENTS, [
-                    'id' => $ids,
+                    'id' => array_keys($deletedElementIds),
+                ]);
+                Db::delete(Table::SEARCHINDEX, [
+                    'elementId' => array_keys($deletedElementIds),
                 ]);
             }
         }
