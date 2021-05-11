@@ -2,6 +2,16 @@
 
 ## Unreleased
 
+### Added
+- Added the `permissionsPolicyHeader` config setting. ([#7915](https://github.com/craftcms/cms/issues/7915))
+- Added `craft\helpers\App::defaultLogTargets()`.
+
+### Changed
+- The `plugin/uninstall` console command now has a `--force` flag. ([#7907](https://github.com/craftcms/cms/pull/7907))
+- `craft\services\Plugins::uninstallPlugin()` now has a `$force` argument. ([#7907](https://github.com/craftcms/cms/pull/7907))
+- Updated Yii to 2.0.42.
+- Updated yii2-queue to 2.3.2. ([#7773](https://github.com/craftcms/cms/issues/7773))
+
 ### Fixed
 - Fixed an error that could occur if `craft\web\View::registerAssetFlashes()` was called after the PHP session had closed.
 - Fixed a bug where the control panel could show the wrong nag alert message for plugin licensing issues.
@@ -14,6 +24,7 @@
 - Fixed a MySQL error that could occur when indexing search keywords which contained certain Russian characters. ([#7905](https://github.com/craftcms/cms/issues/7905))
 - Fixed a bug  where `craft\elements\actions\Delete` wasn’t hard-deleting elements when `$hard` was set to `true`, if the element index wasn’t already set to query soft-deleted elements. ([#7901](https://github.com/craftcms/cms/issues/7901))
 - Fixed a bug where `craft\elements\actions\Delete` wasn’t clearing search indexes when `$hard` was set to `true`. ([#7901](https://github.com/craftcms/cms/issues/7901))
+- Fixed a PHP error that could occur if `config/app.php` was overriding the `log` component using `craft\helpers\App::logConfig()`, and expecting it to return an array with log target configs (as it used to before Craft 3.6).
 - Fixed a SQL error that occurred when calling `craft\records\SiteGroup::getSites()`. ([#7914](https://github.com/craftcms/cms/issues/7914))
 - Fixed an error that occurred when saving a Number field with a non-numeric value. ([#7917](https://github.com/craftcms/cms/issues/7917))
 
