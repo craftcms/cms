@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 3.x
 
-## Unreleased
+## 3.6.14 - 2021-05-11
 
 ### Added
 - Added the `permissionsPolicyHeader` config setting. ([#7915](https://github.com/craftcms/cms/issues/7915))
