@@ -1312,7 +1312,7 @@ class Entry extends Element
 
             case 'type':
                 try {
-                    return Craft::t('site', $this->getType()->name);
+                    return Html::encode(Craft::t('site', $this->getType()->name));
                 } catch (InvalidConfigException $e) {
                     return Craft::t('app', 'Unknown');
                 }

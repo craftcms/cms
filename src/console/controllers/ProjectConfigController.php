@@ -322,21 +322,10 @@ class ProjectConfigController extends Controller
             $this->stdout(' ... ', Console::FG_YELLOW);
 
             ob_start();
+            $pluginsService->uninstallPlugin($handle, true);
+            ob_end_clean();
 
-            try {
-                $pluginsService->uninstallPlugin($handle);
-                ob_end_clean();
-                $this->stdout('done' . PHP_EOL, Console::FG_GREEN);
-            } catch (\Throwable $e) {
-                ob_end_clean();
-                $this->stdout('error: ' . $e->getMessage() . PHP_EOL, Console::FG_RED);
-                Craft::$app->getErrorHandler()->logException($e);
-
-                // Just remove the row
-                Db::delete(Table::PLUGINS, [
-                    'handle' => $handle,
-                ]);
-            }
+            $this->stdout('done' . PHP_EOL, Console::FG_GREEN);
         }
     }
 

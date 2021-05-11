@@ -117,6 +117,12 @@
     </div>
 {% endset %}
 
+{% js at head %}
+    // Remove the hash so the browser doesn't scroll to it
+    window.LOCATION_HASH = document.location.hash ? decodeURIComponent(document.location.hash.substr(1)) : null;
+    document.location.hash = '';
+{% endjs %}
+
 {% block body %}
     <div id="global-container">
         {% include '_layouts/components/global-sidebar' %}
