@@ -15,12 +15,13 @@ use craft\helpers\ArrayHelper;
 use craft\helpers\Component;
 use craft\models\FieldLayout;
 use craft\models\FieldLayoutTab;
-use craft\test\ActiveFixture;
 use craft\test\DbFixtureTrait;
 use Throwable;
 use yii\base\Exception as YiiBaseException;
 use yii\base\InvalidArgumentException;
 use yii\base\NotSupportedException;
+use yii\test\DbFixture;
+use yii\test\FileFixtureTrait;
 
 /**
  * Class FieldLayoutFixture.
@@ -29,9 +30,10 @@ use yii\base\NotSupportedException;
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
  * @since  3.2
  */
-abstract class FieldLayoutFixture extends ActiveFixture
+abstract class FieldLayoutFixture extends DbFixture
 {
     use DbFixtureTrait;
+    use FileFixtureTrait;
 
     /**
      * @var FieldLayout[]
@@ -96,6 +98,21 @@ abstract class FieldLayoutFixture extends ActiveFixture
     }
 
     /**
+     * Returns the fixture data.
+     *
+     * The default implementation will try to return the fixture data by including the external file specified by [[dataFile]].
+     * The file should return an array of data rows (column name => column value), each corresponding to a row in the table.
+     *
+     * If the data file does not exist, an empty array will be returned.
+     *
+     * @return array the data rows to be inserted into the database table.
+     */
+    protected function getData()
+    {
+        return $this->loadData($this->dataFile);
+    }
+
+    /**
      * @inheritdoc
      */
     public function unload()
@@ -132,8 +149,6 @@ abstract class FieldLayoutFixture extends ActiveFixture
     public function afterUnload()
     {
         $this->db->getSchema()->refresh();
-
-        parent::afterUnload();
     }
 
     /**

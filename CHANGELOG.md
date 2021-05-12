@@ -1,5 +1,10 @@
 # Release Notes for Craft CMS 3.x
 
+## Unreleased
+
+### Fixed
+- Fixed an error that occurred when running tests that use `craft\test\fixtures\FieldLayoutFixture`.
+
 ## 3.6.14 - 2021-05-11
 
 ### Added
