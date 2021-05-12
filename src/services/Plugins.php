@@ -583,7 +583,7 @@ class Plugins extends Component
      *
      * @param string $handle The plugin’s handle
      * @param bool $force Whether to force the plugin uninstallation, even if it is disabled, its
-     * `uninstall()` method returns `false`, or its files aren’t present or its
+     * `uninstall()` method returns `false`, or its files aren’t present
      * @return bool Whether the plugin was uninstalled successfully
      * @throws InvalidPluginException if the plugin doesn’t exist
      * @throws \Throwable if reasons
