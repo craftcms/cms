@@ -6,6 +6,7 @@
 - Fixed an error that occurred when running tests that use `craft\test\fixtures\FieldLayoutFixture`.
 - Fixed a SQL error that occurred when calling `craft\records\Site::getGroup()`. ([#7914](https://github.com/craftcms/cms/issues/7914))
 - Fixed a bug where search terms that contained camelCased attribute names could yield no results. ([#7927](https://github.com/craftcms/cms/issues/7927))
+- Fixed a bug where the browser would jump back to the top of the page when scrolling passed a Redactor field with a fixed toolbar. ([#7888](https://github.com/craftcms/cms/issues/7888))
 
 ## 3.6.14 - 2021-05-11
 
