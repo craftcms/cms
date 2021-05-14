@@ -146,6 +146,8 @@ class GeneralConfig extends BaseObject
         'dfxp',
         'doc',
         'docx',
+        'dotm',
+        'dotx',
         'fla',
         'flv',
         'gif',
