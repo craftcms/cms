@@ -7,7 +7,7 @@ class Credentials extends AuthenticationStep
     {
         super('craft\\authentication\\type\\Credentials');
 
-        new Craft.PasswordInput(, {
+        new Craft.PasswordInput({
             onToggleInput: ($newPasswordInput: JQuery): void => {
                 this.getPasswordInput().off('input');
                 this.getPasswordInput().replaceWith($newPasswordInput);

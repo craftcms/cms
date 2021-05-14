@@ -176,7 +176,6 @@ class LoginForm {
     invokeStepHandler(ev) {
         const stepType = this.getActiveContainer().attr('rel');
         const handler = this.stepHandlers[stepType];
-        console.log(stepType);
         if (typeof handler == "function") {
             const data = handler(ev);
             if (typeof data == "object") {
