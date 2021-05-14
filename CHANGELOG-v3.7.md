@@ -22,6 +22,7 @@
 - Added `craft\base\Element::mergeCanonicalChanges()`.
 - Added `craft\base\Element::setCanonicalId()`.
 - Added `craft\base\ElementInterface::getIsProvisionalDraft()`.
+- Added `craft\base\ElementInterface::getParentUri()`. ([#7932](https://github.com/craftcms/cms/issues/7932))
 - Added `craft\base\ElementInterface::setCanonical()`.
 - Added `craft\base\ElementTrait::$dateLastMerged`.
 - Added `craft\base\ElementTrait::$isProvisionalDraft`.

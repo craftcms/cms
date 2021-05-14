@@ -873,6 +873,15 @@ interface ElementInterface extends ComponentInterface
     public function getParent();
 
     /**
+     * Returns the parent element’s URI, if there is one.
+     *
+     * If the parent’s URI is `__home__` (the homepage URI), then `null` will be returned.
+     *
+     * @return string|null
+     */
+    public function getParentUri(): ?string;
+
+    /**
      * Sets the element’s parent.
      *
      * @param static|null $parent

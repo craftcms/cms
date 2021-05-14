@@ -2641,6 +2641,18 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @inheritdoc
      */
+    public function getParentUri(): ?string
+    {
+        $parent = $this->getParent();
+        if ($parent && $parent->uri !== self::HOMEPAGE_URI) {
+            return $parent->uri;
+        }
+        return null;
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function setParent(ElementInterface $parent = null)
     {
         $this->_parent = $parent;
