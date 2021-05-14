@@ -240,10 +240,10 @@
 {% endblock %}
 
 {% block contextMenu %}
-    {% if isMultiSiteElement or saveDraftAction or element.find().revisionOf(element).exists() %}
+    {% set canHaveDrafts = not isUnpublishedDraft and saveDraftAction %}
+    {% if isMultiSiteElement or canHaveDrafts or element.find().revisionOf(element).exists() %}
         {% include "_includes/revisionmenu" with {
             supportedSiteIds: propSiteIds,
-            canHaveDrafts: not isUnpublishedDraft and saveDraftAction is not empty,
         } %}
     {% endif %}
 {% endblock %}
