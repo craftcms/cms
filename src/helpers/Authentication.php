@@ -23,6 +23,11 @@ use yii\base\InvalidConfigException;
 class Authentication
 {
     /**
+     * The key to store the authenticator secret in session, while attaching it.
+     */
+    public const AUTHENTICATOR_SECRET_SESSION_KEY = 'user.authenticator.secret';
+
+    /**
      * Create an authentication type based on a config.
      *
      * @param array $typeConfig

@@ -1021,6 +1021,20 @@ class User extends Element implements IdentityInterface
         return (bool) $result;
     }
 
+    public function getQR() {
+        $site = Craft::$app->getSites()->getPrimarySite();
+
+        $authenticator = Authentication::getCodeAuthenticator();
+
+        $qrUrl = $authenticator->getQRCodeInline(
+            $site->getName(),
+            $this->email,
+            $this->_authenticatorSecret
+        );
+
+        return $qrUrl;
+    }
+
     /**
      * Returns whether the user is in a specific group.
      *
@@ -1499,6 +1513,7 @@ class User extends Element implements IdentityInterface
         $record->passwordResetRequired = $this->passwordResetRequired;
         $record->unverifiedEmail = $this->unverifiedEmail;
         $record->authenticatorTimestamp = $this->authenticatorTimestamp;
+        $record->authenticatorSecret = $this->_authenticatorSecret;
 
         if ($changePassword = ($this->newPassword !== null)) {
             $hash = Craft::$app->getSecurity()->hashPassword($this->newPassword);
