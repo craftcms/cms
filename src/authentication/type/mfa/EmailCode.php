@@ -91,6 +91,9 @@ class EmailCode extends Type
         return $this->completeStep($user);
     }
 
+    /**
+     * @inheritdoc
+     */
     public function getFieldHtml(): string
     {
         return Craft::$app->getView()->renderTemplate('_components/authenticationsteps/EmailCode/input');
