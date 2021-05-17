@@ -1219,7 +1219,7 @@ class UsersController extends Controller
 
             if (!empty($code1) || !empty($code2)) {
                 $this->requireElevatedSession();
-                
+
                 $attached = false;
                 $authenticator = AuthenticationHelper::getCodeAuthenticator();
                 // More generous, when attaching

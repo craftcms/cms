@@ -66,9 +66,9 @@ abstract class Type extends Component implements TypeInterface
     /**
      * @inheritdoc
      */
-    public function getIsApplicable(User $user): bool
+    public static function getIsApplicable(User $user): bool
     {
-        return false;
+        return true;
     }
 
     /**

@@ -56,7 +56,7 @@ interface TypeInterface
      * @param User $user
      * @return bool
      */
-    public function getIsApplicable(User $user): bool;
+    public static function getIsApplicable(User $user): bool;
 
     /**
      * Return the description of the authentication step.

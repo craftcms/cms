@@ -13,7 +13,19 @@ use yii\base\InvalidConfigException;
 
 class Chain
 {
+    /**
+     * @var array A list of all the authentication steps for this chain.
+     */
     private array $_steps;
+
+    /**
+     * @var array A list of all the authentication steps that are applicable for current user.
+     */
+    private array $_applicableSteps;
+
+    /**
+     * @var AuthenticationState The current authentication state.
+     */
     private AuthenticationState $_state;
 
     /**
@@ -32,8 +44,10 @@ class Chain
         }
         unset ($step);
 
-        $this->_steps = $steps;
+        $this->_applicableSteps = $this->_steps = $steps;
         $this->_state = $state;
+
+        $this->_prepareApplicableStepList();
     }
 
     /**
@@ -44,7 +58,7 @@ class Chain
     public function getIsComplete(): bool
     {
         $lastCompletedStepType = $this->_getLastCompletedStepType();
-        $finalSteps = (array)end($this->_steps);
+        $finalSteps = (array)end($this->_applicableSteps);
 
         return $this->_isPossibleStepType((string)$lastCompletedStepType, $finalSteps);
     }
@@ -88,6 +102,11 @@ class Chain
 
             // If advanced in chain
             $success = $this->_getLastCompletedStepType() === get_class($nextStep);
+
+            if ($success) {
+                // In case circumstances have changed.
+                $this->_prepareApplicableStepList();
+            }
 
             if ($success && !$this->getIsComplete()) {
                 // Prepare the next step.
@@ -255,19 +274,48 @@ class Chain
 
         // If no steps performed, return the first one
         if (!$lastCompletedStepType) {
-            $availableTypes = (array)reset($this->_steps);
+            $availableTypes = (array)reset($this->_applicableSteps);
         } else {
-            foreach ($this->_steps as $index => $authenticationSteps) {
+            foreach ($this->_applicableSteps as $index => $authenticationSteps) {
                 $authenticationSteps = (array)$authenticationSteps;
 
                 // If we hit a match, we're after the next step
                 if ($this->_isPossibleStepType($lastCompletedStepType, $authenticationSteps)) {
-                    $availableTypes = (array)$this->_steps[$index + 1];
+                    $availableTypes = (array)$this->_applicableSteps[$index + 1];
                     break;
                 }
             }
         }
 
         return $availableTypes;
+    }
+
+    /**
+     * Prepare a list of applicable steps.
+     */
+    private function _prepareApplicableStepList(): void
+    {
+        // Filter out steps that are not applicable
+        $resolvedUser = $this->_state->getResolvedUser();
+        if ($resolvedUser) {
+            $filteredSteps = [];
+
+            foreach ($this->_steps as $stepCollection) {
+                $filteredCollection = [];
+                foreach ($stepCollection as $step) {
+                    $stepType = $step['type'];
+
+                    if (is_subclass_of($stepType, TypeInterface::class) && $stepType::getIsApplicable($resolvedUser)) {
+                        $filteredCollection[] = $step;
+                    }
+                }
+
+                if (!empty($filteredCollection)) {
+                    $filteredSteps[] = $filteredCollection;
+                }
+            }
+
+            $this->_applicableSteps = $filteredSteps;
+        }
     }
 }

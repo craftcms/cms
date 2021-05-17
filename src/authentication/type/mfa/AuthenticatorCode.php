@@ -63,8 +63,19 @@ class AuthenticatorCode extends Type
         return $this->completeStep($user);
     }
 
+    /**
+     * @inheritdoc
+     */
     public function getFieldHtml(): string
     {
         return Craft::$app->getView()->renderTemplate('_components/authenticationsteps/AuthenticatorCode/input');
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public static function getIsApplicable(User $user): bool
+    {
+        return $user->hasAuthenticatorSecret();
     }
 }
