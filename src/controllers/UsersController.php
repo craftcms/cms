@@ -1288,7 +1288,7 @@ class UsersController extends Controller
             'useShapes' => (bool)$this->request->getBodyParam('useShapes', $user->getPreference('useShapes')),
             'underlineLinks' => (bool)$this->request->getBodyParam('underlineLinks', $user->getPreference('underlineLinks')),
             'manuallyCloseNotifications' => (bool)$this->request->getBodyParam('manuallyCloseNotifications', $user->getPreference('manuallyCloseNotifications')),
-            'notificationDuration' => (bool)$this->request->getBodyParam('notificationDuration', $user->getPreference('notificationDuration')),
+            'notificationDuration' => (int)$this->request->getBodyParam('notificationDuration', $user->getPreference('notificationDuration')),
         ];
 
         if ($user->admin) {
