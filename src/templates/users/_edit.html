@@ -147,10 +147,10 @@
                 {% endif %}
 
                 {% if CraftEdition == CraftPro and craft.cp.loginSupportsAuthenticator %}
-                    <h2>{{ 'Enable 2FA with an authenticator app'|t('app') }}</h2>
+                    <h2>{{ 'Manage multi-factor authentication with an authenticator app'|t('app') }}</h2>
                     {% if user.hasAuthenticatorSecret %}
                         {{ forms.textField({
-                            label: "Detach 2FA authenticator"|t('app'),
+                            label: "Detach multi-factor authenticator"|t('app'),
                             instructions: 'Enter the word “detach” to detach the authenticator app'|t('app'),
                             id: 'detach',
                             name: 'detach',

@@ -1218,8 +1218,9 @@ class UsersController extends Controller
             $session = Craft::$app->getSession();
 
             if (!empty($code1) || !empty($code2)) {
-                $attached = false;
                 $this->requireElevatedSession();
+                
+                $attached = false;
                 $authenticator = AuthenticationHelper::getCodeAuthenticator();
                 // More generous, when attaching
                 $authenticator->setWindow(4);
@@ -1244,6 +1245,8 @@ class UsersController extends Controller
                     $session->setNotice(Craft::t('app', 'Successfully attached the authenticator.'));
                 }
             } else if (!empty($detach)) {
+                $this->requireElevatedSession();
+
                 if ($detach === 'detach') {
                     $user->setAuthenticatorSecret(null);
                     $user->authenticatorTimestamp = null;
