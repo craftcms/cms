@@ -101,8 +101,13 @@ Craft.CP = Garnish.Base.extend({
             var $notifications = this.$notificationContainer.children();
 
             for (let i = 0; i < $notifications.length; i++) {
-                this.removeNotification($($notifications[i]));
+                notification = $notifications[i];
+                let type = notification.classList.contains('error') ? 'error' : 'notice';
+                let message = notification.querySelector('.message').textContent;
+                this.displayNotification(type, message, false);
             }
+
+            $notifications.remove();
 
             // Wait a frame before initializing any confirm-unload forms,
             // so other JS that runs on ready() has a chance to initialize
@@ -624,7 +629,9 @@ Craft.CP = Garnish.Base.extend({
      * @param {string} type
      * @param {string} message
      */
-    displayNotification: function(type, message) {
+    displayNotification: function(type, message, animate = true) {
+        const manuallyCloseNotifications = window.Craft.manuallyCloseNotifications;
+
         if (['cp-error', 'error'].includes(type)) {
             icon = 'alert';
             label = Craft.t('app', 'Error');
@@ -641,14 +648,35 @@ Craft.CP = Garnish.Base.extend({
             `)
             .appendTo(this.$notificationContainer);
 
-        var fadedMargin = -($notification.outerWidth() / 2) + 'px';
+        if (manuallyCloseNotifications) {
+            const self = this;
 
-        $notification
-            .hide()
-            .css({opacity: 0, 'margin-left': fadedMargin, 'margin-right': fadedMargin})
-            .velocity({opacity: 1, 'margin-left': '2px', 'margin-right': '2px'}, {display: 'inline-block', duration: 'fast'});
+            $closeButton = $('<button/>', {
+                    type: 'button',
+                    'data-icon': 'remove',
+                    'aria-label': Craft.t('app', 'Close'),
+                })
+                .on('click', function(){
+                    self.removeNotification($notification, 0);
+                });
 
-        this.removeNotification($notification);
+            $notification.append($closeButton);
+        }
+
+        // Animate show notification
+        if (animate) {
+            var fadedMargin = -($notification.outerWidth() / 2) + 'px';
+
+            $notification
+                .hide()
+                .css({opacity: 0, 'margin-left': fadedMargin, 'margin-right': fadedMargin})
+                .velocity({opacity: 1, 'margin-left': '2px', 'margin-right': '2px'}, {display: 'inline-block', duration: 'fast'});
+        }
+
+        // Remove notification after specified duration
+        if (!manuallyCloseNotifications) {
+            this.removeNotification($notification, window.Craft.notificationDuration * 1000);
+        }
 
         this.trigger('displayNotification', {
             notificationType: type,
@@ -661,16 +689,11 @@ Craft.CP = Garnish.Base.extend({
      *
      * @param {object} $notification
      */
-    removeNotification: function($notification) {
-        if (window.Craft.manuallyCloseNotifications) {
-            return;
-        }
-
-        var notificationDuration = window.Craft.notificationDuration * 1000;
+    removeNotification: function($notification, duration) {
         var fadedMargin = -($notification.outerWidth() / 2) + 'px';
 
         (function() {
-            var timeRemaining = notificationDuration;
+            var timeRemaining = duration;
             var countdownTime = 100;
 
             var countdownInterval = setInterval(function() {
