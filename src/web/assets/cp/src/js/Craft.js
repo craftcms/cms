@@ -861,8 +861,10 @@ $.extend(Craft,
          * @param {string} oldData
          * @param {string} newData
          * @param {object} deltaNames
+         * @param {function} [callback] Callback function that should be called whenever a new group of modified params has been found
+         * @return {string}
          */
-        findDeltaData: function(oldData, newData, deltaNames) {
+        findDeltaData: function(oldData, newData, deltaNames, callback) {
             // Sort the delta namespaces from least -> most specific
             deltaNames.sort(function(a, b) {
                 if (a.length === b.length) {
@@ -888,6 +890,9 @@ $.extend(Craft,
                 )) {
                     params = params.concat(groupedNewParams[deltaNames[n]]);
                     params.push('modifiedDeltaNames[]=' + deltaNames[n]);
+                    if (callback) {
+                        callback(deltaNames[n], groupedNewParams[deltaNames[n]]);
+                    }
                 }
             }
 

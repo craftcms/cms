@@ -658,7 +658,13 @@ Craft.DraftEditor = Garnish.Base.extend({
                 this.$saveMetaBtn.addClass('active');
             }
 
-            let preparedData = this.prepareData(data);
+            // Prep the data to be saved, keeping track of the first input name for each delta group
+            let modifiedFieldNames = [];
+            let preparedData = this.prepareData(data, (deltaName, params)  => {
+                if (params.length) {
+                    modifiedFieldNames.push(decodeURIComponent(params[0].split('=')[0]));
+                }
+            });
 
             // Are we saving a provisional draft?
             if (this.settings.isProvisionalDraft || !this.settings.draftId) {
@@ -798,6 +804,21 @@ Craft.DraftEditor = Garnish.Base.extend({
                     }
                 }
 
+                // Add missing field modified indicators
+                const selectors = response.data.modifiedAttributes.map(attr => `[name="${attr}"],[name^="${attr}["]`)
+                    .concat(modifiedFieldNames.map(name => `[name="${name}"]`));
+
+                const $fields = $(selectors.join(',')).closest('.field:not(:has(> .status-badge))');
+                for (let i = 0; i < $fields.length; i++) {
+                    $fields.eq(i).prepend(
+                        $('<div/>', {
+                            class: 'status-badge modified',
+                            title: Craft.t('app', 'This field has been modified.'),
+                            'aria-label': Craft.t('app', 'This field has been modified.'),
+                        })
+                    );
+                }
+
                 resolve();
             }).catch(() => {
                 this._afterSaveRequest();
@@ -832,9 +853,10 @@ Craft.DraftEditor = Garnish.Base.extend({
 
     /**
      * @param {string} data
+     * @param {function} [deltaCallback] Callback function that should be passed to `Craft.findDeltaData()`
      * @returns {string}
      */
-    prepareData: function(data) {
+    prepareData: function(data, deltaCallback) {
         // Swap out element IDs with their duplicated ones
         data = this.swapDuplicatedElementIds(data);
 
@@ -851,8 +873,8 @@ Craft.DraftEditor = Garnish.Base.extend({
         }
 
         // Filter out anything that hasn't changed
-        const initialData = this.swapDuplicatedElementIds(Craft.cp.$primaryForm.data('initialSerializedValue'));
-        return Craft.findDeltaData(initialData, data, this.getDeltaNames());
+        const initialData = this.swapDuplicatedElementIds(Craft.cp.$primaryForm.data('initialSerializedValue') || '');
+        return Craft.findDeltaData(initialData, data, this.getDeltaNames(), deltaCallback);
     },
 
     /**

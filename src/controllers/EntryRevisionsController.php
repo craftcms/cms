@@ -327,6 +327,7 @@ class EntryRevisionsController extends BaseEntriesController
                 'title' => $title,
                 'duplicatedElements' => Elements::$duplicatedElementIds,
                 'previewTargets' => $draft->getPreviewTargets(),
+                'modifiedAttributes' => $draft->getModifiedAttributes(),
             ]);
         }
 

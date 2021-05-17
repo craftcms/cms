@@ -61,7 +61,8 @@
 - Changes from an entry’s Current revision are now automatically merged into drafts upon visiting drafts’ edit pages.
 - When changes from an entry’s Current revision are merged into a draft, Matrix field changes are now merged on a per-block basis. ([#5503](https://github.com/craftcms/cms/issues/5503), [#7710](https://github.com/craftcms/cms/pull/7710))
 - Matrix blocks now retain their original IDs and UIDs when a draft is published. ([#7710](https://github.com/craftcms/cms/pull/7710))
-- Improved the styling of field status indicators, when editing a draft that has preexisting changes.
+- Improved the styling of field status indicators.
+- Field status indicators now appear immediately after a field’s value is changed and saved successfully to a draft.
 - Improved the UI of the Time Zone input in Settings → General.
 - Custom fields with a custom translation method are no longer labelled as translatable if the translation key is an empty string. ([#7647](https://github.com/craftcms/cms/issues/7647))
 - The `resave/entries` command now has a `--provisional-drafts` option.
