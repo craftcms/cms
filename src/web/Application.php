@@ -660,12 +660,7 @@ class Application extends \yii\web\Application
         // We'll also let update actions go through
         if ($request->getIsActionRequest()) {
             $actionSegments = $request->getActionSegments();
-            if (
-                ArrayHelper::firstValue($actionSegments) === 'updater' ||
-                $actionSegments === ['app', 'health-check'] ||
-                $actionSegments === ['app', 'migrate'] ||
-                $actionSegments === ['pluginstore', 'install', 'migrate']
-            ) {
+            if ($this->getUpdates()->getIsCraftUpdateActionRequest($actionSegments)) {
                 return $this->runAction(implode('/', $actionSegments));
             }
         }

@@ -305,6 +305,23 @@ class Updates extends Component
     }
 
     /**
+     * Returns true if the action segments match an update action
+     *
+     * @param array $actionSegments
+     *
+     * @return bool
+     */
+    public function getIsCraftUpdateActionRequest(array $actionSegments = []): bool
+    {
+        return (
+            ArrayHelper::firstValue($actionSegments) === 'updater' ||
+            $actionSegments === ['app', 'health-check'] ||
+            $actionSegments === ['app', 'migrate'] ||
+            $actionSegments === ['pluginstore', 'install', 'migrate']
+        );
+    }
+
+    /**
      * Returns true if the version stored in craft_info is less than the minimum required version on the file system.
      * This effectively makes sure that a user cannot manually update past a manual breakpoint.
      *
