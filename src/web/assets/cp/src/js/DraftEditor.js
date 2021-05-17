@@ -28,7 +28,8 @@ Craft.DraftEditor = Garnish.Base.extend({
     pauseLevel: 0,
     timeout: null,
     saving: false,
-    saveXhr: null,
+    cancelToken: null,
+    ignoreFailedRequest: false,
     queue: null,
     submittingForm: false,
 
@@ -643,18 +644,20 @@ Craft.DraftEditor = Garnish.Base.extend({
 
             this.lastSerializedValue = data;
             this.saving = true;
-            const $spinners = this.spinners().removeClass('hidden');
-            const $statusIcons = this.statusIcons()
+            this.errors = null;
+            this.cancelToken = axios.CancelToken.source();
+            this.spinners().removeClass('hidden');
+
+            this.statusIcons()
                 .velocity('stop')
                 .css('opacity', '')
                 .removeClass('invisible checkmark-icon alert-icon fade-out')
                 .addClass('hidden');
+
             if (this.$saveMetaBtn) {
                 this.$saveMetaBtn.addClass('active');
             }
-            this.errors = null;
 
-            const url = Craft.getActionUrl(this.settings.saveDraftAction);
             let preparedData = this.prepareData(data);
 
             // Are we saving a provisional draft?
@@ -662,27 +665,19 @@ Craft.DraftEditor = Garnish.Base.extend({
                 preparedData += '&provisional=1';
             }
 
-            this.saveXhr = Craft.postActionRequest(url, preparedData, (response, textStatus) => {
-                $spinners.addClass('hidden');
-                if (this.$saveMetaBtn) {
-                    this.$saveMetaBtn.removeClass('active');
-                }
-                this.saving = false;
+            Craft.sendActionRequest('POST', this.settings.saveDraftAction, {
+                cancelToken: this.cancelToken.token,
+                headers: {
+                    'content-type': 'application/x-www-form-urlencoded',
+                },
+                data: preparedData,
+            }).then(response => {
+                this._afterSaveRequest();
 
-                if (textStatus === 'abort') {
-                    return;
-                }
-
-                if (textStatus !== 'success' || response.errors) {
-                    this.errors = (response ? response.errors : null) || [];
-                    $statusIcons
-                        .velocity('stop')
-                        .css('opacity', '')
-                        .removeClass('hidden checkmark-icon')
-                        .addClass('alert-icon')
-                        .attr('title', this._saveFailMessage());
+                if (response.data.errors) {
+                    this.errors = response.data.errors;
+                    this._showFailStatus();
                     reject();
-                    return;
                 }
 
                 const createdProvisionalDraft = !this.settings.draftId;
@@ -692,12 +687,12 @@ Craft.DraftEditor = Garnish.Base.extend({
                     this.createdProvisionalDraft = true;
                 }
 
-                if (response.title) {
-                    $('#header h1').text(response.title);
+                if (response.data.title) {
+                    $('#header h1').text(response.data.title);
                 }
 
-                if (response.docTitle) {
-                    document.title = response.docTitle;
+                if (response.data.docTitle) {
+                    document.title = response.data.docTitle;
                 }
 
                 if (this.settings.isProvisionalDraft) {
@@ -710,8 +705,8 @@ Craft.DraftEditor = Garnish.Base.extend({
                         );
                     }
                 } else {
-                    this.$revisionLabel.text(response.draftName);
-                    this.settings.draftName = response.draftName;
+                    this.$revisionLabel.text(response.data.draftName);
+                    this.settings.draftName = response.data.draftName;
                 }
 
                 let revisionMenu = this.$revisionBtn.data('menubtn') ? this.$revisionBtn.data('menubtn').menu : null;
@@ -741,7 +736,7 @@ Craft.DraftEditor = Garnish.Base.extend({
                         const $actionInput = $('#action').attr('value', this.settings.publishDraftAction);
 
                         // Update the editor settings
-                        this.settings.draftId = response.draftId;
+                        this.settings.draftId = response.data.draftId;
                         this.settings.isLive = false;
                         this.previewToken = null;
 
@@ -767,24 +762,24 @@ Craft.DraftEditor = Garnish.Base.extend({
                         this.initForProvisionalDraft();
                     }
                 } else if (revisionMenu) {
-                    revisionMenu.$options.filter('.sel').find('.draft-name').text(response.draftName);
-                    revisionMenu.$options.filter('.sel').find('.draft-meta').text(response.creator
+                    revisionMenu.$options.filter('.sel').find('.draft-name').text(response.data.draftName);
+                    revisionMenu.$options.filter('.sel').find('.draft-meta').text(response.data.creator
                         ? Craft.t('app', 'Saved {timestamp} by {creator}', {
-                            timestamp: response.timestamp,
-                            creator: response.creator
+                            timestamp: response.data.timestamp,
+                            creator: response.data.creator
                         })
                         : Craft.t('app', 'Saved {timestamp}', {
-                            timestamp: response.timestamp,
+                            timestamp: response.data.timestamp,
                         })
                     );
                 }
 
                 // Did the controller send us updated preview targets?
                 if (
-                    response.previewTargets &&
-                    JSON.stringify(response.previewTargets) !== JSON.stringify(this.settings.previewTargets)
+                    response.data.previewTargets &&
+                    JSON.stringify(response.data.previewTargets) !== JSON.stringify(this.settings.previewTargets)
                 ) {
-                    this.updatePreviewTargets(response.previewTargets);
+                    this.updatePreviewTargets(response.data.previewTargets);
                 }
 
                 this.afterUpdate(data);
@@ -797,15 +792,42 @@ Craft.DraftEditor = Garnish.Base.extend({
                     this.checkMetaValues();
                 }
 
-                for (const oldId in response.duplicatedElements) {
-                    if (oldId != this.settings.sourceId && response.duplicatedElements.hasOwnProperty(oldId)) {
-                        this.duplicatedElements[oldId] = response.duplicatedElements[oldId];
+                for (const oldId in response.data.duplicatedElements) {
+                    if (oldId != this.settings.sourceId && response.data.duplicatedElements.hasOwnProperty(oldId)) {
+                        this.duplicatedElements[oldId] = response.data.duplicatedElements[oldId];
                     }
                 }
 
                 resolve();
+            }).catch(() => {
+                this._afterSaveRequest();
+
+                if (!this.ignoreFailedRequest) {
+                    this.errors = [];
+                    this._showFailStatus();
+                    reject();
+                }
+
+                this.ignoreFailedRequest = false;
             });
         });
+    },
+
+    _afterSaveRequest: function() {
+        this.spinners().addClass('hidden');
+        if (this.$saveMetaBtn) {
+            this.$saveMetaBtn.removeClass('active');
+        }
+        this.saving = false;
+    },
+
+    _showFailStatus: function() {
+        this.statusIcons()
+            .velocity('stop')
+            .css('opacity', '')
+            .removeClass('hidden checkmark-icon')
+            .addClass('alert-icon')
+            .attr('title', this._saveFailMessage());
     },
 
     /**
@@ -1026,8 +1048,9 @@ Craft.DraftEditor = Garnish.Base.extend({
         Craft.cp.$confirmUnloadForms = Craft.cp.$confirmUnloadForms.not(Craft.cp.$primaryForm);
 
         // Abort the current save request if there is one
-        if (this.saving) {
-            this.saveXhr.abort();
+        if (this.cancelToken) {
+            this.ignoreFailedRequest = true;
+            this.cancelToken.cancel();
         }
 
         // Duplicate the form with normalized data
