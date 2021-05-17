@@ -1038,6 +1038,14 @@ interface ElementInterface extends ComponentInterface
     public function isAttributeOutdated(string $name): bool;
 
     /**
+     * Returns the attribute names that have changed for this element.
+     *
+     * @return string[]
+     * @since 3.7.0
+     */
+    public function getModifiedAttributes(): array;
+
+    /**
      * Returns whether an attribute value has changed for this element.
      *
      * @param string $name
@@ -1173,6 +1181,14 @@ interface ElementInterface extends ComponentInterface
      * @since 3.7.0
      */
     public function isFieldOutdated(string $fieldHandle): bool;
+
+    /**
+     * Returns the field handles that have changed for this element.
+     *
+     * @return string[]
+     * @since 3.7.0
+     */
+    public function getModifiedFields(): array;
 
     /**
      * Returns whether a field value has changed for this element.

@@ -2919,6 +2919,14 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @inheritdoc
      */
+    public function getModifiedAttributes(): array
+    {
+        return array_keys($this->_modifiedAttributes());
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function isAttributeModified(string $name): bool
     {
         return isset($this->_modifiedAttributes()[$name]);
@@ -3133,6 +3141,14 @@ abstract class Element extends Component implements ElementInterface
     public function isFieldOutdated(string $fieldHandle): bool
     {
         return isset($this->_outdatedFields()[$fieldHandle]);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getModifiedFields(): array
+    {
+        return array_keys($this->_modifiedFields());
     }
 
     /**

@@ -14,6 +14,8 @@
 - Added `craft\base\ElementInterface::getIsCanonical()`.
 - Added `craft\base\ElementInterface::getIsDerivative()`.
 - Added `craft\base\ElementInterface::getIsProvisionalDraft()`.
+- Added `craft\base\ElementInterface::getModifiedAttributes()`.
+- Added `craft\base\ElementInterface::getModifiedFields()`.
 - Added `craft\base\ElementInterface::getOutdatedAttributes()`.
 - Added `craft\base\ElementInterface::getOutdatedFields()`.
 - Added `craft\base\ElementInterface::getParentUri()`. ([#7932](https://github.com/craftcms/cms/issues/7932))
