@@ -22,6 +22,7 @@ use craft\helpers\ElementHelper;
 use craft\helpers\UrlHelper;
 use craft\models\Section;
 use craft\models\Section_SiteSettings;
+use craft\services\Elements;
 use yii\base\Exception;
 use yii\web\BadRequestHttpException;
 use yii\web\ForbiddenHttpException;
@@ -324,7 +325,7 @@ class EntryRevisionsController extends BaseEntriesController
                 'draftNotes' => $draft->draftNotes,
                 'docTitle' => $docTitle,
                 'title' => $title,
-                'duplicatedElements' => $elementsService::$duplicatedElementIds,
+                'duplicatedElements' => Elements::$duplicatedElementIds,
                 'previewTargets' => $draft->getPreviewTargets(),
             ]);
         }
