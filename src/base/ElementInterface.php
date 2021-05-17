@@ -1019,7 +1019,7 @@ interface ElementInterface extends ComponentInterface
      */
     public function getAttributeStatus(string $attribute);
 
-    /**]
+    /**
      * Returns the attribute names that have been updated on the canonical element since the last time it was
      * merged into this element.
      *
@@ -1038,8 +1038,7 @@ interface ElementInterface extends ComponentInterface
     public function isAttributeOutdated(string $name): bool;
 
     /**
-     * Returns whether an attribute value has changed for this element, since the last time changes on the
-     * canonical element were merged in.
+     * Returns whether an attribute value has changed for this element.
      *
      * @param string $name
      * @return bool
@@ -1176,8 +1175,7 @@ interface ElementInterface extends ComponentInterface
     public function isFieldOutdated(string $fieldHandle): bool;
 
     /**
-     * Returns whether a field value has changed for this element, since the last time changes on the
-     * canonical element were merged in.
+     * Returns whether a field value has changed for this element.
      *
      * @param string $fieldHandle
      * @return bool

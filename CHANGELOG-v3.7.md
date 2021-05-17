@@ -9,21 +9,21 @@
 - Matrix fields can now be set to custom propagation methods, based on a propagation key template. ([#7610](https://github.com/craftcms/cms/issues/7610))
 - Added the `siteSettingsId` element query and GraphQL API query parameter for all elements.
 - Added `craft\base\Element::cpEditUrl()`, which should be overridden rather than `getCpEditUrl()`.
-- Added `craft\base\Element::getCanonical()`.
-- Added `craft\base\Element::getCanonicalId()`.
-- Added `craft\base\Element::getIsCanonical()`.
-- Added `craft\base\Element::getIsDerivative()`.
-- Added `craft\base\Element::getOutdatedAttributes()`.
-- Added `craft\base\Element::getOutdatedFields()`.
-- Added `craft\base\Element::isAttributeModified()`.
-- Added `craft\base\Element::isAttributeOutdated()`.
-- Added `craft\base\Element::isFieldModified()`.
-- Added `craft\base\Element::isFieldOutdated()`.
-- Added `craft\base\Element::mergeCanonicalChanges()`.
-- Added `craft\base\Element::setCanonicalId()`.
+- Added `craft\base\ElementInterface::getCanonical()`.
+- Added `craft\base\ElementInterface::getCanonicalId()`.
+- Added `craft\base\ElementInterface::getIsCanonical()`.
+- Added `craft\base\ElementInterface::getIsDerivative()`.
 - Added `craft\base\ElementInterface::getIsProvisionalDraft()`.
+- Added `craft\base\ElementInterface::getOutdatedAttributes()`.
+- Added `craft\base\ElementInterface::getOutdatedFields()`.
 - Added `craft\base\ElementInterface::getParentUri()`. ([#7932](https://github.com/craftcms/cms/issues/7932))
+- Added `craft\base\ElementInterface::isAttributeModified()`.
+- Added `craft\base\ElementInterface::isAttributeOutdated()`.
+- Added `craft\base\ElementInterface::isFieldModified()`.
+- Added `craft\base\ElementInterface::isFieldOutdated()`.
+- Added `craft\base\ElementInterface::mergeCanonicalChanges()`.
 - Added `craft\base\ElementInterface::setCanonical()`.
+- Added `craft\base\ElementInterface::setCanonicalId()`.
 - Added `craft\base\ElementTrait::$dateLastMerged`.
 - Added `craft\base\ElementTrait::$isProvisionalDraft`.
 - Added `craft\base\ElementTrait::$mergingCanonicalChanges`.
