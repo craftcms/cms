@@ -865,13 +865,27 @@ class Gql extends Component
             ->one();
 
         // If we don't have it and admin changes aren't currently supported, return null
-        if (
-            (!$result || !$result['schemaId']) &&
-            !Craft::$app->getConfig()->getGeneral()->allowAdminChanges
-        ) {
-            return null;
+        if (!Craft::$app->getConfig()->getGeneral()->allowAdminChanges) {
+            // Can't adjust for a missing token entirely
+            if (!$result) {
+                return null;
+            }
+
+            // Existing token but missing schema link
+            if (!$result['schemaId']) {
+                $schema = $this->_getPublicSchema();
+
+                // If we actually have a public schema, re-link it and bypass project-config, since the link is not stored there.
+                if ($schema) {
+                    $token = new GqlToken($result);
+                    $token->setSchema($schema);
+                    $this->_saveTokenInternal($token);
+                    return $token;
+                }
+            }
         }
 
+        // If we got here, either admin changes are allowed or the token-schema link is fine and dandy.
         $token = $result ? new GqlToken($result) : new GqlToken([
             'name' => 'Public Token',
             'accessToken' => GqlToken::PUBLIC_TOKEN,
@@ -879,7 +893,7 @@ class Gql extends Component
         ]);
 
         if (!$token->schemaId) {
-            $schema = $this->_createPublicSchema();
+            $schema = $this->_getPublicSchema() ?: $this->_createPublicSchema();
             $token->setSchema($schema);
 
             if (!$this->saveToken($token)) {
@@ -1688,28 +1702,34 @@ class Gql extends Component
     }
 
     /**
+     * Get the public schema, if it exists.
+     *
+     * @return GqlSchema|null
+     */
+    private function _getPublicSchema(): ?GqlSchema
+    {
+        $result = $this->_createSchemaQuery()->where(['isPublic' => true])->one();
+
+        return $result ? new GqlSchema($result) : null;
+    }
+
+    /**
      * Creates the public schema.
      *
      * @return GqlSchema
      */
     private function _createPublicSchema(): GqlSchema
     {
-        // See if it already exists, and is just missing its token
-        $result = $this->_createSchemaQuery()->where(['isPublic' => true])->one();
+        $schemaUid = StringHelper::UUID();
+        $publicSchema = new GqlSchema([
+            'name' => 'Public Schema',
+            'uid' => $schemaUid,
+            'isPublic' => true,
+        ]);
 
-        if ($result) {
-            $schema = new GqlSchema($result);
-        } else {
-            $schemaUid = StringHelper::UUID();
-            $schema = new GqlSchema([
-                'name' => 'Public Schema',
-                'uid' => $schemaUid,
-                'isPublic' => true,
-            ]);
-        }
+        $this->saveSchema($publicSchema, false);
 
-        $this->saveSchema($schema, false);
-        return $schema;
+        return $publicSchema;
     }
 
     /**

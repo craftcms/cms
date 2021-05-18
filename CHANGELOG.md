@@ -12,6 +12,10 @@
 - Fixed a SQL error that occurred when calling `craft\records\Site::getGroup()`. ([#7914](https://github.com/craftcms/cms/issues/7914))
 - Fixed a bug where search terms that contained camelCased attribute names could yield no results. ([#7927](https://github.com/craftcms/cms/issues/7927))
 - Fixed a bug where the browser would jump back to the top of the page when scrolling passed a Redactor field with a fixed toolbar. ([#7888](https://github.com/craftcms/cms/issues/7888))
+- Fixed a bug where the My Drafts widget wasn’t showing drafts for entries that didn’t exist in the primary site. ([#7942](https://github.com/craftcms/cms/issues/7942))
+- Fixed a JavaScript error that occurred when switching an entry’s type from one that had multiple tabs to one with only one. ([#7943](https://github.com/craftcms/cms/issues/7943))
+- Fixed a bug where nested GraphQL arguments could be parsed incorrectly. ([#7534](https://github.com/craftcms/cms/issues/7534))
+- Fixed a bug where public GraphQL schemas could be unavailable on environments that didn’t allow admin changes. ([#7925](https://github.com/craftcms/cms/issues/7925))
 
 ## 3.6.14 - 2021-05-11
 
