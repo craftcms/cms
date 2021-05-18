@@ -9,6 +9,7 @@
 - Fixed a bug where the browser would jump back to the top of the page when scrolling passed a Redactor field with a fixed toolbar. ([#7888](https://github.com/craftcms/cms/issues/7888))
 - Fixed a bug where the My Drafts widget wasn’t showing drafts for entries that didn’t exist in the primary site. ([#7942](https://github.com/craftcms/cms/issues/7942))
 - Fixed a JavaScript error that occurred when switching an entry’s type from one that had multiple tabs to one with only one. ([#7943](https://github.com/craftcms/cms/issues/7943))
+- Fixed an error where sometimes nested GraphQL arguments were not being parsed correctly. ([#7534](https://github.com/craftcms/cms/issues/7534))
 
 ## 3.6.14 - 2021-05-11
 
