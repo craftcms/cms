@@ -156,6 +156,7 @@ return [
     'Author' => 'Yazar',
     'Authorization Header' => 'Yetkilendirme Başlığı',
     'Auto' => 'Otomatik',
+    'Auto-refresh' => 'Auto-refresh',
     'Automatic' => 'Otomatik',
     'Back to the queue index' => 'Kuyruk dizinine geri dön',
     'Back' => 'Geri',
