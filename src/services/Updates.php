@@ -280,6 +280,7 @@ class Updates extends Component
      * Returns whether a plugin needs to run a database update.
      *
      * @return bool
+     * @todo rename to getIsPluginUpdatePending() in v4
      */
     public function getIsPluginDbUpdateNeeded(): bool
     {
@@ -331,6 +332,7 @@ class Updates extends Component
      * Returns whether Craft needs to run any database migrations.
      *
      * @return bool
+     * @todo rename to getIsCraftUpdatePending() in v4
      */
     public function getIsCraftDbMigrationNeeded(): bool
     {
