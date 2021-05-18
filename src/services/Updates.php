@@ -277,9 +277,21 @@ class Updates extends Component
     }
 
     /**
+     * Returns whether any Craft or plugin updates are pending.
+     *
+     * @return bool
+     * @since 3.6.15
+     */
+    public function getIsUpdatePending(): bool
+    {
+        return $this->getIsCraftDbMigrationNeeded() || $this->getIsPluginDbUpdateNeeded();
+    }
+
+    /**
      * Returns whether a plugin needs to run a database update.
      *
      * @return bool
+     * @todo rename to getIsPluginUpdatePending() in v4
      */
     public function getIsPluginDbUpdateNeeded(): bool
     {
@@ -331,6 +343,7 @@ class Updates extends Component
      * Returns whether Craft needs to run any database migrations.
      *
      * @return bool
+     * @todo rename to getIsCraftUpdatePending() in v4
      */
     public function getIsCraftDbMigrationNeeded(): bool
     {

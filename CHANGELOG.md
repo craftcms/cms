@@ -2,6 +2,14 @@
 
 ## Unreleased
 
+### Added
+- Added `craft\services\Updates::getIsUpdatePending()`. ([#7946](https://github.com/craftcms/cms/issues/7946))
+
+### Changed
+- The `allowedFileExtensions` config setting now includes `dotx` and `dotm` files by default. ([#7935](https://github.com/craftcms/cms/issues/7935))
+- Craft now recognizes `dotx` files. ([#7935](https://github.com/craftcms/cms/issues/7935))
+- Updated Garnish to 0.1.44. ([#7940](https://github.com/craftcms/cms/issues/7940))
+
 ### Fixed
 - Fixed an error that occurred when running tests that use `craft\test\fixtures\FieldLayoutFixture`.
 - Fixed a SQL error that occurred when calling `craft\records\Site::getGroup()`. ([#7914](https://github.com/craftcms/cms/issues/7914))

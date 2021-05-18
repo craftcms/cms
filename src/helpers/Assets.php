@@ -611,6 +611,7 @@ class Assets
                         'docx',
                         'dot',
                         'dotm',
+                        'dotx',
                     ],
                 ],
                 Asset::KIND_XML => [
