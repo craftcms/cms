@@ -156,6 +156,7 @@ return [
     'Author' => 'Auteur',
     'Authorization Header' => 'En-tête d’autorisation',
     'Auto' => 'Auto',
+    'Auto-refresh' => 'Auto-refresh',
     'Automatic' => 'Automatique',
     'Back to the queue index' => 'Retour à l’index de la file',
     'Back' => 'Retour',

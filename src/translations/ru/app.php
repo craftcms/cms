@@ -156,6 +156,7 @@ return [
     'Author' => 'Автор',
     'Authorization Header' => 'Заголовок авторизации',
     'Auto' => 'Автоматически',
+    'Auto-refresh' => 'Auto-refresh',
     'Automatic' => 'Автоматический',
     'Back to the queue index' => 'Вернуться к списку очередей',
     'Back' => 'Назад',

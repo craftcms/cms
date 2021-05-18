@@ -156,6 +156,7 @@ return [
     'Author' => 'עורך',
     'Authorization Header' => 'כותרת הרשאה',
     'Auto' => 'אוטו',
+    'Auto-refresh' => 'Auto-refresh',
     'Automatic' => 'אוטומטי',
     'Back to the queue index' => 'חזרה לאינדקס התור',
     'Back' => 'חזור',

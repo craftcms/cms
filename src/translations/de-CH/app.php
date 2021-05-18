@@ -156,6 +156,7 @@ return [
     'Author' => 'Autor',
     'Authorization Header' => 'Autorisierungsheader',
     'Auto' => 'Autom',
+    'Auto-refresh' => 'Auto-refresh',
     'Automatic' => 'Automatisch',
     'Back to the queue index' => 'Zurück zum Queue-Index',
     'Back' => 'Zurück',

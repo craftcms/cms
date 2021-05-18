@@ -156,6 +156,7 @@ return [
     'Author' => 'نویسنده',
     'Authorization Header' => 'هدر مجوز',
     'Auto' => 'خودکار',
+    'Auto-refresh' => 'Auto-refresh',
     'Automatic' => 'خودکار',
     'Back to the queue index' => 'برگشت به اندیس صف',
     'Back' => 'بازگشت',

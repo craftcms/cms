@@ -156,6 +156,7 @@ return [
     'Author' => '저자',
     'Authorization Header' => '인증 헤더',
     'Auto' => '자동',
+    'Auto-refresh' => 'Auto-refresh',
     'Automatic' => '자동',
     'Back to the queue index' => '큐 인덱스로 돌아가기',
     'Back' => '뒤로',

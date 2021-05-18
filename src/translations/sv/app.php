@@ -156,6 +156,7 @@ return [
     'Author' => 'Författare',
     'Authorization Header' => 'Godkännanderubrik',
     'Auto' => 'Automatisk',
+    'Auto-refresh' => 'Auto-refresh',
     'Automatic' => 'Automatisk',
     'Back to the queue index' => 'Tillbaka till köindex',
     'Back' => 'Tillbaka',

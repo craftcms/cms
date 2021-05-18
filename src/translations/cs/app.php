@@ -156,6 +156,7 @@ return [
     'Author' => 'Autor',
     'Authorization Header' => 'Autorizační záhlaví',
     'Auto' => 'Automaticky',
+    'Auto-refresh' => 'Auto-refresh',
     'Automatic' => 'Automaticky',
     'Back to the queue index' => 'Zpět na index fronty',
     'Back' => 'Zpět',

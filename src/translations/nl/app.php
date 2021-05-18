@@ -156,6 +156,7 @@ return [
     'Author' => 'Auteur',
     'Authorization Header' => 'Autorisatiekop',
     'Auto' => 'Automatisch',
+    'Auto-refresh' => 'Auto-refresh',
     'Automatic' => 'Automatisch',
     'Back to the queue index' => 'Terug naar begin van de wachtrij',
     'Back' => 'Terug',

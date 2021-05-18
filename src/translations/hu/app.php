@@ -156,6 +156,7 @@ return [
     'Author' => 'Szerző',
     'Authorization Header' => 'Hitelesítés fejléce',
     'Auto' => 'Automatikus',
+    'Auto-refresh' => 'Auto-refresh',
     'Automatic' => 'Automatikus',
     'Back to the queue index' => 'Vissza a sor indexéhez',
     'Back' => 'Fekete',

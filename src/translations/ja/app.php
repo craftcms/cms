@@ -156,6 +156,7 @@ return [
     'Author' => '投稿者',
     'Authorization Header' => 'Authorizationヘッダー',
     'Auto' => '自動',
+    'Auto-refresh' => 'Auto-refresh',
     'Automatic' => '自動',
     'Back to the queue index' => 'クエリーインデックスに戻る',
     'Back' => '戻る',
