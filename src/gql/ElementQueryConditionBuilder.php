@@ -29,7 +29,11 @@ use GraphQL\Language\AST\FieldNode;
 use GraphQL\Language\AST\FragmentDefinitionNode;
 use GraphQL\Language\AST\FragmentSpreadNode;
 use GraphQL\Language\AST\InlineFragmentNode;
+use GraphQL\Language\AST\ListValueNode;
 use GraphQL\Language\AST\Node;
+use GraphQL\Language\AST\ObjectFieldNode;
+use GraphQL\Language\AST\ObjectValueNode;
+use GraphQL\Language\AST\VariableNode;
 use GraphQL\Type\Definition\ResolveInfo;
 use GraphQL\Type\Definition\WrappingType;
 use yii\base\InvalidArgumentException;
@@ -184,9 +188,23 @@ class ElementQueryConditionBuilder extends Component
      */
     private function _extractArgumentValue(Node $argumentNode)
     {
-        $argumentNodeValue = $argumentNode->value;
+
+        // Deal with a raw object value.
+        if ($argumentNode->kind === 'ObjectValue') {
+            /** @var ObjectValueNode $argumentNode */
+            $extractedValue = [];
+
+            foreach ($argumentNode->fields as $fieldNode) {
+                $extractedValue[$fieldNode->name->value] = $this->_extractArgumentValue($fieldNode);
+            }
+
+            return $extractedValue;
+        }
 
         if (in_array($argumentNode->kind, ['Argument', 'Variable', 'ListValue', 'ObjectField'], true)) {
+            /** @var ArgumentNode|VariableNode|ListValueNode|ObjectFieldNode $argumentNode */
+            $argumentNodeValue = $argumentNode->value;
+
             switch ($argumentNodeValue->kind) {
                 case 'Variable':
                     $extractedValue = $this->_resolveInfo->variableValues[$argumentNodeValue->name->value];
@@ -207,7 +225,8 @@ class ElementQueryConditionBuilder extends Component
                     $extractedValue = $argumentNodeValue->value;
             }
         } else {
-            $extractedValue = $argumentNode->kind === 'IntValue' ? (int)$argumentNodeValue : $argumentNodeValue;
+            $value = $argumentNode->value ?? null;
+            $extractedValue = $argumentNode->kind === 'IntValue' ? (int)$value : $value;
         }
 
         return $extractedValue;
