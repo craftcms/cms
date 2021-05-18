@@ -156,6 +156,7 @@ return [
     'Author' => 'Autor',
     'Authorization Header' => 'Cabeçalho de autorização',
     'Auto' => 'Auto',
+    'Auto-refresh' => 'Auto-refresh',
     'Automatic' => 'Automático',
     'Back to the queue index' => 'Voltar ao índice em fila',
     'Back' => 'Voltar',
