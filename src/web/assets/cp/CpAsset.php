@@ -216,6 +216,7 @@ JS;
             'Phone',
             'Previous Page',
             'Really delete folder “{folder}”?',
+            'Refresh',
             'Remove',
             'Rename folder',
             'Rename',

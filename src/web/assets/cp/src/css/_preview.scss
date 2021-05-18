@@ -92,6 +92,14 @@
       background-color: transparentize($grey100, 0.25);
     }
 
+    .buttons {
+      margin: 0;
+
+      .btn + .btn {
+        @include margin-left(7px);
+      }
+    }
+
     & + .lp-iframe-container {
       padding-top: 50px;
 

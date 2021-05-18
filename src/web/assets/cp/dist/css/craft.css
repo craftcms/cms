@@ -3596,6 +3596,12 @@ body.rtl .lp-editor-container .lp-draghandle { left: -2px; }
 
 @supports (-moz-appearance: none) { .lp-preview-container .lp-preview-header { background-color: rgba(228, 237, 246, 0.75); } }
 
+.lp-preview-container .lp-preview-header .buttons { margin: 0; }
+
+body.ltr .lp-preview-container .lp-preview-header .buttons .btn + .btn { margin-left: 7px; }
+
+body.rtl .lp-preview-container .lp-preview-header .buttons .btn + .btn { margin-right: 7px; }
+
 .lp-preview-container .lp-preview-header + .lp-iframe-container { padding-top: 50px; }
 
 @supports (-moz-appearance: none) { .lp-preview-container .lp-preview-header + .lp-iframe-container { padding-top: 0; } }
