@@ -94,7 +94,12 @@ Craft.CP = Garnish.Base.extend({
 
         Garnish.$doc.ready($.proxy(function() {
             // Update responsive tables on window resize
-            this.addListener(Garnish.$win, 'resize', 'handleWindowResize');
+            this.addListener(Garnish.$win, 'resize', ev => {
+                // Ignore element resizes
+                if (ev.target === window) {
+                    this.handleWindowResize();
+                }
+            });
             this.handleWindowResize();
 
             // Fade the notification out two seconds after page load
@@ -530,7 +535,7 @@ Craft.CP = Garnish.Base.extend({
             }
 
             if (document.activeElement !== activeElement) {
-                $(activeElement).focus();
+                $(activeElement).focus({preventScroll: true});
             }
         }
 
