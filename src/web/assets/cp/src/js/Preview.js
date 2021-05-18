@@ -216,7 +216,7 @@ Craft.Preview = Garnish.Base.extend({
                 this.$orientationBtn = $('<button/>', {
                     type: 'button',
                     'class': 'btn disabled',
-                    'data-icon': 'refresh',
+                    'data-icon': 'rotate',
                     disabled: '',
                     'aria-hidden': '',
                     'text': Craft.t('app', 'Rotate')
