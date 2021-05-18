@@ -156,6 +156,7 @@ return [
     'Author' => 'Forfatter',
     'Authorization Header' => 'Godkjennelsesoverskrift',
     'Auto' => 'Auto',
+    'Auto-refresh' => 'Auto-refresh',
     'Automatic' => 'Automatisk',
     'Back to the queue index' => 'Tilbake til køindeks',
     'Back' => 'Tilbake',
