@@ -156,6 +156,7 @@ return [
     'Author' => '作者',
     'Authorization Header' => '授权标头',
     'Auto' => '自动',
+    'Auto-refresh' => 'Auto-refresh',
     'Automatic' => '自动',
     'Back to the queue index' => '返回至队列索引',
     'Back' => '返回',
