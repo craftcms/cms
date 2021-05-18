@@ -225,7 +225,8 @@ class ElementQueryConditionBuilder extends Component
                     $extractedValue = $argumentNodeValue->value;
             }
         } else {
-            $extractedValue = $argumentNode->kind === 'IntValue' ? (int)$argumentNodeValue : $argumentNodeValue;
+            $value = $argumentNode->value ?? null;
+            $extractedValue = $argumentNode->kind === 'IntValue' ? (int)$value : $value;
         }
 
         return $extractedValue;
