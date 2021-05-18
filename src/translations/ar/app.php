@@ -156,6 +156,7 @@ return [
     'Author' => 'المؤلف',
     'Authorization Header' => 'عنوان الترخيص',
     'Auto' => 'تلقائي',
+    'Auto-refresh' => 'Auto-refresh',
     'Automatic' => 'تلقائي',
     'Back to the queue index' => 'العودة إلى فهرس قائمة الانتظار',
     'Back' => 'رجوع',
