@@ -1,5 +1,10 @@
 # Release Notes for Craft CMS 3.x
 
+## Unreleased
+
+### Added
+- Added to ability to show button links in the toolbar of an admin table.
+
 ## 3.6.15 - 2021-05-18
 
 ### Added
