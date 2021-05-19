@@ -1055,7 +1055,7 @@ return [
     'Recent {section} Entries' => 'Recente items in {section}',
     'Recent {type} changes merged.' => 'Recente wijzigingen in {type} samengevoegd.',
     'Record of generated image transforms' => 'Registratie van gegenereerde afbeeldingstransformaties',
-    'Reduce focus visibility' => 'Reduce focus visibility',
+    'Reduce focus visibility' => 'Zichtbaarheid van focus verminderen',
     'Refresh' => 'Vernieuwen',
     'Regenerate' => 'Opnieuw genereren',
     'Regenerating project config YAML files from the loaded project config…' => 'YAML-projectconfiguratiebestanden opnieuw genereren vanuit de geladen projectconfiguratie ...',
