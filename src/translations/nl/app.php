@@ -934,7 +934,7 @@ return [
     'Notes' => 'Notities',
     'Nothing selected.' => 'Niets geselecteerd.',
     'Nothing to update.' => 'Niets om bij te werken.',
-    'Notice' => 'Notice',
+    'Notice' => 'Opmerking',
     'Number' => 'Nummer',
     'OFF Label' => 'Label OFF',
     'OK' => 'OK',
