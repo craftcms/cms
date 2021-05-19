@@ -1,8 +1,7 @@
 <template>
     <div :id="tableId" class="vue-admin-table" :class="{ 'vue-admin-table-padded': padded }">
         <div v-show="showToolbar" class="toolbar">
-            <div class="flex">
-
+            <div class="flex flex-nowrap">
                 <div v-for="(action,index) in actions" :key="index">
                     <admin-table-action-button
                         :label="action.label"
@@ -28,6 +27,19 @@
                     <div class="clear hidden" :title="searchClearTitle"></div>
                 </div>
 
+                <div class="vue-admin-table-secondary-actions" v-if="secondaryActions && secondaryActions.length">
+                    <div class="flex">
+                        <div v-for="(action, index) in secondaryActions" :key="index">
+                            <admin-table-secondary-action-button
+                                :label="action.label"
+                                :icon="action.icon"
+                                :href="action.href"
+                                :btn-class="action.class"
+                                :enabled="action.enabled"
+                            ></admin-table-secondary-action-button>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -127,16 +139,18 @@
     import AdminTableCheckbox from './js/components/AdminTableCheckbox';
     import AdminTableActionButton from './js/components/AdminTableActionButton';
     import AdminTableDetailRow from './js/components/AdminTableDetailRow';
+    import AdminTableSecondaryActionButton from './js/components/AdminTableSecondaryActionButton';
     import Sortable from 'sortablejs'
     import {debounce, map} from 'lodash'
 
     export default {
         components: {
-            Vuetable,
-            AdminTablePagination,
+            AdminTableActionButton,
             AdminTableCheckbox,
             AdminTableDeleteButton,
-            AdminTableActionButton
+            AdminTablePagination,
+            AdminTableSecondaryActionButton,
+            Vuetable,
         },
 
         props: {
@@ -225,6 +239,10 @@
             searchPlaceholder: {
                 type: String,
                 default: Craft.t('app', 'Search'),
+            },
+            secondaryActions: {
+                type: Array,
+                default: () => { return []; },
             },
             tableData: {
                 type: Array,
@@ -649,6 +667,10 @@
 
     table.data.vue-admin-table-dragging tbody tr:not(.disabled):hover td {
         background-color: transparent;
+    }
+
+    .vue-admin-table-secondary-actions {
+        margin-left: auto;
     }
 
     .detail-cursor-pointer {
