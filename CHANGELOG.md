@@ -1,6 +1,14 @@
 # Release Notes for Craft CMS 3.x
 
-## Unreleased
+## 3.6.15 - 2021-05-18
+
+### Added
+- Added `craft\services\Updates::getIsUpdatePending()`. ([#7946](https://github.com/craftcms/cms/issues/7946))
+
+### Changed
+- The `allowedFileExtensions` config setting now includes `dotx` and `dotm` files by default. ([#7935](https://github.com/craftcms/cms/issues/7935))
+- Craft now recognizes `dotx` files. ([#7935](https://github.com/craftcms/cms/issues/7935))
+- Updated Garnish to 0.1.44. ([#7940](https://github.com/craftcms/cms/issues/7940))
 
 ### Fixed
 - Fixed an error that occurred when running tests that use `craft\test\fixtures\FieldLayoutFixture`.
@@ -9,6 +17,8 @@
 - Fixed a bug where the browser would jump back to the top of the page when scrolling passed a Redactor field with a fixed toolbar. ([#7888](https://github.com/craftcms/cms/issues/7888))
 - Fixed a bug where the My Drafts widget wasn’t showing drafts for entries that didn’t exist in the primary site. ([#7942](https://github.com/craftcms/cms/issues/7942))
 - Fixed a JavaScript error that occurred when switching an entry’s type from one that had multiple tabs to one with only one. ([#7943](https://github.com/craftcms/cms/issues/7943))
+- Fixed a bug where nested GraphQL arguments could be parsed incorrectly. ([#7534](https://github.com/craftcms/cms/issues/7534))
+- Fixed a bug where public GraphQL schemas could be unavailable on environments that didn’t allow admin changes. ([#7925](https://github.com/craftcms/cms/issues/7925))
 
 ## 3.6.14 - 2021-05-11
 
@@ -2919,6 +2929,7 @@
 - Preview targets can now opt out of being automatically refreshed when content changes, by setting `refresh` to `false` on their target definition. ([#5359](https://github.com/craftcms/cms/issues/5359))
 - The old `craft\controllers\AssetsController::actionSaveAsset()` method has been renamed to `actionUpload()`.
 - Assets fields now open their asset selection modals to the field's Default Upload Location, if it exists. ([#2778](https://github.com/craftcms/cms/issues/2778)
+- The `|merge` filter now has a `recursive` argument. ([#1465](https://github.com/craftcms/cms/issues/1465))
 - `craft\config\GeneralConfig::getLoginPath()` and `getLogoutPath()` may now return non-string values.
 - `craft\elements\Asset::getImg()` now has an optional `$transform` argument. ([#3563](https://github.com/craftcms/cms/issues/3563))
 - `craft\helpers\Db::prepDateForDb()` now has a `$stripSeconds` argument (defaults to `false`).

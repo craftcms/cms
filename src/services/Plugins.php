@@ -774,6 +774,7 @@ class Plugins extends Component
      *
      * @param PluginInterface $plugin The plugin
      * @return bool Whether the plugin’s local schema version is greater than the record we have in the database
+     * @todo rename to isPluginUpdatePending() in v4
      */
     public function doesPluginRequireDatabaseUpdate(PluginInterface $plugin): bool
     {
