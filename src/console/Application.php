@@ -96,7 +96,7 @@ class Application extends \yii\console\Application
             && !getenv('CRAFT_ALLOW_ROOT')
         ) {
             if (function_exists('posix_getuid') && posix_getuid() === 0) {
-                Console::outputWarning('You should probably not run Craft as root! See https://craftcms.com/root for details.');
+                Console::outputWarning('You should probably not run Craft as root! See https://craftcms.com/knowledge-base/craft-console-root for details.');
 
                 if (!Console::confirm('Are you sure you want to do this?')) {
                     Console::output('Command cancelled.' . PHP_EOL);
@@ -114,7 +114,6 @@ class Application extends \yii\console\Application
             /** @noinspection CommandExecutionAsSuperUserInspection */
             Silencer::call('exec', 'sudo -K > /dev/null 2>&1');
         }
-
 
         return parent::runAction($route, $params);
     }
