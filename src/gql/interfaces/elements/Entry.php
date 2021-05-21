@@ -171,15 +171,8 @@ class Entry extends Structure
             ]);
         }
 
-
         if (Gql::canQueryDrafts()) {
             $fields = array_merge($fields, [
-                'revisionCreator' => [
-                    'name' => 'revisionCreator',
-                    'type' => User::getType(),
-                    'description' => 'The creator of a given revision.',
-                    'complexity' => Gql::relatedArgumentComplexity(GqlService::GRAPHQL_COMPLEXITY_EAGER_LOAD),
-                ],
                 'draftCreator' => [
                     'name' => 'draftCreator',
                     'type' => User::getType(),
@@ -191,6 +184,23 @@ class Entry extends Structure
                     'args' => EntryArguments::getArguments(),
                     'type' => Type::listOf(EntryInterface::getType()),
                     'description' => 'The drafts for the entry.',
+                    'complexity' => Gql::relatedArgumentComplexity(GqlService::GRAPHQL_COMPLEXITY_EAGER_LOAD),
+                ],
+            ]);
+        }
+
+        if (Gql::canQueryRevisions()) {
+            $fields = array_merge($fields, [
+                'revisionCreator' => [
+                    'name' => 'revisionCreator',
+                    'type' => User::getType(),
+                    'description' => 'The creator of a given revision.',
+                    'complexity' => Gql::relatedArgumentComplexity(GqlService::GRAPHQL_COMPLEXITY_EAGER_LOAD),
+                ],
+                'currentRevision' => [
+                    'name' => 'currentRevision',
+                    'type' => EntryInterface::getType(),
+                    'description' => 'The current revision for the entry.',
                     'complexity' => Gql::relatedArgumentComplexity(GqlService::GRAPHQL_COMPLEXITY_EAGER_LOAD),
                 ],
             ]);
