@@ -14,6 +14,7 @@ use craft\base\ApplicationTrait;
 use craft\db\Query;
 use craft\db\Table;
 use craft\errors\MissingComponentException;
+use craft\helpers\App;
 use craft\helpers\Console;
 use craft\queue\QueueLogBehavior;
 use yii\base\Component;
@@ -93,7 +94,7 @@ class Application extends \yii\console\Application
         if (
             !Platform::isWindows()
             && function_exists('exec')
-            && !getenv('CRAFT_ALLOW_ROOT')
+            && !App::env('CRAFT_ALLOW_ROOT')
         ) {
             if (function_exists('posix_getuid') && posix_getuid() === 0) {
                 Console::outputWarning('You should probably not run Craft as root! See https://craftcms.com/knowledge-base/craft-console-root for details.');
