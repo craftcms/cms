@@ -885,6 +885,8 @@ abstract class Element extends Component implements ElementInterface
                 return self::_mapCurrentRevisions($sourceElements);
             case 'drafts':
                 return self::_mapDrafts($sourceElements);
+            case 'revisions':
+                return self::_mapRevisions($sourceElements);
             case 'draftCreator':
                 return self::_mapDraftCreators($sourceElements);
             case 'revisionCreator':
@@ -1163,7 +1165,7 @@ abstract class Element extends Component implements ElementInterface
     }
 
     /**
-     * Returns an eager-loading map for the source elements’ current revisions.
+     * Returns an eager-loading map for the source elements’ current drafts.
      *
      * @param ElementInterface[] $sourceElements An array of the source elements
      * @return array The eager-loading element ID mappings
@@ -1187,6 +1189,34 @@ abstract class Element extends Component implements ElementInterface
             'elementType' => static::class,
             'map' => $map,
             'criteria' => ['drafts' => true],
+        ];
+    }
+
+    /**
+     * Returns an eager-loading map for the source elements’ current revisions.
+     *
+     * @param ElementInterface[] $sourceElements An array of the source elements
+     * @return array The eager-loading element ID mappings
+     */
+    private static function _mapRevisions(array $sourceElements): array
+    {
+        // Get the source element IDs
+        $sourceElementIds = ArrayHelper::getColumn($sourceElements, 'id');
+
+        $map = (new Query())
+            ->select([
+                'source' => 'r.sourceId',
+                'target' => 'e.id',
+            ])
+            ->from(['r' => Table::REVISIONS])
+            ->innerJoin(['e' => Table::ELEMENTS], '[[e.revisionId]] = [[r.id]]')
+            ->where(['r.sourceId' => $sourceElementIds])
+            ->all();
+
+        return [
+            'elementType' => static::class,
+            'map' => $map,
+            'criteria' => ['revisions' => true],
         ];
     }
 

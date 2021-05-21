@@ -217,6 +217,13 @@ class Entry extends Structure
                     'description' => 'The current revision for the entry.',
                     'complexity' => Gql::relatedArgumentComplexity(GqlService::GRAPHQL_COMPLEXITY_EAGER_LOAD),
                 ],
+                'revisions' => [
+                    'name' => 'revisions',
+                    'args' => EntryArguments::getArguments(),
+                    'type' => Type::listOf(EntryInterface::getType()),
+                    'description' => 'The revisions for the entry.',
+                    'complexity' => Gql::relatedArgumentComplexity(GqlService::GRAPHQL_COMPLEXITY_EAGER_LOAD),
+                ],
             ]);
         }
         return $fields;
