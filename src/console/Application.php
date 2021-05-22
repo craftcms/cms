@@ -14,7 +14,6 @@ use craft\base\ApplicationTrait;
 use craft\db\Query;
 use craft\db\Table;
 use craft\errors\MissingComponentException;
-use craft\helpers\App;
 use craft\helpers\Console;
 use craft\queue\QueueLogBehavior;
 use yii\base\Component;
@@ -91,24 +90,20 @@ class Application extends \yii\console\Application
 
         // Check if we're running as root. Borrowed heavily from
         // https://github.com/composer/composer/blob/master/src/Composer/Console/Application.php
-        if (
-            !Platform::isWindows()
-            && function_exists('exec')
-            && !App::env('CRAFT_ALLOW_ROOT')
-        ) {
+        if (!Platform::isWindows() && function_exists('exec')) {
             if (function_exists('posix_getuid') && posix_getuid() === 0) {
-                Console::outputWarning('You should probably not run Craft as root! See https://craftcms.com/knowledge-base/craft-console-root for details.');
+                Console::stdout('Craft commands should not be run as the root user.' . PHP_EOL, Console::FG_RED);
+                Console::stdout('See https://craftcms.com/knowledge-base/craft-console-root for details on why that’s a bad idea.' . PHP_EOL, Console::FG_GREY);
 
-                if (!Console::confirm('Are you sure you want to do this?')) {
-                    Console::output('Command cancelled.' . PHP_EOL);
+                if (!Console::confirm('Proceed anyway?', true)) {
                     Craft::$app->end();
                 }
 
-                if ($uid = (int) getenv('SUDO_UID')) {
+                if ($uid = (int)getenv('SUDO_UID')) {
                     // Silently clobber any sudo credentials on the invoking user to avoid privilege escalations later on
                     // ref. https://github.com/composer/composer/issues/5119
                     /** @noinspection CommandExecutionAsSuperUserInspection */
-                    Silencer::call('exec', "sudo -u \\#{$uid} sudo -K > /dev/null 2>&1");
+                    Silencer::call('exec', "sudo -u \\#$uid sudo -K > /dev/null 2>&1");
                 }
             }
             // Silently clobber any remaining sudo leases on the current user as well to avoid privilege escalations
