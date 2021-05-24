@@ -42,7 +42,7 @@ class AuthenticationController extends Controller
         $this->requireAcceptsJson();
         $scenario = Authentication::CP_AUTHENTICATION_CHAIN;
         $request = Craft::$app->getRequest();
-        $stepType = $request->getRequiredBodyParam('stepType');
+        $stepType = $request->getBodyParam('stepType', '');
         $chain = Craft::$app->getAuthentication()->getAuthenticationChain($scenario);
         $switch = !empty($request->getBodyParam('switch'));
 
