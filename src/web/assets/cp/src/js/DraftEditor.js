@@ -661,7 +661,7 @@ Craft.DraftEditor = Garnish.Base.extend({
             // Prep the data to be saved, keeping track of the first input name for each delta group
             let modifiedFieldNames = [];
             let preparedData = this.prepareData(data, (deltaName, params)  => {
-                if (params.length) {
+                if (!this.settings.isUnpublishedDraft && params.length) {
                     modifiedFieldNames.push(decodeURIComponent(params[0].split('=')[0]));
                 }
             });
