@@ -50,9 +50,7 @@ body.rtl #rememberMe-field { margin-left: 14px; }
 
 #spinner-pending { top: 0; margin-left: -24px; left: 50%; position: absolute; }
 
-#authentication-container { position: relative; }
-
-#recovery-container { position: relative; }
+.authentication-chain { position: relative; }
 
 #login-errors { text-align: center; color: #CF1124; margin-top: 1em; }
 
