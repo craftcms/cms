@@ -195,18 +195,6 @@
             retainScroll: true,
         }) %}
     {% endif %}
-    {% if canUpdateSource and publishDraftAction and addAnotherRedirectUrl %}
-        {% set formActions = formActions|push({
-            label: 'Publish and add another'|t('app'),
-            action: publishDraftAction,
-            redirect: addAnotherRedirectUrl|hash,
-            shortcut: true,
-            shift: true,
-            data: {
-                autosave: false,
-            },
-        }) %}
-    {% endif %}
     {% if canDeleteDraft %}
         {% if canDeleteForSite %}
             {% set formActions = formActions|push({
@@ -295,7 +283,7 @@
                 {{ tag('button', {
                     type: 'button',
                     class: ['btn', 'secondary', 'formsubmit'],
-                    text: 'Publish draft'|t('app'),
+                    text: 'Apply draft'|t('app'),
                     title: forms.shortcutText('S', false, true),
                     data: {
                         action: publishDraftAction,

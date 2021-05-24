@@ -475,7 +475,11 @@ class EntryRevisionsController extends BaseEntriesController
             // Publish the draft (finally!)
             $newEntry = Craft::$app->getDrafts()->publishDraft($draft);
         } catch (InvalidElementException $e) {
-            $this->setFailFlash(Craft::t('app', 'Couldn’t publish draft.'));
+            if ($draft->getIsProvisionalDraft() || $draft->getIsUnpublishedDraft()) {
+                $this->setFailFlash(Craft::t('app', 'Couldn’t save entry.'));
+            } else {
+                $this->setFailFlash(Craft::t('app', 'Couldn’t apply draft.'));
+            }
 
             // Send the draft back to the template
             Craft::$app->getUrlManager()->setRouteParams([
@@ -493,7 +497,7 @@ class EntryRevisionsController extends BaseEntriesController
         if ($draft->getIsProvisionalDraft() || $draft->getIsUnpublishedDraft()) {
             $this->setSuccessFlash(Craft::t('app', 'Entry saved.'));
         } else {
-            $this->setSuccessFlash(Craft::t('app', 'Draft published.'));
+            $this->setSuccessFlash(Craft::t('app', 'Draft applied.'));
         }
 
         return $this->redirectToPostedUrl($newEntry);
