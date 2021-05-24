@@ -3213,7 +3213,7 @@ body.fixed-header #header { position: fixed; z-index: 12; top: 0; background-col
 @media only screen and (min-width: 974px) { body.ltr #header .flex:not(:last-child) { margin-right: 7px; }
   body.rtl #header .flex:not(:last-child) { margin-left: 7px; } }
 
-#header h1 { line-height: 32px; margin-top: 0; margin-bottom: 0; min-width: 0; white-space: nowrap; overflow: hidden; -o-text-overflow: ellipsis; text-overflow: ellipsis; }
+#header h1 { line-height: 34px; margin-top: 0; margin-bottom: 0; min-width: 0; white-space: nowrap; overflow: hidden; -o-text-overflow: ellipsis; text-overflow: ellipsis; }
 
 body.ltr #header h1:not(:last-child) { margin-right: 14px !important; }
 
