@@ -737,7 +737,7 @@ class Sites extends Component
 
             // Shared attributes
             $siteRecord->uid = $siteUid;
-            $siteRecord->groupId = $groupRecord['id'];
+            $siteRecord->groupId = $groupRecord->id;
             $siteRecord->name = $data['name'];
             $siteRecord->handle = $data['handle'];
             $siteRecord->language = $data['language'];

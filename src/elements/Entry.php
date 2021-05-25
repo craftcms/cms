@@ -607,6 +607,9 @@ class Entry extends Element
             return [
                 'elementType' => User::class,
                 'map' => $map,
+                'criteria' => [
+                    'status' => null,
+                ],
             ];
         }
 
