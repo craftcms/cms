@@ -1026,6 +1026,33 @@ class Db
     }
 
     /**
+     * This method attempts to see if timezone data has been populated on the
+     * database server Craft is configured to use.
+     *
+     * https://dev.mysql.com/doc/refman/5.7/en/time-zone-support.html
+     * @param Connection|null $db
+     * @return bool `false` if this is MySQL and it appears timezone data is not available, `true` otherwise.
+     * @throws DbException
+     * @since 3.6.16
+     */
+    public static function validateDatabaseTimezoneSupport(?Connection $db = null): bool
+    {
+        if ($db === null) {
+            $db = self::db();
+        }
+
+        if ($db->getIsMysql()) {
+            $result = $db->createCommand("SELECT CONVERT_TZ('2007-03-11 2:00:00','US/Eastern','US/Central') AS time1")->queryScalar();
+
+            if (!$result) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    /**
      * Generates a DB config from a database connection URL.
      *
      * This can be used from `config/db.php`:
