@@ -15,6 +15,7 @@
 /package-lock.json export-ignore
 /README.md export-ignore
 /SECURITY.md export-ignore
+/packages/ export-ignore
 /src/translations/a*/app.php linguist-generated=true
 /src/translations/c*/app.php linguist-generated=true
 /src/translations/d*/app.php linguist-generated=true
