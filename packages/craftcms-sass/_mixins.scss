@@ -216,7 +216,7 @@ $radioSize: 16px;
 
 @mixin pane {
   background: $white;
-  box-shadow: 0 0 0 1px transparentize($grey200, 0.75), 0 2px 12px transparentize($grey200, 0.5);
+  box-shadow: 0 0 0 1px transparentize($grey300, 0.75), 0 2px 12px transparentize($grey200, 0.5);
 
   &:focus {
     box-shadow: $darkFocusRing
