@@ -4,6 +4,7 @@
 
 ### Fixed
 - Fixed a bug where eager-loading entrys’ authors wasn’t including pending and suspended authors. ([#7963](https://github.com/craftcms/cms/issues/7963))
+- Fixed a bug where `status` argument was missing for some element GraphQL queries. ([craftcms/gatsby-source-craft#35](https://github.com/craftcms/gatsby-source-craft/issues/35))
 
 ## 3.6.15 - 2021-05-18
 
