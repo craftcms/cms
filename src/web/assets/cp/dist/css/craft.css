@@ -1691,6 +1691,8 @@ body.rtl .missing-component .install-plugin .icon { right: 0; }
 
 .pane-tabs ul { margin: -8px -24px 0; padding: 8px 24px 0; -webkit-flex: 1; flex: 1; display: -webkit-flex; display: flex; -webkit-flex-direction: row; flex-direction: row; overflow-x: auto; scrollbar-width: none; }
 
+.pane-tabs ul::-webkit-scrollbar { display: none; }
+
 body.ltr .pane-tabs ul.scrollable { -webkit-mask-image: linear-gradient(to left, rgba(0, 0, 0, 0), black 24px); mask-image: linear-gradient(to left, rgba(0, 0, 0, 0), black 24px); }
 
 body.rtl .pane-tabs ul.scrollable { -webkit-mask-image: linear-gradient(to right, rgba(0, 0, 0, 0), black 24px); mask-image: linear-gradient(to right, rgba(0, 0, 0, 0), black 24px); }
