@@ -810,80 +810,6 @@ $toolbarIconColor: darken($inputColor, 10%);
   }
 }
 
-#tabs {
-  margin: -10px -12px 0;
-  padding: 10px 12px 0;
-  overflow: hidden;
-  display: flex;
-  align-items: center;
-
-  ul {
-    display: flex;
-    flex-direction: row;
-    max-width: calc(100% - 40px);
-
-    li {
-      max-width: 100%;
-
-      & + li {
-        @include margin-left(-12px);
-      }
-
-      a {
-        display: block;
-        position: relative;
-        border-radius: $mediumBorderRadius $mediumBorderRadius 0 0;
-        padding: 12px 24px;
-        max-width: 100%;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        box-sizing: border-box;
-        line-height: 1.2;
-
-        &:hover {
-          text-decoration: none;
-        }
-
-        &:not(.sel) {
-          color: $mediumDarkTextColor;
-
-          &:hover {
-            color: $textColor;
-            background-image: linear-gradient(to bottom, $grey050, transparentize($grey050, 0.5));
-          }
-        }
-
-        &.sel {
-          @include pane;
-          z-index: 1;
-          color: $textColor;
-          cursor: default;
-          background-clip: padding-box;
-        }
-      }
-    }
-  }
-
-  #overflow-tab-btn {
-    margin-left: 10px;
-    width: 30px;
-    height: 17px;
-    padding: 0;
-    line-height: 16px;
-    border-radius: $smallBorderRadius;
-    color: $mediumDarkTextColor;
-
-    &:before {
-      margin: 0;
-    }
-
-    &:after {
-      display: none;
-    }
-  }
-}
-
 .content-pane {
   @include pane;
   border-radius: $largeBorderRadius;
@@ -891,15 +817,6 @@ $toolbarIconColor: darken($inputColor, 10%);
   background-clip: padding-box;
   padding: 24px;
   word-wrap: break-word;
-
-  &.square {
-    body.ltr & {
-      border-top-left-radius: 0;
-    }
-    body.rtl & {
-      border-top-right-radius: 0;
-    }
-  }
 
   & > hr {
     margin-left: -24px;
@@ -938,18 +855,10 @@ $toolbarIconColor: darken($inputColor, 10%);
   @include padding-left(14px);
   width: $detailsWidth + 38;
 
-  #main-content.has-tabs & {
-    padding-top: 40px;
-  }
-
   &.fixed {
     position: fixed;
     overflow-y: auto;
     padding-top: 14px;
-
-    #main-content.has-tabs & {
-      padding-top: 54px;
-    }
   }
 
   .meta {

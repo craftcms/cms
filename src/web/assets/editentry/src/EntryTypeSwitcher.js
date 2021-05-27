@@ -21,17 +21,20 @@
                 if (textStatus === 'success') {
                     this.trigger('beforeTypeChange');
 
-                    var $tabs = $('#tabs');
+                    const $tabs = $('#tabs');
+
                     if (response.tabsHtml) {
                         if ($tabs.length) {
                             $tabs.replaceWith(response.tabsHtml);
                         } else {
-                            $(response.tabsHtml).insertBefore($('#content'))
+                            const $contentHeader = $('<header/>', {
+                                id: 'content-header',
+                                class: 'pane-header',
+                            }).prependTo($('#content'));
+                            $(response.tabsHtml).appendTo($contentHeader).attr('id', 'tabs');
                         }
-                        Craft.cp.$mainContent.addClass('has-tabs');
                     } else {
-                        $tabs.remove();
-                        Craft.cp.$mainContent.removeClass('has-tabs');
+                        $('#content-header').remove();
                     }
 
                     Craft.cp.initTabs();

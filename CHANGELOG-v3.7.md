@@ -58,6 +58,7 @@
 - Added `craft\web\View::startScriptBuffer()`.
 - Added `craft\web\twig\variables\Cp::getTimeZoneOptions()`.
 - Added the `timeZone` and `timeZoneField` macros to the `_includes/forms.html` control panel template.
+- Added the `Craft.Tabs` JavaScript class.
 
 ### Changed
 - Changes from an entry’s Current revision are now automatically merged into drafts upon visiting drafts’ edit pages.
@@ -66,6 +67,7 @@
 - Matrix blocks now retain their original IDs and UIDs when a draft is published. ([#7710](https://github.com/craftcms/cms/pull/7710))
 - Improved the styling of field status indicators.
 - Field status indicators now appear immediately after a field’s value is changed and saved successfully to a draft.
+- Improved the design and accessibility of tabs in the control panel. ([#7299](https://github.com/craftcms/cms/issues/7299))
 - Improved the UI of the Time Zone input in Settings → General.
 - Custom fields with a custom translation method are no longer labelled as translatable if the translation key is an empty string. ([#7647](https://github.com/craftcms/cms/issues/7647))
 - The `resave/entries` command now has a `--provisional-drafts` option.
