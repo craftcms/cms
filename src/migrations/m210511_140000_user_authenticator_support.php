@@ -16,8 +16,13 @@ class m210511_140000_user_authenticator_support extends Migration
      */
     public function safeUp()
     {
-        $this->addColumn(Table::USERS, 'authenticatorSecret', $this->char(32)->after('password'));
-        $this->addColumn(Table::USERS, 'authenticatorTimestamp', $this->bigInteger()->after('authenticatorSecret'));
+        $this->createTable(Table::AUTH_AUTHENTICATOR, [
+            'userId' => $this->integer()->notNull(),
+            'authenticatorSecret' => $this->char(32),
+            'authenticatorTimestamp' => $this->bigInteger(),
+        ]);
+
+        $this->addForeignKey(null, Table::AUTH_AUTHENTICATOR, ['userId'], Table::USERS, ['id'], 'CASCADE', null);
     }
 
     /**

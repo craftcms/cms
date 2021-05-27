@@ -20,6 +20,10 @@ abstract class Table
     const ASSETS = '{{%assets}}';
     const ASSETTRANSFORMINDEX = '{{%assettransformindex}}';
     const ASSETTRANSFORMS = '{{%assettransforms}}';
+    /* @since 4.0.0 */
+    const AUTH_AUTHENTICATOR = '{{%auth_authenticator}}';
+    /* @since 4.0.0 */
+    const AUTH_WEBAUTHN = '{{%auth_webauthn}}';
     /* @since 3.4.14 */
     const CACHE = '{{%cache}}';
     const CATEGORIES = '{{%categories}}';

@@ -644,6 +644,7 @@ class UserQuery extends ElementQuery
         }
 
         $this->joinElementTable('users');
+        $this->leftJoin(['authenticator' => Table::AUTH_AUTHENTICATOR], '[[authenticator.userId]] = [[users.id]]');
 
         $this->query->select([
             'users.username',
@@ -651,8 +652,6 @@ class UserQuery extends ElementQuery
             //'users.photoId',
             'users.firstName',
             'users.lastName',
-            'users.authenticatorSecret',
-            'users.authenticatorTimestamp',
             'users.email',
             'users.unverifiedEmail',
             'users.admin',
@@ -661,6 +660,8 @@ class UserQuery extends ElementQuery
             'users.suspended',
             'users.lastLoginDate',
             'users.lockoutDate',
+            'authenticator.authenticatorSecret',
+            'authenticator.authenticatorTimestamp',
             // TODO: uncomment after next breakpoint
             //'users.hasDashboard',
         ]);

@@ -165,6 +165,16 @@ class Install extends Migration
             'dateUpdated' => $this->dateTime()->notNull(),
             'uid' => $this->uid(),
         ]);
+        $this->createTable(Table::AUTH_AUTHENTICATOR, [
+            'userId' => $this->integer()->notNull(),
+            'authenticatorSecret' => $this->char(32),
+            'authenticatorTimestamp' => $this->bigInteger(),
+        ]);
+        $this->createTable(Table::AUTH_WEBAUTHN, [
+            'userId' => $this->integer()->notNull(),
+            'credentialId' => $this->string(),
+            'credential' => $this->text(),
+        ]);
         $this->createTable(Table::CATEGORIES, [
             'id' => $this->integer()->notNull(),
             'groupId' => $this->integer()->notNull(),
@@ -720,8 +730,6 @@ class Install extends Migration
             'lastName' => $this->string(100),
             'email' => $this->string()->notNull(),
             'password' => $this->string(),
-            'authenticatorSecret' => $this->char(32),
-            'authenticatorTimestamp' => $this->bigInteger(),
             'admin' => $this->boolean()->defaultValue(false)->notNull(),
             'locked' => $this->boolean()->defaultValue(false)->notNull(),
             'suspended' => $this->boolean()->defaultValue(false)->notNull(),
@@ -797,6 +805,7 @@ class Install extends Migration
         $this->createIndex(null, Table::ASSETTRANSFORMINDEX, ['volumeId', 'assetId', 'location'], false);
         $this->createIndex(null, Table::ASSETTRANSFORMS, ['name']);
         $this->createIndex(null, Table::ASSETTRANSFORMS, ['handle']);
+        $this->createIndex(null, Table::AUTH_WEBAUTHN, ['credentialId']);
         $this->createIndex(null, Table::CATEGORIES, ['groupId'], false);
         $this->createIndex(null, Table::CATEGORYGROUPS, ['name'], false);
         $this->createIndex(null, Table::CATEGORYGROUPS, ['handle'], false);
@@ -983,6 +992,8 @@ class Install extends Migration
         $this->addForeignKey(null, Table::ASSETS, ['id'], Table::ELEMENTS, ['id'], 'CASCADE', null);
         $this->addForeignKey(null, Table::ASSETS, ['uploaderId'], Table::USERS, ['id'], 'SET NULL', null);
         $this->addForeignKey(null, Table::ASSETS, ['volumeId'], Table::VOLUMES, ['id'], 'CASCADE', null);
+        $this->addForeignKey(null, Table::AUTH_AUTHENTICATOR, ['userId'], Table::USERS, ['id'], 'CASCADE', null);
+        $this->addForeignKey(null, Table::AUTH_WEBAUTHN, ['userId'], Table::USERS, ['id'], 'CASCADE', null);
         $this->addForeignKey(null, Table::CATEGORIES, ['groupId'], Table::CATEGORYGROUPS, ['id'], 'CASCADE', null);
         $this->addForeignKey(null, Table::CATEGORIES, ['id'], Table::ELEMENTS, ['id'], 'CASCADE', null);
         $this->addForeignKey(null, Table::CATEGORIES, ['parentId'], Table::CATEGORIES, ['id'], 'SET NULL', null);
