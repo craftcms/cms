@@ -1512,8 +1512,6 @@ class User extends Element implements IdentityInterface
         $record->admin = $this->admin;
         $record->passwordResetRequired = $this->passwordResetRequired;
         $record->unverifiedEmail = $this->unverifiedEmail;
-        $record->authenticatorTimestamp = $this->authenticatorTimestamp;
-        $record->authenticatorSecret = $this->_authenticatorSecret;
 
         if ($changePassword = ($this->newPassword !== null)) {
             $hash = Craft::$app->getSecurity()->hashPassword($this->newPassword);
