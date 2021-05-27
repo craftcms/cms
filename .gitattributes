@@ -7,14 +7,14 @@
 /.lando.yml export-ignore
 /.travis.yml export-ignore
 /CHANGELOG.md export-ignore
+/README.md export-ignore
+/SECURITY.md export-ignore
 /codeception.yml export-ignore
 /composer.lock export-ignore
 /crowdin.yml export-ignore
 /gulpfile.js export-ignore
-/package.json export-ignore
 /package-lock.json export-ignore
-/README.md export-ignore
-/SECURITY.md export-ignore
+/package.json export-ignore
 /packages/ export-ignore
 /src/translations/a*/app.php linguist-generated=true
 /src/translations/c*/app.php linguist-generated=true
