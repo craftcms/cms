@@ -11,7 +11,9 @@ use Composer\InstalledVersions;
 use Craft;
 use craft\base\PluginInterface;
 use craft\base\Utility;
+use craft\db\Connection;
 use craft\helpers\App;
+use craft\helpers\Db;
 use RequirementsChecker;
 use yii\base\Module;
 
@@ -182,6 +184,11 @@ class SystemReport extends Utility
     private static function _requirementResults(): array
     {
         $reqCheck = new RequirementsChecker();
+        $dbConfig = Craft::$app->getConfig()->getDb();
+        $reqCheck->dsn = $dbConfig->dsn;
+        $reqCheck->dbDriver = $dbConfig->dsn ? Db::parseDsn($dbConfig->dsn, 'driver') : Connection::DRIVER_MYSQL;
+        $reqCheck->dbUser = $dbConfig->user;
+        $reqCheck->dbPassword = $dbConfig->password;
         $reqCheck->checkCraft();
 
         return $reqCheck->getResult()['requirements'];

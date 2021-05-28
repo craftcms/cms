@@ -535,7 +535,7 @@ Craft.CP = Garnish.Base.extend({
             }
 
             if (document.activeElement !== activeElement) {
-                $(activeElement).focus({preventScroll: true});
+                activeElement.focus({preventScroll: true});
             }
         }
 

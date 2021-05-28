@@ -1026,6 +1026,30 @@ class Db
     }
 
     /**
+     * Returns whether the database supports time zone conversions.
+     *
+     * This could return `false` if MySQL’s time zone tables haven’t been populated yet. See
+     * https://dev.mysql.com/doc/refman/5.7/en/time-zone-support.html for more info.
+     *
+     * @param Connection|null $db
+     * @return bool
+     * @since 3.6.16
+     */
+    public static function supportsTimeZones(?Connection $db = null): bool
+    {
+        if ($db === null) {
+            $db = self::db();
+        }
+
+        if ($db->getIsPgsql()) {
+            return true;
+        }
+
+        $result = $db->createCommand("SELECT CONVERT_TZ('2007-03-11 2:00:00','US/Eastern','US/Central') AS time1")->queryScalar();
+        return (bool)$result;
+    }
+
+    /**
      * Generates a DB config from a database connection URL.
      *
      * This can be used from `config/db.php`:
