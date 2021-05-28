@@ -405,24 +405,21 @@ class Entry extends Element
                 // New child?
                 if (
                     $section->type == Section::TYPE_STRUCTURE &&
+                    $section->maxLevels != 1 &&
                     $userSession->checkPermission('createEntries:' . $section->uid)
                 ) {
-                    $structure = Craft::$app->getStructures()->getStructureById($section->structureId);
+                    $newChildUrl = 'entries/' . $section->handle . '/new';
 
-                    if ($structure) {
-                        $newChildUrl = 'entries/' . $section->handle . '/new';
-
-                        if (Craft::$app->getIsMultiSite()) {
-                            $newChildUrl .= '?site=' . $site->handle;
-                        }
-
-                        $actions[] = $elementsService->createAction([
-                            'type' => NewChild::class,
-                            'label' => Craft::t('app', 'Create a new child entry'),
-                            'maxLevels' => $structure->maxLevels,
-                            'newChildUrl' => $newChildUrl,
-                        ]);
+                    if (Craft::$app->getIsMultiSite()) {
+                        $newChildUrl .= '?site=' . $site->handle;
                     }
+
+                    $actions[] = $elementsService->createAction([
+                        'type' => NewChild::class,
+                        'label' => Craft::t('app', 'Create a new child entry'),
+                        'maxLevels' => $section->maxLevels,
+                        'newChildUrl' => $newChildUrl,
+                    ]);
                 }
 
                 // Duplicate
@@ -446,6 +443,7 @@ class Entry extends Element
 
                     if (
                         $section->type === Section::TYPE_STRUCTURE &&
+                        $section->maxLevels != 1 &&
                         $userSession->checkPermission("deletePeerEntries:$section->uid")
                     ) {
                         $actions[] = [
