@@ -57,7 +57,7 @@ new Craft.VueAdminTable({...options...});
 | reorderFailMessage        | String   | `Couldn’t reorder items`                    | Message to be displayed as the fail notice after reorder failure. |
 | search                    | Bool     | `false`                                     | Whether or not to show the search field.                     |
 | searchPlaceholder         | String   | `Search`                                    | Search placeholder text.                                     |
-| secondaryActions          | Array    | `[]`                                        | Array of secondary actions, these are simple button links to be place in the toolbar.                                     |
+| secondaryActions          | Array    | `[]`                                        | Array of links to be placed in the toolbar.                                     |
 | tableData                 | Array    | `null`                                      | Array of objects used to populate the table data for data mode. |
 | tableDataEndpoint         | String   | `null`                                      | Endpoint for api mode to retrieve table data, pagination and table metadata (e.g. total count). |
 
@@ -360,31 +360,30 @@ The secondary actions are simple button links that can appear in the top right o
 
 ### Options
 
-The `secondaryActions` option is and `array` of objects.
+The `secondaryActions` option is an array of objects.
 
 Each object has the following parameters. __References to "button" is only from a visual standpoint, secondary actions are anchor elements.__
 
-| Name            | Description                                                                                                   |
-| --------------- | ------------------------------------------------------------------------------------------------------------- |
-| label           | label to show in the button                                                                                   |
-| icon (optional) | icon to show in the button                                                                                    |
-| href            | href attribute to use on the button                                                                           |
-| enabled         | this can be either a `boolen` or a `function` that returns a `boolean` to determine if the button is "enabled" |
+| Name | Description |
+| ---- | ----------- |
+| `label` | The link label |
+| `icon` _(optional)_ | The link icon |
+| `href` | The link’s `href` attribute |
+| `enabled` | Whether the link should be enabled. This can either be a boolean or a callback function that returns a boolean. |
 
 
 ### Example
 
 ```js
 new Craft.VueAdminTable({
-    ...
+    // ...
     secondaryActions: [
         {
             label: 'Create New Thing',
             icon: 'plus',
-            href: '{{ cpUrl('my-plugin/thing/new') }}',
-            enabled: function() { return true; }
+            href: '{{ cpUrl("my-plugin/thing/new") }}',
+            enabled: () => true,
         }
-    ]
-    ...
-})
+    ],
+});
 ```

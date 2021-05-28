@@ -3,7 +3,7 @@
 ## Unreleased
 
 ### Added
-- Added to ability to show button links in the toolbar of an admin table.
+- Admin tables can now include linked buttons in the toolbar.
 - Added `craft\helpers\Db::supportsTimeZones()`.
 
 ### Fixed
