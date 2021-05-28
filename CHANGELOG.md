@@ -3,7 +3,7 @@
 ## Unreleased
 
 ### Added
-- Added `craft\helpers\Db::validateDatabaseTimezoneSupport()`.
+- Added `craft\helpers\Db::supportsTimeZones()`.
 
 ### Fixed
 - Fixed a bug where eager-loading entrys’ authors wasn’t including pending and suspended authors. ([#7963](https://github.com/craftcms/cms/issues/7963))
