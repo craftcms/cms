@@ -404,36 +404,33 @@ class Entry extends Element
                 // Channel/Structure-only actions
                 $section = $sections[0];
 
-                // New child?
                 if (
                     $section->type == Section::TYPE_STRUCTURE &&
                     $userSession->checkPermission('createEntries:' . $section->uid)
                 ) {
-                    $structure = Craft::$app->getStructures()->getStructureById($section->structureId);
+                    $newEntryUrl = 'entries/' . $section->handle . '/new';
 
-                    if ($structure) {
-                        $newEntryUrl = 'entries/' . $section->handle . '/new';
+                    if (Craft::$app->getIsMultiSite()) {
+                        $newEntryUrl .= '?site=' . $site->handle;
+                    }
 
-                        if (Craft::$app->getIsMultiSite()) {
-                            $newEntryUrl .= '?site=' . $site->handle;
-                        }
+                    $actions[] = $elementsService->createAction([
+                        'type' => NewSiblingBefore::class,
+                        'label' => Craft::t('app', 'Create a new entry before'),
+                        'newSiblingUrl' => $newEntryUrl,
+                    ]);
 
-                        $actions[] = $elementsService->createAction([
-                            'type' => NewSiblingBefore::class,
-                            'label' => Craft::t('app', 'Create a new entry before'),
-                            'newSiblingUrl' => $newEntryUrl,
-                        ]);
+                    $actions[] = $elementsService->createAction([
+                        'type' => NewSiblingAfter::class,
+                        'label' => Craft::t('app', 'Create a new entry after'),
+                        'newSiblingUrl' => $newEntryUrl,
+                    ]);
 
-                        $actions[] = $elementsService->createAction([
-                            'type' => NewSiblingAfter::class,
-                            'label' => Craft::t('app', 'Create a new entry after'),
-                            'newSiblingUrl' => $newEntryUrl,
-                        ]);
-
+                    if ($section->maxLevels != 1) {
                         $actions[] = $elementsService->createAction([
                             'type' => NewChild::class,
                             'label' => Craft::t('app', 'Create a new child entry'),
-                            'maxLevels' => $structure->maxLevels,
+                            'maxLevels' => $section->maxLevels,
                             'newChildUrl' => $newEntryUrl,
                         ]);
                     }
@@ -460,6 +457,7 @@ class Entry extends Element
 
                     if (
                         $section->type === Section::TYPE_STRUCTURE &&
+                        $section->maxLevels != 1 &&
                         $userSession->checkPermission("deletePeerEntries:$section->uid")
                     ) {
                         $actions[] = [

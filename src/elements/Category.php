@@ -249,9 +249,7 @@ class Category extends Element
             ]);
 
             // New Child
-            $structure = Craft::$app->getStructures()->getStructureById($group->structureId);
-
-            if ($structure) {
+            if ($group->maxLevels != 1) {
                 $newChildUrl = 'categories/' . $group->handle . '/new';
 
                 if (Craft::$app->getIsMultiSite()) {
@@ -261,7 +259,7 @@ class Category extends Element
                 $actions[] = $elementsService->createAction([
                     'type' => NewChild::class,
                     'label' => Craft::t('app', 'Create a new child category'),
-                    'maxLevels' => $structure->maxLevels,
+                    'maxLevels' => $group->maxLevels,
                     'newChildUrl' => $newChildUrl,
                 ]);
             }
@@ -278,10 +276,13 @@ class Category extends Element
 
             // Delete
             $actions[] = Delete::class;
-            $actions[] = [
-                'type' => Delete::class,
-                'withDescendants' => true,
-            ];
+
+            if ($group->maxLevels != 1) {
+                $actions[] = [
+                    'type' => Delete::class,
+                    'withDescendants' => true,
+                ];
+            }
         }
 
         // Restore

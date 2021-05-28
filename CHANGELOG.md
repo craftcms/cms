@@ -2,8 +2,16 @@
 
 ## Unreleased
 
+### Added
+- Added `craft\helpers\Db::supportsTimeZones()`.
+
 ### Fixed
-- Fixed a bug where eager-loading entrys’ authors wasn’t including pending and suspended authors. ([#7963](https://github.com/craftcms/cms/issues/7963))
+- Fixed a bug where eager-loading entries’ authors wasn’t including pending and suspended authors. ([#7963](https://github.com/craftcms/cms/issues/7963))
+- Fixed a bug where not all element types’ GraphQL queries supported a `status` argument. ([craftcms/gatsby-source-craft#35](https://github.com/craftcms/gatsby-source-craft/issues/35))
+- Fixed JavaScript errors that could occur in the control panel.
+- Fixed a bug where the System Messages utility was showing default messages in the user’s preferred language, even if that wasn’t one of the sites’ languages. ([#7992](https://github.com/craftcms/cms/issues/7992))
+- Fixed a bug where Table fields were getting duplicate search keywords, making it difficult to perform exact match searching on their values. ([#7984](https://github.com/craftcms/cms/issues/7984))
+- Fixed a bug where Structure section entries and categories would show “Create a new child” and “Delete (with descendants)” actions even if the structure was limited to a single level. ([#7988](https://github.com/craftcms/cms/issues/7988))
 
 ## 3.6.15 - 2021-05-18
 
