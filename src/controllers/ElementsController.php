@@ -418,7 +418,6 @@ class ElementsController extends BaseElementsController
 
         $view = $this->getView();
         $namespace = 'editor_' . StringHelper::randomString(10);
-        $view->setNamespace($namespace);
 
         $response['html'] = '<input type="hidden" name="namespace" value="' . $namespace . '">';
 
@@ -431,7 +430,9 @@ class ElementsController extends BaseElementsController
         }
 
         $response['html'] .= '<div class="meta">' .
-            $view->namespaceInputs((string)$element->getEditorHtml()) .
+            $view->namespaceInputs(function() use ($element) {
+                return $element->getEditorHtml();
+            }, $namespace) .
             '</div>';
 
         // Set the field layout id to a discrete value, in case we know it.

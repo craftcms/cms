@@ -85,6 +85,7 @@
 - `craft\base\FieldInterface::getContentColumnType()` can now return an array, if the field stores content across multiple columns.
 - `craft\services\AssetTransforms::normalizeTransform()` now accepts transform configs arrays that specify a base transform which should be extended, via a `transform` key set to the stored transform’s handle. ([#7892](https://github.com/craftcms/cms/issues/7892)) 
 - `craft\web\View::clearJsBuffer()` now has a `$combine` argument.
+- `craft\web\View::namespaceInputs()` now accepts a callback function for the first argument, which simplifies the process of setting and resetting the registered namespace before and after generating the to-be-namespaced HTML.
 
 ### Deprecated
 - Deprecated `craft\base\Element::ATTR_STATUS_CONFLICTED`.

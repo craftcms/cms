@@ -31,6 +31,7 @@ use Twig\Extension\StringLoaderExtension;
 use Twig\Template as TwigTemplate;
 use yii\base\Arrayable;
 use yii\base\Exception;
+use yii\base\InvalidArgumentException;
 use yii\base\Model;
 use yii\base\NotSupportedException;
 use yii\web\AssetBundle as YiiAssetBundle;
@@ -1486,15 +1487,39 @@ JS;
      * <input type="text" name="foo[bar][title]" id="foo-bar-title">
      * ```
      *
-     * @param string $html The HTML code
+     * When a callable is passed to `$html` (supported as of Craft 3.7), the namespace will be set via
+     * [[setNamespace()]] before the callable is executed, in time for any JavaScript code that needs to be
+     * registered by the callable.
+     *
+     * ```php
+     * $settingsHtml = Craft::$app->view->namespaceInputs(function() use ($widget) {
+     *     return $widget->getSettingsHtml();
+     * }, 'widget-settings');
+     * ```
+     *
+     * @param string|callable $html The HTML code, or a callable that returns the HTML code
      * @param string|null $namespace The namespace. Defaults to the [[getNamespace()|active namespace]].
      * @param bool $otherAttributes Whether `id`, `for`, and other attributes should be namespaced (in addition to `name`)
      * @param bool $withClasses Whether class names should be namespaced as well (affects both `class` attributes and
      * class name CSS selectors within `<style>` tags). This will only have an effect if `$otherAttributes` is `true`.
      * @return string The HTML with namespaced attributes
      */
-    public function namespaceInputs(string $html, string $namespace = null, bool $otherAttributes = true, bool $withClasses = false): string
+    public function namespaceInputs($html, string $namespace = null, bool $otherAttributes = true, bool $withClasses = false): string
     {
+        if (is_callable($html)) {
+            // If no namespace was passed in, just return the callable response directly.
+            // No need to namespace it via the currently-set namespace in this case; if there is one, it should get applied later on.
+            if ($namespace === null) {
+                return $html();
+            }
+
+            $oldNamespace = $this->getNamespace();
+            $this->setNamespace($this->namespaceInputName($namespace));
+            $response = $this->namespaceInputs($html(), $namespace, $otherAttributes, $withClasses);
+            $this->setNamespace($oldNamespace);
+            return $response;
+        }
+
         if ($html === '') {
             return $html;
         }
