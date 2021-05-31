@@ -7,8 +7,6 @@
 
 namespace craft\console;
 
-use Composer\Util\Platform;
-use Composer\Util\Silencer;
 use Craft;
 use craft\base\ApplicationTrait;
 use craft\db\Query;
@@ -86,29 +84,6 @@ class Application extends \yii\console\Application
                     Console::outputWarning("Craft can’t fetch the `$infoTable` table row." . ($e ? PHP_EOL . 'Exception: ' . $e->getMessage() : ''), false);
                 }
             }
-        }
-
-        // Check if we're running as root. Borrowed heavily from
-        // https://github.com/composer/composer/blob/master/src/Composer/Console/Application.php
-        if (!Platform::isWindows() && function_exists('exec')) {
-            if (function_exists('posix_getuid') && posix_getuid() === 0) {
-                Console::stdout('Craft commands should not be run as the root user.' . PHP_EOL, Console::FG_RED);
-                Console::stdout('See https://craftcms.com/knowledge-base/craft-console-root for details on why that’s a bad idea.' . PHP_EOL, Console::FG_GREY);
-
-                if (!Console::confirm('Proceed anyway?', true)) {
-                    Craft::$app->end();
-                }
-
-                if ($uid = (int)getenv('SUDO_UID')) {
-                    // Silently clobber any sudo credentials on the invoking user to avoid privilege escalations later on
-                    // ref. https://github.com/composer/composer/issues/5119
-                    /** @noinspection CommandExecutionAsSuperUserInspection */
-                    Silencer::call('exec', "sudo -u \\#$uid sudo -K > /dev/null 2>&1");
-                }
-            }
-            // Silently clobber any remaining sudo leases on the current user as well to avoid privilege escalations
-            /** @noinspection CommandExecutionAsSuperUserInspection */
-            Silencer::call('exec', 'sudo -K > /dev/null 2>&1');
         }
 
         return parent::runAction($route, $params);

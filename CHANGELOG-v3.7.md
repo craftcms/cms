@@ -35,6 +35,7 @@
 - Added `craft\base\FieldInterface::copyValue()`.
 - Added `craft\base\FieldInterface::getStatus()`.
 - Added `craft\base\FieldTrait::$columnSuffix`.
+- Added `craft\console\ControllerTrait::checkRootUser()`.
 - Added `craft\elements\db\ElementQuery::provisionalDrafts()`.
 - Added `craft\events\DraftEvent::$provisional`.
 - Added `craft\fields\Matrix::$propagationKeyFormat`.
