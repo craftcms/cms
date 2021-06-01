@@ -8,6 +8,7 @@
 namespace craft\controllers;
 
 use Craft;
+use craft\authentication\base\MfaTypeInterface;
 use craft\base\Element;
 use craft\elements\Asset;
 use craft\elements\Entry;
@@ -751,6 +752,7 @@ class UsersController extends Controller
         $sessionActions = [];
         $destructiveActions = [];
         $miscActions = [];
+        $mfaStepTypes = [];
 
         if ($edition === Craft::Pro && !$isNewUser) {
             switch ($user->getStatus()) {
@@ -849,6 +851,14 @@ class UsersController extends Controller
                     ];
                 }
             }
+
+            foreach (Craft::$app->getAuthentication()->getMfaTypes() as $authenticator) {
+                /** @var MfaTypeInterface $authenticator */
+                if ($authenticator::hasUserSetup()) {
+                    $mfaStepTypes[] = new $authenticator();
+                }
+            }
+
         }
 
         // Give plugins a chance to modify these, or add new ones
@@ -1015,26 +1025,6 @@ class UsersController extends Controller
         ]);
         $this->getView()->registerJs('new Craft.AccountSettingsForm(' . $userIdJs . ', ' . $isCurrentJs . ', ' . $settingsJs . ');', View::POS_END);
 
-        $qrAuthenticatorCode = '';
-
-        if (Craft::$app->getEdition() == Craft::Pro && $isCurrentUser && !$user->hasAuthenticatorSecret()) {
-            $session = Craft::$app->getSession();
-            $existingSecret = $session->get(AuthenticationHelper::AUTHENTICATOR_SECRET_SESSION_KEY);
-
-            $codeAuthenticator = AuthenticationHelper::getCodeAuthenticator();
-
-            if (!$existingSecret) {
-                $existingSecret = $codeAuthenticator->generateSecretKey(32);
-                $session->set(AuthenticationHelper::AUTHENTICATOR_SECRET_SESSION_KEY, $existingSecret);
-            }
-
-            $qrAuthenticatorCode = $codeAuthenticator->getQRCodeInline(
-                Craft::$app->getSites()->getPrimarySite()->getName(),
-                $user->email,
-                $existingSecret
-            );
-        }
-
         return $this->renderTemplate('users/_edit', compact(
             'user',
             'isNewUser',
@@ -1049,7 +1039,7 @@ class UsersController extends Controller
             'selectedTab',
             'showPhotoField',
             'fieldsHtml',
-            'qrAuthenticatorCode'
+            'mfaStepTypes'
         ));
     }
 
@@ -1207,54 +1197,6 @@ class UsersController extends Controller
         ) {
             Craft::warning('Tried to change the email or password for userId: ' . $user->id . ', but the current password does not match what the user supplied.', __METHOD__);
             $user->addError('currentPassword', Craft::t('app', 'Incorrect current password.'));
-        }
-
-        // Handle attaching/detaching an authenticator
-        // ---------------------------------------------------------------------
-        if (Craft::$app->getEdition() === Craft::Pro) {
-            $code1 = $this->request->getBodyParam('verification-code-1');
-            $code2 = $this->request->getBodyParam('verification-code-2');
-            $detach = $this->request->getBodyParam('detach');
-            $session = Craft::$app->getSession();
-
-            if (!empty($code1) || !empty($code2)) {
-                $this->requireElevatedSession();
-
-                $attached = false;
-                $authenticator = AuthenticationHelper::getCodeAuthenticator();
-                // More generous, when attaching
-                $authenticator->setWindow(4);
-                $existingSecret = $session->get(AuthenticationHelper::AUTHENTICATOR_SECRET_SESSION_KEY);
-                $firstTimestamp = $authenticator->verifyKeyNewer($existingSecret, $code1, 100);
-
-                if ($firstTimestamp) {
-                    // Ensure sequence of two codes
-                    $secondTimestamp = $authenticator->verifyKeyNewer($existingSecret, $code2, $firstTimestamp);
-
-                    if ($secondTimestamp) {
-                        $user->authenticatorTimestamp = $secondTimestamp;
-                        $user->setAuthenticatorSecret($existingSecret);
-                        $session->remove(AuthenticationHelper::AUTHENTICATOR_SECRET_SESSION_KEY);
-                        $attached = true;
-                    }
-                }
-
-                if (!$attached) {
-                    $user->addError('authenticator', Craft::t('app', 'Failed to verify two consecutive codes.'));
-                } else {
-                    $session->setNotice(Craft::t('app', 'Successfully attached the authenticator.'));
-                }
-            } else if (!empty($detach)) {
-                $this->requireElevatedSession();
-
-                if ($detach === 'detach') {
-                    $user->setAuthenticatorSecret(null);
-                    $user->authenticatorTimestamp = null;
-                    $session->setNotice(Craft::t('app', 'Successfully detached the authenticator.'));
-                } else {
-                    $user->addError('authenticator', Craft::t('app', 'Failed to detach the authenticator.'));
-                }
-            }
         }
 
         // Handle the rest of the user properties

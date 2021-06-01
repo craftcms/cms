@@ -166,14 +166,22 @@ class Install extends Migration
             'uid' => $this->uid(),
         ]);
         $this->createTable(Table::AUTH_AUTHENTICATOR, [
+            'id' => $this->primaryKey(),
             'userId' => $this->integer()->notNull(),
             'authenticatorSecret' => $this->char(32),
             'authenticatorTimestamp' => $this->bigInteger(),
+            'dateCreated' => $this->dateTime()->notNull(),
+            'dateUpdated' => $this->dateTime()->notNull(),
+            'uid' => $this->uid(),
         ]);
         $this->createTable(Table::AUTH_WEBAUTHN, [
+            'id' => $this->primaryKey(),
             'userId' => $this->integer()->notNull(),
             'credentialId' => $this->string(),
             'credential' => $this->text(),
+            'dateCreated' => $this->dateTime()->notNull(),
+            'dateUpdated' => $this->dateTime()->notNull(),
+            'uid' => $this->uid(),
         ]);
         $this->createTable(Table::CATEGORIES, [
             'id' => $this->integer()->notNull(),

@@ -27,7 +27,7 @@ abstract class Type extends Component implements TypeInterface
      *
      * @return string
      */
-    abstract public function getFieldHtml(): string;
+    abstract public function getInputFieldHtml(): string;
 
     /**
      * @inheritdoc

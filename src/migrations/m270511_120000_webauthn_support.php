@@ -17,9 +17,13 @@ class m270511_120000_webauthn_support extends Migration
     public function safeUp()
     {
         $this->createTable(Table::AUTH_WEBAUTHN, [
+            'id' => $this->primaryKey(),
             'userId' => $this->integer()->notNull(),
             'credentialId' => $this->string(),
             'credential' => $this->text(),
+            'dateCreated' => $this->dateTime()->notNull(),
+            'dateUpdated' => $this->dateTime()->notNull(),
+            'uid' => $this->uid(),
         ]);
 
         $this->addForeignKey(null, Table::AUTH_WEBAUTHN, ['userId'], Table::USERS, ['id'], 'CASCADE', null);

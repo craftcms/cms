@@ -10,8 +10,12 @@ namespace craft\services;
 
 use Craft;
 use craft\authentication\Chain;
+use craft\authentication\type\mfa\AuthenticatorCode;
+use craft\authentication\type\mfa\EmailCode;
+use craft\elements\User;
 use craft\models\AuthenticationChainConfiguration;
 use craft\models\AuthenticationState;
+use craft\records\AuthAuthenticator;
 use yii\base\Component;
 use yii\base\InvalidConfigException;
 
@@ -44,6 +48,19 @@ class Authentication extends Component
         $chain = Craft::createObject(Chain::class, [$state, $chainConfig->steps]);
 
         return $chain;
+    }
+
+    /**
+     * Return a list of all the multi-factor authentication types.
+     * @return string[]
+     */
+    public function getMfaTypes(): array
+    {
+        // TODO event here
+        return [
+            AuthenticatorCode::class,
+            EmailCode::class
+        ];
     }
 
     /**
@@ -127,7 +144,7 @@ class Authentication extends Component
      *
      * @param string $scenario
      */
-    public function invalidateAuthenticationState(string $scenario) : void
+    public function invalidateAuthenticationState(string $scenario): void
     {
         $states = $this->getAllAuthenticationStates();
         unset($states[$scenario]);

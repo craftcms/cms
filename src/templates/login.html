@@ -41,7 +41,7 @@
                 {% set authenticationChain = craft.app.authentication.cpAuthenticationChain %}
                 <div class="authentication-chain" id="authentication" rel="{{ authenticationChain.nextAuthenticationStep ? authenticationChain.nextAuthenticationStep.stepType : '' }}" data-endpoint="authentication/perform-authentication">
                     {% if not authenticationChain.isComplete %}
-                        {{ authenticationChain.nextAuthenticationStep.fieldHtml|raw }}
+                        {{ authenticationChain.nextAuthenticationStep.inputFieldHtml|raw }}
                     {% else %}
                         <div id="spinner-pending" class="spinner big over-bg"></div>
                     {% endif %}
@@ -51,7 +51,7 @@
                     {% set recoveryChain = craft.app.authentication.getCpRecoveryChain(true) %}
                     <div class="authentication-chain hidden" id="recovery" data-endpoint="authentication/recover-account">
                         {% if not recoveryChain.isComplete %}
-                            {{ recoveryChain.nextAuthenticationStep.fieldHtml|raw }}
+                            {{ recoveryChain.nextAuthenticationStep.inputFieldHtml|raw }}
                         {% endif %}
                     </div>
                 {% endif %}

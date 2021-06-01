@@ -4,10 +4,9 @@ declare(strict_types=1);
 namespace craft\authentication\type\mfa;
 
 use Craft;
-use craft\authentication\base\Type;
+use craft\authentication\base\MfaType;
 use craft\elements\User;
-use craft\helpers\StringHelper;
-use craft\mail\Message;
+use craft\helpers\Authentication as AuthenticationHelper;
 use craft\models\AuthenticationState;
 
 /**
@@ -17,7 +16,7 @@ use craft\models\AuthenticationState;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.0.0
  */
-class AuthenticatorCode extends Type
+class AuthenticatorCode extends MfaType
 {
     /**
      * @inheritdoc
@@ -66,7 +65,7 @@ class AuthenticatorCode extends Type
     /**
      * @inheritdoc
      */
-    public function getFieldHtml(): string
+    public function getInputFieldHtml(): string
     {
         return Craft::$app->getView()->renderTemplate('_components/authenticationsteps/AuthenticatorCode/input');
     }
@@ -77,5 +76,40 @@ class AuthenticatorCode extends Type
     public static function getIsApplicable(User $user): bool
     {
         return $user->hasAuthenticatorSecret();
+    }
+
+    public static function hasUserSetup(): bool
+    {
+        return true;
+    }
+
+    public function getUserSetupFormHtml(User $user): string
+    {
+
+        $qrAuthenticatorCode = '';
+
+        if (Craft::$app->getEdition() == Craft::Pro && $user->getIsCurrent() && !$user->hasAuthenticatorSecret()) {
+            $session = Craft::$app->getSession();
+            $existingSecret = $session->get(AuthenticationHelper::AUTHENTICATOR_SECRET_SESSION_KEY);
+
+            $codeAuthenticator = AuthenticationHelper::getCodeAuthenticator();
+
+            if (!$existingSecret) {
+                $existingSecret = $codeAuthenticator->generateSecretKey(32);
+                $session->set(AuthenticationHelper::AUTHENTICATOR_SECRET_SESSION_KEY, $existingSecret);
+            }
+
+            $qrAuthenticatorCode = $codeAuthenticator->getQRCodeInline(
+                Craft::$app->getSites()->getPrimarySite()->getName(),
+                $user->email,
+                $existingSecret
+            );
+        }
+
+
+        return Craft::$app->getView()->renderTemplate('_components/authenticationsteps/AuthenticatorCode/setup', [
+            'user' => $user,
+            'qrAuthenticatorCode' => $qrAuthenticatorCode
+        ]);
     }
 }

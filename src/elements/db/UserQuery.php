@@ -644,7 +644,6 @@ class UserQuery extends ElementQuery
         }
 
         $this->joinElementTable('users');
-        $this->leftJoin(['authenticator' => Table::AUTH_AUTHENTICATOR], '[[authenticator.userId]] = [[users.id]]');
 
         $this->query->select([
             'users.username',
@@ -660,8 +659,6 @@ class UserQuery extends ElementQuery
             'users.suspended',
             'users.lastLoginDate',
             'users.lockoutDate',
-            'authenticator.authenticatorSecret',
-            'authenticator.authenticatorTimestamp',
             // TODO: uncomment after next breakpoint
             //'users.hasDashboard',
         ]);
@@ -673,6 +670,14 @@ class UserQuery extends ElementQuery
         }
         if (version_compare($version, '3.0.4', '>=')) {
             $this->query->addSelect(['users.hasDashboard']);
+        }
+
+        if (version_compare(Craft::$app->getInfo()->schemaVersion, '4.0.0', '>=')) {
+            $this->leftJoin(['authenticator' => Table::AUTH_AUTHENTICATOR], '[[authenticator.userId]] = [[users.id]]');
+            $this->query->addSelect([
+                'authenticator.authenticatorSecret',
+                'authenticator.authenticatorTimestamp',
+            ]);
         }
 
         if (is_bool($this->admin)) {

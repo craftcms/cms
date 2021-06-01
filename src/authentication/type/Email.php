@@ -68,7 +68,7 @@ class Email extends Type
     /**
      * @inheritdoc
      */
-    public function getFieldHtml(): string
+    public function getInputFieldHtml(): string
     {
         return Craft::$app->getView()->renderTemplate('_components/authenticationsteps/Email/input');
     }

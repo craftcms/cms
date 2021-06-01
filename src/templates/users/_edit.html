@@ -146,41 +146,10 @@
                     }) }}
                 {% endif %}
 
-                {% if CraftEdition == CraftPro and craft.cp.loginSupportsAuthenticator %}
-                    <h2>{{ 'Manage multi-factor authentication with an authenticator app'|t('app') }}</h2>
-                    {% if user.hasAuthenticatorSecret %}
-                        {{ forms.textField({
-                            label: "Detach multi-factor authenticator"|t('app'),
-                            instructions: 'Enter the word “detach” to detach the authenticator app'|t('app'),
-                            id: 'detach',
-                            name: 'detach',
-                            errors: user.getErrors('authenticator'),
-                            value: null,
-                            required: false,
-                            type: 'name',
-                        }) }}
-                    {% else %}
-                        <img alt="Authenticator code" src="{{ qrAuthenticatorCode }}" style="width: auto;"/>
-                        <label> {{ 'Scan the QR code and enter two consecutive codes to attach'|t('app') }}</label>
-                        {{ forms.textField({
-                            label: "First verification code"|t('app'),
-                            id: 'verification-code-1',
-                            name: 'verification-code-1',
-                            errors: user.getErrors('authenticator'),
-                            value: null,
-                            required: false,
-                            type: 'name',
-                        }) }}
-
-                        {{ forms.textField({
-                            label: "Second verification code"|t('app'),
-                            id: 'verification-code-2',
-                            name: 'verification-code-2',
-                            value: null,
-                            required: false,
-                            type: 'name',
-                        }) }}
-                    {% endif %}
+                {% if CraftEdition == CraftPro and mfaStepTypes|length > 0%}
+                    {% for stepType in mfaStepTypes %}
+                        {{ stepType.getUserSetupFormHtml(user)|raw }}
+                    {% endfor %}
                 {% endif %}
             {% endif %}
         </div>
@@ -440,8 +409,5 @@
         '#admin:not(:checked)',
         '#user-groups input[type="checkbox"]:not(:checked)',
         '#permissions input[type="checkbox"]:not(:checked)',
-        '#verification-code-1',
-        '#verification-code-2',
-        '#detach',
     ]);
 {% endjs %}

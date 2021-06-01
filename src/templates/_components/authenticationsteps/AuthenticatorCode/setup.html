@@ -1,0 +1,47 @@
+{% import "_includes/forms" as forms %}
+
+<div id="authenticator-settings">
+    <h2>{{ 'Manage multi-factor authentication with an authenticator app'|t('app') }}</h2>
+    {% if user.hasAuthenticatorSecret %}
+        {{ forms.textField({
+            label: "Detach multi-factor authenticator"|t('app'),
+            instructions: 'Enter the word “detach” to detach the authenticator app'|t('app'),
+            id: 'detach',
+            name: 'detach',
+            errors: user.getErrors('authenticator'),
+            value: null,
+            required: false,
+            type: 'name',
+            class: 'authenticator-field detach'
+        }) }}
+    {% else %}
+        {% if user.getIsCurrent() %}
+            <img alt="Authenticator code" src="{{ qrAuthenticatorCode }}" style="width: auto;"/><br />
+            <label> {{ 'Scan the QR code and enter two consecutive codes to attach'|t('app') }}</label>
+            {{ forms.textField({
+                label: "First verification code"|t('app'),
+                id: 'verification-code-1',
+                name: 'verification-code-1',
+                errors: user.getErrors('authenticator'),
+                value: null,
+                required: false,
+                type: 'name',
+                class: 'authenticator-field'
+            }) }}
+
+            {{ forms.textField({
+                label: "Second verification code"|t('app'),
+                id: 'verification-code-2',
+                name: 'verification-code-2',
+                value: null,
+                required: false,
+                type: 'name',
+                class: 'authenticator-field'
+           }) }}
+        {% else %}
+            <div class="error">{{ 'Unable to add authenticator to other users'|t('app')}}</div>
+        {% endif %}
+    {% endif %}
+
+    <button type="button" id="update-authenticator" class="btn submit formsubmit">Update authenticator settings</button>
+</div>

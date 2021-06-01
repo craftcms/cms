@@ -1,16 +1,17 @@
 interface ProgressBarInterface
 {
     new($element: JQuery, displaySteps?: boolean): ProgressBarInterface
-
     $progressBar: JQuery
-
     setItemCount(count: number): void
-
     setProcessedItemCount(count: number): void
-
     updateProgressBar(): void
-
     showProgressBar(): void
+}
+
+interface ElevatedSessionManagerInterface
+{
+    fetchingTimeout: boolean,
+    requireElevatedSession(cb: () => void)
 }
 
 declare var Craft: {
@@ -23,6 +24,7 @@ declare var Craft: {
     cpLoginChain: string,
     PasswordInput: any,
     appendFootHtml: (html?: string) => void
+    elevatedSessionManager: ElevatedSessionManagerInterface
 };
 
 declare var Garnish: any;

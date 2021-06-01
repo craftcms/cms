@@ -11,6 +11,9 @@ namespace craft\controllers;
 use Craft;
 use craft\authentication\base\Type;
 use craft\authentication\Chain;
+use craft\authentication\type\mfa\AuthenticatorCode;
+use craft\elements\User;
+use craft\helpers\Authentication as AuthenticationHelper;
 use craft\services\Authentication;
 use craft\web\Controller;
 use yii\base\InvalidConfigException;
@@ -109,7 +112,7 @@ class AuthenticationController extends Controller
             $step = $chain->getNextAuthenticationStep();
             $output['stepComplete'] = true;
             $output['stepType'] = $step->getStepType();
-            $output['html'] = $step->getFieldHtml();
+            $output['html'] = $step->getInputFieldHtml();
             $output['footHtml'] = Craft::$app->getView()->getBodyHtml();
         }
 
@@ -190,12 +193,73 @@ class AuthenticationController extends Controller
             $step = $recoveryChain->getNextAuthenticationStep();
             $output['stepComplete'] = true;
             $output['stepType'] = $step->getStepType();
-            $output['html'] = $step->getFieldHtml();
+            $output['html'] = $step->getInputFieldHtml();
             $output['footHtml'] = Craft::$app->getView()->getBodyHtml();
         }
 
         $output['message'] = $session->getNotice();
         $output['error'] = $session->getError();
+
+        return $this->asJson($output);
+    }
+
+    public function actionUpdateAuthenticatorSettings(): Response
+    {
+        $this->requireAcceptsJson();
+        $this->requireLogin();
+        $this->requireElevatedSession();
+
+        $userSession = Craft::$app->getUser();
+        $currentUser = $userSession->getIdentity();
+
+        $request = Craft::$app->getRequest();
+        $session = Craft::$app->getSession();
+        $output = [];
+        $message = '';
+
+        if (Craft::$app->getEdition() === Craft::Pro) {
+            $code1 = $request->getBodyParam('verification-code-1');
+            $code2 = $request->getBodyParam('verification-code-2');
+            $detach = $request->getBodyParam('detach');
+
+            if (!empty($code1) || !empty($code2)) {
+                $authenticator = AuthenticationHelper::getCodeAuthenticator();
+
+                $authenticator->setWindow(4);
+                $existingSecret = $session->get(AuthenticationHelper::AUTHENTICATOR_SECRET_SESSION_KEY);
+                $firstTimestamp = $authenticator->verifyKeyNewer($existingSecret, $code1, 100);
+
+                if ($firstTimestamp) {
+                    // Ensure sequence of two codes
+                    $secondTimestamp = $authenticator->verifyKeyNewer($existingSecret, $code2, $firstTimestamp);
+
+                    if ($secondTimestamp) {
+                        $currentUser->saveAuthenticator($existingSecret, $secondTimestamp);
+                        $session->remove(AuthenticationHelper::AUTHENTICATOR_SECRET_SESSION_KEY);
+                        $message = Craft::t('app', 'Successfully attached the authenticator.');
+                    }
+                } else {
+                    $message = Craft::t('app', 'Failed to verify two consecutive codes.');
+                }
+            } else if (!empty($detach)) {
+
+                if ($detach === 'detach') {
+                    $currentUser->removeAuthenticator();
+                    $message = Craft::t('app', 'Successfully detached the authenticator.');
+                } else {
+                    $message = Craft::t('app', 'Failed to detach the authenticator.');
+                }
+            }
+
+        }
+
+        if ($message) {
+            $output['message'] = $message;
+        }
+
+        $step = new AuthenticatorCode();
+
+        $output['html'] = $step->getUserSetupFormHtml($currentUser);
 
         return $this->asJson($output);
     }
@@ -214,7 +278,7 @@ class AuthenticationController extends Controller
         $session = Craft::$app->getSession();
 
         $output = [
-            'html' => $step->getFieldHtml(),
+            'html' => $step->getInputFieldHtml(),
             'footHtml' => Craft::$app->getView()->getBodyHtml(),
             'alternatives' => $authenticationChain->getAlternativeSteps(get_class($step)),
             'stepType' => $step->getStepType(),

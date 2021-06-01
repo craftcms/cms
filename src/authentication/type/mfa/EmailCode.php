@@ -4,7 +4,7 @@ declare(strict_types=1);
 namespace craft\authentication\type\mfa;
 
 use Craft;
-use craft\authentication\base\Type;
+use craft\authentication\base\MfaType;
 use craft\elements\User;
 use craft\helpers\StringHelper;
 use craft\mail\Message;
@@ -17,7 +17,7 @@ use craft\models\AuthenticationState;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.0.0
  */
-class EmailCode extends Type
+class EmailCode extends MfaType
 {
     protected const CODE_KEY = 'craft.authentication.data.emailCode';
 
@@ -94,7 +94,7 @@ class EmailCode extends Type
     /**
      * @inheritdoc
      */
-    public function getFieldHtml(): string
+    public function getInputFieldHtml(): string
     {
         return Craft::$app->getView()->renderTemplate('_components/authenticationsteps/EmailCode/input');
     }

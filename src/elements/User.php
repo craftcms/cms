@@ -30,11 +30,13 @@ use craft\helpers\StringHelper;
 use craft\helpers\UrlHelper;
 use craft\i18n\Locale;
 use craft\models\UserGroup;
+use craft\records\AuthAuthenticator;
 use craft\records\User as UserRecord;
 use craft\validators\DateTimeValidator;
 use craft\validators\UniqueValidator;
 use craft\validators\UsernameValidator;
 use craft\validators\UserPasswordValidator;
+use yii\base\BaseObject;
 use yii\base\ErrorHandler;
 use yii\base\Exception;
 use yii\base\InvalidArgumentException;
@@ -1014,25 +1016,59 @@ class User extends Element implements IdentityInterface
         }
 
         if ($result) {
-            $this->authenticatorTimestamp = $result;
-            Craft::$app->getElements()->saveElement($this);
+            $this->updateAuthenticatorTimestamp($result);
         }
 
         return (bool) $result;
     }
 
-    public function getQR() {
-        $site = Craft::$app->getSites()->getPrimarySite();
+    /**
+     * Update the timestamp of the last used authenticator code.
+     * x
+     * @param int $timestamp
+     */
+    public function updateAuthenticatorTimestamp(int $timestamp): void
+    {
+        if ($this->id && $this->hasAuthenticatorSecret()) {
+            $record = AuthAuthenticator::findOne(['userId' => $this->id]);
+            if ($record) {
+                $record->authenticatorTimestamp = $timestamp;
+                $record->save();
+                $this->authenticatorTimestamp = $timestamp;
+            }
+        }
+    }
 
-        $authenticator = Authentication::getCodeAuthenticator();
+    /**
+     * Save an authenticator for a user.
+     *
+     * @param string $secret
+     * @param int $timestamp
+     */
+    public function saveAuthenticator(string $secret, int $timestamp): void
+    {
+        if ($this->id) {
+            $this->removeAuthenticator();
 
-        $qrUrl = $authenticator->getQRCodeInline(
-            $site->getName(),
-            $this->email,
-            $this->_authenticatorSecret
-        );
+            $record = new AuthAuthenticator();
+            $record->userId = $this->id;
+            $record->authenticatorSecret = $secret;
+            $record->authenticatorTimestamp = $timestamp;
+            $record->save();
 
-        return $qrUrl;
+            $this->setAuthenticatorSecret($secret);
+            $this->authenticatorTimestamp = $timestamp;
+        }
+    }
+
+    /**
+     * Remove a user's authenticator.
+     */
+    public function removeAuthenticator(): void
+    {
+        if ($this->id) {
+            AuthAuthenticator::deleteAll(['userId' => $this->id]);
+        }
     }
 
     /**
@@ -1542,6 +1578,7 @@ class User extends Element implements IdentityInterface
         }
 
         $this->setDirtyAttributes($dirtyAttributes);
+
 
         parent::afterSave($isNew);
 

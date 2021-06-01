@@ -86,7 +86,7 @@ class IpAddress extends Type
      *
      * @return string
      */
-    public function getFieldHtml(): string
+    public function getInputFieldHtml(): string
     {
         return '';
     }

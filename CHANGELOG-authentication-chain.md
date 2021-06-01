@@ -1,14 +1,23 @@
 ### Added
 - Added the concept of authentication chains to Craft, which allows chaining multiple authentication types together to authenticate a Craft CMS user.
 - Added `craft\authentication\Chain`.
+- Added `craft\authentication\base\MfaInterface`.
+- Added `craft\authentication\base\Mfa`.
 - Added `craft\authentication\base\TypeInterface`.
 - Added `craft\authentication\base\Type`.
 - Added `craft\authentication\type\Credentials`.
 - Added `craft\authentication\type\Email`.
 - Added `craft\authentication\type\IpAddress`.
+- Added `craft\authentication\type\mfa\AuthenticatorCode`.
 - Added `craft\authentication\type\mfa\EmailCode`.
+- Added `craft\controllers\AuthenticationController`.
 - Added `craft\errors\AuthenticationException`.
+- Added `craft\elements\User::removeAuthenticator()`.
+- Added `craft\elements\User::updateAuthenticatorTimestamp()`.
+- Added `craft\elements\User::saveAuthenticator()`.
+- Added `craft\elements\User::setAuthenticatorSecret()`.
 - Added `craft\helpers\Authentication`.
 - Added `craft\models\AuthenticationChainConfiguration`.
 - Added `craft\models\AuthenticationState`.
+- Added `craft\records\AuthAuthenticator`.
 - Added `craft\services\Authentication`.
