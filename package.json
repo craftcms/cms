@@ -20,7 +20,7 @@
     "element-resize-detector": "^1.2.2",
     "event-stream": "3.3.4",
     "fabric": "^1.7.19",
-    "garnishjs": "^0.1.45",
+    "garnishjs": "^0.1.46",
     "graphiql": "^0.14.2",
     "graphiql-explorer": "^0.6.3",
     "graphql": "^14.6.0",

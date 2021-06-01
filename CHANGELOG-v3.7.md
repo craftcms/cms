@@ -73,6 +73,7 @@
 - Custom fields with a custom translation method are no longer labelled as translatable if the translation key is an empty string. ([#7647](https://github.com/craftcms/cms/issues/7647))
 - The `resave/entries` command now has a `--provisional-drafts` option.
 - Entries no longer support Live Preview if the `autosaveDrafts` config setting is disabled.
+- Most text areas in the control panel will now submit the closest form when <kbd>Ctrl</kbd>/<kbd>Command</kbd> + <kbd>Return</kbd> is pressed. ([#7999](https://github.com/craftcms/cms/issues/7999))
 - The `defaultCpLanguage` config setting no longer affects console requests. ([#7747](https://github.com/craftcms/cms/issues/7747))
 - The `{% cache %}` tag now stores any JavaScript or CSS code registered with `{% js %}`, `{% script %}`, and `{% css %}` tags. ([#7758](https://github.com/craftcms/cms/issues/7758))
 - The `date()` Twig function now supports arrays with `date` and/or `time` keys. ([#7681](https://github.com/craftcms/cms/issues/7681))
@@ -87,6 +88,7 @@
 - `craft\services\AssetTransforms::normalizeTransform()` now accepts transform configs arrays that specify a base transform which should be extended, via a `transform` key set to the stored transform’s handle. ([#7892](https://github.com/craftcms/cms/issues/7892)) 
 - `craft\web\View::clearJsBuffer()` now has a `$combine` argument.
 - `craft\web\View::namespaceInputs()` now accepts a callback function for the first argument, which simplifies the process of setting and resetting the registered namespace before and after generating the to-be-namespaced HTML.
+- Updated Garnish to 0.1.46.
 
 ### Deprecated
 - Deprecated `craft\base\Element::ATTR_STATUS_CONFLICTED`.
