@@ -988,11 +988,16 @@ Craft.CP = Garnish.Base.extend({
 
         for (var i = 0; i < statuses.length; i++) {
             for (var j = 0; j < this.jobInfo.length; j++) {
-                if (this.jobInfo[j].status === statuses[i]) {
+                if (
+                    this.jobInfo[j].status === statuses[i] &&
+                    (statuses[i] !== Craft.CP.JOB_STATUS_WAITING || !this.jobInfo[j].delay)
+                ) {
                     return this.jobInfo[j];
                 }
             }
         }
+
+        return null;
     },
 
     updateJobIcon: function() {

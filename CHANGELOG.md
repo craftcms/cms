@@ -5,6 +5,9 @@
 ### Added
 - Added `craft\helpers\Db::supportsTimeZones()`.
 
+### Changed
+- The control panel sidebar no longer shows delayed queue jobs until they’re actually executing. ([#7998](https://github.com/craftcms/cms/issues/7998))
+
 ### Fixed
 - Fixed a bug where eager-loading entries’ authors wasn’t including pending and suspended authors. ([#7963](https://github.com/craftcms/cms/issues/7963))
 - Fixed a bug where not all element types’ GraphQL queries supported a `status` argument. ([craftcms/gatsby-source-craft#35](https://github.com/craftcms/gatsby-source-craft/issues/35))
