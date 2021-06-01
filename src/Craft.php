@@ -346,7 +346,8 @@ EOD;
         $guzzleConfig = static::$app->getConfig()->getConfigFromFile('guzzle');
 
         // Merge everything together
-        $guzzleConfig = ArrayHelper::merge($defaultConfig, $guzzleConfig, $config);
+        $guzzleConfig = ArrayHelper::merge($defaultConfig, $guzzleConfig);
+        $guzzleConfig = ArrayHelper::merge($guzzleConfig, $config);
 
         return new Client($guzzleConfig);
     }
