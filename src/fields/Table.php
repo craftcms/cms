@@ -18,6 +18,7 @@ use craft\helpers\Cp;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Html;
 use craft\helpers\Json;
+use craft\helpers\StringHelper;
 use craft\validators\ColorValidator;
 use craft\validators\HandleValidator;
 use craft\validators\UrlValidator;
@@ -429,6 +430,26 @@ class Table extends Field
         }
 
         return $serialized;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    protected function searchKeywords($value, ElementInterface $element): string
+    {
+        if (!is_array($value) || empty($this->columns)) {
+            return '';
+        }
+
+        $keywords = [];
+
+        foreach ($value as $row) {
+            foreach (array_keys($this->columns) as $colId) {
+                $keywords[] = $row[$colId];
+            }
+        }
+
+        return implode(' ', $keywords);
     }
 
     /**
