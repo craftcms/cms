@@ -143,7 +143,7 @@ abstract class ElementArguments extends Arguments
             'orderBy' => [
                 'name' => 'orderBy',
                 'type' => Type::string(),
-                'description' => 'Sets the field the returned elements should be ordered by',
+                'description' => 'Sets the field the returned elements should be ordered by.',
             ],
         ]);
     }
