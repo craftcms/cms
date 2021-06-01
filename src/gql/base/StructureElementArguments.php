@@ -56,7 +56,7 @@ abstract class StructureElementArguments extends ElementArguments
             'descendantOf' => [
                 'name' => 'descendantOf',
                 'type' => Type::int(),
-                'description' => 'Narrows the query results to only elements that are descendants of another element, provided by its id',
+                'description' => 'Narrows the query results to only elements that are descendants of another element, provided by its id.',
             ],
             'descendantDist' => [
                 'name' => 'descendantDist',
