@@ -347,9 +347,9 @@ EOD;
 
         // Merge everything together
         $guzzleConfig = ArrayHelper::merge($defaultConfig, $guzzleConfig);
-        $guzzleConfig = ArrayHelper::merge($guzzleConfig, $config);
+        $config = ArrayHelper::merge($guzzleConfig, $config);
 
-        return new Client($guzzleConfig);
+        return new Client($config);
     }
 }
 
