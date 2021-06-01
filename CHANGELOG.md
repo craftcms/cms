@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 3.x
 
-## Unreleased
+## 3.6.16 - 2021-06-01
 
 ### Added
 - Added `craft\helpers\Db::supportsTimeZones()`.
