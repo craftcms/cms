@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 /**
  * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
@@ -10,6 +11,7 @@ namespace craft\helpers;
 use Craft;
 use craft\authentication\base\TypeInterface;
 use craft\authentication\type\mfa\AuthenticatorCode;
+use craft\authentication\type\mfa\WebAuthn;
 use craft\models\AuthenticationState;
 use PragmaRX\Google2FAQRCode\Google2FA;
 use yii\base\InvalidConfigException;
@@ -22,10 +24,6 @@ use yii\base\InvalidConfigException;
  */
 class Authentication
 {
-    /**
-     * The key to store the authenticator secret in session, while attaching it.
-     */
-    public const AUTHENTICATOR_SECRET_SESSION_KEY = 'user.authenticator.secret';
 
     /**
      * Create an authentication type based on a config.
@@ -46,22 +44,14 @@ class Authentication
         $settings = array_merge($typeConfig['settings'] ?? [], ['state' => $state]);
 
         /** @var TypeInterface $type */
-        $type = Craft::createObject($class, [$settings]);
-        return $type;
+        return Craft::createObject($class, [$settings]);
     }
 
     /**
-     * Returns `true` if Craft's control panel login supports authenticator.
+     * Get the code authenticator instance.
      *
-     * @return bool
+     * @return Google2FA
      */
-    public static function loginSupportsAuthenticator(): bool
-    {
-        $chain = Craft::$app->getAuthentication()->getCpAuthenticationChain();
-
-        return $chain->containsStepType(AuthenticatorCode::class);
-    }
-
     public static function getCodeAuthenticator(): Google2FA
     {
         // TODO window as a config option

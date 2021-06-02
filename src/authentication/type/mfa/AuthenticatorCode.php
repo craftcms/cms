@@ -19,6 +19,11 @@ use craft\models\AuthenticationState;
 class AuthenticatorCode extends MfaType
 {
     /**
+     * The key to store the authenticator secret in session, while attaching it.
+     */
+    public const AUTHENTICATOR_SECRET_SESSION_KEY = 'user.authenticator.secret';
+
+    /**
      * @inheritdoc
      */
     public static function displayName(): string
@@ -90,13 +95,13 @@ class AuthenticatorCode extends MfaType
 
         if (Craft::$app->getEdition() == Craft::Pro && $user->getIsCurrent() && !$user->hasAuthenticatorSecret()) {
             $session = Craft::$app->getSession();
-            $existingSecret = $session->get(AuthenticationHelper::AUTHENTICATOR_SECRET_SESSION_KEY);
+            $existingSecret = $session->get(self::AUTHENTICATOR_SECRET_SESSION_KEY);
 
             $codeAuthenticator = AuthenticationHelper::getCodeAuthenticator();
 
             if (!$existingSecret) {
                 $existingSecret = $codeAuthenticator->generateSecretKey(32);
-                $session->set(AuthenticationHelper::AUTHENTICATOR_SECRET_SESSION_KEY, $existingSecret);
+                $session->set(self::AUTHENTICATOR_SECRET_SESSION_KEY, $existingSecret);
             }
 
             $qrAuthenticatorCode = $codeAuthenticator->getQRCodeInline(
