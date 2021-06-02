@@ -9,6 +9,7 @@
 - Matrix fields can now be set to custom propagation methods, based on a propagation key template. ([#7610](https://github.com/craftcms/cms/issues/7610))
 - Added a “Refresh” button to Live Preview, for preview targets whose “Auto-refresh” (formerly “Refresh”) setting is disabled.
 - Added the `siteSettingsId` element query and GraphQL API query parameter for all elements.
+- Added the `preferSites` GraphQL API query argument for all elements.
 - Added the `ancestors`, `descendants`, `drafts`, draftCreator`, `revisions`, `currentRevision`, and `revisionCreator` field to entry queries when using GraphQL API. ([#7950]((https://github.com/craftcms/cms/issues/7950)))
 - Added `craft\base\Element::cpEditUrl()`, which should be overridden rather than `getCpEditUrl()`.
 - Added `craft\base\ElementInterface::getCanonical()`.

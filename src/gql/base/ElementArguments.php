@@ -45,9 +45,9 @@ abstract class ElementArguments extends Arguments
                 'type' => Type::boolean(),
                 'description' => 'Determines whether only elements with unique IDs should be returned by the query.',
             ],
-            'preferSite' => [
-                'name' => 'preferSite',
-                'type' => Type::listOf(Type::string()),
+            'preferSites' => [
+                'name' => 'preferSites',
+                'type' => Type::listOf(QueryArgument::getType()),
                 'description' => 'Determines which site should be selected when querying multi-site elements.',
             ],
             'enabledForSite' => [
