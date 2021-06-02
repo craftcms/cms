@@ -28,7 +28,7 @@ class m210602_111300_project_config_names_in_config extends Migration
             $projectConfig->set(ProjectConfig::CONFIG_NAMES_KEY, $names);
         }
 
-        $this->dropTable('{{%projectconfignames}}');
+        $this->dropTableIfExists('{{%projectconfignames}}');
     }
 
     /**
