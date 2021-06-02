@@ -692,14 +692,4 @@ class Cp extends Component
         $this->trigger(self::EVENT_REGISTER_FORM_ACTIONS, $event);
         return $event->formActions ?: null;
     }
-
-    /**
-     * Returns `true` if Craft's control panel login supports authenticator.
-     *
-     * @return bool
-     */
-    public function loginSupportsAuthenticator(): bool
-    {
-        return Authentication::loginSupportsAuthenticator();
-    }
 }
