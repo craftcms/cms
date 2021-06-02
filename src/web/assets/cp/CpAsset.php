@@ -357,6 +357,7 @@ JS;
             'previewIframeResizerOptions' => $this->_previewIframeResizerOptions($generalConfig),
             'primarySiteId' => $primarySite ? (int)$primarySite->id : null,
             'primarySiteLanguage' => $primarySite->language ?? null,
+            'primarySiteName' => $primarySite ? $primarySite->getName() : null,
             'Pro' => Craft::Pro,
             'publishableSections' => $upToDate && $currentUser ? $this->_publishableSections($currentUser) : [],
             'registeredAssetBundles' => ['' => ''], // force encode as JS object

@@ -12,6 +12,7 @@ use Craft;
 use craft\authentication\Chain;
 use craft\authentication\type\mfa\AuthenticatorCode;
 use craft\authentication\type\mfa\EmailCode;
+use craft\authentication\type\mfa\WebAuthn;
 use craft\elements\User;
 use craft\models\AuthenticationChainConfiguration;
 use craft\models\AuthenticationState;
@@ -59,6 +60,7 @@ class Authentication extends Component
         // TODO event here
         return [
             AuthenticatorCode::class,
+            WebAuthn::class,
             EmailCode::class
         ];
     }

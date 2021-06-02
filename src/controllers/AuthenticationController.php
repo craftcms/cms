@@ -226,7 +226,7 @@ class AuthenticationController extends Controller
                 $authenticator = AuthenticationHelper::getCodeAuthenticator();
 
                 $authenticator->setWindow(4);
-                $existingSecret = $session->get(AuthenticationHelper::AUTHENTICATOR_SECRET_SESSION_KEY);
+                $existingSecret = $session->get(AuthenticatorCode::AUTHENTICATOR_SECRET_SESSION_KEY);
                 $firstTimestamp = $authenticator->verifyKeyNewer($existingSecret, $code1, 100);
 
                 if ($firstTimestamp) {
@@ -235,7 +235,7 @@ class AuthenticationController extends Controller
 
                     if ($secondTimestamp) {
                         $currentUser->saveAuthenticator($existingSecret, $secondTimestamp);
-                        $session->remove(AuthenticationHelper::AUTHENTICATOR_SECRET_SESSION_KEY);
+                        $session->remove(AuthenticatorCode::AUTHENTICATOR_SECRET_SESSION_KEY);
                         $message = Craft::t('app', 'Successfully attached the authenticator.');
                     }
                 } else {

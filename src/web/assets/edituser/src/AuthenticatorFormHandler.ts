@@ -9,6 +9,7 @@ class AuthenticatorFormHandler
     constructor()
     {
         this.attachEvents();
+
     }
 
     /**

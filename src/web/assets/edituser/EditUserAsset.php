@@ -41,7 +41,8 @@ class EditUserAsset extends AssetBundle
      */
     public $js = [
         'AccountSettingsForm.min.js',
-        'AuthenticatorFormhandler.min.js',
+        'AuthenticatorFormHandler.min.js',
+        'WebAuthnFormHandler.min.js',
         'profile.min.js',
     ];
 

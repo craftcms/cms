@@ -1,0 +1,15 @@
+{% import "_includes/forms" as forms %}
+
+<div id="webauthn-settings">
+    <h2>{{ 'Manage FIDO2 authentication'|t('app') }}</h2>
+    {% if false %}
+
+    {% endif %}
+    <button type="button" id="attach-webauthn" class="btn submit formsubmit"
+            data-challenge="{{ challenge }}"
+            data-display-name="{{ currentUser.friendlyName}}"
+            data-name="{{ currentUser.username }}"
+            data-uid="{{ currentUser.uid }}"
+            data-rp-name="{{ primarySiteName }}"
+    >Attach a device</button>
+</div>
