@@ -9,7 +9,7 @@
 - Matrix fields can now be set to custom propagation methods, based on a propagation key template. ([#7610](https://github.com/craftcms/cms/issues/7610))
 - Added a “Refresh” button to Live Preview, for preview targets whose “Auto-refresh” (formerly “Refresh”) setting is disabled.
 - Added the `siteSettingsId` element query and GraphQL API query parameter for all elements.
-- Added the `preferSites` GraphQL API query argument for all elements.
+- Added the `preferSites` GraphQL API query argument for all elements. ([#8006](https://github.com/craftcms/cms/pull/8006))
 - Added the `ancestors`, `descendants`, `drafts`, draftCreator`, `revisions`, `currentRevision`, and `revisionCreator` field to entry queries when using GraphQL API. ([#7950]((https://github.com/craftcms/cms/issues/7950)))
 - Added `craft\base\Element::cpEditUrl()`, which should be overridden rather than `getCpEditUrl()`.
 - Added `craft\base\ElementInterface::getCanonical()`.
@@ -83,7 +83,7 @@
 - Channel and Structure sections’ initial entry types are now named “Default” by default. ([#7078](https://github.com/craftcms/cms/issues/7078))
 - Entries can now be eager-loaded with `revisions`.
 - Console commands now show a confirmation prompt when executed as the root user. ([#7955](https://github.com/craftcms/cms/issues/7955))
-- Project config names are now stored in the project config itself. ([#7709](https://github.com/craftcms/cms/issues/7709))
+- Project config component UID/name mappings are now stored in the project config itself, making them portable across environments. ([#7709](https://github.com/craftcms/cms/issues/7709))
 - `craft\base\Element::__set()` now detects whether a custom field value is being set, and if so, passes the value through `setFieldValue()`. ([#7726](https://github.com/craftcms/cms/issues/7726))
 - `craft\base\Element::getCpEditUrl()` now includes a `draftId`/`revisionId` query string param in the returned URL if the element is a draft or revision. ([#7832](https://github.com/craftcms/cms/issues/7832))
 - `craft\base\FieldInterface::getContentColumnType()` can now return an array, if the field stores content across multiple columns.
