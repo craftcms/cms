@@ -1,5 +1,10 @@
 # Release Notes for Craft CMS 3.x
 
+## Unreleased
+
+### Changed
+- Mobile viewports no longer zoom into inputs on focus automatically..
+
 ## 3.6.16 - 2021-06-01
 
 ### Added
