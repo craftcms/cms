@@ -16,6 +16,7 @@ use craft\helpers\Session as SessionHelper;
 use craft\helpers\StringHelper;
 use craft\models\Site;
 use craft\services\Sites;
+use GuzzleHttp\Psr7\ServerRequest;
 use yii\base\InvalidConfigException;
 use yii\db\Exception as DbException;
 use yii\di\Instance;
@@ -331,6 +332,21 @@ class Request extends \yii\web\Request
         }
 
         $this->_pageNum = min($this->_pageNum, $this->maxPageNum);
+    }
+
+    /**
+     * Get the current request as a PSR-7 compliant request.
+     *
+     * @return ServerRequest
+     */
+    public function asPsr7(): ServerRequest
+    {
+        return new ServerRequest(
+            $this->getMethod(),
+            $this->getFullUri(),
+            $this->getHeaders()->toArray(),
+            $this->getRawBody()
+        );
     }
 
     /**

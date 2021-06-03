@@ -30,6 +30,7 @@
 - Added `craft\services\AssetIndexer::startIndexingSession()`.
 - Added `craft\services\AssetIndexer::stopIndexingSession()`.
 - Added `craft\services\AssetTransforms::deleteTransformIndexDataByAssetIds()`.
+- Added `craft\web\Request::asPsr7()`.
 - Added the `index-assets/cleanup` command that cleans up any leftover CLI indexing sessions.
 
 ### Changed
