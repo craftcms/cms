@@ -5,6 +5,7 @@
      * Slide Picker
      */
     Craft.Slideout = Garnish.Base.extend({
+        $outerContainer: null,
         $container: null,
         $shade: null,
         isOpen: false,
@@ -12,7 +13,7 @@
         init: function(contents, settings) {
             this.setSettings(settings, Craft.Slideout.defaults);
 
-            if (!Craft.Slideout.isMobile()) {
+            if (!Garnish.isMobileBrowser()) {
                 this.$shade = $('<div class="slideout-shade"/>')
                     .appendTo(Garnish.$bod);
 
@@ -24,12 +25,14 @@
                 }
             }
 
+            this.$outerContainer = $('<div/>', {class: 'slideout-container hidden'});
             this.$container = $(`<${this.settings.containerElement}/>`, this.settings.containerAttributes)
-                .addClass('slideout hidden')
+                .addClass('slideout')
                 .append(contents)
-                .data('slideout', this);
+                .data('slideout', this)
+                .appendTo(this.$outerContainer);
 
-            if (Craft.Slideout.isMobile()) {
+            if (Garnish.isMobileBrowser()) {
                 this.$container.addClass('so-mobile');
             }
 
@@ -54,11 +57,11 @@
                     .show();
             }
 
-            this.$container
+            this.$outerContainer
                 .appendTo(Garnish.$bod)
                 .removeClass('hidden');
 
-            if (Craft.Slideout.isMobile()) {
+            if (Garnish.isMobileBrowser()) {
                 this.$container.css('top', '100vh');
             } else {
                 this.$container.css(Garnish.ltr ? 'left' : 'right', '100vw');
@@ -112,7 +115,7 @@
             Craft.Slideout.removePanel(this);
             Garnish.shortcutManager.removeLayer();
             this.$container.one('transitionend.slideout', () => {
-                this.$container.addClass('hidden');
+                this.$outerContainer.addClass('hidden');
                 this.trigger('close');
             });
         },
@@ -134,7 +137,8 @@
                 this.$shade = null;
             }
 
-            this.$container.remove();
+            this.$outerContainer.remove();
+            this.$outerContainer = null;
             this.$container = null;
 
             this.base();
@@ -150,7 +154,7 @@
         openPanels: [],
         addPanel: function(panel) {
             Craft.Slideout.openPanels.unshift(panel);
-            if (Craft.Slideout.isMobile()) {
+            if (Garnish.isMobileBrowser()) {
                 panel.$container.css('top', 0);
             } else {
                 Craft.Slideout.updateStyles();
@@ -158,7 +162,7 @@
         },
         removePanel: function(panel) {
             Craft.Slideout.openPanels = Craft.Slideout.openPanels.filter(m => m !== panel);
-            if (Craft.Slideout.isMobile()) {
+            if (Garnish.isMobileBrowser()) {
                 panel.$container.css('top', '100vh');
             } else {
                 panel.$container.css(Garnish.ltr ? 'left' : 'right', '100vw');
@@ -176,9 +180,6 @@
             } else {
                 Garnish.$bod.removeClass('no-scroll');
             }
-        },
-        isMobile: function() {
-            return Garnish.isMobileBrowser(true);
         },
     });
 })(jQuery);

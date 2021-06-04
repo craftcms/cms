@@ -89,7 +89,7 @@ Craft.BaseElementEditor = Garnish.Base.extend({
         this.$fieldsContainer = $('<div/>', {class: 'fields'}).appendTo(this.$body);
 
         // Sidebar
-        if (!Craft.Slideout.isMobile()) {
+        if (!Garnish.isMobileBrowser()) {
             this.$sidebarShade = $('<div/>', {class: 'ee-sidebar-shade hidden'}).appendTo(this.$body);
 
             this.addListener(this.$sidebarShade, 'click', ev => {
@@ -387,7 +387,10 @@ Craft.BaseElementEditor = Garnish.Base.extend({
                 this.initialData = this.slideout.$container.serialize();
             }
 
-            Craft.setFocusWithin(this.$fieldsContainer);
+            if (!Garnish.isMobileBrowser()) {
+                Craft.setFocusWithin(this.$fieldsContainer);
+            }
+
             this.trigger('updateForm');
         });
     },
@@ -407,17 +410,19 @@ Craft.BaseElementEditor = Garnish.Base.extend({
         // Hack to force CSS animations
         this.$sidebar[0].offsetWidth;
 
-        if (!Craft.Slideout.isMobile()) {
+        if (!Garnish.isMobileBrowser()) {
             this.$sidebarShade
                 .removeClass('hidden')
                 .css(this._sidebarStyles());
         }
 
-        this.$sidebar
-            .css(this._openedSidebarStyles())
-            .one('transitionend.element-editor', () => {
+        this.$sidebar.css(this._openedSidebarStyles());
+
+        if (!Garnish.isMobileBrowser()) {
+            this.$sidebar.one('transitionend.element-editor', () => {
                 Craft.setFocusWithin(this.$sidebar);
             });
+        }
 
         this.$sidebarBtn
             .addClass('active')
@@ -444,7 +449,7 @@ Craft.BaseElementEditor = Garnish.Base.extend({
 
         this.$body.removeClass('no-scroll');
 
-        if (!Craft.Slideout.isMobile()) {
+        if (!Garnish.isMobileBrowser()) {
             this.$sidebarShade.addClass('hidden');
         }
 
