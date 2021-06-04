@@ -76,6 +76,10 @@ body, input, select, textarea {
   margin-bottom: 0 !important;
 }
 
+.no-scroll {
+  overflow: hidden !important;
+}
+
 .draghelper {
   box-sizing: border-box;
 }
@@ -1490,7 +1494,7 @@ ul.icons {
 }
 
 .buttons.right .btn + .spinner {
-  @include margin-right(-24px);
+  @include margin-right(var(--neg-padding));
 }
 
 /* small buttons */
@@ -3230,8 +3234,8 @@ ul.tree,
 }
 
 .pane-header {
-  margin: -24px -24px 24px;
-  padding: 8px 24px;
+  margin: var(--neg-padding) var(--neg-padding) var(--padding);
+  padding: 8px var(--padding);
   background: $grey050;
   box-shadow: inset 0 -1px 0 0 transparentize($grey300, 0.75);
   border-radius: $largeBorderRadius $largeBorderRadius 0 0;
@@ -3242,6 +3246,7 @@ ul.tree,
   display: flex;
   flex-direction: row;
   align-items: center;
+  max-width: 100%;
 
   ul {
     margin: -8px -24px 0;
@@ -3535,6 +3540,7 @@ ul.tree,
   position: relative;
 }
 
+.slideout,
 .modal,
 .hud {
   z-index: 100;
@@ -3544,6 +3550,159 @@ ul.tree,
 .modal,
 .hud .body {
   @include modal;
+}
+
+.slideout-shade {
+  opacity: 0;
+  transition: opacity linear 250ms;
+
+  &.so-visible {
+    opacity: 1;
+  }
+}
+
+.slideout {
+  position: fixed;
+  background-color: $white;
+  box-shadow: 0 0 0 1px transparentize($grey400, 0.75), 0 25px 100px transparentize($grey900, 0.5);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  padding: var(--padding);
+
+  &.so-mobile {
+    --padding: 10px;
+    --neg-padding: -10px;
+    width: 100vw;
+    height: 100vh;
+    max-height: -webkit-fill-available; // h/t https://twitter.com/AllThingsSmitty/status/1254151507412496384
+    left: 0;
+    transition: top linear 250ms;
+  }
+
+  &:not(.so-mobile) {
+    --padding: 24px;
+    --neg-padding: -24px;
+    top: 8px;
+    width: calc(50vw - 8px);
+    height: calc(100vh - 16px);
+    border-radius: $largeBorderRadius;
+
+    body.ltr & {
+      transition: left linear 250ms;
+    }
+    body.rtl & {
+      transition: right linear 250ms;
+    }
+  }
+}
+
+/* Element editor slideouts */
+.element-editor {
+  & > .ee-body {
+    flex: 1;
+    margin: var(--neg-padding) var(--neg-padding) 0;
+    padding: var(--padding);
+    overflow: hidden auto;
+    position: relative;
+
+    & > .pane-header {
+      & > .ee-toolbar {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        margin-bottom: -8px;
+
+        & > .pane-tabs {
+          width: 1px; // give other elements in the header plenty of room before the tabs take up whatever's left
+          flex: 1;
+          margin-bottom: 0;
+          @include margin-right(8px);
+        }
+
+        & > .btn {
+          width: 34px;
+          padding-left: 0;
+          padding-right: 0;
+
+          &:not(:hover):not(:active):not(.active) {
+            background-color: transparent;
+          }
+          &:not(:active):not(.active):hover {
+            background-color: transparentize($grey300, 0.85);
+          }
+        }
+      }
+    }
+
+    & > .ee-sidebar-shade {
+      position: absolute;
+      left: 0;
+      width: 100%;
+    }
+
+    & > .ee-sidebar {
+      position: absolute;
+      @include right(0);
+      @include pane();
+      width: 350px;
+      max-width: 100%;
+      box-sizing: border-box;
+      padding: 0 var(--padding);
+      background-color: $grey050;
+      overflow: hidden auto;
+      z-index: 1;
+
+      body.ltr & {
+        transition: right linear 250ms;
+      }
+      body.rtl & {
+        transition: left linear 250ms;
+      }
+
+      & > .preview-thumb-container {
+        margin: 0 var(--neg-padding);
+        height: auto;
+        max-height: 190px;
+
+        & + .pane-header {
+          border-radius: 0;
+        }
+      }
+
+      & > .meta {
+        margin: 0 var(--neg-padding);
+        padding: 14px var(--padding);
+
+        &:not(.read-only) {
+          background: $white;
+        }
+      }
+    }
+  }
+
+  & > .ee-footer {
+    position: relative;
+    display: flex;
+    flex-direction: row;
+    margin: 0 var(--neg-padding) var(--neg-padding);
+    padding: var(--padding);
+    @include pane;
+    background-color: $grey050;
+    z-index: 1;
+
+    & > .ee-site-select {
+      flex: 1;
+    }
+
+    & > .btn {
+      @include margin-left(5px);
+    }
+
+    & > .spinner {
+      @include margin(0, var(--neg-padding), 0, 0);
+    }
+  }
 }
 
 .header,
@@ -3614,6 +3773,7 @@ ul.tree,
   }
 }
 
+.slideout-shade,
 .modal-shade,
 .hud-shade {
   z-index: 100;
@@ -3625,9 +3785,10 @@ ul.tree,
   display: none;
 }
 
+.slideout-shade,
 .modal-shade {
   &:not(.dark) {
-    background-color: transparentize($grey100, 0.35) !important;
+    background-color: transparentize($grey400, 0.65) !important;
   }
 
   &.dark {
@@ -3810,7 +3971,7 @@ ul.tree,
     img {
       display: block;
       max-width: 100%;
-      max-height: 190px;
+      max-height: 100%;
     }
   }
 
@@ -3849,41 +4010,6 @@ ul.tree,
 
   &:hover .buttons {
     opacity: 1;
-  }
-}
-
-/* element editor HUDs */
-
-@media (min-width: 440px) {
-  .hud .elementeditor {
-    min-width: 380px;
-  }
-}
-
-.hud .elementeditor {
-  max-width: 600px;
-
-  .hud-header {
-    text-align: center;
-  }
-
-  .main {
-    padding: 8px 0;
-
-    .meta {
-      .preview-thumb-container {
-        margin: -8px -24px 8px;
-      }
-
-      .field {
-        padding-left: 24px;
-        padding-right: 24px;
-
-        &.has-errors {
-          border-radius: 0;
-        }
-      }
-    }
   }
 }
 
@@ -5015,12 +5141,6 @@ body.reduce-focus-visibility {
 ::-ms-reveal,
 ::-ms-clear {
   display: none;
-}
-
-/* Assets related */
-.hud.assetshud .body {
-  max-height: 500px;
-  overflow: auto;
 }
 
 // Selects

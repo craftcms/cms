@@ -1,6 +1,11 @@
 @charset "UTF-8";
 @import "../../../../../../packages/craftcms-sass/mixins";
 
+:root {
+  --padding: 24px;
+  --neg-padding: -24px;
+}
+
 $sidebarWidth: 226px;
 $detailsWidth: 350px;
 $minFullUiWidth: 1200px;
@@ -30,6 +35,15 @@ body {
   display: flex;
   flex-direction: column;
   min-height: 100vh;
+  @include left(0);
+
+  body.ltr & {
+    transition: left 250ms ease-out;
+  }
+
+  body.rtl & {
+    transition: right 250ms ease-out;
+  }
 }
 
 /* global sidebar */
@@ -966,14 +980,6 @@ $toolbarIconColor: darken($inputColor, 10%);
   #global-container {
     @include left(-$sidebarWidth);
     width: calc(100vw + #{$sidebarWidth});
-
-    body.ltr & {
-      transition: left 250ms ease-in-out;
-    }
-
-    body.rtl & {
-      transition: right 250ms ease-in-out;
-    }
 
     body.ltr.showing-nav & {
       left: 0;

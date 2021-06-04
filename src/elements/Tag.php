@@ -275,31 +275,6 @@ class Tag extends Element
         return static::gqlTypeNameByContext($this->getGroup());
     }
 
-    // Indexes, etc.
-    // -------------------------------------------------------------------------
-
-    /**
-     * @inheritdoc
-     */
-    public function getEditorHtml(): string
-    {
-        $html = Cp::textFieldHtml([
-            'label' => Craft::t('app', 'Title'),
-            'siteId' => $this->siteId,
-            'id' => 'title',
-            'name' => 'title',
-            'value' => $this->title,
-            'errors' => $this->getErrors('title'),
-            'first' => true,
-            'autofocus' => true,
-            'required' => true,
-        ]);
-
-        $html .= parent::getEditorHtml();
-
-        return $html;
-    }
-
     // Events
     // -------------------------------------------------------------------------
 

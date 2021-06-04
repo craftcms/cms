@@ -192,12 +192,6 @@ Craft.CategoryIndex = Craft.BaseElementIndex.extend({
             attributes: {
                 groupId: groupId
             },
-            onBeginLoading: () => {
-                this.$newCategoryBtn.addClass('loading');
-            },
-            onEndLoading: () => {
-                this.$newCategoryBtn.removeClass('loading');
-            },
             onHideHud: () => {
                 this.$newCategoryBtn.removeClass('inactive').text(newCategoryBtnText);
             },

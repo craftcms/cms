@@ -36,6 +36,7 @@ use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
 use craft\helpers\ElementHelper;
 use craft\helpers\Html;
+use craft\helpers\Json;
 use craft\helpers\UrlHelper;
 use craft\models\EntryType;
 use craft\models\Section;
@@ -1378,26 +1379,28 @@ class Entry extends Element
     /**
      * @inheritdoc
      */
-    public function getEditorHtml(): string
+    public function metaFieldsHtml(): string
     {
-        $html = '';
+        $fields = [];
         $view = Craft::$app->getView();
+        $section = $this->getSection();
 
-        // Show the Entry Type field?
-        if ($this->id === null) {
+        if ($section->type !== Section::TYPE_SINGLE) {
             $entryTypes = $this->getAvailableEntryTypes();
 
             if (count($entryTypes) > 1) {
                 $entryTypeOptions = [];
+                $fieldLayoutIds = [];
 
                 foreach ($entryTypes as $entryType) {
                     $entryTypeOptions[] = [
                         'label' => Craft::t('site', $entryType->name),
                         'value' => $entryType->id,
                     ];
+                    $fieldLayoutIds["type-$entryType->id"] = $entryType->fieldLayoutId;
                 }
 
-                $html .= Cp::selectFieldHtml([
+                $fields[] = Cp::selectFieldHtml([
                     'label' => Craft::t('app', 'Entry Type'),
                     'id' => 'entryType',
                     'value' => $this->typeId,
@@ -1405,24 +1408,67 @@ class Entry extends Element
                 ]);
 
                 $typeInputId = $view->namespaceInputId('entryType');
+                $fieldLayoutIdsJson = Json::encode($fieldLayoutIds);
                 $js = <<<EOD
-$('#{$typeInputId}').on('change', function(ev) {
-    var \$typeInput = $(this),
-        editor = \$typeInput.closest('.hud').data('elementEditor');
+(() => {
+    const \$typeInput = $('#$typeInputId');
+    const editor = \$typeInput.closest('.element-editor').data('elementEditor');
+    const fieldLayoutIds = $fieldLayoutIdsJson;
     if (editor) {
-        editor.setElementAttribute('typeId', \$typeInput.val());
-        editor.loadHud();
+        \$typeInput.on('change', function(ev) {
+            editor.setElementAttribute('typeId', \$typeInput.val());
+            editor.setElementAttribute('fieldLayoutId', fieldLayoutIds[`type-\${\$typeInput.val()}`]);
+            editor.load();
+        });
     }
-});
+})();
 EOD;
                 $view->registerJs($js);
             }
         }
 
-        // Render the custom fields
-        $html .= parent::getEditorHtml();
+        $fields[] = $this->slugFieldHtml();
 
-        return $html;
+        if ($section->type !== Section::TYPE_SINGLE) {
+            if (
+                Craft::$app->getEdition() === Craft::Pro &&
+                Craft::$app->getUser()->checkPermission("editPeerEntries:$section->uid")
+            ) {
+                $author = $this->getAuthor();
+                $fields[] = Cp::elementSelectFieldHtml([
+                    'label' => Craft::t('app', 'Author'),
+                    'id' => 'authorId',
+                    'name' => 'authorId',
+                    'elementType' => User::class,
+                    'selectionLabel' => Craft::t('app', 'Choose'),
+                    'criteria' => [
+                        'can' => "editEntries:$section->uid",
+                    ],
+                    'single' => true,
+                    'elements' => $author ? [$author] : null,
+                ]);
+            }
+
+            $fields[] = Cp::dateTimeFieldHtml([
+                'label' => Craft::t('app', 'Post Date'),
+                'id' => 'postDate',
+                'name' => 'postDate',
+                'value' => $this->postDate,
+                'errors' => $this->getErrors('postDate'),
+            ]);
+
+            $fields[] = Cp::dateTimeFieldHtml([
+                'label' => Craft::t('app', 'Expiry Date'),
+                'id' => 'expiryDate',
+                'name' => 'expiryDate',
+                'value' => $this->expiryDate,
+                'errors' => $this->getErrors('expiryDate'),
+            ]);
+        }
+
+        $fields[] = parent::metaFieldsHtml();
+
+        return implode('', $fields);
     }
 
     /**

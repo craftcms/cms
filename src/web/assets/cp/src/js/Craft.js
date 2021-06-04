@@ -1824,6 +1824,40 @@ $.extend(Craft,
 
             $form.trigger($.extend({type: 'submit'}, options.data));
         },
+
+        /**
+         * Traps focus within a container, so when focus is tabbed out of it, it’s cycled back into it.
+         * @param {Object} container
+         */
+        trapFocusWithin: function(container) {
+            const $container = $(container);
+            $container.on('keydown.focus-trap', ev => {
+                // Tab key?
+                if (ev.keyCode === 9) {
+                    const $focusableElements = $container.find(':focusable');
+                    const index = $focusableElements.index(document.activeElement);
+                    if (index !== -1) {
+                        if (index === 0 && ev.shiftKey) {
+                            ev.preventDefault();
+                            ev.stopPropagation();
+                            $focusableElements.last().focus();
+                        } else if (index === $focusableElements.length - 1 && !ev.shiftKey) {
+                            ev.preventDefault();
+                            ev.stopPropagation();
+                            $focusableElements.first().focus();
+                        }
+                    }
+                }
+            });
+        },
+
+        /**
+         * Sets focus to the first focusable element within a container.
+         * @param {Object} container
+         */
+        setFocusWithin: function(container) {
+            $(container).find(':focusable:first').focus();
+        },
     });
 
 // -------------------------------------------

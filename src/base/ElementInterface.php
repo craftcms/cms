@@ -1383,11 +1383,29 @@ interface ElementInterface extends ComponentInterface
     public function getTableAttributeHtml(string $attribute): string;
 
     /**
-     * Returns the HTML for the element’s editor HUD.
+     * Returns the HTML for the element’s editor slideout.
      *
-     * @return string The HTML for the editor HUD
+     * @return string The HTML for the editor slideout
+     * @deprecated in 3.7.0. Use [[getSidebarHtml()]] or [[getMetadata()]] instead.
      */
     public function getEditorHtml(): string;
+
+    /**
+     * Returns the HTML for any fields/info that should be shown within the sidebar of element editor slideouts.
+     *
+     * @return string
+     * @since 3.7.0
+     */
+    public function getSidebarHtml(): string;
+
+    /**
+     * Returns element metadata that can be shown on its edit page or within element editor slideouts.
+     *
+     * @return array The data, with keys representing the labels. The values can either be strings or callables.
+     * If a value is `false`, it will be omitted.
+     * @since 3.7.0
+     */
+    public function getMetadata(): array;
 
     /**
      * Returns the GraphQL type name for this element type.

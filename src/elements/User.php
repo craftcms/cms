@@ -1372,17 +1372,15 @@ class User extends Element implements IdentityInterface
     /**
      * @inheritdoc
      */
-    public function getEditorHtml(): string
+    protected function metaFieldsHtml(): string
     {
-        $html = Craft::$app->getView()->renderTemplate('users/_accountfields', [
-            'user' => $this,
-            'isNewUser' => false,
-            'meta' => true,
+        return implode('', [
+            Craft::$app->getView()->renderTemplate('users/_accountfields', [
+                'user' => $this,
+                'isNewUser' => !$this->id,
+            ]),
+            parent::metaFieldsHtml(),
         ]);
-
-        $html .= parent::getEditorHtml();
-
-        return $html;
     }
 
     /**

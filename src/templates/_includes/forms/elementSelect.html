@@ -13,7 +13,8 @@
 {% set sortable = sortable ?? true %}
 {% set prevalidate = prevalidate ?? false %}
 {% set fieldId = fieldId ?? null %}
-{% set limit = limit ?? null %}
+{% set single = single ?? false %}
+{% set limit = single ? 1 : (limit ?? null) %}
 
 {% set containerAttributes = {
     id: id,
@@ -49,6 +50,7 @@
     sourceElementId: sourceElementId,
     disabledElementIds: disabledElementIds ?? null,
     viewMode: viewMode,
+    single: single,
     limit: limit,
     showSiteMenu: showSiteMenu ?? false,
     modalStorageKey: storageKey,
