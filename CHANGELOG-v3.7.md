@@ -81,7 +81,7 @@
 ### Changed
 - Changes from an entry’s Current revision are now automatically merged into drafts upon visiting drafts’ edit pages.
 - When changes from an entry’s Current revision are merged into a draft, Matrix field changes are now merged on a per-block basis. ([#5503](https://github.com/craftcms/cms/issues/5503), [#7710](https://github.com/craftcms/cms/pull/7710))
-- Inline element editors now use slideouts rather than HUDs, and include the element’s fully-rendered field layout (including tabs and custom UI elements), meta fields (Slug, Post Date, etc.) and metadata, plus a link to open the element’s dedicated edit page in a new browser tab. ([#3448](https://github.com/craftcms/cms/issues/3448), [#4129](https://github.com/craftcms/cms/issues/4129), [#6247](https://github.com/craftcms/cms/issues/6247), [#6587](https://github.com/craftcms/cms/issues/6587), [#6622](https://github.com/craftcms/cms/issues/6622), [#6647](https://github.com/craftcms/cms/issues/6647), [#6918](https://github.com/craftcms/cms/issues/6918))
+- Inline element editors now use slideouts rather than HUDs, and include the element’s fully-rendered field layout (including tabs and custom UI elements), meta fields (Slug, Post Date, etc.) and metadata, plus a link to open the element’s dedicated edit page in a new browser tab. ([#8017](https://github.com/craftcms/cms/pull/8017))
 - The “Publish draft” button has been relabelled to “Apply draft”.
 - Matrix blocks now retain their original IDs and UIDs when a draft is published. ([#7710](https://github.com/craftcms/cms/pull/7710))
 - Improved the styling of field status indicators.
