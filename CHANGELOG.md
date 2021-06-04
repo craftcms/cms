@@ -5,6 +5,9 @@
 ### Changed
 - Mobile viewports no longer zoom into inputs on focus automatically..
 
+### Fixed
+- Fixed a bug where missing plugin notices for Google Cloud Storage were linking to Amazon S3 instead. ([#8012](https://github.com/craftcms/cms/issues/8012))
+
 ## 3.6.16 - 2021-06-01
 
 ### Added
