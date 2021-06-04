@@ -3586,6 +3586,7 @@ ul.tree,
   width: 100vw;
   height: 100vh;
   height: -webkit-fill-available; // h/t https://twitter.com/AllThingsSmitty/status/1254151507412496384
+  pointer-events: none;
 }
 
 .slideout {
@@ -3596,6 +3597,7 @@ ul.tree,
   flex-direction: column;
   overflow: hidden;
   padding: 24px var(--padding);
+  pointer-events: all;
 
   &.so-mobile {
     --padding: 10px;

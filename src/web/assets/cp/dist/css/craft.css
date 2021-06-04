@@ -1842,9 +1842,9 @@ body.rtl .meta > .field > .input > .select select { padding: 7px 0 7px 12px ; }
 
 .slideout-shade.so-visible { opacity: 1; }
 
-.slideout-container { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; height: -webkit-fill-available; }
+.slideout-container { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; height: -webkit-fill-available; pointer-events: none; }
 
-.slideout { position: absolute; background-color: #fff; box-shadow: 0 0 0 1px rgba(123, 135, 147, 0.25), 0 25px 100px rgba(31, 41, 51, 0.5); display: -webkit-flex; display: flex; -webkit-flex-direction: column; flex-direction: column; overflow: hidden; padding: 24px var(--padding); }
+.slideout { position: absolute; background-color: #fff; box-shadow: 0 0 0 1px rgba(123, 135, 147, 0.25), 0 25px 100px rgba(31, 41, 51, 0.5); display: -webkit-flex; display: flex; -webkit-flex-direction: column; flex-direction: column; overflow: hidden; padding: 24px var(--padding); pointer-events: all; }
 
 .slideout.so-mobile { --padding: 10px; --neg-padding: -10px; width: 100%; height: 100%; left: 0; -o-transition: top linear 250ms; transition: top linear 250ms; }
 
