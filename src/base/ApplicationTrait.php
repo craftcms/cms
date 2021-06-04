@@ -17,6 +17,7 @@ use craft\db\Table;
 use craft\elements\Asset;
 use craft\elements\Category;
 use craft\elements\Entry;
+use craft\elements\Tag;
 use craft\errors\DbConnectException;
 use craft\errors\SiteNotFoundException;
 use craft\errors\WrongEditionException;
@@ -1532,11 +1533,12 @@ trait ApplicationTrait
             $fieldLayout = $event->sender;
 
             switch ($fieldLayout->type) {
+                case Category::class:
+                case Tag::class:
+                    $event->fields[] = TitleField::class;
+                    break;
                 case Asset::class:
                     $event->fields[] = AssetTitleField::class;
-                    break;
-                case Category::class:
-                    $event->fields[] = TitleField::class;
                     break;
                 case Entry::class:
                     $event->fields[] = EntryTitleField::class;

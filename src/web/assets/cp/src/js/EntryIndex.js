@@ -208,12 +208,6 @@ Craft.EntryIndex = Craft.BaseElementIndex.extend({
                 typeId: section.entryTypes[0].id,
                 enabled: section.canPublish ? 1 : 0,
             },
-            onBeginLoading: () => {
-                this.$newEntryBtn.addClass('loading');
-            },
-            onEndLoading: () => {
-                this.$newEntryBtn.removeClass('loading');
-            },
             onHideHud: () => {
                 this.$newEntryBtn.removeClass('inactive').text(newEntryBtnText);
             },

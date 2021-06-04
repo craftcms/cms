@@ -2117,7 +2117,12 @@ JS;
             $context['element'],
             $context['context'] ?? 'index',
             $size,
-            $context['name'] ?? null
+            $context['name'] ?? null,
+            true,
+            true,
+            true,
+            true,
+            $context['single'] ?? false
         );
     }
 

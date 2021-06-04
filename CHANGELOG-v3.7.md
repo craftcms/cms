@@ -11,17 +11,25 @@
 - Added the `siteSettingsId` element query and GraphQL API query parameter for all elements.
 - Added the `preferSites` GraphQL API query argument for all elements. ([#8006](https://github.com/craftcms/cms/pull/8006))
 - Added the `ancestors`, `descendants`, `drafts`, draftCreator`, `revisions`, `currentRevision`, and `revisionCreator` field to entry queries when using GraphQL API. ([#7950]((https://github.com/craftcms/cms/issues/7950)))
+- Added `craft\base\Element::EVENT_DEFINE_METADATA`.
+- Added `craft\base\Element::EVENT_DEFINE_META_FIELDS_HTML`.
+- Added `craft\base\Element::EVENT_DEFINE_SIDEBAR_HTML`.
 - Added `craft\base\Element::cpEditUrl()`, which should be overridden rather than `getCpEditUrl()`.
+- Added `craft\base\Element::metaFieldsHtml()`.
+- Added `craft\base\Element::metadata()`.
+- Added `craft\base\Element::slugFieldHtml()`.
 - Added `craft\base\ElementInterface::getCanonical()`.
 - Added `craft\base\ElementInterface::getCanonicalId()`.
 - Added `craft\base\ElementInterface::getIsCanonical()`.
 - Added `craft\base\ElementInterface::getIsDerivative()`.
 - Added `craft\base\ElementInterface::getIsProvisionalDraft()`.
+- Added `craft\base\ElementInterface::getMetadata()`.
 - Added `craft\base\ElementInterface::getModifiedAttributes()`.
 - Added `craft\base\ElementInterface::getModifiedFields()`.
 - Added `craft\base\ElementInterface::getOutdatedAttributes()`.
 - Added `craft\base\ElementInterface::getOutdatedFields()`.
 - Added `craft\base\ElementInterface::getParentUri()`. ([#7932](https://github.com/craftcms/cms/issues/7932))
+- Added `craft\base\ElementInterface::getSidebarHtml()`.
 - Added `craft\base\ElementInterface::isAttributeModified()`.
 - Added `craft\base\ElementInterface::isAttributeOutdated()`.
 - Added `craft\base\ElementInterface::isFieldModified()`.
@@ -38,10 +46,15 @@
 - Added `craft\base\FieldTrait::$columnSuffix`.
 - Added `craft\console\ControllerTrait::checkRootUser()`.
 - Added `craft\elements\db\ElementQuery::provisionalDrafts()`.
+- Added `craft\events\DefineHtmlEvent`.
+- Added `craft\events\DefineMetadataEvent`.
 - Added `craft\events\DraftEvent::$provisional`.
 - Added `craft\fields\Matrix::$propagationKeyFormat`.
 - Added `craft\fields\Matrix::PROPAGATION_METHOD_CUSTOM`.
+- Added `craft\helpers\Cp::dateTimeFieldHtml()`.
 - Added `craft\helpers\Cp::editElementTitles()`.
+- Added `craft\helpers\Cp::elementSelectFieldHtml()`.
+- Added `craft\helpers\Cp::metadataHtml()`.
 - Added `craft\helpers\Db::batch()` and `each()`, which can be used instead of `craft\db\Query::batch()` and `each()`, to execute batched SQL queries over a new, unbuffered database connection (if using MySQL). ([#7338](https://github.com/craftcms/cms/issues/7338))
 - Added `craft\helpers\ElementHelper::fieldColumn()`.
 - Added `craft\helpers\ElementHelper::fieldColumnFromField()`.
@@ -60,17 +73,22 @@
 - Added `craft\web\View::startScriptBuffer()`.
 - Added `craft\web\twig\variables\Cp::getTimeZoneOptions()`.
 - Added the `timeZone` and `timeZoneField` macros to the `_includes/forms.html` control panel template.
+- Added the `Craft.Slideout` JavaScript class.
 - Added the `Craft.Tabs` JavaScript class.
+- Added the `Craft.setFocusWithin()` JavaScript method.
+- Added the `Craft.trapFocusWithin()` JavaScript method.
 
 ### Changed
 - Changes from an entry’s Current revision are now automatically merged into drafts upon visiting drafts’ edit pages.
 - When changes from an entry’s Current revision are merged into a draft, Matrix field changes are now merged on a per-block basis. ([#5503](https://github.com/craftcms/cms/issues/5503), [#7710](https://github.com/craftcms/cms/pull/7710))
+- Inline element editors now use slideouts rather than HUDs, and include the element’s fully-rendered field layout (including tabs and custom UI elements), meta fields (Slug, Post Date, etc.) and metadata, plus a link to open the element’s dedicated edit page in a new browser tab. ([#3448](https://github.com/craftcms/cms/issues/3448), [#4129](https://github.com/craftcms/cms/issues/4129), [#6247](https://github.com/craftcms/cms/issues/6247), [#6587](https://github.com/craftcms/cms/issues/6587), [#6622](https://github.com/craftcms/cms/issues/6622), [#6647](https://github.com/craftcms/cms/issues/6647), [#6918](https://github.com/craftcms/cms/issues/6918))
 - The “Publish draft” button has been relabelled to “Apply draft”.
 - Matrix blocks now retain their original IDs and UIDs when a draft is published. ([#7710](https://github.com/craftcms/cms/pull/7710))
 - Improved the styling of field status indicators.
 - Field status indicators now appear immediately after a field’s value is changed and saved successfully to a draft.
 - Improved the design and accessibility of tabs in the control panel. ([#7299](https://github.com/craftcms/cms/issues/7299))
 - Improved the UI of the Time Zone input in Settings → General.
+- Tag field layouts now include the Title field, allowing its placement and label to be customized.
 - Custom fields with a custom translation method are no longer labelled as translatable if the translation key is an empty string. ([#7647](https://github.com/craftcms/cms/issues/7647))
 - The `resave/entries` command now has a `--provisional-drafts` option.
 - Entries no longer support Live Preview if the `autosaveDrafts` config setting is disabled.
@@ -87,6 +105,7 @@
 - `craft\base\Element::__set()` now detects whether a custom field value is being set, and if so, passes the value through `setFieldValue()`. ([#7726](https://github.com/craftcms/cms/issues/7726))
 - `craft\base\Element::getCpEditUrl()` now includes a `draftId`/`revisionId` query string param in the returned URL if the element is a draft or revision. ([#7832](https://github.com/craftcms/cms/issues/7832))
 - `craft\base\FieldInterface::getContentColumnType()` can now return an array, if the field stores content across multiple columns.
+- `craft\helpers\Cp::elementHtml()` now has a `$single` argument.
 - `craft\services\AssetTransforms::normalizeTransform()` now accepts transform configs arrays that specify a base transform which should be extended, via a `transform` key set to the stored transform’s handle. ([#7892](https://github.com/craftcms/cms/issues/7892)) 
 - `craft\web\View::clearJsBuffer()` now has a `$combine` argument.
 - `craft\web\View::namespaceInputs()` now accepts a callback function for the first argument, which simplifies the process of setting and resetting the registered namespace before and after generating the to-be-namespaced HTML.
