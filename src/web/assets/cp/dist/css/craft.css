@@ -1687,11 +1687,19 @@ body.rtl .missing-component .install-plugin .icon { right: 0; }
 
 .pane.loading:after { display: block; content: ''; font-size: 0; position: absolute; top: 0; left: -24px; width: calc(100% + 48px); height: 100%; background: url(../images/spinner.gif) no-repeat 50% 50%; }
 
-.pane-header { margin: var(--neg-padding) var(--neg-padding) var(--padding); padding: 8px var(--padding); background: #f3f7fc; box-shadow: inset 0 -1px 0 0 rgba(154, 165, 177, 0.25); border-radius: 5px 5px 0 0; }
+.pane-header { margin: var(--neg-padding) var(--neg-padding) var(--padding); padding: 7px var(--padding); background: #f3f7fc; box-shadow: inset 0 -1px 0 0 rgba(154, 165, 177, 0.25); border-radius: 5px 5px 0 0; }
 
-.pane-tabs { margin-bottom: -8px; display: -webkit-flex; display: flex; -webkit-flex-direction: row; flex-direction: row; -webkit-align-items: center; align-items: center; max-width: 100%; }
+.pane-header .btn { margin: 5px 0; width: 34px; height: 30px; padding-left: 0; padding-right: 0; }
 
-.pane-tabs ul { margin: -8px -24px 0; padding: 8px 24px 0; -webkit-flex: 1; flex: 1; display: -webkit-flex; display: flex; -webkit-flex-direction: row; flex-direction: row; overflow-x: auto; scrollbar-width: none; }
+.pane-header .btn:not(:hover):not(:active):not(.active) { background-color: transparent; }
+
+.pane-header .btn:not(:active):not(.active):hover { background-color: rgba(154, 165, 177, 0.15); }
+
+.pane-header .spinner { margin: 3px 0; }
+
+.pane-tabs { margin-bottom: -7px; display: -webkit-flex; display: flex; -webkit-flex-direction: row; flex-direction: row; -webkit-align-items: center; align-items: center; max-width: 100%; }
+
+.pane-tabs ul { margin: -7px var(--neg-padding) 0; padding: 7px var(--padding) 0; -webkit-flex: 1; flex: 1; display: -webkit-flex; display: flex; -webkit-flex-direction: row; flex-direction: row; overflow-x: auto; scrollbar-width: none; }
 
 .pane-tabs ul::-webkit-scrollbar { display: none; }
 
@@ -1703,7 +1711,7 @@ body.ltr .pane-tabs ul li:not(:first-child) a { margin-left: 4px; }
 
 body.rtl .pane-tabs ul li:not(:first-child) a { margin-right: 4px; }
 
-.pane-tabs ul li a { display: block; position: relative; border-radius: 4px 4px 0 0; padding: 12px; white-space: nowrap; line-height: 1.2; color: #606d7b; }
+.pane-tabs ul li a { display: block; position: relative; border-radius: 4px 4px 0 0; padding: 12px; white-space: nowrap; line-height: 16px; color: #606d7b; }
 
 .pane-tabs ul li a:hover { text-decoration: none; }
 
@@ -1712,8 +1720,6 @@ body.rtl .pane-tabs ul li:not(:first-child) a { margin-right: 4px; }
 .pane-tabs ul li a.sel { cursor: default; color: #3f4d5a; background: #fff; box-shadow: 0 0 0 1px rgba(154, 165, 177, 0.25), 0 2px 12px rgba(205, 216, 228, 0.5); }
 
 .pane-tabs ul li a.sel:focus { box-shadow: 0 0 0 1px #127FBF, 0 0 0 3px rgba(18, 127, 191, 0.5); }
-
-.pane-tabs .menubtn { width: 28px; height: 19px; }
 
 body.ltr .pane-tabs .menubtn { margin-left: 32px; }
 
@@ -1849,19 +1855,9 @@ body.rtl .slideout:not(.so-mobile) { -o-transition: right linear 250ms; transiti
 /* Element editor slideouts */
 .element-editor > .ee-body { -webkit-flex: 1; flex: 1; margin: var(--neg-padding) var(--neg-padding) 0; padding: var(--padding); overflow: hidden auto; position: relative; }
 
-.element-editor > .ee-body > .pane-header > .ee-toolbar { display: -webkit-flex; display: flex; -webkit-flex-direction: row; flex-direction: row; -webkit-align-items: center; align-items: center; margin-bottom: -8px; }
+.element-editor > .ee-body > .pane-header > .ee-toolbar { display: -webkit-flex; display: flex; -webkit-flex-direction: row; flex-direction: row; -webkit-align-items: center; align-items: center; margin-bottom: -7px; }
 
 .element-editor > .ee-body > .pane-header > .ee-toolbar > .pane-tabs { width: 1px; -webkit-flex: 1; flex: 1; margin-bottom: 0; }
-
-body.ltr .element-editor > .ee-body > .pane-header > .ee-toolbar > .pane-tabs { margin-right: 8px; }
-
-body.rtl .element-editor > .ee-body > .pane-header > .ee-toolbar > .pane-tabs { margin-left: 8px; }
-
-.element-editor > .ee-body > .pane-header > .ee-toolbar > .btn { width: 34px; padding-left: 0; padding-right: 0; }
-
-.element-editor > .ee-body > .pane-header > .ee-toolbar > .btn:not(:hover):not(:active):not(.active) { background-color: transparent; }
-
-.element-editor > .ee-body > .pane-header > .ee-toolbar > .btn:not(:active):not(.active):hover { background-color: rgba(154, 165, 177, 0.15); }
 
 .element-editor > .ee-body > .ee-sidebar-shade { position: absolute; left: 0; width: 100%; }
 
@@ -3398,11 +3394,13 @@ body.rtl #details { padding-right: 14px; }
 
 #details .meta { margin-bottom: 14px; border-radius: 5px; padding: 0 24px; }
 
-#details .meta:not(.read-only):not(.warning) { background: #fff; box-shadow: 0 0 0 1px rgba(154, 165, 177, 0.25), 0 2px 12px rgba(205, 216, 228, 0.5); background-color: #f3f7fc; }
+#details .meta:not(.warning) { background: #fff; box-shadow: 0 0 0 1px rgba(154, 165, 177, 0.25), 0 2px 12px rgba(205, 216, 228, 0.5); }
 
-#details .meta:not(.read-only):not(.warning):focus { box-shadow: 0 0 0 1px #127FBF, 0 0 0 3px rgba(18, 127, 191, 0.5); }
+#details .meta:not(.warning):focus { box-shadow: 0 0 0 1px #127FBF, 0 0 0 3px rgba(18, 127, 191, 0.5); }
 
-#details .meta.read-only { padding-top: 14px; padding-bottom: 14px; background-color: #cdd8e4; }
+#details .meta:not(.read-only):not(.warning) { background-color: #f3f7fc; }
+
+#details .meta.read-only { padding-top: 8px; padding-bottom: 8px; color: #606d7b; background-color: transparent; }
 
 #details .meta.warning { border: 2px solid #FADB5F; padding: 19px 22px; background: #fff; color: #3f4d5a !important; }
 
@@ -3442,9 +3440,15 @@ body.rtl #details .meta .ui-datepicker { margin: 0 -8px 0 0 ; }
 
 #details .spinner { background-image: url(../images/spinner_details.gif); }
 
-#details .text { background-color: transparent; }
+#details ::-webkit-input-placeholder { color: #606d7b; }
+
+#details ::placeholder { color: #606d7b; }
+
+#details .text { background-color: transparent; resize: none; }
 
 #details > .text { border-radius: 5px; margin-bottom: 14px; }
+
+#details > .text:not(:focus) { border-color: rgba(96, 125, 159, 0.4); }
 
 @media only screen and (max-width: 1199px) { #global-container { width: calc(100vw + 226px); }
   body.ltr #global-container { left: -226px; }

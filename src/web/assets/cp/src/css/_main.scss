@@ -3235,22 +3235,41 @@ ul.tree,
 
 .pane-header {
   margin: var(--neg-padding) var(--neg-padding) var(--padding);
-  padding: 8px var(--padding);
+  padding: 7px var(--padding);
   background: $grey050;
   box-shadow: inset 0 -1px 0 0 transparentize($grey300, 0.75);
   border-radius: $largeBorderRadius $largeBorderRadius 0 0;
+
+  .btn {
+    margin: 5px 0;
+    width: 34px;
+    height: 30px;
+    padding-left: 0;
+    padding-right: 0;
+
+    &:not(:hover):not(:active):not(.active) {
+      background-color: transparent;
+    }
+    &:not(:active):not(.active):hover {
+      background-color: transparentize($grey300, 0.85);
+    }
+  }
+
+  .spinner {
+    margin: 3px 0;
+  }
 }
 
 .pane-tabs {
-  margin-bottom: -8px;
+  margin-bottom: -7px;
   display: flex;
   flex-direction: row;
   align-items: center;
   max-width: 100%;
 
   ul {
-    margin: -8px -24px 0;
-    padding: 8px 24px 0;
+    margin: -7px var(--neg-padding) 0;
+    padding: 7px var(--padding) 0;
     flex: 1;
     display: flex;
     flex-direction: row;
@@ -3283,7 +3302,7 @@ ul.tree,
         border-radius: $mediumBorderRadius $mediumBorderRadius 0 0;
         padding: 12px;
         white-space: nowrap;
-        line-height: 1.2;
+        line-height: 16px;
         color: $lightTextColor;
 
         &:hover {
@@ -3307,8 +3326,6 @@ ul.tree,
 
   .menubtn {
     @include margin-left(32px);
-    width: 28px;
-    height: 19px;
   }
 }
 
@@ -3611,26 +3628,12 @@ ul.tree,
         display: flex;
         flex-direction: row;
         align-items: center;
-        margin-bottom: -8px;
+        margin-bottom: -7px;
 
         & > .pane-tabs {
           width: 1px; // give other elements in the header plenty of room before the tabs take up whatever's left
           flex: 1;
           margin-bottom: 0;
-          @include margin-right(8px);
-        }
-
-        & > .btn {
-          width: 34px;
-          padding-left: 0;
-          padding-right: 0;
-
-          &:not(:hover):not(:active):not(.active) {
-            background-color: transparent;
-          }
-          &:not(:active):not(.active):hover {
-            background-color: transparentize($grey300, 0.85);
-          }
         }
       }
     }

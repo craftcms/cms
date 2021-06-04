@@ -880,15 +880,19 @@ $toolbarIconColor: darken($inputColor, 10%);
     border-radius: $largeBorderRadius;
     padding: 0 24px;
 
-    &:not(.read-only):not(.warning) {
+    &:not(.warning) {
       @include pane;
+    }
+
+    &:not(.read-only):not(.warning) {
       background-color: $grey050;
     }
 
     &.read-only {
-      padding-top: 14px;
-      padding-bottom: 14px;
-      background-color: $grey200;
+      padding-top: 8px;
+      padding-bottom: 8px;
+      color: $lightTextColor;
+      background-color: transparent;
     }
 
     &.warning {
@@ -965,13 +969,20 @@ $toolbarIconColor: darken($inputColor, 10%);
     background-image: url(../images/spinner_details.gif);
   }
 
+  @include placeholder-styles($grey500);
+
   .text {
     background-color: transparent;
+    resize: none;
   }
 
   & > .text {
     border-radius: $largeBorderRadius;
     margin-bottom: 14px;
+
+    &:not(:focus) {
+      border-color: transparentize($inputColor, 0.6);
+    }
   }
 }
 
