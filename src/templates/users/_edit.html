@@ -357,7 +357,7 @@
                     </div>
                 </div>
 
-                {% if user.getStatus() == 'locked' and craft.app.config.general.cooldownDuration and user.remainingCooldownTime %}
+                {% if user.locked and craft.app.config.general.cooldownDuration and user.remainingCooldownTime %}
                     <div class="data">
                         <h5 class="heading">{{ "Cooldown Time Remaining"|t('app') }}</h5>
                         <p class="value">{{ user.remainingCooldownTime|duration }}</p>
