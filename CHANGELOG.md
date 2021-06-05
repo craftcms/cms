@@ -1,5 +1,8 @@
 # Release Notes for Craft CMS 3.x
 
+## 3.7.0 - Unreleased
+- Added the `$enableGraphQlSystemTimezone` setting, when set to true GQL DateTime types will by default return dates in the set System Timezone, when set to false it will return dates as UTC
+
 ## 3.6.16 - 2021-06-01
 
 ### Added
