@@ -3606,6 +3606,7 @@ ul.tree,
     height: 100%;
     left: 0;
     transition: top linear 250ms;
+    will-change: top;
   }
 
   &:not(.so-mobile) {
@@ -3616,9 +3617,11 @@ ul.tree,
 
     body.ltr & {
       transition: left linear 250ms;
+      will-change: left;
     }
     body.rtl & {
       transition: right linear 250ms;
+      will-change: right;
     }
   }
 }
