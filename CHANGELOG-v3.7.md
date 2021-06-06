@@ -11,10 +11,14 @@
 - Added the `siteSettingsId` element query and GraphQL API query parameter for all elements.
 - Added the `preferSites` GraphQL API query argument for all elements. ([#8006](https://github.com/craftcms/cms/pull/8006))
 - Added the `ancestors`, `descendants`, `drafts`, draftCreator`, `revisions`, `currentRevision`, and `revisionCreator` field to entry queries when using GraphQL API. ([#7950]((https://github.com/craftcms/cms/issues/7950)))
+- Added `craft\base\Element::EVENT_DEFINE_IS_DELETABLE`.
+- Added `craft\base\Element::EVENT_DEFINE_IS_EDITABLE`. ([#8023](https://github.com/craftcms/cms/issues/8023))
 - Added `craft\base\Element::EVENT_DEFINE_METADATA`.
 - Added `craft\base\Element::EVENT_DEFINE_META_FIELDS_HTML`.
 - Added `craft\base\Element::EVENT_DEFINE_SIDEBAR_HTML`.
 - Added `craft\base\Element::cpEditUrl()`, which should be overridden rather than `getCpEditUrl()`.
+- Added `craft\base\Element::isDeletable()`.
+- Added `craft\base\Element::isEditable()`.
 - Added `craft\base\Element::metaFieldsHtml()`.
 - Added `craft\base\Element::metadata()`.
 - Added `craft\base\Element::slugFieldHtml()`.
@@ -48,6 +52,7 @@
 - Added `craft\elements\db\ElementQuery::provisionalDrafts()`.
 - Added `craft\events\DefineHtmlEvent`.
 - Added `craft\events\DefineMetadataEvent`.
+- Added `craft\events\DefineValueEvent`.
 - Added `craft\events\DraftEvent::$provisional`.
 - Added `craft\fields\Matrix::$propagationKeyFormat`.
 - Added `craft\fields\Matrix::PROPAGATION_METHOD_CUSTOM`.

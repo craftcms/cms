@@ -852,7 +852,7 @@ class Asset extends Element
     /**
      * @inheritdoc
      */
-    public function getIsEditable(): bool
+    protected function isEditable(): bool
     {
         $volume = $this->getVolume();
         $userSession = Craft::$app->getUser();
@@ -866,7 +866,7 @@ class Asset extends Element
      * @inheritdoc
      * @since 3.5.15
      */
-    public function getIsDeletable(): bool
+    protected function isDeletable(): bool
     {
         $volume = $this->getVolume();
 

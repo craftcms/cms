@@ -96,7 +96,7 @@ class GlobalSet extends Element
     /**
      * @inheritdoc
      */
-    public function getIsEditable(): bool
+    protected function isEditable(): bool
     {
         return Craft::$app->getUser()->checkPermission("editGlobalSet:$this->uid");
     }

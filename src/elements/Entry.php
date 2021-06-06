@@ -1212,7 +1212,7 @@ class Entry extends Element
      * {% endif %}
      * ```
      */
-    public function getIsEditable(): bool
+    protected function isEditable(): bool
     {
         $section = $this->getSection();
         $userSession = Craft::$app->getUser();
@@ -1249,7 +1249,7 @@ class Entry extends Element
     /**
      * @inheritdoc
      */
-    public function getIsDeletable(): bool
+    protected function isDeletable(): bool
     {
         $section = $this->getSection();
         if ($section->type === Section::TYPE_SINGLE) {
