@@ -11,6 +11,7 @@
 - Added the `siteSettingsId` element query and GraphQL API query parameter for all elements.
 - Added the `preferSites` GraphQL API query argument for all elements. ([#8006](https://github.com/craftcms/cms/pull/8006))
 - Added the `ancestors`, `descendants`, `drafts`, draftCreator`, `revisions`, `currentRevision`, and `revisionCreator` field to entry queries when using GraphQL API. ([#7950]((https://github.com/craftcms/cms/issues/7950)))
+- Added the `useSystemTimezoneForGraphQlDates` setting that sets the date to system timezone by default, when enabled.
 - Added `craft\base\Element::EVENT_DEFINE_IS_DELETABLE`.
 - Added `craft\base\Element::EVENT_DEFINE_IS_EDITABLE`. ([#8023](https://github.com/craftcms/cms/issues/8023))
 - Added `craft\base\Element::EVENT_DEFINE_METADATA`.
