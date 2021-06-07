@@ -53,7 +53,7 @@ class FormatDateTime extends Directive
                 new FieldArgument([
                     'name' => 'timezone',
                     'type' => Type::string(),
-                    'description' => 'The full name of the timezone, defaults to UTC. (E.g., America/New_York)',
+                    'description' => 'The full name of the timezone (e.g., America/New_York). Defaults to ' . self::defaultTimezone(),
                     'defaultValue' => self::defaultTimezone(),
                 ]),
                 new FieldArgument([
@@ -114,6 +114,6 @@ class FormatDateTime extends Directive
      */
     public static function defaultTimezone(): string
     {
-        return Craft::$app->getConfig()->getGeneral()->enableGraphQlSystemTimezone ? Craft::$app->getTimezone() : self::DEFAULT_TIMEZONE;
+        return Craft::$app->getConfig()->getGeneral()->useSystemTimezoneForGraphQlDates ? Craft::$app->getTimezone() : self::DEFAULT_TIMEZONE;
     }
 }

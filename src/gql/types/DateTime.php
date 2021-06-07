@@ -62,7 +62,7 @@ class DateTime extends ScalarType
     {
         // The value not being a datetime would indicate an already formatted date.
         if ($value instanceof \DateTime) {
-            $value->setTimezone(new \DateTimeZone(FormatDateTime::defaultTimezone();));
+            $value->setTimezone(new \DateTimeZone(FormatDateTime::defaultTimezone()));
             $value = $value->format(FormatDateTime::DEFAULT_FORMAT);
         }
 
