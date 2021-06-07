@@ -8,6 +8,7 @@
 namespace craftunit\gql;
 
 use Codeception\Test\Unit;
+use Craft as Craft;
 use craft\errors\GqlException;
 use craft\gql\directives\FormatDateTime;
 use craft\gql\GqlEntityRegistry;
@@ -98,6 +99,29 @@ class ScalarTypesTest extends Unit
     }
 
     /**
+     * Test the useSystemTimezoneForGraphQlDates setting.
+     * 
+     * @throws \GraphQL\Error\Error
+     */
+    public function testTimeZoneConfigSetting()
+    {
+        Craft::$app->setTimeZone('America/New_York');
+
+        $dateTime = new \DateTime('now', new \DateTimeZone('UTC'));
+
+        $settingValue = Craft::$app->getConfig()->getGeneral()->useSystemTimezoneForGraphQlDates;
+
+        Craft::$app->getConfig()->getGeneral()->useSystemTimezoneForGraphQlDates = true;
+        $value1 = DateTime::getType()->serialize(clone $dateTime);
+        Craft::$app->getConfig()->getGeneral()->useSystemTimezoneForGraphQlDates = false;
+        $value2 = DateTime::getType()->serialize(clone $dateTime);
+
+        Craft::$app->getConfig()->getGeneral()->useSystemTimezoneForGraphQlDates = $settingValue;
+
+        $this->assertNotEquals($value1, $value2);
+    }
+
+    /**
      * @return array[]
      */
     public function serializationDataProvider()
@@ -109,7 +133,7 @@ class ScalarTypesTest extends Unit
         return [
             [DateTime::getType(), 'testString', 'testString'],
             [DateTime::getType(), null, null],
-            [DateTime::getType(), clone $now, $now->setTimezone(new \DateTimeZone(FormatDateTime::defaultTimezone();))->format(FormatDateTime::DEFAULT_FORMAT)],
+            [DateTime::getType(), clone $now, $now->setTimezone(new \DateTimeZone(FormatDateTime::defaultTimezone()))->format(FormatDateTime::DEFAULT_FORMAT)],
 
             [Number::getType(), 'testString', 'testString'],
             [Number::getType(), '', null],
