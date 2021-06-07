@@ -177,7 +177,7 @@ class CustomField extends BaseField
      */
     protected function statusClass(ElementInterface $element = null, bool $static = false)
     {
-        if ($element && ($status = $element->getFieldStatus($this->_field->handle))) {
+        if ($element && ($status = $this->_field->getStatus($element))) {
             return $status[0];
         }
         return null;
@@ -188,7 +188,7 @@ class CustomField extends BaseField
      */
     protected function statusLabel(ElementInterface $element = null, bool $static = false)
     {
-        if ($element && ($status = $element->getFieldStatus($this->_field->handle))) {
+        if ($element && ($status = $this->_field->getStatus($element))) {
             return $status[1];
         }
         return null;
@@ -209,14 +209,11 @@ class CustomField extends BaseField
     {
         $view = Craft::$app->getView();
         $registerDeltas = ($element->id ?? false) && $view->getIsDeltaRegistrationActive();
-        $namespace = $view->getNamespace();
         $view->setIsDeltaRegistrationActive(!$static);
-        $view->setNamespace($view->namespaceInputName('fields'));
-
-        $html = Html::namespaceHtml(parent::formHtml($element, $static), 'fields');
-
+        $html = $view->namespaceInputs(function() use ($element, $static) {
+            return (string)parent::formHtml($element, $static);
+        }, 'fields');
         $view->setIsDeltaRegistrationActive($registerDeltas);
-        $view->setNamespace($namespace);
 
         return $html;
     }

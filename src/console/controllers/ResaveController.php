@@ -38,6 +38,12 @@ class ResaveController extends Controller
     public $drafts = false;
 
     /**
+     * @var bool Whether to resave provisional element drafts.
+     * @since 3.7.0
+     */
+    public $provisionalDrafts = false;
+
+    /**
      * @var int|string The ID(s) of the elements to resave.
      */
     public $elementId;
@@ -131,6 +137,7 @@ class ResaveController extends Controller
                 $options[] = 'section';
                 $options[] = 'type';
                 $options[] = 'drafts';
+                $options[] = 'provisionalDrafts';
                 break;
             case 'matrix-blocks':
                 $options[] = 'field';
@@ -247,6 +254,10 @@ class ResaveController extends Controller
 
         if ($this->drafts) {
             $query->drafts();
+        }
+
+        if ($this->provisionalDrafts) {
+            $query->provisionalDrafts();
         }
 
         if ($this->elementId) {

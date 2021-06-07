@@ -134,9 +134,9 @@
 {% endblock %}
 
 {% block meta %}
-    {{ parent() }}
     {# Give plugins a chance to add other things here #}
     {% hook "cp.entries.edit.meta" %}
+    {{ parent() }}
 {% endblock %}
 
 {% block details %}

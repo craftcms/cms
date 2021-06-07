@@ -27,6 +27,7 @@ use craft\helpers\Json;
 use craft\helpers\Session;
 use craft\helpers\StringHelper;
 use craft\helpers\UrlHelper;
+use craft\i18n\Formatter;
 use craft\i18n\Locale;
 use craft\models\UserGroup;
 use craft\records\User as UserRecord;
@@ -1104,7 +1105,7 @@ class User extends Element implements IdentityInterface
     /**
      * @inheritdoc
      */
-    public function getIsEditable(): bool
+    protected function isEditable(): bool
     {
         return Craft::$app->getUser()->checkPermission('editUsers');
     }
@@ -1206,7 +1207,7 @@ class User extends Element implements IdentityInterface
     /**
      * @inheritdoc
      */
-    public function getCpEditUrl()
+    protected function cpEditUrl(): ?string
     {
         if (Craft::$app->getRequest()->getIsCpRequest() && $this->getIsCurrent()) {
             return UrlHelper::cpUrl('myaccount');
@@ -1372,17 +1373,56 @@ class User extends Element implements IdentityInterface
     /**
      * @inheritdoc
      */
-    public function getEditorHtml(): string
+    protected function metaFieldsHtml(): string
     {
-        $html = Craft::$app->getView()->renderTemplate('users/_accountfields', [
-            'user' => $this,
-            'isNewUser' => false,
-            'meta' => true,
+        return implode('', [
+            Craft::$app->getView()->renderTemplate('users/_accountfields', [
+                'user' => $this,
+                'isNewUser' => !$this->id,
+            ]),
+            parent::metaFieldsHtml(),
         ]);
+    }
 
-        $html .= parent::getEditorHtml();
+    protected function metadata(): array
+    {
+        $formatter = Craft::$app->getFormatter();
 
-        return $html;
+        return [
+            Craft::t('app', 'Email') => Html::a($this->email, "mailto:$this->email"),
+            Craft::t('app', 'Cooldown Time Remaining') => function() use ($formatter) {
+                if (
+                    !$this->locked ||
+                    !Craft::$app->getConfig()->getGeneral()->cooldownDuration ||
+                    ($duration = $this->getRemainingCooldownTime()) === null
+                ) {
+                    return false;
+                }
+                return $formatter->asDuration($duration);
+            },
+            Craft::t('app', 'Registered at') => $formatter->asDatetime($this->dateCreated, Formatter::FORMAT_WIDTH_SHORT),
+            Craft::t('app', 'Last login') => function() use ($formatter) {
+                if ($this->pending) {
+                    return false;
+                }
+                if (!$this->lastLoginDate) {
+                    return Craft::t('app', 'Never');
+                }
+                return $formatter->asDatetime($this->lastLoginDate, Formatter::FORMAT_WIDTH_SHORT);
+            },
+            Craft::t('app', 'Last login fail') => function() use ($formatter) {
+                if (!$this->locked || !$this->lastInvalidLoginDate) {
+                    return false;
+                }
+                return $formatter->asDatetime($this->lastInvalidLoginDate, Formatter::FORMAT_WIDTH_SHORT);
+            },
+            Craft::t('app', 'Login fail count') => function() use ($formatter) {
+                if (!$this->locked) {
+                    return false;
+                }
+                return $formatter->asDecimal($this->invalidLoginCount, 0);
+            },
+        ];
     }
 
     /**
@@ -1523,7 +1563,7 @@ class User extends Element implements IdentityInterface
                     ->authorId($this->id)
                     ->anyStatus();
 
-                foreach ($entryQuery->each() as $entry) {
+                foreach (Db::each($entryQuery) as $entry) {
                     $elementsService->deleteElement($entry);
                 }
             }

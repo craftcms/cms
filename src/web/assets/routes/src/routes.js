@@ -22,7 +22,7 @@
 
             this.sorter = new Garnish.DragSort($routes, {
                 axis: Garnish.Y_AXIS,
-                onSortChange: $.proxy(this, 'updateRouteOrder')
+                onSortChange: this.updateRouteOrder.bind(this)
             });
 
             this.$addRouteBtn = $('#add-route-btn');
@@ -42,7 +42,7 @@
                 data['routeUids[' + i + ']'] = $($routes[i]).attr('data-uid');
             }
 
-            Craft.postActionRequest('routes/update-route-order', data, $.proxy(function(response, textStatus) {
+            Craft.postActionRequest('routes/update-route-order', data, (response, textStatus) => {
                 if (textStatus === 'success') {
                     if (response.success) {
                         Craft.cp.displayNotice(Craft.t('app', 'New route order saved.'));
@@ -50,7 +50,7 @@
                         Craft.cp.displayError(Craft.t('app', 'Couldn’t save new route order.'));
                     }
                 }
-            }, this));
+            });
         },
 
         addRoute: function() {
@@ -287,25 +287,25 @@
                 switch (event.keyCode) {
                     case Garnish.LEFT_KEY: {
                         // Select the previous element
-                        setTimeout($.proxy(function() {
+                        setTimeout(() => {
                             this.uriInput.focusPreviousElement($uriVar);
-                        }, this), 1);
+                        }, 1);
 
                         break;
                     }
                     case Garnish.RIGHT_KEY: {
                         // Select the next element
-                        setTimeout($.proxy(function() {
+                        setTimeout(() => {
                             this.uriInput.focusNextElement($uriVar);
-                        }, this), 1);
+                        }, 1);
 
                         break;
                     }
                     case Garnish.DELETE_KEY: {
                         // Delete this element
-                        setTimeout($.proxy(function() {
+                        setTimeout(() => {
                             this.uriInput.removeElement($uriVar);
-                        }, this), 1);
+                        }, 1);
 
                         event.preventDefault();
                     }
@@ -320,7 +320,7 @@
             }
 
             // Focus on the first element
-            setTimeout(function() {
+            setTimeout(() => {
                 if (this.uriInput.elements.length) {
                     var $firstElem = this.uriInput.elements[0];
                     this.uriInput.setFocus($firstElem);
@@ -328,7 +328,7 @@
                 } else {
                     this.$uriInput.trigger('focus');
                 }
-            }.bind(this), 100);
+            }, 100);
 
             this.base();
         },
@@ -393,7 +393,7 @@
             this.$saveBtn.addClass('active');
             this.$spinner.show();
 
-            Craft.postActionRequest('routes/save-route', data, $.proxy(function(response, textStatus) {
+            Craft.postActionRequest('routes/save-route', data, (response, textStatus) => {
                 this.$saveBtn.removeClass('active');
                 this.$spinner.hide();
                 this.loading = false;
@@ -443,7 +443,7 @@
                         Craft.cp.displayError(Craft.t('app', 'Couldn’t save route.'));
                     }
                 }
-            }, this));
+            });
         },
 
         addUriError: function(error) {

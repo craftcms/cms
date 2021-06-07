@@ -8,14 +8,15 @@
 namespace craft\behaviors;
 
 use craft\base\Element;
-use craft\db\Query;
 use craft\db\Table;
-use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
+use DateTime;
 
 /**
  * DraftBehavior is applied to element drafts.
  *
+ * @property-read Datetime|null $dateLastMerged The date that the canonical element was last merged into this one
+ * @property-read bool $mergingChanges Whether recent changes to the canonical element are being merged into this element
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.2.0
  */
@@ -33,61 +34,15 @@ class DraftBehavior extends BaseRevisionBehavior
 
     /**
      * @var bool Whether to track changes in this draft
+     * @deprecated in 3.7.0.
      */
-    public $trackChanges = false;
-
-    /**
-     * @var \DateTime|null The last date that this draft was merged with changes from the source element
-     */
-    public $dateLastMerged = false;
-
-    /**
-     * @var bool Whether the source element’s changes are currently being merged into the draft.
-     * @since 3.4.0
-     */
-    public $mergingChanges = false;
+    public $trackChanges = true;
 
     /**
      * @var bool Whether the draft should be marked as saved (if unpublished).
      * @since 3.6.6
      */
     public $markAsSaved = true;
-
-    /**
-     * @var array|null
-     * @see _outdatedAttributes()
-     */
-    private $_outdatedAttributes;
-
-    /**
-     * @var array|null
-     * @see _modifiedAttributes()
-     */
-    private $_modifiedAttributes;
-
-    /**
-     * @var array|null
-     * @see _outdatedFields()
-     */
-    private $_outdatedFields;
-
-    /**
-     * @var array|null
-     * @see _modifiedFields()
-     */
-    private $_modifiedFields;
-
-    /**
-     * @inheritdoc
-     */
-    public function init()
-    {
-        parent::init();
-
-        if ($this->dateLastMerged !== null) {
-            $this->dateLastMerged = DateTimeHelper::toDateTime($this->dateLastMerged);
-        }
-    }
 
     /**
      * @inheritdoc
@@ -106,9 +61,10 @@ class DraftBehavior extends BaseRevisionBehavior
     public function handleSave()
     {
         Db::update(Table::DRAFTS, [
+            'provisional' => $this->owner->getIsProvisionalDraft(),
             'name' => $this->draftName,
             'notes' => $this->draftNotes,
-            'dateLastMerged' => Db::prepareDateForDb($this->dateLastMerged),
+            'dateLastMerged' => Db::prepareDateForDb($this->owner->dateLastMerged),
             'saved' => $this->markAsSaved,
         ], [
             'id' => $this->owner->draftId,
@@ -147,19 +103,21 @@ class DraftBehavior extends BaseRevisionBehavior
      */
     public function getIsOutdated(): bool
     {
-        if (($source = $this->source()) === null) {
+        if ($this->owner->getIsCanonical()) {
             return false;
         }
 
-        if ($this->owner->dateCreated > $source->dateUpdated) {
+        $canonical = $this->owner->getCanonical();
+
+        if ($this->owner->dateCreated > $canonical->dateUpdated) {
             return false;
         }
 
-        if (!$this->trackChanges || !$this->dateLastMerged) {
+        if (!$this->owner->dateLastMerged) {
             return true;
         }
 
-        return $this->dateLastMerged < $source->dateUpdated;
+        return $this->owner->dateLastMerged < $canonical->dateUpdated;
     }
 
     /**
@@ -167,34 +125,37 @@ class DraftBehavior extends BaseRevisionBehavior
      *
      * @return string[]
      * @since 3.4.0
+     * @deprecated in 3.7.0. Use [[\craft\base\ElementInterface::getOutdatedAttributes()]] instead.
      */
     public function getOutdatedAttributes(): array
     {
-        return array_keys($this->_outdatedAttributes());
+        return $this->owner->getOutdatedAttributes();
     }
 
     /**
      * Returns whether an attribute on the draft has fallen behind the source element’s value.
      *
-     * @param string $fieldHandle
+     * @param string $name
      * @return bool
      * @since 3.4.0
+     * @deprecated in 3.7.0. Use [[\craft\base\ElementInterface::isAttributeOutdated()]] instead.
      */
-    public function isAttributeOutdated(string $fieldHandle): bool
+    public function isAttributeOutdated(string $name): bool
     {
-        return isset($this->_outdatedAttributes()[$fieldHandle]);
+        return $this->owner->isAttributeOutdated($name);
     }
 
     /**
      * Returns whether an attribute has changed on the draft.
      *
-     * @param string $fieldHandle
+     * @param string $name
      * @return bool
      * @since 3.4.0
+     * @deprecated in 3.7.0. Use [[\craft\base\ElementInterface::isAttributeModified()]] instead.
      */
-    public function isAttributeModified(string $fieldHandle): bool
+    public function isAttributeModified(string $name): bool
     {
-        return isset($this->_modifiedAttributes()[$fieldHandle]);
+        return $this->owner->isAttributeModified($name);
     }
 
     /**
@@ -202,10 +163,11 @@ class DraftBehavior extends BaseRevisionBehavior
      *
      * @return string[]
      * @since 3.4.0
+     * @deprecated in 3.7.0. Use [[\craft\base\ElementInterface::getOutdatedFields()]] instead.
      */
     public function getOutdatedFields(): array
     {
-        return array_keys($this->_outdatedFields());
+        return $this->owner->getOutdatedFields();
     }
 
     /**
@@ -214,10 +176,11 @@ class DraftBehavior extends BaseRevisionBehavior
      * @param string $fieldHandle
      * @return bool
      * @since 3.4.0
+     * @deprecated in 3.7.0. Use [[\craft\base\ElementInterface::isFieldOutdated()]] instead.
      */
     public function isFieldOutdated(string $fieldHandle): bool
     {
-        return isset($this->_outdatedFields()[$fieldHandle]);
+        return $this->owner->isFieldOutdated($fieldHandle);
     }
 
     /**
@@ -226,117 +189,32 @@ class DraftBehavior extends BaseRevisionBehavior
      * @param string $fieldHandle
      * @return bool
      * @since 3.4.0
+     * @deprecated in 3.7.0. Use [[\craft\base\ElementInterface::isFieldModified()]] instead.
      */
     public function isFieldModified(string $fieldHandle): bool
     {
-        return isset($this->_modifiedFields()[$fieldHandle]);
+        return $this->owner->isFieldModified($fieldHandle);
     }
 
     /**
-     * @return array The attribute names that have been modified for this draft
+     * Returns the date that the canonical element was last merged into this one.
+     *
+     * @since 3.7.0
+     * @deprecated in 3.7.0. Use [[\craft\base\ElementInterface::$dateLastMerged]] instead.
      */
-    private function _outdatedAttributes(): array
+    public function getDateLastMerged(): ?DateTime
     {
-        if (!$this->sourceId || !$this->trackChanges) {
-            return [];
-        }
-
-        if ($this->_outdatedAttributes !== null) {
-            return $this->_outdatedAttributes;
-        }
-
-        $query = (new Query())
-            ->select(['attribute'])
-            ->from([Table::CHANGEDATTRIBUTES])
-            ->where([
-                'elementId' => $this->sourceId,
-                'siteId' => $this->owner->siteId,
-            ]);
-
-        if ($this->dateLastMerged) {
-            $query->andWhere(['>=', 'dateUpdated', Db::prepareDateForDb($this->dateLastMerged)]);
-        } else {
-            $query->andWhere(['>=', 'dateUpdated', Db::prepareDateForDb($this->owner->dateCreated)]);
-        }
-
-        return $this->_outdatedAttributes = array_flip($query->column());
+        return $this->owner->dateLastMerged;
     }
 
     /**
-     * @return array The attribute names that have been modified for this draft
+     * Returns whether recent changes to the canonical element are being merged into this element.
+     *
+     * @since 3.7.0
+     * @deprecated in 3.7.0. Use [[\craft\base\ElementInterface::$mergingCanonicalChanges]] instead.
      */
-    private function _modifiedAttributes(): array
+    public function getMergingChanges(): bool
     {
-        if (!$this->trackChanges) {
-            return [];
-        }
-
-        if ($this->_modifiedAttributes !== null) {
-            return $this->_modifiedAttributes;
-        }
-
-        return $this->_modifiedAttributes = array_flip((new Query())
-            ->select(['attribute'])
-            ->from([Table::CHANGEDATTRIBUTES])
-            ->where([
-                'elementId' => $this->owner->id,
-                'siteId' => $this->owner->siteId,
-            ])
-            ->column());
-    }
-
-    /**
-     * @return array The field handles that have been modified for this draft
-     */
-    private function _outdatedFields(): array
-    {
-        if ($this->source() === null || !$this->trackChanges) {
-            return [];
-        }
-
-        if ($this->_outdatedFields !== null) {
-            return $this->_outdatedFields;
-        }
-
-        $query = (new Query())
-            ->select(['f.handle'])
-            ->from(['f' => Table::FIELDS])
-            ->innerJoin(['cf' => Table::CHANGEDFIELDS], '[[cf.fieldId]] = [[f.id]]')
-            ->where([
-                'cf.elementId' => $this->sourceId,
-                'cf.siteId' => $this->owner->siteId,
-            ]);
-
-        if ($this->dateLastMerged) {
-            $query->andWhere(['>=', 'cf.dateUpdated', Db::prepareDateForDb($this->dateLastMerged)]);
-        } else {
-            $query->andWhere(['>=', 'cf.dateUpdated', Db::prepareDateForDb($this->owner->dateCreated)]);
-        }
-
-        return $this->_outdatedFields = array_flip($query->column());
-    }
-
-    /**
-     * @return array The field handles that have been modified for this draft
-     */
-    private function _modifiedFields(): array
-    {
-        if (!$this->trackChanges) {
-            return [];
-        }
-
-        if ($this->_modifiedFields !== null) {
-            return $this->_modifiedFields;
-        }
-
-        return $this->_modifiedFields = array_flip((new Query())
-            ->select(['f.handle'])
-            ->from(['f' => Table::FIELDS])
-            ->innerJoin(['cf' => Table::CHANGEDFIELDS], '[[cf.fieldId]] = [[f.id]]')
-            ->where([
-                'cf.elementId' => $this->owner->id,
-                'cf.siteId' => $this->owner->siteId,
-            ])
-            ->column());
+        return $this->owner->mergingCanonicalChanges;
     }
 }

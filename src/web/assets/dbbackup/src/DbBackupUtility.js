@@ -26,19 +26,19 @@
                 this.progressBar.$progressBar.velocity('stop').velocity({
                     opacity: 1
                 }, {
-                    complete: $.proxy(function() {
+                    complete: () => {
                         if (($('#download-backup').prop('checked'))) {
                             Craft.downloadFromUrl('POST', Craft.getActionUrl('utilities/db-backup-perform-action'), this.$form.serialize())
-                                .then(function() {
+                                .then(() => {
                                     this.updateProgressBar();
                                     setTimeout(this.onComplete.bind(this), 300);
-                                }.bind(this))
-                                .catch(function() {
+                                })
+                                .catch(() => {
                                     Craft.cp.displayError(Craft.t('app', 'There was a problem backing up your database. Please check the Craft logs.'));
                                     this.onComplete(false);
-                                }.bind(this));
+                                });
                         } else {
-                            Craft.postActionRequest('utilities/db-backup-perform-action', function(response, textStatus) {
+                            Craft.postActionRequest('utilities/db-backup-perform-action', (response, textStatus) => {
                                 this.updateProgressBar();
                                 if (textStatus === 'success') {
                                     setTimeout(this.onComplete.bind(this), 300);
@@ -46,9 +46,9 @@
                                     Craft.cp.displayError(Craft.t('app', 'There was a problem backing up your database. Please check the Craft logs.'));
                                     this.onComplete(false);
                                 }
-                            }.bind(this))
+                            });
                         }
-                    }.bind(this))
+                    },
                 });
 
                 if (this.$allDone) {
@@ -72,14 +72,14 @@
             }
 
             this.progressBar.$progressBar.velocity({opacity: 0}, {
-                duration: 'fast', complete: $.proxy(function() {
+                duration: 'fast', complete: () => {
                     if (typeof showAllDone === 'undefined' || showAllDone === true) {
                         this.$allDone.velocity({opacity: 1}, {duration: 'fast'});
                     }
 
                     this.$trigger.removeClass('disabled');
                     this.$trigger.trigger('focus');
-                }, this)
+                },
             });
         }
     });

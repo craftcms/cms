@@ -176,6 +176,11 @@ class MigrateController extends BaseMigrateController
      */
     public function beforeAction($action)
     {
+        // Make sure this isn't a root user
+        if (!$this->checkRootUser()) {
+            return false;
+        }
+
         if ($action->id !== 'all') {
             // Validate $type
             if ($this->type) {

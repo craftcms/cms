@@ -66,6 +66,10 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
     const PROPAGATION_METHOD_NONE = 'none';
     const PROPAGATION_METHOD_SITE_GROUP = 'siteGroup';
     const PROPAGATION_METHOD_LANGUAGE = 'language';
+    /**
+     * @since 3.7.0
+     */
+    const PROPAGATION_METHOD_CUSTOM = 'custom';
     const PROPAGATION_METHOD_ALL = 'all';
 
     /**
@@ -126,6 +130,12 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
     public $propagationMethod = self::PROPAGATION_METHOD_ALL;
 
     /**
+     * @var string|null The field’s propagation key format, if [[propagationMethod]] is `custom`
+     * @since 3.7.0
+     */
+    public $propagationKeyFormat;
+
+    /**
      * @var int Whether each site should get its own unique set of blocks
      * @deprecated in 3.2.0. Use [[$propagationMethod]] instead
      */
@@ -159,6 +169,10 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
      */
     public function init()
     {
+        if ($this->propagationKeyFormat === '') {
+            $this->propagationKeyFormat = null;
+        }
+
         // todo: remove this in 4.0
         // Set localizeBlocks in case anything is still checking it
         $this->localizeBlocks = $this->propagationMethod === self::PROPAGATION_METHOD_NONE;
@@ -185,6 +199,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
                 self::PROPAGATION_METHOD_NONE,
                 self::PROPAGATION_METHOD_SITE_GROUP,
                 self::PROPAGATION_METHOD_LANGUAGE,
+                self::PROPAGATION_METHOD_CUSTOM,
                 self::PROPAGATION_METHOD_ALL,
             ],
         ];
@@ -326,6 +341,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
                             'id' => is_numeric($fieldId) ? $fieldId : null,
                             'name' => $fieldConfig['name'],
                             'handle' => $fieldConfig['handle'],
+                            'columnSuffix' => $fieldConfig['columnSuffix'] ?? null,
                             'instructions' => $fieldConfig['instructions'],
                             'required' => (bool)$fieldConfig['required'],
                             'searchable' => (bool)$fieldConfig['searchable'],
@@ -556,6 +572,14 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
     /**
      * @inheritdoc
      */
+    public function copyValue(ElementInterface $from, ElementInterface $to): void
+    {
+        // We'll do it later from afterElementPropagate()
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function modifyElementsQuery(ElementQueryInterface $query, $value)
     {
         /* @var ElementQuery $query */
@@ -624,6 +648,23 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
             default:
                 return null;
         }
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getStatus(ElementInterface $element): ?array
+    {
+        // The only thing we need to actually present to the UI is whether it is outdated.
+        // Individual blocks will show their own field statuses.
+        if ($element->isFieldOutdated($this->handle)) {
+            return [
+                Element::ATTR_STATUS_OUTDATED,
+                Craft::t('app', 'This field was updated in the Current revision.'),
+            ];
+        }
+
+        return null;
     }
 
     /**
@@ -961,7 +1002,8 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
         // If the propagation method just changed, resave all the Matrix blocks
         if ($this->oldSettings !== null) {
             $oldPropagationMethod = $this->oldSettings['propagationMethod'] ?? self::PROPAGATION_METHOD_ALL;
-            if ($this->propagationMethod !== $oldPropagationMethod) {
+            $oldPropagationKeyFormat = $this->oldSettings['propagationKeyFormat'] ?? null;
+            if ($this->propagationMethod !== $oldPropagationMethod || $this->propagationKeyFormat !== $oldPropagationKeyFormat) {
                 Queue::push(new ApplyNewPropagationMethod([
                     'description' => Craft::t('app', 'Applying new propagation method to Matrix blocks'),
                     'elementType' => MatrixBlock::class,
@@ -997,13 +1039,8 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
             $resetValue = true;
         } else if ($element->isFieldDirty($this->handle) || !empty($element->newSiteIds)) {
             $matrixService->saveField($this, $element);
-        } else if (
-            ($status = $element->getFieldStatus($this->handle)) !== null &&
-            $status[0] === Element::ATTR_STATUS_OUTDATED
-        ) {
-            // This is just a temporary fix for merging Matrix field changes.
-            // Will be replaced with a more thorough solution in 3.7: https://github.com/craftcms/cms/pull/7710
-            $matrixService->duplicateBlocks($this, ElementHelper::sourceElement($element), $element, true);
+        } else if ($element->mergingCanonicalChanges) {
+            $matrixService->mergeCanonicalChanges($this, $element);
             $resetValue = true;
         }
 
@@ -1113,9 +1150,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
 
         // Set a temporary namespace for these
         $view = Craft::$app->getView();
-        $originalNamespace = $view->getNamespace();
-        $namespace = $view->namespaceInputName($this->handle . "[blocks][__BLOCK_{$placeholderKey}__]", $originalNamespace);
-        $view->setNamespace($namespace);
+        $namespace = $view->namespaceInputName($this->handle . "[blocks][__BLOCK_{$placeholderKey}__]");
 
         foreach ($blockTypes as $blockType) {
             // Create a fake MatrixBlock so the field types have a way to get at the owner element, if there is one
@@ -1138,7 +1173,9 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
             }
 
             $view->startJsBuffer();
-            $bodyHtml = $view->namespaceInputs($fieldLayout->createForm($block)->render());
+            $bodyHtml = $view->namespaceInputs(function() use ($fieldLayout, $block) {
+                return $fieldLayout->createForm($block)->render();
+            }, $namespace);
             $footHtml = $view->clearJsBuffer();
 
             // Reset $_isFresh's
@@ -1155,8 +1192,6 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
                 'footHtml' => $footHtml,
             ];
         }
-
-        $view->setNamespace($originalNamespace);
 
         return $blockTypeInfo;
     }

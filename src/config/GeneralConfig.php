@@ -47,6 +47,7 @@ class GeneralConfig extends BaseObject
      *
      * The array can contain the following keys:
      *
+     * - `reduceFocusVisibility` - Whether focus visibility styles should be reduced
      * - `useShapes` – Whether shapes should be used to represent statuses
      * - `underlineLinks` – Whether links should be underlined
      *
@@ -54,6 +55,7 @@ class GeneralConfig extends BaseObject
      * @group System
      */
     public $accessibilityDefaults = [
+        'reduceFocusVisibility' => false,
         'useShapes' => false,
         'underlineLinks' => false,
     ];
@@ -224,7 +226,6 @@ class GeneralConfig extends BaseObject
         'wmv',
         'xls',
         'xlsx',
-        'xml',
         'zip',
     ];
 
@@ -438,10 +439,8 @@ class GeneralConfig extends BaseObject
     public $defaultCookieDomain = '';
 
     /**
-     * @var string|null The default language the control panel should use for users who haven’t set a preferred language yet,
-     * as well as for console requests.
+     * @var string|null The default language the control panel should use for users who haven’t set a preferred language yet.
      * @group System
-     * @todo Rename to `defaultLanguage` in Craft 4, since it also determines the language for console requests
      */
     public $defaultCpLanguage;
 

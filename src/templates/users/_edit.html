@@ -250,6 +250,12 @@
                         {% block input %}
                             {% from '_includes/forms' import checkboxField %}
                             {{ checkboxField({
+                                label: 'Reduce focus visibility'|t('app'),
+                                name: 'reduceFocusVisibility',
+                                id: 'reduceFocusVisibility',
+                                checked: user.getPreference('reduceFocusVisibility') ?? a11yDefaults['reduceFocusVisibility'] ?? false,
+                            }) }}
+                            {{ checkboxField({
                                 label: 'Use shapes to represent statuses'|t('app'),
                                 name: 'useShapes',
                                 id: 'useShapes',
@@ -351,7 +357,7 @@
                     </div>
                 </div>
 
-                {% if user.getStatus() == 'locked' and craft.app.config.general.cooldownDuration and user.remainingCooldownTime %}
+                {% if user.locked and craft.app.config.general.cooldownDuration and user.remainingCooldownTime %}
                     <div class="data">
                         <h5 class="heading">{{ "Cooldown Time Remaining"|t('app') }}</h5>
                         <p class="value">{{ user.remainingCooldownTime|duration }}</p>

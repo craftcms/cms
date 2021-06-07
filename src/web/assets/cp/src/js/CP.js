@@ -17,14 +17,6 @@ Craft.CP = Garnish.Base.extend({
     $header: null,
     $mainContent: null,
     $details: null,
-    $tabsContainer: null,
-    $tabsList: null,
-    $tabs: null,
-    $overflowTabBtn: null,
-    $overflowTabList: null,
-    $selectedTab: null,
-    selectedTabIndex: null,
-    $focusableTab: null,
     $sidebarContainer: null,
     $sidebar: null,
     $contentContainer: null,
@@ -35,6 +27,8 @@ Craft.CP = Garnish.Base.extend({
     $collapsibleTables: null,
 
     fixedHeader: false,
+
+    tabManager: null,
 
     enableQueue: true,
     totalJobs: 0,
@@ -92,7 +86,7 @@ Craft.CP = Garnish.Base.extend({
             this.updateFixedHeader();
         }
 
-        Garnish.$doc.ready($.proxy(function() {
+        Garnish.$doc.ready(() => {
             // Update responsive tables on window resize
             this.addListener(Garnish.$win, 'resize', ev => {
                 // Ignore element resizes
@@ -111,8 +105,8 @@ Craft.CP = Garnish.Base.extend({
 
             // Wait a frame before initializing any confirm-unload forms,
             // so other JS that runs on ready() has a chance to initialize
-            Garnish.requestAnimationFrame($.proxy(this, 'initSpecialForms'));
-        }, this));
+            Garnish.requestAnimationFrame(this.initSpecialForms.bind(this));
+        });
 
         // Alerts
         if (this.$alerts.length) {
@@ -185,8 +179,8 @@ Craft.CP = Garnish.Base.extend({
         }
 
         if ($.isTouchCapable()) {
-            this.$mainContainer.on('focus', 'input, textarea, .focusable-input', $.proxy(this, '_handleInputFocus'));
-            this.$mainContainer.on('blur', 'input, textarea, .focusable-input', $.proxy(this, '_handleInputBlur'));
+            this.$mainContainer.on('focus', 'input, textarea, .focusable-input', this._handleInputFocus.bind(this));
+            this.$mainContainer.on('blur', 'input, textarea, .focusable-input', this._handleInputBlur.bind(this));
         }
     },
 
@@ -320,230 +314,124 @@ Craft.CP = Garnish.Base.extend({
     },
 
     initTabs: function() {
-        // Clear out all our old info in case the tabs were just replaced
-        this.$tabsList = this.$tabs = this.$overflowTabBtn = this.$overflowTabList = this.$selectedTab =
-            this.selectedTabIndex = this.$focusableTab = null;
+        if (this.tabManager) {
+            this.tabManager.destroy();
+            this.tabManager = null;
+        }
 
-        this.$tabsContainer = $('#tabs');
-        if (!this.$tabsContainer.length) {
-            this.$tabsContainer = null;
+        const $tabs = $('#tabs');
+        if (!$tabs.length) {
             return;
         }
 
-        this.$tabsList = this.$tabsContainer.find('> ul');
-        this.$tabs = this.$tabsList.find('> li');
-        this.$overflowTabBtn = $('#overflow-tab-btn');
-        if (!this.$overflowTabBtn.data('menubtn')) {
-            new Garnish.MenuBtn(this.$overflowTabBtn);
-        }
-        this.$overflowTabList = this.$overflowTabBtn.data('menubtn').menu.$container.find('> ul');
+        this.tabManager = new Craft.Tabs($tabs);
 
-        let $initialTab;
+        this.tabManager.on('selectTab', ev => {
+            const href = ev.$tab.attr('href');
 
-        for (let i = 0; i < this.$tabs.length; i++) {
-            const $tab = this.$tabs.eq(i);
+            // Show its content area
+            if (href.charAt(0) === '#') {
+                $(href).removeClass('hidden');
+            }
 
-            // Does it link to an anchor?
-            const $a = $tab.children('a');
-            const href = $a.attr('href');
+            // Trigger a resize event to update any UI components that are listening for it
+            Garnish.$win.trigger('resize');
+
+            // Fixes Redactor fixed toolbars on previously hidden panes
+            Garnish.$doc.trigger('scroll');
+
+            // If there is a revision menu, set its links to this tab ID
             if (href && href.charAt(0) === '#') {
-                this.addListener($a, 'keydown', ev => {
-                    if ([Garnish.SPACE_KEY, Garnish.RETURN_KEY].includes(ev.keyCode)) {
-                        ev.preventDefault();
-                        this.selectTab(ev.currentTarget);
+                const menuBtn = $('#context-btn').menubtn().data('menubtn');
+                if (menuBtn) {
+                    for (let i = 0; i < menuBtn.menu.$options.length; i++) {
+                        let a = menuBtn.menu.$options[i];
+                        if (a.href) {
+                            a.href = a.href.match(/^[^#]*/)[0] + href;
+                        }
                     }
-                });
-                this.addListener($a, 'click', ev => {
-                    ev.preventDefault();
-                    const $a = $(ev.currentTarget);
-                    this.selectTab($a);
-                    this._focusTab($a);
-                });
-
-                if (href.substr(1) === window.LOCATION_HASH) {
-                    $initialTab = $a;
                 }
             }
 
-            if (!$initialTab && $a.hasClass('sel')) {
-                this.$selectedTab = $initialTab = $a;
+            if (typeof history !== 'undefined') {
+                // Delay changing the hash so it doesn't cause the browser to jump on page load
+                Garnish.requestAnimationFrame(() => {
+                    history.replaceState(undefined, undefined, href);
+                });
             }
+        });
 
-            this.addListener($a, 'keydown', ev => {
-                if (
-                    [Garnish.LEFT_KEY, Garnish.RIGHT_KEY].includes(ev.keyCode) &&
-                    $.contains(this.$tabsList[0], ev.currentTarget)
-                ) {
-                    let $tab;
-                    if (ev.keyCode === Garnish.LEFT_KEY) {
-                        $tab = $(ev.currentTarget).parent().prev('li').children('a');
-                    } else {
-                        $tab = $(ev.currentTarget).parent().next('li').children('a');
-                    }
-                    if ($tab.length) {
-                        this._focusTab($tab);
-                    }
-                }
-            });
-        }
+        this.tabManager.on('deselectTab', ev => {
+            if (ev.$tab.attr('href').charAt(0) === '#') {
+                // Hide its content area
+                $(ev.$tab.attr('href')).addClass('hidden');
+            }
+        });
 
-        if ($initialTab) {
-            this.selectTab($initialTab, true);
-            this._focusTab($initialTab, false);
+        if (window.LOCATION_HASH) {
+            const $tab = this.tabManager.$tabs.filter(`[href="#${window.LOCATION_HASH}"]`);
+            if ($tab.length) {
+                this.tabManager.selectTab($tab);
+            }
         }
     },
 
+    /**
+     * @deprecated in 3.7.0
+     */
+    get $tabsContainer() {
+        return this.tabManager ? this.tabManager.$container : undefined;
+    },
+    /**
+     * @deprecated in 3.7.0
+     */
+    get $tabsList() {
+        return this.tabManager ? this.tabManager.$ul : undefined;
+    },
+    /**
+     * @deprecated in 3.7.0
+     */
+    get $tabs() {
+        return this.tabManager ? this.tabManager.$ul.find('> li') : undefined;
+    },
+    /**
+     * @deprecated in 3.7.0
+     */
+    get $selectedTab() {
+        return this.tabManager ? this.tabManager.$selectedTab : undefined;
+    },
+    /**
+     * @deprecated in 3.7.0
+     */
+    get selectedTabIndex() {
+        return this.tabManager ? this.tabManager.$tabs.index(this.tabManager.$selectedTab) : undefined;
+    },
+    /**
+     * @deprecated in 3.7.0
+     */
+    get $focusableTab() {
+        return this.tabManager ? this.tabManager.$focusableTab : undefined;
+    },
     /**
      * @param {object} tab
-     * @param {bool} [force]
+     * @deprecated in 3.7.0
      */
-    selectTab: function(tab, force) {
-        var $tab = $(tab);
-
-        if (this.$selectedTab) {
-            if (!force && this.$selectedTab.get(0) === $tab.get(0)) {
-                return;
-            }
-            this.deselectTab();
-        }
-
-        $tab.addClass('sel');
-
-        const index = $tab ? this.$tabs.index($tab.parent()) : null;
-        this.$selectedTab = $tab;
-        this.selectedTabIndex = index;
-
-        if (index === 0) {
-            $('#content').addClass('square');
-        } else {
-            $('#content').removeClass('square');
-        }
-
-        // Show its content area
-        if ($tab.attr('href').charAt(0) === '#') {
-            $(this.$selectedTab.attr('href')).removeClass('hidden');
-        }
-
-        // Trigger a resize event to update any UI components that are listening for it, including updateTabs()
-        Garnish.$win.trigger('resize');
-
-        // Fixes Redactor fixed toolbars on previously hidden panes
-        Garnish.$doc.trigger('scroll');
-
-        this.$overflowTabBtn.data('menubtn').menu.hide();
-
-        // If there is a revision menu, set its links to this tab ID
-        let href = $tab && $tab.attr('href');
-        if (href && href.charAt(0) === '#') {
-            let menubtn = $('#context-btn').menubtn().data('menubtn');
-            if (menubtn) {
-                for (let i = 0; i < menubtn.menu.$options.length; i++) {
-                    let a = menubtn.menu.$options[i];
-                    if (a.href) {
-                        a.href = a.href.match(/^[^#]*/)[0] + href;
-                    }
-                }
-            }
-        }
-
-        if (typeof history !== 'undefined') {
-            // Delay changing the hash so it doesn't cause the browser to jump on page load
-            Garnish.requestAnimationFrame(() => {
-                history.replaceState(undefined, undefined, href);
-            });
+    selectTab: function(tab) {
+        if (this.tabManager) {
+            this.tabManager.selectTab(tab);
         }
     },
-
     /**
-     * @param {object} $tab
-     * @param {boolean} [setFocus]
-     * @private
+     * @deprecated in 3.7.0
      */
-    _focusTab: function($tab, setFocus) {
-        if ($tab === this.$focusableTab) {
-            return;
-        }
-
-        if (this.$focusableTab) {
-            this.$focusableTab.attr('tabindex', '-1');
-        }
-
-        this.$focusableTab = $tab.attr('tabindex', '0');
-
-        if (setFocus !== false) {
-            this.$focusableTab.focus();
-        }
-    },
-
     deselectTab: function() {
-        if (!this.$selectedTab) {
-            return;
-        }
-
-        this.$selectedTab.removeClass('sel');
-
-        // Hide its content area
-        if (this.$selectedTab.attr('href').charAt(0) === '#') {
-            $(this.$selectedTab.attr('href')).addClass('hidden');
+        if (this.tabManager) {
+            this.tabManager.deselectTab();
         }
     },
 
     handleWindowResize: function() {
-        this.updateTabs();
         this.updateResponsiveTables();
-    },
-
-    updateTabs: function() {
-        if (!this.$tabsContainer) {
-            return;
-        }
-
-        // Keep track of the focussed element in case it's one of the tabs
-        const activeElement = document.activeElement;
-
-        const maxWidth = Math.floor(this.$tabsContainer.width()) - 40;
-        const tabMargin = Garnish.$bod.width() >= 768 ? -12 : -7;
-        let totalWidth = 0;
-        let showOverflowMenu = false;
-
-        // Start with the selected tab, because that needs to be visible
-        if (this.$selectedTab) {
-            this.$selectedTab.parent('li').appendTo(this.$tabsList);
-            totalWidth = Math.ceil(this.$selectedTab.parent('li').width());
-        }
-
-        for (var i = 0; i < this.$tabs.length; i++) {
-            const $tab = this.$tabs.eq(i);
-            $tab.appendTo(this.$tabsList);
-            if (i !== this.selectedTabIndex) {
-                totalWidth += Math.ceil($tab.width());
-                // account for the negative margin
-                if (i !== 0 || this.$selectedTab) {
-                    totalWidth += tabMargin;
-                }
-            }
-
-            const $a = $tab.find('> a');
-            if (i === this.selectedTabIndex || totalWidth <= maxWidth) {
-                $a
-                    .removeAttr('role')
-                    .attr('tabindex', this.$focusableTab && $a[0] === this.$focusableTab[0] ? '0' : '-1');
-            } else {
-                $tab.appendTo(this.$overflowTabList);
-                this.$overflowTabBtn.data('menubtn').menu.addOptions($a);
-                showOverflowMenu = true;
-            }
-
-            if (document.activeElement !== activeElement) {
-                activeElement.focus({preventScroll: true});
-            }
-        }
-
-        if (showOverflowMenu) {
-            this.$overflowTabBtn.removeClass('hidden');
-        } else {
-            this.$overflowTabBtn.addClass('hidden');
-        }
     },
 
     updateResponsiveTables: function() {
@@ -695,7 +583,7 @@ Craft.CP = Garnish.Base.extend({
             path: Craft.path
         };
 
-        Craft.queueActionRequest('app/get-cp-alerts', data, $.proxy(this, 'displayAlerts'));
+        Craft.queueActionRequest('app/get-cp-alerts', data, this.displayAlerts.bind(this));
     },
 
     displayAlerts: function(alerts) {
@@ -720,7 +608,7 @@ Craft.CP = Garnish.Base.extend({
         var $shunnableAlerts = this.$alerts.find('a[class^="shun:"]');
 
         for (var i = 0; i < $shunnableAlerts.length; i++) {
-            this.addListener($shunnableAlerts[i], 'click', $.proxy(function(ev) {
+            this.addListener($shunnableAlerts[i], 'click', ev => {
                 ev.preventDefault();
 
                 var $link = $(ev.currentTarget);
@@ -729,7 +617,7 @@ Craft.CP = Garnish.Base.extend({
                     message: $link.prop('className').substr(5)
                 };
 
-                Craft.queueActionRequest('app/shun-cp-alert', data, $.proxy(function(response, textStatus) {
+                Craft.queueActionRequest('app/shun-cp-alert', data, (response, textStatus) => {
                     if (textStatus === 'success') {
                         if (response.success) {
                             $link.parent().remove();
@@ -737,8 +625,8 @@ Craft.CP = Garnish.Base.extend({
                             this.displayError(response.error);
                         }
                     }
-                }, this));
-            }, this));
+                });
+            });
         }
     },
 
@@ -756,10 +644,9 @@ Craft.CP = Garnish.Base.extend({
             (includeDetails === true && !this.includingDetailsOnUpdatesCheck)
         )) {
             var realCallback = callback;
-
-            callback = function() {
+            callback = () => {
                 this.checkForUpdates(forceRefresh, includeDetails, realCallback);
-            }.bind(this);
+            };
         }
 
         // Callback function?
@@ -777,7 +664,7 @@ Craft.CP = Garnish.Base.extend({
             this.includingDetailsOnUpdatesCheck = (includeDetails === true);
 
             this._checkForUpdates(forceRefresh, includeDetails)
-                .then(function(info) {
+                .then(info => {
                     this.updateUtilitiesBadge();
                     this.checkingForUpdates = false;
 
@@ -793,31 +680,31 @@ Craft.CP = Garnish.Base.extend({
                     this.trigger('checkForUpdates', {
                         updateInfo: info
                     });
-                }.bind(this));
+                });
         }
     },
 
     _checkForUpdates: function(forceRefresh, includeDetails) {
-        return new Promise(function(resolve, reject) {
+        return new Promise((resolve, reject) => {
             if (!forceRefresh) {
                 this._checkForCachedUpdates(includeDetails)
-                    .then(function(info) {
+                    .then(info => {
                         if (info.cached !== false) {
                             resolve(info);
                         }
 
                         this._getUpdates(includeDetails)
-                            .then(function(info) {
+                            .then(info => {
                                 resolve(info);
                             });
-                    }.bind(this));
+                    });
             } else {
                 this._getUpdates(includeDetails)
-                    .then(function(info) {
+                    .then(info => {
                         resolve(info);
                     });
             }
-        }.bind(this));
+        });
     },
 
     _checkForCachedUpdates: function(includeDetails) {
@@ -837,15 +724,15 @@ Craft.CP = Garnish.Base.extend({
     },
 
     _getUpdates: function(includeDetails) {
-        return new Promise(function(resolve, reject) {
+        return new Promise((resolve, reject) => {
             Craft.sendApiRequest('GET', 'updates')
-                .then(function(updates) {
+                .then(updates => {
                     this._cacheUpdates(updates, includeDetails).then(resolve);
-                }.bind(this))
-                .catch(function(e) {
+                })
+                .catch(e => {
                     this._cacheUpdates({}).then(resolve);
-                }.bind(this));
-        }.bind(this));
+                });
+        });
     },
 
     _cacheUpdates: function(updates, includeDetails) {
@@ -873,7 +760,7 @@ Craft.CP = Garnish.Base.extend({
             return;
         }
 
-        Craft.queueActionRequest('app/get-utilities-badge-count', $.proxy(function(response) {
+        Craft.queueActionRequest('app/get-utilities-badge-count', response => {
             // Get the existing utility nav badge, if any
             var $badge = $utilitiesLink.children('.badge');
 
@@ -885,7 +772,7 @@ Craft.CP = Garnish.Base.extend({
             } else if ($badge.length) {
                 $badge.remove();
             }
-        }, this));
+        });
     },
 
     runQueue: function() {
@@ -894,11 +781,11 @@ Craft.CP = Garnish.Base.extend({
         }
 
         if (Craft.runQueueAutomatically) {
-            Craft.queueActionRequest('queue/run', $.proxy(function(response, textStatus) {
+            Craft.queueActionRequest('queue/run', (response, textStatus) => {
                 if (textStatus === 'success') {
                     this.trackJobProgress(false, true);
                 }
-            }, this));
+            });
         } else {
             this.trackJobProgress(false, true);
         }
@@ -918,14 +805,14 @@ Craft.CP = Garnish.Base.extend({
         if (delay === true) {
             // Determine the delay based on how long the displayed job info has remained unchanged
             var timeout = Math.min(60000, this.displayedJobInfoUnchanged * 500);
-            this.trackJobProgressTimeout = setTimeout($.proxy(this, '_trackJobProgressInternal'), timeout);
+            this.trackJobProgressTimeout = setTimeout(this._trackJobProgressInternal.bind(this), timeout);
         } else {
             this._trackJobProgressInternal();
         }
     },
 
     _trackJobProgressInternal: function() {
-        Craft.queueActionRequest('queue/get-job-info?limit=50&dontExtendSession=1', $.proxy(function(response, textStatus) {
+        Craft.queueActionRequest('queue/get-job-info?limit=50&dontExtendSession=1', (response, textStatus) => {
             if (textStatus === 'success') {
                 this.trackJobProgressTimeout = null;
                 this.totalJobs = response.total;
@@ -936,7 +823,7 @@ Craft.CP = Garnish.Base.extend({
                     this.trackJobProgress(true);
                 }
             }
-        }, this));
+        });
     },
 
     setJobInfo: function(jobInfo) {
@@ -1155,14 +1042,14 @@ var JobProgressIcon = Garnish.Base.extend({
     },
 
     complete: function() {
-        this._animateArc(0, 1, $.proxy(function() {
+        this._animateArc(0, 1, () => {
             this._$bgCanvas.velocity('fadeOut');
 
-            this._animateArc(1, 1, $.proxy(function() {
+            this._animateArc(1, 1, () => {
                 this.$a.remove();
                 this.destroy();
-            }, this));
-        }, this));
+            });
+        });
     },
 
     showFailMode: function(message) {
@@ -1238,7 +1125,7 @@ var JobProgressIcon = Garnish.Base.extend({
         this._arcStep++;
 
         if (this._arcStep < 10) {
-            this._arcStepTimeout = setTimeout($.proxy(this, '_takeNextArcStep'), 50);
+            this._arcStepTimeout = setTimeout(this._takeNextArcStep.bind(this), 50);
         } else if (this._arcAnimateCallback) {
             this._arcAnimateCallback();
         }

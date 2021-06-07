@@ -12,10 +12,14 @@ use craft\base\Element;
 use craft\base\ElementInterface;
 use craft\elements\Category;
 use craft\errors\InvalidTypeException;
+use craft\fieldlayoutelements\BaseField;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Cp;
+use craft\helpers\DateTimeHelper;
 use craft\helpers\ElementHelper;
+use craft\helpers\Html;
 use craft\helpers\StringHelper;
+use ReflectionMethod;
 use yii\web\BadRequestHttpException;
 use yii\web\ForbiddenHttpException;
 use yii\web\NotFoundHttpException;
@@ -147,15 +151,20 @@ class ElementsController extends BaseElementsController
     {
         $element = $this->_getEditorElement();
 
-        // Figure out where the data will be in POST
+        // Get the params
         $namespace = $this->request->getRequiredBodyParam('namespace');
-
-        // Configure the element
         $params = $this->request->getBodyParam($namespace, []);
         ArrayHelper::remove($params, 'fields');
-        Craft::configure($element, $params);
 
-        // Set the custom field values
+        // Normalize the DateTime attributes
+        foreach ($element->datetimeAttributes() as $attribute) {
+            if (isset($params[$attribute])) {
+                $params[$attribute] = DateTimeHelper::toDateTime($params[$attribute]);
+            }
+        }
+
+        // Configure the element
+        Craft::configure($element, $params);
         $element->setFieldValuesFromRequest($namespace . '.fields');
 
         // Now save it
@@ -163,33 +172,33 @@ class ElementsController extends BaseElementsController
             $element->setScenario(Element::SCENARIO_LIVE);
         }
 
-        if (Craft::$app->getElements()->saveElement($element)) {
-            $response = [
-                'success' => true,
-                'id' => $element->id,
-                'siteId' => $element->siteId,
-                'newTitle' => (string)$element,
-                'cpEditUrl' => $element->getCpEditUrl(),
-            ];
-
-            // Should we be including table attributes too?
-            $sourceKey = $this->request->getBodyParam('includeTableAttributesForSource');
-
-            if ($sourceKey) {
-                $attributes = Craft::$app->getElementIndexes()->getTableAttributes(get_class($element), $sourceKey);
-
-                // Drop the first one
-                array_shift($attributes);
-
-                foreach ($attributes as $attribute) {
-                    $response['tableAttributes'][$attribute[0]] = $element->getTableAttributeHtml($attribute[0]);
-                }
-            }
-
-            return $this->asJson($response);
+        if (!Craft::$app->getElements()->saveElement($element)) {
+            return $this->_getEditorHtmlResponse($element, false);
         }
 
-        return $this->_getEditorHtmlResponse($element, false);
+        $response = [
+            'success' => true,
+            'id' => $element->id,
+            'siteId' => $element->siteId,
+            'newTitle' => (string)$element,
+            'cpEditUrl' => $element->getCpEditUrl(),
+        ];
+
+        // Should we be including table attributes too?
+        $sourceKey = $this->request->getBodyParam('includeTableAttributesForSource');
+
+        if ($sourceKey) {
+            $attributes = Craft::$app->getElementIndexes()->getTableAttributes(get_class($element), $sourceKey);
+
+            // Drop the first one
+            array_shift($attributes);
+
+            foreach ($attributes as $attribute) {
+                $response['tableAttributes'][$attribute[0]] = $element->getTableAttributeHtml($attribute[0]);
+            }
+        }
+
+        return $this->asJson($response);
     }
 
     /**
@@ -399,49 +408,93 @@ class ElementsController extends BaseElementsController
             throw new ForbiddenHttpException('User not permitted to edit content in any of the sites supported by this element');
         }
 
-        $response = [];
-
-        if ($includeSites) {
-            $response['sites'] = [];
-
-            foreach ($siteIds as $siteId) {
-                $site = Craft::$app->getSites()->getSiteById($siteId);
-
-                $response['sites'][] = [
-                    'id' => $siteId,
-                    'name' => Craft::t('site', $site->getName()),
-                ];
-            }
-        }
-
-        $response['siteId'] = $element->siteId;
-
         $view = $this->getView();
         $namespace = 'editor_' . StringHelper::randomString(10);
-        $view->setNamespace($namespace);
 
-        $response['html'] = '<input type="hidden" name="namespace" value="' . $namespace . '">';
+        $editorHtml = $view->namespaceInputs(function() use ($element) {
+            return $element->getEditorHtml();
+        }, $namespace);
+        $fieldLayout = $element->getFieldLayout();
 
+        if ($fieldLayout) {
+            // If only the placeholder was returned, wa can safely pull in the full field layout form render
+            if ($editorHtml === '<!-- FIELD LAYOUT -->') {
+                $form = $fieldLayout->createForm($element, false, [
+                    'namespace' => $namespace,
+                    'tabIdPrefix' => "$namespace-tab",
+                ]);
+                $editorHtml = $form->render();
+
+                if (count($form->tabs) !== 1) {
+                    $tabHtml = Craft::$app->getView()->renderTemplate('_includes/tabs', [
+                        'tabs' => $form->getTabMenu(),
+                    ]);
+                }
+            } else {
+                $editorHtml = preg_replace_callback('/<!-- FIELD LAYOUT -->/', function() use ($element, $view, $namespace) {
+                    return $view->namespaceInputs(function() use ($element) {
+                        $fieldLayout = $element->getFieldLayout();
+                        if (!$fieldLayout) {
+                            return '';
+                        }
+
+                        $fields = [];
+
+                        foreach ($fieldLayout->getTabs() as $tab) {
+                            foreach ($tab->elements as $layoutElement) {
+                                if ($layoutElement instanceof BaseField) {
+                                    $fields[] = $layoutElement->formHtml($element);
+                                }
+                            }
+                        }
+
+                        return implode("\n", $fields);
+                    }, $namespace);
+                }, $editorHtml, 1);
+            }
+        } else {
+            $editorHtml = preg_replace('<!-- FIELD LAYOUT -->', '', $editorHtml, 1);
+        }
+
+        $fieldHtml = [];
+        if ($editorHtml !== '') {
+            $fieldHtml[] = $editorHtml;
+        }
+        $fieldHtml[] = Html::hiddenInput('namespace', $namespace);
         if ($element->id !== null) {
-            $response['html'] .= '<input type="hidden" name="elementId" value="' . $element->id . '">';
+            $fieldHtml[] = Html::hiddenInput('elementId', $element->id);
         }
-
         if ($element->siteId !== null) {
-            $response['html'] .= '<input type="hidden" name="siteId" value="' . $element->siteId . '">';
+            $fieldHtml[] = Html::hiddenInput('siteId', $element->siteId);
         }
-
-        $response['html'] .= '<div class="meta">' .
-            $view->namespaceInputs((string)$element->getEditorHtml()) .
-            '</div>';
-
-        // Set the field layout id to a discrete value, in case we know it.
         if ($element->fieldLayoutId !== null) {
-            $response['html'] .= '<input type="hidden" name="fieldLayoutId" value="' . $element->fieldLayoutId . '">';
+            $fieldHtml[] = Html::hiddenInput('fieldLayoutId', $element->fieldLayoutId);
         }
 
-        $response['headHtml'] = $view->getHeadHtml();
-        $response['footHtml'] = $view->getBodyHtml();
-        $response['deltaNames'] = $view->getDeltaNames();
+        $sidebarHtml = $view->namespaceInputs(function() use ($element) {
+            return $element->getSidebarHtml();
+        }, $namespace);
+
+        $response = [
+            'siteId' => $element->siteId,
+            'tabHtml' => $tabHtml ?? null,
+            'fieldHtml' => implode("\n", $fieldHtml),
+            'sidebarHtml' => $sidebarHtml,
+            'headHtml' => $view->getHeadHtml(),
+            'footHtml' => $view->getBodyHtml(),
+            'deltaNames' => $view->getDeltaNames(),
+            'editUrl' => $element->getCpEditUrl(),
+        ];
+
+        if ($includeSites) {
+            $sitesService = Craft::$app->getSites();
+            $response['sites'] = array_map(function(int $siteId) use ($sitesService) {
+                return [
+                    'id' => $siteId,
+                    'name' => Craft::t('site', $sitesService->getSiteById($siteId)->getName()),
+                ];
+            }, $siteIds);
+        }
 
         return $this->asJson($response);
     }
