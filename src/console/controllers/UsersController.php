@@ -8,6 +8,7 @@
 namespace craft\console\controllers;
 
 use Craft;
+use craft\base\Model;
 use craft\console\Controller;
 use craft\elements\User;
 use craft\helpers\Console;
@@ -22,9 +23,24 @@ use yii\console\ExitCode;
 class UsersController extends Controller
 {
     /**
-     * @var string|null The user’s new password.
+     * @var string|null The created user’s email
+     */
+    public $email;
+
+    /**
+     * @var string|null The created user’s username
+     */
+    public $username;
+
+    /**
+     * @var string|null The user’s new password, or created user's password
      */
     public $password;
+
+    /**
+     * @var bool|null Create the user as an admin
+     */
+    public $admin;
 
     /**
      * @inheritdoc
@@ -33,8 +49,16 @@ class UsersController extends Controller
     {
         $options = parent::options($actionID);
 
-        if ($actionID === 'set-password') {
-            $options[] = 'password';
+        switch ($actionID) {
+            case 'create':
+                $options[] = 'email';
+                $options[] = 'username';
+                $options[] = 'password';
+                $options[] = 'admin';
+                break;
+            case 'set-password':
+                $options[] = 'password';
+                break;
         }
 
         return $options;
@@ -82,6 +106,58 @@ class UsersController extends Controller
     }
 
     /**
+     * Creates a user.
+     *
+     * @return int
+     */
+    public function actionCreate(): int
+    {
+        // Validate the arguments
+        $attributesFromArgs = array_filter([
+            'email' => $this->email,
+            'username' => $this->username,
+            'newPassword' => $this->password,
+            'admin' => $this->admin,
+        ], function($v) {
+            return $v !== null;
+        });
+
+        $user = new User($attributesFromArgs);
+
+        if (!$user->validate(array_keys($attributesFromArgs))) {
+            $this->stderr('Invalid arguments:' . PHP_EOL . '    - ' . implode(PHP_EOL . '    - ', $user->getFirstErrors()) . PHP_EOL, Console::FG_RED);
+            return ExitCode::USAGE;
+        }
+
+        if (Craft::$app->getConfig()->getGeneral()->useEmailAsUsername) {
+            $user->username = $this->email ?: $this->prompt('Email:', [
+                'required' => true,
+                'validator' => $this->_createInputValidator($user, 'email'),
+            ]);
+        } else {
+            $user->email = $this->email ?: $this->prompt('Email:', [
+                'required' => true,
+                'validator' => $this->_createInputValidator($user, 'email'),
+            ]);
+            $user->username = $this->username ?: $this->prompt('Username:', [
+                'required' => true,
+                'validator' => $this->_createInputValidator($user, 'username'),
+            ]);
+        }
+
+        $user->admin = $this->admin ?? $this->confirm('Make this user an admin?', $this->admin);
+        $user->newPassword = $this->password ?: $this->passwordPrompt([
+            'validator' => $this->_createInputValidator($user, 'newPassword'),
+        ]);
+
+        $this->stdout('Saving the user ... ');
+        Craft::$app->getElements()->saveElement($user, false);
+        $this->stdout('done' . PHP_EOL, Console::FG_GREEN);
+
+        return ExitCode::OK;
+    }
+
+    /**
      * Changes a user’s password.
      *
      * @param string $usernameOrEmail The user’s username or email address
@@ -106,14 +182,7 @@ class UsersController extends Controller
             }
         } else {
             $this->passwordPrompt([
-                'validator' => function(string $input, string &$error = null) use ($user) {
-                    $user->newPassword = $input;
-                    if (!$user->validate()) {
-                        $error = $user->getFirstError('newPassword');
-                        return false;
-                    }
-                    return true;
-                },
+                'validator' => $this->_createInputValidator($user, 'newPassword'),
             ]);
         }
 
@@ -122,5 +191,29 @@ class UsersController extends Controller
         $this->stdout('done' . PHP_EOL, Console::FG_GREEN);
 
         return ExitCode::OK;
+    }
+
+    /**
+     * Creates a validator function for `validator` option of `Controller::prompt`.
+     *
+     * @param Model $model
+     * @param string $attribute
+     * @param string|null $error
+     * @return callable
+     */
+    private function _createInputValidator(Model $model, string $attribute, &$error = null): callable
+    {
+        return function($input, &$error) use($model, $attribute) {
+            $model->$attribute = $input;
+
+            if (!$model->validate([$attribute])) {
+                $error = $model->getFirstError($attribute);
+
+                return false;
+            }
+            $error = null;
+
+            return true;
+        };
     }
 }
