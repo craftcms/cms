@@ -11,6 +11,7 @@ use Craft;
 use craft\base\Model;
 use craft\console\Controller;
 use craft\elements\User;
+use craft\helpers\ArrayHelper;
 use craft\helpers\Console;
 use yii\console\ExitCode;
 
@@ -113,14 +114,12 @@ class UsersController extends Controller
     public function actionCreate(): int
     {
         // Validate the arguments
-        $attributesFromArgs = array_filter([
+        $attributesFromArgs = ArrayHelper::withoutValue([
             'email' => $this->email,
             'username' => $this->username,
             'newPassword' => $this->password,
             'admin' => $this->admin,
-        ], function($v) {
-            return $v !== null;
-        });
+        ], null);
 
         $user = new User($attributesFromArgs);
 
