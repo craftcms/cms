@@ -480,10 +480,10 @@ class Install extends Migration
             'dateUpdated' => $this->dateTime()->notNull(),
             'uid' => $this->uid(),
         ]);
-        $this->createTable(Table::PROJECTCONFIGNAMES, [
-            'uid' => $this->uid()->notNull(),
-            'name' => $this->string()->notNull(),
-            'PRIMARY KEY([[uid]])',
+        $this->createTable(Table::PROJECTCONFIG, [
+            'path' => $this->string()->notNull(),
+            'value' => $this->text()->notNull(),
+            'PRIMARY KEY([[path]])',
         ]);
         $this->createTable(Table::QUEUE, [
             'id' => $this->primaryKey(),
