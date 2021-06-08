@@ -203,7 +203,7 @@ class UsersController extends Controller
      */
     private function _createInputValidator(Model $model, string $attribute, &$error = null): callable
     {
-        return function($input, &$error) use($model, $attribute) {
+        return function($input, &$error) use ($model, $attribute) {
             $model->$attribute = $input;
 
             if (!$model->validate([$attribute])) {
