@@ -19,6 +19,7 @@ use craft\elements\actions\UnsuspendUsers;
 use craft\elements\db\ElementQueryInterface;
 use craft\elements\db\UserQuery;
 use craft\events\AuthenticateUserEvent;
+use craft\events\DefineValueEvent;
 use craft\helpers\ArrayHelper;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
@@ -35,6 +36,7 @@ use craft\validators\DateTimeValidator;
 use craft\validators\UniqueValidator;
 use craft\validators\UsernameValidator;
 use craft\validators\UserPasswordValidator;
+use yii\base\BaseObject;
 use yii\base\ErrorHandler;
 use yii\base\Exception;
 use yii\base\InvalidArgumentException;
@@ -70,6 +72,18 @@ class User extends Element implements IdentityInterface
      * something if there is an authentication error.
      */
     const EVENT_BEFORE_AUTHENTICATE = 'beforeAuthenticate';
+
+    /**
+     * @event DefineValueEvent The event that is triggered when defining the user’s name, as returned by [[getName()]] or [[__toString()]].
+     * @since 3.7.0
+     */
+    const EVENT_DEFINE_NAME = 'defineName';
+
+    /**
+     * @event DefineValueEvent The event that is triggered when defining the user’s friendly name, as returned by [[getFriendlyName()]].
+     * @since 3.7.0
+     */
+    const EVENT_DEFINE_FRIENDLY_NAME = 'defineFriendlyName';
 
     const IMPERSONATE_KEY = 'Craft.UserSessionService.prevImpersonateUserId';
 
@@ -596,6 +610,20 @@ class User extends Element implements IdentityInterface
     public $inheritorOnDelete;
 
     /**
+     * @var string|null
+     * @see getName()
+     * @see setName()
+     */
+    private $_name;
+
+    /**
+     * @var string|bool
+     * @see getFriendlyName()
+     * @see setFriendlyName()
+     */
+    private $_friendlyName;
+
+    /**
      * @var Asset|false|null user photo
      */
     private $_photo;
@@ -1017,6 +1045,25 @@ class User extends Element implements IdentityInterface
      */
     public function getName(): string
     {
+        if ($this->_name === null) {
+            $this->_name = $this->_defineName();
+        }
+
+        return $this->_name;
+    }
+
+    /**
+     * @return string
+     */
+    private function _defineName(): string
+    {
+        if ($this->hasEventHandlers(self::EVENT_DEFINE_NAME)) {
+            $this->trigger(self::EVENT_DEFINE_NAME, $event = new DefineValueEvent());
+            if ($event->value !== null) {
+                return $event->value;
+            }
+        }
+
         if (($fullName = $this->getFullName()) !== null) {
             return $fullName;
         }
@@ -1025,17 +1072,60 @@ class User extends Element implements IdentityInterface
     }
 
     /**
-     * Gets the user's first name or username.
+     * Sets the user’s name.
+     *
+     * @param string $name
+     * @return void
+     * @since 3.7.0
+     */
+    public function setName(string $name): void
+    {
+        $this->_name = $name;
+    }
+
+    /**
+     * Returns the user's first name or username.
      *
      * @return string|null
      */
-    public function getFriendlyName()
+    public function getFriendlyName(): ?string
     {
+        if ($this->_friendlyName === null) {
+            $this->_friendlyName = $this->_defineFriendlyName() ?? false;
+        }
+
+        return $this->_friendlyName ?: null;
+    }
+
+    /**
+     * @return string|null
+     */
+    private function _defineFriendlyName(): ?string
+    {
+        if ($this->hasEventHandlers(self::EVENT_DEFINE_FRIENDLY_NAME)) {
+            $this->trigger(self::EVENT_DEFINE_FRIENDLY_NAME, $event = new DefineValueEvent());
+            if ($event->value !== null) {
+                return $event->value;
+            }
+        }
+
         if ($firstName = trim($this->firstName)) {
             return $firstName;
         }
 
         return $this->username;
+    }
+
+    /**
+     * Sets the user’s friendly name.
+     *
+     * @param string $friendlyName
+     * @return void
+     * @since 3.7.0
+     */
+    public function setFriendlyName(string $friendlyName): void
+    {
+        $this->_friendlyName = $friendlyName;
     }
 
     /**

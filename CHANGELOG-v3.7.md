@@ -50,6 +50,10 @@
 - Added `craft\base\FieldInterface::getStatus()`.
 - Added `craft\base\FieldTrait::$columnSuffix`.
 - Added `craft\console\ControllerTrait::checkRootUser()`.
+- Added `craft\elements\User::EVENT_DEFINE_FRIENDLY_NAME`. ([#8027](https://github.com/craftcms/cms/issues/8027))
+- Added `craft\elements\User::EVENT_DEFINE_NAME`. ([#8027](https://github.com/craftcms/cms/issues/8027))
+- Added `craft\elements\User::setFriendlyName()`.
+- Added `craft\elements\User::setName()`.
 - Added `craft\elements\db\ElementQuery::provisionalDrafts()`.
 - Added `craft\events\DefineHtmlEvent`.
 - Added `craft\events\DefineMetadataEvent`.
