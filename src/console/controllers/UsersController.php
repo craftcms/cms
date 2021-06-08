@@ -124,7 +124,7 @@ class UsersController extends Controller
         $user = new User($attributesFromArgs);
 
         if (!$user->validate(array_keys($attributesFromArgs))) {
-            $this->stderr('Invalid arguments:' . PHP_EOL . '    - ' . implode(PHP_EOL . '    - ', $user->getFirstErrors()) . PHP_EOL, Console::FG_RED);
+            $this->stderr('Invalid arguments:' . PHP_EOL . '    - ' . implode(PHP_EOL . '    - ', $user->getErrorSummary(true)) . PHP_EOL, Console::FG_RED);
             return ExitCode::USAGE;
         }
 
@@ -145,14 +145,24 @@ class UsersController extends Controller
         }
 
         $user->admin = $this->admin ?? $this->confirm('Make this user an admin?', $this->admin);
-        $user->newPassword = $this->password ?: $this->passwordPrompt([
-            'validator' => $this->_createInputValidator($user, 'newPassword'),
-        ]);
+
+        if ($this->password) {
+            $user->newPassword = $this->password;
+        } elseif ($this->interactive) {
+            $user->newPassword = $this->passwordPrompt([
+                'validator' => $this->_createInputValidator($user, 'newPassword'),
+            ]);
+        }
 
         $this->stdout('Saving the user ... ');
-        Craft::$app->getElements()->saveElement($user, false);
-        $this->stdout('done' . PHP_EOL, Console::FG_GREEN);
 
+        if (!Craft::$app->getElements()->saveElement($user)) {
+            $this->stderr('failed:' . PHP_EOL . '    - ' . implode(PHP_EOL . '    - ', $user->getErrorSummary(true)) . PHP_EOL, Console::FG_RED);
+
+            return ExitCode::USAGE;
+        }
+
+        $this->stdout('done' . PHP_EOL, Console::FG_GREEN);
         return ExitCode::OK;
     }
 
