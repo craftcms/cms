@@ -1104,7 +1104,7 @@ class User extends Element implements IdentityInterface
     {
         if ($this->hasEventHandlers(self::EVENT_DEFINE_FRIENDLY_NAME)) {
             $this->trigger(self::EVENT_DEFINE_FRIENDLY_NAME, $event = new DefineValueEvent());
-            if ($event->value !== null) {
+            if ($event->handled || $event->value !== null) {
                 return $event->value;
             }
         }
