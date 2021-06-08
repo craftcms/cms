@@ -1249,7 +1249,7 @@ class Gql extends Component
             }
 
             // If devMode enabled, substitute the original exception here.
-            if ($devMode) {
+            if ($devMode && !empty($originException->getMessage())) {
                 $error = $originException;
             }
 
