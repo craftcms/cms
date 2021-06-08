@@ -194,7 +194,7 @@ class UsersController extends Controller
     }
 
     /**
-     * Creates a validator function for `validator` option of `Controller::prompt`.
+     * Creates a function for the `validator` option of `Controller::prompt`.
      *
      * @param Model $model
      * @param string $attribute
