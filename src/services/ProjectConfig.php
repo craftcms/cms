@@ -1223,7 +1223,6 @@ class ProjectConfig extends Component
     public function rebuild()
     {
         $this->reset();
-        $this->_discardProjectConfigNames();
 
         $config = $this->get();
         $config['dateModified'] = DateTimeHelper::currentTimeStamp();
@@ -1253,6 +1252,8 @@ class ProjectConfig extends Component
         $this->muteEvents = true;
         $readOnly = $this->readOnly;
         $this->readOnly = false;
+
+        $this->_discardProjectConfigNames();
 
         // Process the changes
         foreach ($event->config as $path => $value) {
