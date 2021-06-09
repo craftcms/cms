@@ -57,6 +57,7 @@ new Craft.VueAdminTable({...options...});
 | reorderFailMessage        | String   | `Couldn’t reorder items`                    | Message to be displayed as the fail notice after reorder failure. |
 | search                    | Bool     | `false`                                     | Whether or not to show the search field.                     |
 | searchPlaceholder         | String   | `Search`                                    | Search placeholder text.                                     |
+| buttons                   | Array    | `[]`                                        | Array of buttons to be placed in the toolbar.                                     |
 | tableData                 | Array    | `null`                                      | Array of objects used to populate the table data for data mode. |
 | tableDataEndpoint         | String   | `null`                                      | Endpoint for api mode to retrieve table data, pagination and table metadata (e.g. total count). |
 
@@ -350,5 +351,39 @@ new Craft.VueAdminTable({
   ...
   actions: actions,
   ...
+});
+```
+
+## Buttons
+
+The buttons are simple button links that can appear in the top right of the table toolbar. As an example these are useful if you would like to link to the creation of a "New record" for the table.
+
+### Options
+
+The `buttons` option is an array of objects.
+
+Each object has the following parameters. __References to "button" is only from a visual standpoint, buttons are anchor elements.__
+
+| Name | Description |
+| ---- | ----------- |
+| `label` | The link label |
+| `icon` _(optional)_ | The link icon |
+| `href` | The link’s `href` attribute |
+| `enabled` | Whether the link should be enabled. This can either be a boolean or a callback function that returns a boolean. |
+
+
+### Example
+
+```js
+new Craft.VueAdminTable({
+    // ...
+    buttons: [
+        {
+            label: 'Create New Thing',
+            icon: 'plus',
+            href: '{{ cpUrl("my-plugin/thing/new") }}',
+            enabled: () => true,
+        }
+    ],
 });
 ```

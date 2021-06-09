@@ -5,8 +5,8 @@
     <input type="hidden" :name="param" :value="value">
     <input type="hidden" name="ids[]" v-for="(id, index) in ids" :key="index" :value="id">
 
-    <div ref="button" class="btn menubtn" :data-icon="icon">{{label}}</div>
-    <div class="menu" v-if="actions.length">
+    <div ref="button" class="btn" :class="{ menubtn: actions && actions.length }" :data-icon="icon">{{label}}</div>
+    <div class="menu" v-if="actions && actions.length">
       <ul class="padded">
         <li v-for="(act,index) in actions" :key="index">
           <a href="#" :class="{ error: act.error !== undefined && act.error, disabled: (act.allowMultiple !== undefined && !act.allowMultiple && hasMultipleSelected) }" :data-param="act.param" :data-value="act.value" :data-ajax="act.ajax" @click.prevent="!(act.allowMultiple !== undefined && !act.allowMultiple && hasMultipleSelected) ? handleClick(act.param, act.value, act.action, act.ajax) : null">

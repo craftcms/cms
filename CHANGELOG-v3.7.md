@@ -115,6 +115,7 @@
 - Project config component UID/name mappings are now stored in the project config itself, making them portable across environments. ([#7709](https://github.com/craftcms/cms/issues/7709))
 - Validation errors in the control panel are now parsed for Markdown syntax. ([#8008](https://github.com/craftcms/cms/issues/8008))
 - Renamed the `enableGraphQlCaching` config setting to `enableGraphqlCaching`. (The old name still works but is deprecated.)
+- Admin tables can now include linked buttons in the toolbar.
 - `craft\base\Element::__set()` now detects whether a custom field value is being set, and if so, passes the value through `setFieldValue()`. ([#7726](https://github.com/craftcms/cms/issues/7726))
 - `craft\base\Element::getCpEditUrl()` now includes a `draftId`/`revisionId` query string param in the returned URL if the element is a draft or revision. ([#7832](https://github.com/craftcms/cms/issues/7832))
 - `craft\base\FieldInterface::getContentColumnType()` can now return an array, if the field stores content across multiple columns.
