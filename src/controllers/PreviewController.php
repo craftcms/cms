@@ -57,6 +57,7 @@ class PreviewController extends Controller
         $siteId = $this->request->getRequiredBodyParam('siteId');
         $draftId = $this->request->getBodyParam('draftId');
         $revisionId = $this->request->getBodyParam('revisionId');
+        $provisional = (bool)($this->request->getBodyParam('provisional') ?? false);
 
         if ($draftId) {
             $this->requireAuthorization('previewDraft:' . $draftId);
@@ -74,6 +75,7 @@ class PreviewController extends Controller
                 'siteId' => (int)$siteId,
                 'draftId' => (int)$draftId ?: null,
                 'revisionId' => (int)$revisionId ?: null,
+                'provisional' => $provisional,
             ],
         ];
 
@@ -94,12 +96,19 @@ class PreviewController extends Controller
      * @param int $siteId
      * @param int|null $draftId
      * @param int|null $revisionId
+     * @param bool $provisional
      * @return Response
      * @throws BadRequestHttpException
      * @throws \Throwable
      */
-    public function actionPreview(string $elementType, int $sourceId, int $siteId, int $draftId = null, int $revisionId = null): Response
-    {
+    public function actionPreview(
+        string $elementType,
+        int $sourceId,
+        int $siteId,
+        ?int $draftId = null,
+        ?int $revisionId = null,
+        bool $provisional = false
+    ): Response {
         // Make sure a token was used to get here
         $this->requireToken();
 
@@ -109,7 +118,9 @@ class PreviewController extends Controller
             ->anyStatus();
 
         if ($draftId) {
-            $query->draftId($draftId);
+            $query
+                ->draftId($draftId)
+                ->provisionalDrafts($provisional);
         } else if ($revisionId) {
             $query->revisionId($revisionId);
         } else {
@@ -125,6 +136,9 @@ class PreviewController extends Controller
 
         // Prevent the browser from caching the response
         $this->response->setNoCacheHeaders();
+
+        // Recheck whether this is an action request, this time ignoring the token
+        $this->request->checkIfActionRequest(true, false);
 
         // Re-route the request, this time ignoring the token
         $urlManager = Craft::$app->getUrlManager();

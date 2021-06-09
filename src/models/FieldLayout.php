@@ -506,9 +506,6 @@ class FieldLayout extends Model
         // since the tab anchors’ `href` attributes won’t end up getting set properly
         $oldNamespace = $view->getNamespace();
         $namespace = ArrayHelper::remove($config, 'namespace');
-        if ($namespace !== null) {
-            $view->setNamespace($view->namespaceInputName($namespace));
-        }
 
         $form = new FieldLayoutForm($config);
         $tabs = $this->getTabs();
@@ -529,11 +526,10 @@ class FieldLayout extends Model
             $tabHtml = [];
 
             foreach ($tab->elements as $formElement) {
-                $elementHtml = $formElement->formHtml($element, $static);
-                if ($elementHtml !== null) {
-                    if ($namespace !== null) {
-                        $elementHtml = Html::namespaceHtml($elementHtml, $namespace);
-                    }
+                $elementHtml = $view->namespaceInputs(function() use ($formElement, $element, $static) {
+                    return (string)$formElement->formHtml($element, $static);
+                }, $namespace);
+                if ($elementHtml !== '') {
                     $tabHtml[] = $elementHtml;
                 }
             }
@@ -547,8 +543,6 @@ class FieldLayout extends Model
                 ]);
             }
         }
-
-        $view->setNamespace($oldNamespace);
 
         return $form;
     }

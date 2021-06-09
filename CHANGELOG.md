@@ -2,15 +2,29 @@
 
 ## Unreleased
 
+### Changed
+- Mobile viewports no longer zoom into inputs on focus automatically..
+
+### Fixed
+- Fixed a bug where missing plugin notices for Google Cloud Storage were linking to Amazon S3 instead. ([#8012](https://github.com/craftcms/cms/issues/8012))
+- Fixed a bug where Number fields’ Default Value, Min Value, and Max Value settings were getting formatted with decimal values when the Intl extension wasn’t installed, causing validation errors when saving the field. ([#8007](https://github.com/craftcms/cms/issues/8007))
+
+## 3.6.16 - 2021-06-01
+
 ### Added
 - Admin tables can now include linked buttons in the toolbar.
 - Added `craft\helpers\Db::supportsTimeZones()`.
+
+### Changed
+- The control panel sidebar no longer shows delayed queue jobs until they’re actually executing. ([#7998](https://github.com/craftcms/cms/issues/7998))
 
 ### Fixed
 - Fixed a bug where eager-loading entries’ authors wasn’t including pending and suspended authors. ([#7963](https://github.com/craftcms/cms/issues/7963))
 - Fixed a bug where not all element types’ GraphQL queries supported a `status` argument. ([craftcms/gatsby-source-craft#35](https://github.com/craftcms/gatsby-source-craft/issues/35))
 - Fixed JavaScript errors that could occur in the control panel.
 - Fixed a bug where the System Messages utility was showing default messages in the user’s preferred language, even if that wasn’t one of the sites’ languages. ([#7992](https://github.com/craftcms/cms/issues/7992))
+- Fixed a bug where Table fields were getting duplicate search keywords, making it difficult to perform exact match searching on their values. ([#7984](https://github.com/craftcms/cms/issues/7984))
+- Fixed a bug where Structure section entries and categories would show “Create a new child” and “Delete (with descendants)” actions even if the structure was limited to a single level. ([#7988](https://github.com/craftcms/cms/issues/7988))
 
 ## 3.6.15 - 2021-05-18
 

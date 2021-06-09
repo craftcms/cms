@@ -15,7 +15,7 @@
             if ($groupSettingsBtn.length) {
                 var menuBtn = $groupSettingsBtn.data('menubtn');
 
-                menuBtn.settings.onOptionSelect = $.proxy(function(elem) {
+                menuBtn.settings.onOptionSelect = elem => {
                     var $elem = $(elem);
 
                     if ($elem.hasClass('disabled')) {
@@ -32,7 +32,7 @@
                             break;
                         }
                     }
-                }, this);
+                };
             }
         },
 
@@ -44,7 +44,7 @@
                     name: name
                 };
 
-                Craft.postActionRequest('sites/save-group', data, $.proxy(function(response, textStatus) {
+                Craft.postActionRequest('sites/save-group', data, (response, textStatus) => {
                     if (textStatus === 'success') {
                         if (response.success) {
                             location.href = Craft.getUrl('settings/sites', {groupId: response.group.id});
@@ -55,7 +55,7 @@
                             Craft.cp.displayError();
                         }
                     }
-                }, this));
+                });
             }
         },
 
@@ -69,7 +69,7 @@
                     name: newName
                 };
 
-                Craft.postActionRequest('sites/save-group', data, $.proxy(function(response, textStatus) {
+                Craft.postActionRequest('sites/save-group', data, (response, textStatus) => {
                     if (textStatus === 'success') {
                         if (response.success) {
                             this.$selectedGroup.text(response.group.name);
@@ -81,7 +81,7 @@
                             Craft.cp.displayError();
                         }
                     }
-                }, this));
+                });
             }
         },
 
@@ -95,7 +95,7 @@
                     id: this.$selectedGroup.data('id')
                 };
 
-                Craft.postActionRequest('sites/delete-group', data, $.proxy(function(response, textStatus) {
+                Craft.postActionRequest('sites/delete-group', data, (response, textStatus) => {
                     if (textStatus === 'success') {
                         if (response.success) {
                             location.href = Craft.getUrl('settings/sites');
@@ -103,7 +103,7 @@
                             Craft.cp.displayError();
                         }
                     }
-                }, this));
+                });
             }
         },
 
@@ -142,9 +142,9 @@
 
             // Auto-focus the first radio
             if (!Garnish.isMobileBrowser(true)) {
-                setTimeout($.proxy(function() {
+                setTimeout(() => {
                     this.$deleteActionRadios.first().trigger('focus');
-                }, this), 100);
+                }, 100);
             }
 
             return false;
@@ -186,14 +186,14 @@
                 data.transferContentTo = this.$transferSelect.val();
             }
 
-            Craft.postActionRequest(this.settings.deleteAction, data, $.proxy(function(response, textStatus) {
+            Craft.postActionRequest(this.settings.deleteAction, data, (response, textStatus) => {
                 if (textStatus === 'success') {
                     this._deleting = false;
                     this.enable();
                     this.confirmDeleteModal.hide();
                     this.handleDeleteItemResponse(response, this.$rowToDelete);
                 }
-            }, this));
+            });
         },
 
         _createConfirmDeleteModal: function($row) {

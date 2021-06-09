@@ -22,7 +22,9 @@ use craft\elements\actions\View;
 use craft\elements\db\CategoryQuery;
 use craft\elements\db\ElementQuery;
 use craft\elements\db\ElementQueryInterface;
+use craft\helpers\Cp;
 use craft\helpers\Db;
+use craft\helpers\ElementHelper;
 use craft\helpers\UrlHelper;
 use craft\models\CategoryGroup;
 use craft\records\Category as CategoryRecord;
@@ -249,9 +251,7 @@ class Category extends Element
             ]);
 
             // New Child
-            $structure = Craft::$app->getStructures()->getStructureById($group->structureId);
-
-            if ($structure) {
+            if ($group->maxLevels != 1) {
                 $newChildUrl = 'categories/' . $group->handle . '/new';
 
                 if (Craft::$app->getIsMultiSite()) {
@@ -261,7 +261,7 @@ class Category extends Element
                 $actions[] = $elementsService->createAction([
                     'type' => NewChild::class,
                     'label' => Craft::t('app', 'Create a new child category'),
-                    'maxLevels' => $structure->maxLevels,
+                    'maxLevels' => $group->maxLevels,
                     'newChildUrl' => $newChildUrl,
                 ]);
             }
@@ -278,10 +278,13 @@ class Category extends Element
 
             // Delete
             $actions[] = Delete::class;
-            $actions[] = [
-                'type' => Delete::class,
-                'withDescendants' => true,
-            ];
+
+            if ($group->maxLevels != 1) {
+                $actions[] = [
+                    'type' => Delete::class,
+                    'withDescendants' => true,
+                ];
+            }
         }
 
         // Restore
@@ -444,7 +447,7 @@ class Category extends Element
     /**
      * @inheritdoc
      */
-    public function getIsEditable(): bool
+    protected function isEditable(): bool
     {
         return Craft::$app->getUser()->checkPermission('editCategories:' . $this->getGroup()->uid);
     }
@@ -452,7 +455,7 @@ class Category extends Element
     /**
      * @inheritdoc
      */
-    public function getCpEditUrl()
+    protected function cpEditUrl(): ?string
     {
         $group = $this->getGroup();
 
@@ -471,6 +474,17 @@ class Category extends Element
     public function getFieldLayout()
     {
         return parent::getFieldLayout() ?? $this->getGroup()->getFieldLayout();
+    }
+
+    /**
+     * @inheritdoc
+     */
+    protected function metaFieldsHtml(): string
+    {
+        return implode('', [
+            $this->slugFieldHtml(),
+            parent::metaFieldsHtml(),
+        ]);
     }
 
     /**

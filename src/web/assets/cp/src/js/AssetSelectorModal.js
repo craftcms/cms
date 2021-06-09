@@ -39,7 +39,7 @@ Craft.AssetSelectorModal = Craft.BaseElementSelectorModal.extend({
         }
 
         var MenuButton = new Garnish.MenuBtn(this.$selectTransformBtn, {
-            onOptionSelect: $.proxy(this, 'onSelectTransform')
+            onOptionSelect: this.onSelectTransform.bind(this),
         });
         MenuButton.disable();
 
@@ -109,10 +109,10 @@ Craft.AssetSelectorModal = Craft.BaseElementSelectorModal.extend({
         if (imageIdsWithMissingUrls.length) {
             this.showFooterSpinner();
 
-            this.fetchMissingTransformUrls(imageIdsWithMissingUrls, transform, $.proxy(function() {
+            this.fetchMissingTransformUrls(imageIdsWithMissingUrls, transform, () => {
                 this.hideFooterSpinner();
                 this.selectImagesWithTransform(transform);
-            }, this));
+            });
         } else {
             this._selectedTransform = transform;
             this.selectElements();
@@ -128,7 +128,7 @@ Craft.AssetSelectorModal = Craft.BaseElementSelectorModal.extend({
             handle: transform
         };
 
-        Craft.postActionRequest('assets/generate-transform', data, $.proxy(function(response, textStatus) {
+        Craft.postActionRequest('assets/generate-transform', data, (response, textStatus) => {
             Craft.AssetSelectorModal.transformUrls[transform][elementId] = false;
 
             if (textStatus === 'success') {
@@ -143,7 +143,7 @@ Craft.AssetSelectorModal = Craft.BaseElementSelectorModal.extend({
             } else {
                 callback();
             }
-        }, this));
+        });
     },
 
     getElementInfo: function($selectedElements) {

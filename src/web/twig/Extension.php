@@ -276,6 +276,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
             new TwigFilter('unshift', [$this, 'unshiftFilter']),
             new TwigFilter('values', 'array_values'),
             new TwigFilter('where', [ArrayHelper::class, 'where']),
+            new TwigFilter('widont', [$this, 'widontFilter'], ['is_safe' => ['html']]),
             new TwigFilter('without', [$this, 'withoutFilter']),
             new TwigFilter('withoutKey', [$this, 'withoutKeyFilter']),
         ];
@@ -579,6 +580,18 @@ class Extension extends AbstractExtension implements GlobalsInterface
         }
 
         return json_encode($value, $options, $depth);
+    }
+
+    /**
+     * Inserts a non-breaking space between the last two words of a string.
+     *
+     * @param string $string
+     * @return string
+     * @since 3.7.0
+     */
+    public function widontFilter(string $string): string
+    {
+        return preg_replace('/(?<=\S)\s+(\S+\s*)$/', '&nbsp;$1', $string);
     }
 
     /**
@@ -1136,6 +1149,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
             new TwigFunction('cpUrl', [UrlHelper::class, 'cpUrl']),
             new TwigFunction('create', [Craft::class, 'createObject']),
             new TwigFunction('dataUrl', [$this, 'dataUrlFunction']),
+            new TwigFunction('date', [$this, 'dateFunction'], ['needs_environment' => true]),
             new TwigFunction('expression', [$this, 'expressionFunction']),
             new TwigFunction('floor', 'floor'),
             new TwigFunction('getenv', [App::class, 'env']),
@@ -1204,6 +1218,27 @@ class Extension extends AbstractExtension implements GlobalsInterface
         }
 
         return Html::dataUrl(Craft::getAlias($file), $mimeType);
+    }
+
+    /**
+     * Converts an input to a [[\DateTime]] instance.
+     *
+     * @param TwigEnvironment $env
+     * @param \DateTimeInterface|string|array|null $date A date, or null to use the current time
+     * @param \DateTimeZone|string|false|null $timezone The target timezone, `null` to use the default, `false` to leave unchanged
+     * @return \DateTimeInterface
+     */
+    public function dateFunction(TwigEnvironment $env, $date = null, $timezone = null): DateTimeInterface
+    {
+        // Support for date/time arrays
+        if (is_array($date)) {
+            $date = DateTimeHelper::toDateTime($date, false, false);
+            if ($date === false) {
+                throw new InvalidArgumentException('Invalid date passed to date() function');
+            }
+        }
+
+        return twig_date_converter($env, $date, $timezone);
     }
 
     /**

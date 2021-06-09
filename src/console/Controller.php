@@ -164,6 +164,19 @@ class Controller extends YiiController
     /**
      * @inheritdoc
      */
+    public function beforeAction($action)
+    {
+        // Make sure this isn't a root user
+        if (!$this->checkRootUser()) {
+            return false;
+        }
+
+        return parent::beforeAction($action);
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function actions()
     {
         return ArrayHelper::getColumn($this->_actions, 'action');

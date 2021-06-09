@@ -17,6 +17,7 @@ use craft\elements\db\ElementQueryInterface;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Cp;
 use craft\helpers\Db;
+use craft\helpers\ElementHelper;
 use craft\helpers\Html;
 use GraphQL\Type\Definition\Type;
 use yii\db\Schema;
@@ -173,13 +174,13 @@ class Lightswitch extends Field implements PreviewableFieldInterface, SortableFi
      */
     public function modifyElementsQuery(ElementQueryInterface $query, $value)
     {
+        /* @var ElementQuery $query */
         if ($value === null) {
             return null;
         }
 
-        $column = 'content.' . Craft::$app->getContent()->fieldColumnPrefix . $this->handle;
-        /* @var ElementQuery $query */
-        $query->subQuery->andWhere(Db::parseBooleanParam($column, $value, (bool)$this->default));
+        $column = ElementHelper::fieldColumnFromField($this);
+        $query->subQuery->andWhere(Db::parseBooleanParam("content.$column", $value, (bool)$this->default));
         return null;
     }
 

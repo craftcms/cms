@@ -38,20 +38,20 @@ Craft.SlideRuleInput = Garnish.Base.extend({
 
         this.$options = this.$container.find('.graduation');
 
-        this.addListener(this.$container, 'resize', $.proxy(this, '_handleResize'));
-        this.addListener(this.$container, 'tapstart', $.proxy(this, '_handleTapStart'));
-        this.addListener(Garnish.$bod, 'tapmove', $.proxy(this, '_handleTapMove'));
-        this.addListener(Garnish.$bod, 'tapend', $.proxy(this, '_handleTapEnd'));
+        this.addListener(this.$container, 'resize', this._handleResize.bind(this));
+        this.addListener(this.$container, 'tapstart', this._handleTapStart.bind(this));
+        this.addListener(Garnish.$bod, 'tapmove', this._handleTapMove.bind(this));
+        this.addListener(Garnish.$bod, 'tapend', this._handleTapEnd.bind(this));
 
         // Set to zero
 
         // this.setValue(0);
 
-        setTimeout($.proxy(function() {
+        setTimeout(() => {
             // (n -1) options because the border is placed on the left of the 10px box
             this.graduationsCalculatedWidth = (this.$options.length - 1) * 10;
             this.$graduationsUl.css('left', (-this.graduationsCalculatedWidth / 2) + this.$container.width() / 2);
-        }, this), 50);
+        }, 50);
     },
 
     _handleResize: function() {

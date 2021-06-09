@@ -385,7 +385,7 @@ class RequestTest extends TestCase
     public function testCheckRequestTypeWithTokenParam()
     {
         $this->request->setBodyParams([Craft::$app->getConfig()->getGeneral()->tokenParam => 'something']);
-        $this->_checkRequestType();
+        $this->request->checkIfActionRequest(true);
 
         self::assertTrue($this->getInaccessibleProperty($this->request, '_checkedRequestType'));
 
@@ -462,7 +462,7 @@ class RequestTest extends TestCase
      */
     public function checkRequestAndAssertIsSingleAction()
     {
-        $this->_checkRequestType();
+        $this->request->checkIfActionRequest(true);
         self::assertTrue($this->getInaccessibleProperty($this->request, '_isSingleActionRequest'));
     }
 
@@ -579,15 +579,6 @@ class RequestTest extends TestCase
         $this->request = new Request([
             'cookieValidationKey' => 'lashdao8u09ud09u09231uoij098wqe'
         ]);
-    }
-
-    /**
-     * @return mixed
-     * @throws ReflectionException
-     */
-    private function _checkRequestType()
-    {
-        return $this->invokeMethod($this->request, '_checkRequestType');
     }
 
     /**

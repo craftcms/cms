@@ -1518,7 +1518,7 @@ body,
   #graphiql .docExplorerWrap,
   #graphiql .historyPaneWrap {
     background: #fff;
-    box-shadow: 0 0 0 1px rgba(205, 216, 228, 0.25), 0 2px 12px rgba(205, 216, 228, 0.5);
+    box-shadow: 0 0 0 1px rgba(154, 165, 177, 0.25), 0 2px 12px rgba(205, 216, 228, 0.5);
     overflow: hidden; }
     #graphiql .queryWrap:focus,
     #graphiql .docExplorerWrap:focus,

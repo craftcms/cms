@@ -96,7 +96,7 @@ class GlobalSet extends Element
     /**
      * @inheritdoc
      */
-    public function getIsEditable(): bool
+    protected function isEditable(): bool
     {
         return Craft::$app->getUser()->checkPermission("editGlobalSet:$this->uid");
     }
@@ -211,7 +211,7 @@ class GlobalSet extends Element
     /**
      * @inheritdoc
      */
-    public function getCpEditUrl()
+    protected function cpEditUrl(): ?string
     {
         if (Craft::$app->getIsMultiSite()) {
             return UrlHelper::cpUrl('globals/' . $this->getSite()->handle . '/' . $this->handle);

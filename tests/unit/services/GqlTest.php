@@ -395,7 +395,7 @@ class GqlTest extends Unit
             'scope' => []
         ]);
 
-        self::assertEquals($gql->getCachedResult($cacheKey), $cacheValue);
+        self::assertEquals($cacheValue, $gql->getCachedResult($cacheKey));
 
         // Make sure saving a schema invalidates caches
         $gql->saveSchema($schema);
