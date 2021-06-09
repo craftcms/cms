@@ -60,20 +60,22 @@ class CredentialRepository implements PublicKeyCredentialSourceRepository
      * @param PublicKeyCredentialSource $publicKeyCredentialSource
      * @throws MissingComponentException
      */
-    public function saveNamedCredentialSource(string $credentialName, PublicKeyCredentialSource $publicKeyCredentialSource): void
+    public function saveNamedCredentialSource(PublicKeyCredentialSource $publicKeyCredentialSource, string $credentialName = ''): void
     {
-        $userId = Db::idByUid(Table::ELEMENTS, $publicKeyCredentialSource->getUserHandle());
-
-        if ($userId) {
+        // The credential gets re-saved on use. Allow setting userId and credentialId only for new credentials.
+        if (!($record = AuthWebAuthn::findOne(['credentialId' => base64_encode($publicKeyCredentialSource->getPublicKeyCredentialId())]))) {
             $record = new AuthWebAuthn();
-            $record->userId = $userId;
+            $record->userId = Db::idByUid(Table::ELEMENTS, $publicKeyCredentialSource->getUserHandle());
+            $record->name = !empty($credentialName) ? $credentialName : Craft::t('app', 'Secure credentials');
             $record->credentialId = base64_encode($publicKeyCredentialSource->getPublicKeyCredentialId());
-            $record->credential = Json::encode($publicKeyCredentialSource);
-            $record->name = $credentialName;
-            $record->save();
-
-            Craft::$app->getSession()->remove(WebAuthn::WEBAUTHN_CREDENTIAL_OPTION_KEY);
         }
+        
+        $record->dateLastUsed = Db::prepareDateForDb($publicKeyCredentialSource->getCounter());
+        $record->credential = Json::encode($publicKeyCredentialSource);
+        $record->save();
+
+        Craft::$app->getSession()->remove(WebAuthn::WEBAUTHN_CREDENTIAL_OPTION_KEY);
+        Craft::$app->getSession()->remove(WebAuthn::WEBAUTHN_CREDENTIAL_REQUEST_OPTION_KEY);
     }
 
     /**
@@ -84,6 +86,6 @@ class CredentialRepository implements PublicKeyCredentialSourceRepository
      */
     public function saveCredentialSource(PublicKeyCredentialSource $publicKeyCredentialSource): void
     {
-        $this->saveNamedCredentialSource(Craft::t('app', 'Secure credentials'), $publicKeyCredentialSource);
+        $this->saveNamedCredentialSource($publicKeyCredentialSource);
     }
 }
