@@ -7,6 +7,7 @@ use Craft;
 use craft\authentication\base\MfaType;
 use craft\authentication\webauthn\CredentialRepository;
 use craft\elements\User;
+use craft\helpers\DateTimeHelper;
 use craft\helpers\Json;
 use craft\models\AuthenticationState;
 use craft\records\AuthWebAuthn;
@@ -124,9 +125,16 @@ class WebAuthn extends MfaType
     {
         $existingCredentials = AuthWebAuthn::findAll(['userId' => $user->id]);
 
+        $credentials = [];
+
+        // TODO Models probably more appropriate than arrays?
+        foreach ($existingCredentials as $existingCredential) {
+            $credentials[] = ['name' => $existingCredential->name, 'dateLastUsed' => DateTimeHelper::toDateTime($existingCredential->dateLastUsed)];
+        }
+
         return Craft::$app->getView()->renderTemplate('_components/authenticationsteps/WebAuthn/setup', [
             'credentialOptions' => Json::encode(self::getCredentialCreationOptions($user)),
-            'existingCredentials' => $existingCredentials
+            'existingCredentials' => $credentials
         ]);
     }
 

@@ -19,8 +19,8 @@ use yii\db\ActiveQueryInterface;
  * @property string $credentialId Credential ID
  * @property string $credential Credential information
  * @property string $name The credential name
- * @property string $dateLastUsed The time when this credential was last used.
- * @property-read \yii\db\ActiveQueryInterface $user
+ * @property \DateTime $dateLastUsed The time when this credential was last used.
+ * @property-read ActiveQueryInterface $user
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.0.0
  */

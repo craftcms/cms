@@ -69,7 +69,7 @@ class CredentialRepository implements PublicKeyCredentialSourceRepository
             $record->name = !empty($credentialName) ? $credentialName : Craft::t('app', 'Secure credentials');
             $record->credentialId = base64_encode($publicKeyCredentialSource->getPublicKeyCredentialId());
         }
-        
+
         $record->dateLastUsed = Db::prepareDateForDb($publicKeyCredentialSource->getCounter());
         $record->credential = Json::encode($publicKeyCredentialSource);
         $record->save();
