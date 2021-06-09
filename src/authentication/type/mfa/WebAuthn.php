@@ -61,14 +61,6 @@ class WebAuthn extends MfaType
     /**
      * @inheritdoc
      */
-    public function prepareForAuthentication(User $user = null): void
-    {
-
-    }
-
-    /**
-     * @inheritdoc
-     */
     public function authenticate(array $credentials, User $user = null): AuthenticationState
     {
         if (empty($credentials['credentialResponse']) || !$user) {
@@ -114,7 +106,7 @@ class WebAuthn extends MfaType
 
     public static function getIsApplicable(User $user): bool
     {
-        return (bool) AuthWebAuthn::findOne(['userId' => $user->id]);
+        return Craft::$app->getRequest()->getIsSecureConnection() && AuthWebAuthn::findOne(['userId' => $user->id]);
     }
 
     /**
