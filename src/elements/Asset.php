@@ -1191,10 +1191,10 @@ class Asset extends Element
 
         if (is_array($transform)) {
             if (isset($transform['width'])) {
-                $transform['width'] = round($transform['width']);
+                $transform['width'] = round((float)$transform['width']);
             }
             if (isset($transform['height'])) {
-                $transform['height'] = round($transform['height']);
+                $transform['height'] = round((float)$transform['height']);
             }
             $assetTransformsService = Craft::$app->getAssetTransforms();
             $transform = $assetTransformsService->normalizeTransform($transform);
