@@ -16,6 +16,8 @@ use craft\models\AuthenticationState;
  *
  * @property-read string $description
  * @property-read string $name
+ * @property-read string $inputFieldHtml
+ * @property-read string $stepType
  * @property-read string $fieldHtml
  */
 abstract class Type extends Component implements TypeInterface

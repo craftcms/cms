@@ -139,7 +139,7 @@ class Chain
         $switchedStep = $this->getNextAuthenticationStep($stepType);
 
         if (!$switchedStep) {
-            throw new InvalidConfigException("Invalid authentication chain configuration. {$stepType} type requested, but not available at this point of the chain.");
+            throw new InvalidConfigException("Invalid authentication chain configuration. $stepType type requested, but not available at this point of the chain.");
         }
 
         $switchedStep->prepareForAuthentication($this->_getResolvedUser());
@@ -199,7 +199,7 @@ class Chain
                 }
             }
 
-            throw new InvalidConfigException("Invalid authentication chain configuration. {$stepType} type requested, but not available at this point of the chain.");
+            throw new InvalidConfigException("Invalid authentication chain configuration. $stepType type requested, but not available at this point of the chain.");
         }
 
         return Authentication::createStepFromConfig(reset($availableTypes), $this->_state);

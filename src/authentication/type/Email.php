@@ -13,6 +13,8 @@ use craft\models\AuthenticationState;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.0.0
+ *
+ * @property-read string $inputFieldHtml
  */
 class Email extends Type
 {

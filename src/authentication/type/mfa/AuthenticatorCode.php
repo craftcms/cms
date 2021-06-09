@@ -15,6 +15,8 @@ use craft\models\AuthenticationState;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.0.0
+ *
+ * @property-read string $inputFieldHtml
  */
 class AuthenticatorCode extends MfaType
 {
@@ -112,9 +114,6 @@ class AuthenticatorCode extends MfaType
         }
 
 
-        return Craft::$app->getView()->renderTemplate('_components/authenticationsteps/AuthenticatorCode/setup', [
-            'user' => $user,
-            'qrAuthenticatorCode' => $qrAuthenticatorCode
-        ]);
+        return Craft::$app->getView()->renderTemplate('_components/authenticationsteps/AuthenticatorCode/setup', compact('user', 'qrAuthenticatorCode'));
     }
 }

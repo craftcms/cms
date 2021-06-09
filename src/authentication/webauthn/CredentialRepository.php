@@ -6,6 +6,7 @@ namespace craft\authentication\webauthn;
 use Craft;
 use craft\authentication\type\mfa\WebAuthn;
 use craft\db\Table;
+use craft\errors\MissingComponentException;
 use craft\helpers\Db;
 use craft\helpers\Json;
 use craft\records\AuthWebAuthn;
@@ -57,7 +58,7 @@ class CredentialRepository implements PublicKeyCredentialSourceRepository
      *
      * @param string $credentialName
      * @param PublicKeyCredentialSource $publicKeyCredentialSource
-     * @throws \craft\errors\MissingComponentException
+     * @throws MissingComponentException
      */
     public function saveNamedCredentialSource(string $credentialName, PublicKeyCredentialSource $publicKeyCredentialSource): void
     {
@@ -79,7 +80,7 @@ class CredentialRepository implements PublicKeyCredentialSourceRepository
      * Save a credential source.
      *
      * @param PublicKeyCredentialSource $publicKeyCredentialSource
-     * @throws \craft\errors\MissingComponentException
+     * @throws MissingComponentException
      */
     public function saveCredentialSource(PublicKeyCredentialSource $publicKeyCredentialSource): void
     {

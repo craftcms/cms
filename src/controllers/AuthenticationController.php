@@ -199,7 +199,6 @@ class AuthenticationController extends Controller
             }
 
             // If successfully completed recovery, invalidate the chain state.
-            // TODO track only one chain per session
             $authenticationService->invalidateAuthenticationState(Authentication::CP_RECOVERY_CHAIN);
 
             $output['success'] = true;
@@ -230,7 +229,6 @@ class AuthenticationController extends Controller
         $this->requireAcceptsJson();
         $this->requireLogin();
         $this->requireElevatedSession();
-
 
         $request = Craft::$app->getRequest();
         $payload = $request->getRequiredBodyParam('credentials');

@@ -8,7 +8,6 @@ use craft\authentication\base\MfaType;
 use craft\authentication\webauthn\CredentialRepository;
 use craft\elements\User;
 use craft\helpers\Json;
-use craft\helpers\StringHelper;
 use craft\models\AuthenticationState;
 use craft\records\AuthWebAuthn;
 use Webauthn\PublicKeyCredentialCreationOptions;
@@ -24,6 +23,8 @@ use Webauthn\Server;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.0.0
+ *
+ * @property-read string $inputFieldHtml
  */
 class WebAuthn extends MfaType
 {
@@ -70,7 +71,7 @@ class WebAuthn extends MfaType
      */
     public function authenticate(array $credentials, User $user = null): AuthenticationState
     {
-        if (empty($credentials['credentialResponse'])) {
+        if (empty($credentials['credentialResponse']) || !$user) {
             return $this->state;
         }
 
@@ -155,32 +156,34 @@ class WebAuthn extends MfaType
      *
      * @param User $user The user for which to get the credential creation options.
      *
-     * @return PublicKeyCredentialOptions
+     * @return PublicKeyCredentialOptions | null
      */
-    public static function getCredentialCreationOptions(User $user): PublicKeyCredentialOptions
+    public static function getCredentialCreationOptions(User $user): ?PublicKeyCredentialOptions
     {
-        if (Craft::$app->getEdition() == Craft::Pro) {
-            $session = Craft::$app->getSession();
-            $credentialOptions = $session->get(self::WEBAUTHN_CREDENTIAL_OPTION_KEY);
+        if (Craft::$app->getEdition() !== Craft::Pro) {
+            return null;
+        }
 
-            if (!$credentialOptions) {
-                $userEntity = self::getUserEntity($user);
+        $session = Craft::$app->getSession();
+        $credentialOptions = $session->get(self::WEBAUTHN_CREDENTIAL_OPTION_KEY);
 
-                $excludeCredentials = array_map(
-                    static fn (CredentialSource $credential) => $credential->getPublicKeyCredentialDescriptor(),
-                    (new CredentialRepository())->findAllForUserEntity($userEntity)
-                );
+        if (!$credentialOptions) {
+            $userEntity = self::getUserEntity($user);
 
-                $credentialOptions = Json::encode(
-                    self::getWebauthnServer()->generatePublicKeyCredentialCreationOptions(
-                        $userEntity,
-                        null,
-                        $excludeCredentials
-                    )
-                );
+            $excludeCredentials = array_map(
+                static fn (CredentialSource $credential) => $credential->getPublicKeyCredentialDescriptor(),
+                (new CredentialRepository())->findAllForUserEntity($userEntity)
+            );
 
-                $session->set(self::WEBAUTHN_CREDENTIAL_OPTION_KEY, $credentialOptions);
-            }
+            $credentialOptions = Json::encode(
+                self::getWebauthnServer()->generatePublicKeyCredentialCreationOptions(
+                    $userEntity,
+                    null,
+                    $excludeCredentials
+                )
+            );
+
+            $session->set(self::WEBAUTHN_CREDENTIAL_OPTION_KEY, $credentialOptions);
         }
 
         return PublicKeyCredentialCreationOptions::createFromArray(Json::decodeIfJson($credentialOptions));
@@ -189,6 +192,7 @@ class WebAuthn extends MfaType
     /**
      * Return a new Public Key Credential User Entity based on the currently logged in user.
      *
+     * @param User $user
      * @return PublicKeyCredentialUserEntity
      */
     public static function getUserEntity(User $user): PublicKeyCredentialUserEntity
