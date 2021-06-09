@@ -1284,7 +1284,7 @@ class Gql extends Component
         // No cache key, if explicitly disabled
         $generalConfig = Craft::$app->getConfig()->getGeneral();
 
-        if (!$generalConfig->enableGraphQlCaching) {
+        if (!$generalConfig->enableGraphqlCaching) {
             return null;
         }
 

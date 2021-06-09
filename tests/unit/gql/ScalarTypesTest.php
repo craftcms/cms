@@ -109,14 +109,14 @@ class ScalarTypesTest extends Unit
 
         $dateTime = new \DateTime('now', new \DateTimeZone('UTC'));
 
-        $settingValue = Craft::$app->getConfig()->getGeneral()->useSystemTimezoneForGraphQlDates;
+        $settingValue = Craft::$app->getConfig()->getGeneral()->setGraphqlDatesToSystemTimeZone;
 
-        Craft::$app->getConfig()->getGeneral()->useSystemTimezoneForGraphQlDates = true;
+        Craft::$app->getConfig()->getGeneral()->setGraphqlDatesToSystemTimeZone = true;
         $value1 = DateTime::getType()->serialize(clone $dateTime);
-        Craft::$app->getConfig()->getGeneral()->useSystemTimezoneForGraphQlDates = false;
+        Craft::$app->getConfig()->getGeneral()->setGraphqlDatesToSystemTimeZone = false;
         $value2 = DateTime::getType()->serialize(clone $dateTime);
 
-        Craft::$app->getConfig()->getGeneral()->useSystemTimezoneForGraphQlDates = $settingValue;
+        Craft::$app->getConfig()->getGeneral()->setGraphqlDatesToSystemTimeZone = $settingValue;
 
         $this->assertNotEquals($value1, $value2);
     }
