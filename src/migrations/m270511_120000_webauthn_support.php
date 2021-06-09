@@ -21,6 +21,8 @@ class m270511_120000_webauthn_support extends Migration
             'userId' => $this->integer()->notNull(),
             'credentialId' => $this->string(),
             'credential' => $this->text(),
+            'name' => $this->string(),
+            'dateLastUsed' => $this->dateTime(),
             'dateCreated' => $this->dateTime()->notNull(),
             'dateUpdated' => $this->dateTime()->notNull(),
             'uid' => $this->uid(),

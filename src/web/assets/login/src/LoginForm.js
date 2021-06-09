@@ -18,7 +18,10 @@ class LoginForm {
         for (const container of $chainContainers) {
             this.endpoints[container.id] = $(container).data('endpoint');
         }
-        this.$loginForm.on('submit', this.invokeStepHandler.bind(this));
+        this.$loginForm.on('submit', (ev) => {
+            this.invokeStepHandler(ev);
+            return false;
+        });
         if (this.$pendingSpinner.length) {
             this.$loginForm.trigger('submit');
         }
@@ -173,22 +176,15 @@ class LoginForm {
      * Invoke the current step handler bound to the authentication container
      * @param ev
      */
-    invokeStepHandler(ev) {
+    async invokeStepHandler(ev) {
         const stepType = this.getActiveContainer().attr('rel');
-        const handler = this.stepHandlers[stepType];
-        if (typeof handler == "function") {
-            const data = handler(ev);
-            if (typeof data == "object") {
-                this.performStep(data);
-            }
-            else {
-                this.showError(data);
-            }
+        const handler = this.stepHandlers[stepType].bind(this);
+        try {
+            this.performStep(await handler());
         }
-        else {
-            this.performStep({});
+        catch (error) {
+            this.showError(error);
         }
-        return false;
     }
     /**
      * Clear all the errors.

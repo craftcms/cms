@@ -179,6 +179,8 @@ class Install extends Migration
             'userId' => $this->integer()->notNull(),
             'credentialId' => $this->string(),
             'credential' => $this->text(),
+            'name' => $this->string(),
+            'dateLastUsed' => $this->dateTime(),
             'dateCreated' => $this->dateTime()->notNull(),
             'dateUpdated' => $this->dateTime()->notNull(),
             'uid' => $this->uid(),

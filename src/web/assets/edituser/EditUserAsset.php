@@ -59,6 +59,7 @@ class EditUserAsset extends AssetBundle
                 'Copy the impersonation URL, and open it in a new private window.',
                 'Please enter your current password.',
                 'Please enter your password.',
+                'Secure credentials',
             ]);
         }
     }

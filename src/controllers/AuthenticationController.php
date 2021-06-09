@@ -12,10 +12,25 @@ use Craft;
 use craft\authentication\base\Type;
 use craft\authentication\Chain;
 use craft\authentication\type\mfa\AuthenticatorCode;
+use craft\authentication\type\mfa\WebAuthn;
+use craft\authentication\webauthn\CredentialRepository;
 use craft\elements\User;
+use craft\errors\AuthenticationException;
 use craft\helpers\Authentication as AuthenticationHelper;
+use craft\helpers\Json;
 use craft\services\Authentication;
 use craft\web\Controller;
+use GuzzleHttp\Psr7\Query;
+use GuzzleHttp\Psr7\Request;
+use Webauthn\AttestationStatement\AttestationObjectLoader;
+use Webauthn\AttestationStatement\AttestationStatementSupportManager;
+use Webauthn\AttestationStatement\NoneAttestationStatementSupport;
+use Webauthn\AuthenticatorAttestationResponse;
+use Webauthn\AuthenticatorAttestationResponseValidator;
+use Webauthn\PublicKeyCredentialLoader;
+use Webauthn\PublicKeyCredentialRpEntity;
+use Webauthn\PublicKeyCredentialSource;
+use Webauthn\Server;
 use yii\base\InvalidConfigException;
 use yii\web\BadRequestHttpException;
 use yii\web\Response;
@@ -203,6 +218,58 @@ class AuthenticationController extends Controller
         return $this->asJson($output);
     }
 
+    /**
+     * Attach WebAuthn ceredentials.
+     *
+     * @return Response
+     * @throws BadRequestHttpException
+     * @throws \yii\web\ForbiddenHttpException
+     */
+    public function actionAttachWebAuthnCredentials(): Response
+    {
+        $this->requireAcceptsJson();
+        $this->requireLogin();
+        $this->requireElevatedSession();
+
+
+        $request = Craft::$app->getRequest();
+        $payload = $request->getRequiredBodyParam('credentials');
+        $credentialName = $request->getBodyParam('credentialName', '');
+
+        $userSession = Craft::$app->getUser();
+        $currentUser = $userSession->getIdentity();
+
+        $output = [];
+
+        try {
+            $credentialRepository = new CredentialRepository();
+
+            $server = new Server(
+                WebAuthn::getRelayingPartyEntity(),
+                $credentialRepository
+            );
+
+            $options = WebAuthn::getCredentialCreationOptions($currentUser);
+            $credentials = $server->loadAndCheckAttestationResponse(Json::encode($payload), $options, $request->asPsr7());
+            $credentialRepository->saveNamedCredentialSource($credentialName, $credentials);
+
+            $step = new WebAuthn();
+            $output['html'] = $step->getUserSetupFormHtml($currentUser);
+        } catch (\Throwable $exception) {
+            Craft::$app->getErrorHandler()->logException($exception);
+            $output['error'] = Craft::t('app', 'Something went wrong when attempting to attach credentials.');
+        }
+
+        return $this->asJson($output);
+    }
+
+    /**
+     * @return Response
+     * @throws BadRequestHttpException
+     * @throws \PragmaRX\Google2FA\Exceptions\Google2FAException
+     * @throws \craft\errors\MissingComponentException
+     * @throws \yii\web\ForbiddenHttpException
+     */
     public function actionUpdateAuthenticatorSettings(): Response
     {
         $this->requireAcceptsJson();
@@ -258,7 +325,6 @@ class AuthenticationController extends Controller
         }
 
         $step = new AuthenticatorCode();
-
         $output['html'] = $step->getUserSetupFormHtml($currentUser);
 
         return $this->asJson($output);

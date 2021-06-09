@@ -18,7 +18,7 @@ class Email extends AuthenticationStep
         return true;
     }
 
-    protected returnFormData(): AuthenticationRequest
+    protected returnFormData()
     {
         return {
             "email": this.getEmailInput().val(),

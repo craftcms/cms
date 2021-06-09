@@ -19,31 +19,33 @@ abstract class AuthenticationStep
     }
 
     /**
-     *
      * @param ev
      */
-    public onInput(ev: any) : void
+    public onInput(ev: any)
     {
         if (this.validateOnInput && this.validate() === true) {
             Craft.LoginForm.clearErrors();
         }
     }
 
-    public prepareData(ev: SubmitEvent): AuthenticationRequest | string
+    /**
+     *
+     * @param ev
+     */
+    public async prepareData()
     {
         const error = this.validate();
 
         if (error !== true) {
             this.validateOnInput = true;
-
-            return error;
+            throw error;
         }
 
         this.validateOnInput = false;
 
-        const returnData = this.returnFormData();
-        returnData.stepType = this.stepType;
+        let data = await this.returnFormData();
+        data.stepType = this.stepType;
 
-        return returnData;
+        return data;
     }
 }

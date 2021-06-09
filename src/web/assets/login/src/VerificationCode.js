@@ -14,7 +14,7 @@ class VerificationCode extends AuthenticationStep {
     }
     returnFormData() {
         return {
-            "verification-code": this.getVerificationCodeInput().val(),
+            "verification-code": this.getVerificationCodeInput().val()
         };
     }
     getVerificationCodeInput() {

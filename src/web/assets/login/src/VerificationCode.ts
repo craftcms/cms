@@ -19,10 +19,10 @@ abstract class VerificationCode extends AuthenticationStep
         return true;
     }
 
-    protected returnFormData(): AuthenticationRequest
+    protected returnFormData()
     {
         return {
-            "verification-code": this.getVerificationCodeInput().val(),
+            "verification-code": this.getVerificationCodeInput().val()
         };
     }
 

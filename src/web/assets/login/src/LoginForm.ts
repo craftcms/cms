@@ -1,4 +1,4 @@
-type AuthenticationStepHandler = (ev: any) => AuthenticationRequest | string;
+type AuthenticationStepHandler = () => AuthenticationRequest;
 
 type AuthenticationRequest = {
     [key: string]: any
@@ -51,7 +51,10 @@ class LoginForm
             this.endpoints[container.id] = $(container).data('endpoint');
         }
 
-        this.$loginForm.on('submit', this.invokeStepHandler.bind(this));
+        this.$loginForm.on('submit', (ev) => {
+            this.invokeStepHandler(ev);
+            return false;
+        });
 
         if (this.$pendingSpinner.length) {
             this.$loginForm.trigger('submit');
@@ -236,23 +239,16 @@ class LoginForm
      * Invoke the current step handler bound to the authentication container
      * @param ev
      */
-    protected invokeStepHandler(ev: any): boolean
+    protected async invokeStepHandler(ev: any)
     {
         const stepType = this.getActiveContainer().attr('rel')!;
-        const handler = this.stepHandlers[stepType]!;
+        const handler = this.stepHandlers[stepType]!.bind(this);
 
-        if (typeof handler == "function") {
-            const data = handler(ev);
-            if (typeof data == "object") {
-                this.performStep(data);
-            } else {
-                this.showError(data);
-            }
-        } else {
-            this.performStep({});
+        try {
+            this.performStep(await handler());
+        } catch (error) {
+            this.showError(error)
         }
-
-        return false;
     }
 
     /**

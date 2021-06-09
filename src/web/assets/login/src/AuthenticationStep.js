@@ -7,7 +7,6 @@ class AuthenticationStep {
         this.$loginForm = Craft.LoginForm.$loginForm;
     }
     /**
-     *
      * @param ev
      */
     onInput(ev) {
@@ -15,15 +14,19 @@ class AuthenticationStep {
             Craft.LoginForm.clearErrors();
         }
     }
-    prepareData(ev) {
+    /**
+     *
+     * @param ev
+     */
+    async prepareData() {
         const error = this.validate();
         if (error !== true) {
             this.validateOnInput = true;
-            return error;
+            throw error;
         }
         this.validateOnInput = false;
-        const returnData = this.returnFormData();
-        returnData.stepType = this.stepType;
-        return returnData;
+        let data = await this.returnFormData();
+        data.stepType = this.stepType;
+        return data;
     }
 }

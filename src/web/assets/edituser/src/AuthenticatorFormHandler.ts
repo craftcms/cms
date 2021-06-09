@@ -93,6 +93,10 @@ class AuthenticatorFormHandler
                 alert(response.message);
             }
 
+            if (response.error) {
+                alert(response.error);
+            }
+
             if (response.html) {
                 this.$container.replaceWith(response.html);
                 this.$container = $('#authenticator-settings');

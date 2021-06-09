@@ -5,11 +5,18 @@ namespace craft\authentication\type\mfa;
 
 use Craft;
 use craft\authentication\base\MfaType;
-use craft\authentication\base\Type;
+use craft\authentication\webauthn\CredentialRepository;
 use craft\elements\User;
+use craft\helpers\Json;
 use craft\helpers\StringHelper;
-use craft\mail\Message;
 use craft\models\AuthenticationState;
+use craft\records\AuthWebAuthn;
+use Webauthn\PublicKeyCredentialCreationOptions;
+use Webauthn\PublicKeyCredentialOptions;
+use Webauthn\PublicKeyCredentialRpEntity;
+use Webauthn\PublicKeyCredentialSource as CredentialSource;
+use Webauthn\PublicKeyCredentialUserEntity;
+use Webauthn\Server;
 
 /**
  * This step type requires an authentication type that supports Web Authentication API.
@@ -21,9 +28,10 @@ use craft\models\AuthenticationState;
 class WebAuthn extends MfaType
 {
     /**
-     * The key to store the WebAuthn challenge in session.
+     * The key for session to use for storing the WebAuthn credential options.
      */
-    public const WEBAUTHN_CHALLENGE_SESSION_KEY = 'user.webauthn.challenge';
+    public const WEBAUTHN_CREDENTIAL_OPTION_KEY = 'user.webauthn.credentialOptions';
+    public const WEBAUTHN_CREDENTIAL_REQUEST_OPTION_KEY = 'user.webauthn.credentialRequestOptions';
 
     /**
      * @inheritdoc
@@ -46,7 +54,7 @@ class WebAuthn extends MfaType
      */
     public function getFields(): ?array
     {
-        return ['verification-code'];
+        return ['credentialResponse'];
     }
 
     /**
@@ -62,6 +70,23 @@ class WebAuthn extends MfaType
      */
     public function authenticate(array $credentials, User $user = null): AuthenticationState
     {
+        if (empty($credentials['credentialResponse'])) {
+            return $this->state;
+        }
+
+        $credentialResponse = Json::encode($credentials['credentialResponse']);
+
+        try {
+            self::getWebauthnServer()->loadAndCheckAssertionResponse(
+                $credentialResponse,
+                Craft::$app->getSession()->get(self::WEBAUTHN_CREDENTIAL_REQUEST_OPTION_KEY),
+                self::getUserEntity($user),
+                Craft::$app->getRequest()->asPsr7()
+            );
+        } catch (\Throwable $exception) {
+            Craft::$app->getErrorHandler()->logException($exception);
+            return $this->state;
+        }
 
         return $this->completeStep($user);
     }
@@ -71,38 +96,113 @@ class WebAuthn extends MfaType
      */
     public function getInputFieldHtml(): string
     {
-        return 'fields';
+        $server = self::getWebauthnServer();
+        $userEntity = self::getUserEntity($this->state->getResolvedUser());
+        $allowedCredentials = array_map(
+            static fn(CredentialSource $credential) => $credential->getPublicKeyCredentialDescriptor(),
+            (new CredentialRepository())->findAllForUserEntity($userEntity)
+        );
+
+        $requestOptions = $server->generatePublicKeyCredentialRequestOptions(null, $allowedCredentials);
+        Craft::$app->getSession()->set(self::WEBAUTHN_CREDENTIAL_REQUEST_OPTION_KEY, $requestOptions);
+
+        return Craft::$app->getView()->renderTemplate('_components/authenticationsteps/WebAuthn/input', [
+            'requestOptions' => Json::encode($requestOptions),
+        ]);
     }
 
     public static function getIsApplicable(User $user): bool
     {
-        return false;
+        return (bool) AuthWebAuthn::findOne(['userId' => $user->id]);
     }
 
+    /**
+     * @inheritdoc
+     */
     public static function hasUserSetup(): bool
     {
         return true;
     }
 
+    /**
+     * @inheritdoc
+     */
     public function getUserSetupFormHtml(User $user): string
     {
-        $challenge = '';
+        $existingCredentials = AuthWebAuthn::findAll(['userId' => $user->id]);
 
-        // TODO check for existing webauthn credentials
-        if (Craft::$app->getEdition() == Craft::Pro && $user->getIsCurrent()) {
-            $session = Craft::$app->getSession();
-            $challenge = $session->get(self::WEBAUTHN_CHALLENGE_SESSION_KEY);
-            if (!$challenge) {
-                $challenge = StringHelper::randomString(32);
-                $session->set(self::WEBAUTHN_CHALLENGE_SESSION_KEY, $challenge);
-            }
-
-        }
         return Craft::$app->getView()->renderTemplate('_components/authenticationsteps/WebAuthn/setup', [
-            'user' => $user,
-            'challenge' => $challenge,
-            'primarySiteName' => Craft::$app->getSites()->getPrimarySite()->getName()
+            'credentialOptions' => Json::encode(self::getCredentialCreationOptions($user)),
+            'existingCredentials' => $existingCredentials
         ]);
+    }
 
+    /**
+     * Return the WebAuthn server, responsible for key creation and validation.
+     *
+     * @return Server
+     */
+    public static function getWebauthnServer(): Server
+    {
+        return new Server(
+            self::getRelayingPartyEntity(),
+            new CredentialRepository()
+        );
+    }
+
+    /**
+     * Get the credential creation options.
+     *
+     * @param User $user The user for which to get the credential creation options.
+     *
+     * @return PublicKeyCredentialOptions
+     */
+    public static function getCredentialCreationOptions(User $user): PublicKeyCredentialOptions
+    {
+        if (Craft::$app->getEdition() == Craft::Pro) {
+            $session = Craft::$app->getSession();
+            $credentialOptions = $session->get(self::WEBAUTHN_CREDENTIAL_OPTION_KEY);
+
+            if (!$credentialOptions) {
+                $userEntity = self::getUserEntity($user);
+
+                $excludeCredentials = array_map(
+                    static fn (CredentialSource $credential) => $credential->getPublicKeyCredentialDescriptor(),
+                    (new CredentialRepository())->findAllForUserEntity($userEntity)
+                );
+
+                $credentialOptions = Json::encode(
+                    self::getWebauthnServer()->generatePublicKeyCredentialCreationOptions(
+                        $userEntity,
+                        null,
+                        $excludeCredentials
+                    )
+                );
+
+                $session->set(self::WEBAUTHN_CREDENTIAL_OPTION_KEY, $credentialOptions);
+            }
+        }
+
+        return PublicKeyCredentialCreationOptions::createFromArray(Json::decodeIfJson($credentialOptions));
+    }
+
+    /**
+     * Return a new Public Key Credential User Entity based on the currently logged in user.
+     *
+     * @return PublicKeyCredentialUserEntity
+     */
+    public static function getUserEntity(User $user): PublicKeyCredentialUserEntity
+    {
+        return new PublicKeyCredentialUserEntity($user->username, $user->uid, $user->friendlyName);
+    }
+
+    /**
+     * Return a new Public Key Credential Relaying Party Entity based on the current Craft installations
+     *
+     * @return PublicKeyCredentialRpEntity
+     */
+    public static function getRelayingPartyEntity(): PublicKeyCredentialRpEntity
+    {
+        return new PublicKeyCredentialRpEntity(Craft::$app->getSites()->getPrimarySite()->getName(), Craft::$app->getRequest()->getHostName());
     }
 }

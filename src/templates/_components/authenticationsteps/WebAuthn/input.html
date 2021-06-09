@@ -1,0 +1,7 @@
+{% import "_includes/forms" as forms %}
+
+{% do view.registerAssetBundle("craft\\web\\assets\\authentication\\webauthn\\WebAuthnAsset") %}
+
+<div id="login-form-top">
+    <button type="button" id="verify-webauthn" class="btn submit" data-request-options="{{ requestOptions|e('html_attr') }}" onclick="javascript: Craft.LoginForm.$submit.click();">{{ 'Authenticate'|t('app')}}</button>
+</div>

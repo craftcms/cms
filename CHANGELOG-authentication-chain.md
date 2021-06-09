@@ -10,6 +10,7 @@
 - Added `craft\authentication\type\IpAddress`.
 - Added `craft\authentication\type\mfa\AuthenticatorCode`.
 - Added `craft\authentication\type\mfa\EmailCode`.
+- Added `craft\authentication\webauthn\CredentialRepository`.
 - Added `craft\controllers\AuthenticationController`.
 - Added `craft\errors\AuthenticationException`.
 - Added `craft\elements\User::removeAuthenticator()`.
@@ -20,4 +21,5 @@
 - Added `craft\models\AuthenticationChainConfiguration`.
 - Added `craft\models\AuthenticationState`.
 - Added `craft\records\AuthAuthenticator`.
+- Added `craft\records\AuthWebAuthn`.
 - Added `craft\services\Authentication`.
