@@ -670,15 +670,11 @@ class GeneralConfig extends BaseObject
     public $enableGraphqlCaching = true;
 
     /**
-     * @var bool Whether Craft should use the system date for default GraphQL dates.
-     *
-     * If set to `true`, Craft will use the system timezone when returning DateTime fields instead of UTC.
-     *
-     *
+     * @var bool Whether dates returned by the GraphQL API should be set to the system time zone by default, rather than UTC.
      * @since 3.7.0
      * @group GraphQL
      */
-    public $useSystemTimezoneForGraphQlDates = false;
+    public $setGraphqlDatesToSystemTimeZone = false;
 
     /**
      * @var bool Whether to enable Craft’s template `{% cache %}` tag on a global basis.
@@ -1294,9 +1290,7 @@ class GeneralConfig extends BaseObject
     public $restoreCommand;
 
     /**
-     * Whether asset URLs should be revved by appending extra parameters to them.
-     *
-     * @var bool
+     * @var bool Whether asset URLs should be revved so browsers don’t load cached versions when they’re modified.
      * @since 3.7.0
      */
     public $revAssetUrls = false;
