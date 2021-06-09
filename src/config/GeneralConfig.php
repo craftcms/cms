@@ -48,6 +48,7 @@ class GeneralConfig extends BaseObject
         'backupDbOnUpdate' => 'backupOnUpdate',
         'defaultFilePermissions' => 'defaultFileMode',
         'defaultFolderPermissions' => 'defaultDirMode',
+        'enableGraphQlCaching' => 'enableGraphqlCaching',
         'environmentVariables' => 'aliases',
         'isSystemOn' => 'isSystemLive',
         'restoreDbOnUpdateFailure' => 'restoreOnUpdateFailure',
@@ -666,7 +667,7 @@ class GeneralConfig extends BaseObject
      * @since 3.3.12
      * @group GraphQL
      */
-    public $enableGraphQlCaching = true;
+    public $enableGraphqlCaching = true;
 
     /**
      * @var bool Whether Craft should use the system date for default GraphQL dates.
