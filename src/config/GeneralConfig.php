@@ -1280,6 +1280,14 @@ class GeneralConfig extends BaseObject
     public $restoreCommand;
 
     /**
+     * Whether asset URLs should be revved by appending extra parameters to them.
+     *
+     * @var bool
+     * @since 3.7.0
+     */
+    public $revAssetUrls = false;
+
+    /**
      * @var bool Whether Craft should rotate images according to their EXIF data on upload.
      * @group Image Handling
      */
