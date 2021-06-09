@@ -12,7 +12,6 @@
 ## 3.6.16 - 2021-06-01
 
 ### Added
-- Admin tables can now include linked buttons in the toolbar.
 - Added `craft\helpers\Db::supportsTimeZones()`.
 
 ### Changed
