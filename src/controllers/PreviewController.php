@@ -138,7 +138,7 @@ class PreviewController extends Controller
         $this->response->setNoCacheHeaders();
 
         // Recheck whether this is an action request, this time ignoring the token
-        $this->request->checkIfActionRequest(true, true);
+        $this->request->checkIfActionRequest(true, false);
 
         // Re-route the request, this time ignoring the token
         $urlManager = Craft::$app->getUrlManager();

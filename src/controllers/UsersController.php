@@ -1853,6 +1853,7 @@ class UsersController extends Controller
                 Craft::$app->getUrlManager()->setRouteParams([
                     'variables' => $variables,
                 ]);
+                Craft::$app->getRequest()->checkIfActionRequest(true, true, false);
                 return Craft::$app->handleRequest($this->request, true);
             } catch (NotFoundHttpException $e) {
                 // Just go with the CP template
