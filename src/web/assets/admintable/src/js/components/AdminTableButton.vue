@@ -1,10 +1,10 @@
 <template>
-    <a ref="button" :href="linkHref" class="btn" :class="actionClass" :data-icon="icon" @click="handleClick">{{label}}</a>
+    <a ref="button" :href="linkHref" class="btn" :class="buttonClass" :data-icon="icon" @click="handleClick">{{label}}</a>
 </template>
 
 <script>
     export default {
-        name: 'AdminTableActionButton',
+        name: 'AdminTableButton',
 
         props: {
             btnClass: {
@@ -29,7 +29,7 @@
         },
 
         computed: {
-            actionClass() {
+            buttonClass() {
                 let isEnabled = this.isEnabled;
 
                 if (typeof this.btnClass == 'string') {

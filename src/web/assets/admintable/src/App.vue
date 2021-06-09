@@ -27,16 +27,16 @@
                     <div class="clear hidden" :title="searchClearTitle"></div>
                 </div>
 
-                <div class="vue-admin-table-secondary-actions" v-if="secondaryActions && secondaryActions.length">
+                <div class="vue-admin-table-buttons" v-if="buttons && buttons.length">
                     <div class="flex">
-                        <div v-for="(action, index) in secondaryActions" :key="index">
-                            <admin-table-secondary-action-button
-                                :label="action.label"
-                                :icon="action.icon"
-                                :href="action.href"
-                                :btn-class="action.class"
-                                :enabled="action.enabled"
-                            ></admin-table-secondary-action-button>
+                        <div v-for="(button, index) in buttons" :key="index">
+                            <admin-table-button
+                                :label="button.label"
+                                :icon="button.icon"
+                                :href="button.href"
+                                :btn-class="button.class"
+                                :enabled="button.enabled"
+                            ></admin-table-button>
                         </div>
                     </div>
                 </div>
@@ -139,7 +139,7 @@
     import AdminTableCheckbox from './js/components/AdminTableCheckbox';
     import AdminTableActionButton from './js/components/AdminTableActionButton';
     import AdminTableDetailRow from './js/components/AdminTableDetailRow';
-    import AdminTableSecondaryActionButton from './js/components/AdminTableSecondaryActionButton';
+    import AdminTableButton from './js/components/AdminTableButton';
     import Sortable from 'sortablejs'
     import {debounce, map} from 'lodash'
 
@@ -149,7 +149,7 @@
             AdminTableCheckbox,
             AdminTableDeleteButton,
             AdminTablePagination,
-            AdminTableSecondaryActionButton,
+            AdminTableButton,
             Vuetable,
         },
 
@@ -164,6 +164,10 @@
             allowMultipleSelections: {
                 type: Boolean,
                 default: true,
+            },
+            buttons: {
+                type: Array,
+                default: () => { return []; },
             },
             checkboxes: {
                 type: Boolean,
@@ -239,10 +243,6 @@
             searchPlaceholder: {
                 type: String,
                 default: Craft.t('app', 'Search'),
-            },
-            secondaryActions: {
-                type: Array,
-                default: () => { return []; },
             },
             tableData: {
                 type: Array,
@@ -669,7 +669,7 @@
         background-color: transparent;
     }
 
-    .vue-admin-table-secondary-actions {
+    .vue-admin-table-buttons {
         margin-left: auto;
     }
 

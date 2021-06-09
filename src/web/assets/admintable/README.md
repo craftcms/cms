@@ -57,7 +57,7 @@ new Craft.VueAdminTable({...options...});
 | reorderFailMessage        | String   | `Couldn’t reorder items`                    | Message to be displayed as the fail notice after reorder failure. |
 | search                    | Bool     | `false`                                     | Whether or not to show the search field.                     |
 | searchPlaceholder         | String   | `Search`                                    | Search placeholder text.                                     |
-| secondaryActions          | Array    | `[]`                                        | Array of links to be placed in the toolbar.                                     |
+| buttons                   | Array    | `[]`                                        | Array of buttons to be placed in the toolbar.                                     |
 | tableData                 | Array    | `null`                                      | Array of objects used to populate the table data for data mode. |
 | tableDataEndpoint         | String   | `null`                                      | Endpoint for api mode to retrieve table data, pagination and table metadata (e.g. total count). |
 
@@ -354,15 +354,15 @@ new Craft.VueAdminTable({
 });
 ```
 
-## Secondary actions
+## Buttons
 
-The secondary actions are simple button links that can appear in the top right of the table toolbar. As an example these are useful if you would like to link to the creation of a "New record" for the table.
+The buttons are simple button links that can appear in the top right of the table toolbar. As an example these are useful if you would like to link to the creation of a "New record" for the table.
 
 ### Options
 
-The `secondaryActions` option is an array of objects.
+The `buttons` option is an array of objects.
 
-Each object has the following parameters. __References to "button" is only from a visual standpoint, secondary actions are anchor elements.__
+Each object has the following parameters. __References to "button" is only from a visual standpoint, buttons are anchor elements.__
 
 | Name | Description |
 | ---- | ----------- |
@@ -377,7 +377,7 @@ Each object has the following parameters. __References to "button" is only from 
 ```js
 new Craft.VueAdminTable({
     // ...
-    secondaryActions: [
+    buttons: [
         {
             label: 'Create New Thing',
             icon: 'plus',
