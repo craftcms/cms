@@ -128,8 +128,8 @@ class Authentication extends Component
         $session = Craft::$app->getSession();
         $scenario = $state->getAuthenticationScenario();
 
-        $authStates = $this->getAllAuthenticationStates();
-        $authStates[$scenario] = $state->exportState();
+        // Only store one authentication state at a time.
+        $authStates = [$scenario => $state->exportState()];
         $session->set(self::AUTHENTICATION_STATE_KEY, $authStates);
     }
 
