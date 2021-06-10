@@ -358,6 +358,18 @@ abstract class Controller extends \yii\web\Controller
     }
 
     /**
+     * Requires that the user is using a secure connection.
+     *
+     * @throws ForbiddenHttpException
+     */
+    public function requireSecureConnection()
+    {
+        if (!Craft::$app->getRequest()->getIsSecureConnection()) {
+            throw new ForbiddenHttpException(Craft::t('app', 'This action may only be performed over a secure connection.'));
+        }
+    }
+
+    /**
      * Throws a 400 error if this isn’t a POST request
      *
      * @throws BadRequestHttpException if the request is not a post request

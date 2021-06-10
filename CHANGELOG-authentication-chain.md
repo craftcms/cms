@@ -23,3 +23,4 @@
 - Added `craft\records\AuthAuthenticator`.
 - Added `craft\records\AuthWebAuthn`.
 - Added `craft\services\Authentication`.
+- Added `craft\web\Controller::requireSecureConnection()`.
