@@ -424,7 +424,7 @@
               }
 
               if (this.deleteCallback && {}.toString.call(this.deleteCallback) === '[object Function]') {
-                  this.deleteCallback();
+                  this.deleteCallback(id);
               }
 
               this.isLoading = false;
