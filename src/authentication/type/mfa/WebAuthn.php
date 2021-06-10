@@ -94,8 +94,7 @@ class WebAuthn extends MfaType
         $userEntity = self::getUserEntity($this->state->getResolvedUser());
         $allowedCredentials = array_map(
             static fn(CredentialSource $credential) => $credential->getPublicKeyCredentialDescriptor(),
-            (new CredentialRepository())->findAllForUserEntity($userEntity)
-        );
+            Craft::createObject(CredentialRepository::class)->findAllForUserEntity($userEntity));
 
         $requestOptions = $server->generatePublicKeyCredentialRequestOptions(null, $allowedCredentials);
         Craft::$app->getSession()->set(self::WEBAUTHN_CREDENTIAL_REQUEST_OPTION_KEY, $requestOptions);
@@ -131,7 +130,8 @@ class WebAuthn extends MfaType
             $credentials[] = [
                 'name' => $existingCredential->name,
                 'credentialId' => $existingCredential->credentialId,
-                'lastUsed' => DateTimeHelper::toDateTime($existingCredential->dateLastUsed)];
+                'lastUsed' => DateTimeHelper::toDateTime($existingCredential->dateLastUsed)
+            ];
         }
 
         $isSecureConnection = Craft::$app->getRequest()->getIsSecureConnection();
@@ -149,17 +149,17 @@ class WebAuthn extends MfaType
      */
     public static function getWebauthnServer(): Server
     {
-        return new Server(
+        return Craft::createObject(Server::class, [
             self::getRelayingPartyEntity(),
-            new CredentialRepository()
-        );
+            Craft::createObject(CredentialRepository::class)
+        ]);
     }
 
     /**
      * Get the credential creation options.
      *
      * @param User $user The user for which to get the credential creation options.
-     * @param bool $createNew  Whether new credential options should be created
+     * @param bool $createNew Whether new credential options should be created
      *
      * @return PublicKeyCredentialOptions | null
      */
@@ -176,9 +176,8 @@ class WebAuthn extends MfaType
             $userEntity = self::getUserEntity($user);
 
             $excludeCredentials = array_map(
-                static fn (CredentialSource $credential) => $credential->getPublicKeyCredentialDescriptor(),
-                (new CredentialRepository())->findAllForUserEntity($userEntity)
-            );
+                static fn(CredentialSource $credential) => $credential->getPublicKeyCredentialDescriptor(),
+                Craft::createObject(CredentialRepository::class)->findAllForUserEntity($userEntity));
 
             $credentialOptions = Json::encode(
                 self::getWebauthnServer()->generatePublicKeyCredentialCreationOptions(
