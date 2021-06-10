@@ -14,22 +14,10 @@ use craft\authentication\Chain;
 use craft\authentication\type\mfa\AuthenticatorCode;
 use craft\authentication\type\mfa\WebAuthn;
 use craft\authentication\webauthn\CredentialRepository;
-use craft\elements\User;
-use craft\errors\AuthenticationException;
 use craft\helpers\Authentication as AuthenticationHelper;
 use craft\helpers\Json;
 use craft\services\Authentication;
 use craft\web\Controller;
-use GuzzleHttp\Psr7\Query;
-use GuzzleHttp\Psr7\Request;
-use Webauthn\AttestationStatement\AttestationObjectLoader;
-use Webauthn\AttestationStatement\AttestationStatementSupportManager;
-use Webauthn\AttestationStatement\NoneAttestationStatementSupport;
-use Webauthn\AuthenticatorAttestationResponse;
-use Webauthn\AuthenticatorAttestationResponseValidator;
-use Webauthn\PublicKeyCredentialLoader;
-use Webauthn\PublicKeyCredentialRpEntity;
-use Webauthn\PublicKeyCredentialSource;
 use Webauthn\Server;
 use yii\base\InvalidConfigException;
 use yii\web\BadRequestHttpException;
@@ -218,7 +206,28 @@ class AuthenticationController extends Controller
     }
 
     /**
-     * Attach WebAuthn ceredentials.
+     * Detach a
+     * @return Response
+     * @throws BadRequestHttpException
+     * @throws \Throwable
+     * @throws \yii\web\ForbiddenHttpException
+     */
+    public function actionDetachWebAuthnCredentials(): Response
+    {
+        $this->requireAcceptsJson();
+        $this->requireLogin();
+        // TODO require elevated session once admintable allows support for it
+        //$this->requireElevatedSession();
+        $userSession = Craft::$app->getUser();
+        $currentUser = $userSession->getIdentity();
+
+        $credentialId = Craft::$app->getRequest()->getRequiredBodyParam('id');
+
+        return $this->asJson(['success' => (new CredentialRepository())->deleteCredentialSourceForUser($currentUser, $credentialId)]);
+    }
+
+    /**
+     * Attach WebAuthn credentials.
      *
      * @return Response
      * @throws BadRequestHttpException
@@ -229,6 +238,7 @@ class AuthenticationController extends Controller
         $this->requireAcceptsJson();
         $this->requireLogin();
         $this->requireElevatedSession();
+        $this->requireSecureConnection();
 
         $request = Craft::$app->getRequest();
         $payload = $request->getRequiredBodyParam('credentials');
@@ -249,10 +259,11 @@ class AuthenticationController extends Controller
 
             $options = WebAuthn::getCredentialCreationOptions($currentUser);
             $credentials = $server->loadAndCheckAttestationResponse(Json::encode($payload), $options, $request->asPsr7());
-            $credentialRepository->saveNamedCredentialSource($credentialName, $credentials);
+            $credentialRepository->saveNamedCredentialSource($credentials, $credentialName);
 
             $step = new WebAuthn();
             $output['html'] = $step->getUserSetupFormHtml($currentUser);
+            $output['footHtml'] = Craft::$app->getView()->getBodyHtml();
         } catch (\Throwable $exception) {
             Craft::$app->getErrorHandler()->logException($exception);
             $output['error'] = Craft::t('app', 'Something went wrong when attempting to attach credentials.');
@@ -288,6 +299,7 @@ class AuthenticationController extends Controller
             $detach = $request->getBodyParam('detach');
 
             if (!empty($code1) || !empty($code2)) {
+                $this->requireSecureConnection();
                 $authenticator = AuthenticationHelper::getCodeAuthenticator();
 
                 $authenticator->setWindow(4);

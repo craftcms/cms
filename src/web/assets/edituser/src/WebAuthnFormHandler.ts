@@ -1,4 +1,5 @@
-interface CraftUserInfo {
+interface CraftUserInfo
+{
     username: string,
     displayName: string,
     uid: string
@@ -8,7 +9,7 @@ class WebAuthnFormHandler
 {
     readonly attachEndpoint = 'authentication/attach-web-authn-credentials';
     private disabled = false;
-    private $button = $('#attach-webauthn');
+    private static $button = $('#attach-webauthn');
     private $container = $('#webauthn-settings');
 
     constructor()
@@ -18,7 +19,8 @@ class WebAuthnFormHandler
 
     protected attachEvents()
     {
-        this.$button.on('click', (ev) => {
+        WebAuthnFormHandler.$button = $('#attach-webauthn');
+        WebAuthnFormHandler.$button.on('click', (ev) => {
             ev.stopImmediatePropagation();
             const $button = $(ev.target);
             const optionData = $button.data('credential-options');
@@ -27,7 +29,7 @@ class WebAuthnFormHandler
             const keyCredentialOptions = {...optionData, user: {...optionData.user}};
 
             if (optionData.excludeCredentials) {
-                keyCredentialOptions.excludeCredentials = [... optionData.excludeCredentials];
+                keyCredentialOptions.excludeCredentials = [...optionData.excludeCredentials];
             }
 
             // proprietary base 64 decode, for some reason
@@ -47,9 +49,11 @@ class WebAuthnFormHandler
                 };
             }
 
-            this.createCredentials(keyCredentialOptions).then(( credentials) => {
+            this.createCredentials(keyCredentialOptions).then((credentials) => {
                 Craft.elevatedSessionManager.requireElevatedSession(() => this.attachWebAuthnCredential(credentials));
-            }).catch((err) => {console.log(err)})
+            }).catch((err) => {
+                console.log(err)
+            })
 
             return false;
         });
@@ -84,10 +88,30 @@ class WebAuthnFormHandler
                 this.attachEvents();
             }
 
+            if (response.footHtml) {
+                const jsFiles = response.footHtml.match(/([^"']+\.js)/gm);
+                const existingSources = Array.from(document.scripts).map(node => node.getAttribute('src')).filter(val => val && val.length > 0);
+                // For some reason, Chrome will fail to load sourcemap properly when jQuery append is used
+                // So roll our own JS file append-thing.
+                if (jsFiles) {
+                    for (const jsFile of jsFiles) {
+                        if (!existingSources.includes(jsFile)) {
+                            let node = document.createElement('script');
+                            node.setAttribute('src', jsFile);
+                            document.body.appendChild(node);
+                        }
+                    }
+                    // If that fails, use Craft's thing.
+                } else {
+                    Craft.appendFootHtml(response.footHtml);
+                }
+            }
+
             this.enable();
         });
 
     }
+
     /**
      * Get the WebAuthn server options based on a random string and user info.
      *
@@ -96,9 +120,11 @@ class WebAuthnFormHandler
      */
     private async createCredentials(keyCredentialOptions: PublicKeyCredentialCreationOptions): Promise<PublicKeyCredential>
     {
-        const credentials = <PublicKeyCredential> await navigator.credentials.create({
+        const credentials = <PublicKeyCredential>await navigator.credentials.create({
             publicKey: keyCredentialOptions
-        }).catch((err) => {console.log(err)});
+        }).catch((err) => {
+            console.log(err)
+        });
 
         if (!credentials) {
             throw "Failed to create credentials";
@@ -116,7 +142,7 @@ class WebAuthnFormHandler
     protected disable()
     {
         this.disabled = true;
-        this.$button.fadeTo(100, 0.5);
+        WebAuthnFormHandler.$button.fadeTo(100, 0.5);
     }
 
     /**
@@ -127,7 +153,28 @@ class WebAuthnFormHandler
     protected enable()
     {
         this.disabled = false;
-        this.$button.fadeTo(100, 1);
+        WebAuthnFormHandler.$button.fadeTo(100, 1);
+    }
+
+    /**
+     * Remove an excluded credential by its id.
+     *
+     * @param credentialId
+     */
+    public static removeExcludedCredential(credentialId: string)
+    {
+        const optionData = WebAuthnFormHandler.$button.data('credential-options');
+        let newExcluded = [];
+
+        for (const excluded of optionData.excludeCredentials) {
+            // Adjust for the proprietary base64 encode thing.
+            if (excluded.id.replace(/[-_=+\/]/g, '') !== credentialId.replace(/[-_=+\/]/g, '')) {
+                newExcluded.push(excluded);
+            }
+        }
+
+        optionData.excludeCredentials = newExcluded;
+        WebAuthnFormHandler.$button.data('credential-options', optionData);
     }
 }
 

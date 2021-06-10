@@ -6,6 +6,7 @@ namespace craft\authentication\webauthn;
 use Craft;
 use craft\authentication\type\mfa\WebAuthn;
 use craft\db\Table;
+use craft\elements\User;
 use craft\errors\MissingComponentException;
 use craft\helpers\Db;
 use craft\helpers\Json;
@@ -87,5 +88,19 @@ class CredentialRepository implements PublicKeyCredentialSourceRepository
     public function saveCredentialSource(PublicKeyCredentialSource $publicKeyCredentialSource): void
     {
         $this->saveNamedCredentialSource($publicKeyCredentialSource);
+    }
+
+    /**
+     * Delete a credential by user and credential id.
+     *
+     * @param User $user
+     * @param string $publicKeyCredentialId
+     * @return bool
+     * @throws \Throwable
+     */
+    public function deleteCredentialSourceForUser(User $user, string $publicKeyCredentialId): bool
+    {
+        $record = AuthWebAuthn::findOne(['userId' => $user->id, 'credentialId' => $publicKeyCredentialId]);
+        return $record && $record->delete();
     }
 }

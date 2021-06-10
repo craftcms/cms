@@ -1,28 +1,44 @@
 {% import "_includes/forms" as forms %}
 
+{% do view.registerAssetBundle('craft\\web\\assets\\admintable\\AdminTableAsset') -%}
+
 <div id="webauthn-settings">
     <h2>{{ 'Manage FIDO2 authentication'|t('app') }}</h2>
-
     {% if existingCredentials|length > 0 %}
-        <table>
-            <thead>
-                <tr>
-                    <th>Credential name</th>
-                    <th>Last used</th>
-                    <th class="thin"></th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for credentials in existingCredentials %}
-                    <tr>
-                        <td>{{credentials.name}}</td>
-                        <td>{{credentials.dateLastUsed ? credentials.dateLastUsed|date('Y-m-d H:i') : ''}}</td>
-                        <td>X</td>
-                    </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+        <div id="credentials-vue-admin-table" style="margin-top: 15px;"></div>
     {% endif %}
 
-    <button type="button" id="attach-webauthn" class="btn submit formsubmit" data-credential-options="{{ credentialOptions|e('html_attr') }}">{{ 'Attach a device'|t('app') }}</button>
+    {% if isSecureConnection %}
+        <button type="button" id="attach-webauthn" class="btn submit formsubmit" data-credential-options="{{ credentialOptions|e('html_attr') }}">{{ 'Attach a device'|t('app') }}</button>
+    {% else %}
+        <p>{{ 'A secure connection is required to attach new credentials'|t('app') }}
+    {% endif %}
 </div>
+
+
+{% set tableData = [] %}
+{% for credential in existingCredentials %}
+    {% set tableData = tableData|merge([{
+        id: credential.credentialId,
+        title: credential.name,
+        name: credential.name,
+        lastUsed: credential.lastUsed|length ? credential.lastUsed|date('Y-m-d H:i') : '',
+    }]) %}
+{% endfor %}
+
+{% js %}
+    var columns = [
+        { name: 'title', title: Craft.t('app', 'Name') },
+        { name: 'lastUsed', title: Craft.t('app', 'Last used') }
+    ];
+
+    new Craft.VueAdminTable({
+        columns: columns,
+        container: '#credentials-vue-admin-table',
+        deleteAction: 'authentication/detach-web-authn-credentials',
+        emptyMessage: Craft.t('app', 'No credentials exist yet.'),
+        tableData: {{ tableData|json_encode|raw }},
+        padded: true,
+        deleteCallback: WebAuthnFormHandler.removeExcludedCredential
+    });
+{% endjs %}

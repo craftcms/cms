@@ -127,14 +127,18 @@ class WebAuthn extends MfaType
 
         $credentials = [];
 
-        // TODO Models probably more appropriate than arrays?
         foreach ($existingCredentials as $existingCredential) {
-            $credentials[] = ['name' => $existingCredential->name, 'dateLastUsed' => DateTimeHelper::toDateTime($existingCredential->dateLastUsed)];
+            $credentials[] = [
+                'name' => $existingCredential->name,
+                'credentialId' => $existingCredential->credentialId,
+                'lastUsed' => DateTimeHelper::toDateTime($existingCredential->dateLastUsed)];
         }
 
+        $isSecureConnection = Craft::$app->getRequest()->getIsSecureConnection();
         return Craft::$app->getView()->renderTemplate('_components/authenticationsteps/WebAuthn/setup', [
-            'credentialOptions' => Json::encode(self::getCredentialCreationOptions($user)),
-            'existingCredentials' => $credentials
+            'credentialOptions' => $isSecureConnection ? Json::encode(self::getCredentialCreationOptions($user, true)) : '',
+            'existingCredentials' => $credentials,
+            'isSecureConnection' => $isSecureConnection
         ]);
     }
 
@@ -155,10 +159,11 @@ class WebAuthn extends MfaType
      * Get the credential creation options.
      *
      * @param User $user The user for which to get the credential creation options.
+     * @param bool $createNew  Whether new credential options should be created
      *
      * @return PublicKeyCredentialOptions | null
      */
-    public static function getCredentialCreationOptions(User $user): ?PublicKeyCredentialOptions
+    public static function getCredentialCreationOptions(User $user, bool $createNew = false): ?PublicKeyCredentialOptions
     {
         if (Craft::$app->getEdition() !== Craft::Pro) {
             return null;
@@ -167,7 +172,7 @@ class WebAuthn extends MfaType
         $session = Craft::$app->getSession();
         $credentialOptions = $session->get(self::WEBAUTHN_CREDENTIAL_OPTION_KEY);
 
-        if (!$credentialOptions) {
+        if ($createNew || !$credentialOptions) {
             $userEntity = self::getUserEntity($user);
 
             $excludeCredentials = array_map(
