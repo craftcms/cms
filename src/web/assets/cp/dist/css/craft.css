@@ -3703,6 +3703,8 @@ body.ltr .layoutdesigner { padding-right: 241px; }
 
 body.rtl .layoutdesigner { padding-left: 241px; }
 
+.errors > .layoutdesigner { border: 1px solid #CF1124 !important; }
+
 .layoutdesigner .fld-workspace { -webkit-flex: 1; flex: 1; background-color: #f3f7fc; background-image: -o-linear-gradient(left, #ecf2f9 1px, transparent 0px), -o-linear-gradient(top, #ecf2f9 1px, transparent 1px); background-image: linear-gradient(to right, #ecf2f9 1px, transparent 0px), linear-gradient(to bottom, #ecf2f9 1px, transparent 1px); -o-background-size: 24px 24px; background-size: 24px 24px; background-position: -1px -1px; box-shadow: inset 0 1px 3px -1px #acbed2; }
 
 body.ltr .layoutdesigner .fld-workspace { border-radius: 3px 0 0 3px; }

@@ -23,6 +23,10 @@ $gridColor: hsl(212, 50%, 95%);
   @include padding-right($tabWidth + 1);
   min-height: 500px;
 
+  .errors > & {
+    border: 1px solid $errorColor !important;
+  }
+
   .fld-workspace {
     flex: 1;
     @include border-radius($smallBorderRadius, 0, 0, $smallBorderRadius);

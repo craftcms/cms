@@ -1132,10 +1132,16 @@ class Users extends Component
      * Save the user field layout
      *
      * @param FieldLayout $layout
+     * @param bool $runValidation Whether the layout should be validated
      * @return bool
      */
-    public function saveLayout(FieldLayout $layout)
+    public function saveLayout(FieldLayout $layout, bool $runValidation = true)
     {
+        if ($runValidation && !$layout->validate()) {
+            Craft::info('Field layout not saved due to validation error.', __METHOD__);
+            return false;
+        }
+
         $projectConfig = Craft::$app->getProjectConfig();
         $fieldLayoutConfig = $layout->getConfig();
         $uid = StringHelper::UUID();

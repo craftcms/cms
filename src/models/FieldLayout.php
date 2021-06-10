@@ -167,6 +167,12 @@ class FieldLayout extends Model
     public $uid;
 
     /**
+     * @var string[]|null Reserved attribute names
+     * @since 3.7.0
+     */
+    public $reservedAttributes;
+
+    /**
      * @var BaseField[][]
      * @see getAvailableCustomFields()
      */
@@ -204,7 +210,35 @@ class FieldLayout extends Model
     {
         $rules = parent::defineRules();
         $rules[] = [['id'], 'number', 'integerOnly' => true];
+        $rules[] = [['fields'], 'validateFields'];
         return $rules;
+    }
+
+    /**
+     * Validates the field selections.
+     *
+     * @return void
+     * @since 3.7.0
+     */
+    public function validateFields(): void
+    {
+        if (!$this->reservedAttributes) {
+            return;
+        }
+
+        // Make sure no fields are using one of our reserved attribute names
+        foreach ($this->getTabs() as $tab) {
+            foreach ($tab->elements as $element) {
+                if (
+                    $element instanceof BaseField &&
+                    in_array($element->attribute(), $this->reservedAttributes, true)
+                ) {
+                    $this->addError('fields', Craft::t('app', '“{handle}” is a reserved word.', [
+                        'handle' => $element->attribute(),
+                    ]));
+                }
+            }
+        }
     }
 
     /**

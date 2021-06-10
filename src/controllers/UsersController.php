@@ -1739,8 +1739,17 @@ class UsersController extends Controller
         // Set the field layout
         $fieldLayout = Craft::$app->getFields()->assembleLayoutFromPost();
         $fieldLayout->type = User::class;
+        $fieldLayout->reservedAttributes = [
+            'groups',
+            'photo',
+        ];
 
         if (!Craft::$app->getUsers()->saveLayout($fieldLayout)) {
+            Craft::$app->getUrlManager()->setRouteParams([
+                'variables' => [
+                    'fieldLayout' => $fieldLayout,
+                ],
+            ]);
             $this->setFailFlash(Craft::t('app', 'Couldn’t save user fields.'));
             return null;
         }

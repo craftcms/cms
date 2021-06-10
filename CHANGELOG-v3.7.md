@@ -72,6 +72,7 @@
 - Added `craft\helpers\ElementHelper::isDraft()`.
 - Added `craft\helpers\ElementHelper::isRevision()`.
 - Added `craft\helpers\Html::parseTagAttribute()`.
+- Added `craft\models\FieldLayout::$reservedAttributes`.
 - Added `craft\services\Elements::EVENT_AFTER_MERGE_CANONICAL_CHANGES`.
 - Added `craft\services\Elements::EVENT_BEFORE_MERGE_CANONICAL_CHANGES`.
 - Added `craft\services\Elements::mergeCanonicalChanges()`.
@@ -101,6 +102,10 @@
 - Improved the UI of the Time Zone input in Settings → General.
 - Tag field layouts now include the Title field, allowing its placement and label to be customized.
 - Custom fields with a custom translation method are no longer labelled as translatable if the translation key is an empty string. ([#7647](https://github.com/craftcms/cms/issues/7647))
+- Category and tag groups no longer validate if their field layout contains a field called `group`. ([#2797](https://github.com/craftcms/cms/issues/2797))
+- Entry types no longer validate if their field layout contains a field called `author`, `section`, or `type`. ([#2797](https://github.com/craftcms/cms/issues/2797))
+- Volumes no longer validate if their field layout contains a field called `folder` or `volume`. ([#2797](https://github.com/craftcms/cms/issues/2797))
+- The user field layout no longer validates if it contains a field called `groups` or `photo`. ([#2797](https://github.com/craftcms/cms/issues/2797))
 - The `resave/entries` command now has a `--provisional-drafts` option.
 - Entries no longer support Live Preview if the `autosaveDrafts` config setting is disabled.
 - Most text areas in the control panel will now submit the closest form when <kbd>Ctrl</kbd>/<kbd>Command</kbd> + <kbd>Return</kbd> is pressed. ([#7999](https://github.com/craftcms/cms/issues/7999))
@@ -120,7 +125,8 @@
 - `craft\base\Element::getCpEditUrl()` now includes a `draftId`/`revisionId` query string param in the returned URL if the element is a draft or revision. ([#7832](https://github.com/craftcms/cms/issues/7832))
 - `craft\base\FieldInterface::getContentColumnType()` can now return an array, if the field stores content across multiple columns.
 - `craft\helpers\Cp::elementHtml()` now has a `$single` argument.
-- `craft\services\AssetTransforms::normalizeTransform()` now accepts transform configs arrays that specify a base transform which should be extended, via a `transform` key set to the stored transform’s handle. ([#7892](https://github.com/craftcms/cms/issues/7892)) 
+- `craft\services\AssetTransforms::normalizeTransform()` now accepts transform configs arrays that specify a base transform which should be extended, via a `transform` key set to the stored transform’s handle. ([#7892](https://github.com/craftcms/cms/issues/7892))
+- `craft\services\Users::saveLayout()` now has a `$runValidation` argument, which is `true` by default.
 - `craft\web\View::clearJsBuffer()` now has a `$combine` argument.
 - `craft\web\View::namespaceInputs()` now accepts a callback function for the first argument, which simplifies the process of setting and resetting the registered namespace before and after generating the to-be-namespaced HTML.
 - Updated Garnish to 0.1.46.

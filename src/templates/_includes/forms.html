@@ -307,6 +307,7 @@
 {% macro fieldLayoutDesignerField(config) %}
     {{ _self.field({
         label: 'Field Layout'|t('app'),
+        errors: (config.fieldLayout ?? false) ? config.fieldLayout.getErrorSummary(true),
     }|merge(config), 'template:_includes/forms/fieldLayoutDesigner') }}
 {% endmacro %}
 
