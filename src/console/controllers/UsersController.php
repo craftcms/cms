@@ -189,7 +189,7 @@ class UsersController extends Controller
                 $this->stderr('Unable to set new password on user: ' . $user->getFirstError('newPassword') . PHP_EOL, Console::FG_RED);
                 return ExitCode::UNSPECIFIED_ERROR;
             }
-        } else {
+        } elseif ($this->interactive) {
             $this->passwordPrompt([
                 'validator' => $this->_createInputValidator($user, 'newPassword'),
             ]);
