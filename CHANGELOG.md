@@ -9,6 +9,7 @@
 - Fixed a bug where missing plugin notices for Google Cloud Storage were linking to Amazon S3 instead. ([#8012](https://github.com/craftcms/cms/issues/8012))
 - Fixed a bug where Number fields’ Default Value, Min Value, and Max Value settings were getting formatted with decimal values when the Intl extension wasn’t installed, causing validation errors when saving the field. ([#8007](https://github.com/craftcms/cms/issues/8007))
 - Fixed a type coercion related bug when passing an empty string as a dimension to Asset transforms. ([#8025](https://github.com/craftcms/cms/issues/8025))
+- Fixed a bug where nested element sources weren’t showing source-specific sort options. ([#8026](https://github.com/craftcms/cms/issues/8026))
 
 ## 3.6.16 - 2021-06-01
 
