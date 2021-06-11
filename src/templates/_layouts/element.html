@@ -93,7 +93,7 @@
 {% endif %}
 
 {# If this is an unpublished draft, then we should only show status toggles if the
-   user actually has permission to publish chanegs #}
+   user actually has permission to publish changes #}
 {% set showStatusToggles = (showStatusToggles ?? true) and
     element.hasStatuses() and
     (not isUnpublishedDraft or canUpdateSource) %}
