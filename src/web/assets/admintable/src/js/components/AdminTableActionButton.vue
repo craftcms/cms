@@ -28,7 +28,7 @@
               </a>
             </li>
           </ul>
-            <hr v-if="actionsList.length > 1 && ind != (actionsList.length - 1)" :key="ind">
+            <hr v-if="actionsList.length > 1 && ind != (actionsList.length - 1) && ind != 0" :key="ind">
         </template>
     </div>
   </form>
