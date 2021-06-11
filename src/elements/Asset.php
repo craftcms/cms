@@ -428,7 +428,7 @@ class Asset extends Element
     protected static function defineTableAttributes(): array
     {
         $attributes = [
-            'title' => ['label' => Craft::t('app', 'Title')],
+            'title' => ['label' => Craft::t('app', 'Asset')],
             'filename' => ['label' => Craft::t('app', 'Filename')],
             'size' => ['label' => Craft::t('app', 'File Size')],
             'kind' => ['label' => Craft::t('app', 'File Kind')],
