@@ -183,8 +183,8 @@ The table below explains all available attributes for data in the detail column.
 | ----------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
 | `handle` (optional)     | The HTML for what will be clicked to show the detail row. If omitted an "info" icon will be displayed.                                       |
 | `title` (optional)      | Content for the title attribute on the clickable show/hide toggle.                                                                           |
-| `content`               | HTML to be displayed in the detail row. If using the `showAsList` option this can be an array that will be converted to a key -> value list. | 
-| `showAsList` (optional) | Default: `false`. When set to `true` and `content` is an array of data a key -> value list will be shown in the detail row.                  | 
+| `content`               | HTML to be displayed in the detail row. If using the `showAsList` option this can be an array that will be converted to a key -> value list. |
+| `showAsList` (optional) | Default: `false`. When set to `true` and `content` is an array of data a key -> value list will be shown in the detail row.                  |
 
 #### Special Column Examples
 
@@ -291,11 +291,11 @@ new Craft.VueAdminTable({
 
 ## Action buttons
 
-Action buttons can be used in conjunction with checkboxes to all bulk actions e.g. bulk enabling/disabling a set of records.
+Action buttons can be used in conjunction with checkboxes to perform singular or bulk actions e.g. bulk enabling/disabling a set of records.
 
-Action buttons are provided as an array of objects. 
+Action buttons are provided as an array of objects and come in two varieties, a menu button which is a dropdown style button with sub actions or a single action button.
 
-### Top level button
+### Menu action button options
 
 | Name            | Description                                                  |
 | --------------- | ------------------------------------------------------------ |
@@ -303,7 +303,7 @@ Action buttons are provided as an array of objects.
 | icon (optional) | icon to show in the top level button                         |
 | actions         | array of actions for use in the dropdown when the button is clicked (spec below) |
 
-###Sub buttons
+####Sub action buttons
 
 | Name          | Type   | Description                                                  |
 | ------------- | ------ | ------------------------------------------------------------ |
@@ -314,12 +314,18 @@ Action buttons are provided as an array of objects.
 | ajax          | Bool   | whether this action should be posted via ajax                |
 | status        | string | status icon to pass to the button                            |
 | allowMultiple | Bool   | whether or not to allow the action to be run if multiple items are selected |
+| separator     | Bool   | optionally add a separating line above the button (not available on single action buttons) |
+
+### Single action button options
+
+Single action buttons have all the same options as **Sub action buttons** *except separator* (see above).
 
 ### Example
 
 ```js
 var actions = [
     {
+      	// Menu button example
         label: Craft.t('app', 'Set Status'),
         actions: [
             {
@@ -341,9 +347,14 @@ var actions = [
                 action: 'controller/refresh',
                 param: 'refresh',
                 value: 'all',
-                allowMultiple: false
+                allowMultiple: false,
+              	separator: true
             }
         ]
+    },
+  	{
+        label: Craft.t('app', 'Delete'),
+        action: 'controller/delete',
     }
 ];
 
