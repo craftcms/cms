@@ -169,18 +169,16 @@ class VolumesController extends Controller
         $volumeId = $this->request->getBodyParam('volumeId') ?: null;
 
         if ($volumeId) {
-            $volumeUid = Db::uidById(Table::VOLUMES, $volumeId);
-            if (!$volumeUid) {
+            $oldVolume = $volumesService->getVolumeById($volumeId);
+            if (!$oldVolume) {
                 throw new BadRequestHttpException("Invalid volume ID: $volumeId");
             }
-        } else {
-            $volumeUid = null;
         }
 
         $volume = $volumesService->createVolume([
             'id' => $volumeId,
-            'uid' => $volumeUid,
-            'sortOrder' => $savedVolume->sortOrder ?? null,
+            'uid' => $oldVolume->uid ?? null,
+            'sortOrder' => $oldVolume->sortOrder ?? null,
             'type' => $type,
             'name' => $this->request->getBodyParam('name'),
             'handle' => $this->request->getBodyParam('handle'),
