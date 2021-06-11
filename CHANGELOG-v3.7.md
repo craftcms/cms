@@ -51,6 +51,7 @@
 - Added `craft\base\FieldInterface::getStatus()`.
 - Added `craft\base\FieldTrait::$columnSuffix`.
 - Added `craft\console\ControllerTrait::checkRootUser()`.
+- Added `craft\console\controllers\ResaveController::resaveElements()`.
 - Added `craft\elements\User::EVENT_DEFINE_FRIENDLY_NAME`. ([#8027](https://github.com/craftcms/cms/issues/8027))
 - Added `craft\elements\User::EVENT_DEFINE_NAME`. ([#8027](https://github.com/craftcms/cms/issues/8027))
 - Added `craft\elements\User::setFriendlyName()`.
@@ -107,6 +108,7 @@
 - Volumes no longer validate if their field layout contains a field called `folder` or `volume`. ([#2797](https://github.com/craftcms/cms/issues/2797))
 - The user field layout no longer validates if it contains a field called `groups` or `photo`. ([#2797](https://github.com/craftcms/cms/issues/2797))
 - The `resave/entries` command now has a `--provisional-drafts` option.
+- `resave/*` commands now have a `--queue` option. ([#8040](https://github.com/craftcms/cms/issues/8040))
 - Entries no longer support Live Preview if the `autosaveDrafts` config setting is disabled.
 - Most text areas in the control panel will now submit the closest form when <kbd>Ctrl</kbd>/<kbd>Command</kbd> + <kbd>Return</kbd> is pressed. ([#7999](https://github.com/craftcms/cms/issues/7999))
 - The `defaultCpLanguage` config setting no longer affects console requests. ([#7747](https://github.com/craftcms/cms/issues/7747))
@@ -147,6 +149,7 @@
 - Deprecated `craft\behaviors\DraftBehavior::isAttributeOutdated()`. `craft\base\ElementInterface::isAttributeOutdated()` should be used instead.
 - Deprecated `craft\behaviors\DraftBehavior::isFieldModified()`. `craft\base\ElementInterface::isFieldModified()` should be used instead.
 - Deprecated `craft\behaviors\DraftBehavior::isFieldOutdated()`. `craft\base\ElementInterface::isFieldOutdated()` should be used instead.
+- Deprecated `craft\console\controllers\ResaveController::saveElements()`. `resaveElements()` should be used instead.
 - Deprecated `craft\elements\Asset::KIND_FLASH`.
 - Deprecated `craft\services\Content::getContentRow()`.
 - Deprecated `craft\services\Content::populateElementContent()`.
