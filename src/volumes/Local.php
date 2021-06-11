@@ -34,11 +34,14 @@ use RecursiveIteratorIterator;
  */
 class Local extends Volume implements LocalVolumeInterface
 {
+    /* @since 4.0.0 */
     public const VISIBILITY_FILE = 'file';
+    /* @since 4.0.0 */
     public const VISIBILITY_DIR = 'dir';
 
     /**
      * @var int[][] Visibility map
+     * @since 4.0.0
      */
     protected array $visibilityMap = [
         self::VISIBILITY_FILE => [
@@ -49,8 +52,8 @@ class Local extends Volume implements LocalVolumeInterface
         self::VISIBILITY_DIR => [
             self::VISIBILITY_DEFAULT => 0775,
             self::VISIBILITY_PUBLIC => 0775,
-            self::VISIBILITY_HIDDEN => 0700
-        ]
+            self::VISIBILITY_HIDDEN => 0700,
+        ],
     ];
 
     /**
@@ -156,7 +159,7 @@ class Local extends Volume implements LocalVolumeInterface
                 'type' => $listing->isDir() ? 'dir' : 'file',
                 'dateModified' => filemtime($listing->getRealPath()),
                 'fileSize' => !$listing->isDir() ? filesize($listing->getRealPath()) : null,
-                'volume' => $this
+                'volume' => $this,
             ]);
         }
     }

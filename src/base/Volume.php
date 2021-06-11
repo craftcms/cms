@@ -11,9 +11,6 @@ namespace craft\base;
 use Craft;
 use craft\behaviors\FieldLayoutBehavior;
 use craft\elements\Asset;
-use craft\errors\VolumeException;
-use craft\errors\VolumeObjectExistsException;
-use craft\errors\VolumeObjectNotFoundException;
 use craft\helpers\Assets;
 use craft\models\FieldLayout;
 use craft\records\Volume as VolumeRecord;
@@ -29,11 +26,16 @@ abstract class Volume extends SavableComponent implements VolumeInterface
 {
     use VolumeTrait;
 
+    /* @since 4.0.0 */
     public const CONFIG_MIMETYPE = 'mimetype';
+    /* @since 4.0.0 */
     public const CONFIG_VISIBILITY = 'visibility';
 
+    /* @since 4.0.0 */
     public const VISIBILITY_DEFAULT = 'default';
+    /* @since 4.0.0 */
     public const VISIBILITY_HIDDEN = 'hidden';
+    /* @since 4.0.0 */
     public const VISIBILITY_PUBLIC = 'public';
 
     /**
@@ -78,8 +80,8 @@ abstract class Volume extends SavableComponent implements VolumeInterface
                 'dateCreated',
                 'dateUpdated',
                 'uid',
-                'title'
-            ]
+                'title',
+            ],
         ];
 
         // Require URLs for public Volumes.
@@ -118,7 +120,6 @@ abstract class Volume extends SavableComponent implements VolumeInterface
      */
     public function saveFileLocally(string $uriPath, string $targetPath): int
     {
-        Craft::$app->getDeprecator()->log('Volume::saveFileLocally()', 'Volume `saveFileLocally()` method has been deprecated. Use `\craft\helpers\Assets::downloadFile()` instead.');
         return Assets::downloadFile($this, $uriPath, $targetPath);
     }
 
@@ -127,7 +128,6 @@ abstract class Volume extends SavableComponent implements VolumeInterface
      */
     public function createFileByStream(string $path, $stream, array $config): void
     {
-        Craft::$app->getDeprecator()->log('Volume::createFileByStream()', 'Volume `createFileByStream()` method has been deprecated. Use `writeFileFromStream()` instead.');
         $this->writeFileFromStream($path, $stream, $config);
     }
 
@@ -136,7 +136,6 @@ abstract class Volume extends SavableComponent implements VolumeInterface
      */
     public function updateFileByStream(string $path, $stream, array $config): void
     {
-        Craft::$app->getDeprecator()->log('Volume::updateFileByStream()', 'Volume `updateFileByStream()` method has been deprecated. Use `writeFileFromStream()` instead.');
         $this->writeFileFromStream($path, $stream, $config);
     }
 }

@@ -82,9 +82,7 @@ Craft.DraftEditor = Garnish.Base.extend({
         }
 
         // Override the serializer to use our own
-        Craft.cp.$primaryForm.data('serializer', function() {
-            return this.serializeForm(true)
-        }.bind(this));
+        Craft.cp.$primaryForm.data('serializer', () => this.serializeForm(true));
 
         this.addListener(Craft.cp.$primaryForm, 'submit', 'handleFormSubmit');
 
@@ -92,21 +90,21 @@ Craft.DraftEditor = Garnish.Base.extend({
             this.initForDraft();
         } else {
             // If the "Create a draft" button is a secondary button, then add special handling for it
-            this.addListener($('#save-draft-btn'), 'click', function(ev) {
+            this.addListener($('#save-draft-btn'), 'click', ev => {
                 ev.preventDefault();
                 this.createDraft();
                 this.removeListener(Craft.cp.$primaryForm, 'submit.saveShortcut');
-            }.bind(this));
+            });
 
             // If they're not allowed to update the source element, override the save shortcut to create a draft too
             if (!this.settings.canUpdateSource) {
-                this.addListener(Craft.cp.$primaryForm, 'submit.saveShortcut', function(ev) {
+                this.addListener(Craft.cp.$primaryForm, 'submit.saveShortcut', ev => {
                     if (ev.saveShortcut) {
                         ev.preventDefault();
                         this.createDraft();
                         this.removeListener(Craft.cp.$primaryForm, 'submit.saveShortcut');
                     }
-                }.bind(this));
+                });
             }
         }
     },
@@ -167,9 +165,9 @@ Craft.DraftEditor = Garnish.Base.extend({
         // Create the edit draft button
         this.createEditMetaBtn();
 
-        this.addListener(this.$statusIcon, 'click', function() {
+        this.addListener(this.$statusIcon, 'click', () => {
             this.showStatusHud(this.$statusIcon);
-        }.bind(this));
+        });
 
         if (Craft.autosaveDrafts) {
             this.listenForChanges();
@@ -191,9 +189,9 @@ Craft.DraftEditor = Garnish.Base.extend({
 
     expandSiteStatuses: function() {
         this.removeListener(this.$expandSiteStatusesBtn, 'click');
-        this.$expandSiteStatusesBtn.velocity({opacity: 0}, 'fast', function() {
+        this.$expandSiteStatusesBtn.velocity({opacity: 0}, 'fast', () => {
             this.$expandSiteStatusesBtn.remove();
-        }.bind(this));
+        });
 
         const $enabledForSiteField = $(`#enabledForSite-${this.settings.siteId}-field`);
         this.$siteStatusPane = $enabledForSiteField.parent();
@@ -259,7 +257,7 @@ Craft.DraftEditor = Garnish.Base.extend({
         $field
             .css('overflow', 'hidden')
             .height(0)
-            .velocity({height: height}, 'fast', () => {
+            .velocity({height}, 'fast', () => {
                 $field.css({
                     overflow: '',
                     height: '',
@@ -453,7 +451,7 @@ Craft.DraftEditor = Garnish.Base.extend({
     },
 
     getPreviewToken: function() {
-        return new Promise(function(resolve, reject) {
+        return new Promise((resolve, reject) => {
             if (this.previewToken) {
                 resolve(this.previewToken);
                 return;
@@ -465,19 +463,19 @@ Craft.DraftEditor = Garnish.Base.extend({
                 siteId: this.settings.siteId,
                 draftId: this.settings.draftId,
                 revisionId: this.settings.revisionId,
-            }, function(response, textStatus) {
+            }, (response, textStatus) => {
                 if (textStatus === 'success') {
                     this.previewToken = response.token;
                     resolve(this.previewToken);
                 } else {
                     reject();
                 }
-            }.bind(this));
-        }.bind(this));
+            });
+        });
     },
 
     getTokenizedPreviewUrl: function(url, randoParam) {
-        return new Promise(function(resolve, reject) {
+        return new Promise((resolve, reject) => {
             const params = {};
 
             if (randoParam || !this.settings.isLive) {
@@ -499,7 +497,7 @@ Craft.DraftEditor = Garnish.Base.extend({
                 params[Craft.tokenParam] = token;
                 resolve(Craft.getUrl(url, params));
             }).catch(reject);
-        }.bind(this));
+        });
     },
 
     openShareLink: function(url) {
@@ -511,12 +509,12 @@ Craft.DraftEditor = Garnish.Base.extend({
     getPreview: function() {
         if (!this.preview) {
             this.preview = new Craft.Preview(this);
-            this.preview.on('open', function() {
+            this.preview.on('open', () => {
                 if (!this.settings.draftId) {
                     this.listenForChanges();
                 }
-            }.bind(this));
-            this.preview.on('close', function() {
+            });
+            this.preview.on('close', () => {
                 if (!this.settings.draftId) {
                     this.stopListeningForChanges();
                 }
@@ -528,7 +526,7 @@ Craft.DraftEditor = Garnish.Base.extend({
                         this.createdDraftInPreview = false;
                     }, 750);
                 }
-            }.bind(this));
+            });
         }
         return this.preview;
     },
@@ -580,20 +578,20 @@ Craft.DraftEditor = Garnish.Base.extend({
     },
 
     openPreview: function() {
-        return new Promise(function(resolve, reject) {
+        return new Promise((resolve, reject) => {
             this.openingPreview = true;
             this.ensureIsDraftOrRevision(true)
-                .then(function() {
+                .then(() => {
                     this.getPreview().open();
                     this.openingPreview = false;
                     resolve();
-                }.bind(this))
+                })
                 .catch(reject);
-        }.bind(this))
+        })
     },
 
     ensureIsDraftOrRevision: function(onlyIfChanged) {
-        return new Promise(function(resolve, reject) {
+        return new Promise((resolve, reject) => {
             if (!this.settings.draftId && !this.settings.revisionId) {
                 if (
                     onlyIfChanged &&
@@ -609,7 +607,7 @@ Craft.DraftEditor = Garnish.Base.extend({
             } else {
                 resolve();
             }
-        }.bind(this));
+        });
     },
 
     serializeForm: function(removeActionParams) {
@@ -653,15 +651,15 @@ Craft.DraftEditor = Garnish.Base.extend({
     },
 
     createDraft: function() {
-        return new Promise(function(resolve, reject) {
+        return new Promise((resolve, reject) => {
             this.saveDraft(this.serializeForm(true))
                 .then(resolve)
                 .catch(reject);
-        }.bind(this));
+        });
     },
 
     saveDraft: function(data) {
-        return new Promise(function(resolve, reject) {
+        return new Promise((resolve, reject) => {
             // Ignore if we're already submitting the main form
             if (this.submittingForm) {
                 reject();
@@ -669,9 +667,9 @@ Craft.DraftEditor = Garnish.Base.extend({
             }
 
             if (this.saving) {
-                this.queue.push(function() {
+                this.queue.push(() => {
                     this.checkForm()
-                }.bind(this));
+                });
                 return;
             }
 
@@ -690,7 +688,7 @@ Craft.DraftEditor = Garnish.Base.extend({
 
             const url = Craft.getActionUrl(this.settings.saveDraftAction);
 
-            this.saveXhr = Craft.postActionRequest(url, this.prepareData(data), function(response, textStatus) {
+            this.saveXhr = Craft.postActionRequest(url, this.prepareData(data), (response, textStatus) => {
                 $spinners.addClass('hidden');
                 if (this.$saveMetaBtn) {
                     this.$saveMetaBtn.removeClass('active');
@@ -957,8 +955,8 @@ Craft.DraftEditor = Garnish.Base.extend({
                 }
 
                 resolve();
-            }.bind(this));
-        }.bind(this));
+            });
+        });
     },
 
     prepareData: function(data) {

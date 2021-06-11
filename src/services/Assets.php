@@ -23,9 +23,7 @@ use craft\elements\User;
 use craft\errors\AssetException;
 use craft\errors\AssetOperationException;
 use craft\errors\AssetTransformException;
-use craft\errors\ElementNotFoundException;
 use craft\errors\ImageException;
-use craft\errors\MissingComponentException;
 use craft\errors\VolumeException;
 use craft\errors\VolumeObjectExistsException;
 use craft\errors\VolumeObjectNotFoundException;
@@ -51,7 +49,6 @@ use craft\queue\jobs\GeneratePendingTransforms;
 use craft\records\VolumeFolder as VolumeFolderRecord;
 use craft\volumes\Temp;
 use yii\base\Component;
-use yii\base\ErrorException;
 use yii\base\Exception;
 use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
@@ -312,7 +309,12 @@ class Assets extends Component
 
             if ($folder && $deleteDir) {
                 $volume = $folder->getVolume();
-                $volume->deleteDirectory($folder->path);
+                try {
+                    $volume->deleteDirectory($folder->path);
+                } catch (VolumeException $exception) {
+                    Craft::$app->getErrorHandler()->logException($exception);
+                    // Carry on.
+                }
             }
         }
 
@@ -600,7 +602,7 @@ class Assets extends Component
         if ($index->fileExists) {
             // For local volumes, really make sure
             $volume = $asset->getVolume();
-            $transformPath = $asset->getFolder()->path . $assetTransforms->getTransformSubpath($asset, $index);
+            $transformPath = $asset->folderPath . $assetTransforms->getTransformSubpath($asset, $index);
 
             if ($volume instanceof LocalVolumeInterface && !$volume->fileExists($transformPath)) {
                 $index->fileExists = false;
@@ -624,12 +626,12 @@ class Assets extends Component
 
         // Queue up a new Generate Pending Transforms job
         if (!$this->_queuedGeneratePendingTransformsJob) {
-            Queue::push(new GeneratePendingTransforms());
+            Queue::push(new GeneratePendingTransforms(), 2048);
             $this->_queuedGeneratePendingTransformsJob = true;
         }
 
         // Return the temporary transform URL
-        return UrlHelper::actionUrl('assets/generate-transform', ['transformId' => $index->id]);
+        return UrlHelper::actionUrl('assets/generate-transform', ['transformId' => $index->id], null, false);
     }
 
     /**
@@ -670,7 +672,7 @@ class Assets extends Component
             'width' => $width,
             'height' => $height,
             'v' => $asset->dateModified->getTimestamp(),
-        ]);
+        ], null, false);
     }
 
     /**

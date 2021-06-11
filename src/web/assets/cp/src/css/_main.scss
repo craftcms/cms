@@ -93,10 +93,6 @@ table.editable textarea {
   }
 }
 
-textarea.nicetext {
-  resize: none;
-}
-
 /* icons */
 .icon:before,
 .menu ul.padded li a.sel:before,
@@ -556,10 +552,6 @@ td.right {
   @include alignright;
 }
 
-.no-outline {
-  outline: none;
-}
-
 .clear {
   display: block;
   clear: both;
@@ -599,7 +591,6 @@ td.right {
 .token:focus {
   box-shadow: 0 0 0 1px transparentize($grey500, 0.75);;
   background-color: $white;
-  outline: none;
 }
 
 // Override .token for Prism
@@ -922,7 +913,7 @@ ul.icons {
   flex-wrap: wrap;
 
   li {
-    margin: 0 0 10px;
+    margin: 0 4px 10px 0;
 
     a {
       display: block;
@@ -1082,7 +1073,6 @@ ul.icons {
   cursor: pointer;
   box-sizing: border-box;
   appearance: none;
-  outline: none;
   color: $textColor;
   font-size: inherit;
   background-color: transparentize($inputColor, 0.75);
@@ -1134,10 +1124,6 @@ ul.icons {
 
   &:hover {
     text-decoration: none;
-  }
-
-  &:active {
-    outline: none;
   }
 
   &[data-icon]:not(:empty):before,
@@ -1221,10 +1207,6 @@ ul.icons {
   white-space: nowrap;
   align-items: center;
 
-  &:focus {
-    outline: none;
-  }
-
   &.fullwidth .btn {
     flex: 1;
   }
@@ -1307,7 +1289,6 @@ ul.icons {
   transition: border-color linear 100ms;
   padding: 0 9px;
   cursor: pointer;
-  outline: none;
   transition: margin-left linear 100ms, margin-right linear 100ms;
 
   input {
@@ -1320,7 +1301,6 @@ ul.icons {
     cursor: pointer;
     color: $textColor;
     text-align: center;
-    outline: none;
   }
 
   &.light input {
@@ -1592,8 +1572,23 @@ div.btn.submit input {
 }
 
 /* color inputs */
+.color-input-container {
+  position: relative;
+
+  .color-hex-indicator {
+    position: absolute;
+    top: 0;
+    @include left(7px);
+    width: 1em;
+    line-height: 34px;
+    text-align: center;
+    user-select: none;
+  }
+}
+
 .color-input {
   @include fixed-width-font;
+  @include padding-left(calc(7px + 1em));
 }
 
 .color {
@@ -1627,6 +1622,10 @@ div.btn.submit input {
     height: 100%;
     border-radius: 17px;
     box-shadow: inset 0 0 0 1px transparentize($black, 0.85);
+
+    &:focus-within {
+      @include input-focused-styles;
+    }
 
     & > .color-preview-input {
       position: absolute;
@@ -1746,8 +1745,6 @@ div.btn.submit input {
   }
 
   &:focus {
-    outline: none;
-
     .lightswitch-container {
       .handle {
         background-color: $lightSelColor;
@@ -2035,8 +2032,6 @@ table {
 
     tbody {
       tr {
-        outline: none;
-
         &:not(.disabled) {
           &:hover {
             th,
@@ -2173,9 +2168,9 @@ $elementInnerSpacing: 5px;
 .element {
   position: relative;
   cursor: default;
-  outline: none !important;
   user-select: none;
   font-weight: normal;
+  border-radius: $smallBorderRadius;
 
   &:focus,
   li:focus & {
@@ -2185,7 +2180,6 @@ $elementInnerSpacing: 5px;
   &.sel,
   li.sel & {
     background-color: $lightSelColor !important;
-    border-radius: $smallBorderRadius;
     cursor: default;
 
     &:focus {
@@ -2406,10 +2400,6 @@ $checkboxPadding: $checkboxSize + 4;
     .selectallcontainer {
       cursor: default;
 
-      &:focus {
-        outline: none;
-      }
-
       .checkbox {
         @include margin-right($elementInnerSpacing);
       }
@@ -2418,12 +2408,6 @@ $checkboxPadding: $checkboxSize + 4;
 
   // table views
   .tableview {
-    thead {
-      th.selectallcontainer {
-        outline: none;
-      }
-    }
-
     .move {
       display: block;
       position: absolute;
@@ -2457,7 +2441,6 @@ $checkboxPadding: $checkboxSize + 4;
     li {
       position: relative;
       @include margin(0, 1px, 1px, 0);
-      outline: none;
 
       &:hover {
         .element {
@@ -2858,10 +2841,6 @@ table.editable {
       overflow: hidden;
       transition: none;
       box-sizing: border-box;
-
-      &:focus {
-        outline: none;
-      }
     }
 
     .color-container {
@@ -2869,7 +2848,7 @@ table.editable {
       position: relative;
 
       & > .color,
-      & > .color-input {
+      .color-input {
         margin-bottom: 0;
       }
 
@@ -2879,8 +2858,12 @@ table.editable {
         @include left(10px);
       }
 
-      & > .color-input {
-        @include padding-left(35px);
+      .color-hex-indicator {
+        @include left(32px);
+      }
+
+      .color-input {
+        @include padding-left(calc(32px + 1em));
       }
     }
 
@@ -3314,7 +3297,6 @@ ul.tree,
             margin: -7px 0;
             padding: 14px 0;
             border-radius: 0;
-            box-shadow: none;
             background-color: transparent;
             border: none !important;
           }
@@ -3815,9 +3797,6 @@ ul.tree,
             }
 
             tr {
-              &:focus {
-                outline: none;
-              }
 
               &.disabled {
                 opacity: 1;
@@ -3841,7 +3820,6 @@ ul.tree,
 
           .structure .row {
             margin-top: 1px;
-            outline: none;
           }
         }
       }
@@ -4203,9 +4181,21 @@ table.editable {
 .passwordwrapper,
 .border-box,
 .selectize-text > .selectize-control > .selectize-input {
-  &.focus,
-  &:focus {
+
+  &.focus {
     @include input-focused-styles;
+  }
+
+  body:not(.reduce-focus-visibility) & {
+    &:focus {
+      @include input-focused-styles;
+    }
+  }
+
+  body.reduce-focus-visibility & {
+    &:focus-visible {
+      @include input-focused-styles;
+    }
   }
 }
 
@@ -4540,10 +4530,18 @@ div.checkbox.indeterminate:before {
   text-align: center;
 }
 
-input.checkbox:focus + label:before,
-:focus div.checkbox:before {
-  outline: none;
-  border-color: $inputColor;
+body:not(.reduce-focus-visibility) {
+  input.checkbox:focus + label:before,
+  :focus div.checkbox:before {
+    @include input-focused-styles;
+  }
+}
+
+body.reduce-focus-visibility {
+  input.checkbox:focus-visible + label:before,
+  :focus-visible div.checkbox:before {
+    @include input-focused-styles;
+  }
 }
 
 fieldset {
@@ -4561,14 +4559,107 @@ fieldset {
   }
 }
 
+/* radio */
+input.radio {
+  opacity: 0;
+  position: absolute;
+  width: $radioSize;
+  height: $radioSize;
+}
+
+input.radio + label,
+div.radio {
+  display: inline-block;
+  clear: none;
+  position: relative;
+  @include padding-left($radioSize+ 5);
+  height: 16px;
+  cursor: pointer;
+}
+
+input.radio:disabled + label,
+.disabled div.radio {
+  cursor: default;
+}
+
+input.radio + label:empty,
+div.radio:empty {
+  @include padding-left($radioSize);
+}
+
+/* fixes a RTL bug */
+input.radio + label:before,
+input.radio + label:after,
+div.radio:before,
+div.radio:after {
+  display: block;
+  position: absolute;
+  content: '';
+  box-sizing: border-box;
+  background-clip: padding-box;
+  border-radius: 100%;
+}
+
+input.radio + label:before,
+div.radio:before {
+  top: 0;
+  left: 0;
+  width: $radioSize;
+  height: $radioSize;
+  background-color: hsl(212, 50%, 99%);
+  border: 1px solid transparentize($inputColor, 0.6);
+}
+
+input.radio + label:after,
+div.radio:after {
+  top: 4px;
+  left: 4px;
+  width: $radioSize - 8;
+  height: $radioSize - 8;
+}
+
+input.radio:disabled + label,
+div.radio.disabled:before,
+div.radio.disabled + label {
+  opacity: 0.25;
+}
+
+input.radio:checked + label:after,
+div.radio.checked:after,
+.sel div.radio:after {
+  background: $grey900;
+}
+
+body:not(.reduce-focus-visibility) {
+  input.radio:focus + label:before,
+  :focus div.radio:before {
+    @include input-focused-styles;
+  }
+}
+
+body.reduce-focus-visibility {
+  input.radio:focus-visible + label:before,
+  :focus-visible div.radio:before {
+    @include input-focused-styles;
+  }
+}
+
 /* multiselect */
 .multiselect > select {
   color: $textColor;
   font-size: 14px;
   appearance: none;
 
-  &:focus {
-    @include input-focused-styles;
+  body:not(.reduce-focus-visibility) & {
+    &:focus {
+      @include input-focused-styles;
+    }
+  }
+
+  body.reduce-focus-visibility & {
+    &:focus-visible {
+      @include input-focused-styles;
+    }
   }
 
   option {
@@ -4602,7 +4693,6 @@ fieldset {
     margin: 0;
     padding: 0;
     border: none;
-    outline: none;
     background-color: transparent;
   }
 }
@@ -4670,19 +4760,20 @@ fieldset {
 
 .passwordwrapper {
   position: relative;
-  display: flex;
-  align-items: center;
 
   .password {
-    flex: 1;
     border: none;
     background: transparent;
+    padding-right: 4rem;
     box-shadow: none;
   }
 
   .password-toggle {
-    @include padding-right(7px);
     color: $linkColor;
+    position: absolute;
+    top: 0;
+    @include right(0);
+    bottom: 0;
 
     &:hover {
       text-decoration: underline;
@@ -4846,9 +4937,20 @@ tr.indexingSession td.progress div.progressContainer  div.progressInfo {
 }
 
 .select:not(.selectize) select {
-  &:hover,
-  &:focus {
+  &:hover {
     @include select-input-focused-styles;
+  }
+
+  body:not(.reduce-focus-visibility) & {
+    &:focus {
+      @include select-input-focused-styles;
+    }
+  }
+
+  body.reduce-focus-visibility & {
+    &:focus-visible {
+      @include select-input-focused-styles;
+    }
   }
 }
 
@@ -5136,8 +5238,6 @@ body .selectize-dropdown .active {
   }
 
   &:focus {
-    outline: none;
-
     a.active {
       background-color: $lightSelColor;
     }
@@ -5419,7 +5519,6 @@ $titlebarBorderRadius: $largeBorderRadius - 1;
   border-radius: $largeBorderRadius;
   border: 1px solid $hairlineColor;
   background-color: $grey050;
-  outline: none;
 
   &.static {
     padding-top: 14px;

@@ -30,7 +30,7 @@ class m200629_112700_remove_project_config_legacy_files extends Migration
             $configData = [];
             $previousFiles = [];
 
-            $traverseFile = function ($filePath) use (&$traverseFile, &$configData, &$previousFiles, $pathService) {
+            $traverseFile = function($filePath) use (&$traverseFile, &$configData, &$previousFiles, $pathService) {
                 $fileConfig = Yaml::parse(file_get_contents($filePath));
                 $fileDir = pathinfo($filePath, PATHINFO_DIRNAME);
                 $previousFiles[] = $filePath;

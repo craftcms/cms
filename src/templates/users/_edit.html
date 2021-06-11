@@ -255,6 +255,12 @@
                         {% block input %}
                             {% from '_includes/forms' import checkboxField %}
                             {{ checkboxField({
+                                label: 'Reduce focus visibility'|t('app'),
+                                name: 'reduceFocusVisibility',
+                                id: 'reduceFocusVisibility',
+                                checked: user.getPreference('reduceFocusVisibility') ?? a11yDefaults['reduceFocusVisibility'] ?? false,
+                            }) }}
+                            {{ checkboxField({
                                 label: 'Use shapes to represent statuses'|t('app'),
                                 name: 'useShapes',
                                 id: 'useShapes',

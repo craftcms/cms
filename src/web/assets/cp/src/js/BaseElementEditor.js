@@ -81,7 +81,7 @@ Craft.BaseElementEditor = Garnish.Base.extend({
         this.onBeginLoading();
         var data = this.getBaseData();
         data.includeSites = Craft.isMultiSite && this.settings.showSiteSwitcher;
-        Craft.postActionRequest('elements/get-editor-html', data, $.proxy(this, 'showHud'));
+        Craft.postActionRequest('elements/get-editor-html', data, this.showHud.bind(this));
     },
 
     showHud: function(response, textStatus) {
@@ -156,9 +156,9 @@ Craft.BaseElementEditor = Garnish.Base.extend({
                 // Disable browser input validation
                 this.hud.$body.attr('novalidate', '');
 
-                this.hud.on('hide', $.proxy(function() {
+                this.hud.on('hide', () => {
                     delete this.hud;
-                }, this));
+                });
             } else {
                 this.hud.updateBody($hudContents);
                 this.hud.updateSizeAndPosition();
@@ -187,19 +187,19 @@ Craft.BaseElementEditor = Garnish.Base.extend({
 
         this.$siteSpinner.removeClass('hidden');
 
-        this.reloadForm({siteId: newSiteId}, $.proxy(function(textStatus) {
+        this.reloadForm({siteId: newSiteId}, textStatus => {
             this.$siteSpinner.addClass('hidden');
             if (textStatus !== 'success') {
                 // Reset the site select
                 this.$siteSelect.val(this.siteId);
             }
-        }, this));
+        });
     },
 
     reloadForm: function(data, callback) {
         data = $.extend(this.getBaseData(), data);
 
-        Craft.postActionRequest('elements/get-editor-html', data, $.proxy(function(response, textStatus) {
+        Craft.postActionRequest('elements/get-editor-html', data, (response, textStatus) => {
             if (textStatus === 'success') {
                 this.updateForm(response, true);
             }
@@ -207,7 +207,7 @@ Craft.BaseElementEditor = Garnish.Base.extend({
             if (callback) {
                 callback(textStatus);
             }
-        }, this));
+        });
     },
 
     updateForm: function(response, refreshInitialData) {
@@ -231,7 +231,7 @@ Craft.BaseElementEditor = Garnish.Base.extend({
             $instructions.remove();
         }
 
-        Garnish.requestAnimationFrame($.proxy(function() {
+        Garnish.requestAnimationFrame(() => {
             Craft.appendHeadHtml(response.headHtml);
             Craft.appendFootHtml(response.footHtml);
             Craft.initUiElements(this.$fieldsContainer);
@@ -239,7 +239,7 @@ Craft.BaseElementEditor = Garnish.Base.extend({
             if (refreshInitialData) {
                 this.initialData = this.hud.$body.serialize();
             }
-        }, this));
+        });
     },
 
     saveElement: function() {
@@ -258,7 +258,7 @@ Craft.BaseElementEditor = Garnish.Base.extend({
         var data = $.param(this.getBaseData()) + '&' + this.hud.$body.serialize();
         data = Craft.findDeltaData(this.initialData, data, this.deltaNames);
 
-        Craft.postActionRequest('elements/save-element', data, $.proxy(function(response, textStatus) {
+        Craft.postActionRequest('elements/save-element', data, (response, textStatus) => {
             this.$spinner.addClass('hidden');
 
             if (textStatus === 'success') {
@@ -289,7 +289,7 @@ Craft.BaseElementEditor = Garnish.Base.extend({
                     Garnish.shake(this.hud.$hud);
                 }
             }
-        }, this));
+        });
     },
 
     isDirty: function() {

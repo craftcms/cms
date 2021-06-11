@@ -135,11 +135,11 @@ class Volumes extends Component
     public function getAllVolumeTypes(): array
     {
         $volumeTypes = [
-            Local::class
+            Local::class,
         ];
 
         $event = new RegisterComponentTypesEvent([
-            'types' => $volumeTypes
+            'types' => $volumeTypes,
         ]);
 
         $this->trigger(self::EVENT_REGISTER_VOLUME_TYPES, $event);
@@ -355,7 +355,7 @@ class Volumes extends Component
         if ($this->hasEventHandlers(self::EVENT_BEFORE_SAVE_VOLUME)) {
             $this->trigger(self::EVENT_BEFORE_SAVE_VOLUME, new VolumeEvent([
                 'volume' => $volume,
-                'isNew' => $isNewVolume
+                'isNew' => $isNewVolume,
             ]));
         }
 
@@ -441,7 +441,7 @@ class Volumes extends Component
             $assetsService = Craft::$app->getAssets();
             $rootFolder = $assetsService->findFolder([
                 'volumeId' => $volumeRecord->id,
-                'parentId' => ':empty:'
+                'parentId' => ':empty:',
             ]);
 
             if ($rootFolder === null) {
@@ -449,7 +449,7 @@ class Volumes extends Component
                     'volumeId' => $volumeRecord->id,
                     'parentId' => null,
                     'path' => '',
-                    'name' => $volumeRecord->name
+                    'name' => $volumeRecord->name,
                 ]);
 
                 $rootFolderRecord->save();
@@ -484,7 +484,7 @@ class Volumes extends Component
         if ($this->hasEventHandlers(self::EVENT_AFTER_SAVE_VOLUME)) {
             $this->trigger(self::EVENT_AFTER_SAVE_VOLUME, new VolumeEvent([
                 'volume' => $this->getVolumeById($volumeRecord->id),
-                'isNew' => $isNewVolume
+                'isNew' => $isNewVolume,
             ]));
         }
 
@@ -600,7 +600,7 @@ class Volumes extends Component
         $assetsService = Craft::$app->getAssets();
         $folder = $assetsService->findFolder([
             'name' => $volume->name,
-            'volumeId' => $volume->id
+            'volumeId' => $volume->id,
         ]);
 
         if ($folder === null) {
@@ -645,7 +645,7 @@ class Volumes extends Component
         // Fire a 'beforeDeleteVolume' event
         if ($this->hasEventHandlers(self::EVENT_BEFORE_DELETE_VOLUME)) {
             $this->trigger(self::EVENT_BEFORE_DELETE_VOLUME, new VolumeEvent([
-                'volume' => $volume
+                'volume' => $volume,
             ]));
         }
 
@@ -723,7 +723,7 @@ class Volumes extends Component
         // Fire an 'afterDeleteVolume' event
         if ($this->hasEventHandlers(self::EVENT_AFTER_DELETE_VOLUME)) {
             $this->trigger(self::EVENT_AFTER_DELETE_VOLUME, new VolumeEvent([
-                'volume' => $volume
+                'volume' => $volume,
             ]));
         }
 

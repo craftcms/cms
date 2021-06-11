@@ -219,7 +219,7 @@ class Asset extends Element
 
             return [
                 'elementType' => User::class,
-                'map' => $map
+                'map' => $map,
             ];
         }
 
@@ -537,7 +537,7 @@ class Asset extends Element
                 'can-upload' => $folder->volumeId === null || $canUpload,
                 'can-move-to' => $canMoveTo,
                 'can-move-peer-files-to' => $canMovePeerFilesTo,
-            ]
+            ],
         ];
 
         if ($user) {
@@ -837,7 +837,7 @@ class Asset extends Element
     public function getCacheTags(): array
     {
         $tags = [
-            "volume:$this->_volumeId"
+            "volume:$this->_volumeId",
         ];
 
         // Did the volume just change?
@@ -971,11 +971,12 @@ class Asset extends Element
      * ```
      *
      * @param string[] $sizes
+     * @param AssetTransform|string|array|null $transform A transform handle or configuration that should be applied to the image
      * @return string|false The `srcset` attribute value, or `false` if it can’t be determined
      * @throws InvalidArgumentException
      * @since 3.5.0
      */
-    public function getSrcset(array $sizes)
+    public function getSrcset(array $sizes, $transform = null)
     {
         if ($this->kind !== self::KIND_IMAGE) {
             return false;
@@ -983,8 +984,11 @@ class Asset extends Element
 
         $srcset = [];
 
-        if ($this->_transform && Image::canManipulateAsImage($this->getExtension())) {
-            $transform = Craft::$app->getAssetTransforms()->normalizeTransform($this->_transform);
+        if (
+            ($transform !== null || $this->_transform) &&
+            Image::canManipulateAsImage($this->getExtension())
+        ) {
+            $transform = Craft::$app->getAssetTransforms()->normalizeTransform($transform ?? $this->_transform);
         } else {
             $transform = null;
         }
@@ -997,7 +1001,7 @@ class Asset extends Element
 
         foreach ($sizes as $size) {
             if ($size === '1x') {
-                $srcset[] = $this->getUrl();
+                $srcset[] = $this->getUrl($transform);
                 continue;
             }
 
@@ -1147,7 +1151,7 @@ class Asset extends Element
     /**
      * Sets the transform.
      *
-     * @param AssetTransform|string|array|null $transform The transform that should be applied, if any. Can either be the handle of a named transform, or an array that defines the transform settings.
+     * @param AssetTransform|string|array|null $transform A transform handle or configuration that should be applied to the image
      * @return Asset
      * @throws AssetTransformException if $transform is an invalid transform handle
      */
@@ -1161,9 +1165,9 @@ class Asset extends Element
     /**
      * Returns the element’s full URL.
      *
-     * @param string|array|null $transform The transform that should be applied, if any. Can either be the handle of a named transform, or an array
-     * that defines the transform settings. If an array is passed, it can optionally include a `transform` key that defines a base transform which
-     * the rest of the settings should be applied to.
+     * @param string|array|null $transform A transform handle or configuration that should be applied to the
+     * image If an array is passed, it can optionally include a `transform` key that defines a base transform
+     * which the rest of the settings should be applied to.
      * @param bool|null $generateNow Whether the transformed image should be generated immediately if it doesn’t exist. If `null`, it will be left
      * up to the `generateTransformsBeforePageLoad` config setting.
      * @return string|null
@@ -1207,7 +1211,7 @@ class Asset extends Element
         } catch (VolumeObjectNotFoundException $e) {
             Craft::error("Could not determine asset's URL ($this->id): {$e->getMessage()}");
             Craft::$app->getErrorHandler()->logException($e);
-            return UrlHelper::actionUrl('not-found');
+            return UrlHelper::actionUrl('not-found', null, null, false);
         }
     }
 
@@ -1310,7 +1314,7 @@ class Asset extends Element
     /**
      * Returns the image height.
      *
-     * @param AssetTransform|string|array|null $transform The transform that should be applied, if any. Can either be the handle of a named transform, or an array that defines the transform settings.
+     * @param AssetTransform|string|array|null $transform A transform handle or configuration that should be applied to the image
      * @return int|float|null
      */
 
@@ -1332,7 +1336,7 @@ class Asset extends Element
     /**
      * Returns the image width.
      *
-     * @param AssetTransform|string|array|null $transform The optional transform handle for which to get thumbnail.
+     * @param AssetTransform|string|array|null $transform A transform handle or configuration that should be applied to the image
      * @return int|float|null
      */
     public function getWidth($transform = null)
@@ -1604,7 +1608,7 @@ class Asset extends Element
             }
             $value = [
                 'x' => (float)$value['x'],
-                'y' => (float)$value['y']
+                'y' => (float)$value['y'],
             ];
         } else if ($value !== null) {
             $focal = explode(';', $value);
@@ -1613,7 +1617,7 @@ class Asset extends Element
             }
             $value = [
                 'x' => (float)$focal[0],
-                'y' => (float)$focal[1]
+                'y' => (float)$focal[1],
             ];
         }
 
@@ -1758,7 +1762,7 @@ class Asset extends Element
     /**
      * Returns a copy of the asset with the given transform applied to it.
      *
-     * @param AssetTransform|string|array|null $transform
+     * @param AssetTransform|string|array|null $transform The transform handle or configuration that should be applied to the image
      * @return Asset
      * @throws AssetTransformException if $transform is an invalid transform handle
      */
@@ -1801,7 +1805,7 @@ class Asset extends Element
         ) {
             $this->trigger(self::EVENT_BEFORE_HANDLE_FILE, new AssetEvent([
                 'asset' => $this,
-                'isNew' => !$this->id
+                'isNew' => !$this->id,
             ]));
         }
 
@@ -1834,7 +1838,7 @@ class Asset extends Element
         if (!$this->propagating) {
             $isCpRequest = Craft::$app->getRequest()->getIsCpRequest();
             $sanitizeCpImageUploads = Craft::$app->getConfig()->getGeneral()->sanitizeCpImageUploads;
-            
+
             if (
                 \in_array($this->getScenario(), [self::SCENARIO_REPLACE, self::SCENARIO_CREATE], true) &&
                 AssetsHelper::getFileKindByExtension($this->tempFilePath) === static::KIND_IMAGE &&

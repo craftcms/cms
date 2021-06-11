@@ -1282,7 +1282,7 @@ class Users extends Component
      * Sets a new verification code on a user, and returns a verification URL.
      *
      * @param User $user The user that should get the new Password Reset URL
-     * @param string $fePath The path to use if we end up linking to the front end
+     * @param string $fePath The URL or path to use if we end up linking to the front end
      * @param string $cpPath The path to use if we end up linking to the control panel
      * @return string
      * @see getPasswordResetUrl()
@@ -1299,7 +1299,11 @@ class Users extends Component
             'id' => $user->uid,
         ];
 
-        $cp = $user->can('accessCp');
+        $generalConfig = Craft::$app->getConfig()->getGeneral();
+        $cp = (
+            $user->can('accessCp') ||
+            ($generalConfig->headlessMode && !UrlHelper::isAbsoluteUrl($fePath))
+        );
         $scheme = UrlHelper::getSchemeForTokenizedUrl($cp);
 
         if (!$cp) {
@@ -1308,7 +1312,7 @@ class Users extends Component
 
         // Only use cpUrl() if the base CP URL has been explicitly set,
         // so UrlHelper won't use HTTP_HOST
-        if (Craft::$app->getConfig()->getGeneral()->baseCpUrl) {
+        if ($generalConfig->baseCpUrl) {
             return UrlHelper::cpUrl($cpPath, $params, $scheme);
         }
 

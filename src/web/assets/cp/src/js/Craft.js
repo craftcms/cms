@@ -808,7 +808,7 @@ $.extend(Craft,
                 }
                 request.responseType = 'blob';
 
-                request.onload = function() {
+                request.onload = () => {
                     // Only handle status code 200
                     if (request.status === 200) {
                         // Try to find out the filename from the content disposition `filename` value
@@ -830,7 +830,7 @@ $.extend(Craft,
                     } else {
                         reject();
                     }
-                }.bind(this);
+                };
 
                 request.send(body);
             });
@@ -1393,26 +1393,6 @@ $.extend(Craft,
                 result += characters.charAt(Math.floor(Math.random() * 62));
             }
             return result;
-        },
-
-        /**
-         * Prevents the outline when an element is focused by the mouse.
-         *
-         * @param elem Either an actual element or a jQuery collection.
-         */
-        preventOutlineOnMouseFocus: function(elem) {
-            var $elem = $(elem),
-                namespace = '.preventOutlineOnMouseFocus';
-
-            $elem.on('mousedown' + namespace, function() {
-                    $elem.addClass('no-outline');
-                    $elem.trigger('focus');
-                })
-                .on('keydown' + namespace + ' blur' + namespace, function(event) {
-                    if (event.keyCode !== Garnish.SHIFT_KEY && event.keyCode !== Garnish.CTRL_KEY && event.keyCode !== Garnish.CMD_KEY) {
-                        $elem.removeClass('no-outline');
-                    }
-                });
         },
 
         /**
@@ -2081,6 +2061,13 @@ $.extend($.fn,
             });
         },
     });
+
+// Override Garnish.NiceText.charsLeftHtml() to be more accessible
+Garnish.NiceText.charsLeftHtml = charsLeft => {
+    return Craft.t('app', '<span class="visually-hidden">Characters left:</span> {chars, number}', {
+        chars: charsLeft,
+    });
+};
 
 Garnish.$doc.ready(function() {
     Craft.initUiElements();

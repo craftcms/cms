@@ -114,22 +114,22 @@ Craft.BaseElementSelectInput = Garnish.Base.extend({
         if (this.settings.sortable) {
             this.elementSort = new Garnish.DragSort({
                 container: this.$elementsContainer,
-                filter: (this.settings.selectable ? $.proxy(function() {
+                filter: (this.settings.selectable ? () => {
                     // Only return all the selected items if the target item is selected
                     if (this.elementSort.$targetItem.hasClass('sel')) {
                         return this.elementSelect.getSelectedItems();
                     } else {
                         return this.elementSort.$targetItem;
                     }
-                }, this) : null),
+                } : null),
                 ignoreHandleSelector: '.delete',
                 axis: this.getElementSortAxis(),
                 collapseDraggees: true,
                 magnetStrength: 4,
                 helperLagBase: 1.5,
-                onSortChange: (this.settings.selectable ? $.proxy(function() {
+                onSortChange: (this.settings.selectable ? () => {
                     this.elementSelect.resetItemOrder();
-                }, this) : null)
+                } : null)
             });
         }
     },
@@ -186,12 +186,12 @@ Craft.BaseElementSelectInput = Garnish.Base.extend({
         }
 
         if (this.settings.editable) {
-            this._handleShowElementEditor = $.proxy(function(ev) {
+            this._handleShowElementEditor = ev => {
                 var $element = $(ev.currentTarget);
                 if (Garnish.hasAttr($element, 'data-editable') && !$element.hasClass('disabled') && !$element.hasClass('loading')) {
                     this.elementEditor = this.createElementEditor($element);
                 }
-            }, this);
+            };
 
             this.addListener($elements, 'dblclick', this._handleShowElementEditor);
 
@@ -200,11 +200,11 @@ Craft.BaseElementSelectInput = Garnish.Base.extend({
             }
         }
 
-        $elements.find('.delete').on('click dblclick', $.proxy(function(ev) {
+        $elements.find('.delete').on('click dblclick', ev => {
             this.removeElement($(ev.currentTarget).closest('.element'));
             // Prevent this from acting as one of a double-click
             ev.stopPropagation();
-        }, this));
+        });
 
         this.$elements = this.$elements.add($elements);
         this.updateAddElementsBtn();
@@ -308,7 +308,7 @@ Craft.BaseElementSelectInput = Garnish.Base.extend({
             multiSelect: (this.settings.limit != 1),
             showSiteMenu: this.settings.showSiteMenu,
             disabledElementIds: this.getDisabledElementIds(),
-            onSelect: $.proxy(this, 'onModalSelect')
+            onSelect: this.onModalSelect.bind(this)
         }, this.settings.modalSettings);
     },
 
@@ -424,7 +424,7 @@ Craft.BaseElementSelectInput = Garnish.Base.extend({
     },
 
     onSelectElements: function(elements) {
-        this.trigger('selectElements', {elements: elements});
+        this.trigger('selectElements', {elements});
         this.settings.onSelectElements(elements);
 
         if (window.draftEditor) {

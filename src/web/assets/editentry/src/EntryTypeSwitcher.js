@@ -15,7 +15,7 @@
         onTypeChange: function(ev) {
             this.$spinner.removeClass('hidden');
 
-            Craft.postActionRequest('entries/switch-entry-type', Craft.cp.$primaryForm.serialize(), $.proxy(function(response, textStatus) {
+            Craft.postActionRequest('entries/switch-entry-type', Craft.cp.$primaryForm.serialize(), (response, textStatus) => {
                 this.$spinner.addClass('hidden');
 
                 if (textStatus === 'success') {
@@ -48,7 +48,7 @@
 
                     this.trigger('typeChange');
                 }
-            }, this));
+            });
         }
     });
 })(jQuery);

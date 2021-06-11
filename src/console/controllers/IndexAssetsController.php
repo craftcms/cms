@@ -15,7 +15,6 @@ use craft\errors\AssetDisallowedExtensionException;
 use craft\errors\AssetNotIndexableException;
 use craft\errors\MissingAssetException;
 use craft\errors\MissingVolumeFolderException;
-use craft\errors\VolumeException;
 use craft\errors\VolumeObjectNotFoundException;
 use craft\helpers\Db;
 use craft\models\VolumeListing;
@@ -316,7 +315,7 @@ class IndexAssetsController extends Controller
         $selection = $this->prompt('>', [
             'validator' => function($input) use ($missingRecords) {
                 return !$input || (is_numeric($input) && isset($missingRecords[$input - 1]));
-            }
+            },
         ]);
 
         return $selection ? $missingRecords[$selection - 1] : null;

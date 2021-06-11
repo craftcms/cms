@@ -16,7 +16,6 @@ use craft\errors\InvalidElementException;
 use craft\events\RevisionEvent;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Db;
-use craft\helpers\ElementHelper;
 use craft\helpers\Queue;
 use craft\queue\jobs\PruneRevisions;
 use yii\base\Component;

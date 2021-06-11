@@ -108,11 +108,13 @@ JS;
     {
         $view->registerTranslations('app', [
             '(blank)',
+            '<span class="visually-hidden">Characters left:</span> {chars, number}',
             'A server error occurred.',
             'Actions',
             'All',
             'Any changes will be lost if you leave this page.',
             'Apply this to the {number} remaining conflicts?',
+            'Apply',
             'Are you sure you want to close the editor? Any changes will be lost.',
             'Are you sure you want to delete this draft?',
             'Are you sure you want to delete this image?',
@@ -125,6 +127,8 @@ JS;
             'Clear',
             'Close Preview',
             'Close',
+            'Color hex value',
+            'Color picker',
             'Continue',
             'Copied to clipboard.',
             'Copy the URL',

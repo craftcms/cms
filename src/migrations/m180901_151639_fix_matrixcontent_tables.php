@@ -61,7 +61,7 @@ class m180901_151639_fix_matrixcontent_tables extends Migration
                     continue;
                 }
 
-                $originalFieldColumns = array_filter($originalSchema->getColumnNames(), function ($columnName) {
+                $originalFieldColumns = array_filter($originalSchema->getColumnNames(), function($columnName) {
                     return strpos($columnName, 'field_') === 0;
                 });
 

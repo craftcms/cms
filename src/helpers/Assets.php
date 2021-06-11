@@ -12,7 +12,6 @@ use craft\base\LocalVolumeInterface;
 use craft\base\VolumeInterface;
 use craft\elements\Asset;
 use craft\enums\PeriodType;
-use craft\errors\AssetException;
 use craft\errors\VolumeException;
 use craft\events\RegisterAssetFileKindsEvent;
 use craft\events\SetAssetFilenameEvent;
@@ -132,7 +131,7 @@ class Assets
             $baseName = pathinfo($name, PATHINFO_FILENAME);
             $extension = pathinfo($name, PATHINFO_EXTENSION);
             if ($extension) {
-                $extension = '.'.$extension;
+                $extension = '.' . $extension;
             }
         } else {
             $baseName = $name;

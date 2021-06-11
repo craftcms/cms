@@ -12,8 +12,6 @@ use Craft;
 use craft\base\PluginInterface;
 use craft\base\Utility;
 use craft\helpers\App;
-use craft\helpers\ArrayHelper;
-use craft\helpers\Json;
 use RequirementsChecker;
 use yii\base\Module;
 

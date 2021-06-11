@@ -49,7 +49,7 @@
                 userGroupId: this.settings.userGroupId
             };
 
-            Craft.postActionRequest('charts/get-new-users-data', requestData, $.proxy(function(response, textStatus) {
+            Craft.postActionRequest('charts/get-new-users-data', requestData, (response, textStatus) => {
                 if (textStatus === 'success' && typeof (response.error) === 'undefined') {
                     this.$chartContainer.removeClass('hidden');
 
@@ -81,7 +81,7 @@
                     this.chart.draw(chartDataTable, chartSettings);
 
                     // Resize chart when grid is refreshed
-                    window.dashboard.grid.on('refreshCols', $.proxy(this, 'handleGridRefresh'));
+                    window.dashboard.grid.on('refreshCols', this.handleGridRefresh.bind(this));
                 } else {
                     // Error
                     var msg = Craft.t('A server error occurred.');
@@ -93,9 +93,9 @@
                     this.$error.html(msg);
                     this.$error.removeClass('hidden');
                 }
-            }, this));
+            });
 
-            this.$widget.data('widget').on('destroy', $.proxy(this, 'destroy'));
+            this.$widget.data('widget').on('destroy', this.destroy.bind(this));
 
             Craft.NewUsersWidget.instances.push(this);
         },

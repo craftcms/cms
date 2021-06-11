@@ -50,7 +50,7 @@ Craft.EditableTable = Garnish.Base.extend({
             this.initialize();
         } else {
             // Give everything a chance to initialize
-            setTimeout($.proxy(this, 'initializeIfVisible'), 500);
+            setTimeout(this.initializeIfVisible.bind(this), 500);
         }
 
         if (this.settings.minRows && this.rowCount < this.settings.minRows) {
@@ -466,7 +466,7 @@ Craft.EditableTable.Row = Garnish.Base.extend({
                 this.addListener($textarea, 'mousedown', 'ignoreNextTextareaFocus');
 
                 this.niceTexts.push(new Garnish.NiceText($textarea, {
-                    onHeightChange: $.proxy(this, 'onTextareaHeightChange')
+                    onHeightChange: this.onTextareaHeightChange.bind(this)
                 }));
 
                 this.addListener($textarea, 'keypress', {tdIndex: i, type: col.type}, 'handleKeypress');
@@ -486,18 +486,18 @@ Craft.EditableTable.Row = Garnish.Base.extend({
                         this.table.radioCheckboxes[colId] = [];
                     }
                     this.table.radioCheckboxes[colId].push($checkbox[0]);
-                    this.addListener($checkbox, 'change', {colId: colId}, 'onRadioCheckboxChange');
+                    this.addListener($checkbox, 'change', {colId}, 'onRadioCheckboxChange');
                 }
 
                 if (col.toggle) {
-                    this.addListener($checkbox, 'change', {colId: colId}, function(ev) {
+                    this.addListener($checkbox, 'change', {colId}, function(ev) {
                         this.applyToggleCheckbox(ev.data.colId);
                     });
                 }
             }
 
             if (!$(td).hasClass('disabled')) {
-                this.addListener(td, 'click', {td: td}, function(ev) {
+                this.addListener(td, 'click', {td}, function(ev) {
                     if (ev.target === ev.data.td) {
                         $(ev.data.td).find('textarea,input,select,.lightswitch').focus();
                     }

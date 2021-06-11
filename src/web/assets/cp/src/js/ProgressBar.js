@@ -47,9 +47,9 @@ Craft.ProgressBar = Garnish.Base.extend({
      * Fade to invisible, hide it using a class and reset opacity to visible
      */
     hideProgressBar: function() {
-        this.$progressBar.fadeTo('fast', 0.01, $.proxy(function() {
+        this.$progressBar.fadeTo('fast', 0.01, () => {
             this.$progressBar.addClass('hidden').fadeTo(1, 1, $.noop);
-        }, this));
+        });
     },
 
     showProgressBar: function() {

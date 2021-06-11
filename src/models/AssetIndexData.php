@@ -50,6 +50,7 @@ class AssetIndexData extends Model
 
     /**
      * @var bool|null Whether the path was skipped
+     * @since 4.0.0
      */
     public ?bool $isSkipped;
 
@@ -99,7 +100,7 @@ class AssetIndexData extends Model
      */
     public function datetimeAttributes(): array
     {
-        $attributes =  parent::datetimeAttributes();
+        $attributes = parent::datetimeAttributes();
         $attributes[] = 'timestamp';
 
         return $attributes;

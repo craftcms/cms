@@ -9,9 +9,7 @@ namespace craft\errors;
 
 use craft\base\VolumeInterface;
 use craft\models\AssetIndexData;
-use craft\models\VolumeFolder;
 use Throwable;
-use yii\base\Exception;
 
 /**
  * MissingVolumeFolderException represents an exception caused by a volume folder record that doesn't exist.
@@ -59,6 +57,6 @@ class MissingVolumeFolderException extends VolumeException
      */
     public function getName(): string
     {
-        return 'Missing asset';
+        return 'Missing volume folder';
     }
 }

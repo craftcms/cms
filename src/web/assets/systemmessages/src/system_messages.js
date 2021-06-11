@@ -84,7 +84,7 @@
                 data[Craft.csrfTokenName] = Craft.csrfTokenValue;
             }
 
-            Craft.postActionRequest('system-messages/get-message-modal', data, $.proxy(function(response, textStatus) {
+            Craft.postActionRequest('system-messages/get-message-modal', data, (response, textStatus) => {
                 if (textStatus === 'success') {
                     if (!this.$container) {
                         var $container = $('<form class="modal fitted message-settings" accept-charset="UTF-8">' + response.body + '</form>').appendTo(Garnish.$bod);
@@ -105,11 +105,11 @@
                     this.addListener(this.$container, 'submit', 'saveMessage');
                     this.addListener(this.$cancelBtn, 'click', 'cancel');
 
-                    setTimeout($.proxy(function() {
+                    setTimeout(() => {
                         this.$subjectInput.trigger('focus');
-                    }, this), 100);
+                    }, 100);
                 }
-            }, this));
+            });
         },
 
         switchLanguage: function() {
@@ -150,7 +150,7 @@
             this.$saveBtn.addClass('active');
             this.$spinner.show();
 
-            Craft.postActionRequest('system-messages/save-message', data, $.proxy(function(response, textStatus) {
+            Craft.postActionRequest('system-messages/save-message', data, (response, textStatus) => {
                 this.$saveBtn.removeClass('active');
                 this.$spinner.hide();
                 this.loading = false;
@@ -168,7 +168,7 @@
                         Craft.cp.displayError();
                     }
                 }
-            }, this));
+            });
         },
 
         cancel: function() {

@@ -16,9 +16,11 @@ Craft.AssetSelectInput = Craft.BaseElementSelectInput.extend({
     init: function() {
         if (arguments.length > 0 && typeof arguments[0] === 'object') {
             arguments[0].editorSettings = {
-                onShowHud: $.proxy(this.resetOriginalFilename, this),
-                onCreateForm: $.proxy(this._renameHelper, this),
-                validators: [$.proxy(this.validateElementForm, this)]
+                onShowHud: this.resetOriginalFilename.bind(this),
+                onCreateForm: this._renameHelper.bind(this),
+                validators: [
+                    this.validateElementForm.bind(this),
+                ],
             };
         }
 
@@ -142,21 +144,21 @@ Craft.AssetSelectInput = Craft.BaseElementSelectInput.extend({
             options.allowedKinds = this.settings.criteria.kind;
         }
 
-        options.canAddMoreFiles = $.proxy(this, 'canAddMoreFiles');
+        options.canAddMoreFiles = this.canAddMoreFiles.bind(this);
 
         options.events = {};
-        options.events.fileuploadstart = $.proxy(this, '_onUploadStart');
-        options.events.fileuploadprogressall = $.proxy(this, '_onUploadProgress');
-        options.events.fileuploaddone = $.proxy(this, '_onUploadComplete');
+        options.events.fileuploadstart = this._onUploadStart.bind(this);
+        options.events.fileuploadprogressall = this._onUploadProgress.bind(this);
+        options.events.fileuploaddone = this._onUploadComplete.bind(this);
 
         this.uploader = new Craft.Uploader(this.$container, options);
 
         if (this.$uploadBtn) {
-            this.$uploadBtn.on('click', $.proxy(function(ev) {
+            this.$uploadBtn.on('click', ev => {
                 // We can't store a reference to the file input, because it gets replaced with a new input
                 // each time a new file is uploaded - see https://stackoverflow.com/a/25034721/1688568
                 this.$uploadBtn.next('input[type=file]').trigger('click');
-            }, this));
+            });
         }
     },
 
@@ -167,7 +169,7 @@ Craft.AssetSelectInput = Craft.BaseElementSelectInput.extend({
             size: this.settings.viewMode
         };
 
-        Craft.postActionRequest('elements/get-element-html', parameters, function(data) {
+        Craft.postActionRequest('elements/get-element-html', parameters, data => {
             if (data.error) {
                 alert(data.error);
             } else {
@@ -175,7 +177,7 @@ Craft.AssetSelectInput = Craft.BaseElementSelectInput.extend({
                 $existing.find('.elementthumb').replaceWith($(data.html).find('.elementthumb'));
                 this.thumbLoader.load($existing);
             }
-        }.bind(this));
+        });
     },
 
     /**
@@ -243,7 +245,7 @@ Craft.AssetSelectInput = Craft.BaseElementSelectInput.extend({
                 size: this.settings.viewMode
             };
 
-            Craft.postActionRequest('elements/get-element-html', parameters, function(data) {
+            Craft.postActionRequest('elements/get-element-html', parameters, data => {
                 if (data.error) {
                     alert(data.error);
                 } else {
@@ -261,7 +263,7 @@ Craft.AssetSelectInput = Craft.BaseElementSelectInput.extend({
                         window.draftEditor.checkForm();
                     }
                 }
-            }.bind(this));
+            });
 
             Craft.cp.runQueue();
         }
@@ -296,7 +298,7 @@ Craft.AssetSelectInput = Craft.BaseElementSelectInput.extend({
      * @private
      */
     _renameHelper: function($form) {
-        $('.renameHelper', $form).on('focus', $.proxy(function(e) {
+        $('.renameHelper', $form).on('focus', e => {
             var input = e.currentTarget,
                 filename = this._parseFilename(input.value);
 
@@ -320,7 +322,7 @@ Craft.AssetSelectInput = Craft.BaseElementSelectInput.extend({
                 range.moveStart("character", startPos);
                 range.select();
             }
-        }, this));
+        });
     },
 
     resetOriginalFilename: function() {

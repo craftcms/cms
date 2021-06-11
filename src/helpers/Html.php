@@ -287,7 +287,7 @@ class Html extends \yii\helpers\Html
      * @throws InvalidArgumentException if `$tag` doesn't contain a valid HTML tag
      * @since 3.3.0
      */
-    public static function parseTagAttributes(string $tag, int $offset = 0, int &$start = null, int &$end = null, bool $decode = false): array
+    public static function parseTagAttributes(string $tag, int $offset = 0, ?int &$start = null, ?int &$end = null, bool $decode = false): array
     {
         [$type, $tagStart] = self::_findTag($tag, $offset);
         $start = $tagStart + strlen($type) + 1;
@@ -295,28 +295,17 @@ class Html extends \yii\helpers\Html
         $attributes = [];
 
         do {
-            if (!preg_match('/\s*([^=\/> ]+)/A', $tag, $match, 0, $anchor)) {
-                // Did we just reach the end of the tag?
-                if (preg_match('/(\s*)\/?>/A', $tag, $match, 0, $anchor)) {
-                    $end = $anchor;
-                    break;
-                }
-                // Otherwise this is a malformed tag
-                throw new InvalidArgumentException('Malformed HTML tag in string: ' . $tag);
+            $attribute = static::parseTagAttribute($tag, $anchor, $attrStart, $attrEnd);
+
+            // Did we just reach the end of the tag?
+            if ($attribute === null) {
+                $end = $anchor;
+                break;
             }
 
-            $name = $match[1];
-            $anchor += strlen($match[0]);
-
-            // Does the tag have a value?
-            if (preg_match('/=(?:(["\'])(.*?)\1|([^ >]+))/A', $tag, $match, 0, $anchor)) {
-                $value = $match[3] ?? $match[2];
-                $anchor += strlen($match[0]);
-            } else {
-                $value = true;
-            }
-
+            [$name, $value] = $attribute;
             $attributes[$name] = $value;
+            $anchor = $attrEnd;
         } while (true);
 
         $attributes = static::normalizeTagAttributes($attributes);
@@ -330,6 +319,60 @@ class Html extends \yii\helpers\Html
         }
 
         return $attributes;
+    }
+
+    /**
+     * Parses the next HTML tag attribute in a given string.
+     *
+     * @param string $html The HTML to parse
+     * @param int $offset The offset to start looking for an attribute
+     * @param int|null $start The start position of the attribute in the given HTML
+     * @param int|null $end The end position of the attribute in the given HTML
+     * @return array|null The name and value of the attribute, or `false` if no complete attribute was found
+     * @throws InvalidArgumentException if `$html` doesn't begin with a valid HTML attribute
+     * @since 3.6.12
+     */
+    public static function parseTagAttribute(string $html, int $offset = 0, ?int &$start = null, ?int &$end = null): ?array
+    {
+        if (!preg_match('/\s*([^=\/>\s]+)/A', $html, $match, PREG_OFFSET_CAPTURE, $offset)) {
+            if (!preg_match('/(\s*)\/?>/A', $html, $m, 0, $offset)) {
+                // No `>`
+                throw new InvalidArgumentException("Malformed HTML tag attribute in string: $html");
+            }
+
+            // No more attributes here
+            return null;
+        }
+
+        $value = true;
+
+        // Does the tag have an explicit value?
+        $offset += strlen($match[0][0]);
+        if (isset($html[$offset]) && $html[$offset] === '=') {
+            $offset++;
+
+            // Wrapped in quotes?
+            if (isset($html[$offset]) && in_array($html[$offset], ['\'', '"'])) {
+                $q = preg_quote($html[$offset], '/');
+                if (!preg_match("/$q(.*?)$q/A", $html, $m, 0, $offset)) {
+                    // No matching end quote
+                    throw new InvalidArgumentException("Malformed HTML tag attribute in string: $html");
+                }
+
+                $offset += strlen($m[0]);
+                if (isset($m[1]) && $m[1] !== '') {
+                    $value = $m[1];
+                }
+            } else if (preg_match('/[^ >]+/A', $html, $m, 0, $offset)) {
+                $offset += strlen($m[0]);
+                $value = $m[0];
+            }
+        }
+
+        $start = $match[1][1];
+        $end = $offset;
+
+        return [$match[1][0], $value];
     }
 
     /**

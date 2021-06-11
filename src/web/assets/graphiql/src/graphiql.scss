@@ -200,10 +200,6 @@ body,
 
       & > div:first-child {
         padding: 7px 14px;
-
-        div:focus {
-          outline: none;
-        }
       }
 
       .graphiql-explorer-actions {

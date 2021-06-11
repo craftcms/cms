@@ -26,7 +26,7 @@ class m170303_140500_asset_field_source_settings extends Migration
             ->where(['type' => Assets::class])
             ->all($this->db);
 
-        $getFolderPathFromVolumeId = function ($volumeId) {
+        $getFolderPathFromVolumeId = function($volumeId) {
             if (empty($volumeId)) {
                 return '';
             }
