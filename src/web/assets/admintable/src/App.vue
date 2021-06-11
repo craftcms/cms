@@ -8,8 +8,11 @@
                         :icon="action.icon"
                         :action="action.action"
                         :actions="action.actions"
+                        :allow-multiple="action.allowMultiple"
                         :ids="checks"
                         :enabled="checks.length ? true : false"
+                        :error="action.error"
+                        :ajax="action.ajax"
                         v-on:reload="reload"
                     >
                     </admin-table-action-button>
