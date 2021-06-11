@@ -218,64 +218,67 @@ Craft.TableElementIndexView = Craft.BaseElementIndexView.extend({
                 var $spinnerRow = this._createSpinnerRowAfter($row);
 
                 // Load the nested elements
-                var params = $.extend(true, {}, this.settings.params);
-                params.criteria.descendantOf = id;
+                let data = $.extend(true, {}, this.settings.params);
+                data.criteria.descendantOf = id;
 
-                Craft.postActionRequest('element-indexes/get-more-elements', params, $.proxy(function(response, textStatus) {
+                Craft.sendActionRequest('POST', this.settings.loadMoreElementsAction, {data}).then(response => {
                     // Do we even care about this anymore?
                     if (!$spinnerRow.parent().length) {
                         return;
                     }
 
-                    if (textStatus === 'success') {
-                        var $newElements = $(response.html);
+                    let $newElements = $(response.data.html);
 
-                        // Are there more descendants we didn't get in this batch?
-                        var totalVisible = (this._totalVisible + $newElements.length),
-                            morePending = (this.settings.batchSize && $newElements.length === this.settings.batchSize);
+                    // Are there more descendants we didn't get in this batch?
+                    let totalVisible = (this._totalVisible + $newElements.length);
+                    let morePending = (this.settings.batchSize && $newElements.length === this.settings.batchSize);
 
-                        if (morePending) {
-                            // Remove all the elements after it
-                            var $nextRows = $spinnerRow.nextAll();
+                    if (morePending) {
+                        // Remove all the elements after it
+                        let $nextRows = $spinnerRow.nextAll();
 
-                            if (this.elementSelect) {
-                                this.elementSelect.removeItems($nextRows);
-                            }
-
-                            if (this.structureTableSort) {
-                                this.structureTableSort.removeItems($nextRows);
-                            }
-
-                            $nextRows.remove();
-                            totalVisible -= $nextRows.length;
-                        } else {
-                            // Maintain the current 'more' status
-                            morePending = this._morePending;
-                        }
-
-                        $spinnerRow.replaceWith($newElements);
-                        this.thumbLoader.load($newElements);
-
-                        if (this.elementIndex.actions || this.settings.selectable) {
-                            this.elementSelect.addItems($newElements.filter(':not(.disabled)'));
-                            this.elementIndex.updateActionTriggers();
+                        if (this.elementSelect) {
+                            this.elementSelect.removeItems($nextRows);
                         }
 
                         if (this.structureTableSort) {
-                            this.structureTableSort.addItems($newElements);
+                            this.structureTableSort.removeItems($nextRows);
                         }
 
-                        Craft.appendHeadHtml(response.headHtml);
-                        Craft.appendFootHtml(response.footHtml);
-                        Craft.cp.updateResponsiveTables();
-
-                        this.setTotalVisible(totalVisible);
-                        this.setMorePending(morePending);
-
-                        // Is there room to load more right now?
-                        this.maybeLoadMore();
+                        $nextRows.remove();
+                        totalVisible -= $nextRows.length;
+                    } else {
+                        // Maintain the current 'more' status
+                        morePending = this._morePending;
                     }
-                }, this));
+
+                    $spinnerRow.replaceWith($newElements);
+                    this.thumbLoader.load($newElements);
+
+                    if (this.elementIndex.actions || this.settings.selectable) {
+                        this.elementSelect.addItems($newElements.filter(':not(.disabled)'));
+                        this.elementIndex.updateActionTriggers();
+                    }
+
+                    if (this.structureTableSort) {
+                        this.structureTableSort.addItems($newElements);
+                    }
+
+                    Craft.appendHeadHtml(response.data.headHtml);
+                    Craft.appendFootHtml(response.data.footHtml);
+                    Craft.cp.updateResponsiveTables();
+
+                    this.setTotalVisible(totalVisible);
+                    this.setMorePending(morePending);
+
+                    // Is there room to load more right now?
+                    this.maybeLoadMore();
+                }).catch(e => {
+                    Craft.cp.displayError();
+                    if (!$spinnerRow.parent().length) {
+                        return;
+                    }
+                });
             }
         }
     },

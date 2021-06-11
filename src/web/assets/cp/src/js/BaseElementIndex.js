@@ -367,15 +367,11 @@ Craft.BaseElementIndex = Garnish.Base.extend({
     refreshSources: function() {
         this.sourceSelect.removeAllItems();
 
-        var params = {
-            context: this.settings.context,
-            elementType: this.elementType
-        };
-
         this.setIndexBusy();
 
         Craft.sendActionRequest('POST', this.settings.refreshSourcesAction, {
-            data: params,
+            context: this.settings.context,
+            elementType: this.elementType,
         }).then((response) => {
             this.setIndexAvailable();
             this.getSourceContainer().replaceWith(response.data.html);
