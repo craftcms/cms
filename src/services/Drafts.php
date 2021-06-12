@@ -330,6 +330,11 @@ class Drafts extends Component
                 $newSource = $elementsService->updateCanonicalElement($draft, [
                     'revisionNotes' => $draftNotes ?: Craft::t('app', 'Applied “{name}”', ['name' => $draft->draftName]),
                 ]);
+
+                // Move the new source element after the draft?
+                if ($draft->structureId && $draft->root) {
+                    Craft::$app->getStructures()->moveAfter($draft->structureId, $newSource, $draft);
+                }
             } else {
                 // Detach the draft behavior
                 $behavior = $draft->detachBehavior('draft');

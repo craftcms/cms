@@ -2420,8 +2420,11 @@ $elementInnerSpacing: 5px;
       @include spinner;
       height: 32px;
     }
+  }
 
-    &.removable .delete {
+  &.loading,
+  &:not(.removable) {
+    .delete {
       display: none;
     }
   }

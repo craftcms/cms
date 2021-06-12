@@ -15,6 +15,7 @@
 {% set fieldId = fieldId ?? null %}
 {% set single = single ?? false %}
 {% set limit = single ? 1 : (limit ?? null) %}
+{% set disabled = (disabled ?? false) ? true : false %}
 
 {% set containerAttributes = {
     id: id,
@@ -28,38 +29,50 @@
 {% tag 'div' with containerAttributes %}
     <div class="elements">
         {% for element in elements %}
-            {% include "_elements/element" with {
+            {% set element = include('_elements/element', {
                 context: 'field',
                 size: (viewMode == 'large' ? 'large' : 'small')
-            } %}
+            }) %}
+            {% if disabled %}
+                {% set element = element|removeClass('removable') %}
+            {% endif %}
+            {{ element|raw }}
         {% endfor %}
     </div>
 
     <div class="flex{% if limit and elements|length >= limit %} hidden{% endif %}">
+        {{ tag('button', {
+            type: 'button',
+            class: ['btn', 'add', 'icon', 'dashed', disabled ? 'disabled']|filter,
+            text: 'Choose'|t('app'),
+            disabled: disabled,
+        }) }}
         <button type="button" class="btn add icon dashed">{{ selectionLabel ?? "Choose"|t('app') }}</button>
     </div>
 {% endtag %}
 
-{% set jsSettings = {
-    id: id|namespaceInputId,
-    name: name|namespaceInputName,
-    elementType: elementType,
-    sources: sources,
-    criteria: criteria,
-    allowSelfRelations: allowSelfRelations ?? false,
-    sourceElementId: sourceElementId,
-    disabledElementIds: disabledElementIds ?? null,
-    viewMode: viewMode,
-    single: single,
-    limit: limit,
-    showSiteMenu: showSiteMenu ?? false,
-    modalStorageKey: storageKey,
-    fieldId: fieldId,
-    sortable: sortable,
-    prevalidate: prevalidate,
-    modalSettings: modalSettings ?? {},
-} %}
+{% if not disabled %}
+    {% set jsSettings = {
+        id: id|namespaceInputId,
+        name: name|namespaceInputName,
+        elementType: elementType,
+        sources: sources,
+        criteria: criteria,
+        allowSelfRelations: allowSelfRelations ?? false,
+        sourceElementId: sourceElementId,
+        disabledElementIds: disabledElementIds ?? null,
+        viewMode: viewMode,
+        single: single,
+        limit: limit,
+        showSiteMenu: showSiteMenu ?? false,
+        modalStorageKey: storageKey,
+        fieldId: fieldId,
+        sortable: sortable,
+        prevalidate: prevalidate,
+        modalSettings: modalSettings ?? {},
+    } %}
 
-{% js %}
-    new {{ jsClass }}({{ jsSettings|json_encode|raw }});
-{% endjs %}
+    {% js %}
+        new {{ jsClass }}({{ jsSettings|json_encode|raw }});
+    {% endjs %}
+{% endif %}
