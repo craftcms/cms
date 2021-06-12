@@ -13,6 +13,7 @@
 - Added the `ancestors`, `descendants`, `drafts`, draftCreator`, `revisions`, `currentRevision`, and `revisionCreator` field to entry queries when using GraphQL API. ([#7950]((https://github.com/craftcms/cms/issues/7950)))
 - Added the `setGraphqlDatesToSystemTimeZone` config setting. ([#8016](https://github.com/craftcms/cms/pull/8016))
 - Added the `revAssetUrls` config setting. ([#7847](https://github.com/craftcms/cms/issues/7847))
+- Added the `|removeClass` Twig filter.
 - Added `craft\base\Element::EVENT_DEFINE_IS_DELETABLE`.
 - Added `craft\base\Element::EVENT_DEFINE_IS_EDITABLE`. ([#8023](https://github.com/craftcms/cms/issues/8023))
 - Added `craft\base\Element::EVENT_DEFINE_METADATA`.
