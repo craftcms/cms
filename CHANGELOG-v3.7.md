@@ -112,6 +112,7 @@
 - Asset, category, and entry indexes now use “Asset”, “Category”, and “Entry” header column headings by default, rather than “Title”.
 - Improved the UI of the Time Zone input in Settings → General.
 - Tag field layouts now include the Title field, allowing its placement and label to be customized.
+- Tag field layouts can now contain multiple tabs and UI elements.
 - Custom fields with a custom translation method are no longer labelled as translatable if the translation key is an empty string. ([#7647](https://github.com/craftcms/cms/issues/7647))
 - Category and tag groups no longer validate if their field layout contains a field called `group`. ([#2797](https://github.com/craftcms/cms/issues/2797))
 - Entry types no longer validate if their field layout contains a field called `author`, `section`, or `type`. ([#2797](https://github.com/craftcms/cms/issues/2797))
