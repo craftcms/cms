@@ -1711,7 +1711,7 @@ body.ltr .pane-tabs ul li:not(:first-child) a { margin-left: 4px; }
 
 body.rtl .pane-tabs ul li:not(:first-child) a { margin-right: 4px; }
 
-.pane-tabs ul li a { display: block; position: relative; border-radius: 4px 4px 0 0; padding: 12px; white-space: nowrap; line-height: 16px; color: #606d7b; }
+.pane-tabs ul li a { display: -webkit-flex; display: flex; -webkit-flex-direction: row; flex-direction: row; -webkit-align-items: center; align-items: center; position: relative; border-radius: 4px 4px 0 0; padding: 0 12px; white-space: nowrap; color: #606d7b; height: 40px; }
 
 .pane-tabs ul li a:hover { text-decoration: none; }
 
@@ -1720,6 +1720,10 @@ body.rtl .pane-tabs ul li:not(:first-child) a { margin-right: 4px; }
 .pane-tabs ul li a.sel { cursor: default; color: #3f4d5a; background: #fff; box-shadow: 0 0 0 1px rgba(154, 165, 177, 0.25), 0 2px 12px rgba(205, 216, 228, 0.5); }
 
 .pane-tabs ul li a.sel:focus { box-shadow: 0 0 0 1px #127FBF, 0 0 0 3px rgba(18, 127, 191, 0.5); }
+
+body.ltr .pane-tabs ul li a span[data-icon] { margin-left: 4px; }
+
+body.rtl .pane-tabs ul li a span[data-icon] { margin-right: 4px; }
 
 body.ltr .pane-tabs .menubtn { margin-left: 32px; }
 
