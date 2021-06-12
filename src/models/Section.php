@@ -39,9 +39,7 @@ class Section extends Model
     const PROPAGATION_METHOD_SITE_GROUP = 'siteGroup';
     const PROPAGATION_METHOD_LANGUAGE = 'language';
     const PROPAGATION_METHOD_ALL = 'all';
-    /**
-     * @since 3.5.0
-     */
+    /** @since 3.5.0 */
     const PROPAGATION_METHOD_CUSTOM = 'custom';
 
     /**
