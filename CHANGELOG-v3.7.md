@@ -5,6 +5,8 @@
 - The Entries index page now has “Create a new entry before” and “Create a new entry after” actions for entries within Structure sections. ([#870](https://github.com/craftcms/cms/issues/870))
 - Edit Entry pages now treat unpublished drafts similarly to published entries, rather than drafts. ([#7899](https://github.com/craftcms/cms/pull/7899))
 - Edit Entry pages no longer appear to create a draft when the Current revision is edited within Live Preview. Unsaved changes are now stored within a “provisional draft”, which is mostly hidden from the author. ([#7899](https://github.com/craftcms/cms/pull/7899))
+- Category groups now have a “Default Category Placement” setting, which determines where new categories should be placed within the structure by default. ([#7759](https://github.com/craftcms/cms/issues/7759))
+- Structure sections now have a “Default Entry Placement” setting, which determines where new entries should be placed within the structure by default. ([#7759](https://github.com/craftcms/cms/issues/7759))
 - Date fields now have a “Show Time Zone” setting, allowing authors to choose which time zone the date is set to, rather than using the system time zone.
 - Matrix fields can now be set to custom propagation methods, based on a propagation key template. ([#7610](https://github.com/craftcms/cms/issues/7610))
 - Added a “Refresh” button to Live Preview, for preview targets whose “Auto-refresh” (formerly “Refresh”) setting is disabled.
@@ -74,7 +76,13 @@
 - Added `craft\helpers\ElementHelper::isDraft()`.
 - Added `craft\helpers\ElementHelper::isRevision()`.
 - Added `craft\helpers\Html::parseTagAttribute()`.
+- Added `craft\models\CategoryGroup::$defaultPlacement`.
+- Added `craft\models\CategoryGroup::DEFAULT_PLACEMENT_BEGINNING`.
+- Added `craft\models\CategoryGroup::DEFAULT_PLACEMENT_END`.
 - Added `craft\models\FieldLayout::$reservedAttributes`.
+- Added `craft\models\Section::$defaultPlacement`.
+- Added `craft\models\Section::DEFAULT_PLACEMENT_BEGINNING`.
+- Added `craft\models\Section::DEFAULT_PLACEMENT_END`.
 - Added `craft\services\Elements::EVENT_AFTER_MERGE_CANONICAL_CHANGES`.
 - Added `craft\services\Elements::EVENT_BEFORE_MERGE_CANONICAL_CHANGES`.
 - Added `craft\services\Elements::mergeCanonicalChanges()`.
@@ -168,6 +176,8 @@
 - Fixed a bug where Craft would place the `beginBody()` tag incorrectly if a template’s `<body>` tag had attribute values that included `>` characters. ([#7779](https://github.com/craftcms/cms/issues/7779))
 - Fixed a bug where updated attributes and fields weren’t getting tracked when publishing a draft or reverting an entry to a revision. 
 - Fixed a bug where it wasn’t easily possible to submit forms to controller actions from Live Preview pages. ([#7885](https://github.com/craftcms/cms/issues/7885))
+- Fixed a bug where it was possible to choose a different parent entry when editing a draft, even though the change wouldn’t stick when publishing the draft.
+- Fixed a bug where changing an entry’s parent wouldn’t update any of its drafts.
 
 ### Security
 - The default `allowedFileExtensions` config setting value no longer includes `xml`.

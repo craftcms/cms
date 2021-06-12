@@ -1617,9 +1617,17 @@ EOD;
                 if ($this->_hasNewParent()) {
                     $mode = $isNew ? Structures::MODE_INSERT : Structures::MODE_AUTO;
                     if (!$this->newParentId) {
-                        Craft::$app->getStructures()->appendToRoot($this->structureId, $this, $mode);
+                        if ($section->defaultPlacement === Section::DEFAULT_PLACEMENT_BEGINNING) {
+                            Craft::$app->getStructures()->prependToRoot($this->structureId, $this, $mode);
+                        } else {
+                            Craft::$app->getStructures()->appendToRoot($this->structureId, $this, $mode);
+                        }
                     } else {
-                        Craft::$app->getStructures()->append($this->structureId, $this, $this->getParent(), $mode);
+                        if ($section->defaultPlacement === Section::DEFAULT_PLACEMENT_BEGINNING) {
+                            Craft::$app->getStructures()->prepend($this->structureId, $this, $this->getParent(), $mode);
+                        } else {
+                            Craft::$app->getStructures()->append($this->structureId, $this, $this->getParent(), $mode);
+                        }
                     }
                 }
 
