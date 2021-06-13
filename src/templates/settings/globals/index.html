@@ -52,6 +52,7 @@ new Craft.VueAdminTable({
     container: '#sets-vue-admin-table',
     deleteAction: 'globals/delete-set',
     emptyMessage: Craft.t('app', 'No global sets exist yet.'),
+    reorderAction: '{{ globalSets|length > 1 ? 'globals/reorder-sets' : ''}}',
     tableData: {{ tableData|json_encode|raw }}
-    });
+});
 {% endjs %}
