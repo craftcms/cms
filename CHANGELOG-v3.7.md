@@ -7,7 +7,7 @@
 - Edit Entry pages no longer appear to create a draft when the Current revision is edited within Live Preview. Unsaved changes are now stored within a “provisional draft”, which is mostly hidden from the author. ([#7899](https://github.com/craftcms/cms/pull/7899))
 - Category groups now have a “Default Category Placement” setting, which determines where new categories should be placed within the structure by default. ([#7759](https://github.com/craftcms/cms/issues/7759))
 - Structure sections now have a “Default Entry Placement” setting, which determines where new entries should be placed within the structure by default. ([#7759](https://github.com/craftcms/cms/issues/7759))
-- It’s now possible to reorder global sets. ([#4972](https://github.com/craftcms/cms/issues/4972))
+- It’s now possible to reorder global sets. ([#8052](https://github.com/craftcms/cms/pull/8052))
 - Date fields now have a “Show Time Zone” setting, allowing authors to choose which time zone the date is set to, rather than using the system time zone.
 - Matrix fields can now be set to custom propagation methods, based on a propagation key template. ([#7610](https://github.com/craftcms/cms/issues/7610))
 - Added a “Refresh” button to Live Preview, for preview targets whose “Auto-refresh” (formerly “Refresh”) setting is disabled.
