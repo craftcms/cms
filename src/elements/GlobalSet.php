@@ -151,6 +151,12 @@ class GlobalSet extends Element
     public $handle;
 
     /**
+     * @var int Sort order
+     * @since 3.7.0
+     */
+    public $sortOrder;
+
+    /**
      * Use the global set's name as its string representation.
      *
      * @return string
@@ -275,6 +281,7 @@ class GlobalSet extends Element
         $config = [
             'name' => $this->name,
             'handle' => $this->handle,
+            'sortOrder' => (int)$this->sortOrder,
         ];
 
         $fieldLayout = $this->getFieldLayout();
