@@ -1,5 +1,5 @@
 @charset "UTF-8";
-@import "../../../../../node_modules/craftcms-sass/mixins";
+@import "../../../../../packages/craftcms-sass/mixins";
 
 .user-permissions {
   position: relative;
@@ -53,7 +53,7 @@
   display: block;
   position: absolute;
   margin-top: 8px;
-  content: '.';
+  content: '';
   font-size: 0;
   width: 10px;
   height: 0;

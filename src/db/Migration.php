@@ -280,6 +280,7 @@ abstract class Migration extends \yii\db\Migration
 
     /**
      * Creates and executes a DELETE SQL statement that will only delete duplicate rows from a table.
+     *
      * @param string $table The table where the data will be deleted from
      * @param string[] $columns The column names that contain duplicate data
      * @param string $pk The primary key column name
@@ -375,7 +376,7 @@ abstract class Migration extends \yii\db\Migration
     public function addForeignKey($name, $table, $columns, $refTable, $refColumns, $delete = null, $update = null)
     {
         if ($name === null) {
-            $name = $this->db->getForeignKeyName($table, $columns);
+            $name = $this->db->getForeignKeyName();
         }
 
         return parent::addForeignKey($name, $table, $columns, $refTable, $refColumns, $delete, $update);
@@ -393,7 +394,7 @@ abstract class Migration extends \yii\db\Migration
     public function createIndex($name, $table, $columns, $unique = false)
     {
         if ($name === null) {
-            $name = $this->db->getIndexName($table, $columns, $unique);
+            $name = $this->db->getIndexName();
         }
 
         return parent::createIndex($name, $table, $columns, $unique);

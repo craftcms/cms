@@ -1,0 +1,26 @@
+{% import '_includes/forms' as forms %}
+
+{{ forms.selectField({
+    label: 'Minute Increment'|t('app'),
+    instructions: 'The number of minutes that timepicker options should be incremented by. (Authors can enter a specific time manually.)'|t('app'),
+    id: 'minuteIncrement',
+    name: 'minuteIncrement',
+    options: incrementOptions,
+    value: field.minuteIncrement ? field.minuteIncrement : 30,
+}) }}
+
+{{ forms.timeField({
+    label: 'Min Time'|t('app'),
+    id: 'min',
+    name: 'min',
+    value: min,
+    errors: field.getErrors('min'),
+}) }}
+
+{{ forms.timeField({
+    label: 'Max Time'|t('app'),
+    id: 'max',
+    name: 'max',
+    value: max,
+    errors: field.getErrors('max'),
+}) }}

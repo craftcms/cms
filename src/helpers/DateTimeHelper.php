@@ -14,6 +14,7 @@ use DateTime;
 use DateTimeImmutable;
 use DateTimeZone;
 use yii\base\ErrorException;
+use yii\base\InvalidArgumentException;
 
 /**
  * Class DateTimeHelper
@@ -68,7 +69,7 @@ class DateTimeHelper
      *  - Unix timestamps
      *  - An array with at least one of these keys defined: `datetime`, `date`, or `time`. Supported keys include:
      *      - `date` – a date string in `YYYY-MM-DD` or `YYYY-MM-DD HH:MM:SS.MU` formats or the current locale’s short date format
-     *      - `time` – a time string in `HH:MM` (24-hour) format or the current locale’s short time format
+     *      - `time` – a time string in `HH:MM` or `HH:MM:SS` (24-hour) format or the current locale’s short time format
      *      - `datetime` – A timestamp in any of the non-array formats supported by this method
      *      - `timezone` – A [valid PHP timezone](http://php.net/manual/en/timezones.php). If set, this will override
      *        the assumed timezone per `$assumeSystemTimeZone`.
@@ -106,14 +107,14 @@ class DateTimeHelper
 
             // Did they specify a full timestamp ?
             if (!empty($value['datetime'])) {
-                list($date, $format) = self::_parseDateTime($value['datetime'], $timeZone);
+                [$date, $format] = self::_parseDateTime($value['datetime'], $timeZone);
                 if ($format === false) {
                     return false;
                 }
             } else {
                 // Did they specify a date?
                 if (!empty($value['date'])) {
-                    list($date, $format) = self::_parseDate($value['date']);
+                    [$date, $format] = self::_parseDate($value['date']);
                 } else {
                     // Default to the current date
                     $format = 'Y-m-d';
@@ -122,7 +123,7 @@ class DateTimeHelper
 
                 // Did they specify a time?
                 if (!empty($value['time'])) {
-                    list($time, $timeFormat) = self::_parseTime($value['time']);
+                    [$time, $timeFormat] = self::_parseTime($value['time']);
                     $format .= ' ' . $timeFormat;
                     $date .= ' ' . $time;
                 }
@@ -132,7 +133,7 @@ class DateTimeHelper
                 $date .= ' ' . $timeZone;
             }
         } else {
-            list($date, $format) = self::_parseDateTime($value, $defaultTimeZone);
+            [$date, $format] = self::_parseDateTime($value, $defaultTimeZone);
             if ($format === false) {
                 return false;
             }
@@ -273,7 +274,7 @@ class DateTimeHelper
      * @return string The translated date string
      * @deprecated in 3.0.6. Use [[\craft\i18n\Formatter::asDate()]] instead.
      */
-    public static function translateDate(string $str, string $language = null): string
+    public static function translateDate(string $str, ?string $language = null): string
     {
         Craft::$app->getDeprecator()->log(__METHOD__, '`' . __METHOD__ . '` is deprecated. Use `craft\i18n\Formatter::asDate()` instead.');
 
@@ -436,24 +437,35 @@ class DateTimeHelper
      * @param mixed $timeInterval The numeric value with space then time type.
      * Example of valid types: '6 hours', '2 days', '1 minute'.
      * @return bool Whether the $dateString was within the specified $timeInterval.
+     * @throws InvalidArgumentException
      */
     public static function isWithinLast($date, $timeInterval): bool
     {
+        $date = static::toDateTime($date);
+
+        if ($date === false) {
+            throw new InvalidArgumentException('Invalid date');
+        }
+
+        $timestamp = $date->getTimestamp();
+        $now = new DateTime();
+
+        // Bail early if it's in the future
+        if ($timestamp > $now->getTimestamp()) {
+            return false;
+        }
+
         if (is_numeric($timeInterval)) {
             $timeInterval .= ' days';
         }
 
-        $date = self::toDateTime($date);
-        $timestamp = $date->getTimestamp();
-
-        // Bail early if it's in the future
-        if ($timestamp > time()) {
-            return false;
+        try {
+            $earliestTimestamp = $now->modify("-$timeInterval")->getTimestamp();
+        } catch (\Throwable $e) {
+            throw new InvalidArgumentException("Invalid time interval: $timeInterval", 0, $e);
         }
 
-        $earliestTimestamp = strtotime('-' . $timeInterval);
-
-        return ($timestamp >= $earliestTimestamp);
+        return $timestamp >= $earliestTimestamp;
     }
 
     /**
@@ -590,7 +602,7 @@ class DateTimeHelper
         }
 
         // Get the locale's short date format
-        $format = Craft::$app->getLocale()->getDateFormat(Locale::LENGTH_SHORT, Locale::FORMAT_PHP);
+        $format = Craft::$app->getFormattingLocale()->getDateFormat(Locale::LENGTH_SHORT, Locale::FORMAT_PHP);
 
         // Make sure it's a 4-digit year
         $format = StringHelper::replace($format, 'y', 'Y');
@@ -627,17 +639,17 @@ class DateTimeHelper
         $value = trim($value);
 
         // First see if it's in HH:MM format
-        if (preg_match('/^\d{2}:\d{2}$/', $value)) {
-            return [$value, 'H:i'];
+        if (preg_match('/^\d{2}:\d{2}(:\d{2})?$/', $value, $matches)) {
+            return [$value, 'H:i' . (isset($matches[1]) ? ':s' : '')];
         }
 
-        // Get the locale's short time format
-        $locale = Craft::$app->getLocale();
-        $format = $locale->getTimeFormat(Locale::LENGTH_SHORT, Locale::FORMAT_PHP);
+        // Get the formatting locale's short time format
+        $formattingLocale = Craft::$app->getFormattingLocale();
+        $format = $formattingLocale->getTimeFormat(Locale::LENGTH_SHORT, Locale::FORMAT_PHP);
 
         // Replace the localized "AM" and "PM"
-        $am = $locale->getAMName();
-        $pm = $locale->getPMName();
+        $am = $formattingLocale->getAMName();
+        $pm = $formattingLocale->getPMName();
 
         if (preg_match('/(.*)(' . preg_quote($am, '/') . '|' . preg_quote($pm, '/') . ')(.*)/iu', $value, $matches)) {
             $value = $matches[1] . $matches[3];
@@ -730,13 +742,9 @@ class DateTimeHelper
     private static function _getDateTranslations(string $language): array
     {
         if (!isset(self::$_translationPairs[$language])) {
-            if (strpos(Craft::$app->language, 'en') === 0) {
-                $sourceLocale = Craft::$app->getLocale();
-            } else {
-                $sourceLocale = Craft::$app->getI18n()->getLocaleById('en-US');
-            }
-
-            $targetLocale = Craft::$app->getI18n()->getLocaleById($language);
+            $i18n = Craft::$app->getI18n();
+            $sourceLocale = $i18n->getLocaleById('en-US');
+            $targetLocale = $i18n->getLocaleById($language);
 
             $amName = $targetLocale->getAMName();
             $pmName = $targetLocale->getPMName();
@@ -750,7 +758,7 @@ class DateTimeHelper
                     'AM' => mb_strtoupper($amName),
                     'PM' => mb_strtoupper($pmName),
                     'am' => mb_strtolower($amName),
-                    'pm' => mb_strtolower($pmName)
+                    'pm' => mb_strtolower($pmName),
                 ]
             );
         }

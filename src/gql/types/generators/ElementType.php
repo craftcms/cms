@@ -34,7 +34,6 @@ class ElementType implements GeneratorInterface, SingleGeneratorInterface
         return [$type->name => $type];
     }
 
-
     /**
      * @inheritdoc
      */
@@ -47,7 +46,7 @@ class ElementType implements GeneratorInterface, SingleGeneratorInterface
             'name' => $typeName,
             'fields' => function() use ($elementFields) {
                 return $elementFields;
-            }
+            },
         ]));
     }
 }

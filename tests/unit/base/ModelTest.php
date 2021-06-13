@@ -5,7 +5,7 @@
  * @license https://craftcms.github.io/license/
  */
 
-namespace crafttests\unit\models;
+namespace crafttests\unit\base;
 
 use Codeception\Test\Unit;
 use Craft;
@@ -28,17 +28,17 @@ class ModelTest extends Unit
      *
      * @dataProvider hasErrorsDataProvider
      *
-     * @param $result
-     * @param $input
-     * @param $searchParam
-     * @param $paramName
+     * @param bool $expected
+     * @param string $attribute
+     * @param string $error
+     * @param string $searchParam
      */
-    public function testHasErrors($result, $input, $searchParam, $paramName)
+    public function testHasErrors(bool $expected, string $attribute, string $error, string $searchParam)
     {
         $model1 = new ExampleModel();
-        $model1->addError($paramName, $input);
+        $model1->addError($attribute, $error);
 
-        $this->assertSame($result, $model1->hasErrors($searchParam));
+        self::assertSame($expected, $model1->hasErrors($searchParam));
     }
 
     /**
@@ -57,8 +57,8 @@ class ModelTest extends Unit
         $dateTime = new DateTime($dateForInput, new DateTimeZone('UTC'));
         $dateTime->setTimezone(new DateTimeZone(Craft::$app->getTimeZone()));
 
-        $this->assertSame($dateTime->format('Y-m-d H:i:s'), $model->$paramName->format('Y-m-d H:i:s'));
-        $this->assertSame($dateTime->getTimezone()->getName(), $model->$paramName->getTimezone()->getName());
+        self::assertSame($dateTime->format('Y-m-d H:i:s'), $model->$paramName->format('Y-m-d H:i:s'));
+        self::assertSame($dateTime->getTimezone()->getName(), $model->$paramName->getTimezone()->getName());
     }
 
     /**
@@ -68,7 +68,7 @@ class ModelTest extends Unit
     {
         $model = new ExampleModel(['exampleParam' => '2018-11-12 20:00:00']);
 
-        $this->assertSame('2018-11-12 20:00:00', $model->exampleParam);
+        self::assertSame('2018-11-12 20:00:00', $model->exampleParam);
     }
 
     /**
@@ -79,7 +79,7 @@ class ModelTest extends Unit
         $model = new ExampleModel();
         $model->exampleDateParam = '2018-11-12 20:00:00';
 
-        $this->assertSame('2018-11-12 20:00:00', $model->exampleDateParam);
+        self::assertSame('2018-11-12 20:00:00', $model->exampleDateParam);
     }
 
     /**
@@ -93,10 +93,10 @@ class ModelTest extends Unit
 
         $model1->addModelErrors($model2);
 
-        $this->assertCount(1, $model1->getErrors());
-        $this->assertCount(1, $model1->getErrors()['exampleParam']);
+        self::assertCount(1, $model1->getErrors());
+        self::assertCount(1, $model1->getErrors()['exampleParam']);
 
-        $this->assertSame('thisAintGood', $model1->getErrors()['exampleParam'][0]);
+        self::assertSame('thisAintGood', $model1->getErrors()['exampleParam'][0]);
     }
 
     /**
@@ -112,11 +112,11 @@ class ModelTest extends Unit
 
         $model1->addModelErrors($model2);
 
-        $this->assertCount(1, $model1->getErrors());
-        $this->assertCount(2, $model1->getErrors()['exampleParam']);
+        self::assertCount(1, $model1->getErrors());
+        self::assertCount(2, $model1->getErrors()['exampleParam']);
 
-        $this->assertSame('thisAintGood', $model1->getErrors()['exampleParam'][0]);
-        $this->assertSame('alsoAintGood', $model1->getErrors()['exampleParam'][1]);
+        self::assertSame('thisAintGood', $model1->getErrors()['exampleParam'][0]);
+        self::assertSame('alsoAintGood', $model1->getErrors()['exampleParam'][1]);
     }
 
     /**
@@ -132,12 +132,12 @@ class ModelTest extends Unit
 
         $model1->addModelErrors($model2, '-custom-');
 
-        $this->assertCount(2, $model1->getErrors());
-        $this->assertCount(1, $model1->getErrors()['exampleParam']);
-        $this->assertCount(1, $model1->getErrors()['-custom-.exampleParam']);
+        self::assertCount(2, $model1->getErrors());
+        self::assertCount(1, $model1->getErrors()['exampleParam']);
+        self::assertCount(1, $model1->getErrors()['-custom-.exampleParam']);
 
-        $this->assertSame('thisAintGood', $model1->getErrors()['exampleParam'][0]);
-        $this->assertSame('alsoAintGood', $model1->getErrors()['-custom-.exampleParam'][0]);
+        self::assertSame('thisAintGood', $model1->getErrors()['exampleParam'][0]);
+        self::assertSame('alsoAintGood', $model1->getErrors()['-custom-.exampleParam'][0]);
     }
 
     /**
@@ -161,13 +161,12 @@ class ModelTest extends Unit
     public function hasErrorsDataProvider(): array
     {
         return [
-            [true, 'error', 'fields.*', 'fields[body]'],
-            [true, 'error', 'fields.*', 'fields.body'],
-            [true, 'error', 'fields.*', 'fields[body'],
-            [true, 'error', 'fields.*', 'fields.[body'],
-            [true, 'error', 'fields.*', 'fields.[body]'],
-
-            [true, 'error', 'exampleParam', 'exampleParam'],
+            [true, 'fields[body]', 'error', 'fields.*'],
+            [true, 'fields.body', 'error', 'fields.*'],
+            [true, 'fields[body', 'error', 'fields.*'],
+            [true, 'fields.[body', 'error', 'fields.*'],
+            [true, 'fields.[body]', 'error', 'fields.*'],
+            [true, 'exampleParam', 'error', 'exampleParam'],
         ];
     }
 }

@@ -46,7 +46,7 @@ class ConfigHelper
         }
 
         if (!$value instanceof \DateInterval) {
-            throw new InvalidConfigException("Unable to convert {$value} to seconds.");
+            throw new InvalidConfigException("Unable to convert to seconds.");
         }
 
         return DateTimeHelper::intervalToSeconds($value);
@@ -99,7 +99,7 @@ class ConfigHelper
      * @param string|null $siteHandle The site handle the value should be defined for. Defaults to the current site.
      * @return mixed
      */
-    public static function localizedValue($value, string $siteHandle = null)
+    public static function localizedValue($value, ?string $siteHandle = null)
     {
         if (is_scalar($value)) {
             return $value;
@@ -110,7 +110,7 @@ class ConfigHelper
         }
 
         if ($siteHandle === null) {
-            /** @noinspection PhpUnhandledExceptionInspection */
+            /* @noinspection PhpUnhandledExceptionInspection */
             $siteHandle = Craft::$app->getSites()->getCurrentSite()->handle;
         }
 

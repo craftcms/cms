@@ -48,21 +48,21 @@ class FormatDateTime extends Directive
                     'name' => 'format',
                     'type' => Type::string(),
                     'defaultValue' => self::DEFAULT_FORMAT,
-                    'description' => 'This specifies the format to use. This can be `short`, `medium`, `long`, `full`, an [ICU date format](http://userguide.icu-project.org/formatparse/datetime), or a [PHP date format](https://www.php.net/manual/en/function.date.php). It defaults to the [Atom date time format](https://www.php.net/manual/en/class.datetimeinterface.php#datetime.constants.atom]).'
+                    'description' => 'This specifies the format to use. This can be `short`, `medium`, `long`, `full`, an [ICU date format](http://userguide.icu-project.org/formatparse/datetime), or a [PHP date format](https://www.php.net/manual/en/function.date.php). It defaults to the [Atom date time format](https://www.php.net/manual/en/class.datetimeinterface.php#datetime.constants.atom]).',
                 ]),
                 new FieldArgument([
                     'name' => 'timezone',
                     'type' => Type::string(),
-                    'description' => 'The full name of the timezone, defaults to UTC. (E.g., America/New_York)',
-                    'defaultValue' => self::DEFAULT_TIMEZONE
+                    'description' => 'The full name of the timezone (e.g., America/New_York). Defaults to ' . self::defaultTimezone(),
+                    'defaultValue' => self::defaultTimezone(),
                 ]),
                 new FieldArgument([
                     'name' => 'locale',
                     'type' => Type::string(),
                     'description' => 'The locale to use when formatting the date. (E.g., en-US)',
-                ])
+                ]),
             ],
-            'description' => 'This directive allows for formatting any date to the desired format. It can be applied to all fields, but changes anything only when applied to a DateTime field.'
+            'description' => 'This directive allows for formatting any date to the desired format. It can be applied to all fields, but changes anything only when applied to a DateTime field.',
         ]));
 
         return $type;
@@ -82,9 +82,9 @@ class FormatDateTime extends Directive
     public static function apply($source, $value, array $arguments, ResolveInfo $resolveInfo)
     {
         if ($value instanceof \DateTime) {
-            /** @var \DateTime $value */
+            /* @var \DateTime $value */
             $format = $arguments['format'] ?? self::DEFAULT_FORMAT;
-            $timezone = $arguments['timezone'] ?? self::DEFAULT_TIMEZONE;
+            $timezone = $arguments['timezone'] ?? self::defaultTimezone();
 
             // Is this a custom PHP date format?
             if ($format !== null && !in_array($format, [Locale::LENGTH_SHORT, Locale::LENGTH_MEDIUM, Locale::LENGTH_LONG, Locale::LENGTH_FULL], true)) {
@@ -107,5 +107,13 @@ class FormatDateTime extends Directive
         }
 
         return $value;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public static function defaultTimezone(): string
+    {
+        return Craft::$app->getConfig()->getGeneral()->useSystemTimezoneForGraphQlDates ? Craft::$app->getTimezone() : self::DEFAULT_TIMEZONE;
     }
 }

@@ -107,7 +107,7 @@ class SearchQuery
 
             // Is this an attribute-specific term?
             if (preg_match('/^(\w+)(::?)(.+)$/', $token, $match)) {
-                list(, $term->attribute, $colons, $token) = $match;
+                [, $term->attribute, $colons, $token] = $match;
                 if ($colons === '::') {
                     $term->exact = true;
                     $term->subLeft = false;
@@ -147,7 +147,7 @@ class SearchQuery
             $term->term = $token;
 
             if ($appendToPrevious) {
-                /** @noinspection PhpUndefinedVariableInspection */
+                /* @noinspection PhpUndefinedVariableInspection */
                 $previousToken->terms[] = $term;
             } else {
                 $this->_tokens[] = $term;

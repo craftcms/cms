@@ -35,7 +35,7 @@ class UnsuspendUsers extends ElementAction
     {
         // Get the users that are suspended
         $query->status(User::STATUS_SUSPENDED);
-        /** @var User[] $users */
+        /* @var User[] $users */
         $users = $query->all();
         $usersService = Craft::$app->getUsers();
 

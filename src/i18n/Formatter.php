@@ -81,7 +81,7 @@ class Formatter extends \yii\i18n\Formatter
         }
 
         if (strncmp($format, 'php:', 4) === 0) {
-            return $this->_formatDateTimeValueWithPhpFormat($value, substr($format, 4));
+            return $this->_formatDateTimeValueWithPhpFormat($value, substr($format, 4), 'date');
         }
 
         if (Craft::$app->getI18n()->getIsIntlLoaded()) {
@@ -110,7 +110,7 @@ class Formatter extends \yii\i18n\Formatter
         }
 
         if (strncmp($format, 'php:', 4) === 0) {
-            return $this->_formatDateTimeValueWithPhpFormat($value, substr($format, 4));
+            return $this->_formatDateTimeValueWithPhpFormat($value, substr($format, 4), 'time');
         }
 
         if (Craft::$app->getI18n()->getIsIntlLoaded()) {
@@ -139,7 +139,7 @@ class Formatter extends \yii\i18n\Formatter
         }
 
         if (strncmp($format, 'php:', 4) === 0) {
-            return $this->_formatDateTimeValueWithPhpFormat($value, substr($format, 4));
+            return $this->_formatDateTimeValueWithPhpFormat($value, substr($format, 4), 'datetime');
         }
 
         if (Craft::$app->getI18n()->getIsIntlLoaded()) {
@@ -177,10 +177,10 @@ class Formatter extends \yii\i18n\Formatter
      */
     public function asTimestamp($value, string $format = null, bool $withPreposition = false): string
     {
-        /** @var DateTime $timestamp */
-        /** @var bool $hasTimeInfo */
-        /** @var bool $hasDateInfo */
-        list($timestamp, $hasTimeInfo, $hasDateInfo) = $this->normalizeDatetimeValue($value, true);
+        /* @var DateTime $timestamp */
+        /* @var bool $hasTimeInfo */
+        /* @var bool $hasDateInfo */
+        [$timestamp, $hasTimeInfo, $hasDateInfo] = $this->normalizeDatetimeValue($value, true);
 
         // If it's today or missing date info, just return the local time.
         if (!$hasDateInfo || DateTimeHelper::isToday($timestamp)) {
@@ -199,7 +199,7 @@ class Formatter extends \yii\i18n\Formatter
         // If it were up to 7 days ago, display the weekday name.
         if (DateTimeHelper::isWithinLast($timestamp, '7 days')) {
             $day = $timestamp->format('w');
-            $dayName = Craft::$app->getI18n()->getLocaleById($this->locale)->getWeekDayName($day);
+            $dayName = Craft::$app->getLocale()->getWeekDayName($day);
             return $withPreposition ? Craft::t('app', 'on {day}', ['day' => $dayName]) : $dayName;
         }
 
@@ -288,8 +288,9 @@ class Formatter extends \yii\i18n\Formatter
      *
      * @param int|string|DateTime $value
      * @param string|null $format
+     * @param string $type 'date', 'time', or 'datetime'.
      */
-    private function _formatDateTimeValueWithPhpFormat($value, string $format): string
+    private function _formatDateTimeValueWithPhpFormat($value, string $format, string $type): string
     {
         // special cases for PHP format characters not supported by ICU
         $split = preg_split('/(?<!\\\\)(S|w|t|L|B|u|I|Z|U|A|a)/', $format, -1, PREG_SPLIT_DELIM_CAPTURE);
@@ -307,7 +308,20 @@ class Formatter extends \yii\i18n\Formatter
                         $formatted .= mb_strtolower($this->asDate($value, FormatConverter::convertDatePhpToIcu($seg)));
                         break;
                     default:
-                        $formatted .= $value->format($seg);
+                        // Make sure we are formatting the date with the right timezone consistently
+                        if (!isset($timestamp)) {
+                            [$timestamp, $hasTimeInfo, $hasDateInfo] = $this->normalizeDatetimeValue($value, true);
+                            if ($type === 'date' && !$hasTimeInfo || $type === 'time' && !$hasDateInfo) {
+                                $timeZone = $this->defaultTimeZone;
+                            } else {
+                                $timeZone = $this->timeZone;
+                            }
+                            if ($timeZone) {
+                                $timestamp->setTimezone(new DateTimeZone($timeZone));
+                            }
+                        }
+
+                        $formatted .= $timestamp->format($seg);
                 }
             }
         }
@@ -338,7 +352,7 @@ class Formatter extends \yii\i18n\Formatter
 
         // Avoid time zone conversion for date-only values
         if ($type === 'date') {
-            list($timestamp, $hasTimeInfo) = $this->normalizeDatetimeValue($value, true);
+            [$timestamp, $hasTimeInfo] = $this->normalizeDatetimeValue($value, true);
 
             if (!$hasTimeInfo) {
                 $timeZone = $this->defaultTimeZone;

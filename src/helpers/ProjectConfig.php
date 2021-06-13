@@ -13,9 +13,6 @@ use craft\services\Gql as GqlService;
 use craft\services\ProjectConfig as ProjectConfigService;
 use craft\services\Sites;
 use craft\services\UserGroups;
-use SebastianBergmann\Diff\Differ;
-use SebastianBergmann\Diff\Output\UnifiedDiffOutputBuilder;
-use Symfony\Component\Yaml\Yaml;
 use yii\base\InvalidConfigException;
 use yii\caching\ChainedDependency;
 use yii\caching\ExpressionDependency;
@@ -57,12 +54,14 @@ class ProjectConfig
      */
     public static function ensureAllFieldsProcessed()
     {
-        if (static::$_processedFields) {
+        $projectConfig = Craft::$app->getProjectConfig();
+
+        if (static::$_processedFields || !$projectConfig->getIsApplyingYamlChanges()) {
             return;
         }
+
         static::$_processedFields = true;
 
-        $projectConfig = Craft::$app->getProjectConfig();
         $allGroups = $projectConfig->get(Fields::CONFIG_FIELDGROUP_KEY, true) ?? [];
         $allFields = $projectConfig->get(Fields::CONFIG_FIELDS_KEY, true) ?? [];
 
@@ -79,26 +78,30 @@ class ProjectConfig
 
     /**
      * Ensure all site config changes are processed immediately in a safe manner.
+     *
+     * @param bool $force Whether to proceed even if YAML changes are not currently being applied
      */
-    public static function ensureAllSitesProcessed()
+    public static function ensureAllSitesProcessed(bool $force = false)
     {
-        if (static::$_processedSites) {
+        $projectConfig = Craft::$app->getProjectConfig();
+
+        if (static::$_processedSites || (!$force && !$projectConfig->getIsApplyingYamlChanges())) {
             return;
         }
+
         static::$_processedSites = true;
 
-        $projectConfig = Craft::$app->getProjectConfig();
         $allGroups = $projectConfig->get(Sites::CONFIG_SITEGROUP_KEY, true) ?? [];
         $allSites = $projectConfig->get(Sites::CONFIG_SITES_KEY, true) ?? [];
 
         foreach ($allGroups as $groupUid => $groupData) {
             // Ensure group is processed
-            $projectConfig->processConfigChanges(Sites::CONFIG_SITEGROUP_KEY . '.' . $groupUid);
+            $projectConfig->processConfigChanges(Sites::CONFIG_SITEGROUP_KEY . '.' . $groupUid, false, null, $force);
         }
 
         foreach ($allSites as $siteUid => $siteData) {
             // Ensure site is processed
-            $projectConfig->processConfigChanges(Sites::CONFIG_SITES_KEY . '.' . $siteUid);
+            $projectConfig->processConfigChanges(Sites::CONFIG_SITES_KEY . '.' . $siteUid, false, null, $force);
         }
     }
 
@@ -107,12 +110,14 @@ class ProjectConfig
      */
     public static function ensureAllUserGroupsProcessed()
     {
-        if (static::$_processedUserGroups) {
+        $projectConfig = Craft::$app->getProjectConfig();
+
+        if (static::$_processedUserGroups || !$projectConfig->getIsApplyingYamlChanges()) {
             return;
         }
+
         static::$_processedUserGroups = true;
 
-        $projectConfig = Craft::$app->getProjectConfig();
         $allGroups = $projectConfig->get(UserGroups::CONFIG_USERPGROUPS_KEY, true);
 
         if (is_array($allGroups)) {
@@ -129,12 +134,14 @@ class ProjectConfig
      */
     public static function ensureAllGqlSchemasProcessed()
     {
-        if (static::$_processedGqlSchemas) {
+        $projectConfig = Craft::$app->getProjectConfig();
+
+        if (static::$_processedGqlSchemas || !$projectConfig->getIsApplyingYamlChanges()) {
             return;
         }
+
         static::$_processedGqlSchemas = true;
 
-        $projectConfig = Craft::$app->getProjectConfig();
         $allSchemas = $projectConfig->get(GqlService::CONFIG_GQL_SCHEMAS_KEY, true);
 
         if (is_array($allSchemas)) {
@@ -149,7 +156,7 @@ class ProjectConfig
     /**
      * Resets the static memoization variables.
      *
-     * @return void
+     * @return null
      */
     public static function reset()
     {
@@ -169,39 +176,70 @@ class ProjectConfig
      */
     public static function cleanupConfig(array $config): array
     {
-        $remove = [];
+        $cleanConfig = [];
 
-        foreach ($config as $key => &$value) {
-            // Only scalars, arrays and simple objects allowed.
-            if ($value instanceof \StdClass) {
-                $value = (array)$value;
+        foreach ($config as $key => $value) {
+            $value = self::_cleanupConfigValue($value);
+
+            // Ignore empty arrays
+            if (!is_array($value) || !empty($value)) {
+                $cleanConfig[$key] = $value;
             }
+        }
 
-            if (!empty($value) && !is_scalar($value) && !is_array($value)) {
-                Craft::info('Unexpected data encountered in config data - ' . print_r($value, true));
+        ksort($cleanConfig, SORT_NATURAL);
+        return $cleanConfig;
+    }
 
-                throw new InvalidConfigException('Unexpected data encountered in config data');
-            }
+    /**
+     * Cleans a config value.
+     *
+     * @param mixed $value
+     * @return mixed
+     * @throws InvalidConfigException
+     */
+    private static function _cleanupConfigValue($value)
+    {
+        // Only scalars, arrays and simple objects allowed.
+        if ($value instanceof \StdClass) {
+            $value = (array)$value;
+        }
 
-            if (is_array($value)) {
-                $value = static::cleanupConfig($value);
+        if (!empty($value) && !is_scalar($value) && !is_array($value)) {
+            Craft::info('Unexpected data encountered in config data - ' . print_r($value, true));
+            throw new InvalidConfigException('Unexpected data encountered in config data');
+        }
 
-                if (empty($value)) {
-                    $remove[] = $key;
+        if (is_array($value)) {
+            // Is this a packed array?
+            if (isset($value[ProjectConfigService::CONFIG_ASSOC_KEY])) {
+                $cleanPackedArray = [];
+
+                foreach ($value[ProjectConfigService::CONFIG_ASSOC_KEY] as $pKey => $pArray) {
+                    // Make sure it has a value
+                    if (isset($pArray[1])) {
+                        $pArray[1] = self::_cleanupConfigValue($pArray[1]);
+
+                        // Ignore empty arrays
+                        if (!is_array($pArray[1]) || !empty($pArray[1])) {
+                            $cleanPackedArray[$pKey] = $pArray;
+                        }
+                    }
                 }
+
+                if (!empty($cleanPackedArray)) {
+                    ksort($cleanPackedArray, SORT_NATURAL);
+                    $value[ProjectConfigService::CONFIG_ASSOC_KEY] = $cleanPackedArray;
+                } else {
+                    // Set $value to an empty array so it doesn't make it into the final config
+                    $value = [];
+                }
+            } else {
+                $value = static::cleanupConfig($value);
             }
         }
 
-        unset($value);
-
-        // Remove empty stuff
-        foreach ($remove as $removeKey) {
-            unset($config[$removeKey]);
-        }
-
-        ksort($config);
-
-        return $config;
+        return $value;
     }
 
     /**
@@ -314,6 +352,10 @@ class ProjectConfig
             $associative = [];
             if (!empty($array[ProjectConfigService::CONFIG_ASSOC_KEY])) {
                 foreach ($array[ProjectConfigService::CONFIG_ASSOC_KEY] as $items) {
+                    if (!isset($items[0], $items[1])) {
+                        Craft::warning('Skipping incomplete packed associative array data', __METHOD__);
+                        continue;
+                    }
                     $associative[$items[0]] = $items[1];
                 }
             }
@@ -379,7 +421,7 @@ class ProjectConfig
      * @param string|null $path
      * @return bool whether the config was split
      */
-    private static function splitConfigIntoComponentsInternal(array &$config, array &$splitConfig, string $path = null): bool
+    private static function splitConfigIntoComponentsInternal(array &$config, array &$splitConfig, ?string $path = null): bool
     {
         $split = false;
 
@@ -440,36 +482,142 @@ class ProjectConfig
     /**
      * Returns a diff of the pending project config YAML changes, compared to the currently loaded project config.
      *
+     * @param bool $invert Whether to reverse the diff, so the loaded config is treated as the source of truth
      * @return string
      * @since 3.5.6
      */
-    public static function diff(): string
+    public static function diff(bool $invert = false): string
     {
         $projectConfig = Craft::$app->getProjectConfig();
+        $cacheKey = ProjectConfigService::DIFF_CACHE_KEY . ($invert ? ':reverse' : '');
 
-        return Craft::$app->getCache()->getOrSet(ProjectConfigService::DIFF_CACHE_KEY, function() use ($projectConfig): string {
-            $currentConfig = $projectConfig->get();
-            $pendingConfig = $projectConfig->get(null, true);
-            $currentYaml = Yaml::dump(static::cleanupConfig($currentConfig), 20, 2);
-            $pendingYaml = Yaml::dump(static::cleanupConfig($pendingConfig), 20, 2);
-            $builder = new UnifiedDiffOutputBuilder('');
-            $differ = new Differ($builder);
-            $diff = $differ->diff($currentYaml, $pendingYaml);
+        return Craft::$app->getCache()->getOrSet($cacheKey, function() use ($projectConfig, $invert): string {
+            $currentConfig = static::cleanupConfig($projectConfig->get());
+            $pendingConfig = static::cleanupConfig($projectConfig->get(null, true));
 
-            // Cleanup
-            $diff = preg_replace("/^@@ @@\n/", '', $diff);
-            $diff = preg_replace('/^[\+\-]?/m', '$0 ', $diff);
-            $diff = str_replace(' @@ @@', '...', $diff);
-            $diff = rtrim($diff);
-
-            return $diff;
+            if ($invert) {
+                return Diff::diff($pendingConfig, $currentConfig);
+            }
+            return Diff::diff($currentConfig, $pendingConfig);
         }, null, new ChainedDependency([
             'dependencies' => [
                 $projectConfig->getCacheDependency(),
                 new ExpressionDependency([
-                    'expression' => 'md5(' . Json::class . '::encode('. Craft::class . '::$app->getProjectConfig()->get(null, true)))',
+                    'expression' => 'md5(' . Json::class . '::encode(' . Craft::class . '::$app->getProjectConfig()->get(null, true)))',
                 ]),
             ],
         ]));
+    }
+
+    /**
+     * Updates the `dateModified` value in `config/project/project.yaml`.
+     *
+     * If a Git conflict is detected on the `dateModified` value, a conflict resolution will also be attempted.
+     *
+     * @param int|null $timestamp The updated `dateModified` value. If `null`, the current time will be used.
+     * @since 3.5.14
+     */
+    public static function touch(?int $timestamp = null)
+    {
+        if ($timestamp === null) {
+            $timestamp = time();
+        }
+
+        $timestampLine = "dateModified: $timestamp\n";
+
+        $path = Craft::$app->getPath()->getProjectConfigFilePath();
+        $handle = fopen($path, 'r');
+        $foundTimestamp = false;
+
+        // Conflict stuff. "bt" = "before timestamp"; "at" = "after timestamp"
+        $inMine = $inTheirs = $foundTimestampInConflict = false;
+        $mineMarker = $theirsMarker = null;
+        $btMine = $atMine = $btTheirs = $atTheirs = null;
+        $conflictDl = "=======\n";
+
+        $newContents = '';
+
+        while (($line = fgets($handle)) !== false) {
+            $isTimestamp = strpos($line, 'dateModified:') === 0;
+
+            if ($foundTimestamp) {
+                if (!$isTimestamp) {
+                    $newContents .= $line;
+                }
+                continue;
+            }
+
+            if (!$isTimestamp) {
+                if (strpos($line, '<<<<<<<') === 0) {
+                    $mineMarker = $line;
+                    $inMine = true;
+                    $inTheirs = false;
+                    $btMine = '';
+                    continue;
+                }
+
+                if (strpos($line, '=======') === 0) {
+                    $inMine = false;
+                    $inTheirs = true;
+                    $btTheirs = '';
+                    continue;
+                }
+
+                if (strpos($line, '>>>>>>>') === 0) {
+                    $theirsMarker = $line;
+                    // We've reached the end of the conflict
+                    if ($btMine || $btTheirs) {
+                        $newContents .= $mineMarker . $btMine . $conflictDl . $btTheirs . $theirsMarker;
+                    }
+                    if ($foundTimestampInConflict) {
+                        $newContents .= $timestampLine;
+                        if ($atMine || $atTheirs) {
+                            $newContents .= $mineMarker . $atMine . $conflictDl . $atTheirs . $theirsMarker;
+                        }
+                        $foundTimestamp = true;
+                    }
+                    $inMine = $inTheirs = false;
+                    $btMine = $atMine = $btTheirs = $atTheirs = null;
+                    continue;
+                }
+            }
+
+            if ($isTimestamp) {
+                if ($inMine || $inTheirs) {
+                    // Just start keeping track of the post-timestamp conflict
+                    if ($inMine) {
+                        $atMine = '';
+                    } else {
+                        $atTheirs = '';
+                    }
+                    $foundTimestampInConflict = true;
+                } else {
+                    $newContents .= $timestampLine;
+                    $foundTimestamp = true;
+                }
+            } else if ($inMine) {
+                if ($atMine === null) {
+                    $btMine .= $line;
+                } else {
+                    $atMine .= $line;
+                }
+            } else if ($inTheirs) {
+                if ($atTheirs === null) {
+                    $btTheirs .= $line;
+                } else {
+                    $atTheirs .= $line;
+                }
+            } else {
+                $newContents .= $line;
+            }
+        }
+
+        fclose($handle);
+
+        if (!$foundTimestamp) {
+            $newContents .= $timestampLine;
+        }
+
+        FileHelper::writeToFile($path, $newContents);
     }
 }

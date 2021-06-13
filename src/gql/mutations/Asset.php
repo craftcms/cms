@@ -18,6 +18,7 @@ use craft\gql\types\generators\AssetType;
 use craft\helpers\Gql;
 use craft\helpers\Gql as GqlHelper;
 use GraphQL\Type\Definition\Type;
+use yii\base\InvalidConfigException;
 
 /**
  * Class Asset
@@ -62,7 +63,7 @@ class Asset extends Mutation
                 'args' => ['id' => Type::nonNull(Type::int())],
                 'resolve' => [Craft::createObject(AssetResolver::class), 'deleteAsset'],
                 'description' => 'Delete an asset.',
-                'type' => Type::boolean()
+                'type' => Type::boolean(),
             ];
         }
 
@@ -74,7 +75,7 @@ class Asset extends Mutation
      *
      * @param Volume $volume
      * @return array
-     * @throws \yii\base\InvalidConfigException
+     * @throws InvalidConfigException
      */
     public static function createSaveMutation(Volume $volume): array
     {
@@ -93,7 +94,7 @@ class Asset extends Mutation
             'description' => 'Save an asset.',
             'args' => $mutationArguments,
             'resolve' => [$resolver, 'saveAsset'],
-            'type' => $generatedType
+            'type' => $generatedType,
         ];
     }
 }

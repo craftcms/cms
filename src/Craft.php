@@ -10,6 +10,7 @@ use craft\behaviors\CustomFieldBehavior;
 use craft\db\Query;
 use craft\db\Table;
 use craft\helpers\App;
+use craft\helpers\ArrayHelper;
 use craft\helpers\Component;
 use craft\helpers\FileHelper;
 use GuzzleHttp\Client;
@@ -22,6 +23,7 @@ use yii\web\Request;
  * Craft is helper class serving common Craft and Yii framework functionality.
  * It encapsulates [[Yii]] and ultimately [[yii\BaseYii]], which provides the actual implementation.
  *
+ * @mixin CraftTrait
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
@@ -39,11 +41,6 @@ class Craft extends Yii
      * @deprecated in 3.0.0. Use [[Pro]] instead.
      */
     const Client = 1;
-
-    /**
-     * @var \craft\web\Application|\craft\console\Application The application instance.
-     */
-    public static $app;
 
     /**
      * @var array The default cookie configuration.
@@ -206,7 +203,7 @@ class Craft extends Yii
         // Now generate it again, this time with the correct field value types
         $fieldHandles = [];
         foreach ($fields as $field) {
-            /** @var FieldInterface|string $fieldClass */
+            /* @var FieldInterface|string $fieldClass */
             $fieldClass = $field['type'];
             if (Component::validateComponentClass($fieldClass, FieldInterface::class)) {
                 $types = explode('|', $fieldClass::valueType());
@@ -240,7 +237,7 @@ class Craft extends Yii
 
         foreach ($fieldHandles as $handle => $types) {
             $methods[] = <<<EOD
- * @method static {$handle}(mixed \$value) Sets the [[{$handle}]] property
+ * @method \$this {$handle}(mixed \$value) Sets the [[{$handle}]] property
 EOD;
 
             $handles[] = <<<EOD
@@ -284,10 +281,18 @@ EOD;
                 include $filePath;
             }
 
-            // Delete any other CustomFieldBehavior files
+            // Delete any CustomFieldBehavior files that are over 10 seconds old
+            $basename = basename($filePath);
+            $time = time() - 10;
             FileHelper::clearDirectory($dir, [
-                'only' => ['CustomFieldBehavior*.php'],
-                'except' => [basename($filePath)],
+                'filter' => function(string $path) use ($basename, $time): bool {
+                    $b = basename($path);
+                    return (
+                        $b !== $basename &&
+                        strpos($b, 'CustomFieldBehavior') === 0 &&
+                        filemtime($path) < $time
+                    );
+                },
             ]);
         } else if ($load) {
             // Just evaluate the code
@@ -333,18 +338,15 @@ EOD;
         // Set the Craft header by default.
         $defaultConfig = [
             'headers' => [
-                'User-Agent' => 'Craft/' . static::$app->getVersion() . ' ' . \GuzzleHttp\default_user_agent()
+                'User-Agent' => 'Craft/' . static::$app->getVersion() . ' ' . \GuzzleHttp\default_user_agent(),
             ],
         ];
 
         // Grab the config from config/guzzle.php that is used on every Guzzle request.
         $guzzleConfig = static::$app->getConfig()->getConfigFromFile('guzzle');
 
-        // Merge default into guzzle config.
-        $guzzleConfig = array_replace_recursive($guzzleConfig, $defaultConfig);
-
-        // Maybe they want to set some config options specifically for this request.
-        $guzzleConfig = array_replace_recursive($guzzleConfig, $config);
+        // Merge everything together
+        $guzzleConfig = ArrayHelper::merge($defaultConfig, $guzzleConfig, $config);
 
         return new Client($guzzleConfig);
     }

@@ -32,7 +32,7 @@ class Component
      * @throws MissingComponentException if the class specified by $config doesn’t exist, or belongs to an uninstalled plugin
      * @since 3.2.0
      */
-    public static function validateComponentClass(string $class, string $instanceOf = null, $throwException = false): bool
+    public static function validateComponentClass(string $class, ?string $instanceOf = null, bool $throwException = false): bool
     {
         // Validate the class
         if (!class_exists($class)) {
@@ -85,7 +85,7 @@ class Component
      * @throws InvalidConfigException if $config doesn’t contain a `type` value, or the type isn’s compatible with|null $instanceOf.
      * @throws MissingComponentException if the class specified by $config doesn’t exist, or belongs to an uninstalled plugin
      */
-    public static function createComponent($config, string $instanceOf = null): ComponentInterface
+    public static function createComponent($config, ?string $instanceOf = null): ComponentInterface
     {
         // Normalize the config
         if (is_string($config)) {
@@ -141,7 +141,7 @@ class Component
      * @return string
      * @since 3.5.0
      */
-    public static function iconSvg(string $icon = null, string $label)
+    public static function iconSvg(?string $icon = null, string $label): string
     {
         if ($icon === null) {
             return self::_defaultIconSvg($label);

@@ -4,13 +4,14 @@
     {% set suggestions = craft.cp.getEnvSuggestions(suggestAliases ?? false) %}
 {% endif %}
 
-{%- set id = (id is defined and id ? id : 'autosuggest'~random()) %}
-{%- set containerId = id ~ '-container' %}
+{%- set id = id ?? "autosuggest#{random()}" %}
+{%- set containerId = "#{id}-container" %}
+{%- set autosuggestId = "#{id}-autosuggest" %}
 
 {%- set class = (class ?? [])|explodeClass|merge([
     'text',
-    (disabled ?? false) ? 'disabled',
-    not (size ?? false) ? 'fullwidth',
+    (disabled ?? false) ? 'disabled' : null,
+    not (size ?? false) ? 'fullwidth' : null,
 ]|filter) %}
 
 <div id="{{ containerId }}" class="autosuggest-container">
@@ -20,6 +21,7 @@
         :get-suggestion-value="getSuggestionValue"
         :input-props="inputProps"
         :limit="limit"
+        :component-attr-id-autosuggest="id"
         @selected="onSelected"
         @focus="updateFilteredOptions"
         @blur="onBlur"
@@ -43,6 +45,7 @@ new Vue({
             selected: '',
             filteredOptions: [],
             suggestions: suggestions ?? [],
+            id: autosuggestId,
             inputProps: {
                 class: class|join(' '),
                 initialValue: value ?? '',
@@ -55,7 +58,8 @@ new Vue({
                 disabled: disabled ?? false,
                 title: title ?? '',
                 placeholder: placeholder ?? '',
-            },
+                'aria-describedby': instructionsId ?? false,
+            }|merge(inputProps ?? inputAttributes ?? [], recursive=true)|filter,
             limit: limit ?? 5
         }|json_encode|raw }};
         data.inputProps.onInputChange = this.onInputChange;

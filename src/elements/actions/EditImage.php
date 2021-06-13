@@ -49,10 +49,9 @@ class EditImage extends ElementAction
     {
         $type = Json::encode(static::class);
 
-        $js = <<<EOT
-(function()
-{
-    var trigger = new Craft.ElementActionTrigger({
+        $js = <<<JS
+(() => {
+    new Craft.ElementActionTrigger({
         type: {$type},
         batch: false,
         _imageEditor: null,
@@ -69,15 +68,15 @@ class EditImage extends ElementAction
                 onSave: function () {
                     Craft.elementIndex.updateElements();
                 },
-                allowDegreeFractions: Craft.isImagick,
             };
             
             new Craft.AssetImageEditor(element.id, settings);
         }
     });
 })();
-EOT;
+JS;
 
         Craft::$app->getView()->registerJs($js);
+        return null;
     }
 }

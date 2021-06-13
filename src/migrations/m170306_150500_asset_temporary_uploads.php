@@ -62,7 +62,7 @@ class m170306_150500_asset_temporary_uploads extends Migration
 
             // Track what needs to be changed
             $updatedProperties = [
-                'folderId' => $topFolderId
+                'folderId' => $topFolderId,
             ];
 
             // If the file doesn't even exist, delete the record of it.

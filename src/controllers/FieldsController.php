@@ -10,11 +10,9 @@ namespace craft\controllers;
 use Craft;
 use craft\base\Field;
 use craft\base\FieldInterface;
-use craft\db\Table;
 use craft\fields\MissingField;
 use craft\fields\PlainText;
 use craft\helpers\ArrayHelper;
-use craft\helpers\Db;
 use craft\helpers\UrlHelper;
 use craft\models\FieldGroup;
 use craft\web\assets\fieldsettings\FieldSettingsAsset;
@@ -37,12 +35,12 @@ class FieldsController extends Controller
     /**
      * @inheritdoc
      */
-    public function init()
+    public function beforeAction($action)
     {
-        parent::init();
-
         // All field actions require an admin
         $this->requireAdmin();
+
+        return parent::beforeAction($action);
     }
 
     // Groups
@@ -150,7 +148,7 @@ class FieldsController extends Controller
         // ---------------------------------------------------------------------
 
         $supportedTranslationMethods = [];
-        /** @var string[]|FieldInterface[] $allFieldTypes */
+        /* @var string[]|FieldInterface[] $allFieldTypes */
         $allFieldTypes = $fieldsService->getAllFieldTypes();
 
         foreach ($allFieldTypes as $class) {
@@ -168,7 +166,7 @@ class FieldsController extends Controller
             $compatibleFieldTypes = $fieldsService->getCompatibleFieldTypes($field, true);
         }
 
-        /** @var string[]|FieldInterface[] $compatibleFieldTypes */
+        /* @var string[]|FieldInterface[] $compatibleFieldTypes */
         $fieldTypeOptions = [];
 
         foreach ($allFieldTypes as $class) {
@@ -208,7 +206,7 @@ class FieldsController extends Controller
         foreach ($allGroups as $group) {
             $groupOptions[] = [
                 'value' => $group->id,
-                'label' => $group->name
+                'label' => $group->name,
             ];
         }
 
@@ -218,15 +216,15 @@ class FieldsController extends Controller
         $crumbs = [
             [
                 'label' => Craft::t('app', 'Settings'),
-                'url' => UrlHelper::url('settings')
+                'url' => UrlHelper::url('settings'),
             ],
             [
                 'label' => Craft::t('app', 'Fields'),
-                'url' => UrlHelper::url('settings/fields')
+                'url' => UrlHelper::url('settings/fields'),
             ],
             [
                 'label' => Craft::t('site', $fieldGroup->name),
-                'url' => UrlHelper::url('settings/fields/' . $groupId)
+                'url' => UrlHelper::url('settings/fields/' . $groupId),
             ],
         ];
 
@@ -278,7 +276,7 @@ JS;
         $view = Craft::$app->getView();
         $html = $view->renderTemplate('settings/fields/_type-settings', [
             'field' => $field,
-            'namespace' => $this->request->getBodyParam('namespace')
+            'namespace' => $this->request->getBodyParam('namespace'),
         ]);
 
         return $this->asJson([
@@ -303,10 +301,11 @@ JS;
         $fieldId = $this->request->getBodyParam('fieldId') ?: null;
 
         if ($fieldId) {
-            $fieldUid = Db::uidById(Table::FIELDS, $fieldId);
-            if (!$fieldUid) {
+            $oldField = clone Craft::$app->getFields()->getFieldById($fieldId);
+            if (!$oldField) {
                 throw new BadRequestHttpException("Invalid field ID: $fieldId");
             }
+            $fieldUid = $oldField->uid;
         } else {
             $fieldUid = null;
         }
@@ -318,6 +317,7 @@ JS;
             'groupId' => $this->request->getRequiredBodyParam('group'),
             'name' => $this->request->getBodyParam('name'),
             'handle' => $this->request->getBodyParam('handle'),
+            'columnSuffix' => $oldField->columnSuffix ?? null,
             'instructions' => $this->request->getBodyParam('instructions'),
             'searchable' => (bool)$this->request->getBodyParam('searchable', true),
             'translationMethod' => $this->request->getBodyParam('translationMethod', Field::TRANSLATION_METHOD_NONE),
@@ -330,7 +330,7 @@ JS;
 
             // Send the field back to the template
             Craft::$app->getUrlManager()->setRouteParams([
-                'field' => $field
+                'field' => $field,
             ]);
 
             return null;
@@ -344,16 +344,35 @@ JS;
      * Deletes a field.
      *
      * @return Response
+     * @throws BadRequestHttpException
+     * @throws ServerErrorHttpException
      */
     public function actionDeleteField(): Response
     {
         $this->requirePostRequest();
-        $this->requireAcceptsJson();
 
-        $fieldId = $this->request->getRequiredBodyParam('id');
-        $success = Craft::$app->getFields()->deleteFieldById($fieldId);
+        $fieldId = $this->request->getBodyParam('fieldId') ?? $this->request->getRequiredBodyParam('id');
+        $fieldsService = Craft::$app->getFields();
+        $field = $fieldsService->getFieldById($fieldId);
 
-        return $this->asJson(['success' => $success]);
+        if (!$field) {
+            throw new BadRequestHttpException("Invalid field ID: $fieldId");
+        }
+
+        $success = $fieldsService->deleteField($field);
+
+        if ($this->request->getAcceptsJson()) {
+            return $this->asJson(['success' => $success]);
+        }
+
+        if (!$success) {
+            throw new ServerErrorHttpException("Unable to delete field ID $fieldId");
+        }
+
+        Craft::$app->getSession()->setNotice(Craft::t('app', '“{name}” deleted.', [
+            'name' => $field->name,
+        ]));
+        return $this->redirectToPostedUrl();
     }
 
     // Field Layouts

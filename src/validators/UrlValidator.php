@@ -19,6 +19,11 @@ use yii\validators\UrlValidator as YiiUrlValidator;
 class UrlValidator extends YiiUrlValidator
 {
     /**
+     * @since 3.6.0
+     */
+    const URL_PATTERN = '^(?:(?:{schemes}:)?\/\/(([A-Z0-9][A-Z0-9_-]*)(\.[A-Z0-9][A-Z0-9_-]*)+)?|\/)[^\s]*$';
+
+    /**
      * @var bool Whether the value can begin with an alias
      * @deprecated
      */
@@ -31,11 +36,11 @@ class UrlValidator extends YiiUrlValidator
     {
         // Override the $pattern regex so that a TLD is not required, and the protocol may be relative.
         if (!isset($config['pattern'])) {
-            $config['pattern'] = '/^(?:(?:{schemes}:)?\/\/(([A-Z0-9][A-Z0-9_-]*)(\.[A-Z0-9][A-Z0-9_-]*)+)?|\/)[^\s]*$/i';
+            $config['pattern'] = '/' . self::URL_PATTERN . '/i';
         }
 
         // Enable support for validating international domain names if the intl extension is available.
-        if (!isset($config['enableIDN']) && Craft::$app->getI18n()->getIsIntlLoaded() && defined('INTL_IDNA_VARIANT_UTS46')) {
+        if (!isset($config['enableIDN']) && function_exists('idn_to_ascii') && defined('INTL_IDNA_VARIANT_UTS46')) {
             $config['enableIDN'] = true;
         }
 

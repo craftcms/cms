@@ -36,19 +36,22 @@ class Asset extends Query
                 'type' => Type::listOf(AssetInterface::getType()),
                 'args' => AssetArguments::getArguments(),
                 'resolve' => AssetResolver::class . '::resolve',
-                'description' => 'This query is used to query for assets.'
+                'description' => 'This query is used to query for assets.',
+                'complexity' => GqlHelper::relatedArgumentComplexity(),
             ],
             'assetCount' => [
                 'type' => Type::nonNull(Type::int()),
                 'args' => AssetArguments::getArguments(),
                 'resolve' => AssetResolver::class . '::resolveCount',
-                'description' => 'This query is used to return the number of assets.'
+                'description' => 'This query is used to return the number of assets.',
+                'complexity' => GqlHelper::relatedArgumentComplexity(),
             ],
             'asset' => [
                 'type' => AssetInterface::getType(),
                 'args' => AssetArguments::getArguments(),
                 'resolve' => AssetResolver::class . '::resolveOne',
-                'description' => 'This query is used to query for a single asset.'
+                'description' => 'This query is used to query for a single asset.',
+                'complexity' => GqlHelper::relatedArgumentComplexity(),
             ],
         ];
     }

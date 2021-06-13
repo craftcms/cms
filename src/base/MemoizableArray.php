@@ -14,6 +14,17 @@ use craft\helpers\Json;
  * MemoizableArray represents an array of values that need to be run through [[ArrayHelper::where()]] or [[ArrayHelper::firstWhere()]] repeatedly,
  * where it could be beneficial if the results were memoized.
  *
+ * Any class properties that are set to an instance of this class should be excluded from class serialization:
+ *
+ * ```php
+ * public function __serialize()
+ * {
+ *     $vars = get_object_vars($this);
+ *     unset($vars['myMemoizedPropertyName'];
+ *     return $vars;
+ * }
+ * ```
+ *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.5.8
  */
@@ -125,9 +136,9 @@ class MemoizableArray extends \ArrayObject
     /**
      * @inheritdoc
      */
-    public function asort()
+    public function asort(int $sort_flags = SORT_REGULAR)
     {
-        parent::asort();
+        parent::asort($sort_flags);
         $this->_memoized = [];
     }
 
@@ -143,9 +154,9 @@ class MemoizableArray extends \ArrayObject
     /**
      * @inheritdoc
      */
-    public function ksort()
+    public function ksort(int $sort_flags = SORT_REGULAR)
     {
-        parent::ksort();
+        parent::ksort($sort_flags);
         $this->_memoized = [];
     }
 

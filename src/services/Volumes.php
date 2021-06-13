@@ -3,6 +3,7 @@
 namespace craft\services;
 
 use Craft;
+use craft\base\Field;
 use craft\base\MemoizableArray;
 use craft\base\VolumeInterface;
 use craft\db\Query;
@@ -100,6 +101,18 @@ class Volumes extends Component
      */
     private $_overrides;
 
+    /**
+     * Serializer
+     *
+     * @since 3.5.14
+     */
+    public function __serialize()
+    {
+        $vars = get_object_vars($this);
+        unset($vars['_volumes']);
+        return $vars;
+    }
+
     // Volumes
     // -------------------------------------------------------------------------
 
@@ -111,11 +124,11 @@ class Volumes extends Component
     public function getAllVolumeTypes(): array
     {
         $volumeTypes = [
-            Local::class
+            Local::class,
         ];
 
         $event = new RegisterComponentTypesEvent([
-            'types' => $volumeTypes
+            'types' => $volumeTypes,
         ]);
 
         $this->trigger(self::EVENT_REGISTER_VOLUME_TYPES, $event);
@@ -276,6 +289,8 @@ class Volumes extends Component
             'type' => get_class($volume),
             'hasUrls' => (bool)$volume->hasUrls,
             'url' => $volume->url,
+            'titleTranslationMethod' => $volume->titleTranslationMethod,
+            'titleTranslationKeyFormat' => $volume->titleTranslationKeyFormat ?: null,
             'settings' => ProjectConfigHelper::packAssociativeArrays($volume->getSettings()),
             'sortOrder' => (int)$volume->sortOrder,
         ];
@@ -329,7 +344,7 @@ class Volumes extends Component
         if ($this->hasEventHandlers(self::EVENT_BEFORE_SAVE_VOLUME)) {
             $this->trigger(self::EVENT_BEFORE_SAVE_VOLUME, new VolumeEvent([
                 'volume' => $volume,
-                'isNew' => $isNewVolume
+                'isNew' => $isNewVolume,
             ]));
         }
 
@@ -386,6 +401,8 @@ class Volumes extends Component
             $volumeRecord->hasUrls = $data['hasUrls'];
             $volumeRecord->sortOrder = $data['sortOrder'];
             $volumeRecord->url = !empty($data['url']) ? $data['url'] : null;
+            $volumeRecord->titleTranslationMethod = $data['titleTranslationMethod'] ?? Field::TRANSLATION_METHOD_SITE;
+            $volumeRecord->titleTranslationKeyFormat = $data['titleTranslationKeyFormat'] ?? null;
             $volumeRecord->settings = ProjectConfigHelper::unpackAssociativeArrays($data['settings']);
             $volumeRecord->uid = $volumeUid;
 
@@ -413,7 +430,7 @@ class Volumes extends Component
             $assetsService = Craft::$app->getAssets();
             $rootFolder = $assetsService->findFolder([
                 'volumeId' => $volumeRecord->id,
-                'parentId' => ':empty:'
+                'parentId' => ':empty:',
             ]);
 
             if ($rootFolder === null) {
@@ -421,7 +438,7 @@ class Volumes extends Component
                     'volumeId' => $volumeRecord->id,
                     'parentId' => null,
                     'path' => '',
-                    'name' => $volumeRecord->name
+                    'name' => $volumeRecord->name,
                 ]);
 
                 $rootFolderRecord->save();
@@ -456,7 +473,7 @@ class Volumes extends Component
         if ($this->hasEventHandlers(self::EVENT_AFTER_SAVE_VOLUME)) {
             $this->trigger(self::EVENT_AFTER_SAVE_VOLUME, new VolumeEvent([
                 'volume' => $this->getVolumeById($volumeRecord->id),
-                'isNew' => $isNewVolume
+                'isNew' => $isNewVolume,
             ]));
         }
 
@@ -574,7 +591,7 @@ class Volumes extends Component
         $folder = VolumeFolder::findOne(
             [
                 'name' => $volume->name,
-                'volumeId' => $volume->id
+                'volumeId' => $volume->id,
             ]
         );
 
@@ -620,7 +637,7 @@ class Volumes extends Component
         // Fire a 'beforeDeleteVolume' event
         if ($this->hasEventHandlers(self::EVENT_BEFORE_DELETE_VOLUME)) {
             $this->trigger(self::EVENT_BEFORE_DELETE_VOLUME, new VolumeEvent([
-                'volume' => $volume
+                'volume' => $volume,
             ]));
         }
 
@@ -698,7 +715,7 @@ class Volumes extends Component
         // Fire an 'afterDeleteVolume' event
         if ($this->hasEventHandlers(self::EVENT_AFTER_DELETE_VOLUME)) {
             $this->trigger(self::EVENT_AFTER_DELETE_VOLUME, new VolumeEvent([
-                'volume' => $volume
+                'volume' => $volume,
             ]));
         }
 
@@ -766,15 +783,21 @@ class Volumes extends Component
                 'fieldLayoutId',
                 'type',
                 'settings',
-                'uid'
+                'uid',
             ])
             ->from([Table::VOLUMES])
             ->orderBy(['sortOrder' => SORT_ASC]);
 
-        // todo: remove schema version condition after next beakpoint
+        // todo: remove schema version conditions after next beakpoint
         $schemaVersion = Craft::$app->getInstalledSchemaVersion();
         if (version_compare($schemaVersion, '3.1.19', '>=')) {
             $query->where(['dateDeleted' => null]);
+        }
+        if (version_compare($schemaVersion, '3.6.0', '>=')) {
+            $query->addSelect([
+                'titleTranslationMethod',
+                'titleTranslationKeyFormat',
+            ]);
         }
 
         return $query;

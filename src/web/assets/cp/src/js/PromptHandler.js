@@ -12,7 +12,6 @@ Craft.PromptHandler = Garnish.Base.extend({
     $promptApplyToRemainingLabel: null,
     $pomptChoices: null,
 
-
     _prompts: [],
     _promptBatchCallback: $.noop,
     _promptBatchReturnData: [],
@@ -45,7 +44,7 @@ Craft.PromptHandler = Garnish.Base.extend({
         var prompt = this._prompts[this._promptBatchNum].prompt,
             remainingInBatch = this._prompts.length - (this._promptBatchNum + 1);
 
-        this._showPrompt(prompt.message, prompt.choices, $.proxy(this, '_handleBatchPromptSelection'), remainingInBatch);
+        this._showPrompt(prompt.message, prompt.choices, this._handleBatchPromptSelection.bind(this), remainingInBatch);
     },
 
     /**
@@ -60,7 +59,7 @@ Craft.PromptHandler = Garnish.Base.extend({
             remainingInBatch = this._prompts.length - (this._promptBatchNum + 1);
 
         // Record this choice
-        var choiceData = $.extend(prompt, {choice: choice});
+        var choiceData = $.extend(prompt, {choice});
         this._promptBatchReturnData.push(choiceData);
 
         // Are there any remaining items in the batch?
@@ -71,13 +70,11 @@ Craft.PromptHandler = Garnish.Base.extend({
             // Apply the same choice to the remaining items?
             if (applyToRemaining) {
                 this._handleBatchPromptSelection(choice, true);
-            }
-            else {
+            } else {
                 // Show the next prompt
                 this._showNextPromptInBatch();
             }
-        }
-        else {
+        } else {
             // All done! Call the callback
             if (typeof this._promptBatchCallback === 'function') {
                 this._promptBatchCallback(this._promptBatchReturnData);
@@ -172,10 +169,10 @@ Craft.PromptHandler = Garnish.Base.extend({
      * @private
      */
     _selectPromptChoice: function(choice, applyToRemaining) {
-        this.$prompt.fadeOut('fast', $.proxy(function() {
+        this.$prompt.fadeOut('fast', () => {
             this.modal.hide();
             this._promptCallback(choice, applyToRemaining);
-        }, this));
+        });
     },
 
     /**

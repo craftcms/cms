@@ -83,7 +83,7 @@ class GlobalsController extends Controller
 
             // Send the global set back to the template
             Craft::$app->getUrlManager()->setRouteParams([
-                'globalSet' => $globalSet
+                'globalSet' => $globalSet,
             ]);
 
             return null;
@@ -141,7 +141,7 @@ class GlobalsController extends Controller
                     $site = Craft::$app->getSites()->getSiteById($siteId);
                 } else {
                     // Are they allowed to edit the current site?
-                    /** @noinspection PhpUnhandledExceptionInspection */
+                    /* @noinspection PhpUnhandledExceptionInspection */
                     $currentSite = Craft::$app->getSites()->getCurrentSite();
                     if (in_array($currentSite->id, $editableSiteIds, false)) {
                         $site = $currentSite;
@@ -167,7 +167,7 @@ class GlobalsController extends Controller
             }
 
             // Set the siteId cookie
-            /** @var Cookie $cookie */
+            /* @var Cookie $cookie */
             $cookie = Craft::createObject(Craft::cookieConfig([
                 'class' => Cookie::class,
                 'name' => $siteCookieName,
@@ -177,7 +177,7 @@ class GlobalsController extends Controller
             ]));
             $this->response->getRawCookies()->add($cookie);
         } else {
-            /** @noinspection PhpUnhandledExceptionInspection */
+            /* @noinspection PhpUnhandledExceptionInspection */
             $site = Craft::$app->getSites()->getPrimarySite();
         }
 
@@ -246,7 +246,8 @@ class GlobalsController extends Controller
             $this->requirePermission('editSite:' . $site->uid);
         }
 
-        $globalSet->setFieldValuesFromRequest('fields');
+        $fieldsLocation = $this->request->getParam('fieldsLocation', 'fields');
+        $globalSet->setFieldValuesFromRequest($fieldsLocation);
         $globalSet->setScenario(Element::SCENARIO_LIVE);
 
         if (!Craft::$app->getElements()->saveElement($globalSet)) {

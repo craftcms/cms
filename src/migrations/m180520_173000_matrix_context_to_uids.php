@@ -31,7 +31,7 @@ class m180520_173000_matrix_context_to_uids extends Migration
 
         // Switch out IDs for UUIDs
         foreach ($fields as $field) {
-            list(, $blockTypeId) = explode(':', $field['context'], 2);
+            [, $blockTypeId] = explode(':', $field['context'], 2);
 
             // Make sure the block type still exists
             if (!isset($blockTypeUids[$blockTypeId])) {
@@ -39,9 +39,9 @@ class m180520_173000_matrix_context_to_uids extends Migration
             }
 
             $this->update(Table::FIELDS, [
-                'context' => 'matrixBlockType:' . $blockTypeUids[$blockTypeId]
+                'context' => 'matrixBlockType:' . $blockTypeUids[$blockTypeId],
             ], [
-                'id' => $field['id']
+                'id' => $field['id'],
             ], [], false);
         }
     }

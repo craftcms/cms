@@ -102,7 +102,7 @@ class m160807_144858_sites extends Migration
                 'name' => "{$siteInfo['siteName']} ({$language})",
                 'handle' => $siteHandle,
                 'language' => $language,
-                'hasUrls' => 1,
+                'hasUrls' => true,
                 'baseUrl' => $siteInfo['siteUrl'],
                 'sortOrder' => ++$sortOrder,
                 'uid' => $uid,
@@ -139,7 +139,7 @@ class m160807_144858_sites extends Migration
         // Create the FK columns
         // ---------------------------------------------------------------------
 
-        foreach (self::$siteColumns as list($table, $column, $isNotNull, $localeColumn)) {
+        foreach (self::$siteColumns as [$table, $column, $isNotNull, $localeColumn]) {
             $this->addSiteColumn($table, $column, $isNotNull, $localeColumn);
         }
 
@@ -228,7 +228,7 @@ class m160807_144858_sites extends Migration
         // Drop the locale columns
         // ---------------------------------------------------------------------
 
-        foreach (self::$siteColumns as list($table, , , $localeColumn)) {
+        foreach (self::$siteColumns as [$table, , , $localeColumn]) {
             $this->dropColumn($table, $localeColumn);
         }
 
@@ -328,8 +328,8 @@ class m160807_144858_sites extends Migration
                         'or',
                         ['nestedUrlFormat' => null],
                         ['nestedUrlFormat' => ''],
-                        '[[nestedUrlFormat]] = [[uriFormat]]'
-                    ]
+                        '[[nestedUrlFormat]] = [[uriFormat]]',
+                    ],
                 ])
                 ->all($this->db);
 
@@ -394,8 +394,8 @@ class m160807_144858_sites extends Migration
                     Categories::class,
                     Entries::class,
                     Tags::class,
-                    Users::class
-                ]
+                    Users::class,
+                ],
             ])
             ->all($this->db);
 
@@ -503,7 +503,7 @@ class m160807_144858_sites extends Migration
 
         // Set the values
         $this->update($table, [
-            $column => new Expression(str_replace('%', "[[{$localeColumn}]]", $this->caseSql))
+            $column => new Expression(str_replace('%', "[[{$localeColumn}]]", $this->caseSql)),
         ], '', [], false);
 
         // In case there were any referenced locales that no longer exist.
@@ -579,7 +579,7 @@ class m160807_144858_sites extends Migration
             $language = 'en-US';
         }
 
-        /** @noinspection PhpUndefinedVariableInspection */
+        /* @noinspection PhpUndefinedVariableInspection */
         return $language;
     }
 }

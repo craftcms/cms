@@ -36,7 +36,7 @@ class Entry extends Element
      */
     protected function resolve($source, $arguments, $context, ResolveInfo $resolveInfo)
     {
-        /** @var EntryElement $source */
+        /* @var EntryElement $source */
         $fieldName = $resolveInfo->fieldName;
 
         switch ($fieldName) {
@@ -48,6 +48,9 @@ class Entry extends Element
                 return $source->getSection()->handle;
             case 'typeHandle':
                 return $source->getType()->handle;
+            case 'draftName':
+            case 'draftNotes':
+                return $source->getIsDraft() ? $source->{$fieldName} : null;
         }
 
         return parent::resolve($source, $arguments, $context, $resolveInfo);

@@ -30,7 +30,7 @@ body.ltr #install-modal #dots > div + div { margin-left: 5px; }
 
 body.rtl #install-modal #dots > div + div { margin-right: 5px; }
 
-#install-modal #dots > div.sel { border-color: #E5422B; background: #E5422B; }
+#install-modal #dots > div.sel { border-color: #E12D39; background: #E12D39; }
 
 .grid { margin-top: 35px; margin-bottom: 35px; }
 
@@ -58,13 +58,15 @@ body.rtl .buttons .btn:after { content: 'larr'; }
 
 input.hidden { position: absolute; top: 100px; }
 
-#license { padding: 70px 105px !important; overflow-y: scroll; }
+#license { padding: 0 !important; overflow-y: scroll; }
 
-#license .license, #license .license h1 { font-family: Menlo, monospace; font-size: 13px; line-height: 25px; }
+#license #license-content { padding: 70px 105px; }
 
-#license .license h1 { font-weight: bold; }
+#license #license-content .license, #license #license-content .license h1 { font-family: Menlo, monospace; font-size: 13px; line-height: 25px; }
 
-#license .centeralign { margin-top: 35px; }
+#license #license-content .license h1 { font-weight: bold; }
+
+#license #license-content #license-accept { margin-top: 35px; display: -webkit-flex; display: flex; -webkit-justify-content: center; justify-content: center; }
 
 #installing { text-align: center; }
 

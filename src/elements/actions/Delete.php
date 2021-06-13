@@ -13,14 +13,18 @@ use craft\base\ElementInterface;
 use craft\db\Table;
 use craft\elements\db\ElementQueryInterface;
 use craft\helpers\Db;
+use craft\helpers\Json;
 
 /**
  * Delete represents a Delete element action.
  *
+ * Element types that make this action available should implement [[ElementInterface::getIsDeletable()]] to explicitly state whether they can be
+ * deleted by the current user.
+ *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
-class Delete extends ElementAction
+class Delete extends ElementAction implements DeleteActionInterface
 {
     /**
      * @var bool Whether to delete the element’s descendants as well.
@@ -46,10 +50,46 @@ class Delete extends ElementAction
 
     /**
      * @inheritdoc
+     */
+    public function canHardDelete(): bool
+    {
+        return !$this->withDescendants;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function setHardDelete(): void
+    {
+        $this->hard = true;
+    }
+
+    /**
+     * @inheritdoc
      * @since 3.5.0
      */
     public function getTriggerHtml()
     {
+        // Only enable for deletable elements, per getIsDeletable()
+        $type = Json::encode(static::class);
+        $js = <<<JS
+(() => {
+    new Craft.ElementActionTrigger({
+        type: {$type},
+        validateSelection: function(\$selectedItems)
+        {
+            for (let i = 0; i < \$selectedItems.length; i++) {
+                if (!Garnish.hasAttr(\$selectedItems.eq(i).find('.element'), 'data-deletable')) {
+                    return false;
+                }
+            }
+            return true;
+        },
+    });
+})();
+JS;
+        Craft::$app->getView()->registerJs($js);
+
         if ($this->hard) {
             return '<div class="btn formsubmit">' . $this->getTriggerLabel() . '</div>';
         }
@@ -89,7 +129,7 @@ class Delete extends ElementAction
             return $this->confirmationMessage;
         }
 
-        /** @var ElementInterface|string $elementType */
+        /* @var ElementInterface|string $elementType */
         $elementType = $this->elementType;
 
         if ($this->hard) {
@@ -114,51 +154,57 @@ class Delete extends ElementAction
      */
     public function performAction(ElementQueryInterface $query): bool
     {
-        if ($this->hard) {
-            $ids = $query->ids();
-            if (!empty($ids)) {
-                Db::delete(Table::ELEMENTS, [
-                    'id' => $ids,
-                ]);
-            }
-        } else {
-            $elementsService = Craft::$app->getElements();
+        $withDescendants = $this->withDescendants && !$this->hard;
+        $elementsService = Craft::$app->getElements();
 
-            if ($this->withDescendants) {
-                $query
-                    ->with([
+        if ($withDescendants) {
+            $query
+                ->with([
+                    [
+                        'descendants',
                         [
-                            'descendants',
-                            [
-                                'orderBy' => ['structureelements.lft' => SORT_DESC],
-                            ]
-                        ]
-                    ])
-                    ->orderBy(['structureelements.lft' => SORT_DESC]);
+                            'orderBy' => ['structureelements.lft' => SORT_DESC],
+                        ],
+                    ],
+                ])
+                ->orderBy(['structureelements.lft' => SORT_DESC]);
+        }
+
+        $deletedElementIds = [];
+
+        foreach ($query->all() as $element) {
+            if (!$element->getIsDeletable()) {
+                continue;
             }
-
-            $deletedElementIds = [];
-
-            foreach ($query->all() as $element) {
-                if (!isset($deletedElementIds[$element->id])) {
-                    if ($this->withDescendants) {
-                        foreach ($element->getDescendants() as $descendant) {
-                            if (!isset($deletedElementIds[$descendant->id])) {
-                                $elementsService->deleteElement($descendant);
-                                $deletedElementIds[$descendant->id] = true;
-                            }
+            if (!isset($deletedElementIds[$element->id])) {
+                if ($withDescendants) {
+                    foreach ($element->getDescendants() as $descendant) {
+                        if (!isset($deletedElementIds[$descendant->id]) && $descendant->getIsDeletable()) {
+                            $elementsService->deleteElement($descendant);
+                            $deletedElementIds[$descendant->id] = true;
                         }
                     }
-                    $elementsService->deleteElement($element);
-                    $deletedElementIds[$element->id] = true;
                 }
+                $elementsService->deleteElement($element);
+                $deletedElementIds[$element->id] = true;
+            }
+        }
+
+        if ($this->hard) {
+            if (!empty($deletedElementIds)) {
+                Db::delete(Table::ELEMENTS, [
+                    'id' => array_keys($deletedElementIds),
+                ]);
+                Db::delete(Table::SEARCHINDEX, [
+                    'elementId' => array_keys($deletedElementIds),
+                ]);
             }
         }
 
         if ($this->successMessage !== null) {
             $this->setMessage($this->successMessage);
         } else {
-            /** @var ElementInterface|string $elementType */
+            /* @var ElementInterface|string $elementType */
             $elementType = $this->elementType;
             $this->setMessage(Craft::t('app', '{type} deleted.', [
                 'type' => $elementType::pluralDisplayName(),

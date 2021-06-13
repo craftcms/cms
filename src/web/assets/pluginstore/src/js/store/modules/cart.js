@@ -1,5 +1,6 @@
 import api from '../../api/cart'
 import pluginStoreApi from '../../api/pluginstore'
+import licensesMixins from '../../mixins/licenses'
 import Vue from 'vue'
 import Vuex from 'vuex'
 
@@ -91,6 +92,121 @@ const getters = {
             return pluginEdition
         }
     },
+
+    activeTrials(state, getters, rootState, rootGetters) {
+        const craftLogo = rootState.craft.craftLogo
+        const cmsEditions = rootState.pluginStore.cmsEditions
+        const licensedEdition = rootState.craft.licensedEdition
+        const CraftEdition = rootState.craft.CraftEdition
+
+        const getPluginLicenseInfo = rootGetters['craft/getPluginLicenseInfo']
+        const getCmsEditionIndex = rootGetters['craft/getCmsEditionIndex']
+        const getPluginEdition = rootGetters['pluginStore/getPluginEdition']
+
+        const trials = []
+
+        // CMS trial
+        const cmsProEdition = cmsEditions.find(edition => edition.handle === 'pro')
+        const cmsProEditionIndex = getCmsEditionIndex(cmsProEdition.handle)
+
+        if (
+            cmsProEdition
+            && (licensedEdition < cmsProEditionIndex && licensedEdition < CraftEdition)
+        ) {
+            trials.push({
+                type: 'cms-edition',
+                name: 'Craft',
+                iconUrl: craftLogo,
+                editionHandle: 'pro',
+                editionName: 'Pro',
+                price: cmsProEdition.price,
+                navigateTo: '/upgrade-craft',
+            })
+        }
+
+        // Plugin trials
+        const plugins = state.activeTrialPlugins
+
+        for (let i = 0; i < plugins.length; i++) {
+            const plugin = plugins[i]
+
+            // license mismatched
+            const pluginLicenseInfo = getPluginLicenseInfo(plugin.handle)
+            const licenseMismatched = licensesMixins.methods.getLicenseMismatched(pluginLicenseInfo)
+
+            // plugin edition
+            const activeTrialPluginEdition = getPluginEdition(plugin, pluginLicenseInfo.edition)
+
+            if (!activeTrialPluginEdition) {
+                continue
+            }
+
+            // licensed edition
+            const licensedEdition = getPluginEdition(plugin, pluginLicenseInfo.licensedEdition)
+
+            // license valid or astray
+            const licenseValidOrAstray = licensesMixins.methods.getLicenseValidOrAstray(pluginLicenseInfo)
+
+            // navigate to
+            const navigateTo = '/' + plugin.handle
+
+            // price & discount price
+            let discountPrice = null
+            let price = activeTrialPluginEdition.price
+
+            if (licensedEdition && licensedEdition.handle !== activeTrialPluginEdition.handle && licensedEdition.price > 0 && licenseValidOrAstray) {
+                discountPrice = activeTrialPluginEdition.price - licensedEdition.price
+            }
+
+            // show edition badge
+            const showEditionBadge = (activeTrialPluginEdition && plugin.editions.length > 1)
+
+            // plugin id
+            const pluginId = plugin.id
+
+            // build trial row
+            trials.push({
+                type: 'plugin-edition',
+                name: plugin.name,
+                iconUrl: plugin.iconUrl,
+                editionHandle: pluginLicenseInfo.edition,
+                editionName: activeTrialPluginEdition.name,
+                pluginHandle: plugin.handle,
+                licenseMismatched,
+                discountPrice,
+                price,
+                navigateTo,
+                showEditionBadge,
+                pluginId,
+            })
+        }
+
+        return trials
+    },
+
+    pendingActiveTrials(state, getters) {
+        const activeTrials = getters.activeTrials
+        const cart = state.cart
+        const isCmsEditionInCart = getters.isCmsEditionInCart
+
+        // filter out trials which are already in the cart
+        return activeTrials.filter(activeTrial => {
+            switch (activeTrial.type) {
+                case 'cms-edition':
+                    if(isCmsEditionInCart(activeTrial.editionHandle)) {
+                        return false
+                    }
+
+                    return true
+                case 'plugin-edition':
+                    return !cart.lineItems.find(item => {
+                        return item.purchasable.pluginId == activeTrial.pluginId
+                    })
+                default:
+                    return false
+            }
+        })
+    },
 }
 
 /**
@@ -112,7 +228,7 @@ const actions = {
                     // Set default values
                     item.autoRenew = false
 
-                    switch(item.type) {
+                    switch (item.type) {
                         case 'plugin-edition': {
                             const pluginLicenseInfo = rootGetters['craft/getPluginLicenseInfo'](item.plugin)
 
@@ -120,14 +236,14 @@ const actions = {
                             if (
                                 pluginLicenseInfo &&
                                 pluginLicenseInfo.licenseKey &&
-                                (pluginLicenseInfo.licenseKeyStatus === 'valid')
+                                (pluginLicenseInfo.licenseKeyStatus === 'valid' || pluginLicenseInfo.licenseKeyStatus === 'trial')
                             ) {
                                 // Check if the license has issues other than `wrong_edition` or `astray`
                                 let hasIssues = false
 
                                 if (pluginLicenseInfo.licenseIssues.length > 0) {
                                     pluginLicenseInfo.licenseIssues.forEach((issue) => {
-                                        if (issue !== 'wrong_edition' && issue !== 'astray') {
+                                        if (issue !== 'wrong_edition' && issue !== 'astray' && issue !== 'no_trials') {
                                             hasIssues = true
                                         }
                                     })
@@ -175,6 +291,25 @@ const actions = {
         })
     },
 
+    addAllTrialsToCart({dispatch, getters}) {
+        let items = []
+
+        getters.pendingActiveTrials.forEach(activeTrial => {
+            const item = {
+                type: activeTrial.type,
+                edition: activeTrial.editionHandle,
+            }
+
+            if (activeTrial.type === 'plugin-edition') {
+                item.plugin = activeTrial.pluginHandle
+            }
+
+            items.push(item)
+        })
+
+        return dispatch('addToCart', items)
+    },
+
     checkout(context, data) {
         return new Promise((resolve, reject) => {
             api.checkout(data)
@@ -212,6 +347,26 @@ const actions = {
         })
     },
 
+    getActiveTrials({dispatch}) {
+        return new Promise((resolve, reject) => {
+            // get cms editions
+            dispatch('pluginStore/getCmsEditions', null, {root: true})
+                .then(() => {
+                    // get active trial plugins
+                    dispatch('getActiveTrialPlugins')
+                        .then(() => {
+                            resolve()
+                        })
+                        .catch((error) => {
+                            reject(error)
+                        })
+                })
+                .catch((error) => {
+                    reject(error)
+                })
+        })
+    },
+
     getActiveTrialPlugins({commit, rootState, rootGetters}) {
         return new Promise((resolve, reject) => {
             // get plugin license info and find active trial plugin handles
@@ -219,7 +374,10 @@ const actions = {
             const pluginLicenseInfo = rootState.craft.pluginLicenseInfo
 
             for (let pluginHandle in pluginLicenseInfo) {
-                if (Object.prototype.hasOwnProperty.call(pluginLicenseInfo, pluginHandle)) {
+                if (
+                    Object.prototype.hasOwnProperty.call(pluginLicenseInfo, pluginHandle) &&
+                    pluginLicenseInfo[pluginHandle].isEnabled
+                ) {
                     pluginHandles.push(pluginHandle)
                 }
             }
@@ -254,7 +412,7 @@ const actions = {
                         if (info.edition) {
                             const pluginEdition = plugin.editions.find(edition => edition.handle === info.edition)
 
-                            if(pluginEdition && rootGetters['pluginStore/isPluginEditionFree'](pluginEdition)) {
+                            if (pluginEdition && rootGetters['pluginStore/isPluginEditionFree'](pluginEdition)) {
                                 continue
                             }
                         }

@@ -35,6 +35,20 @@ class PrepareQueryTest extends Unit
      */
     protected $tester;
 
+    private $_volume;
+    private $_structure;
+    private $_categoryGroup;
+    private $_section;
+    private $_entryType;
+    private $_element;
+    private $_globalSet;
+    private $_tagGroup;
+    private $_userGroup;
+
+
+    /**
+     * @inheritdoc
+     */
     protected function _before()
     {
         // Mock the GQL token
@@ -55,10 +69,29 @@ class PrepareQueryTest extends Unit
                 ])
             ]
         );
+
+        $this->_setupAssets();
+        $this->_setupCategories();
+        $this->_setupEntries();
+        $this->_setupGlobals();
+        $this->_setupTags();
+        $this->_setupUsers();
     }
 
+    /**
+     * @inheritdoc
+     */
     protected function _after()
     {
+        $this->_volume->delete();
+        $this->_structure->delete();
+        $this->_categoryGroup->delete();
+        $this->_section->delete();
+        $this->_entryType->delete();
+        $this->_element->delete();
+        $this->_globalSet->delete();
+        $this->_tagGroup->delete();
+        $this->_userGroup->delete();
     }
 
     const VOLUME_UID = 'volume-uid';
@@ -74,7 +107,7 @@ class PrepareQueryTest extends Unit
      *
      * @param string $resolverClass The resolver class to test
      * @param array $preparationArguments The arguments to pass to the `prepareQuery` method
-     * @param callable $testFunction The test functiob to determine the result.
+     * @param callable $testFunction The test function to determine the result.
      * @param callable|null $testLoader The callable that will set up the test conditions
      *
      * @dataProvider relationalFieldQueryPreparationProvider
@@ -90,7 +123,7 @@ class PrepareQueryTest extends Unit
         $result = call_user_func_array([$resolverClass, 'prepareQuery'], $preparationArguments);
 
         // Test if results valid
-        $this->assertTrue($testFunction($result));
+        self::assertTrue($testFunction($result));
     }
 
     public function relationalFieldQueryPreparationProvider()
@@ -106,110 +139,110 @@ class PrepareQueryTest extends Unit
             // Assets
             [
                 AssetResolver::class, [(object)['field' => ['foo', 'bar']], [], 'field'], function($result) {
-                return $result === ['foo', 'bar'];
-            }
+                    return $result === ['foo', 'bar'];
+                }
             ],
             [
                 AssetResolver::class, [null, ['volumeId' => 2, 'folderId' => 5]], function($result) {
-                return $result->volumeId == 2 && $result->folderId == 5;
-            }
+                    return $result->volumeId == 2 && $result->folderId == 5;
+                }
             ],
             [
                 AssetResolver::class, [null, []], function($result) {
-                return $result->where[0] === 'in' && !empty($result->where[2]);
-            }, [$this, '_setupAssets']
+                    return $result->where[0] === 'in' && !empty($result->where[2]);
+                }
             ],
 
             // Category
             [
                 CategoryResolver::class, [(object)['field' => ['foo', 'bar']], [], 'field'], function($result) {
-                return $result === ['foo', 'bar'];
-            }
+                    return $result === ['foo', 'bar'];
+                }
             ],
             [
                 CategoryResolver::class, [null, ['groupId' => 2]], function($result) {
-                return $result->groupId == 2;
-            }
+                    return $result->groupId == 2;
+                }
             ],
             [
                 CategoryResolver::class, [null, []], function($result) {
-                return $result->where[0] === 'in' && !empty($result->where[2]);
-            }, [$this, '_setupCategories']
+                    return $result->where[0] === 'in' && !empty($result->where[2]);
+                },
             ],
 
             // Entries
             [
                 EntryResolver::class, [(object)['field' => ['foo', 'bar']], [], 'field'], function($result) {
-                return $result === ['foo', 'bar'];
-            }
+                    return $result === ['foo', 'bar'];
+                }
             ],
             [
                 EntryResolver::class, [null, ['sectionId' => 2, 'typeId' => 5]], function($result) {
-                return $result->sectionId == 2 && $result->typeId == 5;
-            }
+                    return $result->sectionId == 2 && $result->typeId == 5;
+                }
             ],
             [
                 EntryResolver::class, [null, []], function($result) {
-                return $result->where[0] === 'and' && !empty($result->where[2]);
-            }, [$this, '_setupEntries']
+                    return $result->where[0] === 'and' && !empty($result->where[2]);
+                }
             ],
 
             // Global Sets
             [
                 GlobalSetResolver::class, [null, ['handle' => 'foo']], function($result) {
-                return $result->handle == 'foo';
-            }
+                    return $result->handle == 'foo';
+                }
             ],
             [
                 GlobalSetResolver::class, [null, []], function($result) {
-                return $result->where[0] === 'in' && !empty($result->where[2]);
-            }, [$this, '_setupGlobals']
+                    return $result->where[0] === 'in' && !empty($result->where[2]);
+                },
             ],
 
             // Tags
             [
                 TagResolver::class, [(object)['field' => ['foo', 'bar']], [], 'field'], function($result) {
-                return $result === ['foo', 'bar'];
-            }
+                    return $result === ['foo', 'bar'];
+                }
             ],
             [
                 TagResolver::class, [null, ['groupId' => 2]], function($result) {
-                return $result->groupId == 2;
-            }
+                    return $result->groupId == 2;
+                }
             ],
             [
                 TagResolver::class, [null, []], function($result) {
-                return $result->where[0] === 'in' && !empty($result->where[2]);
-            }, [$this, '_setupTags']
+                    return $result->where[0] === 'in' && !empty($result->where[2]);
+                },
             ],
 
             // Users
             [
                 UserResolver::class, [(object)['field' => ['foo', 'bar']], [], 'field'], function($result) {
-                return $result === ['foo', 'bar'];
-            }
+                    return $result === ['foo', 'bar'];
+                }
             ],
             [
                 UserResolver::class, [null, ['groupId' => 2, 'email' => 'foo@bar.org']], function($result) {
-                return $result->groupId == 2 && $result->email == 'foo@bar.org';
+                    return $result->groupId == 2 && $result->email == 'foo@bar.org';
             }
             ],
             [
                 UserResolver::class, [null, []], function($result) {
-                return !empty($result->groupBy);
-            }, [$this, '_setupUsers']
+                    return !empty($result->groupBy);
+                }
             ],
 
             // Matrix Blocks
             [
                 MatrixBlockResolver::class, [(object)['field' => ['foo', 'bar']], [], 'field'], function($result) {
-                return $result === ['foo', 'bar'];
-            }
+                    return $result === ['foo', 'bar'];
+                }
             ],
             [
                 MatrixBlockResolver::class, [null, ['fieldId' => 2, 'typeId' => 5]], function($result) {
-                return $result->fieldId == 2 && $result->typeId == 5;
-            }
+                    return $result->fieldId == 2 && $result->typeId == 5;
+                }
             ],
 
         ];
@@ -217,7 +250,7 @@ class PrepareQueryTest extends Unit
 
     private function _setupAssets()
     {
-        $volume = new Volume([
+        $this->_volume = new Volume([
             'uid' => self::VOLUME_UID,
             'name' => StringHelper::randomString(),
             'handle' => StringHelper::randomString(),
@@ -225,27 +258,27 @@ class PrepareQueryTest extends Unit
             'hasUrls' => false,
         ]);
 
-        $volume->save();
+        $this->_volume->save();
     }
 
     private function _setupCategories()
     {
-        $structure = new Structure();
-        $structure->save();
+        $this->_structure = new Structure();
+        $this->_structure->save();
 
-        $record = new CategoryGroup([
+        $this->_categoryGroup = new CategoryGroup([
             'uid' => self::CATEGORY_GROUP_UID,
             'name' => StringHelper::randomString(),
             'handle' => StringHelper::randomString(),
-            'structureId' => $structure->id,
+            'structureId' => $this->_structure->id,
         ]);
 
-        $record->save();
+        $this->_categoryGroup->save();
     }
 
     private function _setupEntries()
     {
-        $section = new Section([
+        $this->_section = new Section([
             'uid' => self::SECTION_UID,
             'name' => StringHelper::randomString(),
             'handle' => StringHelper::randomString(),
@@ -253,55 +286,55 @@ class PrepareQueryTest extends Unit
             'enableVersioning' => true,
             'propagationMethod' => StringHelper::randomString(),
         ]);
-        $section->save();
+        $this->_section->save();
 
-        $entryType = new EntryType([
+        $this->_entryType = new EntryType([
             'uid' => self::ENTRY_TYPE_UID,
             'name' => StringHelper::randomString(),
             'handle' => StringHelper::randomString(),
-            'sectionId' => $section->id,
+            'sectionId' => $this->_section->id,
             'hasTitleField' => false,
         ]);
-        $entryType->save();
+        $this->_entryType->save();
     }
 
     private function _setupGlobals()
     {
-        $element = new Element([
+        $this->_element = new Element([
             'type' => StringHelper::randomString(),
             'enabled' => true,
             'archived' => false,
         ]);
-        $element->save();
+        $this->_element->save();
 
-        $globalSet = new GlobalSet([
+        $this->_globalSet = new GlobalSet([
             'uid' => self::GLOBAL_SET_UID,
             'name' => StringHelper::randomString(),
             'handle' => StringHelper::randomString(),
-            'id' => $element->id,
+            'id' => $this->_element->id,
         ]);
-        $globalSet->save();
+        $this->_globalSet->save();
     }
 
     private function _setupTags()
     {
-        $record = new TagGroup([
+        $this->_tagGroup = new TagGroup([
             'uid' => self::TAG_GROUP_UID,
             'name' => StringHelper::randomString(),
             'handle' => StringHelper::randomString(),
         ]);
 
-        $record->save();
+        $this->_tagGroup->save();
     }
 
     private function _setupUsers()
     {
-        $record = new UserGroup([
+        $this->_userGroup = new UserGroup([
             'uid' => self::USER_GROUP_UID,
             'name' => StringHelper::randomString(),
             'handle' => StringHelper::randomString(),
         ]);
 
-        $record->save();
+        $this->_userGroup->save();
     }
 }

@@ -20,7 +20,7 @@ use yii\web\ForbiddenHttpException;
 use yii\web\Response;
 use yii\web\ServerErrorHttpException;
 
-/** @noinspection ClassOverridesFieldOfSuperClassInspection */
+/* @noinspection ClassOverridesFieldOfSuperClassInspection */
 
 /**
  * The QueueController class is a controller that handles various queue-related operations.
@@ -121,7 +121,7 @@ class QueueController extends Controller
         Craft::$app->getQueue()->release($id);
 
         return $this->asJson([
-            'success' => true
+            'success' => true,
         ]);
     }
 
@@ -143,7 +143,7 @@ class QueueController extends Controller
         Craft::$app->getQueue()->releaseAll();
 
         return $this->asJson([
-            'success' => true
+            'success' => true,
         ]);
     }
 

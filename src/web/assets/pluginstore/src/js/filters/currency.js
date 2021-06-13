@@ -8,7 +8,7 @@ export function currency(value) {
     let floatValue = parseFloat(value);
 
     // Auto precision
-    if(Math.round(floatValue) === floatValue) {
+    if (Math.round(floatValue) === floatValue) {
         precision = 0;
     }
 

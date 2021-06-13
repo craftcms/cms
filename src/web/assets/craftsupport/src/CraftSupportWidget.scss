@@ -1,5 +1,5 @@
 @charset "UTF-8";
-@import "../../../../../node_modules/craftcms-sass/mixins";
+@import "../../../../../packages/craftcms-sass/mixins";
 
 .widget.craft\\widgets\\craftsupport {
   .front {
@@ -171,7 +171,7 @@
 
             &:before {
               display: block;
-              content: '.';
+              content: '';
               font-size: 0;
               position: absolute;
               top: 0;

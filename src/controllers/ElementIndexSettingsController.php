@@ -66,13 +66,13 @@ class ElementIndexSettingsController extends BaseElementsController
             foreach ($tableAttributes as $attribute) {
                 $source['tableAttributes'][] = [
                     $attribute[0],
-                    $attribute[1]['label']
+                    $attribute[1]['label'],
                 ];
             }
 
             // Header column info
             if ($firstAttribute = reset($tableAttributes)) {
-                list (, $attributeInfo) = $firstAttribute;
+                [, $attributeInfo] = $firstAttribute;
                 // Is there a custom header col heading?
                 if (isset($attributeInfo['defaultLabel'])) {
                     $source['headerColHeading'] = $attributeInfo['label'];

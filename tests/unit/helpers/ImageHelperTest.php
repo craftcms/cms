@@ -36,36 +36,34 @@ class ImageHelperTest extends Unit
      */
     public function testConstants()
     {
-        $this->assertSame(3, Image::EXIF_IFD0_ROTATE_180);
-        $this->assertSame(6, Image::EXIF_IFD0_ROTATE_90);
-        $this->assertSame(8, Image::EXIF_IFD0_ROTATE_270);
+        self::assertSame(3, Image::EXIF_IFD0_ROTATE_180);
+        self::assertSame(6, Image::EXIF_IFD0_ROTATE_90);
+        self::assertSame(8, Image::EXIF_IFD0_ROTATE_270);
     }
 
     /**
      * @dataProvider calculateMissingDimensionDataProvider
      *
-     * @param $result
-     * @param $targetWidth
-     * @param $targetHeight
-     * @param $sourceWidth
-     * @param $sourceHeight
+     * @param int[] $expected
+     * @param int|float|null $targetWidth
+     * @param int|float|null $targetHeight
+     * @param int|float $sourceWidth
+     * @param int|float $sourceHeight
      */
-    public function testCalculateMissingDimension($result, $targetWidth, $targetHeight, $sourceWidth, $sourceHeight)
+    public function testCalculateMissingDimension(array $expected, $targetWidth, $targetHeight, $sourceWidth, $sourceHeight)
     {
-        $calculate = Image::calculateMissingDimension($targetWidth, $targetHeight, $sourceWidth, $sourceHeight);
-        $this->assertSame($result, $calculate);
+        self::assertSame($expected, Image::calculateMissingDimension($targetWidth, $targetHeight, $sourceWidth, $sourceHeight));
     }
 
     /**
      * @dataProvider canManipulateAsImageDataProvider
      *
-     * @param $result
-     * @param $input
+     * @param bool $expected
+     * @param string $extension
      */
-    public function testCanManipulateAsImage($result, $input)
+    public function testCanManipulateAsImage(bool $expected, string $extension)
     {
-        $canManipulate = Image::canManipulateAsImage($input);
-        $this->assertSame($result, $canManipulate);
+        self::assertSame($expected, Image::canManipulateAsImage($extension));
     }
 
     /**
@@ -73,72 +71,67 @@ class ImageHelperTest extends Unit
      */
     public function testWebSafeFormats()
     {
-        $this->assertSame(['jpg', 'jpeg', 'gif', 'png', 'svg', 'webp'], Image::webSafeFormats());
+        self::assertSame(['jpg', 'jpeg', 'gif', 'png', 'svg', 'webp'], Image::webSafeFormats());
     }
 
     /**
      * @dataProvider pngImageInfoDataProvider
      *
-     * @param $result
-     * @param $input
+     * @param array|false $expected
+     * @param string $file
      */
-    public function testPngImageInfo($result, $input)
+    public function testPngImageInfo($expected, string $file)
     {
-        $imageInfo = Image::pngImageInfo($input);
-        $this->assertSame($result, $imageInfo);
+        self::assertSame($expected, Image::pngImageInfo($file));
     }
 
     /**
      * @dataProvider canHaveExitDataProvider
      *
-     * @param $result
-     * @param $input
+     * @param bool $expected
+     * @param string $filePath
      */
-    public function testCanHaveExifData($result, $input)
+    public function testCanHaveExifData(bool $expected, string $filePath)
     {
-        $canHavExit = Image::canHaveExifData($input);
-        $this->assertSame($result, $canHavExit);
+        self::assertSame($expected, Image::canHaveExifData($filePath));
     }
 
     /**
      * @dataProvider imageSizeDataProvider
      *
-     * @param array $result
-     * @param string $input
+     * @param array $expected
+     * @param string $filePath
      * @param bool $skipIfGd
      */
-    public function testImageSize($result, $input, $skipIfGd)
+    public function testImageSize(array $expected, string $filePath, bool $skipIfGd)
     {
         if ($skipIfGd && Craft::$app->getImages()->getIsGd()) {
             $this->markTestSkipped('Need Imagick to test this function.');
         }
 
-        $imageSize = Image::imageSize($input);
-        $this->assertSame($result, $imageSize);
+        self::assertSame($expected, Image::imageSize($filePath));
     }
 
     /**
-     * @dataProvider parseSvgDataProvider
+     * @dataProvider parseSvgSizeProvider
      *
-     * @param $result
-     * @param $input
+     * @param array $expected
+     * @param string $svg
      */
-    public function testParseSvgImageSize($result, $input)
+    public function testParseSvgSize(array $expected, string $svg)
     {
-        $parsed = Image::parseSvgSize($input);
-        $this->assertSame($result, $parsed);
+        self::assertSame($expected, Image::parseSvgSize($svg));
     }
 
     /**
-     * @dataProvider imageByStreamDataProvider
+     * @dataProvider imageSizeByStreamDataProvider
      *
-     * @param $result
-     * @param $input
+     * @param array|false $expected
+     * @param resource $stream
      */
-    public function testImageByStream($result, $input)
+    public function testImageSizeByStream($expected, $stream)
     {
-        $stream = Image::imageSizeByStream($input);
-        $this->assertSame($result, $stream);
+        self::assertSame($expected, Image::imageSizeByStream($stream));
     }
 
     /**
@@ -147,9 +140,7 @@ class ImageHelperTest extends Unit
     public function testNoResourceImageByStreamExceptions()
     {
         $this->tester->expectThrowable(TypeError::class, function() {
-            $db_link = @mysqli_connect('localhost', 'not_a_user', 'not_a_pass');
-            /** @noinspection PhpParamsInspection */
-            Image::imageSizeByStream($db_link);
+            Image::imageSizeByStream(1);
         });
     }
 
@@ -165,19 +156,19 @@ class ImageHelperTest extends Unit
         Craft::setLogger(
             Stub::make(Logger::class, [
                 'log' => function($message) use ($errorLogMessage) {
-                    $this->assertSame($errorLogMessage, $message);
+                    self::assertSame($errorLogMessage, $message);
                 }
             ])
         );
 
         $result = Image::imageSizeByStream($input);
-        $this->assertSame([], $result);
+        self::assertSame([], $result);
     }
 
     /**
      * @return array
      */
-    public function imageByStreamDataProvider(): array
+    public function imageSizeByStreamDataProvider(): array
     {
         $dirnameFile3 = dirname(__FILE__, 3);
 
@@ -207,7 +198,7 @@ class ImageHelperTest extends Unit
     /**
      * @return array
      */
-    public function parseSvgDataProvider(): array
+    public function parseSvgSizeProvider(): array
     {
         return [
             [[140.0, 41.0], file_get_contents(dirname(__FILE__, 3) . '/_data/assets/files/craft-logo.svg')],
@@ -285,7 +276,7 @@ class ImageHelperTest extends Unit
             [[10, 2], 10, 2, 4, 2],
             [[4, 2], 0, 2, 4, 2],
             [[2, 1], 2, 0, 4, 2],
-            [[0, 0], 0, 0, 4.2891, 2.12321],
+            [[4, 2], 0, 0, 4.2891, 2.12321],
             [[28971, 14342], 28971.251, 0, 4.2891, 2.12321],
             [[2491031, 1233121], 0, 1233121.123213, 4.2891, 2.12321],
             [[12, 1233121], 12.12, 1233121.123213, 0, 4324],

@@ -88,7 +88,7 @@ abstract class BaseEntriesController extends Controller
 
         if ($entry->getIsDraft()) {
             // If it's another user's draft, make sure they have permission to edit those
-            /** @var Entry|DraftBehavior $entry */
+            /* @var Entry|DraftBehavior $entry */
             if ($entry->creatorId != $userId) {
                 $this->requirePermission('editPeerEntryDrafts' . $permissionSuffix);
             }
@@ -105,38 +105,25 @@ abstract class BaseEntriesController extends Controller
     }
 
     /**
-     * Returns the document title that should be used on an Edit Entry page.
+     * Enforces entry deletion permissions.
      *
-     * @param Entry
-     * @return string
+     * @param Entry $entry
+     * @throws ForbiddenHttpException
+     * @since 3.6.0
      */
-    protected function docTitle(Entry $entry): string
+    protected function enforceDeleteEntryPermissions(Entry $entry)
     {
-        $docTitle = $this->pageTitle($entry);
+        $currentUser = Craft::$app->getUser()->getIdentity();
+        $section = $entry->getSection();
 
         if ($entry->getIsDraft()) {
-            /** @var Entry|DraftBehavior $entry */
-            $docTitle .= ' (' . $entry->draftName . ')';
-        } else if ($entry->getIsRevision()) {
-            /** @var Entry|RevisionBehavior $entry */
-            $docTitle .= ' (' . $entry->getRevisionLabel() . ')';
+            /* @var Entry|DraftBehavior $entry */
+            if (!$entry->creatorId || $entry->creatorId != $currentUser->id) {
+                $this->requirePermission("deletePeerEntryDrafts:$section->uid");
+            }
+        } else if (!$entry->getIsDeletable()) {
+            throw new ForbiddenHttpException('User is not permitted to perform this action');
         }
-
-        return $docTitle;
-    }
-
-    /**
-     * Returns the page title that should be used on an Edit Entry page.
-     *
-     * @param Entry
-     * @return string
-     */
-    protected function pageTitle(Entry $entry): string
-    {
-        if ($entry->getIsUnsavedDraft()) {
-            return Craft::t('app', 'Create a new entry');
-        }
-        return trim($entry->title) ?: Craft::t('app', 'Edit Entry');
     }
 
     /**

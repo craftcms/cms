@@ -8,8 +8,8 @@
             {% for attribute in attributes %}
                 {% set icon = (attribute[1].icon is defined ? attribute[1].icon : null) %}
                 <th scope="col" data-attribute="{{ attribute[0] }}"
-                        {%- if icon %} data-icon="{{ icon }}" title="{{ attribute[1].label }}"{% endif %}>
-                    {%- if not icon %}{{ attribute[1].label }}{% endif -%}
+                        {%- if icon %} data-icon="{{ icon }}" title="{{ attribute[1].label }}" aria-label="{{ attribute[1].label }}"{% endif %}>
+                    {%- if not icon %}{{ attribute[1].label|t('site') }}{% endif -%}
                 </th>
             {% endfor %}
         </tr>

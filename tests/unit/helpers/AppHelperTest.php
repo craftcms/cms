@@ -16,6 +16,7 @@ use craft\test\TestCase;
 use stdClass;
 use UnitTester;
 use yii\base\Component;
+use yii\base\InvalidArgumentException;
 
 /**
  * Unit tests for the App Helper class.
@@ -34,44 +35,94 @@ class AppHelperTest extends TestCase
     /**
      *
      */
+    public function testIsNitro()
+    {
+        $old = $_SERVER['CRAFT_NITRO'] ?? false;
+        $_SERVER['CRAFT_NITRO'] = '1';
+        self::assertTrue(App::isNitro());
+        if ($old !== false) {
+            $_SERVER['CRAFT_NITRO'] = $old;
+        } else {
+            unset($_SERVER['CRAFT_NITRO']);
+        }
+    }
+
+    /**
+     *
+     */
     public function testEditions()
     {
-        $this->assertEquals([Craft::Solo, Craft::Pro], App::editions());
+        self::assertEquals([Craft::Solo, Craft::Pro], App::editions());
     }
 
     /**
+     * @dataProvider editionHandleDataProvider
      *
+     * @param string|false $expected
+     * @param int $edition
      */
-    public function testEditionName()
+    public function testEditionHandle($expected, int $edition)
     {
-        $this->assertEquals('Solo', App::editionName(Craft::Solo));
-        $this->assertEquals('Pro', App::editionName(Craft::Pro));
+        if ($expected === false) {
+            self::expectException(InvalidArgumentException::class);
+            App::editionHandle($edition);
+        } else {
+            self::assertSame($expected, App::editionHandle($edition));
+        }
     }
 
     /**
-     * @dataProvider validEditionsDataProviders
+     * @dataProvider editionNameDataProvider
      *
-     * @param $result
-     * @param $input
+     * @param string|false $expected
+     * @param int $edition
      */
-    public function testIsValidEdition($result, $input)
+    public function testEditionName($expected, int $edition)
     {
-        $isValid = App::isValidEdition($input);
-        $this->assertSame($result, $isValid);
-        $this->assertIsBool($isValid);
+        if ($expected === false) {
+            self::expectException(InvalidArgumentException::class);
+            App::editionName($edition);
+        } else {
+            self::assertSame($expected, App::editionName($edition));
+        }
     }
 
     /**
-     * @dataProvider versionListDataProvider
+     * @dataProvider editionIdByHandleDataProvider
      *
-     * @param $result
-     * @param $input
+     * @param int|false $expected
+     * @param string $handle
      */
-    public function testVersionNormalization($result, string $input)
+    public function testEditionIdByHandle($expected, string $handle)
     {
-        $version = App::normalizeVersion($input);
-        $this->assertSame($result, App::normalizeVersion($input));
-        $this->assertIsString($version);
+        if ($expected === false) {
+            self::expectException(InvalidArgumentException::class);
+            App::editionIdByHandle($handle);
+        } else {
+            self::assertSame($expected, App::editionIdByHandle($handle));
+        }
+    }
+
+    /**
+     * @dataProvider validEditionsDataProvider
+     *
+     * @param bool $expected
+     * @param mixed $edition
+     */
+    public function testIsValidEdition(bool $expected, $edition)
+    {
+        self::assertSame($expected, App::isValidEdition($edition));
+    }
+
+    /**
+     * @dataProvider normalizeVersionDataProvider
+     *
+     * @param string $expected
+     * @param string $version
+     */
+    public function testNormalizeVersion(string $expected, string $version)
+    {
+        self::assertSame($expected, App::normalizeVersion($version));
     }
 
     /**
@@ -81,31 +132,38 @@ class AppHelperTest extends TestCase
     {
         $displayErrorsValue = ini_get('display_errors');
         @ini_set('display_errors', 1);
-        $this->assertTrue(App::phpConfigValueAsBool('display_errors'));
+        self::assertTrue(App::phpConfigValueAsBool('display_errors'));
         @ini_set('display_errors', $displayErrorsValue);
 
         $timezoneValue = ini_get('date.timezone');
         @ini_set('date.timezone', Craft::$app->getTimeZone() ?: 'Europe/Amsterdam');
-        $this->assertFalse(App::phpConfigValueAsBool('date.timezone'));
+        self::assertFalse(App::phpConfigValueAsBool('date.timezone'));
         @ini_set('date.timezone', $timezoneValue);
 
-        $this->assertFalse(App::phpConfigValueAsBool(''));
-        $this->assertFalse(App::phpConfigValueAsBool('This is not a config value'));
+        self::assertFalse(App::phpConfigValueAsBool(''));
+        self::assertFalse(App::phpConfigValueAsBool('This is not a config value'));
     }
 
     /**
-     * @dataProvider classHumanizationDataProvider
+     * @dataProvider phpSizeToBytesDataProvider
      *
-     * @param $result
-     * @param $input
+     * @param int|float $expected
+     * @param string $value
      */
-    public function testClassHumanization($result, $input)
+    public function testPhpSizeToBytes($expected, string $value)
     {
-        $humanizedClass = App::humanizeClass($input);
-        $this->assertSame($result, $humanizedClass);
+        self::assertSame($expected, App::phpSizeToBytes($value));
+    }
 
-        // Make sure we dont have any uppercase characters.
-        $this->assertNotRegExp('/[A-Z]/', $humanizedClass);
+    /**
+     * @dataProvider humanizeClassDataProvider
+     *
+     * @param string $expected
+     * @param string $class
+     */
+    public function testHumanizeClass(string $expected, string $class)
+    {
+        self::assertSame($expected, App::humanizeClass($class));
     }
 
     /**
@@ -123,8 +181,8 @@ class AppHelperTest extends TestCase
 
         App::maxPowerCaptain();
 
-        $this->assertSame($generalConfig->phpMaxMemoryLimit, ini_get('memory_limit'));
-        $this->assertSame('0', ini_get('max_execution_time'));
+        self::assertSame($generalConfig->phpMaxMemoryLimit, ini_get('memory_limit'));
+        self::assertSame('0', ini_get('max_execution_time'));
 
         ini_set('memory_limit', $oldMemoryLimit);
         ini_set('max_execution_time', $oldMaxExecution);
@@ -136,7 +194,7 @@ class AppHelperTest extends TestCase
      */
     public function testLicenseKey()
     {
-        $this->assertSame(250, strlen(App::licenseKey()));
+        self::assertSame(250, strlen(App::licenseKey()));
     }
 
     /**
@@ -149,13 +207,13 @@ class AppHelperTest extends TestCase
     {
         $config = App::$method();
 
-        $this->assertFalse($this->_areKeysMissing($config, $desiredConfig));
+        self::assertFalse($this->_areKeysMissing($config, $desiredConfig));
 
         // Make sure we aren't passing in anything unknown or invalid.
-        $this->assertTrue(class_exists($config['class']));
+        self::assertTrue(class_exists($config['class']));
 
         // Make sure its a component
-        $this->assertContains(Component::class, class_parents($config['class']));
+        self::assertContains(Component::class, class_parents($config['class']));
     }
 
     /**
@@ -166,11 +224,11 @@ class AppHelperTest extends TestCase
         $mailSettings = new MailSettings(['transportType' => Sendmail::class]);
         $result = App::mailerConfig($mailSettings);
 
-        $this->assertFalse($this->_areKeysMissing($result, ['class', 'messageClass', 'from', 'template', 'transport']));
+        self::assertFalse($this->_areKeysMissing($result, ['class', 'messageClass', 'from', 'template', 'transport']));
 
         // Make sure its a component
-        $this->assertContains(Component::class, class_parents($result['class']));
-        $this->assertTrue(class_exists($result['class']));
+        self::assertContains(Component::class, class_parents($result['class']));
+        self::assertTrue(class_exists($result['class']));
     }
 
     /**
@@ -188,7 +246,44 @@ class AppHelperTest extends TestCase
     /**
      * @return array
      */
-    public function validEditionsDataProviders(): array
+    public function editionHandleDataProvider(): array
+    {
+        return [
+            ['solo', Craft::Solo],
+            ['pro', Craft::Pro],
+            [false, -1],
+        ];
+    }
+
+    /**
+     * @return array
+     */
+    public function editionNameDataProvider(): array
+    {
+        return [
+            ['Solo', Craft::Solo],
+            ['Pro', Craft::Pro],
+            [false, -1],
+        ];
+    }
+
+    /**
+     * @return array
+     */
+    public function editionIdByHandleDataProvider(): array
+    {
+        return [
+            [Craft::Solo, 'solo'],
+            [Craft::Pro, 'pro'],
+            [false, 'personal'],
+            [false, 'client'],
+        ];
+    }
+
+    /**
+     * @return array
+     */
+    public function validEditionsDataProvider(): array
     {
         return [
             [true, Craft::Pro],
@@ -216,7 +311,7 @@ class AppHelperTest extends TestCase
             ['webRequestConfig', ['class', 'enableCookieValidation', 'cookieValidationKey', 'enableCsrfValidation', 'enableCsrfCookie', 'csrfParam',]],
             ['cacheConfig', ['class', 'cachePath', 'fileMode', 'dirMode', 'defaultDuration']],
             ['mutexConfig', ['class', 'fileMode', 'dirMode']],
-            ['logConfig', ['class', 'targets']],
+            ['logConfig', ['class']],
             ['sessionConfig', ['class', 'flashParam', 'authAccessParam', 'name', 'cookieParams']],
             ['userConfig', ['class', 'identityClass', 'enableAutoLogin', 'autoRenewCookie', 'loginUrl', 'authTimeout', 'identityCookie', 'usernameCookie', 'idParam', 'authTimeoutParam', 'absoluteAuthTimeoutParam', 'returnUrlParam']],
         ];
@@ -225,7 +320,20 @@ class AppHelperTest extends TestCase
     /**
      * @return array
      */
-    public function classHumanizationDataProvider(): array
+    public function phpSizeToBytesDataProvider(): array
+    {
+        return [
+            [1, '1B'],
+            [1024, '1K'],
+            [pow(1024, 2), '1M'],
+            [pow(1024, 3), '1G'],
+        ];
+    }
+
+    /**
+     * @return array
+     */
+    public function humanizeClassDataProvider(): array
     {
         return [
             ['entries', Entries::class],
@@ -238,7 +346,7 @@ class AppHelperTest extends TestCase
     /**
      * @return array
      */
-    public function versionListDataProvider(): array
+    public function normalizeVersionDataProvider(): array
     {
         return [
             ['version', 'version 21'],
@@ -250,7 +358,6 @@ class AppHelperTest extends TestCase
             ['~2', '~2'],
             ['', ''],
             ['\*v^2.0.0(beta)', '\*v^2.0.0(beta)'],
-
         ];
     }
 

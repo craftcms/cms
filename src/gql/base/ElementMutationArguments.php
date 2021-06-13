@@ -26,12 +26,12 @@ abstract class ElementMutationArguments extends MutationArguments
             'title' => [
                 'name' => 'title',
                 'type' => Type::string(),
-                'description' => 'The title of the element.'
+                'description' => 'The title of the element.',
             ],
             'enabled' => [
                 'name' => 'enabled',
                 'type' => Type::boolean(),
-                'description' => 'Whether the element should be enabled.'
+                'description' => 'Whether the element should be enabled.',
             ],
         ]);
     }

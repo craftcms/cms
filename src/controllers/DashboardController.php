@@ -62,22 +62,21 @@ class DashboardController extends Controller
         $dashboardService = Craft::$app->getDashboard();
         $view = $this->getView();
 
-        $namespace = $view->getNamespace();
-
         // Assemble the list of available widget types
         $widgetTypes = $dashboardService->getAllWidgetTypes();
         $widgetTypeInfo = [];
-        $view->setNamespace('__NAMESPACE__');
 
         foreach ($widgetTypes as $widgetType) {
-            /** @var WidgetInterface $widgetType */
+            /* @var WidgetInterface $widgetType */
             if (!$widgetType::isSelectable()) {
                 continue;
             }
 
             $view->startJsBuffer();
             $widget = $dashboardService->createWidget($widgetType);
-            $settingsHtml = $view->namespaceInputs((string)$widget->getSettingsHtml());
+            $settingsHtml = $view->namespaceInputs(function() use ($widget) {
+                return (string)$widget->getSettingsHtml();
+            }, '__NAMESPACE__');
             $settingsJs = (string)$view->clearJsBuffer(false);
 
             $class = get_class($widget);
@@ -94,7 +93,6 @@ class DashboardController extends Controller
         // Sort them by name
         ArrayHelper::multisort($widgetTypeInfo, 'name');
 
-        $view->setNamespace($namespace);
         $variables = [];
 
         // Assemble the list of existing widgets
@@ -349,7 +347,7 @@ class DashboardController extends Controller
             return $this->renderTemplate('_components/widgets/CraftSupport/response', [
                 'widgetId' => $widgetId,
                 'success' => false,
-                'errors' => $getHelpModel->getErrors()
+                'errors' => $getHelpModel->getErrors(),
             ]);
         }
 
@@ -415,7 +413,7 @@ class DashboardController extends Controller
                 FileHelper::addFilesToZip($zip, $logPath, 'logs', [
                     'only' => ['*.log'],
                     'except' => ['web-404s.log'],
-                    'recursive' => false
+                    'recursive' => false,
                 ]);
             }
 
@@ -448,7 +446,7 @@ class DashboardController extends Controller
             $parts[] = [
                 'name' => 'attachments[0]',
                 'contents' => fopen($zipPath, 'rb'),
-                'filename' => 'SupportAttachment-' . FileHelper::sanitizeFilename(Craft::$app->getSites()->getPrimarySite()->name) . '.zip',
+                'filename' => 'SupportAttachment-' . FileHelper::sanitizeFilename(Craft::$app->getSites()->getPrimarySite()->getName()) . '.zip',
             ];
         } catch (\Throwable $e) {
             Craft::warning('Error creating support zip: ' . $e->getMessage(), __METHOD__);
@@ -481,15 +479,15 @@ class DashboardController extends Controller
                 'widgetId' => $widgetId,
                 'success' => false,
                 'errors' => [
-                    'Support' => [$requestException->getMessage()]
-                ]
+                    'Support' => [$requestException->getMessage()],
+                ],
             ]);
         }
 
         return $this->renderTemplate('_components/widgets/CraftSupport/response', [
             'widgetId' => $widgetId,
             'success' => true,
-            'errors' => []
+            'errors' => [],
         ]);
     }
 
@@ -502,7 +500,6 @@ class DashboardController extends Controller
     private function _getWidgetInfo(WidgetInterface $widget)
     {
         $view = $this->getView();
-        $namespace = $view->getNamespace();
 
         // Get the body HTML
         $widgetBodyHtml = $widget->getBodyHtml();
@@ -512,9 +509,10 @@ class DashboardController extends Controller
         }
 
         // Get the settings HTML + JS
-        $view->setNamespace('widget' . $widget->id . '-settings');
         $view->startJsBuffer();
-        $settingsHtml = $view->namespaceInputs((string)$widget->getSettingsHtml());
+        $settingsHtml = $view->namespaceInputs(function() use ($widget) {
+            return (string)$widget->getSettingsHtml();
+        }, "widget$widget->id-settings");
         $settingsJs = $view->clearJsBuffer(false);
 
         // Get the colspan (limited to the widget type's max allowed colspan)
@@ -523,8 +521,6 @@ class DashboardController extends Controller
         if (($maxColspan = $widget::maxColspan()) && $colspan > $maxColspan) {
             $colspan = $maxColspan;
         }
-
-        $view->setNamespace($namespace);
 
         return [
             'id' => $widget->id,
@@ -581,7 +577,7 @@ class DashboardController extends Controller
         }
 
         return $this->asJson([
-            'errors' => $allErrors
+            'errors' => $allErrors,
         ]);
     }
 

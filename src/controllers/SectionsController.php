@@ -34,12 +34,12 @@ class SectionsController extends Controller
     /**
      * @inheritdoc
      */
-    public function init()
+    public function beforeAction($action)
     {
-        parent::init();
-
         // All section actions require an admin
         $this->requireAdmin();
+
+        return parent::beforeAction($action);
     }
 
     /**
@@ -68,7 +68,7 @@ class SectionsController extends Controller
     {
         $variables = [
             'sectionId' => $sectionId,
-            'brandNewSection' => false
+            'brandNewSection' => false,
         ];
 
         if ($sectionId !== null) {
@@ -102,17 +102,6 @@ class SectionsController extends Controller
 
         $variables['section'] = $section;
         $variables['typeOptions'] = $typeOptions;
-
-        $variables['crumbs'] = [
-            [
-                'label' => Craft::t('app', 'Settings'),
-                'url' => UrlHelper::url('settings')
-            ],
-            [
-                'label' => Craft::t('app', 'Sections'),
-                'url' => UrlHelper::url('settings/sections')
-            ],
-        ];
 
         $this->getView()->registerAssetBundle(EditSectionAsset::class);
 
@@ -188,7 +177,7 @@ class SectionsController extends Controller
 
             // Send the section back to the template
             Craft::$app->getUrlManager()->setRouteParams([
-                'section' => $section
+                'section' => $section,
             ]);
 
             return null;
@@ -232,28 +221,12 @@ class SectionsController extends Controller
             throw new NotFoundHttpException('Section not found');
         }
 
-        $crumbs = [
-            [
-                'label' => Craft::t('app', 'Settings'),
-                'url' => UrlHelper::url('settings')
-            ],
-            [
-                'label' => Craft::t('app', 'Sections'),
-                'url' => UrlHelper::url('settings/sections')
-            ],
-            [
-                'label' => Craft::t('site', $section->name),
-                'url' => UrlHelper::url('settings/sections/' . $section->id)
-            ],
-        ];
-
         $title = Craft::t('app', '{section} Entry Types',
             ['section' => Craft::t('site', $section->name)]);
 
         return $this->renderTemplate('settings/sections/_entrytypes/index', [
             'sectionId' => $sectionId,
             'section' => $section,
-            'crumbs' => $crumbs,
             'title' => $title,
         ]);
     }
@@ -303,19 +276,19 @@ class SectionsController extends Controller
         $crumbs = [
             [
                 'label' => Craft::t('app', 'Settings'),
-                'url' => UrlHelper::url('settings')
+                'url' => UrlHelper::url('settings'),
             ],
             [
                 'label' => Craft::t('app', 'Sections'),
-                'url' => UrlHelper::url('settings/sections')
+                'url' => UrlHelper::url('settings/sections'),
             ],
             [
                 'label' => $section->name,
-                'url' => UrlHelper::url('settings/sections/' . $section->id)
+                'url' => UrlHelper::url('settings/sections/' . $section->id),
             ],
             [
                 'label' => Craft::t('app', 'Entry Types'),
-                'url' => UrlHelper::url('settings/sections/' . $sectionId . '/entrytypes')
+                'url' => UrlHelper::url('settings/sections/' . $sectionId . '/entrytypes'),
             ],
         ];
 
@@ -325,7 +298,9 @@ class SectionsController extends Controller
             'entryTypeId' => $entryTypeId,
             'entryType' => $entryType,
             'title' => $title,
-            'crumbs' => $crumbs
+            'crumbs' => $crumbs,
+            'typeName' => Entry::displayName(),
+            'lowerTypeName' => Entry::lowerDisplayName(),
         ]);
     }
 
@@ -371,7 +346,7 @@ class SectionsController extends Controller
 
             // Send the entry type back to the template
             Craft::$app->getUrlManager()->setRouteParams([
-                'entryType' => $entryType
+                'entryType' => $entryType,
             ]);
 
             return null;

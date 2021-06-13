@@ -82,17 +82,6 @@ class Application extends \yii\web\Application
     const EVENT_AFTER_EDITION_CHANGE = 'afterEditionChange';
 
     /**
-     * Constructor.
-     *
-     * @param array $config
-     */
-    public function __construct(array $config = [])
-    {
-        Craft::$app = $this;
-        parent::__construct($config);
-    }
-
-    /**
      * Initializes the application.
      */
     public function init()
@@ -150,108 +139,110 @@ class Application extends \yii\web\Application
      */
     public function handleRequest($request, bool $skipSpecialHandling = false): Response
     {
-        if ($skipSpecialHandling) {
-            try {
-                return parent::handleRequest($request);
-            } catch (\Throwable $e) {
-                $this->_unregisterDebugModule();
-                throw $e;
+        if (!$skipSpecialHandling) {
+            // Process resource requests before anything else
+            $this->_processResourceRequest($request);
+
+            // Disable read/write splitting for POST requests
+            if ($this->getRequest()->getIsPost()) {
+                $this->getDb()->enableReplicas = false;
             }
-        }
 
-        // Process resource requests before anything else
-        $this->_processResourceRequest($request);
+            $headers = $this->getResponse()->getHeaders();
+            $generalConfig = $this->getConfig()->getGeneral();
 
-        $headers = $this->getResponse()->getHeaders();
-        $generalConfig = $this->getConfig()->getGeneral();
+            if ($generalConfig->permissionsPolicyHeader) {
+                $headers->set('Permissions-Policy', $generalConfig->permissionsPolicyHeader);
+            }
 
-        // Tell bots not to index/follow CP and tokenized pages
-        if ($request->getIsCpRequest() || $request->getToken() !== null) {
-            $headers->set('X-Robots-Tag', 'none');
-        }
+            // Tell bots not to index/follow CP and tokenized pages
+            if ($generalConfig->disallowRobots || $request->getIsCpRequest() || $request->getToken() !== null || $request->getIsActionRequest()) {
+                $headers->set('X-Robots-Tag', 'none');
+            }
 
-        // Prevent some possible XSS attack vectors
-        if ($request->getIsCpRequest()) {
-            $headers->set('X-Frame-Options', 'SAMEORIGIN');
-            $headers->set('X-Content-Type-Options', 'nosniff');
-        }
-
-        // Send the X-Powered-By header?
-        if ($generalConfig->sendPoweredByHeader) {
-            $original = $headers->get('X-Powered-By');
-            $headers->set('X-Powered-By', $original . ($original ? ',' : '') . $this->name);
-        } else {
-            // In case PHP is already setting one
-            header_remove('X-Powered-By');
-        }
-
-        // Process install requests
-        if (($response = $this->_processInstallRequest($request)) !== null) {
-            return $response;
-        }
-
-        // Check if the app path has changed.  If so, run the requirements check again.
-        if (($response = $this->_processRequirementsCheck($request)) !== null) {
-            $this->_unregisterDebugModule();
-
-            return $response;
-        }
-
-        // Makes sure that the uploaded files are compatible with the current database schema
-        if (!$this->getUpdates()->getIsCraftSchemaVersionCompatible()) {
-            $this->_unregisterDebugModule();
-
+            // Prevent some possible XSS attack vectors
             if ($request->getIsCpRequest()) {
-                $version = $this->getInfo()->version;
-
-                throw new HttpException(200, Craft::t('app', 'Craft CMS does not support backtracking to this version. Please update to Craft CMS {version} or later.', [
-                    'version' => $version,
-                ]));
+                $headers->set('X-Frame-Options', 'SAMEORIGIN');
+                $headers->set('X-Content-Type-Options', 'nosniff');
             }
 
-            throw new ServiceUnavailableHttpException();
-        }
-
-        // getIsCraftDbMigrationNeeded will return true if we're in the middle of a manual or auto-update for Craft itself.
-        // If we're in maintenance mode and it's not a site request, show the manual update template.
-        if ($this->getUpdates()->getIsCraftDbMigrationNeeded()) {
-            return $this->_processUpdateLogic($request) ?: $this->getResponse();
-        }
-
-        // If there's a new version, but the schema hasn't changed, just update the info table
-        if ($this->getUpdates()->getHasCraftVersionChanged()) {
-            $this->getUpdates()->updateCraftVersionInfo();
-
-            // Delete all compiled templates
-            try {
-                FileHelper::clearDirectory($this->getPath()->getCompiledTemplatesPath(false));
-            } catch (InvalidArgumentException $e) {
-                // the directory doesn't exist
-            } catch (ErrorException $e) {
-                Craft::error('Could not delete compiled templates: ' . $e->getMessage());
-                Craft::$app->getErrorHandler()->logException($e);
+            // Send the X-Powered-By header?
+            if ($generalConfig->sendPoweredByHeader) {
+                $original = $headers->get('X-Powered-By');
+                $headers->set('X-Powered-By', $original . ($original ? ',' : '') . $this->name);
+            } else {
+                // In case PHP is already setting one
+                header_remove('X-Powered-By');
             }
-        }
 
-        // Check if a plugin needs to update the database.
-        if ($this->getUpdates()->getIsPluginDbUpdateNeeded()) {
-            return $this->_processUpdateLogic($request) ?: $this->getResponse();
-        }
-
-        // If this is a plugin template request, make sure the user has access to the plugin
-        // If this is a non-login, non-validate, non-setPassword CP request, make sure the user has access to the CP
-        if (
-            $request->getIsCpRequest() &&
-            !$request->getIsActionRequest() &&
-            ($firstSeg = $request->getSegment(1)) !== null &&
-            ($plugin = $this->getPlugins()->getPlugin($firstSeg)) !== null
-        ) {
-            $user = $this->getUser();
-            if ($user->getIsGuest()) {
-                return $user->loginRequired();
+            // Process install requests
+            if (($response = $this->_processInstallRequest($request)) !== null) {
+                return $response;
             }
-            if (!$user->checkPermission('accessPlugin-' . $plugin->id)) {
-                throw new ForbiddenHttpException();
+
+            // Check if the app path has changed.  If so, run the requirements check again.
+            if (($response = $this->_processRequirementsCheck($request)) !== null) {
+                $this->_unregisterDebugModule();
+
+                return $response;
+            }
+
+            // Makes sure that the uploaded files are compatible with the current database schema
+            if (!$this->getUpdates()->getIsCraftSchemaVersionCompatible()) {
+                $this->_unregisterDebugModule();
+
+                if ($request->getIsCpRequest()) {
+                    $version = $this->getInfo()->version;
+
+                    throw new HttpException(200, Craft::t('app', 'Craft CMS does not support backtracking to this version. Please update to Craft CMS {version} or later.', [
+                        'version' => $version,
+                    ]));
+                }
+
+                throw new ServiceUnavailableHttpException();
+            }
+
+            // getIsCraftDbMigrationNeeded will return true if we're in the middle of a manual or auto-update for Craft itself.
+            // If we're in maintenance mode and it's not a site request, show the manual update template.
+            if ($this->getUpdates()->getIsCraftDbMigrationNeeded()) {
+                return $this->_processUpdateLogic($request) ?: $this->getResponse();
+            }
+
+            // If there's a new version, but the schema hasn't changed, just update the info table
+            if ($this->getUpdates()->getHasCraftVersionChanged()) {
+                $this->getUpdates()->updateCraftVersionInfo();
+
+                // Delete all compiled templates
+                try {
+                    FileHelper::clearDirectory($this->getPath()->getCompiledTemplatesPath(false));
+                } catch (InvalidArgumentException $e) {
+                    // the directory doesn't exist
+                } catch (ErrorException $e) {
+                    Craft::error('Could not delete compiled templates: ' . $e->getMessage());
+                    Craft::$app->getErrorHandler()->logException($e);
+                }
+            }
+
+            // Check if a plugin needs to update the database.
+            if ($this->getUpdates()->getIsPluginDbUpdateNeeded()) {
+                return $this->_processUpdateLogic($request) ?: $this->getResponse();
+            }
+
+            // If this is a plugin template request, make sure the user has access to the plugin
+            // If this is a non-login, non-validate, non-setPassword CP request, make sure the user has access to the CP
+            if (
+                $request->getIsCpRequest() &&
+                !$request->getIsActionRequest() &&
+                ($firstSeg = $request->getSegment(1)) !== null &&
+                ($plugin = $this->getPlugins()->getPlugin($firstSeg)) !== null
+            ) {
+                $user = $this->getUser();
+                if ($user->getIsGuest()) {
+                    return $user->loginRequired();
+                }
+                if (!$user->checkPermission('accessPlugin-' . $plugin->id)) {
+                    throw new ForbiddenHttpException();
+                }
             }
         }
 
@@ -372,7 +363,7 @@ class Application extends \yii\web\Application
         }
 
         // Did the request include user credentials?
-        list($username, $password) = $this->getRequest()->getAuthCredentials();
+        [$username, $password] = $this->getRequest()->getAuthCredentials();
 
         if (!$username || !$password) {
             return;
@@ -402,13 +393,13 @@ class Application extends \yii\web\Application
             return;
         }
 
+        // Only load the debug toolbar if it's enabled for the user, or Dev Mode is enabled and the request wants it
         $user = $this->getUser()->getIdentity();
-        if (!$user || !$user->admin) {
-            return;
-        }
-
         $pref = $request->getIsCpRequest() ? 'enableDebugToolbarForCp' : 'enableDebugToolbarForSite';
-        if (!$user->getPreference($pref)) {
+        if (!(
+            ($user && $user->admin && $user->getPreference($pref)) ||
+            (YII_DEBUG && $request->getHeaders()->get('X-Debug') === 'enable')
+        )) {
             return;
         }
 
@@ -429,7 +420,7 @@ class Application extends \yii\web\Application
                         UrlManager::class . '::_getMatchedUrlRoute',
                         UrlManager::class . '::_getTemplateRoute',
                         UrlManager::class . '::_getTokenRoute',
-                    ]
+                    ],
                 ],
                 'request' => RequestPanel::class,
                 'log' => LogPanel::class,
@@ -440,7 +431,7 @@ class Application extends \yii\web\Application
                 'mail' => MailPanel::class,
             ],
         ]);
-        /** @var DebugModule $module */
+        /* @var DebugModule $module */
         $module = $this->getModule('debug');
         $module->bootstrap($this);
     }

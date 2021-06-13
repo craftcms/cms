@@ -6,31 +6,34 @@
 {% set isRevision = entry.getIsRevision() %}
 
 {% set element = entry %}
+{% set hasRevisions = section.enableVersioning %}
 {% set redirectUrl = 'entries/' ~ (isSingle ? 'singles' : section.handle) %}
 {% set saveSourceAction = 'entries/save-entry' %}
 {% set duplicateSourceAction = 'entries/duplicate-entry' %}
 {% set deleteSourceAction = 'entries/delete-entry' %}
+{% set deleteForSiteAction = 'entries/delete-for-site' %}
 {% set saveDraftAction = 'entry-revisions/save-draft' %}
 {% set deleteDraftAction = 'entry-revisions/delete-draft' %}
-{% set applyDraftAction = 'entry-revisions/publish-draft' %}
+{% set publishDraftAction = 'entry-revisions/publish-draft' %}
 {% set revertSourceAction = 'entry-revisions/revert-entry-to-version' %}
 {% set canUpdateSource = (
     currentUser.can('publishEntries'~permissionSuffix) and
-    (isSingle or entry.authorId == currentUser.id or currentUser.can('publishPeerEntries'~permissionSuffix))
+    (isSingle or entry.authorId == currentUser.id or currentUser.can('publishPeerEntries'~permissionSuffix)) and
+    (not isDraft or entry.creatorId == currentUser.id or currentUser.can('publishPeerEntryDrafts'~permissionSuffix))
 ) %}
 {% set canDuplicateSource = canUpdateSource and not isSingle %}
 {% set canDeleteDraft = currentUser.can('deletePeerEntryDrafts'~permissionSuffix) %}
 
 {% if not isSingle and canUpdateSource %}
-    {% set nextEntryParams = ["siteId=#{entry.siteId}"] %}
+    {% set nextEntryParams = ["site=#{entry.site.handle}"] %}
     {% if showEntryTypes %}
         {% set nextEntryParams = nextEntryParams|merge(['typeId={type.id}']) %}
     {% endif %}
     {% if section.type == 'structure' %}
         {% set nextEntryParams = nextEntryParams|merge(['parentId={parent.id}']) %}
     {% endif %}
-    {% set canDuplicateSource = true %}
-    {% set canAddAnother = true %}
+    {% set canDuplicateSource = currentUser.can("createEntries#{permissionSuffix}") %}
+    {% set canAddAnother = currentUser.can("createEntries#{permissionSuffix}") %}
     {% set addAnotherRedirectUrl = "entries/#{section.handle}/new?" ~ nextEntryParams|join('&') %}
 {% endif %}
 
@@ -47,33 +50,32 @@
 {% endblock %}
 
 {% block settings %}
-    {% if not isSingle %}
-        {% if showEntryTypes %}
-            {{ forms.selectField({
-                status: entry.getAttributeStatus('typeId'),
-                label: "Entry Type"|t('app'),
-                id: 'entryType',
-                name: 'typeId',
-                value: entryType.id,
-                options: entryTypeOptions
-            }) }}
-        {% endif %}
+    {% if not isSingle and showEntryTypes %}
+        {{ forms.selectField({
+            status: entry.getAttributeStatus('typeId'),
+            label: "Entry Type"|t('app'),
+            id: 'entryType',
+            name: 'typeId',
+            value: entryType.id,
+            options: entryTypeOptions,
+            errors: entry.getErrors('typeId'),
+        }) }}
     {% endif %}
 
-        {{ forms.textField({
-            status: entry.getAttributeStatus('slug'),
-            label: "Slug"|t('app'),
-            siteId: entry.siteId,
-            translationDescription: 'This field is translated for each site.'|t('app'),
-            id: 'slug',
-            name: 'slug',
-            autocorrect: false,
-            autocapitalize: false,
-            value: '__temp_' in entry.slug ? '' : entry.slug,
-            placeholder: "Enter slug"|t('app'),
-            errors: (not isRevision ? entry.getErrors('slug')|merge(entry.getErrors('uri'))),
-            disabled: isRevision
-        }) }}
+    {{ forms.textField({
+        status: entry.getAttributeStatus('slug'),
+        label: "Slug"|t('app'),
+        siteId: entry.siteId,
+        translationDescription: 'This field is translated for each site.'|t('app'),
+        id: 'slug',
+        name: 'slug',
+        autocorrect: false,
+        autocapitalize: false,
+        value: '__temp_' in entry.slug ? '' : entry.slug,
+        placeholder: "Enter slug"|t('app'),
+        errors: (not isRevision ? entry.getErrors('slug')|merge(entry.getErrors('uri'))),
+        disabled: isRevision
+    }) }}
 
     {% if not isSingle %}
         {% if parentOptionCriteria is defined %}
@@ -132,9 +134,9 @@
 {% endblock %}
 
 {% block meta %}
-    {{ parent() }}
     {# Give plugins a chance to add other things here #}
     {% hook "cp.entries.edit.meta" %}
+    {{ parent() }}
 {% endblock %}
 
 {% block details %}

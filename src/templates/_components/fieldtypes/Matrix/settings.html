@@ -14,13 +14,13 @@
                                 <h4>
                                     {{ blockType.name }}
                                     {% if blockType.hasFieldErrors %}
-                                        <span data-icon="alert"></span>
+                                        <span data-icon="alert" aria-label="{{ 'Error'|t('app') }}"></span>
                                     {% endif %}
                                 </h4>
                                 <div class="smalltext light code">{{ blockType.handle }}</div>
                             </div>
-                            <a class="settings icon{% if blockType.hasErrors() %} error{% endif %}" title="{{ 'Settings'|t('app') }}" role="button"></a>
-                            <a class="move icon" title="{{ 'Reorder'|t('app') }}" role="button"></a>
+                            <a class="settings icon{% if blockType.hasErrors() %} error{% endif %}" title="{{ 'Settings'|t('app') }}" aria-label="{{ 'Settings'|t('app') }}" role="button"></a>
+                            <a class="move icon" title="{{ 'Reorder'|t('app') }}" aria-label="{{ 'Reorder'|t('app') }}" role="button"></a>
                             <input class="hidden" name="blockTypes[{{ blockTypeId }}][name]" value="{{ blockType.name }}">
                             <input class="hidden" name="blockTypes[{{ blockTypeId }}][handle]" value="{{ blockType.handle }}">
                         </div>
@@ -48,11 +48,11 @@
                                         {%- else -%}
                                             <em class="light">{{ '(blank)'|t('app') }}</em>
                                         {%- endif -%}
-                                        {%- if field.hasErrors() %} <span data-icon="alert"></span>{% endif -%}
+                                        {%- if field.hasErrors() %} <span data-icon="alert" aria-label="{{ 'Error'|t('app') }}"></span>{% endif -%}
                                     </h4>
                                     <div class="smalltext light code">{{ field.handle }}</div>
                                 </div>
-                                <a class="move icon" title="{{ 'Reorder'|t('app') }}" role="button"></a>
+                                <a class="move icon" title="{{ 'Reorder'|t('app') }}" aria-label="{{ 'Reorder'|t('app') }}" role="button"></a>
                             </div>
                         {% endfor %}
                     </div>
@@ -210,9 +210,27 @@
             { value: 'siteGroup', label: 'Save blocks to other sites in the same site group'|t('app') },
             { value: 'language', label: 'Save blocks to other sites with the same language'|t('app') },
             { value: 'all', label: 'Save blocks to all sites the owner element is saved in'|t('app') },
+            { value: 'custom', label: 'Custom…'|t('app') },
         ],
-        value: matrixField.propagationMethod
+        value: matrixField.propagationMethod,
+        toggle: true,
+        targetPrefix: 'propagation-method-',
     }) }}
+
+    {% tag 'div' with {
+        id: 'propagation-method-custom',
+        class: matrixField.propagationMethod != 'custom' ? 'hidden' : null,
+    } %}
+        {{ forms.textField({
+            label: 'Propagation Key Format'|t('app'),
+            instructions: 'Template that defines the field’s custom “propagation key” format. Blocks will be saved to all sites that produce the same key.'|t('app'),
+            id: 'propagation-key-format',
+            class: 'code',
+            name: 'propagationKeyFormat',
+            value: matrixField.propagationKeyFormat,
+            errors: matrixField.getErrors('propagationKeyFormat'),
+        }) }}
+    {% endtag %}
 
     {% if matrixField.id and matrixField.propagationMethod != 'none' %}
         {% js %}

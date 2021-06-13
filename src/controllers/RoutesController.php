@@ -24,12 +24,12 @@ class RoutesController extends Controller
     /**
      * @inheritdoc
      */
-    public function init()
+    public function beforeAction($action)
     {
-        parent::init();
-
         // All route actions require an admin
         $this->requireAdmin();
+
+        return parent::beforeAction($action);
     }
 
     /**
@@ -56,7 +56,7 @@ class RoutesController extends Controller
         return $this->asJson([
             'success' => true,
             'routeUid' => $routeUid,
-            'siteUid' => $siteUid
+            'siteUid' => $siteUid,
         ]);
     }
 

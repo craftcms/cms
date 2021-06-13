@@ -83,12 +83,12 @@ class UsersTest extends TestCase
      */
     public function testUserCreation()
     {
-        $this->assertSame(User::STATUS_ACTIVE, $this->lockedUser->getStatus());
-        $this->assertTrue($this->lockedUser->locked);
-        $this->assertSame(User::STATUS_PENDING, $this->pendingUser->getStatus());
-        $this->assertSame(User::STATUS_ACTIVE, $this->activeUser->getStatus());
-        $this->assertSame(User::STATUS_SUSPENDED, $this->suspendedUser->getStatus());
-        $this->assertTrue($this->suspendedUser->suspended);
+        self::assertSame(User::STATUS_ACTIVE, $this->lockedUser->getStatus());
+        self::assertTrue($this->lockedUser->locked);
+        self::assertSame(User::STATUS_PENDING, $this->pendingUser->getStatus());
+        self::assertSame(User::STATUS_ACTIVE, $this->activeUser->getStatus());
+        self::assertSame(User::STATUS_SUSPENDED, $this->suspendedUser->getStatus());
+        self::assertTrue($this->suspendedUser->suspended);
     }
 
     /**
@@ -100,8 +100,8 @@ class UsersTest extends TestCase
 
         $user = $this->getUser($this->pendingUser->id);
 
-        $this->assertSame(User::STATUS_ACTIVE, $user->getStatus());
-        $this->assertSame('jsmith', $user->username);
+        self::assertSame(User::STATUS_ACTIVE, $user->getStatus());
+        self::assertSame('jsmith', $user->username);
     }
 
     /**
@@ -117,8 +117,8 @@ class UsersTest extends TestCase
 
         $user = $this->getUser($this->pendingUser->id);
 
-        $this->assertSame(User::STATUS_ACTIVE, $user->getStatus());
-        $this->assertSame('jsmith@gmail.com', $user->username);
+        self::assertSame(User::STATUS_ACTIVE, $user->getStatus());
+        self::assertSame('jsmith@gmail.com', $user->username);
     }
 
     /**
@@ -136,8 +136,8 @@ class UsersTest extends TestCase
 
         $user = $this->getUser($this->pendingUser->id);
 
-        $this->assertSame(User::STATUS_ACTIVE, $user->getStatus());
-        $this->assertSame('jsmith', $user->username);
+        self::assertSame(User::STATUS_ACTIVE, $user->getStatus());
+        self::assertSame('jsmith', $user->username);
     }
 
     /**
@@ -147,10 +147,10 @@ class UsersTest extends TestCase
     {
         $this->users->unlockUser($this->lockedUser);
 
-        $this->assertFalse($this->lockedUser->locked);
-        $this->assertNull($this->lockedUser->lockoutDate);
-        $this->assertNull($this->lockedUser->invalidLoginCount);
-        $this->assertSame(User::STATUS_ACTIVE, $this->lockedUser->getStatus());
+        self::assertFalse($this->lockedUser->locked);
+        self::assertNull($this->lockedUser->lockoutDate);
+        self::assertNull($this->lockedUser->invalidLoginCount);
+        self::assertSame(User::STATUS_ACTIVE, $this->lockedUser->getStatus());
     }
 
     /**
@@ -160,8 +160,8 @@ class UsersTest extends TestCase
     {
         $this->users->suspendUser($this->activeUser);
 
-        $this->assertTrue($this->activeUser->suspended);
-        $this->assertSame(User::STATUS_SUSPENDED, $this->activeUser->getStatus());
+        self::assertTrue($this->activeUser->suspended);
+        self::assertSame(User::STATUS_SUSPENDED, $this->activeUser->getStatus());
     }
 
     /**
@@ -171,8 +171,8 @@ class UsersTest extends TestCase
     {
         $this->users->unsuspendUser($this->suspendedUser);
 
-        $this->assertFalse($this->suspendedUser->suspended);
-        $this->assertSame(User::STATUS_ACTIVE, $this->suspendedUser->getStatus());
+        self::assertFalse($this->suspendedUser->suspended);
+        self::assertSame(User::STATUS_ACTIVE, $this->suspendedUser->getStatus());
     }
 
     /**
@@ -188,8 +188,8 @@ class UsersTest extends TestCase
             ->select('*')
             ->from(Table::USERS)->where(['id' => $this->pendingUser->id])->one();
 
-        $this->assertSame(32, strlen($verificationCode));
-        $this->assertNotNull($user['verificationCode']);
+        self::assertSame(32, strlen($verificationCode));
+        self::assertNotNull($user['verificationCode']);
 
         $this->tester->assertEqualDates(
             $this,
@@ -212,7 +212,7 @@ class UsersTest extends TestCase
         );
 
         $groups = $this->activeUser->getGroups();
-        $this->assertCount(3, $groups);
+        self::assertCount(3, $groups);
     }
 
     /**
@@ -229,7 +229,7 @@ class UsersTest extends TestCase
         );
 
         $groups = $this->activeUser->getGroups();
-        $this->assertCount(1, $groups);
+        self::assertCount(1, $groups);
 
         // Invalidate the currentGroups - otherwise memoization will ruin our tests.
         $this->setInaccessibleProperty($this->activeUser, '_groups', null);
@@ -241,7 +241,7 @@ class UsersTest extends TestCase
 
         // There should now be 2 - not three.
         $groups = $this->activeUser->getGroups();
-        $this->assertCount(2, $groups);
+        self::assertCount(2, $groups);
     }
 
     /**
@@ -258,8 +258,8 @@ class UsersTest extends TestCase
         $this->users->assignUserToDefaultGroup($this->activeUser);
 
         $groups = $this->activeUser->getGroups();
-        $this->assertCount(1, $groups);
-        $this->assertSame('Group 3', $groups[0]->name);
+        self::assertCount(1, $groups);
+        self::assertSame('Group 3', $groups[0]->name);
     }
 
     /**
@@ -272,7 +272,7 @@ class UsersTest extends TestCase
 
         $user = $this->getUserQuery($this->activeUser->id);
 
-        $this->assertSame('1', (string)$user['invalidLoginCount']);
+        self::assertSame('1', (string)$user['invalidLoginCount']);
         $this->tester->assertEqualDates($this, $user['invalidLoginWindowStart'], $dateTime->format('Y-m-d H:i:s'));
         $this->tester->assertEqualDates($this, $user['lastInvalidLoginDate'], $dateTime->format('Y-m-d H:i:s'));
     }
@@ -290,7 +290,7 @@ class UsersTest extends TestCase
         $this->users->handleInvalidLogin($this->activeUser);
 
         $user = $this->getUserQuery($this->activeUser->id);
-        $this->assertSame('127.0.0.1', $user['lastLoginAttemptIp']);
+        self::assertSame('127.0.0.1', $user['lastLoginAttemptIp']);
     }
 
     /**
@@ -307,11 +307,11 @@ class UsersTest extends TestCase
         $this->users->handleInvalidLogin($this->activeUser);
 
         $user = $this->getUserQuery($this->activeUser->id);
-        $this->assertSame('127.0.0.1', $user['lastLoginAttemptIp']);
-        $this->assertNull($user['invalidLoginWindowStart']);
-        $this->assertNull($user['invalidLoginCount']);
-        $this->assertNotNull($user['lastInvalidLoginDate']);
-        $this->assertNull($user['lockoutDate']);
+        self::assertSame('127.0.0.1', $user['lastLoginAttemptIp']);
+        self::assertNull($user['invalidLoginWindowStart']);
+        self::assertNull($user['invalidLoginCount']);
+        self::assertNotNull($user['lastInvalidLoginDate']);
+        self::assertNull($user['lockoutDate']);
     }
 
     /**
@@ -330,10 +330,10 @@ class UsersTest extends TestCase
         $user = $this->getUserQuery($this->activeUser->id);
 
         $this->tester->assertEqualDates($this, $dateTime->format('Y-m-d H:i:s'), $user['invalidLoginWindowStart']);
-        $this->assertSame('1', (string)$user['invalidLoginCount']);
-        $this->assertFalse((bool)$user['locked']);
-        $this->assertNull($user['lockoutDate']);
-        $this->assertNull($user['lockoutDate']);
+        self::assertSame('1', (string)$user['invalidLoginCount']);
+        self::assertFalse((bool)$user['locked']);
+        self::assertNull($user['lockoutDate']);
+        self::assertNull($user['lockoutDate']);
     }
 
     /**
@@ -359,17 +359,17 @@ class UsersTest extends TestCase
 
         // This should just increment the invalidLoginCount
         $user = $this->getUserQuery($this->activeUser->id);
-        $this->assertSame('2', (string)$user['invalidLoginCount']);
-        $this->assertFalse((bool)$user['locked']);
+        self::assertSame('2', (string)$user['invalidLoginCount']);
+        self::assertFalse((bool)$user['locked']);
 
         // Wrap this in an event check - because the EVENT_AFTER_LOCK_USER only get's thrown under specific circumstances.
         $this->tester->expectEvent(Users::class, Users::EVENT_AFTER_LOCK_USER, function() use ($dateTime) {
             // The user should now be locked out.
             $this->users->handleInvalidLogin($this->activeUser);
             $user = $this->getUserQuery($this->activeUser->id);
-            $this->assertTrue((bool)$user['locked']);
-            $this->assertNull($user['invalidLoginCount']);
-            $this->assertNull($user['invalidLoginWindowStart']);
+            self::assertTrue((bool)$user['locked']);
+            self::assertNull($user['invalidLoginCount']);
+            self::assertNull($user['invalidLoginWindowStart']);
             $this->tester->assertEqualDates($this, $dateTime->format('Y-m-d H:i:s'), $user['lockoutDate'], 10);
         }, UserEvent::class, $this->tester->createEventItems([
             [
@@ -396,7 +396,7 @@ class UsersTest extends TestCase
         $user = $this->getUserQuery($this->activeUser->id);
 
         $this->tester->assertEqualDates($this, $dateTime->format('Y-m-d H:i:s'), $user['lastLoginDate']);
-        $this->assertNull($user['lastLoginAttemptIp']);
+        self::assertNotNull($user['lastLoginAttemptIp']);
     }
 
     /**
@@ -414,7 +414,7 @@ class UsersTest extends TestCase
 
         $user = $this->getUserQuery($this->activeUser->id);
 
-        $this->assertSame('127.0.0.1', $user['lastLoginAttemptIp']);
+        self::assertSame('127.0.0.1', $user['lastLoginAttemptIp']);
     }
 
     /**
@@ -431,8 +431,8 @@ class UsersTest extends TestCase
 
         // These variables are now overriden to null.
         $user = $this->getUserQuery($this->activeUser->id);
-        $this->assertNull($user['invalidLoginWindowStart']);
-        $this->assertNull($user['invalidLoginCount']);
+        self::assertNull($user['invalidLoginWindowStart']);
+        self::assertNull($user['invalidLoginCount']);
     }
 
     public function testIsVerificationCodeValidForUser()
@@ -444,9 +444,10 @@ class UsersTest extends TestCase
         $this->updateUser([
             // The past.
             'verificationCodeIssuedDate' => '2018-06-06 20:00:00',
+            'verificationCode' => 'irrelevant_code'
         ], ['id' => $this->activeUser->id]);
 
-        $this->assertFalse(
+        self::assertFalse(
             $this->users->isVerificationCodeValidForUser($this->activeUser, 'irrelevant_code')
         );
 
@@ -454,9 +455,10 @@ class UsersTest extends TestCase
         $this->updateUser([
             // The present.
             'verificationCodeIssuedDate' => Db::prepareDateForDb(new DateTime('now')),
+            'verificationCode' => 'irrelevant_code'
         ], ['id' => $this->activeUser->id]);
 
-        $this->assertTrue(
+        self::assertTrue(
             $this->users->isVerificationCodeValidForUser($this->activeUser, 'irrelevant_code')
         );
     }
@@ -473,14 +475,14 @@ class UsersTest extends TestCase
         $this->users->sendActivationEmail($this->pendingUser);
         $this->testUsersEmailFunctions(
             'account_activation',
-            'set-password&code=' . $string
+            'set-password?code=' . $string
         );
 
         $this->pendingUser->password = 'some_password';
         $this->users->sendActivationEmail($this->pendingUser);
         $this->testUsersEmailFunctions(
             'account_activation',
-            'verify-email&code=' . $string
+            'verify-email?code=' . $string
         );
         $this->pendingUser->password = null;
 
@@ -488,14 +490,14 @@ class UsersTest extends TestCase
         $this->users->sendNewEmailVerifyEmail($this->pendingUser);
         $this->testUsersEmailFunctions(
             'verify_new_email',
-            'verify-email&code=' . $string
+            'verify-email?code=' . $string
         );
 
         // Test password reset email
         $this->users->sendPasswordResetEmail($this->pendingUser);
         $this->testUsersEmailFunctions(
             'forgot_password',
-            'set-password&code=' . $string
+            'set-password?code=' . $string
         );
     }
 
@@ -508,8 +510,8 @@ class UsersTest extends TestCase
     {
         /* @var Message $lastEmail */
         $lastEmail = $this->tester->grabLastSentEmail();
-        $this->assertSame($desiredKey, $lastEmail->key);
-        $this->assertStringContainsString(
+        self::assertSame($desiredKey, $lastEmail->key);
+        self::assertStringContainsString(
             $desiredLinkResult,
             urldecode($lastEmail->variables['link'])
         );
@@ -559,7 +561,6 @@ class UsersTest extends TestCase
     }
 
     /**
-     * @todo These tests are 'Dependancy Injected` -ish so i'll swap them out with fixtures later.
      * @inheritdoc
      */
     protected function _before()
@@ -614,5 +615,18 @@ class UsersTest extends TestCase
         $this->tester->saveElement($this->suspendedUser);
         $this->tester->saveElement($this->lockedUser);
         $this->tester->saveElement($this->activeUser);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function _after()
+    {
+        parent::_after();
+
+        $this->tester->deleteElement($this->pendingUser);
+        $this->tester->deleteElement($this->suspendedUser);
+        $this->tester->deleteElement($this->lockedUser);
+        $this->tester->deleteElement($this->activeUser);
     }
 }

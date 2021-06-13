@@ -38,10 +38,9 @@ class SuspendUsers extends ElementAction
         $type = Json::encode(static::class);
         $userId = Json::encode(Craft::$app->getUser()->getIdentity()->id);
 
-        $js = <<<EOD
-(function()
-{
-    var trigger = new Craft.ElementActionTrigger({
+        $js = <<<JS
+(() => {
+    new Craft.ElementActionTrigger({
         type: {$type},
         batch: true,
         validateSelection: function(\$selectedItems)
@@ -58,9 +57,10 @@ class SuspendUsers extends ElementAction
         }
     });
 })();
-EOD;
+JS;
 
         Craft::$app->getView()->registerJs($js);
+        return null;
     }
 
     /**
@@ -68,14 +68,14 @@ EOD;
      */
     public function performAction(ElementQueryInterface $query): bool
     {
-        /** @var ElementQuery $query */
+        /* @var ElementQuery $query */
         // Get the users that aren't already suspended
         $query->status = [
             User::STATUS_ACTIVE,
             User::STATUS_PENDING,
         ];
 
-        /** @var User[] $users */
+        /* @var User[] $users */
         $users = $query->all();
         $usersService = Craft::$app->getUsers();
 

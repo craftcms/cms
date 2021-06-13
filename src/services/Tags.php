@@ -67,6 +67,18 @@ class Tags extends Component
      */
     private $_tagGroups;
 
+    /**
+     * Serializer
+     *
+     * @since 3.5.14
+     */
+    public function __serialize()
+    {
+        $vars = get_object_vars($this);
+        unset($vars['_tagGroups']);
+        return $vars;
+    }
+
     // Tag groups
     // -------------------------------------------------------------------------
 
@@ -180,7 +192,7 @@ class Tags extends Component
         if ($this->hasEventHandlers(self::EVENT_BEFORE_SAVE_GROUP)) {
             $this->trigger(self::EVENT_BEFORE_SAVE_GROUP, new TagGroupEvent([
                 'tagGroup' => $tagGroup,
-                'isNew' => $isNewTagGroup
+                'isNew' => $isNewTagGroup,
             ]));
         }
 
@@ -319,7 +331,7 @@ class Tags extends Component
         // Fire a 'beforeDeleteGroup' event
         if ($this->hasEventHandlers(self::EVENT_BEFORE_DELETE_GROUP)) {
             $this->trigger(self::EVENT_BEFORE_DELETE_GROUP, new TagGroupEvent([
-                'tagGroup' => $tagGroup
+                'tagGroup' => $tagGroup,
             ]));
         }
 
@@ -341,7 +353,7 @@ class Tags extends Component
             return;
         }
 
-        /** @var TagGroup $tagGroup */
+        /* @var TagGroup $tagGroup */
         $tagGroup = $this->getTagGroupById($tagGroupRecord->id);
 
         // Fire a 'beforeApplyGroupDelete' event
@@ -387,7 +399,7 @@ class Tags extends Component
         // Fire an 'afterDeleteGroup' event
         if ($this->hasEventHandlers(self::EVENT_AFTER_DELETE_GROUP)) {
             $this->trigger(self::EVENT_AFTER_DELETE_GROUP, new TagGroupEvent([
-                'tagGroup' => $tagGroup
+                'tagGroup' => $tagGroup,
             ]));
         }
 
@@ -447,7 +459,7 @@ class Tags extends Component
      */
     public function getTagById(int $tagId, int $siteId = null)
     {
-        /** @noinspection PhpIncompatibleReturnTypeInspection */
+        /* @noinspection PhpIncompatibleReturnTypeInspection */
         return Craft::$app->getElements()->getElementById($tagId, Tag::class, $siteId);
     }
 

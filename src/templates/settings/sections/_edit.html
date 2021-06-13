@@ -1,14 +1,32 @@
-{% extends "_layouts/cp" %}
+{% extends 'settings/sections/_layout' %}
+{% set selectedTab = 'settings' %}
 {% set fullPageForm = true %}
+{% set formActions = [
+    {
+        label: 'Save and continue editing'|t('app'),
+        redirect: 'settings/sections/{id}'|hash,
+        shortcut: true,
+        retainScroll: true,
+    },
+] %}
 
 {% import "_includes/forms" as forms %}
 
 {% set headlessMode = craft.app.config.general.headlessMode %}
 
 
+{% block submitButton %}
+    {% if section.id %}
+        {{ parent() }}
+    {% else %}
+        <button type="submit" class="btn submit">{{ 'Save and edit entry types'|t('app') }}</button>
+    {% endif %}
+{% endblock %}
+
+
 {% block content %}
     {{ actionInput('sections/save-section') }}
-    {{ redirectInput('settings/sections') }}
+    {{ redirectInput(section.id ? 'settings/sections' : "settings/sections/{id}/entrytypes") }}
 
     {% if section.id %}{{ hiddenInput('sectionId', section.id) }}{% endif %}
 
@@ -211,7 +229,7 @@
                 },
                 refresh: {
                     type: 'checkbox',
-                    heading: 'Refresh'|t('app'),
+                    heading: 'Auto-refresh'|t('app'),
                     info: 'Whether preview frames should be automatically refreshed when content changes.'|t('app'),
                     thin: true,
                 }
@@ -226,13 +244,13 @@
 {% endblock %}
 
 {% if brandNewSection %}
-    {% js %}
+    {% js on ready %}
         new Craft.HandleGenerator('#name', '#handle');
 
         {% for site in craft.app.sites.getAllSites() %}
             new Craft.UriFormatGenerator('#name', '#sites tr[data-id="{{ site.handle }}"] textarea[name$="[singleUri]"]');
             new Craft.UriFormatGenerator('#name', '#sites tr[data-id="{{ site.handle }}"] textarea[name$="[uriFormat]"]', { suffix: '/{slug}' });
-            new Craft.UriFormatGenerator('#name', '#sites tr[data-id="{{ site.handle }}"] textarea[name$="[template]"]', { suffix: '/_entry' });
+            new Craft.UriFormatGenerator('#name', '#sites tr[data-id="{{ site.handle }}"] input[name$="[template]"]', { suffix: '/_entry' })
         {% endfor %}
     {% endjs %}
 {% endif %}

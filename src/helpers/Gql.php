@@ -11,8 +11,10 @@ use Craft;
 use craft\base\ElementInterface;
 use craft\errors\GqlException;
 use craft\gql\base\Directive;
+use craft\gql\ElementQueryConditionBuilder;
 use craft\gql\GqlEntityRegistry;
 use craft\models\GqlSchema;
+use craft\services\Gql as GqlService;
 use GraphQL\Language\AST\ListValueNode;
 use GraphQL\Language\AST\ValueNode;
 use GraphQL\Language\AST\VariableNode;
@@ -30,26 +32,28 @@ use GraphQL\Type\Definition\UnionType;
 class Gql
 {
     /**
-     * Returns true if the active schema is aware of the provided scope(s).
+     * Returns whether the given component(s) are included in a schema’s scope.
      *
-     * @param string|string[] $scopes The scope(s) to check.
+     * @param string|string[] $components The component(s) to check.
+     * @param GqlSchema|null $schema The GraphQL schema. If none is provided, the active schema will be used.
      * @return bool
      */
-    public static function isSchemaAwareOf($scopes): bool
+    public static function isSchemaAwareOf($components, ?GqlSchema $schema = null): bool
     {
-        if (!is_array($scopes)) {
-            $scopes = [$scopes];
-        }
-
         try {
-            $permissions = (array)Craft::$app->getGql()->getActiveSchema()->scope;
-        } catch (GqlException $exception) {
-            Craft::$app->getErrorHandler()->logException($exception);
+            $schema = static::_schema($schema);
+        } catch (GqlException $e) {
             return false;
         }
 
-        foreach ($scopes as $scope) {
-            if (empty(preg_grep('/^' . preg_quote($scope, '/') . '\:/i', $permissions))) {
+        if (!is_array($components)) {
+            $components = [$components];
+        }
+
+        $scope = (array)$schema->scope;
+
+        foreach ($components as $component) {
+            if (empty(preg_grep('/^' . preg_quote($component, '/') . '\:/i', $scope))) {
                 return false;
             }
         }
@@ -58,77 +62,83 @@ class Gql
     }
 
     /**
-     * Extracts all the allowed entities from the active schema for the action.
+     * Extracts all the allowed entities from a schema for the given action.
      *
-     * @param string $action The action for which the entities should be extracted. Defaults to "read"
+     * @param string $action The action for which the entities should be extracted. Defaults to "read".
+     * @param GqlSchema|null $schema The GraphQL schema. If none is provided, the active schema will be used.
      * @return array
      */
-    public static function extractAllowedEntitiesFromSchema($action = 'read'): array
+    public static function extractAllowedEntitiesFromSchema(string $action = 'read', ?GqlSchema $schema = null): array
     {
         try {
-            return Craft::$app->getGql()->getActiveSchema()->getAllScopePairsForAction($action);
-        } catch (GqlException $exception) {
-            Craft::$app->getErrorHandler()->logException($exception);
+            $schema = static::_schema($schema);
+        } catch (GqlException $e) {
             return [];
         }
+
+        return $schema->getAllScopePairsForAction($action);
     }
 
     /**
-     * Returns true if the active schema can perform the action on the scope.
+     * Returns whether the given component is included in a schema, for the given action.
      *
-     * @param string $scope The scope to check.
-     * @param string $action The action. Defaults to "read"
+     * @param string $component The component to check.
+     * @param string $action The action. Defaults to "read".
+     * @param GqlSchema|null $schema The GraphQL schema. If none is provided, the active schema will be used.
      * @return bool
      * @throws GqlException
      */
-    public static function canSchema($scope, $action = 'read'): bool
+    public static function canSchema(string $component, $action = 'read', ?GqlSchema $schema = null): bool
     {
         try {
-            $permissions = (array)Craft::$app->getGql()->getActiveSchema()->scope;
-            return !empty(preg_grep('/^' . preg_quote($scope, '/') . '\:' . preg_quote($action, '/') . '$/i', $permissions));
-        } catch (GqlException $exception) {
-            Craft::$app->getErrorHandler()->logException($exception);
+            $schema = static::_schema($schema);
+        } catch (GqlException $e) {
             return false;
         }
+
+        return !empty(preg_grep('/^' . preg_quote($component, '/') . '\:' . preg_quote($action, '/') . '$/i', (array)$schema->scope));
     }
 
     /**
      * Return a list of all the actions the current schema is allowed for a given entity.
      *
      * @param string $entity
+     * @param GqlSchema|null $schema The GraphQL schema. If none is provided, the active schema will be used.
      * @return array
      */
-    public static function extractEntityAllowedActions(string $entity): array
+    public static function extractEntityAllowedActions(string $entity, ?GqlSchema $schema = null): array
     {
         try {
-            $permissions = (array)Craft::$app->getGql()->getActiveSchema()->scope;
-            $actions = [];
-
-            foreach (preg_grep('/^' . preg_quote($entity, '/') . '\:.*$/i', $permissions) as $scope) {
-                $parts = explode(':', $scope);
-                $actions[end($parts)] = true;
-            }
-
-            return array_keys($actions);
-        } catch (GqlException $exception) {
-            Craft::$app->getErrorHandler()->logException($exception);
+            $schema = static::_schema($schema);
+        } catch (GqlException $e) {
             return [];
         }
+
+        $scope = (array)$schema->scope;
+        $actions = [];
+
+        foreach (preg_grep('/^' . preg_quote($entity, '/') . '\:.*$/i', $scope) as $component) {
+            $parts = explode(':', $component);
+            $actions[end($parts)] = true;
+        }
+
+        return array_keys($actions);
     }
 
     /**
      * Return true if active schema can mutate entries.
      *
+     * @param GqlSchema|null $schema The GraphQL schema. If none is provided, the active schema will be used.
      * @return bool
      * @since 3.5.0
      */
-    public static function canMutateEntries(): bool
+    public static function canMutateEntries(?GqlSchema $schema = null): bool
     {
-        $allowedEntities = self::extractAllowedEntitiesFromSchema('edit');
+        $allowedEntities = self::extractAllowedEntitiesFromSchema('edit', $schema);
 
         // Singles don't have the `edit` action.
         if (!isset($allowedEntities['entrytypes'])) {
-            $allowedEntities = self::extractAllowedEntitiesFromSchema('save');
+            $allowedEntities = self::extractAllowedEntitiesFromSchema('save', $schema);
         }
 
         return isset($allowedEntities['entrytypes']);
@@ -137,114 +147,129 @@ class Gql
     /**
      * Return true if active schema can mutate tags.
      *
+     * @param GqlSchema|null $schema The GraphQL schema. If none is provided, the active schema will be used.
      * @return bool
      * @since 3.5.0
      */
-    public static function canMutateTags(): bool
+    public static function canMutateTags(?GqlSchema $schema = null): bool
     {
-        $allowedEntities = self::extractAllowedEntitiesFromSchema('edit');
+        $allowedEntities = self::extractAllowedEntitiesFromSchema('edit', $schema);
         return isset($allowedEntities['taggroups']);
     }
 
     /**
      * Return true if active schema can mutate global sets.
      *
+     * @param GqlSchema|null $schema The GraphQL schema. If none is provided, the active schema will be used.
      * @return bool
      * @since 3.5.0
      */
-    public static function canMutateGlobalSets(): bool
+    public static function canMutateGlobalSets(?GqlSchema $schema = null): bool
     {
-        $allowedEntities = self::extractAllowedEntitiesFromSchema('edit');
+        $allowedEntities = self::extractAllowedEntitiesFromSchema('edit', $schema);
         return isset($allowedEntities['globalsets']);
     }
 
     /**
      * Return true if active schema can mutate categories.
      *
+     * @param GqlSchema|null $schema The GraphQL schema. If none is provided, the active schema will be used.
      * @return bool
      * @since 3.5.0
      */
-    public static function canMutateCategories(): bool
+    public static function canMutateCategories(?GqlSchema $schema = null): bool
     {
-        $allowedEntities = self::extractAllowedEntitiesFromSchema('edit');
+        $allowedEntities = self::extractAllowedEntitiesFromSchema('edit', $schema);
         return isset($allowedEntities['categorygroups']);
     }
 
     /**
      * Return true if active schema can mutate assets.
      *
+     * @param GqlSchema|null $schema The GraphQL schema. If none is provided, the active schema will be used.
      * @return bool
      * @since 3.5.0
      */
-    public static function canMutateAssets(): bool
+    public static function canMutateAssets(?GqlSchema $schema = null): bool
     {
-        $allowedEntities = self::extractAllowedEntitiesFromSchema('edit');
+        $allowedEntities = self::extractAllowedEntitiesFromSchema('edit', $schema);
         return isset($allowedEntities['volumes']);
     }
 
     /**
      * Return true if active schema can query entries.
      *
+     * @param GqlSchema|null $schema The GraphQL schema. If none is provided, the active schema will be used.
      * @return bool
      */
-    public static function canQueryEntries(): bool
+    public static function canQueryEntries(?GqlSchema $schema = null): bool
     {
-        $allowedEntities = self::extractAllowedEntitiesFromSchema();
+        $allowedEntities = self::extractAllowedEntitiesFromSchema('read', $schema);
         return isset($allowedEntities['sections'], $allowedEntities['entrytypes']);
     }
 
     /**
      * Return true if active schema can query assets.
      *
+     * @param GqlSchema|null $schema The GraphQL schema. If none is provided, the active schema will be used.
      * @return bool
      */
-    public static function canQueryAssets(): bool
+    public static function canQueryAssets(?GqlSchema $schema = null): bool
     {
-        return isset(self::extractAllowedEntitiesFromSchema()['volumes']);
+        $allowedEntities = self::extractAllowedEntitiesFromSchema('read', $schema);
+        return isset($allowedEntities['volumes']);
     }
 
     /**
      * Return true if active schema can query categories.
      *
+     * @param GqlSchema|null $schema The GraphQL schema. If none is provided, the active schema will be used.
      * @return bool
      */
-    public static function canQueryCategories(): bool
+    public static function canQueryCategories(?GqlSchema $schema = null): bool
     {
-        return isset(self::extractAllowedEntitiesFromSchema()['categorygroups']);
+        $allowedEntities = self::extractAllowedEntitiesFromSchema('read', $schema);
+        return isset($allowedEntities['categorygroups']);
     }
 
     /**
      * Return true if active schema can query tags.
      *
+     * @param GqlSchema|null $schema The GraphQL schema. If none is provided, the active schema will be used.
      * @return bool
      */
-    public static function canQueryTags(): bool
+    public static function canQueryTags(?GqlSchema $schema = null): bool
     {
-        return isset(self::extractAllowedEntitiesFromSchema()['taggroups']);
+        $allowedEntities = self::extractAllowedEntitiesFromSchema('read', $schema);
+        return isset($allowedEntities['taggroups']);
     }
 
     /**
      * Return true if active schema can query global sets.
      *
+     * @param GqlSchema|null $schema The GraphQL schema. If none is provided, the active schema will be used.
      * @return bool
      */
-    public static function canQueryGlobalSets(): bool
+    public static function canQueryGlobalSets(?GqlSchema $schema = null): bool
     {
-        return isset(self::extractAllowedEntitiesFromSchema()['globalsets']);
+        $allowedEntities = self::extractAllowedEntitiesFromSchema('read', $schema);
+        return isset($allowedEntities['globalsets']);
     }
 
     /**
      * Return true if active schema can query users.
      *
+     * @param GqlSchema|null $schema The GraphQL schema. If none is provided, the active schema will be used.
      * @return bool
      */
-    public static function canQueryUsers(): bool
+    public static function canQueryUsers(?GqlSchema $schema = null): bool
     {
-        return isset(self::extractAllowedEntitiesFromSchema()['usergroups']);
+        $allowedEntities = self::extractAllowedEntitiesFromSchema('read', $schema);
+        return isset($allowedEntities['usergroups']);
     }
 
     /**
-     * Get (and create if needed) a union type by name, included types and a resolver funcion.
+     * Get (and create if needed) a union type by name, included types and a resolver function.
      *
      * @param string $typeName The union type name.
      * @param array $includedTypes The type the union should include
@@ -291,13 +316,13 @@ class Gql
      */
     public static function createFullAccessSchema(): GqlSchema
     {
-        $permissionGroups = Craft::$app->getGql()->getAllSchemaComponents();
+        $groups = Craft::$app->getGql()->getAllSchemaComponents();
         $schema = new GqlSchema(['name' => 'Full Schema', 'uid' => '*']);
 
-        // Fetch all nested permissions
-        $traverser = function($permissions) use ($schema, &$traverser) {
-            foreach ($permissions as $permission => $config) {
-                $schema->scope[] = $permission;
+        // Fetch all nested components
+        $traverser = function($group) use ($schema, &$traverser) {
+            foreach ($group as $component => $config) {
+                $schema->scope[] = $component;
 
                 if (isset($config['nested'])) {
                     $traverser($config['nested']);
@@ -305,12 +330,12 @@ class Gql
             }
         };
 
-        foreach ($permissionGroups['queries'] as $permissionGroup) {
-            $traverser($permissionGroup);
+        foreach ($groups['queries'] as $group) {
+            $traverser($group);
         }
 
-        foreach ($permissionGroups['mutations'] as $permissionGroup) {
-            $traverser($permissionGroup);
+        foreach ($groups['mutations'] as $group) {
+            $traverser($group);
         }
 
         return $schema;
@@ -328,7 +353,7 @@ class Gql
     {
         if (isset($resolveInfo->fieldNodes[0]->directives)) {
             foreach ($resolveInfo->fieldNodes[0]->directives as $directive) {
-                /** @var Directive $directiveEntity */
+                /* @var Directive $directiveEntity */
                 $directiveEntity = GqlEntityRegistry::getEntity($directive->name->value);
                 $arguments = [];
 
@@ -372,6 +397,45 @@ class Gql
     }
 
     /**
+     * Return true if active schema can query for drafts.
+     *
+     * @param GqlSchema|null $schema The GraphQL schema. If none is provided, the active schema will be used.
+     * @return bool
+     * @since 3.6.8
+     */
+    public static function canQueryDrafts(?GqlSchema $schema = null): bool
+    {
+        $allowedEntities = self::extractAllowedEntitiesFromSchema('read', $schema);
+        return isset($allowedEntities['elements']) && is_array($allowedEntities['elements']) && in_array('drafts', $allowedEntities['elements'], true);
+    }
+
+    /**
+     * Return true if active schema can query for revisions.
+     *
+     * @param GqlSchema|null $schema The GraphQL schema. If none is provided, the active schema will be used.
+     * @return bool
+     * @since 3.6.8
+     */
+    public static function canQueryRevisions(?GqlSchema $schema = null): bool
+    {
+        $allowedEntities = self::extractAllowedEntitiesFromSchema('read', $schema);
+        return isset($allowedEntities['elements']) && is_array($allowedEntities['elements']) && in_array('revisions', $allowedEntities['elements'], true);
+    }
+
+    /**
+     * Return true if active schema can query for inactive elements.
+     *
+     * @param GqlSchema|null $schema The GraphQL schema. If none is provided, the active schema will be used.
+     * @return bool
+     * @since 3.6.8
+     */
+    public static function canQueryInactiveElements(?GqlSchema $schema = null): bool
+    {
+        $allowedEntities = self::extractAllowedEntitiesFromSchema('read', $schema);
+        return isset($allowedEntities['elements']) && is_array($allowedEntities['elements']) && in_array('inactive', $allowedEntities['elements'], true);
+    }
+
+    /**
      * @param ValueNode|VariableNode $value
      * @param array $variableValues
      * @return array|array[]|mixed
@@ -396,17 +460,116 @@ class Gql
      *
      * @param ResolveInfo $resolveInfo
      * @param $source
+     * @param $context
      * @return string
      */
-    public static function getFieldNameWithAlias(ResolveInfo $resolveInfo, $source): string
+    public static function getFieldNameWithAlias(ResolveInfo $resolveInfo, $source, $context): string
     {
         $fieldName = is_array($resolveInfo->path) ? array_slice($resolveInfo->path, -1)[0] : $resolveInfo->fieldName;
         $isAlias = $fieldName !== $resolveInfo->fieldName;
 
-        if ($isAlias && !($source instanceof ElementInterface && $source->getEagerLoadedElements($fieldName))) {
-            $fieldName = $resolveInfo->fieldName;
+        /* @var ElementQueryConditionBuilder $conditionBuilder */
+        $conditionBuilder = $context['conditionBuilder'] ?? null;
+
+        if ($isAlias) {
+            $cannotBeAliased = $conditionBuilder && !$conditionBuilder->canNodeBeAliased($fieldName);
+            $aliasNotEagerLoaded = !$source instanceof ElementInterface || $source->getEagerLoadedElements($fieldName) === null;
+
+            if ($cannotBeAliased || $aliasNotEagerLoaded) {
+                $fieldName = $resolveInfo->fieldName;
+            }
         }
 
         return $fieldName;
+    }
+
+    /**
+     * Shorthand for returning the complexity function for an eager-loaded field.
+     *
+     * @return callable
+     * @since 3.6.0
+     */
+    public static function eagerLoadComplexity(): callable
+    {
+        return static function($childComplexity) {
+            return $childComplexity + GqlService::GRAPHQL_COMPLEXITY_EAGER_LOAD;
+        };
+    }
+
+    /**
+     * Shorthand for returning the complexity function for a field that will add a single query to execution.
+     *
+     * @return callable
+     * @since 3.6.0
+     */
+    public static function singleQueryComplexity(): callable
+    {
+        return static function($childComplexity) {
+            return $childComplexity + GqlService::GRAPHQL_COMPLEXITY_QUERY;
+        };
+    }
+
+    /**
+     * Shorthand for returning the complexity function for a field that will add a single query to execution.
+     *
+     * @param int $baseComplexity The base complexity to use. Defaults to a single query.
+     *
+     * @return callable
+     * @since 3.6.7
+     */
+    public static function relatedArgumentComplexity(int $baseComplexity = GqlService::GRAPHQL_COMPLEXITY_QUERY): callable
+    {
+        return static function($childComplexity, $args) use ($baseComplexity) {
+            $complexityScore = $childComplexity + $baseComplexity;
+            $relatedArguments = ['relatedToAssets', 'relatedToEntries', 'relatedToUsers', 'relatedToCategories', 'relatedToTags'];
+
+            foreach ($relatedArguments as $argumentName) {
+                if (!empty($args[$argumentName])) {
+                    $complexityScore += GqlService::GRAPHQL_COMPLEXITY_QUERY * count((array)$args[$argumentName]);
+                }
+            }
+
+            if (!empty($args['relatedTo'])) {
+                $complexityScore += GqlService::GRAPHQL_COMPLEXITY_QUERY;
+            }
+            if (!empty($args['relatedToAll'])) {
+                $complexityScore += GqlService::GRAPHQL_COMPLEXITY_QUERY;
+            }
+
+            return $complexityScore;
+        };
+    }
+
+    /**
+     * Shorthand for returning the complexity function for a field that will generate a single query for every iteration.
+     *
+     * @return callable
+     * @since 3.6.0
+     */
+    public static function nPlus1Complexity(): callable
+    {
+        return static function($childComplexity) {
+            return $childComplexity + GqlService::GRAPHQL_COMPLEXITY_NPLUS1;
+        };
+    }
+
+    /**
+     * @param GqlSchema|null $schema
+     * @return GqlSchema
+     * @throws GqlException
+     */
+    private static function _schema(?GqlSchema $schema): GqlSchema
+    {
+        if ($schema !== null) {
+            return $schema;
+        }
+
+        try {
+            return Craft::$app->getGql()->getActiveSchema();
+        } catch (GqlException $e) {
+            Craft::warning("Could not get the active GraphQL schema: {$e->getMessage()}", __METHOD__);
+            Craft::$app->getErrorHandler()->logException($e);
+            throw $e;
+        }
     }
 }

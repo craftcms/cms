@@ -114,7 +114,13 @@ class Images extends Component
      */
     public function getSupportedImageFormats(): array
     {
-        return $this->supportedImageFormats;
+        $supportedFormats = $this->supportedImageFormats;
+
+        if ($this->getSupportsWebP()) {
+            $supportedFormats[] = 'webp';
+        }
+
+        return $supportedFormats;
     }
 
     /**
@@ -135,9 +141,9 @@ class Images extends Component
 
         // Taken from Imagick\Imagine() constructor.
         // Imagick::getVersion() is static only since Imagick PECL extension 3.2.0b1, so instantiate it.
-        /** @noinspection PhpStaticAsDynamicMethodCallInspection */
+        /* @noinspection PhpStaticAsDynamicMethodCallInspection */
         $versionString = \Imagick::getVersion()['versionString'];
-        list($this->_imagickVersion) = sscanf($versionString, 'ImageMagick %s %04d-%02d-%02d %s %s');
+        [$this->_imagickVersion] = sscanf($versionString, 'ImageMagick %s %04d-%02d-%02d %s %s');
 
         return $this->_imagickVersion;
     }
@@ -173,7 +179,7 @@ class Images extends Component
      */
     public function getSupportsWebP(): bool
     {
-        return $this->getCanUseImagick() ? !empty(Imagick::queryFormats('WEBP')) : function_exists('imagewebp');
+        return $this->getIsImagick() ? !empty(Imagick::queryFormats('WEBP')) : function_exists('imagewebp');
     }
 
     /**
@@ -238,6 +244,13 @@ class Images extends Component
 
         // Find out how much memory this image is going to need.
         $imageInfo = getimagesize($filePath);
+
+        // If we can't find out the imagesize, chances are, we won't be able to anything about it.
+        if (!is_array($imageInfo)) {
+            Craft::warning('Could not determine image information for ' . $filePath);
+
+            return false;
+        }
 
         $K64 = 65536;
         $tweakFactor = 1.7;
@@ -349,7 +362,7 @@ class Images extends Component
             return false;
         }
 
-        /** @var Raster $image */
+        /* @var Raster $image */
         $image = $this->loadImage($filePath);
         $image->rotate($degrees);
 

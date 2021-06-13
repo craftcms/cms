@@ -14,7 +14,6 @@ use craft\elements\Category;
 use craft\elements\db\ElementQuery;
 use craft\elements\Entry;
 use craft\helpers\Console;
-use craft\helpers\ProjectConfig as ProjectConfigHelper;
 use craft\models\Section;
 use craft\records\StructureElement;
 use craft\services\ProjectConfig;
@@ -118,15 +117,16 @@ class RepairController extends Controller
             ->leftJoin('{{%structureelements}} structureelements', [
                 'and',
                 '[[structureelements.elementId]] = [[elements.id]]',
-                ['structureelements.structureId' => $structureId]
+                ['structureelements.structureId' => $structureId],
             ])
             ->orderBy([
-                new Expression('CASE WHEN ([[structureelements.lft]] IS NOT NULL) THEN 0 ELSE [[elements.dateCreated]] END ASC'),
+                new Expression('CASE WHEN [[structureelements.lft]] IS NOT NULL THEN 0 ELSE 1 END ASC'),
                 'structureelements.lft' => SORT_ASC,
+                'elements.dateCreated' => SORT_ASC,
             ])
             ->all();
 
-        /** @var string|ElementInterface $elementType */
+        /* @var string|ElementInterface $elementType */
         $elementType = $query->elementType;
         $displayName = $elementType::pluralLowerDisplayName();
 
@@ -153,7 +153,7 @@ class RepairController extends Controller
             }
 
             foreach ($elements as $element) {
-                /** @var ElementInterface $element */
+                /* @var ElementInterface $element */
                 if (!$element->level) {
                     $issue = 'was missing from structure';
                     if (!$this->dryRun) {
@@ -257,10 +257,21 @@ class RepairController extends Controller
     private function _repairProjectConfigItem(ProjectConfig $projectConfigService, string $path, $value)
     {
         if (is_array($value)) {
+            // Is this a packed array?
             if (isset($value[ProjectConfig::CONFIG_ASSOC_KEY])) {
-                $this->stdout("- double-packed array found at $path" . PHP_EOL);
-                $value = ProjectConfigHelper::unpackAssociativeArray($value, false);
-                $projectConfigService->set($path, $value);
+                $double = false;
+                while (
+                    isset($value[ProjectConfig::CONFIG_ASSOC_KEY][0][0]) &&
+                    $value[ProjectConfig::CONFIG_ASSOC_KEY][0][0] === ProjectConfig::CONFIG_ASSOC_KEY
+                ) {
+                    $value[ProjectConfig::CONFIG_ASSOC_KEY] = $value[ProjectConfig::CONFIG_ASSOC_KEY][0][1] ?? [];
+                    $double = true;
+                }
+
+                if ($double) {
+                    $this->stdout("- double-packed array found at $path" . PHP_EOL);
+                    $projectConfigService->set($path, $value);
+                }
             }
 
             foreach ($value as $k => $v) {

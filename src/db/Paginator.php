@@ -9,6 +9,7 @@ namespace craft\db;
 
 use craft\helpers\ArrayHelper;
 use yii\base\BaseObject;
+use yii\base\InvalidConfigException;
 use yii\db\Connection as YiiConnection;
 use yii\db\Query as YiiQuery;
 use yii\db\QueryInterface;
@@ -103,7 +104,7 @@ class Paginator extends BaseObject
 
     /**
      * @inheritdoc
-     * @throws \yii\base\InvalidConfigException
+     * @throws InvalidConfigException
      */
     public function init()
     {

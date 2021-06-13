@@ -135,6 +135,7 @@ abstract class BaseField extends FieldLayoutElement
         ]) : '';
 
         if ($label !== null) {
+            $label = Html::encode($label);
             $innerHtml .= Html::tag('div',
                 Html::tag('h4', $label, [
                     'title' => $label,
@@ -205,14 +206,16 @@ abstract class BaseField extends FieldLayoutElement
         }
 
         $statusClass = $this->statusClass($element, $static);
+        $label = $this->showLabel() ? $this->label() : null;
 
         return Cp::fieldHtml($inputHtml, [
+            'fieldset' => $this->useFieldset(),
             'id' => $this->id(),
             'fieldAttributes' => $this->containerAttributes($element, $static),
             'inputContainerAttributes' => $this->inputContainerAttributes($element, $static),
             'labelAttributes' => $this->labelAttributes($element, $static),
             'status' => $statusClass ? [$statusClass, $this->statusLabel($element, $static) ?? ucfirst($statusClass)] : null,
-            'label' => $this->showLabel() ? $this->label() : null,
+            'label' => $label !== null ? Html::encode($label) : null,
             'attribute' => $this->attribute(),
             'required' => !$static && $this->required,
             'instructions' => Html::encode($this->instructions ? Craft::t('site', $this->instructions) : $this->defaultInstructions($element, $static)),
@@ -237,6 +240,17 @@ abstract class BaseField extends FieldLayoutElement
             $this->defaultLabel(),
             $this->attribute(),
         ]);
+    }
+
+    /**
+     * Returns whether the element’s form HTML should use a `<fieldset>` + `<legend>` instead of a `<div>` + `<label>`.
+     *
+     * @return bool
+     * @since 3.6.0
+     */
+    protected function useFieldset(): bool
+    {
+        return false;
     }
 
     /**
@@ -387,7 +401,13 @@ abstract class BaseField extends FieldLayoutElement
      */
     protected function orientation(ElementInterface $element = null, bool $static = false): string
     {
-        return Craft::$app->getLocale()->getOrientation();
+        if (!$element || !$this->translatable($element, $static)) {
+            return Craft::$app->getLocale()->getOrientation();
+        }
+
+        $site = $element->getSite();
+        $locale = Craft::$app->getI18n()->getLocaleById($site->language);
+        return $locale->getOrientation();
     }
 
     /**

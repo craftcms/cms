@@ -43,7 +43,7 @@ trait MissingComponentTrait
      */
     public function createFallback(string $type): ComponentInterface
     {
-        /** @var Arrayable $this */
+        /* @var Arrayable $this */
         $config = $this->toArray();
         unset($config['expectedType'], $config['errorMessage'], $config['settings']);
         $config['type'] = $type;
@@ -96,7 +96,7 @@ trait MissingComponentTrait
                     $showPlugin = true;
                     $isInstalled = false;
                     $name = 'Google Cloud Storage';
-                    $handle = 'aws-s3';
+                    $handle = 'google-cloud';
                     $iconUrl = 'https://s3-us-west-2.amazonaws.com/plugin-icons.craftcms/google-cloud.svg';
                     $error = "Support for {$name} volumes has been moved to a plugin.";
                     break;

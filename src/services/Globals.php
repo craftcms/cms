@@ -59,6 +59,18 @@ class Globals extends Component
     private $_editableGlobalSets;
 
     /**
+     * Serializer
+     *
+     * @since 3.5.14
+     */
+    public function __serialize()
+    {
+        $vars = get_object_vars($this);
+        unset($vars['_allGlobalSets']);
+        return $vars;
+    }
+
+    /**
      * Returns all of the global set IDs.
      *
      * ---
@@ -112,7 +124,7 @@ class Globals extends Component
      */
     public function getAllSets(): array
     {
-        /** @noinspection PhpUnhandledExceptionInspection */
+        /* @noinspection PhpUnhandledExceptionInspection */
         return $this->_allSets(Craft::$app->getSites()->getCurrentSite()->id)->all();
     }
 
@@ -132,7 +144,7 @@ class Globals extends Component
      */
     public function getEditableSets(): array
     {
-        /** @noinspection PhpUnhandledExceptionInspection */
+        /* @noinspection PhpUnhandledExceptionInspection */
         $currentSiteId = Craft::$app->getSites()->getCurrentSite()->id;
 
         if (!isset($this->_editableGlobalSets[$currentSiteId])) {
@@ -202,7 +214,7 @@ class Globals extends Component
      */
     public function getSetById(int $globalSetId, int $siteId = null)
     {
-        /** @noinspection PhpUnhandledExceptionInspection */
+        /* @noinspection PhpUnhandledExceptionInspection */
         $currentSiteId = Craft::$app->getSites()->getCurrentSite()->id;
 
         if ($siteId === null) {
@@ -237,7 +249,7 @@ class Globals extends Component
      */
     public function getSetByHandle(string $globalSetHandle, int $siteId = null)
     {
-        /** @noinspection PhpUnhandledExceptionInspection */
+        /* @noinspection PhpUnhandledExceptionInspection */
         $currentSiteId = Craft::$app->getSites()->getCurrentSite()->id;
 
         if ($siteId === null) {
@@ -282,7 +294,7 @@ class Globals extends Component
         }
 
         if ($isNewSet) {
-            $globalSet->uid = StringHelper::UUID();
+            $globalSet->uid = $globalSet->uid ?: StringHelper::UUID();
         } else if (!$globalSet->uid) {
             $globalSet->uid = Db::uidById(Table::GLOBALSETS, $globalSet->id);
         }
@@ -386,7 +398,7 @@ class Globals extends Component
         if ($this->hasEventHandlers(self::EVENT_AFTER_SAVE_GLOBAL_SET)) {
             $this->trigger(self::EVENT_AFTER_SAVE_GLOBAL_SET, new GlobalSetEvent([
                 'globalSet' => $this->getSetById($globalSetRecord->id),
-                'isNew' => $isNewSet
+                'isNew' => $isNewSet,
             ]));
         }
 
@@ -413,8 +425,19 @@ class Globals extends Component
             return false;
         }
 
-        Craft::$app->getProjectConfig()->remove(self::CONFIG_GLOBALSETS_KEY . '.' . $globalSet->uid, "Delete the “{$globalSet->handle}” global set");
+        $this->deleteSet($globalSet);
         return true;
+    }
+
+    /**
+     * Deletes a global set by its ID.
+     *
+     * @param GlobalSet $globalSet
+     * @since 3.6.0
+     */
+    public function deleteSet(GlobalSet $globalSet): void
+    {
+        Craft::$app->getProjectConfig()->remove(self::CONFIG_GLOBALSETS_KEY . '.' . $globalSet->uid, "Delete the “{$globalSet->handle}” global set");
     }
 
     /**
@@ -495,6 +518,16 @@ class Globals extends Component
 
         // Allow events again
         $projectConfig->muteEvents = false;
+    }
+
+    /**
+     * Resets the memoized globals.
+     *
+     * @since 3.6.0
+     */
+    public function reset(): void
+    {
+        $this->_allGlobalSets = $this->_editableGlobalSets = null;
     }
 
     /**

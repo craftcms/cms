@@ -1,5 +1,5 @@
 @charset "UTF-8";
-@import "../../../../../node_modules/craftcms-sass/mixins";
+@import "../../../../../packages/craftcms-sass/mixins";
 
 #routes {
   margin: 0 1px 25px;
@@ -41,7 +41,7 @@
 
     &:after {
       display: block;
-      content: '.';
+      content: '';
       text-indent: -100%;
       overflow: hidden;
       position: absolute;

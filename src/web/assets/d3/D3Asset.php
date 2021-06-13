@@ -10,6 +10,7 @@ namespace craft\web\assets\d3;
 use Craft;
 use craft\helpers\ChartHelper;
 use craft\helpers\Json;
+use craft\i18n\Locale;
 use craft\web\AssetBundle;
 use craft\web\View;
 
@@ -51,10 +52,35 @@ class D3Asset extends AssetBundle
         parent::registerAssetFiles($view);
 
         // Add locale definition JS variables
-        $libPath = Craft::getAlias('@lib');
-        $js = 'window.d3FormatLocaleDefinition = ' . $this->formatDef($libPath . '/d3-format') . ';';
-        $js .= 'window.d3TimeFormatLocaleDefinition = ' . $this->formatDef($libPath . '/d3-time-format') . ';';
-        $js .= 'window.d3Formats = ' . Json::encode(ChartHelper::formats()) . ';';
+        $locale = Craft::$app->getFormattingLocale();
+        $formatter = Craft::$app->getFormatter();
+
+        // https://github.com/d3/d3-format#formatLocale
+        $localeDef = [
+            'decimal' => $locale->getNumberSymbol(Locale::SYMBOL_DECIMAL_SEPARATOR),
+            'thousands' => $locale->getNumberSymbol(Locale::SYMBOL_GROUPING_SEPARATOR),
+            'grouping' => [3],
+            'currency' => $locale->getCurrencySymbol('USD'),
+            'numerals' => [
+                $formatter->asDecimal(0, 0),
+                $formatter->asDecimal(1, 0),
+                $formatter->asDecimal(2, 0),
+                $formatter->asDecimal(3, 0),
+                $formatter->asDecimal(4, 0),
+                $formatter->asDecimal(5, 0),
+                $formatter->asDecimal(6, 0),
+                $formatter->asDecimal(7, 0),
+                $formatter->asDecimal(8, 0),
+                $formatter->asDecimal(9, 0),
+            ],
+            'percent' => $locale->getNumberSymbol(Locale::SYMBOL_PERCENT),
+            'minus' => $locale->getNumberSymbol(Locale::SYMBOL_MINUS_SIGN),
+            'nan' => $locale->getNumberSymbol(Locale::SYMBOL_NAN),
+        ];
+
+        $js = 'window.d3FormatLocaleDefinition = ' . Json::encode($localeDef) . ";\n" .
+            'window.d3TimeFormatLocaleDefinition = ' . $this->formatDef(Craft::getAlias('@lib/d3-time-format')) . ";\n" .
+            'window.d3Formats = ' . Json::encode(ChartHelper::formats()) . ';';
 
         $view->registerJs($js, View::POS_BEGIN);
     }
@@ -67,12 +93,14 @@ class D3Asset extends AssetBundle
      */
     public function formatDef(string $dir): string
     {
-        // Do we have locale data for that exact language?
-        if (($def = $this->_def($dir, Craft::$app->language)) !== null) {
+        $locale = Craft::$app->getFormattingLocale();
+
+        // Do we have locale data for that exact formatting locale?
+        if (($def = $this->_def($dir, $locale->id)) !== null) {
             return $def;
         }
 
-        $language = Craft::$app->getLocale()->getLanguageID();
+        $language = $locale->getLanguageID();
 
         // Do we have a default for this language ID?
         if (

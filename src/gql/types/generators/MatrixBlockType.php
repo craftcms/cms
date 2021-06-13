@@ -8,9 +8,9 @@
 namespace craft\gql\types\generators;
 
 use Craft;
-use craft\base\Field;
 use craft\elements\MatrixBlock as MatrixBlockElement;
 use craft\fields\Matrix;
+use craft\gql\base\Generator;
 use craft\gql\base\GeneratorInterface;
 use craft\gql\base\ObjectType;
 use craft\gql\base\SingleGeneratorInterface;
@@ -26,7 +26,7 @@ use craft\models\MatrixBlockType as MatrixBlockTypeModel;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.3.0
  */
-class MatrixBlockType implements GeneratorInterface, SingleGeneratorInterface
+class MatrixBlockType extends Generator implements GeneratorInterface, SingleGeneratorInterface
 {
     /**
      * @inheritdoc
@@ -35,7 +35,7 @@ class MatrixBlockType implements GeneratorInterface, SingleGeneratorInterface
     {
         // If we need matrix block types for a specific Matrix field, fetch those.
         if ($context) {
-            /** @var Matrix $context */
+            /* @var Matrix $context */
             $matrixBlockTypes = $context->getBlockTypes();
         } else {
             $matrixBlockTypes = Craft::$app->getMatrix()->getAllBlockTypes();
@@ -51,24 +51,16 @@ class MatrixBlockType implements GeneratorInterface, SingleGeneratorInterface
         return $gqlTypes;
     }
 
-
     /**
      * @inheritdoc
      */
     public static function generateType($context): ObjectType
     {
-        /** @var MatrixBlockTypeModel $matrixBlockType */
+        /* @var MatrixBlockTypeModel $matrixBlockType */
         $typeName = MatrixBlockElement::gqlTypeNameByContext($context);
 
         if (!($entity = GqlEntityRegistry::getEntity($typeName))) {
-            $contentFields = $context->getFields();
-            $contentFieldGqlTypes = [];
-
-            /** @var Field $contentField */
-            foreach ($contentFields as $contentField) {
-                $contentFieldGqlTypes[$contentField->handle] = $contentField->getContentGqlType();
-            }
-
+            $contentFieldGqlTypes = self::getContentFields($context);
             $blockTypeFields = TypeManager::prepareFieldDefinitions(array_merge(MatrixBlockInterface::getFieldDefinitions(), $contentFieldGqlTypes), $typeName);
 
             // Generate a type for each block type
@@ -79,7 +71,7 @@ class MatrixBlockType implements GeneratorInterface, SingleGeneratorInterface
                     'name' => $typeName,
                     'fields' => function() use ($blockTypeFields) {
                         return $blockTypeFields;
-                    }
+                    },
                 ]);
 
                 // It's possible that creating the matrix block triggered creating all matrix block types, so check again.

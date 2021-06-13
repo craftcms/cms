@@ -21,6 +21,12 @@ use voku\helper\ASCII;
 class Stringy extends \Stringy\Stringy
 {
     /**
+     * @var array
+     * @see charsArray()
+     */
+    private static $_charsArray;
+
+    /**
      * Public wrapper for [[langSpecificCharsArray()]].
      *
      * @param string $language Language of the source string
@@ -54,10 +60,22 @@ class Stringy extends \Stringy\Stringy
      */
     protected function charsArray(): array
     {
-        static $charsArray;
-        return $charsArray ?? $charsArray = array_merge(
-                ASCII::charsArrayWithMultiLanguageValues(),
+        if (self::$_charsArray === null) {
+            self::$_charsArray = [];
+
+            foreach (ASCII::charsArrayWithMultiLanguageValues() as $ascii => $chars) {
+                // trim off trailing `'`s
+                $ascii = rtrim($ascii, '\'');
+                self::$_charsArray[$ascii] = $chars;
+            }
+
+            // merge in any custom mappings
+            self::$_charsArray = array_merge(
+                self::$_charsArray,
                 Craft::$app->getConfig()->getGeneral()->customAsciiCharMappings
             );
+        }
+
+        return self::$_charsArray;
     }
 }

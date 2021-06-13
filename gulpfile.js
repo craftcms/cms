@@ -27,6 +27,7 @@ const atAssetPath = `${cpAssetsPath}/admintable`;
 
 const cpSassGlob = [
     `${cpAssetsPath}/**/src/**/*.scss`,
+    `!${cpAssetsPath}/cp/src/craftui/**/*.scss`,
     `!${graphiqlAssetPath}/**/*.scss`,
     `!${psAssetPath}/**/*.scss`,
     `!${atAssetPath}/**/*.scss`,
@@ -35,8 +36,9 @@ const cpSassGlob = [
 const cpGlobalJsGlob = [
     `${cpGlobalAssetPath}/src/js/Craft.js`,
     `${cpGlobalAssetPath}/src/js/Base*.js`,
+    `${cpGlobalAssetPath}/src/js/Tabs.js`,
     `${cpGlobalAssetPath}/src/js/*.js`,
-    `!(${cpGlobalAssetPath}/src/js/Craft.js|${cpGlobalAssetPath}/src/js/Base*.js)`,
+    `!(${cpGlobalAssetPath}/src/js/Craft.js|${cpGlobalAssetPath}/src/js/Base*.js|${cpGlobalAssetPath}/src/js/Tabs.js)`,
     `!${graphiqlAssetPath}/**/*.js`,
     `!${psAssetPath}/**/*.js`,
     `!${atAssetPath}/**/*.js`
@@ -86,7 +88,6 @@ const jquiGlob = [
 ];
 
 const d3LocaleData = [
-    {srcGlob: 'node_modules/d3-format/locale/*.json', dest: `${libPath}/d3-format`},
     {srcGlob: 'node_modules/d3-time-format/locale/*.json', dest: `${libPath}/d3-time-format`},
 ];
 
@@ -249,3 +250,5 @@ gulp.task('deps', ['jqui', 'graphiql', 'vue', 'static-deps'], function() {
 
     return es.merge(streams);
 });
+
+gulp.task('default', ['cp', 'deps']);

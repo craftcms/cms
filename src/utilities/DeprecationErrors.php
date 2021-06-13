@@ -61,7 +61,7 @@ class DeprecationErrors extends Utility
         $view->registerAssetBundle(DeprecationErrorsAsset::class);
 
         return $view->renderTemplate('_components/utilities/DeprecationErrors', [
-            'logs' => Craft::$app->getDeprecator()->getLogs()
+            'logs' => Craft::$app->getDeprecator()->getLogs(),
         ]);
     }
 }

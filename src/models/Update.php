@@ -50,9 +50,39 @@ class Update extends Model
     public $releases = [];
 
     /**
+     * @var string|null The PHP version constraint required by this version
+     * @since 3.5.15
+     */
+    public $phpConstraint;
+
+    /**
      * @var string The package name that should be used when updating
      */
     public $packageName;
+
+    /**
+     * @var bool Whether the package is abandoned
+     * @since 3.6.7
+     */
+    public $abandoned = false;
+
+    /**
+     * @var string|null The name of the suggested replacement package
+     * @since 3.6.7
+     */
+    public $replacementName;
+
+    /**
+     * @var string|null The handle of the suggested replacement package
+     * @since 3.6.7
+     */
+    public $replacementHandle;
+
+    /**
+     * @var string|null The URL of the suggested replacement package
+     * @since 3.6.7
+     */
+    public $replacementUrl;
 
     /**
      * @inheritdoc

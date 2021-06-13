@@ -1,5 +1,10 @@
 @charset "UTF-8";
-@import "../../../../../../node_modules/craftcms-sass/mixins";
+@import "../../../../../../packages/craftcms-sass/mixins";
+
+:root {
+  --padding: 24px;
+  --neg-padding: -24px;
+}
 
 $sidebarWidth: 226px;
 $detailsWidth: 350px;
@@ -8,10 +13,37 @@ $minHorizontalUiWidth: $minFullUiWidth - $sidebarWidth;
 
 html {
   -webkit-text-size-adjust: 100%;
+  min-height: 100vh;
+}
+
+body {
+  min-height: 100vh;
+
+  :focus {
+    outline-style: solid;
+    outline-color: transparent;
+  }
+
+  &:not(.reduce-focus-visibility) :focus,
+  &.reduce-focus-visibility :focus-visible {
+    box-shadow: $darkFocusRing;
+  }
 }
 
 #global-container {
   position: relative;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  @include left(0);
+
+  body.ltr & {
+    transition: left 250ms ease-out;
+  }
+
+  body.rtl & {
+    transition: right 250ms ease-out;
+  }
 }
 
 /* global sidebar */
@@ -31,6 +63,18 @@ $sidebarLinkSecondaryColor: $grey200;
   @include light-on-dark-text;
   background-color: $grey800;
 
+  body:not(.reduce-focus-visibility) & {
+    :focus {
+      box-shadow: $lightFocusRing;
+    }
+  }
+
+  body.reduce-focus-visibility & {
+    :focus-visible {
+      box-shadow: $lightFocusRing;
+    }
+  }
+
   a {
     color: $sidebarLinkStaticColor;
     transition: color linear 100ms;
@@ -39,7 +83,6 @@ $sidebarLinkSecondaryColor: $grey200;
 
   & > a,
   *:not(.has-subnav) > a {
-    outline: none;
     transition: background-color linear 100ms;
 
     &[href] {
@@ -135,7 +178,7 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
 
     &:after {
       display: block;
-      content: '.';
+      content: '';
       font-size: 0;
       position: absolute;
       top: 0;
@@ -151,11 +194,14 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
 }
 
 #job-icon {
+  align-items: flex-start;
+
   & > span.icon {
     display: block;
     position: relative;
     width: 16px;
     height: 16px;
+    margin-top: 2px !important;
 
     & > canvas {
       display: block;
@@ -170,37 +216,24 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
     }
   }
 
-  .progressbar {
-    position: static;
-    margin: 8px 2px;
-    width: auto;
-    border-color: $grey200;
-    transition: color linear 100ms;
-  }
-
-  .progressbar-inner {
-    background-color: $grey200;
-    transition: color linear 100ms;
-  }
-
   &[href]:hover {
-    .progressbar {
-      border-color: $white;
-    }
-
-    .progressbar-inner {
-      background-color: $white;
-    }
-
     .icon > span.icon > canvas#job-icon-hover {
       opacity: 1;
     }
+  }
+
+  .progress-label {
+    display: block;
+    color: $grey300;
+    font-size: 11px;
+    line-height: 1.5;
   }
 }
 
 #nav {
   flex: 1;
   margin: 27px 0 0;
+  padding-bottom: 24px;
   overflow: visible;
 
   li {
@@ -278,38 +311,31 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
   }
 }
 
-#app-info {
+#global-footer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
   padding: 14px 14px 24px;
-  color: $grey1000;
-  text-align: center;
 }
 
-#edition {
-  font-size: 14px;
+#app-info {
+  margin-top: 7px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  color: $grey600;
+  text-align: center;
 
-  &.hot:hover {
-    cursor: pointer;
+  li {
+    margin: 0 7px;
 
-    #edition-logo {
-      border-color: $grey300;
+    a {
+      color: $grey600;
+      text-decoration: underline;
 
-      & > .edition-name {
-        color: $grey300;
-        @include light-on-dark-text;
-      }
-
-      & > .edition-trial {
-        background-color: $grey300;
-
-        &:before {
-          body.ltr & {
-            border-color: transparent $grey300 transparent transparent;
-          }
-
-          body.rtl & {
-            border-color: transparent transparent transparent $grey300;
-          }
-        }
+      &.go:hover:after {
+        color: $grey600;
       }
     }
   }
@@ -317,23 +343,23 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
 
 #edition-logo {
   user-select: none;
-  border: 1px solid $grey1000;
+  border: 1px solid $grey600;
   border-radius: 3px;
   display: inline-flex;
-  height: 24px;
+  height: 20px;
   box-sizing: content-box;
-  transition: border-color linear 100ms;
+  font-size: 11px;
 
   & > .edition-name,
   & > .edition-trial {
-    padding: 8px 8px 7px;
+    padding: 6px 7px 5px;
     line-height: 8px;
-    font-weight: 500;
   }
 
   & > .edition-name {
-    letter-spacing: 2.2px;
-    padding-right: 5.8px;
+    font-weight: 600;
+    letter-spacing: 1.7px;
+    padding-right: 5px;
     text-transform: uppercase;
     transition: color linear 100ms;
   }
@@ -343,8 +369,8 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
     position: relative;
     @include margin-left(5px);
     @include padding-left(5px);
-    background-color: $grey1000;
-    color: $grey800;
+    background-color: $grey600;
+    color: $grey200;
     border-radius: 0 1px 1px 0;
     letter-spacing: 1px;
     @include padding-right(7px);
@@ -355,7 +381,7 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
       display: block;
       position: absolute;
       top: 0;
-      content: '.';
+      content: '';
       font-size: 0;
       width: 0;
       height: 0;
@@ -364,22 +390,17 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
 
       body.ltr & {
         left: -10px;
-        border-width: 0 10px 23px 0;
-        border-color: transparent $grey1000 transparent transparent;
+        border-width: 0 10px 20px 0;
+        border-color: transparent $grey600 transparent transparent;
       }
 
       body.rtl & {
         right: -10px;
-        border-width: 0 0 23px 10px;
-        border-color: transparent transparent transparent $grey1000;
+        border-width: 0 0 20px 10px;
+        border-color: transparent transparent transparent $grey600;
       }
     }
   }
-}
-
-#version {
-  margin-top: 4px;
-  font-size: 12px;
 }
 
 #devmode {
@@ -392,42 +413,39 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
 
 #page-container {
   @include padding-left($sidebarWidth);
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
 }
 
 #alerts {
-  background-color: $errorColor;
-  padding: 9px 0;
+  background-color: $red050;
+  border-left: 5px solid $errorColor;
+  padding: 11px 0;
   text-align: center;
-  color: $white;
+  color: $errorColor;
 
   li {
     padding: 4px 24px;
 
-    &:before {
-      @include icon;
-      @include margin(-1px, 3px, 0, 0);
-      content: 'alert';
-      font-size: 16px;
-    }
-
     a {
-      color: $white;
+      color: $errorColor;
       text-decoration: underline;
 
       &.go {
         text-decoration: none;
         white-space: nowrap;
-        border: 1px solid transparentize($white, 0.5);
+        border: 1px solid transparentize($errorColor, 0.5);
         border-radius: $mediumBorderRadius;
         padding: 3px 5px;
         margin: 0 2px;
 
         &:after {
-          color: $white;
+          color: $errorColor;
         }
 
         &:hover {
-          border-color: $white;
+          border-color: $errorColor;
           transition: border-color linear 100ms;
         }
       }
@@ -449,7 +467,7 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
 #crumbs {
   display: flex;
   flex-direction: row;
-  align-items: stretch;
+  align-items: center;
   font-size: 13px;
 
   &.empty {
@@ -493,23 +511,6 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
 
 #nav-toggle {
   display: none;
-  width: 36px;
-  height: 26px;
-  line-height: 26px;
-  color: $grey300;
-  text-align: center;
-  @include margin-left(-10px);
-
-  &:before {
-    @include icon;
-    content: 'menu';
-    font-size: 16px;
-    line-height: 0;
-  }
-
-  &:hover {
-    color: $grey400;
-  }
 }
 
 #user-info {
@@ -517,6 +518,7 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
   flex-direction: row;
   align-items: center;
   @include padding(0, 11px, 0, 14px);
+  @include margin-right(14px);
   height: 100%;
   background-color: transparent;
   border-radius: 0;
@@ -555,15 +557,22 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
 
 #main-container {
   position: relative;
+  flex-grow: 1;
 }
 
 #notifications {
   position: fixed;
-  width: calc(100% - #{$sidebarWidth});
+  top: 0;
+  width: 100%;
   z-index: 101;
   display: flex;
   justify-content: center;
   align-items: flex-start;
+  pointer-events: none;
+
+  @media only screen and (min-width: $minFullUiWidth) {
+    width: calc(100% - #{$sidebarWidth});
+  }
 
   .notification {
     padding: 5px 10px;
@@ -573,10 +582,7 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
     pointer-events: auto;
     @include light-on-dark-text;
     @include shadow;
-
-    &.notice {
-      background-color: $noticeColor;
-    }
+    background-color: $noticeColor;
 
     &.error {
       background-color: $primaryColor;
@@ -654,7 +660,7 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
   }
 
   h1 {
-    line-height: 32px;
+    line-height: 34px;
     margin-top: 0;
     margin-bottom: 0;
     min-width: 0;
@@ -702,7 +708,6 @@ $toolbarIconColor: darken($inputColor, 10%);
 
   .text {
     border-radius: $largeBorderRadius;
-    box-shadow: none;
 
     &::-webkit-input-placeholder {
       color: $toolbarIconColor;
@@ -819,80 +824,6 @@ $toolbarIconColor: darken($inputColor, 10%);
   }
 }
 
-#tabs {
-  margin: -10px -12px 0;
-  padding: 10px 12px 0;
-  overflow: hidden;
-  display: flex;
-  align-items: center;
-
-  ul {
-    display: flex;
-    flex-direction: row;
-    max-width: calc(100% - 40px);
-
-    li {
-      max-width: 100%;
-
-      & + li {
-        @include margin-left(-12px);
-      }
-
-      a {
-        display: block;
-        position: relative;
-        border-radius: $mediumBorderRadius $mediumBorderRadius 0 0;
-        padding: 12px 24px;
-        max-width: 100%;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        box-sizing: border-box;
-        line-height: 1.2;
-
-        &:hover {
-          text-decoration: none;
-        }
-
-        &:not(.sel) {
-          color: $mediumDarkTextColor;
-
-          &:hover {
-            color: $textColor;
-            background-image: linear-gradient(to bottom, $grey050, transparentize($grey050, 0.5));
-          }
-        }
-
-        &.sel {
-          @include pane;
-          z-index: 1;
-          color: $textColor;
-          cursor: default;
-          background-clip: padding-box;
-        }
-      }
-    }
-  }
-
-  #overflow-tab-btn {
-    margin-left: 10px;
-    width: 30px;
-    height: 17px;
-    padding: 0;
-    line-height: 16px;
-    border-radius: $smallBorderRadius;
-    color: $mediumDarkTextColor;
-
-    &:before {
-      margin: 0;
-    }
-
-    &:after {
-      display: none;
-    }
-  }
-}
-
 .content-pane {
   @include pane;
   border-radius: $largeBorderRadius;
@@ -900,15 +831,6 @@ $toolbarIconColor: darken($inputColor, 10%);
   background-clip: padding-box;
   padding: 24px;
   word-wrap: break-word;
-
-  &.square {
-    body.ltr & {
-      border-top-left-radius: 0;
-    }
-    body.rtl & {
-      border-top-right-radius: 0;
-    }
-  }
 
   & > hr {
     margin-left: -24px;
@@ -918,7 +840,7 @@ $toolbarIconColor: darken($inputColor, 10%);
 
 #footer {
   z-index: 1;
-  margin: 24px -24px -24px;
+  margin: 25px -24px -24px; // 1px extra on top is intentional
   padding: 10px 24px;
   background-color: $grey050;
   border-radius: 0 0 $largeBorderRadius $largeBorderRadius;
@@ -947,18 +869,10 @@ $toolbarIconColor: darken($inputColor, 10%);
   @include padding-left(14px);
   width: $detailsWidth + 38;
 
-  #main-content.has-tabs & {
-    padding-top: 40px;
-  }
-
   &.fixed {
     position: fixed;
     overflow-y: auto;
     padding-top: 14px;
-
-    #main-content.has-tabs & {
-      padding-top: 54px;
-    }
   }
 
   .meta {
@@ -966,21 +880,25 @@ $toolbarIconColor: darken($inputColor, 10%);
     border-radius: $largeBorderRadius;
     padding: 0 24px;
 
-    &:not(.read-only):not(.warning) {
+    &:not(.warning) {
       @include pane;
+    }
+
+    &:not(.read-only):not(.warning) {
       background-color: $grey050;
     }
 
     &.read-only {
-      padding-top: 14px;
-      padding-bottom: 14px;
-      background-color: $grey200;
+      padding-top: 8px;
+      padding-bottom: 8px;
+      color: $lightTextColor;
+      background-color: transparent;
     }
 
     &.warning {
       border: 2px solid $yellow300;
       padding: 19px 22px;
-      background: $grey050;
+      background: $white;
       color: $textColor !important;
 
       p {
@@ -1006,12 +924,18 @@ $toolbarIconColor: darken($inputColor, 10%);
       margin: 0 -24px !important;
 
       &:first-child {
-        border-top-left-radius: $largeBorderRadius;
+        &,
+        & > .status-badge {
+          border-top-left-radius: $largeBorderRadius;
+        }
         border-top-right-radius: $largeBorderRadius;
       }
 
       &:last-child {
-        border-bottom-left-radius: $largeBorderRadius;
+        &,
+        & > .status-badge {
+          border-bottom-left-radius: $largeBorderRadius;
+        }
         border-bottom-right-radius: $largeBorderRadius;
       }
 
@@ -1021,11 +945,8 @@ $toolbarIconColor: darken($inputColor, 10%);
       }
     }
 
-    & > .field {
-      .status-badge {
-        @include left(4px);
-        top: calc(50% - 8px);
-      }
+    & > .field  > .status-badge {
+      @include left(-2px);
     }
 
     .text::placeholder,
@@ -1048,8 +969,20 @@ $toolbarIconColor: darken($inputColor, 10%);
     background-image: url(../images/spinner_details.gif);
   }
 
+  @include placeholder-styles($grey500);
+
   .text {
     background-color: transparent;
+    resize: none;
+  }
+
+  & > .text {
+    border-radius: $largeBorderRadius;
+    margin-bottom: 14px;
+
+    &:not(:focus) {
+      border-color: transparentize($inputColor, 0.6);
+    }
   }
 }
 
@@ -1058,14 +991,6 @@ $toolbarIconColor: darken($inputColor, 10%);
   #global-container {
     @include left(-$sidebarWidth);
     width: calc(100vw + #{$sidebarWidth});
-
-    body.ltr & {
-      transition: left 250ms ease-in-out;
-    }
-
-    body.rtl & {
-      transition: right 250ms ease-in-out;
-    }
 
     body.ltr.showing-nav & {
       left: 0;
@@ -1085,7 +1010,26 @@ $toolbarIconColor: darken($inputColor, 10%);
   }
 
   #nav-toggle {
-    display: block;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 50px;
+    line-height: 26px;
+    color: $grey300;
+    text-align: center;
+    @include margin-left(-10px);
+
+    &:before {
+      @include icon;
+      content: 'menu';
+      font-size: 16px;
+      line-height: 0;
+    }
+
+    &:hover {
+      color: $grey400;
+    }
   }
 
   #main-content {
@@ -1215,6 +1159,7 @@ $toolbarIconColor: darken($inputColor, 10%);
 /* grids */
 .grid {
   position: relative;
+  min-height: 1px; // Required for Grid.js to run
 
   &:after {
     @include clearafter;
@@ -1223,103 +1168,6 @@ $toolbarIconColor: darken($inputColor, 10%);
   & > .item {
     display: none;
     box-sizing: border-box;
-  }
-}
-
-.lp-editor-container,
-.lp-preview-container {
-  position: fixed;
-  top: 0;
-  height: 100%;
-  background-color: $white;
-  z-index: 100;
-
-  header {
-    padding: 8px 24px;
-    background-color: $grey100;
-    box-shadow: 0 1px 0 transparentize($grey700, 0.8);
-    box-sizing: border-box;
-
-    @supports (backdrop-filter: blur(10px)) {
-      & {
-        position: absolute;
-        z-index: 2;
-        top: 0;
-        left: 0;
-        width: 100%;
-        background-color: transparentize($grey100, 0.25);
-        backdrop-filter: blur(10px);
-
-        & + .lp-editor {
-          padding-top: #{10 + 34 + 10 + 24}px;
-        }
-      }
-    }
-
-    .btn, .spinner, .checkmark-icon {
-      margin-bottom: 0;
-    }
-  }
-}
-
-.lp-editor-container {
-  display: flex;
-  flex-direction: column;
-  box-shadow: 1px 0 0 transparentize($grey700, 0.8);
-
-  .lp-editor {
-    flex: 1;
-    padding: 24px;
-    overflow: auto;
-    box-sizing: border-box;
-
-    & > .field:last-child {
-      margin-bottom: 24px !important;
-    }
-  }
-
-  .lp-draghandle {
-    position: absolute;
-    z-index: 6;
-    top: 0;
-    @include right(-2px);
-    width: 4px;
-    height: 100%;
-    cursor: col-resize;
-  }
-}
-
-.lp-preview-container {
-  display: flex;
-  flex-direction: column;
-
-  &.dragging:after {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    content: '';
-    font-size: 0;
-  }
-
-  .lp-preview-header {
-    justify-content: center;
-
-    & + .lp-iframe-container {
-      padding-top: 50px;
-    }
-  }
-
-  .lp-iframe-container {
-    flex: 1;
-    overflow: auto;
-
-    .lp-preview {
-      display: block;
-      width: 100%;
-      min-height: 100%;
-    }
   }
 }
 
@@ -1342,7 +1190,7 @@ $toolbarIconColor: darken($inputColor, 10%);
       padding: 0 5px;
       margin: 0 -5px;
       text-transform: uppercase;
-      color: $lightTextColor;
+      color: $mediumTextColor;
       font-size: 11px;
       font-weight: bold;
     }
@@ -1354,7 +1202,7 @@ $toolbarIconColor: darken($inputColor, 10%);
     }
 
     & > .toggle {
-      @include left(5px + 14px * $level);
+      @include left(14px * $level);
     }
   }
 
@@ -1405,7 +1253,6 @@ $toolbarIconColor: darken($inputColor, 10%);
         box-sizing: border-box;
         color: $textColor;
         user-select: none;
-        outline: none;
         border-radius: $largeBorderRadius;
 
         .status {
@@ -1463,12 +1310,10 @@ $toolbarIconColor: darken($inputColor, 10%);
         position: absolute;
         height: 34px;
         top: 0;
-        padding: 0 4px;
-
-        &:before {
-          position: relative;
-          top: 14px;
-        }
+        width: 24px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
       }
 
       ul {
@@ -1479,21 +1324,6 @@ $toolbarIconColor: darken($inputColor, 10%);
         display: block;
       }
     }
-  }
-}
-
-#job-icon {
-  align-items: flex-start;
-
-  .icon {
-    margin-top: 2px !important;
-  }
-
-  .progress-label {
-    display: block;
-    color: $grey300;
-    font-size: 11px;
-    line-height: 1.5;
   }
 }
 

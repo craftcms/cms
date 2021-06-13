@@ -11,7 +11,7 @@ use Craft;
 use craft\fields\PlainText;
 use craft\records\Field;
 use craft\services\Fields;
-use craft\test\Fixture;
+use craft\test\ActiveFixture;
 use yii\base\InvalidArgumentException;
 
 /**
@@ -21,7 +21,7 @@ use yii\base\InvalidArgumentException;
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
  * @since 3.2.0
  */
-class FieldFixture extends Fixture
+class FieldFixture extends ActiveFixture
 {
     /**
      * @inheritdoc

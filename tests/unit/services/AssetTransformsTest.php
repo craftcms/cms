@@ -5,7 +5,7 @@
  * @license https://craftcms.github.io/license/
  */
 
-namespace craftunit\services;
+namespace crafttests\unit\services;
 
 use Codeception\Test\Unit;
 use Craft;
@@ -22,17 +22,18 @@ class AssetTransformsTest extends Unit
     /**
      * Makes sure that extending transform correctly updates it.
      *
+     * @dataProvider extendTransformDataProvider
+     *
      * @param AssetTransform $transform
      * @param array $parameters
      * @param array $resultCheck
-     * @dataProvider extendTransformDataProvider
      */
-    public function testExtendingTransform($transform, $parameters, $resultCheck)
+    public function testExtendTransform(AssetTransform $transform, array $parameters, array $resultCheck)
     {
         $extendedTransform = Craft::$app->getAssetTransforms()->extendTransform($transform, $parameters);
 
         foreach ($resultCheck as $property => $value) {
-            $this->assertSame($value, $extendedTransform->{$property});
+            self::assertSame($value, $extendedTransform->{$property});
         }
     }
 
@@ -40,7 +41,7 @@ class AssetTransformsTest extends Unit
     {
         $transform = new AssetTransform(['width' => 200, 'height' => 200]);
         $extendedTransform = Craft::$app->getAssetTransforms()->extendTransform($transform, ['height' => 300]);
-        $this->assertNotSame($extendedTransform, $transform);
+        self::assertNotSame($extendedTransform, $transform);
     }
 
     public function extendTransformDataProvider()
@@ -53,7 +54,7 @@ class AssetTransformsTest extends Unit
             ],
             [
                 new AssetTransform(['width' => 200, 'height' => 200]),
-                null,
+                [],
                 ['width' => 200, 'height' => 200],
             ],
             [

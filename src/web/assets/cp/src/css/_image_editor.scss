@@ -1,5 +1,5 @@
 @charset "UTF-8";
-@import "../../../../../../node_modules/craftcms-sass/mixins";
+@import "../../../../../../packages/craftcms-sass/mixins";
 
 /* No Scroll */
 html.noscroll, html.noscroll body {
@@ -44,7 +44,7 @@ html.noscroll, html.noscroll body {
   margin-top: -4px;
   margin-left: -3px;
   display: inline-block;
-  content: ' ';
+  content: '';
 }
 
 .modal.imageeditor .icon.rotate-left::before {
@@ -218,10 +218,6 @@ html.noscroll, html.noscroll body {
       margin: 0 4px;
       cursor: pointer;
 
-      &:focus {
-        outline: none;
-      }
-
       &[value="landscape"] {
         width: 30px;
         height: 20px;
@@ -281,7 +277,7 @@ html.noscroll, html.noscroll body {
         position: relative;
 
         &:after {
-          content: "";
+          content: '';
           display: block;
           position: absolute;
           right: -24px;
@@ -479,4 +475,3 @@ html.noscroll, html.noscroll body {
     }
   }
 }
-

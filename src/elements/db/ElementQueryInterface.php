@@ -107,11 +107,11 @@ interface ElementQueryInterface extends QueryInterface, ArrayAccess, Arrayable, 
      *     ->one();
      * ```
      *
-     * @param bool $value The property value (defaults to true)
+     * @param bool|null $value The property value (defaults to true)
      * @return static self reference
      * @since 3.2.0
      */
-    public function drafts(bool $value = true);
+    public function drafts(?bool $value = true);
 
     /**
      * Narrows the query results based on the {elements}’ draft’s ID (from the `drafts` table).
@@ -153,6 +153,8 @@ interface ElementQueryInterface extends QueryInterface, ArrayAccess, Arrayable, 
      * | - | -
      * | `1` | for the {element} with an ID of 1.
      * | a [[{element-class}]] object | for the {element} represented by the object.
+     * | `'*'` | for any {element}
+     * | `false` | that aren’t associated with a published {element}
      *
      * ---
      *
@@ -170,7 +172,7 @@ interface ElementQueryInterface extends QueryInterface, ArrayAccess, Arrayable, 
      *     ->all();
      * ```
      *
-     * @param int|ElementInterface|null $value The property value
+     * @param int|ElementInterface|string|false|null $value The property value
      * @return static self reference
      * @since 3.2.0
      */
@@ -207,6 +209,60 @@ interface ElementQueryInterface extends QueryInterface, ArrayAccess, Arrayable, 
      * @since 3.2.0
      */
     public function draftCreator($value);
+
+    /**
+     * Narrows the query results to only provisional drafts.
+     *
+     * ---
+     *
+     * ```twig
+     * {# Fetch provisional drafts created by the current user #}
+     * {% set {elements-var} = {twig-method}
+     *     .provisionalDrafts()
+     *     .draftCreator(currentUser)
+     *     .all() %}
+     * ```
+     *
+     * ```php
+     * // Fetch provisional drafts created by the current user
+     * ${elements-var} = {php-method}
+     *     ->provisionalDrafts()
+     *     ->draftCreator(Craft::$app->user->identity)
+     *     ->all();
+     * ```
+     *
+     * @param bool|null $value The property value
+     * @return static self reference
+     * @since 3.7.0
+     */
+    public function provisionalDrafts(?bool $value = true);
+
+    /**
+     * Narrows the query results to only unpublished drafts which have been saved after initial creation.
+     *
+     * ---
+     *
+     * ```twig
+     * {# Fetch saved, unpublished draft {elements} #}
+     * {% set {elements-var} = {twig-function}
+     *     .draftOf(false)
+     *     .savedDraftsOnly()
+     *     .all() %}
+     * ```
+     *
+     * ```php
+     * // Fetch saved, unpublished draft {elements}
+     * ${elements-var} = {element-class}::find()
+     *     ->draftOf(false)
+     *     ->savedDraftsOnly()
+     *     ->all();
+     * ```
+     *
+     * @param bool $value The property value (defaults to true)
+     * @return static self reference
+     * @since 3.6.6
+     */
+    public function savedDraftsOnly(bool $value = true);
 
     /**
      * Narrows the query results to only revision {elements}.
@@ -392,6 +448,40 @@ interface ElementQueryInterface extends QueryInterface, ArrayAccess, Arrayable, 
      * @return static self reference
      */
     public function uid($value);
+
+    /**
+     * Narrows the query results based on the {elements}’ IDs in the `elements_sites` table.
+     *
+     * Possible values include:
+     *
+     * | Value | Fetches {elements}…
+     * | - | -
+     * | `1` | with an `elements_sites` ID of 1.
+     * | `'not 1'` | not with an `elements_sites` ID of 1.
+     * | `[1, 2]` | with an `elements_sites` ID of 1 or 2.
+     * | `['not', 1, 2]` | not with an `elements_sites` ID of 1 or 2.
+     *
+     * ---
+     *
+     * ```twig
+     * {# Fetch the {element} by its ID in the elements_sites table #}
+     * {% set {element-var} = {twig-method}
+     *     .siteSettingsId(1)
+     *     .one() %}
+     * ```
+     *
+     * ```php
+     * // Fetch the {element} by its ID in the elements_sites table
+     * ${element-var} = {php-method}
+     *     ->siteSettingsId(1)
+     *     ->one();
+     * ```
+     *
+     * @param int|int[]|null $value The property value
+     * @return static self reference
+     * @since 3.7.0
+     */
+    public function siteSettingsId($value);
 
     /**
      * Causes the query results to be returned in the order specified by [[id()]].
@@ -755,6 +845,35 @@ interface ElementQueryInterface extends QueryInterface, ArrayAccess, Arrayable, 
      * @return static self reference
      */
     public function relatedTo($value);
+
+    /**
+     * Narrows the query results to only {elements} that are related to certain other elements.
+     *
+     * See [Relations](https://craftcms.com/docs/3.x/relations.html) for a full explanation of how to work with this parameter.
+     *
+     * ---
+     *
+     * ```twig
+     * {# Fetch all {elements} that are related to myCategoryA and myCategoryB #}
+     * {% set {elements-var} = {twig-method}
+     *     .relatedTo(myCategoryA)
+     *     .andRelatedTo(myCategoryBy)
+     *     .all() %}
+     * ```
+     *
+     * ```php
+     * // Fetch all {elements} that are related to $myCategoryA and $myCategoryB
+     * ${elements-var} = {php-method}
+     *     ->relatedTo($myCategoryA)
+     *     ->andRelatedTo($myCategoryB)
+     *     ->all();
+     * ```
+     *
+     * @param int|array|ElementInterface|null $value The property value
+     * @return static self reference
+     * @since 3.6.11
+     */
+    public function andRelatedTo($value);
 
     /**
      * Narrows the query results based on the {elements}’ titles.
@@ -1400,4 +1519,22 @@ interface ElementQueryInterface extends QueryInterface, ArrayAccess, Arrayable, 
      * @return int[] The resulting element IDs. An empty array is returned if no elements are found.
      */
     public function ids($db = null): array;
+
+    /**
+     * Converts a found row into an element instance.
+     *
+     * @param array $row
+     * @return ElementInterface
+     * @since 3.6.0
+     */
+    public function createElement(array $row): ElementInterface;
+
+    /**
+     * Performs any post-population processing on elements.
+     *
+     * @param ElementInterface[]|array[] $elements the populated elements
+     * @return ElementInterface[]|array[]
+     * @since 3.6.0
+     */
+    public function afterPopulate(array $elements): array;
 }

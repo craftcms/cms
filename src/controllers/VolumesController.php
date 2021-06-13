@@ -9,8 +9,10 @@ namespace craft\controllers;
 
 use Craft;
 use craft\base\VolumeInterface;
+use craft\db\Table;
 use craft\elements\Asset;
 use craft\helpers\ArrayHelper;
+use craft\helpers\Db;
 use craft\helpers\Json;
 use craft\helpers\UrlHelper;
 use craft\volumes\Local;
@@ -34,12 +36,12 @@ class VolumesController extends Controller
     /**
      * @inheritdoc
      */
-    public function init()
+    public function beforeAction($action)
     {
-        parent::init();
-
         // All asset volume actions require an admin
         $this->requireAdmin();
+
+        return parent::beforeAction($action);
     }
 
     /**
@@ -89,7 +91,7 @@ class VolumesController extends Controller
             }
         }
 
-        /** @var string[]|VolumeInterface[] $allVolumeTypes */
+        /* @var string[]|VolumeInterface[] $allVolumeTypes */
         $allVolumeTypes = $volumes->getAllVolumeTypes();
 
         // Make sure the selected volume class is in there
@@ -106,7 +108,7 @@ class VolumesController extends Controller
 
                 $volumeTypeOptions[] = [
                     'value' => $class,
-                    'label' => $class::displayName()
+                    'label' => $class::displayName(),
                 ];
             }
         }
@@ -125,15 +127,15 @@ class VolumesController extends Controller
         $crumbs = [
             [
                 'label' => Craft::t('app', 'Settings'),
-                'url' => UrlHelper::url('settings')
+                'url' => UrlHelper::url('settings'),
             ],
             [
                 'label' => Craft::t('app', 'Assets'),
-                'url' => UrlHelper::url('settings/assets')
+                'url' => UrlHelper::url('settings/assets'),
             ],
             [
                 'label' => Craft::t('app', 'Volumes'),
-                'url' => UrlHelper::url('settings/assets')
+                'url' => UrlHelper::url('settings/assets'),
             ],
         ];
 
@@ -147,6 +149,8 @@ class VolumesController extends Controller
             'volumeInstances' => $volumeInstances,
             'title' => $title,
             'crumbs' => $crumbs,
+            'typeName' => Asset::displayName(),
+            'lowerTypeName' => Asset::lowerDisplayName(),
         ]);
     }
 
@@ -165,25 +169,27 @@ class VolumesController extends Controller
         $volumeId = $this->request->getBodyParam('volumeId') ?: null;
 
         if ($volumeId) {
-            $savedVolume = $volumesService->getVolumeById($volumeId);
-            if (!$savedVolume) {
+            $volumeUid = Db::uidById(Table::VOLUMES, $volumeId);
+            if (!$volumeUid) {
                 throw new BadRequestHttpException("Invalid volume ID: $volumeId");
             }
+        } else {
+            $volumeUid = null;
         }
 
-        $volumeData = [
+        $volume = $volumesService->createVolume([
             'id' => $volumeId,
-            'uid' => $savedVolume->uid ?? null,
+            'uid' => $volumeUid,
             'sortOrder' => $savedVolume->sortOrder ?? null,
             'type' => $type,
             'name' => $this->request->getBodyParam('name'),
             'handle' => $this->request->getBodyParam('handle'),
             'hasUrls' => (bool)$this->request->getBodyParam('hasUrls'),
             'url' => $this->request->getBodyParam('url'),
-            'settings' => $this->request->getBodyParam('types.' . $type)
-        ];
-
-        $volume = $volumesService->createVolume($volumeData);
+            'titleTranslationMethod' => $this->request->getBodyParam('titleTranslationMethod'),
+            'titleTranslationKeyFormat' => $this->request->getBodyParam('titleTranslationKeyFormat'),
+            'settings' => $this->request->getBodyParam('types.' . $type),
+        ]);
 
         // Set the field layout
         $fieldLayout = Craft::$app->getFields()->assembleLayoutFromPost();
@@ -195,7 +201,7 @@ class VolumesController extends Controller
 
             // Send the volume back to the template
             Craft::$app->getUrlManager()->setRouteParams([
-                'volume' => $volume
+                'volume' => $volume,
             ]);
 
             return null;

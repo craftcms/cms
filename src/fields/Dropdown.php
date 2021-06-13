@@ -11,6 +11,7 @@ use Craft;
 use craft\base\ElementInterface;
 use craft\base\SortableFieldInterface;
 use craft\fields\data\SingleOptionFieldData;
+use craft\helpers\Html;
 
 /**
  * Dropdown represents a Dropdown field.
@@ -46,7 +47,15 @@ class Dropdown extends BaseOptionsField implements SortableFieldInterface
      */
     protected function inputHtml($value, ElementInterface $element = null): string
     {
+        /* @var SingleOptionFieldData $value */
+        if (!$value->valid) {
+            Craft::$app->getView()->setInitialDeltaValue($this->handle, null);
+        }
+
+        $id = Html::id($this->handle);
         return Craft::$app->getView()->renderTemplate('_includes/forms/select', [
+            'id' => $id,
+            'instructionsId' => "$id-instructions",
             'name' => $this->handle,
             'value' => $value,
             'options' => $this->translatedOptions(),

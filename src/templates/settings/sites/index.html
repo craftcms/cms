@@ -25,7 +25,7 @@
         <button type="button" id="newgroupbtn" class="btn add icon">{{ "New group"|t('app') }}</button>
 
         {% if group %}
-            <button type="button" id="groupsettingsbtn" class="btn settings icon menubtn" title="{{ 'Settings' }}"></button>
+            <button type="button" id="groupsettingsbtn" class="btn settings icon menubtn" title="{{ 'Settings' }}" aria-label="{{ 'Settings' }}"></button>
             <div class="menu">
                 <ul>
                     <li><a data-action="rename" role="button">{{ "Rename selected group"|t('app') }}</a></li>
@@ -67,16 +67,16 @@
                             </th>
                             <td data-title="{{ 'Handle'|t('app') }}"><code>{{ site.handle }}</code></td>
                             <td data-title="{{ 'Language'|t('app') }}"><code>{{ site.language }}</code></td>
-                            <td data-title="{{ 'Primary'|t('app') }}">{% if site.primary %}<div data-icon="check"></div>{% endif %}</td>
+                            <td data-title="{{ 'Primary'|t('app') }}">{% if site.primary %}<div data-icon="check" aria-label="{{ 'Yes'|t('app') }}"></div>{% endif %}</td>
                             <td data-title="{{ 'Base URL'|t('app') }}"><code>{{ site.baseUrl }}</code></td>
                             {% if not group %}
                                 <td data-title="{{ 'Group'|t('app') }}">{{ site.group.name|t('site') }}</td>
                             {% endif %}
                             {% if canSort %}
-                                <td class="thin"><a class="move icon" title="{{ 'Reorder'|t('app') }}" role="button"></a></td>
+                                <td class="thin"><a class="move icon" title="{{ 'Reorder'|t('app') }}" aria-label="{{ 'Reorder'|t('app') }}" role="button"></a></td>
                             {% endif %}
                             {% if multiple %}
-                                <td class="thin"><a class="delete icon{% if site.primary %} disabled{% endif %}" title="{{ 'Delete'|t('app') }}" role="button"></a></td>
+                                <td class="thin"><a class="delete icon{% if site.primary %} disabled{% endif %}" title="{{ 'Delete'|t('app') }}" aria-label="{{ 'Delete'|t('app') }}" role="button"></a></td>
                             {% endif %}
                         </tr>
                     {% endfor %}

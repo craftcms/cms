@@ -42,7 +42,7 @@ class Routes
                         $uriDisplayHtml .= Html::encodeParams('<span class="token" data-name="{name}" data-value="{value}"><span>{name}</span></span>',
                             [
                                 'name' => $part[0],
-                                'value' => $part[1]
+                                'value' => $part[1],
                             ]);
                     }
                 }
@@ -52,7 +52,7 @@ class Routes
                 'uid' => $routeUid,
                 'siteUid' => $route['siteUid'],
                 'uriDisplayHtml' => $uriDisplayHtml,
-                'template' => $route['template']
+                'template' => $route['template'],
             ];
             $sortOrders[] = $route['sortOrder'];
         }

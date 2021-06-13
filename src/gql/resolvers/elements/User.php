@@ -54,7 +54,7 @@ class User extends ElementResolver
                 [
                     'and',
                     '[[users.id]] = [[usergroups_users.userId]]',
-                    ['in', '[[usergroups_users.groupId]]', array_values(Db::idsByUids(Table::USERGROUPS, $pairs['usergroups']))]
+                    ['in', '[[usergroups_users.groupId]]', array_values(Db::idsByUids(Table::USERGROUPS, $pairs['usergroups']))],
                 ]
             );
 

@@ -30,6 +30,11 @@ abstract class FlysystemVolume extends Volume
     protected $foldersHaveTrailingSlashes = true;
 
     /**
+     * @var array An array of cached metadata by path.
+     */
+    private $_cachedMetadata = [];
+
+    /**
      * @var AdapterInterface|null The Flysystem adapter, created by [[createAdapter()]]
      */
     private $_adapter;
@@ -54,11 +59,25 @@ abstract class FlysystemVolume extends Volume
      */
     public function getFileMetadata(string $uri): array
     {
-        try {
-            return $this->filesystem()->getMetadata($uri);
-        } catch (FileNotFoundException $e) {
-            throw new VolumeObjectNotFoundException($e->getMessage(), 0, $e);
-        }
+        return $this->fetchFileMetadata($uri, true);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getDateModified(string $uri): ?int
+    {
+        $metadata = $this->fetchFileMetadata($uri);
+        return $metadata['timestamp'] ?? null;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getFileSize(string $uri): ?int
+    {
+        $metadata = $this->fetchFileMetadata($uri);
+        return $metadata['size'] ?? null;
     }
 
     /**
@@ -201,7 +220,7 @@ abstract class FlysystemVolume extends Volume
     /**
      * @inheritdoc
      */
-    public function createDir(string $path)
+    public function createDirectory(string $path)
     {
         if ($this->folderExists($path)) {
             throw new VolumeObjectExistsException("$path already exists on the volume");
@@ -215,7 +234,7 @@ abstract class FlysystemVolume extends Volume
     /**
      * @inheritdoc
      */
-    public function deleteDir(string $path)
+    public function deleteDirectory(string $path)
     {
         try {
             $success = $this->filesystem()->deleteDir($path);
@@ -224,14 +243,14 @@ abstract class FlysystemVolume extends Volume
         }
 
         if (!$success) {
-            throw new VolumeException('Couldn’t delete ' . $path);
+            Craft::warning('Failed to delete the “' . $path . '” directory');
         }
     }
 
     /**
      * @inheritdoc
      */
-    public function renameDir(string $path, string $newName)
+    public function renameDirectory(string $path, string $newName)
     {
         // Get the list of dir contents
         $fileList = $this->getFileList($path, true);
@@ -256,6 +275,12 @@ abstract class FlysystemVolume extends Volume
             }
         }
 
+        // Work around an edge case were empty folders would cause the containing folder to be deleted instead of renamed
+        if (empty($fileList)) {
+            $this->renameFile($path, $newPath);
+            return;
+        }
+
         // It's possible for a folder object to not exist on remote volumes, so to throw an exception
         // we must make sure that there are no files AS WELL as no folder.
         if (empty($fileList) && !$this->folderExists($path)) {
@@ -265,7 +290,7 @@ abstract class FlysystemVolume extends Volume
         // The files are moved, but the directories remain. Delete them.
         foreach ($directoryList as $dir) {
             try {
-                $this->deleteDir($dir);
+                $this->deleteDirectory($dir);
             } catch (\Throwable $e) {
                 // This really varies between volume types and whether folders are virtual or real
                 // So just in case, catch the exception, log it and then move on
@@ -317,7 +342,7 @@ abstract class FlysystemVolume extends Volume
     protected function addFileMetadataToConfig(array $config): array
     {
         $config = array_merge($config, [
-            'visibility' => $this->visibility()
+            'visibility' => $this->visibility(),
         ]);
 
         return $config;
@@ -342,5 +367,33 @@ abstract class FlysystemVolume extends Volume
     protected function visibility(): string
     {
         return $this->hasUrls ? AdapterInterface::VISIBILITY_PUBLIC : AdapterInterface::VISIBILITY_PRIVATE;
+    }
+
+    /**
+     * Fetch the file metadata from the volume, optionally caching the result.
+     *
+     * @param string $uri
+     * @param false $bypassCache
+     * @return array|false|mixed
+     * @throws VolumeObjectNotFoundException
+     * @since 3.6.0
+     */
+    protected function fetchFileMetadata(string $uri, $bypassCache = false)
+    {
+        if ($bypassCache || empty($this->_cachedMetadata[$uri])) {
+            try {
+                $metadata = $this->filesystem()->getMetadata($uri);
+            } catch (FileNotFoundException $e) {
+                throw new VolumeObjectNotFoundException($e->getMessage(), 0, $e);
+            }
+
+            if ($bypassCache) {
+                return $metadata;
+            }
+
+            $this->_cachedMetadata[$uri] = $metadata;
+        }
+
+        return $this->_cachedMetadata[$uri];
     }
 }

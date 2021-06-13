@@ -11,6 +11,7 @@ use Closure;
 use Codeception\Stub;
 use Craft;
 use craft\console\Controller;
+use Traversable;
 use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
 
@@ -47,6 +48,7 @@ class CommandTest
 
     /**
      * @var bool
+     * @todo rename to ignoreStdout in 4.0
      */
     protected $ignoreStdOut = false;
 
@@ -118,9 +120,8 @@ class CommandTest
         }
 
         $exitCode = $this->controller->run($this->actionId, $this->parameters);
-        $test = $this->test;
-        $test::assertSame($this->desiredExitCode, $exitCode);
-        $test::assertCount($this->eventChainItemsHandled, $this->eventChain);
+        $this->test::assertSame($this->desiredExitCode, $exitCode);
+        $this->test::assertCount($this->eventChainItemsHandled, $this->eventChain);
     }
 
     /**
@@ -134,40 +135,41 @@ class CommandTest
     }
 
     /**
-     * @param string $desiredOutput
+     * @param string|string[]|Traversable $desiredOutput
      * @return CommandTest
+     * @todo rename to stdout() in 4.0
      */
-    public function stdOut(string $desiredOutput): CommandTest
+    public function stdOut($desiredOutput): CommandTest
     {
         return $this->addEventChainItem([
             'type' => self::STD_OUT,
-            'desiredOutput' => $desiredOutput
+            'desiredOutput' => $desiredOutput,
         ]);
     }
 
     /**
-     * @param string $desiredOutput
+     * @param string|string[]|Traversable $desiredOutput
      * @param bool $withScriptName
      * @return CommandTest
      */
-    public function outputCommand(string $desiredOutput, bool $withScriptName = true): CommandTest
+    public function outputCommand($desiredOutput, bool $withScriptName = true): CommandTest
     {
         return $this->addEventChainItem([
             'type' => self::OUTPUT_COMMAND,
             'desiredOutput' => $desiredOutput,
-            'withScriptName' => $withScriptName
+            'withScriptName' => $withScriptName,
         ]);
     }
 
     /**
-     * @param string $desiredOutput
+     * @param string|string[]|Traversable $desiredOutput
      * @return CommandTest
      */
-    public function stderr(string $desiredOutput): CommandTest
+    public function stderr($desiredOutput): CommandTest
     {
         return $this->addEventChainItem([
             'type' => self::STD_ERR,
-            'desiredOutput' => $desiredOutput
+            'desiredOutput' => $desiredOutput,
         ]);
     }
 
@@ -183,7 +185,7 @@ class CommandTest
             'type' => self::PROMPT,
             'prompt' => $prompt,
             'options' => $options,
-            'returnValue' => $returnValue
+            'returnValue' => $returnValue,
         ]);
     }
 
@@ -199,7 +201,7 @@ class CommandTest
             'type' => self::CONFIRM,
             'message' => $message,
             'default' => $default,
-            'returnValue' => $returnValue
+            'returnValue' => $returnValue,
         ]);
     }
 
@@ -215,7 +217,7 @@ class CommandTest
             'type' => self::SELECT,
             'prompt' => $prompt,
             'options' => $options,
-            'returnValue' => $returnValue
+            'returnValue' => $returnValue,
         ]);
     }
 
@@ -244,7 +246,7 @@ class CommandTest
             'prompt' => $this->promptHandler(),
             'confirm' => $this->confirmHandler(),
             'select' => $this->selectHandler(),
-            'outputCommand' => $this->outputCommandHandler()
+            'outputCommand' => $this->outputCommandHandler(),
         ]);
 
         $this->controller = $stubController;
@@ -258,28 +260,29 @@ class CommandTest
     {
         return function($out, $withScriptName = true) {
             $nextItem = $this->runHandlerCheck($out, self::OUTPUT_COMMAND);
-            $test = $this->test;
-            $test::assertSame(
-                $nextItem->withScriptName,
-                $withScriptName
-            );
-            $test::assertSame(
-                $nextItem->desiredOutput,
-                $out
-            );
+            $this->test::assertSame($nextItem->withScriptName, $withScriptName);
+            if (is_string($nextItem->desiredOutput)) {
+                $this->test::assertSame($nextItem->desiredOutput, $out);
+            } else {
+                $this->test::assertContains($out, $nextItem->desiredOutput);
+            }
         };
     }
 
     /**
      * @return Closure
+     * @todo rename to stdoutHandler in 4.0
      */
     protected function stdOutHandler(): Closure
     {
         return function($out) {
             if (!$this->ignoreStdOut) {
                 $nextItem = $this->runHandlerCheck($out, self::STD_OUT);
-                $test = $this->test;
-                $test::assertSame($nextItem->desiredOutput, $out);
+                if (is_string($nextItem->desiredOutput)) {
+                    $this->test::assertSame($nextItem->desiredOutput, $out);
+                } else {
+                    $this->test::assertContains($out, $nextItem->desiredOutput);
+                }
             }
         };
     }
@@ -291,11 +294,11 @@ class CommandTest
     {
         return function($out) {
             $nextItem = $this->runHandlerCheck($out, self::STD_ERR);
-            $test = $this->test;
-            $test::assertSame(
-                $nextItem->desiredOutput,
-                $out
-            );
+            if (is_string($nextItem->desiredOutput)) {
+                $this->test::assertSame($nextItem->desiredOutput, $out);
+            } else {
+                $this->test::assertContains($out, $nextItem->desiredOutput);
+            }
         };
     }
 
@@ -306,15 +309,8 @@ class CommandTest
     {
         return function($text, $options = []) {
             $nextItem = $this->runHandlerCheck('A prompt with value: ' . $text, self::PROMPT);
-            $test = $this->test;
-            $test::assertSame(
-                $nextItem->prompt,
-                $text
-            );
-            $test::assertSame(
-                $nextItem->options,
-                $options
-            );
+            $this->test::assertSame($nextItem->prompt, $text);
+            $this->test::assertSame($nextItem->options, $options);
             return $nextItem->returnValue;
         };
     }
@@ -326,15 +322,8 @@ class CommandTest
     {
         return function($message, $default = false) {
             $nextItem = $this->runHandlerCheck('A confirm with value: ' . $message, self::CONFIRM);
-            $test = $this->test;
-            $test::assertSame(
-                $nextItem->message,
-                $message
-            );
-            $test::assertSame(
-                $nextItem->default,
-                $default
-            );
+            $this->test::assertSame($nextItem->message, $message);
+            $this->test::assertSame($nextItem->default, $default);
             return $nextItem->returnValue;
         };
     }
@@ -346,15 +335,8 @@ class CommandTest
     {
         return function($prompt, $options = []) {
             $nextItem = $this->runHandlerCheck('A select with value: ' . $prompt, self::SELECT);
-            $test = $this->test;
-            $test::assertSame(
-                $nextItem->prompt,
-                $prompt
-            );
-            $test::assertSame(
-                $nextItem->options,
-                $options
-            );
+            $this->test::assertSame($nextItem->prompt, $prompt);
+            $this->test::assertSame($nextItem->options, $options);
             return $nextItem->returnValue;
         };
     }
@@ -362,18 +344,16 @@ class CommandTest
     /**
      * @param $out
      * @param $type
-     *
      * @return CommandTestItem
      */
     protected function runHandlerCheck($out, $type): CommandTestItem
     {
         $nextItem = $this->getNextItem();
-        $test = $this->test;
         if (!$nextItem) {
-            $test::fail("There are no more items however: $out was printed");
+            $this->test::fail("There are no more items however: $out was printed");
         }
         if ($nextItem->type !== $type) {
-            $test::fail("A $type message was expected but $nextItem->type was given");
+            $this->test::fail("A $type message was expected but $nextItem->type was given");
         }
         $this->eventChainItemsHandled++;
         return $nextItem;
@@ -393,9 +373,7 @@ class CommandTest
         }
 
         $eventChainItem = $this->eventChain[$this->currentIndex];
-
         $this->currentIndex++;
-
         return $eventChainItem;
     }
 
@@ -407,7 +385,6 @@ class CommandTest
     protected function addEventChainItem(array $config): CommandTest
     {
         $this->eventChain[] = new CommandTestItem($config);
-
         return $this;
     }
 }

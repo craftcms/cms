@@ -82,7 +82,7 @@ class RecentEntries extends Widget
     {
         return Craft::$app->getView()->renderTemplate('_components/widgets/RecentEntries/settings',
             [
-                'widget' => $this
+                'widget' => $this,
             ]);
     }
 
@@ -96,12 +96,12 @@ class RecentEntries extends Widget
 
             if ($section) {
                 $title = Craft::t('app', 'Recent {section} Entries', [
-                    'section' => Craft::t('site', $section->name)
+                    'section' => Craft::t('site', $section->name),
                 ]);
             }
         }
 
-        /** @noinspection UnSafeIsSetOverArrayInspection - FP */
+        /* @noinspection UnSafeIsSetOverArrayInspection - FP */
         if (!isset($title)) {
             $title = Craft::t('app', 'Recent Entries');
         }
@@ -115,7 +115,7 @@ class RecentEntries extends Widget
             if ($site) {
                 $title = Craft::t('app', '{title} ({site})', [
                     'title' => $title,
-                    'site' => Craft::t('site', $site->name),
+                    'site' => Craft::t('site', $site->getName()),
                 ]);
             }
         }
@@ -144,7 +144,7 @@ class RecentEntries extends Widget
 
         return $view->renderTemplate('_components/widgets/RecentEntries/body',
             [
-                'entries' => $entries
+                'entries' => $entries,
             ]);
     }
 
@@ -180,6 +180,7 @@ class RecentEntries extends Widget
         $query->sectionId($targetSectionId);
         $query->editable(true);
         $query->limit($this->limit ?: 100);
+        $query->with(['author']);
         $query->orderBy('elements.dateCreated desc');
 
         return $query->all();

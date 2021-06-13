@@ -11,6 +11,7 @@ use Craft;
 use craft\db\Table;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
+use craft\helpers\Session;
 use craft\models\CraftIdToken;
 use craft\records\CraftIdToken as OauthTokenRecord;
 use DateInterval;
@@ -94,7 +95,7 @@ class PluginStore extends Component
 
         if ($saveToSession) {
             // Save token to session
-            Craft::$app->getSession()->set('pluginStore.token', $oauthToken);
+            Session::set('pluginStore.token', $oauthToken);
         } else {
             // Save token to database
 
@@ -124,7 +125,7 @@ class PluginStore extends Component
         $userId = Craft::$app->getUser()->getIdentity()->id;
 
         // Get the token from the session
-        $token = Craft::$app->getSession()->get('pluginStore.token');
+        $token = Session::get('pluginStore.token');
 
         if ($token && !$token->hasExpired()) {
             return $token;
@@ -167,8 +168,7 @@ class PluginStore extends Component
 
 
         // Delete session token
-
-        Craft::$app->getSession()->remove('pluginStore.token');
+        Session::remove('pluginStore.token');
     }
 
     /**

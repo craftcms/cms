@@ -60,8 +60,8 @@ class InstallController extends BaseUpdaterController
      */
     public function actionCraftInstall(): YiiResponse
     {
-        /** @var Response $tempResponse */
-        list($success, $tempResponse, $errorDetails) = $this->installPlugin($this->data['handle'], $this->data['edition']);
+        /* @var Response $tempResponse */
+        [$success, $tempResponse, $errorDetails] = $this->installPlugin($this->data['handle'], $this->data['edition']);
 
         if (!$success) {
             $info = Craft::$app->getPlugins()->getComposerPluginInfo($this->data['handle']);

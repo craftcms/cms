@@ -35,9 +35,8 @@ class DownloadAssetFile extends ElementAction
         $type = Json::encode(static::class);
 
         $js = <<<JS
-(function()
-{
-    var trigger = new Craft.ElementActionTrigger({
+(() => {
+    new Craft.ElementActionTrigger({
         type: {$type},
         activate: function(\$selectedItems)
         {
@@ -69,12 +68,13 @@ JS;
         $request = Craft::$app->getRequest();
         $js = str_replace([
             '{csrfName}',
-            '{csrfValue}'
+            '{csrfValue}',
         ], [
             $request->csrfParam,
-            $request->getCsrfToken()
+            $request->getCsrfToken(),
         ], $js);
 
         Craft::$app->getView()->registerJs($js);
+        return null;
     }
 }

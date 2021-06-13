@@ -3,6 +3,9 @@
 Craft.ui =
     {
         createTextInput: function(config) {
+            config = $.extend({
+                autocomplete: false,
+            }, config);
             var $input = $('<input/>', {
                 attr: {
                     'class': 'text',
@@ -14,7 +17,7 @@ Craft.ui =
                     value: config.value,
                     maxlength: config.maxlength,
                     autofocus: this.getAutofocusValue(config.autofocus),
-                    autocomplete: (typeof config.autocomplete === 'undefined' || !config.autocomplete ? 'off' : null),
+                    autocomplete: typeof config.autocomplete === 'boolean' ? (config.autocomplete ? 'on' : 'off') : config.autocomplete,
                     disabled: this.getDisabledValue(config.disabled),
                     readonly: config.readonly,
                     title: config.title,
@@ -53,8 +56,7 @@ Craft.ui =
 
             if (config.type === 'password') {
                 return $('<div class="passwordwrapper"/>').append($input);
-            }
-            else {
+            } else {
                 return $input;
             }
         },
@@ -67,7 +69,7 @@ Craft.ui =
         },
 
         createCopyTextInput: function(config) {
-            let id = config.id || `copytext-${Math.floor(Math.random() * 1000000000)}`;
+            let id = config.id || 'copytext' + Math.floor(Math.random() * 1000000000);
             let buttonId = config.buttonId || `${id}-btn`;
 
             let $container = $('<div/>', {
@@ -84,6 +86,7 @@ Craft.ui =
                 'class': 'btn',
                 'data-icon': 'clipboard',
                 title: Craft.t('app', 'Copy to clipboard'),
+                'aria-label': Craft.t('app', 'Copy to clipboard'),
             }).appendTo($container);
 
             $btn.on('click', () => {
@@ -219,7 +222,7 @@ Craft.ui =
                         'value': option.value,
                         'selected': (option.value == config.value),
                         'disabled': typeof option.disabled !== 'undefined' ? option.disabled : false,
-                        'html':  option.label
+                        'html': option.label
                     }).appendTo($optgroup || $select);
                 }
             }
@@ -266,7 +269,7 @@ Craft.ui =
 
             var $label = $('<label/>', {
                 'for': id,
-                text: config.label
+                html: config.label,
             });
 
             // Should we include a hidden input first?
@@ -280,8 +283,7 @@ Craft.ui =
                     $input[0],
                     $label[0]
                 ]);
-            }
-            else {
+            } else {
                 return $([
                     $input[0],
                     $label[0]
@@ -356,7 +358,7 @@ Craft.ui =
                         label: option.label,
                         name: (config.name ? config.name + '[]' : null),
                         value: option.value,
-                        checked: (allChecked || Craft.inArray(option.value, config.values)),
+                        checked: allChecked || (config.values || []).includes(option.value),
                         disabled: allChecked
                     })
                 );
@@ -368,6 +370,7 @@ Craft.ui =
         },
 
         createCheckboxSelectField: function(config) {
+            config.fieldset = true;
             if (!config.id) {
                 config.id = 'checkboxselect' + Math.floor(Math.random() * 1000000000);
             }
@@ -378,13 +381,13 @@ Craft.ui =
             var value = config.value || '1';
             var indeterminateValue = config.indeterminateValue || '-';
 
-            var $container = $('<div/>', {
+            var $container = $('<button/>', {
+                'type': 'button',
                 'class': 'lightswitch',
-                tabindex: '0',
                 'data-value': value,
                 'data-indeterminate-value': indeterminateValue,
                 id: config.id,
-                role: 'switch',
+                role: 'checkbox',
                 'aria-checked': config.on ? 'true' : (config.indeterminate ? 'mixed' : 'false'),
                 'aria-labelledby': config.labelId,
                 'data-target': config.toggle,
@@ -441,43 +444,57 @@ Craft.ui =
         },
 
         createColorInput: function(config) {
-            var id = (config.id || 'color' + Math.floor(Math.random() * 1000000000));
-            var containerId = config.containerId || id + '-container';
-            var name = config.name || null;
-            var value = config.value || null;
-            var small = config.small || false;
-            var autofocus = config.autofocus && Garnish.isMobileBrowser(true);
-            var disabled = config.disabled || false;
+            const id = (config.id || 'color' + Math.floor(Math.random() * 1000000000));
+            const containerId = config.containerId || id + '-container';
+            const name = config.name || null;
+            const value = config.value || null;
+            const small = config.small || false;
+            const autofocus = config.autofocus && Garnish.isMobileBrowser(true);
+            const disabled = config.disabled || false;
 
-            var $container = $('<div/>', {
+            const $container = $('<div/>', {
                 id: containerId,
-                'class': 'flex color-container'
+                class: 'flex color-container'
             });
 
-            var $colorPreviewContainer = $('<div/>', {
-                'class': 'color static' + (small ? ' small' : '')
+            const $colorPreviewContainer = $('<div/>', {
+                class: 'color static' + (small ? ' small' : '')
             }).appendTo($container);
 
-            var $colorPreview = $('<div/>', {
-                'class': 'color-preview',
+            const $colorPreview = $('<div/>', {
+                class: 'color-preview',
                 style: config.value ? {backgroundColor: config.value} : null
             }).appendTo($colorPreviewContainer);
 
-            var $input = this.createTextInput({
+            const $inputContainer = $('<div/>', {
+                class: 'color-input-container',
+            })
+                .append(
+                    $('<div/>', {
+                        class: 'color-hex-indicator light code',
+                        'aria-hidden': 'true',
+                        text: '#',
+                    })
+                )
+                .appendTo($container);
+
+            const $input = this.createTextInput({
                 id: id,
                 name: name,
-                value: value,
+                value: Craft.ltrim(value, '#'),
                 size: 10,
                 'class': 'color-input',
                 autofocus: autofocus,
-                disabled: disabled
-            }).appendTo($container);
+                disabled: disabled,
+                'aria-label': Craft.t('app', 'Color hex value'),
+            }).appendTo($inputContainer);
 
             new Craft.ColorInput($container);
             return $container;
         },
 
         createColorField: function(config) {
+            config.fieldset = true;o
             if (!config.id) {
                 config.id = 'color' + Math.floor(Math.random() * 1000000000);
             }
@@ -485,9 +502,9 @@ Craft.ui =
         },
 
         createDateInput: function(config) {
-            var id = (config.id || 'date' + Math.floor(Math.random() * 1000000000))+'-date';
+            var id = (config.id || 'date' + Math.floor(Math.random() * 1000000000)) + '-date';
             var name = config.name || null;
-            var inputName = name ? name+'[date]' : null;
+            var inputName = name ? name + '[date]' : null;
             var value = config.value && typeof config.value.getMonth === 'function' ? config.value : null;
             var formattedValue = value ? Craft.formatDate(value) : null;
             var autofocus = config.autofocus && Garnish.isMobileBrowser(true);
@@ -512,7 +529,7 @@ Craft.ui =
             if (name) {
                 $('<input/>', {
                     type: 'hidden',
-                    name: name+'[timezone]',
+                    name: name + '[timezone]',
                     val: Craft.timezone
                 }).appendTo($container);
             }
@@ -548,7 +565,7 @@ Craft.ui =
                 ],
                 onChange: $.noop,
                 selected: null,
-                startDate:null,
+                startDate: null,
                 endDate: null,
             }, config);
 
@@ -766,9 +783,9 @@ Craft.ui =
         },
 
         createTimeInput: function(config) {
-            var id = (config.id || 'time' + Math.floor(Math.random() * 1000000000))+'-time';
+            var id = (config.id || 'time' + Math.floor(Math.random() * 1000000000)) + '-time';
             var name = config.name || null;
-            var inputName = name ? name+'[time]' : null;
+            var inputName = name ? name + '[time]' : null;
             var value = config.value && typeof config.value.getMonth === 'function' ? config.value : null;
             var autofocus = config.autofocus && Garnish.isMobileBrowser(true);
             var disabled = config.disabled || false;
@@ -791,14 +808,14 @@ Craft.ui =
             if (name) {
                 $('<input/>', {
                     type: 'hidden',
-                    name: name+'[timezone]',
+                    name: name + '[timezone]',
                     val: Craft.timezone
                 }).appendTo($container);
             }
 
             $input.timepicker(Craft.timepickerOptions);
             if (value) {
-                $input.timepicker('setTime', value.getHours()*3600 + value.getMinutes()*60 + value.getSeconds());
+                $input.timepicker('setTime', value.getHours() * 3600 + value.getMinutes() * 60 + value.getSeconds());
             }
 
             return $container;
@@ -815,7 +832,7 @@ Craft.ui =
             var label = (config.label && config.label !== '__blank__' ? config.label : null),
                 siteId = (Craft.isMultiSite && config.siteId ? config.siteId : null);
 
-            var $field = $('<div/>', {
+            var $field = $(config.fieldset ? '<fieldset/>' : '<div/>', {
                 'class': 'field',
                 'id': config.fieldId || (config.id ? config.id + '-field' : null)
             });
@@ -827,10 +844,10 @@ Craft.ui =
             if (label) {
                 var $heading = $('<div class="heading"/>').appendTo($field);
 
-                var $label = $('<label/>', {
-                    'id': config.labelId || (config.id ? `${config.id}-label` : null),
+                var $label = $(config.fieldset ? '<legend/>' : '<label/>', {
+                    'id': config.labelId || (config.id ? `${config.id}-${config.fieldset ? 'legend' : 'label'}` : null),
                     'class': (config.required ? 'required' : null),
-                    'for': config.id,
+                    'for': !config.fieldset && config.id,
                     text: label
                 }).appendTo($heading);
             }

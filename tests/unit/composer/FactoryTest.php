@@ -10,6 +10,8 @@ namespace crafttests\unit\composer;
 use Composer\Config;
 use Composer\Downloader\DownloadManager;
 use Composer\IO\NullIO;
+use Composer\Util\Loop;
+use Composer\Util\ProcessExecutor;
 use craft\composer\Factory;
 use craft\test\TestCase;
 use UnitTester;
@@ -47,9 +49,14 @@ class FactoryTest extends TestCase
     public function testCreateArchiveManager()
     {
         $config = new Config();
-        $downloadManager = new DownloadManager(new NullIO());
-        $archiveManager = $this->factory->createArchiveManager($config, $downloadManager);
+        $io = new NullIO();
+        $downloadManager = new DownloadManager($io);
+        $httpDownloader = Factory::createHttpDownloader($io, $config);
+        $process = new ProcessExecutor($io);
+        $loop = new Loop($httpDownloader, $process);
 
-        $this->assertSame([], $this->getInaccessibleProperty($archiveManager, 'archivers'));
+        $archiveManager = $this->factory->createArchiveManager($config, $downloadManager, $loop);
+
+        self::assertSame([], $this->getInaccessibleProperty($archiveManager, 'archivers'));
     }
 }

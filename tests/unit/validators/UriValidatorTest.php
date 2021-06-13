@@ -50,9 +50,9 @@ class UriValidatorTest extends Unit
         $validates = $this->uriValidator->validate($input);
 
         if ($mustValidate) {
-            $this->assertTrue($validates);
+            self::assertTrue($validates);
         } else {
-            $this->assertFalse($validates);
+            self::assertFalse($validates);
         }
     }
 

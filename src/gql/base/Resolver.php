@@ -7,8 +7,9 @@
 
 namespace craft\gql\base;
 
+use Craft;
+use craft\gql\ArgumentManager;
 use craft\gql\ElementQueryConditionBuilder;
-use craft\helpers\StringHelper;
 use GraphQL\Language\AST\Node;
 use GraphQL\Type\Definition\ResolveInfo;
 
@@ -39,9 +40,11 @@ abstract class Resolver
      * Returns a list of all the arguments that can be accepted as arrays.
      *
      * @return array
+     * @deprecated in 3.6. Any argument modifications should be performed using argument handlers.
      */
     public static function getArrayableArguments(): array
     {
+        Craft::$app->getDeprecator()->log(__METHOD__, 'The `craft\gql\base\Resolve::getArrayableArguments` method has been deprecated. Any argument modifications should be performed using argument handlers.');
         return [];
     }
 
@@ -50,29 +53,18 @@ abstract class Resolver
      *
      * @param array $arguments
      * @return array
+     * @deprecated in 3.6. Any argument modifications should be performed using argument handlers.
      */
     public static function prepareArguments(array $arguments): array
     {
-        $arrayable = static::getArrayableArguments();
+        Craft::$app->getDeprecator()->log(__METHOD__, 'The `craft\gql\base\Resolve::prepareArguments` Method has been deprecated. Any argument modifications should be performed using argument handlers.');
+        $argumentManager = new ArgumentManager();
 
-        foreach ($arguments as $key => &$value) {
-            if (in_array($key, $arrayable, true) && !empty($value) && !is_array($value)) {
-                $array = StringHelper::split($value);
-
-                if (count($array) > 1) {
-                    $value = $array;
-                }
-            } else if (is_array($value) && count($value) === 1 && isset($value[0]) && $value[0] === '*') {
-                // Normalize ['*'] to '*'
-                $value = '*';
-            }
-        }
-
-        return $arguments;
+        return $argumentManager->prepareArguments($arguments);
     }
 
     /**
-     * Extract eager load conditions for a given resolve information. Preferrably at the very top of the query.
+     * Extract eager load conditions for a given resolve information. Preferably at the very top of the query.
      *
      * @param Node $parentNode
      * @return array
@@ -80,7 +72,7 @@ abstract class Resolver
      */
     protected static function extractEagerLoadCondition(ResolveInfo $resolveInfo)
     {
-        $conditions = (new ElementQueryConditionBuilder($resolveInfo))->extractQueryConditions();
+        $conditions = (new ElementQueryConditionBuilder(['resolveInfo' => $resolveInfo]))->extractQueryConditions();
 
         return isset($conditions['with']) ? $conditions['with'] : [];
     }

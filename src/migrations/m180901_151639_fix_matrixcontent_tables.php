@@ -130,7 +130,7 @@ class m180901_151639_fix_matrixcontent_tables extends Migration
             'not in', 'elementId', (new Query())
                 ->select(['id'])
                 ->from([Table::MATRIXBLOCKS])
-                ->where(['fieldId' => $fieldId])
+                ->where(['fieldId' => $fieldId]),
         ]);
 
         // get all of the columns this field needs

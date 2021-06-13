@@ -36,13 +36,15 @@ class GlobalSet extends Query
                 'type' => Type::listOf(GlobalSetInterface::getType()),
                 'args' => GlobalSetArguments::getArguments(),
                 'resolve' => GlobalSetResolver::class . '::resolve',
-                'description' => 'This query is used to query for global sets.'
+                'description' => 'This query is used to query for global sets.',
+                'complexity' => GqlHelper::relatedArgumentComplexity(),
             ],
             'globalSet' => [
                 'type' => GlobalSetInterface::getType(),
                 'args' => GlobalSetArguments::getArguments(),
                 'resolve' => GlobalSetResolver::class . '::resolveOne',
-                'description' => 'This query is used to query for a single global set.'
+                'description' => 'This query is used to query for a single global set.',
+                'complexity' => GqlHelper::relatedArgumentComplexity(),
             ],
         ];
     }

@@ -5,7 +5,7 @@
  * @license https://craftcms.github.io/license/
  */
 
-namespace crafttests\unit\services;
+namespace crafttests\unit\services\projectConfig;
 
 use Codeception\Test\Unit;
 use Craft;
@@ -59,7 +59,7 @@ class FixturesTest extends Unit
             $projectConfig->set($path, $newValue);
         }
 
-        $this->assertTrue($testFunction());
+        self::assertTrue($testFunction());
     }
 
     public function configChangesPropagatedToDbProvider()
@@ -67,10 +67,6 @@ class FixturesTest extends Unit
         $randomHandle = StringHelper::randomString(20);
         $sectionUid = 'section-1000---------------------uid';
         $entryTypeUid = 'entry-type-1000------------------uid';
-        $entryTypeId = 1000;
-        $fieldLayoutUid = 'field-layout-1000----------------uid';
-        $fieldUid = 'field-1001-----------------------uid';
-        $fieldHandle = 'plainTextField';
 
         return [
             // Simple section handle check
@@ -83,22 +79,10 @@ class FixturesTest extends Unit
             ],
             // Entry type nesting inside section and handle
             [
-                ['sections.' . $sectionUid . '.entryTypes.' . $entryTypeUid . '.handle' => $randomHandle],
+                ['entryTypes.' . $entryTypeUid . '.handle' => $randomHandle],
                 function() use ($sectionUid, $randomHandle, $entryTypeUid) {
                     $sectionService = $this->make(Sections::class);
                     return $sectionService->getEntryTypesByHandle($randomHandle)[0]->uid === $entryTypeUid;
-                }
-            ],
-            [
-                ['sections.' . $sectionUid . '.entryTypes.' . $entryTypeUid . '.fieldLayouts.' . $fieldLayoutUid . '.tabs.0.fields.' . $fieldUid . '.required' => false],
-                function() use ($sectionUid, $entryTypeId, $entryTypeUid, $fieldHandle) {
-                    $sectionService = $this->make(Sections::class);
-                    $fieldService = $this->make(Fields::class);
-                    Craft::$app->set('fields', $fieldService);
-
-                    $entryType = $sectionService->getEntryTypeById($entryTypeId);
-
-                    return !$entryType->getFieldLayout()->getFieldByHandle($fieldHandle)->required;
                 }
             ],
         ];

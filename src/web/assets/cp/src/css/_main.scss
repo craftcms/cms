@@ -1,5 +1,5 @@
 @charset "UTF-8";
-@import "../../../../../../node_modules/craftcms-sass/mixins";
+@import "../../../../../../packages/craftcms-sass/mixins";
 
 @mixin spinner {
   width: 24px;
@@ -74,6 +74,10 @@ body, input, select, textarea {
 
 .last, h1:last-child, h2:last-child, h3:last-child, h4:last-child, h5:last-child, h6:last-child, p:last-child, blockquote:last-child, .pane:last-child, .grid:last-child, fieldset:last-child, .field:last-child, .toolbar:last-child, .buttons:last-child {
   margin-bottom: 0 !important;
+}
+
+.no-scroll {
+  overflow: hidden !important;
 }
 
 .draghelper {
@@ -395,7 +399,73 @@ li.sel a {
   }
 }
 
+#revision-menu {
+  padding: 10px 24px;
+
+  hr {
+    margin: 10px -24px;
+  }
+
+  ul {
+    li {
+      &.sel {
+        margin: 0 -14px;
+        padding: 0 14px;
+        background: $grey050;
+        border-radius: $largeBorderRadius;
+
+        .edited-desc {
+          display: flex;
+          align-items: center;
+          @include margin-left(10px);
+          border-top: 1px solid $hairlineColor;
+          padding: 10px 0;
+          color: $lightTextColor;
+          white-space: normal;
+
+          p {
+            margin: 0;
+          }
+
+          .btn {
+            @include margin-left(14px);
+            color: $textColor !important;
+            background-color: $yellow300;
+
+            &:hover,
+            &:focus {
+              background-color: darken($yellow300, 10%);
+            }
+
+            &:active {
+              background-color: darken($yellow300, 15%);
+            }
+          }
+        }
+      }
+
+      a {
+        padding-top: 7px;
+        border-radius: $largeBorderRadius;
+      }
+
+    }
+  }
+
+  .extralight {
+    margin-top: 2px;
+  }
+}
+
 /* toggles */
+button.toggle {
+  appearance: none;
+  color: inherit;
+  background: none;
+  border: none;
+  padding: 0;
+}
+
 .toggle:before,
 a.fieldtoggle:before {
   @include angle(right);
@@ -489,6 +559,11 @@ strong, b, i em {
   font-size: 20px;
   line-height: 24px;
   color: $lightTextColor;
+
+  &.small {
+    padding: 24px 0;
+    font-size: 16px;
+  }
 }
 
 input.checkbox + label.smalltext {
@@ -539,10 +614,6 @@ td.right {
   @include alignright;
 }
 
-.no-outline {
-  outline: none;
-}
-
 .clear {
   display: block;
   clear: both;
@@ -582,7 +653,6 @@ td.right {
 .token:focus {
   box-shadow: 0 0 0 1px transparentize($grey500, 0.75);;
   background-color: $white;
-  outline: none;
 }
 
 // Override .token for Prism
@@ -682,6 +752,18 @@ td.right {
 
 .hidden {
   display: none !important;
+}
+
+// Visually hide without hiding from screen readers
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: 0;
+  overflow: hidden;
+  clip: rect(0,0,0,0);
+  border: 0;
 }
 
 .invisible {
@@ -893,7 +975,7 @@ ul.icons {
   flex-wrap: wrap;
 
   li {
-    margin: 0 0 10px;
+    margin: 0 4px 10px 0;
 
     a {
       display: block;
@@ -964,6 +1046,7 @@ ul.icons {
   margin-bottom: 14px;
   min-height: 34px;
 
+  &.flex,
   .flex {
     align-items: flex-start;
   }
@@ -999,6 +1082,10 @@ ul.icons {
     &.spinner {
       @include margin-left(0 !important);
     }
+  }
+
+  .centeralign & {
+    justify-content: center;
   }
 }
 
@@ -1038,6 +1125,7 @@ ul.icons {
 .btn {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   border-radius: $largeBorderRadius;
   padding: 7px 14px;
   border: none;
@@ -1047,7 +1135,6 @@ ul.icons {
   cursor: pointer;
   box-sizing: border-box;
   appearance: none;
-  outline: none;
   color: $textColor;
   font-size: inherit;
   background-color: transparentize($inputColor, 0.75);
@@ -1069,20 +1156,22 @@ ul.icons {
     }
   }
 
-  &:focus,
-  &.focus,
-  &:hover {
-    background-color: transparentize($inputColor, 0.65);
-  }
-
-  &:active,
-  &.active {
-    background-color: transparentize($inputColor, 0.5);
-
+  &:not(.disabled) {
     &:focus,
     &.focus,
-    .btngroup:focus & {
-      background-color: transparentize($inputColor, 0.4);
+    &:hover {
+      background-color: transparentize($inputColor, 0.65);
+    }
+
+    &:active,
+    &.active {
+      background-color: transparentize($inputColor, 0.5);
+
+      &:focus,
+      &.focus,
+      .btngroup:focus & {
+        background-color: transparentize($inputColor, 0.4);
+      }
     }
   }
 
@@ -1097,10 +1186,6 @@ ul.icons {
 
   &:hover {
     text-decoration: none;
-  }
-
-  &:active {
-    outline: none;
   }
 
   &[data-icon]:not(:empty):before,
@@ -1157,7 +1242,7 @@ ul.icons {
 
 .btn.icon.add.loading:after {
   position: absolute;
-  content: '.';
+  content: '';
   font-size: 0;
   display: block;
   width: 24px;
@@ -1183,10 +1268,6 @@ ul.icons {
   display: flex;
   white-space: nowrap;
   align-items: center;
-
-  &:focus {
-    outline: none;
-  }
 
   &.fullwidth .btn {
     flex: 1;
@@ -1270,7 +1351,6 @@ ul.icons {
   transition: border-color linear 100ms;
   padding: 0 9px;
   cursor: pointer;
-  outline: none;
   transition: margin-left linear 100ms, margin-right linear 100ms;
 
   input {
@@ -1283,7 +1363,6 @@ ul.icons {
     cursor: pointer;
     color: $textColor;
     text-align: center;
-    outline: none;
   }
 
   &.light input {
@@ -1384,12 +1463,20 @@ ul.icons {
   display: inline-block;
   vertical-align: bottom;
   @include spinner;
-}
 
-.spinner.big {
-  width: 48px;
-  height: 48px;
-  background: url(../images/spinner_big.gif) no-repeat 50% 50%;
+  &.over-bg {
+    background-image: url(../images/spinner_bg.gif);
+  }
+
+  &.big {
+    width: 48px;
+    height: 48px;
+    background: url(../images/spinner_big.gif) no-repeat 50% 50%;
+
+    &.over-bg {
+      background-image: url(../images/spinner_big_bg.gif);
+    }
+  }
 }
 
 .btn + .spinner {
@@ -1407,7 +1494,7 @@ ul.icons {
 }
 
 .buttons.right .btn + .spinner {
-  @include margin-right(-24px);
+  @include margin-right(var(--neg-padding));
 }
 
 /* small buttons */
@@ -1446,30 +1533,51 @@ ul.icons {
   height: 36px;
 }
 
-/* submit buttons */
-.btn.submit,
-.btn.secondary {
-  &,
-  &:before,
-  &:after {
-    color: $white !important;
-    @include light-on-dark-text;
+/* special buttons */
+.btn {
+
+  &.submit,
+  &.secondary {
+    &,
+    &:before,
+    &:after {
+      color: $white !important;
+      @include light-on-dark-text;
+    }
   }
-}
 
-.btn.submit {
-  background-color: $primaryColor !important;
-}
+  &.submit {
+    background-color: $primaryColor !important;
 
-.btn.submit:not(.disabled):not(.inactive):hover,
-.btn.submit:not(.disabled):not(.inactive).hover,
-.btn.submit:not(.disabled):not(.inactive):focus {
-  background-color: darken($primaryColor, 5%) !important;
-}
+    &:not(.disabled):not(.inactive) {
+      &:hover,
+      &.hover,
+      &:focus {
+        background-color: darken($primaryColor, 5%) !important;
+      }
 
-.btn.submit:not(.disabled):not(.inactive):active,
-.btn.submit:not(.disabled):not(.inactive).active {
-  background-color: darken($primaryColor, 10%) !important;
+      &:active,
+      &.active {
+        background-color: darken($primaryColor, 10%) !important;
+      }
+    }
+  }
+
+  &.caution {
+    background-color: $red050 !important;
+    color: $errorColor;
+
+    &:hover,
+    &.hover,
+    &:focus {
+      background-color: darken($red050, 5%) !important;
+    }
+
+    &:active,
+    &.active {
+      background-color: $red100 !important;
+    }
+  }
 }
 
 .secondary-buttons .btn.submit,
@@ -1526,8 +1634,23 @@ div.btn.submit input {
 }
 
 /* color inputs */
+.color-input-container {
+  position: relative;
+
+  .color-hex-indicator {
+    position: absolute;
+    top: 0;
+    @include left(7px);
+    width: 1em;
+    line-height: 34px;
+    text-align: center;
+    user-select: none;
+  }
+}
+
 .color-input {
   @include fixed-width-font;
+  @include padding-left(calc(7px + 1em));
 }
 
 .color {
@@ -1562,6 +1685,10 @@ div.btn.submit input {
     border-radius: 17px;
     box-shadow: inset 0 0 0 1px transparentize($black, 0.85);
 
+    &:focus-within {
+      @include input-focused-styles;
+    }
+
     & > .color-preview-input {
       position: absolute;
       @include left(0);
@@ -1592,9 +1719,10 @@ div.btn.submit input {
     display: flex;
     align-items: center;
 
-    label {
+    span {
       padding: 7px 0;
       color: $mediumTextColor;
+      cursor: default;
 
       &[data-toggle=on] {
         @include padding-right(10px);
@@ -1679,8 +1807,6 @@ div.btn.submit input {
   }
 
   &:focus {
-    outline: none;
-
     .lightswitch-container {
       .handle {
         background-color: $lightSelColor;
@@ -1697,12 +1823,12 @@ div.btn.submit input {
   &.indeterminate {
     &:not(.small) {
       .lightswitch-container {
-        @include margin-left(-12px / 2);
+        @include margin-left(0.5 * -12px);
       }
     }
     &.small {
       .lightswitch-container {
-        @include margin-left(-10px / 2);
+        @include margin-left(0.5 * -10px);
       }
     }
   }
@@ -1787,7 +1913,7 @@ h2 + .actions {
 /* ----------------------------------------*/
 
 .tablepane {
-  margin: -24px -24px 0;
+  margin: -24px -24px -12px;
   overflow-x: auto;
 
   table {
@@ -1804,8 +1930,35 @@ h2 + .actions {
     thead {
       th,
       td {
-        border-bottom-left-radius: 0 !important;
-        border-bottom-right-radius: 0 !important;
+        @include border-bottom-left-radius(0);
+        @include border-bottom-right-radius(0);
+      }
+    }
+
+    thead,
+    tbody,
+    tfoot {
+      &:first-child tr:first-child {
+        th,
+        td {
+          &:first-child {
+            @include border-top-left-radius($largeBorderRadius);
+          }
+          &:last-child {
+            @include border-top-right-radius($largeBorderRadius);
+          }
+        }
+      }
+      &:last-child tr:last-child {
+        th,
+        td {
+          &:first-child {
+            @include border-bottom-left-radius($largeBorderRadius);
+          }
+          &:last-child {
+            @include border-bottom-right-radius($largeBorderRadius);
+          }
+        }
       }
     }
   }
@@ -1827,7 +1980,6 @@ table {
       font-weight: bold;
       @include alignleft;
       vertical-align: top;
-      color: $mediumTextColor;
     }
   }
 
@@ -1942,8 +2094,6 @@ table {
 
     tbody {
       tr {
-        outline: none;
-
         &:not(.disabled) {
           &:hover {
             th,
@@ -1963,7 +2113,6 @@ table {
 
       th,
       td {
-        border-top: 1px solid transparent;
         padding-top: 7px;
         padding-bottom: 7px;
         background-clip: padding-box;
@@ -1976,6 +2125,14 @@ table {
           white-space: nowrap;
           color: $lightTextColor;
         }
+      }
+    }
+
+    thead + tbody tr,
+    tr + tr {
+      th,
+      td {
+        border-top: 1px solid transparent;
       }
     }
   }
@@ -2073,9 +2230,9 @@ $elementInnerSpacing: 5px;
 .element {
   position: relative;
   cursor: default;
-  outline: none !important;
   user-select: none;
   font-weight: normal;
+  border-radius: $smallBorderRadius;
 
   &:focus,
   li:focus & {
@@ -2085,7 +2242,6 @@ $elementInnerSpacing: 5px;
   &.sel,
   li.sel & {
     background-color: $lightSelColor !important;
-    border-radius: $smallBorderRadius;
     cursor: default;
 
     &:focus {
@@ -2131,6 +2287,17 @@ $elementInnerSpacing: 5px;
 
   .label {
     display: inline-block;
+
+    .draft-label {
+      display: inline-block;
+      @include margin(-1px, 0, -1px, 7px);
+      padding: 1px 5px;
+      font-weight: normal;
+      text-decoration: none !important;
+      color: $lightTextColor;
+      background: $grey100;
+      border-radius: $largeBorderRadius;
+    }
   }
 
   &.small,
@@ -2146,6 +2313,12 @@ $elementInnerSpacing: 5px;
         position: absolute;
         @include left($baseElementSidePadding);
         top: calc(50% - 5px);
+      }
+
+      .icon:not(.delete) {
+        position: absolute;
+        @include left($baseElementSidePadding - 1);
+        top: calc(50% - 11px);
       }
     }
 
@@ -2239,7 +2412,7 @@ $elementInnerSpacing: 5px;
     @include padding-right($baseElementSidePadding + 24);
 
     &:after {
-      content: '.';
+      content: '';
       font-size: 0;
       position: absolute;
       bottom: 0;
@@ -2264,7 +2437,7 @@ $checkboxPadding: $checkboxSize + 4;
 
     &:after {
       display: block;
-      content: '.';
+      content: '';
       font-size: 0;
       position: absolute;
       top: 0;
@@ -2289,10 +2462,6 @@ $checkboxPadding: $checkboxSize + 4;
     .selectallcontainer {
       cursor: default;
 
-      &:focus {
-        outline: none;
-      }
-
       .checkbox {
         @include margin-right($elementInnerSpacing);
       }
@@ -2301,12 +2470,6 @@ $checkboxPadding: $checkboxSize + 4;
 
   // table views
   .tableview {
-    thead {
-      th.selectallcontainer {
-        outline: none;
-      }
-    }
-
     .move {
       display: block;
       position: absolute;
@@ -2340,7 +2503,6 @@ $checkboxPadding: $checkboxSize + 4;
     li {
       position: relative;
       @include margin(0, 1px, 1px, 0);
-      outline: none;
 
       &:hover {
         .element {
@@ -2542,6 +2704,7 @@ $checkboxPadding: $checkboxSize + 4;
   }
 
   .element.small,
+  .flex,
   .btn {
     clear: both;
   }
@@ -2565,6 +2728,10 @@ $checkboxPadding: $checkboxSize + 4;
 
   .caboose {
     @include floatleft;
+  }
+
+  .flex .btn {
+    float: none !important;
   }
 }
 
@@ -2695,7 +2862,7 @@ table.editable {
           opacity: 1;
 
           &:after {
-            content: '.';
+            content: '';
             font-size: 0;
             position: absolute;
             top: 0;
@@ -2736,10 +2903,6 @@ table.editable {
       overflow: hidden;
       transition: none;
       box-sizing: border-box;
-
-      &:focus {
-        outline: none;
-      }
     }
 
     .color-container {
@@ -2747,7 +2910,7 @@ table.editable {
       position: relative;
 
       & > .color,
-      & > .color-input {
+      .color-input {
         margin-bottom: 0;
       }
 
@@ -2757,8 +2920,12 @@ table.editable {
         @include left(10px);
       }
 
-      & > .color-input {
-        @include padding-left(35px);
+      .color-hex-indicator {
+        @include left(32px);
+      }
+
+      .color-input {
+        @include padding-left(calc(32px + 1em));
       }
     }
 
@@ -2783,9 +2950,7 @@ table.editable {
   & + .btn.add {
     display: block;
     width: 100%;
-    border-radius: 0 0 $mediumBorderRadius $mediumBorderRadius;
     border: 1px dashed $mediumHairlineColor;
-    border-top-width: 0;
     background-color: transparent;
     box-shadow: none;
 
@@ -2793,6 +2958,11 @@ table.editable {
       border-style: solid;
       border-color: $blue600;
     }
+  }
+
+  &:not(.hidden) + .btn.add {
+    border-top-width: 0;
+    border-radius: 0 0 $mediumBorderRadius $mediumBorderRadius;
   }
 }
 
@@ -2921,6 +3091,7 @@ ul.tree,
   position: absolute;
   left: 20%;
   width: 60%;
+  z-index: 1000;
 }
 
 .progressbar-inner {
@@ -3050,7 +3221,7 @@ ul.tree,
 
     &:after {
       display: block;
-      content: '.';
+      content: '';
       font-size: 0;
       position: absolute;
       top: 0;
@@ -3059,6 +3230,102 @@ ul.tree,
       height: 100%;
       background: url(../images/spinner.gif) no-repeat 50% 50%;;
     }
+  }
+}
+
+.pane-header {
+  margin: -24px var(--neg-padding) 24px;
+  padding: 7px 24px;
+  background: $grey050;
+  box-shadow: inset 0 -1px 0 0 transparentize($grey300, 0.75);
+  border-radius: $largeBorderRadius $largeBorderRadius 0 0;
+
+  .btn {
+    margin: 5px 0;
+    width: 34px;
+    height: 30px;
+    padding-left: 0;
+    padding-right: 0;
+
+    &:not(:hover):not(:active):not(.active) {
+      background-color: transparent;
+    }
+    &:not(:active):not(.active):hover {
+      background-color: transparentize($grey300, 0.85);
+    }
+  }
+
+  .spinner {
+    margin: 3px 0;
+  }
+}
+
+.pane-tabs {
+  margin-bottom: -7px;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  max-width: 100%;
+
+  ul {
+    margin: -7px var(--neg-padding) 0;
+    padding: 7px var(--padding) 0;
+    flex: 1;
+    display: flex;
+    flex-direction: row;
+    overflow-x: auto;
+    scrollbar-width: none;
+
+    &::-webkit-scrollbar {
+      display: none;
+    }
+
+    &.scrollable {
+      body.ltr & {
+        mask-image: linear-gradient(to left, rgba(0, 0, 0, 0), rgba(0, 0, 0, 1) 24px);
+      }
+      body.rtl & {
+        mask-image: linear-gradient(to right, rgba(0, 0, 0, 0), rgba(0, 0, 0, 1) 24px);
+      }
+    }
+
+    li {
+      &:not(:first-child) {
+        a {
+          @include margin-left(4px);
+        }
+      }
+
+      a {
+        display: block;
+        position: relative;
+        border-radius: $mediumBorderRadius $mediumBorderRadius 0 0;
+        padding: 12px;
+        white-space: nowrap;
+        line-height: 16px;
+        color: $lightTextColor;
+
+        &:hover {
+          text-decoration: none;
+        }
+
+        &:not(.sel) {
+          &:hover {
+            background-color: transparentize($grey300, 0.85);
+          }
+        }
+
+        &.sel {
+          cursor: default;
+          color: $textColor;
+          @include pane;
+        }
+      }
+    }
+  }
+
+  .menubtn {
+    @include margin-left(32px);
   }
 }
 
@@ -3072,10 +3339,9 @@ ul.tree,
     & > .field,
     & > .data {
       display: flex;
-      flex-warp: wrap; // for error lists
+      flex-wrap: wrap; // for error lists
       justify-content: space-between;
       align-items: center;
-      flex-wrap: nowrap;
       margin: 0 -24px !important;
       padding: 0 24px;
       transition: padding-left linear 100ms, padding-right linear 100ms;
@@ -3095,6 +3361,10 @@ ul.tree,
           @include icon;
           content: 'plus';
           color: $lightTextColor;
+        }
+
+        .input {
+          width: 100%;
         }
       }
 
@@ -3185,7 +3455,6 @@ ul.tree,
             margin: -7px 0;
             padding: 14px 0;
             border-radius: 0;
-            box-shadow: none;
             background-color: transparent;
             border: none !important;
           }
@@ -3227,6 +3496,10 @@ ul.tree,
         padding: 0 0 6px;
         width: 100%;
         list-style-type: none;
+      }
+
+      & > .clear-btn {
+        @include margin-right(-24px);
       }
     }
   }
@@ -3284,6 +3557,8 @@ ul.tree,
   position: relative;
 }
 
+.slideout-container,
+.slideout,
 .modal,
 .hud {
   z-index: 100;
@@ -3293,6 +3568,161 @@ ul.tree,
 .modal,
 .hud .body {
   @include modal;
+}
+
+.slideout-shade {
+  opacity: 0;
+  transition: opacity linear 250ms;
+
+  &.so-visible {
+    opacity: 1;
+  }
+}
+
+.slideout-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  height: -webkit-fill-available; // h/t https://twitter.com/AllThingsSmitty/status/1254151507412496384
+  pointer-events: none;
+}
+
+.slideout {
+  position: absolute;
+  background-color: $white;
+  box-shadow: 0 0 0 1px transparentize($grey400, 0.75), 0 25px 100px transparentize($grey900, 0.5);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  padding: 24px var(--padding);
+  pointer-events: all;
+
+  &.so-mobile {
+    --padding: 10px;
+    --neg-padding: -10px;
+    width: 100%;
+    height: 100%;
+    left: 0;
+    transition: top linear 250ms;
+    will-change: top;
+  }
+
+  &:not(.so-mobile) {
+    top: 8px;
+    width: calc(50% - 8px);
+    height: calc(100% - 16px);
+    border-radius: $largeBorderRadius;
+
+    body.ltr & {
+      transition: left linear 250ms;
+      will-change: left;
+    }
+    body.rtl & {
+      transition: right linear 250ms;
+      will-change: right;
+    }
+  }
+}
+
+/* Element editor slideouts */
+.element-editor {
+  & > .ee-body {
+    flex: 1;
+    margin: -24px var(--neg-padding) 0;
+    padding: 24px var(--padding);
+    overflow: hidden auto;
+    position: relative;
+
+    & > .pane-header {
+      & > .ee-toolbar {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        margin-bottom: -7px;
+
+        & > .pane-tabs {
+          width: 1px; // give other elements in the header plenty of room before the tabs take up whatever's left
+          flex: 1;
+          margin-bottom: 0;
+        }
+      }
+    }
+
+    & > .ee-sidebar-shade {
+      position: absolute;
+      left: 0;
+      width: 100%;
+    }
+
+    & > .ee-sidebar {
+      position: absolute;
+      @include right(0);
+      @include pane();
+      width: 350px;
+      max-width: 100%;
+      box-sizing: border-box;
+      padding: 0 var(--padding);
+      background-color: $grey050;
+      overflow: hidden auto;
+      z-index: 1;
+
+      body.ltr & {
+        transition: right linear 250ms;
+      }
+      body.rtl & {
+        transition: left linear 250ms;
+      }
+
+      & > .preview-thumb-container {
+        margin: 0 var(--neg-padding);
+        height: auto;
+        max-height: 190px;
+
+        & + .pane-header {
+          border-radius: 0;
+        }
+      }
+
+      & > .meta {
+        margin: 0 var(--neg-padding);
+        padding: 0 var(--padding);
+
+        &:not(.read-only) {
+          background: $white;
+        }
+
+        &.read-only {
+          padding-top: 14px;
+          padding-bottom: 14px;
+        }
+      }
+    }
+  }
+
+  & > .ee-footer {
+    position: relative;
+    display: flex;
+    flex-direction: row;
+    margin: 0 var(--neg-padding) -24px;
+    padding: var(--padding);
+    @include pane;
+    background-color: $grey050;
+    z-index: 1;
+
+    & > .ee-site-select {
+      flex: 1;
+    }
+
+    & > .btn {
+      @include margin-left(5px);
+    }
+
+    & > .spinner {
+      @include margin(0, var(--neg-padding), 0, 0);
+    }
+  }
 }
 
 .header,
@@ -3363,6 +3793,7 @@ ul.tree,
   }
 }
 
+.slideout-shade,
 .modal-shade,
 .hud-shade {
   z-index: 100;
@@ -3374,9 +3805,10 @@ ul.tree,
   display: none;
 }
 
+.slideout-shade,
 .modal-shade {
   &:not(.dark) {
-    background-color: transparentize($grey100, 0.35) !important;
+    background-color: transparentize($grey400, 0.65) !important;
   }
 
   &.dark {
@@ -3528,10 +3960,11 @@ ul.tree,
   align-items: center;
   height: 190px;
   background-color: $grey900;
+  cursor: pointer;
 
   &.loading {
     &:after {
-      content: '.';
+      content: '';
       font-size: 0;
       display: block;
       position: absolute;
@@ -3558,12 +3991,8 @@ ul.tree,
     img {
       display: block;
       max-width: 100%;
-      max-height: 190px;
+      max-height: 100%;
     }
-  }
-
-  &.editable {
-    cursor: pointer;
   }
 
   .buttons {
@@ -3586,56 +4015,21 @@ ul.tree,
           transition: opacity linear 100ms, backdrop-filter linear 100ms;
         }
       }
+
+      &:hover {
+        background-color: $grey500;
+
+        @supports (backdrop-filter: blur(10px)) {
+          & {
+            background-color: transparentize($grey500, 0.3);
+          }
+        }
+      }
     }
   }
 
   &:hover .buttons {
     opacity: 1;
-  }
-
-  &:not(.editable) .buttons .btn:hover {
-    background-color: $grey500;
-
-    @supports (backdrop-filter: blur(10px)) {
-      & {
-        background-color: transparentize($grey500, 0.3);
-      }
-    }
-  }
-}
-
-/* element editor HUDs */
-
-@media (min-width: 440px) {
-  .hud .elementeditor {
-    min-width: 380px;
-  }
-}
-
-.hud .elementeditor {
-  max-width: 600px;
-
-  .hud-header {
-    text-align: center;
-  }
-
-  .main {
-    padding: 8px 0;
-
-    .meta {
-      .preview-thumb-container {
-        margin: -8px -24px 8px;
-      }
-
-      .field {
-        padding-left: 24px;
-        padding-right: 24px;
-
-        &.has-errors {
-          border-radius: 0;
-        }
-      }
-    }
   }
 }
 
@@ -3685,9 +4079,6 @@ ul.tree,
             }
 
             tr {
-              &:focus {
-                outline: none;
-              }
 
               &.disabled {
                 opacity: 1;
@@ -3711,7 +4102,6 @@ ul.tree,
 
           .structure .row {
             margin-top: 1px;
-            outline: none;
           }
         }
       }
@@ -3948,8 +4338,11 @@ ul.tree,
   @include menu-option-active-styles;
 }
 
-.menu hr.padded {
-  @include margin-left(10px);
+.menu {
+  hr.padded,
+  h6.padded {
+    @include margin-left(10px);
+  }
 }
 
 /* tag select fields */
@@ -4073,9 +4466,21 @@ table.editable {
 .passwordwrapper,
 .border-box,
 .selectize-text > .selectize-control > .selectize-input {
-  &.focus,
-  &:focus {
+
+  &.focus {
     @include input-focused-styles;
+  }
+
+  body:not(.reduce-focus-visibility) & {
+    &:focus {
+      @include input-focused-styles;
+    }
+  }
+
+  body.reduce-focus-visibility & {
+    &:focus-visible {
+      @include input-focused-styles;
+    }
   }
 }
 
@@ -4191,30 +4596,22 @@ fieldset {
 .field {
   & > .status-badge {
     position: absolute;
-    top: -3px;
-    @include left(-19px);
-    font-size: 9px;
-    font-weight: bold;
-    line-height: 15px;
-    width: 15px;
-    text-align: center;
-    cursor: default;
-    border-radius: $smallBorderRadius;
+    top: 0;
+    @include left(-26px);
+    width: 2px;
+    height: 100%;
+    content: '';
+    cursor: help;
+    border: solid transparent;
+    border-width: 0 2px;
+    background-clip: content-box;
 
     &.modified {
       background-color: $blue600;
-      color: $white;
-      @include light-on-dark-text;
     }
 
     &.outdated {
       background-color: $yellow300;
-    }
-
-    &.conflicted {
-      background-color: $red600;
-      color: $white;
-      @include light-on-dark-text;
     }
   }
 
@@ -4226,7 +4623,8 @@ fieldset {
     margin-top: -5px;
     margin-bottom: 5px;
 
-    & > label {
+    & > label,
+    & > legend {
       font-weight: bold;
       color: $mediumDarkTextColor;
 
@@ -4258,17 +4656,21 @@ fieldset {
     margin-bottom: 5px;
   }
 
-  & > .notice,
-  & > .warning {
-    margin: 5px 0 0;
-  }
-
   & > .input {
     position: relative;
 
     &:after {
       @include clearafter;
     }
+
+    & + .instructions {
+      margin: 5px 0 0;
+    }
+  }
+
+  & > .notice,
+  & > .warning {
+    margin: 5px 0 0;
   }
 }
 
@@ -4361,7 +4763,7 @@ div.checkbox:empty {
 
 input.checkbox + label:empty:after,
 div.checkbox:empty:after {
-  content: '.';
+  content: '';
   font-size: 0;
 }
 
@@ -4375,7 +4777,7 @@ div.checkbox:before {
   width: $checkboxSize !important;
   height: $checkboxSize;
   box-sizing: border-box;;
-  content: '.';
+  content: '';
   font-size: 0;
   background-color: hsl(212, 50%, 99%);
   border: 1px solid transparentize($inputColor, 0.6);
@@ -4413,10 +4815,18 @@ div.checkbox.indeterminate:before {
   text-align: center;
 }
 
-input.checkbox:focus + label:before,
-:focus div.checkbox:before {
-  outline: none;
-  border-color: $inputColor;
+body:not(.reduce-focus-visibility) {
+  input.checkbox:focus + label:before,
+  :focus div.checkbox:before {
+    @include input-focused-styles;
+  }
+}
+
+body.reduce-focus-visibility {
+  input.checkbox:focus-visible + label:before,
+  :focus-visible div.checkbox:before {
+    @include input-focused-styles;
+  }
 }
 
 fieldset {
@@ -4434,14 +4844,107 @@ fieldset {
   }
 }
 
+/* radio */
+input.radio {
+  opacity: 0;
+  position: absolute;
+  width: $radioSize;
+  height: $radioSize;
+}
+
+input.radio + label,
+div.radio {
+  display: inline-block;
+  clear: none;
+  position: relative;
+  @include padding-left($radioSize+ 5);
+  height: 16px;
+  cursor: pointer;
+}
+
+input.radio:disabled + label,
+.disabled div.radio {
+  cursor: default;
+}
+
+input.radio + label:empty,
+div.radio:empty {
+  @include padding-left($radioSize);
+}
+
+/* fixes a RTL bug */
+input.radio + label:before,
+input.radio + label:after,
+div.radio:before,
+div.radio:after {
+  display: block;
+  position: absolute;
+  content: '';
+  box-sizing: border-box;
+  background-clip: padding-box;
+  border-radius: 100%;
+}
+
+input.radio + label:before,
+div.radio:before {
+  top: 0;
+  left: 0;
+  width: $radioSize;
+  height: $radioSize;
+  background-color: hsl(212, 50%, 99%);
+  border: 1px solid transparentize($inputColor, 0.6);
+}
+
+input.radio + label:after,
+div.radio:after {
+  top: 4px;
+  left: 4px;
+  width: $radioSize - 8;
+  height: $radioSize - 8;
+}
+
+input.radio:disabled + label,
+div.radio.disabled:before,
+div.radio.disabled + label {
+  opacity: 0.25;
+}
+
+input.radio:checked + label:after,
+div.radio.checked:after,
+.sel div.radio:after {
+  background: $grey900;
+}
+
+body:not(.reduce-focus-visibility) {
+  input.radio:focus + label:before,
+  :focus div.radio:before {
+    @include input-focused-styles;
+  }
+}
+
+body.reduce-focus-visibility {
+  input.radio:focus-visible + label:before,
+  :focus-visible div.radio:before {
+    @include input-focused-styles;
+  }
+}
+
 /* multiselect */
 .multiselect > select {
   color: $textColor;
   font-size: 14px;
   appearance: none;
 
-  &:focus {
-    @include input-focused-styles;
+  body:not(.reduce-focus-visibility) & {
+    &:focus {
+      @include input-focused-styles;
+    }
+  }
+
+  body.reduce-focus-visibility & {
+    &:focus-visible {
+      @include input-focused-styles;
+    }
   }
 
   option {
@@ -4475,7 +4978,6 @@ fieldset {
     margin: 0;
     padding: 0;
     border: none;
-    outline: none;
     background-color: transparent;
   }
 }
@@ -4543,16 +5045,24 @@ fieldset {
 
 .passwordwrapper {
   position: relative;
-  display: flex;
-  align-items: center;
 
   .password {
-    flex: 1;
     border: none;
+    background: transparent;
+    padding-right: 4rem;
+    box-shadow: none;
   }
 
   .password-toggle {
-    @include padding-right(7px);
+    color: $linkColor;
+    position: absolute;
+    top: 0;
+    @include right(0);
+    bottom: 0;
+
+    &:hover {
+      text-decoration: underline;
+    }
   }
 }
 
@@ -4561,27 +5071,30 @@ fieldset {
   flex-direction: row;
   align-items: center;
 
-  & > .datewrapper + .timewrapper {
+  & > .datewrapper + .timewrapper,
+  & > .timewrapper + .timezone {
     @include margin-left(5px);
   }
+}
 
-  .clear-btn {
-    width: 20px;
-    @include margin-left(4px);
-    cursor: pointer;
-    color: $darkHairlineColor;
-    border: none;
-    padding: 0;
-    background: transparent;
+.clear-btn {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 24px;
+  cursor: pointer;
+  color: $darkHairlineColor;
+  border: none;
+  padding: 0;
+  background: transparent;
 
-    &:before {
-      @include icon;
-      content: 'remove';
-    }
+  &:before {
+    @include icon;
+    content: 'remove';
+  }
 
-    &:hover {
-      color: $mediumTextColor;
-    }
+  &:hover {
+    color: $mediumTextColor;
   }
 }
 
@@ -4650,12 +5163,6 @@ fieldset {
   display: none;
 }
 
-/* Assets related */
-.hud.assetshud .body {
-  max-height: 500px;
-  overflow: auto;
-}
-
 // Selects
 .select:not(.selectize),
 .select:not(.selectize) select {
@@ -4684,9 +5191,20 @@ fieldset {
 }
 
 .select:not(.selectize) select {
-  &:hover,
-  &:focus {
+  &:hover {
     @include select-input-focused-styles;
+  }
+
+  body:not(.reduce-focus-visibility) & {
+    &:focus {
+      @include select-input-focused-styles;
+    }
+  }
+
+  body.reduce-focus-visibility & {
+    &:focus-visible {
+      @include select-input-focused-styles;
+    }
   }
 }
 
@@ -4796,6 +5314,12 @@ body .selectize-dropdown .optgroup-header {
 
 body .selectize-dropdown .active {
   @include menu-option-active-styles;
+}
+
+/* time zones */
+.timezone {
+  height: 34px;
+  max-width: 25em;
 }
 
 /* datepicker */
@@ -4968,8 +5492,6 @@ body .selectize-dropdown .active {
   }
 
   &:focus {
-    outline: none;
-
     a.active {
       background-color: $lightSelColor;
     }
@@ -5053,37 +5575,14 @@ ul.errors li {
     max-width: none;
 
     & > .input {
-      position: relative;
-      @include padding-left(440px);
+      display: flex;
+      align-items: stretch;
       background-color: $grey050;
-      overflow: hidden;
       box-shadow: none;
-
-      &:after {
-        display: block;
-        position: absolute;
-        z-index: 1;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        visibility: visible;
-        content: '.';
-        font-size: 0;
-        border-radius: $smallBorderRadius;
-        box-shadow: inset 0 1px 3px -1px darken($grey200, 10%);
-        user-select: none;
-        pointer-events: none;
-      }
     }
   }
 
   .mc-sidebar {
-    position: absolute;
-    top: 0;
-    margin: 0;
-    border: none;
-    height: 100%;
     box-sizing: border-box;
 
     .mc-col-items {
@@ -5092,22 +5591,28 @@ ul.errors li {
     }
 
     &.block-types {
-      @include left(0);
       width: 200px;
+      @include border-top-left-radius($smallBorderRadius);
+      @include border-bottom-left-radius($smallBorderRadius);
 
-      .mc-col-items {
-        .btn {
-          margin: 14px;
+      & > .mc-col-inner-container {
+        & > .mc-col-heading {
+          @include border-top-left-radius($smallBorderRadius);
+        }
+
+        & > .mc-col-items {
+          .btn {
+            margin: 14px;
+          }
         }
       }
     }
 
     &.mc-fields {
-      @include left(200px);
       width: 240px;
       z-index: 1;
       background: #fff;
-      box-shadow: 0 0 0 1px transparentize($grey900, 0.9), 0 2px 5px -2px transparentize($grey900, 0.8);
+      box-shadow: -1px 0 0 0 transparentize($grey900, 0.9), 1px 0 0 0 transparentize($grey900, 0.9);
 
       .mc-col-items {
         padding: 14px;
@@ -5133,12 +5638,14 @@ ul.errors li {
   .mc-field-settings {
     flex: 1;
     position: relative;
-    height: 100%;
+    @include border-top-right-radius($smallBorderRadius);
+    @include border-bottom-right-radius($smallBorderRadius);
 
     & > .mc-col-inner-container {
       & > .mc-col-heading {
         padding-left: 24px;
         padding-right: 24px;
+        @include border-top-right-radius($smallBorderRadius);
       }
 
       & > .mc-col-items {
@@ -5251,7 +5758,6 @@ $titlebarBorderRadius: $largeBorderRadius - 1;
   border-radius: $largeBorderRadius;
   border: 1px solid $hairlineColor;
   background-color: $grey050;
-  outline: none;
 
   &.static {
     padding-top: 14px;
@@ -5379,12 +5885,10 @@ $titlebarBorderRadius: $largeBorderRadius - 1;
   &:not(.static) {
     & > .fields {
       padding-top: 14px;
-    }
-  }
 
-  & > .fields {
-    & > .field {
-      margin: 15px 0;
+      & > .flex-fields > .field > .status-badge {
+        @include left(-17px);
+      }
     }
   }
 
@@ -5519,14 +6023,22 @@ only screen and (min-resolution: 1.5dppx) {
     }
   }
 
-  .spinner
+  .spinner,
   .elements.busy:after {
     background-image: url(../images/spinner_2x.gif);
     background-size: 20px;
   }
-  .spinner.big {
-    background-image: url(../images/spinner_big_2x.gif);
-    background-size: 48px;
+  .spinner {
+    &.over-bg {
+      background-image: url(../images/spinner_bg_2x.gif);
+    }
+    &.big {
+      background-image: url(../images/spinner_big_2x.gif);
+      background-size: 48px;
+      &.over-bg {
+        background-image: url(../images/spinner_big_bg_2x.gif);
+      }
+    }
   }
 
   .btn.icon.add.loading:after {

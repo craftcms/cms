@@ -4,15 +4,37 @@
 // Use old jQuery prefilter behavior
 // see https://jquery.com/upgrade-guide/3.5/
 var rxhtmlTag = /<(?!area|br|col|embed|hr|img|input|link|meta|param)(([a-z][^\/\0>\x20\t\r\n\f]*)[^>]*)\/>/gi;
-jQuery.htmlPrefilter = function( html ) {
-    return html.replace( rxhtmlTag, "<$1></$2>" );
+jQuery.htmlPrefilter = function(html) {
+    return html.replace(rxhtmlTag, "<$1></$2>");
 };
-
 
 // Set all the standard Craft.* stuff
 $.extend(Craft,
     {
         navHeight: 48,
+
+        /**
+         * @callback indexKeyCallback
+         * @param {object} currentValue
+         * @param {number} [index]
+         * @return {string}
+         */
+        /**
+         * Indexes an array of objects by a specified key
+         *
+         * @param {object[]} arr
+         * @param {(string|indexKeyCallback)} key
+         */
+        index: function(arr, key) {
+            if (!$.isArray(arr)) {
+                throw 'The first argument passed to Craft.index() must be an array.';
+            }
+
+            return arr.reduce((index, obj, i) => {
+                index[typeof key === 'string' ? obj[key] : key(obj, i)] = obj;
+                return index;
+            }, {});
+        },
 
         /**
          * Get a translated message.
@@ -200,6 +222,18 @@ $.extend(Craft,
             var formatter = d3.formatLocale(d3FormatLocaleDefinition).format(format);
 
             return formatter(number);
+        },
+
+        /**
+         * @param {string} key
+         * @param {boolean} shift
+         * @param {boolean} alt
+         */
+        shortcutText: function (key, shift, alt) {
+            if (Craft.clientOs === 'Mac') {
+                return (alt ? '⌥' : '') + (shift ? '⇧' : '') + '⌘' + key;
+            }
+            return 'Ctrl+' + (alt ? 'Alt+' : '') + (shift ? 'Shift+' : '') + key;
         },
 
         /**
@@ -615,8 +649,6 @@ $.extend(Craft,
             });
         },
 
-        _processedApiHeaders: false,
-
         /**
          * Sends a request to the Craftnet API.
          * @param {string} method The request action to use ('GET' or 'POST')
@@ -629,8 +661,10 @@ $.extend(Craft,
             return new Promise((resolve, reject) => {
                 options = options ? $.extend({}, options) : {};
                 let cancelToken = options.cancelToken || null;
+
                 // Get the latest headers
-                this.getApiHeaders(cancelToken).then(apiHeaders => {
+                this._getApiHeaders(cancelToken).then(apiHeaders => {
+                    // Send the API request
                     options.method = method;
                     options.baseURL = Craft.baseApiUrl;
                     options.url = uri;
@@ -640,35 +674,17 @@ $.extend(Craft,
                         v: new Date().getTime(),
                     });
 
+                    // Force the API to process the Craft headers if this is the first API request
+                    if (!this._apiHeaders) {
+                        options.params.processCraftHeaders = 1;
+                    }
+
                     axios.request(options).then((apiResponse) => {
-                        // Send the API response back immediately
-                        resolve(apiResponse.data);
-
-                        if (!this._processedApiHeaders) {
-                            if (apiResponse.headers['x-craft-license-status']) {
-                                this._processedApiHeaders = true;
-                                this.sendActionRequest('POST', 'app/process-api-response-headers', {
-                                    data: {
-                                        headers: apiResponse.headers,
-                                    },
-                                    cancelToken: cancelToken,
-                                });
-
-                                // If we just got a new license key, set it and then resolve the header waitlist
-                                if (this._apiHeaders && this._apiHeaders['X-Craft-License'] === '__REQUEST__') {
-                                    this._apiHeaders['X-Craft-License'] = window.cmsLicenseKey = apiResponse.headers['x-craft-license'];
-                                    this._resolveHeaderWaitlist();
-                                }
-                            } else if (
-                                this._apiHeaders &&
-                                this._apiHeaders['X-Craft-License'] === '__REQUEST__' &&
-                                this._apiHeaderWaitlist.length
-                            ) {
-                                // The request didn't send headers. Go ahead and resolve the next request on the
-                                // header waitlist.
-                                this._apiHeaderWaitlist.shift()[0](this._apiHeaders);
-                            }
-                        }
+                        // Process the response headers
+                        this._processApiHeaders(apiResponse.headers, cancelToken).then(() => {
+                            // Finally return the API response data
+                            resolve(apiResponse.data);
+                        }).catch(reject);
                     }).catch(reject);
                 }).catch(reject);
             });
@@ -684,7 +700,7 @@ $.extend(Craft,
          * @param {Object|null} cancelToken
          * @return {Promise}
          */
-        getApiHeaders: function(cancelToken) {
+        _getApiHeaders: function(cancelToken) {
             return new Promise((resolve, reject) => {
                 // Are we already loading them?
                 if (this._loadingApiHeaders) {
@@ -708,32 +724,53 @@ $.extend(Craft,
                         return;
                     }
 
-                    this._apiHeaders = response.data;
-                    resolve(this._apiHeaders);
-
-                    // If we are requesting a new Craft license, hold off on
-                    // resolving other API requests until we have one
-                    if (response.data['X-Craft-License'] !== '__REQUEST__') {
-                        this._resolveHeaderWaitlist();
-                    }
+                    resolve(response.data);
                 }).catch(e => {
-                    this._loadingApiHeaders = false;
-                    reject(e)
-
-                    // Was anything else waiting for them?
-                    while (this._apiHeaderWaitlist.length) {
-                        this._apiHeaderWaitlist.shift()[1](e);
-                    }
+                    this._rejectApiRequests(reject, e);
                 });
             });
         },
 
-        _resolveHeaderWaitlist: function() {
-            this._loadingApiHeaders = false;
+        _processApiHeaders: function(headers, cancelToken) {
+            return new Promise((resolve, reject) => {
+                // Have we already processed them?
+                if (this._apiHeaders) {
+                    resolve();
+                    return;
+                }
 
-            // Was anything else waiting for them?
+                this.sendActionRequest('POST', 'app/process-api-response-headers', {
+                    data: {
+                        headers: headers,
+                    },
+                    cancelToken: cancelToken,
+                }).then(response => {
+                    // Make sure we even are waiting for these anymore
+                    if (!this._loadingApiHeaders) {
+                        reject(e);
+                        return;
+                    }
+
+                    this._apiHeaders = response.data;
+                    this._loadingApiHeaders = false;
+
+                    resolve();
+
+                    // Was anything else waiting for them?
+                    while (this._apiHeaderWaitlist.length) {
+                        this._apiHeaderWaitlist.shift()[0](this._apiHeaders);
+                    }
+                }).catch(e => {
+                    this._rejectApiRequests(reject, e);
+                });
+            });
+        },
+
+        _rejectApiRequests: function(reject, e) {
+            this._loadingApiHeaders = false;
+            reject(e);
             while (this._apiHeaderWaitlist.length) {
-                this._apiHeaderWaitlist.shift()[0](this._apiHeaders);
+                this._apiHeaderWaitlist.shift()[1](e);
             }
         },
 
@@ -742,7 +779,6 @@ $.extend(Craft,
          */
         clearCachedApiHeaders: function() {
             this._apiHeaders = null;
-            this._processedApiHeaders = false;
             this._loadingApiHeaders = false;
 
             // Reject anything in the header waitlist
@@ -772,7 +808,7 @@ $.extend(Craft,
                 }
                 request.responseType = 'blob';
 
-                request.onload = function() {
+                request.onload = () => {
                     // Only handle status code 200
                     if (request.status === 200) {
                         // Try to find out the filename from the content disposition `filename` value
@@ -794,7 +830,7 @@ $.extend(Craft,
                     } else {
                         reject();
                     }
-                }.bind(this);
+                };
 
                 request.send(body);
             });
@@ -825,8 +861,10 @@ $.extend(Craft,
          * @param {string} oldData
          * @param {string} newData
          * @param {object} deltaNames
+         * @param {function} [callback] Callback function that should be called whenever a new group of modified params has been found
+         * @return {string}
          */
-        findDeltaData: function(oldData, newData, deltaNames) {
+        findDeltaData: function(oldData, newData, deltaNames, callback) {
             // Sort the delta namespaces from least -> most specific
             deltaNames.sort(function(a, b) {
                 if (a.length === b.length) {
@@ -852,6 +890,9 @@ $.extend(Craft,
                 )) {
                     params = params.concat(groupedNewParams[deltaNames[n]]);
                     params.push('modifiedDeltaNames[]=' + deltaNames[n]);
+                    if (callback) {
+                        callback(deltaNames[n], groupedNewParams[deltaNames[n]]);
+                    }
                 }
             }
 
@@ -1188,7 +1229,7 @@ $.extend(Craft,
             if ($.isPlainObject(arr)) {
                 arr = Object.values(arr);
             }
-            return ($.inArray(elem, arr) !== -1);
+            return arr.includes(elem);
         },
 
         /**
@@ -1335,6 +1376,9 @@ $.extend(Craft,
          * @return string
          */
         asciiString: function(str, charMap) {
+            // Normalize NFD chars to NFC
+            str = str.normalize('NFC');
+
             var asciiStr = '';
             var char;
 
@@ -1354,26 +1398,6 @@ $.extend(Craft,
                 result += characters.charAt(Math.floor(Math.random() * 62));
             }
             return result;
-        },
-
-        /**
-         * Prevents the outline when an element is focused by the mouse.
-         *
-         * @param elem Either an actual element or a jQuery collection.
-         */
-        preventOutlineOnMouseFocus: function(elem) {
-            var $elem = $(elem),
-                namespace = '.preventOutlineOnMouseFocus';
-
-            $elem.on('mousedown' + namespace, function() {
-                    $elem.addClass('no-outline');
-                    $elem.trigger('focus');
-                })
-                .on('keydown' + namespace + ' blur' + namespace, function(event) {
-                    if (event.keyCode !== Garnish.SHIFT_KEY && event.keyCode !== Garnish.CTRL_KEY && event.keyCode !== Garnish.CMD_KEY) {
-                        $elem.removeClass('no-outline');
-                    }
-                });
         },
 
         /**
@@ -1456,10 +1480,17 @@ $.extend(Craft,
             $('.fieldtoggle', $container).fieldtoggle();
             $('.lightswitch', $container).lightswitch();
             $('.nicetext', $container).nicetext();
-            $('.pill', $container).pill();
             $('.formsubmit', $container).formsubmit();
             $('.menubtn', $container).menubtn();
             $('.datetimewrapper', $container).datetime();
+
+            // Open outbound links in new windows
+            // hat tip: https://stackoverflow.com/a/2911045/1688568
+            $('a', $container).each(function() {
+                if (this.hostname.length && this.hostname !== location.hostname && typeof $(this).attr('target') === 'undefined') {
+                    $(this).attr('rel', 'noopener').attr('target', '_blank')
+                }
+            });
         },
 
         _elementIndexClasses: {},
@@ -1793,8 +1824,41 @@ $.extend(Craft,
 
             $form.trigger($.extend({type: 'submit'}, options.data));
         },
-    });
 
+        /**
+         * Traps focus within a container, so when focus is tabbed out of it, it’s cycled back into it.
+         * @param {Object} container
+         */
+        trapFocusWithin: function(container) {
+            const $container = $(container);
+            $container.on('keydown.focus-trap', ev => {
+                // Tab key?
+                if (ev.keyCode === 9) {
+                    const $focusableElements = $container.find(':focusable');
+                    const index = $focusableElements.index(document.activeElement);
+                    if (index !== -1) {
+                        if (index === 0 && ev.shiftKey) {
+                            ev.preventDefault();
+                            ev.stopPropagation();
+                            $focusableElements.last().focus();
+                        } else if (index === $focusableElements.length - 1 && !ev.shiftKey) {
+                            ev.preventDefault();
+                            ev.stopPropagation();
+                            $focusableElements.first().focus();
+                        }
+                    }
+                }
+            });
+        },
+
+        /**
+         * Sets focus to the first focusable element within a container.
+         * @param {Object} container
+         */
+        setFocusWithin: function(container) {
+            $(container).find(':focusable:first').focus();
+        },
+    });
 
 // -------------------------------------------
 //  Custom jQuery plugins
@@ -1958,14 +2022,6 @@ $.extend($.fn,
             });
         },
 
-        pill: function() {
-            return this.each(function() {
-                if (!$.data(this, 'pill')) {
-                    new Garnish.Pill(this);
-                }
-            });
-        },
-
         formsubmit: function() {
             // Secondary form submit buttons
             return this.on('click', function(ev) {
@@ -2024,6 +2080,7 @@ $.extend($.fn,
                                 type: 'button',
                                 class: 'clear-btn',
                                 title: Craft.t('app', 'Clear'),
+                                'aria-label': Craft.t('app', 'Clear'),
                             })
                                 .appendTo($wrapper)
                                 .on('click', () => {
@@ -2031,6 +2088,7 @@ $.extend($.fn,
                                         $inputs.eq(i).val('');
                                     }
                                     $btn.remove();
+                                    $inputs.first().focus();
                                 })
                         }
                     } else {
@@ -2043,6 +2101,12 @@ $.extend($.fn,
         },
     });
 
+// Override Garnish.NiceText.charsLeftHtml() to be more accessible
+Garnish.NiceText.charsLeftHtml = charsLeft => {
+    return Craft.t('app', '<span class="visually-hidden">Characters left:</span> {chars, number}', {
+        chars: charsLeft,
+    });
+};
 
 Garnish.$doc.ready(function() {
     Craft.initUiElements();

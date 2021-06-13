@@ -12,6 +12,7 @@ use craft\base\Element;
 use craft\db\Table;
 use craft\elements\db\ElementQueryInterface;
 use craft\elements\db\TagQuery;
+use craft\helpers\Cp;
 use craft\helpers\Db;
 use craft\models\TagGroup;
 use craft\records\Tag as TagRecord;
@@ -120,7 +121,7 @@ class Tag extends Element
             $sources[] = [
                 'key' => 'taggroup:' . $tagGroup->uid,
                 'label' => Craft::t('site', $tagGroup->name),
-                'criteria' => ['groupId' => $tagGroup->id]
+                'criteria' => ['groupId' => $tagGroup->id],
             ];
         }
 
@@ -133,7 +134,7 @@ class Tag extends Element
      */
     public static function gqlTypeNameByContext($context): string
     {
-        /** @var TagGroup $context */
+        /* @var TagGroup $context */
         return $context->handle . '_Tag';
     }
 
@@ -143,7 +144,7 @@ class Tag extends Element
      */
     public static function gqlScopesByContext($context): array
     {
-        /** @var TagGroup $context */
+        /* @var TagGroup $context */
         return ['taggroups.' . $context->uid];
     }
 
@@ -153,7 +154,7 @@ class Tag extends Element
      */
     public static function gqlMutationNameByContext($context): string
     {
-        /** @var TagGroup $context */
+        /* @var TagGroup $context */
         return 'save_' . $context->handle . '_Tag';
     }
 
@@ -233,7 +234,7 @@ class Tag extends Element
     /**
      * @inheritdoc
      */
-    public function getIsEditable(): bool
+    protected function isEditable(): bool
     {
         return true;
     }
@@ -272,33 +273,6 @@ class Tag extends Element
     public function getGqlTypeName(): string
     {
         return static::gqlTypeNameByContext($this->getGroup());
-    }
-
-    // Indexes, etc.
-    // -------------------------------------------------------------------------
-
-    /**
-     * @inheritdoc
-     */
-    public function getEditorHtml(): string
-    {
-        $html = Craft::$app->getView()->renderTemplateMacro('_includes/forms', 'textField', [
-            [
-                'label' => Craft::t('app', 'Title'),
-                'siteId' => $this->siteId,
-                'id' => 'title',
-                'name' => 'title',
-                'value' => $this->title,
-                'errors' => $this->getErrors('title'),
-                'first' => true,
-                'autofocus' => true,
-                'required' => true
-            ]
-        ]);
-
-        $html .= parent::getEditorHtml();
-
-        return $html;
     }
 
     // Events

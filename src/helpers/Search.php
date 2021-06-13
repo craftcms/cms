@@ -26,7 +26,7 @@ class Search
      * @param string|null The language that the character map should be based on, if `$processCharMap` is `true`.
      * @return string The cleansed keywords.
      */
-    public static function normalizeKeywords($str, array $ignore = [], bool $processCharMap = true, string $language = null): string
+    public static function normalizeKeywords($str, array $ignore = [], bool $processCharMap = true, ?string $language = null): string
     {
         // Flatten
         if (is_array($str)) {
@@ -34,9 +34,7 @@ class Search
         }
 
         // Get rid of tags
-        $str = preg_replace('/<br\s*\/?>/i', ' ', $str);
-        $str = preg_replace('/<\/\w+>/', ' $1', $str);
-        $str = strip_tags($str);
+        $str = strip_tags(preg_replace(['/<br\s*\/?>/i', '/<\/\w+>/'], [' ', ' $1'], $str));
 
         // Convert non-breaking spaces entities to regular ones
         $str = str_replace(['&nbsp;', '&#160;', '&#xa0;'], ' ', $str);
@@ -48,10 +46,11 @@ class Search
         $str = mb_strtolower($str);
 
         if ($processCharMap) {
+            $str = strtr($str, StringHelper::asciiCharMap(true, $language ?? Craft::$app->language));
+
             // Remove punctuation and diacritics
             $punctuation = self::_getPunctuation();
             $str = str_replace(array_keys($punctuation), $punctuation, $str);
-            $str = strtr($str, StringHelper::asciiCharMap(true, $language ?? Craft::$app->language));
         }
 
         // Remove ignore-words?
@@ -63,13 +62,7 @@ class Search
         }
 
         // Strip out new lines and superfluous spaces
-        $str = preg_replace('/[\n\r]+/u', ' ', $str);
-        $str = preg_replace('/\s{2,}/u', ' ', $str);
-
-        // Trim white space
-        $str = trim($str);
-
-        return $str;
+        return trim(preg_replace(['/[\n\r]+/u', '/\s{2,}/u'], ' ', $str));
     }
 
     /**

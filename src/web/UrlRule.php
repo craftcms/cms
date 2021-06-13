@@ -36,9 +36,9 @@ class UrlRule extends \yii\web\UrlRule
     public function __construct(array $config = [])
     {
         // Add support for a 'template' config option, which acts as a shortcut for templates/render?template=foo
-        if (isset($config['template'])) {
+        if (array_key_exists('template', $config)) {
             $config['route'] = 'templates/render';
-            $config['params']['template'] = $config['template'];
+            $config['params']['template'] = (string)$config['template'];
             unset($config['template']);
 
             if (isset($config['variables'])) {
@@ -76,7 +76,7 @@ class UrlRule extends \yii\web\UrlRule
      */
     public function parseRequest($manager, $request)
     {
-        /** @var UrlManager $manager */
+        /* @var UrlManager $manager */
         $result = parent::parseRequest($manager, $request);
 
         // Is this a template route?

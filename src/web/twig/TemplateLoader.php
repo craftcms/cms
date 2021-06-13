@@ -19,7 +19,7 @@ use Twig\Source;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
-/** @noinspection PhpDeprecationInspection */
+/* @noinspection PhpDeprecationInspection */
 
 class TemplateLoader implements LoaderInterface, ExistsLoaderInterface
 {

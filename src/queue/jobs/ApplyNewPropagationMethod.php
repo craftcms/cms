@@ -9,9 +9,11 @@ namespace craft\queue\jobs;
 
 use Craft;
 use craft\base\ElementInterface;
+use craft\db\Table;
 use craft\errors\UnsupportedSiteException;
 use craft\events\BatchElementActionEvent;
 use craft\helpers\ArrayHelper;
+use craft\helpers\Db;
 use craft\helpers\ElementHelper;
 use craft\queue\BaseJob;
 use craft\services\Elements;
@@ -42,7 +44,7 @@ class ApplyNewPropagationMethod extends BaseJob
      */
     public function execute($queue)
     {
-        /** @var string|ElementInterface $elementType */
+        /* @var string|ElementInterface $elementType */
         $elementType = $this->elementType;
         $query = $elementType::find()
             ->siteId('*')
@@ -59,7 +61,7 @@ class ApplyNewPropagationMethod extends BaseJob
 
         $callback = function(BatchElementActionEvent $e) use ($elementType, $queue, $query, $total, $elementsService, $allSiteIds) {
             if ($e->query === $query) {
-                $this->setProgress($queue, ($e->position - 1) / $total, Craft::t('app', '{step} of {total}', [
+                $this->setProgress($queue, ($e->position - 1) / $total, Craft::t('app', '{step, number} of {total, number}', [
                     'step' => $e->position,
                     'total' => $total,
                 ]));
@@ -85,11 +87,19 @@ class ApplyNewPropagationMethod extends BaseJob
                     ->indexBy('siteId')
                     ->all();
 
+                if (!empty($otherSiteElements)) {
+                    // Remove their URIs so the duplicated elements can retain them w/out needing to increment them
+                    Db::update(Table::ELEMENTS_SITES, [
+                        'uri' => null,
+                    ], [
+                        'id' => ArrayHelper::getColumn($otherSiteElements, 'siteSettingsId'),
+                    ], [], false);
+                }
+
                 // Duplicate those blocks so their content can live on
                 while (!empty($otherSiteElements)) {
                     $otherSiteElement = array_pop($otherSiteElements);
                     try {
-                        /** @var Element $newElement */
                         $newElement = $elementsService->duplicateElement($otherSiteElement);
                     } catch (UnsupportedSiteException $e) {
                         // Just log it and move along

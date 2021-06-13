@@ -88,7 +88,8 @@
                             </template>
                         </template>
                         <template slot="detail" slot-scope="props">
-                            <div style="cursor: pointer;" @click="handleDetailRow(props.rowData.id)" v-if="props.rowData.detail.content" v-html="props.rowData.detail.handle"></div>
+                            <div class="detail-cursor-pointer" @click="handleDetailRow(props.rowData.id)" v-if="props.rowData.detail.content && props.rowData.detail.handle" v-html="props.rowData.detail.handle">asd</div>
+                            <div class="detail-cursor-pointer" @click="handleDetailRow(props.rowData.id)" v-if="props.rowData.detail.content && (!props.rowData.detail.handle || props.rowData.detail.handle == undefined) && (Object.keys(props.rowData.detail.content).length || props.rowData.detail.content.length)" data-icon="info" :title="props.rowData.detail.title"></div>
                         </template>
                         <template slot="reorder" slot-scope="props">
                             <i class="move icon vue-table-move-handle" :class="{disabled: !canReorder}" :data-id="props.rowData.id"></i>
@@ -648,6 +649,10 @@
 
     table.data.vue-admin-table-dragging tbody tr:not(.disabled):hover td {
         background-color: transparent;
+    }
+
+    .detail-cursor-pointer {
+      cursor: pointer;
     }
 
 </style>

@@ -42,11 +42,11 @@ class HandleValidatorTest extends Unit
 
     public function testStaticConstants()
     {
-        $this->assertSame('[a-zA-Z][a-zA-Z0-9_]*', HandleValidator::$handlePattern);
-        $this->assertSame(
+        self::assertSame('[a-zA-Z][a-zA-Z0-9_]*', HandleValidator::$handlePattern);
+        self::assertSame(
             [
                 'attribute', 'attributeLabels', 'attributeNames', 'attributes', 'classHandle', 'content',
-                'dateCreated', 'dateUpdated', 'false', 'fields', 'handle', 'id', 'n', 'name', 'no',
+                'dateCreated', 'dateUpdated', 'errors', 'false', 'fields', 'handle', 'id', 'n', 'name', 'no',
                 'rawContent', 'rules', 'searchKeywords', 'section', 'this',
                 'true', 'type', 'uid', 'value', 'y', 'yes',
             ],
@@ -63,7 +63,7 @@ class HandleValidatorTest extends Unit
             $this->model->exampleParam = $reservedWord;
             $this->handleValidator->validateAttribute($this->model, 'exampleParam');
 
-            $this->assertArrayHasKey('exampleParam', $this->model->getErrors(), $reservedWord);
+            self::assertArrayHasKey('exampleParam', $this->model->getErrors(), $reservedWord);
 
             $this->model->clearErrors();
             $this->model->exampleParam = null;
@@ -82,12 +82,12 @@ class HandleValidatorTest extends Unit
 
         $validatorResult = $this->handleValidator->validateAttribute($this->model, 'exampleParam');
 
-        $this->assertNull($validatorResult);
+        self::assertNull($validatorResult);
 
         if ($mustValidate) {
-            $this->assertArrayNotHasKey('exampleParam', $this->model->getErrors());
+            self::assertArrayNotHasKey('exampleParam', $this->model->getErrors());
         } else {
-            $this->assertArrayHasKey('exampleParam', $this->model->getErrors());
+            self::assertArrayHasKey('exampleParam', $this->model->getErrors());
         }
     }
 
@@ -116,7 +116,7 @@ class HandleValidatorTest extends Unit
         $this->model = new ExampleModel();
         $this->handleValidator = new HandleValidator(['reservedWords' => self::$reservedWords]);
 
-        $this->assertSame(self::$reservedWords, $this->handleValidator->reservedWords);
+        self::assertSame(self::$reservedWords, $this->handleValidator->reservedWords);
         self::$reservedWords = array_merge(self::$reservedWords, HandleValidator::$baseReservedWords);
     }
 }

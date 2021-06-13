@@ -36,6 +36,18 @@ trait VolumeTrait
     public $url;
 
     /**
+     * @var string Title translation method
+     * @since 3.6.0
+     */
+    public $titleTranslationMethod = Field::TRANSLATION_METHOD_SITE;
+
+    /**
+     * @var string|null Title translation key format
+     * @since 3.6.0
+     */
+    public $titleTranslationKeyFormat;
+
+    /**
      * @var int|null Sort order
      */
     public $sortOrder;

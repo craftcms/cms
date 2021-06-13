@@ -14,7 +14,6 @@ use craft\helpers\Console;
 use craft\helpers\Install as InstallHelper;
 use craft\migrations\Install;
 use craft\models\Site;
-use Seld\CliPrompt\CliPrompt;
 use yii\base\Exception;
 use yii\console\ExitCode;
 
@@ -56,7 +55,7 @@ class InstallController extends Controller
      */
     public $language;
 
-    /** @inheritdoc */
+    /* @inheritdoc */
     public $defaultAction = 'craft';
 
     /**
@@ -142,7 +141,7 @@ class InstallController extends Controller
             $username = $this->username ?: $this->prompt('Username:', ['validator' => [$this, 'validateUsername'], 'default' => 'admin']);
             $email = $this->email ?: $this->prompt('Email:', ['required' => true, 'validator' => [$this, 'validateEmail']]);
         }
-        $password = $this->password ?: $this->_passwordPrompt();
+        $password = $this->password ?: $this->passwordPrompt(['validator' => [$this, 'validatePassword']]);
         $siteName = $this->siteName ?: $this->prompt('Site name:', ['required' => true, 'default' => InstallHelper::defaultSiteName(), 'validator' => [$this, 'validateSiteName']]);
         $siteUrl = $this->siteUrl ?: $this->prompt('Site URL:', ['required' => true, 'default' => InstallHelper::defaultSiteUrl(), 'validator' => [$this, 'validateSiteUrl']]);
         $language = $this->language ?: $this->prompt('Site language:', ['default' => InstallHelper::defaultSiteLanguage(), 'validator' => [$this, 'validateLanguage']]);
@@ -198,7 +197,7 @@ class InstallController extends Controller
     }
 
     /**
-     * Installs a plugin. (DEPRECATED -- use plugin/install instead.)
+     * DEPRECATED. Use `plugin/install` instead.
      *
      * @param string $handle
      * @return int
@@ -290,27 +289,5 @@ class InstallController extends Controller
         }
         $error = null;
         return true;
-    }
-
-    private function _passwordPrompt(): string
-    {
-        // todo: would be nice to replace CliPrompt with a native Yii silent prompt
-        // (https://github.com/yiisoft/yii2/issues/10551)
-        top:
-        $this->stdout('Password: ');
-        if (($password = CliPrompt::hiddenPrompt(true)) === '') {
-            $this->stdout('Invalid input.' . PHP_EOL);
-            goto top;
-        }
-        if (!$this->validatePassword($password, $error)) {
-            $this->stdout($error . PHP_EOL);
-            goto top;
-        }
-        $this->stdout('Confirm: ');
-        if (!($matched = ($password === CliPrompt::hiddenPrompt(true)))) {
-            $this->stdout('Passwords didn\'t match, try again.' . PHP_EOL, Console::FG_RED);
-            goto top;
-        }
-        return $password;
     }
 }

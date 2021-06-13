@@ -65,21 +65,8 @@ class m150428_231346_userpreferences extends Migration
      */
     private function _createUserPrefsIndexAndForeignKey()
     {
-        $this->createIndex(
-            $this->db->getIndexName($this->_prefsTable, 'userId', true),
-            $this->_prefsTable,
-            'userId',
-            true
-        );
-
-        $this->addForeignKey(
-            $this->db->getForeignKeyName($this->_prefsTable, ['userId']),
-            $this->_prefsTable,
-            'userId',
-            $this->_usersTable,
-            'id',
-            'CASCADE'
-        );
+        $this->createIndex(null, $this->_prefsTable, 'userId', true);
+        $this->addForeignKey(null, $this->_prefsTable, 'userId', $this->_usersTable, 'id', 'CASCADE');
     }
 
     /**
@@ -94,8 +81,8 @@ class m150428_231346_userpreferences extends Migration
                 'not',
                 [
                     'preferredLocale' => null,
-                    'weekStartDay' => '0'
-                ]
+                    'weekStartDay' => '0',
+                ],
             ])
             ->all($this->db);
 
@@ -122,7 +109,7 @@ class m150428_231346_userpreferences extends Migration
 
             $this->batchInsert($this->_prefsTable, [
                 'userId',
-                'preferences'
+                'preferences',
             ], $rows, false);
         }
     }

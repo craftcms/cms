@@ -1,4 +1,4 @@
-import {buildClientSchema, getIntrospectionQuery, parse} from 'graphql';
+import {buildClientSchema, getIntrospectionQuery} from 'graphql';
 import React from 'react';
 import GraphiQL from 'graphiql';
 import GraphiQLExplorer from 'graphiql-explorer';
@@ -74,16 +74,16 @@ class Item extends React.Component {
         return elem(GraphiQL.MenuItem, {
             label: this.props.name,
             title: this.props.name,
-            onSelect: function() {
+            onSelect: () => {
                 setSchema(this.props.uid)
-            }.bind(this)
+            },
         })
     }
 }
 
 class SchemaSelector extends React.Component {
     render() {
-        let e =  elem(GraphiQL.Menu, {
+        let e = elem(GraphiQL.Menu, {
             className: 'menu',
             label: this.props.selectedSchema.name,
             title: "Select a GraphQL schema"
@@ -128,7 +128,7 @@ export class CraftGraphiQL extends React.Component {
     // Event handlers
     handleEditQuery(query) {
         // On query change, save it to state, so everyone knows about it.
-        this.setState({query: query});
+        this.setState({query});
         onEditQuery(query);
     }
 

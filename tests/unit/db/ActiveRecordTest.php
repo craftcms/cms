@@ -39,8 +39,8 @@ class ActiveRecordTest extends Unit
      */
     public function testIsCraftAr()
     {
-        $this->assertInstanceOf(ActiveRecord::class, new Volume());
-        $this->assertInstanceOf(ActiveRecord::class, new Session());
+        self::assertInstanceOf(ActiveRecord::class, new Volume());
+        self::assertInstanceOf(ActiveRecord::class, new Session());
     }
 
     /**
@@ -75,7 +75,7 @@ class ActiveRecordTest extends Unit
 
         // Save it again with a new value. Ensure dateUpdated is now current.
         $date = new DateTime('now', $dateTimeZone);
-        $this->assertGreaterThan($oldDate, $date);
+        self::assertGreaterThan($oldDate, $date);
 
         $session->token = 'test2';
         $session->save();
@@ -91,18 +91,20 @@ class ActiveRecordTest extends Unit
     {
         $session = $this->ensureSession();
 
-        $this->assertTrue(StringHelper::isUUID($session->uid));
+        self::assertTrue(StringHelper::isUUID($session->uid));
 
         $session->delete();
     }
 
     /**
-     * @dataProvider dataForDbPrepareDataProvider
+     * @dataProvider prepValForDbDataProvider
      *
-     * @param $result
-     * @param $input
+     * @param string $expected
+     * @param mixed $input
+     * @throws \Throwable
+     * @throws \yii\db\StaleObjectException
      */
-    public function testPrepValForDb($result, $input)
+    public function testPrepValForDb(string $expected, $input)
     {
         $vol = new Volume();
         $vol->name = 'NaN';
@@ -113,8 +115,8 @@ class ActiveRecordTest extends Unit
 
         $save = $vol->save();
 
-        $this->assertTrue($save);
-        $this->assertSame($result, $vol->settings);
+        self::assertTrue($save);
+        self::assertSame($expected, $vol->settings);
 
         $vol->delete();
     }
@@ -123,7 +125,7 @@ class ActiveRecordTest extends Unit
      * @return array
      * @throws Exception
      */
-    public function dataForDbPrepareDataProvider(): array
+    public function prepValForDbDataProvider(): array
     {
         $jsonableArray = ['JsonArray' => 'SomeArray'];
         $jsonableClass = new stdClass();
@@ -155,8 +157,8 @@ class ActiveRecordTest extends Unit
         $session->uid = '00000000|0000|0000|0000|000000000000';
         $save = $session->save();
 
-        $this->assertTrue($save);
-        $this->assertSame('00000000|0000|0000|0000|000000000000', $session->uid);
+        self::assertTrue($save);
+        self::assertSame('00000000|0000|0000|0000|000000000000', $session->uid);
 
         $session->delete();
     }
@@ -171,8 +173,8 @@ class ActiveRecordTest extends Unit
         $session->token = 'test';
         $save = $session->save();
 
-        $this->assertTrue($save);
-        $this->assertTrue(StringHelper::isUUID($session->uid));
+        self::assertTrue($save);
+        self::assertTrue(StringHelper::isUUID($session->uid));
 
         $session->delete();
     }
@@ -187,7 +189,7 @@ class ActiveRecordTest extends Unit
         $session->token = 'test' . StringHelper::randomString();
         $save = $session->save();
 
-        $this->assertTrue($save);
+        self::assertTrue($save);
         return $session;
     }
 }

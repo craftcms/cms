@@ -32,12 +32,12 @@ class SitesController extends Controller
     /**
      * @inheritdoc
      */
-    public function init()
+    public function beforeAction($action)
     {
-        parent::init();
-
         // All actions require an admin account
         $this->requireAdmin();
+
+        return parent::beforeAction($action);
     }
 
     /**
@@ -176,7 +176,7 @@ class SitesController extends Controller
                 }
             }
 
-            $title = trim($site->name) ?: Craft::t('app', 'Edit Site');
+            $title = trim($site->getName()) ?: Craft::t('app', 'Edit Site');
         } else {
             if ($site === null) {
                 $site = new Site();
@@ -211,7 +211,7 @@ class SitesController extends Controller
         foreach ($allGroups as $group) {
             $groupOptions[] = [
                 'value' => $group->id,
-                'label' => $group->name
+                'label' => $group->name,
             ];
         }
 
@@ -222,12 +222,12 @@ class SitesController extends Controller
         $crumbs = [
             [
                 'label' => Craft::t('app', 'Settings'),
-                'url' => UrlHelper::url('settings')
+                'url' => UrlHelper::url('settings'),
             ],
             [
                 'label' => Craft::t('app', 'Sites'),
-                'url' => UrlHelper::url('settings/sites')
-            ]
+                'url' => UrlHelper::url('settings/sites'),
+            ],
         ];
 
         $languageOptions = [];
@@ -237,8 +237,8 @@ class SitesController extends Controller
                 'value' => $locale->id,
                 'label' => Craft::t('app', '{id} – {name}', [
                     'name' => $locale->getDisplayName(Craft::$app->language),
-                    'id' => $locale->id
-                ])
+                    'id' => $locale->id,
+                ]),
             ];
         }
 
@@ -277,13 +277,13 @@ class SitesController extends Controller
         }
 
         $site->groupId = $this->request->getBodyParam('group');
-        $site->name = $this->request->getBodyParam('name');
+        $site->setName($this->request->getBodyParam('name'));
         $site->handle = $this->request->getBodyParam('handle');
         $site->language = $this->request->getBodyParam('language');
         $site->primary = (bool)$this->request->getBodyParam('primary');
         $site->enabled = $site->primary || (bool)$this->request->getBodyParam('enabled');
         $site->hasUrls = (bool)$this->request->getBodyParam('hasUrls');
-        $site->baseUrl = $site->hasUrls ? $this->request->getBodyParam('baseUrl') : null;
+        $site->setBaseUrl($site->hasUrls ? $this->request->getBodyParam('baseUrl') : null);
 
         // Save it
         if (!$sitesService->saveSite($site)) {
@@ -291,7 +291,7 @@ class SitesController extends Controller
 
             // Send the site back to the template
             Craft::$app->getUrlManager()->setRouteParams([
-                'site' => $site
+                'site' => $site,
             ]);
 
             return null;

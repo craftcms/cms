@@ -8,8 +8,8 @@
 namespace craft\gql\types\generators;
 
 use Craft;
-use craft\base\Field;
 use craft\elements\Category as CategoryElement;
+use craft\gql\base\Generator;
 use craft\gql\base\GeneratorInterface;
 use craft\gql\base\ObjectType;
 use craft\gql\base\SingleGeneratorInterface;
@@ -27,7 +27,7 @@ use craft\models\CategoryGroup;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.3.0
  */
-class CategoryType implements GeneratorInterface, SingleGeneratorInterface
+class CategoryType extends Generator implements GeneratorInterface, SingleGeneratorInterface
 {
     /**
      * @inheritdoc
@@ -52,21 +52,14 @@ class CategoryType implements GeneratorInterface, SingleGeneratorInterface
         return $gqlTypes;
     }
 
-
     /**
      * @inheritdoc
      */
     public static function generateType($context): ObjectType
     {
-        /** @var CategoryGroup $categoryGroup */
+        /* @var CategoryGroup $categoryGroup */
         $typeName = CategoryElement::gqlTypeNameByContext($context);
-        $contentFields = $context->getFields();
-        $contentFieldGqlTypes = [];
-
-        /** @var Field $contentField */
-        foreach ($contentFields as $contentField) {
-            $contentFieldGqlTypes[$contentField->handle] = $contentField->getContentGqlType();
-        }
+        $contentFieldGqlTypes = self::getContentFields($context);
 
         $categoryGroupFields = TypeManager::prepareFieldDefinitions(array_merge(CategoryInterface::getFieldDefinitions(), $contentFieldGqlTypes), $typeName);
 
@@ -74,7 +67,7 @@ class CategoryType implements GeneratorInterface, SingleGeneratorInterface
             'name' => $typeName,
             'fields' => function() use ($categoryGroupFields) {
                 return $categoryGroupFields;
-            }
+            },
         ]));
     }
 }

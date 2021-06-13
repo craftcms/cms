@@ -31,7 +31,9 @@
 │   │     │   │   │   └──────────────────────────────────────────────────┘   │   │   │
 │   │     │   │   │                                                          │   │   │
 │   │     │   │   └──────────────────────────────────────────────────────────┘   │   │
-│   │     │   │                                                                  │   │
+│   │     │   │   ┌──────────────────────────────────────────────────────────┐   │   │
+│   │     │   │   │                      #global-footer                      │   │   │
+│   │     │   │   └──────────────────────────────────────────────────────────┘   │   │
 │   └─────┘   └──────────────────────────────────────────────────────────────────┘   │
 │                                                                                    │
 └────────────────────────────────────────────────────────────────────────────────────┘
@@ -57,6 +59,7 @@
 {% set hasSystemIcon = CraftEdition == CraftPro and craft.rebrand.isIconUploaded %}
 {% set fullPageForm = (fullPageForm is defined and fullPageForm) %}
 
+{% set editionName = craft.app.getEditionName() %}
 {% set canUpgradeEdition = craft.app.getCanUpgradeEdition() %}
 {% set licensedEdition = craft.app.getLicensedEdition() %}
 {% set isTrial = licensedEdition is not same as(null) and licensedEdition is not same as(CraftEdition) %}
@@ -72,7 +75,6 @@
 {% set mainContentClasses = [
     sidebar ? 'has-sidebar',
     details ? 'has-details',
-    tabs ? 'has-tabs',
 ]|filter %}
 
 {% set showHeader = showHeader ?? true %}
@@ -85,18 +87,20 @@
     role: 'main',
 }|merge(mainAttributes ?? []) %}
 
+{% set formActions = craft.cp.prepFormActions(formActions ?? null) %}
+
 {% set mainFormAttributes = {
-    'id': 'main-form',
-    'method': 'post',
+    id: 'main-form',
+    method: 'post',
     'accept-charset': 'UTF-8',
-    'novalidate': true,
-    'data': {
-        'saveshortcut': saveShortcut ?? true,
+    novalidate: true,
+    data: {
+        saveshortcut: saveShortcut ?? true,
         'saveshortcut-redirect': (saveShortcutRedirect ?? false) ? saveShortcutRedirect|hash : false,
         'saveshortcut-scroll': retainScrollOnSaveShortcut ?? false,
-        'actions': formActions ?? false,
+        actions: formActions ?? false,
         'confirm-unload': true,
-        'delta': view.getIsDeltaRegistrationActive(),
+        delta: view.getIsDeltaRegistrationActive(),
     },
 }|merge(mainFormAttributes ?? [], recursive=true) %}
 
@@ -108,10 +112,15 @@
             sizes: '30px',
             srcset: "#{currentUser.getThumbUrl(30)} 30w, #{currentUser.getThumbUrl(60)} 60w",
             alt: currentUser.getName(),
-            title: currentUser.getName(),
         }) }}
     </div>
 {% endset %}
+
+{% js at head %}
+    // Remove the hash so the browser doesn't scroll to it
+    window.LOCATION_HASH = document.location.hash ? decodeURIComponent(document.location.hash.substr(1)) : null;
+    document.location.hash = '';
+{% endjs %}
 
 {% block body %}
     <div id="global-container">
@@ -121,11 +130,11 @@
             {% include '_layouts/components/alerts' %}
             {% include '_layouts/components/notifications' %}
 
-            <div id="global-header">
+            <div id="global-header" role="region" aria-label="{{ 'My Account'|t('app') }}">
                 <div class="flex">
                     {% include '_layouts/components/crumbs' %}
                     <div class="flex-grow"></div>
-                    <button type="button" id="user-info" class="btn menubtn" data-menu-anchor=".header-photo">
+                    <button type="button" id="user-info" class="btn menubtn" aria-label="{{ 'My Account'|t('app') }}" title="{{ 'My Account'|t('app') }}" data-menu-anchor=".header-photo">
                         {{ userPhoto }}
                     </button>
                     <div class="menu" data-align="right">
@@ -203,13 +212,19 @@
                         {# content-container #}
                         <div id="content-container">
                             {% block main %}
-                                {% block tabs %}
-                                    {% if tabs %}
-                                        {% include "_includes/tabs" %}
-                                    {% endif %}
-                                {% endblock %}
-
                                 <div id="content" class="content-pane">
+                                    {% block tabs %}
+                                        {% if tabs %}
+                                            <header id="content-header" class="pane-header">
+                                                {% include "_includes/tabs" with {
+                                                    containerAttributes: {
+                                                        id: 'tabs',
+                                                    },
+                                                } %}
+                                            </header>
+                                        {% endif %}
+                                    {% endblock %}
+
                                     {% block content %}
                                         {{ content is defined ? content }}
                                     {% endblock %}
@@ -238,6 +253,24 @@
                     {%- endif %}
                 </main><!-- #main -->
             </div><!-- #main-container -->
+
+            <footer id="global-footer">
+                <div id="edition-logo" title="{{ '{edition} edition'|t('app', {edition: editionName}) ~ (isTrial ? ' ' ~ '(trial)'|t('app')) }}" aria-label="{{ '{edition} edition'|t('app', {edition: editionName}) ~ (isTrial ? ' ' ~ '(trial)'|t('app')) }}">
+                    <div class="edition-name">{{ editionName }}</div>
+                    {% if isTrial %}
+                        <div class="edition-trial">{{ "Trial"|t('app') }}</div>
+                    {% endif %}
+                </div>
+                <ul id="app-info">
+                    <li>Craft CMS {{ craft.app.version }}</li>
+                    {% if canUpgradeEdition %}
+                        <li>
+                            <a class="go" href="{{ url('plugin-store/upgrade-craft') }}">{{ isTrial ? 'Buy Craft Pro'|t('app') : 'Upgrade to Craft Pro'|t('app') }}</a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </footer>
+
         </div><!-- #page-container -->
     </div><!-- #global-container -->
 {% endblock %}
@@ -246,7 +279,9 @@
 {% block actionButton %}
     {% if fullPageForm %}
         <div class="btngroup">
-            <button type="submit" class="btn submit">{{ 'Save'|t('app') }}</button>
+            {% block submitButton %}
+                <button type="submit" class="btn submit">{{ 'Save'|t('app') }}</button>
+            {% endblock %}
             {% if formActions ?? false %}
                 <button type="button" class="btn submit menubtn"></button>
                 {% include '_layouts/components/form-action-menu' %}

@@ -12,7 +12,6 @@ use craft\base\MemoizableArray;
 use craft\db\Query;
 use craft\db\Table;
 use craft\elements\Category;
-use craft\elements\db\CategoryQuery;
 use craft\errors\CategoryGroupNotFoundException;
 use craft\events\CategoryGroupEvent;
 use craft\events\ConfigEvent;
@@ -76,6 +75,16 @@ class Categories extends Component
      */
     private $_groups;
 
+    /**
+     * Serializer
+     */
+    public function __serialize()
+    {
+        $vars = get_object_vars($this);
+        unset($vars['_groups']);
+        return $vars;
+    }
+
     // Category groups
     // -------------------------------------------------------------------------
 
@@ -109,7 +118,7 @@ class Categories extends Component
         if ($this->_groups === null) {
             $groups = [];
 
-            /** @var CategoryGroupRecord[] $groupRecords */
+            /* @var CategoryGroupRecord[] $groupRecords */
             $groupRecords = CategoryGroupRecord::find()
                 ->orderBy(['name' => SORT_ASC])
                 ->with('structure')
@@ -392,7 +401,7 @@ class Categories extends Component
                 // site rows
                 $affectedSiteUids = array_keys($siteData);
 
-                /** @noinspection PhpUndefinedVariableInspection */
+                /* @noinspection PhpUndefinedVariableInspection */
                 foreach ($allOldSiteSettingsRecords as $siteId => $siteSettingsRecord) {
                     $siteUid = array_search($siteId, $siteIdMap, false);
                     if (!in_array($siteUid, $affectedSiteUids, false)) {
@@ -508,7 +517,7 @@ class Categories extends Component
         // Fire a 'beforeDeleteGroup' event
         if ($this->hasEventHandlers(self::EVENT_BEFORE_DELETE_GROUP)) {
             $this->trigger(self::EVENT_BEFORE_DELETE_GROUP, new CategoryGroupEvent([
-                'categoryGroup' => $group
+                'categoryGroup' => $group,
             ]));
         }
 
@@ -549,7 +558,7 @@ class Categories extends Component
             return;
         }
 
-        /** @var CategoryGroup $group */
+        /* @var CategoryGroup $group */
         $group = $this->getGroupById($categoryGroupRecord->id);
 
         // Fire a 'beforeApplyGroupDelete' event
@@ -695,7 +704,7 @@ class Categories extends Component
             return null;
         }
 
-        /** @noinspection PhpIncompatibleReturnTypeInspection */
+        /* @noinspection PhpIncompatibleReturnTypeInspection */
         return Craft::$app->getElements()->getElementById($categoryId, Category::class, $siteId, [
             'structureId' => $structureId,
         ]);
@@ -705,39 +714,11 @@ class Categories extends Component
      * Patches an array of categories, filling in any gaps in the tree.
      *
      * @param Category[] $categories
+     * @deprecated in 3.6.0. Use [[\craft\services\Structures::fillGapsInElements()]] instead.
      */
     public function fillGapsInCategories(array &$categories)
     {
-        /** @var Category|null $prevCategory */
-        $prevCategory = null;
-        $patchedCategories = [];
-
-        foreach ($categories as $i => $category) {
-            // Did we just skip any categories?
-            if ($category->level != 1 && (
-                    ($i == 0) ||
-                    (!$category->isSiblingOf($prevCategory) && !$category->isChildOf($prevCategory))
-                )
-            ) {
-                // Merge in any missing ancestors
-                /** @var CategoryQuery $ancestorQuery */
-                $ancestorQuery = $category->getAncestors()
-                    ->anyStatus();
-
-                if ($prevCategory) {
-                    $ancestorQuery->andWhere(['>', 'structureelements.lft', $prevCategory->lft]);
-                }
-
-                foreach ($ancestorQuery->all() as $ancestor) {
-                    $patchedCategories[] = $ancestor;
-                }
-            }
-
-            $patchedCategories[] = $category;
-            $prevCategory = $category;
-        }
-
-        $categories = $patchedCategories;
+        Craft::$app->getStructures()->fillGapsInElements($categories);
     }
 
     /**
@@ -745,26 +726,11 @@ class Categories extends Component
      *
      * @param Category[] $categories
      * @param int $branchLimit
+     * @deprecated in 3.6.0. Use [[\craft\services\Structures::applyBranchLimitToElements()]] instead.
      */
     public function applyBranchLimitToCategories(array &$categories, int $branchLimit)
     {
-        $branchCount = 0;
-        $prevCategory = null;
-
-        foreach ($categories as $i => $category) {
-            // Is this a new branch?
-            if ($prevCategory === null || !$category->isDescendantOf($prevCategory)) {
-                $branchCount++;
-
-                // Have we gone over?
-                if ($branchCount > $branchLimit) {
-                    array_splice($categories, $i);
-                    break;
-                }
-            }
-
-            $prevCategory = $category;
-        }
+        Craft::$app->getStructures()->applyBranchLimitToElements($categories, $branchLimit);
     }
 
     /**
@@ -785,7 +751,7 @@ class Categories extends Component
             'fieldLayoutId',
             'name',
             'handle',
-            'uid'
+            'uid',
         ]));
 
         if ($groupRecord->structure) {

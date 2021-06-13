@@ -21,7 +21,6 @@ use craft\mail\transportadapters\TransportAdapterInterface;
 use craft\models\MailSettings;
 use craft\web\assets\generalsettings\GeneralSettingsAsset;
 use craft\web\Controller;
-use DateTime;
 use yii\base\Exception;
 use yii\web\NotFoundHttpException;
 use yii\web\Response;
@@ -39,12 +38,12 @@ class SystemSettingsController extends Controller
     /**
      * @inheritdoc
      */
-    public function init()
+    public function beforeAction($action)
     {
-        parent::init();
-
         // All system setting actions require an admin
         $this->requireAdmin();
+
+        return parent::beforeAction($action);
     }
 
     /**
@@ -54,48 +53,10 @@ class SystemSettingsController extends Controller
      */
     public function actionGeneralSettings(): Response
     {
-        // Assemble the timezone options array (Technique adapted from http://stackoverflow.com/a/7022536/1688568)
-        $timezoneOptions = [];
-
-        $utc = new DateTime();
-        $offsets = [];
-        $timezoneIds = [];
-
-        foreach (\DateTimeZone::listIdentifiers() as $timezoneId) {
-            $timezone = new \DateTimeZone($timezoneId);
-            $transition = $timezone->getTransitions($utc->getTimestamp(), $utc->getTimestamp());
-            $abbr = $transition[0]['abbr'];
-
-            $offset = round($timezone->getOffset($utc) / 60);
-
-            if ($offset) {
-                $hour = floor($offset / 60);
-                $minutes = floor(abs($offset) % 60);
-
-                $format = sprintf('%+d', $hour);
-
-                if ($minutes) {
-                    $format .= ':' . sprintf('%02u', $minutes);
-                }
-            } else {
-                $format = '';
-            }
-
-            $offsets[] = $offset;
-            $timezoneIds[] = $timezoneId;
-            $timezoneOptions[] = [
-                'value' => $timezoneId,
-                'label' => 'UTC' . $format . ($abbr !== 'UTC' ? " ({$abbr})" : '') . ($timezoneId !== 'UTC' ? ' – ' . $timezoneId : '')
-            ];
-        }
-
-        array_multisort($offsets, $timezoneIds, $timezoneOptions);
-
         $this->getView()->registerAssetBundle(GeneralSettingsAsset::class);
 
         return $this->renderTemplate('settings/general/_index', [
             'system' => Craft::$app->getProjectConfig()->get('system'),
-            'timezoneOptions' => $timezoneOptions
         ]);
     }
 
@@ -140,7 +101,7 @@ class SystemSettingsController extends Controller
             } catch (MissingComponentException $e) {
                 $adapter = new Sendmail();
                 $adapter->addError('type', Craft::t('app', 'The transport type “{type}” could not be found.', [
-                    'type' => $settings->transportType
+                    'type' => $settings->transportType,
                 ]));
             }
         }
@@ -157,12 +118,12 @@ class SystemSettingsController extends Controller
         $transportTypeOptions = [];
 
         foreach ($allTransportAdapterTypes as $transportAdapterType) {
-            /** @var string|TransportAdapterInterface $transportAdapterType */
+            /* @var string|TransportAdapterInterface $transportAdapterType */
             if ($transportAdapterType === get_class($adapter) || $transportAdapterType::isSelectable()) {
                 $allTransportAdapters[] = MailerHelper::createTransportAdapter($transportAdapterType);
                 $transportTypeOptions[] = [
                     'value' => $transportAdapterType,
-                    'label' => $transportAdapterType::displayName()
+                    'label' => $transportAdapterType::displayName(),
                 ];
             }
         }
@@ -201,7 +162,7 @@ class SystemSettingsController extends Controller
         $settings = $this->_createMailSettingsFromPost();
         $settingsAreValid = $settings->validate();
 
-        /** @var BaseTransportAdapter $adapter */
+        /* @var BaseTransportAdapter $adapter */
         $adapter = MailerHelper::createTransportAdapter($settings->transportType, $settings->transportSettings);
         $adapterIsValid = $adapter->validate();
 
@@ -211,7 +172,7 @@ class SystemSettingsController extends Controller
             // Send the settings back to the template
             Craft::$app->getUrlManager()->setRouteParams([
                 'settings' => $settings,
-                'adapter' => $adapter
+                'adapter' => $adapter,
             ]);
 
             return null;
@@ -233,17 +194,17 @@ class SystemSettingsController extends Controller
         $settings = $this->_createMailSettingsFromPost();
         $settingsIsValid = $settings->validate();
 
-        /** @var BaseTransportAdapter $adapter */
+        /* @var BaseTransportAdapter $adapter */
         $adapter = MailerHelper::createTransportAdapter($settings->transportType, $settings->transportSettings);
         $adapterIsValid = $adapter->validate();
 
         if ($settingsIsValid && $adapterIsValid) {
             // Try to send the test email
-            /** @var Mailer $mailer */
+            /* @var Mailer $mailer */
             $mailer = Craft::createObject(App::mailerConfig($settings));
             $message = $mailer
                 ->composeFromKey('test_email', [
-                    'settings' => MailerHelper::settingsReport($mailer, $adapter)
+                    'settings' => MailerHelper::settingsReport($mailer, $adapter),
                 ])
                 ->setTo(Craft::$app->getUser()->getIdentity());
 
@@ -259,7 +220,7 @@ class SystemSettingsController extends Controller
         // Send the settings back to the template
         Craft::$app->getUrlManager()->setRouteParams([
             'settings' => $settings,
-            'adapter' => $adapter
+            'adapter' => $adapter,
         ]);
     }
 
@@ -295,12 +256,12 @@ class SystemSettingsController extends Controller
         $crumbs = [
             [
                 'label' => Craft::t('app', 'Settings'),
-                'url' => UrlHelper::url('settings')
+                'url' => UrlHelper::url('settings'),
             ],
             [
                 'label' => Craft::t('app', 'Globals'),
-                'url' => UrlHelper::url('settings/globals')
-            ]
+                'url' => UrlHelper::url('settings/globals'),
+            ],
         ];
 
         // Render the template!

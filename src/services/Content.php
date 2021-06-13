@@ -13,6 +13,7 @@ use craft\db\Query;
 use craft\db\Table;
 use craft\events\ElementContentEvent;
 use craft\helpers\Db;
+use craft\helpers\ElementHelper;
 use yii\base\Component;
 use yii\base\Exception;
 use yii\di\Instance;
@@ -71,6 +72,7 @@ class Content extends Component
      *
      * @param ElementInterface $element The element whose content we're looking for.
      * @return array|null The element's content row values, or null if the row could not be found
+     * @deprecated in 3.7.0
      */
     public function getContentRow(ElementInterface $element)
     {
@@ -90,7 +92,7 @@ class Content extends Component
             ->from([$this->contentTable])
             ->where([
                 'elementId' => $element->id,
-                'siteId' => $element->siteId
+                'siteId' => $element->siteId,
             ])
             ->one();
 
@@ -109,6 +111,7 @@ class Content extends Component
      * Populates a given element with its custom field values.
      *
      * @param ElementInterface $element The element for which we should create a new content model.
+     * @deprecated in 3.7.0
      */
     public function populateElementContent(ElementInterface $element)
     {
@@ -129,7 +132,18 @@ class Content extends Component
             if ($fieldLayout) {
                 foreach ($fieldLayout->getFields() as $field) {
                     if ($field::hasContentColumn()) {
-                        $element->setFieldValue($field->handle, $row[$field->handle]);
+                        $type = $field->getContentColumnType();
+                        if (is_array($type)) {
+                            $value = [];
+                            foreach (array_keys($type) as $i => $key) {
+                                $column = ElementHelper::fieldColumn('', $field->handle, $field->columnSuffix, $i !== 0 ? $key : null);
+                                $value[$key] = $row[$column];
+                            }
+                            $element->setFieldValue($field->handle, $value);
+                        } else {
+                            $column = ElementHelper::fieldColumn('', $field->handle, $field->columnSuffix);
+                            $element->setFieldValue($field->handle, $row[$column]);
+                        }
                     }
                 }
             }
@@ -161,14 +175,14 @@ class Content extends Component
         // Fire a 'beforeSaveContent' event
         if ($this->hasEventHandlers(self::EVENT_BEFORE_SAVE_CONTENT)) {
             $this->trigger(self::EVENT_BEFORE_SAVE_CONTENT, new ElementContentEvent([
-                'element' => $element
+                'element' => $element,
             ]));
         }
 
         // Prepare the data to be saved
         $values = [
             'elementId' => $element->id,
-            'siteId' => $element->siteId
+            'siteId' => $element->siteId,
         ];
         if ($element->hasTitles() && ($title = (string)$element->title) !== '') {
             $values['title'] = $title;
@@ -180,8 +194,17 @@ class Content extends Component
                     (!$element->contentId || $element->isFieldDirty($field->handle)) &&
                     $field::hasContentColumn()
                 ) {
-                    $column = $this->fieldColumnPrefix . $field->handle;
-                    $values[$column] = Db::prepareValueForDb($field->serializeValue($element->getFieldValue($field->handle), $element));
+                    $value = $field->serializeValue($element->getFieldValue($field->handle), $element);
+                    $type = $field->getContentColumnType();
+                    if (is_array($type)) {
+                        foreach (array_keys($type) as $i => $key) {
+                            $column = ElementHelper::fieldColumnFromField($field, $i !== 0 ? $key : null);
+                            $values[$column] = Db::prepareValueForDb($value[$key] ?? null);
+                        }
+                    } else {
+                        $column = ElementHelper::fieldColumnFromField($field);
+                        $values[$column] = Db::prepareValueForDb($value);
+                    }
                 }
             }
         }
@@ -193,7 +216,7 @@ class Content extends Component
                 ->from([$this->contentTable])
                 ->where([
                     'elementId' => $element->id,
-                    'siteId' => $element->siteId
+                    'siteId' => $element->siteId,
                 ])
                 ->scalar();
         }
@@ -213,7 +236,7 @@ class Content extends Component
         // Fire an 'afterSaveContent' event
         if ($this->hasEventHandlers(self::EVENT_AFTER_SAVE_CONTENT)) {
             $this->trigger(self::EVENT_AFTER_SAVE_CONTENT, new ElementContentEvent([
-                'element' => $element
+                'element' => $element,
             ]));
         }
 

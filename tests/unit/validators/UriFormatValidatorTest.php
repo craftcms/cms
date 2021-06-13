@@ -48,12 +48,12 @@ class UriFormatValidatorTest extends Unit
 
         $validatorResult = $this->uriFormatValidator->validateAttribute($this->model, 'exampleParam');
 
-        $this->assertNull($validatorResult);
+        self::assertNull($validatorResult);
 
         if ($mustValidate) {
-            $this->assertArrayNotHasKey('exampleParam', $this->model->getErrors());
+            self::assertArrayNotHasKey('exampleParam', $this->model->getErrors());
         } else {
-            $this->assertArrayHasKey('exampleParam', $this->model->getErrors());
+            self::assertArrayHasKey('exampleParam', $this->model->getErrors());
         }
     }
 

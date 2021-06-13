@@ -28,12 +28,12 @@ class AssetTransformsController extends Controller
     /**
      * @inheritdoc
      */
-    public function init()
+    public function beforeAction($action)
     {
-        parent::init();
-
         // All asset transform actions require an admin
         $this->requireAdmin();
+
+        return parent::beforeAction($action);
     }
 
     /**
@@ -144,7 +144,7 @@ class AssetTransformsController extends Controller
         if (!$success) {
             // Send the transform back to the template
             Craft::$app->getUrlManager()->setRouteParams([
-                'transform' => $transform
+                'transform' => $transform,
             ]);
 
             return null;

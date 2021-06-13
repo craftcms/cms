@@ -27,12 +27,12 @@ class SystemMessagesController extends Controller
     /**
      * @inheritdoc
      */
-    public function init()
+    public function beforeAction($action)
     {
-        parent::init();
-
         // Make sure they have access to the System Messages utility
         $this->requirePermission('utility:system-messages');
+
+        return parent::beforeAction($action);
     }
 
     /**
@@ -57,7 +57,7 @@ class SystemMessagesController extends Controller
             'body' => $this->getView()->renderTemplate('_components/utilities/SystemMessages/message-modal', [
                 'message' => $message,
                 'language' => $language,
-            ])
+            ]),
         ]);
     }
 

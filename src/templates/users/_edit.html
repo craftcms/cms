@@ -53,15 +53,15 @@
 
 {% block content %}
     {% set formAttributes = {
-        'id': 'userform',
-        'method': 'post',
+        id: 'userform',
+        method: 'post',
         'accept-charset': 'UTF-8',
-        'data': {
-            'saveshortcut': true,
+        data: {
+            saveshortcut: true,
             'saveshortcut-redirect':  (user.getIsCurrent() ? 'myaccount' : (CraftEdition == CraftPro and currentUser.can('editUsers') ? 'users/{id}' : 'dashboard'))|hash,
             'saveshortcut-scroll': true,
             'confirm-unload': true,
-            'delta': true,
+            delta: true,
         },
     } %}
     <form {{ attr(formAttributes) }}>
@@ -89,7 +89,10 @@
                     value: user.email,
                     required: true,
                     type: 'email',
-                    errors: user.getErrors('email')|merge(user.getErrors('unverifiedEmail'))
+                    errors: user.getErrors('email')|merge(user.getErrors('unverifiedEmail')),
+                    inputAttributes: {
+                        data: {lpignore: 'true'},
+                    },
                 }) }}
 
                 {{ forms.checkboxField({
@@ -110,7 +113,10 @@
                     value: user.email,
                     required: true,
                     type: 'email',
-                    errors: user.getErrors('email')|merge(user.getErrors('unverifiedEmail'))
+                    errors: user.getErrors('email')|merge(user.getErrors('unverifiedEmail')),
+                    inputAttributes: {
+                        data: {lpignore: 'true'},
+                    },
                 }) }}
 
                 {% if user.getIsCurrent() %}
@@ -119,7 +125,12 @@
                         id: 'newPassword',
                         name: 'newPassword',
                         autocomplete: 'new-password',
-                        errors: user.getErrors('newPassword')
+                        errors: user.getErrors('newPassword'),
+                        inputAttributes: {
+                            data: {
+                                lpignore: user.getIsCurrent() ? false : 'true',
+                            }|filter,
+                        },
                     }) }}
 
                     {% js %}
@@ -235,19 +246,26 @@
                     {% embed '_includes/forms/field' with {
                         label: 'Accessibility'|t('app'),
                     } %}
+                        {% set a11yDefaults = craft.app.config.general.accessibilityDefaults %}
                         {% block input %}
                             {% from '_includes/forms' import checkboxField %}
+                            {{ checkboxField({
+                                label: 'Reduce focus visibility'|t('app'),
+                                name: 'reduceFocusVisibility',
+                                id: 'reduceFocusVisibility',
+                                checked: user.getPreference('reduceFocusVisibility') ?? a11yDefaults['reduceFocusVisibility'] ?? false,
+                            }) }}
                             {{ checkboxField({
                                 label: 'Use shapes to represent statuses'|t('app'),
                                 name: 'useShapes',
                                 id: 'useShapes',
-                                checked: user.getPreference('useShapes')
+                                checked: user.getPreference('useShapes') ?? a11yDefaults['useShapes'] ?? false,
                             }) }}
                             {{ checkboxField({
                                 label: 'Underline links'|t('app'),
                                 name: 'underlineLinks',
                                 id: 'underlineLinks',
-                                checked: user.getPreference('underlineLinks')
+                                checked: user.getPreference('underlineLinks') ?? a11yDefaults['underlineLinks'] ?? false,
                             }) }}
                         {% endblock %}
                     {% endembed %}
@@ -318,7 +336,7 @@
 
                         {% if actions|length %}
                             <div>
-                                <button type="button" id="action-menubtn" class="btn menubtn" data-icon="settings" title="{{ 'Actions'|t('app') }}"></button>
+                                <button type="button" id="action-menubtn" class="btn menubtn" data-icon="settings" title="{{ 'Actions'|t('app') }}" aria-label="{{ 'Actions'|t('app') }}"></button>
                                 <div class="menu">
                                     {% for actionList in actions %}
                                         {% if not loop.first %}<hr>{% endif %}
@@ -339,7 +357,7 @@
                     </div>
                 </div>
 
-                {% if user.getStatus() == 'locked' and craft.app.config.general.cooldownDuration and user.remainingCooldownTime %}
+                {% if user.locked and craft.app.config.general.cooldownDuration and user.remainingCooldownTime %}
                     <div class="data">
                         <h5 class="heading">{{ "Cooldown Time Remaining"|t('app') }}</h5>
                         <p class="value">{{ user.remainingCooldownTime|duration }}</p>

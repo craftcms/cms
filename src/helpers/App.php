@@ -17,11 +17,17 @@ use craft\db\mysql\Schema as MysqlSchema;
 use craft\db\pgsql\Schema as PgsqlSchema;
 use craft\elements\User;
 use craft\errors\MissingComponentException;
+use craft\helpers\Session as SessionHelper;
+use craft\i18n\Locale;
+use craft\log\Dispatcher;
 use craft\log\FileTarget;
+use craft\log\StreamLogTarget;
 use craft\mail\Mailer;
 use craft\mail\Message;
 use craft\mail\transportadapters\Sendmail;
 use craft\models\MailSettings;
+use craft\mutex\MysqlMutex;
+use craft\mutex\PgsqlMutex;
 use craft\services\ProjectConfig as ProjectConfigService;
 use craft\web\AssetManager;
 use craft\web\Request;
@@ -33,11 +39,9 @@ use craft\web\View;
 use yii\base\InvalidArgumentException;
 use yii\helpers\Inflector;
 use yii\i18n\PhpMessageSource;
-use yii\log\Dispatcher;
+use yii\log\Dispatcher as YiiDispatcher;
 use yii\log\Logger;
 use yii\mutex\FileMutex;
-use yii\mutex\MysqlMutex;
-use yii\mutex\PgsqlMutex;
 use yii\web\JsonParser;
 
 /**
@@ -215,6 +219,18 @@ class App
     public static function phpConfigValueInBytes(string $var)
     {
         $value = trim(ini_get($var));
+        return static::phpSizeToBytes($value);
+    }
+
+    /**
+     * Normalizes a PHP file size into bytes.
+     *
+     * @param string $value The file size expressed in PHP config value notation
+     * @return int|float The value normalized into bytes.
+     * @since 3.6.0
+     */
+    public static function phpSizeToBytes(string $value)
+    {
         $unit = strtolower(substr($value, -1, 1));
         $value = (int)$value;
 
@@ -428,7 +444,7 @@ class App
      * @return array
      * @since 3.0.18
      */
-    public static function dbConfig(DbConfig $dbConfig = null): array
+    public static function dbConfig(?DbConfig $dbConfig = null): array
     {
         if ($dbConfig === null) {
             $dbConfig = Craft::$app->getConfig()->getDb();
@@ -485,7 +501,7 @@ class App
      * @return array
      * @since 3.0.18
      */
-    public static function mailerConfig(MailSettings $settings = null): array
+    public static function mailerConfig(?MailSettings $settings = null): array
     {
         if ($settings === null) {
             $settings = static::mailSettings();
@@ -502,7 +518,7 @@ class App
             'class' => Mailer::class,
             'messageClass' => Message::class,
             'from' => [
-                Craft::parseEnv($settings->fromEmail) => Craft::parseEnv($settings->fromName)
+                Craft::parseEnv($settings->fromEmail) => Craft::parseEnv($settings->fromName),
             ],
             'replyTo' => Craft::parseEnv($settings->replyToEmail),
             'template' => Craft::parseEnv($settings->template),
@@ -511,11 +527,19 @@ class App
     }
 
     /**
-     * Returns the `mutex` component config.
+     * Returns a file-based `mutex` component config.
+     *
+     * ::: tip
+     * If you were calling this to override the [[\yii\mutex\FileMutex::$isWindows]] property, note that you
+     * can safely remove your custom `mutex` component config for Craft 3.5.0 and later. Craft now uses a
+     * database-based mutex component by default (see [[dbMutexConfig()]]), which doesn’t care which type of
+     * file system is used.
+     * :::
      *
      * @return array
      * @since 3.0.18
-     * @deprecated in 3.5.0. Use [[dbMutexConfig()]] instead.
+     * @deprecated in 3.5.0.
+     *
      */
     public static function mutexConfig(): array
     {
@@ -545,6 +569,7 @@ class App
         return [
             'class' => $db->getIsMysql() ? MysqlMutex::class : PgsqlMutex::class,
             'db' => $db,
+            'namePrefix' => Craft::$app->id,
         ];
     }
 
@@ -553,45 +578,86 @@ class App
      *
      * @return array|null
      * @since 3.0.18
+     * @deprecated in 3.6.0. Override `components.log.targets` instead
      */
     public static function logConfig()
     {
-        // Only log console requests and web requests that aren't getAuthTimeout requests
-        $isConsoleRequest = Craft::$app->getRequest()->getIsConsoleRequest();
-        if (!$isConsoleRequest && !Craft::$app->getUser()->enableSession) {
-            return null;
-        }
-
-        $generalConfig = Craft::$app->getConfig()->getGeneral();
-
-        $target = [
-            'class' => FileTarget::class,
-            'fileMode' => $generalConfig->defaultFileMode,
-            'dirMode' => $generalConfig->defaultDirMode,
-            'includeUserIp' => $generalConfig->storeUserIps,
-            'except' => [
-                PhpMessageSource::class . ':*',
-            ],
-        ];
-
-        if ($isConsoleRequest) {
-            $target['logFile'] = '@storage/logs/console.log';
-        } else {
-            $target['logFile'] = '@storage/logs/web.log';
-        }
-
-        // Only log errors and warnings, unless Craft is running in Dev Mode or it's being installed/updated
-        // (Explicitly check GeneralConfig::$devMode here, because YII_DEBUG is always `1` for console requests.)
-        if (!$generalConfig->devMode && Craft::$app->getIsInstalled() && !Craft::$app->getUpdates()->getIsCraftDbMigrationNeeded()) {
-            $target['levels'] = Logger::LEVEL_ERROR | Logger::LEVEL_WARNING;
-        }
-
+        // Using Yii's Dispatcher class here is intentional
         return [
-            'class' => Dispatcher::class,
-            'targets' => [
-                $target,
-            ]
+            'class' => YiiDispatcher::class,
+            'targets' => array_values(static::defaultLogTargets()),
         ];
+    }
+
+    /**
+     * Returns the default log targets.
+     *
+     * @return array
+     * @since 3.6.14
+     */
+    public static function defaultLogTargets(): array
+    {
+        $targets = [];
+
+        $isConsoleRequest = Craft::$app->getRequest()->getIsConsoleRequest();
+
+        if ($isConsoleRequest || Craft::$app->getUser()->enableSession) {
+            $generalConfig = Craft::$app->getConfig()->getGeneral();
+
+            $fileTargetConfig = [
+                'class' => FileTarget::class,
+                'fileMode' => $generalConfig->defaultFileMode,
+                'dirMode' => $generalConfig->defaultDirMode,
+                'includeUserIp' => $generalConfig->storeUserIps,
+                'except' => [
+                    PhpMessageSource::class . ':*',
+                ],
+            ];
+
+            if ($isConsoleRequest) {
+                $fileTargetConfig['logFile'] = '@storage/logs/console.log';
+            } else {
+                $fileTargetConfig['logFile'] = '@storage/logs/web.log';
+            }
+
+            // Only log errors and warnings, unless Craft is running in Dev Mode or it's being installed/updated
+            // (Explicitly check GeneralConfig::$devMode here, because YII_DEBUG is always `1` for console requests.)
+            $devModeLogging = (
+                !Craft::$app->getConfig()->getGeneral()->devMode &&
+                Craft::$app->getIsInstalled() &&
+                !Craft::$app->getUpdates()->getIsCraftDbMigrationNeeded()
+            );
+
+            if ($devModeLogging) {
+                $fileTargetConfig['levels'] = Logger::LEVEL_ERROR | Logger::LEVEL_WARNING;
+            }
+
+            $targets[Dispatcher::TARGET_FILE] = $fileTargetConfig;
+
+            if (defined('CRAFT_STREAM_LOG') && CRAFT_STREAM_LOG === true) {
+                $streamErrLogTarget = [
+                    'class' => StreamLogTarget::class,
+                    'url' => 'php://stderr',
+                    'levels' => Logger::LEVEL_ERROR | Logger::LEVEL_WARNING,
+                    'includeUserIp' => $generalConfig->storeUserIps,
+                ];
+
+                $targets[Dispatcher::TARGET_STDERR] = $streamErrLogTarget;
+
+                if ($devModeLogging) {
+                    $streamOutLogTarget = [
+                        'class' => StreamLogTarget::class,
+                        'url' => 'php://stdout',
+                        'levels' => ~Logger::LEVEL_ERROR & ~Logger::LEVEL_WARNING,
+                        'includeUserIp' => $generalConfig->storeUserIps,
+                    ];
+
+                    $targets[Dispatcher::TARGET_STDOUT] = $streamOutLogTarget;
+                }
+            }
+        }
+
+        return $targets;
     }
 
     /**
@@ -749,5 +815,48 @@ class App
         }
 
         return $config;
+    }
+
+    /**
+     * Creates a locale object that should be used for date and number formatting.
+     *
+     * @return Locale
+     * @since 3.6.0
+     */
+    public static function createFormattingLocale(): Locale
+    {
+        $i18n = Craft::$app->getI18n();
+
+        if (Craft::$app->getRequest()->getIsCpRequest() && !Craft::$app->getResponse()->isSent) {
+            // Is someone logged in?
+            $id = SessionHelper::get(Craft::$app->getUser()->idParam);
+            if ($id) {
+                // If they have a preferred locale, use it
+                $usersService = Craft::$app->getUsers();
+                if (
+                    ($locale = $usersService->getUserPreference($id, 'locale')) !== null &&
+                    $i18n->validateAppLocaleId($locale)
+                ) {
+                    return $i18n->getLocaleById($locale);
+                }
+
+                // Otherwise see if they have a preferred language
+                if (
+                    ($language = $usersService->getUserPreference($id, 'language')) !== null &&
+                    $i18n->validateAppLocaleId($language)
+                ) {
+                    return $i18n->getLocaleById($language);
+                }
+            }
+
+            // If the defaultCpLocale setting is set, go with that
+            $generalConfig = Craft::$app->getConfig()->getGeneral();
+            if ($generalConfig->defaultCpLocale) {
+                return $i18n->getLocaleById($generalConfig->defaultCpLocale);
+            }
+        }
+
+        // Default to the application locale
+        return Craft::$app->getLocale();
     }
 }

@@ -21,6 +21,7 @@ use GraphQL\Error\Error;
 use GraphQL\Error\UserError;
 use GraphQL\Type\Definition\ResolveInfo;
 use GuzzleHttp\Client;
+use yii\base\InvalidArgumentException;
 
 /**
  * Class Asset
@@ -30,7 +31,7 @@ use GuzzleHttp\Client;
  */
 class Asset extends ElementMutationResolver
 {
-    /** @inheritdoc */
+    /* @inheritdoc */
     protected $immutableAttributes = ['id', 'uid', 'volumeId', 'folderId'];
 
     /**
@@ -45,7 +46,7 @@ class Asset extends ElementMutationResolver
      */
     public function saveAsset($source, array $arguments, $context, ResolveInfo $resolveInfo)
     {
-        /** @var Volume $volume */
+        /* @var Volume $volume */
         $volume = $this->getResolutionData('volume');
         $canIdentify = !empty($arguments['id']) || !empty($arguments['uid']);
         $elementService = Craft::$app->getElements();
@@ -79,11 +80,11 @@ class Asset extends ElementMutationResolver
             $asset = $elementService->createElement([
                 'type' => AssetElement::class,
                 'volumeId' => $volume->id,
-                'newFolderId' => $newFolderId
+                'newFolderId' => $newFolderId,
             ]);
         }
 
-        /** @var AssetElement $asset */
+        /* @var AssetElement $asset */
         if (empty($newFolderId)) {
             if (!$canIdentify) {
                 $asset->newFolderId = $assetService->getRootFolderByVolumeId($volume->id)->id;
@@ -119,7 +120,7 @@ class Asset extends ElementMutationResolver
         $assetId = $arguments['id'];
 
         $elementService = Craft::$app->getElements();
-        /** @var AssetElement $asset */
+        /* @var AssetElement $asset */
         $asset = $elementService->getElementById($assetId, AssetElement::class);
 
         if (!$asset) {
@@ -144,7 +145,7 @@ class Asset extends ElementMutationResolver
             unset($arguments['_file']);
         }
 
-        /** @var AssetElement $asset */
+        /* @var AssetElement $asset */
         $asset = parent::populateElementWithData($asset, $arguments);
 
         if (!empty($fileInformation) && $this->handleUpload($asset, $fileInformation)) {
@@ -176,36 +177,30 @@ class Asset extends ElementMutationResolver
             $dataString = $fileInformation['fileData'];
             $fileData = null;
 
-            if (preg_match('/^data:(?<type>[a-z0-9]+\/[a-z0-9\+]+);base64,(?<data>.+)/i', $dataString, $matches)) {
+            if (preg_match('/^data:((?<type>[a-z0-9]+\/[a-z0-9\+\.\-]+);)?base64,(?<data>.+)/i', $dataString, $matches)) {
                 // Decode the file
                 $fileData = base64_decode($matches['data']);
             }
 
             if ($fileData) {
                 if (empty($fileInformation['filename'])) {
-                    $extensions = FileHelper::getExtensionsByMimeType($matches['type']);
-
-                    if (empty($extensions)) {
-                        throw new UserError('Invalid file data provided');
+                    // Make up a filename
+                    $extension = null;
+                    if (isset($matches['type'])) {
+                        try {
+                            $extension = FileHelper::getExtensionByMimeType($matches['type']);
+                        } catch (InvalidArgumentException $e) {
+                        }
                     }
-
-                    $extension = reset($extensions);
-
-                    // Manually correct for some types.
-                    switch ($extension) {
-                        case 'svgz':
-                            $extension = 'svg';
-                            break;
-                        case 'jpe':
-                            $extension = 'jpg';
+                    if (!$extension) {
+                        throw new UserError('Invalid file data provided.');
                     }
-
                     $filename = 'Upload.' . $extension;
                 } else {
                     $filename = AssetsHelper::prepareAssetName($fileInformation['filename']);
+                    $extension = pathinfo($filename, PATHINFO_EXTENSION);
                 }
 
-                $extension = pathinfo($filename, PATHINFO_EXTENSION);
                 $tempPath = AssetsHelper::tempFilePath($extension);
                 file_put_contents($tempPath, $fileData);
             } else {

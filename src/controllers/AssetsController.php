@@ -36,7 +36,7 @@ use yii\web\Response;
 use yii\web\ServerErrorHttpException;
 use ZipArchive;
 
-/** @noinspection ClassOverridesFieldOfSuperClassInspection */
+/* @noinspection ClassOverridesFieldOfSuperClassInspection */
 
 /**
  * The AssetsController class is a controller that handles various actions related to asset tasks, such as uploading
@@ -103,11 +103,11 @@ class AssetsController extends Controller
         $crumbs = [
             [
                 'label' => Craft::t('app', 'Assets'),
-                'url' => UrlHelper::url('assets')
+                'url' => UrlHelper::url('assets'),
             ],
             [
                 'label' => Craft::t('site', $volume->name),
-                'url' => UrlHelper::url("assets/{$volume->handle}")
+                'url' => UrlHelper::url("assets/{$volume->handle}"),
             ],
         ];
 
@@ -145,7 +145,7 @@ class AssetsController extends Controller
         // See if the user is allowed to replace the file
         $userSession = Craft::$app->getUser();
         $canReplaceFile = (
-            $userSession->checkPermission("deleteFilesAndFoldersInVolume:{$volume->uid}") &&
+            $userSession->checkPermission("replaceFilesInVolume:{$volume->uid}") &&
             ($userSession->getId() == $asset->uploaderId || $userSession->checkPermission("replacePeerFilesInVolume:{$volume->uid}"))
         );
 
@@ -221,7 +221,7 @@ class AssetsController extends Controller
         $siteId = $this->request->getBodyParam('siteId');
         $assetVariable = $this->request->getValidatedBodyParam('assetVariable') ?? 'asset';
 
-        /** @var Asset|null $asset */
+        /* @var Asset|null $asset */
         $asset = Asset::find()
             ->id($assetId)
             ->siteId($siteId)
@@ -260,7 +260,7 @@ class AssetsController extends Controller
 
             // Send the asset back to the template
             Craft::$app->getUrlManager()->setRouteParams([
-                $assetVariable => $asset
+                $assetVariable => $asset,
             ]);
 
             return null;
@@ -272,7 +272,7 @@ class AssetsController extends Controller
                 'id' => $asset->id,
                 'title' => $asset->title,
                 'url' => $asset->getUrl(),
-                'cpEditUrl' => $asset->getCpEditUrl()
+                'cpEditUrl' => $asset->getCpEditUrl(),
             ]);
         }
 
@@ -290,16 +290,16 @@ class AssetsController extends Controller
     public function actionUpload(): Response
     {
         $uploadedFile = UploadedFile::getInstanceByName('assets-upload');
-        $folderId = $this->request->getBodyParam('folderId');
-        $fieldId = $this->request->getBodyParam('fieldId');
-        $elementId = $this->request->getBodyParam('elementId');
 
-        if (empty($folderId) && (empty($fieldId) || empty($elementId))) {
-            throw new BadRequestHttpException('No target destination provided for uploading');
+        if (!$uploadedFile) {
+            throw new BadRequestHttpException('No file was uploaded');
         }
 
-        if ($uploadedFile === null) {
-            throw new BadRequestHttpException('No file was uploaded');
+        $folderId = $this->request->getBodyParam('folderId');
+        $fieldId = $this->request->getBodyParam('fieldId');
+
+        if (!$folderId && !$fieldId) {
+            throw new BadRequestHttpException('No target destination provided for uploading');
         }
 
         try {
@@ -314,7 +314,12 @@ class AssetsController extends Controller
                     throw new BadRequestHttpException('The field provided is not an Assets field');
                 }
 
-                $element = $elementId ? Craft::$app->getElements()->getElementById((int)$elementId) : null;
+                if ($elementId = $this->request->getBodyParam('elementId')) {
+                    $siteId = $this->request->getBodyParam('siteId') ?: null;
+                    $element = Craft::$app->getElements()->getElementById($elementId, null, $siteId);
+                } else {
+                    $element = null;
+                }
                 $folderId = $field->resolveDynamicPathToFolderId($element);
             }
 
@@ -359,14 +364,14 @@ class AssetsController extends Controller
                     'filename' => $asset->conflictingFilename,
                     'conflictingAssetId' => $conflictingAsset ? $conflictingAsset->id : null,
                     'suggestedFilename' => $asset->suggestedFilename,
-                    'conflictingAssetUrl' => ($conflictingAsset && $conflictingAsset->getVolume()->hasUrls) ? $conflictingAsset->getUrl() : null
+                    'conflictingAssetUrl' => ($conflictingAsset && $conflictingAsset->getVolume()->hasUrls) ? $conflictingAsset->getUrl() : null,
                 ]);
             }
 
             return $this->asJson([
                 'success' => true,
                 'filename' => $asset->filename,
-                'assetId' => $asset->id
+                'assetId' => $asset->id,
             ]);
         } catch (\Throwable $e) {
             Craft::error('An error occurred when saving an asset: ' . $e->getMessage(), __METHOD__);
@@ -510,7 +515,7 @@ class AssetsController extends Controller
                 'success' => true,
                 'folderName' => $folderModel->name,
                 'folderUid' => $folderModel->uid,
-                'folderId' => $folderModel->id
+                'folderId' => $folderModel->id,
             ]);
         } catch (AssetException $exception) {
             return $this->asErrorJson($exception->getMessage());
@@ -589,7 +594,7 @@ class AssetsController extends Controller
 
             // Send the entry back to the template
             Craft::$app->getUrlManager()->setRouteParams([
-                'asset' => $asset
+                'asset' => $asset,
             ]);
 
             return null;
@@ -695,13 +700,13 @@ class AssetsController extends Controller
 
         if (!$result) {
             // Get the corrected filename
-            list(, $filename) = Assets::parseFileLocation($asset->newLocation);
+            [, $filename] = Assets::parseFileLocation($asset->newLocation);
 
             return $this->asJson([
                 'conflict' => $asset->getFirstError('newLocation'),
                 'suggestedFilename' => $asset->suggestedFilename,
                 'filename' => $filename,
-                'assetId' => $asset->id
+                'assetId' => $asset->id,
             ]);
         }
 
@@ -743,7 +748,7 @@ class AssetsController extends Controller
 
         $existingFolder = $assets->findFolder([
             'parentId' => $newParentFolderId,
-            'name' => $folderToMove->name
+            'name' => $folderToMove->name,
         ]);
 
         if (!$existingFolder) {
@@ -756,7 +761,7 @@ class AssetsController extends Controller
             return $this->asJson([
                 'conflict' => Craft::t('app', 'Folder “{folder}” already exists at target location', ['folder' => $folderToMove->name]),
                 'folderId' => $folderBeingMovedId,
-                'parentId' => $newParentFolderId
+                'parentId' => $newParentFolderId,
             ]);
         }
 
@@ -794,7 +799,7 @@ class AssetsController extends Controller
                     }
                 } else if ($existingFolder && $force) {
                     // An un-indexed folder is conflicting. If we're forcing things, just remove it.
-                    $targetVolume->deleteDir(rtrim($destinationFolder->path, '/') . '/' . $folderToMove->name);
+                    $targetVolume->deleteDirectory(rtrim($destinationFolder->path, '/') . '/' . $folderToMove->name);
                 }
 
                 // Mirror the structure, passing along the exsting folder map
@@ -819,7 +824,7 @@ class AssetsController extends Controller
             'success' => true,
             'transferList' => $fileTransferList,
             'newFolderUid' => $newFolder->uid,
-            'newFolderId' => $newFolderId
+            'newFolderId' => $newFolderId,
         ]);
     }
 
@@ -927,7 +932,7 @@ class AssetsController extends Controller
 
             $imageSize = Image::imageSize($imageCopy);
 
-            /** @var Raster $image */
+            /* @var Raster $image */
             $image = Craft::$app->getImages()->loadImage($imageCopy, true, max($imageSize));
 
             // TODO Is this hacky? It seems hacky.
@@ -938,7 +943,7 @@ class AssetsController extends Controller
                 $asset->filename = preg_replace('/(svg)$/i', 'png', $asset->filename);
             }
 
-            list($originalImageWidth, $originalImageHeight) = $imageSize;
+            [$originalImageWidth, $originalImageHeight] = $imageSize;
 
             if ($imageFlipped) {
                 if (!empty($flipData['x'])) {
@@ -950,9 +955,15 @@ class AssetsController extends Controller
                 }
             }
 
+            $generalConfig = Craft::$app->getConfig()->getGeneral();
+            $upscale = $generalConfig->upscaleImages;
+            $generalConfig->upscaleImages = true;
+
             if ($zoom !== 1.0) {
                 $image->scaleToFit($originalImageWidth * $zoom, $originalImageHeight * $zoom);
             }
+
+            $generalConfig->upscaleImages = $upscale;
 
             if ($imageRotated) {
                 $image->rotate($imageRotation + $viewportRotation);
@@ -976,7 +987,7 @@ class AssetsController extends Controller
 
                 $focal = [
                     'x' => $fx / $width,
-                    'y' => $fy / $height
+                    'y' => $fy / $height,
                 ];
             }
 
@@ -1054,9 +1065,9 @@ class AssetsController extends Controller
         if (count($assets) === 1) {
             $asset = reset($assets);
             return $this->response
-                ->sendStreamAsFile($asset->stream, $asset->filename, [
+                ->sendStreamAsFile($asset->getStream(), $asset->filename, [
                     'fileSize' => $asset->size,
-                    'mimeType' => $asset->mimeType,
+                    'mimeType' => $asset->getMimeType(),
                 ]);
         }
 
@@ -1069,10 +1080,10 @@ class AssetsController extends Controller
         }
 
         App::maxPowerCaptain();
+
         foreach ($assets as $asset) {
-            $localPath = $asset->getCopyOfFile();
-            $volume = $asset->getVolume();
-            $zip->addFile($localPath, $volume->name . '/' . $asset->getPath());
+            $path = $asset->getVolume()->name . '/' . $asset->getPath();
+            $zip->addFromString($path, $asset->getContents());
         }
 
         $zip->close();

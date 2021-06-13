@@ -32,7 +32,7 @@ class AssetManager extends \yii\web\AssetManager
     public function getPublishedPath($sourcePath, bool $publish = false)
     {
         if ($publish === true) {
-            list($path) = $this->publish($sourcePath);
+            [$path] = $this->publish($sourcePath);
             return $path;
         }
 
@@ -50,7 +50,7 @@ class AssetManager extends \yii\web\AssetManager
     public function getPublishedUrl($sourcePath, bool $publish = false, $filePath = null)
     {
         if ($publish === true) {
-            list(, $url) = $this->publish($sourcePath);
+            [, $url] = $this->publish($sourcePath);
         } else {
             $url = parent::getPublishedUrl($sourcePath);
         }
@@ -104,7 +104,7 @@ class AssetManager extends \yii\web\AssetManager
      */
     protected function publishDirectory($src, $options): array
     {
-        list($dir, $url) = parent::publishDirectory($src, $options);
+        [$dir, $url] = parent::publishDirectory($src, $options);
 
         // A backslash can cause issues on Windows here.
         $url = str_replace('\\', '/', $url);
@@ -117,7 +117,7 @@ class AssetManager extends \yii\web\AssetManager
      */
     protected function publishFile($src)
     {
-        list($file, $url) = parent::publishFile($src);
+        [$file, $url] = parent::publishFile($src);
 
         // A backslash can cause issues on Windows here.
         $url = str_replace('\\', '/', $url);

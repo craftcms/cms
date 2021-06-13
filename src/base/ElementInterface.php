@@ -8,6 +8,7 @@
 namespace craft\base;
 
 use craft\elements\db\ElementQueryInterface;
+use craft\errors\InvalidFieldException;
 use craft\models\FieldLayout;
 use craft\models\Site;
 use Twig\Markup;
@@ -18,6 +19,7 @@ use Twig\Markup;
  * A class implementing this interface should also use [[ElementTrait]] and [[ContentTrait]].
  *
  * @mixin ElementTrait
+ * @mixin \craft\behaviors\CustomFieldBehavior
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
@@ -374,7 +376,9 @@ interface ElementInterface extends ComponentInterface
      * This method should return an array, where each item is a sub-array with the following keys:
      *
      * - `label` – The sort option label
-     * - `orderBy` – An array or comma-delimited string of columns to order the query by
+     * - `orderBy` – An array, comma-delimited string, or a callback function that defines the columns to order the query by. If set to a callback
+     *   function, the function will be passed a single argument, `$dir`, set to either `SORT_ASC` or `SORT_DESC`, and it should return an array of
+     *   column names or an [[\yii\db\ExpressionInterface]] object.
      * - `attribute` _(optional)_ – The [[tableAttributes()|table attribute]] name that this option is associated
      *   with (required if `orderBy` is an array or more than one column name)
      * - `defaultDir` _(optional)_ – The default sort direction that should be used when sorting by this option
@@ -410,13 +414,13 @@ interface ElementInterface extends ComponentInterface
     /**
      * Defines all of the available columns that can be shown in table views.
      *
-     * This method should return an array whose keys map to attribute names and database columns that can be sorted
-     * against when querying for elements, and whose values make up the table’s column headers.
-     * The *first* item that this array returns will just identify the database column name, and the table column’s
-     * header, but will **not** have any effect on what shows up in the table’s body. That’s because the first column is
-     * reserved for displaying whatever your element’s __toString() method returns.
-     * All other items besides the first one will also define which element attribute should be shown within the data
-     * cells. (The actual HTML to be shown can be customized with [[getTableAttributeHtml()]].)
+     * This method should return an array whose keys represent element attribute names, and whose values make
+     * up the table’s column headers.
+     *
+     * The first item in the array will determine the first table column’s header (and which
+     * [[\craft\base\ElementInterface::sortOptions()|sort option]] it should be mapped to, if any), however it
+     * doesn’t have any effect on the table body, because the first column is reserved for displaying whatever
+     * the elements’ [[\craft\base\ElementInterface::getUiLabel()|getUiLabel()]] methods return.
      *
      * @return array The table attributes.
      */
@@ -528,6 +532,14 @@ interface ElementInterface extends ComponentInterface
     public function getIsDraft(): bool;
 
     /**
+     * Returns whether this is a provisional draft.
+     *
+     * @return bool
+     * @since 3.7.0
+     */
+    public function getIsProvisionalDraft(): bool;
+
+    /**
      * Returns whether this is a revision.
      *
      * @return bool
@@ -536,28 +548,76 @@ interface ElementInterface extends ComponentInterface
     public function getIsRevision(): bool;
 
     /**
-     * Returns the element’s ID, or if it’s a draft/revision, its source element’s ID.
-     *
-     * @return int|null
-     * @since 3.2.0
-     */
-    public function getSourceId();
-
-    /**
-     * Returns the element’s UUID, or if it’s a draft/revision, its source element’s UUID.
-     *
-     * @return string
-     * @since 3.2.0
-     */
-    public function getSourceUid(): string;
-
-    /**
-     * Returns whether the element is an unsaved draft.
+     * Returns whether this is the canonical element.
      *
      * @return bool
-     * @since 3.2.0
+     * @since 3.7.0
      */
-    public function getIsUnsavedDraft(): bool;
+    public function getIsCanonical(): bool;
+
+    /**
+     * Returns whether this is a derivative element, such as a draft or revision.
+     *
+     * @return bool
+     * @since 3.7.0
+     */
+    public function getIsDerivative(): bool;
+
+    /**
+     * Returns the canonical version of the element.
+     *
+     * If this is a draft or revision, the source element will be returned.
+     *
+     * @param bool $anySite Whether the canonical element can be retrieved in any site
+     * @return static
+     * @since 3.7.0
+     */
+    public function getCanonical(bool $anySite = false): ElementInterface;
+
+    /**
+     * Sets the canonical version of the element.
+     *
+     * @param static $element
+     * @return void
+     * @since 3.7.0
+     */
+    public function setCanonical(ElementInterface $element): void;
+
+    /**
+     * Returns the element’s canonical ID.
+     *
+     * If this is a draft or revision, the source element’s ID will be returned.
+     *
+     * @return int|null
+     * @since 3.7.0
+     */
+    public function getCanonicalId(): ?int;
+
+    /**
+     * Sets the element’s canonical ID.
+     *
+     * @param int|null $canonicalId
+     * @return void
+     * @since 3.7.0
+     */
+    public function setCanonicalId(?int $canonicalId): void;
+
+    /**
+     * Returns whether the element is an unpublished draft.
+     *
+     * @return bool
+     * @since 3.6.0
+     */
+    public function getIsUnpublishedDraft(): bool;
+
+    /**
+     * Merges changes from a given canonical element into this one.
+     *
+     * @return void
+     * @see \craft\services\Elements::mergeCanonicalChanges()
+     * @since 3.7.0
+     */
+    public function mergeCanonicalChanges(): void;
 
     /**
      * Returns the field layout used by this element.
@@ -658,6 +718,15 @@ interface ElementInterface extends ComponentInterface
     public function getUiLabel(): string;
 
     /**
+     * Defines what the element should be called within the control panel.
+     *
+     * @param string|null $label
+     * @return void
+     * @since 3.6.3
+     */
+    public function setUiLabel(?string $label): void;
+
+    /**
      * Returns the reference string to this element.
      *
      * @return string|null
@@ -670,6 +739,14 @@ interface ElementInterface extends ComponentInterface
      * @return bool
      */
     public function getIsEditable(): bool;
+
+    /**
+     * Returns whether the current user can delete the element.
+     *
+     * @return bool
+     * @since 3.5.12
+     */
+    public function getIsDeletable(): bool;
 
     /**
      * Returns the element’s edit URL in the control panel.
@@ -753,7 +830,7 @@ interface ElementInterface extends ComponentInterface
     /**
      * Returns the same element in other locales.
      *
-     * @return ElementQueryInterface[]|ElementInterface[]
+     * @return ElementQueryInterface[]|static[]
      */
     public function getLocalized();
 
@@ -761,7 +838,7 @@ interface ElementInterface extends ComponentInterface
      * Returns the next element relative to this one, from a given set of criteria.
      *
      * @param mixed $criteria
-     * @return ElementInterface|null
+     * @return static|null
      */
     public function getNext($criteria = false);
 
@@ -769,36 +846,45 @@ interface ElementInterface extends ComponentInterface
      * Returns the previous element relative to this one, from a given set of criteria.
      *
      * @param mixed $criteria
-     * @return ElementInterface|null
+     * @return static|null
      */
     public function getPrev($criteria = false);
 
     /**
      * Sets the default next element.
      *
-     * @param ElementInterface|false $element
+     * @param static|false $element
      */
     public function setNext($element);
 
     /**
      * Sets the default previous element.
      *
-     * @param ElementInterface|false $element
-     * return void
+     * @param static|false $element
+     * @return void
      */
     public function setPrev($element);
 
     /**
      * Returns the element’s parent.
      *
-     * @return ElementInterface|null
+     * @return static|null
      */
     public function getParent();
 
     /**
+     * Returns the parent element’s URI, if there is one.
+     *
+     * If the parent’s URI is `__home__` (the homepage URI), then `null` will be returned.
+     *
+     * @return string|null
+     */
+    public function getParentUri(): ?string;
+
+    /**
      * Sets the element’s parent.
      *
-     * @param ElementInterface|null $parent
+     * @param static|null $parent
      */
     public function setParent(ElementInterface $parent = null);
 
@@ -806,7 +892,7 @@ interface ElementInterface extends ComponentInterface
      * Returns the element’s ancestors.
      *
      * @param int|null $dist
-     * @return ElementQueryInterface|ElementInterface[]
+     * @return ElementQueryInterface|static[]
      */
     public function getAncestors(int $dist = null);
 
@@ -814,35 +900,35 @@ interface ElementInterface extends ComponentInterface
      * Returns the element’s descendants.
      *
      * @param int|null $dist
-     * @return ElementQueryInterface|ElementInterface[]
+     * @return ElementQueryInterface|static[]
      */
     public function getDescendants(int $dist = null);
 
     /**
      * Returns the element’s children.
      *
-     * @return ElementQueryInterface|ElementInterface[]
+     * @return ElementQueryInterface|static[]
      */
     public function getChildren();
 
     /**
      * Returns all of the element’s siblings.
      *
-     * @return ElementQueryInterface|ElementInterface[]
+     * @return ElementQueryInterface|static[]
      */
     public function getSiblings();
 
     /**
      * Returns the element’s previous sibling.
      *
-     * @return ElementInterface|null
+     * @return static|null
      */
     public function getPrevSibling();
 
     /**
      * Returns the element’s next sibling.
      *
-     * @return ElementInterface|null
+     * @return static|null
      */
     public function getNextSibling();
 
@@ -863,7 +949,7 @@ interface ElementInterface extends ComponentInterface
     /**
      * Returns whether this element is an ancestor of another one.
      *
-     * @param ElementInterface $element
+     * @param static $element
      * @return bool
      */
     public function isAncestorOf(ElementInterface $element): bool;
@@ -871,7 +957,7 @@ interface ElementInterface extends ComponentInterface
     /**
      * Returns whether this element is a descendant of another one.
      *
-     * @param ElementInterface $element
+     * @param static $element
      * @return bool
      */
     public function isDescendantOf(ElementInterface $element): bool;
@@ -879,7 +965,7 @@ interface ElementInterface extends ComponentInterface
     /**
      * Returns whether this element is a direct parent of another one.
      *
-     * @param ElementInterface $element
+     * @param static $element
      * @return bool
      */
     public function isParentOf(ElementInterface $element): bool;
@@ -887,7 +973,7 @@ interface ElementInterface extends ComponentInterface
     /**
      * Returns whether this element is a direct child of another one.
      *
-     * @param ElementInterface $element
+     * @param static $element
      * @return bool
      */
     public function isChildOf(ElementInterface $element): bool;
@@ -895,7 +981,7 @@ interface ElementInterface extends ComponentInterface
     /**
      * Returns whether this element is a sibling of another one.
      *
-     * @param ElementInterface $element
+     * @param static $element
      * @return bool
      */
     public function isSiblingOf(ElementInterface $element): bool;
@@ -903,7 +989,7 @@ interface ElementInterface extends ComponentInterface
     /**
      * Returns whether this element is the direct previous sibling of another one.
      *
-     * @param ElementInterface $element
+     * @param static $element
      * @return bool
      */
     public function isPrevSiblingOf(ElementInterface $element): bool;
@@ -911,7 +997,7 @@ interface ElementInterface extends ComponentInterface
     /**
      * Returns whether this element is the direct next sibling of another one.
      *
-     * @param ElementInterface $element
+     * @param static $element
      * @return bool
      */
     public function isNextSiblingOf(ElementInterface $element): bool;
@@ -932,6 +1018,41 @@ interface ElementInterface extends ComponentInterface
      * @since 3.4.0
      */
     public function getAttributeStatus(string $attribute);
+
+    /**
+     * Returns the attribute names that have been updated on the canonical element since the last time it was
+     * merged into this element.
+     *
+     * @return string[]
+     * @since 3.7.0
+     */
+    public function getOutdatedAttributes(): array;
+
+    /**
+     * Returns whether an attribute value has fallen behind the canonical element’s value.
+     *
+     * @param string $name
+     * @return bool
+     * @since 3.7.0
+     */
+    public function isAttributeOutdated(string $name): bool;
+
+    /**
+     * Returns the attribute names that have changed for this element.
+     *
+     * @return string[]
+     * @since 3.7.0
+     */
+    public function getModifiedAttributes(): array;
+
+    /**
+     * Returns whether an attribute value has changed for this element.
+     *
+     * @param string $name
+     * @return bool
+     * @since 3.7.0
+     */
+    public function isAttributeModified(string $name): bool;
 
     /**
      * Returns whether an attribute has changed since the element was first loaded.
@@ -1031,6 +1152,7 @@ interface ElementInterface extends ComponentInterface
      *
      * @param string $fieldHandle The field handle whose value needs to be returned
      * @return mixed The field value
+     * @throws InvalidFieldException if the element doesn’t have a field with the handle specified by `$fieldHandle`
      */
     public function getFieldValue(string $fieldHandle);
 
@@ -1043,13 +1165,39 @@ interface ElementInterface extends ComponentInterface
     public function setFieldValue(string $fieldHandle, $value);
 
     /**
-     * Returns the status of a given field.
+     * Returns the field handles that have been updated on the canonical element since the last time it was
+     * merged into this element.
+     *
+     * @return string[]
+     * @since 3.7.0
+     */
+    public function getOutdatedFields(): array;
+
+    /**
+     * Returns whether a field value has fallen behind the canonical element’s value.
      *
      * @param string $fieldHandle
-     * @return array|null
-     * @since 3.4.0
+     * @return bool
+     * @since 3.7.0
      */
-    public function getFieldStatus(string $fieldHandle);
+    public function isFieldOutdated(string $fieldHandle): bool;
+
+    /**
+     * Returns the field handles that have changed for this element.
+     *
+     * @return string[]
+     * @since 3.7.0
+     */
+    public function getModifiedFields(): array;
+
+    /**
+     * Returns whether a field value has changed for this element.
+     *
+     * @param string $fieldHandle
+     * @return bool
+     * @since 3.7.0
+     */
+    public function isFieldModified(string $fieldHandle): bool;
 
     /**
      * Returns whether a custom field value has changed since the element was first loaded.
@@ -1200,7 +1348,7 @@ interface ElementInterface extends ComponentInterface
     /**
      * Returns the element’s current revision, if one exists.
      *
-     * @return ElementInterface|null
+     * @return static|null
      * @since 3.2.0
      */
     public function getCurrentRevision();
@@ -1235,11 +1383,29 @@ interface ElementInterface extends ComponentInterface
     public function getTableAttributeHtml(string $attribute): string;
 
     /**
-     * Returns the HTML for the element’s editor HUD.
+     * Returns the HTML for the element’s editor slideout.
      *
-     * @return string The HTML for the editor HUD
+     * @return string The HTML for the editor slideout
+     * @deprecated in 3.7.0. Use [[getSidebarHtml()]] or [[getMetadata()]] instead.
      */
     public function getEditorHtml(): string;
+
+    /**
+     * Returns the HTML for any fields/info that should be shown within the sidebar of element editor slideouts.
+     *
+     * @return string
+     * @since 3.7.0
+     */
+    public function getSidebarHtml(): string;
+
+    /**
+     * Returns element metadata that can be shown on its edit page or within element editor slideouts.
+     *
+     * @return array The data, with keys representing the labels. The values can either be strings or callables.
+     * If a value is `false`, it will be omitted.
+     * @since 3.7.0
+     */
+    public function getMetadata(): array;
 
     /**
      * Returns the GraphQL type name for this element type.

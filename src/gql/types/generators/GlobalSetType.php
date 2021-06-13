@@ -56,7 +56,7 @@ class GlobalSetType implements GeneratorInterface, SingleGeneratorInterface
      */
     public static function getName($context = null): string
     {
-        /** @var GlobalSetElement $context */
+        /* @var GlobalSetElement $context */
         return $context->handle . '_GlobalSet';
     }
 
@@ -65,14 +65,16 @@ class GlobalSetType implements GeneratorInterface, SingleGeneratorInterface
      */
     public static function generateType($context): ObjectType
     {
-        /** @var GlobalSetElement $globalSet */
+        /* @var GlobalSetElement $globalSet */
         $typeName = self::getName($context);
         $contentFields = $context->getFields();
         $contentFieldGqlTypes = [];
 
-        /** @var Field $contentField */
+        /* @var Field $contentField */
         foreach ($contentFields as $contentField) {
-            $contentFieldGqlTypes[$contentField->handle] = $contentField->getContentGqlType();
+            if (!$contentField instanceof GqlSchemaAwareFieldInterface || $contentField->getExistsForCurrentGqlSchema()) {
+                $contentFieldGqlTypes[$contentField->handle] = $contentField->getContentGqlType();
+            }
         }
 
         $globalSetFields = TypeManager::prepareFieldDefinitions(array_merge(GlobalSetInterface::getFieldDefinitions(), $contentFieldGqlTypes), $typeName);
@@ -81,7 +83,7 @@ class GlobalSetType implements GeneratorInterface, SingleGeneratorInterface
             'name' => $typeName,
             'fields' => function() use ($globalSetFields) {
                 return $globalSetFields;
-            }
+            },
         ]));
     }
 

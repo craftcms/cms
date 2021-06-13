@@ -8,8 +8,6 @@
 namespace craft\test\mockclasses\components;
 
 use craft\base\Component;
-use Exception;
-use RuntimeException;
 
 /**
  * Class DependencyHeavyComponentExample.
@@ -21,23 +19,19 @@ use RuntimeException;
 class DependencyHeavyComponentExample extends Component
 {
     /**
-     * @param array $settings
-     * @throws Exception
+     * @var
      */
-    public function __construct(array $settings)
-    {
-        if (!isset($settings['dependency1'])) {
-            throw new RuntimeException('Dependency 1 does not exist');
-        }
+    public $dependency1;
 
-        if (!isset($settings['dependency2'])) {
-            throw new RuntimeException('Dependency 2 does not exist');
-        }
+    /**
+     * @var
+     */
+    public $dependency2;
 
-        if (!isset($settings['settingsdependency1'])) {
-            throw new RuntimeException('Settings dependency 1 does not exist');
-        }
-    }
+    /**
+     * @var
+     */
+    public $settingsdependency1;
 
     /**
      * @return string

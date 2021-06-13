@@ -62,7 +62,7 @@ class DateTime extends ScalarType
     {
         // The value not being a datetime would indicate an already formatted date.
         if ($value instanceof \DateTime) {
-            $value->setTimezone(new \DateTimeZone(FormatDateTime::DEFAULT_TIMEZONE));
+            $value->setTimezone(new \DateTimeZone(FormatDateTime::defaultTimezone()));
             $value = $value->format(FormatDateTime::DEFAULT_FORMAT);
         }
 
@@ -74,7 +74,12 @@ class DateTime extends ScalarType
      */
     public function parseValue($value)
     {
-        return (string)$value;
+        if (is_string($value)) {
+            return new \DateTime($value);
+        }
+
+        // This message will be lost by the wrapping exception, but it feels good to provide one.
+        throw new GqlException("DateTime must be a string");
     }
 
     /**
@@ -83,7 +88,7 @@ class DateTime extends ScalarType
     public function parseLiteral($valueNode, array $variables = null)
     {
         if ($valueNode instanceof StringValueNode) {
-            return (string)$valueNode->value;
+            return new \DateTime($valueNode->value);
         }
 
         // This message will be lost by the wrapping exception, but it feels good to provide one.

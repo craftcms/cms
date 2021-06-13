@@ -95,6 +95,14 @@ class GlobalSet extends Element
 
     /**
      * @inheritdoc
+     */
+    protected function isEditable(): bool
+    {
+        return Craft::$app->getUser()->checkPermission("editGlobalSet:$this->uid");
+    }
+
+    /**
+     * @inheritdoc
      * @return GlobalSetQuery The newly created [[GlobalSetQuery]] instance.
      */
     public static function find(): ElementQueryInterface
@@ -108,7 +116,7 @@ class GlobalSet extends Element
      */
     public static function gqlTypeNameByContext($context): string
     {
-        /** @var self $context */
+        /* @var self $context */
         return $context->handle . '_GlobalSet';
     }
 
@@ -118,7 +126,7 @@ class GlobalSet extends Element
      */
     public static function gqlScopesByContext($context): array
     {
-        /** @var self $context */
+        /* @var self $context */
         return ['globalsets.' . $context->uid];
     }
 
@@ -128,7 +136,7 @@ class GlobalSet extends Element
      */
     public static function gqlMutationNameByContext($context): string
     {
-        /** @var self $context */
+        /* @var self $context */
         return 'save_' . $context->handle . '_GlobalSet';
     }
 
@@ -178,13 +186,13 @@ class GlobalSet extends Element
         $rules[] = [
             ['name', 'handle'],
             UniqueValidator::class,
-            'targetClass' => GlobalSetRecord::class
+            'targetClass' => GlobalSetRecord::class,
         ];
 
         $rules[] = [
             ['handle'],
             HandleValidator::class,
-            'reservedWords' => ['id', 'dateCreated', 'dateUpdated', 'uid', 'title']
+            'reservedWords' => ['id', 'dateCreated', 'dateUpdated', 'uid', 'title'],
         ];
 
         return $rules;
@@ -195,7 +203,7 @@ class GlobalSet extends Element
      */
     public function getFieldLayout()
     {
-        /** @var FieldLayoutBehavior $behavior */
+        /* @var FieldLayoutBehavior $behavior */
         $behavior = $this->getBehavior('fieldLayout');
         return $behavior->getFieldLayout();
     }
@@ -203,7 +211,7 @@ class GlobalSet extends Element
     /**
      * @inheritdoc
      */
-    public function getCpEditUrl()
+    protected function cpEditUrl(): ?string
     {
         if (Craft::$app->getIsMultiSite()) {
             return UrlHelper::cpUrl('globals/' . $this->getSite()->handle . '/' . $this->handle);

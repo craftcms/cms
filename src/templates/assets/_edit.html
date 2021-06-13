@@ -68,11 +68,12 @@
                 class: 'value',
                 text: formattedSize,
                 title: formattedSizeInBytes,
+                aria: {
+                    label: formattedSizeInBytes,
+                },
             }) }}
         </div>
     {% endif %}
-
-    {{ parent() }}
 
     {% set uploader = element.getUploader() %}
     {% if uploader %}
@@ -84,7 +85,7 @@
                 } %}
             </div>
             {% js %}
-                new Craft.ElementThumbLoader().load($('#uploader-element'));
+            new Craft.ElementThumbLoader().load($('#uploader-element'));
             {% endjs %}
         </div>
     {% endif %}
@@ -98,6 +99,8 @@
 
     {# Give plugins a chance to add other things here #}
     {% hook "cp.assets.edit.meta" %}
+
+    {{ parent() }}
 {% endblock %}
 
 {% js on ready %}

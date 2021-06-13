@@ -280,10 +280,10 @@ class ElementFieldResolverTest extends Unit
     {
         $assetService = $this->make(Assets::class, [
             'getAssetUrl' => function ($asset, $transformArguments, $generateImmediately) use ($fieldArguments, $expectedArguments, $generateNow) {
-                $this->assertEquals($expectedArguments, $transformArguments);
+                self::assertEquals($expectedArguments, $transformArguments);
 
                 if (is_bool($generateNow)) {
-                    $this->assertSame($generateNow, $fieldArguments['immediately']);
+                    self::assertSame($generateNow, $fieldArguments['immediately']);
                 }
             }
         ]);
@@ -309,10 +309,10 @@ class ElementFieldResolverTest extends Unit
         };
 
         if (is_callable($result)) {
-            $this->assertEquals($result($element), $resolve());
+            self::assertEquals($result($element), $resolve());
         } else if ($result === true) {
-            $this->assertEquals($element->$propertyName, $resolve());
-            $this->assertNotNull($element->$propertyName);
+            self::assertEquals($element->$propertyName, $resolve());
+            self::assertNotNull($element->$propertyName);
         } else {
             $this->tester->expectThrowable(GqlException::class, $resolve);
         }

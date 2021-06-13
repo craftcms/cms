@@ -12,6 +12,8 @@ return [
     'categories/<groupHandle:{handle}>/<categoryId:\d+><slug:(?:-[^\/]*)?>/<siteHandle:{handle}>' => 'categories/edit-category',
     'categories/<groupHandle:{handle}>/new/<siteHandle:{handle}>' => 'categories/edit-category',
     'dashboard' => 'dashboard/index',
+    'edit/<id:\d+>' => 'edit/by-id',
+    'edit/<uid:' . StringHelper::UUID_PATTERN . '>' => 'edit/by-uid',
     'entries/<sectionHandle:{handle}>' => ['template' => 'entries'],
     'entries/<section:{handle}>/new' => 'entry-revisions/create-draft',
     'entries/<section:{handle}>/<entryId:\d+><slug:(?:-[^\/]*)?>' => 'entries/edit-entry',
@@ -20,7 +22,7 @@ return [
     'globals/<siteHandle:{handle}>/<globalSetHandle:{handle}>' => 'globals/edit-content',
     'myaccount' => [
         'route' => 'users/edit-user',
-        'defaults' => ['userId' => 'current']
+        'defaults' => ['userId' => 'current'],
     ],
     'update' => 'updater',
     'settings/assets' => 'volumes/volume-index',
@@ -53,8 +55,8 @@ return [
                 'slug' => '[^\/]+',
                 'tag' => '[^\/]+',
                 '*' => '[^\/]+',
-            ]
-        ]
+            ],
+        ],
     ],
     'settings/sections' => 'sections/index',
     'settings/sections/new' => 'sections/edit-section',

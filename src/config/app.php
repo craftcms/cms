@@ -3,8 +3,8 @@
 return [
     'id' => 'CraftCMS',
     'name' => 'Craft CMS',
-    'version' => '3.5.9',
-    'schemaVersion' => '3.5.13',
+    'version' => '3.7.0-alpha',
+    'schemaVersion' => '3.7.4',
     'minVersionRequired' => '2.6.2788',
     'basePath' => dirname(__DIR__), // Defines the @app alias
     'runtimePath' => '@storage/runtime', // Defines the @runtime alias
@@ -71,6 +71,9 @@ return [
         'images' => [
             'class' => craft\services\Images::class,
         ],
+        'log' => [
+            'class' => craft\log\Dispatcher::class,
+        ],
         'matrix' => [
             'class' => craft\services\Matrix::class,
         ],
@@ -130,6 +133,11 @@ return [
         ],
         'updates' => [
             'class' => craft\services\Updates::class,
+        ],
+        'urlManager' => [
+            'class' => craft\web\UrlManager::class,
+            'enablePrettyUrl' => true,
+            'ruleConfig' => ['class' => craft\web\UrlRule::class],
         ],
         'users' => [
             'class' => craft\services\Users::class,
@@ -208,43 +216,15 @@ return [
         },
 
         'formatter' => function() {
-            return Craft::$app->getLocale()->getFormatter();
+            return Craft::$app->getFormattingLocale()->getFormatter();
+        },
+
+        'formattingLocale' => function() {
+            return craft\helpers\App::createFormattingLocale();
         },
 
         'locale' => function() {
-            $i18n = Craft::$app->getI18n();
-
-            if (Craft::$app->getRequest()->getIsCpRequest() && !Craft::$app->getResponse()->isSent) {
-                // Is someone logged in?
-                $session = Craft::$app->getSession();
-                $id = $session->getHasSessionId() || $session->getIsActive() ? $session->get(Craft::$app->getUser()->idParam) : null;
-                if ($id) {
-                    // If they have a preferred locale, use it
-                    $usersService = Craft::$app->getUsers();
-                    if (($locale = $usersService->getUserPreference($id, 'locale')) !== null) {
-                        return $i18n->getLocaleById($locale);
-                    }
-
-                    // Otherwise see if they have a preferred language
-                    if (($language = $usersService->getUserPreference($id, 'language')) !== null) {
-                        return $i18n->getLocaleById($language);
-                    }
-                }
-
-                // If the defaultCpLocale setting is set, go with that
-                $generalConfig = Craft::$app->getConfig()->getGeneral();
-                if ($generalConfig->defaultCpLocale) {
-                    return $i18n->getLocaleById($generalConfig->defaultCpLocale);
-                }
-            }
-
-            // Default to the application language
-            return $i18n->getLocaleById(Craft::$app->language);
-        },
-
-        'log' => function() {
-            $config = craft\helpers\App::logConfig();
-            return $config ? Craft::createObject($config) : null;
+            return Craft::$app->getI18n()->getLocaleById(Craft::$app->language);
         },
 
         'mailer' => function() {

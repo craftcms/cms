@@ -43,19 +43,19 @@
     {{ forms.textField({
         label: 'Retry Duration'|t('app'),
         instructions: 'The number of seconds that the `Retry-After` HTTP header should be set to for 503 responses when the system is offline.'|t('app'),
+        id: 'retry-duration',
         name: 'retryDuration',
         value: system.retryDuration ?? null,
         inputmode: 'numeric',
         size: 4,
     }) }}
 
-    {{ forms.selectField({
+    {{ forms.timeZoneField({
         label: "Time Zone"|t('app'),
         warning: (craft.app.config.general.timezone ? configWarning('timezone')),
         id: 'time-zone',
         name: 'timeZone',
         value: system.timeZone,
-        options: timezoneOptions
     }) }}
 
     {% if CraftEdition == CraftPro %}

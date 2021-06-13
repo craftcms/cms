@@ -38,19 +38,6 @@ class Application extends \yii\console\Application
     use ApplicationTrait;
 
     /**
-     * Constructor.
-     *
-     * @param array $config name-value pairs that will be used to initialize the object properties.
-     * Note that the configuration must contain both [[id]] and [[basePath]].
-     * @throws InvalidConfigException if either [[id]] or [[basePath]] configuration is missing.
-     */
-    public function __construct($config = [])
-    {
-        Craft::$app = $this;
-        parent::__construct($config);
-    }
-
-    /**
      * Initializes the console app by creating the command runner.
      */
     public function init()
@@ -80,7 +67,7 @@ class Application extends \yii\console\Application
     public function runAction($route, $params = [])
     {
         if (!$this->getIsInstalled()) {
-            list($firstSeg) = explode('/', $route, 2);
+            [$firstSeg] = explode('/', $route, 2);
             if ($route !== 'install/plugin' && !in_array($firstSeg, ['install', 'setup'], true)) {
                 // Is the connection valid at least?
                 if (!$this->getIsDbConnectionValid()) {
@@ -88,6 +75,7 @@ class Application extends \yii\console\Application
                 } else {
                     $infoTable = $this->getDb()->getSchema()->getRawTableName(Table::INFO);
                     // Figure out the exception that is getting thrown
+                    $e = null;
                     try {
                         (new Query())->from([Table::INFO])->where(['id' => 1])->one();
                     } catch (\Throwable $e) {

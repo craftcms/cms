@@ -1,5 +1,5 @@
 @charset "UTF-8";
-@import "../../../../../node_modules/craftcms-sass/mixins";
+@import "../../../../../packages/craftcms-sass/mixins";
 
 html, body {
   height: 100%;
@@ -144,24 +144,30 @@ input.hidden {
 }
 
 #license {
-  padding: 70px 105px !important;
+  padding: 0 !important;
   overflow-y: scroll;
 
-  .license {
-    &,
-    h1 {
-      font-family: Menlo, monospace;
-      font-size: 13px;
-      line-height: 25px;
+  #license-content {
+    padding: 70px 105px;
+
+    .license {
+      &,
+      h1 {
+        font-family: Menlo, monospace;
+        font-size: 13px;
+        line-height: 25px;
+      }
+
+      h1 {
+        font-weight: bold;
+      }
     }
 
-    h1 {
-      font-weight: bold;
+    #license-accept {
+      margin-top: 35px;
+      display: flex;
+      justify-content: center;
     }
-  }
-
-  .centeralign {
-    margin-top: 35px;
   }
 }
 

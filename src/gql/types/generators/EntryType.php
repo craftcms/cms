@@ -8,8 +8,8 @@
 namespace craft\gql\types\generators;
 
 use Craft;
-use craft\base\Field;
 use craft\elements\Entry as EntryElement;
+use craft\gql\base\Generator;
 use craft\gql\base\GeneratorInterface;
 use craft\gql\base\ObjectType;
 use craft\gql\base\SingleGeneratorInterface;
@@ -27,7 +27,7 @@ use craft\models\EntryType as EntryTypeModel;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.3.0
  */
-class EntryType implements GeneratorInterface, SingleGeneratorInterface
+class EntryType extends Generator implements GeneratorInterface, SingleGeneratorInterface
 {
     /**
      * @inheritdoc
@@ -57,28 +57,21 @@ class EntryType implements GeneratorInterface, SingleGeneratorInterface
      */
     public static function generateType($context): ObjectType
     {
-        /** @var EntryTypeModel $entryType */
+        /* @var EntryTypeModel $entryType */
         $typeName = EntryElement::gqlTypeNameByContext($context);
 
         if ($createdType = GqlEntityRegistry::getEntity($typeName)) {
             return $createdType;
         }
 
-        $contentFields = $context->getFields();
-        $contentFieldGqlTypes = [];
-
-        /** @var Field $contentField */
-        foreach ($contentFields as $contentField) {
-            $contentFieldGqlTypes[$contentField->handle] = $contentField->getContentGqlType();
-        }
-
+        $contentFieldGqlTypes = self::getContentFields($context);
         $entryTypeFields = TypeManager::prepareFieldDefinitions(array_merge(EntryInterface::getFieldDefinitions(), $contentFieldGqlTypes), $typeName);
 
         return GqlEntityRegistry::createEntity($typeName, new Entry([
             'name' => $typeName,
             'fields' => function() use ($entryTypeFields) {
                 return $entryTypeFields;
-            }
+            },
         ]));
     }
 }

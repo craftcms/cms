@@ -7,15 +7,19 @@
 
 namespace craft\helpers;
 
+use Closure;
 use Craft;
 use craft\base\Serializable;
 use craft\db\Connection;
 use craft\db\mysql\Schema as MysqlSchema;
 use craft\db\Query;
+use PDO;
 use yii\base\Exception;
 use yii\base\InvalidArgumentException;
 use yii\base\NotSupportedException;
+use yii\db\BatchQueryResult;
 use yii\db\Exception as DbException;
+use yii\db\Query as YiiQuery;
 use yii\db\Schema;
 
 /**
@@ -89,7 +93,7 @@ class Db
     public static function prepareValuesForDb($values): array
     {
         // Normalize to an array
-        $values = ArrayHelper::toArray($values);
+        $values = ArrayHelper::toArray($values, [], false);
 
         foreach ($values as $key => $value) {
             $values[$key] = static::prepareValueForDb($value);
@@ -130,6 +134,7 @@ class Db
      * @param mixed $date The date to be prepared
      * @param bool $stripSeconds Whether the seconds should be omitted from the formatted string
      * @return string|null The prepped date, or `null` if it could not be prepared
+     * @todo Remove the $stripSeconds argument in Craft 4
      */
     public static function prepareDateForDb($date, bool $stripSeconds = false)
     {
@@ -153,7 +158,7 @@ class Db
      * @param string $columnType
      * @return int|false The min allowed number, or false if it can't be determined
      */
-    public static function getMinAllowedValueForNumericColumn($columnType)
+    public static function getMinAllowedValueForNumericColumn(string $columnType)
     {
         $shortColumnType = self::parseColumnType($columnType);
 
@@ -171,7 +176,7 @@ class Db
      * @param string $columnType
      * @return int|false The max allowed number, or false if it can't be determined
      */
-    public static function getMaxAllowedValueForNumericColumn($columnType)
+    public static function getMaxAllowedValueForNumericColumn(string $columnType)
     {
         $shortColumnType = self::parseColumnType($columnType);
 
@@ -192,7 +197,7 @@ class Db
      * @return string
      * @throws Exception if no column types can contain this
      */
-    public static function getNumericalColumnType(int $min = null, int $max = null, int $decimals = null): string
+    public static function getNumericalColumnType(?int $min = null, ?int $max = null, ?int $decimals = null): string
     {
         // Normalize the arguments
         if (!is_numeric($min)) {
@@ -215,7 +220,7 @@ class Db
         }
 
         // Figure out the smallest possible int column type that will fit our min/max
-        foreach (self::$_integerSizeRanges as $type => list($typeMin, $typeMax)) {
+        foreach (self::$_integerSizeRanges as $type => [$typeMin, $typeMax]) {
             if ($min >= $typeMin && $max <= $typeMax) {
                 return $type . "({$length})";
             }
@@ -231,7 +236,7 @@ class Db
      * @param Connection|null $db The database connection
      * @return int|null|false The storage capacity of the column type in bytes, null if unlimited, or false or it can't be determined.
      */
-    public static function getTextualColumnStorageCapacity(string $columnType, Connection $db = null)
+    public static function getTextualColumnStorageCapacity(string $columnType, ?Connection $db = null)
     {
         if ($db === null) {
             $db = self::db();
@@ -283,7 +288,7 @@ class Db
      * @return string
      * @throws Exception if using an unsupported connection type
      */
-    public static function getTextualColumnTypeByContentLength(int $contentLength, Connection $db = null): string
+    public static function getTextualColumnTypeByContentLength(int $contentLength, ?Connection $db = null): string
     {
         if ($db === null) {
             $db = self::db();
@@ -315,7 +320,7 @@ class Db
      * @param string $columnType
      * @return string|null
      */
-    public static function parseColumnType($columnType)
+    public static function parseColumnType(string $columnType): ?string
     {
         if (!preg_match('/^\w+/', $columnType, $matches)) {
             return null;
@@ -330,7 +335,7 @@ class Db
      * @param string $columnType
      * @return int|null
      */
-    public static function parseColumnLength($columnType)
+    public static function parseColumnLength(string $columnType): ?int
     {
         if (!preg_match('/^\w+\((\d+)\)/', $columnType, $matches)) {
             return null;
@@ -345,7 +350,7 @@ class Db
      * @param string $columnType
      * @return string
      */
-    public static function getSimplifiedColumnType($columnType)
+    public static function getSimplifiedColumnType(string $columnType): string
     {
         if (($shortColumnType = self::parseColumnType($columnType)) === null) {
             return $columnType;
@@ -371,7 +376,7 @@ class Db
      * @param string $typeB
      * @return bool
      */
-    public static function areColumnTypesCompatible($typeA, $typeB)
+    public static function areColumnTypesCompatible(string $typeA, string $typeB): bool
     {
         return static::getSimplifiedColumnType($typeA) === static::getSimplifiedColumnType($typeB);
     }
@@ -443,7 +448,7 @@ class Db
      * @param string|null $columnType The database column type the param is targeting
      * @return mixed
      */
-    public static function parseParam(string $column, $value, string $defaultOperator = '=', bool $caseInsensitive = false, string $columnType = null)
+    public static function parseParam(string $column, $value, string $defaultOperator = '=', bool $caseInsensitive = false, ?string $columnType = null)
     {
         if (is_string($value) && preg_match('/^not\s*$/', $value)) {
             return '';
@@ -509,7 +514,7 @@ class Db
                     $valCondition = [
                         'or',
                         [$column => null],
-                        [$column => '']
+                        [$column => ''],
                     ];
                 } else {
                     $valCondition = [$column => null];
@@ -649,7 +654,7 @@ class Db
      * @return mixed
      * @since 3.4.15
      */
-    public static function parseBooleanParam(string $column, $value, bool $defaultValue = null)
+    public static function parseBooleanParam(string $column, $value, ?bool $defaultValue = null)
     {
         self::_normalizeEmptyValue($value);
         $operator = self::_parseParamOperator($value, '=');
@@ -672,13 +677,13 @@ class Db
      * @return bool
      * @throws NotSupportedException
      */
-    public static function isTypeSupported(string $type, Connection $db = null): bool
+    public static function isTypeSupported(string $type, ?Connection $db = null): bool
     {
         if ($db === null) {
             $db = self::db();
         }
 
-        /** @var \craft\db\mysql\Schema|\craft\db\pgsql\Schema $schema */
+        /* @var \craft\db\mysql\Schema|\craft\db\pgsql\Schema $schema */
         $schema = $db->getSchema();
 
         return isset($schema->typeMap[$type]);
@@ -698,7 +703,7 @@ class Db
      * @throws DbException if execution failed
      * @since 3.5.0
      */
-    public static function insert(string $table, array $columns, bool $includeAuditColumns = true, Connection $db = null): int
+    public static function insert(string $table, array $columns, bool $includeAuditColumns = true, ?Connection $db = null): int
     {
         if ($db === null) {
             $db = self::db();
@@ -723,7 +728,7 @@ class Db
      * @throws DbException if execution failed
      * @since 3.5.0
      */
-    public static function batchInsert(string $table, array $columns, array $rows, bool $includeAuditColumns = true, Connection $db = null): int
+    public static function batchInsert(string $table, array $columns, array $rows, bool $includeAuditColumns = true, ?Connection $db = null): int
     {
         if ($db === null) {
             $db = self::db();
@@ -756,7 +761,7 @@ class Db
      * @throws DbException if execution failed
      * @since 3.5.0
      */
-    public static function upsert(string $table, $insertColumns, $updateColumns = true, array $params = [], bool $includeAuditColumns = true, Connection $db = null): int
+    public static function upsert(string $table, $insertColumns, $updateColumns = true, array $params = [], bool $includeAuditColumns = true, ?Connection $db = null): int
     {
         if ($db === null) {
             $db = self::db();
@@ -783,7 +788,7 @@ class Db
      * @throws DbException if execution failed
      * @since 3.5.0
      */
-    public static function update(string $table, array $columns, $condition = '', array $params = [], bool $includeAuditColumns = true, Connection $db = null): int
+    public static function update(string $table, array $columns, $condition = '', array $params = [], bool $includeAuditColumns = true, ?Connection $db = null): int
     {
         if ($db === null) {
             $db = self::db();
@@ -809,7 +814,7 @@ class Db
      * @throws DbException if execution failed
      * @since 3.5.0
      */
-    public static function replace(string $table, string $column, string $find, string $replace, $condition = '', array $params = [], Connection $db = null): int
+    public static function replace(string $table, string $column, string $find, string $replace, $condition = '', array $params = [], ?Connection $db = null): int
     {
         if ($db === null) {
             $db = self::db();
@@ -832,7 +837,7 @@ class Db
      * @throws DbException if execution failed
      * @since 3.5.0
      */
-    public static function delete(string $table, $condition = '', array $params = [], Connection $db = null)
+    public static function delete(string $table, $condition = '', array $params = [], ?Connection $db = null): int
     {
         if ($db === null) {
             $db = self::db();
@@ -856,7 +861,7 @@ class Db
      * @throws DbException execution failed
      * @since 3.0.12
      */
-    public static function deleteIfExists(string $table, $condition = '', array $params = [], Connection $db = null): int
+    public static function deleteIfExists(string $table, $condition = '', array $params = [], ?Connection $db = null): int
     {
         if ($db === null) {
             $db = self::db();
@@ -871,6 +876,26 @@ class Db
     }
 
     /**
+     * Creates and executes a `TRUNCATE TABLE` SQL statement.
+     *
+     * @param string $table the table where the data will be deleted from
+     * @param Connection|null $db The database connection to use
+     * @return int The number of rows affected by the execution
+     * @throws DbException if execution failed
+     * @since 3.6.8
+     */
+    public static function truncateTable(string $table, ?Connection $db = null): int
+    {
+        if ($db === null) {
+            $db = self::db();
+        }
+
+        return $db->createCommand()
+            ->truncateTable($table)
+            ->execute();
+    }
+
+    /**
      * Returns the `id` of a row in the given table by its `uid`.
      *
      * @param string $table
@@ -879,7 +904,7 @@ class Db
      * @return int|null
      * @since 3.1.0
      */
-    public static function idByUid(string $table, string $uid, Connection $db = null)
+    public static function idByUid(string $table, string $uid, ?Connection $db = null)
     {
         if ($db === null) {
             $db = self::db();
@@ -903,7 +928,7 @@ class Db
      * @return string[]
      * @since 3.1.0
      */
-    public static function idsByUids(string $table, array $uids, Connection $db = null): array
+    public static function idsByUids(string $table, array $uids, ?Connection $db = null): array
     {
         if ($db === null) {
             $db = self::db();
@@ -925,7 +950,7 @@ class Db
      * @return string|null
      * @since 3.1.0
      */
-    public static function uidById(string $table, int $id, Connection $db = null)
+    public static function uidById(string $table, int $id, ?Connection $db = null)
     {
         if ($db === null) {
             $db = self::db();
@@ -949,7 +974,7 @@ class Db
      * @return string[]
      * @since 3.1.0
      */
-    public static function uidsByIds(string $table, array $ids, Connection $db = null): array
+    public static function uidsByIds(string $table, array $ids, ?Connection $db = null): array
     {
         if ($db === null) {
             $db = self::db();
@@ -972,7 +997,7 @@ class Db
      * @throws InvalidArgumentException if $dsn is invalid
      * @since 3.4.0
      */
-    public static function parseDsn(string $dsn, string $key = null)
+    public static function parseDsn(string $dsn, ?string $key = null)
     {
         if (($pos = strpos($dsn, ':')) === false) {
             throw new InvalidArgumentException('Invalid DSN: ' . $dsn);
@@ -990,7 +1015,7 @@ class Db
 
         $params = substr($dsn, $pos + 1);
         foreach (ArrayHelper::filterEmptyStringsFromArray(explode(';', $params)) as $param) {
-            list($n, $v) = array_pad(explode('=', $param, 2), 2, '');
+            [$n, $v] = array_pad(explode('=', $param, 2), 2, '');
             if ($key === $n) {
                 return $v;
             }
@@ -1002,6 +1027,30 @@ class Db
             return $parsed;
         }
         return false;
+    }
+
+    /**
+     * Returns whether the database supports time zone conversions.
+     *
+     * This could return `false` if MySQL’s time zone tables haven’t been populated yet. See
+     * https://dev.mysql.com/doc/refman/5.7/en/time-zone-support.html for more info.
+     *
+     * @param Connection|null $db
+     * @return bool
+     * @since 3.6.16
+     */
+    public static function supportsTimeZones(?Connection $db = null): bool
+    {
+        if ($db === null) {
+            $db = self::db();
+        }
+
+        if ($db->getIsPgsql()) {
+            return true;
+        }
+
+        $result = $db->createCommand("SELECT CONVERT_TZ('2007-03-11 2:00:00','US/Eastern','US/Central') AS time1")->queryScalar();
+        return (bool)$result;
     }
 
     /**
@@ -1075,6 +1124,19 @@ class Db
      * @var Connection|null;
      */
     private static $_db;
+
+    /**
+     * Resets the memoized database connection.
+     *
+     * @since 3.5.12.1
+     */
+    public static function reset()
+    {
+        if (self::$_db) {
+            self::$_db->close();
+        }
+        self::$_db = null;
+    }
 
     /**
      * Converts a given param value to an array.
@@ -1201,5 +1263,109 @@ class Db
         return [
             $column => count($values) === 1 ? $values[0] : $values,
         ];
+    }
+
+    /**
+     * Starts a batch query, similar to [[YiiQuery::batch()]].
+     *
+     * Each iteration will be a batch of rows.
+     *
+     * ```php
+     * foreach (Db::batch($query) as $batch) {
+     *     foreach ($batch as $row) {
+     *         // ...
+     *     }
+     * }
+     * ```
+     *
+     * If using MySQL and `$db` is null, a new [unbuffered](https://www.php.net/manual/en/mysqlinfo.concepts.buffering.php)
+     * DB connection will be created for the query so that the data can actually be retrieved in batches,
+     * to work around [limitations](https://www.yiiframework.com/doc/guide/2.0/en/db-query-builder#batch-query-mysql)
+     * with query batching in MySQL. Therefore keep in mind that the data retrieved by the batch query won’t
+     * reflect any changes that have been made over the main DB connection, if a transaction is currently
+     * active.
+     *
+     * @param YiiQuery $query The query that should be executed
+     * @param int $batchSize The number of rows to be fetched in each batch
+     * @return BatchQueryResult The batched query to be iterated on
+     * @since 3.7.0
+     */
+    public static function batch(YiiQuery $query, int $batchSize = 100): BatchQueryResult
+    {
+        return self::_batch($query, $batchSize, false);
+    }
+
+    /**
+     * Starts a batch query and retrieves data row by row.
+     *
+     * This method is similar to [[batch()]] except that in each iteration of the result,
+     * only one row of data is returned.
+     *
+     * ```php
+     * foreach (Db::each($query) as $row) {
+     *     // ...
+     * }
+     * ```
+     *
+     * If using MySQL and `$db` is null, a new [unbuffered](https://www.php.net/manual/en/mysqlinfo.concepts.buffering.php)
+     * DB connection will be created for the query so that the data can actually be retrieved in batches,
+     * to work around [limitations](https://www.yiiframework.com/doc/guide/2.0/en/db-query-builder#batch-query-mysql)
+     * with query batching in MySQL. Therefore keep in mind that the data retrieved by the batch query won’t
+     * reflect any changes that have been made over the main DB connection, if a transaction is currently
+     * active.
+     *
+     * @param YiiQuery $query The query that should be executed
+     * @param int $batchSize The number of rows to be fetched in each batch
+     * @return BatchQueryResult The batched query to be iterated on
+     * @since 3.7.0
+     */
+    public static function each(YiiQuery $query, int $batchSize = 100): BatchQueryResult
+    {
+        return self::_batch($query, $batchSize, true);
+    }
+
+    /**
+     * Starts a new batch query for batch() and each().
+     *
+     * @param YiiQuery $query
+     * @param int $batchSize
+     * @param bool $each
+     * @return BatchQueryResult
+     */
+    private static function _batch(YiiQuery $query, int $batchSize, bool $each): BatchQueryResult
+    {
+        $unbuffered = Craft::$app->getDb()->getIsMysql();
+
+        if ($unbuffered) {
+            $db = Craft::$app->getComponents()['db'];
+            if (!is_object($db) || $db instanceof Closure) {
+                $db = Craft::createObject($db);
+            }
+            $db->on(Connection::EVENT_AFTER_OPEN, function() use ($db) {
+                $db->pdo->setAttribute(PDO::MYSQL_ATTR_USE_BUFFERED_QUERY, false);
+            });
+        } else {
+            $db = self::db();
+        }
+
+        /* @var BatchQueryResult $result */
+        $result = Craft::createObject([
+            'class' => BatchQueryResult::class,
+            'query' => $query,
+            'batchSize' => $batchSize,
+            'db' => $db,
+            'each' => $each,
+        ]);
+
+        if ($unbuffered) {
+            $result->on(BatchQueryResult::EVENT_FINISH, function() use ($db) {
+                $db->close();
+            });
+            $result->on(BatchQueryResult::EVENT_RESET, function() use ($db) {
+                $db->close();
+            });
+        }
+
+        return $result;
     }
 }

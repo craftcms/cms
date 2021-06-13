@@ -12,6 +12,7 @@ use craft\base\BlockElementInterface;
 use craft\base\Element;
 use craft\base\ElementInterface;
 use craft\base\Field;
+use craft\base\FieldInterface;
 use craft\db\Query;
 use craft\db\Table;
 use craft\errors\OperationAbortedException;
@@ -25,6 +26,8 @@ use yii\base\Exception;
  */
 class ElementHelper
 {
+    private const URI_MAX_LENGTH = 255;
+
     /**
      * Generates a new temporary slug.
      *
@@ -63,7 +66,7 @@ class ElementHelper
      * @return string
      * @since 3.5.0
      */
-    public static function generateSlug(string $str, bool $ascii = null, string $language = null): string
+    public static function generateSlug(string $str, ?bool $ascii = null, ?string $language = null): string
     {
         // Replace periods, underscores, and hyphens with spaces so they get separated with the slugWordSeparator
         // to mimic the default JavaScript-based slug generation.
@@ -155,51 +158,44 @@ class ElementHelper
             return;
         }
 
-        $slugWordSeparator = Craft::$app->getConfig()->getGeneral()->slugWordSeparator;
+        $generalConfig = Craft::$app->getConfig()->getGeneral();
         $maxSlugIncrement = Craft::$app->getConfig()->getGeneral()->maxSlugIncrement;
+        $originalSlug = $element->slug;
+        $originalSlugLen = mb_strlen($originalSlug);
 
-        for ($i = 0; $i < $maxSlugIncrement; $i++) {
-            $testSlug = $element->slug;
-
-            if ($i > 0) {
-                $testSlug .= $slugWordSeparator . $i;
-            }
-
-            $originalSlug = $element->slug;
-            $element->slug = $testSlug;
-
+        for ($i = 1; $i <= $maxSlugIncrement; $i++) {
+            $suffix = ($i !== 1) ? $generalConfig->slugWordSeparator . $i : '';
+            $element->slug = $originalSlug . $suffix;
             $testUri = self::_renderUriFormat($uriFormat, $element);
 
             // Make sure we're not over our max length.
-            if (mb_strlen($testUri) > 255) {
+            $testUriLen = mb_strlen($testUri);
+            if ($testUriLen > self::URI_MAX_LENGTH) {
                 // See how much over we are.
-                $overage = mb_strlen($testUri) - 255;
+                $overage = $testUriLen - self::URI_MAX_LENGTH;
 
-                // Do we have anything left to chop off?
-                if ($overage < mb_strlen($element->slug)) {
-                    // Chop off the overage amount from the slug
-                    $element->slug = mb_substr($element->slug, 0, -$overage);
-
-                    // Let's try this again.
-                    $i--;
-                    continue;
+                // If the slug is too small to be trimmed down, we're SOL
+                if ($overage >= $originalSlugLen) {
+                    $element->slug = $originalSlug;
+                    throw new OperationAbortedException('Could not find a unique URI for this element');
                 }
 
-                // We're screwed, blow things up.
-                throw new OperationAbortedException('Could not find a unique URI for this element');
+                $trimmedSlug = mb_substr($originalSlug, 0, -$overage);
+                if ($generalConfig->slugWordSeparator) {
+                    $trimmedSlug = rtrim($trimmedSlug, $generalConfig->slugWordSeparator);
+                }
+                $element->slug = $trimmedSlug . $suffix;
+                $testUri = self::_renderUriFormat($uriFormat, $element);
             }
 
             if (self::_isUniqueUri($testUri, $element)) {
                 // OMG!
-                $element->slug = $testSlug;
                 $element->uri = $testUri;
                 return;
             }
-
-            // Try again...
-            $element->slug = $originalSlug;
         }
 
+        $element->slug = $originalSlug;
         throw new OperationAbortedException('Could not find a unique URI for this element');
     }
 
@@ -220,7 +216,7 @@ class ElementHelper
             if (strpos($uriFormat, '{id') !== false) {
                 $variables['id'] = $element->tempId;
             }
-            if (!$element->getSourceId() && strpos($uriFormat, '{sourceId') !== false) {
+            if (!$element->getCanonicalId() && strpos($uriFormat, '{sourceId') !== false) {
                 $variables['sourceId'] = $element->tempId;
             }
         }
@@ -263,11 +259,11 @@ class ElementHelper
             ]);
         }
 
-        if (($sourceId = $element->getSourceId()) !== null) {
+        if (($sourceId = $element->getCanonicalId()) !== null) {
             $query->andWhere([
                 'not', [
                     'elements.id' => $sourceId,
-                ]
+                ],
             ]);
         }
 
@@ -388,6 +384,30 @@ class ElementHelper
     }
 
     /**
+     * Returns whether the given element (or its root element if a block element) is a draft.
+     *
+     * @param ElementInterface $element
+     * @return bool
+     * @since 3.7.0
+     */
+    public static function isDraft(ElementInterface $element): bool
+    {
+        return static::rootElement($element)->getIsDraft();
+    }
+
+    /**
+     * Returns whether the given element (or its root element if a block element) is a revision.
+     *
+     * @param ElementInterface $element
+     * @return bool
+     * @since 3.7.0
+     */
+    public static function isRevision(ElementInterface $element): bool
+    {
+        return static::rootElement($element)->getIsRevision();
+    }
+
+    /**
      * Returns whether the given element (or its root element if a block element) is a draft or revision.
      *
      * @param ElementInterface $element
@@ -396,34 +416,22 @@ class ElementHelper
      */
     public static function isDraftOrRevision(ElementInterface $element): bool
     {
-        $root = ElementHelper::rootElement($element);
+        $root = static::rootElement($element);
         return $root->getIsDraft() || $root->getIsRevision();
     }
 
     /**
-     * Returns the element, or if it’s a draft/revision, the source element.
+     * Returns the canonical version of an element.
      *
      * @param ElementInterface $element The source/draft/revision element
      * @param bool $anySite Whether the source element can be retrieved in any site
-     * @return ElementInterface|null
+     * @return ElementInterface
      * @since 3.3.0
+     * @deprecated in 3.7.0. Use [[ElementInterface::getCanonical()]] instead.
      */
-    public static function sourceElement(ElementInterface $element, bool $anySite = false)
+    public static function sourceElement(ElementInterface $element, bool $anySite = false): ElementInterface
     {
-        $sourceId = $element->getSourceId();
-        if ($sourceId === $element->id) {
-            return $element;
-        }
-
-        return $element::find()
-            ->id($sourceId)
-            ->siteId($anySite ? '*' : $element->siteId)
-            ->preferSites([$element->siteId])
-            ->structureId($element->structureId)
-            ->unique()
-            ->anyStatus()
-            ->ignorePlaceholders()
-            ->one();
+        return $element->getCanonical($anySite);
     }
 
     /**
@@ -434,7 +442,7 @@ class ElementHelper
      */
     public static function setNextPrevOnElements(array $elements)
     {
-        /** @var ElementInterface $lastElement */
+        /* @var ElementInterface $lastElement */
         $lastElement = null;
 
         foreach ($elements as $i => $element) {
@@ -461,9 +469,9 @@ class ElementHelper
      * @param string|null $context The context
      * @return array|null The source definition, or null if it cannot be found
      */
-    public static function findSource(string $elementType, string $sourceKey, string $context = null)
+    public static function findSource(string $elementType, string $sourceKey, ?string $context = null)
     {
-        /** @var string|ElementInterface $elementType */
+        /* @var string|ElementInterface $elementType */
         $path = explode('/', $sourceKey);
         $sources = $elementType::sources($context);
 
@@ -530,7 +538,7 @@ class ElementHelper
      * @return string
      * @since 3.5.0
      */
-    public static function translationKey(ElementInterface $element, string $translationMethod, string $translationKeyFormat = null): string
+    public static function translationKey(ElementInterface $element, string $translationMethod, ?string $translationKeyFormat = null): string
     {
         switch ($translationMethod) {
             case Field::TRANSLATION_METHOD_NONE:
@@ -548,5 +556,40 @@ class ElementHelper
                 }
                 return Craft::$app->getView()->renderObjectTemplate($translationKeyFormat, $element);
         }
+    }
+
+    /**
+     * Returns the content column name for a given field.
+     *
+     * @param FieldInterface $field
+     * @param string|null $columnKey
+     * @return string|null
+     * @since 3.7.0
+     */
+    public static function fieldColumnFromField(FieldInterface $field, ?string $columnKey = null): ?string
+    {
+        if ($field::hasContentColumn()) {
+            return static::fieldColumn($field->columnPrefix, $field->handle, $field->columnSuffix, $columnKey);
+        }
+
+        return null;
+    }
+
+    /**
+     * Returns the content column name based on the given field attributes.
+     *
+     * @param string|null $columnPrefix
+     * @param string $handle
+     * @param string|null $columnSuffix
+     * @param string|null $columnKey
+     * @return string
+     * @since 3.7.0
+     */
+    public static function fieldColumn(?string $columnPrefix, string $handle, ?string $columnSuffix, ?string $columnKey = null): string
+    {
+        return ($columnPrefix ?? Craft::$app->getContent()->fieldColumnPrefix) .
+            $handle .
+            ($columnKey ? "_$columnKey" : '') .
+            ($columnSuffix ? "_$columnSuffix" : '');
     }
 }

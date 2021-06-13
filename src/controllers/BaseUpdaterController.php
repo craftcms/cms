@@ -142,7 +142,7 @@ abstract class BaseUpdaterController extends Controller
                         ['label' => Craft::t('app', 'Learn how'), 'url' => 'https://craftcms.com/guides/php-ini'],
                         $this->actionOption(Craft::t('app', 'Check again'), self::ACTION_PRECHECK),
                         $this->actionOption(Craft::t('app', 'Continue anyway'), $postState['nextAction'], $postState),
-                    ]
+                    ],
                 ]);
             }
         }
@@ -236,7 +236,7 @@ abstract class BaseUpdaterController extends Controller
                 'options' => [
                     $this->actionOption(Craft::t('app', 'Try again'), self::ACTION_COMPOSER_OPTIMIZE),
                     $continueOption,
-                ]
+                ],
             ]);
         }
 
@@ -345,7 +345,7 @@ abstract class BaseUpdaterController extends Controller
             'errorDetails' => 'define(\'CRAFT_COMPOSER_PATH\', \'path/to/composer.json\');',
             'options' => [
                 $this->actionOption(Craft::t('app', 'Try again'), self::ACTION_RECHECK_COMPOSER, ['submit' => true]),
-            ]
+            ],
         ];
     }
 
@@ -411,7 +411,7 @@ abstract class BaseUpdaterController extends Controller
                 'label' => Craft::t('app', 'Send for help'),
                 'email' => 'support@craftcms.com',
                 'subject' => 'Composer error',
-            ]
+            ],
         ];
 
         return $this->send($state);
@@ -465,11 +465,11 @@ abstract class BaseUpdaterController extends Controller
                 return Craft::t('app', 'Checking…');
             case self::ACTION_COMPOSER_INSTALL:
                 return Craft::t('app', 'Updating Composer dependencies (this may take a minute)…', [
-                    'command' => '`composer install`'
+                    'command' => '`composer install`',
                 ]);
             case self::ACTION_COMPOSER_REMOVE:
                 return Craft::t('app', 'Updating Composer dependencies (this may take a minute)…', [
-                    'command' => '`composer remove`'
+                    'command' => '`composer remove`',
                 ]);
             case self::ACTION_FINISH:
                 return Craft::t('app', 'Finishing up…');
@@ -510,11 +510,11 @@ abstract class BaseUpdaterController extends Controller
         } catch (MigrateException $e) {
             $ownerName = $e->ownerName;
             $ownerHandle = $e->ownerHandle;
-            /** @var \Throwable $e */
+            /* @var \Throwable $e */
             $e = $e->getPrevious();
 
             if ($e instanceof MigrationException) {
-                /** @var \Throwable|null $previous */
+                /* @var \Throwable|null $previous */
                 $previous = $e->getPrevious();
                 $migration = $e->migration;
                 $output = $e->output;
@@ -580,8 +580,10 @@ abstract class BaseUpdaterController extends Controller
     protected function installPlugin(string $handle, string $edition = null): array
     {
         // Prevent the plugin from sending any headers, etc.
+        $response = $this->response;
         $tempResponse = new CraftResponse(['isSent' => true]);
         Craft::$app->set('response', $tempResponse);
+        $this->response = $tempResponse;
 
         try {
             Craft::$app->getPlugins()->installPlugin($handle, $edition);
@@ -589,14 +591,15 @@ abstract class BaseUpdaterController extends Controller
             $errorDetails = null;
         } catch (\Throwable $e) {
             $success = false;
-            Craft::$app->set('response', $this->response);
+            Craft::$app->set('response', $response);
+            $this->response = $response;
             $migration = $output = null;
 
             if ($e instanceof MigrateException) {
-                /** @var \Throwable $e */
+                /* @var \Throwable $e */
                 $e = $e->getPrevious();
                 if ($e instanceof MigrationException) {
-                    /** @var \Throwable|null $previous */
+                    /* @var \Throwable|null $previous */
                     $previous = $e->getPrevious();
                     $migration = $e->migration;
                     $output = $e->output;
@@ -613,7 +616,8 @@ abstract class BaseUpdaterController extends Controller
         }
 
         // Put the real response back
-        Craft::$app->set('response', $this->response);
+        Craft::$app->set('response', $response);
+        $this->response = $response;
 
         return [$success, $tempResponse, $errorDetails];
     }

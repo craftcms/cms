@@ -25,7 +25,7 @@
             <div class="tab sel{% if context.customizableTabs %} draggable{% endif %}">
                 <span>{{ tabName }}</span>
                 {% if context.customizableTabs %}
-                    <a class="settings icon" title="{{ 'Edit'|t('app') }}"></a>
+                    <a class="settings icon" title="{{ 'Edit'|t('app') }}" aria-label="{{ 'Edit'|t('app') }}"></a>
                 {% endif %}
             </div>
         </div>
@@ -41,7 +41,7 @@
     {% if element is instance of('craft\\fieldlayoutelements\\BaseField') %}
         {% set attr = {
             class: [
-                not forLibrary and element.required ? 'fld-required',
+                not forLibrary and element.required ? 'fld-required' : null,
             ]|filter,
             data: {
                 keywords: forLibrary ? element.keywords()|join(' ')|lower : false,
@@ -52,13 +52,13 @@
     {{ element.selectorHtml()|attr({
         class: [
             'fld-element',
-            forLibrary ? 'unused',
+            forLibrary ? 'unused' : null,
         ]|filter,
         data: {
             type: className(element),
             config: element.toArray(),
             'has-custom-width': element.hasCustomWidth(),
-            'settings-html': settingsHtml ? settingsHtml|namespaceAttributes("element-#{random()}") ?: false,
+            'settings-html': (settingsHtml ? settingsHtml|namespaceAttributes("element#{random()}") : null) ?: false,
         },
     }|merge(attr ?? {}, recursive=true)) }}
 {% endmacro %}
@@ -70,7 +70,7 @@
         {% for field in groupFields %}
             {{ _self.elementSelector(field, true, {
                 class: [
-                    context.fieldLayout.isFieldIncluded(field.attribute()) ? 'hidden',
+                    context.fieldLayout.isFieldIncluded(field.attribute()) ? 'hidden' : null,
                 ],
             }) }}
         {% endfor %}
@@ -119,7 +119,7 @@
                     inputmode: 'search',
                     placeholder: "Search"|t('app')
                 }) }}
-                <div class="clear hidden" title="{{ 'Clear'|t('app') }}"></div>
+                <div class="clear hidden" title="{{ 'Clear'|t('app') }}" aria-label="{{ 'Clear'|t('app') }}"></div>
             </div>
 
             {{ _self.fieldSelectors('Standard Fields'|t('app'), fieldLayout.getAvailableStandardFields(), _context) }}

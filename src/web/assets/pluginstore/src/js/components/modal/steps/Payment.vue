@@ -255,9 +255,14 @@
                     },
 
                     // error
-                    () => {
+                    (errorMsg) => {
                         this.loading = false
-                        this.$root.displayError("Couldn’t save payment method.")
+
+                        if (!errorMsg) {
+                            errorMsg = this.$options.filters.t("There was a problem processing your credit card.", 'app')
+                        }
+
+                        this.$root.displayError(errorMsg)
                     })
             },
 
@@ -266,7 +271,7 @@
                 this.couponCodeSuccess = false
                 this.couponCodeError = false
 
-                this.couponCodeTimeout = setTimeout(function() {
+                this.couponCodeTimeout = setTimeout(() => {
                     this.couponCodeLoading = true
 
                     const data = {
@@ -285,7 +290,7 @@
                             this.staticCartTotal = this.cart.totalPrice
                             this.couponCodeLoading = false
                         })
-                }.bind(this), 500)
+                }, 500)
             },
 
             onCountryChange(iso) {
@@ -348,8 +353,8 @@
                                 this.$refs.newCard.save(response => {
                                     this.cardToken = response
                                     cb()
-                                }, () => {
-                                    cbError()
+                                }, (response) => {
+                                    this.handleSavePaymentError(response, cbError)
                                 })
                             } else {
                                 cb()
@@ -362,14 +367,30 @@
                         this.$refs.guestCard.save(response => {
                             this.guestCardToken = response
                             cb()
-                        }, () => {
-                            cbError()
+                        }, (response) => {
+                            this.handleSavePaymentError(response, cbError)
                         })
                     }
                 } else {
                     cb()
                 }
             },
+
+            handleSavePaymentError(response, cbError) {
+                if (!response || !response.error || !response.error.code) {
+                    cbError()
+                    return null
+                }
+
+                const translationKey = 'stripe_error_' + response.error.code
+                let errorMsg = this.$options.filters.t(translationKey, 'app')
+
+                if (errorMsg === translationKey) {
+                    errorMsg = response.error.message ? response.error.message : null
+                }
+
+                cbError(errorMsg)
+            }
         },
 
         mounted() {

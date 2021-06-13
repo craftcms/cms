@@ -1,5 +1,5 @@
 @charset "UTF-8";
-@import "../../../../../node_modules/craftcms-sass/mixins";
+@import "../../../../../packages/craftcms-sass/mixins";
 
 #content {
   #graphic {
@@ -45,14 +45,8 @@
       }
     }
 
-    blockquote.ineligible {
-      border: none;
-      background: $warningColor;
-      color: #110902;
-      &:before {
-        content: 'ban';
-        color: #110902;
-      }
+    blockquote.ineligible:before {
+      content: 'ban';
     }
 
     .releases {

@@ -8,13 +8,19 @@
 namespace tests\gql;
 
 use Craft;
+use craft\models\GqlSchema;
 use crafttests\fixtures\EntryWithFieldsFixture;
 use crafttests\fixtures\GlobalSetFixture;
 use crafttests\fixtures\GqlSchemasFixture;
+use crafttests\fixtures\GqlTokensFixture;
 use FunctionalTester;
+use yii\base\Exception;
 
 class GqlCest
 {
+    /**
+     *
+     */
     public function _fixtures()
     {
         return [
@@ -30,21 +36,44 @@ class GqlCest
         ];
     }
 
+    private $tokenStatus;
+
+    /**
+     * @param FunctionalTester $I
+     */
     public function _before(FunctionalTester $I)
     {
+        $gql = Craft::$app->getGql();
+        $token = $gql->getPublicToken();
+        $this->tokenStatus = $token->enabled;
+        $token->enabled = false;
+        $gql->saveToken($token);
+
         $this->_setSchema(1000);
     }
 
+    /**
+     * @param FunctionalTester $I
+     */
     public function _after(FunctionalTester $I)
     {
-        $gqlService = Craft::$app->getGql();
-        $gqlService->flushCaches();
+        $gql = Craft::$app->getGql();
+        $token = $gql->getPublicToken();
+        $token->enabled = $this->tokenStatus;
+        $gql->saveToken($token);
+
+        $gql->flushCaches();
     }
 
-    public function _setSchema(int $tokenId)
+    /**
+     * @param int $schemaId
+     * @return GqlSchema|null
+     * @throws Exception
+     */
+    public function _setSchema(int $schemaId)
     {
         $gqlService = Craft::$app->getGql();
-        $schema = $gqlService->getSchemaById($tokenId);
+        $schema = $gqlService->getSchemaById($schemaId);
         $gqlService->setActiveSchema($schema);
 
         return $schema;
@@ -103,7 +132,7 @@ class GqlCest
     public function testWrongGqlQueryParameter(FunctionalTester $I)
     {
         $I->amOnPage('?action=graphql/api&query={entries(limit:[5,2]){title}}');
-        $I->see('"debugMessage":"Expected');
+        $I->see('requires type Int');
     }
 
     /**
@@ -113,8 +142,8 @@ class GqlCest
     {
         $testData = file_get_contents(__DIR__ . '/data/gql.txt');
         foreach (explode('-----TEST DELIMITER-----', $testData) as $case) {
-            list ($query, $response) = explode('-----RESPONSE DELIMITER-----', $case);
-            list ($schemaId, $query) = explode('-----TOKEN DELIMITER-----', $query);
+            [$query, $response] = explode('-----RESPONSE DELIMITER-----', $case);
+            [$schemaId, $query] = explode('-----TOKEN DELIMITER-----', $query);
             $schema = $this->_setSchema(trim($schemaId));
             $I->amOnPage('?action=graphql/api&query=' . urlencode(trim($query)));
             $I->see(trim($response));

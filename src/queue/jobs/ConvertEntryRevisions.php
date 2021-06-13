@@ -37,19 +37,19 @@ use yii\db\Expression;
 class ConvertEntryRevisions extends BaseJob
 {
     private $queue;
-    /** @var Elements */
+    /* @var Elements */
     private $elementsService;
-    /** @var Entries */
+    /* @var Entries */
     private $entriesService;
-    /** @var Fields */
+    /* @var Fields */
     private $fieldsService;
-    /** @var Drafts */
+    /* @var Drafts */
     private $draftsService;
-    /** @var Revisions */
+    /* @var Revisions */
     private $revisionsService;
-    /** @var User */
+    /* @var User */
     private $defaultCreator;
-    /** @var Entry[] */
+    /* @var Entry[] */
     private $entries;
 
     /**
@@ -123,8 +123,11 @@ class ConvertEntryRevisions extends BaseJob
 
         $total = $query->count();
 
-        foreach ($query->each() as $i => $result) {
-            $this->setProgress($this->queue, $i / $total, 'Draft ' . $i . ' of ' . $total);
+        foreach (Db::each($query) as $i => $result) {
+            $this->setProgress($this->queue, $i / $total, Craft::t('app', '{step, number} of {total, number}', [
+                'step' => $i,
+                'total' => $total,
+            ]));
             try {
                 $this->convertDraft($result);
             } catch (\Throwable $e) {
@@ -150,7 +153,7 @@ class ConvertEntryRevisions extends BaseJob
         }
 
         // Create the draft
-        /** @var Entry|DraftBehavior $draft */
+        /* @var Entry|DraftBehavior $draft */
         $draft = $this->draftsService->createDraft(
             $entry,
             $result['creatorId'] ?: $this->defaultCreator->id,
@@ -195,14 +198,17 @@ class ConvertEntryRevisions extends BaseJob
                 '>', 'num', (new Query())
                     ->select(new Expression("max({$numSql})" . ($maxRevisions ? " - {$maxRevisions}" : '')))
                     ->from([Table::ENTRYVERSIONS])
-                    ->where('[[entryId]] = [[v.entryId]]')
+                    ->where('[[entryId]] = [[v.entryId]]'),
             ]);
         }
 
         $total = $query->count();
 
-        foreach ($query->each() as $i => $result) {
-            $this->setProgress($this->queue, $i / $total, 'Revision ' . $i . ' of ' . $total);
+        foreach (Db::each($query) as $i => $result) {
+            $this->setProgress($this->queue, $i / $total, Craft::t('app', '{step, number} of {total, number}', [
+                'step' => $i,
+                'total' => $total,
+            ]));
             try {
                 $this->convertVersion($result);
             } catch (\Throwable $e) {
@@ -250,7 +256,7 @@ class ConvertEntryRevisions extends BaseJob
         }
 
         // Create the revision
-        /** @var Entry|RevisionBehavior $revision */
+        /* @var Entry|RevisionBehavior $revision */
         $revision = $this->revisionsService->createRevision(
             $entry,
             $result['creatorId'] ?: $this->defaultCreator->id,

@@ -21,6 +21,28 @@ use yii\console\ExitCode;
 class PluginController extends Controller
 {
     /**
+     * @var bool Whether the plugin uninstallation should be forced.
+     * @since 3.6.14
+     */
+    public $force = false;
+
+    /**
+     * @inheritdoc
+     */
+    public function options($actionID)
+    {
+        $options = parent::options($actionID);
+
+        switch ($actionID) {
+            case 'uninstall':
+                $options[] = 'force';
+                break;
+        }
+
+        return $options;
+    }
+
+    /**
      * @inheritdoc
      */
     public function beforeAction($action)
@@ -64,9 +86,13 @@ class PluginController extends Controller
         $start = microtime(true);
 
         try {
-            Craft::$app->plugins->uninstallPlugin($handle);
+            Craft::$app->plugins->uninstallPlugin($handle, $this->force);
         } catch (\Throwable $e) {
-            $this->stderr("*** failed to uninstall {$handle}: {$e->getMessage()}" . PHP_EOL . PHP_EOL, Console::FG_RED);
+            $this->stderr("*** failed to uninstall {$handle}: {$e->getMessage()}" . PHP_EOL, Console::FG_RED);
+            if (!$this->force) {
+                $this->stderr('Try again with --force.' . PHP_EOL);
+            }
+            $this->stderr(PHP_EOL);
             return ExitCode::UNSPECIFIED_ERROR;
         }
 

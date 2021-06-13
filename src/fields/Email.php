@@ -11,6 +11,7 @@ use Craft;
 use craft\base\ElementInterface;
 use craft\base\Field;
 use craft\base\PreviewableFieldInterface;
+use craft\helpers\Cp;
 use craft\helpers\Html;
 use yii\db\Schema;
 
@@ -56,15 +57,13 @@ class Email extends Field implements PreviewableFieldInterface
      */
     public function getSettingsHtml()
     {
-        return Craft::$app->getView()->renderTemplateMacro('_includes/forms', 'textField', [
-            [
-                'label' => Craft::t('app', 'Placeholder Text'),
-                'instructions' => Craft::t('app', 'The text that will be shown if the field doesn’t have a value.'),
-                'id' => 'placeholder',
-                'name' => 'placeholder',
-                'value' => $this->placeholder,
-                'errors' => $this->getErrors('placeholder'),
-            ]
+        return Cp::textFieldHtml([
+            'label' => Craft::t('app', 'Placeholder Text'),
+            'instructions' => Craft::t('app', 'The text that will be shown if the field doesn’t have a value.'),
+            'id' => 'placeholder',
+            'name' => 'placeholder',
+            'value' => $this->placeholder,
+            'errors' => $this->getErrors('placeholder'),
         ]);
     }
 
@@ -73,9 +72,11 @@ class Email extends Field implements PreviewableFieldInterface
      */
     protected function inputHtml($value, ElementInterface $element = null): string
     {
+        $id = Html::id($this->handle);
         return Craft::$app->getView()->renderTemplate('_includes/forms/text', [
             'type' => 'email',
-            'id' => $this->handle,
+            'id' => $id,
+            'instructionsId' => "$id-instructions",
             'name' => $this->handle,
             'inputmode' => 'email',
             'placeholder' => Craft::t('site', $this->placeholder),

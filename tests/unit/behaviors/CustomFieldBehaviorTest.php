@@ -39,9 +39,9 @@ class CustomFieldBehaviorTest extends Unit
         // Make sure it exists
         new CustomFieldBehavior();
 
-        $this->assertInstanceOf(FieldInterface::class, Craft::$app->getFields()->getFieldByHandle($handle));
-        $this->assertTrue(property_exists(CustomFieldBehavior::class, $handle));
-        $this->assertArrayHasKey($handle, CustomFieldBehavior::$fieldHandles);
+        self::assertInstanceOf(FieldInterface::class, Craft::$app->getFields()->getFieldByHandle($handle));
+        self::assertTrue(property_exists(CustomFieldBehavior::class, $handle));
+        self::assertArrayHasKey($handle, CustomFieldBehavior::$fieldHandles);
     }
 
     /**
@@ -58,8 +58,8 @@ class CustomFieldBehaviorTest extends Unit
         }
 
         $cBehavior = new CustomFieldBehavior();
-        $this->assertFalse(property_exists($cBehavior, 'testRetrofittingDontWork1'));
-        $this->assertArrayHasKey('testRetrofittingDontWork1', CustomFieldBehavior::$fieldHandles);
+        self::assertFalse(property_exists($cBehavior, 'testRetrofittingDontWork1'));
+        self::assertArrayHasKey('testRetrofittingDontWork1', CustomFieldBehavior::$fieldHandles);
 
         // Cleanup and remove the column from the content table.
         if (!Craft::$app->getFields()->deleteField($field)) {

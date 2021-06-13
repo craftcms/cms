@@ -8,7 +8,6 @@
 namespace craft\db;
 
 use creocoder\nestedsets\NestedSetsQueryBehavior;
-use yii\db\ActiveQuery;
 
 /**
  * @inheritdoc

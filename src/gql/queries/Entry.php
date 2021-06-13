@@ -36,19 +36,22 @@ class Entry extends Query
                 'type' => Type::listOf(EntryInterface::getType()),
                 'args' => EntryArguments::getArguments(),
                 'resolve' => EntryResolver::class . '::resolve',
-                'description' => 'This query is used to query for entries.'
+                'description' => 'This query is used to query for entries.',
+                'complexity' => GqlHelper::relatedArgumentComplexity(),
             ],
             'entryCount' => [
                 'type' => Type::nonNull(Type::int()),
                 'args' => EntryArguments::getArguments(),
                 'resolve' => EntryResolver::class . '::resolveCount',
-                'description' => 'This query is used to return the number of entries.'
+                'description' => 'This query is used to return the number of entries.',
+                'complexity' => GqlHelper::singleQueryComplexity(),
             ],
             'entry' => [
                 'type' => EntryInterface::getType(),
                 'args' => EntryArguments::getArguments(),
                 'resolve' => EntryResolver::class . '::resolveOne',
-                'description' => 'This query is used to query for a single entry.'
+                'description' => 'This query is used to query for a single entry.',
+                'complexity' => GqlHelper::singleQueryComplexity(),
             ],
         ];
     }

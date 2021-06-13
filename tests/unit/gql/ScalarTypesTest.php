@@ -8,8 +8,10 @@
 namespace craftunit\gql;
 
 use Codeception\Test\Unit;
+use Craft as Craft;
 use craft\errors\GqlException;
 use craft\gql\directives\FormatDateTime;
+use craft\gql\GqlEntityRegistry;
 use craft\gql\types\DateTime;
 use craft\gql\types\Number;
 use craft\gql\types\QueryArgument;
@@ -30,17 +32,28 @@ class ScalarTypesTest extends Unit
     /**
      * Test the serialization of scalar data types
      *
-     *@dataProvider seializationDataProvider
+     * @dataProvider serializationDataProvider
+     *
+     * @param ScalarType $type
+     * @param $testValue
+     * @param $match
+     * @throws \GraphQL\Error\Error
      */
     public function testSerialization(ScalarType $type, $testValue, $match)
     {
-        $this->assertSame($match, $type->serialize($testValue));
+        self::assertSame($match, $type->serialize($testValue));
     }
 
     /**
      * Test parsing a value provided as a query variable
      *
      * @dataProvider parsingValueDataProvider
+     *
+     * @param ScalarType $type
+     * @param $testValue
+     * @param $match
+     * @param $exceptionThrown
+     * @throws \GraphQL\Error\Error
      */
     public function testParsingValue(ScalarType $type, $testValue, $match, $exceptionThrown)
     {
@@ -48,14 +61,32 @@ class ScalarTypesTest extends Unit
             $this->expectException($exceptionThrown);
             $type->parseValue($testValue);
         } else {
-            $this->assertSame($match, $type->parseValue($testValue));
+            self::assertSame($match, $type->parseValue($testValue));
         }
+    }
+
+    /**
+     * Test DateTime parsing value correctly.
+     * @throws \GraphQL\Error\Error
+     */
+    public function testDateTimeParseValueAndLiteral()
+    {
+        $timeAsStr = (new \DateTime('now'))->format("Y-m-d H:i:s");
+
+        $this->assertInstanceOf(\DateTime::class, (new DateTime())->parseValue($timeAsStr));
+        $this->assertInstanceOf(\DateTime::class, (new DateTime())->parseLiteral(new StringValueNode(['value' => $timeAsStr])));
     }
 
     /**
      * Test parsing a value provided as a query variable
      *
      * @dataProvider parsingLiteralDataProvider
+     *
+     * @param ScalarType $type
+     * @param $testValue
+     * @param $match
+     * @param $exceptionThrown
+     * @throws \Exception
      */
     public function testParsingLiteral(ScalarType $type, $testValue, $match, $exceptionThrown)
     {
@@ -63,18 +94,46 @@ class ScalarTypesTest extends Unit
             $this->expectException($exceptionThrown);
             $type->parseLiteral($testValue);
         } else {
-            $this->assertSame($match, $type->parseLiteral($testValue));
+            self::assertSame($match, $type->parseLiteral($testValue));
         }
     }
 
-    public function seializationDataProvider()
+    /**
+     * Test the useSystemTimezoneForGraphQlDates setting.
+     * 
+     * @throws \GraphQL\Error\Error
+     */
+    public function testTimeZoneConfigSetting()
+    {
+        Craft::$app->setTimeZone('America/New_York');
+
+        $dateTime = new \DateTime('now', new \DateTimeZone('UTC'));
+
+        $settingValue = Craft::$app->getConfig()->getGeneral()->useSystemTimezoneForGraphQlDates;
+
+        Craft::$app->getConfig()->getGeneral()->useSystemTimezoneForGraphQlDates = true;
+        $value1 = DateTime::getType()->serialize(clone $dateTime);
+        Craft::$app->getConfig()->getGeneral()->useSystemTimezoneForGraphQlDates = false;
+        $value2 = DateTime::getType()->serialize(clone $dateTime);
+
+        Craft::$app->getConfig()->getGeneral()->useSystemTimezoneForGraphQlDates = $settingValue;
+
+        $this->assertNotEquals($value1, $value2);
+    }
+
+    /**
+     * @return array[]
+     */
+    public function serializationDataProvider()
     {
         $now = new \DateTime();
+
+        GqlEntityRegistry::setPrefix('');
 
         return [
             [DateTime::getType(), 'testString', 'testString'],
             [DateTime::getType(), null, null],
-            [DateTime::getType(), clone $now, $now->setTimezone(new \DateTimeZone(FormatDateTime::DEFAULT_TIMEZONE))->format(FormatDateTime::DEFAULT_FORMAT)],
+            [DateTime::getType(), clone $now, $now->setTimezone(new \DateTimeZone(FormatDateTime::defaultTimezone()))->format(FormatDateTime::DEFAULT_FORMAT)],
 
             [Number::getType(), 'testString', 'testString'],
             [Number::getType(), '', null],
@@ -93,11 +152,14 @@ class ScalarTypesTest extends Unit
         ];
     }
 
+    /**
+     * @return array[]
+     */
     public function parsingValueDataProvider()
     {
-        return [
-            [DateTime::getType(), $time = time(), (string)$time, false],
+        GqlEntityRegistry::setPrefix('');
 
+        return [
             [Number::getType(), 2, 2, false],
             [Number::getType(), 2.0, 2.0, false],
             [Number::getType(), null, null, false],
@@ -111,10 +173,14 @@ class ScalarTypesTest extends Unit
         ];
     }
 
+    /**
+     * @return array[]
+     */
     public function parsingLiteralDataProvider()
     {
+        GqlEntityRegistry::setPrefix('');
+
         return [
-            [DateTime::getType(), new StringValueNode(['value' => $time = time()]), (string)$time, false],
             [DateTime::getType(), new IntValueNode(['value' => 2]), null, GqlException::class],
 
             [Number::getType(), new StringValueNode(['value' => '2.4']), 2.4, false],

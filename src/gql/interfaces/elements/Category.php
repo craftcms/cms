@@ -12,6 +12,8 @@ use craft\gql\GqlEntityRegistry;
 use craft\gql\interfaces\Structure;
 use craft\gql\TypeManager;
 use craft\gql\types\generators\CategoryType;
+use craft\helpers\Gql;
+use craft\services\Gql as GqlService;
 use GraphQL\Type\Definition\InterfaceType;
 use GraphQL\Type\Definition\Type;
 
@@ -69,23 +71,27 @@ class Category extends Structure
             'groupId' => [
                 'name' => 'groupId',
                 'type' => Type::int(),
-                'description' => 'The ID of the group that contains the category.'
+                'description' => 'The ID of the group that contains the category.',
             ],
             'groupHandle' => [
                 'name' => 'groupHandle',
                 'type' => Type::string(),
-                'description' => 'The handle of the group that contains the category.'
+                'description' => 'The handle of the group that contains the category.',
+                'complexity' => Gql::singleQueryComplexity(),
             ],
             'children' => [
                 'name' => 'children',
                 'args' => CategoryArguments::getArguments(),
                 'type' => Type::listOf(static::getType()),
-                'description' => 'The category’s children.'
+                'description' => 'The category’s children.',
+                'complexity' => Gql::relatedArgumentComplexity(GqlService::GRAPHQL_COMPLEXITY_EAGER_LOAD),
             ],
             'parent' => [
                 'name' => 'parent',
+                'args' => CategoryArguments::getArguments(),
                 'type' => static::getType(),
-                'description' => 'The category’s parent.'
+                'description' => 'The category’s parent.',
+                'complexity' => Gql::relatedArgumentComplexity(GqlService::GRAPHQL_COMPLEXITY_EAGER_LOAD),
             ],
             'url' => [
                 'name' => 'url',
@@ -97,18 +103,25 @@ class Category extends Structure
                 'args' => CategoryArguments::getArguments(),
                 'type' => Type::listOf(static::getType()),
                 'description' => 'The same element in other locales.',
+                'complexity' => Gql::eagerLoadComplexity(),
             ],
             'prev' => [
                 'name' => 'prev',
                 'type' => self::getType(),
                 'args' => CategoryArguments::getArguments(),
-                'description' => 'Returns the previous element relative to this one, from a given set of criteria. CAUTION: Applying arguments to this field severely degrades the performance of the query.',
+                'description' => 'Returns the previous element relative to this one, from a given set of criteria.',
+                'complexity' => function($childrenComplexity, $args) {
+                    return $childrenComplexity + GqlService::GRAPHQL_COMPLEXITY_NPLUS1 * (int)!empty($args);
+                },
             ],
             'next' => [
                 'name' => 'next',
                 'type' => self::getType(),
                 'args' => CategoryArguments::getArguments(),
-                'description' => 'Returns the next element relative to this one, from a given set of criteria. CAUTION: Applying arguments to this field severely degrades the performance of the query.',
+                'description' => 'Returns the next element relative to this one, from a given set of criteria.',
+                'complexity' => function($childrenComplexity, $args) {
+                    return $childrenComplexity + GqlService::GRAPHQL_COMPLEXITY_NPLUS1 * (int)!empty($args);
+                },
             ],
         ]), self::getName());
     }

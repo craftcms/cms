@@ -14,8 +14,10 @@ use craft\db\TableSchema;
 use craft\helpers\App;
 use craft\helpers\Db;
 use craft\helpers\FileHelper;
+use craft\helpers\StringHelper;
 use mikehaertl\shellcommand\Command as ShellCommand;
 use yii\base\ErrorException;
+use yii\base\NotSupportedException;
 use yii\db\Exception;
 
 /**
@@ -43,6 +45,11 @@ class Schema extends \yii\db\mysql\Schema
     public $maxObjectNameLength = 64;
 
     /**
+     * @var string|null The path to the temporary my.cnf file used for backups and restoration.
+     */
+    public $tempMyCnfPath;
+
+    /**
      * @inheritdoc
      */
     public function init()
@@ -65,7 +72,7 @@ class Schema extends \yii\db\mysql\Schema
     public function createQueryBuilder(): QueryBuilder
     {
         return new QueryBuilder($this->db, [
-            'separator' => "\n"
+            'separator' => "\n",
         ]);
     }
 
@@ -234,7 +241,7 @@ class Schema extends \yii\db\mysql\Schema
      *
      * @param string $tableName The name of the table to get the indexes for.
      * @return array All indexes for the given table.
-     * @throws \yii\base\NotSupportedException
+     * @throws NotSupportedException
      */
     public function findIndexes(string $tableName): array
     {
@@ -246,8 +253,8 @@ class Schema extends \yii\db\mysql\Schema
         $regexp = '/(UNIQUE\s+)?KEY\s+([^\(\s]+)\s*\(([^\(\)]+)\)/mi';
         if (preg_match_all($regexp, $sql, $matches, PREG_SET_ORDER)) {
             foreach ($matches as $match) {
-                $indexName = str_replace('`', '', $match[2]);
-                $indexColumns = array_map('trim', explode(',', str_replace('`', '', $match[3])));
+                $indexName = str_replace(['`', '"'], '', $match[2]);
+                $indexColumns = array_map('trim', explode(',', str_replace(['`', '"'], '', $match[3])));
                 $indexes[$indexName] = [
                     'columns' => $indexColumns,
                     'unique' => !empty($match[1]),
@@ -344,9 +351,9 @@ SQL;
             $regexp = '/FOREIGN KEY\s+\(([^\)]+)\)\s+REFERENCES\s+([^\(^\s]+)\s*\(([^\)]+)\)(?:\s+ON DELETE (\w+))?(?:\s+ON UPDATE (\w+))?/mi';
             if (preg_match_all($regexp, $sql, $matches, PREG_SET_ORDER)) {
                 foreach ($matches as $i => $match) {
-                    $fks = array_map('trim', explode(',', str_replace('`', '', $match[1])));
-                    $pks = array_map('trim', explode(',', str_replace('`', '', $match[3])));
-                    $constraint = [str_replace('`', '', $match[2])];
+                    $fks = array_map('trim', explode(',', str_replace(['`', '"'], '', $match[1])));
+                    $pks = array_map('trim', explode(',', str_replace(['`', '"'], '', $match[3])));
+                    $constraint = [str_replace(['`', '"'], '', $match[2])];
                     foreach ($fks as $k => $name) {
                         $constraint[$name] = $pks[$k];
                     }
@@ -370,26 +377,27 @@ SQL;
      */
     private function _createDumpConfigFile(): string
     {
-        $filePath = FileHelper::normalizePath(sys_get_temp_dir()) . DIRECTORY_SEPARATOR . 'my.cnf';
+        $this->tempMyCnfPath = FileHelper::normalizePath(sys_get_temp_dir()) . DIRECTORY_SEPARATOR . StringHelper::randomString(12) . '.cnf';
 
         $parsed = Db::parseDsn($this->db->dsn);
         $username = $this->db->getIsPgsql() && !empty($parsed['user']) ? $parsed['user'] : $this->db->username;
         $password = $this->db->getIsPgsql() && !empty($parsed['password']) ? $parsed['password'] : $this->db->password;
         $contents = '[client]' . PHP_EOL .
             'user=' . $username . PHP_EOL .
-            'password="' . addslashes($password) . '"' . PHP_EOL .
-            'host=' . ($parsed['host'] ?? '') . PHP_EOL .
-            'port=' . ($parsed['port'] ?? '');
+            'password="' . addslashes($password) . '"';
 
         if (isset($parsed['unix_socket'])) {
             $contents .= PHP_EOL . 'socket=' . $parsed['unix_socket'];
+        } else {
+            $contents .= PHP_EOL . 'host=' . ($parsed['host'] ?? '') .
+                PHP_EOL . 'port=' . ($parsed['port'] ?? '');
         }
 
-        FileHelper::writeToFile($filePath, $contents);
-
+        FileHelper::writeToFile($this->tempMyCnfPath, '');
         // Avoid a “world-writable config file 'my.cnf' is ignored” warning
-        chmod($filePath, 0644);
+        chmod($this->tempMyCnfPath, 0600);
+        FileHelper::writeToFile($this->tempMyCnfPath, $contents, ['append']);
 
-        return $filePath;
+        return $this->tempMyCnfPath;
     }
 }

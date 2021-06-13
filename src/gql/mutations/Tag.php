@@ -20,6 +20,7 @@ use craft\helpers\Gql as GqlHelper;
 use craft\models\EntryType as EntryTypeModel;
 use craft\models\TagGroup;
 use GraphQL\Type\Definition\Type;
+use yii\base\InvalidConfigException;
 
 /**
  * Class Tag
@@ -62,7 +63,7 @@ class Tag extends Mutation
                 'args' => ['id' => Type::nonNull(Type::int())],
                 'resolve' => [Craft::createObject(TagResolver::class), 'deleteTag'],
                 'description' => 'Delete a tag.',
-                'type' => Type::boolean()
+                'type' => Type::boolean(),
             ];
         }
 
@@ -74,7 +75,7 @@ class Tag extends Mutation
      *
      * @param EntryTypeModel $tagGroup
      * @return array
-     * @throws \yii\base\InvalidConfigException
+     * @throws InvalidConfigException
      */
     public static function createSaveMutation(TagGroup $tagGroup): array
     {
@@ -93,7 +94,7 @@ class Tag extends Mutation
             'description' => 'Save the “' . $tagGroup->name . '” tag.',
             'args' => $mutationArguments,
             'resolve' => [$resolver, 'saveTag'],
-            'type' => $generatedType
+            'type' => $generatedType,
         ];
     }
 }

@@ -10,10 +10,12 @@ namespace craft\console\controllers;
 use Craft;
 use craft\console\Controller;
 use craft\db\Table;
+use craft\events\ConfigEvent;
 use craft\helpers\Console;
 use craft\helpers\Db;
 use craft\helpers\ProjectConfig;
 use craft\services\Plugins;
+use craft\services\ProjectConfig as ProjectConfigService;
 use yii\console\ExitCode;
 
 /**
@@ -30,14 +32,40 @@ class ProjectConfigController extends Controller
     public $force = false;
 
     /**
+     * @var bool Whether to treat the loaded project config as the source of truth, instead of the YAML files.
+     * @since 3.5.13
+     */
+    public $invert = false;
+
+    /**
+     * @var int Counter of the total paths that have been processed.
+     */
+    private $_pathCount = 0;
+
+    /**
+     * @var array The config paths that are currently being processed.
+     */
+    private $_processingPaths;
+
+    /**
+     * @var array The config paths that have finished being processed.
+     */
+    private $_completedPaths = [];
+
+    /**
      * @inheritdoc
      */
     public function options($actionID)
     {
         $options = parent::options($actionID);
 
-        if (in_array($actionID, ['apply', 'sync'], true)) {
-            $options[] = 'force';
+        switch ($actionID) {
+            case 'apply':
+            case 'sync':
+                $options[] = 'force';
+                break;
+            case 'diff':
+                $options[] = 'reverse';
         }
 
         return $options;
@@ -51,7 +79,7 @@ class ProjectConfigController extends Controller
      */
     public function actionDiff(): int
     {
-        $diff = ProjectConfig::diff();
+        $diff = ProjectConfig::diff($this->invert);
 
         if ($diff === '') {
             $this->stdout('No pending project config YAML changes.' . PHP_EOL, Console::FG_GREEN);
@@ -116,39 +144,103 @@ class ProjectConfigController extends Controller
         }
 
         // Do we need to create a new config file?
-        if (!file_exists(Craft::$app->getPath()->getProjectConfigFilePath())) {
+        if (!$projectConfig->getDoesYamlExist()) {
             $this->stdout("No project config files found. Generating them from internal config ... ", Console::FG_YELLOW);
             $projectConfig->regenerateYamlFromConfig();
         } else {
             // Any plugins need to be installed/uninstalled?
             $loadedConfigPlugins = array_keys($projectConfig->get(Plugins::CONFIG_PLUGINS_KEY) ?? []);
             $yamlPlugins = array_keys($projectConfig->get(Plugins::CONFIG_PLUGINS_KEY, true) ?? []);
-            $this->_uninstallPlugins(array_diff($loadedConfigPlugins, $yamlPlugins));
 
             if (!$this->_installPlugins(array_diff($yamlPlugins, $loadedConfigPlugins))) {
                 $this->stdout('Aborting config apply process' . PHP_EOL, Console::FG_RED);
                 return ExitCode::UNSPECIFIED_ERROR;
             }
 
-            $this->stdout("Applying changes from your project config files ... ", Console::FG_YELLOW);
+            $this->_uninstallPlugins(array_diff($loadedConfigPlugins, $yamlPlugins));
+
+            $this->stdout('Applying changes from your project config files ...');
+
             try {
                 $forceUpdate = $projectConfig->forceUpdate;
                 $projectConfig->forceUpdate = $this->force;
+                $this->_processingPaths = [];
+
+                $projectConfig->on(ProjectConfigService::EVENT_ADD_ITEM, [$this, 'onStartProcessingItem'], ['label' => 'adding'], false);
+                $projectConfig->on(ProjectConfigService::EVENT_ADD_ITEM, [$this, 'onFinishProcessingItem'], ['label' => 'adding'], true);
+                $projectConfig->on(ProjectConfigService::EVENT_REMOVE_ITEM, [$this, 'onStartProcessingItem'], ['label' => 'removing'], false);
+                $projectConfig->on(ProjectConfigService::EVENT_REMOVE_ITEM, [$this, 'onFinishProcessingItem'], ['label' => 'removing'], true);
+                $projectConfig->on(ProjectConfigService::EVENT_UPDATE_ITEM, [$this, 'onStartProcessingItem'], ['label' => 'updating'], false);
+                $projectConfig->on(ProjectConfigService::EVENT_UPDATE_ITEM, [$this, 'onFinishProcessingItem'], ['label' => 'updating'], true);
+
                 $projectConfig->applyYamlChanges();
+
                 $projectConfig->forceUpdate = $forceUpdate;
             } catch (\Throwable $e) {
-                $this->stderr('error: ' . $e->getMessage() . PHP_EOL, Console::FG_RED);
+                $this->stderr("\nerror: " . $e->getMessage() . PHP_EOL, Console::FG_RED);
                 Craft::$app->getErrorHandler()->logException($e);
                 return ExitCode::UNSPECIFIED_ERROR;
             }
         }
 
-        $this->stdout('done' . PHP_EOL, Console::FG_GREEN);
+        $this->stdout("\nFinished applying changes\n", Console::FG_GREEN);
         return ExitCode::OK;
     }
 
     /**
-     * Alias for `apply`.
+     * Called when a project config item has started getting processed.
+     *
+     * @param ConfigEvent $event
+     * @return void
+     * @since 3.6.10
+     */
+    public function onStartProcessingItem(ConfigEvent $event): void
+    {
+        if (isset($this->_processingPaths[$event->path]) || isset($this->_completedPaths[$event->path])) {
+            return;
+        }
+
+        $this->stdout("\n");
+
+        // Are we in the middle of processing another path(s)?
+        $otherPaths = count($this->_processingPaths);
+        if ($otherPaths !== 0) {
+            $this->stdout(str_repeat('  ', $otherPaths));
+        }
+
+        $this->stdout("- {$event->data['label']} ");
+        $this->stdout($event->path, Console::FG_CYAN);
+        $this->stdout(' ... ');
+
+        $this->_processingPaths[$event->path] = ++$this->_pathCount;
+    }
+
+    /**
+     * Called when a project config item has finished getting processed.
+     *
+     * @param ConfigEvent $event
+     * @return void
+     * @since 3.6.10
+     */
+    public function onFinishProcessingItem(ConfigEvent $event): void
+    {
+        if (!isset($this->_processingPaths[$event->path])) {
+            return;
+        }
+
+        // Have any other paths been processed since this one started?
+        if ($this->_processingPaths[$event->path] !== $this->_pathCount) {
+            $this->stdout("\n" . str_repeat('  ', count($this->_processingPaths) - 1) . '  ');
+        }
+
+        $this->stdout('done', Console::FG_GREEN);
+
+        unset($this->_processingPaths[$event->path]);
+        $this->_completedPaths[$event->path] = true;
+    }
+
+    /**
+     * DEPRECATED. Use `project-config/apply` instead.
      *
      * @return int
      * @deprecated in 3.5.0. Use [[actionApply()]] instead.
@@ -157,6 +249,20 @@ class ProjectConfigController extends Controller
     {
         $this->stderr('project-config/sync has been renamed to project-config/apply. Running that instead...' . PHP_EOL, Console::FG_RED);
         return $this->runAction('apply');
+    }
+
+    /**
+     * Writes out the current project config as YAML files to the `config/project/` folder, discarding any pending YAML changes.
+     *
+     * @return int
+     * @since 3.5.13
+     */
+    public function actionWrite(): int
+    {
+        $this->stdout('Writing out project config files ... ');
+        Craft::$app->getProjectConfig()->regenerateYamlFromConfig();
+        $this->stdout('done' . PHP_EOL, Console::FG_GREEN);
+        return ExitCode::OK;
     }
 
     /**
@@ -169,7 +275,7 @@ class ProjectConfigController extends Controller
     {
         $projectConfig = Craft::$app->getProjectConfig();
 
-        if (!file_exists(Craft::$app->getPath()->getProjectConfigFilePath())) {
+        if ($projectConfig->writeYamlAutomatically && !$projectConfig->getDoesYamlExist()) {
             $this->stdout("No project config files found. Generating them from internal config ... ", Console::FG_YELLOW);
             $projectConfig->regenerateYamlFromConfig();
         }
@@ -189,6 +295,19 @@ class ProjectConfigController extends Controller
     }
 
     /**
+     * Updates the `dateModified` value in `config/project/project.yaml`, attempting to resolve a Git conflict for it.
+     *
+     * @return int
+     */
+    public function actionTouch(): int
+    {
+        $time = time();
+        ProjectConfig::touch($time);
+        $this->stdout("The dateModified value in project.yaml is now set to $time." . PHP_EOL, Console::FG_GREEN);
+        return ExitCode::OK;
+    }
+
+    /**
      * Uninstalls plugins.
      *
      * @param string[] $handles
@@ -203,21 +322,10 @@ class ProjectConfigController extends Controller
             $this->stdout(' ... ', Console::FG_YELLOW);
 
             ob_start();
+            $pluginsService->uninstallPlugin($handle, true);
+            ob_end_clean();
 
-            try {
-                $pluginsService->uninstallPlugin($handle);
-                ob_end_clean();
-                $this->stdout('done' . PHP_EOL, Console::FG_GREEN);
-            } catch (\Throwable $e) {
-                ob_end_clean();
-                $this->stdout('error: ' . $e->getMessage() . PHP_EOL, Console::FG_RED);
-                Craft::$app->getErrorHandler()->logException($e);
-
-                // Just remove the row
-                Db::delete(Table::PLUGINS, [
-                    'handle' => $handle,
-                ]);
-            }
+            $this->stdout('done' . PHP_EOL, Console::FG_GREEN);
         }
     }
 

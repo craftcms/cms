@@ -14,6 +14,7 @@ use craft\elements\User;
 use craft\errors\WrongEditionException;
 use craft\events\ConfigEvent;
 use craft\events\UserGroupEvent;
+use craft\helpers\ArrayHelper;
 use craft\helpers\Db;
 use craft\helpers\StringHelper;
 use craft\models\UserGroup;
@@ -168,7 +169,7 @@ class UserGroups extends Component
                 'g.id',
                 'g.name',
                 'g.handle',
-                'g.uid'
+                'g.uid',
             ])
             ->from(['g' => Table::USERGROUPS])
             ->innerJoin(['gu' => Table::USERGROUPS_USERS], '[[gu.groupId]] = [[g.id]]')
@@ -180,6 +181,54 @@ class UserGroups extends Component
         }
 
         return $groups;
+    }
+
+    /**
+     * Eager-loads user groups onto the given users.
+     *
+     * @param User[] $users The users to eager-load user groups onto
+     * @since 3.6.0
+     */
+    public function eagerLoadGroups(array $users): void
+    {
+        if (empty($users)) {
+            return;
+        }
+
+        $assignments = (new Query())
+            ->select(['groupId', 'userId'])
+            ->from([Table::USERGROUPS_USERS])
+            ->where([
+                'userId' => array_unique(ArrayHelper::getColumn($users, 'id')),
+            ])
+            ->all();
+
+        $groupsByUserId = [];
+
+        if (!empty($assignments)) {
+            // Get the user groups, indexed by their IDs
+            $groups = [];
+            $groupResults = $this->_createUserGroupsQuery()
+                ->where([
+                    'id' => array_unique(ArrayHelper::getColumn($assignments, 'groupId')),
+                ])
+                ->all();
+            foreach ($groupResults as $result) {
+                $groups[$result['id']] = new UserGroup($result);
+            }
+
+            // Create batches of user groups by user ID
+            foreach ($assignments as $assignment) {
+                if (isset($groups[$assignment['groupId']])) {
+                    $groupsByUserId[$assignment['userId']][] = $groups[$assignment['groupId']];
+                }
+            }
+        }
+
+        // Assign the user groups
+        foreach ($users as $user) {
+            $user->setGroups($groupsByUserId[$user->id] ?? []);
+        }
     }
 
     /**
@@ -358,7 +407,7 @@ class UserGroups extends Component
                 'id',
                 'name',
                 'handle',
-                'uid'
+                'uid',
             ])
             ->from([Table::USERGROUPS]);
 

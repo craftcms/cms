@@ -8,6 +8,7 @@
 namespace craft\helpers;
 
 use Craft;
+use craft\base\ElementInterface;
 use craft\db\Paginator;
 use craft\i18n\Locale;
 use craft\web\twig\variables\Paginate;
@@ -68,6 +69,19 @@ class Template
      */
     public static function attribute(Environment $env, Source $source, $object, $item, array $arguments = [], string $type = TwigTemplate::ANY_CALL, bool $isDefinedTest = false, bool $ignoreStrictCheck = false)
     {
+        // Include this element in any active caches
+        if ($object instanceof ElementInterface) {
+            $elementsService = Craft::$app->getElements();
+            if ($elementsService->getIsCollectingCacheTags()) {
+                $class = get_class($object);
+                $elementsService->collectCacheTags([
+                    'element',
+                    "element::$class",
+                    "element::$class::$object->id",
+                ]);
+            }
+        }
+
         if (
             $type !== TwigTemplate::METHOD_CALL &&
             $object instanceof BaseObject &&
@@ -100,14 +114,27 @@ class Template
     }
 
     /**
-     * Paginates a query's results
+     * Paginates a query.
      *
      * @param QueryInterface $query
      * @return array
+     * @deprecated in 3.6.0. Use [[paginateQuery()]] instead.
      */
     public static function paginateCriteria(QueryInterface $query): array
     {
-        /** @var Query $query */
+        return static::paginateQuery($query);
+    }
+
+    /**
+     * Paginates a query.
+     *
+     * @param QueryInterface $query
+     * @return array
+     * @since 3.6.0
+     */
+    public static function paginateQuery(QueryInterface $query): array
+    {
+        /* @var Query $query */
         $paginatorQuery = clone $query;
         $paginator = new Paginator($paginatorQuery->limit(null), [
             'currentPage' => Craft::$app->getRequest()->getPageNum(),
@@ -116,7 +143,7 @@ class Template
 
         return [
             Paginate::create($paginator),
-            $paginator->getPageResults()
+            $paginator->getPageResults(),
         ];
     }
 
@@ -298,7 +325,7 @@ class Template
         }
 
         $key = "DateTime::{$item}()";
-        /** @noinspection PhpUndefinedVariableInspection */
+        /* @noinspection PhpUndefinedVariableInspection */
         $message = "`DateTime::{$item}" . ($type === TwigTemplate::METHOD_CALL ? '()' : '') . "` is deprecated. Use the `|{$filter}` filter instead.";
 
         if ($item === 'iso8601') {
@@ -306,7 +333,7 @@ class Template
         }
 
         Craft::$app->getDeprecator()->log($key, $message);
-        /** @noinspection PhpUndefinedVariableInspection */
+        /* @noinspection PhpUndefinedVariableInspection */
         return $value;
     }
 
@@ -321,7 +348,7 @@ class Template
      * @throws InvalidConfigException
      * @since 3.5.6
      */
-    public static function css(string $css, array $options = [], string $key = null)
+    public static function css(string $css, array $options = [], ?string $key = null)
     {
         // Is this a CSS file?
         if (preg_match('/^[^\r\n]+\.css$/i', $css)) {
@@ -342,7 +369,7 @@ class Template
      * @throws InvalidConfigException
      * @since 3.5.6
      */
-    public static function js(string $js, array $options = [], string $key = null)
+    public static function js(string $js, array $options = [], ?string $key = null)
     {
         // Is this a JS file?
         if (preg_match('/^[^\r\n]+\.js$/i', $js)) {

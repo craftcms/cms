@@ -95,7 +95,7 @@ abstract class ElementMutationResolver extends MutationResolver
         if ($this->hasEventHandlers(self::EVENT_BEFORE_POPULATE_ELEMENT)) {
             $event = new MutationPopulateElementEvent([
                 'arguments' => $arguments,
-                'element' => $element
+                'element' => $element,
             ]);
 
             $this->trigger(self::EVENT_BEFORE_POPULATE_ELEMENT, $event);
@@ -118,7 +118,7 @@ abstract class ElementMutationResolver extends MutationResolver
         if ($this->hasEventHandlers(self::EVENT_AFTER_POPULATE_ELEMENT)) {
             $event = new MutationPopulateElementEvent([
                 'arguments' => $arguments,
-                'element' => $element
+                'element' => $element,
             ]);
 
             $this->trigger(self::EVENT_AFTER_POPULATE_ELEMENT, $event);
@@ -136,7 +136,7 @@ abstract class ElementMutationResolver extends MutationResolver
      */
     protected function saveElement(ElementInterface $element): ElementInterface
     {
-        /** @var Element $element */
+        /* @var Element $element */
         if ($element->enabled && $element->getScenario() == Element::SCENARIO_DEFAULT) {
             $element->setScenario(Element::SCENARIO_LIVE);
         }

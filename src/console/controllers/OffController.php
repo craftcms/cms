@@ -48,24 +48,24 @@ class OffController extends Controller
             return ExitCode::UNSPECIFIED_ERROR;
         }
 
-        // Temporarily allow changes to the project config even if it's supposed to be read only
+        // Allow changes to the project config even if it's supposed to be read only,
+        // and prevent changes from getting written to YAML
         $projectConfig = Craft::$app->getProjectConfig();
-        $readOnly = $projectConfig->readOnly;
         $projectConfig->readOnly = false;
+        $projectConfig->writeYamlAutomatically = false;
 
         if (!Craft::$app->getIsLive()) {
             $this->stdout('The system is already offline.' . PHP_EOL, Console::FG_GREEN);
         } else {
-            $projectConfig->set('system.live', false);
+            $projectConfig->set('system.live', false, null, false);
             $this->stdout('The system is now offline.' . PHP_EOL, Console::FG_GREEN);
         }
 
         if ($this->retry !== null) {
-            $projectConfig->set('system.retryDuration', (int)$this->retry ?: null);
+            $retry = (int)$this->retry ?: null;
+            $projectConfig->set('system.retryDuration', $retry, null, false);
             $this->stdout(($this->retry ? "The retry duration is now set to $this->retry." : 'The retry duration has been removed.') . PHP_EOL, Console::FG_GREEN);
         }
-
-        $projectConfig->readOnly = $readOnly;
 
         return ExitCode::OK;
     }

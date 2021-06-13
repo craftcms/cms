@@ -163,19 +163,19 @@ Garnish.$doc.ready(function() {
                 // Header Title
                 const $headerTitle = $('#header h1')
 
-                $headerTitle.on('click', function() {
+                $headerTitle.on('click', () => {
                     this.$router.push({path: '/'})
-                }.bind(this))
+                });
 
                 // Cart button
                 const $cartButton = $('#cart-button')
 
-                $cartButton.on('click', function(e) {
+                $cartButton.on('click', e => {
                     e.preventDefault()
                     this.openModal('cart')
-                }.bind(this))
+                });
 
-                $cartButton.keydown(function(e) {
+                $cartButton.keydown(e => {
                     switch (e.which) {
                         case 13: // Enter
                         case 32: // Space
@@ -183,9 +183,9 @@ Garnish.$doc.ready(function() {
                             this.openModal('cart')
                             break
                     }
-                }.bind(this))
+                });
 
-                this.$on('cartChange', function (cart) {
+                this.$on('cartChange', function(cart) {
                     let totalQty = 0
 
                     if (cart) {
@@ -200,11 +200,11 @@ Garnish.$doc.ready(function() {
                 const $pluginStoreActionsSpinner = $('#pluginstore-actions-spinner')
 
                 // Show actions spinner when Plugin Store data has finished loading but Craft data has not.
-                this.$on('dataLoaded', function() {
+                this.$on('dataLoaded', () => {
                     if (this.pluginStoreDataLoaded && !(this.craftDataLoaded && this.cartDataLoaded && this.craftIdDataLoaded)) {
                         $pluginStoreActionsSpinner.removeClass('hidden')
                     }
-                }.bind(this))
+                });
 
                 // Hide actions spinner when Plugin Store data and Craft data have finished loading.
                 this.$on('allDataLoaded', function() {
@@ -232,10 +232,10 @@ Garnish.$doc.ready(function() {
                 })
 
                 // Cancel ajax requests when an outbound link gets clicked
-                $('a[href]').on('click', function() {
+                $('a[href]').on('click', () => {
                     this.$store.dispatch('craft/cancelRequests')
                     this.$store.dispatch('pluginStore/cancelRequests')
-                }.bind(this))
+                });
             },
 
             /**
@@ -288,10 +288,10 @@ Garnish.$doc.ready(function() {
             loadData() {
                 this.loadPluginStoreData()
 
-                this.loadCraftData(function() {
+                this.loadCraftData(() => {
                     this.loadCraftIdData()
                     this.loadCartData()
-                }.bind(this))
+                });
             },
 
             /**

@@ -49,7 +49,7 @@ class MultiOptionsFieldData extends \ArrayObject
         $value = (string)$value;
 
         foreach ($this as $selectedValue) {
-            /** @var OptionData $selectedValue */
+            /* @var OptionData $selectedValue */
             if ($value === $selectedValue->value) {
                 return true;
             }

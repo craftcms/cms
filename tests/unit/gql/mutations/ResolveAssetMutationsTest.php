@@ -17,6 +17,7 @@ use craft\test\mockclasses\elements\MockElementQuery;
 use craft\test\TestCase;
 use GraphQL\Type\Definition\ResolveInfo;
 use GuzzleHttp\Client;
+use GuzzleHttp\Psr7\Response;
 
 class ResolveAssetMutationsTest extends TestCase
 {
@@ -89,7 +90,7 @@ class ResolveAssetMutationsTest extends TestCase
 
         $resolver = $this->make(AssetResolver::class, [
             'requireSchemaAction' => function($scope, $action) use ($canIdentify) {
-                $this->assertSame($canIdentify ? 'save' : 'create', $action);
+                self::assertSame($canIdentify ? 'save' : 'create', $action);
             },
             'getResolutionData' => $mockVolume,
             'handleUpload' => true,
@@ -107,10 +108,10 @@ class ResolveAssetMutationsTest extends TestCase
 
         // For identifiable assets, don't change the folder automatically, if the volume does not change
         if ((!empty($arguments['id']) || !empty($arguments['uid'])) && !$volumeChanged) {
-            $this->assertEquals($asset->newFolderId, $arguments['newFolderId'] ?? null);
+            self::assertEquals($asset->newFolderId, $arguments['newFolderId'] ?? null);
         }
 
-        $this->assertSame($mockVolume->id, $asset->getVolumeId());
+        self::assertSame($mockVolume->id, $asset->getVolumeId());
     }
 
     /**
@@ -175,10 +176,10 @@ class ResolveAssetMutationsTest extends TestCase
 
         $asset = $this->invokeMethod($resolver, 'populateElementWithData', [$asset, $arguments]);
 
-        $this->assertSame($scenario, $asset->getScenario());
+        self::assertSame($scenario, $asset->getScenario());
 
         foreach ($fieldValues as $field => $value) {
-            $this->assertSame($value, $asset->{$field});
+            self::assertSame($value, $asset->{$field});
         }
     }
 
@@ -196,7 +197,7 @@ class ResolveAssetMutationsTest extends TestCase
     {
         $resolver = $this->make(AssetResolver::class, [
             'createGuzzleClient' => $this->make(Client::class, [
-                'request' => null
+                'request' => $this->make(Response::class)
             ])
         ]);
 
@@ -209,18 +210,18 @@ class ResolveAssetMutationsTest extends TestCase
         $handleUploadResult = $this->invokeMethod($resolver, 'handleUpload', [$asset, $fileInformation]);
 
         // Check if correct result
-        $this->assertSame($result, $handleUploadResult);
+        self::assertSame($result, $handleUploadResult);
 
         // And properties match
         if (!empty($properties)) {
             foreach ($properties as $property => $value) {
-                $this->assertEquals($value, $asset->{$property});
+                self::assertEquals($value, $asset->{$property});
             }
         }
 
         // Check if temp file exists. And kill it.
         if (!empty($asset->tempFilePath)) {
-            $this->assertFileExists($asset->tempFilePath);
+            self::assertFileExists($asset->tempFilePath);
             @unlink($asset->tempFilePath);
         }
     }

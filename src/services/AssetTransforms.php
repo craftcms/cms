@@ -121,6 +121,18 @@ class AssetTransforms extends Component
     private $_activeTransformIndex;
 
     /**
+     * Serializer
+     *
+     * @since 3.5.14
+     */
+    public function __serialize()
+    {
+        $vars = get_object_vars($this);
+        unset($vars['_transforms']);
+        return $vars;
+    }
+
+    /**
      * @inheritdoc
      */
     public function init()
@@ -355,7 +367,7 @@ class AssetTransforms extends Component
         // Fire a 'beforeDeleteAssetTransform' event
         if ($this->hasEventHandlers(self::EVENT_BEFORE_DELETE_ASSET_TRANSFORM)) {
             $this->trigger(self::EVENT_BEFORE_DELETE_ASSET_TRANSFORM, new AssetTransformEvent([
-                'assetTransform' => $transform
+                'assetTransform' => $transform,
             ]));
         }
 
@@ -395,7 +407,7 @@ class AssetTransforms extends Component
         // Fire an 'afterDeleteAssetTransform' event
         if ($this->hasEventHandlers(self::EVENT_AFTER_DELETE_ASSET_TRANSFORM)) {
             $this->trigger(self::EVENT_AFTER_DELETE_ASSET_TRANSFORM, new AssetTransformEvent([
-                'assetTransform' => $transform
+                'assetTransform' => $transform,
             ]));
         }
 
@@ -404,7 +416,7 @@ class AssetTransforms extends Component
     }
 
     /**
-     * Eager-loads transform indexes for a given set of file IDs.
+     * Eager-loads transform indexes the given list of assets.
      *
      * You can include `srcset`-style sizes (e.g. `100w` or `2x`) following a normal transform definition, for example:
      *
@@ -423,7 +435,7 @@ class AssetTransforms extends Component
      * When a `srcset`-style size is encountered, the preceding normal transform definition will be used as a
      * reference when determining the resulting transform dimensions.
      *
-     * @param Asset[]|array $assets The files to eager-load tranforms for
+     * @param Asset[]|array $assets The assets or asset data to eager-load transforms for
      * @param array $transforms The transform definitions to eager-load
      */
     public function eagerLoadTransforms(array $assets, array $transforms)
@@ -439,13 +451,13 @@ class AssetTransforms extends Component
         $transformsByFingerprint = [];
         $indexCondition = ['or'];
 
-        /** @var AssetTransform|null $refTransform */
+        /* @var AssetTransform|null $refTransform */
         $refTransform = null;
 
         foreach ($transforms as $transform) {
             // Is this a srcset-style size (2x, 100w, etc.)?
             try {
-                list($sizeValue, $sizeUnit) = AssetsHelper::parseSrcsetSize($transform);
+                [$sizeValue, $sizeUnit] = AssetsHelper::parseSrcsetSize($transform);
             } catch (InvalidArgumentException $e) {
                 // All good.
             }
@@ -504,7 +516,7 @@ class AssetTransforms extends Component
             ->where([
                 'and',
                 ['assetId' => array_keys($assetsById)],
-                $indexCondition
+                $indexCondition,
             ])
             ->all();
 
@@ -570,7 +582,7 @@ class AssetTransforms extends Component
             ->where([
                 'volumeId' => $asset->getVolumeId(),
                 'assetId' => $asset->id,
-                'location' => $transformLocation
+                'location' => $transformLocation,
             ]);
 
         if ($transform->format === null) {
@@ -605,14 +617,14 @@ class AssetTransforms extends Component
             'dateIndexed' => Db::prepareDateForDb(new DateTime()),
             'location' => $transformLocation,
             'fileExists' => false,
-            'inProgress' => false
+            'inProgress' => false,
         ]);
 
         return $this->storeTransformIndexData($transformIndex);
     }
 
     /**
-     * Validates a transform index result to see if the index is still valid for a given file.
+     * Validates a transform index result to see if the index is still valid for a given asset.
      *
      * @param array $result
      * @param AssetTransform $transform
@@ -663,7 +675,7 @@ class AssetTransforms extends Component
                 sleep(1);
                 App::maxPowerCaptain();
 
-                /** @noinspection CallableParameterUseCaseInTypeContextInspection */
+                /* @noinspection CallableParameterUseCaseInTypeContextInspection */
                 $index = $this->getTransformIndexModelById($index->id);
 
                 // Is it being worked on right now?
@@ -749,7 +761,7 @@ class AssetTransforms extends Component
 
         $asset = Craft::$app->getAssets()->getAssetById($index->assetId);
         $volume = $asset->getVolume();
-        $index->detectedFormat = !empty($index->format) ? $index->format : $this->detectAutoTransformFormat($asset);
+        $index->detectedFormat = $index->format ?: $this->detectAutoTransformFormat($asset);
 
         $transformFilename = pathinfo($asset->filename, PATHINFO_FILENAME) . '.' . $index->detectedFormat;
         $index->filename = $transformFilename;
@@ -778,7 +790,7 @@ class AssetTransforms extends Component
                         'location' => $possibleLocations,
                         'format' => $index->detectedFormat,
                     ],
-                    ['not', ['id' => $index->id]]
+                    ['not', ['id' => $index->id]],
                 ])
                 ->one();
 
@@ -789,7 +801,7 @@ class AssetTransforms extends Component
 
         // If we have a match, copy the file.
         if ($matchFound) {
-            /** @var array $matchFound */
+            /* @var array $matchFound */
             $from = $asset->folderPath . $this->getTransformSubpath($asset, new AssetTransformIndex($matchFound));
             $to = $asset->folderPath . $this->getTransformSubpath($asset, $index);
 
@@ -824,6 +836,11 @@ class AssetTransforms extends Component
         }
 
         if (is_array($transform)) {
+            if (array_key_exists('transform', $transform)) {
+                $baseTransform = $this->normalizeTransform(ArrayHelper::remove($transform, 'transform'));
+                return $this->extendTransform($baseTransform, $transform);
+            }
+
             return new AssetTransform($transform);
         }
 
@@ -973,7 +990,7 @@ class AssetTransforms extends Component
         $result = $this->_createTransformIndexQuery()
             ->where([
                 'assetId' => $assetId,
-                'location' => '_' . $transformHandle
+                'location' => '_' . $transformHandle,
             ])
             ->one();
 
@@ -1060,8 +1077,8 @@ class AssetTransforms extends Component
                     // Fetch a list of existing temp files for this image.
                     $files = FileHelper::findFiles($tempPath, [
                         'only' => [
-                            $prefix . '*' . '.' . $extension
-                        ]
+                            $prefix . '*' . '.' . $extension,
+                        ],
                     ]);
 
                     // And clean them up.
@@ -1308,7 +1325,7 @@ class AssetTransforms extends Component
     {
         $dirs = [
             Craft::$app->getPath()->getAssetThumbsPath(),
-            Craft::$app->getPath()->getImageEditorSourcesPath() . '/' . $asset->id
+            Craft::$app->getPath()->getImageEditorSourcesPath() . '/' . $asset->id,
         ];
 
         foreach ($dirs as $dir) {
@@ -1443,7 +1460,7 @@ class AssetTransforms extends Component
                 'quality',
                 'interlace',
                 'dimensionChangeTime',
-                'uid'
+                'uid',
             ])
             ->from([Table::ASSETTRANSFORMS])
             ->orderBy(['name' => SORT_ASC]);
@@ -1504,9 +1521,14 @@ class AssetTransforms extends Component
         }
 
         $transform = $index->getTransform();
+        $images = Craft::$app->getImages();
 
         if ($index->detectedFormat === null) {
-            $index->detectedFormat = !empty($index->format) ? $index->format : $this->detectAutoTransformFormat($asset);
+            $index->detectedFormat = $index->format ?: $this->detectAutoTransformFormat($asset);
+        }
+
+        if ($index->format === 'webp' && !$images->getSupportsWebP()) {
+            throw new AssetTransformException("The `webp` format is not supported on this server!");
         }
 
         $volume = $asset->getVolume();
@@ -1514,8 +1536,7 @@ class AssetTransforms extends Component
 
         // Already created. Relax, grasshopper!
         if ($volume->fileExists($transformPath)) {
-            $metaData = $volume->getFileMetadata($transformPath);
-            $dateModified = $metaData['timestamp'];
+            $dateModified = $volume->getDateModified($transformPath);
             $dimensionChangeTime = $index->getTransform()->dimensionChangeTime;
 
             if (!$dimensionChangeTime || $dimensionChangeTime->getTimestamp() <= $dateModified) {
@@ -1533,7 +1554,6 @@ class AssetTransforms extends Component
         $imageSource = $asset->getTransformSource();
         $quality = $transform->quality ?: Craft::$app->getConfig()->getGeneral()->defaultImageQuality;
 
-        $images = Craft::$app->getImages();
         if (strtolower($asset->getExtension()) === 'svg' && $index->detectedFormat !== 'svg') {
             $image = $images->loadImage($imageSource, true, max($transform->width, $transform->height));
         } else {

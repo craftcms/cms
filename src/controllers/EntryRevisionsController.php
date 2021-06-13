@@ -16,11 +16,13 @@ use craft\db\Table;
 use craft\elements\Entry;
 use craft\errors\InvalidElementException;
 use craft\helpers\ArrayHelper;
+use craft\helpers\Cp;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\ElementHelper;
 use craft\helpers\UrlHelper;
 use craft\models\Section;
 use craft\models\Section_SiteSettings;
+use craft\services\Elements;
 use yii\base\Exception;
 use yii\web\BadRequestHttpException;
 use yii\web\ForbiddenHttpException;
@@ -95,13 +97,13 @@ class EntryRevisionsController extends BaseEntriesController
 
         // Type
         if (($typeHandle = $this->request->getQueryParam('type')) !== null) {
-            $type = ArrayHelper::firstWhere($section->getEntryTypes(), 'handle', $typeHandle);
+            $type = ArrayHelper::firstWhere($entry->getAvailableEntryTypes(), 'handle', $typeHandle);
             if ($type === null) {
                 throw new BadRequestHttpException("Invalid entry type handle: $typeHandle");
             }
             $entry->typeId = $type->id;
         } else {
-            $entry->typeId = $this->request->getQueryParam('typeId') ?? $section->getEntryTypes()[0]->id;
+            $entry->typeId = $this->request->getQueryParam('typeId') ?? $entry->getAvailableEntryTypes()[0]->id;
         }
 
         // Status
@@ -109,7 +111,7 @@ class EntryRevisionsController extends BaseEntriesController
             $enabled = $status === 'enabled';
         } else {
             // Set the default status based on the section's settings
-            /** @var Section_SiteSettings $siteSettings */
+            /* @var Section_SiteSettings $siteSettings */
             $siteSettings = ArrayHelper::firstWhere($section->getSiteSettings(), 'siteId', $entry->siteId);
             $enabled = $siteSettings->enabledByDefault;
         }
@@ -129,7 +131,7 @@ class EntryRevisionsController extends BaseEntriesController
             // Get the initially selected parent
             $entry->newParentId = $this->request->getParam('parentId');
             if (is_array($entry->newParentId)) {
-                $entry->newParentId = reset($parentId) ?: null;
+                $entry->newParentId = reset($entry->newParentId) ?: null;
             }
         }
 
@@ -162,12 +164,28 @@ class EntryRevisionsController extends BaseEntriesController
             }
         }
 
-        // Save it and redirect to its edit page
+        // Save it
         $entry->setScenario(Element::SCENARIO_ESSENTIALS);
-        if (!Craft::$app->getDrafts()->saveElementAsDraft($entry, Craft::$app->getUser()->getId())) {
+        if (!Craft::$app->getDrafts()->saveElementAsDraft($entry, Craft::$app->getUser()->getId(), null, null, false)) {
             throw new Exception('Unable to save entry as a draft: ' . implode(', ', $entry->getErrorSummary(true)));
         }
 
+        // Set its position in the structure if a before/after parma was passed
+        if ($section->type === Section::TYPE_STRUCTURE) {
+            if ($nextId = $this->request->getParam('before')) {
+                $nextEntry = Craft::$app->getEntries()->getEntryById($nextId, $site->id, [
+                    'structureId' => $section->structureId,
+                ]);
+                Craft::$app->getStructures()->moveBefore($section->structureId, $entry, $nextEntry);
+            } else if ($prevId = $this->request->getParam('after')) {
+                $prevEntry = Craft::$app->getEntries()->getEntryById($prevId, $site->id, [
+                    'structureId' => $section->structureId,
+                ]);
+                Craft::$app->getStructures()->moveAfter($section->structureId, $entry, $prevEntry);
+            }
+        }
+
+        // Redirect to its edit page
         return $this->redirect(UrlHelper::url($entry->getCpEditUrl(), [
             'draftId' => $entry->draftId,
             'fresh' => 1,
@@ -191,6 +209,8 @@ class EntryRevisionsController extends BaseEntriesController
         $entryId = $this->request->getBodyParam('sourceId') ?? $this->request->getBodyParam('entryId');
         $siteId = $this->request->getBodyParam('siteId') ?: Craft::$app->getSites()->getPrimarySite()->id;
         $fieldsLocation = $this->request->getParam('fieldsLocation', 'fields');
+        $provisional = (bool)($this->request->getBodyParam('provisional') ?? false);
+        $dropProvisional = (bool)($this->request->getBodyParam('dropProvisional') ?? false);
 
         // Are we creating a new entry too?
         if (!$draftId && !$entryId) {
@@ -216,7 +236,7 @@ class EntryRevisionsController extends BaseEntriesController
             }
 
             $entry->enabled = $enabled;
-            /** @var Entry|DraftBehavior $draft */
+            /* @var Entry|DraftBehavior $draft */
             $draft = Craft::$app->getDrafts()->createDraft($entry, Craft::$app->getUser()->getId());
         } else {
             $transaction = null;
@@ -224,6 +244,7 @@ class EntryRevisionsController extends BaseEntriesController
             if ($draftId) {
                 $draft = Entry::find()
                     ->draftId($draftId)
+                    ->provisionalDrafts($provisional)
                     ->siteId($siteId)
                     ->anyStatus()
                     ->one();
@@ -232,11 +253,6 @@ class EntryRevisionsController extends BaseEntriesController
                 }
                 $this->enforceSitePermission($draft->getSite());
                 $this->enforceEditEntryPermissions($draft);
-
-                // Draft meta
-                /** @var Entry|DraftBehavior $draft */
-                $draft->draftName = $this->request->getBodyParam('draftName');
-                $draft->draftNotes = $this->request->getBodyParam('draftNotes');
             } else {
                 $entry = Entry::find()
                     ->id($entryId)
@@ -252,16 +268,21 @@ class EntryRevisionsController extends BaseEntriesController
                 // Create the draft in a transaction so we can undo it if something goes wrong
                 $transaction = Craft::$app->getDb()->beginTransaction();
 
-                /** @var Entry|DraftBehavior $draft */
-                $draft = Craft::$app->getDrafts()->createDraft($entry, Craft::$app->getUser()->getId());
+                /* @var Entry|DraftBehavior $draft */
+                $draft = Craft::$app->getDrafts()->createDraft($entry, Craft::$app->getUser()->getId(), null, null, [], $provisional);
             }
 
             $this->_setDraftAttributesFromPost($draft);
             $draft->setFieldValuesFromRequest($fieldsLocation);
             $draft->updateTitle();
+
+            if ($dropProvisional) {
+                $draft->isProvisionalDraft = false;
+            }
+
             $draft->setScenario(Element::SCENARIO_ESSENTIALS);
 
-            if ($draft->getIsUnsavedDraft() && $this->request->getBodyParam('propagateAll')) {
+            if ($draft->getIsUnpublishedDraft() && $this->request->getBodyParam('propagateAll')) {
                 $draft->propagateAll = true;
             }
 
@@ -291,20 +312,22 @@ class EntryRevisionsController extends BaseEntriesController
         // Make sure the user is authorized to preview the draft
         Craft::$app->getSession()->authorize('previewDraft:' . $draft->draftId);
 
-        /** @var ElementInterface|DraftBehavior */
+        /* @var ElementInterface|DraftBehavior */
         if ($this->request->getAcceptsJson()) {
             $creator = $draft->getCreator();
+            [$docTitle, $title] = Cp::editElementTitles($draft);
             return $this->asJson([
-                'sourceId' => $draft->sourceId,
+                'sourceId' => $draft->getCanonicalId(),
                 'draftId' => $draft->draftId,
                 'timestamp' => Craft::$app->getFormatter()->asTimestamp($draft->dateUpdated, 'short', true),
                 'creator' => $creator ? $creator->getName() : null,
                 'draftName' => $draft->draftName,
                 'draftNotes' => $draft->draftNotes,
-                'docTitle' => $this->docTitle($draft),
-                'title' => $this->pageTitle($draft),
-                'duplicatedElements' => $elementsService::$duplicatedElementIds,
+                'docTitle' => $docTitle,
+                'title' => $title,
+                'duplicatedElements' => Elements::$duplicatedElementIds,
                 'previewTargets' => $draft->getPreviewTargets(),
+                'modifiedAttributes' => $draft->getModifiedAttributes(),
             ]);
         }
 
@@ -323,10 +346,12 @@ class EntryRevisionsController extends BaseEntriesController
         $this->requirePostRequest();
 
         $draftId = $this->request->getBodyParam('draftId');
+        $provisional = (bool)($this->request->getBodyParam('provisional') ?? false);
 
-        /** @var ElementInterface|DraftBehavior $draft */
+        /* @var Entry|DraftBehavior $draft */
         $draft = Entry::find()
             ->draftId($draftId)
+            ->provisionalDrafts($provisional)
             ->siteId('*')
             ->anyStatus()
             ->one();
@@ -335,13 +360,15 @@ class EntryRevisionsController extends BaseEntriesController
             throw new NotFoundHttpException('Draft not found');
         }
 
-        if (!$draft->creatorId || $draft->creatorId != Craft::$app->getUser()->getIdentity()->id) {
-            $this->requirePermission('deletePeerEntryDrafts:' . $draft->getSection()->uid);
-        }
+        $this->enforceDeleteEntryPermissions($draft);
 
         Craft::$app->getElements()->deleteElement($draft, true);
 
-        $this->setSuccessFlash(Craft::t('app', 'Draft deleted'));
+        if ($provisional) {
+            $this->setSuccessFlash(Craft::t('app', 'Changes discarded'));
+        } else {
+            $this->setSuccessFlash(Craft::t('app', 'Draft deleted'));
+        }
 
         if ($this->request->getAcceptsJson()) {
             return $this->asJson([
@@ -349,7 +376,7 @@ class EntryRevisionsController extends BaseEntriesController
             ]);
         }
 
-        return $this->redirectToPostedUrl();
+        return $this->redirectToPostedUrl($draft);
     }
 
     /**
@@ -366,6 +393,7 @@ class EntryRevisionsController extends BaseEntriesController
 
         $draftId = $this->request->getRequiredBodyParam('draftId');
         $siteId = $this->request->getBodyParam('siteId');
+        $provisional = (bool)($this->request->getBodyParam('provisional') ?? false);
 
         // Get the structure ID
         $structureId = (new Query())
@@ -376,9 +404,10 @@ class EntryRevisionsController extends BaseEntriesController
             ->where(['elements.draftId' => $draftId])
             ->scalar();
 
-        /** @var Entry|DraftBehavior|null $draft */
+        /* @var Entry|DraftBehavior|null $draft */
         $draft = Entry::find()
             ->draftId($draftId)
+            ->provisionalDrafts($provisional)
             ->siteId($siteId)
             ->structureId($structureId)
             ->anyStatus()
@@ -389,9 +418,9 @@ class EntryRevisionsController extends BaseEntriesController
         }
 
         // Permission enforcement
-        /** @var Entry|null $entry */
+        /* @var Entry|null $entry */
         $this->enforceSitePermission($draft->getSite());
-        $entry = ElementHelper::sourceElement($draft, true);
+        $entry = $draft->getCanonical(true);
         $this->enforceEditEntryPermissions($entry);
         $section = $entry->getSection();
 
@@ -416,7 +445,7 @@ class EntryRevisionsController extends BaseEntriesController
 
         // Even more permission enforcement
         if ($draft->enabled && !Craft::$app->getUser()->checkPermission("publishEntries:{$section->uid}")) {
-            if ($draft->getIsUnsavedDraft()) {
+            if ($draft->getIsUnpublishedDraft()) {
                 // Just disable it
                 $draft->enabled = false;
             } else {
@@ -434,7 +463,7 @@ class EntryRevisionsController extends BaseEntriesController
             $draft->setScenario(Element::SCENARIO_LIVE);
         }
 
-        if ($draft->getIsUnsavedDraft() && $this->request->getBodyParam('propagateAll')) {
+        if ($draft->getIsUnpublishedDraft() && $this->request->getBodyParam('propagateAll')) {
             $draft->propagateAll = true;
         }
 
@@ -444,13 +473,17 @@ class EntryRevisionsController extends BaseEntriesController
             }
 
             // Publish the draft (finally!)
-            $newEntry = Craft::$app->getDrafts()->applyDraft($draft);
+            $newEntry = Craft::$app->getDrafts()->publishDraft($draft);
         } catch (InvalidElementException $e) {
-            $this->setFailFlash(Craft::t('app', 'Couldn’t publish draft.'));
+            if ($draft->getIsProvisionalDraft() || $draft->getIsUnpublishedDraft()) {
+                $this->setFailFlash(Craft::t('app', 'Couldn’t save entry.'));
+            } else {
+                $this->setFailFlash(Craft::t('app', 'Couldn’t apply draft.'));
+            }
 
             // Send the draft back to the template
             Craft::$app->getUrlManager()->setRouteParams([
-                'entry' => $draft
+                'entry' => $draft,
             ]);
             return null;
         }
@@ -461,7 +494,12 @@ class EntryRevisionsController extends BaseEntriesController
             ]);
         }
 
-        $this->setSuccessFlash(Craft::t('app', 'Entry saved.'));
+        if ($draft->getIsProvisionalDraft() || $draft->getIsUnpublishedDraft()) {
+            $this->setSuccessFlash(Craft::t('app', 'Entry saved.'));
+        } else {
+            $this->setSuccessFlash(Craft::t('app', 'Draft applied.'));
+        }
+
         return $this->redirectToPostedUrl($newEntry);
     }
 
@@ -490,8 +528,7 @@ class EntryRevisionsController extends BaseEntriesController
         }
 
         // Permission enforcement
-        /** @var Entry $entry */
-        $entry = ElementHelper::sourceElement($revision);
+        $entry = $revision->getCanonical();
 
         $this->enforceSitePermission($entry->getSite());
         $this->enforceEditEntryPermissions($entry);
@@ -524,7 +561,7 @@ class EntryRevisionsController extends BaseEntriesController
      */
     private function _setDraftAttributesFromPost(Entry $draft)
     {
-        /** @var Entry|DraftBehavior $draft */
+        /* @var Entry|DraftBehavior $draft */
         $draft->typeId = $this->request->getBodyParam('typeId');
         // Prevent the last entry type's field layout from being used
         $draft->fieldLayoutId = null;
@@ -551,7 +588,7 @@ class EntryRevisionsController extends BaseEntriesController
 
         if (!$draft->typeId) {
             // Default to the section's first entry type
-            $draft->typeId = $draft->getSection()->getEntryTypes()[0]->id;
+            $draft->typeId = $draft->getAvailableEntryTypes()[0]->id;
             // Prevent the last entry type's field layout from being used
             $draft->fieldLayoutId = null;
         }
@@ -566,12 +603,16 @@ class EntryRevisionsController extends BaseEntriesController
         $draft->authorId = $authorId;
 
         // Parent
-        $parentId = $this->request->getBodyParam('parentId');
-
-        if (is_array($parentId)) {
-            $parentId = $parentId[0] ?? null;
+        if (($parentId = $this->request->getBodyParam('parentId')) !== null) {
+            if (is_array($parentId)) {
+                $parentId = reset($parentId) ?: false;
+            }
+            $draft->newParentId = $parentId ?: false;
         }
 
-        $draft->newParentId = $parentId ?: null;
+        // Draft meta
+        /* @var Entry|DraftBehavior $draft */
+        $draft->draftName = $this->request->getBodyParam('draftName') ?? $draft->draftName;
+        $draft->draftNotes = $this->request->getBodyParam('notes') ?? $draft->draftNotes;
     }
 }

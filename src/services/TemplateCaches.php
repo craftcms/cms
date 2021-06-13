@@ -10,10 +10,13 @@ namespace craft\services;
 use Craft;
 use craft\base\ElementInterface;
 use craft\elements\db\ElementQuery;
+use craft\helpers\DateTimeHelper;
+use craft\helpers\Html;
 use craft\helpers\StringHelper;
 use DateTime;
 use yii\base\Component;
 use yii\base\Event;
+use yii\base\Exception;
 
 /**
  * Template Caches service.
@@ -55,9 +58,11 @@ class TemplateCaches extends Component
      *
      * @param string $key The template cache key
      * @param bool $global Whether the cache would have been stored globally.
+     * @param bool $registerScripts Whether JS and CSS code coptured with the cache should be registered
      * @return string|null
+     * @throws Exception if this is a console request and `false` is passed to `$global`
      */
-    public function getTemplateCache(string $key, bool $global)
+    public function getTemplateCache(string $key, bool $global, bool $registerScripts = false)
     {
         // Make sure template caching is enabled
         if ($this->_isTemplateCachingEnabled() === false) {
@@ -71,17 +76,28 @@ class TemplateCaches extends Component
             return null;
         }
 
-        list($body, $tags) = $data;
+        [$body, $tags, $bufferedJs, $bufferedScripts, $bufferedCss] = array_pad($data, 5, null);
 
         // If we're actively collecting element cache tags, add this cache's tags to the collection
         Craft::$app->getElements()->collectCacheTags($tags);
+
+        // Register JS and CSS tags
+        if ($registerScripts) {
+            $this->_registerScripts($bufferedJs ?? [], $bufferedScripts ?? [], $bufferedCss ?? []);
+        }
+
         return $body;
     }
 
     /**
      * Starts a new template cache.
+     *
+     * @param bool $withScripts Whether JS and CSS code registered with [[\craft\web\View::registerJs()]],
+     * [[\craft\web\View::registerScript()]], and [[\craft\web\View::registerCss()]] should be captured and
+     * included in the cache. If this is `true`, be sure to pass `$withScripts = true` to [[endTemplateCache()]]
+     * as well.
      */
-    public function startTemplateCache()
+    public function startTemplateCache(bool $withScripts = false)
     {
         // Make sure template caching is enabled
         if ($this->_isTemplateCachingEnabled() === false) {
@@ -89,6 +105,13 @@ class TemplateCaches extends Component
         }
 
         Craft::$app->getElements()->startCollectingCacheTags();
+
+        if ($withScripts) {
+            $view = Craft::$app->getView();
+            $view->startJsBuffer();
+            $view->startScriptBuffer();
+            $view->startCssBuffer();
+        }
     }
 
     /**
@@ -119,9 +142,13 @@ class TemplateCaches extends Component
      * @param string|null $duration How long the cache should be stored for. Should be a [relative time format](http://php.net/manual/en/datetime.formats.relative.php).
      * @param mixed|null $expiration When the cache should expire.
      * @param string $body The contents of the cache.
+     * @param bool $withScripts Whether JS and CSS code registered with [[\craft\web\View::registerJs()]],
+     * [[\craft\web\View::registerScript()]], and [[\craft\web\View::registerCss()]] should be captured and
+     * included in the cache.
+     * @throws Exception if this is a console request and `false` is passed to `$global`
      * @throws \Throwable
      */
-    public function endTemplateCache(string $key, bool $global, string $duration = null, $expiration, string $body)
+    public function endTemplateCache(string $key, bool $global, ?string $duration, $expiration, string $body, bool $withScripts = false)
     {
         // Make sure template caching is enabled
         if ($this->_isTemplateCachingEnabled() === false) {
@@ -130,8 +157,12 @@ class TemplateCaches extends Component
 
         $dep = Craft::$app->getElements()->stopCollectingCacheTags();
 
-        // Always add a `template` tag
-        $dep->tags[] = 'template';
+        if ($withScripts) {
+            $view = Craft::$app->getView();
+            $bufferedJs = $view->clearJsBuffer(false, false);
+            $bufferedScripts = $view->clearScriptBuffer();
+            $bufferedCss = $view->clearCssBuffer();
+        }
 
         // If there are any transform generation URLs in the body, don't cache it.
         // stripslashes($body) in case the URL has been JS-encoded or something.
@@ -139,11 +170,64 @@ class TemplateCaches extends Component
             return;
         }
 
-        $cacheKey = $this->_cacheKey($key, $global);
-        if ($duration !== null) {
-            $duration = (new DateTime($duration))->getTimestamp() - time();
+        // Always add a `template` tag
+        $dep->tags[] = 'template';
+
+        $cacheValue = [$body, $dep->tags];
+
+        if ($withScripts) {
+            // Parse the JS/CSS code and tag attributes out of the <script> and <style> tags
+            $bufferedScripts = array_map(function($tags) {
+                return array_map(function($tag) {
+                    $tag = Html::parseTag($tag);
+                    return [$tag['children'][0]['value'], $tag['attributes']];
+                }, $tags);
+            }, $bufferedScripts);
+            $bufferedCss = array_map(function($tag) {
+                $tag = Html::parseTag($tag);
+                return [$tag['children'][0]['value'], $tag['attributes']];
+            }, $bufferedCss);
+
+            array_push($cacheValue, $bufferedJs, $bufferedScripts, $bufferedCss);
+
+            // Re-register the JS and CSS
+            $this->_registerScripts($bufferedJs, $bufferedScripts, $bufferedCss);
         }
-        Craft::$app->getCache()->set($cacheKey, [$body, $dep->tags], $duration, $dep);
+
+        $cacheKey = $this->_cacheKey($key, $global);
+
+        if ($duration !== null) {
+            $expiration = (new DateTime($duration));
+        }
+
+        if ($expiration !== null) {
+            $duration = DateTimeHelper::toDateTime($expiration)->getTimestamp() - time();
+        }
+
+        Craft::$app->getCache()->set($cacheKey, $cacheValue, $duration, $dep);
+    }
+
+    private function _registerScripts(array $bufferedJs, array $bufferedScripts, array $bufferedCss): void
+    {
+        $view = Craft::$app->getView();
+
+        foreach ($bufferedJs as $pos => $scripts) {
+            foreach ($scripts as $key => $script) {
+                $view->registerJs($script, $pos, $key);
+            }
+        }
+
+        foreach ($bufferedScripts as $pos => $tags) {
+            foreach ($tags as $key => $tag) {
+                [$script, $options] = $tag;
+                $view->registerScript($script, $pos, $options, $key);
+            }
+        }
+
+        foreach ($bufferedCss as $key => $tag) {
+            [$css, $options] = $tag;
+            $view->registerCss($css, $options, $key);
+        }
     }
 
     /**
@@ -241,16 +325,26 @@ class TemplateCaches extends Component
     /**
      * Deletes a cache by its key(s).
      *
-     * @param int|array $key The cache key(s) to delete.
+     * @param string|string[] $key The cache key(s) to delete.
+     * @param bool|null $global Whether the template caches are stored globally.
+     * @param int|null $siteId The site ID to delete caches for.
      * @return bool
-     * @deprecated in 3.5.0
+     * @throws Exception if this is a console request and `null` or `false` is passed to `$global`
      */
-    public function deleteCachesByKey($key): bool
+    public function deleteCachesByKey($key, ?bool $global = null, ?int $siteId = null): bool
     {
         $cache = Craft::$app->getCache();
-        // ¯\_(ツ)_/¯
-        $cache->delete($this->_cacheKey($key, true));
-        $cache->delete($this->_cacheKey($key, false));
+
+        if ($global === null) {
+            $this->deleteCachesByKey($key, true, $siteId);
+            $this->deleteCachesByKey($key, false, $siteId);
+            return true;
+        }
+
+        foreach ((array)$key as $k) {
+            $cache->delete($this->_cacheKey($k, $global, $siteId));
+        }
+
         return true;
     }
 
@@ -309,10 +403,12 @@ class TemplateCaches extends Component
      *
      * @param string $key
      * @param bool $global
+     * @param int|null $siteId
+     * @throws Exception if this is a console request and `false` is passed to `$global`
      */
-    private function _cacheKey(string $key, bool $global): string
+    private function _cacheKey(string $key, bool $global, int $siteId = null): string
     {
-        $cacheKey = "template::$key::" . Craft::$app->getSites()->getCurrentSite()->id;
+        $cacheKey = "template::$key::" . ($siteId ?? Craft::$app->getSites()->getCurrentSite()->id);
 
         if (!$global) {
             $cacheKey .= '::' . $this->_path();
@@ -325,11 +421,17 @@ class TemplateCaches extends Component
      * Returns the current request path, including a "site:" or "cp:" prefix.
      *
      * @return string
+     * @throws Exception if this is a console request
      */
     private function _path(): string
     {
         if ($this->_path !== null) {
             return $this->_path;
+        }
+
+        $request = Craft::$app->getRequest();
+        if ($request->getIsConsoleRequest()) {
+            throw new Exception('Not possible to determine the request path for console commands.');
         }
 
         if (Craft::$app->getRequest()->getIsCpRequest()) {

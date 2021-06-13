@@ -12,19 +12,18 @@ use craft\base\ElementAction;
 use craft\base\ElementActionInterface;
 use craft\base\ElementExporterInterface;
 use craft\base\ElementInterface;
-use craft\elements\actions\Delete;
+use craft\elements\actions\DeleteActionInterface;
 use craft\elements\actions\Restore;
 use craft\elements\db\ElementQuery;
 use craft\elements\db\ElementQueryInterface;
 use craft\elements\exporters\Raw;
 use craft\events\ElementActionEvent;
-use craft\helpers\ArrayHelper;
 use craft\helpers\ElementHelper;
+use yii\base\InvalidValueException;
 use yii\db\Expression;
 use yii\web\BadRequestHttpException;
 use yii\web\ForbiddenHttpException;
 use yii\web\Response;
-use yii\web\ServerErrorHttpException;
 
 /**
  * The ElementIndexesController class is a controller that handles various element index related actions.
@@ -181,7 +180,7 @@ class ElementIndexesController extends BaseElementsController
 
         // Find that action from the list of available actions for the source
         if (!empty($this->actions)) {
-            /** @var ElementAction $availableAction */
+            /* @var ElementAction $availableAction */
             foreach ($this->actions as $availableAction) {
                 if ($actionClass === get_class($availableAction)) {
                     $action = clone $availableAction;
@@ -190,7 +189,7 @@ class ElementIndexesController extends BaseElementsController
             }
         }
 
-        /** @noinspection UnSafeIsSetOverArrayInspection - FP */
+        /* @noinspection UnSafeIsSetOverArrayInspection - FP */
         if (!isset($action)) {
             throw new BadRequestHttpException('Element action is not supported by the element type');
         }
@@ -210,7 +209,7 @@ class ElementIndexesController extends BaseElementsController
         }
 
         // Perform the action
-        /** @var ElementQuery $actionCriteria */
+        /* @var ElementQuery $actionCriteria */
         $actionCriteria = clone $this->elementQuery;
         $actionCriteria->offset = 0;
         $actionCriteria->limit = null;
@@ -222,7 +221,7 @@ class ElementIndexesController extends BaseElementsController
         // Fire a 'beforePerformAction' event
         $event = new ElementActionEvent([
             'action' => $action,
-            'criteria' => $actionCriteria
+            'criteria' => $actionCriteria,
         ]);
 
         $elementsService->trigger($elementsService::EVENT_BEFORE_PERFORM_ACTION, $event);
@@ -235,7 +234,7 @@ class ElementIndexesController extends BaseElementsController
                 // Fire an 'afterPerformAction' event
                 $elementsService->trigger($elementsService::EVENT_AFTER_PERFORM_ACTION, new ElementActionEvent([
                     'action' => $action,
-                    'criteria' => $actionCriteria
+                    'criteria' => $actionCriteria,
                 ]));
             }
         } else {
@@ -275,8 +274,8 @@ class ElementIndexesController extends BaseElementsController
         return $this->asJson([
             'html' => $this->getView()->renderTemplate('_elements/sources', [
                 'elementType' => $this->elementType,
-                'sources' => $sources
-            ])
+                'sources' => $sources,
+            ]),
         ]);
     }
 
@@ -292,53 +291,46 @@ class ElementIndexesController extends BaseElementsController
         $exporter = $this->_exporter();
         $exporter->setElementType($this->elementType);
 
-        $this->response->data = $exporter->export($this->elementQuery);
-        $this->response->format = $this->request->getBodyParam('format', 'csv');
-        $this->response->setDownloadHeaders($exporter->getFilename() . ".{$this->response->format}");
+        // Set the filename header before calling export() in case export() starts outputting the data
+        $filename = $exporter->getFilename();
+        if ($exporter::isFormattable()) {
+            $this->response->format = $this->request->getBodyParam('format', 'csv');
+            $filename .= '.' . $this->response->format;
+        }
+        $this->response->setDownloadHeaders($filename);
 
-        switch ($this->response->format) {
-            case Response::FORMAT_JSON:
-                $this->response->formatters[Response::FORMAT_JSON]['prettyPrint'] = true;
-                break;
-            case Response::FORMAT_XML:
-                Craft::$app->language = 'en-US';
-                /** @var string|ElementInterface $elementType */
-                $elementType = $this->elementType;
-                $this->response->formatters[Response::FORMAT_XML]['rootTag'] = $elementType::pluralLowerDisplayName();
-                break;
+        $export = $exporter->export($this->elementQuery);
+
+        if ($exporter::isFormattable()) {
+            if (!is_array($export)) {
+                throw new InvalidValueException(get_class($exporter) . '::export() must return an array since isFormattable() returns true.');
+            }
+
+            $this->response->data = $export;
+
+            switch ($this->response->format) {
+                case Response::FORMAT_JSON:
+                    $this->response->formatters[Response::FORMAT_JSON]['prettyPrint'] = true;
+                    break;
+                case Response::FORMAT_XML:
+                    Craft::$app->language = 'en-US';
+                    /* @var string|ElementInterface $elementType */
+                    $elementType = $this->elementType;
+                    $this->response->formatters[Response::FORMAT_XML]['rootTag'] = $elementType::pluralLowerDisplayName();
+                    break;
+            }
+        } else if (
+            is_callable($export) ||
+            is_resource($export) ||
+            (is_array($export) && isset($export[0]) && is_resource($export[0]))
+        ) {
+            $this->response->stream = $export;
+        } else {
+            $this->response->data = $export;
+            $this->response->format = Response::FORMAT_RAW;
         }
 
         return $this->response;
-    }
-
-    /**
-     * Creates an export token.
-     *
-     * @return Response
-     * @throws BadRequestHttpException
-     * @throws ServerErrorHttpException
-     * @since 3.2.0
-     * @deprecated in 3.4.4
-     */
-    public function actionCreateExportToken(): Response
-    {
-        $exporter = $this->_exporter();
-        $token = Craft::$app->getTokens()->createToken([
-            'export/export',
-            [
-                'elementType' => $this->elementType,
-                'sourceKey' => $this->sourceKey,
-                'criteria' => $this->request->getBodyParam('criteria', []),
-                'exporter' => get_class($exporter),
-                'format' => $this->request->getBodyParam('format', 'csv'),
-            ]
-        ], 1, (new \DateTime())->add(new \DateInterval('PT1H')));
-
-        if (!$token) {
-            throw new ServerErrorHttpException('Could not create an export token.');
-        }
-
-        return $this->asJson(compact('token'));
     }
 
     /**
@@ -425,7 +417,7 @@ class ElementIndexesController extends BaseElementsController
      */
     protected function elementQuery(): ElementQueryInterface
     {
-        /** @var string|ElementInterface $elementType */
+        /* @var string|ElementInterface $elementType */
         $elementType = $this->elementType;
         $query = $elementType::find();
 
@@ -437,11 +429,17 @@ class ElementIndexesController extends BaseElementsController
         // Override with the request's params
         if ($criteria = $this->request->getBodyParam('criteria')) {
             if (isset($criteria['trashed'])) {
-                $criteria['trashed'] = (bool)$criteria['trashed'];
+                $criteria['trashed'] = filter_var($criteria['trashed'] ?? false, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE) ?? false;
             }
-            if (ArrayHelper::remove($criteria, 'drafts')) {
-                $criteria['drafts'] = true;
-                $criteria['draftOf'] = false;
+            if (isset($criteria['drafts'])) {
+                $criteria['drafts'] = filter_var($criteria['drafts'] ?? false, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE) ?? false;
+            }
+            if (isset($criteria['draftOf'])) {
+                if (is_numeric($criteria['draftOf']) && $criteria['draftOf'] != 0) {
+                    $criteria['draftOf'] = (int)$criteria['draftOf'];
+                } else {
+                    $criteria['draftOf'] = filter_var($criteria['draftOf'], FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE);
+                }
             }
             Craft::configure($query, $criteria);
         }
@@ -501,7 +499,7 @@ class ElementIndexesController extends BaseElementsController
      */
     protected function elementResponseData(bool $includeContainer, bool $includeActions): array
     {
-        /** @var string|ElementInterface $elementType */
+        /* @var string|ElementInterface $elementType */
         $elementType = $this->elementType;
         $responseData = [];
         $view = $this->getView();
@@ -548,7 +546,7 @@ class ElementIndexesController extends BaseElementsController
             return null;
         }
 
-        /** @var string|ElementInterface $elementType */
+        /* @var string|ElementInterface $elementType */
         $elementType = $this->elementType;
         $actions = $elementType::actions($this->sourceKey);
 
@@ -569,7 +567,7 @@ class ElementIndexesController extends BaseElementsController
             }
 
             if ($this->elementQuery->trashed) {
-                if ($action instanceof Delete && !$action->withDescendants) {
+                if ($action instanceof DeleteActionInterface && $action->canHardDelete()) {
                     $action->hard = true;
                 } else if (!$action instanceof Restore) {
                     unset($actions[$i]);
@@ -607,7 +605,7 @@ class ElementIndexesController extends BaseElementsController
             return null;
         }
 
-        /** @var string|ElementInterface $elementType */
+        /* @var string|ElementInterface $elementType */
         $elementType = $this->elementType;
         $exporters = $elementType::exporters($this->sourceKey);
 
@@ -644,7 +642,7 @@ class ElementIndexesController extends BaseElementsController
 
         $actionData = [];
 
-        /** @var ElementAction $action */
+        /* @var ElementAction $action */
         foreach ($this->actions as $action) {
             $actionData[] = [
                 'type' => get_class($action),
@@ -678,6 +676,7 @@ class ElementIndexesController extends BaseElementsController
             $exporterData[] = [
                 'type' => get_class($exporter),
                 'name' => $exporter::displayName(),
+                'formattable' => $exporter::isFormattable(),
             ];
         }
 

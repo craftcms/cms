@@ -14,9 +14,11 @@ use craft\fields\data\ColorData;
 use craft\gql\GqlEntityRegistry;
 use craft\gql\types\generators\TableRowType as TableRowTypeGenerator;
 use craft\gql\types\TableRow;
+use craft\helpers\Cp;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Html;
 use craft\helpers\Json;
+use craft\helpers\StringHelper;
 use craft\validators\ColorValidator;
 use craft\validators\HandleValidator;
 use craft\validators\UrlValidator;
@@ -24,6 +26,7 @@ use craft\web\assets\tablesettings\TableSettingsAsset;
 use craft\web\assets\timepicker\TimepickerAsset;
 use GraphQL\Type\Definition\InputObjectType;
 use GraphQL\Type\Definition\Type;
+use LitEmoji\LitEmoji;
 use yii\db\Schema;
 use yii\validators\EmailValidator;
 
@@ -73,8 +76,8 @@ class Table extends Field
         'col1' => [
             'heading' => '',
             'handle' => '',
-            'type' => 'singleline'
-        ]
+            'type' => 'singleline',
+        ],
     ];
 
     /**
@@ -235,18 +238,18 @@ class Table extends Field
             'heading' => [
                 'heading' => Craft::t('app', 'Column Heading'),
                 'type' => 'singleline',
-                'autopopulate' => 'handle'
+                'autopopulate' => 'handle',
             ],
             'handle' => [
                 'heading' => Craft::t('app', 'Handle'),
                 'code' => true,
-                'type' => 'singleline'
+                'type' => 'singleline',
             ],
             'width' => [
                 'heading' => Craft::t('app', 'Width'),
                 'code' => true,
                 'type' => 'singleline',
-                'width' => 50
+                'width' => 50,
             ],
             'type' => [
                 'heading' => Craft::t('app', 'Type'),
@@ -276,16 +279,14 @@ class Table extends Field
             ],
         ];
 
-        $dropdownSettingsHtml = Craft::$app->getView()->renderTemplateMacro('_includes/forms', 'editableTableField', [
-            [
-                'label' => Craft::t('app', 'Dropdown Options'),
-                'instructions' => Craft::t('app', 'Define the available options.'),
-                'id' => '__ID__',
-                'name' => '__NAME__',
-                'addRowLabel' => Craft::t('app', 'Add an option'),
-                'cols' => $dropdownSettingsCols,
-                'initJs' => false,
-            ]
+        $dropdownSettingsHtml = Cp::editableTableFieldHtml([
+            'label' => Craft::t('app', 'Dropdown Options'),
+            'instructions' => Craft::t('app', 'Define the available options.'),
+            'id' => '__ID__',
+            'name' => '__NAME__',
+            'addRowLabel' => Craft::t('app', 'Add an option'),
+            'cols' => $dropdownSettingsCols,
+            'initJs' => false,
         ]);
 
         $view = Craft::$app->getView();
@@ -308,16 +309,14 @@ class Table extends Field
             'errors' => $this->getErrors('columns'),
         ]);
 
-        $defaultsField = $view->renderTemplateMacro('_includes/forms', 'editableTableField', [
-            [
-                'label' => Craft::t('app', 'Default Values'),
-                'instructions' => Craft::t('app', 'Define the default values for the field.'),
-                'id' => 'defaults',
-                'name' => 'defaults',
-                'cols' => $this->columns,
-                'rows' => $this->defaults,
-                'initJs' => false,
-            ]
+        $defaultsField = Cp::editableTableFieldHtml([
+            'label' => Craft::t('app', 'Default Values'),
+            'instructions' => Craft::t('app', 'Define the default values for the field.'),
+            'id' => 'defaults',
+            'name' => 'defaults',
+            'cols' => $this->columns,
+            'rows' => $this->defaults,
+            'initJs' => false,
         ]);
 
         return $view->renderTemplate('_components/fieldtypes/Table/settings', [
@@ -419,12 +418,38 @@ class Table extends Field
         foreach ($value as $row) {
             $serializedRow = [];
             foreach (array_keys($this->columns) as $colId) {
-                $serializedRow[$colId] = parent::serializeValue($row[$colId] ?? null);
+                $value = $row[$colId];
+
+                if (is_string($value) && in_array($this->columns[$colId]['type'], ['singleline', 'multiline'], true)) {
+                    $value = LitEmoji::unicodeToShortcode($value);
+                }
+
+                $serializedRow[$colId] = parent::serializeValue($value ?? null);
             }
             $serialized[] = $serializedRow;
         }
 
         return $serialized;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    protected function searchKeywords($value, ElementInterface $element): string
+    {
+        if (!is_array($value) || empty($this->columns)) {
+            return '';
+        }
+
+        $keywords = [];
+
+        foreach ($value as $row) {
+            foreach (array_keys($this->columns) as $colId) {
+                $keywords[] = $row[$colId];
+            }
+        }
+
+        return implode(' ', $keywords);
     }
 
     /**
@@ -463,7 +488,7 @@ class Table extends Field
             'name' => $typeName,
             'fields' => function() use ($contentFields) {
                 return $contentFields;
-            }
+            },
         ]));
 
         return Type::listOf($argumentType);
@@ -501,6 +526,12 @@ class Table extends Field
 
                 return new ColorData($value);
 
+            case 'multiline':
+            case 'singleline':
+                if ($value !== null) {
+                    $value = LitEmoji::shortcodeToUnicode($value);
+                    return trim(preg_replace('/\R/u', "\n", $value));
+                }
             case 'date':
             case 'time':
                 return DateTimeHelper::toDateTime($value) ?: null;
@@ -526,7 +557,7 @@ class Table extends Field
 
         switch ($type) {
             case 'color':
-                /** @var ColorData $value */
+                /* @var ColorData $value */
                 $value = $value->getHex();
                 $validator = new ColorValidator();
                 break;

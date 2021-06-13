@@ -10,6 +10,7 @@ namespace craft\web;
 use Craft;
 use craft\helpers\FileHelper;
 use craft\helpers\Json;
+use craft\helpers\StringHelper;
 use craft\helpers\UrlHelper;
 use craft\web\assets\iframeresizer\ContentWindowAsset;
 use GuzzleHttp\Exception\ClientException;
@@ -208,7 +209,23 @@ abstract class Controller extends \yii\web\Controller
                 } else {
                     $statusCode = 500;
                 }
-                return $this->asErrorJson($message)
+
+                if (YII_DEBUG) {
+                    $response = $this->asJson([
+                        'error' => $message,
+                        'exception' => get_class($e),
+                        'file' => $e->getFile(),
+                        'line' => $e->getLine(),
+                        'trace' => array_map(function($step) {
+                            unset($step['args']);
+                            return $step;
+                        }, $e->getTrace()),
+                    ]);
+                } else {
+                    $response = $this->asErrorJson($message);
+                }
+
+                return $response
                     ->setStatusCode($statusCode);
             }
             throw $e;
@@ -226,32 +243,27 @@ abstract class Controller extends \yii\web\Controller
      */
     public function renderTemplate(string $template, array $variables = [], string $templateMode = null): YiiResponse
     {
-        $headers = $this->response->getHeaders();
         $view = $this->getView();
-
-        // Set the MIME type for the request based on the matched template's file extension (unless the
-        // Content-Type header was already set, perhaps by the template via the {% header %} tag)
-        if (!$headers->has('content-type')) {
-            $templateFile = $view->resolveTemplate($template);
-            $extension = pathinfo($templateFile, PATHINFO_EXTENSION) ?: 'html';
-
-            if (($mimeType = FileHelper::getMimeTypeByExtension('.' . $extension)) === null) {
-                $mimeType = 'text/html';
-            }
-
-            $headers->set('content-type', $mimeType . '; charset=' . $this->response->charset);
-        }
 
         // If this is a preview request, register the iframe resizer script
         if ($this->request->getIsPreview()) {
             $view->registerAssetBundle(ContentWindowAsset::class);
         }
 
+        // Prevent a response formatter from overriding the content-type header
+        $this->response->format = YiiResponse::FORMAT_RAW;
+
         // Render and return the template
         $this->response->data = $view->renderPageTemplate($template, $variables, $templateMode);
 
-        // Prevent a response formatter from overriding the content-type header
-        $this->response->format = YiiResponse::FORMAT_RAW;
+        // Set the MIME type for the request based on the matched template's file extension (unless the
+        // Content-Type header was already set, perhaps by the template via the {% header %} tag)
+        $headers = $this->response->getHeaders();
+        if (!$headers->has('content-type')) {
+            $templateFile = StringHelper::removeRight(strtolower($view->resolveTemplate($template)), '.twig');
+            $mimeType = FileHelper::getMimeTypeByExtension($templateFile) ?? 'text/html';
+            $headers->set('content-type', $mimeType . '; charset=' . $this->response->charset);
+        }
 
         return $this->response;
     }
@@ -377,7 +389,7 @@ abstract class Controller extends \yii\web\Controller
      */
     public function requireToken()
     {
-        if ($this->request->getToken() === null) {
+        if (!$this->request->getHadToken()) {
             throw new BadRequestHttpException('Valid token required');
         }
     }
@@ -466,7 +478,7 @@ abstract class Controller extends \yii\web\Controller
         return $this->redirect($url);
     }
 
-    /** @noinspection ArrayTypeOfParameterByDefaultValueInspection */
+    /* @noinspection ArrayTypeOfParameterByDefaultValueInspection */
     /**
      * Sets the response format of the given data as JSONP.
      *
@@ -483,7 +495,7 @@ abstract class Controller extends \yii\web\Controller
         return $this->response;
     }
 
-    /** @noinspection ArrayTypeOfParameterByDefaultValueInspection */
+    /* @noinspection ArrayTypeOfParameterByDefaultValueInspection */
     /**
      * Sets the response format of the given data as RAW.
      *

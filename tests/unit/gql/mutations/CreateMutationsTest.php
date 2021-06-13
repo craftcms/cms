@@ -103,7 +103,7 @@ class CreateMutationsTest extends Unit
        sort($mutationNames);
        sort($actualMutationNames);
 
-       $this->assertEquals($mutationNames, $actualMutationNames);
+       self::assertEquals($mutationNames, $actualMutationNames);
    }
 
     /**
@@ -122,10 +122,10 @@ class CreateMutationsTest extends Unit
 
        $mutation = AssetMutations::createSaveMutation($volume);
 
-       $this->assertInstanceOf(AssetGqlType::class, $mutation['type']);
-       $this->assertArrayHasKey('someNumberField', $mutation['args']);
-       $this->assertArrayHasKey('id', $mutation['args']);
-       $this->assertArrayHasKey('_file', $mutation['args']);
+       self::assertInstanceOf(AssetGqlType::class, $mutation['type']);
+       self::assertArrayHasKey('someNumberField', $mutation['args']);
+       self::assertArrayHasKey('id', $mutation['args']);
+       self::assertArrayHasKey('_file', $mutation['args']);
    }
 
     /**
@@ -149,7 +149,7 @@ class CreateMutationsTest extends Unit
        sort($mutationNames);
        sort($actualMutationNames);
 
-       $this->assertEquals($mutationNames, $actualMutationNames);
+       self::assertEquals($mutationNames, $actualMutationNames);
    }
 
     /**
@@ -168,10 +168,10 @@ class CreateMutationsTest extends Unit
 
        $mutation = CategoryMutations::createSaveMutation($categoryGroup);
 
-       $this->assertInstanceOf(CategoryGqlType::class, $mutation['type']);
-       $this->assertArrayHasKey('someTextField', $mutation['args']);
-       $this->assertArrayHasKey('prependToRoot', $mutation['args']);
-       $this->assertArrayHasKey('title', $mutation['args']);
+       self::assertInstanceOf(CategoryGqlType::class, $mutation['type']);
+       self::assertArrayHasKey('someTextField', $mutation['args']);
+       self::assertArrayHasKey('prependToRoot', $mutation['args']);
+       self::assertArrayHasKey('title', $mutation['args']);
    }
 
     /**
@@ -195,7 +195,7 @@ class CreateMutationsTest extends Unit
        sort($mutationNames);
        sort($actualMutationNames);
 
-       $this->assertEquals($mutationNames, $actualMutationNames);
+       self::assertEquals($mutationNames, $actualMutationNames);
    }
 
     /**
@@ -214,9 +214,9 @@ class CreateMutationsTest extends Unit
 
        $mutation = TagMutations::createSaveMutation($tagGroup);
 
-       $this->assertInstanceOf(TagGqlType::class, $mutation['type']);
-       $this->assertArrayHasKey('someTextField', $mutation['args']);
-       $this->assertArrayHasKey('uid', $mutation['args']);
+       self::assertInstanceOf(TagGqlType::class, $mutation['type']);
+       self::assertArrayHasKey('someTextField', $mutation['args']);
+       self::assertArrayHasKey('uid', $mutation['args']);
    }
 
     /**
@@ -240,7 +240,7 @@ class CreateMutationsTest extends Unit
        sort($mutationNames);
        sort($actualMutationNames);
 
-       $this->assertEquals($mutationNames, $actualMutationNames);
+       self::assertEquals($mutationNames, $actualMutationNames);
    }
 
     /**
@@ -259,9 +259,9 @@ class CreateMutationsTest extends Unit
 
        $mutation = GlobalSetMutations::createSaveMutation($globalSet);
 
-       $this->assertInstanceOf(GlobalSetGqlType::class, $mutation['type']);
-       $this->assertArrayHasKey('someTextField', $mutation['args']);
-       $this->assertArrayNotHasKey('uid', $mutation['args']);
+       self::assertInstanceOf(GlobalSetGqlType::class, $mutation['type']);
+       self::assertArrayHasKey('someTextField', $mutation['args']);
+       self::assertArrayNotHasKey('uid', $mutation['args']);
    }
 
 
@@ -286,7 +286,7 @@ class CreateMutationsTest extends Unit
         sort($mutationNames);
         sort($actualMutationNames);
 
-        $this->assertEquals($mutationNames, $actualMutationNames);
+        self::assertEquals($mutationNames, $actualMutationNames);
     }
 
     /**
@@ -325,26 +325,26 @@ class CreateMutationsTest extends Unit
         );
 
         list($saveMutation, $draftMutation) = EntryMutations::createSaveMutations($single, true);
-        $this->assertInstanceOf(EntryGqlType::class, $saveMutation['type']);
-        $this->assertInstanceOf(EntryGqlType::class, $draftMutation['type']);
-        $this->assertArrayHasKey('someTextField', $saveMutation['args']);
-        $this->assertArrayNotHasKey('id', $saveMutation['args']);
-        $this->assertArrayNotHasKey('authorId', $draftMutation['args']);
+        self::assertInstanceOf(EntryGqlType::class, $saveMutation['type']);
+        self::assertInstanceOf(EntryGqlType::class, $draftMutation['type']);
+        self::assertArrayHasKey('someTextField', $saveMutation['args']);
+        self::assertArrayNotHasKey('id', $saveMutation['args']);
+        self::assertArrayNotHasKey('authorId', $draftMutation['args']);
 
         list($saveMutation, $draftMutation) = EntryMutations::createSaveMutations($channel, true);
-        $this->assertInstanceOf(EntryGqlType::class, $saveMutation['type']);
-        $this->assertInstanceOf(EntryGqlType::class, $draftMutation['type']);
-        $this->assertArrayHasKey('someTextField', $draftMutation['args']);
-        $this->assertArrayHasKey('uid', $saveMutation['args']);
-        $this->assertArrayHasKey('authorId', $draftMutation['args']);
+        self::assertInstanceOf(EntryGqlType::class, $saveMutation['type']);
+        self::assertInstanceOf(EntryGqlType::class, $draftMutation['type']);
+        self::assertArrayHasKey('someTextField', $draftMutation['args']);
+        self::assertArrayHasKey('uid', $saveMutation['args']);
+        self::assertArrayHasKey('authorId', $draftMutation['args']);
 
         list($saveMutation, $draftMutation) = EntryMutations::createSaveMutations($structure, true);
-        $this->assertInstanceOf(EntryGqlType::class, $saveMutation['type']);
-        $this->assertInstanceOf(EntryGqlType::class, $draftMutation['type']);
-        $this->assertContains('draft', $draftMutation['description']);
-        $this->assertArrayHasKey('appendTo', $saveMutation['args']);
-        $this->assertArrayHasKey('appendToRoot', $saveMutation['args']);
-        $this->assertArrayNotHasKey('appendToRoot', $draftMutation['args']);
+        self::assertInstanceOf(EntryGqlType::class, $saveMutation['type']);
+        self::assertInstanceOf(EntryGqlType::class, $draftMutation['type']);
+        self::assertStringContainsString('draft', $draftMutation['description']);
+        self::assertArrayHasKey('appendTo', $saveMutation['args']);
+        self::assertArrayHasKey('appendToRoot', $saveMutation['args']);
+        self::assertArrayNotHasKey('appendToRoot', $draftMutation['args']);
     }
 
     public function assetMutationDataProvider()

@@ -64,9 +64,9 @@ class ElementResolverTest extends Unit
         // One slight caveat, though - in real life usages resolveOnce will only be called on null source, but it's impossible
         /// to test that scenario, because static methods are impossible/very hard to test. ¯\_(ツ)_/¯
         $source = (object)['url' => $assetQuery];
-        $resolveInfo = $this->make(ResolveInfo::class, ['fieldName' => 'url']);
+        $resolveInfo = $this->make(ResolveInfo::class, ['fieldName' => 'url', 'fieldNodes' => [null]]);
 
-        $this->assertSame($testUid, AssetResolver::resolveOne($source, [], null, $resolveInfo)->uid);
-        $this->assertSame($testCount, AssetResolver::resolveCount($source, [], null, $resolveInfo));
+        self::assertSame($testUid, AssetResolver::resolveOne($source, [], null, $resolveInfo)->uid);
+        self::assertSame($testCount, AssetResolver::resolveCount($source, [], null, $resolveInfo));
     }
 }

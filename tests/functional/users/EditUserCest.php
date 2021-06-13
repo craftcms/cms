@@ -42,58 +42,8 @@ class EditUserCest
 
         $I->amLoggedInAs($this->currentUser);
         $this->cpTrigger = Craft::$app->getConfig()->getGeneral()->cpTrigger;
-    }
 
-    /**
-     * @param FunctionalTester $I
-     */
-    public function testSaveUserFunctions(FunctionalTester $I)
-    {
-        $I->amOnPage('/' . $this->cpTrigger . '/users/new');
-        $I->see('New User');
-
-        $variables = [
-            'username' => 'newusernameforcreateuserfunctest',
-            'firstName' => 'NewUserFirstName',
-            'lastName' => 'NewUserLastName',
-            'email' => 'NewUser@email.com',
-            'fields' => ['exampleTextField1' => 'Test data']
-        ];
-
-        $I->submitForm('#userform', $variables);
-
-        unset($variables['fields']);
-
-        $I->see('User saved');
-        $I->see('Users');
-
-        $user = $I->assertElementsExist(User::class, $variables, 1, true);
-        $user = ArrayHelper::firstValue($user);
-
-        $I->amOnPage('/' . $this->cpTrigger . '/users/' . $user->id . '');
-        $I->submitForm('#userform', []);
-    }
-
-    /**
-     * @param FunctionalTester $I
-     */
-    public function testNewUserValidationError(FunctionalTester $I)
-    {
-        $I->amOnPage('/' . $this->cpTrigger . '/users/new');
-        $I->see('New User');
-
-        $I->submitForm('#userform', []);
-        $I->see('Couldn’t save user.');
-        $I->see('Username cannot be blank.');
-        $I->see('Email cannot be blank.');
-
-        $I->submitForm('#userform', [
-            'username' => 'testusernametestusername32798132789312789',
-            'email' => 'test',
-            'fields' => ['exampleTextField1' => 'Test data']
-        ]);
-
-        $I->see('Email is not a valid email address.');
+        Craft::$app->setEdition(Craft::Pro);
     }
 
     /**
@@ -103,11 +53,10 @@ class EditUserCest
     {
         $I->amOnPage('/' . $this->cpTrigger . '/myaccount');
 
-        $I->see('My account');
+        $I->see('My Account');
 
         $I->submitForm('#userform', [
             'firstName' => 'IM A CHANGED FIRSTNAME',
-            'fields' => ['exampleTextField1' => 'Test data']
         ]);
 
         $I->see('User saved');
@@ -122,20 +71,4 @@ class EditUserCest
         );
     }
 
-    /**
-     * @param FunctionalTester $I
-     */
-    public function testCustomFieldValidation(FunctionalTester $I)
-    {
-        $I->amOnPage('/' . $this->cpTrigger . '/myaccount');
-
-        $I->see('My account');
-
-        $I->submitForm('#userform', [
-            'firstName' => 'IM A CHANGED FIRSTNAME',
-        ]);
-
-        $I->canSeeInCurrentUrl('myaccount');
-        $I->see('Example text field 1 cannot be blank.');
-    }
 }

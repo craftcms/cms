@@ -13,7 +13,7 @@
  */
 new Vue({
     el: "#main",
-    delimiters: ['[[',']]'],
+    delimiters: ['[[', ']]'],
     data() {
         return {
             loading: false,
@@ -43,7 +43,6 @@ new Vue({
         })
 
         window.onpopstate = (event) => {
-            console.log('popstate', event.state)
             if (event.state && event.state.jobId) {
                 this.setActiveJob(event.state.jobId, false)
             } else {
@@ -55,7 +54,7 @@ new Vue({
         let m = Craft.path.match(/utilities\/queue-manager\/([^\/]+)/)
         if (m) {
             let jobId = m[1]
-            history.replaceState({jobId: jobId}, '', this.url(jobId))
+            history.replaceState({jobId}, '', this.url(jobId))
             this.setActiveJob(jobId, false)
         }
     },
@@ -81,10 +80,10 @@ new Vue({
                 this.activeJobId = jobId
 
                 if (pushState) {
-                    history.pushState({jobId: jobId}, '', this.url(jobId))
+                    history.pushState({jobId}, '', this.url(jobId))
                 }
 
-                axios.get(Craft.getActionUrl('queue/get-job-details?id='+jobId+'', {})).then(response => {
+                axios.get(Craft.getActionUrl('queue/get-job-details?id=' + jobId + '', {})).then(response => {
                     if (response.data.id != this.activeJobId) {
                         resolve(false)
                         return
@@ -291,9 +290,14 @@ new Vue({
         /**
          * Returns a job status code.
          * @param {number} status
+         * @param {number} delay
          * @returns {string}
          */
-        jobStatusLabel(status) {
+        jobStatusLabel(status, delay) {
+            if (delay) {
+                return Craft.t('app', 'Delayed')
+            }
+
             switch (status) {
                 case 1:
                     return Craft.t('app', 'Pending')
@@ -387,4 +391,3 @@ new Vue({
         }
     }
 })
-

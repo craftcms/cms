@@ -135,6 +135,46 @@ class MissingVolume extends Volume implements MissingComponentInterface
     }
 
     /**
+     * @inheritDoc
+     */
+    public function getFileSize(string $uri): ?int
+    {
+        throw new NotSupportedException('getFileSize() is not implemented.');
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function renameDirectory(string $path, string $newName)
+    {
+        throw new NotSupportedException('renameDirectory() is not implemented.');
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getDateModified(string $uri): ?int
+    {
+        throw new NotSupportedException('getDateModified() is not implemented.');
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function createDirectory(string $path)
+    {
+        throw new NotSupportedException('createDirectory() is not implemented.');
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function deleteDirectory(string $path)
+    {
+        throw new NotSupportedException('deleteDirectory() is not implemented.');
+    }
+
+    /**
      * @inheritdoc
      */
     public function renameDir(string $path, string $newName)

@@ -9,6 +9,7 @@ namespace craft\services;
 
 use Composer\CaBundle\CaBundle;
 use Composer\Config\JsonConfigSource;
+use Composer\DependencyResolver\Request;
 use Composer\Installer;
 use Composer\IO\IOInterface;
 use Composer\IO\NullIO;
@@ -38,12 +39,13 @@ class Composer extends Component
     /**
      * @var string
      */
-    public $composerRepoUrl = 'https://composer.craftcms.com/';
+    public $composerRepoUrl = 'https://composer.craftcms.com';
 
     /**
      * @var bool
+     * @deprecated in 3.6.0
      */
-    public $disablePackagist = true;
+    public $disablePackagist = false;
 
     /**
      * @var bool Whether to generate a new Composer class map, rather than preloading all of the classes in the current class map
@@ -99,15 +101,28 @@ class Composer extends Component
     }
 
     /**
+     * Returns the Composer config defined by composer.json.
+     *
+     * @return array
+     * @since 3.5.15
+     */
+    public function getConfig(): array
+    {
+        try {
+            return Json::decode(file_get_contents($this->getJsonPath()));
+        } catch (\Throwable $e) {
+            return [];
+        }
+    }
+
+    /**
      * Installs a given set of packages with Composer.
      *
      * @param array|null $requirements Package name/version pairs, or set to null to run the equivalent of `composer install`
      * @param IOInterface|null $io The IO object that Composer should be instantiated with
-     * @param array|bool $allowlist List of package names to allow, `true` if that should be determined
-     * dynamically, or `false` if no allowlist should be used.
      * @throws \Throwable if something goes wrong
      */
-    public function install(array $requirements = null, IOInterface $io = null, $allowlist = true)
+    public function install(array $requirements = null, IOInterface $io = null)
     {
         App::maxPowerCaptain();
 
@@ -148,24 +163,19 @@ class Composer extends Component
 
         // Create the installer
         $composer = $this->createComposer($io, $jsonPath);
-        $config = $composer->getConfig();
 
         $installer = Installer::create($io, $composer)
             ->setPreferDist()
-            ->setSkipSuggest()
-            ->setDumpAutoloader()
-            ->setRunScripts(false)
-            ->setOptimizeAutoloader(true)
-            ->setClassMapAuthoritative($config->get('classmap-authoritative'));
+            ->setRunScripts(false);
 
         if ($requirements !== null) {
-            $installer->setUpdate();
+            $installer
+                ->setUpdate(true)
+                ->setUpdateAllowTransitiveDependencies(Request::UPDATE_LISTED_WITH_TRANSITIVE_DEPS);
 
-            if (is_array($allowlist)) {
-                $installer->setUpdateWhitelist($allowlist);
-            } else if ($allowlist === true) {
-                $allowlist = Craft::$app->getApi()->getComposerWhitelist($requirements);
-                $installer->setUpdateWhitelist($allowlist);
+            // if no lock is present, we do not do a partial update as this is not supported by the Installer
+            if ($composer->getLocker()->isLocked()) {
+                $installer->setUpdateAllowList(array_keys($requirements));
             }
         }
 
@@ -253,17 +263,13 @@ class Composer extends Component
             }
 
             $composer = $this->createComposer($io, $jsonPath);
-            $composer->getDownloadManager()->setOutputProgress(false);
-            $config = $composer->getConfig();
+            $composer->getInstallationManager()->setOutputProgress(false);
 
             // Run the installer
             $installer = Installer::create($io, $composer)
-                ->setUpdate()
-                ->setUpdateWhitelist($packages)
-                ->setDumpAutoloader()
-                ->setRunScripts(false)
-                ->setOptimizeAutoloader(true)
-                ->setClassMapAuthoritative($config->get('classmap-authoritative'));
+                ->setUpdate(true)
+                ->setUpdateAllowList($packages)
+                ->setRunScripts(false);
 
             $status = $this->run($installer);
         } catch (\Throwable $exception) {
@@ -345,19 +351,12 @@ class Composer extends Component
      */
     protected function _ensureHomeVar()
     {
-        if (App::env('COMPOSER_HOME') !== false) {
-            return;
+        // Must call getenv() instead of App::env() here because Composer\Factory doesn’t check $_SERVER
+        if (!getenv('COMPOSER_HOME') && !getenv(Platform::isWindows() ? 'APPDATA' : 'HOME')) {
+            $path = Craft::$app->getPath()->getRuntimePath() . DIRECTORY_SEPARATOR . 'composer';
+            FileHelper::createDirectory($path);
+            putenv("COMPOSER_HOME=$path");
         }
-
-        $alt = Platform::isWindows() ? 'APPDATA' : 'HOME';
-        if (App::env($alt) !== false) {
-            return;
-        }
-
-        // Just define one ourselves
-        $path = Craft::$app->getPath()->getRuntimePath() . DIRECTORY_SEPARATOR . 'composer';
-        FileHelper::createDirectory($path);
-        putenv("COMPOSER_HOME={$path}");
     }
 
     /**
@@ -444,11 +443,6 @@ class Composer extends Component
                 $config['repositories'][] = ['type' => 'composer', 'url' => $this->composerRepoUrl];
             }
 
-            // Disable Packagist if it's not already disabled
-            if ($this->disablePackagist && !$this->findDisablePackagist($config)) {
-                $config['repositories'][] = ['packagist.org' => false];
-            }
-
             // Are we relying on the bundled CA file?
             $bundledCaPath = CaBundle::getBundledCaBundlePath();
             if (
@@ -477,7 +471,7 @@ class Composer extends Component
         }
 
         foreach ($config['repositories'] as $repository) {
-            if (isset($repository['url']) && $repository['url'] === $this->composerRepoUrl) {
+            if (isset($repository['url']) && rtrim($repository['url'], '/') === $this->composerRepoUrl) {
                 return true;
             }
         }
@@ -515,9 +509,8 @@ class Composer extends Component
         $lockFile = pathinfo($jsonPath, PATHINFO_EXTENSION) === 'json'
             ? substr($jsonPath, 0, -4) . 'lock'
             : $jsonPath . '.lock';
-        $rm = $composer->getRepositoryManager();
         $im = $composer->getInstallationManager();
-        $locker = new Locker($io, new JsonFile($lockFile, null, $io), $rm, $im, file_get_contents($jsonPath));
+        $locker = new Locker($io, new JsonFile($lockFile, null, $io), $im, file_get_contents($jsonPath));
         $composer->setLocker($locker);
         return $composer;
     }

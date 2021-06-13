@@ -9,11 +9,7 @@ namespace craft\utilities;
 
 use Craft;
 use craft\base\Utility;
-use craft\helpers\ProjectConfig as ProjectConfigHelper;
 use craft\web\assets\prismjs\PrismJsAsset;
-use SebastianBergmann\Diff\Differ;
-use SebastianBergmann\Diff\Output\DiffOnlyOutputBuilder;
-use SebastianBergmann\Diff\Output\UnifiedDiffOutputBuilder;
 use Symfony\Component\Yaml\Yaml;
 
 /**
@@ -62,9 +58,19 @@ class ProjectConfig extends Utility
             $view->registerTranslations('app', [
                 'Show all changes',
             ]);
+            $invert = (
+                !$projectConfig->readOnly &&
+                !$projectConfig->writeYamlAutomatically &&
+                $projectConfig->get('dateModified') > $projectConfig->get('dateModified', true)
+            );
+        } else {
+            $invert = false;
         }
 
         return $view->renderTemplate('_components/utilities/ProjectConfig', [
+            'readOnly' => $projectConfig->readOnly,
+            'invert' => $invert,
+            'yamlExists' => $projectConfig->writeYamlAutomatically || $projectConfig->getDoesYamlExist(),
             'areChangesPending' => $areChangesPending,
             'entireConfig' => Yaml::dump($projectConfig->get(), 20, 2),
         ]);

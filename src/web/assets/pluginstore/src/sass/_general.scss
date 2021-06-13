@@ -1,5 +1,5 @@
 @charset "UTF-8";
-@import "../../../../../../node_modules/craftcms-sass/mixins";
+@import "../../../../../../packages/craftcms-sass/mixins";
 
 /* Basics */
 
@@ -66,14 +66,6 @@ input.error {
 .swiper-wrapper {
   min-width: auto;
 }
-
-
-/* Notifications */
-
-#notifications-wrapper {
-  z-index: 20001;
-}
-
 
 /* Craft tweaks */
 
