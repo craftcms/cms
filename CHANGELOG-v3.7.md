@@ -17,6 +17,7 @@
 - Added the `setGraphqlDatesToSystemTimeZone` config setting. ([#8016](https://github.com/craftcms/cms/pull/8016))
 - Added the “Validate custom fields on public registration” user setting. ([#4229](https://github.com/craftcms/cms/issues/4229))
 - Added the `|removeClass` Twig filter.
+- Added `craft\base\ConfigurableComponent::EVENT_DEFINE_SETTINGS_ATTRIBUTES`. ([#8004](https://github.com/craftcms/cms/issues/8004))
 - Added `craft\base\Element::EVENT_DEFINE_IS_DELETABLE`.
 - Added `craft\base\Element::EVENT_DEFINE_IS_EDITABLE`. ([#8023](https://github.com/craftcms/cms/issues/8023))
 - Added `craft\base\Element::EVENT_DEFINE_METADATA`.
