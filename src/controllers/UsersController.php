@@ -1235,7 +1235,7 @@ class UsersController extends Controller
         }
 
         // Don't validate required custom fields if it's public registration
-        if (!$isPublicRegistration) {
+        if (!$isPublicRegistration || ($userSettings['validateOnPublicRegistration'] ?? false)) {
             $user->setScenario(Element::SCENARIO_LIVE);
         }
 
