@@ -102,9 +102,7 @@ Craft.DraftEditor = Garnish.Base.extend({
             });
         }
 
-        if (Craft.autosaveDrafts) {
-            this.listenForChanges();
-        }
+        this.listenForChanges();
 
         this.addListener(this.$statusIcon, 'click', () => {
             this.showStatusHud(this.$statusIcon);
@@ -112,7 +110,7 @@ Craft.DraftEditor = Garnish.Base.extend({
     },
 
     listenForChanges: function() {
-        if (this.listeningForChanges || this.pauseLevel > 0 || !Craft.autosaveDrafts) {
+        if (this.listeningForChanges || this.pauseLevel > 0 || !Craft.autosaveDrafts || !this.settings.saveDraftAction) {
             return;
         }
 
@@ -156,9 +154,7 @@ Craft.DraftEditor = Garnish.Base.extend({
         // number of times that pause() was called
         this.pauseLevel--;
         if (this.pauseLevel === 0) {
-            if (Craft.autosaveDrafts) {
-                this.checkForm();
-            }
+            this.checkForm();
             this.listenForChanges();
         }
     },
@@ -597,9 +593,10 @@ Craft.DraftEditor = Garnish.Base.extend({
 
     checkForm: function(force) {
         // If this isn't a draft and there's no active preview, then there's nothing to check
-        if (this.settings.revisionId || this.pauseLevel > 0) {
+        if (this.settings.revisionId || this.pauseLevel > 0 || !Craft.autosaveDrafts || !this.settings.saveDraftAction) {
             return;
         }
+
         clearTimeout(this.timeout);
         this.timeout = null;
 

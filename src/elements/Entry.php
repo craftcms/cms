@@ -540,7 +540,7 @@ class Entry extends Element
     protected static function defineTableAttributes(): array
     {
         $attributes = [
-            'title' => ['label' => Craft::t('app', 'Title')],
+            'title' => ['label' => Craft::t('app', 'Entry')],
             'section' => ['label' => Craft::t('app', 'Section')],
             'type' => ['label' => Craft::t('app', 'Entry Type')],
             'author' => ['label' => Craft::t('app', 'Author')],
@@ -1617,9 +1617,17 @@ EOD;
                 if ($this->_hasNewParent()) {
                     $mode = $isNew ? Structures::MODE_INSERT : Structures::MODE_AUTO;
                     if (!$this->newParentId) {
-                        Craft::$app->getStructures()->appendToRoot($this->structureId, $this, $mode);
+                        if ($section->defaultPlacement === Section::DEFAULT_PLACEMENT_BEGINNING) {
+                            Craft::$app->getStructures()->prependToRoot($this->structureId, $this, $mode);
+                        } else {
+                            Craft::$app->getStructures()->appendToRoot($this->structureId, $this, $mode);
+                        }
                     } else {
-                        Craft::$app->getStructures()->append($this->structureId, $this, $this->getParent(), $mode);
+                        if ($section->defaultPlacement === Section::DEFAULT_PLACEMENT_BEGINNING) {
+                            Craft::$app->getStructures()->prepend($this->structureId, $this, $this->getParent(), $mode);
+                        } else {
+                            Craft::$app->getStructures()->append($this->structureId, $this, $this->getParent(), $mode);
+                        }
                     }
                 }
 
@@ -1714,6 +1722,23 @@ EOD;
 
         if ($section->type == Section::TYPE_STRUCTURE && $section->structureId == $structureId) {
             Craft::$app->getElements()->updateElementSlugAndUri($this, true, true, true);
+
+            // If this is the canonical entry, update its drafts
+            if ($this->getIsCanonical()) {
+                $drafts = static::find()
+                    ->draftOf($this)
+                    ->anyStatus()
+                    ->siteId('*')
+                    ->unique()
+                    ->all();
+                $structuresService = Craft::$app->getStructures();
+                $lastElement = $this;
+
+                foreach ($drafts as $draft) {
+                    $structuresService->moveAfter($section->structureId, $draft, $lastElement);
+                    $lastElement = $draft;
+                }
+            }
         }
 
         parent::afterMoveInStructure($structureId);

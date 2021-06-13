@@ -5,13 +5,19 @@
 - The Entries index page now has “Create a new entry before” and “Create a new entry after” actions for entries within Structure sections. ([#870](https://github.com/craftcms/cms/issues/870))
 - Edit Entry pages now treat unpublished drafts similarly to published entries, rather than drafts. ([#7899](https://github.com/craftcms/cms/pull/7899))
 - Edit Entry pages no longer appear to create a draft when the Current revision is edited within Live Preview. Unsaved changes are now stored within a “provisional draft”, which is mostly hidden from the author. ([#7899](https://github.com/craftcms/cms/pull/7899))
+- Category groups now have a “Default Category Placement” setting, which determines where new categories should be placed within the structure by default. ([#7759](https://github.com/craftcms/cms/issues/7759))
+- Structure sections now have a “Default Entry Placement” setting, which determines where new entries should be placed within the structure by default. ([#7759](https://github.com/craftcms/cms/issues/7759))
 - Date fields now have a “Show Time Zone” setting, allowing authors to choose which time zone the date is set to, rather than using the system time zone.
 - Matrix fields can now be set to custom propagation methods, based on a propagation key template. ([#7610](https://github.com/craftcms/cms/issues/7610))
 - Added a “Refresh” button to Live Preview, for preview targets whose “Auto-refresh” (formerly “Refresh”) setting is disabled.
 - Added the `siteSettingsId` element query and GraphQL API query parameter for all elements.
 - Added the `preferSites` GraphQL API query argument for all elements. ([#8006](https://github.com/craftcms/cms/pull/8006))
-- Added the `ancestors`, `descendants`, `drafts`, draftCreator`, `revisions`, `currentRevision`, and `revisionCreator` field to entry queries when using GraphQL API. ([#7950]((https://github.com/craftcms/cms/issues/7950)))
-- Added the `useSystemTimezoneForGraphQlDates` setting that sets the date to system timezone by default, when enabled.
+- Added the `ancestors`, `descendants`, `drafts`, `draftCreator`, `revisions`, `currentRevision`, and `revisionCreator` fields to entry GraphQL queries. ([#7950]((https://github.com/craftcms/cms/issues/7950)))
+- Added the `revAssetUrls` config setting. ([#7847](https://github.com/craftcms/cms/issues/7847))
+- Added the `setGraphqlDatesToSystemTimeZone` config setting. ([#8016](https://github.com/craftcms/cms/pull/8016))
+- Added the “Validate custom fields on public registration” user setting. ([#4229](https://github.com/craftcms/cms/issues/4229))
+- Added the `|removeClass` Twig filter.
+- Added `craft\base\ConfigurableComponent::EVENT_DEFINE_SETTINGS_ATTRIBUTES`. ([#8004](https://github.com/craftcms/cms/issues/8004))
 - Added `craft\base\Element::EVENT_DEFINE_IS_DELETABLE`.
 - Added `craft\base\Element::EVENT_DEFINE_IS_EDITABLE`. ([#8023](https://github.com/craftcms/cms/issues/8023))
 - Added `craft\base\Element::EVENT_DEFINE_METADATA`.
@@ -50,6 +56,11 @@
 - Added `craft\base\FieldInterface::getStatus()`.
 - Added `craft\base\FieldTrait::$columnSuffix`.
 - Added `craft\console\ControllerTrait::checkRootUser()`.
+- Added `craft\console\controllers\ResaveController::resaveElements()`.
+- Added `craft\elements\User::EVENT_DEFINE_FRIENDLY_NAME`. ([#8027](https://github.com/craftcms/cms/issues/8027))
+- Added `craft\elements\User::EVENT_DEFINE_NAME`. ([#8027](https://github.com/craftcms/cms/issues/8027))
+- Added `craft\elements\User::setFriendlyName()`.
+- Added `craft\elements\User::setName()`.
 - Added `craft\elements\db\ElementQuery::provisionalDrafts()`.
 - Added `craft\events\DefineHtmlEvent`.
 - Added `craft\events\DefineMetadataEvent`.
@@ -67,6 +78,13 @@
 - Added `craft\helpers\ElementHelper::isDraft()`.
 - Added `craft\helpers\ElementHelper::isRevision()`.
 - Added `craft\helpers\Html::parseTagAttribute()`.
+- Added `craft\models\CategoryGroup::$defaultPlacement`.
+- Added `craft\models\CategoryGroup::DEFAULT_PLACEMENT_BEGINNING`.
+- Added `craft\models\CategoryGroup::DEFAULT_PLACEMENT_END`.
+- Added `craft\models\FieldLayout::$reservedAttributes`.
+- Added `craft\models\Section::$defaultPlacement`.
+- Added `craft\models\Section::DEFAULT_PLACEMENT_BEGINNING`.
+- Added `craft\models\Section::DEFAULT_PLACEMENT_END`.
 - Added `craft\services\Elements::EVENT_AFTER_MERGE_CANONICAL_CHANGES`.
 - Added `craft\services\Elements::EVENT_BEFORE_MERGE_CANONICAL_CHANGES`.
 - Added `craft\services\Elements::mergeCanonicalChanges()`.
@@ -93,10 +111,18 @@
 - Improved the styling of field status indicators.
 - Field status indicators now appear immediately after a field’s value is changed and saved successfully to a draft.
 - Improved the design and accessibility of tabs in the control panel. ([#7299](https://github.com/craftcms/cms/issues/7299))
+- Asset, category, and entry indexes now use “Asset”, “Category”, and “Entry” header column headings by default, rather than “Title”.
 - Improved the UI of the Time Zone input in Settings → General.
+- It’s now possible to toggle site-specific category statuses from the Edit Category page. ([#7636](https://github.com/craftcms/cms/issues/7636))
 - Tag field layouts now include the Title field, allowing its placement and label to be customized.
+- Tag field layouts can now contain multiple tabs and UI elements.
 - Custom fields with a custom translation method are no longer labelled as translatable if the translation key is an empty string. ([#7647](https://github.com/craftcms/cms/issues/7647))
+- Category and tag groups no longer validate if their field layout contains a field called `group`. ([#2797](https://github.com/craftcms/cms/issues/2797))
+- Entry types no longer validate if their field layout contains a field called `author`, `section`, or `type`. ([#2797](https://github.com/craftcms/cms/issues/2797))
+- Volumes no longer validate if their field layout contains a field called `folder` or `volume`. ([#2797](https://github.com/craftcms/cms/issues/2797))
+- The user field layout no longer validates if it contains a field called `groups` or `photo`. ([#2797](https://github.com/craftcms/cms/issues/2797))
 - The `resave/entries` command now has a `--provisional-drafts` option.
+- `resave/*` commands now have a `--queue` option. ([#8040](https://github.com/craftcms/cms/issues/8040))
 - Entries no longer support Live Preview if the `autosaveDrafts` config setting is disabled.
 - Most text areas in the control panel will now submit the closest form when <kbd>Ctrl</kbd>/<kbd>Command</kbd> + <kbd>Return</kbd> is pressed. ([#7999](https://github.com/craftcms/cms/issues/7999))
 - The `defaultCpLanguage` config setting no longer affects console requests. ([#7747](https://github.com/craftcms/cms/issues/7747))
@@ -109,11 +135,16 @@
 - Console commands now show a confirmation prompt when executed as the root user. ([#7955](https://github.com/craftcms/cms/issues/7955))
 - Project config component UID/name mappings are now stored in the project config itself, making them portable across environments. ([#7709](https://github.com/craftcms/cms/issues/7709))
 - Validation errors in the control panel are now parsed for Markdown syntax. ([#8008](https://github.com/craftcms/cms/issues/8008))
+- Renamed the `enableGraphQlCaching` config setting to `enableGraphqlCaching`. (The old name still works but is deprecated.)
+- Admin tables can now include linked buttons in the toolbar.
+- Admin tables can now include single action buttons.
+- Admin tables now support separators in menu button lists.
 - `craft\base\Element::__set()` now detects whether a custom field value is being set, and if so, passes the value through `setFieldValue()`. ([#7726](https://github.com/craftcms/cms/issues/7726))
 - `craft\base\Element::getCpEditUrl()` now includes a `draftId`/`revisionId` query string param in the returned URL if the element is a draft or revision. ([#7832](https://github.com/craftcms/cms/issues/7832))
 - `craft\base\FieldInterface::getContentColumnType()` can now return an array, if the field stores content across multiple columns.
 - `craft\helpers\Cp::elementHtml()` now has a `$single` argument.
-- `craft\services\AssetTransforms::normalizeTransform()` now accepts transform configs arrays that specify a base transform which should be extended, via a `transform` key set to the stored transform’s handle. ([#7892](https://github.com/craftcms/cms/issues/7892)) 
+- `craft\services\AssetTransforms::normalizeTransform()` now accepts transform configs arrays that specify a base transform which should be extended, via a `transform` key set to the stored transform’s handle. ([#7892](https://github.com/craftcms/cms/issues/7892))
+- `craft\services\Users::saveLayout()` now has a `$runValidation` argument, which is `true` by default.
 - `craft\web\View::clearJsBuffer()` now has a `$combine` argument.
 - `craft\web\View::namespaceInputs()` now accepts a callback function for the first argument, which simplifies the process of setting and resetting the registered namespace before and after generating the to-be-namespaced HTML.
 - Updated Garnish to 0.1.46.
@@ -134,6 +165,7 @@
 - Deprecated `craft\behaviors\DraftBehavior::isAttributeOutdated()`. `craft\base\ElementInterface::isAttributeOutdated()` should be used instead.
 - Deprecated `craft\behaviors\DraftBehavior::isFieldModified()`. `craft\base\ElementInterface::isFieldModified()` should be used instead.
 - Deprecated `craft\behaviors\DraftBehavior::isFieldOutdated()`. `craft\base\ElementInterface::isFieldOutdated()` should be used instead.
+- Deprecated `craft\console\controllers\ResaveController::saveElements()`. `resaveElements()` should be used instead.
 - Deprecated `craft\elements\Asset::KIND_FLASH`.
 - Deprecated `craft\services\Content::getContentRow()`.
 - Deprecated `craft\services\Content::populateElementContent()`.
@@ -148,6 +180,8 @@
 - Fixed a bug where Craft would place the `beginBody()` tag incorrectly if a template’s `<body>` tag had attribute values that included `>` characters. ([#7779](https://github.com/craftcms/cms/issues/7779))
 - Fixed a bug where updated attributes and fields weren’t getting tracked when publishing a draft or reverting an entry to a revision. 
 - Fixed a bug where it wasn’t easily possible to submit forms to controller actions from Live Preview pages. ([#7885](https://github.com/craftcms/cms/issues/7885))
+- Fixed a bug where it was possible to choose a different parent entry when editing a draft, even though the change wouldn’t stick when publishing the draft.
+- Fixed a bug where changing an entry’s parent wouldn’t update any of its drafts.
 
 ### Security
 - The default `allowedFileExtensions` config setting value no longer includes `xml`.

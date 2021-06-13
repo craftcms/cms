@@ -510,6 +510,8 @@ class Structures extends Component
                 return false;
             }
 
+            $mutex->release($lockName);
+
             // Update the element with the latest values.
             // todo: we should be able to pull these from $elementRecord - https://github.com/creocoder/yii2-nested-sets/issues/114
             $values = (new Query())
@@ -535,8 +537,6 @@ class Structures extends Component
             $mutex->release($lockName);
             throw $e;
         }
-
-        $mutex->release($lockName);
 
         if ($mode === self::MODE_UPDATE && $this->hasEventHandlers(self::EVENT_AFTER_MOVE_ELEMENT)) {
             // Fire an 'afterMoveElement' event

@@ -1235,7 +1235,7 @@ class UsersController extends Controller
         }
 
         // Don't validate required custom fields if it's public registration
-        if (!$isPublicRegistration) {
+        if (!$isPublicRegistration || ($userSettings['validateOnPublicRegistration'] ?? false)) {
             $user->setScenario(Element::SCENARIO_LIVE);
         }
 
@@ -1739,8 +1739,17 @@ class UsersController extends Controller
         // Set the field layout
         $fieldLayout = Craft::$app->getFields()->assembleLayoutFromPost();
         $fieldLayout->type = User::class;
+        $fieldLayout->reservedAttributes = [
+            'groups',
+            'photo',
+        ];
 
         if (!Craft::$app->getUsers()->saveLayout($fieldLayout)) {
+            Craft::$app->getUrlManager()->setRouteParams([
+                'variables' => [
+                    'fieldLayout' => $fieldLayout,
+                ],
+            ]);
             $this->setFailFlash(Craft::t('app', 'Couldn’t save user fields.'));
             return null;
         }
@@ -1853,6 +1862,7 @@ class UsersController extends Controller
                 Craft::$app->getUrlManager()->setRouteParams([
                     'variables' => $variables,
                 ]);
+                Craft::$app->getRequest()->checkIfActionRequest(true, true, false);
                 return Craft::$app->handleRequest($this->request, true);
             } catch (NotFoundHttpException $e) {
                 // Just go with the CP template

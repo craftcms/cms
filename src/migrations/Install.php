@@ -21,6 +21,7 @@ use craft\helpers\DateTimeHelper;
 use craft\helpers\ProjectConfig as ProjectConfigHelper;
 use craft\helpers\StringHelper;
 use craft\mail\transportadapters\Sendmail;
+use craft\models\CategoryGroup;
 use craft\models\Info;
 use craft\models\Section;
 use craft\models\Site;
@@ -167,6 +168,7 @@ class Install extends Migration
             'fieldLayoutId' => $this->integer(),
             'name' => $this->string()->notNull(),
             'handle' => $this->string()->notNull(),
+            'defaultPlacement' => $this->enum('defaultPlacement', [CategoryGroup::DEFAULT_PLACEMENT_BEGINNING, CategoryGroup::DEFAULT_PLACEMENT_END])->defaultValue('end')->notNull(),
             'dateCreated' => $this->dateTime()->notNull(),
             'dateUpdated' => $this->dateTime()->notNull(),
             'dateDeleted' => $this->dateTime()->null(),
@@ -485,11 +487,6 @@ class Install extends Migration
             'value' => $this->text()->notNull(),
             'PRIMARY KEY([[path]])',
         ]);
-        $this->createTable(Table::PROJECTCONFIGNAMES, [
-            'uid' => $this->uid()->notNull(),
-            'name' => $this->string()->notNull(),
-            'PRIMARY KEY([[uid]])',
-        ]);
         $this->createTable(Table::QUEUE, [
             'id' => $this->primaryKey(),
             'channel' => $this->string()->notNull()->defaultValue('queue'),
@@ -527,6 +524,7 @@ class Install extends Migration
             'type' => $this->enum('type', [Section::TYPE_SINGLE, Section::TYPE_CHANNEL, Section::TYPE_STRUCTURE])->notNull()->defaultValue('channel'),
             'enableVersioning' => $this->boolean()->defaultValue(false)->notNull(),
             'propagationMethod' => $this->string()->defaultValue(Section::PROPAGATION_METHOD_ALL)->notNull(),
+            'defaultPlacement' => $this->enum('defaultPlacement', [Section::DEFAULT_PLACEMENT_BEGINNING, Section::DEFAULT_PLACEMENT_END])->defaultValue('end')->notNull(),
             'previewTargets' => $this->text(),
             'dateCreated' => $this->dateTime()->notNull(),
             'dateUpdated' => $this->dateTime()->notNull(),

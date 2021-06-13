@@ -1576,11 +1576,12 @@ class Request extends \yii\web\Request
      * Checks to see if this is an action request.
      *
      * @param bool $force Whether to recheck even if we already know
-     * @param bool $ignoreToken Whether to ignore the token if there is one
+     * @param bool $checkToken Whether to check if there’s a token on the request and use that.
+     * @param bool $checkSpecialPaths Whether to check for special URIs that should route to controller actions
      * @return void
      * @since 3.7.0
      */
-    public function checkIfActionRequest(bool $force = false, bool $ignoreToken = false): void
+    public function checkIfActionRequest(bool $force = false, bool $checkToken = true, bool $checkSpecialPaths = true): void
     {
         if ($this->_checkedRequestType) {
             if (!$force) {
@@ -1595,29 +1596,31 @@ class Request extends \yii\web\Request
         }
 
         // If there's a token on the request, then that should take precedence over everything else
-        if ($ignoreToken || $this->getToken() === null) {
+        if (!$checkToken || $this->getToken() === null) {
             $firstSegment = $this->getSegment(1);
 
             // Is this an action request?
-            $checkSpecialPaths = false;
             $loginPath = $logoutPath = $setPasswordPath = $verifyEmailPath = $updatePath = null;
-            if ($this->_isCpRequest) {
-                $checkSpecialPaths = true;
-                $loginPath = self::CP_PATH_LOGIN;
-                $logoutPath = self::CP_PATH_LOGOUT;
-                $setPasswordPath = self::CP_PATH_SET_PASSWORD;
-                $verifyEmailPath = self::CP_PATH_VERIFY_EMAIL;
-                $updatePath = self::CP_PATH_UPDATE;
-            } else if (!$this->generalConfig->headlessMode) {
-                $checkSpecialPaths = true;
-                if (is_string($loginPath = $this->generalConfig->getLoginPath())) {
-                    $loginPath = trim($loginPath, '/');
+
+            if ($checkSpecialPaths) {
+                if ($this->_isCpRequest) {
+                    $loginPath = self::CP_PATH_LOGIN;
+                    $logoutPath = self::CP_PATH_LOGOUT;
+                    $setPasswordPath = self::CP_PATH_SET_PASSWORD;
+                    $verifyEmailPath = self::CP_PATH_VERIFY_EMAIL;
+                    $updatePath = self::CP_PATH_UPDATE;
+                } else if (!$this->generalConfig->headlessMode) {
+                    if (is_string($loginPath = $this->generalConfig->getLoginPath())) {
+                        $loginPath = trim($loginPath, '/');
+                    }
+                    if (is_string($logoutPath = $this->generalConfig->getLogoutPath())) {
+                        $logoutPath = trim($logoutPath, '/');
+                    }
+                    $setPasswordPath = trim($this->generalConfig->getSetPasswordPath(), '/');
+                    $verifyEmailPath = trim($this->generalConfig->getVerifyEmailPath(), '/');
+                } else {
+                    $checkSpecialPaths = false;
                 }
-                if (is_string($logoutPath = $this->generalConfig->getLogoutPath())) {
-                    $logoutPath = trim($logoutPath, '/');
-                }
-                $setPasswordPath = trim($this->generalConfig->getSetPasswordPath(), '/');
-                $verifyEmailPath = trim($this->generalConfig->getVerifyEmailPath(), '/');
             }
 
             $hasTriggerMatch = ($firstSegment === $this->generalConfig->actionTrigger && count($this->getSegments()) > 1);

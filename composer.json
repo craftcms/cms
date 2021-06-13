@@ -9,6 +9,12 @@
   ],
   "homepage": "https://craftcms.com",
   "license": "proprietary",
+  "authors": [
+    {
+      "name": "Pixel & Tonic",
+      "homepage": "https://pixelandtonic.com/"
+    }
+  ],
   "support": {
     "email": "support@craftcms.com",
     "issues": "https://github.com/craftcms/cms/issues?state=open",

@@ -1210,34 +1210,7 @@ class Elements extends Component
                 $mainClone->structureId == $element->structureId
             ) {
                 $mode = isset($newAttributes['id']) ? Structures::MODE_AUTO : Structures::MODE_INSERT;
-
-                // If this is a root level element, insert the duplicate after the source
-                if ($element->level == 1) {
-                    Craft::$app->getStructures()->moveAfter($element->structureId, $mainClone, $element, $mode);
-                } else {
-                    // Append the clone to the source's parent
-                    // (we can't use getParent() here because there's a chance that the parent doesn't exist in the same
-                    // site as the source element anymore, if this is coming from an ApplyNewPropagationMethod job)
-                    $parentId = $element
-                        ->getAncestors(1)
-                        ->select(['elements.id'])
-                        ->siteId('*')
-                        ->unique()
-                        ->anyStatus()
-                        ->scalar();
-
-                    if ($parentId !== false) {
-                        // If we've cloned the parent, use the clone's ID instead
-                        if (isset(static::$duplicatedElementIds[$parentId])) {
-                            $parentId = static::$duplicatedElementIds[$parentId];
-                        }
-
-                        Craft::$app->getStructures()->append($element->structureId, $mainClone, $parentId, $mode);
-                    } else {
-                        // Just append it to the root
-                        Craft::$app->getStructures()->appendToRoot($element->structureId, $mainClone, $mode);
-                    }
-                }
+                Craft::$app->getStructures()->moveAfter($element->structureId, $mainClone, $element, $mode);
             }
 
             // Map it

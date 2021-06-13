@@ -583,6 +583,7 @@ class Sections extends Component
             $sectionRecord->type = $data['type'];
             $sectionRecord->enableVersioning = (bool)$data['enableVersioning'];
             $sectionRecord->propagationMethod = $data['propagationMethod'] ?? Section::PROPAGATION_METHOD_ALL;
+            $sectionRecord->defaultPlacement = $data['defaultPlacement'] ?? Section::DEFAULT_PLACEMENT_END;
             $sectionRecord->previewTargets = isset($data['previewTargets']) && is_array($data['previewTargets'])
                 ? ProjectConfigHelper::unpackAssociativeArray($data['previewTargets'])
                 : null;
@@ -1448,6 +1449,9 @@ class Sections extends Component
         }
         if (version_compare($schemaVersion, '3.2.6', '>=')) {
             $query->addSelect('sections.previewTargets');
+        }
+        if (version_compare($schemaVersion, '3.7.5', '>=')) {
+            $query->addSelect('sections.defaultPlacement');
         }
 
         return $query;

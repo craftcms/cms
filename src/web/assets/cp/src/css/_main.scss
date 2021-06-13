@@ -2420,8 +2420,11 @@ $elementInnerSpacing: 5px;
       @include spinner;
       height: 32px;
     }
+  }
 
-    &.removable .delete {
+  &.loading,
+  &:not(.removable) {
+    .delete {
       display: none;
     }
   }
@@ -3297,13 +3300,15 @@ ul.tree,
       }
 
       a {
-        display: block;
+        display: flex;
+        flex-direction: row;
+        align-items: center;
         position: relative;
         border-radius: $mediumBorderRadius $mediumBorderRadius 0 0;
-        padding: 12px;
+        padding: 0 12px;
         white-space: nowrap;
-        line-height: 16px;
         color: $lightTextColor;
+        height: 40px;
 
         &:hover {
           text-decoration: none;
@@ -3319,6 +3324,10 @@ ul.tree,
           cursor: default;
           color: $textColor;
           @include pane;
+        }
+
+        span[data-icon] {
+          @include margin-left(4px);
         }
       }
     }

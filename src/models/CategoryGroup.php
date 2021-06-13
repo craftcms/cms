@@ -29,6 +29,11 @@ use craft\validators\UniqueValidator;
  */
 class CategoryGroup extends Model
 {
+    /** @since 3.7.0 */
+    const DEFAULT_PLACEMENT_BEGINNING = 'beginning';
+    /** @since 3.7.0 */
+    const DEFAULT_PLACEMENT_END = 'end';
+
     /**
      * @var int|null ID
      */
@@ -58,6 +63,12 @@ class CategoryGroup extends Model
      * @var int|null Max levels
      */
     public $maxLevels;
+
+    /**
+     * @var string Default placement
+     * @since 3.7.0
+     */
+    public $defaultPlacement = self::DEFAULT_PLACEMENT_END;
 
     /**
      * @var string|null UID
@@ -104,8 +115,28 @@ class CategoryGroup extends Model
         $rules[] = [['name', 'handle'], UniqueValidator::class, 'targetClass' => CategoryGroupRecord::class];
         $rules[] = [['name', 'handle', 'siteSettings'], 'required'];
         $rules[] = [['name', 'handle'], 'string', 'max' => 255];
+        $rules[] = [['defaultPlacement'], 'in', 'range' => [self::DEFAULT_PLACEMENT_BEGINNING, self::DEFAULT_PLACEMENT_END]];
+        $rules[] = [['fieldLayout'], 'validateFieldLayout'];
         $rules[] = [['siteSettings'], 'validateSiteSettings'];
         return $rules;
+    }
+
+    /**
+     * Validates the field layout.
+     *
+     * @return void
+     * @since 3.7.0
+     */
+    public function validateFieldLayout(): void
+    {
+        $fieldLayout = $this->getFieldLayout();
+        $fieldLayout->reservedAttributes = [
+            'group',
+        ];
+
+        if (!$fieldLayout->validate()) {
+            $this->addModelErrors($fieldLayout, 'fieldLayout');
+        }
     }
 
     /**
@@ -181,6 +212,7 @@ class CategoryGroup extends Model
                 'maxLevels' => (int)$this->maxLevels ?: null,
             ],
             'siteSettings' => [],
+            'defaultPlacement' => $this->defaultPlacement ?? self::DEFAULT_PLACEMENT_END,
         ];
 
         $fieldLayout = $this->getFieldLayout();

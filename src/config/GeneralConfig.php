@@ -42,6 +42,20 @@ class GeneralConfig extends BaseObject
      */
     const SNAKE_CASE = 'snake';
 
+    private static $renamedSettings = [
+        'activateAccountFailurePath' => 'invalidUserTokenPath',
+        'allowAutoUpdates' => 'allowUpdates',
+        'backupDbOnUpdate' => 'backupOnUpdate',
+        'defaultFilePermissions' => 'defaultFileMode',
+        'defaultFolderPermissions' => 'defaultDirMode',
+        'enableGraphQlCaching' => 'enableGraphqlCaching',
+        'environmentVariables' => 'aliases',
+        'isSystemOn' => 'isSystemLive',
+        'restoreDbOnUpdateFailure' => 'restoreOnUpdateFailure',
+        'useWriteFileLock' => 'useFileLocks',
+        'validationKey' => 'securityKey',
+    ];
+
     /**
      * @var array The default user accessibility preferences that should be applied to users that haven’t saved their preferences yet.
      *
@@ -653,18 +667,14 @@ class GeneralConfig extends BaseObject
      * @since 3.3.12
      * @group GraphQL
      */
-    public $enableGraphQlCaching = true;
+    public $enableGraphqlCaching = true;
 
     /**
-     * @var bool Whether Craft should use the system date for default GraphQL dates.
-     *
-     * If set to `true`, Craft will use the system timezone when returning DateTime fields instead of UTC.
-     *
-     *
+     * @var bool Whether dates returned by the GraphQL API should be set to the system time zone by default, rather than UTC.
      * @since 3.7.0
      * @group GraphQL
      */
-    public $useSystemTimezoneForGraphQlDates = false;
+    public $setGraphqlDatesToSystemTimeZone = false;
 
     /**
      * @var bool Whether to enable Craft’s template `{% cache %}` tag on a global basis.
@@ -1280,6 +1290,12 @@ class GeneralConfig extends BaseObject
     public $restoreCommand;
 
     /**
+     * @var bool Whether asset URLs should be revved so browsers don’t load cached versions when they’re modified.
+     * @since 3.7.0
+     */
+    public $revAssetUrls = false;
+
+    /**
      * @var bool Whether Craft should rotate images according to their EXIF data on upload.
      * @group Image Handling
      */
@@ -1691,44 +1707,13 @@ class GeneralConfig extends BaseObject
     /**
      * @inheritdoc
      */
-    public function __construct(array $config = [])
-    {
-        // Check for renamed settings
-        $renamedSettings = [
-            'allowAutoUpdates' => 'allowUpdates',
-            'defaultFilePermissions' => 'defaultFileMode',
-            'defaultFolderPermissions' => 'defaultDirMode',
-            'useWriteFileLock' => 'useFileLocks',
-            'backupDbOnUpdate' => 'backupOnUpdate',
-            'restoreDbOnUpdateFailure' => 'restoreOnUpdateFailure',
-            'activateAccountFailurePath' => 'invalidUserTokenPath',
-            'validationKey' => 'securityKey',
-            'isSystemOn' => 'isSystemLive',
-        ];
-
-        $configFilePath = null;
-        foreach ($renamedSettings as $old => $new) {
-            if (array_key_exists($old, $config)) {
-                $configFilePath = $configFilePath ?? Craft::$app->getConfig()->getConfigFilePath(Config::CATEGORY_GENERAL);
-                Craft::$app->getDeprecator()->log($old, "The `{$old}` config setting has been renamed to `{$new}`.", $configFilePath);
-                $config[$new] = $config[$old];
-                unset($config[$old]);
-            }
-        }
-
-        // Check for environmentVariables, but don't actually rename it in case a template is referencing it
-        if (array_key_exists('environmentVariables', $config)) {
-            Craft::$app->getDeprecator()->log('environmentVariables', "The `environmentVariables` config setting has been renamed to `aliases`.");
-        }
-
-        parent::__construct($config);
-    }
-
-    /**
-     * @inheritdoc
-     */
     public function __get($name)
     {
+        if (isset(self::$renamedSettings[$name])) {
+            $newName = self::$renamedSettings[$name];
+            return $this->$newName;
+        }
+
         if (array_key_exists($name, $this->_customSettings)) {
             return $this->_customSettings[$name];
         }
@@ -1741,6 +1726,14 @@ class GeneralConfig extends BaseObject
      */
     public function __set($name, $value)
     {
+        if (isset(self::$renamedSettings[$name])) {
+            $newName = self::$renamedSettings[$name];
+            $configFilePath = $configFilePath ?? Craft::$app->getConfig()->getConfigFilePath(Config::CATEGORY_GENERAL);
+            Craft::$app->getDeprecator()->log($name, "The `$name` config setting has been renamed to `$newName`.", $configFilePath);
+            $this->$newName = $value;
+            return;
+        }
+
         try {
             parent::__set($name, $value);
         } catch (UnknownPropertyException $e) {
