@@ -3752,7 +3752,7 @@ abstract class Element extends Component implements ElementInterface
      */
     public function getEditorHtml(): string
     {
-        if (!$this->_hasFieldLayout()) {
+        if (!$this->hasFieldLayout()) {
             // No field layout, so show the meta fields here instead
             return $this->metaFieldsHtml();
         }
@@ -3770,7 +3770,7 @@ abstract class Element extends Component implements ElementInterface
     {
         $components = [];
 
-        if ($this->_hasFieldLayout()) {
+        if ($this->hasFieldLayout()) {
             // The main editor body is reserved for the field layout
             $metaFieldsHtml = $this->metaFieldsHtml();
             if ($metaFieldsHtml !== '') {
@@ -3829,7 +3829,7 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @return bool Returns whether the element has a field layout with at least one tab.
      */
-    private function _hasFieldLayout(): bool
+    protected function hasFieldLayout(): bool
     {
         $fieldLayout = $this->getFieldLayout();
         return $fieldLayout && !empty($fieldLayout->getTabs());
