@@ -1,6 +1,7 @@
 # Release Notes for Craft CMS 3.7
 
 ### Added
+- The control panel now displays new feature announcements. ([#8056](https://github.com/craftcms/cms/pull/8056))
 - Added the “Reduce focus visibility” user preference. ([#7790](https://github.com/craftcms/cms/issues/7790))
 - The Entries index page now has “Create a new entry before” and “Create a new entry after” actions for entries within Structure sections. ([#870](https://github.com/craftcms/cms/issues/870))
 - Edit Entry pages now treat unpublished drafts similarly to published entries, rather than drafts. ([#7899](https://github.com/craftcms/cms/pull/7899))
@@ -104,6 +105,7 @@
 - Added the `timeZone` and `timeZoneField` macros to the `_includes/forms.html` control panel template.
 - Added the `Craft.Slideout` JavaScript class.
 - Added the `Craft.Tabs` JavaScript class.
+- Added the `Craft.group()` JavaScript method.
 - Added the `Craft.setFocusWithin()` JavaScript method.
 - Added the `Craft.trapFocusWithin()` JavaScript method.
 
