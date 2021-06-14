@@ -77,8 +77,8 @@ script:
 - npm install -g npm
 - npm cache clean -f
 - npm install -g snyk
-- snyk monitor --all-projects # Enable reachable vulns, scan and publish results to Snyk
-- snyk test --all-projects # Enable reachable vulns
+#- snyk monitor --all-projects # Enable reachable vulns, scan and publish results to Snyk
+#- snyk test --all-projects # Enable reachable vulns
 - |
   if [[ $TASK_TESTS_COVERAGE != 1 ]]; then
     vendor/bin/codecept run unit,functional
