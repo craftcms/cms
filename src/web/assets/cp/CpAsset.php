@@ -324,6 +324,7 @@ JS;
             'allowAdminChanges' => $generalConfig->allowAdminChanges,
             'allowUpdates' => $generalConfig->allowUpdates,
             'allowUppercaseInSlug' => (bool)$generalConfig->allowUppercaseInSlug,
+            'announcements' => $this->_announcements(),
             'apiParams' => Craft::$app->apiParams,
             'asciiCharMap' => StringHelper::asciiCharMap(true, Craft::$app->language),
             'autosaveDrafts' => (bool)$generalConfig->autosaveDrafts,
@@ -389,6 +390,11 @@ JS;
         }
 
         return $data;
+    }
+
+    private function _announcements(): array
+    {
+        return Craft::$app->getAnnouncements()->get();
     }
 
     private function _datepickerOptions(Locale $formattingLocale, Locale $locale, User $currentUser = null, GeneralConfig $generalConfig): array

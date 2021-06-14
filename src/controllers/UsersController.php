@@ -2290,4 +2290,17 @@ class UsersController extends Controller
             'user' => $user,
         ], $templateMode);
     }
+
+    /**
+     * Marks the user’s feature announcements as read.
+     *
+     * @return Response
+     */
+    public function actionMarkAnnouncementsAsRead(): Response
+    {
+        $this->requirePostRequest();
+        $ids = $this->request->getRequiredBodyParam('ids');
+        Craft::$app->getAnnouncements()->markAsRead($ids);
+        return $this->asJson(['success' => true]);
+    }
 }

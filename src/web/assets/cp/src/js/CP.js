@@ -182,6 +182,49 @@ Craft.CP = Garnish.Base.extend({
             this.$mainContainer.on('focus', 'input, textarea, .focusable-input', this._handleInputFocus.bind(this));
             this.$mainContainer.on('blur', 'input, textarea, .focusable-input', this._handleInputBlur.bind(this));
         }
+
+        // Announcements HUD
+        if (Craft.announcements.length) {
+            let $btn = $('#announcements-btn').removeClass('hidden');
+            const hasUnreads = Craft.announcements.some(a => a.unread);
+            if (hasUnreads) {
+                $btn.addClass('unread');
+            }
+            let hud;
+            this.addListener($btn, 'click', () => {
+                if (!hud) {
+                    let contents = '';
+                    Craft.group(Craft.announcements, 'timestamp').forEach(([announcements, timestamp]) => {
+                        announcements.forEach((a, i) => {
+                            contents += `<div class="announcement ${a.unread ? 'unread' : ''}">` +
+                                (i === 0 ? `<div class="timestamp">${a.timestamp}</div>` : '') +
+                                `<h2>${a.heading}</h2>` +
+                                `<p>${a.body}</p>` +
+                                '</div>';
+                        });
+                    });
+                    hud = new Garnish.HUD($btn, `<div id="announcements">${contents}</div>`, {
+                        onShow: () => {
+                            $btn.addClass('active');
+                        },
+                        onHide: () => {
+                            $btn.removeClass('active');
+                        },
+                    });
+
+                    if (hasUnreads) {
+                        $btn.removeClass('unread');
+                        Craft.sendActionRequest('POST', 'users/mark-announcements-as-read', {
+                            data: {
+                                ids: Craft.announcements.map(a => a.id),
+                            },
+                        });
+                    }
+                } else {
+                    hud.show();
+                }
+            });
+        }
     },
 
     initSpecialForms: function() {

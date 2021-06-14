@@ -3253,15 +3253,45 @@ body.rtl #crumbs nav ul li:after { -webkit-transform: rotate(135deg); -o-transfo
 
 #nav-toggle { display: none; }
 
+#announcements-btn { width: 34px; height: 30px; padding-left: 0; padding-right: 0; width: 40px; position: relative; }
+
+#announcements-btn:not(:hover):not(:active):not(.active) { background-color: transparent; }
+
+#announcements-btn:not(:active):not(.active):hover { background-color: rgba(154, 165, 177, 0.15); }
+
+#announcements-btn.unread:after { content: ''; display: block; position: absolute; top: 3px; width: 7px; height: 7px; border-radius: 4px; background-color: #1992D4; }
+
+body.ltr #announcements-btn.unread:after { right: 7px; }
+
+body.rtl #announcements-btn.unread:after { left: 7px; }
+
+#announcements-btn svg { width: 22px; height: 22px; }
+
+#announcements-btn svg rect, #announcements-btn svg circle, #announcements-btn svg ellipse, #announcements-btn svg line, #announcements-btn svg polyline, #announcements-btn svg polygon, #announcements-btn svg path, #announcements-btn svg text { fill: rgba(123, 135, 147, 0.5); stroke-width: 0; -o-transition: fill linear 100ms; transition: fill linear 100ms; }
+
+#announcements-btn:hover svg rect, #announcements-btn:hover svg circle, #announcements-btn:hover svg ellipse, #announcements-btn:hover svg line, #announcements-btn:hover svg polyline, #announcements-btn:hover svg polygon, #announcements-btn:hover svg path, #announcements-btn:hover svg text, #announcements-btn:active svg rect, #announcements-btn:active svg circle, #announcements-btn:active svg ellipse, #announcements-btn:active svg line, #announcements-btn:active svg polyline, #announcements-btn:active svg polygon, #announcements-btn:active svg path, #announcements-btn:active svg text, #announcements-btn.active svg rect, #announcements-btn.active svg circle, #announcements-btn.active svg ellipse, #announcements-btn.active svg line, #announcements-btn.active svg polyline, #announcements-btn.active svg polygon, #announcements-btn.active svg path, #announcements-btn.active svg text { fill: #0B69A3; stroke-width: 0; -o-transition: fill linear 100ms; transition: fill linear 100ms; }
+
+#announcements { max-width: 350px; }
+
+#announcements .announcement:not(:first-child) { margin-top: 20px; }
+
+#announcements .announcement .timestamp { margin-top: -3px; font-size: 12px; color: #606d7b; margin-bottom: 3px; }
+
+#announcements .announcement h2 { position: relative; margin: 0 0 3px; }
+
+#announcements .announcement.unread h2:after { content: ''; display: block; position: absolute; top: 7px; width: 7px; height: 7px; border-radius: 4px; background-color: #1992D4; }
+
+body.ltr #announcements .announcement.unread h2:after { left: -13px; }
+
+body.rtl #announcements .announcement.unread h2:after { right: -13px; }
+
+#announcements .announcement p { margin: 0; }
+
 #user-info { display: -webkit-flex; display: flex; -webkit-flex-direction: row; flex-direction: row; -webkit-align-items: center; align-items: center; height: 100%; background-color: transparent; border-radius: 0; }
 
-body.ltr #user-info { padding: 0 11px 0 14px ; }
+body.ltr #user-info { padding-right: 25px; }
 
-body.rtl #user-info { padding: 0 14px 0 11px ; }
-
-body.ltr #user-info { margin-right: 14px; }
-
-body.rtl #user-info { margin-left: 14px; }
+body.rtl #user-info { padding-left: 25px; }
 
 #user-info:after { border-color: rgba(81, 95, 108, 0.25); -o-transition: border-color linear 100ms; transition: border-color linear 100ms; }
 

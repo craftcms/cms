@@ -15,6 +15,8 @@ namespace craft\db;
  */
 abstract class Table
 {
+    /** @since 3.7.0 */
+    const ANNOUNCEMENTS = '{{%announcements}}';
     const ASSETINDEXDATA = '{{%assetindexdata}}';
     const ASSETS = '{{%assets}}';
     const ASSETTRANSFORMINDEX = '{{%assettransformindex}}';
