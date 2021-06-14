@@ -39,9 +39,9 @@ class UsersController extends Controller
     public $password;
 
     /**
-     * @var bool|null Create the user as an admin
+     * @var bool Create the user as an admin
      */
-    public $admin;
+    public $admin = false;
 
     /**
      * @var string[] The group handles to assign the created user to
