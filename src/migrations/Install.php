@@ -88,6 +88,16 @@ class Install extends Migration
      */
     public function createTables()
     {
+        $this->createTable(Table::ANNOUNCEMENTS, [
+            'id' => $this->primaryKey(),
+            'userId' => $this->integer()->notNull(),
+            'pluginId' => $this->integer(),
+            'heading' => $this->string()->notNull(),
+            'body' => $this->text()->notNull(),
+            'unread' => $this->boolean()->defaultValue(true)->notNull(),
+            'dateRead' => $this->dateTime(),
+            'dateCreated' => $this->dateTime()->notNull(),
+        ]);
         $this->createTable(Table::ASSETINDEXDATA, [
             'id' => $this->primaryKey(),
             'sessionId' => $this->string(36)->notNull()->defaultValue(''),
@@ -773,6 +783,8 @@ class Install extends Migration
      */
     public function createIndexes()
     {
+        $this->createIndex(null, Table::ANNOUNCEMENTS, ['userId', 'unread', 'dateRead', 'dateCreated'], false);
+        $this->createIndex(null, Table::ANNOUNCEMENTS, ['dateRead'], false);
         $this->createIndex(null, Table::ASSETINDEXDATA, ['sessionId', 'volumeId']);
         $this->createIndex(null, Table::ASSETINDEXDATA, ['volumeId'], false);
         $this->createIndex(null, Table::ASSETS, ['filename', 'folderId'], false);
@@ -963,6 +975,8 @@ class Install extends Migration
      */
     public function addForeignKeys()
     {
+        $this->addForeignKey(null, Table::ANNOUNCEMENTS, ['userId'], Table::USERS, ['id'], 'CASCADE', null);
+        $this->addForeignKey(null, Table::ANNOUNCEMENTS, ['pluginId'], Table::PLUGINS, ['id'], 'CASCADE', null);
         $this->addForeignKey(null, Table::ASSETINDEXDATA, ['volumeId'], Table::VOLUMES, ['id'], 'CASCADE', null);
         $this->addForeignKey(null, Table::ASSETS, ['folderId'], Table::VOLUMEFOLDERS, ['id'], 'CASCADE', null);
         $this->addForeignKey(null, Table::ASSETS, ['id'], Table::ELEMENTS, ['id'], 'CASCADE', null);

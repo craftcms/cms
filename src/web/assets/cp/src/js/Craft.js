@@ -37,6 +37,36 @@ $.extend(Craft,
         },
 
         /**
+         * @callback indexKeyCallback
+         * @param {object} currentValue
+         * @param {number} [index]
+         * @return {string}
+         */
+        /**
+         * Groups an array of objects by a specified key
+         *
+         * @param {object[]} arr
+         * @param {(string|indexKeyCallback)} key
+         */
+        group: function(arr, key) {
+            if (!$.isArray(arr)) {
+                throw 'The first argument passed to Craft.group() must be an array.';
+            }
+
+            let index = {};
+
+            return arr.reduce((grouped, obj, i) => {
+                const thisKey = typeof key === 'string' ? obj[key] : key(obj, i);
+                if (!index.hasOwnProperty(thisKey)) {
+                    index[thisKey] = [[], thisKey];
+                    grouped.push(index[thisKey]);
+                }
+                index[thisKey][0].push(obj);
+                return grouped;
+            }, []);
+        },
+
+        /**
          * Get a translated message.
          *
          * @param {string} category

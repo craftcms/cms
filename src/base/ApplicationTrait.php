@@ -77,6 +77,7 @@ use yii\web\ServerErrorHttpException;
  * @property-read \craft\i18n\Locale $formattingLocale The Locale object that should be used to define the formatter
  * @property-read \craft\i18n\Locale $locale The Locale object for the target language
  * @property-read \craft\mail\Mailer $mailer The mailer component
+ * @property-read \craft\services\Announcements $announcements The announcements service
  * @property-read \craft\services\Api $api The API service
  * @property-read \craft\services\AssetIndexer $assetIndexer The asset indexer service
  * @property-read \craft\services\Assets $assets The assets service
@@ -854,6 +855,18 @@ trait ApplicationTrait
 
     // Service Getters
     // -------------------------------------------------------------------------
+
+    /**
+     * Returns the announcements service.
+     *
+     * @return \craft\services\Announcements The announcements service
+     * @since 3.7.0
+     */
+    public function getAnnouncements()
+    {
+        /* @var WebApplication|ConsoleApplication $this */
+        return $this->get('announcements');
+    }
 
     /**
      * Returns the API service.

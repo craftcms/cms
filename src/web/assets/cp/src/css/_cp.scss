@@ -513,12 +513,81 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
   display: none;
 }
 
+#announcements-btn {
+  @include header-btn;
+  width: 40px;
+  position: relative;
+
+  &.unread:after {
+    content: '';
+    display: block;
+    position: absolute;
+    top: 3px;
+    @include right(7px);
+    width: 7px;
+    height: 7px;
+    border-radius: 4px;
+    background-color: $blue600;
+  }
+
+  svg {
+    width: 22px;
+    height: 22px;
+    @include svg-mask($darkHairlineColor);
+  }
+
+  &:hover,
+  &:active,
+  &.active {
+    svg {
+      @include svg-mask($linkColor);
+    }
+  }
+}
+
+#announcements {
+  max-width: 350px;
+
+  .announcement {
+    &:not(:first-child) {
+      margin-top: 20px;
+    }
+
+    .timestamp {
+      margin-top: -3px;
+      font-size: 12px;
+      color: $lightTextColor;
+      margin-bottom: 3px;
+    }
+
+    h2 {
+      position: relative;
+      margin: 0 0 3px;
+    }
+
+    &.unread h2:after {
+      content: '';
+      display: block;
+      position: absolute;
+      top: 7px;
+      @include left(-13px);
+      width: 7px;
+      height: 7px;
+      border-radius: 4px;
+      background-color: $blue600;
+    }
+
+    p {
+      margin: 0;
+    }
+  }
+}
+
 #user-info {
   display: flex;
   flex-direction: row;
   align-items: center;
-  @include padding(0, 11px, 0, 14px);
-  @include margin-right(14px);
+  @include padding-right(25px);
   height: 100%;
   background-color: transparent;
   border-radius: 0;
