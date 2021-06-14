@@ -1695,13 +1695,13 @@ class Fields extends Component
                     foreach ($columnType as $i => $type) {
                         [$key, $type] = explode(':', $type, 2);
                         $oldColumn = !$isNewField ? ElementHelper::fieldColumn(null, $oldHandle, $oldColumnSuffix, $i !== 0 ? $key : null) : null;
-                        $newColumn = ElementHelper::fieldColumn(null, $data['handle'], $data['columnSuffix'], $i !== 0 ? $key : null);
+                        $newColumn = ElementHelper::fieldColumn(null, $data['handle'], $data['columnSuffix'] ?? null, $i !== 0 ? $key : null);
                         $this->_updateColumn($db, $transaction, $contentService->contentTable, $oldColumn, $newColumn, $type);
                         $newColumns[$newColumn] = true;
                     }
                 } else {
                     $oldColumn = !$isNewField ? ElementHelper::fieldColumn(null, $oldHandle, $oldColumnSuffix) : null;
-                    $newColumn = ElementHelper::fieldColumn(null, $data['handle'], $data['columnSuffix']);;
+                    $newColumn = ElementHelper::fieldColumn(null, $data['handle'], $data['columnSuffix'] ?? null);;
                     $this->_updateColumn($db, $transaction, $contentService->contentTable, $oldColumn, $newColumn, $columnType);
                     $newColumns[$newColumn] = true;
                 }
@@ -1713,8 +1713,8 @@ class Fields extends Component
             if (!$isNewField) {
                 $this->_dropOldFieldColumns($oldHandle, $oldColumnSuffix, $newColumns);
 
-                if ($data['handle'] !== $oldHandle || $data['columnSuffix'] !== $oldColumnSuffix) {
-                    $this->_dropOldFieldColumns($data['handle'], $data['columnSuffix'], $newColumns);
+                if ($data['handle'] !== $oldHandle || ($data['columnSuffix'] ?? null) !== $oldColumnSuffix) {
+                    $this->_dropOldFieldColumns($data['handle'], $data['columnSuffix'] ?? null, $newColumns);
                 }
             }
 
