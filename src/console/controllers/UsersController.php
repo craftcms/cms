@@ -44,6 +44,16 @@ class UsersController extends Controller
     public $admin;
 
     /**
+     * @var string|null The email or username of the user to inheritor content when deleting a user
+     */
+    public $inheritor;
+
+    /**
+     * @var bool Whether to delete the user’s content if no inheritor is specified
+     */
+    public $deleteContent = false;
+
+    /**
      * @inheritdoc
      */
     public function options($actionID)
@@ -56,6 +66,10 @@ class UsersController extends Controller
                 $options[] = 'username';
                 $options[] = 'password';
                 $options[] = 'admin';
+                break;
+            case 'delete':
+                $options[] = 'inheritor';
+                $options[] = 'deleteContent';
                 break;
             case 'set-password':
                 $options[] = 'password';
@@ -160,6 +174,63 @@ class UsersController extends Controller
             $this->stderr('failed:' . PHP_EOL . '    - ' . implode(PHP_EOL . '    - ', $user->getErrorSummary(true)) . PHP_EOL, Console::FG_RED);
 
             return ExitCode::USAGE;
+        }
+
+        $this->stdout('done' . PHP_EOL, Console::FG_GREEN);
+        return ExitCode::OK;
+    }
+
+    /**
+     * Deletes a user.
+     *
+     * @param string $usernameOrEmail The user’s username or email address
+     * @return int
+     */
+    public function actionDelete(string $usernameOrEmail): int
+    {
+        $user = Craft::$app->getUsers()->getUserByUsernameOrEmail($usernameOrEmail);
+
+        if (!$user) {
+            $this->stderr("No user exists with a username/email of “{$usernameOrEmail}”." . PHP_EOL, Console::FG_RED);
+            return ExitCode::UNSPECIFIED_ERROR;
+        }
+
+        if (!$this->inheritor && $this->confirm('Transfer this user’s content to an existing user?', true)) {
+            $this->inheritor = $this->prompt('Enter the email or username of the user to inherit the content:', [
+                'required' => true,
+            ]);
+        }
+
+        if ($this->inheritor) {
+            $inheritor = Craft::$app->getUsers()->getUserByUsernameOrEmail($this->inheritor);
+
+            if (!$inheritor) {
+                $this->stderr("No user exists with a username/email of “{$this->inheritor}”." . PHP_EOL, Console::FG_RED);
+                return ExitCode::UNSPECIFIED_ERROR;
+            }
+
+            $user->inheritorOnDelete = $inheritor;
+        }
+
+        if (!$this->interactive && !$this->inheritor && !$this->deleteContent) {
+            $this->stdout('You must specify --delete-content or --inheritor in non-interactive mode' . PHP_EOL, Console::FG_RED);
+            return ExitCode::USAGE;
+        }
+
+        $confirmation = $this->inheritor ?
+            "Delete user “{$usernameOrEmail}” and transfer their content to user “{$this->inheritor}”?" :
+            "Delete user “{$usernameOrEmail}” and their content?";
+
+        if (!$this->confirm($confirmation)) {
+            $this->stdout('Aborting.' . PHP_EOL);
+            return ExitCode::UNSPECIFIED_ERROR;
+        }
+
+        $this->stdout('Deleting the user ... ');
+
+        if (!Craft::$app->getElements()->deleteElement($user)) {
+            $this->stderr('failed: Couldn’t delete the user.' . PHP_EOL, Console::FG_RED);
+            return ExitCode::UNSPECIFIED_ERROR;
         }
 
         $this->stdout('done' . PHP_EOL, Console::FG_GREEN);
