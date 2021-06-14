@@ -3245,17 +3245,7 @@ ul.tree,
 
   .btn {
     margin: 5px 0;
-    width: 34px;
-    height: 30px;
-    padding-left: 0;
-    padding-right: 0;
-
-    &:not(:hover):not(:active):not(.active) {
-      background-color: transparent;
-    }
-    &:not(:active):not(.active):hover {
-      background-color: transparentize($grey300, 0.85);
-    }
+    @include header-btn;
   }
 
   .spinner {

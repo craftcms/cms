@@ -457,6 +457,20 @@ $radioSize: 16px;
   }
 }
 
+@mixin header-btn {
+  width: 34px;
+  height: 30px;
+  padding-left: 0;
+  padding-right: 0;
+
+  &:not(:hover):not(:active):not(.active) {
+    background-color: transparent;
+  }
+  &:not(:active):not(.active):hover {
+    background-color: transparentize($grey300, 0.85);
+  }
+}
+
 @mixin h6-styles {
   margin: 14px 0 3px;
   font-size: 10px;
