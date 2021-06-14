@@ -229,6 +229,11 @@ class UsersController extends Controller
             return ExitCode::UNSPECIFIED_ERROR;
         }
 
+        if ($this->deleteContent && $this->inheritor) {
+            $this->stdout('Only one of --delete-content or --inheritor may be specified.' . PHP_EOL, Console::FG_RED);
+            return ExitCode::USAGE;
+        }
+
         if (!$this->inheritor && $this->confirm('Transfer this user’s content to an existing user?', true)) {
             $this->inheritor = $this->prompt('Enter the email or username of the user to inherit the content:', [
                 'required' => true,
@@ -243,11 +248,19 @@ class UsersController extends Controller
                 return ExitCode::UNSPECIFIED_ERROR;
             }
 
-            if ($this->confirm("Delete user “{$usernameOrEmail}” and transfer their content to user “{$this->inheritor}”?")) {
-                $user->inheritorOnDelete = $inheritor;
+            if (!$this->confirm("Delete user “{$usernameOrEmail}” and transfer their content to user “{$this->inheritor}”?")) {
+                $this->stdout('Aborting.' . PHP_EOL);
+                return ExitCode::USAGE;
             }
-        } elseif ($this->interactive) {
+
+            $user->inheritorOnDelete = $inheritor;
+        } else if ($this->interactive) {
             $this->deleteContent = $this->confirm("Delete user “{$usernameOrEmail}” and their content?");
+
+            if (!$this->deleteContent) {
+                $this->stdout('Aborting.' . PHP_EOL);
+                return ExitCode::USAGE;
+            }
         }
 
         if (!$user->inheritorOnDelete && !$this->deleteContent) {
