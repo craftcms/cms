@@ -889,6 +889,14 @@ class ExtensionTest extends Unit
     /**
      *
      */
+    public function testWidontFilter()
+    {
+        $this->testRenderResult('foo bar&nbsp;baz', '{{ "foo bar baz"|widont }}');
+    }
+
+    /**
+     *
+     */
     public function testCloneFunction()
     {
         $this->testRenderResult(

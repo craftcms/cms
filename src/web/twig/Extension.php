@@ -592,7 +592,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
      */
     public function widontFilter(string $string): string
     {
-        return preg_replace('/(?<=\S)\s+(\S+\s*)$/', '&nbsp;$1', $string);
+        return Html::widont($string);
     }
 
     /**
