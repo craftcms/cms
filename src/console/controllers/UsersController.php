@@ -44,6 +44,16 @@ class UsersController extends Controller
     public $admin;
 
     /**
+     * @var string[] The group handles to assign the created user to
+     */
+    public $groups = [];
+
+    /**
+     * @var int[] The group IDs to assign the user to the created user to
+     */
+    public $groupIds = [];
+
+    /**
      * @var string|null The email or username of the user to inheritor content when deleting a user
      */
     public $inheritor;
@@ -66,6 +76,8 @@ class UsersController extends Controller
                 $options[] = 'username';
                 $options[] = 'password';
                 $options[] = 'admin';
+                $options[] = 'groups';
+                $options[] = 'groupIds';
                 break;
             case 'delete':
                 $options[] = 'inheritor';
@@ -174,6 +186,26 @@ class UsersController extends Controller
             $this->stderr('failed:' . PHP_EOL . '    - ' . implode(PHP_EOL . '    - ', $user->getErrorSummary(true)) . PHP_EOL, Console::FG_RED);
 
             return ExitCode::USAGE;
+        }
+
+        $this->stdout('done' . PHP_EOL, Console::FG_GREEN);
+
+        $groupIds = array_merge($this->groupIds, array_map(function($handle) {
+            return Craft::$app->getUserGroups()->getGroupByHandle($handle)->id ?? null;
+        }, $this->groups));
+
+        if (!$groupIds) {
+            return ExitCode::OK;
+        }
+
+        $this->stdout('Assigning user to groups ... ');
+
+        // Most likely an invalid group ID will throw…
+        try {
+            Craft::$app->getUsers()->assignUserToGroups($user->id, $groupIds);
+        } catch(\Throwable) {
+            $this->stderr('failed: Couldn’t assign user to specified groups.' . PHP_EOL, Console::FG_RED);
+            return ExitCode::UNSPECIFIED_ERROR;
         }
 
         $this->stdout('done' . PHP_EOL, Console::FG_GREEN);
