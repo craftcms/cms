@@ -7,7 +7,7 @@ use Craft;
 use craft\authentication\base\Type;
 use craft\elements\User;
 use craft\helpers\User as UserHelper;
-use craft\models\AuthenticationState;
+use craft\models\authentication\State;
 
 /**
  * This step type identifies a user by a username/email and password combination.
@@ -46,7 +46,7 @@ class Credentials extends Type
     /**
      * @inheritdoc
      */
-    public function authenticate(array $credentials, User $user = null): AuthenticationState
+    public function authenticate(array $credentials, User $user = null): State
     {
         $potentialUser = !empty($credentials['loginName']) ? Craft::$app->getUsers()->getUserByUsernameOrEmail($credentials['loginName']) : null;
 
@@ -67,9 +67,9 @@ class Credentials extends Type
     /**
      * Set authentication failure message on the state and return it.
      *
-     * @return AuthenticationState
+     * @return State
      */
-    protected function failToAuthenticate(): AuthenticationState
+    protected function failToAuthenticate(): State
     {
         Craft::$app->getSession()->setError(UserHelper::getLoginFailureMessage(User::AUTH_INVALID_CREDENTIALS));
         return $this->state;

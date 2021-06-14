@@ -7,7 +7,7 @@ use Craft;
 use craft\authentication\base\MfaType;
 use craft\elements\User;
 use craft\helpers\Authentication as AuthenticationHelper;
-use craft\models\AuthenticationState;
+use craft\models\authentication\State;
 
 /**
  * This step type requires the user to enter TOTP
@@ -52,7 +52,7 @@ class AuthenticatorCode extends MfaType
     /**
      * @inheritdoc
      */
-    public function authenticate(array $credentials, User $user = null): AuthenticationState
+    public function authenticate(array $credentials, User $user = null): State
     {
         if (is_null($user) || empty($credentials['verification-code'])) {
             return $this->state;
@@ -80,9 +80,9 @@ class AuthenticatorCode extends MfaType
     /**
      * @inheritdoc
      */
-    public static function getIsApplicable(User $user): bool
+    public static function getIsApplicable(?User $user): bool
     {
-        return $user->hasAuthenticatorSecret();
+        return $user && $user->hasAuthenticatorSecret();
     }
 
     public static function hasUserSetup(): bool

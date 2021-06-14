@@ -6,7 +6,7 @@ namespace craft\authentication\type;
 use Craft;
 use craft\authentication\base\Type;
 use craft\elements\User;
-use craft\models\AuthenticationState;
+use craft\models\authentication\State;
 
 /**
  * This step type checks if the IP address matches the defined rules.
@@ -53,7 +53,7 @@ class IpAddress extends Type
     /**
      * @inheritdoc
      */
-    public function authenticate(array $credentials, User $user = null): AuthenticationState
+    public function authenticate(array $credentials, User $user = null): State
     {
         $ip = Craft::$app->getRequest()->getUserIP();
 

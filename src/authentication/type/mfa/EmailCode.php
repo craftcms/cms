@@ -8,7 +8,7 @@ use craft\authentication\base\MfaType;
 use craft\elements\User;
 use craft\helpers\StringHelper;
 use craft\mail\Message;
-use craft\models\AuthenticationState;
+use craft\models\authentication\State;
 
 /**
  * This step type sends a single-use-password to the user's email and requires the password to be entered for the step to be completed.
@@ -74,7 +74,7 @@ class EmailCode extends MfaType
     /**
      * @inheritdoc
      */
-    public function authenticate(array $credentials, User $user = null): AuthenticationState
+    public function authenticate(array $credentials, User $user = null): State
     {
         if (is_null($user) || empty($credentials['verification-code'])) {
             return $this->state;

@@ -5,49 +5,67 @@ namespace craft\authentication;
 
 use Craft;
 use craft\authentication\base\TypeInterface;
+use craft\base\Component;
 use craft\elements\User;
-use craft\helpers\ArrayHelper;
-use craft\helpers\Authentication;
-use craft\models\AuthenticationState;
+use craft\errors\AuthenticationException;
+use craft\errors\AuthenticationStateException;
+use craft\helpers\Authentication as AuthHelper;
+use craft\models\authentication\State;
 use yii\base\InvalidConfigException;
 
-class Chain
+/**
+ *
+ * @property-read User|null $authenticatedUser
+ * @property-read bool $isNew
+ * @property-read bool $isComplete
+ */
+class Chain extends Component
 {
     /**
-     * @var array A list of all the authentication steps for this chain.
+     * @var array A list of all the authentication branches for this chain, keyed by name.
      */
-    private array $_steps;
+    private array $branchConfigs;
 
     /**
-     * @var array A list of all the authentication steps that are applicable for current user.
+     * @var Branch The currently active branch.
      */
-    private array $_applicableSteps;
+    private Branch $_activeBranch;
+
+    /** @var string[] a list of all the possible branch names in preferred order  */
+    protected array $branchNames = [];
 
     /**
-     * @var AuthenticationState The current authentication state.
+     * @var string The auth chain scenario.
      */
-    private AuthenticationState $_state;
+    protected string $scenario = '';
+
+    /**
+     * @var State The current authentication state.
+     */
 
     /**
      * Authentication chain constructor.
      *
-     * @param AuthenticationState $state Current state of authentication
-     * @param array $steps A list of steps that have to be completed.
+     * @param string $scenario The auth chain scenario name
+     * @param State $state Current state of authentication
+     * @param array $branchConfigs A list of branches this chain has that have to be completed.
+     * @throws AuthenticationException if something went wrong while creating the auth chain.
      */
-    public function __construct(AuthenticationState $state, array $steps)
+    public function __construct(string $scenario, State $state, array $branchConfigs)
     {
-        // Normalize all steps to be an array of types.
-        foreach ($steps as &$step) {
-            if (ArrayHelper::isAssociative($step)) {
-                $step = [$step];
-            }
+        // Move to array based config.
+        if (empty($branchConfigs)) {
+            throw new AuthenticationException('Impossible to create an authentication chain with no branches!');
         }
-        unset ($step);
 
-        $this->_applicableSteps = $this->_steps = $steps;
-        $this->_state = $state;
+        $this->branchConfigs = $branchConfigs;
+        $this->branchNames = array_keys($branchConfigs);
+        $this->scenario = $scenario;
 
-        $this->_prepareApplicableStepList();
+        $branchName = $state->getAuthenticationBranch();
+        $this->_activeBranch = $this->ensureActiveBranch($branchName, $state);
+
+        parent::__construct([]);
     }
 
     /**
@@ -57,10 +75,7 @@ class Chain
      */
     public function getIsComplete(): bool
     {
-        $lastCompletedStepType = $this->_getLastCompletedStepType();
-        $finalSteps = (array)end($this->_applicableSteps);
-
-        return $this->_isPossibleStepType((string)$lastCompletedStepType, $finalSteps);
+        return $this->_activeBranch && $this->_activeBranch->getIsComplete();
     }
 
     /**
@@ -70,7 +85,7 @@ class Chain
      */
     public function getIsNew(): bool
     {
-        return $this->_getLastCompletedStepType() === null;
+        return $this->_activeBranch && $this->_activeBranch->getIsNew();
     }
 
     /**
@@ -80,7 +95,7 @@ class Chain
      */
     public function getAuthenticatedUser(): ?User
     {
-        return $this->getIsComplete() ? $this->_getResolvedUser() : null;
+        return $this->getIsComplete() ? $this->_activeBranch->getAuthenticatedUser() : null;
     }
 
     /**
@@ -93,38 +108,19 @@ class Chain
      */
     public function performAuthenticationStep(string $stepType, array $credentials = []): bool
     {
-        /** @var TypeInterface $nextStep */
-        if ($nextStep = $this->getNextAuthenticationStep($stepType)) {
-            $this->_state = $nextStep->authenticate($credentials, $this->_getResolvedUser());
+        $activeBranch = $this->_activeBranch;
+        $success = $activeBranch->performAuthenticationStep($stepType, $credentials);
 
-            // Write it down
-            Craft::$app->getAuthentication()->storeAuthenticationState($this->_state);
-
-            // If advanced in chain
-            $success = $this->_getLastCompletedStepType() === get_class($nextStep);
-
-            if ($success) {
-                // In case circumstances have changed.
-                $this->_prepareApplicableStepList();
-            }
-
-            if ($success && !$this->getIsComplete()) {
-                // Prepare the next step.
-                /** @var TypeInterface $nextStep */
-                $nextStep = $this->getNextAuthenticationStep();
-                $nextStep->prepareForAuthentication($this->_getResolvedUser());
-
-                // If next step is not interactive, repeat
-                if (!$nextStep->getRequiresInput()) {
-                    // Intentionally not use the return result
-                    $this->performAuthenticationStep(get_class($nextStep));
-                }
-            }
-
+        if ($activeBranch->validate()) {
             return $success;
         }
 
-        return true;
+        $nextBranchName = $this->getNextBranchName($activeBranch->getName());
+        $newState = AuthHelper::createAuthState($this->scenario, $nextBranchName);
+
+        $this->_activeBranch = $this->ensureActiveBranch($nextBranchName, $newState);
+
+        return false;
     }
 
     /**
@@ -136,14 +132,7 @@ class Chain
      */
     public function switchStep(string $stepType): TypeInterface
     {
-        $switchedStep = $this->getNextAuthenticationStep($stepType);
-
-        if (!$switchedStep) {
-            throw new InvalidConfigException("Invalid authentication chain configuration. $stepType type requested, but not available at this point of the chain.");
-        }
-
-        $switchedStep->prepareForAuthentication($this->_getResolvedUser());
-        return $switchedStep;
+        return $this->_activeBranch->switchStep($stepType);
     }
 
     /**
@@ -153,24 +142,7 @@ class Chain
      */
     public function getAlternativeSteps(string $chosenStep = ''): array
     {
-        if ($this->getIsComplete()) {
-            return [];
-        }
-
-        $availableTypes = $this->_getAvailableStepTypes();
-        $alternativeSteps = [];
-
-        if (empty($chosenStep)) {
-            $chosenStep = reset($availableTypes)['type'];
-        }
-        foreach ($availableTypes as $config) {
-            if ($config['type'] !== $chosenStep) {
-                $step = $config['type'];
-                $alternativeSteps[$step] = $step::displayName();
-            }
-        }
-
-        return $alternativeSteps;
+        return $this->_activeBranch->getAlternativeSteps($chosenStep);
     }
 
     /**
@@ -182,140 +154,72 @@ class Chain
      */
     public function getNextAuthenticationStep(string $stepType = ''): ?TypeInterface
     {
-        if ($this->getIsComplete()) {
-            return null;
+        return $this->_activeBranch->getNextAuthenticationStep($stepType);
+    }
+
+    /**
+     * Determine the next possible branch name, based on the last invalid branch name.
+     *
+     * @param string $invalidBranchName
+     * @return string
+     * @throws AuthenticationException if impossible to determine a valid branch name.
+     */
+    protected function getNextBranchName(string $invalidBranchName): string
+    {
+        $nextBranchName = $this->branchNames[array_search($invalidBranchName, $this->branchNames, true) + 1] ?? null;
+
+        if (!$nextBranchName) {
+            throw new AuthenticationException('Impossible to determine a possible branch name');
         }
 
-        $availableTypes = $this->_getAvailableStepTypes();
+        return $nextBranchName;
+    }
 
-        if (empty($availableTypes)) {
-            throw new InvalidConfigException("Unterminated authentication chain - {$this->_state->getAuthenticationScenario()}, last completed step - {$this->_getLastCompletedStepType()}");
-        }
+    /**
+     * @param string $branchName
+     * @param array $config
+     * @param State $state
+     * @return Branch
+     * @throws InvalidConfigException
+     */
+    private function createBranch(string $branchName, array $config, State $state): Branch
+    {
+        return Craft::createObject(Branch::class, [
+            [
+                'name' => $branchName,
+                'steps' => $config['steps'],
+                'state' => $state,
+            ]
+        ]);
+    }
 
-        if (!empty($stepType)) {
-            foreach ($availableTypes as $availableType) {
-                if ($stepType === $availableType['type']) {
-                    return Authentication::createStepFromConfig($availableType, $this->_state);
+    /**
+     * This method creates and returns a branch based current branch name and auth state.
+     * @param string $branchName
+     * @param State $state
+     * @throws AuthenticationException if ran out of branches to try
+     * @throws AuthenticationStateException if authentication state expects a non-existing branch
+     * @throws InvalidConfigException
+     */
+    private function ensureActiveBranch(string $branchName, State $state): Branch
+    {
+        if ($branchName && in_array($branchName, $this->branchNames, true)) {
+            do {
+                $config = $this->branchConfigs[$branchName];
+                $branch = $this->createBranch($branchName, $config, $state);
+
+                if ($branch->validate()) {
+                    $this->_activeBranch = $branch;
+                } else {
+                    Craft::warning("Failed to validate the $branchName authentication branch: " . implode("\n", $branch->getErrorSummary(true)));
+                    // If we run out of branches, this will throw an exception breaking the loop
+                    $branchName = $this->getNextBranchName($branchName);
                 }
-            }
+            } while (!$branch->validate());
 
-            throw new InvalidConfigException("Invalid authentication chain configuration. $stepType type requested, but not available at this point of the chain.");
-        }
-
-        return Authentication::createStepFromConfig(reset($availableTypes), $this->_state);
-    }
-
-    /**
-     * Returns true if chain contains a step of a given type.
-     *
-     * @param string $stepType
-     * @return bool
-     */
-    public function containsStepType(string $stepType): bool
-    {
-        foreach ($this->_steps as $stepList) {
-            foreach ($stepList as $step) {
-                if ($step['type'] === $stepType) {
-                    return true;
-                }
-            }
-        }
-
-        return false;
-    }
-
-    /**
-     * Get the last completed authentication step.
-     *
-     * @return string|null
-     */
-    private function _getLastCompletedStepType(): ?string
-    {
-        return $this->_state->getLastCompletedStepType();
-    }
-
-    /**
-     * Get the resolved user.
-     *
-     * @return User|null
-     */
-    private function _getResolvedUser(): ?User
-    {
-        return $this->_state->getResolvedUser();
-    }
-
-    /**
-     * Given a step type and a list of step configurations, return true, if step type is part of the list.
-     *
-     * @param string $stepType
-     * @param array $availableStepConfigurations
-     * @return bool
-     */
-    private function _isPossibleStepType(string $stepType, array $availableStepConfigurations): bool
-    {
-        foreach ($availableStepConfigurations as $stepConfiguration) {
-            if ($stepType === $stepConfiguration['type']) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    /**
-     * Get available step types for the current state.
-     *
-     * @return array
-     */
-    private function _getAvailableStepTypes(): array
-    {
-        $lastCompletedStepType = $this->_getLastCompletedStepType();
-        $availableTypes = [];
-
-        // If no steps performed, return the first one
-        if (!$lastCompletedStepType) {
-            $availableTypes = (array)reset($this->_applicableSteps);
+            return $branch;
         } else {
-            foreach ($this->_applicableSteps as $index => $authenticationSteps) {
-                $authenticationSteps = (array)$authenticationSteps;
-
-                // If we hit a match, we're after the next step
-                if ($this->_isPossibleStepType($lastCompletedStepType, $authenticationSteps)) {
-                    $availableTypes = (array)$this->_applicableSteps[$index + 1];
-                    break;
-                }
-            }
-        }
-
-        return $availableTypes;
-    }
-
-    /**
-     * Prepare a list of applicable steps.
-     */
-    private function _prepareApplicableStepList(): void
-    {
-        // Filter out steps that are not applicable
-        $resolvedUser = $this->_state->getResolvedUser();
-        if ($resolvedUser) {
-            $filteredSteps = [];
-
-            foreach ($this->_steps as $stepCollection) {
-                $filteredCollection = [];
-                foreach ($stepCollection as $step) {
-                    $stepType = $step['type'];
-
-                    if (is_subclass_of($stepType, TypeInterface::class) && $stepType::getIsApplicable($resolvedUser)) {
-                        $filteredCollection[] = $step;
-                    }
-                }
-
-                if (!empty($filteredCollection)) {
-                    $filteredSteps[] = $filteredCollection;
-                }
-            }
-
-            $this->_applicableSteps = $filteredSteps;
+            throw new AuthenticationStateException('Authentication state does not match the chain configuration!');
         }
     }
 }

@@ -10,9 +10,7 @@ namespace craft\helpers;
 
 use Craft;
 use craft\authentication\base\TypeInterface;
-use craft\authentication\type\mfa\AuthenticatorCode;
-use craft\authentication\type\mfa\WebAuthn;
-use craft\models\AuthenticationState;
+use craft\models\authentication\State;
 use PragmaRX\Google2FAQRCode\Google2FA;
 use yii\base\InvalidConfigException;
 
@@ -29,11 +27,11 @@ class Authentication
      * Create an authentication type based on a config.
      *
      * @param array $typeConfig
-     * @param AuthenticationState $state
+     * @param State $state
      * @return TypeInterface
      * @throws InvalidConfigException
      */
-    public static function createStepFromConfig(array $typeConfig, AuthenticationState $state): TypeInterface
+    public static function createStepFromConfig(array $typeConfig, State $state): TypeInterface
     {
         $class = $typeConfig['type'];
 
@@ -48,6 +46,22 @@ class Authentication
     }
 
     /**
+     * Create an auth state for a scenario and branch.
+     *
+     * @param string $scenario
+     * @param string $branch
+     * @return State
+     * @throws InvalidConfigException
+     */
+    public static function createAuthState(string $scenario, string $branch): State
+    {
+        return Craft::createObject(State::class, [[
+            'authenticationScenario' => $scenario,
+            'authenticationBranch' => $branch
+        ]]);
+    }
+
+    /**
      * Get the code authenticator instance.
      *
      * @return Google2FA
@@ -55,6 +69,7 @@ class Authentication
     public static function getCodeAuthenticator(): Google2FA
     {
         // TODO window as a config option
+        // Probably better as a method on the relevant auth step?
         $authenticator = new Google2FA();
         $authenticator->setWindow(2);
 

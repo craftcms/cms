@@ -6,7 +6,7 @@ declare(strict_types=1);
  * @license https://craftcms.github.io/license/
  */
 
-namespace craft\models;
+namespace craft\models\authentication;
 
 use Craft;
 use craft\base\Model;
@@ -22,12 +22,17 @@ use craft\elements\User;
  * @property-write null|string $lastCompletedStep
  * @property-read bool $isNew
  */
-class AuthenticationState extends Model
+class State extends Model
 {
     /**
      * @var string The authentication chain scenario
      */
     protected string $authenticationScenario;
+
+    /**
+     * @var string The authentication chain branch
+     */
+    protected string $authenticationBranch;
 
     /**
      * @var string|null Last step type performed in the chain.
@@ -60,6 +65,16 @@ class AuthenticationState extends Model
     }
 
     /**
+     * Get the last completed authentication step type.
+     *
+     * @return string
+     */
+    public function getAuthenticationBranch(): string
+    {
+        return $this->authenticationBranch;
+    }
+
+    /**
      * Return the resolved user id, if any.
      *
      * @return int|null
@@ -88,6 +103,7 @@ class AuthenticationState extends Model
     {
         return [
             'authenticationScenario' => $this->authenticationScenario,
+            'authenticationBranch' => $this->authenticationBranch,
             'lastCompletedStepType' => $this->lastCompletedStepType,
             'resolvedUserId' => $this->resolvedUserId,
         ];
@@ -101,6 +117,16 @@ class AuthenticationState extends Model
     protected function setAuthenticationScenario(string $scenario): void
     {
         $this->authenticationScenario = $scenario;
+    }
+
+    /**
+     * Set the authentication branch value.
+     *
+     * @param string $scenario
+     */
+    protected function setAuthenticationBranch(string $branch): void
+    {
+        $this->authenticationBranch = $branch;
     }
 
     /**

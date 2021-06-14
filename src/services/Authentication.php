@@ -13,10 +13,10 @@ use craft\authentication\Chain;
 use craft\authentication\type\mfa\AuthenticatorCode;
 use craft\authentication\type\mfa\EmailCode;
 use craft\authentication\type\mfa\WebAuthn;
-use craft\elements\User;
-use craft\models\AuthenticationChainConfiguration;
-use craft\models\AuthenticationState;
-use craft\records\AuthAuthenticator;
+use craft\errors\AuthenticationStateException;
+use craft\helpers\Authentication as AuthHelper;
+use craft\models\authentication\Scenario;
+use craft\models\authentication\State;
 use yii\base\Component;
 use yii\base\InvalidConfigException;
 
@@ -43,10 +43,22 @@ class Authentication extends Component
             throw new InvalidConfigException("Unable to configure authentication chain for `$scenario`");
         }
 
-        $state = $forceNew ? Craft::createObject(AuthenticationState::class, [['authenticationScenario' => $scenario]]) : $this->getAuthenticationState($scenario);
+        /** @var Scenario $defaultBranch */
+        $defaultBranch = $chainConfig->getDefaultBranchName();
+
+        if ($forceNew || !($state = $this->getAuthenticationState($scenario))) {
+            $state = AuthHelper::createAuthState($scenario, $defaultBranch);
+        }
 
         /** @var Chain $chain */
-        $chain = Craft::createObject(Chain::class, [$state, $chainConfig->steps]);
+        try {
+            $chain = Craft::createObject(Chain::class, [$scenario, $state, $chainConfig->branches]);
+        } catch (AuthenticationStateException $exception) {
+            // Try with a fresh state
+            Craft::$app->getErrorHandler()->logException($exception);
+            $state = AuthHelper::createAuthState($scenario, $defaultBranch);
+            $chain = Craft::createObject(Chain::class, [$state, $chainConfig->branches]);
+        }
 
         return $chain;
     }
@@ -93,37 +105,33 @@ class Authentication extends Component
      * Get scenario configuration for a give scenario.
      *
      * @param string $scenario
-     * @return AuthenticationChainConfiguration|null
+     * @return Scenario|null
      */
-    public function getScenarioConfiguration(string $scenario): ?AuthenticationChainConfiguration
+    public function getScenarioConfiguration(string $scenario): ?Scenario
     {
         $scenarios = Craft::$app->getProjectConfig()->get(self::CONFIG_AUTH_CHAINS);
-        return $scenarios[$scenario] ? new AuthenticationChainConfiguration($scenarios[$scenario]) :  null;
+        return $scenarios[$scenario] ? Craft::createObject(Scenario::class, [$scenarios[$scenario]]) :  null;
     }
 
     /**
      * Get the current authentication state for a scenario.
      *
      * @param string $scenario
-     * @return AuthenticationState
+     * @return State
      */
-    public function getAuthenticationState(string $scenario): AuthenticationState
+    public function getAuthenticationState(string $scenario): ?State
     {
         $authStates = $this->getAllAuthenticationStates();
-        $stateData = $authStates[$scenario] ?? ['authenticationScenario' => $scenario];
 
-        /** @var AuthenticationState $state */
-        $state = Craft::createObject(AuthenticationState::class, [$stateData]);
-
-        return $state;
+        return !empty($authStates[$scenario]) ? Craft::createObject(State::class, [$authStates[$scenario]]) : null;
     }
 
     /**
      * Store an authentication state in the session.
      *
-     * @param AuthenticationState $state
+     * @param State $state
      */
-    public function storeAuthenticationState(AuthenticationState $state): void
+    public function storeAuthenticationState(State $state): void
     {
         $session = Craft::$app->getSession();
         $scenario = $state->getAuthenticationScenario();

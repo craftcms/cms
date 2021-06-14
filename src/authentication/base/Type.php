@@ -6,7 +6,7 @@ namespace craft\authentication\base;
 use Craft;
 use craft\base\Component;
 use craft\elements\User;
-use craft\models\AuthenticationState;
+use craft\models\authentication\State;
 
 /**
  * Authentication step type base class. This class must be implemented for all steps indented to be used in Craft CP.
@@ -22,7 +22,7 @@ use craft\models\AuthenticationState;
  */
 abstract class Type extends Component implements TypeInterface
 {
-    protected AuthenticationState $state;
+    protected State $state;
 
     /**
      * Return the field HTML.
@@ -68,7 +68,7 @@ abstract class Type extends Component implements TypeInterface
     /**
      * @inheritdoc
      */
-    public static function getIsApplicable(User $user): bool
+    public static function getIsApplicable(?User $user): bool
     {
         return true;
     }
@@ -76,9 +76,9 @@ abstract class Type extends Component implements TypeInterface
     /**
      * Setter for the Authentication state. Protected, to avoid exposing state.
      *
-     * @param AuthenticationState $state
+     * @param State $state
      */
-    protected function setState(AuthenticationState $state): void
+    protected function setState(State $state): void
     {
         $this->state = $state;
     }
@@ -87,16 +87,17 @@ abstract class Type extends Component implements TypeInterface
      * Complete an authentication step.
      *
      * @param User|null $user
-     * @return AuthenticationState
+     * @return State
      */
-    protected function completeStep(User $user = null): AuthenticationState
+    protected function completeStep(User $user = null): State
     {
-        /** @var AuthenticationState $state */
+        /** @var State $state */
         /** @noinspection PhpUnnecessaryLocalVariableInspection */
-        $state = Craft::createObject(AuthenticationState::class, [[
+        $state = Craft::createObject(State::class, [[
             'resolvedUserId' => $user->id ?? null,
             'lastCompletedStepType' => $this->getStepType(),
-            'authenticationScenario' => $this->state->getAuthenticationScenario()
+            'authenticationScenario' => $this->state->getAuthenticationScenario(),
+            'authenticationBranch' => $this->state->getAuthenticationBranch()
         ]]);
 
         return $state;

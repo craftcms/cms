@@ -4,7 +4,7 @@ declare(strict_types=1);
 namespace craft\authentication\base;
 
 use craft\elements\User;
-use craft\models\AuthenticationState;
+use craft\models\authentication\State;
 use yii\base\InvalidConfigException;
 
 /**
@@ -38,10 +38,10 @@ interface TypeInterface
      *
      * @param array $credentials
      * @param User|null $user
-     * @return AuthenticationState
+     * @return State
      * @throws InvalidConfigException If something went wrong while createing authentication chain.
      */
-    public function authenticate(array $credentials, User $user = null): AuthenticationState;
+    public function authenticate(array $credentials, User $user = null): State;
 
     /**
      * Whether this authentication step requires user input
@@ -53,10 +53,10 @@ interface TypeInterface
     /**
      * Return true if a step is applicable for the currently identified user.
      *
-     * @param User $user
+     * @param User|null $user
      * @return bool
      */
-    public static function getIsApplicable(User $user): bool;
+    public static function getIsApplicable(?User $user): bool;
 
     /**
      * Return the description of the authentication step.

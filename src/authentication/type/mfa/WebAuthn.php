@@ -9,7 +9,7 @@ use craft\authentication\webauthn\CredentialRepository;
 use craft\elements\User;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Json;
-use craft\models\AuthenticationState;
+use craft\models\authentication\State;
 use craft\records\AuthWebAuthn;
 use Webauthn\PublicKeyCredentialCreationOptions;
 use Webauthn\PublicKeyCredentialOptions;
@@ -62,7 +62,7 @@ class WebAuthn extends MfaType
     /**
      * @inheritdoc
      */
-    public function authenticate(array $credentials, User $user = null): AuthenticationState
+    public function authenticate(array $credentials, User $user = null): State
     {
         if (empty($credentials['credentialResponse']) || !$user) {
             return $this->state;
@@ -104,9 +104,9 @@ class WebAuthn extends MfaType
         ]);
     }
 
-    public static function getIsApplicable(User $user): bool
+    public static function getIsApplicable(?User $user): bool
     {
-        return Craft::$app->getRequest()->getIsSecureConnection() && AuthWebAuthn::findOne(['userId' => $user->id]);
+        return $user && Craft::$app->getRequest()->getIsSecureConnection() && AuthWebAuthn::findOne(['userId' => $user->id]);
     }
 
     /**

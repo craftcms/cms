@@ -6,7 +6,7 @@ namespace craft\authentication\type;
 use Craft;
 use craft\authentication\base\Type;
 use craft\elements\User;
-use craft\models\AuthenticationState;
+use craft\models\authentication\State;
 
 /**
  * This step type authenticates a user by an email address.
@@ -45,7 +45,7 @@ class Email extends Type
     /**
      * @inheritdoc
      */
-    public function authenticate(array $credentials, User $user = null): AuthenticationState
+    public function authenticate(array $credentials, User $user = null): State
     {
         if (empty($credentials['email'])) {
             return $this->state;
