@@ -25,6 +25,7 @@
 - Added `craft\base\Element::EVENT_DEFINE_META_FIELDS_HTML`.
 - Added `craft\base\Element::EVENT_DEFINE_SIDEBAR_HTML`.
 - Added `craft\base\Element::cpEditUrl()`, which should be overridden rather than `getCpEditUrl()`.
+- Added `craft\base\Element::hasFieldLayout()`.
 - Added `craft\base\Element::isDeletable()`.
 - Added `craft\base\Element::isEditable()`.
 - Added `craft\base\Element::metaFieldsHtml()`.

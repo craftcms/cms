@@ -3827,7 +3827,10 @@ abstract class Element extends Component implements ElementInterface
     }
 
     /**
+     * Returns whether the element has a field layout with at least one tab.
+     *
      * @return bool Returns whether the element has a field layout with at least one tab.
+     * @since 3.7.0
      */
     protected function hasFieldLayout(): bool
     {
