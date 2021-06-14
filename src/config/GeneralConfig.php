@@ -1292,6 +1292,7 @@ class GeneralConfig extends BaseObject
     /**
      * @var bool Whether asset URLs should be revved so browsers don’t load cached versions when they’re modified.
      * @since 3.7.0
+     * @group Assets
      */
     public $revAssetUrls = false;
 
