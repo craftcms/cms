@@ -54,7 +54,7 @@ class UsersController extends Controller
     public $groupIds = [];
 
     /**
-     * @var string|null The email or username of the user to inheritor content when deleting a user
+     * @var string|null The email or username of the user to inherit content when deleting a user
      */
     public $inheritor;
 
@@ -205,7 +205,7 @@ class UsersController extends Controller
         // Most likely an invalid group ID will throw…
         try {
             Craft::$app->getUsers()->assignUserToGroups($user->id, $groupIds);
-        } catch(\Throwable) {
+        } catch (\Throwable) {
             $this->stderr('failed: Couldn’t assign user to specified groups.' . PHP_EOL, Console::FG_RED);
             return ExitCode::UNSPECIFIED_ERROR;
         }
@@ -243,21 +243,16 @@ class UsersController extends Controller
                 return ExitCode::UNSPECIFIED_ERROR;
             }
 
-            $user->inheritorOnDelete = $inheritor;
+            if ($this->confirm("Delete user “{$usernameOrEmail}” and transfer their content to user “{$this->inheritor}”?")) {
+                $user->inheritorOnDelete = $inheritor;
+            }
+        } elseif ($this->interactive) {
+            $this->deleteContent = $this->confirm("Delete user “{$usernameOrEmail}” and their content?");
         }
 
-        if (!$this->interactive && !$this->inheritor && !$this->deleteContent) {
-            $this->stdout('You must specify --delete-content or --inheritor in non-interactive mode' . PHP_EOL, Console::FG_RED);
+        if (!$user->inheritorOnDelete && !$this->deleteContent) {
+            $this->stdout('You must specify either --delete-content or --inheritor to proceed.' . PHP_EOL, Console::FG_RED);
             return ExitCode::USAGE;
-        }
-
-        $confirmation = $this->inheritor ?
-            "Delete user “{$usernameOrEmail}” and transfer their content to user “{$this->inheritor}”?" :
-            "Delete user “{$usernameOrEmail}” and their content?";
-
-        if (!$this->confirm($confirmation)) {
-            $this->stdout('Aborting.' . PHP_EOL);
-            return ExitCode::UNSPECIFIED_ERROR;
         }
 
         $this->stdout('Deleting the user ... ');
