@@ -82,11 +82,15 @@ script:
   fi
 - npm -v
 - node -v
+- sudo npm cache clean -f
+- sudo npm install -g n
+- sudo n stable
+- npm install -g npm
 # - npm cache clean -f
 # - npm install -g n
 # - sudo n stable
 # - npm install -g npm
-# - npm install -g snyk
+- npm install -g snyk
 # - snyk monitor --reachable-vulns # Enable reachable vulns, scan and publish results to Snyk
 # - snyk test --reachable-vulns # Enable reachable vulns
 after_script:
