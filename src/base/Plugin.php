@@ -60,7 +60,7 @@ class Plugin extends Module implements PluginInterface
 
     /**
      * @var Model|bool|null The model used to store the plugin’s settings
-     * @see getSettingsModel()
+     * @see getSettings()
      */
     private $_settingsModel;
 
