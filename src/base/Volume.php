@@ -89,7 +89,7 @@ abstract class Volume extends SavableComponent implements VolumeInterface
     public function validateFieldLayout(): void
     {
         $fieldLayout = $this->getFieldLayout();
-        $fieldLayout->reservedAttributes = [
+        $fieldLayout->reservedFieldHandles = [
             'folder',
             'volume',
         ];

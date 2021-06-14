@@ -167,10 +167,10 @@ class FieldLayout extends Model
     public $uid;
 
     /**
-     * @var string[]|null Reserved attribute names
+     * @var string[]|null Reserved custom field handles
      * @since 3.7.0
      */
-    public $reservedAttributes;
+    public $reservedFieldHandles;
 
     /**
      * @var BaseField[][]
@@ -222,7 +222,7 @@ class FieldLayout extends Model
      */
     public function validateFields(): void
     {
-        if (!$this->reservedAttributes) {
+        if (!$this->reservedFieldHandles) {
             return;
         }
 
@@ -230,8 +230,8 @@ class FieldLayout extends Model
         foreach ($this->getTabs() as $tab) {
             foreach ($tab->elements as $element) {
                 if (
-                    $element instanceof BaseField &&
-                    in_array($element->attribute(), $this->reservedAttributes, true)
+                    $element instanceof CustomField &&
+                    in_array($element->attribute(), $this->reservedFieldHandles, true)
                 ) {
                     $this->addError('fields', Craft::t('app', '“{handle}” is a reserved word.', [
                         'handle' => $element->attribute(),

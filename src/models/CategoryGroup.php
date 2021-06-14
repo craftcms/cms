@@ -130,7 +130,7 @@ class CategoryGroup extends Model
     public function validateFieldLayout(): void
     {
         $fieldLayout = $this->getFieldLayout();
-        $fieldLayout->reservedAttributes = [
+        $fieldLayout->reservedFieldHandles = [
             'group',
         ];
 

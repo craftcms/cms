@@ -1739,7 +1739,7 @@ class UsersController extends Controller
         // Set the field layout
         $fieldLayout = Craft::$app->getFields()->assembleLayoutFromPost();
         $fieldLayout->type = User::class;
-        $fieldLayout->reservedAttributes = [
+        $fieldLayout->reservedFieldHandles = [
             'groups',
             'photo',
         ];

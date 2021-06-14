@@ -82,7 +82,7 @@
 - Added `craft\models\CategoryGroup::$defaultPlacement`.
 - Added `craft\models\CategoryGroup::DEFAULT_PLACEMENT_BEGINNING`.
 - Added `craft\models\CategoryGroup::DEFAULT_PLACEMENT_END`.
-- Added `craft\models\FieldLayout::$reservedAttributes`.
+- Added `craft\models\FieldLayout::$reservedFieldHandles`.
 - Added `craft\models\Section::$defaultPlacement`.
 - Added `craft\models\Section::DEFAULT_PLACEMENT_BEGINNING`.
 - Added `craft\models\Section::DEFAULT_PLACEMENT_END`.
