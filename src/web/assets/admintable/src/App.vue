@@ -676,6 +676,10 @@
         margin-left: auto;
     }
 
+    .vue-admin-table-buttons .flex:not(.flex-nowrap) > * {
+        margin-bottom: 0;
+    }
+
     .detail-cursor-pointer {
       cursor: pointer;
     }
