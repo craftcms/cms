@@ -212,6 +212,13 @@ Craft.CP = Garnish.Base.extend({
                         },
                     });
 
+                    // Open outbound links in new windows
+                    $('a', hud.$main).each(function() {
+                        if (this.hostname.length && this.hostname !== location.hostname && typeof $(this).attr('target') === 'undefined') {
+                            $(this).attr('rel', 'noopener').attr('target', '_blank')
+                        }
+                    });
+
                     if (hasUnreads) {
                         $btn.removeClass('unread');
                         Craft.sendActionRequest('POST', 'users/mark-announcements-as-read', {
