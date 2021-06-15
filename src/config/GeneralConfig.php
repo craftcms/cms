@@ -1169,6 +1169,17 @@ class GeneralConfig extends BaseObject
     public $previewIframeResizerOptions = [];
 
     /**
+     * @var mixed The amount of time content preview tokens can be used before expiring.
+     *
+     * See [[ConfigHelper::durationInSeconds()]] for a list of supported value types.
+     *
+     * @group Security
+     * @defaultAlt 1 day
+     * @since 3.7.0
+     */
+    public $previewTokenDuration = 86400;
+
+    /**
      * @var mixed The amount of time to wait before Craft purges pending users from the system that have not activated.
      *
      * Any content assigned to a pending user will be deleted as well when the given time interval passes.
@@ -1778,6 +1789,7 @@ class GeneralConfig extends BaseObject
         $this->defaultTokenDuration = ConfigHelper::durationInSeconds($this->defaultTokenDuration);
         $this->elevatedSessionDuration = ConfigHelper::durationInSeconds($this->elevatedSessionDuration);
         $this->invalidLoginWindowDuration = ConfigHelper::durationInSeconds($this->invalidLoginWindowDuration);
+        $this->previewTokenDuration = ConfigHelper::durationInSeconds($this->previewTokenDuration);
         $this->purgePendingUsersDuration = ConfigHelper::durationInSeconds($this->purgePendingUsersDuration);
         $this->purgeUnsavedDraftsDuration = ConfigHelper::durationInSeconds($this->purgeUnsavedDraftsDuration);
         $this->rememberUsernameDuration = ConfigHelper::durationInSeconds($this->rememberUsernameDuration);
