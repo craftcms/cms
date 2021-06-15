@@ -103,6 +103,11 @@ class Element extends InterfaceType
                 'type' => Type::int(),
                 'description' => 'The ID of the site the element is associated with.',
             ],
+            'siteSettingsId' => [
+                'name' => 'siteSettingsId',
+                'type' => Type::id(),
+                'description' => 'The unique identifier for an element-site relation.',
+            ],
             'language' => [
                 'name' => 'language',
                 'type' => Type::string(),

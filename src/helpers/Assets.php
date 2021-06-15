@@ -95,24 +95,26 @@ class Assets
      * Get appendix for an URL based on it's Source caching settings.
      *
      * @param VolumeInterface $volume
-     * @param Asset $file
+     * @param Asset $asset
      * @param AssetTransformIndex|null $transformIndex Transform index, for which the URL is being generated, if any
      * @return string
      */
-    public static function urlAppendix(VolumeInterface $volume, Asset $file, ?AssetTransformIndex $transformIndex = null): string
+    public static function urlAppendix(VolumeInterface $volume, Asset $asset, ?AssetTransformIndex $transformIndex = null): string
     {
-        $appendix = '';
-
-        if (!empty($volume->expires) && DateTimeHelper::isValidIntervalString($volume->expires) && $file->dateModified) {
-            $focalAppendix = $file->getHasFocalPoint() ? urlencode($file->getFocalPoint(true)) : 'none';
-            $appendix = '?mtime=' . $file->dateModified->format('YmdHis') . '&focal=' . $focalAppendix;
-
-            if ($transformIndex) {
-                $appendix .= '&tmtime=' . $transformIndex->dateUpdated->format('YmdHis');
-            }
+        if (!Craft::$app->getConfig()->getGeneral()->revAssetUrls) {
+            return '';
         }
 
-        return $appendix;
+        /** @var DateTime $dateModified */
+        $dateModified = max($asset->dateModified, $transformIndex->dateUpdated ?? null);
+        $v = $dateModified->getTimestamp();
+
+        if ($asset->getHasFocalPoint()) {
+            $fp = $asset->getFocalPoint();
+            $v .= ",{$fp['x']},{$fp['y']}";
+        }
+
+        return "?$v";
     }
 
     /**
@@ -473,16 +475,6 @@ class Assets
                         'xlsx',
                         'xltm',
                         'xltx',
-                    ],
-                ],
-                Asset::KIND_FLASH => [
-                    'label' => Craft::t('app', 'Flash'),
-                    'extensions' => [
-                        'fla',
-                        'flv',
-                        'swc',
-                        'swf',
-                        'swt',
                     ],
                 ],
                 Asset::KIND_HTML => [

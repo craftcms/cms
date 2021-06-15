@@ -48,7 +48,7 @@
             progressBar.$progressBar.velocity('stop').velocity({
                 opacity: 1
             }, {
-                complete: $.proxy(function() {
+                complete: () => {
                     let postData = Garnish.getPostData($form);
                     let params = Craft.expandPostArray(postData);
 
@@ -77,7 +77,7 @@
                     }, {
                         complete: $.noop
                     });
-                }, this)
+                },
             });
 
             if ($allDone) {

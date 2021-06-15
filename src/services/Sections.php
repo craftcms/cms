@@ -503,13 +503,15 @@ class Sections extends Component
             if (!$entryTypeExists) {
                 $entryType = new EntryType();
                 $entryType->sectionId = $section->id;
-                $entryType->name = $section->name;
-                $entryType->handle = $section->handle;
 
                 if ($section->type === Section::TYPE_SINGLE) {
+                    $entryType->name = $section->name;
+                    $entryType->handle = $section->handle;
                     $entryType->hasTitleField = false;
                     $entryType->titleFormat = '{section.name|raw}';
                 } else {
+                    $entryType->name = Craft::t('app', 'Default');
+                    $entryType->handle = 'default';
                     $entryType->hasTitleField = true;
                     $entryType->titleFormat = null;
                 }
@@ -581,6 +583,7 @@ class Sections extends Component
             $sectionRecord->type = $data['type'];
             $sectionRecord->enableVersioning = (bool)$data['enableVersioning'];
             $sectionRecord->propagationMethod = $data['propagationMethod'] ?? Section::PROPAGATION_METHOD_ALL;
+            $sectionRecord->defaultPlacement = $data['defaultPlacement'] ?? Section::DEFAULT_PLACEMENT_END;
             $sectionRecord->previewTargets = isset($data['previewTargets']) && is_array($data['previewTargets'])
                 ? ProjectConfigHelper::unpackAssociativeArray($data['previewTargets'])
                 : null;
@@ -850,7 +853,7 @@ class Sections extends Component
                 ->sectionId($sectionRecord->id);
             $elementsService = Craft::$app->getElements();
             foreach (Craft::$app->getSites()->getAllSiteIds() as $siteId) {
-                foreach ($entryQuery->siteId($siteId)->each() as $entry) {
+                foreach (Db::each($entryQuery->siteId($siteId)) as $entry) {
                     $elementsService->deleteElement($entry);
                 }
             }
@@ -1367,7 +1370,7 @@ class Sections extends Component
 
             $elementsService = Craft::$app->getElements();
             foreach (Craft::$app->getSites()->getAllSiteIds() as $siteId) {
-                foreach ($entryQuery->siteId($siteId)->each() as $entry) {
+                foreach (Db::each($entryQuery->siteId($siteId)) as $entry) {
                     /* @var Entry $entry */
                     $entry->deletedWithEntryType = true;
                     $elementsService->deleteElement($entry);
@@ -1446,6 +1449,9 @@ class Sections extends Component
         }
         if (version_compare($schemaVersion, '3.2.6', '>=')) {
             $query->addSelect('sections.previewTargets');
+        }
+        if (version_compare($schemaVersion, '3.7.5', '>=')) {
+            $query->addSelect('sections.defaultPlacement');
         }
 
         return $query;
@@ -1533,13 +1539,14 @@ class Sections extends Component
         $elementsService = Craft::$app->getElements();
         $otherEntriesQuery = Entry::find()
             ->drafts(null)
+            ->provisionalDrafts(null)
             ->sectionId($section->id)
             ->siteId('*')
             ->unique()
             ->id(['not', $entry->id])
             ->anyStatus();
 
-        foreach ($otherEntriesQuery->each() as $entry) {
+        foreach (Db::each($otherEntriesQuery) as $entry) {
             $elementsService->deleteElement($entry, true);
         }
 
@@ -1567,7 +1574,7 @@ class Sections extends Component
         $structuresService = Craft::$app->getStructures();
 
         /* @var Entry $entry */
-        foreach ($query->each() as $entry) {
+        foreach (Db::each($query) as $entry) {
             $structuresService->appendToRoot($sectionRecord->structureId, $entry, Structures::MODE_INSERT);
         }
     }

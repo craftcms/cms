@@ -167,6 +167,12 @@ class FieldLayout extends Model
     public $uid;
 
     /**
+     * @var string[]|null Reserved custom field handles
+     * @since 3.7.0
+     */
+    public $reservedFieldHandles;
+
+    /**
      * @var BaseField[][]
      * @see getAvailableCustomFields()
      */
@@ -204,7 +210,35 @@ class FieldLayout extends Model
     {
         $rules = parent::defineRules();
         $rules[] = [['id'], 'number', 'integerOnly' => true];
+        $rules[] = [['fields'], 'validateFields'];
         return $rules;
+    }
+
+    /**
+     * Validates the field selections.
+     *
+     * @return void
+     * @since 3.7.0
+     */
+    public function validateFields(): void
+    {
+        if (!$this->reservedFieldHandles) {
+            return;
+        }
+
+        // Make sure no fields are using one of our reserved attribute names
+        foreach ($this->getTabs() as $tab) {
+            foreach ($tab->elements as $element) {
+                if (
+                    $element instanceof CustomField &&
+                    in_array($element->attribute(), $this->reservedFieldHandles, true)
+                ) {
+                    $this->addError('fields', Craft::t('app', '“{handle}” is a reserved word.', [
+                        'handle' => $element->attribute(),
+                    ]));
+                }
+            }
+        }
     }
 
     /**
@@ -506,9 +540,6 @@ class FieldLayout extends Model
         // since the tab anchors’ `href` attributes won’t end up getting set properly
         $oldNamespace = $view->getNamespace();
         $namespace = ArrayHelper::remove($config, 'namespace');
-        if ($namespace !== null) {
-            $view->setNamespace($view->namespaceInputName($namespace));
-        }
 
         $form = new FieldLayoutForm($config);
         $tabs = $this->getTabs();
@@ -529,11 +560,10 @@ class FieldLayout extends Model
             $tabHtml = [];
 
             foreach ($tab->elements as $formElement) {
-                $elementHtml = $formElement->formHtml($element, $static);
-                if ($elementHtml !== null) {
-                    if ($namespace !== null) {
-                        $elementHtml = Html::namespaceHtml($elementHtml, $namespace);
-                    }
+                $elementHtml = $view->namespaceInputs(function() use ($formElement, $element, $static) {
+                    return (string)$formElement->formHtml($element, $static);
+                }, $namespace);
+                if ($elementHtml !== '') {
                     $tabHtml[] = $elementHtml;
                 }
             }
@@ -547,8 +577,6 @@ class FieldLayout extends Model
                 ]);
             }
         }
-
-        $view->setNamespace($oldNamespace);
 
         return $form;
     }

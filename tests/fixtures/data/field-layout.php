@@ -88,6 +88,7 @@ return [
                                         'type' => PlainText::class,
                                         'name' => 'First Subfield',
                                         'handle' => 'firstSubfield',
+                                        'columnSuffix' => 'aaaaaaaa',
                                         'instructions' => '',
                                         'required' => false,
                                         'typesettings' => [

@@ -89,7 +89,8 @@
                 criteria: parentOptionCriteria,
                 limit: 1,
                 elements: (parent is defined and parent ? [parent]),
-                errors: entry.getErrors('parent')
+                errors: entry.getErrors('parent'),
+                disabled: entry.getIsDraft() and not entry.getIsProvisionalDraft(),
             }) }}
         {% endif %}
 
@@ -134,9 +135,9 @@
 {% endblock %}
 
 {% block meta %}
-    {{ parent() }}
     {# Give plugins a chance to add other things here #}
     {% hook "cp.entries.edit.meta" %}
+    {{ parent() }}
 {% endblock %}
 
 {% block details %}

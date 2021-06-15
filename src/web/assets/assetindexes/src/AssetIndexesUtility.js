@@ -40,14 +40,14 @@
                 this.progressBar.$progressBar.velocity('stop').velocity({
                     opacity: 1
                 }, {
-                    complete: $.proxy(function() {
+                    complete: () => {
                         var postData = Garnish.getPostData(this.$form),
                             params = Craft.expandPostArray(postData);
                         params.start = true;
 
                         this.cacheImages = params.cacheImages;
 
-                        Craft.postActionRequest('utilities/asset-index-perform-action', {params: params}, function(response) {
+                        Craft.postActionRequest('utilities/asset-index-perform-action', {params}, response => {
                             if (response.indexingData) {
                                 this.sessionId = response.indexingData.sessionId;
 
@@ -72,8 +72,8 @@
                                     this.finishIndexing();
                                 }
                             }
-                        }.bind(this));
-                    }, this)
+                        });
+                    },
                 });
 
                 if (this.$allDone) {
@@ -96,7 +96,7 @@
                 this.loadingActions++;
 
                 var params = this.queue.shift();
-                Craft.postActionRequest('utilities/asset-index-perform-action', {params: params}, function(response) {
+                Craft.postActionRequest('utilities/asset-index-perform-action', {params}, response => {
                     this.loadingActions--;
                     this.completedActions++;
 
@@ -111,7 +111,7 @@
                     } else {
                         this.processIndexing();
                     }
-                }.bind(this));
+                });
 
                 // Try again, in case we have more space.
                 this.processIndexing();
@@ -153,7 +153,6 @@
             var modal = new Garnish.Modal($modal, {
                 hideOnEsc: false,
                 hideOnShadeClick: false,
-                onHide: $.proxy(this, 'onActionResponse')
             });
 
             this.addListener($modal, 'submit', function(ev) {
@@ -168,7 +167,7 @@
                 $.extend(params, data.params);
                 params.finish = true;
 
-                Craft.postActionRequest('utilities/asset-index-perform-action', {params: params}, $.noop);
+                Craft.postActionRequest('utilities/asset-index-perform-action', {params}, $.noop);
                 this.onComplete();
             });
         },
@@ -179,14 +178,14 @@
                 overview: true
             };
 
-            Craft.postActionRequest('utilities/asset-index-perform-action', {params: params}, function(response) {
+            Craft.postActionRequest('utilities/asset-index-perform-action', {params}, response => {
                 if (response.confirm) {
                     this.hideProgressBar();
                     this.showConfirmDialog(response);
                 } else {
                     this.onComplete();
                 }
-            }.bind(this));
+            });
         },
 
         hideProgressBar: function() {

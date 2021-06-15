@@ -22,7 +22,9 @@ use craft\elements\actions\View;
 use craft\elements\db\CategoryQuery;
 use craft\elements\db\ElementQuery;
 use craft\elements\db\ElementQueryInterface;
+use craft\helpers\Cp;
 use craft\helpers\Db;
+use craft\helpers\ElementHelper;
 use craft\helpers\UrlHelper;
 use craft\models\CategoryGroup;
 use craft\records\Category as CategoryRecord;
@@ -331,7 +333,7 @@ class Category extends Element
     protected static function defineTableAttributes(): array
     {
         return [
-            'title' => ['label' => Craft::t('app', 'Title')],
+            'title' => ['label' => Craft::t('app', 'Category')],
             'slug' => ['label' => Craft::t('app', 'Slug')],
             'uri' => ['label' => Craft::t('app', 'URI')],
             'link' => ['label' => Craft::t('app', 'Link'), 'icon' => 'world'],
@@ -445,7 +447,7 @@ class Category extends Element
     /**
      * @inheritdoc
      */
-    public function getIsEditable(): bool
+    protected function isEditable(): bool
     {
         return Craft::$app->getUser()->checkPermission('editCategories:' . $this->getGroup()->uid);
     }
@@ -453,7 +455,7 @@ class Category extends Element
     /**
      * @inheritdoc
      */
-    public function getCpEditUrl()
+    protected function cpEditUrl(): ?string
     {
         $group = $this->getGroup();
 
@@ -472,6 +474,17 @@ class Category extends Element
     public function getFieldLayout()
     {
         return parent::getFieldLayout() ?? $this->getGroup()->getFieldLayout();
+    }
+
+    /**
+     * @inheritdoc
+     */
+    protected function metaFieldsHtml(): string
+    {
+        return implode('', [
+            $this->slugFieldHtml(),
+            parent::metaFieldsHtml(),
+        ]);
     }
 
     /**
@@ -543,6 +556,8 @@ class Category extends Element
     public function afterSave(bool $isNew)
     {
         if (!$this->propagating) {
+            $group = $this->getGroup();
+
             // Get the category record
             if (!$isNew) {
                 $record = CategoryRecord::findOne($this->id);
@@ -562,9 +577,17 @@ class Category extends Element
             if (!$this->duplicateOf && $this->_hasNewParent()) {
                 $mode = $isNew ? Structures::MODE_INSERT : Structures::MODE_AUTO;
                 if (!$this->newParentId) {
-                    Craft::$app->getStructures()->appendToRoot($this->structureId, $this, $mode);
+                    if ($group->defaultPlacement === CategoryGroup::DEFAULT_PLACEMENT_BEGINNING) {
+                        Craft::$app->getStructures()->prependToRoot($this->structureId, $this, $mode);
+                    } else {
+                        Craft::$app->getStructures()->appendToRoot($this->structureId, $this, $mode);
+                    }
                 } else {
-                    Craft::$app->getStructures()->append($this->structureId, $this, $this->getParent(), $mode);
+                    if ($group->defaultPlacement === CategoryGroup::DEFAULT_PLACEMENT_BEGINNING) {
+                        Craft::$app->getStructures()->prepend($this->structureId, $this, $this->getParent(), $mode);
+                    } else {
+                        Craft::$app->getStructures()->append($this->structureId, $this, $this->getParent(), $mode);
+                    }
                 }
             }
 

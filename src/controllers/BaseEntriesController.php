@@ -127,45 +127,6 @@ abstract class BaseEntriesController extends Controller
     }
 
     /**
-     * Returns the document title that should be used on an Edit Entry page.
-     *
-     * @param Entry
-     * @return string
-     */
-    protected function docTitle(Entry $entry): string
-    {
-        $docTitle = $this->pageTitle($entry);
-
-        if ($entry->getIsDraft()) {
-            /* @var Entry|DraftBehavior $entry */
-            $docTitle .= ' (' . $entry->draftName . ')';
-        } else if ($entry->getIsRevision()) {
-            /* @var Entry|RevisionBehavior $entry */
-            $docTitle .= ' (' . $entry->getRevisionLabel() . ')';
-        }
-
-        return $docTitle;
-    }
-
-    /**
-     * Returns the page title that should be used on an Edit Entry page.
-     *
-     * @param Entry
-     * @return string
-     */
-    protected function pageTitle(Entry $entry): string
-    {
-        if ($title = trim($entry->title)) {
-            return $title;
-        }
-
-        if ($entry->getIsUnpublishedDraft()) {
-            return Craft::t('app', 'Create a new entry');
-        }
-        return Craft::t('app', 'Edit Entry');
-    }
-
-    /**
      * Returns the posted `enabledForSite` value, taking the user’s permissions into account.
      *
      * @return bool|bool[]|null

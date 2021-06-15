@@ -53,16 +53,16 @@ Craft.BaseElementIndexView = Garnish.Base.extend({
                     handle: (this.settings.context === 'index' ? '.checkbox, .element:first' : null),
                     filter: ':not(a):not(.toggle)',
                     checkboxMode: this.settings.checkboxMode,
-                    onSelectionChange: $.proxy(this, 'onSelectionChange')
+                    onSelectionChange: this.onSelectionChange.bind(this)
                 });
 
-            this._handleEnableElements = $.proxy(function(ev) {
+            this._handleEnableElements = ev => {
                 this.elementSelect.addItems(ev.elements);
-            }, this);
+            };
 
-            this._handleDisableElements = $.proxy(function(ev) {
+            this._handleDisableElements = ev => {
                 this.elementSelect.removeItems(ev.elements);
-            }, this);
+            };
 
             this.elementIndex.on('enableElements', this._handleEnableElements);
             this.elementIndex.on('disableElements', this._handleDisableElements);
@@ -70,7 +70,7 @@ Craft.BaseElementIndexView = Garnish.Base.extend({
 
         // Enable inline element editing if this is an index page
         if (this.settings.context === 'index') {
-            this._handleElementEditing = $.proxy(function(ev) {
+            this._handleElementEditing = ev => {
                 var $target = $(ev.target);
 
                 if ($target.prop('nodeName') === 'A') {
@@ -93,7 +93,7 @@ Craft.BaseElementIndexView = Garnish.Base.extend({
                 if (Garnish.hasAttr($element, 'data-editable')) {
                     this.createElementEditor($element);
                 }
-            }, this);
+            };
 
             if (!this.elementIndex.trashed) {
                 this.addListener(this.$elementContainer, 'dblclick', this._handleElementEditing);
@@ -269,32 +269,33 @@ Craft.BaseElementIndexView = Garnish.Base.extend({
         this.$loadingMoreSpinner.removeClass('hidden');
         this.removeListener(this.$scroller, 'scroll');
 
-        var data = this.getLoadMoreParams();
-
-        Craft.postActionRequest(this.settings.loadMoreElementsAction, data, $.proxy(function(response, textStatus) {
+        Craft.sendActionRequest('POST', this.settings.loadMoreElementsAction, {
+            data: this.getLoadMoreParams(),
+        }).then(response => {
             this.loadingMore = false;
             this.$loadingMoreSpinner.addClass('hidden');
 
-            if (textStatus === 'success') {
-                var $newElements = $(response.html);
+            let $newElements = $(response.data.html);
 
-                this.appendElements($newElements);
-                Craft.appendHeadHtml(response.headHtml);
-                Craft.appendFootHtml(response.footHtml);
+            this.appendElements($newElements);
+            Craft.appendHeadHtml(response.data.headHtml);
+            Craft.appendFootHtml(response.data.footHtml);
 
-                if (this.elementSelect) {
-                    this.elementSelect.addItems($newElements.filter(':not(.disabled)'));
-                    this.elementIndex.updateActionTriggers();
-                }
-
-                this.setTotalVisible(this.getTotalVisible() + $newElements.length);
-                this.setMorePending($newElements.length == this.settings.batchSize);
-
-                // Is there room to load more right now?
-                this.addListener(this.$scroller, 'scroll', 'maybeLoadMore');
-                this.maybeLoadMore();
+            if (this.elementSelect) {
+                this.elementSelect.addItems($newElements.filter(':not(.disabled)'));
+                this.elementIndex.updateActionTriggers();
             }
-        }, this));
+
+            this.setTotalVisible(this.getTotalVisible() + $newElements.length);
+            this.setMorePending($newElements.length == this.settings.batchSize);
+
+            // Is there room to load more right now?
+            this.addListener(this.$scroller, 'scroll', 'maybeLoadMore');
+            this.maybeLoadMore();
+        }).catch(e => {
+            this.loadingMore = false;
+            this.$loadingMoreSpinner.addClass('hidden');
+        });
     },
 
     getLoadMoreParams: function() {

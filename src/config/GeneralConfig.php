@@ -42,11 +42,26 @@ class GeneralConfig extends BaseObject
      */
     const SNAKE_CASE = 'snake';
 
+    private static $renamedSettings = [
+        'activateAccountFailurePath' => 'invalidUserTokenPath',
+        'allowAutoUpdates' => 'allowUpdates',
+        'backupDbOnUpdate' => 'backupOnUpdate',
+        'defaultFilePermissions' => 'defaultFileMode',
+        'defaultFolderPermissions' => 'defaultDirMode',
+        'enableGraphQlCaching' => 'enableGraphqlCaching',
+        'environmentVariables' => 'aliases',
+        'isSystemOn' => 'isSystemLive',
+        'restoreDbOnUpdateFailure' => 'restoreOnUpdateFailure',
+        'useWriteFileLock' => 'useFileLocks',
+        'validationKey' => 'securityKey',
+    ];
+
     /**
      * @var array The default user accessibility preferences that should be applied to users that haven’t saved their preferences yet.
      *
      * The array can contain the following keys:
      *
+     * - `reduceFocusVisibility` - Whether focus visibility styles should be reduced
      * - `useShapes` – Whether shapes should be used to represent statuses
      * - `underlineLinks` – Whether links should be underlined
      *
@@ -54,6 +69,7 @@ class GeneralConfig extends BaseObject
      * @group System
      */
     public $accessibilityDefaults = [
+        'reduceFocusVisibility' => false,
         'useShapes' => false,
         'underlineLinks' => false,
     ];
@@ -224,7 +240,6 @@ class GeneralConfig extends BaseObject
         'wmv',
         'xls',
         'xlsx',
-        'xml',
         'zip',
     ];
 
@@ -438,10 +453,8 @@ class GeneralConfig extends BaseObject
     public $defaultCookieDomain = '';
 
     /**
-     * @var string|null The default language the control panel should use for users who haven’t set a preferred language yet,
-     * as well as for console requests.
+     * @var string|null The default language the control panel should use for users who haven’t set a preferred language yet.
      * @group System
-     * @todo Rename to `defaultLanguage` in Craft 4, since it also determines the language for console requests
      */
     public $defaultCpLanguage;
 
@@ -654,7 +667,14 @@ class GeneralConfig extends BaseObject
      * @since 3.3.12
      * @group GraphQL
      */
-    public $enableGraphQlCaching = true;
+    public $enableGraphqlCaching = true;
+
+    /**
+     * @var bool Whether dates returned by the GraphQL API should be set to the system time zone by default, rather than UTC.
+     * @since 3.7.0
+     * @group GraphQL
+     */
+    public $setGraphqlDatesToSystemTimeZone = false;
 
     /**
      * @var bool Whether to enable Craft’s template `{% cache %}` tag on a global basis.
@@ -1149,6 +1169,17 @@ class GeneralConfig extends BaseObject
     public $previewIframeResizerOptions = [];
 
     /**
+     * @var mixed The amount of time content preview tokens can be used before expiring.
+     *
+     * See [[ConfigHelper::durationInSeconds()]] for a list of supported value types.
+     *
+     * @group Security
+     * @defaultAlt 1 day
+     * @since 3.7.0
+     */
+    public $previewTokenDuration = 86400;
+
+    /**
      * @var mixed The amount of time to wait before Craft purges pending users from the system that have not activated.
      *
      * Any content assigned to a pending user will be deleted as well when the given time interval passes.
@@ -1268,6 +1299,13 @@ class GeneralConfig extends BaseObject
      * @group Environment
      */
     public $restoreCommand;
+
+    /**
+     * @var bool Whether asset URLs should be revved so browsers don’t load cached versions when they’re modified.
+     * @since 3.7.0
+     * @group Assets
+     */
+    public $revAssetUrls = false;
 
     /**
      * @var bool Whether Craft should rotate images according to their EXIF data on upload.
@@ -1681,44 +1719,13 @@ class GeneralConfig extends BaseObject
     /**
      * @inheritdoc
      */
-    public function __construct(array $config = [])
-    {
-        // Check for renamed settings
-        $renamedSettings = [
-            'allowAutoUpdates' => 'allowUpdates',
-            'defaultFilePermissions' => 'defaultFileMode',
-            'defaultFolderPermissions' => 'defaultDirMode',
-            'useWriteFileLock' => 'useFileLocks',
-            'backupDbOnUpdate' => 'backupOnUpdate',
-            'restoreDbOnUpdateFailure' => 'restoreOnUpdateFailure',
-            'activateAccountFailurePath' => 'invalidUserTokenPath',
-            'validationKey' => 'securityKey',
-            'isSystemOn' => 'isSystemLive',
-        ];
-
-        $configFilePath = null;
-        foreach ($renamedSettings as $old => $new) {
-            if (array_key_exists($old, $config)) {
-                $configFilePath = $configFilePath ?? Craft::$app->getConfig()->getConfigFilePath(Config::CATEGORY_GENERAL);
-                Craft::$app->getDeprecator()->log($old, "The `{$old}` config setting has been renamed to `{$new}`.", $configFilePath);
-                $config[$new] = $config[$old];
-                unset($config[$old]);
-            }
-        }
-
-        // Check for environmentVariables, but don't actually rename it in case a template is referencing it
-        if (array_key_exists('environmentVariables', $config)) {
-            Craft::$app->getDeprecator()->log('environmentVariables', "The `environmentVariables` config setting has been renamed to `aliases`.");
-        }
-
-        parent::__construct($config);
-    }
-
-    /**
-     * @inheritdoc
-     */
     public function __get($name)
     {
+        if (isset(self::$renamedSettings[$name])) {
+            $newName = self::$renamedSettings[$name];
+            return $this->$newName;
+        }
+
         if (array_key_exists($name, $this->_customSettings)) {
             return $this->_customSettings[$name];
         }
@@ -1731,6 +1738,14 @@ class GeneralConfig extends BaseObject
      */
     public function __set($name, $value)
     {
+        if (isset(self::$renamedSettings[$name])) {
+            $newName = self::$renamedSettings[$name];
+            $configFilePath = $configFilePath ?? Craft::$app->getConfig()->getConfigFilePath(Config::CATEGORY_GENERAL);
+            Craft::$app->getDeprecator()->log($name, "The `$name` config setting has been renamed to `$newName`.", $configFilePath);
+            $this->$newName = $value;
+            return;
+        }
+
         try {
             parent::__set($name, $value);
         } catch (UnknownPropertyException $e) {
@@ -1774,6 +1789,7 @@ class GeneralConfig extends BaseObject
         $this->defaultTokenDuration = ConfigHelper::durationInSeconds($this->defaultTokenDuration);
         $this->elevatedSessionDuration = ConfigHelper::durationInSeconds($this->elevatedSessionDuration);
         $this->invalidLoginWindowDuration = ConfigHelper::durationInSeconds($this->invalidLoginWindowDuration);
+        $this->previewTokenDuration = ConfigHelper::durationInSeconds($this->previewTokenDuration);
         $this->purgePendingUsersDuration = ConfigHelper::durationInSeconds($this->purgePendingUsersDuration);
         $this->purgeUnsavedDraftsDuration = ConfigHelper::durationInSeconds($this->purgeUnsavedDraftsDuration);
         $this->rememberUsernameDuration = ConfigHelper::durationInSeconds($this->rememberUsernameDuration);

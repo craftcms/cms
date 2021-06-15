@@ -296,9 +296,13 @@ class ElementQueryConditionBuilder extends Component
                 'author' => [EntryField::class, 'canBeAliased' => false],
                 'uploader' => [AssetField::class, 'canBeAliased' => false],
                 'parent' => [BaseRelationField::class, 'canBeAliased' => false],
+                'ancestors' => [BaseRelationField::class, 'canBeAliased' => false],
                 'children' => [BaseRelationField::class, 'canBeAliased' => false],
+                'descendants' => [BaseRelationField::class, 'canBeAliased' => false],
                 'currentRevision' => [BaseRelationField::class, 'canBeAliased' => false],
                 'draftCreator' => [BaseRelationField::class, 'canBeAliased' => false],
+                'drafts' => [BaseRelationField::class, 'canBeAliased' => false],
+                'revisions' => [BaseRelationField::class, 'canBeAliased' => false],
                 'revisionCreator' => [BaseRelationField::class, 'canBeAliased' => false],
                 self::LOCALIZED_NODENAME => [CategoryField::class, EntryField::class],
             ];

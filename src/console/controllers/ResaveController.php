@@ -19,6 +19,8 @@ use craft\elements\MatrixBlock;
 use craft\elements\Tag;
 use craft\elements\User;
 use craft\events\BatchElementActionEvent;
+use craft\helpers\Queue;
+use craft\queue\jobs\ResaveElements;
 use craft\services\Elements;
 use yii\console\ExitCode;
 use yii\helpers\Console;
@@ -32,10 +34,22 @@ use yii\helpers\Console;
 class ResaveController extends Controller
 {
     /**
+     * @var bool Whether the elements should be resaved via a queue job.
+     * @since 3.7.0
+     */
+    public $queue = false;
+
+    /**
      * @var bool Whether to resave element drafts.
      * @since 3.6.5
      */
     public $drafts = false;
+
+    /**
+     * @var bool Whether to resave provisional element drafts.
+     * @since 3.7.0
+     */
+    public $provisionalDrafts = false;
 
     /**
      * @var int|string The ID(s) of the elements to resave.
@@ -109,6 +123,7 @@ class ResaveController extends Controller
     public function options($actionID)
     {
         $options = parent::options($actionID);
+        $options[] = 'queue';
         $options[] = 'elementId';
         $options[] = 'uid';
         $options[] = 'site';
@@ -131,6 +146,7 @@ class ResaveController extends Controller
                 $options[] = 'section';
                 $options[] = 'type';
                 $options[] = 'drafts';
+                $options[] = 'provisionalDrafts';
                 break;
             case 'matrix-blocks':
                 $options[] = 'field';
@@ -148,11 +164,11 @@ class ResaveController extends Controller
      */
     public function actionAssets(): int
     {
-        $query = Asset::find();
+        $criteria = [];
         if ($this->volume !== null) {
-            $query->volume(explode(',', $this->volume));
+            $criteria['volume'] = explode(',', $this->volume);
         }
-        return $this->saveElements($query);
+        return $this->resaveElements(Asset::class, $criteria);
     }
 
     /**
@@ -162,11 +178,11 @@ class ResaveController extends Controller
      */
     public function actionCategories(): int
     {
-        $query = Category::find();
+        $criteria = [];
         if ($this->group !== null) {
-            $query->group(explode(',', $this->group));
+            $criteria['group'] = explode(',', $this->group);
         }
-        return $this->saveElements($query);
+        return $this->resaveElements(Category::class, $criteria);
     }
 
     /**
@@ -176,14 +192,14 @@ class ResaveController extends Controller
      */
     public function actionEntries(): int
     {
-        $query = Entry::find();
+        $criteria = [];
         if ($this->section !== null) {
-            $query->section(explode(',', $this->section));
+            $criteria['section'] = explode(',', $this->section);
         }
         if ($this->type !== null) {
-            $query->type(explode(',', $this->type));
+            $criteria['type'] = explode(',', $this->type);
         }
-        return $this->saveElements($query);
+        return $this->resaveElements(Entry::class, $criteria);
     }
 
     /**
@@ -196,14 +212,14 @@ class ResaveController extends Controller
      */
     public function actionMatrixBlocks(): int
     {
-        $query = MatrixBlock::find();
+        $criteria = [];
         if ($this->field !== null) {
-            $query->field(explode(',', $this->field));
+            $criteria['field'] = explode(',', $this->field);
         }
         if ($this->type !== null) {
-            $query->type(explode(',', $this->type));
+            $criteria['type'] = explode(',', $this->type);
         }
-        return $this->saveElements($query);
+        return $this->resaveElements(MatrixBlock::class, $criteria);
     }
 
     /**
@@ -213,11 +229,11 @@ class ResaveController extends Controller
      */
     public function actionTags(): int
     {
-        $query = Tag::find();
+        $criteria = [];
         if ($this->group !== null) {
-            $query->group(explode(',', $this->group));
+            $criteria['group'] = explode(',', $this->group);
         }
-        return $this->saveElements($query);
+        return $this->resaveElements(Tag::class, $criteria);
     }
 
     /**
@@ -227,54 +243,107 @@ class ResaveController extends Controller
      */
     public function actionUsers(): int
     {
-        $query = User::find();
+        $criteria = [];
         if ($this->group !== null) {
-            $query->group(explode(',', $this->group));
+            $criteria['group'] = explode(',', $this->group);
         }
-        return $this->saveElements($query);
+        return $this->resaveElements(User::class, $criteria);
+    }
+
+    /**
+     * @param string|ElementInterface $elementType The element type that should be resaved
+     * @param array $criteria The element criteria that determines which elements should be resaved
+     * @return int
+     * @since 3.7.0
+     */
+    public function resaveElements(string $elementType, array $criteria = []): int
+    {
+        $criteria += $this->_baseCriteria();
+
+        if ($this->queue) {
+            Queue::push(new ResaveElements([
+                'elementType' => $elementType,
+                'criteria' => $criteria,
+                'updateSearchIndex' => $this->updateSearchIndex,
+            ]));
+            $this->stdout($elementType::pluralDisplayName() . ' queued to be resaved.' . PHP_EOL);
+            return ExitCode::OK;
+        }
+
+        $query = $elementType::find();
+        Craft::configure($query, $criteria);
+        return $this->_resaveElements($query);
     }
 
     /**
      * @param ElementQueryInterface $query
      * @return int
      * @since 3.2.0
+     * @deprecated in 3.7.0. Use [[resaveElements()]] instead.
      */
     public function saveElements(ElementQueryInterface $query): int
+    {
+        if ($this->queue) {
+            $this->stderr('This command doesn’t support the --queue option yet.' . PHP_EOL, Console::FG_RED);
+            return ExitCode::UNSPECIFIED_ERROR;
+        }
+
+        Craft::configure($query, $this->_baseCriteria());
+        return $this->_resaveElements($query);
+    }
+
+    /**
+     * @return array
+     */
+    private function _baseCriteria(): array
+    {
+        $criteria = [];
+
+        if ($this->drafts) {
+            $criteria['drafts'] = true;
+        }
+
+        if ($this->provisionalDrafts) {
+            $query->provisionalDrafts();
+        }
+
+        if ($this->elementId) {
+            $criteria['id'] = is_int($this->elementId) ? $this->elementId : explode(',', $this->elementId);
+        }
+
+        if ($this->uid) {
+            $criteria['uid'] = explode(',', $this->uid);
+        }
+
+        if ($this->site) {
+            $criteria['site'] = $this->site;
+        }
+
+        if ($this->status === 'any') {
+            $criteria['status'] = null;
+        } else if ($this->status) {
+            $criteria['status'] = explode(',', $this->status);
+        }
+
+        if ($this->offset !== null) {
+            $criteria['offset'] = $this->offset;
+        }
+
+        if ($this->limit !== null) {
+            $criteria['limit'] = $this->limit;
+        }
+
+        return $criteria;
+    }
+
+    /**
+     * Resave elemetns
+     */
+    private function _resaveElements(ElementQueryInterface $query): int
     {
         /* @var ElementQuery $query */
         /* @var ElementInterface $elementType */
         $elementType = $query->elementType;
-
-        if ($this->drafts) {
-            $query->drafts();
-        }
-
-        if ($this->elementId) {
-            $query->id(is_int($this->elementId) ? $this->elementId : explode(',', $this->elementId));
-        }
-
-        if ($this->uid) {
-            $query->uid(explode(',', $this->uid));
-        }
-
-        if ($this->site) {
-            $query->site($this->site);
-        }
-
-        if ($this->status === 'any') {
-            $query->anyStatus();
-        } else if ($this->status) {
-            $query->status(explode(',', $this->status));
-        }
-
-        if ($this->offset !== null) {
-            $query->offset($this->offset);
-        }
-
-        if ($this->limit !== null) {
-            $query->limit($this->limit);
-        }
-
         $count = (int)$query->count();
 
         if ($count === 0) {

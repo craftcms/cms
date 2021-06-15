@@ -18,6 +18,7 @@ use craft\elements\Tag;
 use craft\elements\User;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
+use DateTime;
 use yii\base\Component;
 
 /**
@@ -64,6 +65,7 @@ class Gc extends Component
         Craft::$app->getDrafts()->purgeUnsavedDrafts();
         Craft::$app->getUsers()->purgeExpiredPendingUsers();
         $this->_deleteStaleSessions();
+        $this->_deleteStaleAnnouncements();
 
         $this->hardDelete([
             Table::ELEMENTS, // elements should always go first
@@ -193,6 +195,17 @@ SQL;
 
         Db::delete(Table::SESSIONS, ['<', 'dateUpdated', Db::prepareDateForDb($pastTime)]);
     }
+
+    /**
+     * Deletes any feature announcement rows that have gone stale.
+     *
+     * @return void
+     */
+    private function _deleteStaleAnnouncements(): void
+    {
+        Db::delete(Table::ANNOUNCEMENTS, ['<', 'dateRead', Db::prepareDateForDb(new DateTime('7 days ago'))]);
+    }
+
 
     /**
      * Deletes any orphaned rows in the `drafts` and `revisions` tables.

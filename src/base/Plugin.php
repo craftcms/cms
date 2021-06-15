@@ -60,7 +60,7 @@ class Plugin extends Module implements PluginInterface
 
     /**
      * @var Model|bool|null The model used to store the plugin’s settings
-     * @see getSettingsModel()
+     * @see getSettings()
      */
     private $_settingsModel;
 
@@ -212,10 +212,9 @@ class Plugin extends Module implements PluginInterface
     public function getSettingsResponse()
     {
         $view = Craft::$app->getView();
-        $namespace = $view->getNamespace();
-        $view->setNamespace('settings');
-        $settingsHtml = $this->settingsHtml();
-        $view->setNamespace($namespace);
+        $settingsHtml = $view->namespaceInputs(function() {
+            return (string)$this->settingsHtml();
+        }, 'settings');
 
         /* @var Controller $controller */
         $controller = Craft::$app->controller;
