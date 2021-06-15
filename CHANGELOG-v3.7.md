@@ -140,7 +140,6 @@
 - The `defaultCpLanguage` config setting no longer affects console requests. ([#7747](https://github.com/craftcms/cms/issues/7747))
 - The `{% cache %}` tag now stores any JavaScript or CSS code registered with `{% js %}`, `{% script %}`, and `{% css %}` tags. ([#7758](https://github.com/craftcms/cms/issues/7758))
 - The `date()` Twig function now supports arrays with `date` and/or `time` keys. ([#7681](https://github.com/craftcms/cms/issues/7681))
-- JavaScript code registered with `{% js %}` tags or `craft\web\View::registerJs()` is now automatically wrapped in a self-executing function. ([#8055](https://github.com/craftcms/cms/issues/8055))
 - Custom field column names now include a random string, preventing column name conflicts when deploying multiple project config changes at once. ([#6922](https://github.com/craftcms/cms/issues/6922))
 - Custom fields can now store data across multiple columns in the `content` table.
 - Channel and Structure sections’ initial entry types are now named “Default” by default. ([#7078](https://github.com/craftcms/cms/issues/7078))
