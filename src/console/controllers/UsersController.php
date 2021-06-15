@@ -8,7 +8,6 @@
 namespace craft\console\controllers;
 
 use Craft;
-use craft\base\Model;
 use craft\console\Controller;
 use craft\elements\User;
 use craft\helpers\ArrayHelper;
