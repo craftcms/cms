@@ -24,6 +24,7 @@ use craft\validators\HandleValidator;
 use craft\validators\UrlValidator;
 use craft\web\assets\tablesettings\TableSettingsAsset;
 use craft\web\assets\timepicker\TimepickerAsset;
+use DateTime;
 use GraphQL\Type\Definition\InputObjectType;
 use GraphQL\Type\Definition\Type;
 use LitEmoji\LitEmoji;
@@ -445,7 +446,9 @@ class Table extends Field
 
         foreach ($value as $row) {
             foreach (array_keys($this->columns) as $colId) {
-                $keywords[] = $row[$colId];
+                if (isset($row[$colId]) && !$row[$colId] instanceof DateTime) {
+                    $keywords[] = $row[$colId];
+                }
             }
         }
 

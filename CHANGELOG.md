@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 3.x
 
-## Unreleased
+## 3.6.17 - 2021-06-15
 
 ### Changed
 - Mobile viewports no longer zoom into inputs on focus automatically..
@@ -12,6 +12,7 @@
 - Fixed a bug where nested element sources weren’t showing source-specific sort options. ([#8026](https://github.com/craftcms/cms/issues/8026))
 - Fixed a bug where volumes would lose their sort position when edited. ([#8033](https://github.com/craftcms/cms/issues/8033))
 - Fixed a bug where unpublished drafts were getting ignored when lazy-loading additional entries in Structure sections.
+- Fixed a PHP error that occurred when indexing search keywords for a Table field with a Date or Time column. ([#8061](https://github.com/craftcms/cms/issues/8061))
 
 ## 3.6.16 - 2021-06-01
 
