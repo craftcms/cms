@@ -73,6 +73,12 @@ before_script:
     sed -i 's/DB_USER=root/DB_USER=postgres/' tests/.env
   fi
 script:
+- nvm install 14
+- npm install -g npm
+- npm cache clean -f
+- npm install -g snyk
+#- snyk monitor --all-projects # Enable reachable vulns, scan and publish results to Snyk
+#- snyk test --all-projects # Enable reachable vulns
 - |
   if [[ $TASK_TESTS_COVERAGE != 1 ]]; then
     vendor/bin/codecept run unit,functional
@@ -80,13 +86,6 @@ script:
     mkdir -p build/logs
     vendor/bin/codecept run unit,functional --coverage-xml coverage.xml;
   fi
-# - npm cache clean -f
-# - npm install -g n
-# - sudo n stable
-# - npm install -g npm
-# - npm install -g snyk
-# - snyk monitor --reachable-vulns # Enable reachable vulns, scan and publish results to Snyk
-# - snyk test --reachable-vulns # Enable reachable vulns
 after_script:
 - |
   if [ $TASK_TESTS_COVERAGE == 1 ]; then
