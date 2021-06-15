@@ -637,7 +637,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
                 ]);
             case self::PROPAGATION_METHOD_SITE_GROUP:
                 return Craft::t('app', 'Blocks will be saved across all sites in the {group} site group.', [
-                    'group' => Craft::t('site', $element->getSite()->getGroup()->name),
+                    'group' => Craft::t('site', $element->getSite()->getGroup()->getName()),
                 ]);
             case self::PROPAGATION_METHOD_LANGUAGE:
                 $language = (new Locale($element->getSite()->language))

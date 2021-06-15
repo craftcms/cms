@@ -92,6 +92,8 @@
 - Added `craft\models\Section::$defaultPlacement`.
 - Added `craft\models\Section::DEFAULT_PLACEMENT_BEGINNING`.
 - Added `craft\models\Section::DEFAULT_PLACEMENT_END`.
+- Added `craft\models\SiteGroup::getName()`.
+- Added `craft\models\SiteGroup::setName()`.
 - Added `craft\services\Announcements`.
 - Added `craft\services\Elements::EVENT_AFTER_MERGE_CANONICAL_CHANGES`.
 - Added `craft\services\Elements::EVENT_BEFORE_MERGE_CANONICAL_CHANGES`.
@@ -150,6 +152,7 @@
 - Admin tables can now include linked buttons in the toolbar.
 - Admin tables can now include single action buttons.
 - Admin tables now support separators in menu button lists.
+- Site group names can now be set to environment variables. ([#8044](https://github.com/craftcms/cms/issues/8044))
 - `craft\base\Element::__set()` now detects whether a custom field value is being set, and if so, passes the value through `setFieldValue()`. ([#7726](https://github.com/craftcms/cms/issues/7726))
 - `craft\base\Element::getCpEditUrl()` now includes a `draftId`/`revisionId` query string param in the returned URL if the element is a draft or revision. ([#7832](https://github.com/craftcms/cms/issues/7832))
 - `craft\base\FieldInterface::getContentColumnType()` can now return an array, if the field stores content across multiple columns.

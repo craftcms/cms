@@ -4142,7 +4142,8 @@ ul.tree,
 
 #logoutwarningmodal,
 #loginmodal,
-#elevatedsessionmodal {
+#elevatedsessionmodal,
+.prompt {
   width: 500px;
 }
 
@@ -4163,6 +4164,11 @@ ul.tree,
       @include right(-24px);
     }
   }
+}
+
+.prompt {
+  height: auto;
+  min-height: auto;
 }
 
 /* delete user modal */

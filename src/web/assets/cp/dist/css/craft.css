@@ -2081,7 +2081,7 @@ body.rtl .element-hud-form .buttons .spinner { left: -24px; }
 /* logout warning/login/elevated session modals */
 .logoutwarningmodalshade, .loginmodalshade { z-index: 101; }
 
-#logoutwarningmodal, #loginmodal, #elevatedsessionmodal { width: 500px; }
+#logoutwarningmodal, #loginmodal, #elevatedsessionmodal, .prompt { width: 500px; }
 
 #logoutwarningmodal, #loginmodal { z-index: 101; }
 
@@ -2092,6 +2092,8 @@ body.rtl .element-hud-form .buttons .spinner { left: -24px; }
 body.ltr #loginmodal .inputcontainer .spinner, body.ltr #elevatedsessionmodal .inputcontainer .spinner { right: -24px; }
 
 body.rtl #loginmodal .inputcontainer .spinner, body.rtl #elevatedsessionmodal .inputcontainer .spinner { left: -24px; }
+
+.prompt { height: auto; min-height: auto; }
 
 /* delete user modal */
 .deleteusermodal .content-summary { margin: -24px -24px 24px; padding: 24px; background-color: #f3f7fc; }
