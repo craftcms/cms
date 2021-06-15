@@ -41,10 +41,10 @@ class UsersController extends Controller
     public $password;
 
     /**
-     * @var bool Whether the user should be an admin
+     * @var bool|null Whether the user should be an admin
      * @since 3.7.0
      */
-    public $admin = false;
+    public $admin;
 
     /**
      * @var string[] The group handles to assign the created user to
@@ -178,7 +178,7 @@ class UsersController extends Controller
             ]);
         }
 
-        $user->admin = $this->admin ?? $this->confirm('Make this user an admin?', $this->admin);
+        $user->admin = $this->admin ?? $this->confirm('Make this user an admin?', false);
 
         if ($this->password) {
             $user->newPassword = $this->password;
