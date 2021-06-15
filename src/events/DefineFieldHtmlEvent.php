@@ -8,7 +8,6 @@
 namespace craft\events;
 
 use craft\base\ElementInterface;
-use yii\base\Event;
 
 /**
  * DefineFieldHtmlEvent is used to define the HTML for a field input.

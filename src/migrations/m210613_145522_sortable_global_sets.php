@@ -8,8 +8,6 @@ use craft\db\Query;
 use craft\db\Table;
 use craft\helpers\MigrationHelper;
 use craft\services\Globals;
-use craft\services\ProjectConfig;
-use yii\base\BaseObject;
 
 /**
  * m210613_145522_sortable_global_sets migration.

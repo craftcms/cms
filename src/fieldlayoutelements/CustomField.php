@@ -11,7 +11,6 @@ use Craft;
 use craft\base\ElementInterface;
 use craft\base\FieldInterface;
 use craft\helpers\ArrayHelper;
-use craft\helpers\Html;
 use yii\base\InvalidArgumentException;
 
 /**

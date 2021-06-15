@@ -811,7 +811,7 @@ class Cp
 
     /**
      * Returns a metadata component’s HTML.
-     * 
+     *
      * @param array $data The data, with keys representing the labels. The values can either be strings or callables.
      * If a value is `false`, it will be omitted.
      * @return string
@@ -819,7 +819,7 @@ class Cp
     public static function metadataHtml(array $data): string
     {
         $defs = [];
-        
+
         foreach ($data as $label => $value) {
             if (is_callable($value)) {
                 $value = $value();
@@ -841,7 +841,7 @@ class Cp
             'class' => ['meta', 'read-only'],
         ]);
     }
-    
+
     /**
      * Returns the page title and document title that should be used for Edit Element pages.
      *

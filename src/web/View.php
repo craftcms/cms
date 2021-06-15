@@ -31,7 +31,6 @@ use Twig\Extension\StringLoaderExtension;
 use Twig\Template as TwigTemplate;
 use yii\base\Arrayable;
 use yii\base\Exception;
-use yii\base\InvalidArgumentException;
 use yii\base\Model;
 use yii\base\NotSupportedException;
 use yii\web\AssetBundle as YiiAssetBundle;

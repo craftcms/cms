@@ -9,10 +9,8 @@ namespace craft\console\controllers;
 
 use Craft;
 use craft\console\Controller;
-use craft\db\Table;
 use craft\events\ConfigEvent;
 use craft\helpers\Console;
-use craft\helpers\Db;
 use craft\helpers\ProjectConfig;
 use craft\services\Plugins;
 use craft\services\ProjectConfig as ProjectConfigService;
