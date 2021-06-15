@@ -183,7 +183,7 @@ class UsersController extends Controller
         if ($this->password) {
             $user->newPassword = $this->password;
         } elseif ($this->interactive) {
-            if ($this->confirm('Set a password for this user?', true)) {
+            if ($this->confirm('Set a password for this user?', false)) {
                 $user->newPassword = $this->passwordPrompt([
                     'validator' => $this->_createInputValidator($user, 'newPassword'),
                 ]);
