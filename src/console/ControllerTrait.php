@@ -9,7 +9,6 @@ namespace craft\console;
 
 use Composer\Util\Platform;
 use Composer\Util\Silencer;
-use Craft;
 use craft\helpers\Console;
 
 /**

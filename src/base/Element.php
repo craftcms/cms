@@ -60,7 +60,6 @@ use craft\validators\StringValidator;
 use craft\web\UploadedFile;
 use DateTime;
 use Twig\Markup;
-use yii\base\BaseObject;
 use yii\base\Event;
 use yii\base\InvalidCallException;
 use yii\base\InvalidConfigException;

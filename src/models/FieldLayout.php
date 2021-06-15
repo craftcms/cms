@@ -22,7 +22,6 @@ use craft\fieldlayoutelements\HorizontalRule;
 use craft\fieldlayoutelements\Template;
 use craft\fieldlayoutelements\Tip;
 use craft\helpers\ArrayHelper;
-use craft\helpers\Html;
 use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
 

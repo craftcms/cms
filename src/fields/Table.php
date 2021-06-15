@@ -18,7 +18,6 @@ use craft\helpers\Cp;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Html;
 use craft\helpers\Json;
-use craft\helpers\StringHelper;
 use craft\validators\ColorValidator;
 use craft\validators\HandleValidator;
 use craft\validators\UrlValidator;

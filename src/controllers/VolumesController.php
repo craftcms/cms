@@ -9,10 +9,8 @@ namespace craft\controllers;
 
 use Craft;
 use craft\base\VolumeInterface;
-use craft\db\Table;
 use craft\elements\Asset;
 use craft\helpers\ArrayHelper;
-use craft\helpers\Db;
 use craft\helpers\Json;
 use craft\helpers\UrlHelper;
 use craft\volumes\Local;

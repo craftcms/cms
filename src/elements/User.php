@@ -36,7 +36,6 @@ use craft\validators\DateTimeValidator;
 use craft\validators\UniqueValidator;
 use craft\validators\UsernameValidator;
 use craft\validators\UserPasswordValidator;
-use yii\base\BaseObject;
 use yii\base\ErrorHandler;
 use yii\base\Exception;
 use yii\base\InvalidArgumentException;

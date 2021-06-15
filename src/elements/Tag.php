@@ -12,7 +12,6 @@ use craft\base\Element;
 use craft\db\Table;
 use craft\elements\db\ElementQueryInterface;
 use craft\elements\db\TagQuery;
-use craft\helpers\Cp;
 use craft\helpers\Db;
 use craft\models\TagGroup;
 use craft\records\Tag as TagRecord;

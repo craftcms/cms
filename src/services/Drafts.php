@@ -141,7 +141,8 @@ class Drafts extends Component
         string $notes = null,
         array $newAttributes = [],
         bool $provisional = false
-    ): ElementInterface {
+    ): ElementInterface
+    {
         // Make sure the source isn't a draft or revision
         if ($source->getIsDraft() || $source->getIsRevision()) {
             throw new InvalidArgumentException('Cannot create a draft from another draft or revision.');
@@ -474,7 +475,8 @@ class Drafts extends Component
         ?int $sourceId = null,
         bool $trackChanges = false,
         bool $provisional = false
-    ): int {
+    ): int
+    {
         Db::insert(Table::DRAFTS, [
             'sourceId' => $sourceId, // todo: remove this in v4
             'creatorId' => $creatorId,

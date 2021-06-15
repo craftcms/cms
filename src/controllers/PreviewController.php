@@ -106,7 +106,8 @@ class PreviewController extends Controller
         ?int $draftId = null,
         ?int $revisionId = null,
         bool $provisional = false
-    ): Response {
+    ): Response
+    {
         // Make sure a token was used to get here
         $this->requireToken();
 

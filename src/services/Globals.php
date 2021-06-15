@@ -23,7 +23,6 @@ use craft\helpers\ProjectConfig as ProjectConfigHelper;
 use craft\helpers\StringHelper;
 use craft\models\FieldLayout;
 use craft\records\GlobalSet as GlobalSetRecord;
-use yii\base\BaseObject;
 use yii\base\Component;
 
 /**
