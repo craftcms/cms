@@ -24,42 +24,49 @@ use yii\console\ExitCode;
 class UsersController extends Controller
 {
     /**
-     * @var string|null The created user’s email
+     * @var string|null The user’s email
+     * @since 3.7.0
      */
     public $email;
 
     /**
-     * @var string|null The created user’s username
+     * @var string|null The user’s username
+     * @since 3.7.0
      */
     public $username;
 
     /**
-     * @var string|null The user’s new password, or created user's password
+     * @var string|null The user’s new password
      */
     public $password;
 
     /**
-     * @var bool Create the user as an admin
+     * @var bool Whether the user should be an admin
+     * @since 3.7.0
      */
     public $admin = false;
 
     /**
      * @var string[] The group handles to assign the created user to
+     * @since 3.7.0
      */
     public $groups = [];
 
     /**
      * @var int[] The group IDs to assign the user to the created user to
+     * @since 3.7.0
      */
     public $groupIds = [];
 
     /**
      * @var string|null The email or username of the user to inherit content when deleting a user
+     * @since 3.7.0
      */
     public $inheritor;
 
     /**
      * @var bool Whether to delete the user’s content if no inheritor is specified
+     * @since 3.7.0
      */
     public $deleteContent = false;
 
@@ -136,6 +143,7 @@ class UsersController extends Controller
      * Creates a user.
      *
      * @return int
+     * @since 3.7.0
      */
     public function actionCreate(): int
     {
@@ -205,7 +213,7 @@ class UsersController extends Controller
         // Most likely an invalid group ID will throw…
         try {
             Craft::$app->getUsers()->assignUserToGroups($user->id, $groupIds);
-        } catch (\Throwable) {
+        } catch (\Throwable $e) {
             $this->stderr('failed: Couldn’t assign user to specified groups.' . PHP_EOL, Console::FG_RED);
             return ExitCode::UNSPECIFIED_ERROR;
         }
