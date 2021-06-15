@@ -73,6 +73,7 @@
 - Added `craft\events\DraftEvent::$provisional`.
 - Added `craft\fields\Matrix::$propagationKeyFormat`.
 - Added `craft\fields\Matrix::PROPAGATION_METHOD_CUSTOM`.
+- Added `craft\helpers\Cp::autosuggestFieldHtml()`.
 - Added `craft\helpers\Cp::dateTimeFieldHtml()`.
 - Added `craft\helpers\Cp::editElementTitles()`.
 - Added `craft\helpers\Cp::elementSelectFieldHtml()`.

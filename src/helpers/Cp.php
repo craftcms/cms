@@ -773,6 +773,43 @@ class Cp
     }
 
     /**
+     * Renders an autosuggest field’s HTML.
+     *
+     * @param array $config
+     * @return string
+     * @throws InvalidArgumentException if `$config['siteId']` is invalid
+     * @since 3.7.0
+     */
+    public static function autosuggestFieldHtml(array $config): string
+    {
+        $config['id'] = $config['id'] ?? 'autosuggest' . mt_rand();
+
+        // Suggest an environment variable / alias?
+        if ($config['suggestEnvVars'] ?? false) {
+            $value = $config['value'] ?? '';
+            if (!isset($config['tip']) && (!isset($value[0]) || !in_array($value[0], ['$', '@']))) {
+                if ($config['suggestAliases'] ?? false) {
+                    $config['tip'] = Craft::t('app', 'This can be set to an environment variable, or begin with an alias.');
+                } else {
+                    $config['tip'] = Craft::t('app', 'This can be set to an environment variable.');
+                }
+                $config['tip'] .= ' ' .
+                    Html::a(Craft::t('app', 'Learn more'), 'https://craftcms.com/docs/3.x/config/#environmental-configuration', [
+                        'class' => 'go',
+                    ]);
+            } else if (
+                !isset($config['warning']) &&
+                ($value === '@web' || strpos($value, '@web/') === 0) &&
+                Craft::$app->getRequest()->isWebAliasSetDynamically
+            ) {
+                $config['warning'] = Craft::t('app', 'The `@web` alias is not recommended if it is determined automatically.');
+            }
+        }
+
+        return static::fieldHtml('template:_includes/forms/autosuggest', $config);
+    }
+
+    /**
      * Returns a metadata component’s HTML.
      * 
      * @param array $data The data, with keys representing the labels. The values can either be strings or callables.
