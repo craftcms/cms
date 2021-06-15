@@ -106,10 +106,7 @@ class InstallController extends Controller
             return ExitCode::OK;
         }
 
-        $user = new User([
-            'admin' => true,
-        ]);
-
+        $user = new User();
         $site = new Site([
             'handle' => 'default',
             'hasUrls' => true,
@@ -146,12 +143,12 @@ class InstallController extends Controller
         $generalConfig = $configService->getGeneral();
 
         if ($generalConfig->useEmailAsUsername) {
-            $user->username = $user->email = $this->email ?: $this->prompt('Email:', ['required' => true, 'validator' => $this->createInputValidator($user, 'email')]);
+            $username = $email = $this->email ?: $this->prompt('Email:', ['required' => true, 'validator' => $this->createInputValidator($user, 'email')]);
         } else {
-            $user->username = $this->username ?: $this->prompt('Username:', ['validator' => $this->createInputValidator($user, 'username'), 'default' => 'admin']);
-            $user->email = $this->email ?: $this->prompt('Email:', ['required' => true, 'validator' => $this->createInputValidator($user, 'email')]);
+            $username = $this->username ?: $this->prompt('Username:', ['validator' => $this->createInputValidator($user, 'username'), 'default' => 'admin']);
+            $email = $this->email ?: $this->prompt('Email:', ['required' => true, 'validator' => $this->createInputValidator($user, 'email')]);
         }
-        $user->newPassword = $this->password ?: $this->passwordPrompt(['validator' => $this->createInputValidator($user, 'newPassword')]);
+        $password = $this->password ?: $this->passwordPrompt(['validator' => $this->createInputValidator($user, 'newPassword')]);
         $site->name = $this->siteName ?: $this->prompt('Site name:', ['required' => true, 'default' => InstallHelper::defaultSiteName(), 'validator' => $this->createInputValidator($site, 'name')]);
         $site->baseUrl = $this->siteUrl ?: $this->prompt('Site URL:', ['required' => true, 'default' => InstallHelper::defaultSiteUrl(), 'validator' => $this->createInputValidator($site, 'baseUrl')]);
         $site->language = $this->language ?: $this->prompt('Site language:', ['default' => InstallHelper::defaultSiteLanguage(), 'validator' => $this->createInputValidator($site, 'language')]);
@@ -168,7 +165,9 @@ class InstallController extends Controller
         }
 
         $migration = new Install([
-            'user' => $user,
+            'username' => $username,
+            'password' => $password,
+            'email' => $email,
             'site' => $site,
         ]);
 
