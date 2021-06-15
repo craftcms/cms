@@ -1215,7 +1215,7 @@ class Install extends Migration
                 ],
             ],
             'email' => [
-                'fromEmail' => $this->email,
+                'fromEmail' => $this->user->email,
                 'fromName' => $this->site->getName(),
                 'transportType' => Sendmail::class,
             ],
