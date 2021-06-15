@@ -67,8 +67,8 @@ class PreviewController extends Controller
             $this->requireAuthorization('previewElement:' . $sourceId);
         }
 
-        // Create a 24 hour token
-        $route = [
+        // Create the token
+        $token = Craft::$app->getTokens()->createPreviewToken([
             'preview/preview', [
                 'elementType' => $elementType,
                 'sourceId' => (int)$sourceId,
@@ -77,9 +77,7 @@ class PreviewController extends Controller
                 'revisionId' => (int)$revisionId ?: null,
                 'provisional' => $provisional,
             ],
-        ];
-
-        $token = Craft::$app->getTokens()->createToken($route);
+        ]);
 
         if (!$token) {
             throw new ServerErrorHttpException(Craft::t('app', 'Could not create a preview token.'));
