@@ -10,6 +10,7 @@ namespace craft\console;
 use Composer\Util\Platform;
 use Composer\Util\Silencer;
 use Craft;
+use craft\base\Model;
 use craft\helpers\Console;
 
 /**
@@ -79,5 +80,29 @@ trait ControllerTrait
     protected function outputCommand(string $command, bool $withScriptName = true)
     {
         Console::outputCommand($command, $withScriptName);
+    }
+
+    /**
+     * Creates a function for the `validator` option of `Controller::prompt`.
+     *
+     * @param Model $model
+     * @param string $attribute
+     * @param string|null $error
+     * @return callable
+     */
+    protected function createInputValidator(Model $model, string $attribute, ?string &$error = null): callable
+    {
+        return function($input, ?string &$error) use ($model, $attribute) {
+            $model->$attribute = $input;
+
+            if (!$model->validate([$attribute])) {
+                $error = $model->getFirstError($attribute);
+
+                return false;
+            }
+            $error = null;
+
+            return true;
+        };
     }
 }

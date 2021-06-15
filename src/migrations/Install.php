@@ -39,19 +39,9 @@ use yii\base\InvalidConfigException;
 class Install extends Migration
 {
     /**
-     * @var string|null The admin user’s username
+     * @var User|null The admin user
      */
-    public $username;
-
-    /**
-     * @var string|null The admin user’s password
-     */
-    public $password;
-
-    /**
-     * @var string|null The admin user’s email
-     */
-    public $email;
+    public $user;
 
     /**
      * @var Site|null The default site
@@ -1148,23 +1138,17 @@ class Install extends Migration
 
         // Save the first user
         echo '    > saving the first user ... ';
-        $user = new User([
-            'username' => $this->username,
-            'newPassword' => $this->password,
-            'email' => $this->email,
-            'admin' => true,
-        ]);
-        Craft::$app->getElements()->saveElement($user);
+        Craft::$app->getElements()->saveElement($this->user);
         echo "done\n";
 
         // Set their preferred language
-        Craft::$app->getUsers()->saveUserPreferences($user, [
+        Craft::$app->getUsers()->saveUserPreferences($this->user, [
             'language' => $this->site->language,
         ]);
 
         // Log them in
         if (!Craft::$app->getRequest()->getIsConsoleRequest()) {
-            Craft::$app->getUser()->login($user, $generalConfig->userSessionDuration);
+            Craft::$app->getUser()->login($this->user, $generalConfig->userSessionDuration);
         }
     }
 
