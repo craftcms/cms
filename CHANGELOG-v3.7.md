@@ -1,5 +1,7 @@
 # Release Notes for Craft CMS 3.7
 
+> {tip} Read through the [Upgrading to Craft 3.7](https://craftcms.com/knowledge-base/upgrading-to-craft-3-7) guide before updating.
+
 ### Added
 - The control panel now displays new feature announcements. ([#8056](https://github.com/craftcms/cms/pull/8056))
 - Added the “Reduce focus visibility” user preference. ([#7790](https://github.com/craftcms/cms/issues/7790))
