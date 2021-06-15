@@ -269,32 +269,33 @@ Craft.BaseElementIndexView = Garnish.Base.extend({
         this.$loadingMoreSpinner.removeClass('hidden');
         this.removeListener(this.$scroller, 'scroll');
 
-        var data = this.getLoadMoreParams();
-
-        Craft.postActionRequest(this.settings.loadMoreElementsAction, data, $.proxy(function(response, textStatus) {
+        Craft.sendActionRequest('POST', this.settings.loadMoreElementsAction, {
+            data: this.getLoadMoreParams(),
+        }).then(response => {
             this.loadingMore = false;
             this.$loadingMoreSpinner.addClass('hidden');
 
-            if (textStatus === 'success') {
-                var $newElements = $(response.html);
+            let $newElements = $(response.data.html);
 
-                this.appendElements($newElements);
-                Craft.appendHeadHtml(response.headHtml);
-                Craft.appendFootHtml(response.footHtml);
+            this.appendElements($newElements);
+            Craft.appendHeadHtml(response.data.headHtml);
+            Craft.appendFootHtml(response.data.footHtml);
 
-                if (this.elementSelect) {
-                    this.elementSelect.addItems($newElements.filter(':not(.disabled)'));
-                    this.elementIndex.updateActionTriggers();
-                }
-
-                this.setTotalVisible(this.getTotalVisible() + $newElements.length);
-                this.setMorePending($newElements.length == this.settings.batchSize);
-
-                // Is there room to load more right now?
-                this.addListener(this.$scroller, 'scroll', 'maybeLoadMore');
-                this.maybeLoadMore();
+            if (this.elementSelect) {
+                this.elementSelect.addItems($newElements.filter(':not(.disabled)'));
+                this.elementIndex.updateActionTriggers();
             }
-        }, this));
+
+            this.setTotalVisible(this.getTotalVisible() + $newElements.length);
+            this.setMorePending($newElements.length == this.settings.batchSize);
+
+            // Is there room to load more right now?
+            this.addListener(this.$scroller, 'scroll', 'maybeLoadMore');
+            this.maybeLoadMore();
+        }).catch(e => {
+            this.loadingMore = false;
+            this.$loadingMoreSpinner.addClass('hidden');
+        });
     },
 
     getLoadMoreParams: function() {
