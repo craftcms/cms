@@ -12,6 +12,7 @@
 - Date fields now have a “Show Time Zone” setting, allowing authors to choose which time zone the date is set to, rather than using the system time zone.
 - Matrix fields can now be set to custom propagation methods, based on a propagation key template. ([#7610](https://github.com/craftcms/cms/issues/7610))
 - Added a “Refresh” button to Live Preview, for preview targets whose “Auto-refresh” (formerly “Refresh”) setting is disabled.
+- Added the `users/create` and `users/delete` commands. ([#8014](https://github.com/craftcms/cms/issues/8014))
 - Added the `siteSettingsId` element query and GraphQL API query parameter for all elements.
 - Added the `preferSites` GraphQL API query argument for all elements. ([#8006](https://github.com/craftcms/cms/pull/8006))
 - Added the `ancestors`, `descendants`, `drafts`, `draftCreator`, `revisions`, `currentRevision`, and `revisionCreator` fields to entry GraphQL queries. ([#7950]((https://github.com/craftcms/cms/issues/7950)))
