@@ -19,9 +19,15 @@ class m200620_230205_field_layout_changes extends Migration
      */
     public function safeUp()
     {
-        $this->addColumn(Table::FIELDLAYOUTTABS, 'elements', $this->text()->after('name'));
+        if (!$this->db->columnExists(Table::FIELDLAYOUTTABS, 'elements')) {
+            $this->addColumn(Table::FIELDLAYOUTTABS, 'elements', $this->text()->after('name'));
+        }
 
-        $this->dropColumn(Table::ENTRYTYPES, 'titleLabel');
+        if ($this->db->columnExists(Table::ENTRYTYPES, 'titleLabel')) {
+            $this->dropColumn(Table::ENTRYTYPES, 'titleLabel');
+        }
+        
+        
         if ($this->db->columnExists(Table::ENTRYTYPES, 'titleInstructions')) {
             $this->dropColumn(Table::ENTRYTYPES, 'titleInstructions');
         }
