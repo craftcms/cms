@@ -43,7 +43,7 @@ class Authentication extends Component
             throw new InvalidConfigException("Unable to configure authentication chain for `$scenario`");
         }
 
-        /** @var Scenario $defaultBranch */
+        /** @var string $defaultBranch */
         $defaultBranch = $chainConfig->getDefaultBranchName();
 
         if ($forceNew || !($state = $this->getAuthenticationState($scenario))) {

@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace craft\authentication\base;
 
 use Craft;
+use craft\authentication\Branch;
 use craft\base\Component;
 use craft\elements\User;
 use craft\models\authentication\State;
@@ -22,7 +23,15 @@ use craft\models\authentication\State;
  */
 abstract class Type extends Component implements TypeInterface
 {
+    /**
+     * @var State Current authentication state.
+     */
     protected State $state;
+
+    /**
+     * @var Branch Current authentication branch.
+     */
+    protected Branch $branch;
 
     /**
      * Return the field HTML.
@@ -74,13 +83,19 @@ abstract class Type extends Component implements TypeInterface
     }
 
     /**
-     * Setter for the Authentication state. Protected, to avoid exposing state.
-     *
-     * @param State $state
+     * @inheritdoc
      */
-    protected function setState(State $state): void
+    public function setState(State $state): void
     {
         $this->state = $state;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function setBranch(Branch $branch): void
+    {
+        $this->branch = $branch;
     }
 
     /**
@@ -110,6 +125,4 @@ abstract class Type extends Component implements TypeInterface
     {
         return static::class;
     }
-
-
 }

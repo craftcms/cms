@@ -110,10 +110,14 @@ class AuthenticationController extends Controller
             'error' => $session->getError(),
         ];
 
-        if ($success) {
-            /** @var Type $step */
-            $step = $chain->getNextAuthenticationStep();
-            $output['stepComplete'] = true;
+        /** @var Type $step */
+        $step = $chain->getNextAuthenticationStep();
+
+        if ($success || $chain->getDidSwitchBranches()) {
+            if ($success) {
+                $output['stepComplete'] = true;
+            }
+
             $output['stepType'] = $step->getStepType();
             $output['html'] = $step->getInputFieldHtml();
             $output['footHtml'] = Craft::$app->getView()->getBodyHtml();

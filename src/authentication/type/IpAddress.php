@@ -59,6 +59,7 @@ class IpAddress extends Type
 
         if (!$this->isAllowedIP($ip)) {
             Craft::warning("Authentication denied for IP `$ip`");
+            $this->branch->invalidateBranch();
             return $this->state;
         }
 

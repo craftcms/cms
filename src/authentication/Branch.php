@@ -290,17 +290,43 @@ class Branch extends Component
             throw new InvalidConfigException("Unterminated authentication chain - {$this->state->getAuthenticationScenario()}, last completed step - {$this->_getLastCompletedStepType()}");
         }
 
+        $stepConfig = null;
+
         if (!empty($stepType)) {
             foreach ($availableTypes as $availableType) {
                 if ($stepType === $availableType['type']) {
-                    return Authentication::createStepFromConfig($availableType, $this->state);
+                    $stepConfig = $availableType;
+                    break;
                 }
             }
 
-            throw new InvalidConfigException("Invalid authentication chain configuration. $stepType type requested, but not available at this point of the chain.");
+            if ($stepConfig === null) {
+                throw new InvalidConfigException("Invalid authentication chain configuration. $stepType type requested, but not available at this point of the chain.");
+            }
+        } else {
+            $stepConfig = reset($availableTypes);
         }
 
-        return Authentication::createStepFromConfig(reset($availableTypes), $this->state);
+        $class = $stepConfig['type'];
+
+        if (!is_subclass_of($class, TypeInterface::class)) {
+            throw new InvalidConfigException('Impossible to create authentication type.');
+        }
+
+        $settings = array_merge($stepConfig['settings'] ?? [], [
+            'branch' => $this,
+            'state' => $this->state
+        ]);
+
+        return Craft::createObject($class, [$settings]);
+    }
+
+    /**
+     * Invalidate this branch.
+     */
+    public function invalidateBranch(): void
+    {
+        $this->isValid = false;
     }
 
     /**

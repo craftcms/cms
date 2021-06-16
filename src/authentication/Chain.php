@@ -40,8 +40,9 @@ class Chain extends Component
     protected string $scenario = '';
 
     /**
-     * @var State The current authentication state.
+     * @var bool True, if branches were switched mid-auth
      */
+    protected bool $didSwitchBranches = false;
 
     /**
      * Authentication chain constructor.
@@ -117,7 +118,6 @@ class Chain extends Component
 
         $nextBranchName = $this->getNextBranchName($activeBranch->getName());
         $newState = AuthHelper::createAuthState($this->scenario, $nextBranchName);
-
         $this->_activeBranch = $this->ensureActiveBranch($nextBranchName, $newState);
 
         return false;
@@ -158,6 +158,14 @@ class Chain extends Component
     }
 
     /**
+     * @return bool
+     */
+    public function getDidSwitchBranches(): bool
+    {
+        return $this->didSwitchBranches;
+    }
+
+    /**
      * Determine the next possible branch name, based on the last invalid branch name.
      *
      * @param string $invalidBranchName
@@ -172,6 +180,7 @@ class Chain extends Component
             throw new AuthenticationException('Impossible to determine a possible branch name');
         }
 
+        $this->didSwitchBranches = true;
         return $nextBranchName;
     }
 
@@ -210,6 +219,7 @@ class Chain extends Component
 
                 if ($branch->validate()) {
                     $this->_activeBranch = $branch;
+                    Craft::$app->getAuthentication()->storeAuthenticationState($state);
                 } else {
                     Craft::warning("Failed to validate the $branchName authentication branch: " . implode("\n", $branch->getErrorSummary(true)));
                     // If we run out of branches, this will throw an exception breaking the loop

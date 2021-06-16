@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace craft\authentication\base;
 
+use craft\authentication\Branch;
 use craft\elements\User;
 use craft\models\authentication\State;
 use yii\base\InvalidConfigException;
@@ -71,4 +72,18 @@ interface TypeInterface
      * @return string
      */
     public function getStepType(): string;
+
+    /**
+     * Set the current authentication state.
+     *
+     * @param State $state
+     */
+    public function setState(State $state): void;
+
+    /**
+     * Set the authentication chain branch.
+     *
+     * @param Branch $branch
+     */
+    public function setBranch(Branch $branch): void;
 }
