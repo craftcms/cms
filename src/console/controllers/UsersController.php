@@ -8,7 +8,6 @@
 namespace craft\console\controllers;
 
 use Craft;
-use craft\base\Model;
 use craft\console\Controller;
 use craft\elements\User;
 use craft\helpers\ArrayHelper;
@@ -165,16 +164,16 @@ class UsersController extends Controller
         if (Craft::$app->getConfig()->getGeneral()->useEmailAsUsername) {
             $user->username = $this->email ?: $this->prompt('Email:', [
                 'required' => true,
-                'validator' => $this->_createInputValidator($user, 'email'),
+                'validator' => $this->createAttributeValidator($user, 'email'),
             ]);
         } else {
             $user->email = $this->email ?: $this->prompt('Email:', [
                 'required' => true,
-                'validator' => $this->_createInputValidator($user, 'email'),
+                'validator' => $this->createAttributeValidator($user, 'email'),
             ]);
             $user->username = $this->username ?: $this->prompt('Username:', [
                 'required' => true,
-                'validator' => $this->_createInputValidator($user, 'username'),
+                'validator' => $this->createAttributeValidator($user, 'username'),
             ]);
         }
 
@@ -185,7 +184,7 @@ class UsersController extends Controller
         } else if ($this->interactive) {
             if ($this->confirm('Set a password for this user?', false)) {
                 $user->newPassword = $this->passwordPrompt([
-                    'validator' => $this->_createInputValidator($user, 'newPassword'),
+                    'validator' => $this->createAttributeValidator($user, 'newPassword'),
                 ]);
             }
         }
@@ -312,7 +311,7 @@ class UsersController extends Controller
             }
         } else if ($this->interactive) {
             $this->passwordPrompt([
-                'validator' => $this->_createInputValidator($user, 'newPassword'),
+                'validator' => $this->createAttributeValidator($user, 'newPassword'),
             ]);
         }
 
@@ -321,29 +320,5 @@ class UsersController extends Controller
         $this->stdout('done' . PHP_EOL, Console::FG_GREEN);
 
         return ExitCode::OK;
-    }
-
-    /**
-     * Creates a function for the `validator` option of `Controller::prompt`.
-     *
-     * @param Model $model
-     * @param string $attribute
-     * @param string|null $error
-     * @return callable
-     */
-    private function _createInputValidator(Model $model, string $attribute, &$error = null): callable
-    {
-        return function($input, &$error) use ($model, $attribute) {
-            $model->$attribute = $input;
-
-            if (!$model->validate([$attribute])) {
-                $error = $model->getFirstError($attribute);
-
-                return false;
-            }
-            $error = null;
-
-            return true;
-        };
     }
 }
