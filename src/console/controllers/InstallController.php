@@ -114,24 +114,25 @@ class InstallController extends Controller
 
         // Validate the arguments
         $errors = [];
+        $currentError = null;
 
-        if ($this->username && !$this->createAttributeValidator($user, 'username', $error)($this->username, $error)) {
-            $errors[] = $error;
+        if ($this->username && !$this->createAttributeValidator($user, 'username')($this->username, $currentError)) {
+            $errors[] = $currentError;
         }
-        if ($this->email && !$this->createAttributeValidator($user, 'email', $error)($this->email, $error)) {
-            $errors[] = $error;
+        if ($this->email && !$this->createAttributeValidator($user, 'email')($this->email, $currentError)) {
+            $errors[] = $currentError;
         }
-        if ($this->password && !$this->createAttributeValidator($user, 'newPassword', $error)($this->password, $error)) {
-            $errors[] = $error;
+        if ($this->password && !$this->createAttributeValidator($user, 'newPassword')($this->password, $currentError)) {
+            $errors[] = $currentError;
         }
-        if ($this->siteName && !$this->createAttributeValidator($site, 'name', $error)($this->siteName, $error)) {
-            $errors[] = $error;
+        if ($this->siteName && !$this->createAttributeValidator($site, 'name')($this->siteName, $currentError)) {
+            $errors[] = $currentError;
         }
-        if ($this->siteUrl && !$this->createAttributeValidator($site, 'baseUrl', $error)($this->siteUrl, $error)) {
-            $errors[] = $error;
+        if ($this->siteUrl && !$this->createAttributeValidator($site, 'baseUrl')($this->siteUrl, $currentError)) {
+            $errors[] = $currentError;
         }
-        if ($this->language && !$this->createAttributeValidator($site, 'language', $error)($this->language, $error)) {
-            $errors[] = $error;
+        if ($this->language && !$this->createAttributeValidator($site, 'language')($this->language, $currentError)) {
+            $errors[] = $currentError;
         }
 
         if (!empty($errors)) {
