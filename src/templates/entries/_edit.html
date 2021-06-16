@@ -90,7 +90,7 @@
                 limit: 1,
                 elements: (parent is defined and parent ? [parent]),
                 errors: entry.getErrors('parent'),
-                disabled: entry.getIsDraft() and not entry.getIsProvisionalDraft(),
+                disabled: entry.getIsDerivative() and not entry.getIsProvisionalDraft(),
             }) }}
         {% endif %}
 

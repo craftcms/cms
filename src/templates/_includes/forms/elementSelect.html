@@ -44,10 +44,9 @@
         {{ tag('button', {
             type: 'button',
             class: ['btn', 'add', 'icon', 'dashed', disabled ? 'disabled']|filter,
-            text: 'Choose'|t('app'),
+            text: selectionLabel ?? 'Choose'|t('app'),
             disabled: disabled,
         }) }}
-        <button type="button" class="btn add icon dashed">{{ selectionLabel ?? "Choose"|t('app') }}</button>
     </div>
 {% endtag %}
 

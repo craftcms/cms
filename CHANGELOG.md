@@ -7,6 +7,8 @@
 
 ### Fixed
 - Fixed an infinite recursion bug that could occur when validating date values.
+- Fixed a bug where it wasn’t possible to choose the parent entry when creating new Structure section entries. ([#8074](https://github.com/craftcms/cms/issues/8074))
+- Fixed a bug where element selection fields could get multiple “Choose” buttons. ([#8074](https://github.com/craftcms/cms/issues/8074))
 
 ## 3.7.0-beta.1 - 2021-06-15
 
