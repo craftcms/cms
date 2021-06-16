@@ -156,6 +156,7 @@
 - Admin tables can now include single action buttons.
 - Admin tables now support separators in menu button lists.
 - Site group names can now be set to environment variables. ([#8044](https://github.com/craftcms/cms/issues/8044))
+- Template requests now respond with a `Content-Length` header. ([#8070](https://github.com/craftcms/cms/issues/8070))
 - Exceptions thrown by queue jobs are now logged. ([#8060](https://github.com/craftcms/cms/issues/8060))
 - `craft\base\Element::__set()` now detects whether a custom field value is being set, and if so, passes the value through `setFieldValue()`. ([#7726](https://github.com/craftcms/cms/issues/7726))
 - `craft\base\Element::getCpEditUrl()` now includes a `draftId`/`revisionId` query string param in the returned URL if the element is a draft or revision. ([#7832](https://github.com/craftcms/cms/issues/7832))

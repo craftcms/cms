@@ -5,6 +5,9 @@
 ### Added
 - Added `craft\console\ControllerTrait::createAttributeValidator()`. ([#8066](https://github.com/craftcms/cms/pull/8066))
 
+### Changed
+- Template requests now respond with a `Content-Length` header. ([#8070](https://github.com/craftcms/cms/issues/8070))
+
 ### Fixed
 - Fixed an infinite recursion bug that could occur when validating date values.
 - Fixed a bug where it wasn’t possible to choose the parent entry when creating new Structure section entries. ([#8074](https://github.com/craftcms/cms/issues/8074))
