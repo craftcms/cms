@@ -115,22 +115,22 @@ class InstallController extends Controller
         // Validate the arguments
         $errors = [];
 
-        if ($this->username && !$this->createInputValidator($user, 'username', $error)($this->username, $error)) {
+        if ($this->username && !$this->createAttributeValidator($user, 'username', $error)($this->username, $error)) {
             $errors[] = $error;
         }
-        if ($this->email && !$this->createInputValidator($user, 'email', $error)($this->email, $error)) {
+        if ($this->email && !$this->createAttributeValidator($user, 'email', $error)($this->email, $error)) {
             $errors[] = $error;
         }
-        if ($this->password && !$this->createInputValidator($user, 'newPassword', $error)($this->password, $error)) {
+        if ($this->password && !$this->createAttributeValidator($user, 'newPassword', $error)($this->password, $error)) {
             $errors[] = $error;
         }
-        if ($this->siteName && !$this->createInputValidator($site, 'name', $error)($this->siteName, $error)) {
+        if ($this->siteName && !$this->createAttributeValidator($site, 'name', $error)($this->siteName, $error)) {
             $errors[] = $error;
         }
-        if ($this->siteUrl && !$this->createInputValidator($site, 'baseUrl', $error)($this->siteUrl, $error)) {
+        if ($this->siteUrl && !$this->createAttributeValidator($site, 'baseUrl', $error)($this->siteUrl, $error)) {
             $errors[] = $error;
         }
-        if ($this->language && !$this->createInputValidator($site, 'language', $error)($this->language, $error)) {
+        if ($this->language && !$this->createAttributeValidator($site, 'language', $error)($this->language, $error)) {
             $errors[] = $error;
         }
 
@@ -143,15 +143,15 @@ class InstallController extends Controller
         $generalConfig = $configService->getGeneral();
 
         if ($generalConfig->useEmailAsUsername) {
-            $username = $email = $this->email ?: $this->prompt('Email:', ['required' => true, 'validator' => $this->createInputValidator($user, 'email')]);
+            $username = $email = $this->email ?: $this->prompt('Email:', ['required' => true, 'validator' => $this->createAttributeValidator($user, 'email')]);
         } else {
-            $username = $this->username ?: $this->prompt('Username:', ['validator' => $this->createInputValidator($user, 'username'), 'default' => 'admin']);
-            $email = $this->email ?: $this->prompt('Email:', ['required' => true, 'validator' => $this->createInputValidator($user, 'email')]);
+            $username = $this->username ?: $this->prompt('Username:', ['validator' => $this->createAttributeValidator($user, 'username'), 'default' => 'admin']);
+            $email = $this->email ?: $this->prompt('Email:', ['required' => true, 'validator' => $this->createAttributeValidator($user, 'email')]);
         }
-        $password = $this->password ?: $this->passwordPrompt(['validator' => $this->createInputValidator($user, 'newPassword')]);
-        $site->name = $this->siteName ?: $this->prompt('Site name:', ['required' => true, 'default' => InstallHelper::defaultSiteName(), 'validator' => $this->createInputValidator($site, 'name')]);
-        $site->baseUrl = $this->siteUrl ?: $this->prompt('Site URL:', ['required' => true, 'default' => InstallHelper::defaultSiteUrl(), 'validator' => $this->createInputValidator($site, 'baseUrl')]);
-        $site->language = $this->language ?: $this->prompt('Site language:', ['default' => InstallHelper::defaultSiteLanguage(), 'validator' => $this->createInputValidator($site, 'language')]);
+        $password = $this->password ?: $this->passwordPrompt(['validator' => $this->createAttributeValidator($user, 'newPassword')]);
+        $site->name = $this->siteName ?: $this->prompt('Site name:', ['required' => true, 'default' => InstallHelper::defaultSiteName(), 'validator' => $this->createAttributeValidator($site, 'name')]);
+        $site->baseUrl = $this->siteUrl ?: $this->prompt('Site URL:', ['required' => true, 'default' => InstallHelper::defaultSiteUrl(), 'validator' => $this->createAttributeValidator($site, 'baseUrl')]);
+        $site->language = $this->language ?: $this->prompt('Site language:', ['default' => InstallHelper::defaultSiteLanguage(), 'validator' => $this->createAttributeValidator($site, 'language')]);
 
         // Try to save the site URL to a PRIMARY_SITE_URL environment variable
         // if it's not already set to an alias or environment variable

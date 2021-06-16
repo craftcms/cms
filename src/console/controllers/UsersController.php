@@ -164,16 +164,16 @@ class UsersController extends Controller
         if (Craft::$app->getConfig()->getGeneral()->useEmailAsUsername) {
             $user->username = $this->email ?: $this->prompt('Email:', [
                 'required' => true,
-                'validator' => $this->createInputValidator($user, 'email'),
+                'validator' => $this->createAttributeValidator($user, 'email'),
             ]);
         } else {
             $user->email = $this->email ?: $this->prompt('Email:', [
                 'required' => true,
-                'validator' => $this->createInputValidator($user, 'email'),
+                'validator' => $this->createAttributeValidator($user, 'email'),
             ]);
             $user->username = $this->username ?: $this->prompt('Username:', [
                 'required' => true,
-                'validator' => $this->createInputValidator($user, 'username'),
+                'validator' => $this->createAttributeValidator($user, 'username'),
             ]);
         }
 
@@ -184,7 +184,7 @@ class UsersController extends Controller
         } else if ($this->interactive) {
             if ($this->confirm('Set a password for this user?', false)) {
                 $user->newPassword = $this->passwordPrompt([
-                    'validator' => $this->createInputValidator($user, 'newPassword'),
+                    'validator' => $this->createAttributeValidator($user, 'newPassword'),
                 ]);
             }
         }
@@ -311,7 +311,7 @@ class UsersController extends Controller
             }
         } else if ($this->interactive) {
             $this->passwordPrompt([
-                'validator' => $this->createInputValidator($user, 'newPassword'),
+                'validator' => $this->createAttributeValidator($user, 'newPassword'),
             ]);
         }
 

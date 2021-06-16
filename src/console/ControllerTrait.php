@@ -89,7 +89,7 @@ trait ControllerTrait
      * @param string|null $error
      * @return callable
      */
-    protected function createInputValidator(Model $model, string $attribute, ?string &$error = null): callable
+    protected function createAttributeValidator(Model $model, string $attribute, ?string &$error = null): callable
     {
         return function($input, ?string &$error) use ($model, $attribute) {
             $model->$attribute = $input;
