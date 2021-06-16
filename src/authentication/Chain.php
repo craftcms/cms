@@ -66,7 +66,7 @@ class Chain extends Component
         $branchName = $state->getAuthenticationBranch();
         $this->_activeBranch = $this->ensureActiveBranch($branchName, $state);
 
-        parent::__construct([]);
+        parent::__construct();
     }
 
     /**
