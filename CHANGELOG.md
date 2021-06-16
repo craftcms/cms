@@ -1,5 +1,10 @@
 # Release Notes for Craft CMS 3.x
 
+## Unreleased
+
+### Fixed
+- Fixed an infinite recursion bug that could occur when validating date values.
+
 ## 3.7.0-beta.1 - 2021-06-15
 
 > {tip} Read through the [Upgrading to Craft 3.7](https://craftcms.com/knowledge-base/upgrading-to-craft-3-7) guide before updating.

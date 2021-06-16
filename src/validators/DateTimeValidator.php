@@ -119,7 +119,7 @@ class DateTimeValidator extends Validator
     public function isEmpty($value)
     {
         if ($this->isEmpty !== null) {
-            return $this->isEmpty($value);
+            return parent::isEmpty($value);
         }
 
         return empty($value);
