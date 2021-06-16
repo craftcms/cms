@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+### Added
+- Added `craft\console\ControllerTrait::createAttributeValidator()`. ([#8066](https://github.com/craftcms/cms/pull/8066))
+
 ### Fixed
 - Fixed an infinite recursion bug that could occur when validating date values.
 

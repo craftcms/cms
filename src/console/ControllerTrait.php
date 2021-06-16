@@ -87,6 +87,7 @@ trait ControllerTrait
      * @param Model $model
      * @param string $attribute
      * @return callable
+     * @since 3.7.0
      */
     protected function createAttributeValidator(Model $model, string $attribute): callable
     {

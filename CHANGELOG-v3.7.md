@@ -64,6 +64,7 @@
 - Added `craft\base\FieldInterface::getStatus()`.
 - Added `craft\base\FieldTrait::$columnSuffix`.
 - Added `craft\console\ControllerTrait::checkRootUser()`.
+- Added `craft\console\ControllerTrait::createAttributeValidator()`. ([#8066](https://github.com/craftcms/cms/pull/8066))
 - Added `craft\console\controllers\ResaveController::resaveElements()`.
 - Added `craft\elements\User::EVENT_DEFINE_FRIENDLY_NAME`. ([#8027](https://github.com/craftcms/cms/issues/8027))
 - Added `craft\elements\User::EVENT_DEFINE_NAME`. ([#8027](https://github.com/craftcms/cms/issues/8027))
