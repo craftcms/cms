@@ -1,45 +1,62 @@
-"use strict";
-class WebAuthn extends AuthenticationStep {
-    constructor() {
+class WebAuthnStep extends AuthenticationStep
+{
+    readonly $button = $('#verify-webauthn');
+
+    constructor()
+    {
         super('craft\\authentication\\type\\mfa\\WebAuthn');
-        this.$button = $('#verify-webauthn');
         Craft.LoginForm.$submit.hide().click();
     }
-    validate() {
+
+    public validate(): true
+    {
         return true;
     }
-    getVerificationCodeInput() {
+
+    protected getVerificationCodeInput(): JQuery
+    {
         return $();
     }
-    async returnFormData() {
+
+    protected async returnFormData()
+    {
         const optionData = this.$button.data('request-options');
+
         // Sort-of deep copy
-        const requestOptions = Object.assign({}, optionData);
+        const requestOptions = {...optionData};
+
         if (optionData.allowCredentials) {
             requestOptions.allowCredentials = [...optionData.allowCredentials];
         }
+
         // proprietary base 64 decode, for some reason
         requestOptions.challenge = atob(requestOptions.challenge.replace(/-/g, '+').replace(/_/g, '/'));
+
         // Unpack to binary data
-        requestOptions.challenge = Uint8Array.from(requestOptions.challenge, c => c.charCodeAt(0));
+        requestOptions.challenge = Uint8Array.from(requestOptions.challenge as string, c => c.charCodeAt(0));
+
         for (const idx in requestOptions.allowCredentials) {
             let allowed = requestOptions.allowCredentials[idx];
+
             requestOptions.allowCredentials[idx] = {
-                id: Uint8Array.from(atob(allowed.id.replace(/-/g, '+').replace(/_/g, '/')), c => c.charCodeAt(0)),
+                id: Uint8Array.from(atob(allowed.id.replace(/-/g, '+').replace(/_/g, '/')) as string, c => c.charCodeAt(0)),
                 type: allowed.type
             };
         }
-        let credential;
+
+        let credential: PublicKeyCredential | null;
+
         try {
             credential = await navigator.credentials.get({
                 publicKey: requestOptions
-            });
-        }
-        catch (error) {
+            }) as PublicKeyCredential;
+        } catch (error) {
             console.log(error);
             throw Craft.t('app', 'Failed to authenticate');
         }
-        const response = credential.response;
+
+        const response = credential.response as AuthenticatorAssertionResponse;
+
         return {
             credentialResponse: {
                 id: credential.id,
@@ -55,4 +72,5 @@ class WebAuthn extends AuthenticationStep {
         };
     }
 }
-new WebAuthn();
+
+new WebAuthnStep();

@@ -27,7 +27,7 @@ class LoginStepAsset extends AssetBundle
      * @inheritdoc
      */
     public $depends = [
-        LoginStepAsset::class
+        LoginAsset::class
     ];
 
     /**

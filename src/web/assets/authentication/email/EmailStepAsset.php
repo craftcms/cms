@@ -5,16 +5,16 @@
  * @license https://craftcms.github.io/license/
  */
 
-namespace craft\web\assets\authentication\webauthn;
+namespace craft\web\assets\authentication\email;
 
 use craft\web\AssetBundle;
 use craft\web\assets\login\LoginAsset;
 use craft\web\View;
 
 /**
- * Asset bundle for the WebAuthn
+ * Asset bundle for the email only auth step
  */
-class WebAuthnAsset extends AssetBundle
+class EmailStepAsset extends AssetBundle
 {
     /**
      * @inheritdoc
@@ -32,20 +32,6 @@ class WebAuthnAsset extends AssetBundle
      * @inheritdoc
      */
     public $js = [
-        'WebAuthn.min.js',
+        'EmailStep.min.js',
     ];
-
-    /**
-     * @inheritdoc
-     */
-    public function registerAssetFiles($view)
-    {
-        parent::registerAssetFiles($view);
-
-        if ($view instanceof View) {
-            $view->registerTranslations('app', [
-                'Failed to authenticate',
-            ]);
-        }
-    }
 }

@@ -17,7 +17,7 @@ use craft\models\authentication\State;
  *
  * @property-read string $inputFieldHtml
  */
-class Credentials extends Type
+class Login extends Type
 {
     /**
      * @inheritdoc
@@ -80,6 +80,6 @@ class Credentials extends Type
      */
     public function getInputFieldHtml(): string
     {
-        return Craft::$app->getView()->renderTemplate('_components/authenticationsteps/Credentials/input');
+        return Craft::$app->getView()->renderTemplate('_components/authenticationsteps/Login/input');
     }
 }

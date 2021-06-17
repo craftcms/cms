@@ -1,24 +1,34 @@
-"use strict";
-class Email extends AuthenticationStep {
-    constructor() {
+class EmailStep extends AuthenticationStep
+{
+    private inputSelector = '#email';
+
+    constructor()
+    {
         super('craft\\authentication\\type\\Email');
-        this.inputSelector = '#email';
         this.$loginForm.on('input', this.inputSelector, this.onInput.bind(this));
     }
-    validate() {
-        const emailAddress = this.getEmailInput().val();
+
+    protected validate()
+    {
+        const emailAddress = this.getEmailInput().val() as string;
         if (emailAddress.length === 0) {
             return Craft.t('app', 'Please enter a valid email address');
         }
+
         return true;
     }
-    returnFormData() {
+
+    protected returnFormData()
+    {
         return {
             "email": this.getEmailInput().val(),
         };
     }
-    getEmailInput() {
+
+    protected getEmailInput(): JQuery
+    {
         return this.$loginForm.find(this.inputSelector);
     }
 }
-new Email();
+
+new EmailStep();

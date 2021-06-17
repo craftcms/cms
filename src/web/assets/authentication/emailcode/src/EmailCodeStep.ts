@@ -1,4 +1,4 @@
-class EmailCode extends VerificationCode
+class EmailCodeStep extends VerificationCode
 {
     constructor()
     {
@@ -6,4 +6,4 @@ class EmailCode extends VerificationCode
     }
 }
 
-new EmailCode();
+new EmailCodeStep();

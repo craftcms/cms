@@ -1,7 +1,7 @@
 "use strict";
-class AuthenticatorCode extends VerificationCode {
+class AuthenticatorCodeStep extends VerificationCode {
     constructor() {
         super('craft\\authentication\\type\\mfa\\AuthenticatorCode');
     }
 }
-new AuthenticatorCode();
+new AuthenticatorCodeStep();

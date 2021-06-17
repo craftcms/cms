@@ -1,4 +1,4 @@
-class AuthenticatorCode extends VerificationCode
+class AuthenticatorCodeStep extends VerificationCode
 {
     constructor()
     {
@@ -6,4 +6,4 @@ class AuthenticatorCode extends VerificationCode
     }
 }
 
-new AuthenticatorCode();
+new AuthenticatorCodeStep();
