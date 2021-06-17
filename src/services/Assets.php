@@ -316,8 +316,11 @@ class Assets extends Component
      */
     public function deleteFoldersByIds($folderIds, bool $deleteDir = true)
     {
+        $folders = [];
+
         foreach ((array)$folderIds as $folderId) {
             $folder = $this->getFolderById($folderId);
+            $folders[] = $folder;
 
             if ($folder) {
                 if ($deleteDir) {
@@ -335,7 +338,15 @@ class Assets extends Component
             $elementService->deleteElement($asset, true);
         }
 
-        VolumeFolderRecord::deleteAll(['id' => $folderIds]);
+        foreach ($folders as $folder) {
+            $descendants = $this->getAllDescendantFolders($folder);
+            usort($descendants, function ($a, $b) { return substr_count($a->path, '/') < substr_count($b->path, '/');});
+
+            foreach ($descendants as $descendant) {
+                VolumeFolderRecord::deleteAll(['id' => $descendant->id]);
+            }
+            VolumeFolderRecord::deleteAll(['id' => $folder->id]);
+        }
     }
 
     /**
