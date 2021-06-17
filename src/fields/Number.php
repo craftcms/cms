@@ -17,6 +17,7 @@ use craft\helpers\Db;
 use craft\helpers\Html;
 use craft\helpers\Localization;
 use craft\i18n\Locale;
+use yii\base\InvalidArgumentException;
 
 /**
  * Number represents a Number field.
@@ -248,7 +249,10 @@ class Number extends Field implements PreviewableFieldInterface, SortableFieldIn
     {
         if ($value !== null) {
             if ($this->previewFormat !== self::FORMAT_NONE) {
-                $value = Craft::$app->getFormatter()->asDecimal($value, $this->decimals);
+                try {
+                    $value = Craft::$app->getFormatter()->asDecimal($value, $this->decimals);
+                } catch (InvalidArgumentException $e) {
+                }
             } else if ($this->decimals) {
                 // Just make sure we're using the right decimal symbol
                 $decimalSeparator = Craft::$app->getFormattingLocale()->getNumberSymbol(Locale::SYMBOL_DECIMAL_SEPARATOR);

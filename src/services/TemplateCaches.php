@@ -16,6 +16,7 @@ use craft\helpers\StringHelper;
 use DateTime;
 use yii\base\Component;
 use yii\base\Event;
+use yii\base\Exception;
 
 /**
  * Template Caches service.
@@ -59,6 +60,7 @@ class TemplateCaches extends Component
      * @param bool $global Whether the cache would have been stored globally.
      * @param bool $registerScripts Whether JS and CSS code coptured with the cache should be registered
      * @return string|null
+     * @throws Exception if this is a console request and `false` is passed to `$global`
      */
     public function getTemplateCache(string $key, bool $global, bool $registerScripts = false)
     {
@@ -143,6 +145,7 @@ class TemplateCaches extends Component
      * @param bool $withScripts Whether JS and CSS code registered with [[\craft\web\View::registerJs()]],
      * [[\craft\web\View::registerScript()]], and [[\craft\web\View::registerCss()]] should be captured and
      * included in the cache.
+     * @throws Exception if this is a console request and `false` is passed to `$global`
      * @throws \Throwable
      */
     public function endTemplateCache(string $key, bool $global, ?string $duration, $expiration, string $body, bool $withScripts = false)
@@ -326,8 +329,9 @@ class TemplateCaches extends Component
      * @param bool|null $global Whether the template caches are stored globally.
      * @param int|null $siteId The site ID to delete caches for.
      * @return bool
+     * @throws Exception if this is a console request and `null` or `false` is passed to `$global`
      */
-    public function deleteCachesByKey($key, bool $global = null, int $siteId = null): bool
+    public function deleteCachesByKey($key, ?bool $global = null, ?int $siteId = null): bool
     {
         $cache = Craft::$app->getCache();
 
@@ -400,6 +404,7 @@ class TemplateCaches extends Component
      * @param string $key
      * @param bool $global
      * @param int|null $siteId
+     * @throws Exception if this is a console request and `false` is passed to `$global`
      */
     private function _cacheKey(string $key, bool $global, int $siteId = null): string
     {
@@ -416,11 +421,17 @@ class TemplateCaches extends Component
      * Returns the current request path, including a "site:" or "cp:" prefix.
      *
      * @return string
+     * @throws Exception if this is a console request
      */
     private function _path(): string
     {
         if ($this->_path !== null) {
             return $this->_path;
+        }
+
+        $request = Craft::$app->getRequest();
+        if ($request->getIsConsoleRequest()) {
+            throw new Exception('Not possible to determine the request path for console commands.');
         }
 
         if (Craft::$app->getRequest()->getIsCpRequest()) {

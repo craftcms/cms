@@ -45,6 +45,11 @@ abstract class ElementArguments extends Arguments
                 'type' => Type::boolean(),
                 'description' => 'Determines whether only elements with unique IDs should be returned by the query.',
             ],
+            'preferSites' => [
+                'name' => 'preferSites',
+                'type' => Type::listOf(QueryArgument::getType()),
+                'description' => 'Determines which site should be selected when querying multi-site elements.',
+            ],
             'enabledForSite' => [
                 'name' => 'enabledForSite',
                 'type' => Type::boolean(),
@@ -143,7 +148,7 @@ abstract class ElementArguments extends Arguments
             'orderBy' => [
                 'name' => 'orderBy',
                 'type' => Type::string(),
-                'description' => 'Sets the field the returned elements should be ordered by',
+                'description' => 'Sets the field the returned elements should be ordered by.',
             ],
             'siteSettingsId' => [
                 'name' => 'siteSettingsId',

@@ -19,6 +19,7 @@ use craft\elements\actions\UnsuspendUsers;
 use craft\elements\db\ElementQueryInterface;
 use craft\elements\db\UserQuery;
 use craft\events\AuthenticateUserEvent;
+use craft\events\DefineValueEvent;
 use craft\helpers\ArrayHelper;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
@@ -27,6 +28,7 @@ use craft\helpers\Json;
 use craft\helpers\Session;
 use craft\helpers\StringHelper;
 use craft\helpers\UrlHelper;
+use craft\i18n\Formatter;
 use craft\i18n\Locale;
 use craft\models\UserGroup;
 use craft\records\User as UserRecord;
@@ -69,6 +71,18 @@ class User extends Element implements IdentityInterface
      * something if there is an authentication error.
      */
     const EVENT_BEFORE_AUTHENTICATE = 'beforeAuthenticate';
+
+    /**
+     * @event DefineValueEvent The event that is triggered when defining the user’s name, as returned by [[getName()]] or [[__toString()]].
+     * @since 3.7.0
+     */
+    const EVENT_DEFINE_NAME = 'defineName';
+
+    /**
+     * @event DefineValueEvent The event that is triggered when defining the user’s friendly name, as returned by [[getFriendlyName()]].
+     * @since 3.7.0
+     */
+    const EVENT_DEFINE_FRIENDLY_NAME = 'defineFriendlyName';
 
     const IMPERSONATE_KEY = 'Craft.UserSessionService.prevImpersonateUserId';
 
@@ -595,6 +609,20 @@ class User extends Element implements IdentityInterface
     public $inheritorOnDelete;
 
     /**
+     * @var string|null
+     * @see getName()
+     * @see setName()
+     */
+    private $_name;
+
+    /**
+     * @var string|bool
+     * @see getFriendlyName()
+     * @see setFriendlyName()
+     */
+    private $_friendlyName;
+
+    /**
      * @var Asset|false|null user photo
      */
     private $_photo;
@@ -1016,6 +1044,25 @@ class User extends Element implements IdentityInterface
      */
     public function getName(): string
     {
+        if ($this->_name === null) {
+            $this->_name = $this->_defineName();
+        }
+
+        return $this->_name;
+    }
+
+    /**
+     * @return string
+     */
+    private function _defineName(): string
+    {
+        if ($this->hasEventHandlers(self::EVENT_DEFINE_NAME)) {
+            $this->trigger(self::EVENT_DEFINE_NAME, $event = new DefineValueEvent());
+            if ($event->value !== null) {
+                return $event->value;
+            }
+        }
+
         if (($fullName = $this->getFullName()) !== null) {
             return $fullName;
         }
@@ -1024,17 +1071,60 @@ class User extends Element implements IdentityInterface
     }
 
     /**
-     * Gets the user's first name or username.
+     * Sets the user’s name.
+     *
+     * @param string $name
+     * @return void
+     * @since 3.7.0
+     */
+    public function setName(string $name): void
+    {
+        $this->_name = $name;
+    }
+
+    /**
+     * Returns the user's first name or username.
      *
      * @return string|null
      */
-    public function getFriendlyName()
+    public function getFriendlyName(): ?string
     {
+        if ($this->_friendlyName === null) {
+            $this->_friendlyName = $this->_defineFriendlyName() ?? false;
+        }
+
+        return $this->_friendlyName ?: null;
+    }
+
+    /**
+     * @return string|null
+     */
+    private function _defineFriendlyName(): ?string
+    {
+        if ($this->hasEventHandlers(self::EVENT_DEFINE_FRIENDLY_NAME)) {
+            $this->trigger(self::EVENT_DEFINE_FRIENDLY_NAME, $event = new DefineValueEvent());
+            if ($event->handled || $event->value !== null) {
+                return $event->value;
+            }
+        }
+
         if ($firstName = trim($this->firstName)) {
             return $firstName;
         }
 
         return $this->username;
+    }
+
+    /**
+     * Sets the user’s friendly name.
+     *
+     * @param string $friendlyName
+     * @return void
+     * @since 3.7.0
+     */
+    public function setFriendlyName(string $friendlyName): void
+    {
+        $this->_friendlyName = $friendlyName;
     }
 
     /**
@@ -1104,7 +1194,7 @@ class User extends Element implements IdentityInterface
     /**
      * @inheritdoc
      */
-    public function getIsEditable(): bool
+    protected function isEditable(): bool
     {
         return Craft::$app->getUser()->checkPermission('editUsers');
     }
@@ -1206,7 +1296,7 @@ class User extends Element implements IdentityInterface
     /**
      * @inheritdoc
      */
-    public function getCpEditUrl()
+    protected function cpEditUrl(): ?string
     {
         if (Craft::$app->getRequest()->getIsCpRequest() && $this->getIsCurrent()) {
             return UrlHelper::cpUrl('myaccount');
@@ -1372,17 +1462,56 @@ class User extends Element implements IdentityInterface
     /**
      * @inheritdoc
      */
-    public function getEditorHtml(): string
+    protected function metaFieldsHtml(): string
     {
-        $html = Craft::$app->getView()->renderTemplate('users/_accountfields', [
-            'user' => $this,
-            'isNewUser' => false,
-            'meta' => true,
+        return implode('', [
+            Craft::$app->getView()->renderTemplate('users/_accountfields', [
+                'user' => $this,
+                'isNewUser' => !$this->id,
+            ]),
+            parent::metaFieldsHtml(),
         ]);
+    }
 
-        $html .= parent::getEditorHtml();
+    protected function metadata(): array
+    {
+        $formatter = Craft::$app->getFormatter();
 
-        return $html;
+        return [
+            Craft::t('app', 'Email') => Html::a($this->email, "mailto:$this->email"),
+            Craft::t('app', 'Cooldown Time Remaining') => function() use ($formatter) {
+                if (
+                    !$this->locked ||
+                    !Craft::$app->getConfig()->getGeneral()->cooldownDuration ||
+                    ($duration = $this->getRemainingCooldownTime()) === null
+                ) {
+                    return false;
+                }
+                return $formatter->asDuration($duration);
+            },
+            Craft::t('app', 'Registered at') => $formatter->asDatetime($this->dateCreated, Formatter::FORMAT_WIDTH_SHORT),
+            Craft::t('app', 'Last login') => function() use ($formatter) {
+                if ($this->pending) {
+                    return false;
+                }
+                if (!$this->lastLoginDate) {
+                    return Craft::t('app', 'Never');
+                }
+                return $formatter->asDatetime($this->lastLoginDate, Formatter::FORMAT_WIDTH_SHORT);
+            },
+            Craft::t('app', 'Last login fail') => function() use ($formatter) {
+                if (!$this->locked || !$this->lastInvalidLoginDate) {
+                    return false;
+                }
+                return $formatter->asDatetime($this->lastInvalidLoginDate, Formatter::FORMAT_WIDTH_SHORT);
+            },
+            Craft::t('app', 'Login fail count') => function() use ($formatter) {
+                if (!$this->locked) {
+                    return false;
+                }
+                return $formatter->asDecimal($this->invalidLoginCount, 0);
+            },
+        ];
     }
 
     /**

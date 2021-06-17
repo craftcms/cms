@@ -360,7 +360,7 @@ class ArrayHelper extends \yii\helpers\ArrayHelper
     }
 
     /**
-     * Returns a copy of an array without items with matching the given value.
+     * Returns a copy of an array without items matching the given value.
      *
      * @param array $array
      * @param mixed $value

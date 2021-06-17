@@ -12,7 +12,7 @@
 
         {{ forms.fieldLayoutDesignerField({
             first: true,
-            fieldLayout: craft.app.fields.getLayoutByType('craft\\elements\\User')
+            fieldLayout: fieldLayout ?? craft.app.fields.getLayoutByType('craft\\elements\\User'),
         }) }}
 
         <div class="buttons">

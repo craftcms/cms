@@ -138,6 +138,12 @@ class ElementQuery extends Query implements ElementQueryInterface
     public $drafts = false;
 
     /**
+     * @var bool|null Whether provisional drafts should be returned.
+     * @since 3.7.0
+     */
+    public $provisionalDrafts = false;
+
+    /**
      * @var int|null The ID of the draft to return (from the `drafts` table)
      * @since 3.2.0
      */
@@ -770,6 +776,20 @@ class ElementQuery extends Query implements ElementQueryInterface
             throw new InvalidArgumentException('Invalid draftCreator value');
         }
         if ($value !== null && $this->drafts === false) {
+            $this->drafts = true;
+        }
+        return $this;
+    }
+
+    /**
+     * @inheritdoc
+     * @uses $provisionalDrafts
+     * @uses $drafts
+     */
+    public function provisionalDrafts(?bool $value = true)
+    {
+        $this->provisionalDrafts = $value;
+        if ($value === true && $this->drafts === false) {
             $this->drafts = true;
         }
         return $this;
@@ -1890,6 +1910,8 @@ class ElementQuery extends Query implements ElementQueryInterface
         $behaviors = [];
 
         if ($this->drafts !== false) {
+            $row['isProvisionalDraft'] = (bool)($row['isProvisionalDraft'] ?? false);
+
             if (!empty($row['draftId'])) {
                 $behaviors['draft'] = new DraftBehavior([
                     'creatorId' => ArrayHelper::remove($row, 'draftCreatorId'),
@@ -2129,7 +2151,7 @@ class ElementQuery extends Query implements ElementQueryInterface
      * {
      *     switch ($status) {
      *         case 'pending':
-     *             return ['mytable.pending' => 1];
+     *             return ['mytable.pending' => true];
      *         default:
      *             return parent::statusCondition($status);
      *     }
@@ -2583,6 +2605,7 @@ class ElementQuery extends Query implements ElementQueryInterface
             $this->query->addSelect([
                 'elements.draftId',
                 'drafts.creatorId as draftCreatorId',
+                'drafts.provisional as isProvisionalDraft',
                 'drafts.name as draftName',
                 'drafts.notes as draftNotes',
             ]);
@@ -2600,6 +2623,15 @@ class ElementQuery extends Query implements ElementQueryInterface
             if ($this->draftCreator) {
                 $this->subQuery->andWhere(['drafts.creatorId' => $this->draftCreator]);
             }
+
+            if ($this->provisionalDrafts !== null) {
+                $this->subQuery->andWhere([
+                    'or',
+                    ['elements.draftId' => null],
+                    ['drafts.provisional' => $this->provisionalDrafts],
+                ]);
+            }
+
 
             if ($this->savedDraftsOnly) {
                 $this->subQuery->andWhere([

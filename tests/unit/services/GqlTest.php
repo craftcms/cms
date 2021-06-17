@@ -58,7 +58,7 @@ class GqlTest extends Unit
         $gql->setActiveSchema(new GqlSchema());
 
         // NO CACHING
-        Craft::$app->getConfig()->getGeneral()->enableGraphQlCaching = false;
+        Craft::$app->getConfig()->getGeneral()->enableGraphqlCaching = false;
     }
 
     protected function _after()
@@ -188,7 +188,7 @@ class GqlTest extends Unit
             },
         ]);
 
-        Craft::$app->getConfig()->getGeneral()->enableGraphQlCaching = true;
+        Craft::$app->getConfig()->getGeneral()->enableGraphqlCaching = true;
 
         $schema = $gql->getPublicSchema();
 
@@ -395,7 +395,7 @@ class GqlTest extends Unit
             'scope' => []
         ]);
 
-        self::assertEquals($gql->getCachedResult($cacheKey), $cacheValue);
+        self::assertEquals($cacheValue, $gql->getCachedResult($cacheKey));
 
         // Make sure saving a schema invalidates caches
         $gql->saveSchema($schema);

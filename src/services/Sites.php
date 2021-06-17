@@ -274,7 +274,7 @@ class Sites extends Component
 
         $configPath = self::CONFIG_SITEGROUP_KEY . '.' . $group->uid;
         $configData = $group->getConfig();
-        Craft::$app->getProjectConfig()->set($configPath, $configData, "Save the “{$group->name}” site group");
+        Craft::$app->getProjectConfig()->set($configPath, $configData, "Save the “{$group->getName(false)}” site group");
 
         // Now that we have an ID, save it on the model
         if ($isNewGroup) {
@@ -404,7 +404,7 @@ class Sites extends Component
             ]));
         }
 
-        Craft::$app->getProjectConfig()->remove(self::CONFIG_SITEGROUP_KEY . '.' . $group->uid, "Delete the “{$group->name}” site group");
+        Craft::$app->getProjectConfig()->remove(self::CONFIG_SITEGROUP_KEY . '.' . $group->uid, "Delete the “{$group->getName(false)}” site group");
         return true;
     }
 
@@ -737,7 +737,7 @@ class Sites extends Component
 
             // Shared attributes
             $siteRecord->uid = $siteUid;
-            $siteRecord->groupId = $groupRecord['id'];
+            $siteRecord->groupId = $groupRecord->id;
             $siteRecord->name = $data['name'];
             $siteRecord->handle = $data['handle'];
             $siteRecord->language = $data['language'];

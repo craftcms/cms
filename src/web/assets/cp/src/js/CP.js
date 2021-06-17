@@ -17,14 +17,6 @@ Craft.CP = Garnish.Base.extend({
     $header: null,
     $mainContent: null,
     $details: null,
-    $tabsContainer: null,
-    $tabsList: null,
-    $tabs: null,
-    $overflowTabBtn: null,
-    $overflowTabList: null,
-    $selectedTab: null,
-    selectedTabIndex: null,
-    $focusableTab: null,
     $sidebarContainer: null,
     $sidebar: null,
     $contentContainer: null,
@@ -35,6 +27,8 @@ Craft.CP = Garnish.Base.extend({
     $collapsibleTables: null,
 
     fixedHeader: false,
+
+    tabManager: null,
 
     enableQueue: true,
     totalJobs: 0,
@@ -94,7 +88,12 @@ Craft.CP = Garnish.Base.extend({
 
         Garnish.$doc.ready(() => {
             // Update responsive tables on window resize
-            this.addListener(Garnish.$win, 'resize', 'handleWindowResize');
+            this.addListener(Garnish.$win, 'resize', ev => {
+                // Ignore element resizes
+                if (ev.target === window) {
+                    this.handleWindowResize();
+                }
+            });
             this.handleWindowResize();
 
             // Fade the notification out two seconds after page load
@@ -182,6 +181,56 @@ Craft.CP = Garnish.Base.extend({
         if ($.isTouchCapable()) {
             this.$mainContainer.on('focus', 'input, textarea, .focusable-input', this._handleInputFocus.bind(this));
             this.$mainContainer.on('blur', 'input, textarea, .focusable-input', this._handleInputBlur.bind(this));
+        }
+
+        // Announcements HUD
+        if (Craft.announcements.length) {
+            let $btn = $('#announcements-btn').removeClass('hidden');
+            const hasUnreads = Craft.announcements.some(a => a.unread);
+            if (hasUnreads) {
+                $btn.addClass('unread');
+            }
+            let hud;
+            this.addListener($btn, 'click', () => {
+                if (!hud) {
+                    let contents = '';
+                    Craft.group(Craft.announcements, 'timestamp').forEach(([announcements, timestamp]) => {
+                        announcements.forEach((a, i) => {
+                            contents += `<div class="announcement ${a.unread ? 'unread' : ''}">` +
+                                (i === 0 ? `<div class="timestamp">${a.timestamp}</div>` : '') +
+                                `<h2>${a.heading}</h2>` +
+                                `<p>${a.body}</p>` +
+                                '</div>';
+                        });
+                    });
+                    hud = new Garnish.HUD($btn, `<div id="announcements">${contents}</div>`, {
+                        onShow: () => {
+                            $btn.addClass('active');
+                        },
+                        onHide: () => {
+                            $btn.removeClass('active');
+                        },
+                    });
+
+                    // Open outbound links in new windows
+                    $('a', hud.$main).each(function() {
+                        if (this.hostname.length && this.hostname !== location.hostname && typeof $(this).attr('target') === 'undefined') {
+                            $(this).attr('rel', 'noopener').attr('target', '_blank')
+                        }
+                    });
+
+                    if (hasUnreads) {
+                        $btn.removeClass('unread');
+                        Craft.sendActionRequest('POST', 'users/mark-announcements-as-read', {
+                            data: {
+                                ids: Craft.announcements.map(a => a.id),
+                            },
+                        });
+                    }
+                } else {
+                    hud.show();
+                }
+            });
         }
     },
 
@@ -315,227 +364,124 @@ Craft.CP = Garnish.Base.extend({
     },
 
     initTabs: function() {
-        // Clear out all our old info in case the tabs were just replaced
-        this.$tabsList = this.$tabs = this.$overflowTabBtn = this.$overflowTabList = this.$selectedTab =
-            this.selectedTabIndex = this.$focusableTab = null;
+        if (this.tabManager) {
+            this.tabManager.destroy();
+            this.tabManager = null;
+        }
 
-        this.$tabsContainer = $('#tabs');
-        if (!this.$tabsContainer.length) {
-            this.$tabsContainer = null;
+        const $tabs = $('#tabs');
+        if (!$tabs.length) {
             return;
         }
 
-        this.$tabsList = this.$tabsContainer.find('> ul');
-        this.$tabs = this.$tabsList.find('> li');
-        this.$overflowTabBtn = $('#overflow-tab-btn');
-        if (!this.$overflowTabBtn.data('menubtn')) {
-            new Garnish.MenuBtn(this.$overflowTabBtn);
-        }
-        this.$overflowTabList = this.$overflowTabBtn.data('menubtn').menu.$container.find('> ul');
+        this.tabManager = new Craft.Tabs($tabs);
 
-        let $initialTab;
+        this.tabManager.on('selectTab', ev => {
+            const href = ev.$tab.attr('href');
 
-        for (let i = 0; i < this.$tabs.length; i++) {
-            const $tab = this.$tabs.eq(i);
+            // Show its content area
+            if (href.charAt(0) === '#') {
+                $(href).removeClass('hidden');
+            }
 
-            // Does it link to an anchor?
-            const $a = $tab.children('a');
-            const href = $a.attr('href');
+            // Trigger a resize event to update any UI components that are listening for it
+            Garnish.$win.trigger('resize');
+
+            // Fixes Redactor fixed toolbars on previously hidden panes
+            Garnish.$doc.trigger('scroll');
+
+            // If there is a revision menu, set its links to this tab ID
             if (href && href.charAt(0) === '#') {
-                this.addListener($a, 'keydown', ev => {
-                    if ([Garnish.SPACE_KEY, Garnish.RETURN_KEY].includes(ev.keyCode)) {
-                        ev.preventDefault();
-                        this.selectTab(ev.currentTarget);
+                const menuBtn = $('#context-btn').menubtn().data('menubtn');
+                if (menuBtn) {
+                    for (let i = 0; i < menuBtn.menu.$options.length; i++) {
+                        let a = menuBtn.menu.$options[i];
+                        if (a.href) {
+                            a.href = a.href.match(/^[^#]*/)[0] + href;
+                        }
                     }
-                });
-                this.addListener($a, 'click', ev => {
-                    ev.preventDefault();
-                    const $a = $(ev.currentTarget);
-                    this.selectTab($a);
-                    this._focusTab($a);
-                });
-
-                if (encodeURIComponent(href.substr(1)) === document.location.hash.substr(1)) {
-                    $initialTab = $a;
                 }
             }
 
-            if (!$initialTab && $a.hasClass('sel')) {
-                this.$selectedTab = $initialTab = $a;
+            if (typeof history !== 'undefined') {
+                // Delay changing the hash so it doesn't cause the browser to jump on page load
+                Garnish.requestAnimationFrame(() => {
+                    history.replaceState(undefined, undefined, href);
+                });
             }
+        });
 
-            this.addListener($a, 'keydown', ev => {
-                if (
-                    [Garnish.LEFT_KEY, Garnish.RIGHT_KEY].includes(ev.keyCode) &&
-                    $.contains(this.$tabsList[0], ev.currentTarget)
-                ) {
-                    let $tab;
-                    if (ev.keyCode === Garnish.LEFT_KEY) {
-                        $tab = $(ev.currentTarget).parent().prev('li').children('a');
-                    } else {
-                        $tab = $(ev.currentTarget).parent().next('li').children('a');
-                    }
-                    if ($tab.length) {
-                        this._focusTab($tab);
-                    }
-                }
-            });
-        }
+        this.tabManager.on('deselectTab', ev => {
+            if (ev.$tab.attr('href').charAt(0) === '#') {
+                // Hide its content area
+                $(ev.$tab.attr('href')).addClass('hidden');
+            }
+        });
 
-        if ($initialTab) {
-            this.selectTab($initialTab, true);
-            this._focusTab($initialTab, false);
+        if (window.LOCATION_HASH) {
+            const $tab = this.tabManager.$tabs.filter(`[href="#${window.LOCATION_HASH}"]`);
+            if ($tab.length) {
+                this.tabManager.selectTab($tab);
+            }
         }
     },
 
+    /**
+     * @deprecated in 3.7.0
+     */
+    get $tabsContainer() {
+        return this.tabManager ? this.tabManager.$container : undefined;
+    },
+    /**
+     * @deprecated in 3.7.0
+     */
+    get $tabsList() {
+        return this.tabManager ? this.tabManager.$ul : undefined;
+    },
+    /**
+     * @deprecated in 3.7.0
+     */
+    get $tabs() {
+        return this.tabManager ? this.tabManager.$ul.find('> li') : undefined;
+    },
+    /**
+     * @deprecated in 3.7.0
+     */
+    get $selectedTab() {
+        return this.tabManager ? this.tabManager.$selectedTab : undefined;
+    },
+    /**
+     * @deprecated in 3.7.0
+     */
+    get selectedTabIndex() {
+        return this.tabManager ? this.tabManager.$tabs.index(this.tabManager.$selectedTab) : undefined;
+    },
+    /**
+     * @deprecated in 3.7.0
+     */
+    get $focusableTab() {
+        return this.tabManager ? this.tabManager.$focusableTab : undefined;
+    },
     /**
      * @param {object} tab
-     * @param {bool} [force]
+     * @deprecated in 3.7.0
      */
-    selectTab: function(tab, force) {
-        var $tab = $(tab);
-
-        if (this.$selectedTab) {
-            if (!force && this.$selectedTab.get(0) === $tab.get(0)) {
-                return;
-            }
-            this.deselectTab();
-        }
-
-        $tab.addClass('sel');
-
-        const index = $tab ? this.$tabs.index($tab.parent()) : null;
-        this.$selectedTab = $tab;
-        this.selectedTabIndex = index;
-
-        if (index === 0) {
-            $('#content').addClass('square');
-        } else {
-            $('#content').removeClass('square');
-        }
-
-        // Show its content area
-        if ($tab.attr('href').charAt(0) === '#') {
-            $(this.$selectedTab.attr('href')).removeClass('hidden');
-        }
-
-        // Trigger a resize event to update any UI components that are listening for it, including updateTabs()
-        Garnish.$win.trigger('resize');
-
-        // Fixes Redactor fixed toolbars on previously hidden panes
-        Garnish.$doc.trigger('scroll');
-
-        this.$overflowTabBtn.data('menubtn').menu.hide();
-
-        // If there is a revision menu, set its links to this tab ID
-        let href = $tab && $tab.attr('href');
-        if (href && href.charAt(0) === '#') {
-            let menubtn = $('#context-btn').menubtn().data('menubtn');
-            if (menubtn) {
-                for (let i = 0; i < menubtn.menu.$options.length; i++) {
-                    let a = menubtn.menu.$options[i];
-                    if (a.href) {
-                        a.href = a.href.match(/^[^#]*/)[0] + href;
-                    }
-                }
-            }
-        }
-
-        if (typeof history !== 'undefined') {
-            history.replaceState(undefined, undefined, href);
+    selectTab: function(tab) {
+        if (this.tabManager) {
+            this.tabManager.selectTab(tab);
         }
     },
-
     /**
-     * @param {object} $tab
-     * @param {boolean} [setFocus]
-     * @private
+     * @deprecated in 3.7.0
      */
-    _focusTab: function($tab, setFocus) {
-        if ($tab === this.$focusableTab) {
-            return;
-        }
-
-        if (this.$focusableTab) {
-            this.$focusableTab.attr('tabindex', '-1');
-        }
-
-        this.$focusableTab = $tab.attr('tabindex', '0');
-
-        if (focus !== false) {
-            this.$focusableTab.focus();
-        }
-    },
-
     deselectTab: function() {
-        if (!this.$selectedTab) {
-            return;
-        }
-
-        this.$selectedTab.removeClass('sel');
-
-        // Hide its content area
-        if (this.$selectedTab.attr('href').charAt(0) === '#') {
-            $(this.$selectedTab.attr('href')).addClass('hidden');
+        if (this.tabManager) {
+            this.tabManager.deselectTab();
         }
     },
 
     handleWindowResize: function() {
-        this.updateTabs();
         this.updateResponsiveTables();
-    },
-
-    updateTabs: function() {
-        if (!this.$tabsContainer) {
-            return;
-        }
-
-        // Keep track of the focussed element in case it's one of the tabs
-        const activeElement = document.activeElement;
-
-        const maxWidth = Math.floor(this.$tabsContainer.width()) - 40;
-        const tabMargin = Garnish.$bod.width() >= 768 ? -12 : -7;
-        let totalWidth = 0;
-        let showOverflowMenu = false;
-
-        // Start with the selected tab, because that needs to be visible
-        if (this.$selectedTab) {
-            this.$selectedTab.parent('li').appendTo(this.$tabsList);
-            totalWidth = Math.ceil(this.$selectedTab.parent('li').width());
-        }
-
-        for (var i = 0; i < this.$tabs.length; i++) {
-            const $tab = this.$tabs.eq(i);
-            $tab.appendTo(this.$tabsList);
-            if (i !== this.selectedTabIndex) {
-                totalWidth += Math.ceil($tab.width());
-                // account for the negative margin
-                if (i !== 0 || this.$selectedTab) {
-                    totalWidth += tabMargin;
-                }
-            }
-
-            const $a = $tab.find('> a');
-            if (i === this.selectedTabIndex || totalWidth <= maxWidth) {
-                $a
-                    .removeAttr('role')
-                    .attr('tabindex', this.$focusableTab && $a[0] === this.$focusableTab[0] ? '0' : '-1');
-            } else {
-                $tab.appendTo(this.$overflowTabList);
-                this.$overflowTabBtn.data('menubtn').menu.addOptions($a);
-                showOverflowMenu = true;
-            }
-
-            if (document.activeElement !== activeElement) {
-                $(activeElement).focus();
-            }
-        }
-
-        if (showOverflowMenu) {
-            this.$overflowTabBtn.removeClass('hidden');
-        } else {
-            this.$overflowTabBtn.addClass('hidden');
-        }
     },
 
     updateResponsiveTables: function() {
@@ -624,11 +570,21 @@ Craft.CP = Garnish.Base.extend({
     displayNotification: function(type, message) {
         var notificationDuration = Craft.CP.notificationDuration;
 
-        if (type === 'error') {
+        if (['cp-error', 'error'].includes(type)) {
             notificationDuration *= 2;
+            icon = 'alert';
+            label = Craft.t('app', 'Error');
+        } else {
+            icon = 'info';
+            label = Craft.t('app', 'Notice');
         }
 
-        var $notification = $('<div class="notification ' + type + '">' + message + '</div>')
+        var $notification = $(`
+            <div class="notification ${ type.replace('cp-', '') }">
+                <span data-icon="${ icon }" aria-label="${ label }"></span>
+                ${ message }
+            </div>
+            `)
             .appendTo(this.$notificationContainer);
 
         var fadedMargin = -($notification.outerWidth() / 2) + 'px';
@@ -687,7 +643,7 @@ Craft.CP = Garnish.Base.extend({
             this.$alerts = $('<ul id="alerts"/>').prependTo($('#page-container'));
 
             for (var i = 0; i < alerts.length; i++) {
-                $('<li>' + alerts[i] + '</li>').appendTo(this.$alerts);
+                $(`<li><span data-icon="alert" aria-label="${ Craft.t('app', 'Error') }"></span> ${ alerts[i] }</li>`).appendTo(this.$alerts);
             }
 
             var height = this.$alerts.outerHeight();
@@ -969,11 +925,16 @@ Craft.CP = Garnish.Base.extend({
 
         for (var i = 0; i < statuses.length; i++) {
             for (var j = 0; j < this.jobInfo.length; j++) {
-                if (this.jobInfo[j].status === statuses[i]) {
+                if (
+                    this.jobInfo[j].status === statuses[i] &&
+                    (statuses[i] !== Craft.CP.JOB_STATUS_WAITING || !this.jobInfo[j].delay)
+                ) {
                     return this.jobInfo[j];
                 }
             }
         }
+
+        return null;
     },
 
     updateJobIcon: function() {

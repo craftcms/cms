@@ -62,12 +62,9 @@ class DashboardController extends Controller
         $dashboardService = Craft::$app->getDashboard();
         $view = $this->getView();
 
-        $namespace = $view->getNamespace();
-
         // Assemble the list of available widget types
         $widgetTypes = $dashboardService->getAllWidgetTypes();
         $widgetTypeInfo = [];
-        $view->setNamespace('__NAMESPACE__');
 
         foreach ($widgetTypes as $widgetType) {
             /* @var WidgetInterface $widgetType */
@@ -77,7 +74,9 @@ class DashboardController extends Controller
 
             $view->startJsBuffer();
             $widget = $dashboardService->createWidget($widgetType);
-            $settingsHtml = $view->namespaceInputs((string)$widget->getSettingsHtml());
+            $settingsHtml = $view->namespaceInputs(function() use ($widget) {
+                return (string)$widget->getSettingsHtml();
+            }, '__NAMESPACE__');
             $settingsJs = (string)$view->clearJsBuffer(false);
 
             $class = get_class($widget);
@@ -94,7 +93,6 @@ class DashboardController extends Controller
         // Sort them by name
         ArrayHelper::multisort($widgetTypeInfo, 'name');
 
-        $view->setNamespace($namespace);
         $variables = [];
 
         // Assemble the list of existing widgets
@@ -502,7 +500,6 @@ class DashboardController extends Controller
     private function _getWidgetInfo(WidgetInterface $widget)
     {
         $view = $this->getView();
-        $namespace = $view->getNamespace();
 
         // Get the body HTML
         $widgetBodyHtml = $widget->getBodyHtml();
@@ -512,9 +509,10 @@ class DashboardController extends Controller
         }
 
         // Get the settings HTML + JS
-        $view->setNamespace('widget' . $widget->id . '-settings');
         $view->startJsBuffer();
-        $settingsHtml = $view->namespaceInputs((string)$widget->getSettingsHtml());
+        $settingsHtml = $view->namespaceInputs(function() use ($widget) {
+            return (string)$widget->getSettingsHtml();
+        }, "widget$widget->id-settings");
         $settingsJs = $view->clearJsBuffer(false);
 
         // Get the colspan (limited to the widget type's max allowed colspan)
@@ -523,8 +521,6 @@ class DashboardController extends Controller
         if (($maxColspan = $widget::maxColspan()) && $colspan > $maxColspan) {
             $colspan = $maxColspan;
         }
-
-        $view->setNamespace($namespace);
 
         return [
             'id' => $widget->id,

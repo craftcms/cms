@@ -10,6 +10,7 @@ namespace craft\helpers;
 use Craft;
 use craft\base\ElementInterface;
 use craft\behaviors\DraftBehavior;
+use craft\behaviors\RevisionBehavior;
 use craft\enums\LicenseKeyStatus;
 use craft\events\RegisterCpAlertsEvent;
 use craft\web\twig\TemplateLoaderException;
@@ -109,13 +110,13 @@ class Cp
                 $issuePlugins = [];
                 foreach ($pluginsService->getAllPlugins() as $pluginHandle => $plugin) {
                     if ($pluginsService->hasIssues($pluginHandle)) {
-                        $issuePlugins[] = $plugin->name;
+                        $issuePlugins[] = [$plugin->name, $plugin->handle];
                     }
                 }
                 if (!empty($issuePlugins)) {
                     if (count($issuePlugins) === 1) {
                         $message = Craft::t('app', 'There’s a licensing issue with the {name} plugin.', [
-                            'name' => reset($issuePlugins),
+                            'name' => reset($issuePlugins)[0],
                         ]);
                     } else {
                         $message = Craft::t('app', '{num} plugins have licensing issues.', [
@@ -136,8 +137,8 @@ class Cp
                     $licenseAlerts[] = $message;
 
                     // Is this reconcilable?
-                    foreach ($issuePlugins as $pluginHandle) {
-                        if (!$pluginsService->getPluginLicenseKeyStatus($pluginHandle) === LicenseKeyStatus::Trial) {
+                    foreach ($issuePlugins as [$pluginName, $pluginHandle]) {
+                        if ($pluginsService->getPluginLicenseKeyStatus($pluginHandle) !== LicenseKeyStatus::Trial) {
                             $canSettleUp = false;
                             break;
                         }
@@ -235,6 +236,7 @@ class Cp
      * @param bool $showThumb Whether the element thumb should be shown (if the element has one)
      * @param bool $showLabel Whether the element label should be shown
      * @param bool $showDraftName Whether to show the draft name beside the label if the element is a draft of a published element
+     * @param bool $single Whether the input name should omit the trailing `[]`
      * @return string
      * @since 3.5.8
      */
@@ -246,7 +248,8 @@ class Cp
         bool $showStatus = true,
         bool $showThumb = true,
         bool $showLabel = true,
-        bool $showDraftName = true
+        bool $showDraftName = true,
+        bool $single = false
     ): string
     {
         $isDraft = $element->getIsDraft();
@@ -340,7 +343,7 @@ class Cp
         $html .= '>';
 
         if ($context === 'field' && $inputName !== null) {
-            $html .= Html::hiddenInput($inputName . '[]', $element->id) .
+            $html .= Html::hiddenInput($inputName . ($single ? '' : '[]'), $element->id) .
                 Html::tag('a', '', [
                     'class' => ['delete', 'icon'],
                     'title' => Craft::t('app', 'Remove'),
@@ -391,12 +394,6 @@ class Cp
                 !$element->trashed &&
                 ($cpEditUrl = $element->getCpEditUrl())
             ) {
-                if ($isDraft) {
-                    $cpEditUrl = UrlHelper::urlWithParams($cpEditUrl, ['draftId' => $element->draftId]);
-                } else if ($isRevision) {
-                    $cpEditUrl = UrlHelper::urlWithParams($cpEditUrl, ['revisionId' => $element->revisionId]);
-                }
-
                 $html .= Html::a($encodedLabel, $cpEditUrl);
             } else {
                 $html .= $encodedLabel;
@@ -739,5 +736,149 @@ class Cp
     {
         $config['id'] = $config['id'] ?? 'textarea' . mt_rand();
         return static::fieldHtml('template:_includes/forms/textarea', $config);
+    }
+
+    /**
+     * Renders a date + time field’s HTML.
+     *
+     * @param array $config
+     * @return string
+     * @throws InvalidArgumentException if `$config['siteId']` is invalid
+     * @since 3.7.0
+     */
+    public static function dateTimeFieldHtml(array $config): string
+    {
+        $config['id'] = $config['id'] ?? 'datetime' . mt_rand();
+        $config['instructionsId'] = $config['instructionsId'] ?? "{$config['id']}-instructions";
+        $input = Html::tag('div',
+            static::renderTemplate('_includes/forms/date', $config) .
+            static::renderTemplate('_includes/forms/time', $config),
+            ['class' => 'datetimewrapper']
+        );
+        return static::fieldHtml($input, $config);
+    }
+
+    /**
+     * Renders an element select field’s HTML.
+     *
+     * @param array $config
+     * @return string
+     * @throws InvalidArgumentException if `$config['siteId']` is invalid
+     * @since 3.7.0
+     */
+    public static function elementSelectFieldHtml(array $config): string
+    {
+        $config['id'] = $config['id'] ?? 'elementselect' . mt_rand();
+        return static::fieldHtml('template:_includes/forms/elementSelect', $config);
+    }
+
+    /**
+     * Renders an autosuggest field’s HTML.
+     *
+     * @param array $config
+     * @return string
+     * @throws InvalidArgumentException if `$config['siteId']` is invalid
+     * @since 3.7.0
+     */
+    public static function autosuggestFieldHtml(array $config): string
+    {
+        $config['id'] = $config['id'] ?? 'autosuggest' . mt_rand();
+
+        // Suggest an environment variable / alias?
+        if ($config['suggestEnvVars'] ?? false) {
+            $value = $config['value'] ?? '';
+            if (!isset($config['tip']) && (!isset($value[0]) || !in_array($value[0], ['$', '@']))) {
+                if ($config['suggestAliases'] ?? false) {
+                    $config['tip'] = Craft::t('app', 'This can be set to an environment variable, or begin with an alias.');
+                } else {
+                    $config['tip'] = Craft::t('app', 'This can be set to an environment variable.');
+                }
+                $config['tip'] .= ' ' .
+                    Html::a(Craft::t('app', 'Learn more'), 'https://craftcms.com/docs/3.x/config/#environmental-configuration', [
+                        'class' => 'go',
+                    ]);
+            } else if (
+                !isset($config['warning']) &&
+                ($value === '@web' || strpos($value, '@web/') === 0) &&
+                Craft::$app->getRequest()->isWebAliasSetDynamically
+            ) {
+                $config['warning'] = Craft::t('app', 'The `@web` alias is not recommended if it is determined automatically.');
+            }
+        }
+
+        return static::fieldHtml('template:_includes/forms/autosuggest', $config);
+    }
+
+    /**
+     * Returns a metadata component’s HTML.
+     *
+     * @param array $data The data, with keys representing the labels. The values can either be strings or callables.
+     * If a value is `false`, it will be omitted.
+     * @return string
+     */
+    public static function metadataHtml(array $data): string
+    {
+        $defs = [];
+
+        foreach ($data as $label => $value) {
+            if (is_callable($value)) {
+                $value = $value();
+            }
+            if ($value !== false) {
+                $defs[] = Html::tag('div',
+                    Html::tag('dt', Html::encode($label), ['class' => 'heading']) . "\n" .
+                    Html::tag('dd', $value, ['class' => 'value']), [
+                        'class' => 'data',
+                    ]);
+            }
+        }
+
+        if (empty($defs)) {
+            return '';
+        }
+
+        return Html::tag('dl', implode("\n", $defs), [
+            'class' => ['meta', 'read-only'],
+        ]);
+    }
+
+    /**
+     * Returns the page title and document title that should be used for Edit Element pages.
+     *
+     * @param ElementInterface $element
+     * @return string[]
+     * @since 3.7.0
+     */
+    public static function editElementTitles(ElementInterface $element): array
+    {
+        $title = trim((string)$element->title);
+
+        if ($title === '') {
+            if ($element->getIsUnpublishedDraft()) {
+                $title = Craft::t('app', 'Create a new {type}', [
+                    'type' => $element::lowerDisplayName(),
+                ]);
+            } else {
+                $title = Craft::t('app', 'Edit {type}', [
+                    'type' => $element::displayName(),
+                ]);
+            }
+        }
+
+        $docTitle = $title;
+
+        if ($element->getIsDraft()) {
+            /** @var ElementInterface|DraftBehavior $element */
+            if ($element->getIsProvisionalDraft()) {
+                $docTitle .= ' — ' . Craft::t('app', 'Edited');
+            } else {
+                $docTitle .= " ($element->draftName)";
+            }
+        } else if ($element->getIsRevision()) {
+            /** @var ElementInterface|RevisionBehavior $element */
+            $docTitle .= ' (' . $element->getRevisionLabel() . ')';
+        }
+
+        return [$docTitle, $title];
     }
 }

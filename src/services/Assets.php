@@ -304,8 +304,11 @@ class Assets extends Component
      */
     public function deleteFoldersByIds($folderIds, bool $deleteDir = true): void
     {
+        $folders = [];
+
         foreach ((array)$folderIds as $folderId) {
             $folder = $this->getFolderById($folderId);
+            $folders[] = $folder;
 
             if ($folder && $deleteDir) {
                 $volume = $folder->getVolume();
@@ -327,7 +330,15 @@ class Assets extends Component
             $elementService->deleteElement($asset, true);
         }
 
-        VolumeFolderRecord::deleteAll(['id' => $folderIds]);
+        foreach ($folders as $folder) {
+            $descendants = $this->getAllDescendantFolders($folder);
+            usort($descendants, function ($a, $b) { return substr_count($a->path, '/') < substr_count($b->path, '/');});
+
+            foreach ($descendants as $descendant) {
+                VolumeFolderRecord::deleteAll(['id' => $descendant->id]);
+            }
+            VolumeFolderRecord::deleteAll(['id' => $folder->id]);
+        }
     }
 
     /**
@@ -859,6 +870,9 @@ class Assets extends Component
             $timestamp = DateTimeHelper::currentUTCDateTime()->format('Y-m-d-His');
             $base = $baseFileName . '_' . $timestamp;
         }
+
+        // Append a random string at the end too, to avoid race-conditions
+        $base .= '_' . StringHelper::randomString(4);
 
         $increment = 0;
 

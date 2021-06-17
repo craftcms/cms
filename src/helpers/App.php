@@ -20,6 +20,8 @@ use craft\errors\MissingComponentException;
 use craft\helpers\Session as SessionHelper;
 use craft\i18n\Locale;
 use craft\log\Dispatcher;
+use craft\log\FileTarget;
+use craft\log\StreamLogTarget;
 use craft\mail\Mailer;
 use craft\mail\Message;
 use craft\mail\transportadapters\Sendmail;
@@ -36,6 +38,9 @@ use craft\web\User as WebUser;
 use craft\web\View;
 use yii\base\InvalidArgumentException;
 use yii\helpers\Inflector;
+use yii\i18n\PhpMessageSource;
+use yii\log\Dispatcher as YiiDispatcher;
+use yii\log\Logger;
 use yii\mutex\FileMutex;
 use yii\web\JsonParser;
 
@@ -577,9 +582,82 @@ class App
      */
     public static function logConfig()
     {
+        // Using Yii's Dispatcher class here is intentional
         return [
-            'class' => Dispatcher::class,
+            'class' => YiiDispatcher::class,
+            'targets' => array_values(static::defaultLogTargets()),
         ];
+    }
+
+    /**
+     * Returns the default log targets.
+     *
+     * @return array
+     * @since 3.6.14
+     */
+    public static function defaultLogTargets(): array
+    {
+        $targets = [];
+
+        $isConsoleRequest = Craft::$app->getRequest()->getIsConsoleRequest();
+
+        if ($isConsoleRequest || Craft::$app->getUser()->enableSession) {
+            $generalConfig = Craft::$app->getConfig()->getGeneral();
+
+            $fileTargetConfig = [
+                'class' => FileTarget::class,
+                'fileMode' => $generalConfig->defaultFileMode,
+                'dirMode' => $generalConfig->defaultDirMode,
+                'includeUserIp' => $generalConfig->storeUserIps,
+                'except' => [
+                    PhpMessageSource::class . ':*',
+                ],
+            ];
+
+            if ($isConsoleRequest) {
+                $fileTargetConfig['logFile'] = '@storage/logs/console.log';
+            } else {
+                $fileTargetConfig['logFile'] = '@storage/logs/web.log';
+            }
+
+            // Only log errors and warnings, unless Craft is running in Dev Mode or it's being installed/updated
+            // (Explicitly check GeneralConfig::$devMode here, because YII_DEBUG is always `1` for console requests.)
+            $devModeLogging = (
+                !Craft::$app->getConfig()->getGeneral()->devMode &&
+                Craft::$app->getIsInstalled() &&
+                !Craft::$app->getUpdates()->getIsCraftDbMigrationNeeded()
+            );
+
+            if ($devModeLogging) {
+                $fileTargetConfig['levels'] = Logger::LEVEL_ERROR | Logger::LEVEL_WARNING;
+            }
+
+            $targets[Dispatcher::TARGET_FILE] = $fileTargetConfig;
+
+            if (defined('CRAFT_STREAM_LOG') && CRAFT_STREAM_LOG === true) {
+                $streamErrLogTarget = [
+                    'class' => StreamLogTarget::class,
+                    'url' => 'php://stderr',
+                    'levels' => Logger::LEVEL_ERROR | Logger::LEVEL_WARNING,
+                    'includeUserIp' => $generalConfig->storeUserIps,
+                ];
+
+                $targets[Dispatcher::TARGET_STDERR] = $streamErrLogTarget;
+
+                if ($devModeLogging) {
+                    $streamOutLogTarget = [
+                        'class' => StreamLogTarget::class,
+                        'url' => 'php://stdout',
+                        'levels' => ~Logger::LEVEL_ERROR & ~Logger::LEVEL_WARNING,
+                        'includeUserIp' => $generalConfig->storeUserIps,
+                    ];
+
+                    $targets[Dispatcher::TARGET_STDOUT] = $streamOutLogTarget;
+                }
+            }
+        }
+
+        return $targets;
     }
 
     /**

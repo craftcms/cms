@@ -11,6 +11,7 @@ use Craft;
 use craft\base\ElementInterface;
 use craft\elements\db\ElementQuery;
 use craft\elements\db\ElementQueryInterface;
+use craft\errors\OperationAbortedException;
 use craft\helpers\Db;
 use craft\queue\BaseJob;
 use craft\queue\QueueInterface;
@@ -107,12 +108,18 @@ class UpdateElementSlugsAndUris extends BaseJob
         $elementsService = Craft::$app->getElements();
 
         foreach (Db::each($query) as $element) {
+            /* @var ElementInterface $element */
             $this->setProgress($queue, $this->_totalProcessed++ / $this->_totalToProcess);
 
             $oldSlug = $element->slug;
             $oldUri = $element->uri;
 
-            $elementsService->updateElementSlugAndUri($element, $this->updateOtherSites, false, false);
+            try {
+                $elementsService->updateElementSlugAndUri($element, $this->updateOtherSites, false, false);
+            } catch (OperationAbortedException $e) {
+                Craft::warning("Couldn’t update slug and URI for element $element->id: {$e->getMessage()}");
+                continue;
+            }
 
             // Only go deeper if something just changed
             if ($this->updateDescendants && ($element->slug !== $oldSlug || $element->uri !== $oldUri)) {

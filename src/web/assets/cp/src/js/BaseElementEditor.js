@@ -10,16 +10,33 @@ Craft.BaseElementEditor = Garnish.Base.extend({
     deltaNames: null,
     initialData: null,
 
-    $form: null,
-    $fieldsContainer: null,
-    $cancelBtn: null,
-    $saveBtn: null,
-    $spinner: null,
+    $header: null,
+    $toolbar: null,
+    $tabContainer: null,
+    $editLink: null,
+    $sidebarBtn: null,
+    $loadSpinner: null,
 
+    $body: null,
+    $fieldsContainer: null,
+
+    $sidebarShade: null,
+    $sidebar: null,
+
+    $footer: null,
+    $siteSelectContainer: null,
     $siteSelect: null,
     $siteSpinner: null,
+    $cancelBtn: null,
+    $saveBtn: null,
+    $saveSpinner: null,
 
-    hud: null,
+    slideout: null,
+    tabManager: null,
+    showingSidebar: false,
+
+    cancelToken: null,
+    ignoreFailedRequest: false,
 
     init: function(element, settings) {
         // Param mapping
@@ -32,7 +49,127 @@ Craft.BaseElementEditor = Garnish.Base.extend({
         this.$element = $(element);
         this.setSettings(settings, Craft.BaseElementEditor.defaults);
 
-        this.loadHud();
+        // Header
+        this.$header = $('<header/>', {class: 'pane-header'});
+        this.$toolbar = $('<div/>', {class: 'ee-toolbar'}).appendTo(this.$header);
+        this.$tabContainer = $('<div/>', {class: 'pane-tabs'}).appendTo(this.$toolbar);
+        this.$loadSpinner = $('<div/>', {
+            class: 'spinner',
+            title: Craft.t('app', 'Loading'),
+            'aria-label': Craft.t('app', 'Loading'),
+        }).appendTo(this.$toolbar);
+        this.$editLink = $('<a/>', {
+            target: '_blank',
+            class: 'btn hidden',
+            title: Craft.t('app', 'Open the full edit page in a new tab'),
+            'aria-label': Craft.t('app', 'Open the full edit page in a new tab'),
+            'data-icon': 'external',
+        }).appendTo(this.$toolbar);
+        this.$sidebarBtn = $('<button/>', {
+            type: 'button',
+            class: 'btn hidden sidebar-btn',
+            title: Craft.t('app', 'Show sidebar'),
+            'aria-label': Craft.t('app', 'Show sidebar'),
+            'data-icon': `sidebar-${Garnish.ltr ? 'right' : 'left'}`,
+        }).appendTo(this.$toolbar);
+
+        this.addListener(this.$sidebarBtn, 'click', ev => {
+            ev.preventDefault();
+            if (!this.showingSidebar) {
+                this.showSidebar();
+            } else {
+                this.hideSidebar();
+            }
+        });
+
+        // Body
+        this.$body = $('<div/>', {class: 'ee-body'});
+
+        // Fields
+        this.$fieldsContainer = $('<div/>', {class: 'fields'}).appendTo(this.$body);
+
+        // Sidebar
+        this.$sidebar = $('<div/>', {class: 'ee-sidebar hidden'}).appendTo(this.$body);
+        Craft.trapFocusWithin(this.$sidebar);
+
+        // Footer
+        this.$footer = $('<div/>', {class: 'ee-footer hidden'});
+        const $siteSelectOuterContainer = $('<div/>', {class: 'ee-site-select'}).appendTo(this.$footer);
+        this.$siteSelectContainer = $('<div/>', {class: 'select hidden'}).appendTo($siteSelectOuterContainer);
+        this.$siteSelect = $('<select/>').appendTo(this.$siteSelectContainer);
+        this.$siteSpinner = $('<div/>', {class: 'spinner hidden'}).appendTo($siteSelectOuterContainer);
+        this.$cancelBtn = $('<button/>', {
+            type: 'button',
+            class: 'btn',
+            text: Craft.t('app', 'Cancel'),
+        }).appendTo(this.$footer);
+        this.$saveBtn = $('<button/>', {
+            type: 'submit',
+            class: 'btn submit',
+            text: Craft.t('app', 'Save'),
+        }).appendTo(this.$footer);
+        this.$saveSpinner = $('<div/>', {class: 'spinner hidden'}).appendTo(this.$footer);
+
+        let $contents = this.$header.add(this.$body).add(this.$footer);
+
+        // Sidebar shade
+        if (!Garnish.isMobileBrowser()) {
+            this.$sidebarShade = $('<div/>', {class: 'ee-sidebar-shade hidden'});
+            $contents = $contents.add(this.$sidebarShade);
+
+            this.addListener(this.$sidebarShade, 'click', ev => {
+                ev.stopPropagation();
+                this.hideSidebar();
+            });
+        }
+
+        // Create the slideout
+        this.slideout = new Craft.Slideout($contents, {
+            containerElement: 'form',
+            containerAttributes: {
+                action: '',
+                method: 'post',
+                novalidate: '',
+                class: 'element-editor',
+            },
+            closeOnEsc: false,
+            closeOnShadeClick: false,
+        });
+        this.slideout.$container.data('elementEditor', this);
+        this.slideout.on('beforeClose', () => {
+            this.hideSidebar();
+        });
+        this.slideout.on('close', () => {
+            this.trigger('closeSlideout');
+            this.destroy();
+        });
+
+        // Register shortcuts & events
+        Garnish.shortcutManager.registerShortcut({
+            keyCode: Garnish.S_KEY,
+            ctrl: true,
+        }, () => {
+            this.saveElement();
+        });
+        Garnish.shortcutManager.registerShortcut(Garnish.ESC_KEY, () => {
+            this.maybeCloseSlideout();
+        });
+        this.addListener(this.$cancelBtn, 'click', () => {
+            this.maybeCloseSlideout();
+        });
+        this.addListener(this.slideout.$shade, 'click', () => {
+            this.maybeCloseSlideout();
+        });
+        this.addListener(this.slideout.$container, 'submit', ev => {
+            ev.preventDefault();
+            this.saveElement();
+        });
+        this.addListener(this.$siteSelect, 'change', 'switchSite');
+
+        this.load().then(() => {
+            this.onShowHud();
+            this.onCreateForm(this.$body);
+        });
     },
 
     setElementAttribute: function(name, value) {
@@ -48,7 +185,7 @@ Craft.BaseElementEditor = Garnish.Base.extend({
     },
 
     getBaseData: function() {
-        var data = $.extend({}, this.settings.params);
+        const data = $.extend({}, this.settings.params);
 
         if (this.settings.siteId) {
             data.siteId = this.settings.siteId;
@@ -77,100 +214,64 @@ Craft.BaseElementEditor = Garnish.Base.extend({
         return data;
     },
 
-    loadHud: function() {
-        this.onBeginLoading();
-        var data = this.getBaseData();
-        data.includeSites = Craft.isMultiSite && this.settings.showSiteSwitcher;
-        Craft.postActionRequest('elements/get-editor-html', data, this.showHud.bind(this));
+    load: function(data) {
+        return new Promise((resolve, reject) => {
+            this.trigger('beforeLoad');
+            // todo: remove this in Craft 4
+            this.trigger('beginLoading');
+            this.showLoadSpinner();
+            this.onBeginLoading();
+
+            if (this.cancelToken) {
+                this.ignoreFailedRequest = true;
+                this.cancelToken.cancel();
+            }
+
+            this.cancelToken = axios.CancelToken.source();
+
+            Craft.sendActionRequest('POST', 'elements/get-editor-html', {
+                cancelToken: this.cancelToken.token,
+                data: $.extend(this.getBaseData(), data || {}, {
+                    includeSites: Craft.isMultiSite && this.settings.showSiteSwitcher,
+                }),
+            }).then(response => {
+                this.hideLoadSpinner();
+                this.trigger('load');
+                // todo: remove this in Craft 4
+                this.trigger('endLoading');
+                this.onEndLoading();
+                this.cancelToken = null;
+                this.updateForm(response.data, true);
+                this.cancelToken = null;
+                resolve();
+            }).catch(e => {
+                this.hideLoadSpinner();
+                this.onEndLoading();
+                this.cancelToken = null;
+                if (!this.ignoreFailedRequest) {
+                    Craft.cp.displayError();
+                    reject(e);
+                }
+                this.ignoreFailedRequest = false;
+            });
+        });
     },
 
-    showHud: function(response, textStatus) {
-        this.onEndLoading();
+    showHeader: function() {
+        this.$header.removeClass('hidden');
+    },
 
-        if (textStatus === 'success') {
-            var $hudContents = $();
+    hideHeader: function() {
+        this.$header.addClass('hidden');
+    },
 
-            if (response.sites) {
-                var $header = $('<div class="hud-header"/>');
+    showLoadSpinner: function() {
+        this.showHeader();
+        this.$loadSpinner.removeClass('hidden');
+    },
 
-                if (response.sites.length === 1) {
-                    $('<h5/>', {text: response.sites[0].name}).appendTo($header);
-                } else {
-                    var $siteSelectContainer = $('<div class="select"/>').appendTo($header);
-
-                    this.$siteSelect = $('<select/>').appendTo($siteSelectContainer);
-                    this.$siteSpinner = $('<div class="spinner hidden"/>').appendTo($header);
-
-                    for (var i = 0; i < response.sites.length; i++) {
-                        var siteInfo = response.sites[i];
-                        $('<option value="' + siteInfo.id + '"' + (siteInfo.id == response.siteId ? ' selected="selected"' : '') + '>' + siteInfo.name + '</option>').appendTo(this.$siteSelect);
-                    }
-
-                    this.addListener(this.$siteSelect, 'change', 'switchSite');
-                }
-
-                $hudContents = $hudContents.add($header);
-            }
-
-            this.$form = $('<div/>');
-            this.$fieldsContainer = $('<div class="fields"/>').appendTo(this.$form);
-
-            this.updateForm(response, true);
-
-            this.onCreateForm(this.$form);
-
-            var $footer = $('<div class="hud-footer"/>').appendTo(this.$form),
-                $buttonsContainer = $('<div class="buttons right"/>').appendTo($footer);
-            this.$cancelBtn = $('<button/>', {
-                type: 'button',
-                class: 'btn',
-                text: Craft.t('app', 'Cancel'),
-            }).appendTo($buttonsContainer);
-            this.$saveBtn = $('<button/>', {
-                type: 'submit',
-                class: 'btn submit',
-                text: Craft.t('app', 'Save'),
-            }).appendTo($buttonsContainer);
-            this.$spinner = $('<div class="spinner hidden"/>').appendTo($buttonsContainer);
-
-            $hudContents = $hudContents.add(this.$form);
-
-            if (!this.hud) {
-                var hudTrigger = (this.settings.hudTrigger || this.$element);
-
-                this.hud = new Garnish.HUD(hudTrigger, $hudContents, {
-                    bodyClass: 'body elementeditor',
-                    closeOtherHUDs: false,
-                    hideOnEsc: false,
-                    hideOnShadeClick: false,
-                    onShow: this.onShowHud.bind(this),
-                    onHide: this.onHideHud.bind(this),
-                    onSubmit: this.saveElement.bind(this),
-                });
-
-                Garnish.shortcutManager.registerShortcut(Garnish.ESC_KEY, this.maybeCloseHud.bind(this));
-                this.hud.addListener(this.hud.$shade, 'click', this.maybeCloseHud.bind(this));
-
-                this.hud.$hud.data('elementEditor', this);
-
-                // Disable browser input validation
-                this.hud.$body.attr('novalidate', '');
-
-                this.hud.on('hide', () => {
-                    delete this.hud;
-                });
-            } else {
-                this.hud.updateBody($hudContents);
-                this.hud.updateSizeAndPosition();
-            }
-
-            // Focus on the first text input
-            $hudContents.find('.text:first').trigger('focus');
-
-            this.addListener(this.$cancelBtn, 'click', function() {
-                this.hud.hide();
-            });
-        }
+    hideLoadSpinner: function() {
+        this.$loadSpinner.addClass('hidden');
     },
 
     switchSite: function() {
@@ -179,7 +280,7 @@ Craft.BaseElementEditor = Garnish.Base.extend({
             return;
         }
 
-        var newSiteId = this.$siteSelect.val();
+        const newSiteId = this.$siteSelect.val();
 
         if (newSiteId == this.siteId) {
             return;
@@ -187,86 +288,230 @@ Craft.BaseElementEditor = Garnish.Base.extend({
 
         this.$siteSpinner.removeClass('hidden');
 
-        this.reloadForm({siteId: newSiteId}, textStatus => {
+        this.load({siteId: newSiteId}).then(() => {
             this.$siteSpinner.addClass('hidden');
-            if (textStatus !== 'success') {
-                // Reset the site select
-                this.$siteSelect.val(this.siteId);
-            }
+        }).catch(() => {
+            this.$siteSpinner.addClass('hidden');
+            // Reset the site select
+            this.$siteSelect.val(this.siteId);
         });
     },
 
-    reloadForm: function(data, callback) {
-        data = $.extend(this.getBaseData(), data);
-
-        Craft.postActionRequest('elements/get-editor-html', data, (response, textStatus) => {
-            if (textStatus === 'success') {
-                this.updateForm(response, true);
-            }
-
-            if (callback) {
-                callback(textStatus);
-            }
-        });
-    },
-
-    updateForm: function(response, refreshInitialData) {
-        this.siteId = response.siteId;
-        this.$fieldsContainer.html(response.html);
-
-        if (refreshInitialData !== false) {
-            this.deltaNames = response.deltaNames;
+    updateForm: function(data, refreshInitialData) {
+        // Cleanup
+        if (this.tabManager) {
+            this.$tabContainer.html('');
+            this.tabManager.destroy();
+            this.tabManager = null;
         }
 
-        // Swap any instruction text with info icons
-        let $allInstructions = this.$fieldsContainer.find('> .meta > .field > .instructions');
+        this.siteId = data.siteId;
+        this.$fieldsContainer.html(data.fieldHtml);
 
-        for (let i = 0; i < $allInstructions.length; i++) {
-            let $instructions = $allInstructions.eq(i);
-            let $label = $instructions.siblings('.heading').children('label');
-            $('<span/>', {
-                'class': 'info',
-                'html': $instructions.children().html()
-            }).appendTo($label);
-            $instructions.remove();
+        let showHeader = false;
+
+        if (data.sites && data.sites.length > 1) {
+            showHeader = true;
+            this.$siteSelectContainer.removeClass('hidden');
+            this.$siteSelect.html('');
+
+            for (let i = 0; i < data.sites.length; i++) {
+                const siteInfo = data.sites[i];
+                const $option = $('<option/>', {
+                    value: siteInfo.id,
+                    text: siteInfo.name
+                }).appendTo(this.$siteSelect);
+                if (siteInfo.id == data.siteId) {
+                    $option.attr('selected', 'selected');
+                }
+            }
+        } else {
+            this.$siteSelectContainer.addClass('hidden');
+        }
+
+        if (data.tabHtml) {
+            showHeader = true;
+            this.$tabContainer.replaceWith(this.$tabContainer = $(data.tabHtml));
+            this.tabManager = new Craft.Tabs(this.$tabContainer);
+            this.tabManager.on('deselectTab', ev => {
+                $(ev.$tab.attr('href')).addClass('hidden');
+            });
+            this.tabManager.on('selectTab', ev => {
+                $(ev.$tab.attr('href')).removeClass('hidden');
+                Garnish.$win.trigger('resize');
+                this.$body.trigger('scroll');
+            });
+        }
+
+        if (data.editUrl) {
+            showHeader = true;
+            this.$editLink
+                .removeClass('hidden')
+                .attr('href', data.editUrl);
+        } else if (this.$editLink) {
+            this.$editLink.addClass('hidden');
+        }
+
+        if (data.sidebarHtml) {
+            showHeader = true;
+            this.$sidebarBtn.removeClass('hidden');
+            this.$sidebar.html(data.sidebarHtml);
+            Craft.initUiElements(this.$sidebar);
+            new Craft.ElementThumbLoader().load($(this.$sidebar));
+
+            // Open outbound links in new windows
+            this.$sidebar.find('a').each(function() {
+                if (this.hostname.length && typeof $(this).attr('target') === 'undefined') {
+                    $(this).attr('target', '_blank')
+                }
+            });
+        } else if (this.$sidebarBtn) {
+            this.$sidebarBtn.addClass('hidden');
+            this.$sidebar.addClass('hidden');
+        }
+
+        if (showHeader) {
+            this.showHeader();
+        } else {
+            this.hideHeader();
+        }
+
+        this.$footer.removeClass('hidden');
+
+        if (refreshInitialData !== false) {
+            this.deltaNames = data.deltaNames;
         }
 
         Garnish.requestAnimationFrame(() => {
-            Craft.appendHeadHtml(response.headHtml);
-            Craft.appendFootHtml(response.footHtml);
+            Craft.appendHeadHtml(data.headHtml);
+            Craft.appendFootHtml(data.footHtml);
             Craft.initUiElements(this.$fieldsContainer);
 
             if (refreshInitialData) {
-                this.initialData = this.hud.$body.serialize();
+                this.initialData = this.slideout.$container.serialize();
             }
+
+            if (!Garnish.isMobileBrowser()) {
+                Craft.setFocusWithin(this.$fieldsContainer);
+            }
+
+            this.trigger('updateForm');
         });
     },
 
+    showSidebar: function() {
+        if (this.showingSidebar) {
+            return;
+        }
+
+        this.$body.scrollTop(0).addClass('no-scroll');
+
+        this.$sidebar
+            .off('transitionend.element-editor')
+            .css(this._closedSidebarStyles())
+            .removeClass('hidden');
+
+        // Hack to force CSS animations
+        this.$sidebar[0].offsetWidth;
+
+        if (!Garnish.isMobileBrowser()) {
+            this.$sidebarShade
+                .removeClass('hidden');
+        }
+
+        this.$sidebar.css(this._openedSidebarStyles());
+
+        if (!Garnish.isMobileBrowser()) {
+            this.$sidebar.one('transitionend.element-editor', () => {
+                Craft.setFocusWithin(this.$sidebar);
+            });
+        }
+
+        this.$sidebarBtn
+            .addClass('active')
+            .attr({
+                title: Craft.t('app', 'Hide sidebar'),
+                'aria-label': Craft.t('app', 'Hide sidebar'),
+            });
+
+        Garnish.$win.trigger('resize');
+        this.$sidebar.trigger('scroll');
+
+        Garnish.shortcutManager.addLayer();
+        Garnish.shortcutManager.registerShortcut(Garnish.ESC_KEY, () => {
+            this.hideSidebar();
+        });
+
+        this.showingSidebar = true;
+    },
+
+    hideSidebar: function() {
+        if (!this.showingSidebar) {
+            return;
+        }
+
+        this.$body.removeClass('no-scroll');
+
+        if (!Garnish.isMobileBrowser()) {
+            this.$sidebarShade.addClass('hidden');
+        }
+
+        this.$sidebar
+            .off('transitionend.element-editor')
+            .css(this._closedSidebarStyles())
+            .one('transitionend.element-editor', () => {
+                this.$sidebar.addClass('hidden');
+            });
+
+        this.$sidebarBtn
+            .removeClass('active')
+            .attr({
+                title: Craft.t('app', 'Show sidebar'),
+                'aria-label': Craft.t('app', 'Show sidebar'),
+            });
+
+        Garnish.shortcutManager.removeLayer();
+
+        this.showingSidebar = false;
+    },
+
+    _openedSidebarStyles: function() {
+        return {
+            [Garnish.ltr ? 'right' : 'left']: '0',
+        };
+    },
+
+    _closedSidebarStyles: function() {
+        return {
+            [Garnish.ltr ? 'right' : 'left']: '-350px',
+        };
+    },
+
     saveElement: function() {
-        var validators = this.settings.validators;
+        const validators = this.settings.validators;
 
         if ($.isArray(validators)) {
-            for (var i = 0; i < validators.length; i++) {
+            for (let i = 0; i < validators.length; i++) {
                 if ($.isFunction(validators[i]) && !validators[i].call()) {
                     return false;
                 }
             }
         }
 
-        this.$spinner.removeClass('hidden');
+        this.$saveSpinner.removeClass('hidden');
 
-        var data = $.param(this.getBaseData()) + '&' + this.hud.$body.serialize();
+        let data = $.param(this.getBaseData()) + '&' + this.slideout.$container.serialize();
         data = Craft.findDeltaData(this.initialData, data, this.deltaNames);
 
         Craft.postActionRequest('elements/save-element', data, (response, textStatus) => {
-            this.$spinner.addClass('hidden');
+            this.$saveSpinner.addClass('hidden');
 
             if (textStatus === 'success') {
                 if (response.success) {
                     if (this.$element && this.siteId == this.$element.data('site-id')) {
                         // Update the label
-                        var $title = this.$element.find('.title'),
-                            $a = $title.find('a');
+                        const $title = this.$element.find('.title');
+                        const $a = $title.find('a');
 
                         if ($a.length && response.cpEditUrl) {
                             $a.attr('href', response.cpEditUrl);
@@ -282,90 +527,103 @@ Craft.BaseElementEditor = Garnish.Base.extend({
                         }));
                     }
 
-                    this.closeHud();
+                    this.closeSlideout();
+                    this.trigger('saveElement', {
+                        response: response
+                    });
                     this.onSaveElement(response);
+                    this.settings.onSaveElement(response);
+
+                    // There may be a new background job that needs to be run
+                    Craft.cp.runQueue();
                 } else {
                     this.updateForm(response, false);
-                    Garnish.shake(this.hud.$hud);
+                    Garnish.shake(this.slideout.$container);
                 }
             }
         });
     },
 
     isDirty: function() {
-        return this.hud.$body.serialize() !== this.initialData;
+        return this.initialData !== null && this.slideout.$container.serialize() !== this.initialData;
     },
 
-    maybeCloseHud: function(ev) {
-        if (!this.hud || !this.hud.showing) {
+    maybeCloseSlideout: function() {
+        if (!this.slideout.isOpen) {
             return;
         }
 
         if (!this.isDirty() || confirm('Are you sure you want to close the editor? Any changes will be lost.')) {
-            this.closeHud();
+            this.closeSlideout();
         }
     },
 
-    closeHud: function() {
-        if (!this.hud || !this.hud.showing) {
-            return;
-        }
+    closeSlideout: function() {
+        this.slideout.close();
+        this.onHideHud();
 
-        this.hud.hide();
-        delete this.hud;
+        if (this.cancelToken) {
+            this.ignoreFailedRequest = true;
+            this.cancelToken.cancel();
+        }
     },
 
-    // Events
+    destroy: function() {
+        this.slideout.destroy();
+        delete this.slideout;
+        this.base();
+    },
+
+    // Deprecated Methods
     // -------------------------------------------------------------------------
 
-    onShowHud: function() {
-        Garnish.shortcutManager.registerShortcut({
-            keyCode: Garnish.S_KEY,
-            ctrl: true,
-        }, this.saveElement.bind(this));
-        this.settings.onShowHud();
-        this.trigger('showHud');
+    /** @deprecated in 3.7.0 */
+    loadHud: function() {
+        this.load();
     },
-
-    onHideHud: function() {
-        this.settings.onHideHud();
-        this.trigger('hideHud');
+    /** @deprecated in 3.7.0 */
+    maybeCloseHud: function() {
+        this.maybeCloseSlideout();
     },
-
-    onBeginLoading: function() {
-        if (this.$element) {
-            this.$element.addClass('loading');
-        }
-
-        this.settings.onBeginLoading();
-        this.trigger('beginLoading');
+    /** @deprecated in 3.7.0 */
+    closeHud: function() {
+        this.closeSlideout();
     },
-
-    onEndLoading: function() {
-        if (this.$element) {
-            this.$element.removeClass('loading');
-        }
-
-        this.settings.onEndLoading();
-        this.trigger('endLoading');
-    },
-
-    onSaveElement: function(response) {
-        this.settings.onSaveElement(response);
-        this.trigger('saveElement', {
-            response: response
+    /** @deprecated */
+    reloadForm: function(data, callback) {
+        this.load(data).then(() => {
+            callback('success');
+        }).catch(() => {
+            callback('error');
         });
-
-        // There may be a new background job that needs to be run
-        Craft.cp.runQueue();
     },
-
+    /** @deprecated in 3.7.0 */
+    onBeginLoading: function() {
+        this.settings.onBeginLoading();
+    },
+    /** @deprecated in 3.7.0 */
+    onEndLoading: function() {
+        this.settings.onEndLoading();
+    },
+    /** @deprecated in 3.7.0 */
+    onSaveElement: function(response) {
+    },
+    /** @deprecated in 3.7.0 */
     onCreateForm: function($form) {
         this.settings.onCreateForm($form);
-    }
+    },
+    /** @deprecated in 3.7.0 */
+    onShowHud: function() {
+        this.trigger('showHud');
+        this.settings.onShowHud();
+    },
+    /** @deprecated in 3.7.0 */
+    onHideHud: function() {
+        this.trigger('hideHud');
+        this.settings.onHideHud();
+    },
 }, {
     defaults: {
-        hudTrigger: null,
         showSiteSwitcher: true,
         elementId: null,
         elementType: null,
@@ -374,14 +632,18 @@ Craft.BaseElementEditor = Garnish.Base.extend({
         params: null,
         prevalidate: false,
         elementIndex: null,
-
-        onShowHud: $.noop,
-        onHideHud: $.noop,
-        onBeginLoading: $.noop,
-        onEndLoading: $.noop,
-        onCreateForm: $.noop,
         onSaveElement: $.noop,
+        validators: [],
 
-        validators: []
+        /** @deprecated in 3.7.0 */
+        onShowHud: $.noop,
+        /** @deprecated in 3.7.0 */
+        onHideHud: $.noop,
+        /** @deprecated in 3.7.0 */
+        onBeginLoading: $.noop,
+        /** @deprecated in 3.7.0 */
+        onEndLoading: $.noop,
+        /** @deprecated in 3.7.0 */
+        onCreateForm: $.noop,
     }
 });

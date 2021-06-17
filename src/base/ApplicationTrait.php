@@ -17,6 +17,7 @@ use craft\db\Table;
 use craft\elements\Asset;
 use craft\elements\Category;
 use craft\elements\Entry;
+use craft\elements\Tag;
 use craft\errors\DbConnectException;
 use craft\errors\SiteNotFoundException;
 use craft\errors\WrongEditionException;
@@ -76,6 +77,7 @@ use yii\web\ServerErrorHttpException;
  * @property-read \craft\i18n\Locale $formattingLocale The Locale object that should be used to define the formatter
  * @property-read \craft\i18n\Locale $locale The Locale object for the target language
  * @property-read \craft\mail\Mailer $mailer The mailer component
+ * @property-read \craft\services\Announcements $announcements The announcements service
  * @property-read \craft\services\Api $api The API service
  * @property-read \craft\services\AssetIndexer $assetIndexer The asset indexer service
  * @property-read \craft\services\Assets $assets The assets service
@@ -855,6 +857,18 @@ trait ApplicationTrait
     // -------------------------------------------------------------------------
 
     /**
+     * Returns the announcements service.
+     *
+     * @return \craft\services\Announcements The announcements service
+     * @since 3.7.0
+     */
+    public function getAnnouncements()
+    {
+        /* @var WebApplication|ConsoleApplication $this */
+        return $this->get('announcements');
+    }
+
+    /**
      * Returns the API service.
      *
      * @return \craft\services\Api The API service
@@ -1532,11 +1546,12 @@ trait ApplicationTrait
             $fieldLayout = $event->sender;
 
             switch ($fieldLayout->type) {
+                case Category::class:
+                case Tag::class:
+                    $event->fields[] = TitleField::class;
+                    break;
                 case Asset::class:
                     $event->fields[] = AssetTitleField::class;
-                    break;
-                case Category::class:
-                    $event->fields[] = TitleField::class;
                     break;
                 case Entry::class:
                     $event->fields[] = EntryTitleField::class;

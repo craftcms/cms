@@ -141,12 +141,33 @@ class EntryType extends Model
             'targetAttribute' => ['handle', 'sectionId'],
             'comboNotUnique' => Craft::t('yii', '{attribute} "{value}" has already been taken.'),
         ];
+        $rules[] = [['fieldLayout'], 'validateFieldLayout'];
 
         if (!$this->hasTitleField) {
             $rules[] = [['titleFormat'], 'required'];
         }
 
         return $rules;
+    }
+
+    /**
+     * Validates the field layout.
+     *
+     * @return void
+     * @since 3.7.0
+     */
+    public function validateFieldLayout(): void
+    {
+        $fieldLayout = $this->getFieldLayout();
+        $fieldLayout->reservedFieldHandles = [
+            'author',
+            'section',
+            'type',
+        ];
+
+        if (!$fieldLayout->validate()) {
+            $this->addModelErrors($fieldLayout, 'fieldLayout');
+        }
     }
 
     /**

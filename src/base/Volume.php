@@ -83,6 +83,7 @@ abstract class Volume extends SavableComponent implements VolumeInterface
                 'title',
             ],
         ];
+        $rules[] = [['fieldLayout'], 'validateFieldLayout'];
 
         // Require URLs for public Volumes.
         if ($this->hasUrls) {
@@ -90,6 +91,25 @@ abstract class Volume extends SavableComponent implements VolumeInterface
         }
 
         return $rules;
+    }
+
+    /**
+     * Validates the field layout.
+     *
+     * @return void
+     * @since 3.7.0
+     */
+    public function validateFieldLayout(): void
+    {
+        $fieldLayout = $this->getFieldLayout();
+        $fieldLayout->reservedFieldHandles = [
+            'folder',
+            'volume',
+        ];
+
+        if (!$fieldLayout->validate()) {
+            $this->addModelErrors($fieldLayout, 'fieldLayout');
+        }
     }
 
     /**

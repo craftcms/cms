@@ -139,6 +139,7 @@ class SectionsController extends Controller
 
         if ($section->type === Section::TYPE_STRUCTURE) {
             $section->maxLevels = $this->request->getBodyParam('maxLevels');
+            $section->defaultPlacement = $this->request->getBodyParam('defaultPlacement') ?? $section->defaultPlacement;
         }
 
         // Site-specific settings

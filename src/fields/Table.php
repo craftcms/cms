@@ -23,6 +23,7 @@ use craft\validators\HandleValidator;
 use craft\validators\UrlValidator;
 use craft\web\assets\tablesettings\TableSettingsAsset;
 use craft\web\assets\timepicker\TimepickerAsset;
+use DateTime;
 use GraphQL\Type\Definition\InputObjectType;
 use GraphQL\Type\Definition\Type;
 use LitEmoji\LitEmoji;
@@ -429,6 +430,28 @@ class Table extends Field
         }
 
         return $serialized;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    protected function searchKeywords($value, ElementInterface $element): string
+    {
+        if (!is_array($value) || empty($this->columns)) {
+            return '';
+        }
+
+        $keywords = [];
+
+        foreach ($value as $row) {
+            foreach (array_keys($this->columns) as $colId) {
+                if (isset($row[$colId]) && !$row[$colId] instanceof DateTime) {
+                    $keywords[] = $row[$colId];
+                }
+            }
+        }
+
+        return implode(' ', $keywords);
     }
 
     /**
