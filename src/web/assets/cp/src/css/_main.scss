@@ -3627,6 +3627,26 @@ ul.tree,
 
 /* Element editor slideouts */
 .element-editor {
+  & > .pane-header {
+    & > .ee-toolbar {
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      margin-bottom: -7px;
+
+      & > .pane-tabs {
+        width: 1px; // give other elements in the header plenty of room before the tabs take up whatever's left
+        flex: 1;
+        margin-bottom: 0;
+      }
+
+      & > .btn {
+        position: relative;
+        z-index: 1;
+      }
+    }
+  }
+
   & > .ee-body {
     flex: 1;
     margin: -24px var(--neg-padding) 0;
@@ -3634,32 +3654,12 @@ ul.tree,
     overflow: hidden auto;
     position: relative;
 
-    & > .pane-header {
-      & > .ee-toolbar {
-        display: flex;
-        flex-direction: row;
-        align-items: center;
-        margin-bottom: -7px;
-
-        & > .pane-tabs {
-          width: 1px; // give other elements in the header plenty of room before the tabs take up whatever's left
-          flex: 1;
-          margin-bottom: 0;
-        }
-      }
-    }
-
-    & > .ee-sidebar-shade {
-      position: absolute;
-      left: 0;
-      width: 100%;
-    }
-
     & > .ee-sidebar {
       position: absolute;
-      @include right(0);
+      top: 0;
       @include pane();
       width: 350px;
+      height: 100%;
       max-width: 100%;
       box-sizing: border-box;
       padding: 0 var(--padding);
@@ -3721,6 +3721,14 @@ ul.tree,
     & > .spinner {
       @include margin(0, var(--neg-padding), 0, 0);
     }
+  }
+
+  & > .ee-sidebar-shade {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
   }
 }
 

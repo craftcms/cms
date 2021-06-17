@@ -49,11 +49,8 @@ Craft.BaseElementEditor = Garnish.Base.extend({
         this.$element = $(element);
         this.setSettings(settings, Craft.BaseElementEditor.defaults);
 
-        // Body
-        this.$body = $('<div/>', {class: 'ee-body'});
-
         // Header
-        this.$header = $('<header/>', {class: 'pane-header'}).prependTo(this.$body);
+        this.$header = $('<header/>', {class: 'pane-header'});
         this.$toolbar = $('<div/>', {class: 'ee-toolbar'}).appendTo(this.$header);
         this.$tabContainer = $('<div/>', {class: 'pane-tabs'}).appendTo(this.$toolbar);
         this.$loadSpinner = $('<div/>', {
@@ -85,19 +82,13 @@ Craft.BaseElementEditor = Garnish.Base.extend({
             }
         });
 
+        // Body
+        this.$body = $('<div/>', {class: 'ee-body'});
+
         // Fields
         this.$fieldsContainer = $('<div/>', {class: 'fields'}).appendTo(this.$body);
 
         // Sidebar
-        if (!Garnish.isMobileBrowser()) {
-            this.$sidebarShade = $('<div/>', {class: 'ee-sidebar-shade hidden'}).appendTo(this.$body);
-
-            this.addListener(this.$sidebarShade, 'click', ev => {
-                ev.stopPropagation();
-                this.hideSidebar();
-            });
-        }
-
         this.$sidebar = $('<div/>', {class: 'ee-sidebar hidden'}).appendTo(this.$body);
         Craft.trapFocusWithin(this.$sidebar);
 
@@ -119,8 +110,21 @@ Craft.BaseElementEditor = Garnish.Base.extend({
         }).appendTo(this.$footer);
         this.$saveSpinner = $('<div/>', {class: 'spinner hidden'}).appendTo(this.$footer);
 
+        let $contents = this.$header.add(this.$body).add(this.$footer);
+
+        // Sidebar shade
+        if (!Garnish.isMobileBrowser()) {
+            this.$sidebarShade = $('<div/>', {class: 'ee-sidebar-shade hidden'});
+            $contents = $contents.add(this.$sidebarShade);
+
+            this.addListener(this.$sidebarShade, 'click', ev => {
+                ev.stopPropagation();
+                this.hideSidebar();
+            });
+        }
+
         // Create the slideout
-        this.slideout = new Craft.Slideout(this.$body.add(this.$footer), {
+        this.slideout = new Craft.Slideout($contents, {
             containerElement: 'form',
             containerAttributes: {
                 action: '',
@@ -412,8 +416,7 @@ Craft.BaseElementEditor = Garnish.Base.extend({
 
         if (!Garnish.isMobileBrowser()) {
             this.$sidebarShade
-                .removeClass('hidden')
-                .css(this._sidebarStyles());
+                .removeClass('hidden');
         }
 
         this.$sidebar.css(this._openedSidebarStyles());
@@ -472,24 +475,16 @@ Craft.BaseElementEditor = Garnish.Base.extend({
         this.showingSidebar = false;
     },
 
-    _sidebarStyles: function() {
-        const headerHeight = this.$header.outerHeight();
+    _openedSidebarStyles: function() {
         return {
-            top: `${headerHeight}px`,
-            height: `calc(100% - ${headerHeight}px`,
+            [Garnish.ltr ? 'right' : 'left']: '0',
         };
     },
 
-    _openedSidebarStyles: function() {
-        return $.extend(this._sidebarStyles(), {
-            [Garnish.ltr ? 'right' : 'left']: '0',
-        });
-    },
-
     _closedSidebarStyles: function() {
-        return $.extend(this._sidebarStyles(), {
+        return {
             [Garnish.ltr ? 'right' : 'left']: '-350px',
-        });
+        };
     },
 
     saveElement: function() {
