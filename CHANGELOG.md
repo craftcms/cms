@@ -1,5 +1,10 @@
 # Release Notes for Craft CMS 3.x
 
+## Unreleased
+
+### Fixed
+- Fixed a button styling issue in Safari. ([#8076](https://github.com/craftcms/cms/pull/8076))
+
 ## 3.6.17 - 2021-06-15
 
 ### Changed
