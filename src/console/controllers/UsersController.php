@@ -69,13 +69,11 @@ class UsersController extends Controller
      */
     public $deleteContent = false;
 
-    
     /**
-     * @var bool Wether to hard delete the user (by pass trash)
+     * @var bool Whether the element should be hard-deleted immediately, instead of soft-deleted
      * @since 3.7.0
      */
     public $hard = false;
-
     
     /**
      * @inheritdoc
