@@ -3628,6 +3628,8 @@ ul.tree,
 /* Element editor slideouts */
 .element-editor {
   & > .pane-header {
+    z-index: 2;
+
     & > .ee-toolbar {
       display: flex;
       flex-direction: row;
@@ -3638,11 +3640,6 @@ ul.tree,
         width: 1px; // give other elements in the header plenty of room before the tabs take up whatever's left
         flex: 1;
         margin-bottom: 0;
-      }
-
-      & > .btn {
-        position: relative;
-        z-index: 1;
       }
     }
   }
@@ -3663,7 +3660,7 @@ ul.tree,
       max-width: 100%;
       box-sizing: border-box;
       padding: 0 var(--padding);
-      background-color: $grey050;
+      background-color: $grey100;
       overflow: hidden auto;
       z-index: 1;
 
@@ -3689,7 +3686,7 @@ ul.tree,
         padding: 0 var(--padding);
 
         &:not(.read-only) {
-          background: $white;
+          background: $grey050;
         }
 
         &.read-only {
@@ -3708,7 +3705,7 @@ ul.tree,
     padding: var(--padding);
     @include pane;
     background-color: $grey050;
-    z-index: 1;
+    z-index: 3;
 
     & > .ee-site-select {
       flex: 1;
@@ -3725,6 +3722,7 @@ ul.tree,
 
   & > .ee-sidebar-shade {
     position: absolute;
+    z-index: 2;
     top: 0;
     left: 0;
     width: 100%;
@@ -3741,9 +3739,18 @@ ul.tree,
     .ee-body {
       display: flex;
       flex-direction: row;
+      padding: 0;
+      overflow: hidden;
 
       & > .fields {
+        position: relative;
+        z-index: 2;
+        padding: 24px;
         width: calc(100% - 350px);
+        height: 100%;
+        box-sizing: border-box;;
+        box-shadow: 0 0 0 1px transparentize($grey1000, 0.9);
+        overflow: hidden auto;
       }
 
       & > .ee-sidebar {
@@ -3752,9 +3759,8 @@ ul.tree,
         top: auto;
         right: auto !important;
         left: auto !important;
-        @include margin(-24px, -24px, -24px, 24px);
-        height: calc(100% + 48px);
-        box-shadow: 0 0 0 1px $hairlineColor;
+        height: 100%;
+        box-shadow: none;
       }
     }
 
