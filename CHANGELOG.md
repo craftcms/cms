@@ -3,6 +3,7 @@
 ## Unreleased
 
 ### Added
+- Added the `--hard` option to the `users/delete` command. ([#8083](https://github.com/craftcms/cms/pull/8083))
 - Added `craft\console\ControllerTrait::createAttributeValidator()`. ([#8066](https://github.com/craftcms/cms/pull/8066))
 
 ### Changed
