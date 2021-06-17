@@ -242,7 +242,6 @@ class AuthenticationController extends Controller
         $this->requireAcceptsJson();
         $this->requireLogin();
         $this->requireElevatedSession();
-        $this->requireSecureConnection();
 
         $request = Craft::$app->getRequest();
         $payload = $request->getRequiredBodyParam('credentials');
@@ -303,7 +302,6 @@ class AuthenticationController extends Controller
             $detach = $request->getBodyParam('detach');
 
             if (!empty($code1) || !empty($code2)) {
-                $this->requireSecureConnection();
                 $authenticator = AuthenticationHelper::getCodeAuthenticator();
 
                 $authenticator->setWindow(4);
