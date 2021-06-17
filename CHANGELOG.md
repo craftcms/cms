@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 3.x
 
-## Unreleased
+## 3.7.0-beta.2 - 2021-06-17
 
 ### Added
 - Added the `--hard` option to the `users/delete` command. ([#8083](https://github.com/craftcms/cms/pull/8083))
