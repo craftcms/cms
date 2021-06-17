@@ -6,6 +6,7 @@
 - Added `craft\console\ControllerTrait::createAttributeValidator()`. ([#8066](https://github.com/craftcms/cms/pull/8066))
 
 ### Changed
+- Element editor slideouts’ sidebars are now always shown when the viewport is at least 1536px wide. ([#8075](https://github.com/craftcms/cms/issues/8075))
 - Template requests now respond with a `Content-Length` header. ([#8070](https://github.com/craftcms/cms/issues/8070))
 
 ### Fixed

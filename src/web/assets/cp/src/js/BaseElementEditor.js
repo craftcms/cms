@@ -67,7 +67,7 @@ Craft.BaseElementEditor = Garnish.Base.extend({
         }).appendTo(this.$toolbar);
         this.$sidebarBtn = $('<button/>', {
             type: 'button',
-            class: 'btn hidden',
+            class: 'btn hidden sidebar-btn',
             title: Craft.t('app', 'Show sidebar'),
             'aria-label': Craft.t('app', 'Show sidebar'),
             'data-icon': `sidebar-${Garnish.ltr ? 'right' : 'left'}`,

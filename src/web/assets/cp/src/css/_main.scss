@@ -3732,6 +3732,38 @@ ul.tree,
   }
 }
 
+@media (min-width: 1536px) {
+  .element-editor {
+    .sidebar-btn {
+      display: none;
+    }
+
+    .ee-body {
+      display: flex;
+      flex-direction: row;
+
+      & > .fields {
+        width: calc(100% - 350px);
+      }
+
+      & > .ee-sidebar {
+        position: relative;
+        display: block !important;
+        top: auto;
+        right: auto !important;
+        left: auto !important;
+        @include margin(-24px, -24px, -24px, 24px);
+        height: calc(100% + 48px);
+        box-shadow: 0 0 0 1px $hairlineColor;
+      }
+    }
+
+    & > .ee-sidebar-shade {
+      display: none !important;
+    }
+  }
+}
+
 .header,
 .hud-header,
 .footer,

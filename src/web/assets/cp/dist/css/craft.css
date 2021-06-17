@@ -1901,6 +1901,14 @@ body.rtl .element-editor > .ee-footer > .spinner { margin: 0 0 0 var(--neg-paddi
 
 .element-editor > .ee-sidebar-shade { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
 
+@media (min-width: 1536px) { .element-editor .sidebar-btn { display: none; }
+  .element-editor .ee-body { display: -webkit-flex; display: flex; -webkit-flex-direction: row; flex-direction: row; }
+  .element-editor .ee-body > .fields { width: calc(100% - 350px); }
+  .element-editor .ee-body > .ee-sidebar { position: relative; display: block !important; top: auto; right: auto !important; left: auto !important; height: calc(100% + 48px); box-shadow: 0 0 0 1px rgba(51, 64, 77, 0.1); }
+  body.ltr .element-editor .ee-body > .ee-sidebar { margin: -24px -24px -24px 24px ; }
+  body.rtl .element-editor .ee-body > .ee-sidebar { margin: -24px 24px -24px -24px ; }
+  .element-editor > .ee-sidebar-shade { display: none !important; } }
+
 .header:after, .hud-header:after, .footer:after, .hud-footer:after, .body:after { content: ''; display: block; height: 0; clear: both; visibility: hidden; }
 
 .header, .hud-header, .footer, .hud-footer { position: relative; z-index: 1; box-sizing: border-box; }
