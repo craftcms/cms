@@ -201,6 +201,7 @@
 - Fixed a bug where it wasn’t easily possible to submit forms to controller actions from Live Preview pages. ([#7885](https://github.com/craftcms/cms/issues/7885))
 - Fixed a bug where it was possible to choose a different parent entry when editing a draft, even though the change wouldn’t stick when publishing the draft.
 - Fixed a bug where changing an entry’s parent wouldn’t update any of its drafts.
+- Fixed a SQL error that occurred when deleting a volume folder that had subfolders nested more than 15 levels deep. ([#8073](https://github.com/craftcms/cms/issues/8073))
 
 ### Security
 - The default `allowedFileExtensions` config setting value no longer includes `xml`.
