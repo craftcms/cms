@@ -18,7 +18,7 @@ table { border-collapse: separate; border-spacing: 0; }
 
 a { text-decoration: none; }
 
-button { -webkit-appearance: none; appearance: none; background-color: transparent; border: none; padding: 0; }
+button { -webkit-appearance: none; appearance: none; background-color: transparent; border: none; padding: 0; margin: 0; }
 
 input, textarea { margin: 0; font-family: 'Lucida Grande', sans-serif; font-size: 100%; }
 

@@ -221,6 +221,11 @@
 ### Security
 - The default `allowedFileExtensions` config setting value no longer includes `xml`.
 
+## Unreleased (3.6)
+
+### Fixed
+- Fixed a button styling issue in Safari. ([#8076](https://github.com/craftcms/cms/pull/8076))
+
 ## 3.6.17 - 2021-06-15
 
 ### Changed
