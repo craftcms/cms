@@ -232,8 +232,9 @@ class UsersController extends Controller
         $user = Craft::$app->getUsers()->getUserByUsernameOrEmail($usernameOrEmail);
 
         if (!$user) {
-            $this->stderr("No user exists with a username/email of “{$usernameOrEmail}”." . PHP_EOL, Console::FG_RED);
-            return ExitCode::UNSPECIFIED_ERROR;
+            $this->stdout("No user exists with a username/email of “{$usernameOrEmail}”." . PHP_EOL);
+            $this->stdout('done' . PHP_EOL, Console::FG_GREEN);
+            return ExitCode::OK;
         }
 
         if ($this->deleteContent && $this->inheritor) {
