@@ -14,6 +14,7 @@
 - Fixed a bug where it wasn’t possible to choose the parent entry when creating new Structure section entries. ([#8074](https://github.com/craftcms/cms/issues/8074))
 - Fixed a bug where element selection fields could get multiple “Choose” buttons. ([#8074](https://github.com/craftcms/cms/issues/8074))
 - Fixed a SQL error that occurred when deleting a volume folder that had subfolders nested more than 15 levels deep. ([#8073](https://github.com/craftcms/cms/issues/8073))
+- Fixed a bug where exported CSV files weren’t being imported with an UTF-8 encoding by Excel. ([#8067](https://github.com/craftcms/cms/issues/8067))
 
 ## 3.7.0-beta.1 - 2021-06-15
 
