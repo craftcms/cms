@@ -70,6 +70,12 @@ class UsersController extends Controller
     public $deleteContent = false;
 
     /**
+     * @var bool Whether the user should be hard-deleted immediately, instead of soft-deleted
+     * @since 3.7.0
+     */
+    public $hard = false;
+
+    /**
      * @inheritdoc
      */
     public function options($actionID)
@@ -88,6 +94,7 @@ class UsersController extends Controller
             case 'delete':
                 $options[] = 'inheritor';
                 $options[] = 'deleteContent';
+                $options[] = 'hard';
                 break;
             case 'set-password':
                 $options[] = 'password';
@@ -277,7 +284,7 @@ class UsersController extends Controller
 
         $this->stdout('Deleting the user ... ');
 
-        if (!Craft::$app->getElements()->deleteElement($user)) {
+        if (!Craft::$app->getElements()->deleteElement($user, $this->hard)) {
             $this->stderr('failed: Couldn’t delete the user.' . PHP_EOL, Console::FG_RED);
             return ExitCode::UNSPECIFIED_ERROR;
         }
