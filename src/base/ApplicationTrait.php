@@ -299,9 +299,9 @@ trait ApplicationTrait
 
         try {
             $info = $this->getInfo(true);
-        } catch (DbException $e) {
+        } catch (DbException | ServerErrorHttpException $e) {
             // yii2-redis awkwardly throws yii\db\Exception's rather than their own exception class.
-            if (strpos($e->getMessage(), 'Redis') !== false) {
+            if ($e instanceof DbException && strpos($e->getMessage(), 'Redis') !== false) {
                 throw $e;
             }
 
@@ -1448,7 +1448,7 @@ trait ApplicationTrait
             $this->trigger(WebApplication::EVENT_INIT);
         }
 
-        if (!$this->getUpdates()->getIsCraftDbMigrationNeeded()) {
+        if ($this->getIsInstalled() && !$this->getUpdates()->getIsCraftDbMigrationNeeded()) {
             // Possibly run garbage collection
             $this->getGc()->run();
         }
