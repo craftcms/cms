@@ -569,7 +569,7 @@ abstract class Field extends SavableComponent implements FieldInterface
      */
     public function modifyElementsQuery(ElementQueryInterface $query, $value)
     {
-        /* @var ElementQuery $query */
+        /** @var ElementQuery $query */
         if ($value !== null) {
             $column = ElementHelper::fieldColumnFromField($this);
 

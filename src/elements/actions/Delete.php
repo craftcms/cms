@@ -129,7 +129,7 @@ JS;
             return $this->confirmationMessage;
         }
 
-        /* @var ElementInterface|string $elementType */
+        /** @var ElementInterface|string $elementType */
         $elementType = $this->elementType;
 
         if ($this->hard) {
@@ -204,7 +204,7 @@ JS;
         if ($this->successMessage !== null) {
             $this->setMessage($this->successMessage);
         } else {
-            /* @var ElementInterface|string $elementType */
+            /** @var ElementInterface|string $elementType */
             $elementType = $this->elementType;
             $this->setMessage(Craft::t('app', '{type} deleted.', [
                 'type' => $elementType::pluralDisplayName(),

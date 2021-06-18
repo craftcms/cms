@@ -394,7 +394,7 @@ class User extends Element implements IdentityInterface
      */
     protected static function prepElementQueryForTableAttribute(ElementQueryInterface $elementQuery, string $attribute)
     {
-        /* @var UserQuery $elementQuery */
+        /** @var UserQuery $elementQuery */
         if ($attribute === 'groups') {
             $elementQuery->withGroups();
         } else {
@@ -454,7 +454,7 @@ class User extends Element implements IdentityInterface
             return null;
         }
 
-        /* @var static $user */
+        /** @var static $user */
         if ($user->getStatus() === self::STATUS_ACTIVE) {
             return $user;
         }

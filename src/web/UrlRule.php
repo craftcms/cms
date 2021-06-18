@@ -76,7 +76,7 @@ class UrlRule extends \yii\web\UrlRule
      */
     public function parseRequest($manager, $request)
     {
-        /* @var UrlManager $manager */
+        /** @var UrlManager $manager */
         $result = parent::parseRequest($manager, $request);
 
         // Is this a template route?

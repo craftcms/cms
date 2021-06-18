@@ -287,8 +287,8 @@ class Drafts extends Component
      */
     public function publishDraft(ElementInterface $draft): ElementInterface
     {
-        /* @var ElementInterface|DraftBehavior $draft */
-        /* @var DraftBehavior $behavior */
+        /** @var ElementInterface|DraftBehavior $draft */
+        /** @var DraftBehavior $behavior */
         $behavior = $draft->getBehavior('draft');
         $canonical = $draft->getCanonical(true);
 
@@ -432,7 +432,7 @@ class Drafts extends Component
         $elementsService = Craft::$app->getElements();
 
         foreach ($drafts as $draftInfo) {
-            /* @var ElementInterface|string $elementType */
+            /** @var ElementInterface|string $elementType */
             $elementType = $draftInfo['type'];
             $draft = $elementType::find()
                 ->draftId($draftInfo['draftId'])

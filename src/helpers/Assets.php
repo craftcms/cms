@@ -276,14 +276,9 @@ class Assets
      */
     public static function sortFolderTree(array &$tree)
     {
-        $sort = [];
-
-        foreach ($tree as $topFolder) {
-            $volume = $topFolder->getVolume();
-            $sort[] = $volume->sortOrder;
-        }
-
-        array_multisort($sort, $tree);
+        ArrayHelper::multisort($tree, function($folder) {
+            return $folder->getVolume()->sortOrder;
+        });
     }
 
     /**

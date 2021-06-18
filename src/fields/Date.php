@@ -234,7 +234,7 @@ class Date extends Field implements PreviewableFieldInterface, SortableFieldInte
      */
     protected function inputHtml($value, ElementInterface $element = null): string
     {
-        /* @var DateTime|null $value */
+        /** @var DateTime|null $value */
         $id = Html::id($this->handle);
         $variables = [
             'id' => $id,
@@ -358,7 +358,7 @@ class Date extends Field implements PreviewableFieldInterface, SortableFieldInte
             return null;
         }
 
-        /* @var DateTime $value */
+        /** @var DateTime $value */
         if (!$this->showTimeZone) {
             return Db::prepareDateForDb($value);
         }
@@ -374,7 +374,7 @@ class Date extends Field implements PreviewableFieldInterface, SortableFieldInte
      */
     public function modifyElementsQuery(ElementQueryInterface $query, $value)
     {
-        /* @var ElementQuery $query */
+        /** @var ElementQuery $query */
         if ($value !== null) {
             $column = ElementHelper::fieldColumnFromField($this);
             $query->subQuery->andWhere(Db::parseDateParam("content.$column", $value));

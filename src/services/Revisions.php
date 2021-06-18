@@ -95,7 +95,7 @@ class Revisions extends Component
 
             if (!$force && $lastRevisionNum) {
                 // Get the revision, if it exists for the source's site
-                /* @var ElementInterface|RevisionBehavior|null $lastRevision */
+                /** @var ElementInterface|RevisionBehavior|null $lastRevision */
                 $lastRevision = $db->usePrimary(function() use ($source, $lastRevisionNum) {
                     return $source::find()
                         ->revisionOf($source)
@@ -209,7 +209,7 @@ class Revisions extends Component
      */
     public function revertToRevision(ElementInterface $revision, int $creatorId): ElementInterface
     {
-        /* @var ElementInterface|RevisionBehavior $revision */
+        /** @var ElementInterface|RevisionBehavior $revision */
         $canonical = $revision->getCanonical();
 
         // Fire a 'beforeRevertToRevision' event

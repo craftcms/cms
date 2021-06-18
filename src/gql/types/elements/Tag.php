@@ -36,7 +36,7 @@ class Tag extends Element
      */
     protected function resolve($source, $arguments, $context, ResolveInfo $resolveInfo)
     {
-        /* @var TagElement $source */
+        /** @var TagElement $source */
         $fieldName = $resolveInfo->fieldName;
 
         switch ($fieldName) {

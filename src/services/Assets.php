@@ -331,7 +331,7 @@ class Assets extends Component
 
         foreach ($folders as $folder) {
             $descendants = $this->getAllDescendantFolders($folder);
-            usort($descendants, static fn ($a, $b) => substr_count($a->path, '/') < substr_count($b->path, '/'));
+            usort($descendants, static fn($a, $b) => substr_count($a->path, '/') < substr_count($b->path, '/'));
 
             foreach ($descendants as $descendant) {
                 VolumeFolderRecord::deleteAll(['id' => $descendant->id]);
@@ -489,7 +489,7 @@ class Assets extends Component
      */
     public function getAllDescendantFolders(VolumeFolder $parentFolder, string $orderBy = 'path'): array
     {
-        /* @var $query Query */
+        /** @var $query Query */
         $query = $this->_createFolderQuery()
             ->where([
                 'and',
