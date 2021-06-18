@@ -1,5 +1,10 @@
 # Release Notes for Craft CMS 3.x
 
+## Unreleased
+
+### Fixed
+- Fixed an error that occurred when running CLI commands on Windows. ([#8089](https://github.com/craftcms/cms/issues/8089))
+
 ## 3.7.0-beta.2 - 2021-06-17
 
 ### Added
