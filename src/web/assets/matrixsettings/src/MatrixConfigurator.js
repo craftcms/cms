@@ -53,8 +53,6 @@
             this.$fieldItemsOuterContainer = this.$fieldsColumnContainer.children('.mc-col-items');
             this.$fieldSettingItemsContainer = this.$fieldSettingsColumnContainer.children('.mc-col-items');
 
-            this.setContainerHeight();
-
             this.$newBlockTypeBtn = this.$blockTypeItemsOuterContainer.children('.btn');
             this.$newFieldBtn = this.$fieldItemsOuterContainer.children('.btn');
 
@@ -86,17 +84,6 @@
 
             this.addListener(this.$newBlockTypeBtn, 'click', 'addBlockType');
             this.addListener(this.$newFieldBtn, 'click', 'addFieldToSelectedBlockType');
-
-            this.addListener(this.$blockTypesColumnContainer, 'resize', 'setContainerHeight');
-            this.addListener(this.$fieldsColumnContainer, 'resize', 'setContainerHeight');
-            this.addListener(this.$fieldSettingsColumnContainer, 'resize', 'setContainerHeight');
-        },
-
-        setContainerHeight: function() {
-            setTimeout(() => {
-                var maxColHeight = Math.max(this.$blockTypesColumnContainer.height(), this.$fieldsColumnContainer.height(), this.$fieldSettingsColumnContainer.height(), 400);
-                this.$container.height(maxColHeight);
-            }, 1);
         },
 
         getFieldTypeInfo: function(type) {
@@ -420,15 +407,16 @@
                 this.configurator.selectedBlockType.deselect();
             }
 
-            this.configurator.$fieldsColumnContainer.removeClass('hidden').trigger('resize');
+            this.configurator.$fieldsColumnContainer.removeClass('hidden');
             this.$fieldItemsContainer.removeClass('hidden');
             this.$item.addClass('sel');
             this.configurator.selectedBlockType = this;
+            Garnish.$win.trigger('resize');
         },
 
         deselect: function() {
             this.$item.removeClass('sel');
-            this.configurator.$fieldsColumnContainer.addClass('hidden').trigger('resize');
+            this.configurator.$fieldsColumnContainer.addClass('hidden');
             this.$fieldItemsContainer.addClass('hidden');
             this.$fieldSettingsContainer.addClass('hidden');
             this.configurator.selectedBlockType = null;
@@ -436,6 +424,8 @@
             if (this.selectedField) {
                 this.selectedField.deselect();
             }
+
+            Garnish.$win.trigger('resize');
         },
 
         showSettings: function() {
@@ -590,11 +580,12 @@
                 this.blockType.selectedField.deselect();
             }
 
-            this.configurator.$fieldSettingsColumnContainer.removeClass('hidden').trigger('resize');
+            this.configurator.$fieldSettingsColumnContainer.removeClass('hidden');
             this.blockType.$fieldSettingsContainer.removeClass('hidden');
             this.$fieldSettingsContainer.removeClass('hidden');
             this.$item.addClass('sel');
             this.blockType.selectedField = this;
+            Garnish.$win.trigger('resize');
 
             if (!Garnish.isMobileBrowser()) {
                 setTimeout(() => {
@@ -605,10 +596,11 @@
 
         deselect: function() {
             this.$item.removeClass('sel');
-            this.configurator.$fieldSettingsColumnContainer.addClass('hidden').trigger('resize');
+            this.configurator.$fieldSettingsColumnContainer.addClass('hidden');
             this.blockType.$fieldSettingsContainer.addClass('hidden');
             this.$fieldSettingsContainer.addClass('hidden');
             this.blockType.selectedField = null;
+            Garnish.$win.trigger('resize');
         },
 
         updateNameLabel: function() {
@@ -654,8 +646,7 @@
                     Craft.appendFootHtml(footHtml);
                 }
 
-                // In case Firefox was sleeping on the job
-                this.$typeSettingsContainer.trigger('resize');
+                Garnish.$win.trigger('resize');
             }).catch(() => {
                 this.$typeSettingsContainer.html('');
             });

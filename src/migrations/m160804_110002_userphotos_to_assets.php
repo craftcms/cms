@@ -273,8 +273,8 @@ class m160804_110002_userphotos_to_assets extends Migration
             if (!$assetExists && is_file($filePath)) {
                 $elementData = [
                     'type' => Asset::class,
-                    'enabled' => 1,
-                    'archived' => 0,
+                    'enabled' => true,
+                    'archived' => false,
                 ];
                 Db::insert(Table::ELEMENTS, $elementData);
 
@@ -286,7 +286,7 @@ class m160804_110002_userphotos_to_assets extends Migration
                         'locale' => $locale,
                         'slug' => ElementHelper::generateSlug($user['photo']),
                         'uri' => null,
-                        'enabled' => 1,
+                        'enabled' => true,
                     ];
                     Db::insert('{{%elements_i18n}}', $elementI18nData);
 

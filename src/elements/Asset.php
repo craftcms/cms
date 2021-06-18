@@ -427,7 +427,7 @@ class Asset extends Element
     protected static function defineTableAttributes(): array
     {
         $attributes = [
-            'title' => ['label' => Craft::t('app', 'Title')],
+            'title' => ['label' => Craft::t('app', 'Asset')],
             'filename' => ['label' => Craft::t('app', 'Filename')],
             'size' => ['label' => Craft::t('app', 'File Size')],
             'kind' => ['label' => Craft::t('app', 'File Kind')],
@@ -851,7 +851,7 @@ class Asset extends Element
     /**
      * @inheritdoc
      */
-    public function getIsEditable(): bool
+    protected function isEditable(): bool
     {
         $volume = $this->getVolume();
         $userSession = Craft::$app->getUser();
@@ -865,7 +865,7 @@ class Asset extends Element
      * @inheritdoc
      * @since 3.5.15
      */
-    public function getIsDeletable(): bool
+    protected function isDeletable(): bool
     {
         $volume = $this->getVolume();
 
@@ -893,7 +893,7 @@ class Asset extends Element
      * ```
      * @since 3.4.0
      */
-    public function getCpEditUrl()
+    protected function cpEditUrl(): ?string
     {
         $volume = $this->getVolume();
         if ($volume instanceof Temp) {
@@ -1190,16 +1190,13 @@ class Asset extends Element
 
         if (is_array($transform)) {
             if (isset($transform['width'])) {
-                $transform['width'] = round($transform['width']);
+                $transform['width'] = round((float)$transform['width']);
             }
             if (isset($transform['height'])) {
-                $transform['height'] = round($transform['height']);
+                $transform['height'] = round((float)$transform['height']);
             }
-            if (isset($transform['transform'])) {
-                $assetTransformsService = Craft::$app->getAssetTransforms();
-                $baseTransform = $assetTransformsService->normalizeTransform(ArrayHelper::remove($transform, 'transform'));
-                $transform = $assetTransformsService->extendTransform($baseTransform, $transform);
-            }
+            $assetTransformsService = Craft::$app->getAssetTransforms();
+            $transform = $assetTransformsService->normalizeTransform($transform);
         }
 
         if ($transform === null && $this->_transform !== null) {
@@ -1668,15 +1665,9 @@ class Asset extends Element
     /**
      * @inheritdoc
      */
-    public function getEditorHtml(): string
+    public function getSidebarHtml(): string
     {
-        $view = Craft::$app->getView();
-
-        if (!$this->fieldLayoutId) {
-            $this->fieldLayoutId = Craft::$app->getRequest()->getBodyParam('defaultFieldLayoutId');
-        }
-
-        $html = '';
+        $components = [];
 
         // See if we can show a thumbnail
         try {
@@ -1691,34 +1682,98 @@ class Asset extends Element
                 ($userSession->getId() == $this->uploaderId || $userSession->checkPermission("editPeerImagesInVolume:$volume->uid"))
             );
 
-            $html .= '<div class="preview-thumb-container' . ($editable ? ' editable' : '') . '">' .
-                '<div class="preview-thumb">' .
-                $this->getPreviewThumbImg(380, 190) .
-                '</div>';
-
-            if ($editable) {
-                $html .= '<div class="buttons"><div class="btn">' . Craft::t('app', 'Edit') . '</div></div>';
-            }
-
-            $html .= '</div>';
+            $components[] = Html::tag('div',
+                Html::tag('div', $this->getPreviewThumbImg(350, 190), [
+                    'class' => 'preview-thumb',
+                ]) .
+                ($editable
+                    ? Html::tag(
+                        'div',
+                        Html::tag('div', Craft::t('app', 'Edit'), ['class' => 'btn']),
+                        ['class' => 'buttons']
+                    )
+                    : ''),
+                [
+                    'class' => array_filter([
+                        'preview-thumb-container',
+                        $editable ? 'editable' : null,
+                    ]),
+                ]
+            );
         } catch (NotSupportedException $e) {
             // NBD
         }
 
-        $html .= Cp::textFieldHtml([
-            'label' => Craft::t('app', 'Filename'),
-            'id' => 'newFilename',
-            'name' => 'newFilename',
-            'value' => $this->filename,
-            'errors' => $this->getErrors('newLocation'),
-            'first' => true,
-            'required' => true,
-            'class' => ['renameHelper', 'text'],
+        $components[] = parent::getSidebarHtml();
+        return implode("\n", $components);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getEditorHtml(): string
+    {
+        if (!$this->fieldLayoutId) {
+            $this->fieldLayoutId = Craft::$app->getRequest()->getBodyParam('defaultFieldLayoutId');
+        }
+
+        return parent::getEditorHtml();
+    }
+
+    /**
+     * @inheritdoc
+     */
+    protected function metaFieldsHtml(): string
+    {
+        return implode('', [
+            Cp::textFieldHtml([
+                'label' => Craft::t('app', 'Filename'),
+                'id' => 'newFilename',
+                'name' => 'newFilename',
+                'value' => $this->filename,
+                'errors' => $this->getErrors('newLocation'),
+                'first' => true,
+                'required' => true,
+                'class' => ['text', 'filename'],
+            ]),
+            parent::metaFieldsHtml(),
         ]);
+    }
 
-        $html .= parent::getEditorHtml();
+    /**
+     * @inheritdoc
+     */
+    protected function metadata(): array
+    {
+        $volume = $this->getVolume();
 
-        return $html;
+        return [
+            Craft::t('app', 'Location') => function() use ($volume) {
+                $loc = [Craft::t('site', $volume->name)];
+                if ($this->folderPath) {
+                    array_push($loc, ...ArrayHelper::filterEmptyStringsFromArray(explode('/', $this->folderPath)));
+                }
+                return implode(' → ', $loc);
+            },
+            Craft::t('app', 'File size') => function() {
+                $size = $this->getFormattedSize(0);
+                if (!$size) {
+                    return false;
+                }
+                $inBytes = $this->getFormattedSizeInBytes(false);
+                return Html::tag('div', $size, [
+                    'title' => $inBytes,
+                    'aria' => [
+                        'label' => $inBytes,
+                    ],
+                ]);
+            },
+            Craft::t('app', 'Uploaded by') => function() {
+                $uploader = $this->getUploader();
+                return $uploader ? Cp::elementHtml($uploader) : false;
+            },
+            Craft::t('app', 'Dimensions') => $this->getDimensions() ?: false,
+        ];
     }
 
     /**

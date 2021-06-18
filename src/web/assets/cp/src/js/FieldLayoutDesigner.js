@@ -223,7 +223,7 @@ Craft.FieldLayoutDesigner = Garnish.Base.extend({
     },
 
     promptForTabName: function(oldName) {
-        return prompt(Craft.t('app', 'Give your tab a name.'), oldName);
+        return Craft.escapeHtml(prompt(Craft.t('app', 'Give your tab a name.'), oldName));
     },
 
     removeTab: function($tab) {

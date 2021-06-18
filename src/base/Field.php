@@ -348,7 +348,7 @@ abstract class Field extends SavableComponent implements FieldInterface
         if ($element->isFieldModified($this->handle)) {
             return [
                 Element::ATTR_STATUS_MODIFIED,
-                Craft::t('app', 'This field was updated in this draft.'),
+                Craft::t('app', 'This field has been modified.'),
             ];
         }
 

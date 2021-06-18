@@ -10,20 +10,7 @@ Craft.AssetSelectInput = Craft.BaseElementSelectInput.extend({
     uploader: null,
     progressBar: null,
 
-    originalFilename: '',
-    originalExtension: '',
-
     init: function() {
-        if (arguments.length > 0 && typeof arguments[0] === 'object') {
-            arguments[0].editorSettings = {
-                onShowHud: this.resetOriginalFilename.bind(this),
-                onCreateForm: this._renameHelper.bind(this),
-                validators: [
-                    this.validateElementForm.bind(this),
-                ],
-            };
-        }
-
         this.base.apply(this, arguments);
 
         if (this.settings.canUpload) {
@@ -275,85 +262,4 @@ Craft.AssetSelectInput = Craft.BaseElementSelectInput.extend({
     canAddMoreFiles: function(slotsTaken) {
         return (!this.settings.limit || this.$elements.length + slotsTaken < this.settings.limit);
     },
-
-    /**
-     * Parse the passed filename into the base filename and extension.
-     *
-     * @param filename
-     * @returns {{extension: string, baseFileName: string}}
-     */
-    _parseFilename: function(filename) {
-        var parts = filename.split('.'),
-            extension = '';
-
-        if (parts.length > 1) {
-            extension = parts.pop();
-        }
-        var baseFileName = parts.join('.');
-        return {extension: extension, baseFileName: baseFileName};
-    },
-
-    /**
-     * A helper function or the filename field.
-     * @private
-     */
-    _renameHelper: function($form) {
-        $('.renameHelper', $form).on('focus', e => {
-            var input = e.currentTarget,
-                filename = this._parseFilename(input.value);
-
-            if (this.originalFilename === '' && this.originalExtension === '') {
-                this.originalFilename = filename.baseFileName;
-                this.originalExtension = filename.extension;
-            }
-
-            var startPos = 0,
-                endPos = filename.baseFileName.length;
-
-            if (typeof input.selectionStart !== 'undefined') {
-                input.selectionStart = startPos;
-                input.selectionEnd = endPos;
-            } else if (document.selection && document.selection.createRange) {
-                // IE branch
-                input.select();
-                var range = document.selection.createRange();
-                range.collapse(true);
-                range.moveEnd("character", endPos);
-                range.moveStart("character", startPos);
-                range.select();
-            }
-        });
-    },
-
-    resetOriginalFilename: function() {
-        this.originalFilename = "";
-        this.originalExtension = "";
-    },
-
-    validateElementForm: function() {
-        var $filenameField = $('.renameHelper', this.elementEditor.hud.$hud.data('elementEditor').$form);
-        var filename = this._parseFilename($filenameField.val());
-
-        if (filename.extension !== this.originalExtension) {
-            // Blank extension
-            if (filename.extension === '') {
-                // If filename changed as well, assume removal of extension a mistake
-                if (this.originalFilename !== filename.baseFileName) {
-                    $filenameField.val(filename.baseFileName + '.' + this.originalExtension);
-                    return true;
-                } else {
-                    // If filename hasn't changed, make sure they want to remove extension
-                    return confirm(Craft.t('app', "Are you sure you want to remove the extension “.{ext}”?", {ext: this.originalExtension}));
-                }
-            } else {
-                // If the extension has changed, make sure it s intentional
-                return confirm(Craft.t('app', "Are you sure you want to change the extension from “.{oldExt}” to “.{newExt}”?",
-                    {
-                        oldExt: this.originalExtension,
-                        newExt: filename.extension
-                    }));
-            }
-        }
-        return true;
-    }
 });

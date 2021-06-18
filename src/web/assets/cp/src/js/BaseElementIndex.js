@@ -367,15 +367,11 @@ Craft.BaseElementIndex = Garnish.Base.extend({
     refreshSources: function() {
         this.sourceSelect.removeAllItems();
 
-        var params = {
-            context: this.settings.context,
-            elementType: this.elementType
-        };
-
         this.setIndexBusy();
 
         Craft.sendActionRequest('POST', this.settings.refreshSourcesAction, {
-            data: params,
+            context: this.settings.context,
+            elementType: this.elementType,
         }).then((response) => {
             this.setIndexAvailable();
             this.getSourceContainer().replaceWith(response.data.html);
@@ -957,7 +953,8 @@ Craft.BaseElementIndex = Garnish.Base.extend({
         this.$sortAttributesList.children('li[data-extra]').remove();
 
         // Does this source have any custom sort options?
-        let sortOptions = this.$source.data('sort-options')
+        let $topSource = this.$source.closest('nav > ul > li').children('a');
+        let sortOptions = $topSource.data('sort-options')
         if (sortOptions) {
             for (let i = 0; i < sortOptions.length; i++) {
                 let $option = $('<li/>', {

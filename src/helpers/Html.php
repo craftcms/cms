@@ -825,4 +825,16 @@ class Html extends \yii\helpers\Html
     {
         return 'data:' . ($mimeType ? "$mimeType;" : '') . 'base64,' . base64_encode($contents);
     }
+
+    /**
+     * Inserts a non-breaking space between the last two words of a string.
+     *
+     * @param string $string
+     * @return string
+     * @since 3.7.0
+     */
+    public static function widont(string $string): string
+    {
+        return preg_replace('/(?<=\S)\s+(\S+\s*)$/', '&nbsp;$1', $string);
+    }
 }

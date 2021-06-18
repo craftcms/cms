@@ -41,7 +41,7 @@ class UserType extends Generator implements GeneratorInterface, SingleGeneratorI
      */
     public static function generateType($context): ObjectType
     {
-        // Users don't have different types, so the contexxt for a user will be the same every time.
+        // Users don't have different types, so the context for a user will be the same every time.
         $context = $context ?: Craft::$app->getFields()->getLayoutByType(UserElement::class);
 
         $typeName = UserElement::gqlTypeNameByContext(null);

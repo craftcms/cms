@@ -1,5 +1,5 @@
 @charset "UTF-8";
-@import "../../../../../../node_modules/craftcms-sass/mixins";
+@import "../../../../../../packages/craftcms-sass/mixins";
 
 @mixin spinner {
   width: 24px;
@@ -74,6 +74,10 @@ body, input, select, textarea {
 
 .last, h1:last-child, h2:last-child, h3:last-child, h4:last-child, h5:last-child, h6:last-child, p:last-child, blockquote:last-child, .pane:last-child, .grid:last-child, fieldset:last-child, .field:last-child, .toolbar:last-child, .buttons:last-child {
   margin-bottom: 0 !important;
+}
+
+.no-scroll {
+  overflow: hidden !important;
 }
 
 .draghelper {
@@ -392,6 +396,64 @@ li.sel a {
   &:before {
     content: 'alert';
     color: $errorColor;
+  }
+}
+
+#revision-menu {
+  padding: 10px 24px;
+
+  hr {
+    margin: 10px -24px;
+  }
+
+  ul {
+    li {
+      &.sel {
+        margin: 0 -14px;
+        padding: 0 14px;
+        background: $grey050;
+        border-radius: $largeBorderRadius;
+
+        .edited-desc {
+          display: flex;
+          align-items: center;
+          @include margin-left(10px);
+          border-top: 1px solid $hairlineColor;
+          padding: 10px 0;
+          color: $lightTextColor;
+          white-space: normal;
+
+          p {
+            margin: 0;
+          }
+
+          .btn {
+            @include margin-left(14px);
+            color: $textColor !important;
+            background-color: $yellow300;
+
+            &:hover,
+            &:focus {
+              background-color: darken($yellow300, 10%);
+            }
+
+            &:active {
+              background-color: darken($yellow300, 15%);
+            }
+          }
+        }
+      }
+
+      a {
+        padding-top: 7px;
+        border-radius: $largeBorderRadius;
+      }
+
+    }
+  }
+
+  .extralight {
+    margin-top: 2px;
   }
 }
 
@@ -1432,7 +1494,7 @@ ul.icons {
 }
 
 .buttons.right .btn + .spinner {
-  @include margin-right(-24px);
+  @include margin-right(var(--neg-padding));
 }
 
 /* small buttons */
@@ -2358,8 +2420,11 @@ $elementInnerSpacing: 5px;
       @include spinner;
       height: 32px;
     }
+  }
 
-    &.removable .delete {
+  &.loading,
+  &:not(.removable) {
+    .delete {
       display: none;
     }
   }
@@ -3171,6 +3236,98 @@ ul.tree,
   }
 }
 
+.pane-header {
+  margin: -24px var(--neg-padding) 24px;
+  padding: 7px 24px;
+  background: $grey050;
+  box-shadow: inset 0 -1px 0 0 transparentize($grey300, 0.75);
+  border-radius: $largeBorderRadius $largeBorderRadius 0 0;
+
+  .btn {
+    margin: 5px 0;
+    @include header-btn;
+  }
+
+  .spinner {
+    margin: 3px 0;
+  }
+}
+
+.pane-tabs {
+  margin-bottom: -7px;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  max-width: 100%;
+
+  ul {
+    margin: -7px var(--neg-padding) 0;
+    padding: 7px var(--padding) 0;
+    flex: 1;
+    display: flex;
+    flex-direction: row;
+    overflow-x: auto;
+    scrollbar-width: none;
+
+    &::-webkit-scrollbar {
+      display: none;
+    }
+
+    &.scrollable {
+      body.ltr & {
+        mask-image: linear-gradient(to left, rgba(0, 0, 0, 0), rgba(0, 0, 0, 1) 24px);
+      }
+      body.rtl & {
+        mask-image: linear-gradient(to right, rgba(0, 0, 0, 0), rgba(0, 0, 0, 1) 24px);
+      }
+    }
+
+    li {
+      &:not(:first-child) {
+        a {
+          @include margin-left(4px);
+        }
+      }
+
+      a {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        position: relative;
+        border-radius: $mediumBorderRadius $mediumBorderRadius 0 0;
+        padding: 0 12px;
+        white-space: nowrap;
+        color: $lightTextColor;
+        height: 40px;
+
+        &:hover {
+          text-decoration: none;
+        }
+
+        &:not(.sel) {
+          &:hover {
+            background-color: transparentize($grey300, 0.85);
+          }
+        }
+
+        &.sel {
+          cursor: default;
+          color: $textColor;
+          @include pane;
+        }
+
+        span[data-icon] {
+          @include margin-left(4px);
+        }
+      }
+    }
+  }
+
+  .menubtn {
+    @include margin-left(32px);
+  }
+}
+
 /* meta panes */
 .meta {
   padding: 0 24px;
@@ -3399,6 +3556,8 @@ ul.tree,
   position: relative;
 }
 
+.slideout-container,
+.slideout,
 .modal,
 .hud {
   z-index: 100;
@@ -3408,6 +3567,207 @@ ul.tree,
 .modal,
 .hud .body {
   @include modal;
+}
+
+.slideout-shade {
+  opacity: 0;
+  transition: opacity linear 250ms;
+
+  &.so-visible {
+    opacity: 1;
+  }
+}
+
+.slideout-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  height: -webkit-fill-available; // h/t https://twitter.com/AllThingsSmitty/status/1254151507412496384
+  pointer-events: none;
+}
+
+.slideout {
+  position: absolute;
+  background-color: $white;
+  box-shadow: 0 0 0 1px transparentize($grey400, 0.75), 0 25px 100px transparentize($grey900, 0.5);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  padding: 24px var(--padding);
+  pointer-events: all;
+
+  &.so-mobile {
+    --padding: 10px;
+    --neg-padding: -10px;
+    width: 100%;
+    height: 100%;
+    left: 0;
+    transition: top linear 250ms;
+    will-change: top;
+  }
+
+  &:not(.so-mobile) {
+    top: 8px;
+    width: calc(50% - 8px);
+    height: calc(100% - 16px);
+    border-radius: $largeBorderRadius;
+
+    body.ltr & {
+      transition: left linear 250ms;
+      will-change: left;
+    }
+    body.rtl & {
+      transition: right linear 250ms;
+      will-change: right;
+    }
+  }
+}
+
+/* Element editor slideouts */
+.element-editor {
+  & > .pane-header {
+    z-index: 2;
+
+    & > .ee-toolbar {
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      margin-bottom: -7px;
+
+      & > .pane-tabs {
+        width: 1px; // give other elements in the header plenty of room before the tabs take up whatever's left
+        flex: 1;
+        margin-bottom: 0;
+      }
+    }
+  }
+
+  & > .ee-body {
+    flex: 1;
+    margin: -24px var(--neg-padding) 0;
+    padding: 24px var(--padding);
+    overflow: hidden auto;
+    position: relative;
+
+    & > .ee-sidebar {
+      position: absolute;
+      top: 0;
+      @include pane();
+      width: 350px;
+      height: 100%;
+      max-width: 100%;
+      box-sizing: border-box;
+      padding: 0 var(--padding);
+      background-color: $grey100;
+      overflow: hidden auto;
+      z-index: 1;
+
+      body.ltr & {
+        transition: right linear 250ms;
+      }
+      body.rtl & {
+        transition: left linear 250ms;
+      }
+
+      & > .preview-thumb-container {
+        margin: 0 var(--neg-padding);
+        height: auto;
+        max-height: 190px;
+
+        & + .pane-header {
+          border-radius: 0;
+        }
+      }
+
+      & > .meta {
+        margin: 0 var(--neg-padding);
+        padding: 0 var(--padding);
+
+        &:not(.read-only) {
+          background: $grey050;
+        }
+
+        &.read-only {
+          padding-top: 14px;
+          padding-bottom: 14px;
+        }
+      }
+    }
+  }
+
+  & > .ee-footer {
+    position: relative;
+    display: flex;
+    flex-direction: row;
+    margin: 0 var(--neg-padding) -24px;
+    padding: var(--padding);
+    @include pane;
+    background-color: $grey050;
+    z-index: 3;
+
+    & > .ee-site-select {
+      flex: 1;
+    }
+
+    & > .btn {
+      @include margin-left(5px);
+    }
+
+    & > .spinner {
+      @include margin(0, var(--neg-padding), 0, 0);
+    }
+  }
+
+  & > .ee-sidebar-shade {
+    position: absolute;
+    z-index: 2;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+  }
+}
+
+@media (min-width: 1536px) {
+  .element-editor {
+    .sidebar-btn {
+      display: none;
+    }
+
+    .ee-body {
+      display: flex;
+      flex-direction: row;
+      padding: 0;
+      overflow: hidden;
+
+      & > .fields {
+        position: relative;
+        z-index: 2;
+        padding: 24px;
+        width: calc(100% - 350px);
+        height: 100%;
+        box-sizing: border-box;;
+        box-shadow: 0 0 0 1px transparentize($grey1000, 0.9);
+        overflow: hidden auto;
+      }
+
+      & > .ee-sidebar {
+        position: relative;
+        display: block !important;
+        top: auto;
+        right: auto !important;
+        left: auto !important;
+        height: 100%;
+        box-shadow: none;
+      }
+    }
+
+    & > .ee-sidebar-shade {
+      display: none !important;
+    }
+  }
 }
 
 .header,
@@ -3478,6 +3838,7 @@ ul.tree,
   }
 }
 
+.slideout-shade,
 .modal-shade,
 .hud-shade {
   z-index: 100;
@@ -3489,9 +3850,10 @@ ul.tree,
   display: none;
 }
 
+.slideout-shade,
 .modal-shade {
   &:not(.dark) {
-    background-color: transparentize($grey100, 0.35) !important;
+    background-color: transparentize($grey400, 0.65) !important;
   }
 
   &.dark {
@@ -3674,7 +4036,7 @@ ul.tree,
     img {
       display: block;
       max-width: 100%;
-      max-height: 190px;
+      max-height: 100%;
     }
   }
 
@@ -3713,41 +4075,6 @@ ul.tree,
 
   &:hover .buttons {
     opacity: 1;
-  }
-}
-
-/* element editor HUDs */
-
-@media (min-width: 440px) {
-  .hud .elementeditor {
-    min-width: 380px;
-  }
-}
-
-.hud .elementeditor {
-  max-width: 600px;
-
-  .hud-header {
-    text-align: center;
-  }
-
-  .main {
-    padding: 8px 0;
-
-    .meta {
-      .preview-thumb-container {
-        margin: -8px -24px 8px;
-      }
-
-      .field {
-        padding-left: 24px;
-        padding-right: 24px;
-
-        &.has-errors {
-          border-radius: 0;
-        }
-      }
-    }
   }
 }
 
@@ -3861,7 +4188,8 @@ ul.tree,
 
 #logoutwarningmodal,
 #loginmodal,
-#elevatedsessionmodal {
+#elevatedsessionmodal,
+.prompt {
   width: 500px;
 }
 
@@ -3882,6 +4210,11 @@ ul.tree,
       @include right(-24px);
     }
   }
+}
+
+.prompt {
+  height: auto;
+  min-height: auto;
 }
 
 /* delete user modal */
@@ -4056,8 +4389,11 @@ ul.tree,
   @include menu-option-active-styles;
 }
 
-.menu hr.padded {
-  @include margin-left(10px);
+.menu {
+  hr.padded,
+  h6.padded {
+    @include margin-left(10px);
+  }
 }
 
 /* tag select fields */
@@ -4878,12 +5214,6 @@ body.reduce-focus-visibility {
   display: none;
 }
 
-/* Assets related */
-.hud.assetshud .body {
-  max-height: 500px;
-  overflow: auto;
-}
-
 /* Asset indexing related */
 tr.indexingSession td {
   height: 34px;
@@ -5321,37 +5651,14 @@ ul.errors li {
     max-width: none;
 
     & > .input {
-      position: relative;
-      @include padding-left(440px);
+      display: flex;
+      align-items: stretch;
       background-color: $grey050;
-      overflow: hidden;
       box-shadow: none;
-
-      &:after {
-        display: block;
-        position: absolute;
-        z-index: 1;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        visibility: visible;
-        content: '';
-        font-size: 0;
-        border-radius: $smallBorderRadius;
-        box-shadow: inset 0 1px 3px -1px darken($grey200, 10%);
-        user-select: none;
-        pointer-events: none;
-      }
     }
   }
 
   .mc-sidebar {
-    position: absolute;
-    top: 0;
-    margin: 0;
-    border: none;
-    height: 100%;
     box-sizing: border-box;
 
     .mc-col-items {
@@ -5360,22 +5667,28 @@ ul.errors li {
     }
 
     &.block-types {
-      @include left(0);
       width: 200px;
+      @include border-top-left-radius($smallBorderRadius);
+      @include border-bottom-left-radius($smallBorderRadius);
 
-      .mc-col-items {
-        .btn {
-          margin: 14px;
+      & > .mc-col-inner-container {
+        & > .mc-col-heading {
+          @include border-top-left-radius($smallBorderRadius);
+        }
+
+        & > .mc-col-items {
+          .btn {
+            margin: 14px;
+          }
         }
       }
     }
 
     &.mc-fields {
-      @include left(200px);
       width: 240px;
       z-index: 1;
       background: #fff;
-      box-shadow: 0 0 0 1px transparentize($grey900, 0.9), 0 2px 5px -2px transparentize($grey900, 0.8);
+      box-shadow: -1px 0 0 0 transparentize($grey900, 0.9), 1px 0 0 0 transparentize($grey900, 0.9);
 
       .mc-col-items {
         padding: 14px;
@@ -5401,12 +5714,14 @@ ul.errors li {
   .mc-field-settings {
     flex: 1;
     position: relative;
-    height: 100%;
+    @include border-top-right-radius($smallBorderRadius);
+    @include border-bottom-right-radius($smallBorderRadius);
 
     & > .mc-col-inner-container {
       & > .mc-col-heading {
         padding-left: 24px;
         padding-right: 24px;
+        @include border-top-right-radius($smallBorderRadius);
       }
 
       & > .mc-col-items {

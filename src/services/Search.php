@@ -627,7 +627,7 @@ SQL;
                 $val = $fieldId;
             } else {
                 $attr = 'attribute';
-                $val = $term->attribute;
+                $val = strtolower($term->attribute);
             }
 
             // Use subselect for attributes

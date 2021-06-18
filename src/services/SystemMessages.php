@@ -47,6 +47,13 @@ class SystemMessages extends Component
             return $this->_defaultMessages;
         }
 
+        // If the current language isn't one of the site's languages, switch to the primary site's language
+        $language = Craft::$app->language;
+        $i18n = Craft::$app->getI18n();
+        if (!in_array($language, $i18n->getSiteLocaleIds())) {
+            Craft::$app->language = $i18n->getPrimarySiteLocaleId();
+        }
+
         $messages = [
             [
                 'key' => 'account_activation',
@@ -89,6 +96,9 @@ class SystemMessages extends Component
                 $messages[$key] = new SystemMessage($message);
             }
         }
+
+        // Put the original language back
+        Craft::$app->language = $language;
 
         return $this->_defaultMessages = $messages;
     }

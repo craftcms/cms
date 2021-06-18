@@ -300,12 +300,14 @@ class Assets extends Component
      * @param array|int $folderIds
      * @param bool $deleteDir Should the volume directory be deleted along the record, if applicable. Defaults to true.
      * @throws InvalidConfigException if the volume cannot be fetched from folder.
-     * @throws VolumeException if a folder cannot be deleted.
      */
     public function deleteFoldersByIds($folderIds, bool $deleteDir = true): void
     {
+        $folders = [];
+
         foreach ((array)$folderIds as $folderId) {
             $folder = $this->getFolderById($folderId);
+            $folders[] = $folder;
 
             if ($folder && $deleteDir) {
                 $volume = $folder->getVolume();
@@ -327,7 +329,15 @@ class Assets extends Component
             $elementService->deleteElement($asset, true);
         }
 
-        VolumeFolderRecord::deleteAll(['id' => $folderIds]);
+        foreach ($folders as $folder) {
+            $descendants = $this->getAllDescendantFolders($folder);
+            usort($descendants, static fn ($a, $b) => substr_count($a->path, '/') < substr_count($b->path, '/'));
+
+            foreach ($descendants as $descendant) {
+                VolumeFolderRecord::deleteAll(['id' => $descendant->id]);
+            }
+            VolumeFolderRecord::deleteAll(['id' => $folder->id]);
+        }
     }
 
     /**
@@ -859,6 +869,9 @@ class Assets extends Component
             $timestamp = DateTimeHelper::currentUTCDateTime()->format('Y-m-d-His');
             $base = $baseFileName . '_' . $timestamp;
         }
+
+        // Append a random string at the end too, to avoid race-conditions
+        $base .= '_' . StringHelper::randomString(4);
 
         $increment = 0;
 

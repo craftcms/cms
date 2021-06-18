@@ -16,7 +16,17 @@
         <ul id="groups">
             <li><a href="{{ url('settings/sites') }}"{% if not group %} class="sel"{% endif %}>{{ "All Sites"|t('app') }}</a></li>
             {% for g in allGroups %}
-                <li><a href="{{ url('settings/sites', {groupId: g.id}) }}"{% if group and g.id == group.id %} class="sel"{% endif %} data-id="{{ g.id }}">{{ g.name|t('site') }}</a></li>
+                <li>
+                    {{ tag('a', {
+                        href: url('settings/sites', {groupId: g.id}),
+                        class: group and g.id == group.id ? 'sel' : false,
+                        text: g.name|t('site'),
+                        data: {
+                            id: g.id,
+                            'raw-name': g.getName(false),
+                        },
+                    }) }}
+                </li>
             {% endfor %}
         </ul>
     </nav>

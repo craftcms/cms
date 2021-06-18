@@ -16,11 +16,13 @@ use craft\db\Table;
 use craft\elements\Entry;
 use craft\errors\InvalidElementException;
 use craft\helpers\ArrayHelper;
+use craft\helpers\Cp;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\ElementHelper;
 use craft\helpers\UrlHelper;
 use craft\models\Section;
 use craft\models\Section_SiteSettings;
+use craft\services\Elements;
 use yii\base\Exception;
 use yii\web\BadRequestHttpException;
 use yii\web\ForbiddenHttpException;
@@ -129,7 +131,7 @@ class EntryRevisionsController extends BaseEntriesController
             // Get the initially selected parent
             $entry->newParentId = $this->request->getParam('parentId');
             if (is_array($entry->newParentId)) {
-                $entry->newParentId = reset($parentId) ?: null;
+                $entry->newParentId = reset($entry->newParentId) ?: null;
             }
         }
 
@@ -207,6 +209,8 @@ class EntryRevisionsController extends BaseEntriesController
         $entryId = $this->request->getBodyParam('sourceId') ?? $this->request->getBodyParam('entryId');
         $siteId = $this->request->getBodyParam('siteId') ?: Craft::$app->getSites()->getPrimarySite()->id;
         $fieldsLocation = $this->request->getParam('fieldsLocation', 'fields');
+        $provisional = (bool)($this->request->getBodyParam('provisional') ?? false);
+        $dropProvisional = (bool)($this->request->getBodyParam('dropProvisional') ?? false);
 
         // Are we creating a new entry too?
         if (!$draftId && !$entryId) {
@@ -240,6 +244,7 @@ class EntryRevisionsController extends BaseEntriesController
             if ($draftId) {
                 $draft = Entry::find()
                     ->draftId($draftId)
+                    ->provisionalDrafts($provisional)
                     ->siteId($siteId)
                     ->anyStatus()
                     ->one();
@@ -264,12 +269,16 @@ class EntryRevisionsController extends BaseEntriesController
                 $transaction = Craft::$app->getDb()->beginTransaction();
 
                 /* @var Entry|DraftBehavior $draft */
-                $draft = Craft::$app->getDrafts()->createDraft($entry, Craft::$app->getUser()->getId());
+                $draft = Craft::$app->getDrafts()->createDraft($entry, Craft::$app->getUser()->getId(), null, null, [], $provisional);
             }
 
             $this->_setDraftAttributesFromPost($draft);
             $draft->setFieldValuesFromRequest($fieldsLocation);
             $draft->updateTitle();
+
+            if ($dropProvisional) {
+                $draft->isProvisionalDraft = false;
+            }
 
             $draft->setScenario(Element::SCENARIO_ESSENTIALS);
 
@@ -306,6 +315,7 @@ class EntryRevisionsController extends BaseEntriesController
         /* @var ElementInterface|DraftBehavior */
         if ($this->request->getAcceptsJson()) {
             $creator = $draft->getCreator();
+            [$docTitle, $title] = Cp::editElementTitles($draft);
             return $this->asJson([
                 'sourceId' => $draft->getCanonicalId(),
                 'draftId' => $draft->draftId,
@@ -313,10 +323,11 @@ class EntryRevisionsController extends BaseEntriesController
                 'creator' => $creator ? $creator->getName() : null,
                 'draftName' => $draft->draftName,
                 'draftNotes' => $draft->draftNotes,
-                'docTitle' => $this->docTitle($draft),
-                'title' => $this->pageTitle($draft),
-                'duplicatedElements' => $elementsService::$duplicatedElementIds,
+                'docTitle' => $docTitle,
+                'title' => $title,
+                'duplicatedElements' => Elements::$duplicatedElementIds,
                 'previewTargets' => $draft->getPreviewTargets(),
+                'modifiedAttributes' => $draft->getModifiedAttributes(),
             ]);
         }
 
@@ -335,10 +346,12 @@ class EntryRevisionsController extends BaseEntriesController
         $this->requirePostRequest();
 
         $draftId = $this->request->getBodyParam('draftId');
+        $provisional = (bool)($this->request->getBodyParam('provisional') ?? false);
 
         /* @var Entry|DraftBehavior $draft */
         $draft = Entry::find()
             ->draftId($draftId)
+            ->provisionalDrafts($provisional)
             ->siteId('*')
             ->anyStatus()
             ->one();
@@ -351,7 +364,11 @@ class EntryRevisionsController extends BaseEntriesController
 
         Craft::$app->getElements()->deleteElement($draft, true);
 
-        $this->setSuccessFlash(Craft::t('app', 'Draft deleted'));
+        if ($provisional) {
+            $this->setSuccessFlash(Craft::t('app', 'Changes discarded'));
+        } else {
+            $this->setSuccessFlash(Craft::t('app', 'Draft deleted'));
+        }
 
         if ($this->request->getAcceptsJson()) {
             return $this->asJson([
@@ -376,6 +393,7 @@ class EntryRevisionsController extends BaseEntriesController
 
         $draftId = $this->request->getRequiredBodyParam('draftId');
         $siteId = $this->request->getBodyParam('siteId');
+        $provisional = (bool)($this->request->getBodyParam('provisional') ?? false);
 
         // Get the structure ID
         $structureId = (new Query())
@@ -389,6 +407,7 @@ class EntryRevisionsController extends BaseEntriesController
         /* @var Entry|DraftBehavior|null $draft */
         $draft = Entry::find()
             ->draftId($draftId)
+            ->provisionalDrafts($provisional)
             ->siteId($siteId)
             ->structureId($structureId)
             ->anyStatus()
@@ -456,7 +475,11 @@ class EntryRevisionsController extends BaseEntriesController
             // Publish the draft (finally!)
             $newEntry = Craft::$app->getDrafts()->publishDraft($draft);
         } catch (InvalidElementException $e) {
-            $this->setFailFlash(Craft::t('app', 'Couldn’t publish draft.'));
+            if ($draft->getIsProvisionalDraft() || $draft->getIsUnpublishedDraft()) {
+                $this->setFailFlash(Craft::t('app', 'Couldn’t save entry.'));
+            } else {
+                $this->setFailFlash(Craft::t('app', 'Couldn’t apply draft.'));
+            }
 
             // Send the draft back to the template
             Craft::$app->getUrlManager()->setRouteParams([
@@ -471,7 +494,12 @@ class EntryRevisionsController extends BaseEntriesController
             ]);
         }
 
-        $this->setSuccessFlash(Craft::t('app', 'Draft published.'));
+        if ($draft->getIsProvisionalDraft() || $draft->getIsUnpublishedDraft()) {
+            $this->setSuccessFlash(Craft::t('app', 'Entry saved.'));
+        } else {
+            $this->setSuccessFlash(Craft::t('app', 'Draft applied.'));
+        }
+
         return $this->redirectToPostedUrl($newEntry);
     }
 

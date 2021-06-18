@@ -5,11 +5,13 @@
 {{ hiddenInput('min[locale]', locale) }}
 {{ hiddenInput('max[locale]', locale) }}
 
+{% set decimals = not field.getErrors('decimals') ? field.decimals : null %}
+
 {{ forms.textField({
     label: "Default Value"|t('app'),
     id: 'defaultValue',
     name: 'defaultValue[value]',
-    value: field.defaultValue|number,
+    value: field.defaultValue|number(decimals),
     size: 5,
     errors: field.getErrors('defaultValue')
 }) }}
@@ -18,7 +20,7 @@
     label: "Min Value"|t('app'),
     id: 'min',
     name: 'min[value]',
-    value: field.min|number,
+    value: field.min|number(decimals),
     size: 5,
     errors: field.getErrors('min')
 }) }}
@@ -27,7 +29,7 @@
     label: "Max Value"|t('app'),
     id: 'max',
     name: 'max[value]',
-    value: field.max|number,
+    value: field.max|number(decimals),
     size: 5,
     errors: field.getErrors('max')
 }) }}

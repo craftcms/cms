@@ -9,6 +9,12 @@
   ],
   "homepage": "https://craftcms.com",
   "license": "proprietary",
+  "authors": [
+    {
+      "name": "Pixel & Tonic",
+      "homepage": "https://pixelandtonic.com/"
+    }
+  ],
   "support": {
     "email": "support@craftcms.com",
     "issues": "https://github.com/craftcms/cms/issues?state=open",
@@ -51,9 +57,9 @@
     "web-auth/webauthn-lib": "^3.3.0",
     "webonyx/graphql-php": "~14.4.1",
     "yii2tech/ar-softdelete": "^1.0.4",
-    "yiisoft/yii2": "~2.0.41.1",
+    "yiisoft/yii2": "~2.0.42.1",
     "yiisoft/yii2-debug": "^2.1.16",
-    "yiisoft/yii2-queue": "~2.3.1",
+    "yiisoft/yii2-queue": "~2.3.2",
     "yiisoft/yii2-swiftmailer": "^2.1.2"
   },
   "require-dev": {

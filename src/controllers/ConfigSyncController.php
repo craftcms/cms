@@ -8,10 +8,8 @@
 namespace craft\controllers;
 
 use Craft;
-use craft\db\Table;
 use craft\errors\InvalidPluginException;
 use craft\helpers\ArrayHelper;
-use craft\helpers\Db;
 use craft\services\Plugins;
 use yii\base\NotSupportedException;
 use yii\web\Response;
@@ -80,18 +78,7 @@ class ConfigSyncController extends BaseUpdaterController
     public function actionUninstallPlugin(): Response
     {
         $handle = array_shift($this->data['uninstallPlugins']);
-
-        try {
-            Craft::$app->getPlugins()->uninstallPlugin($handle);
-        } catch (\Throwable $e) {
-            Craft::warning("Could not uninstall plugin \"$handle\" that was removed from your project config YAML files: " . $e->getMessage());
-
-            // Just remove the row
-            Db::delete(Table::PLUGINS, [
-                'handle' => $handle,
-            ]);
-        }
-
+        Craft::$app->getPlugins()->uninstallPlugin($handle, true);
         return $this->sendNextAction($this->_nextApplyYamlAction());
     }
 

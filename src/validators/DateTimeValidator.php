@@ -115,4 +115,13 @@ class DateTimeValidator extends Validator
             $model->$attribute = $value;
         }
     }
+
+    public function isEmpty($value)
+    {
+        if ($this->isEmpty !== null) {
+            return parent::isEmpty($value);
+        }
+
+        return empty($value);
+    }
 }

@@ -74,6 +74,10 @@ class CsvResponseFormatter extends Component implements ResponseFormatterInterfa
         $file = tempnam(sys_get_temp_dir(), 'csv');
         $fp = fopen($file, 'wb');
 
+        // Add BOM to fix UTF-8 in Excel
+        // h/t https://www.php.net/manual/en/function.fputcsv.php#118252
+        fputs($fp, chr(0xEF) . chr(0xBB) . chr(0xBF));
+
         if ($this->includeHeaderRow) {
             $headers = $this->headers ?? array_keys(reset($data));
             fputcsv($fp, $headers, ',');

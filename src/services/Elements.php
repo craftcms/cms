@@ -507,18 +507,18 @@ class Elements extends Component
         if (!$elementId) {
             return null;
         }
-        
+
         try {
             $data = (new Query())
                 ->select(['draftId', 'revisionId', 'type'])
                 ->from([Table::ELEMENTS])
                 ->where([$property => $elementId])
                 ->one();
-            
+
             if (!$data) {
                 return null;
             }
-            
+
             if ($elementType === null) {
                 $elementType = $data['type'];
             }
@@ -540,7 +540,9 @@ class Elements extends Component
 
         // Is this a draft/revision?
         if (!empty($data['draftId'])) {
-            $query->draftId($data['draftId']);
+            $query
+                ->draftId($data['draftId'])
+                ->provisionalDrafts(null);
         } else if (!empty($data['revisionId'])) {
             $query->revisionId($data['revisionId']);
         }
@@ -702,7 +704,7 @@ class Elements extends Component
         return (new Query())
             ->select(['siteId'])
             ->from([Table::ELEMENTS_SITES])
-            ->where(['elementId' => $elementId, 'enabled' => 1])
+            ->where(['elementId' => $elementId, 'enabled' => true])
             ->column();
     }
 
@@ -814,6 +816,7 @@ class Elements extends Component
             // Now the other sites
             $siteElements = $element::find()
                 ->drafts(null)
+                ->provisionalDrafts(null)
                 ->id($element->id)
                 ->siteId(ArrayHelper::withoutValue($supportedSiteIds, $element->id))
                 ->anyStatus()
@@ -871,7 +874,48 @@ class Elements extends Component
             'updatingFromDerivative' => true,
         ];
 
-        return $this->duplicateElement($element, $newAttributes);
+        $updatedCanonical = $this->duplicateElement($element, $newAttributes);
+
+        // Update change tracking for the canonical element
+        $timestamp = Db::prepareDateForDb($updatedCanonical->dateUpdated);
+
+        $attributes = (new Query())
+            ->select(['siteId', 'attribute', 'propagated', 'userId'])
+            ->from([Table::CHANGEDATTRIBUTES])
+            ->where(['elementId' => $element->id])
+            ->all();
+
+        foreach ($attributes as $attribute) {
+            Db::upsert(Table::CHANGEDATTRIBUTES, [
+                'elementId' => $canonical->id,
+                'siteId' => $attribute['siteId'],
+                'attribute' => $attribute['attribute'],
+            ], [
+                'dateUpdated' => $timestamp,
+                'propagated' => $attribute['propagated'],
+                'userId' => $attribute['userId'],
+            ], [], false);
+        }
+
+        $fields = (new Query())
+            ->select(['siteId', 'fieldId', 'propagated', 'userId'])
+            ->from([Table::CHANGEDFIELDS])
+            ->where(['elementId' => $element->id])
+            ->all();
+
+        foreach ($fields as $field) {
+            Db::upsert(Table::CHANGEDFIELDS, [
+                'elementId' => $canonical->id,
+                'siteId' => $field['siteId'],
+                'fieldId' => $field['fieldId'],
+            ], [
+                'dateUpdated' => $timestamp,
+                'propagated' => $field['propagated'],
+                'userId' => $field['userId'],
+            ], [], false);
+        }
+
+        return $updatedCanonical;
     }
 
     /**
@@ -1166,34 +1210,7 @@ class Elements extends Component
                 $mainClone->structureId == $element->structureId
             ) {
                 $mode = isset($newAttributes['id']) ? Structures::MODE_AUTO : Structures::MODE_INSERT;
-
-                // If this is a root level element, insert the duplicate after the source
-                if ($element->level == 1) {
-                    Craft::$app->getStructures()->moveAfter($element->structureId, $mainClone, $element, $mode);
-                } else {
-                    // Append the clone to the source's parent
-                    // (we can't use getParent() here because there's a chance that the parent doesn't exist in the same
-                    // site as the source element anymore, if this is coming from an ApplyNewPropagationMethod job)
-                    $parentId = $element
-                        ->getAncestors(1)
-                        ->select(['elements.id'])
-                        ->siteId('*')
-                        ->unique()
-                        ->anyStatus()
-                        ->scalar();
-
-                    if ($parentId !== false) {
-                        // If we've cloned the parent, use the clone's ID instead
-                        if (isset(static::$duplicatedElementIds[$parentId])) {
-                            $parentId = static::$duplicatedElementIds[$parentId];
-                        }
-
-                        Craft::$app->getStructures()->append($element->structureId, $mainClone, $parentId, $mode);
-                    } else {
-                        // Just append it to the root
-                        Craft::$app->getStructures()->appendToRoot($element->structureId, $mainClone, $mode);
-                    }
-                }
+                Craft::$app->getStructures()->moveAfter($element->structureId, $mainClone, $element, $mode);
             }
 
             // Map it
@@ -1209,7 +1226,9 @@ class Elements extends Component
                         ->anyStatus();
 
                     if ($element->getIsDraft()) {
-                        $siteQuery->drafts();
+                        $siteQuery
+                            ->drafts()
+                            ->provisionalDrafts(null);
                     } else if ($element->getIsRevision()) {
                         $siteQuery->revisions();
                     }
@@ -1297,6 +1316,7 @@ class Elements extends Component
      * @param bool $updateOtherSites Whether the element’s other sites should also be updated.
      * @param bool $updateDescendants Whether the element’s descendants should also be updated.
      * @param bool $queue Whether the element’s slug and URI should be updated via a job in the queue.
+     * @throws OperationAbortedException if a unique URI can’t be generated based on the element’s URI format
      */
     public function updateElementSlugAndUri(ElementInterface $element, bool $updateOtherSites = true, bool $updateDescendants = true, bool $queue = false)
     {
@@ -2341,7 +2361,7 @@ class Elements extends Component
                 // Pass the instantiated elements to afterPopulate()
                 if (!empty($targetElements)) {
                     $query->asArray = false;
-                    $query->afterPopulate(array_merge(...$targetElements));
+                    $query->afterPopulate(array_merge(...array_values($targetElements)));
                 }
 
                 // Now eager-load any sub paths

@@ -249,9 +249,7 @@ class Category extends Element
             ]);
 
             // New Child
-            $structure = Craft::$app->getStructures()->getStructureById($group->structureId);
-
-            if ($structure) {
+            if ($group->maxLevels != 1) {
                 $newChildUrl = 'categories/' . $group->handle . '/new';
 
                 if (Craft::$app->getIsMultiSite()) {
@@ -261,7 +259,7 @@ class Category extends Element
                 $actions[] = $elementsService->createAction([
                     'type' => NewChild::class,
                     'label' => Craft::t('app', 'Create a new child category'),
-                    'maxLevels' => $structure->maxLevels,
+                    'maxLevels' => $group->maxLevels,
                     'newChildUrl' => $newChildUrl,
                 ]);
             }
@@ -278,10 +276,13 @@ class Category extends Element
 
             // Delete
             $actions[] = Delete::class;
-            $actions[] = [
-                'type' => Delete::class,
-                'withDescendants' => true,
-            ];
+
+            if ($group->maxLevels != 1) {
+                $actions[] = [
+                    'type' => Delete::class,
+                    'withDescendants' => true,
+                ];
+            }
         }
 
         // Restore
@@ -330,7 +331,7 @@ class Category extends Element
     protected static function defineTableAttributes(): array
     {
         return [
-            'title' => ['label' => Craft::t('app', 'Title')],
+            'title' => ['label' => Craft::t('app', 'Category')],
             'slug' => ['label' => Craft::t('app', 'Slug')],
             'uri' => ['label' => Craft::t('app', 'URI')],
             'link' => ['label' => Craft::t('app', 'Link'), 'icon' => 'world'],
@@ -444,7 +445,7 @@ class Category extends Element
     /**
      * @inheritdoc
      */
-    public function getIsEditable(): bool
+    protected function isEditable(): bool
     {
         return Craft::$app->getUser()->checkPermission('editCategories:' . $this->getGroup()->uid);
     }
@@ -452,7 +453,7 @@ class Category extends Element
     /**
      * @inheritdoc
      */
-    public function getCpEditUrl()
+    protected function cpEditUrl(): ?string
     {
         $group = $this->getGroup();
 
@@ -471,6 +472,17 @@ class Category extends Element
     public function getFieldLayout()
     {
         return parent::getFieldLayout() ?? $this->getGroup()->getFieldLayout();
+    }
+
+    /**
+     * @inheritdoc
+     */
+    protected function metaFieldsHtml(): string
+    {
+        return implode('', [
+            $this->slugFieldHtml(),
+            parent::metaFieldsHtml(),
+        ]);
     }
 
     /**
@@ -542,6 +554,8 @@ class Category extends Element
     public function afterSave(bool $isNew)
     {
         if (!$this->propagating) {
+            $group = $this->getGroup();
+
             // Get the category record
             if (!$isNew) {
                 $record = CategoryRecord::findOne($this->id);
@@ -561,9 +575,17 @@ class Category extends Element
             if (!$this->duplicateOf && $this->_hasNewParent()) {
                 $mode = $isNew ? Structures::MODE_INSERT : Structures::MODE_AUTO;
                 if (!$this->newParentId) {
-                    Craft::$app->getStructures()->appendToRoot($this->structureId, $this, $mode);
+                    if ($group->defaultPlacement === CategoryGroup::DEFAULT_PLACEMENT_BEGINNING) {
+                        Craft::$app->getStructures()->prependToRoot($this->structureId, $this, $mode);
+                    } else {
+                        Craft::$app->getStructures()->appendToRoot($this->structureId, $this, $mode);
+                    }
                 } else {
-                    Craft::$app->getStructures()->append($this->structureId, $this, $this->getParent(), $mode);
+                    if ($group->defaultPlacement === CategoryGroup::DEFAULT_PLACEMENT_BEGINNING) {
+                        Craft::$app->getStructures()->prepend($this->structureId, $this, $this->getParent(), $mode);
+                    } else {
+                        Craft::$app->getStructures()->append($this->structureId, $this, $this->getParent(), $mode);
+                    }
                 }
             }
 
