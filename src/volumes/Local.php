@@ -307,7 +307,12 @@ class Local extends Volume implements LocalVolumeInterface
             throw new VolumeObjectNotFoundException('No folder exists at path: ' . $path);
         }
 
-        @rename($path, $this->prefixPath($path));
+        $components = explode("/", $this->prefixPath($path));
+        array_pop($components);
+        $components[] = $newName;
+        $newPath = implode("/", $components);
+
+        @rename($this->prefixPath($path), $newPath);
     }
 
     /**
