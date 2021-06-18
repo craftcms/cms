@@ -87,7 +87,7 @@ abstract class BaseEntriesController extends Controller
 
         if ($entry->getIsDraft()) {
             // If it's another user's draft, make sure they have permission to edit those
-            /* @var Entry|DraftBehavior $entry */
+            /** @var Entry|DraftBehavior $entry */
             if ($entry->creatorId != $userId) {
                 $this->requirePermission('editPeerEntryDrafts' . $permissionSuffix);
             }
@@ -116,7 +116,7 @@ abstract class BaseEntriesController extends Controller
         $section = $entry->getSection();
 
         if ($entry->getIsDraft()) {
-            /* @var Entry|DraftBehavior $entry */
+            /** @var Entry|DraftBehavior $entry */
             if (!$entry->creatorId || $entry->creatorId != $currentUser->id) {
                 $this->requirePermission("deletePeerEntryDrafts:$section->uid");
             }

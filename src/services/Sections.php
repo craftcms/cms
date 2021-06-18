@@ -674,7 +674,7 @@ class Sections extends Component
                 // rows
                 $affectedSiteUids = array_keys($siteSettingData);
 
-                /* @noinspection PhpUndefinedVariableInspection */
+                /** @noinspection PhpUndefinedVariableInspection */
                 foreach ($allOldSiteSettingsRecords as $siteId => $siteSettingsRecord) {
                     $siteUid = array_search($siteId, $siteIdMap, false);
                     if (!in_array($siteUid, $affectedSiteUids, false)) {
@@ -738,7 +738,7 @@ class Sections extends Component
         // Clear caches
         $this->_sections = null;
 
-        /* @var Section $section */
+        /** @var Section $section */
         $section = $this->getSectionById($sectionRecord->id);
 
         // If this is a Single and no entry type changes need to be processed,
@@ -834,7 +834,7 @@ class Sections extends Component
             return;
         }
 
-        /* @var Section $section */
+        /** @var Section $section */
         $section = $this->getSectionById($sectionRecord->id);
 
         // Fire a 'beforeApplySectionDelete' event
@@ -1216,7 +1216,7 @@ class Sections extends Component
             Craft::$app->getElements()->restoreElements($entries);
         }
 
-        /* @var EntryType $entryType */
+        /** @var EntryType $entryType */
         $entryType = $this->getEntryTypeById($entryTypeRecord->id);
 
         // If this is for a Single section, ensure its entry exists
@@ -1347,7 +1347,7 @@ class Sections extends Component
             return;
         }
 
-        /* @var EntryType $entryType */
+        /** @var EntryType $entryType */
         $entryType = $this->getEntryTypeById($entryTypeRecord->id);
 
         // Fire a 'beforeApplyEntryTypeDelete' event
@@ -1371,7 +1371,7 @@ class Sections extends Component
             $elementsService = Craft::$app->getElements();
             foreach (Craft::$app->getSites()->getAllSiteIds() as $siteId) {
                 foreach (Db::each($entryQuery->siteId($siteId)) as $entry) {
-                    /* @var Entry $entry */
+                    /** @var Entry $entry */
                     $entry->deletedWithEntryType = true;
                     $elementsService->deleteElement($entry);
                 }
@@ -1573,7 +1573,7 @@ class Sections extends Component
 
         $structuresService = Craft::$app->getStructures();
 
-        /* @var Entry $entry */
+        /** @var Entry $entry */
         foreach (Db::each($query) as $entry) {
             $structuresService->appendToRoot($sectionRecord->structureId, $entry, Structures::MODE_INSERT);
         }

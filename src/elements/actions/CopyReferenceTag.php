@@ -40,7 +40,7 @@ class CopyReferenceTag extends ElementAction
     public function getTriggerHtml()
     {
         $type = Json::encode(static::class);
-        /* @var string|ElementInterface $elementType */
+        /** @var string|ElementInterface $elementType */
         $elementType = $this->elementType;
 
         if (($refHandle = $elementType::refHandle()) === null) {

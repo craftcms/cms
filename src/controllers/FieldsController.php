@@ -148,7 +148,7 @@ class FieldsController extends Controller
         // ---------------------------------------------------------------------
 
         $supportedTranslationMethods = [];
-        /* @var string[]|FieldInterface[] $allFieldTypes */
+        /** @var string[]|FieldInterface[] $allFieldTypes */
         $allFieldTypes = $fieldsService->getAllFieldTypes();
 
         foreach ($allFieldTypes as $class) {
@@ -166,7 +166,7 @@ class FieldsController extends Controller
             $compatibleFieldTypes = $fieldsService->getCompatibleFieldTypes($field, true);
         }
 
-        /* @var string[]|FieldInterface[] $compatibleFieldTypes */
+        /** @var string[]|FieldInterface[] $compatibleFieldTypes */
         $fieldTypeOptions = [];
 
         foreach ($allFieldTypes as $class) {

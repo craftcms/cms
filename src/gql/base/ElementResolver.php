@@ -77,7 +77,7 @@ abstract class ElementResolver extends Resolver
      */
     protected static function prepareElementQuery($source, array $arguments, $context, ResolveInfo $resolveInfo)
     {
-        /* @var ArgumentManager $argumentManager */
+        /** @var ArgumentManager $argumentManager */
         $argumentManager = empty($context['argumentManager']) ? Craft::createObject(['class' => ArgumentManager::class]) : $context['argumentManager'];
         $arguments = $argumentManager->prepareArguments($arguments);
 
@@ -103,14 +103,14 @@ abstract class ElementResolver extends Resolver
             }
         }
 
-        /* @var ElementQueryConditionBuilder $conditionBuilder */
+        /** @var ElementQueryConditionBuilder $conditionBuilder */
         $conditionBuilder = empty($context['conditionBuilder']) ? Craft::createObject(['class' => ElementQueryConditionBuilder::class]) : $context['conditionBuilder'];
         $conditionBuilder->setResolveInfo($resolveInfo);
         $conditionBuilder->setArgumentManager($argumentManager);
 
         $conditions = $conditionBuilder->extractQueryConditions($parentField);
 
-        /* @var ElementQuery $query */
+        /** @var ElementQuery $query */
         foreach ($conditions as $method => $parameters) {
             if (method_exists($query, $method)) {
                 $query = $query->{$method}($parameters);
