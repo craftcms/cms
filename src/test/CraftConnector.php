@@ -89,7 +89,7 @@ class CraftConnector extends Yii2
         // Reset the view object
         $app->set('view', new View());
 
-        /* @var Module $module */
+        /** @var Module $module */
         foreach (Craft::$app->getModules() as $module) {
             $moduleClass = get_class($module);
             $moduleId = $module->id;

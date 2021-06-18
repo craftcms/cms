@@ -36,7 +36,7 @@ class NavTokenParser extends AbstractTokenParser
     public function parse(Token $token)
     {
         $lineno = $token->getLine();
-        /* @var Parser $parser */
+        /** @var Parser $parser */
         $parser = $this->parser;
         $stream = $parser->getStream();
 

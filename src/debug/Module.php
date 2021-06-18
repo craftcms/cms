@@ -27,7 +27,7 @@ class Module extends \yii\debug\Module
             return;
         }
 
-        /* @var $view View */
+        /** @var $view View */
         $view = $event->sender;
         echo $this->getToolbarHtml();
 

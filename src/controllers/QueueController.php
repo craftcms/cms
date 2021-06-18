@@ -20,7 +20,7 @@ use yii\web\ForbiddenHttpException;
 use yii\web\Response;
 use yii\web\ServerErrorHttpException;
 
-/* @noinspection ClassOverridesFieldOfSuperClassInspection */
+/** @noinspection ClassOverridesFieldOfSuperClassInspection */
 
 /**
  * The QueueController class is a controller that handles various queue-related operations.

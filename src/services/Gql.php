@@ -411,7 +411,7 @@ class Gql extends Component
 
             foreach ($registeredTypes as $registeredType) {
                 if (method_exists($registeredType, 'getTypeGenerator')) {
-                    /* @var GeneratorInterface $typeGeneratorClass */
+                    /** @var GeneratorInterface $typeGeneratorClass */
                     $typeGeneratorClass = $registeredType::getTypeGenerator();
 
                     if (is_subclass_of($typeGeneratorClass, GeneratorInterface::class)) {
@@ -1239,7 +1239,7 @@ class Gql extends Component
     {
         $devMode = Craft::$app->getConfig()->getGeneral()->devMode;
 
-        /* @var Error $error */
+        /** @var Error $error */
         foreach ($errors as &$error) {
             $originException = $nextException = $error;
 
@@ -1346,7 +1346,7 @@ class Gql extends Component
         $this->trigger(self::EVENT_REGISTER_GQL_TYPES, $event);
 
         foreach ($event->types as $type) {
-            /* @var InterfaceType $type */
+            /** @var InterfaceType $type */
             TypeLoader::registerType($type::getName(), $type . '::getType');
         }
 
@@ -1435,7 +1435,7 @@ class Gql extends Component
         $directives = GraphQL::getStandardDirectives();
 
         foreach ($event->directives as $directive) {
-            /* @var Directive $directive */
+            /** @var Directive $directive */
             $directives[] = $directive::create();
         }
 

@@ -277,7 +277,7 @@ class Elements extends Component
             $config = ['type' => $config];
         }
 
-        /* @noinspection PhpIncompatibleReturnTypeInspection */
+        /** @noinspection PhpIncompatibleReturnTypeInspection */
         return ComponentHelper::createComponent($config, ElementInterface::class);
     }
 
@@ -552,7 +552,7 @@ class Elements extends Component
         }
 
         if ($siteId === null) {
-            /* @noinspection PhpUnhandledExceptionInspection */
+            /** @noinspection PhpUnhandledExceptionInspection */
             $siteId = Craft::$app->getSites()->getCurrentSite()->id;
         }
 
@@ -1001,8 +1001,8 @@ class Elements extends Component
 
         // If we are duplicating a draft as another draft, create a new draft row
         if ($mainClone->draftId && $mainClone->draftId === $element->draftId) {
-            /* @var ElementInterface|DraftBehavior $element */
-            /* @var DraftBehavior $draftBehavior */
+            /** @var ElementInterface|DraftBehavior $element */
+            /** @var DraftBehavior $draftBehavior */
             $draftBehavior = $mainClone->getBehavior('draft');
             $draftsService = Craft::$app->getDrafts();
             // Are we duplicating a draft of a published element?
@@ -1396,7 +1396,7 @@ class Elements extends Component
             }
 
             // Update any reference tags
-            /* @var ElementInterface|null $elementType */
+            /** @var ElementInterface|null $elementType */
             $elementType = $this->getElementTypeById($prevailingElement->id);
 
             if ($elementType !== null && ($refHandle = $elementType::refHandle()) !== null) {
@@ -1448,9 +1448,9 @@ class Elements extends Component
      */
     public function deleteElementById(int $elementId, string $elementType = null, int $siteId = null, bool $hardDelete = false): bool
     {
-        /* @var ElementInterface|string|null $elementType */
+        /** @var ElementInterface|string|null $elementType */
         if ($elementType === null) {
-            /* @noinspection CallableParameterUseCaseInTypeContextInspection */
+            /** @noinspection CallableParameterUseCaseInTypeContextInspection */
             $elementType = $this->getElementTypeById($elementId);
 
             if ($elementType === null) {
@@ -1753,7 +1753,7 @@ class Elements extends Component
         }
 
         foreach ($this->getAllElementTypes() as $class) {
-            /* @var string|ElementInterface $class */
+            /** @var string|ElementInterface $class */
             if (
                 ($elementRefHandle = $class::refHandle()) !== null &&
                 strcasecmp($elementRefHandle, $refHandle) === 0
@@ -2037,7 +2037,7 @@ class Elements extends Component
      */
     public function eagerLoadElements(string $elementType, array $elements, $with)
     {
-        /* @var ElementInterface|string $elementType */
+        /** @var ElementInterface|string $elementType */
         // Bail if there aren't even any elements
         if (empty($elements)) {
             return;
@@ -2077,7 +2077,7 @@ class Elements extends Component
                 }
 
                 // Get the eager-loading map from the source element type
-                /* @var ElementInterface|string $elementType */
+                /** @var ElementInterface|string $elementType */
                 $map = $elementType::eagerLoadingMap($filteredElements, $plan->handle);
 
                 if ($map === null) {
@@ -2279,10 +2279,10 @@ class Elements extends Component
      */
     private function _saveElementInternal(ElementInterface $element, bool $runValidation = true, bool $propagate = true, bool $updateSearchIndex = null): bool
     {
-        /* @var ElementInterface|DraftBehavior|RevisionBehavior $element */
+        /** @var ElementInterface|DraftBehavior|RevisionBehavior $element */
         $isNewElement = !$element->id;
 
-        /* @var DraftBehavior|null $draftBehavior */
+        /** @var DraftBehavior|null $draftBehavior */
         $draftBehavior = $element->getIsDraft() ? $element->getBehavior('draft') : null;
 
         // Are we tracking changes?

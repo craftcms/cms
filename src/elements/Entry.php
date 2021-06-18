@@ -239,7 +239,7 @@ class Entry extends Element
                 $sources[] = ['heading' => $heading];
 
                 foreach ($sectionsByType[$type] as $section) {
-                    /* @var Section $section */
+                    /** @var Section $section */
                     $source = [
                         'key' => 'section:' . $section->uid,
                         'label' => Craft::t('site', $section->name),
@@ -306,7 +306,7 @@ class Entry extends Element
         // Get the selected site
         $controller = Craft::$app->controller;
         if ($controller instanceof ElementIndexesController) {
-            /* @var ElementQuery $elementQuery */
+            /** @var ElementQuery $elementQuery */
             $elementQuery = $controller->getElementQuery();
         } else {
             $elementQuery = null;
@@ -339,7 +339,7 @@ class Entry extends Element
         $actions = [];
         $elementsService = Craft::$app->getElements();
 
-        /* @var Section[] $sections */
+        /** @var Section[] $sections */
         if (!empty($sections)) {
             $userSession = Craft::$app->getUser();
             $canSetStatus = true;
@@ -605,7 +605,7 @@ class Entry extends Element
      */
     public static function gqlTypeNameByContext($context): string
     {
-        /* @var EntryType $context */
+        /** @var EntryType $context */
         return self::_getGqlIdentifierByContext($context) . '_Entry';
     }
 
@@ -615,7 +615,7 @@ class Entry extends Element
      */
     public static function gqlMutationNameByContext($context): string
     {
-        /* @var EntryType $context */
+        /** @var EntryType $context */
         return 'save_' . self::_getGqlIdentifierByContext($context) . '_Entry';
     }
 
@@ -624,7 +624,7 @@ class Entry extends Element
      */
     public static function gqlScopesByContext($context): array
     {
-        /* @var EntryType $context */
+        /** @var EntryType $context */
         return [
             'sections.' . $context->getSection()->uid,
             'entrytypes.' . $context->uid,
@@ -811,7 +811,7 @@ class Entry extends Element
     public function getSupportedSites(): array
     {
         $section = $this->getSection();
-        /* @var Site[] $allSites */
+        /** @var Site[] $allSites */
         $allSites = ArrayHelper::index(Craft::$app->getSites()->getAllSites(), 'id');
         $sites = [];
 
@@ -1319,8 +1319,8 @@ class Entry extends Element
                 }
 
             case 'revisionNotes':
-                /* @var Entry|null $revision */
-                /* @var RevisionBehavior|null $behavior */
+                /** @var Entry|null $revision */
+                /** @var RevisionBehavior|null $behavior */
                 if (
                     ($revision = $this->getCurrentRevision()) === null ||
                     ($behavior = $revision->getBehavior('revision')) === null
@@ -1330,8 +1330,8 @@ class Entry extends Element
                 return Html::encode($behavior->revisionNotes);
 
             case 'revisionCreator':
-                /* @var Entry|null $revision */
-                /* @var RevisionBehavior|null $behavior */
+                /** @var Entry|null $revision */
+                /** @var RevisionBehavior|null $behavior */
                 if (
                     ($revision = $this->getCurrentRevision()) === null ||
                     ($behavior = $revision->getBehavior('revision')) === null ||
@@ -1349,7 +1349,7 @@ class Entry extends Element
                 $drafts = $this->getEagerLoadedElements('drafts');
 
                 foreach ($drafts as $draft) {
-                    /* @var ElementInterface|DraftBehavior $draft */
+                    /** @var ElementInterface|DraftBehavior $draft */
                     $draft->setUiLabel($draft->draftName);
                 }
 

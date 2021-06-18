@@ -30,7 +30,7 @@ class UploadedFile extends \yii\web\UploadedFile
      */
     public static function getInstanceByName($name, bool $ensureTempFileExists = true)
     {
-        /* @var static $instance */
+        /** @var static $instance */
         $instance = parent::getInstanceByName(self::_normalizeName($name));
         if ($instance === null) {
             return null;
@@ -57,7 +57,7 @@ class UploadedFile extends \yii\web\UploadedFile
     public static function getInstancesByName($name, $lookForSingleInstance = true, $ensureTempFilesExist = true): array
     {
         $name = self::_normalizeName($name);
-        /* @var static[] $instances */
+        /** @var static[] $instances */
         $instances = parent::getInstancesByName($name);
 
         if (empty($instances) && $lookForSingleInstance) {

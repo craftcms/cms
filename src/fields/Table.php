@@ -18,7 +18,6 @@ use craft\helpers\Cp;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Html;
 use craft\helpers\Json;
-use craft\helpers\StringHelper;
 use craft\validators\ColorValidator;
 use craft\validators\HandleValidator;
 use craft\validators\UrlValidator;
@@ -560,7 +559,7 @@ class Table extends Field
 
         switch ($type) {
             case 'color':
-                /* @var ColorData $value */
+                /** @var ColorData $value */
                 $value = $value->getHex();
                 $validator = new ColorValidator();
                 break;
