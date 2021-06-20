@@ -182,8 +182,9 @@ class Mailer extends \yii\swiftmailer\Mailer
             Craft::warning('Error sending email: ' . $eMessage);
 
             // Save the exception on the message, for plugins to make use of
-            $message->error = $eMessage;
-            $message->exception = $e;
+            if ($message instanceof Message) {
+                $message->error = $e;
+            }
 
             $this->afterSend($message, false);
             return false;
