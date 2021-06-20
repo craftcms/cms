@@ -34,6 +34,16 @@ class Message extends \yii\swiftmailer\Message
     public $language;
 
     /**
+     * @var string|null The error message, if the message failed to send
+     */
+    public $error;
+
+    /**
+     * @var Swift_TransportException|null The caught exception object, if the message failed to send
+     */
+    public $exception;
+
+    /**
      * Sets the message sender.
      *
      * @param string|array|User|User[] $from The sender’s email address, or their
