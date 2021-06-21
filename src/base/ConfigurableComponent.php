@@ -7,6 +7,7 @@
 
 namespace craft\base;
 
+use craft\events\DefineValueEvent;
 use craft\helpers\DateTimeHelper;
 
 /**
@@ -17,6 +18,12 @@ use craft\helpers\DateTimeHelper;
  */
 abstract class ConfigurableComponent extends Component implements ConfigurableComponentInterface
 {
+    /**
+     * @event DefineValueEvent The event that is triggered when defining the component’s settings attributes, as returned by [[settingsAttributes()]].
+     * @since 3.7.0
+     */
+    const EVENT_DEFINE_SETTINGS_ATTRIBUTES = 'defineSettingsAttributes';
+
     /**
      * @inheritdoc
      */
@@ -30,6 +37,14 @@ abstract class ConfigurableComponent extends Component implements ConfigurableCo
             if (!$property->isStatic() && !$property->getDeclaringClass()->isAbstract()) {
                 $names[] = $property->getName();
             }
+        }
+
+        if ($this->hasEventHandlers(self::EVENT_DEFINE_SETTINGS_ATTRIBUTES)) {
+            $event = new DefineValueEvent([
+                'value' => $names,
+            ]);
+            $this->trigger(self::EVENT_DEFINE_SETTINGS_ATTRIBUTES, $event);
+            $names = $event->value;
         }
 
         return $names;

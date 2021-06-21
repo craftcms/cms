@@ -314,6 +314,7 @@ class Categories extends Component
             $groupRecord->name = $data['name'];
             $groupRecord->handle = $data['handle'];
             $groupRecord->uid = $categoryGroupUid;
+            $groupRecord->defaultPlacement = $data['defaultPlacement'] ?? CategoryGroup::DEFAULT_PLACEMENT_END;
 
             // Structure
             $structuresService = Craft::$app->getStructures();
@@ -751,6 +752,7 @@ class Categories extends Component
             'fieldLayoutId',
             'name',
             'handle',
+            'defaultPlacement',
             'uid',
         ]));
 

@@ -9,7 +9,6 @@ namespace craft\controllers;
 
 use Craft;
 use craft\behaviors\DraftBehavior;
-use craft\behaviors\RevisionBehavior;
 use craft\elements\Entry;
 use craft\models\Section;
 use craft\models\Site;
@@ -124,45 +123,6 @@ abstract class BaseEntriesController extends Controller
         } else if (!$entry->getIsDeletable()) {
             throw new ForbiddenHttpException('User is not permitted to perform this action');
         }
-    }
-
-    /**
-     * Returns the document title that should be used on an Edit Entry page.
-     *
-     * @param Entry
-     * @return string
-     */
-    protected function docTitle(Entry $entry): string
-    {
-        $docTitle = $this->pageTitle($entry);
-
-        if ($entry->getIsDraft()) {
-            /** @var Entry|DraftBehavior $entry */
-            $docTitle .= ' (' . $entry->draftName . ')';
-        } else if ($entry->getIsRevision()) {
-            /** @var Entry|RevisionBehavior $entry */
-            $docTitle .= ' (' . $entry->getRevisionLabel() . ')';
-        }
-
-        return $docTitle;
-    }
-
-    /**
-     * Returns the page title that should be used on an Edit Entry page.
-     *
-     * @param Entry
-     * @return string
-     */
-    protected function pageTitle(Entry $entry): string
-    {
-        if ($title = trim($entry->title)) {
-            return $title;
-        }
-
-        if ($entry->getIsUnpublishedDraft()) {
-            return Craft::t('app', 'Create a new entry');
-        }
-        return Craft::t('app', 'Edit Entry');
     }
 
     /**

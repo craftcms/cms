@@ -70,6 +70,7 @@ abstract class Volume extends SavableComponent implements VolumeInterface
                 'title',
             ],
         ];
+        $rules[] = [['fieldLayout'], 'validateFieldLayout'];
 
         // Require URLs for public Volumes.
         if ($this->hasUrls) {
@@ -77,6 +78,25 @@ abstract class Volume extends SavableComponent implements VolumeInterface
         }
 
         return $rules;
+    }
+
+    /**
+     * Validates the field layout.
+     *
+     * @return void
+     * @since 3.7.0
+     */
+    public function validateFieldLayout(): void
+    {
+        $fieldLayout = $this->getFieldLayout();
+        $fieldLayout->reservedFieldHandles = [
+            'folder',
+            'volume',
+        ];
+
+        if (!$fieldLayout->validate()) {
+            $this->addModelErrors($fieldLayout, 'fieldLayout');
+        }
     }
 
     /**
@@ -127,6 +147,14 @@ abstract class Volume extends SavableComponent implements VolumeInterface
     }
 
     /**
+     * @inheritDoc
+     */
+    public function directoryExists(string $path): bool
+    {
+        return $this->folderExists($path);
+    }
+
+    /**
      * Creates a directory.
      *
      * @param string $path The path of the directory, relative to the source’s root
@@ -158,5 +186,17 @@ abstract class Volume extends SavableComponent implements VolumeInterface
     public function renameDir(string $path, string $newName)
     {
         throw new NotSupportedException('renameDir() has not been implemented.');
+    }
+
+    /**
+     * Returns whether a folder exists at the given path.
+     *
+     * @param string $path The folder path to check
+     * @return bool
+     * @deprecated in 3.7.0. Use [[directoryExists()]] instead.
+     */
+    public function folderExists(string $path): bool
+    {
+        throw new NotSupportedException('folderExists() has not been implemented.');
     }
 }

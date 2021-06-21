@@ -26,6 +26,19 @@
     value: field.minuteIncrement ? field.minuteIncrement : 30,
 }) }}
 
+{{ forms.lightswitchField({
+    fieldClass: [
+        "#{targetPrefix}showTime",
+        "#{targetPrefix}showBoth",
+        value == 'showDate' ? 'hidden',
+    ]|filter,
+    label: 'Show Time Zone'|t('app'),
+    instructions: 'Whether authors should be able to choose which time zone the time is in.'|t('app'),
+    id: 'show-time-zone',
+    name: 'showTimeZone',
+    on: field.showTimeZone,
+}) }}
+
 {{ forms.dateField({
     fieldClass: [
         "#{targetPrefix}showDate",

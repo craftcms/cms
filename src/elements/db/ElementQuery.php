@@ -138,6 +138,12 @@ class ElementQuery extends Query implements ElementQueryInterface
     public $drafts = false;
 
     /**
+     * @var bool|null Whether provisional drafts should be returned.
+     * @since 3.7.0
+     */
+    public $provisionalDrafts = false;
+
+    /**
      * @var int|null The ID of the draft to return (from the `drafts` table)
      * @since 3.2.0
      */
@@ -206,6 +212,13 @@ class ElementQuery extends Query implements ElementQueryInterface
      * @used-by uid()
      */
     public $uid;
+
+    /**
+     * @var int|int[]|null The element ID(s) in the `elements_sites` table. Prefix IDs with `'not '` to exclude them.
+     * @used-by siteSettingsId()
+     * @since 3.7.0
+     */
+    public $siteSettingsId;
 
     /**
      * @var bool Whether results should be returned in the order specified by [[id]].
@@ -736,7 +749,7 @@ class ElementQuery extends Query implements ElementQueryInterface
     public function draftOf($value)
     {
         if ($value instanceof ElementInterface) {
-            $this->draftOf = $value->getSourceId();
+            $this->draftOf = $value->getCanonicalId();
         } else if (is_numeric($value) || $value === '*' || $value === false || $value === null) {
             $this->draftOf = $value;
         } else {
@@ -763,6 +776,20 @@ class ElementQuery extends Query implements ElementQueryInterface
             throw new InvalidArgumentException('Invalid draftCreator value');
         }
         if ($value !== null && $this->drafts === false) {
+            $this->drafts = true;
+        }
+        return $this;
+    }
+
+    /**
+     * @inheritdoc
+     * @uses $provisionalDrafts
+     * @uses $drafts
+     */
+    public function provisionalDrafts(?bool $value = true)
+    {
+        $this->provisionalDrafts = $value;
+        if ($value === true && $this->drafts === false) {
             $this->drafts = true;
         }
         return $this;
@@ -808,7 +835,7 @@ class ElementQuery extends Query implements ElementQueryInterface
     public function revisionOf($value)
     {
         if ($value instanceof ElementInterface) {
-            $this->revisionOf = $value->getSourceId();
+            $this->revisionOf = $value->getCanonicalId();
         } else if (is_numeric($value) || $value === null) {
             $this->revisionOf = $value;
         } else {
@@ -853,6 +880,16 @@ class ElementQuery extends Query implements ElementQueryInterface
     public function uid($value)
     {
         $this->uid = $value;
+        return $this;
+    }
+
+    /**
+     * @inheritdoc
+     * @uses $siteSettingsId
+     */
+    public function siteSettingsId($value)
+    {
+        $this->siteSettingsId = $value;
         return $this;
     }
 
@@ -1427,6 +1464,10 @@ class ElementQuery extends Query implements ElementQueryInterface
             $this->subQuery->andWhere(Db::parseParam('elements.uid', $this->uid));
         }
 
+        if ($this->siteSettingsId) {
+            $this->subQuery->andWhere(Db::parseParam('elements_sites.id', $this->siteSettingsId));
+        }
+
         if ($this->archived) {
             $this->subQuery->andWhere(['elements.archived' => true]);
         } else {
@@ -1829,17 +1870,29 @@ class ElementQuery extends Query implements ElementQueryInterface
 
             if (!empty($this->customFields)) {
                 foreach ($this->customFields as $field) {
-                    if ($field->hasContentColumn()) {
+                    if (($column = $this->_fieldColumn($field)) !== null) {
                         // Account for results where multiple fields have the same handle, but from
                         // different columns e.g. two Matrix block types that each have a field with the
                         // same handle
-                        $colName = $this->_getFieldContentColumnName($field);
+                        $firstCol = is_string($column) ? $column : reset($column);
+                        $setValue = !isset($fieldValues[$field->handle]) || (empty($fieldValues[$field->handle]) && !empty($row[$firstCol]));
 
-                        if (!isset($fieldValues[$field->handle]) || (empty($fieldValues[$field->handle]) && !empty($row[$colName]))) {
-                            $fieldValues[$field->handle] = $row[$colName] ?? null;
+                        if (is_string($column)) {
+                            if ($setValue) {
+                                $fieldValues[$field->handle] = $row[$column] ?? null;
+                            }
+                            unset($row[$column]);
+                        } else {
+                            if ($setValue) {
+                                $fieldValues[$field->handle] = [];
+                                foreach ($column as $key => $col) {
+                                    $fieldValues[$field->handle][$key] = $row[$col] ?? null;
+                                }
+                            }
+                            foreach ($column as $col) {
+                                unset($row[$col]);
+                            }
                         }
-
-                        unset($row[$colName]);
                     }
                 }
             }
@@ -1857,30 +1910,25 @@ class ElementQuery extends Query implements ElementQueryInterface
         $behaviors = [];
 
         if ($this->drafts !== false) {
+            $row['isProvisionalDraft'] = (bool)($row['isProvisionalDraft'] ?? false);
+
             if (!empty($row['draftId'])) {
                 $behaviors['draft'] = new DraftBehavior([
-                    'sourceId' => ArrayHelper::remove($row, 'draftSourceId'),
                     'creatorId' => ArrayHelper::remove($row, 'draftCreatorId'),
                     'draftName' => ArrayHelper::remove($row, 'draftName'),
                     'draftNotes' => ArrayHelper::remove($row, 'draftNotes'),
-                    'trackChanges' => (bool)ArrayHelper::remove($row, 'draftTrackChanges'),
-                    'dateLastMerged' => ArrayHelper::remove($row, 'draftDateLastMerged'),
                 ]);
             } else {
                 unset(
-                    $row['draftSourceId'],
                     $row['draftCreatorId'],
                     $row['draftName'],
-                    $row['draftNotes'],
-                    $row['draftTrackChanges'],
-                    $row['draftDateLastMerged']
+                    $row['draftNotes']
                 );
             }
         }
 
         if ($this->revisions) {
             $behaviors['revision'] = new RevisionBehavior([
-                'sourceId' => ArrayHelper::remove($row, 'revisionSourceId'),
                 'creatorId' => ArrayHelper::remove($row, 'revisionCreatorId'),
                 'revisionNum' => ArrayHelper::remove($row, 'revisionNum'),
                 'revisionNotes' => ArrayHelper::remove($row, 'revisionNotes'),
@@ -2177,7 +2225,7 @@ class ElementQuery extends Query implements ElementQueryInterface
                 $siteIds = array_flip((array)$this->siteId);
                 foreach ($placeholderElements as $element) {
                     if ($element instanceof $this->elementType && isset($siteIds[$element->siteId])) {
-                        $placeholderSourceIds[] = $element->getSourceId();
+                        $placeholderSourceIds[] = $element->getCanonicalId();
                     }
                 }
             }
@@ -2233,8 +2281,14 @@ class ElementQuery extends Query implements ElementQueryInterface
             $fieldAttributes = $this->getBehavior('customFields');
 
             foreach ($this->customFields as $field) {
-                if ($field->hasContentColumn()) {
-                    $this->query->addSelect(['content.' . $this->_getFieldContentColumnName($field)]);
+                if (($column = $this->_fieldColumn($field)) !== null) {
+                    if (is_string($column)) {
+                        $this->query->addSelect("content.$column");
+                    } else {
+                        foreach ($column as $c) {
+                            $this->query->addSelect("content.$c");
+                        }
+                    }
                 }
 
                 $handle = $field->handle;
@@ -2550,37 +2604,40 @@ class ElementQuery extends Query implements ElementQueryInterface
 
             $this->query->addSelect([
                 'elements.draftId',
-                'drafts.sourceId as draftSourceId',
                 'drafts.creatorId as draftCreatorId',
+                'drafts.provisional as isProvisionalDraft',
                 'drafts.name as draftName',
                 'drafts.notes as draftNotes',
             ]);
-
-            $schemaVersion = Craft::$app->getInstalledSchemaVersion();
-            if (version_compare($schemaVersion, '3.4.3', '>=')) {
-                $this->query->addSelect(['drafts.trackChanges as draftTrackChanges']);
-                $this->query->addSelect(['drafts.dateLastMerged as draftDateLastMerged']);
-            }
 
             if ($this->draftId) {
                 $this->subQuery->andWhere(['elements.draftId' => $this->draftId]);
             }
 
             if ($this->draftOf === '*') {
-                $this->subQuery->andWhere(['not', ['drafts.sourceId' => null]]);
+                $this->subQuery->andWhere(['not', ['elements.canonicalId' => null]]);
             } else if ($this->draftOf !== null) {
-                $this->subQuery->andWhere(['drafts.sourceId' => $this->draftOf ?: null]);
+                $this->subQuery->andWhere(['elements.canonicalId' => $this->draftOf ?: null]);
             }
 
             if ($this->draftCreator) {
                 $this->subQuery->andWhere(['drafts.creatorId' => $this->draftCreator]);
             }
 
+            if ($this->provisionalDrafts !== null) {
+                $this->subQuery->andWhere([
+                    'or',
+                    ['elements.draftId' => null],
+                    ['drafts.provisional' => $this->provisionalDrafts],
+                ]);
+            }
+
+
             if ($this->savedDraftsOnly) {
                 $this->subQuery->andWhere([
                     'or',
                     ['elements.draftId' => null],
-                    ['not', ['drafts.sourceId' => null]],
+                    ['not', ['elements.canonicalId' => null]],
                     ['drafts.saved' => true],
                 ]);
             }
@@ -2594,7 +2651,6 @@ class ElementQuery extends Query implements ElementQueryInterface
                 ->innerJoin(['revisions' => Table::REVISIONS], '[[revisions.id]] = [[elements.revisionId]]')
                 ->addSelect([
                     'elements.revisionId',
-                    'revisions.sourceId as revisionSourceId',
                     'revisions.creatorId as revisionCreatorId',
                     'revisions.num as revisionNum',
                     'revisions.notes as revisionNotes',
@@ -2605,7 +2661,7 @@ class ElementQuery extends Query implements ElementQueryInterface
             }
 
             if ($this->revisionOf) {
-                $this->subQuery->andWhere(['revisions.sourceId' => $this->revisionOf]);
+                $this->subQuery->andWhere(['elements.canonicalId' => $this->revisionOf]);
             }
 
             if ($this->revisionCreator) {
@@ -2763,8 +2819,9 @@ class ElementQuery extends Query implements ElementQueryInterface
         if (is_array($this->customFields)) {
             // Add the field column prefixes
             foreach ($this->customFields as $field) {
-                if ($field::hasContentColumn()) {
-                    $orderColumnMap[$field->handle] = 'content.' . $this->_getFieldContentColumnName($field);
+                if (($column = $this->_fieldColumn($field)) !== null) {
+                    $firstCol = is_string($column) ? $column : reset($column);
+                    $orderColumnMap[$field->handle] = "content.$firstCol";
                 }
             }
         }
@@ -2834,6 +2891,12 @@ class ElementQuery extends Query implements ElementQueryInterface
                 'elements_sites.uri' => 'elements_sites.uri',
                 'enabledForSite' => 'elements_sites.enabled',
             ]);
+
+            // todo: remove this condition after the next breakpoint
+            if (Craft::$app->getDb()->columnExists(Table::ELEMENTS, 'canonicalId')) {
+                $select['elements.canonicalId'] = 'elements.canonicalId';
+                $select['elements.dateLastMerged'] = 'elements.dateLastMerged';
+            }
 
             // If the query includes soft-deleted elements, include the date deleted
             if ($this->trashed !== false) {
@@ -2929,14 +2992,28 @@ class ElementQuery extends Query implements ElementQueryInterface
     }
 
     /**
-     * Returns a field’s corresponding content column name.
+     * Returns a field’s content column name(s).
      *
      * @param FieldInterface $field
-     * @return string
+     * @return string|string[]|null
      */
-    private function _getFieldContentColumnName(FieldInterface $field): string
+    private function _fieldColumn(FieldInterface $field)
     {
-        return ($field->columnPrefix ?: 'field_') . $field->handle;
+        if (!$field::hasContentColumn()) {
+            return null;
+        }
+
+        $type = $field->getContentColumnType();
+
+        if (is_array($type)) {
+            $columns = [];
+            foreach (array_keys($type) as $i => $key) {
+                $columns[$key] = ElementHelper::fieldColumnFromField($field, $i !== 0 ? $key : null);
+            }
+            return $columns;
+        }
+
+        return ElementHelper::fieldColumnFromField($field);
     }
 
     /**

@@ -22,7 +22,7 @@ Craft.StructureDrag = Garnish.Drag.extend({
 
         this.base($items, {
             handle: '.element:first, .move:first',
-            helper: $.proxy(this, 'getHelper')
+            helper: this.getHelper.bind(this)
         });
     },
 
@@ -52,9 +52,9 @@ Craft.StructureDrag = Garnish.Drag.extend({
         this.draggeeHeight = this.$draggee.height();
         this.$draggee.velocity({
             height: 0
-        }, 'fast', $.proxy(function() {
+        }, 'fast', () => {
             this.$draggee.addClass('hidden');
-        }, this));
+        });
         this.base();
 
         this.addListener(Garnish.$doc, 'keydown', function(ev) {
@@ -334,9 +334,9 @@ Craft.StructureDrag = Garnish.Drag.extend({
         // Animate things back into place
         this.$draggee.velocity('stop').removeClass('hidden').velocity({
             height: this.draggeeHeight
-        }, 'fast', $.proxy(function() {
+        }, 'fast', () => {
             this.$draggee.css('height', 'auto');
-        }, this));
+        });
 
         this.returnHelpersToDraggees();
 

@@ -113,11 +113,11 @@
         },
 
         mounted() {
-            this.$root.$on('craftIdUpdated', function() {
+            this.$root.$on('craftIdUpdated', () => {
                 if (this.craftId) {
                     this.$root.openModal('payment')
                 }
-            }.bind(this))
+            });
 
             this.guestEmail = this.cart.email
         }

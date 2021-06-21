@@ -21,6 +21,9 @@ use craft\elements\User;
 use craft\errors\InvalidFieldException;
 use craft\events\DefineAttributeKeywordsEvent;
 use craft\events\DefineEagerLoadingMapEvent;
+use craft\events\DefineHtmlEvent;
+use craft\events\DefineMetadataEvent;
+use craft\events\DefineValueEvent;
 use craft\events\ElementStructureEvent;
 use craft\events\ModelEvent;
 use craft\events\RegisterElementActionsEvent;
@@ -38,12 +41,14 @@ use craft\events\SetElementRouteEvent;
 use craft\events\SetElementTableAttributeHtmlEvent;
 use craft\fieldlayoutelements\BaseField;
 use craft\helpers\ArrayHelper;
+use craft\helpers\Cp;
 use craft\helpers\Db;
 use craft\helpers\ElementHelper;
 use craft\helpers\Html;
 use craft\helpers\StringHelper;
 use craft\helpers\Template;
 use craft\helpers\UrlHelper;
+use craft\i18n\Formatter;
 use craft\i18n\Locale;
 use craft\models\FieldLayout;
 use craft\models\Site;
@@ -56,7 +61,10 @@ use craft\web\UploadedFile;
 use DateTime;
 use Twig\Markup;
 use yii\base\Event;
+use yii\base\InvalidCallException;
 use yii\base\InvalidConfigException;
+use yii\base\NotSupportedException;
+use yii\base\UnknownPropertyException;
 use yii\db\ExpressionInterface;
 use yii\validators\NumberValidator;
 use yii\validators\Validator;
@@ -64,6 +72,10 @@ use yii\validators\Validator;
 /**
  * Element is the base class for classes representing elements in terms of objects.
  *
+ * @property int|null $canonicalId The element’s canonical ID
+ * @property-read string $canonicalUid The element’s canonical UID
+ * @property-read $isCanonical Whether this is the canonical element
+ * @property-read $isDerivative Whether this is a derivative element, such as a draft or revision
  * @property ElementQueryInterface $ancestors The element’s ancestors
  * @property ElementQueryInterface $children The element’s children
  * @property string $contentTable The name of the table this element’s content is stored in
@@ -128,6 +140,7 @@ abstract class Element extends Component implements ElementInterface
 
     const ATTR_STATUS_MODIFIED = 'modified';
     const ATTR_STATUS_OUTDATED = 'outdated';
+    /** @deprecated in 3.7.0 */
     const ATTR_STATUS_CONFLICTED = 'conflicted';
 
     // Events
@@ -236,6 +249,41 @@ abstract class Element extends Component implements ElementInterface
      * @event RegisterElementHtmlAttributesEvent The event that is triggered when registering the HTML attributes that should be included in the element’s DOM representation in the control panel.
      */
     const EVENT_REGISTER_HTML_ATTRIBUTES = 'registerHtmlAttributes';
+
+    /**
+     * @event DefineHtmlEvent The event that is triggered when defining the HTML for the element’s editor slideout sidebar.
+     * @see getSidebarHtml()
+     * @since 3.7.0
+     */
+    const EVENT_DEFINE_SIDEBAR_HTML = 'defineSidebarHtml';
+
+    /**
+     * @event DefineHtmlEvent The event that is triggered when defining the HTML for meta fields within the element’s editor slideout sidebar.
+     * @see metaFieldsHtml()
+     * @since 3.7.0
+     */
+    const EVENT_DEFINE_META_FIELDS_HTML = 'defineMetaFieldsHtml';
+
+    /**
+     * @event DefineMetadataEvent The event that is triggered when defining the element’s metadata info.
+     * @see getMetadata()
+     * @since 3.7.0
+     */
+    const EVENT_DEFINE_METADATA = 'defineMetadata';
+
+    /**
+     * @event DefineValueEvent The event that is triggered when determining whether the element should be editable by the current user.
+     * @see getIsEditable()
+     * @since 3.7.0
+     */
+    const EVENT_DEFINE_IS_EDITABLE = 'defineIsEditable';
+
+    /**
+     * @event DefineValueEvent The event that is triggered when determining whether the element should be deletable by the current user.
+     * @see getIsDeletable()
+     * @since 3.7.0
+     */
+    const EVENT_DEFINE_IS_DELETABLE = 'defineIsDeletable';
 
     /**
      * @event SetElementRouteEvent The event that is triggered when defining the route that should be used when this element’s URL is requested
@@ -877,6 +925,8 @@ abstract class Element extends Component implements ElementInterface
                 return self::_mapCurrentRevisions($sourceElements);
             case 'drafts':
                 return self::_mapDrafts($sourceElements);
+            case 'revisions':
+                return self::_mapRevisions($sourceElements);
             case 'draftCreator':
                 return self::_mapDraftCreators($sourceElements);
             case 'revisionCreator':
@@ -1155,7 +1205,7 @@ abstract class Element extends Component implements ElementInterface
     }
 
     /**
-     * Returns an eager-loading map for the source elements’ current revisions.
+     * Returns an eager-loading map for the source elements’ current drafts.
      *
      * @param ElementInterface[] $sourceElements An array of the source elements
      * @return array The eager-loading element ID mappings
@@ -1179,6 +1229,34 @@ abstract class Element extends Component implements ElementInterface
             'elementType' => static::class,
             'map' => $map,
             'criteria' => ['drafts' => true],
+        ];
+    }
+
+    /**
+     * Returns an eager-loading map for the source elements’ current revisions.
+     *
+     * @param ElementInterface[] $sourceElements An array of the source elements
+     * @return array The eager-loading element ID mappings
+     */
+    private static function _mapRevisions(array $sourceElements): array
+    {
+        // Get the source element IDs
+        $sourceElementIds = ArrayHelper::getColumn($sourceElements, 'id');
+
+        $map = (new Query())
+            ->select([
+                'source' => 'r.sourceId',
+                'target' => 'e.id',
+            ])
+            ->from(['r' => Table::REVISIONS])
+            ->innerJoin(['e' => Table::ELEMENTS], '[[e.revisionId]] = [[r.id]]')
+            ->where(['r.sourceId' => $sourceElementIds])
+            ->all();
+
+        return [
+            'elementType' => static::class,
+            'map' => $map,
+            'criteria' => ['revisions' => true],
         ];
     }
 
@@ -1356,6 +1434,45 @@ abstract class Element extends Component implements ElementInterface
      * @see setRevisionNotes()
      */
     protected $revisionNotes;
+
+    /**
+     * @var int|null
+     * @see getCanonicalId()
+     * @see setCanonicalId()
+     * @see getIsCanonical()
+     * @see getIsDerivative()
+     */
+    private $_canonicalId;
+
+    /**
+     * @var static|null
+     * @see getCanonical()
+     */
+    private $_canonical;
+
+    /**
+     * @var array|null
+     * @see _outdatedAttributes()
+     */
+    private $_outdatedAttributes;
+
+    /**
+     * @var array|null
+     * @see _modifiedAttributes()
+     */
+    private $_modifiedAttributes;
+
+    /**
+     * @var array|null
+     * @see _outdatedFields()
+     */
+    private $_outdatedFields;
+
+    /**
+     * @var array|null
+     * @see _modifiedFields()
+     */
+    private $_modifiedFields;
 
     /**
      * @var bool
@@ -1544,7 +1661,16 @@ abstract class Element extends Component implements ElementInterface
             return;
         }
 
-        parent::__set($name, $value);
+        try {
+            parent::__set($name, $value);
+        } catch (InvalidCallException | UnknownPropertyException $e) {
+            // Is this is a field?
+            if ($this->fieldByHandle($name) !== null) {
+                $this->setFieldValue($name, $value);
+            } else {
+                throw $e;
+            }
+        }
     }
 
     /**
@@ -1627,9 +1753,12 @@ abstract class Element extends Component implements ElementInterface
         ArrayHelper::removeValue($names, 'newSiteIds');
         ArrayHelper::removeValue($names, 'resaving');
         ArrayHelper::removeValue($names, 'duplicateOf');
+        ArrayHelper::removeValue($names, 'mergingCanonicalChanges');
+        ArrayHelper::removeValue($names, 'updatingFromDerivative');
         ArrayHelper::removeValue($names, 'previewing');
         ArrayHelper::removeValue($names, 'hardDelete');
 
+        $names[] = 'canonicalId';
         $names[] = 'ref';
         $names[] = 'status';
         $names[] = 'structureId';
@@ -1773,6 +1902,16 @@ abstract class Element extends Component implements ElementInterface
     }
 
     /**
+     * @inheritdoc
+     */
+    public function datetimeAttributes(): array
+    {
+        $attributes = parent::datetimeAttributes();
+        $attributes[] = 'dateLastMerged';
+        return $attributes;
+    }
+
+    /**
      * Normalizes a field’s validation rule.
      *
      * @param string $attribute
@@ -1876,13 +2015,33 @@ abstract class Element extends Component implements ElementInterface
     {
         $field = $this->fieldByHandle($attribute);
         $columnType = $field->getContentColumnType();
+        $value = $field->serializeValue($this->getFieldValue($attribute), $this);
+
+        if (is_array($columnType)) {
+            foreach ($columnType as $key => $type) {
+                $this->_validateCustomFieldContentSizeInternal($attribute, $field, $type, $value[$key] ?? null);
+            }
+        } else {
+            $this->_validateCustomFieldContentSizeInternal($attribute, $field, $columnType, $value);
+        }
+    }
+
+    /**
+     * @param string $attribute
+     * @param FieldInterface $field
+     * @param string $columnType
+     * @param mixed $value
+     * @return void
+     */
+    private function _validateCustomFieldContentSizeInternal(string $attribute, FieldInterface $field, string $columnType, $value): void
+    {
         $simpleColumnType = Db::getSimplifiedColumnType($columnType);
 
         if (!in_array($simpleColumnType, [Db::SIMPLE_TYPE_NUMERIC, Db::SIMPLE_TYPE_TEXTUAL], true)) {
             return;
         }
 
-        $value = Db::prepareValueForDb($field->serializeValue($this->getFieldValue($attribute), $this));
+        $value = Db::prepareValueForDb($value);
 
         // Ignore empty values
         if ($value === null || $value === '') {
@@ -1940,6 +2099,14 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @inheritdoc
      */
+    public function getIsProvisionalDraft(): bool
+    {
+        return $this->isProvisionalDraft;
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function getIsRevision(): bool
     {
         return !empty($this->revisionId);
@@ -1948,24 +2115,103 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @inheritdoc
      */
-    public function getSourceId()
+    public function getIsCanonical(): bool
     {
-        /** @var DraftBehavior|RevisionBehavior|null $behavior */
-        $behavior = $this->getBehavior('draft') ?: $this->getBehavior('revision');
-        return $behavior->sourceId ?? $this->id;
+        return $this->_canonicalId === null;
     }
 
     /**
      * @inheritdoc
      */
+    public function getIsDerivative(): bool
+    {
+        return !$this->getIsCanonical();
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getCanonical(bool $anySite = false): ElementInterface
+    {
+        if ($this->getIsCanonical()) {
+            return $this;
+        }
+
+        if ($this->_canonical === null) {
+            $this->_canonical = static::find()
+                    ->id($this->_canonicalId)
+                    ->siteId($anySite ? '*' : $this->siteId)
+                    ->preferSites([$this->siteId])
+                    ->structureId($this->structureId)
+                    ->unique()
+                    ->anyStatus()
+                    ->ignorePlaceholders()
+                    ->one() ?? false;
+        }
+
+        return $this->_canonical ?: $this;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function setCanonical(ElementInterface $element): void
+    {
+        if ($this->getIsCanonical()) {
+            throw new NotSupportedException('setCanonical() can only be called on a derivative element.');
+        }
+
+        $this->_canonical = $element;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getCanonicalId(): ?int
+    {
+        return $this->getSourceId();
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function setCanonicalId(?int $canonicalId): void
+    {
+        if ($canonicalId != $this->id) {
+            $this->_canonicalId = $canonicalId;
+        } else {
+            $this->_canonicalId = null;
+        }
+
+        $this->_canonical = null;
+    }
+
+    /**
+     * Returns the element’s canonical ID.
+     *
+     * @return int|null
+     * @since 3.2.0
+     * @deprecated in 3.7.0. Use [[getCanonicalId()]] instead.
+     */
+    public function getSourceId()
+    {
+        return $this->_canonicalId ?? $this->id;
+    }
+
+    /**
+     * Returns the element’s canonical UID.
+     *
+     * @return string
+     * @since 3.2.0
+     * @deprecated in 3.7.0. Use [[getCanonical()]] instead.
+     */
     public function getSourceUid(): string
     {
-        $sourceId = $this->getSourceId();
-        if ($sourceId === $this->id) {
+        if ($this->getIsCanonical()) {
             return $this->uid;
         }
         return static::find()
-            ->id($sourceId)
+            ->id($this->_canonicalId)
             ->siteId($this->siteId)
             ->anyStatus()
             ->select(['elements.uid'])
@@ -1989,11 +2235,31 @@ abstract class Element extends Component implements ElementInterface
      */
     public function getIsUnsavedDraft(): bool
     {
-        if (!$this->getIsDraft()) {
-            return false;
+        return $this->getIsDraft() && $this->getIsCanonical();
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function mergeCanonicalChanges(): void
+    {
+        if (($canonical = $this->getCanonical()) === null) {
+            return;
         }
-        $sourceId = $this->getSourceId();
-        return !$sourceId || $sourceId == $this->id;
+
+        // Update any attributes that were modified upstream
+        foreach ($this->getOutdatedAttributes() as $attribute) {
+            if (!$this->isAttributeModified($attribute)) {
+                $this->$attribute = $canonical->$attribute;
+            }
+        }
+
+        foreach ($this->getOutdatedFields() as $fieldHandle) {
+            if (!$this->isFieldModified($fieldHandle)) {
+                $field = $this->fieldByHandle($fieldHandle);
+                $field->copyValue($canonical, $this);
+            }
+        }
     }
 
     /**
@@ -2171,6 +2437,21 @@ abstract class Element extends Component implements ElementInterface
      */
     public function getIsEditable(): bool
     {
+        $event = new DefineValueEvent([
+            'value' => $this->isEditable(),
+        ]);
+        $this->trigger(self::EVENT_DEFINE_IS_EDITABLE, $event);
+        return $event->value;
+    }
+
+    /**
+     * Returns whether the current user can edit the element.
+     *
+     * @return bool
+     * @since 3.7.0
+     */
+    protected function isEditable(): bool
+    {
         return false;
     }
 
@@ -2178,6 +2459,21 @@ abstract class Element extends Component implements ElementInterface
      * @inheritdoc
      */
     public function getIsDeletable(): bool
+    {
+        $event = new DefineValueEvent([
+            'value' => $this->isDeletable(),
+        ]);
+        $this->trigger(self::EVENT_DEFINE_IS_DELETABLE, $event);
+        return $event->value;
+    }
+
+    /**
+     * Returns whether the current user can delete the element.
+     *
+     * @return bool
+     * @since 3.5.12
+     */
+    protected function isDeletable(): bool
     {
         // todo: change to false in 4.0
         return true;
@@ -2187,6 +2483,27 @@ abstract class Element extends Component implements ElementInterface
      * @inheritdoc
      */
     public function getCpEditUrl()
+    {
+        $cpEditUrl = $this->cpEditUrl();
+
+        if ($cpEditUrl !== null) {
+            if ($this->getIsDraft() && !$this->getIsProvisionalDraft()) {
+                $cpEditUrl = UrlHelper::urlWithParams($cpEditUrl, ['draftId' => $this->draftId]);
+            } else if ($this->getIsRevision()) {
+                $cpEditUrl = UrlHelper::urlWithParams($cpEditUrl, ['revisionId' => $this->revisionId]);
+            }
+        }
+
+        return $cpEditUrl;
+    }
+
+    /**
+     * Returns the element’s edit URL in the control panel.
+     *
+     * @return string|null
+     * @since 3.7.0
+     */
+    protected function cpEditUrl(): ?string
     {
         return null;
     }
@@ -2347,6 +2664,7 @@ abstract class Element extends Component implements ElementInterface
             ->structureId($this->structureId)
             ->siteId(['not', $this->siteId])
             ->drafts($this->getIsDraft())
+            ->provisionalDrafts($this->getIsProvisionalDraft())
             ->revisions($this->getIsRevision());
     }
 
@@ -2423,6 +2741,18 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @inheritdoc
      */
+    public function getParentUri(): ?string
+    {
+        $parent = $this->getParent();
+        if ($parent && $parent->uri !== self::HOMEPAGE_URI) {
+            return $parent->uri;
+        }
+        return null;
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function setParent(ElementInterface $parent = null)
     {
         $this->_parent = $parent;
@@ -2473,7 +2803,7 @@ abstract class Element extends Component implements ElementInterface
 
         return static::find()
             ->structureId($this->structureId)
-            ->descendantOf(ElementHelper::sourceElement($this))
+            ->descendantOf($this->getCanonical())
             ->siteId($this->siteId)
             ->descendantDist($dist);
     }
@@ -2575,8 +2905,8 @@ abstract class Element extends Component implements ElementInterface
      */
     public function isAncestorOf(ElementInterface $element): bool
     {
-        $source = ElementHelper::sourceElement($this);
-        return ($source->root == $element->root && $source->lft < $element->lft && $source->rgt > $element->rgt);
+        $canonical = $this->getCanonical();
+        return ($canonical->root == $element->root && $canonical->lft < $element->lft && $canonical->rgt > $element->rgt);
     }
 
     /**
@@ -2592,8 +2922,8 @@ abstract class Element extends Component implements ElementInterface
      */
     public function isParentOf(ElementInterface $element): bool
     {
-        $source = ElementHelper::sourceElement($this);
-        return ($source->root == $element->root && $source->level == $element->level - 1 && $source->isAncestorOf($element));
+        $canonical = $this->getCanonical();
+        return ($canonical->root == $element->root && $canonical->level == $element->level - 1 && $canonical->isAncestorOf($element));
     }
 
     /**
@@ -2653,32 +2983,106 @@ abstract class Element extends Component implements ElementInterface
      */
     function getAttributeStatus(string $attribute)
     {
-        if (!$this->getIsDraft()) {
-            return null;
+        if ($this->isAttributeModified($attribute)) {
+            return [
+                self::ATTR_STATUS_MODIFIED,
+                Craft::t('app', 'This field has been modified.'),
+            ];
         }
 
-        /** @var DraftBehavior $behavior */
-        $behavior = $this->getBehavior('draft');
-        $modified = $behavior->isAttributeModified($attribute);
-        $outdated = $behavior->isAttributeOutdated($attribute);
-        if ($modified && !$outdated) {
-            return [self::ATTR_STATUS_MODIFIED, Craft::t('app', 'Modified in draft')];
-        }
-        if ($outdated && !$modified) {
+        if ($this->isAttributeOutdated($attribute)) {
             return [
-                self::ATTR_STATUS_OUTDATED, Craft::t('app', 'Modified in source {type}', [
-                    'type' => static::lowerDisplayName(),
-                ]),
+                self::ATTR_STATUS_OUTDATED,
+                Craft::t('app', 'This field was updated in the Current revision.'),
             ];
         }
-        if ($outdated && $modified) {
-            return [
-                self::ATTR_STATUS_CONFLICTED, Craft::t('app', 'Modified in draft and source {type}', [
-                    'type' => static::lowerDisplayName(),
-                ]),
-            ];
-        }
+
         return null;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getOutdatedAttributes(): array
+    {
+        return array_keys($this->_outdatedAttributes());
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function isAttributeOutdated(string $name): bool
+    {
+        return isset($this->_outdatedAttributes()[$name]);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getModifiedAttributes(): array
+    {
+        return array_keys($this->_modifiedAttributes());
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function isAttributeModified(string $name): bool
+    {
+        return isset($this->_modifiedAttributes()[$name]);
+    }
+
+    /**
+     * @return array The attribute names that have been modified for this element
+     */
+    private function _outdatedAttributes(): array
+    {
+        if (!static::trackChanges() || $this->getIsCanonical()) {
+            return [];
+        }
+
+        if ($this->_outdatedAttributes === null) {
+            $query = (new Query())
+                ->select(['attribute'])
+                ->from([Table::CHANGEDATTRIBUTES])
+                ->where([
+                    'elementId' => $this->getCanonicalId(),
+                    'siteId' => $this->siteId,
+                ]);
+
+            if ($this->dateLastMerged) {
+                $query->andWhere(['>=', 'dateUpdated', Db::prepareDateForDb($this->dateLastMerged)]);
+            } else {
+                $query->andWhere(['>=', 'dateUpdated', Db::prepareDateForDb($this->dateCreated)]);
+            }
+
+            $this->_outdatedAttributes = array_flip($query->column());
+        }
+
+        return $this->_outdatedAttributes;
+    }
+
+    /**
+     * @return array The attribute names that have been modified for this element
+     */
+    private function _modifiedAttributes(): array
+    {
+        if (!static::trackChanges() || $this->getIsCanonical()) {
+            return [];
+        }
+
+        if ($this->_modifiedAttributes === null) {
+            $this->_modifiedAttributes = array_flip((new Query())
+                ->select(['attribute'])
+                ->from([Table::CHANGEDATTRIBUTES])
+                ->where([
+                    'elementId' => $this->id,
+                    'siteId' => $this->siteId,
+                ])
+                ->column());
+        }
+
+        return $this->_modifiedAttributes;
     }
 
     /**
@@ -2808,36 +3212,106 @@ abstract class Element extends Component implements ElementInterface
     }
 
     /**
-     * @inheritdoc
+     * Returns the status of a given field.
+     *
+     * @param string $fieldHandle
+     * @return array|null
+     * @since 3.4.0
+     * @deprecated in 3.7.0. Use [[FieldInterface::getStatus()]] instead.
      */
     function getFieldStatus(string $fieldHandle)
     {
-        if (!$this->getIsDraft()) {
-            return null;
-        }
-
-        /** @var DraftBehavior $behavior */
-        $behavior = $this->getBehavior('draft');
-        $modified = $behavior->isFieldModified($fieldHandle);
-        $outdated = $behavior->isFieldOutdated($fieldHandle);
-        if ($modified && !$outdated) {
-            return [self::ATTR_STATUS_MODIFIED, Craft::t('app', 'Modified in draft')];
-        }
-        if ($outdated && !$modified) {
-            return [
-                self::ATTR_STATUS_OUTDATED, Craft::t('app', 'Modified in source {type}', [
-                    'type' => static::lowerDisplayName(),
-                ]),
-            ];
-        }
-        if ($outdated && $modified) {
-            return [
-                self::ATTR_STATUS_CONFLICTED, Craft::t('app', 'Modified in draft and source {type}', [
-                    'type' => static::lowerDisplayName(),
-                ]),
-            ];
+        if (($field = $this->fieldByHandle($fieldHandle)) !== null) {
+            return $field->getStatus($this);
         }
         return null;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getOutdatedFields(): array
+    {
+        return array_keys($this->_outdatedFields());
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function isFieldOutdated(string $fieldHandle): bool
+    {
+        return isset($this->_outdatedFields()[$fieldHandle]);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getModifiedFields(): array
+    {
+        return array_keys($this->_modifiedFields());
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function isFieldModified(string $fieldHandle): bool
+    {
+        return isset($this->_modifiedFields()[$fieldHandle]);
+    }
+
+    /**
+     * @return array The field handles that have been modified for this element
+     */
+    private function _outdatedFields(): array
+    {
+        if (!static::trackChanges() || $this->getIsCanonical()) {
+            return [];
+        }
+
+        if ($this->_outdatedFields === null) {
+            $query = (new Query())
+                ->select(['f.handle'])
+                ->from(['f' => Table::FIELDS])
+                ->innerJoin(['cf' => Table::CHANGEDFIELDS], '[[cf.fieldId]] = [[f.id]]')
+                ->where([
+                    'cf.elementId' => $this->getCanonicalId(),
+                    'cf.siteId' => $this->siteId,
+                ]);
+
+            if ($this->dateLastMerged) {
+                $query->andWhere(['>=', 'cf.dateUpdated', Db::prepareDateForDb($this->dateLastMerged)]);
+            } else {
+                $query->andWhere(['>=', 'cf.dateUpdated', Db::prepareDateForDb($this->dateCreated)]);
+            }
+
+            $this->_outdatedFields = array_flip($query->column());
+        }
+
+        return $this->_outdatedFields;
+    }
+
+    /**
+     * @return array The field handles that have been modified for this element
+     */
+    private function _modifiedFields(): array
+    {
+        if (!static::trackChanges() || $this->getIsCanonical()) {
+            return [];
+        }
+
+        if ($this->_modifiedFields === null) {
+            $this->_modifiedFields = array_flip((new Query())
+                ->select(['f.handle'])
+                ->from(['f' => Table::FIELDS])
+                ->innerJoin(['cf' => Table::CHANGEDFIELDS], '[[cf.fieldId]] = [[f.id]]')
+                ->where([
+                    'cf.elementId' => $this->id,
+                    'cf.siteId' => $this->siteId,
+                ])
+                ->column());
+        }
+
+        return $this->_modifiedFields;
     }
 
     /**
@@ -3070,10 +3544,10 @@ abstract class Element extends Component implements ElementInterface
         }
 
         if ($this->_currentRevision === null) {
-            $source = ElementHelper::sourceElement($this, true);
+            $canonical = $this->getCanonical(true);
             $this->_currentRevision = static::find()
-                ->revisionOf($source->id)
-                ->dateCreated($source->dateUpdated)
+                ->revisionOf($canonical->id)
+                ->dateCreated($canonical->dateUpdated)
                 ->anyStatus()
                 ->orderBy(['num' => SORT_DESC])
                 ->one() ?: false;
@@ -3277,24 +3751,158 @@ abstract class Element extends Component implements ElementInterface
      */
     public function getEditorHtml(): string
     {
-        $fieldLayout = $this->getFieldLayout();
-        if (!$fieldLayout) {
-            return '';
+        if (!$this->hasFieldLayout()) {
+            // No field layout, so show the meta fields here instead
+            return $this->metaFieldsHtml();
         }
 
-        $html = '';
+        // Return a placeholder for displaying the custom fields. If this is *all* that’s returned,
+        // we can safely use the full field layout form render. Otherwise there may be other
+        // fields intermingled by the child method, so only the custom fields should be shown.
+        return '<!-- FIELD LAYOUT -->';
+    }
 
-        foreach ($fieldLayout->getTabs() as $tab) {
-            foreach ($tab->elements as $element) {
-                if ($element instanceof BaseField) {
-                    $html .= $element->formHtml($this);
-                }
+    /**
+     * @inheritdoc
+     */
+    public function getSidebarHtml(): string
+    {
+        $components = [];
+
+        if ($this->hasFieldLayout()) {
+            // The main editor body is reserved for the field layout
+            $metaFieldsHtml = $this->metaFieldsHtml();
+            if ($metaFieldsHtml !== '') {
+                $components[] = Html::tag('div', $metaFieldsHtml, ['class' => 'meta']);
             }
         }
 
-        $html .= Html::hiddenInput('fieldLayoutId', $fieldLayout->id);
+        if ($this->id) {
+            $components[] = Cp::metadataHtml($this->getMetadata());
+        }
 
-        return $html;
+        // Fire a defineSidebarHtml event
+        $event = new DefineHtmlEvent([
+            'html' => implode("\n", $components),
+        ]);
+        $this->trigger(self::EVENT_DEFINE_SIDEBAR_HTML, $event);
+        return $event->html;
+    }
+
+    /**
+     * Returns the HTML for any meta fields that should be shown within the sidebar of element editor
+     * slideouts. Or if the element doesn’t have a field layout, they’ll be shown in the main body of the slideout.
+     *
+     * @return string
+     * @since 3.7.0
+     */
+    protected function metaFieldsHtml(): string
+    {
+        // Fire a defineMetaFieldsHtml event
+        $event = new DefineHtmlEvent();
+        $this->trigger(self::EVENT_DEFINE_META_FIELDS_HTML, $event);
+        return $event->html;
+    }
+
+    /**
+     * Returns the HTML for the element’s Slug field.
+     *
+     * @return string
+     * @since 3.7.0
+     */
+    protected function slugFieldHtml(): string
+    {
+        return Cp::textFieldHtml([
+            'label' => Craft::t('app', 'Slug'),
+            'siteId' => $this->siteId,
+            'translationDescription' => Craft::t('app', 'This field is translated for each site.'),
+            'id' => 'slug',
+            'name' => 'slug',
+            'autocorrect' => false,
+            'autocapitalize' => false,
+            'value' => $this->slug !== null && !ElementHelper::isTempSlug($this->slug) ? $this->slug : '',
+            'errors' => array_merge($this->getErrors('slug'), $this->getErrors('uri')),
+        ]);
+    }
+
+    /**
+     * Returns whether the element has a field layout with at least one tab.
+     *
+     * @return bool Returns whether the element has a field layout with at least one tab.
+     * @since 3.7.0
+     */
+    protected function hasFieldLayout(): bool
+    {
+        $fieldLayout = $this->getFieldLayout();
+        return $fieldLayout && !empty($fieldLayout->getTabs());
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getMetadata(): array
+    {
+        $metadata = $this->metadata();
+
+        // Fire a defineMetadata event
+        $event = new DefineMetadataEvent([
+            'metadata' => $metadata,
+        ]);
+        $this->trigger(self::EVENT_DEFINE_METADATA, $event);
+
+        $formatter = Craft::$app->getFormatter();
+
+        return array_merge([
+            Craft::t('app', 'Status') => function() {
+                if (!static::hasStatuses()) {
+                    return false;
+                }
+                if ($this->getIsUnpublishedDraft()) {
+                    $icon = Html::tag('span', '', ['data' => ['icon' => 'draft']]);
+                    $color = 'white';
+                    $label = Craft::t('app', 'Draft');
+                } else {
+                    $status = $this->getStatus();
+                    $statusDef = static::statuses()[$status] ?? null;
+                    Html::tag('span', '', ['class' => ['status', $statusDef['color'] ?? $status]]);
+                    $label = $statusDef['label'] ?? $statusDef ?? ucfirst($status);
+                }
+                return $icon . Html::tag('span', $label);
+            },
+        ], $event->metadata, [
+            Craft::t('app', 'Created at') => $this->dateCreated
+                ? $formatter->asDatetime($this->dateCreated, Formatter::FORMAT_WIDTH_SHORT)
+                : false,
+            Craft::t('app', 'Updated at') => $this->dateUpdated
+                ? $formatter->asDatetime($this->dateUpdated, Formatter::FORMAT_WIDTH_SHORT)
+                : false,
+            Craft::t('app', 'Notes') => function() {
+                if ($this->getIsRevision()) {
+                    $revision = $this;
+                } else if ($this->getIsCanonical() || $this->getIsProvisionalDraft()) {
+                    $element = $this->getCanonical(true);
+                    $revision = $element->getCurrentRevision();
+                }
+                if (!isset($revision)) {
+                    return false;
+                }
+                /** @var RevisionBehavior $behavior */
+                $behavior = $revision->getBehavior('revision');
+                return $behavior->revisionNotes ?: false;
+            },
+        ]);
+    }
+
+    /**
+     * Returns element metadata that can be shown on its edit page or within element editor slideouts.
+     *
+     * @return array The data, with keys representing the labels. The values can either be strings or callables.
+     * If a value is `false`, it will be omitted.
+     * @since 3.7.0
+     */
+    protected function metadata(): array
+    {
+        return [];
     }
 
     /**
@@ -3612,7 +4220,7 @@ abstract class Element extends Component implements ElementInterface
 
         /** @var ElementQuery $query */
         $elementIds = $query->ids();
-        $key = array_search($this->getSourceId(), $elementIds, false);
+        $key = array_search($this->getCanonicalId(), $elementIds, false);
 
         if ($key === false || !isset($elementIds[$key + $dir])) {
             return null;

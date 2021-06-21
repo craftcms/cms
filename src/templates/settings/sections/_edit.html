@@ -208,6 +208,18 @@
             size: 5,
             errors: section.getErrors('maxLevels')
         }) }}
+
+        {{ forms.selectField({
+            label: 'Default {type} Placement'|t('app', {type: 'Entry'|t('app')}),
+            instructions: 'Where new {type} should be placed by default in the structure.'|t('app', {type: 'entries'|t('app')}),
+            id: 'default-placement',
+            name: 'defaultPlacement',
+            options: [
+                {label: 'Before other {type}'|t('app', {type: 'entries'|t('app')}), value: 'beginning'},
+                {label: 'After other {type}'|t('app', {type: 'entries'|t('app')}), value: 'end'},
+            ],
+            value: section.defaultPlacement,
+        }) }}
     </div>
 
     {% if CraftEdition == CraftPro %}
@@ -229,7 +241,7 @@
                 },
                 refresh: {
                     type: 'checkbox',
-                    heading: 'Refresh'|t('app'),
+                    heading: 'Auto-refresh'|t('app'),
                     info: 'Whether preview frames should be automatically refreshed when content changes.'|t('app'),
                     thin: true,
                 }

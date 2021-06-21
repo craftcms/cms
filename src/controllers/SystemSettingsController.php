@@ -21,7 +21,6 @@ use craft\mail\transportadapters\TransportAdapterInterface;
 use craft\models\MailSettings;
 use craft\web\assets\generalsettings\GeneralSettingsAsset;
 use craft\web\Controller;
-use DateTime;
 use yii\base\Exception;
 use yii\web\NotFoundHttpException;
 use yii\web\Response;
@@ -54,48 +53,10 @@ class SystemSettingsController extends Controller
      */
     public function actionGeneralSettings(): Response
     {
-        // Assemble the timezone options array (Technique adapted from http://stackoverflow.com/a/7022536/1688568)
-        $timezoneOptions = [];
-
-        $utc = new DateTime();
-        $offsets = [];
-        $timezoneIds = [];
-
-        foreach (\DateTimeZone::listIdentifiers() as $timezoneId) {
-            $timezone = new \DateTimeZone($timezoneId);
-            $transition = $timezone->getTransitions($utc->getTimestamp(), $utc->getTimestamp());
-            $abbr = $transition[0]['abbr'];
-
-            $offset = round($timezone->getOffset($utc) / 60);
-
-            if ($offset) {
-                $hour = floor($offset / 60);
-                $minutes = floor(abs($offset) % 60);
-
-                $format = sprintf('%+d', $hour);
-
-                if ($minutes) {
-                    $format .= ':' . sprintf('%02u', $minutes);
-                }
-            } else {
-                $format = '';
-            }
-
-            $offsets[] = $offset;
-            $timezoneIds[] = $timezoneId;
-            $timezoneOptions[] = [
-                'value' => $timezoneId,
-                'label' => 'UTC' . $format . ($abbr !== 'UTC' ? " ({$abbr})" : '') . ($timezoneId !== 'UTC' ? ' – ' . $timezoneId : ''),
-            ];
-        }
-
-        array_multisort($offsets, $timezoneIds, $timezoneOptions);
-
         $this->getView()->registerAssetBundle(GeneralSettingsAsset::class);
 
         return $this->renderTemplate('settings/general/_index', [
             'system' => Craft::$app->getProjectConfig()->get('system'),
-            'timezoneOptions' => $timezoneOptions,
         ]);
     }
 

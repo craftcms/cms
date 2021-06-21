@@ -38,11 +38,11 @@
         handleFormSubmit: function(event) {
             event.preventDefault();
 
-            this.save($.proxy(this, 'onSave'));
+            this.save(this.onSave.bind(this));
         },
 
         saveAndContinueEditing: function() {
-            this.save($.proxy(this, 'gotoEntry'));
+            this.save(this.gotoEntry.bind(this));
         },
 
         save: function(callback) {
@@ -56,7 +56,7 @@
             var formData = Garnish.getPostData(this.$form),
                 data = $.extend({enabled: 1}, formData, this.params);
 
-            Craft.postActionRequest('entries/save-entry', data, $.proxy(function(response, textStatus) {
+            Craft.postActionRequest('entries/save-entry', data, (response, textStatus) => {
                 this.loading = false;
                 this.$spinner.addClass('hidden');
 
@@ -89,7 +89,7 @@
                         }
                     }
                 }
-            }, this));
+            });
         },
 
         onSave: function(response) {

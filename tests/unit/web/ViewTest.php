@@ -347,6 +347,80 @@ class ViewTest extends TestCase
     /**
      * @return void
      */
+    public function testJsBuffer(): void
+    {
+        $view = Craft::$app->getView();
+
+        $this->assertFalse($view->clearJsBuffer());
+
+        $view->startJsBuffer();
+        $view->registerJs('var foo = true;', View::POS_END);
+        $view->registerJs('var bar = true', View::POS_BEGIN);
+        $this->assertSame("<script type=\"text/javascript\">var bar = true;\nvar foo = true;\n</script>", $view->clearJsBuffer());
+
+        $view->startJsBuffer();
+        $view->registerJs('var foo = true;', View::POS_END);
+        $view->registerJs('var bar = true', View::POS_BEGIN);
+        $this->assertSame("var bar = true;\nvar foo = true;\n", $view->clearJsBuffer(false));
+
+        $view->startJsBuffer();
+        $view->registerJs('var foo = true;', View::POS_END);
+        $view->registerJs('var bar = true', View::POS_BEGIN);
+        $this->assertSame([
+            View::POS_END => "<script type=\"text/javascript\">var foo = true;</script>",
+            View::POS_BEGIN => "<script type=\"text/javascript\">var bar = true;</script>",
+        ], $view->clearJsBuffer(true, false));
+
+        $view->startJsBuffer();
+        $view->registerJs('var foo = true;', View::POS_END, 'foo');
+        $view->registerJs('var bar = true', View::POS_BEGIN, 'bar');
+        $this->assertSame([
+            View::POS_END => [
+                'foo' => 'var foo = true;',
+            ],
+            View::POS_BEGIN => [
+                'bar' => 'var bar = true;',
+            ]
+        ], $view->clearJsBuffer(false, false));
+    }
+
+    /**
+     * @return void
+     */
+    public function testScriptBuffer(): void
+    {
+        $view = Craft::$app->getView();
+
+        $this->assertFalse($view->clearScriptBuffer());
+
+        $view->startScriptBuffer();
+        $view->registerScript('let foo = true', View::POS_END, ['type' => 'module'], 'foo');
+        $this->assertSame([
+            View::POS_END => [
+                'foo' => '<script type="module">let foo = true</script>',
+            ],
+        ], $view->clearScriptBuffer());
+    }
+
+    /**
+     * @return void
+     */
+    public function testCssBuffer(): void
+    {
+        $view = Craft::$app->getView();
+
+        $this->assertFalse($view->clearCssBuffer());
+
+        $view->startCssBuffer();
+        $view->registerCss('#foo { color: red; }', ['type' => 'text/css'], 'foo');
+        $this->assertSame([
+            'foo' => '<style type="text/css">#foo { color: red; }</style>',
+        ], $view->clearCssBuffer());
+    }
+
+    /**
+     * @return void
+     */
     public function testEventTags(): void
     {
         // https://github.com/craftcms/cms/issues/7779
@@ -355,12 +429,10 @@ class ViewTest extends TestCase
 <head>
 </head>
 <body
-    x-init="\$watch('modalOpen', (newValue) => {
-      // do something
-      })"
-    >
-  </body>    Hello World
-  
+  x-data="testing"
+  x-init=" () => { data.match(/<(.*?)>/) ? alert('wat') }"
+>Hello World
+</body>
 </html>
 
 TWIG;

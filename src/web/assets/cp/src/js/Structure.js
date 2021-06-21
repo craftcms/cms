@@ -60,7 +60,7 @@ Craft.Structure = Garnish.Base.extend({
     },
 
     initToggle: function($toggle) {
-        $toggle.on('click', $.proxy(function(ev) {
+        $toggle.on('click', ev => {
             var $li = $(ev.currentTarget).closest('li'),
                 elementId = $li.children('.row').find('.element:first').data('id'),
                 viewStateKey = $.inArray(elementId, this.state.collapsedElementIds);
@@ -82,7 +82,7 @@ Craft.Structure = Garnish.Base.extend({
             if (this.settings.storageKey) {
                 Craft.setLocalStorage(this.settings.storageKey, this.state);
             }
-        }, this));
+        });
     },
 
     initNewChildMenus: function($addBtns) {
@@ -140,13 +140,13 @@ Craft.Structure = Garnish.Base.extend({
             $parentUl = $li.parent();
         }
 
-        $li.css('visibility', 'hidden').velocity({marginBottom: -$li.height()}, 'fast', $.proxy(function() {
+        $li.css('visibility', 'hidden').velocity({marginBottom: -$li.height()}, 'fast', () => {
             $li.remove();
 
             if (typeof $parentUl !== 'undefined') {
                 this._removeUl($parentUl);
             }
-        }, this));
+        });
     },
 
     _removeUl: function($ul) {

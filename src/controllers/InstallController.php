@@ -183,7 +183,8 @@ class InstallController extends Controller
         $this->requirePostRequest();
         $this->requireAcceptsJson();
 
-        $user = new User(['scenario' => User::SCENARIO_REGISTRATION]);
+        $user = new User();
+        $user->setScenario(User::SCENARIO_REGISTRATION);
         $user->email = $this->request->getBodyParam('email');
         $user->username = $this->request->getBodyParam('username', $user->email);
         $user->newPassword = $this->request->getBodyParam('password');

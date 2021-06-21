@@ -53,6 +53,7 @@ use craft\records\Element_SiteSettings as Element_SiteSettingsRecord;
 use craft\records\StructureElement as StructureElementRecord;
 use craft\validators\HandleValidator;
 use craft\validators\SlugValidator;
+use DateTime;
 use yii\base\Behavior;
 use yii\base\Component;
 use yii\base\Exception;
@@ -230,6 +231,18 @@ class Elements extends Component
      * @event \craft\events\ElementActionEvent The event that is triggered after an element action is performed.
      */
     const EVENT_AFTER_PERFORM_ACTION = 'afterPerformAction';
+
+    /**
+     * @event ElementEvent The event that is triggered before canonical element changes are merged into a derivative.
+     * @since 3.7.0
+     */
+    const EVENT_BEFORE_MERGE_CANONICAL_CHANGES = 'beforeMergeCanonical';
+
+    /**
+     * @event ElementEvent The event that is triggered after canonical element changes are merged into a derivative.
+     * @since 3.7.0
+     */
+    const EVENT_AFTER_MERGE_CANONICAL_CHANGES = 'afterMergeCanonical';
 
     /**
      * @var int[] Stores a mapping of source element IDs to their duplicated element IDs.
@@ -527,7 +540,9 @@ class Elements extends Component
 
         // Is this a draft/revision?
         if (!empty($data['draftId'])) {
-            $query->draftId($data['draftId']);
+            $query
+                ->draftId($data['draftId'])
+                ->provisionalDrafts(null);
         } else if (!empty($data['revisionId'])) {
             $query->revisionId($data['revisionId']);
         }
@@ -761,6 +776,149 @@ class Elements extends Component
     }
 
     /**
+     * Merges recent canonical element changes into a given derivative, such as a draft.
+     *
+     * @param ElementInterface $element The derivative element
+     * @return void
+     * @since 3.7.0
+     */
+    public function mergeCanonicalChanges(ElementInterface $element): void
+    {
+        if ($element->getIsCanonical()) {
+            throw new InvalidArgumentException('Only a derivative element can be passed to ' . __METHOD__);
+        }
+
+        if (!$element::trackChanges()) {
+            throw new InvalidArgumentException(get_class($element) . ' elements don’t track their changes');
+        }
+
+        // Make sure the derivative element actually supports its own site ID
+        $supportedSites = ElementHelper::supportedSitesForElement($element);
+        $supportedSiteIds = ArrayHelper::getColumn($supportedSites, 'siteId');
+        if (!in_array($element->siteId, $supportedSiteIds, false)) {
+            throw new Exception('Attempting to merge source changes for a draft in an unsupported site.');
+        }
+
+        // Fire a 'beforeMergeCanonical' event
+        if ($this->hasEventHandlers(self::EVENT_BEFORE_MERGE_CANONICAL_CHANGES)) {
+            $this->trigger(self::EVENT_BEFORE_MERGE_CANONICAL_CHANGES, new ElementEvent([
+                'element' => $element,
+            ]));
+        }
+
+        Craft::$app->getDb()->transaction(function() use ($element, $supportedSiteIds) {
+            // Start with $element's site
+            $element->mergeCanonicalChanges();
+            $element->dateLastMerged = new DateTime();
+            $element->mergingCanonicalChanges = true;
+            $this->saveElement($element, false, false);
+
+            // Now the other sites
+            $siteElements = $element::find()
+                ->drafts(null)
+                ->provisionalDrafts(null)
+                ->id($element->id)
+                ->siteId(ArrayHelper::withoutValue($supportedSiteIds, $element->id))
+                ->anyStatus()
+                ->all();
+
+            foreach ($siteElements as $siteElement) {
+                $siteElement->mergeCanonicalChanges();
+                $siteElement->dateLastMerged = $element->dateLastMerged;
+                $siteElement->mergingCanonicalChanges = true;
+                $this->saveElement($siteElement, false, false);
+            }
+
+            // It's now fully merged and propagated
+            $element->afterPropagate(false);
+        });
+
+        $element->mergingCanonicalChanges = false;
+
+        // Fire an 'afterMergeCanonical' event
+        if ($this->hasEventHandlers(self::EVENT_AFTER_MERGE_CANONICAL_CHANGES)) {
+            $this->trigger(self::EVENT_AFTER_MERGE_CANONICAL_CHANGES, new ElementEvent([
+                'element' => $element,
+            ]));
+        }
+    }
+
+    /**
+     * Updates the canonical element from a given derivative, such as a draft or revision.
+     *
+     * @param ElementInterface $element The derivative element
+     * @param array $newAttributes Any attributes to apply to the canonical element
+     * @return ElementInterface The updated canonical element
+     * @throws InvalidArgumentException if the element is already a canonical element
+     * @since 3.7.0
+     */
+    public function updateCanonicalElement(ElementInterface $element, array $newAttributes = []): ElementInterface
+    {
+        if ($element->getIsCanonical()) {
+            throw new InvalidArgumentException('Element was already canonical');
+        }
+
+        // "Duplicate" the revision with the source element's ID, UID, and content ID
+        $canonical = $element->getCanonical();
+
+        $newAttributes += [
+            'id' => $canonical->id,
+            'uid' => $canonical->uid,
+            'root' => $canonical->root,
+            'lft' => $canonical->lft,
+            'rgt' => $canonical->rgt,
+            'level' => $canonical->level,
+            'dateCreated' => $canonical->dateCreated,
+            'draftId' => null,
+            'revisionId' => null,
+            'updatingFromDerivative' => true,
+        ];
+
+        $updatedCanonical = $this->duplicateElement($element, $newAttributes);
+
+        // Update change tracking for the canonical element
+        $timestamp = Db::prepareDateForDb($updatedCanonical->dateUpdated);
+
+        $attributes = (new Query())
+            ->select(['siteId', 'attribute', 'propagated', 'userId'])
+            ->from([Table::CHANGEDATTRIBUTES])
+            ->where(['elementId' => $element->id])
+            ->all();
+
+        foreach ($attributes as $attribute) {
+            Db::upsert(Table::CHANGEDATTRIBUTES, [
+                'elementId' => $canonical->id,
+                'siteId' => $attribute['siteId'],
+                'attribute' => $attribute['attribute'],
+            ], [
+                'dateUpdated' => $timestamp,
+                'propagated' => $attribute['propagated'],
+                'userId' => $attribute['userId'],
+            ], [], false);
+        }
+
+        $fields = (new Query())
+            ->select(['siteId', 'fieldId', 'propagated', 'userId'])
+            ->from([Table::CHANGEDFIELDS])
+            ->where(['elementId' => $element->id])
+            ->all();
+
+        foreach ($fields as $field) {
+            Db::upsert(Table::CHANGEDFIELDS, [
+                'elementId' => $canonical->id,
+                'siteId' => $field['siteId'],
+                'fieldId' => $field['fieldId'],
+            ], [
+                'dateUpdated' => $timestamp,
+                'propagated' => $field['propagated'],
+                'userId' => $field['userId'],
+            ], [], false);
+        }
+
+        return $updatedCanonical;
+    }
+
+    /**
      * Resaves all elements that match a given element query.
      *
      * @param ElementQueryInterface $query The element query to fetch elements with
@@ -783,7 +941,7 @@ class Elements extends Component
         $position = 0;
 
         try {
-            foreach ($query->each() as $element) {
+            foreach (Db::each($query) as $element) {
                 $position++;
 
                 $element->setScenario(Element::SCENARIO_ESSENTIALS);
@@ -808,12 +966,11 @@ class Elements extends Component
                     // Make sure this isn't a revision
                     if ($skipRevisions) {
                         try {
-                            $root = ElementHelper::rootElement($element);
+                            if (ElementHelper::isRevision($element)) {
+                                throw new InvalidElementException($element, "Skipped resaving {$element} ({$element->id}) because it's a revision.");
+                            }
                         } catch (\Throwable $rootException) {
                             throw new InvalidElementException($element, "Skipped resaving {$element} ({$element->id}) due to an error obtaining its root element: " . $rootException->getMessage());
-                        }
-                        if ($root->getIsRevision()) {
-                            throw new InvalidElementException($element, "Skipped resaving {$element} ({$element->id}) because it's a revision.");
                         }
                     }
                 } catch (InvalidElementException $e) {
@@ -878,7 +1035,7 @@ class Elements extends Component
         $position = 0;
 
         try {
-            foreach ($query->each() as $element) {
+            foreach (Db::each($query) as $element) {
                 $position++;
 
                 $element->setScenario(Element::SCENARIO_ESSENTIALS);
@@ -971,7 +1128,9 @@ class Elements extends Component
         $mainClone->rgt = null;
         $mainClone->level = null;
         $mainClone->dateCreated = null;
+        $mainClone->dateUpdated = null;
         $mainClone->duplicateOf = $element;
+        $mainClone->setCanonicalId(null);
 
         $behaviors = ArrayHelper::remove($newAttributes, 'behaviors', []);
         $mainClone->setRevisionNotes(ArrayHelper::remove($newAttributes, 'revisionNotes'));
@@ -1006,17 +1165,18 @@ class Elements extends Component
             $draftBehavior = $mainClone->getBehavior('draft');
             $draftsService = Craft::$app->getDrafts();
             // Are we duplicating a draft of a published element?
-            if ($element->sourceId) {
-                $draftBehavior->draftName = $draftsService->generateDraftName($element->sourceId);
+            if ($element->getIsDerivative()) {
+                $draftBehavior->draftName = $draftsService->generateDraftName($element->getCanonicalId());
             } else {
                 $draftBehavior->draftName = Craft::t('app', 'First draft');
             }
             $draftBehavior->draftNotes = null;
+            $mainClone->setCanonicalId($element->getCanonicalId());
             $mainClone->draftId = $draftsService->insertDraftRow(
                 $draftBehavior->draftName,
                 null,
                 Craft::$app->getUser()->getId(),
-                $draftBehavior->sourceId,
+                $element->getCanonicalId(),
                 $draftBehavior->trackChanges
             );
         }
@@ -1050,34 +1210,7 @@ class Elements extends Component
                 $mainClone->structureId == $element->structureId
             ) {
                 $mode = isset($newAttributes['id']) ? Structures::MODE_AUTO : Structures::MODE_INSERT;
-
-                // If this is a root level element, insert the duplicate after the source
-                if ($element->level == 1) {
-                    Craft::$app->getStructures()->moveAfter($element->structureId, $mainClone, $element, $mode);
-                } else {
-                    // Append the clone to the source's parent
-                    // (we can't use getParent() here because there's a chance that the parent doesn't exist in the same
-                    // site as the source element anymore, if this is coming from an ApplyNewPropagationMethod job)
-                    $parentId = $element
-                        ->getAncestors(1)
-                        ->select(['elements.id'])
-                        ->siteId('*')
-                        ->unique()
-                        ->anyStatus()
-                        ->scalar();
-
-                    if ($parentId !== false) {
-                        // If we've cloned the parent, use the clone's ID instead
-                        if (isset(static::$duplicatedElementIds[$parentId])) {
-                            $parentId = static::$duplicatedElementIds[$parentId];
-                        }
-
-                        Craft::$app->getStructures()->append($element->structureId, $mainClone, $parentId, $mode);
-                    } else {
-                        // Just append it to the root
-                        Craft::$app->getStructures()->appendToRoot($element->structureId, $mainClone, $mode);
-                    }
-                }
+                Craft::$app->getStructures()->moveAfter($element->structureId, $mainClone, $element, $mode);
             }
 
             // Map it
@@ -1093,7 +1226,9 @@ class Elements extends Component
                         ->anyStatus();
 
                     if ($element->getIsDraft()) {
-                        $siteQuery->drafts();
+                        $siteQuery
+                            ->drafts()
+                            ->provisionalDrafts(null);
                     } else if ($element->getIsRevision()) {
                         $siteQuery->revisions();
                     }
@@ -1118,6 +1253,7 @@ class Elements extends Component
                     $siteClone->contentId = null;
                     $siteClone->dateCreated = $mainClone->dateCreated;
                     $siteClone->dateUpdated = $mainClone->dateUpdated;
+                    $siteClone->setCanonicalId(null);
 
                     // Attach behaviors
                     foreach ($behaviors as $name => $behavior) {
@@ -1895,7 +2031,7 @@ class Elements extends Component
             throw new InvalidArgumentException('Placeholder element is missing an ID');
         }
 
-        $this->_placeholderElements[$element->getSourceId()][$element->siteId] = $element;
+        $this->_placeholderElements[$element->getCanonicalId()][$element->siteId] = $element;
 
         if ($element->uri) {
             $this->_placeholderUris[$element->uri][$element->siteId] = $element;
@@ -2282,9 +2418,6 @@ class Elements extends Component
         /** @var ElementInterface|DraftBehavior|RevisionBehavior $element */
         $isNewElement = !$element->id;
 
-        /** @var DraftBehavior|null $draftBehavior */
-        $draftBehavior = $element->getIsDraft() ? $element->getBehavior('draft') : null;
-
         // Are we tracking changes?
         // todo: remove the tableExists condition after the next breakpoint
         $trackChanges = (
@@ -2292,8 +2425,7 @@ class Elements extends Component
             $element->siteSettingsId &&
             $element->duplicateOf === null &&
             $element::trackChanges() &&
-            ($draftBehavior->trackChanges ?? true) &&
-            !($draftBehavior->mergingChanges ?? false) &&
+            !$element->mergingCanonicalChanges &&
             Craft::$app->getDb()->tableExists(Table::CHANGEDATTRIBUTES)
         );
         $dirtyAttributes = [];
@@ -2394,11 +2526,13 @@ class Elements extends Component
 
                 // Set the attributes
                 $elementRecord->uid = $element->uid;
+                $elementRecord->canonicalId = $element->getIsDerivative() ? $element->getCanonicalId() : null;
                 $elementRecord->draftId = (int)$element->draftId ?: null;
                 $elementRecord->revisionId = (int)$element->revisionId ?: null;
                 $elementRecord->fieldLayoutId = $element->fieldLayoutId = (int)($element->fieldLayoutId ?? $element->getFieldLayout()->id ?? 0) ?: null;
                 $elementRecord->enabled = (bool)$element->enabled;
                 $elementRecord->archived = (bool)$element->archived;
+                $elementRecord->dateLastMerged = Db::prepareDateForDb($element->dateLastMerged);
 
                 if ($isNewElement) {
                     if (isset($element->dateCreated)) {
@@ -2529,7 +2663,7 @@ class Elements extends Component
             if (
                 !$element->propagating &&
                 !$element->duplicateOf &&
-                !($draftBehavior->mergingChanges ?? false)
+                !$element->mergingCanonicalChanges
             ) {
                 $element->afterPropagate($isNewElement);
             }
@@ -2682,6 +2816,10 @@ class Elements extends Component
         if ($enabledForSite !== null) {
             $siteElement->setEnabledForSite($enabledForSite);
         }
+
+        // Copy the timestamps
+        $siteElement->dateCreated = $element->dateCreated;
+        $siteElement->dateUpdated = $element->dateUpdated;
 
         // Copy the title value?
         if (

@@ -57,16 +57,13 @@ class LivePreviewController extends Controller
             throw new BadRequestHttpException('Request missing required body param');
         }
 
-        // Create a 24 hour token
-        $route = [
+        // Create the token
+        $token = Craft::$app->getTokens()->createPreviewToken([
             'live-preview/preview', [
                 'previewAction' => $action,
                 'userId' => Craft::$app->getUser()->getId(),
             ],
-        ];
-
-        $expiryDate = (new \DateTime())->add(new \DateInterval('P1D'));
-        $token = Craft::$app->getTokens()->createToken($route, null, $expiryDate);
+        ]);
 
         if (!$token) {
             throw new ServerErrorHttpException('Could not create a Live Preview token.');

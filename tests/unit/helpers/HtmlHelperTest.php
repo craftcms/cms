@@ -208,6 +208,17 @@ class HtmlHelperTest extends Unit
     }
 
     /**
+     * @dataProvider widontDataProvider
+     *
+     * @param string $expected
+     * @param string $string
+     */
+    public function testWidont(string $expected, string $string)
+    {
+        self::assertSame($expected, Html::widont($string));
+    }
+
+    /**
      * @return array
      */
     public function encodeParamsDataProvider(): array
@@ -292,6 +303,10 @@ class HtmlHelperTest extends Unit
     public function parseTagAttributesDataProvider(): array
     {
         return [
+            [[], '<div/>'],
+            [['x-foo' => true], '<div x-foo=>'],
+            [['x-foo' => true], '<div x-foo="">'],
+            [['x-foo' => true], "<div x-foo=''>"],
             [['type' => 'text', 'disabled' => true], '<input type="text" disabled>'],
             [['type' => 'text', 'disabled' => true], '<input type=text disabled />'],
             [['type' => 'text'], '<!-- comment --> <input type="text">'],
@@ -307,6 +322,8 @@ class HtmlHelperTest extends Unit
             [['class' => ['foo', 'bar']], '<div class="foo bar">'],
             [['style' => ['color' => 'black', 'background' => 'red']], '<div style="color: black; background: red">'],
             [false, '<div'],
+            [false, '<div x-foo=">'],
+            [false, "<div x-foo='>"],
             [false, '<!-- comment -->'],
             [false, '<?xml?>'],
         ];
@@ -441,6 +458,18 @@ class HtmlHelperTest extends Unit
             ['<linearGradient id="foo-bar"></linearGradient><path fill="url(#foo-bar)"></path>', '<linearGradient id="bar"></linearGradient><path fill="url(#bar)"></path>', 'foo', false],
             ['<style>.foo-st4{mask:url(#foo-bar);fill-rule:evenodd;fill:url(#foo-bla);}</style><mask id="foo-bar"></mask><linearGradient id="foo-bla"></linearGradient>', '<style>.st4{mask:url(#bar);fill-rule:evenodd;fill:url(#bla);}</style><mask id="bar"></mask><linearGradient id="bla"></linearGradient>', 'foo', true],
             ['<circle id="foo-bar"></circle><use xlink:href="#foo-bar"></use>', '<circle id="bar"></circle><use xlink:href="#bar"></use>', 'foo', false],
+        ];
+    }
+
+    /**
+     * @return array
+     */
+    public function widontDataProvider(): array
+    {
+        return [
+            ['foo', 'foo'],
+            ['foo&nbsp;bar', 'foo bar'],
+            ['foo bar&nbsp;baz', 'foo bar baz'],
         ];
     }
 }

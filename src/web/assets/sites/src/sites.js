@@ -15,7 +15,7 @@
             if ($groupSettingsBtn.length) {
                 var menuBtn = $groupSettingsBtn.data('menubtn');
 
-                menuBtn.settings.onOptionSelect = $.proxy(function(elem) {
+                menuBtn.settings.onOptionSelect = elem => {
                     var $elem = $(elem);
 
                     if ($elem.hasClass('disabled')) {
@@ -32,19 +32,21 @@
                             break;
                         }
                     }
-                }, this);
+                };
             }
         },
 
         addNewGroup: function() {
-            var name = this.promptForGroupName('');
+            this.promptForGroupName('').then(name => {
+                if (!name) {
+                    return;
+                }
 
-            if (name) {
-                var data = {
+                let data = {
                     name: name
                 };
 
-                Craft.postActionRequest('sites/save-group', data, $.proxy(function(response, textStatus) {
+                Craft.postActionRequest('sites/save-group', data, (response, textStatus) => {
                     if (textStatus === 'success') {
                         if (response.success) {
                             location.href = Craft.getUrl('settings/sites', {groupId: response.group.id});
@@ -55,24 +57,22 @@
                             Craft.cp.displayError();
                         }
                     }
-                }, this));
-            }
+                });
+            }).catch(() => {});
         },
 
         renameSelectedGroup: function() {
-            var oldName = this.$selectedGroup.text(),
-                newName = this.promptForGroupName(oldName);
-
-            if (newName && newName !== oldName) {
+            this.promptForGroupName(this.$selectedGroup.data('raw-name')).then(newName => {
                 var data = {
                     id: this.$selectedGroup.data('id'),
                     name: newName
                 };
 
-                Craft.postActionRequest('sites/save-group', data, $.proxy(function(response, textStatus) {
+                Craft.postActionRequest('sites/save-group', data, (response, textStatus) => {
                     if (textStatus === 'success') {
                         if (response.success) {
                             this.$selectedGroup.text(response.group.name);
+                            this.$selectedGroup.data('raw-name', newName);
                             Craft.cp.displayNotice(Craft.t('app', 'Group renamed.'));
                         } else if (response.errors) {
                             var errors = this.flattenErrors(response.errors);
@@ -81,12 +81,52 @@
                             Craft.cp.displayError();
                         }
                     }
-                }, this));
-            }
+                });
+            }).catch(() => {});
         },
 
         promptForGroupName: function(oldName) {
-            return prompt(Craft.t('app', 'What do you want to name the group?'), oldName);
+            return new Promise((resolve, reject) => {
+                Craft.sendActionRequest('POST', 'sites/rename-group-field', {
+                    data: {name: oldName},
+                }).then(response => {
+                    let $form = $('<form/>', {class: 'modal prompt'}).appendTo(Garnish.$bod);
+                    let $body = $('<div/>', {class: 'body'}).append(response.data.html).appendTo($form);
+                    let $buttons = $('<div/>', {class: 'buttons right'}).appendTo($body);
+                    let $cancelBtn = $('<button/>', {type: 'button', class: 'btn', text: Craft.t('app', 'Cancel')}).appendTo($buttons);
+                    let $saveBtn = $('<button/>', {type: 'submit', class: 'btn submit', text: Craft.t('app', 'Save')}).appendTo($buttons);
+
+                    Craft.appendFootHtml(response.data.js);
+
+                    let success = false;
+                    let modal = new Garnish.Modal($form, {
+                        onShow: () => {
+                            setTimeout(() => {
+                                Craft.setFocusWithin($body);
+                            }, 100);
+                        },
+                        onHide: () => {
+                            if (!success) {
+                                reject();
+                            }
+                        },
+                    });
+
+                    $form.on('submit', ev => {
+                        ev.preventDefault();
+                        let newName = $('.text', $body).val();
+                        if (newName && newName !== oldName) {
+                            resolve(newName);
+                            success = true;
+                        }
+                        modal.hide();
+                    });
+
+                    $cancelBtn.on('click', () => {
+                        modal.hide();
+                    });
+                });
+            });
         },
 
         deleteSelectedGroup: function() {
@@ -95,7 +135,7 @@
                     id: this.$selectedGroup.data('id')
                 };
 
-                Craft.postActionRequest('sites/delete-group', data, $.proxy(function(response, textStatus) {
+                Craft.postActionRequest('sites/delete-group', data, (response, textStatus) => {
                     if (textStatus === 'success') {
                         if (response.success) {
                             location.href = Craft.getUrl('settings/sites');
@@ -103,7 +143,7 @@
                             Craft.cp.displayError();
                         }
                     }
-                }, this));
+                });
             }
         },
 
@@ -142,9 +182,9 @@
 
             // Auto-focus the first radio
             if (!Garnish.isMobileBrowser(true)) {
-                setTimeout($.proxy(function() {
+                setTimeout(() => {
                     this.$deleteActionRadios.first().trigger('focus');
-                }, this), 100);
+                }, 100);
             }
 
             return false;
@@ -186,14 +226,14 @@
                 data.transferContentTo = this.$transferSelect.val();
             }
 
-            Craft.postActionRequest(this.settings.deleteAction, data, $.proxy(function(response, textStatus) {
+            Craft.postActionRequest(this.settings.deleteAction, data, (response, textStatus) => {
                 if (textStatus === 'success') {
                     this._deleting = false;
                     this.enable();
                     this.confirmDeleteModal.hide();
                     this.handleDeleteItemResponse(response, this.$rowToDelete);
                 }
-            }, this));
+            });
         },
 
         _createConfirmDeleteModal: function($row) {

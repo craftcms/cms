@@ -147,7 +147,7 @@ Craft.BaseElementIndex = Garnish.Base.extend({
 
         if (this.$statusMenuBtn.length) {
             this.statusMenu = this.$statusMenuBtn.menubtn().data('menubtn').menu;
-            this.statusMenu.on('optionselect', $.proxy(this, '_handleStatusChange'));
+            this.statusMenu.on('optionselect', this._handleStatusChange.bind(this));
         }
 
         // Initialize the site menu
@@ -171,7 +171,7 @@ Craft.BaseElementIndex = Garnish.Base.extend({
                 this.settings.criteria = {id: '0'};
             }
 
-            this.siteMenu.on('optionselect', $.proxy(this, '_handleSiteChange'));
+            this.siteMenu.on('optionselect', this._handleSiteChange.bind(this));
 
             if (this.siteId) {
                 // Should we be using a different default site?
@@ -202,7 +202,7 @@ Craft.BaseElementIndex = Garnish.Base.extend({
         // ---------------------------------------------------------------------
 
         // Automatically update the elements after new search text has been sitting for a 1/2 second
-        this.addListener(this.$search, 'input', $.proxy(function() {
+        this.addListener(this.$search, 'input', () => {
             if (!this.searching && this.$search.val()) {
                 this.startSearching();
             } else if (this.searching && !this.$search.val()) {
@@ -213,11 +213,11 @@ Craft.BaseElementIndex = Garnish.Base.extend({
                 clearTimeout(this.searchTimeout);
             }
 
-            this.searchTimeout = setTimeout($.proxy(this, 'updateElementsIfSearchTextChanged'), 500);
-        }, this));
+            this.searchTimeout = setTimeout(this.updateElementsIfSearchTextChanged.bind(this), 500);
+        });
 
         // Update the elements when the Return key is pressed
-        this.addListener(this.$search, 'keypress', $.proxy(function(ev) {
+        this.addListener(this.$search, 'keypress', ev => {
             if (ev.keyCode === Garnish.RETURN_KEY) {
                 ev.preventDefault();
 
@@ -227,10 +227,10 @@ Craft.BaseElementIndex = Garnish.Base.extend({
 
                 this.updateElementsIfSearchTextChanged();
             }
-        }, this));
+        });
 
         // Clear the search when the X button is clicked
-        this.addListener(this.$clearSearchBtn, 'click', $.proxy(function() {
+        this.addListener(this.$clearSearchBtn, 'click', () => {
             this.$search.val('');
 
             if (this.searchTimeout) {
@@ -244,7 +244,7 @@ Craft.BaseElementIndex = Garnish.Base.extend({
             this.stopSearching();
 
             this.updateElementsIfSearchTextChanged();
-        }, this));
+        });
 
         // Auto-focus the Search box
         if (!Garnish.isMobileBrowser(true)) {
@@ -260,7 +260,7 @@ Craft.BaseElementIndex = Garnish.Base.extend({
             this.$sortAttributesList = this.sortMenu.$container.children('.sort-attributes');
             this.$sortDirectionsList = this.sortMenu.$container.children('.sort-directions');
 
-            this.sortMenu.on('optionselect', $.proxy(this, '_handleSortChange'));
+            this.sortMenu.on('optionselect', this._handleSortChange.bind(this));
         }
 
         // Initialize the Export button
@@ -333,7 +333,7 @@ Craft.BaseElementIndex = Garnish.Base.extend({
                 multi: false,
                 allowEmpty: false,
                 vertical: true,
-                onSelectionChange: $.proxy(this, '_handleSourceSelectionChange')
+                onSelectionChange: this._handleSourceSelectionChange.bind(this)
             });
         }
 
@@ -1775,7 +1775,7 @@ Craft.BaseElementIndex = Garnish.Base.extend({
             selectable: selectable,
             multiSelect: (this.actions || this.settings.multiSelect),
             checkboxMode: !!this.actions,
-            onSelectionChange: $.proxy(this, '_handleSelectionChange')
+            onSelectionChange: this._handleSelectionChange.bind(this)
         });
 
         // Auto-select elements
@@ -1898,7 +1898,7 @@ Craft.BaseElementIndex = Garnish.Base.extend({
         Craft.initUiElements(this._$triggers);
 
         if ($btn) {
-            $btn.data('menubtn').on('optionSelect', $.proxy(this, '_handleMenuActionTriggerSubmit'));
+            $btn.data('menubtn').on('optionSelect', this._handleMenuActionTriggerSubmit.bind(this));
         }
     },
 
@@ -1962,9 +1962,9 @@ Craft.BaseElementIndex = Garnish.Base.extend({
 
         var hud = new Garnish.HUD(this.$exportBtn, $form);
 
-        hud.on('hide', $.proxy(function() {
+        hud.on('hide', () => {
             this.$exportBtn.removeClass('active');
-        }, this));
+        });
 
         var submitting = false;
 

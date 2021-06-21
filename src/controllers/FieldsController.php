@@ -10,11 +10,9 @@ namespace craft\controllers;
 use Craft;
 use craft\base\Field;
 use craft\base\FieldInterface;
-use craft\db\Table;
 use craft\fields\MissingField;
 use craft\fields\PlainText;
 use craft\helpers\ArrayHelper;
-use craft\helpers\Db;
 use craft\helpers\UrlHelper;
 use craft\models\FieldGroup;
 use craft\web\assets\fieldsettings\FieldSettingsAsset;
@@ -303,10 +301,11 @@ JS;
         $fieldId = $this->request->getBodyParam('fieldId') ?: null;
 
         if ($fieldId) {
-            $fieldUid = Db::uidById(Table::FIELDS, $fieldId);
-            if (!$fieldUid) {
+            $oldField = clone Craft::$app->getFields()->getFieldById($fieldId);
+            if (!$oldField) {
                 throw new BadRequestHttpException("Invalid field ID: $fieldId");
             }
+            $fieldUid = $oldField->uid;
         } else {
             $fieldUid = null;
         }
@@ -318,6 +317,7 @@ JS;
             'groupId' => $this->request->getRequiredBodyParam('group'),
             'name' => $this->request->getBodyParam('name'),
             'handle' => $this->request->getBodyParam('handle'),
+            'columnSuffix' => $oldField->columnSuffix ?? null,
             'instructions' => $this->request->getBodyParam('instructions'),
             'searchable' => (bool)$this->request->getBodyParam('searchable', true),
             'translationMethod' => $this->request->getBodyParam('translationMethod', Field::TRANSLATION_METHOD_NONE),
