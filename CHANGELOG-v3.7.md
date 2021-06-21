@@ -109,6 +109,7 @@
 - Added `craft\web\Request::checkIfActionRequest()`.
 - Added `craft\web\View::clearCssBuffer()`.
 - Added `craft\web\View::clearScriptBuffer()`.
+- Added `craft\web\View::getInitialDeltaValues()`.
 - Added `craft\web\View::startCssBuffer()`.
 - Added `craft\web\View::startScriptBuffer()`.
 - Added `craft\web\twig\variables\Cp::getTimeZoneOptions()`.
@@ -192,6 +193,7 @@
 - Deprecated `craft\services\Drafts::EVENT_AFTER_MERGE_SOURCE_CHANGES`.
 - Deprecated `craft\services\Drafts::EVENT_BEFORE_MERGE_SOURCE_CHANGES`.
 - Deprecated `craft\services\Drafts::mergeSourceChanges()`.
+- Deprecated `craft\web\View::getInitialDeltaValue()`.
 
 ### Removed
 - Removed support for the “Flash” file kind. ([#7626](https://github.com/craftcms/cms/issues/7626))

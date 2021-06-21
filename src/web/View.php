@@ -1318,8 +1318,21 @@ JS;
     /**
      * Returns the initial values of delta inputs.
      *
-     * @return mixed[]
+     * @return array
      * @see setInitialDeltaValue()
+     * @since 3.7.0
+     */
+    public function getInitialDeltaValues(): array
+    {
+        return $this->_initialDeltaValues;
+    }
+
+    /**
+     * Returns the initial values of delta inputs.
+     *
+     * @return array
+     * @see setInitialDeltaValue()
+     * @deprecated in 3.7.0. Use [[getInitialDeltaValues()]] instead.
      * @since 3.4.6
      */
     public function getInitialDeltaValue()
@@ -1332,7 +1345,7 @@ JS;
      *
      * @param string $inputName
      * @param mixed $value
-     * @see getInitialDeltaValue()
+     * @see getInitialDeltaValues()
      * @since 3.4.6
      */
     public function setInitialDeltaValue(string $inputName, $value)

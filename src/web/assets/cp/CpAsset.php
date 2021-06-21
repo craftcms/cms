@@ -344,7 +344,7 @@ JS;
             'elementTypeNames' => $elementTypeNames,
             'fileKinds' => Assets::getFileKinds(),
             'handleCasing' => $generalConfig->handleCasing,
-            'initialDeltaValues' => $view->getInitialDeltaValue(),
+            'initialDeltaValues' => $view->getInitialDeltaValues(),
             'isImagick' => Craft::$app->getImages()->getIsImagick(),
             'isMultiSite' => Craft::$app->getIsMultiSite(),
             'language' => Craft::$app->language,
