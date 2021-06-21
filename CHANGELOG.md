@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+### Added
+- Added `craft\mail\Message::$error`. ([#8091](https://github.com/craftcms/cms/pull/8091))
+
 ### Changed
 - Unpublished drafts’ primary action is now labelled “Create entry” rather than “Save”. ([#8094](https://github.com/craftcms/cms/issues/8094))
 - Unpublished drafts’ Save buttons’ context menus now include a “Save draft” action. ([#7899](https://github.com/craftcms/cms/pull/7899))

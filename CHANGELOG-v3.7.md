@@ -89,6 +89,7 @@
 - Added `craft\helpers\ElementHelper::isRevision()`.
 - Added `craft\helpers\Html::parseTagAttribute()`.
 - Added `craft\helpers\Html::widont()`.
+- Added `craft\mail\Message::$error`. ([#8091](https://github.com/craftcms/cms/pull/8091))
 - Added `craft\models\CategoryGroup::$defaultPlacement`.
 - Added `craft\models\CategoryGroup::DEFAULT_PLACEMENT_BEGINNING`.
 - Added `craft\models\CategoryGroup::DEFAULT_PLACEMENT_END`.
