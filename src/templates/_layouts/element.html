@@ -127,7 +127,7 @@
 {% if isLikeCurrent %}
     {% if canUpdateSource and saveSourceAction %}
         {% set formActions = formActions|push({
-            label: 'Save and continue editing'|t('app'),
+            label: isUnpublishedDraft ? 'Create and continue editing'|t('app') : 'Save and continue editing'|t('app'),
             redirect: hashedCpEditUrl,
             shortcut: true,
             retainScroll: true,
@@ -137,7 +137,7 @@
         }) %}
         {% if addAnotherRedirectUrl %}
             {% set formActions = formActions|push({
-                label: 'Save and add another'|t('app'),
+                label: isUnpublishedDraft ? 'Create and add another'|t('app') : 'Save and add another'|t('app'),
                 action: isUnpublishedDraft ? publishDraftAction : null,
                 redirect: addAnotherRedirectUrl|hash,
                 shortcut: true,
@@ -160,12 +160,12 @@
     {% if canDeleteForSite %}
         {% set formActions = formActions|push({
             destructive: true,
-            label: 'Delete {type} for this site'|t('app', {
+            label: isUnpublishedDraft ? 'Delete draft for this site'|t('app') : 'Delete {type} for this site'|t('app', {
                 type: element.lowerDisplayName()
             }),
             action: deleteForSiteAction,
             redirect: (redirectUrl ~ '#')|hash,
-            confirm: 'Are you sure you want to delete the {type} for this site?'|t('app', {
+            confirm: isUnpublishedDraft ? 'Are you sure you want to delete the draft for this site?'|t('app') : 'Are you sure you want to delete the {type} for this site?'|t('app', {
                 type: element.lowerDisplayName(),
             }),
         }) %}
@@ -176,12 +176,12 @@
     ) %}
         {% set formActions = formActions|push({
             destructive: true,
-            label: 'Delete {type}'|t('app', {
+            label: isUnpublishedDraft ? 'Delete draft'|t('app') : 'Delete {type}'|t('app', {
                 type: element.lowerDisplayName()
             }),
             action: isUnpublishedDraft ? deleteDraftAction : deleteSourceAction,
             redirect: (redirectUrl ~ '#')|hash,
-            confirm: 'Are you sure you want to delete this {type}?'|t('app', {
+            confirm: isUnpublishedDraft ? 'Are you sure you want to delete this draft?'|t('app') : 'Are you sure you want to delete this {type}?'|t('app', {
                 type: element.lowerDisplayName(),
             }),
         }) %}
@@ -276,7 +276,11 @@
         {% endif %}
         {% if canUpdateSource and saveSourceAction %}
             <div id="save-btn-container" class="btngroup submit">
-                <button type="submit" class="btn submit">{{ 'Save'|t('app') }}</button>
+                <button type="submit" class="btn submit">
+                    {{ isUnpublishedDraft ? 'Create {type}'|t('app', {
+                        type: element.lowerDisplayName(),
+                    }) : 'Save'|t('app') }}
+                </button>
                 <button type="button" class="btn submit menubtn"></button>
                 {% include '_layouts/components/form-action-menu' %}
             </div>

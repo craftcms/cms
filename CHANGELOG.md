@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+### Changed
+- Unpublished drafts’ primary action is now labelled “Create entry” rather than “Save”. ([#8094](https://github.com/craftcms/cms/issues/8094))
+
 ### Fixed
 - Fixed an error that occurred when running CLI commands on Windows. ([#8089](https://github.com/craftcms/cms/issues/8089))
 - Fixed an error that could occur when updating to Craft 3.7 if there were any soft-deleted global sets. ([#8079](https://github.com/craftcms/cms/issues/8079))
