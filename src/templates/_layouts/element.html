@@ -409,7 +409,14 @@
                 {% endif %}
                 <div class="data">
                     <h5 class="heading">{{ 'Status'|t('app') }}</h5>
-                    <div id="status-value" class="value"><span class="status {{ statusColor }}"></span>{{ statusLabel }}</div>
+                    <div id="status-value" class="value">
+                        {% if isUnpublishedDraft %}
+                            <span data-icon="draft"></span>
+                        {% else %}
+                            <span class="status {{ statusColor }}"></span>
+                        {% endif %}
+                        <span>{{ statusLabel }}</span>
+                    </div>
                 </div>
             {% endif %}
             <div class="data">

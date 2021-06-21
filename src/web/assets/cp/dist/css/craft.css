@@ -1774,6 +1774,14 @@ body.rtl .meta > .field > .heading, body.rtl .meta > .data > .heading, body.rtl 
 
 .meta > .field > .input, .meta > .data > .value, .meta > .flex-fields > .field > .input, .meta > .flex-fields > .data > .value { padding: 7px 0; width: calc(100% - 112px); }
 
+.meta > .data > .value, .meta > .flex-fields > .data > .value { display: -webkit-flex; display: flex; -webkit-align-items: center; align-items: center; }
+
+.meta > .data > .value > [data-icon="draft"], .meta > .flex-fields > .data > .value > [data-icon="draft"] { margin-top: -2px; }
+
+body.ltr .meta > .data > .value > [data-icon="draft"], body.ltr .meta > .flex-fields > .data > .value > [data-icon="draft"] { margin-right: 8px; }
+
+body.rtl .meta > .data > .value > [data-icon="draft"], body.rtl .meta > .flex-fields > .data > .value > [data-icon="draft"] { margin-left: 8px; }
+
 .meta > .field.lightswitch-field > .input, .meta > .flex-fields > .field.lightswitch-field > .input { -webkit-flex: 0; flex: 0; width: auto; }
 
 .meta > .field.has-errors, .meta > .flex-fields > .field.has-errors { border: 1px solid #CF1124 !important; }

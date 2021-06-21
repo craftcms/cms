@@ -3411,6 +3411,16 @@ ul.tree,
       width: calc(100% - 112px);
     }
 
+    & > .data > .value {
+      display: flex;
+      align-items: center;
+
+      & > [data-icon="draft"] {
+        margin-top: -2px;
+        @include margin-right(8px);
+      }
+    }
+
     & > .field.lightswitch-field > .input {
       flex: 0;
       width: auto;
