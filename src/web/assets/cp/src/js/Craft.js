@@ -2069,9 +2069,9 @@ $.extend($.fn,
                     action: $btn.data('action'),
                     redirect: $btn.data('redirect'),
                     params: params,
-                    data: {
+                    data: $.extend({
                         customTrigger: $btn,
-                    }
+                    }, $btn.data('event-data')),
                 });
             });
         },
