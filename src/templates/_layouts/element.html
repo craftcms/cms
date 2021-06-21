@@ -147,7 +147,16 @@
                 },
             }) %}
         {% endif %}
-        {% if not isUnpublishedDraft and canDuplicateSource and duplicateSourceAction %}
+        {% if isUnpublishedDraft %}
+            {% set formActions = formActions|push({
+                label: 'Save draft'|t('app'),
+                action: saveDraftAction,
+                redirect: (redirectUrl ~ '#')|hash,
+                eventData: {
+                    autosave: false,
+                },
+            }) %}
+        {% elseif canDuplicateSource and duplicateSourceAction %}
             {% set formActions = formActions|push({
                 label: 'Save as a new {type}'|t('app', {
                     type: element.lowerDisplayName(),

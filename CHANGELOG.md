@@ -4,6 +4,7 @@
 
 ### Changed
 - Unpublished drafts’ primary action is now labelled “Create entry” rather than “Save”. ([#8094](https://github.com/craftcms/cms/issues/8094))
+- Unpublished drafts’ Save buttons’ context menus now include a “Save draft” action. ([#7899](https://github.com/craftcms/cms/pull/7899))
 
 ### Fixed
 - Fixed an error that occurred when running CLI commands on Windows. ([#8089](https://github.com/craftcms/cms/issues/8089))
