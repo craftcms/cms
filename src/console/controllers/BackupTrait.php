@@ -75,7 +75,7 @@ trait BackupTrait
             return $backupOnUpdate;
         }
 
-        return $this->confirm('Backup the database?', $backupOnUpdate);
+        return $this->confirm('Back up the database?', $backupOnUpdate);
     }
 
     /**
