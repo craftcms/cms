@@ -310,7 +310,7 @@ class MigrateController extends BaseMigrateController
         $handles = $updatesService->getPendingMigrationHandles(!$this->noContent);
 
         if (empty($handles)) {
-            $this->stdout('No new migrations found. Your system is up-to-date.' . PHP_EOL, Console::FG_GREEN);
+            $this->stdout('No new migrations found. Your system is up to date.' . PHP_EOL, Console::FG_GREEN);
             return ExitCode::OK;
         }
 

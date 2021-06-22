@@ -274,7 +274,7 @@ return [
     'Compressed' => 'Komprimeret',
     'Configuration' => 'Konfiguration',
     'Configure the category group’s site-specific settings.' => 'Konfigurer kategorigruppens site-specifikke indstillinger.',
-    'Congrats! You’re up-to-date.' => 'Tillykke! Alt er up-to date.',
+    'Congrats! You’re up to date.' => 'Tillykke! Alt er up-to date.',
     'Connect the database' => 'Tilslut databasen',
     'Connect to your Craft ID' => 'Opret forbindelse til dit Craft ID',
     'Connected to craftcms.com.' => 'Forbundet til craftcms.com.',
@@ -1676,7 +1676,7 @@ return [
     'Your session will expire in {time}.' => 'Din session udløber om {time}.',
     'Your system isn’t set up to save content for the site “{site}”.' => 'Dit system er ikke konfigureret til at gemme indhold for sitet “{site}”.',
     'Your {folder} folder isn’t writable.' => 'Din {folder}- mappe er ikke skrivbar.',
-    'You’re all up-to-date!' => 'Du helt up-to-date!',
+    'You’re all up to date!' => 'Du helt up to date!',
     'You’re running Craft {edition} with a Craft {licensedEdition} license.' => 'Du kører Craft {edition} med et Craft {licensedEdition} licens.',
     'Zip Code' => 'Postnummer',
     'account_activation_body' => "Hej {{user.friendlyName}}. Tak fordi du opretter en konto med {{siteName}}! Aktiver din konto ved at klikke på følgende link:
