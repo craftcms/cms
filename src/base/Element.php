@@ -3864,7 +3864,7 @@ abstract class Element extends Component implements ElementInterface
                 } else {
                     $status = $this->getStatus();
                     $statusDef = static::statuses()[$status] ?? null;
-                    Html::tag('span', '', ['class' => ['status', $statusDef['color'] ?? $status]]);
+                    $icon = Html::tag('span', '', ['class' => ['status', $statusDef['color'] ?? $status]]);
                     $label = $statusDef['label'] ?? $statusDef ?? ucfirst($status);
                 }
                 return $icon . Html::tag('span', $label);
