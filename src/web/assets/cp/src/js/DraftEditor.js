@@ -1055,6 +1055,7 @@ Craft.DraftEditor = Garnish.Base.extend({
         // then trigger an autosave
         if (
             this.settings.draftId &&
+            !this.settings.isUnpublishedDraft &&
             !this.settings.isProvisionalDraft &&
             (typeof ev.autosave === 'undefined' || ev.autosave) &&
             (ev.saveShortcut || (ev.customTrigger && ev.customTrigger.data('action') === this.settings.saveDraftAction))
