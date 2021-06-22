@@ -102,12 +102,17 @@ Craft.CP = Garnish.Base.extend({
             });
             this.handleWindowResize();
 
-            // Fade the notification out two seconds after page load
-            var $errorNotifications = this.$notificationContainer.children('.error'),
-                $otherNotifications = this.$notificationContainer.children(':not(.error)');
+            // Remove notifications
+            var $notifications = this.$notificationContainer.children();
 
-            $errorNotifications.delay(Craft.CP.notificationDuration * 2).velocity('fadeOut');
-            $otherNotifications.delay(Craft.CP.notificationDuration).velocity('fadeOut');
+            for (let i = 0; i < $notifications.length; i++) {
+                notification = $notifications[i];
+                let type = notification.classList.contains('error') ? 'error' : 'notice';
+                let message = notification.querySelector('.message').textContent;
+                this.displayNotification(type, message, false);
+            }
+
+            $notifications.remove();
 
             // Wait a frame before initializing any confirm-unload forms,
             // so other JS that runs on ready() has a chance to initialize
@@ -629,11 +634,10 @@ Craft.CP = Garnish.Base.extend({
      * @param {string} type
      * @param {string} message
      */
-    displayNotification: function(type, message) {
-        var notificationDuration = Craft.CP.notificationDuration;
+    displayNotification: function(type, message, animate = true) {
+        const manuallyCloseNotifications = window.Craft.manuallyCloseNotifications;
 
         if (['cp-error', 'error'].includes(type)) {
-            notificationDuration *= 2;
             icon = 'alert';
             label = Craft.t('app', 'Error');
         } else {
@@ -649,23 +653,74 @@ Craft.CP = Garnish.Base.extend({
             `)
             .appendTo(this.$notificationContainer);
 
-        var fadedMargin = -($notification.outerWidth() / 2) + 'px';
+        if (manuallyCloseNotifications) {
+            const self = this;
 
-        $notification
-            .hide()
-            .css({opacity: 0, 'margin-left': fadedMargin, 'margin-right': fadedMargin})
-            .velocity({opacity: 1, 'margin-left': '2px', 'margin-right': '2px'}, {display: 'inline-block', duration: 'fast'})
-            .delay(notificationDuration)
-            .velocity({opacity: 0, 'margin-left': fadedMargin, 'margin-right': fadedMargin}, {
-                complete: function() {
-                    $notification.remove();
-                }
-            });
+            $closeButton = $('<button/>', {
+                    type: 'button',
+                    'data-icon': 'remove',
+                    'aria-label': Craft.t('app', 'Close'),
+                })
+                .on('click', function(){
+                    self.removeNotification($notification, 0);
+                });
+
+            $notification.append($closeButton);
+        }
+
+        // Animate show notification
+        if (animate) {
+            var fadedMargin = -($notification.outerWidth() / 2) + 'px';
+
+            $notification
+                .hide()
+                .css({opacity: 0, 'margin-left': fadedMargin, 'margin-right': fadedMargin})
+                .velocity({opacity: 1, 'margin-left': '2px', 'margin-right': '2px'}, {display: 'inline-block', duration: 'fast'});
+        }
+
+        // Remove notification after specified duration
+        if (!manuallyCloseNotifications) {
+            this.removeNotification($notification, window.Craft.notificationDuration * 1000);
+        }
 
         this.trigger('displayNotification', {
             notificationType: type,
             message: message
         });
+    },
+
+    /**
+     * Remove a notification
+     *
+     * @param {object} $notification
+     */
+    removeNotification: function($notification, duration) {
+        var fadedMargin = -($notification.outerWidth() / 2) + 'px';
+
+        (function() {
+            var timeRemaining = duration;
+            var countdownTime = 100;
+
+            var countdownInterval = setInterval(function() {
+                if (document.hidden) {
+                    return;
+                }
+
+                timeRemaining -= countdownTime;
+
+                if (timeRemaining <= 0) {
+                    clearInterval(countdownInterval);
+
+                    // Hide notification
+                    $notification
+                        .velocity({opacity: 0, 'margin-left': fadedMargin, 'margin-right': fadedMargin}, {
+                            complete: function() {
+                                $notification.remove();
+                            }
+                        });
+                }
+            }, countdownTime);
+        })();
     },
 
     /**
@@ -1052,9 +1107,6 @@ Craft.CP = Garnish.Base.extend({
         });
     }
 }, {
-    //maxWidth: 1051, //1024,
-    notificationDuration: 2000,
-
     JOB_STATUS_WAITING: 1,
     JOB_STATUS_RESERVED: 2,
     JOB_STATUS_DONE: 3,

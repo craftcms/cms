@@ -7,7 +7,7 @@
         {% if message %}
             <div class="notification {{ type|replace('cp-', '') }}">
                 <span data-icon="{{ icon }}" aria-label="{{ label }}"></span>
-                {{ message }}
+                <span class="message">{{ message }}</span>
             </div>
         {% endif %}
     {% endfor %}
