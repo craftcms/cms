@@ -11,6 +11,7 @@ use Craft;
 use craft\base\Model;
 use craft\helpers\ArrayHelper;
 use craft\records\SiteGroup as SiteGroupRecord;
+use craft\validators\HandleValidator;
 use craft\validators\UniqueValidator;
 
 /**
@@ -32,6 +33,11 @@ class SiteGroup extends Model
     public $name;
 
     /**
+     * @var string|null Handle
+     */
+    public $handle;
+
+    /**
      * @var string|null UID
      */
     public $uid;
@@ -43,6 +49,7 @@ class SiteGroup extends Model
     {
         return [
             'name' => Craft::t('app', 'Name'),
+            'handle' => Craft::t('app', 'Handle'),
         ];
     }
 
@@ -52,10 +59,16 @@ class SiteGroup extends Model
     protected function defineRules(): array
     {
         $rules = parent::defineRules();
-        $rules[] = [['id'], 'number', 'integerOnly' => true];
-        $rules[] = [['name'], 'string', 'max' => 255];
-        $rules[] = [['name'], UniqueValidator::class, 'targetClass' => SiteGroupRecord::class];
         $rules[] = [['name'], 'required'];
+        $rules[] = [['id'], 'number', 'integerOnly' => true];
+        $rules[] = [['name', 'handle'], 'string', 'max' => 255];
+        $rules[] = [['name'], UniqueValidator::class, 'targetClass' => SiteGroupRecord::class];
+        $rules[] = [['handle'], HandleValidator::class, 'reservedWords' => ['id', 'dateCreated', 'dateUpdated', 'uid', 'title']];
+
+        if (Craft::$app->getIsInstalled()) {
+            $rules[] = [['name', 'handle'], UniqueValidator::class, 'targetClass' => SiteGroupRecord::class];
+        }
+
         return $rules;
     }
 
@@ -99,6 +112,7 @@ class SiteGroup extends Model
     {
         return [
             'name' => $this->name,
+            'handle' => $this->handle,
         ];
     }
 }

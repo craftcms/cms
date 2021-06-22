@@ -36,6 +36,7 @@ use yii\base\Component;
 use yii\base\Exception;
 use yii\base\InvalidArgumentException;
 use yii\db\Exception as DbException;
+use yii\helpers\Inflector;
 
 /**
  * Sites service.
@@ -303,6 +304,7 @@ class Sites extends Component
         }
 
         $groupRecord->name = $data['name'];
+        $groupRecord->handle = Inflector::variablize($data['name']);
 
         if ($groupRecord->dateDeleted) {
             $groupRecord->restore();
@@ -1250,6 +1252,7 @@ class Sites extends Component
             ->select([
                 'id',
                 'name',
+                'handle',
                 'uid',
             ])
             ->from([Table::SITEGROUPS])
