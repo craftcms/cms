@@ -3859,7 +3859,6 @@ abstract class Element extends Component implements ElementInterface
                 }
                 if ($this->getIsUnpublishedDraft()) {
                     $icon = Html::tag('span', '', ['data' => ['icon' => 'draft']]);
-                    $color = 'white';
                     $label = Craft::t('app', 'Draft');
                 } else {
                     $status = $this->getStatus();
