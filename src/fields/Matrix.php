@@ -1149,8 +1149,11 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
         $blockTypeInfo = [];
 
         // Set a temporary namespace for these
+        // Note: we can't just wrap FieldLayoutForm::render() in a callable passed to namespaceInputs() here,
+        // because the form HTML is for JavaScript; not returned by inputHtml().
         $view = Craft::$app->getView();
-        $namespace = $view->namespaceInputName($this->handle . "[blocks][__BLOCK_{$placeholderKey}__]");
+        $oldNamespace = $view->getNamespace();
+        $view->setNamespace($view->namespaceInputName("$this->handle[blocks][__BLOCK_{$placeholderKey}__]"));
 
         foreach ($blockTypes as $blockType) {
             // Create a fake MatrixBlock so the field types have a way to get at the owner element, if there is one
@@ -1173,9 +1176,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
             }
 
             $view->startJsBuffer();
-            $bodyHtml = $view->namespaceInputs(function() use ($fieldLayout, $block) {
-                return $fieldLayout->createForm($block)->render();
-            }, $namespace);
+            $bodyHtml = $view->namespaceInputs($fieldLayout->createForm($block)->render());
             $footHtml = $view->clearJsBuffer();
 
             // Reset $_isFresh's
@@ -1193,6 +1194,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
             ];
         }
 
+        $view->setNamespace($oldNamespace);
         return $blockTypeInfo;
     }
 
