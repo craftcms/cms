@@ -17,6 +17,7 @@
 - Fixed an error that occurred when running CLI commands on Windows. ([#8089](https://github.com/craftcms/cms/issues/8089))
 - Fixed an error that could occur when updating to Craft 3.7 if there were any soft-deleted global sets. ([#8079](https://github.com/craftcms/cms/issues/8079))
 - Fixed a bug where Dropdown fields weren’t always saving properly within element editor slideouts, if left unchanged. ([#8090](https://github.com/craftcms/cms/issues/8090))
+- Fixed a SQL error that could occur when saving an element.
 
 ## 3.7.0-beta.2 - 2021-06-17
 
