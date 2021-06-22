@@ -1134,7 +1134,10 @@ class Elements extends Component
 
         $behaviors = ArrayHelper::remove($newAttributes, 'behaviors', []);
         $mainClone->setRevisionNotes(ArrayHelper::remove($newAttributes, 'revisionNotes'));
-        $mainClone->setAttributes($newAttributes, false);
+
+        // Note: must use Craft::configure() rather than setAttributes() here,
+        // so we're not limited to whatever attributes() returns
+        Craft::configure($mainClone, $newAttributes);
 
         // Attach behaviors
         foreach ($behaviors as $name => $behavior) {
@@ -1263,7 +1266,9 @@ class Elements extends Component
                         $siteClone->attachBehavior($name, $behavior);
                     }
 
-                    $siteClone->setAttributes($newAttributes, false);
+                    // Note: must use Craft::configure() rather than setAttributes() here,
+                    // so we're not limited to whatever attributes() returns
+                    Craft::configure($siteClone, $newAttributes);
                     $siteClone->siteId = $siteInfo['siteId'];
 
                     // Clone any field values that are objects

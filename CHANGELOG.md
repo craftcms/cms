@@ -18,6 +18,7 @@
 - Fixed an error that could occur when updating to Craft 3.7 if there were any soft-deleted global sets. ([#8079](https://github.com/craftcms/cms/issues/8079))
 - Fixed a bug where Dropdown fields weren’t always saving properly within element editor slideouts, if left unchanged. ([#8090](https://github.com/craftcms/cms/issues/8090))
 - Fixed a SQL error that could occur when saving an element.
+- Fixed a bug where applying a (provisional) draft to an entry could result in other drafts getting duplicate Matrix blocks. ([#8092](https://github.com/craftcms/cms/issues/8092))
 
 ## 3.7.0-beta.2 - 2021-06-17
 
