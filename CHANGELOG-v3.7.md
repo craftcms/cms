@@ -206,6 +206,7 @@
 - Fixed a bug where changing an entry’s parent wouldn’t update any of its drafts.
 - Fixed a SQL error that occurred when deleting a volume folder that had subfolders nested more than 15 levels deep. ([#8073](https://github.com/craftcms/cms/issues/8073))
 - Fixed a bug where exported CSV files weren’t being imported with an UTF-8 encoding by Excel. ([#8067](https://github.com/craftcms/cms/issues/8067))
+- Fixed a bug where Dropdown fields weren’t always saving properly within element editor slideouts, if left unchanged. ([#8090](https://github.com/craftcms/cms/issues/8090)) 
 
 ### Security
 - The default `allowedFileExtensions` config setting value no longer includes `xml`.

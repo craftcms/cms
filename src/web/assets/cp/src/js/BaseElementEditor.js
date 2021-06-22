@@ -37,6 +37,7 @@ Craft.BaseElementEditor = Garnish.Base.extend({
 
     cancelToken: null,
     ignoreFailedRequest: false,
+    initialDeltaValues: null,
 
     init: function(element, settings) {
         // Param mapping
@@ -241,6 +242,9 @@ Craft.BaseElementEditor = Garnish.Base.extend({
                 this.trigger('endLoading');
                 this.onEndLoading();
                 this.cancelToken = null;
+                if (this.initialDeltaValues === null) {
+                    this.initialDeltaValues = response.data.initialDeltaValues;
+                }
                 this.updateForm(response.data, true);
                 this.cancelToken = null;
                 resolve();
@@ -501,7 +505,7 @@ Craft.BaseElementEditor = Garnish.Base.extend({
         this.$saveSpinner.removeClass('hidden');
 
         let data = $.param(this.getBaseData()) + '&' + this.slideout.$container.serialize();
-        data = Craft.findDeltaData(this.initialData, data, this.deltaNames);
+        data = Craft.findDeltaData(this.initialData, data, this.deltaNames, null, this.initialDeltaValues);
 
         Craft.postActionRequest('elements/save-element', data, (response, textStatus) => {
             this.$saveSpinner.addClass('hidden');
