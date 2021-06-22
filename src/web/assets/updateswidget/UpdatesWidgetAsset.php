@@ -47,7 +47,7 @@ class UpdatesWidgetAsset extends AssetBundle
                 'One update available!',
                 '{total} updates available!',
                 'Go to Updates',
-                'Congrats! You’re up-to-date.',
+                'Congrats! You’re up to date.',
                 'Check again',
             ]);
         }
