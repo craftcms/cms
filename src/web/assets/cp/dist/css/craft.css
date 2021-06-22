@@ -2014,6 +2014,8 @@ body.rtl .modal .resizehandle { background-image: url(../images/resizehandle_rtl
 /* inline asset previews */
 .preview-thumb-container { position: relative; display: -webkit-flex; display: flex; -webkit-flex-direction: row; flex-direction: row; -webkit-align-items: center; align-items: center; height: 190px; background-color: #1f2933; cursor: pointer; }
 
+.preview-thumb-container.checkered img { background-color: #fff; background-image: -o-linear-gradient(45deg, #e4edf6 25%, transparent 25%), -o-linear-gradient(315deg, #e4edf6 25%, transparent 25%), -o-linear-gradient(45deg, transparent 75%, #e4edf6 75%), -o-linear-gradient(315deg, transparent 75%, #e4edf6 75%); background-image: linear-gradient(45deg, #e4edf6 25%, transparent 25%), linear-gradient(135deg, #e4edf6 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #e4edf6 75%), linear-gradient(135deg, transparent 75%, #e4edf6 75%); -o-background-size: 17px 17px; background-size: 17px 17px; background-position: 0 0, 8.5px 0, 8.5px -8.5px, 0 8.5px; }
+
 .preview-thumb-container.loading:after { content: ''; font-size: 0; display: block; position: absolute; width: 100%; height: 100%; left: 0; top: 0; background: rgba(31, 41, 51, 0.8) no-repeat 50% 50% url(../images/spinner_dark.gif); }
 
 #details .preview-thumb-container { margin-bottom: 14px; border-radius: 5px; overflow: hidden; }

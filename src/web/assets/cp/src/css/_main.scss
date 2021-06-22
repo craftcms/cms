@@ -4017,6 +4017,11 @@ ul.tree,
   background-color: $grey900;
   cursor: pointer;
 
+  &.checkered img {
+    background-color: $white;
+    @include checkered-bg(17px);
+  }
+
   &.loading {
     &:after {
       content: '';

@@ -1680,6 +1680,7 @@ class Asset extends Element
                 $userSession->checkPermission("editImagesInVolume:$volume->uid") &&
                 ($userSession->getId() == $this->uploaderId || $userSession->checkPermission("editPeerImagesInVolume:$volume->uid"))
             );
+            $hasPreview = Craft::$app->getAssets()->getAssetPreviewHandler($this) !== null;
 
             $components[] = Html::tag('div',
                 Html::tag('div', $this->getPreviewThumbImg(350, 190), [
@@ -1695,6 +1696,7 @@ class Asset extends Element
                 [
                     'class' => array_filter([
                         'preview-thumb-container',
+                        $this->getHasCheckeredThumb() ? 'checkered' : null,
                         $editable ? 'editable' : null,
                     ]),
                 ]

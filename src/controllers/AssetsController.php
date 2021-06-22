@@ -17,6 +17,7 @@ use craft\fields\Assets as AssetsField;
 use craft\helpers\App;
 use craft\helpers\Assets;
 use craft\helpers\Db;
+use craft\helpers\Html;
 use craft\helpers\Image;
 use craft\helpers\StringHelper;
 use craft\helpers\UrlHelper;
@@ -121,22 +122,26 @@ class AssetsController extends Controller
                 $userSession->checkPermission("editImagesInVolume:{$volume->uid}") &&
                 ($userSession->getId() == $asset->uploaderId || $userSession->checkPermission("editPeerImagesInVolume:{$volume->uid}"))
             );
-
-            $previewHtml = '<div id="preview-thumb-container" class="preview-thumb-container">' .
-                '<div class="preview-thumb">' .
-                $asset->getPreviewThumbImg(350, 190) .
-                '</div>' .
-                '<div class="buttons">';
-
-            if (Craft::$app->getAssets()->getAssetPreviewHandler($asset) !== null) {
-                $previewHtml .= '<div class="btn" id="preview-btn">' . Craft::t('app', 'Preview') . '</div>';
-            }
-
-            if ($editable) {
-                $previewHtml .= '<div class="btn" id="edit-btn">' . Craft::t('app', 'Edit') . '</div>';
-            }
-
-            $previewHtml .= '</div></div>';
+            $hasPreview = Craft::$app->getAssets()->getAssetPreviewHandler($asset) !== null;
+            $previewHtml = Html::tag('div',
+                Html::tag('div', $asset->getPreviewThumbImg(350, 190), [
+                    'class' => 'preview-thumb',
+                ]) .
+                Html::tag(
+                    'div',
+                    ($hasPreview ? Html::tag('div', Craft::t('app', 'Preview'), ['class' => 'btn', 'id' => 'preview-btn']) : '') .
+                    ($editable ? Html::tag('div', Craft::t('app', 'Edit'), ['class' => 'btn', 'id' => 'edit-btn']) : ''),
+                    ['class' => 'buttons']
+                ),
+                [
+                    'id' => 'preview-thumb-container',
+                    'class' => array_filter([
+                        'preview-thumb-container',
+                        $asset->getHasCheckeredThumb() ? 'checkered' : null,
+                        $editable ? 'editable' : null,
+                    ]),
+                ]
+            );
         } catch (NotSupportedException $e) {
             // NBD
             $previewHtml = '';
