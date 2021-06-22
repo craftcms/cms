@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 3.x
 
-## Unreleased
+## 3.7.0-beta.3 - 2021-06-22
 
 ### Added
 - Added `craft\mail\Message::$error`. ([#8091](https://github.com/craftcms/cms/pull/8091))
