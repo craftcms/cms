@@ -95,7 +95,7 @@ class UpdateController extends Controller
         $updates = $this->_getUpdates();
 
         if (($total = $updates->getTotal()) === 0) {
-            $this->stdout('You’re all up-to-date!' . PHP_EOL . PHP_EOL, Console::FG_GREEN);
+            $this->stdout('You’re all up to date!' . PHP_EOL . PHP_EOL, Console::FG_GREEN);
             return ExitCode::OK;
         }
 
@@ -317,7 +317,7 @@ class UpdateController extends Controller
 
             $this->stdout(PHP_EOL);
         } else {
-            $this->stdout('You’re all up-to-date!' . PHP_EOL . PHP_EOL, Console::FG_GREEN);
+            $this->stdout('You’re all up to date!' . PHP_EOL . PHP_EOL, Console::FG_GREEN);
         }
 
         return $requirements;
@@ -352,7 +352,7 @@ class UpdateController extends Controller
         }
 
         if ($to === $from) {
-            $this->stdout("Skipping {$handle} because it’s already up-to-date." . PHP_EOL, Console::FG_GREY);
+            $this->stdout("Skipping {$handle} because it’s already up to date." . PHP_EOL, Console::FG_GREY);
             return;
         }
 
