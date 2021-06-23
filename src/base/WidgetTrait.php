@@ -18,7 +18,7 @@ trait WidgetTrait
     /**
      * @var int|null The user’s chosen cospan for the widget
      */
-    public $colspan;
+    protected $colspan;
     
     /**
      * @return int|null
