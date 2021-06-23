@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+### Changed
+- Image preview thumbnails on Edit Asset pages and within asset editor slideouts now have checkered backgrounds. ([#9073](https://github.com/craftcms/cms/pull/9073))
+
 ### Fixed
 - Fixed a bug where only the first changed nested Matrix field would initially show a change badge, when making changes to an entry’s Current revision. ([#9068](https://github.com/craftcms/cms/issues/9068))
 - Fixed a bug where clicking on fields within element editor sidebars would close the sidebar. ([#9072](https://github.com/craftcms/cms/pull/9072))
