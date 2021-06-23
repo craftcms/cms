@@ -20,7 +20,6 @@ Craft.BaseElementEditor = Garnish.Base.extend({
     $body: null,
     $fieldsContainer: null,
 
-    $sidebarShade: null,
     $sidebar: null,
 
     $footer: null,
@@ -113,17 +112,6 @@ Craft.BaseElementEditor = Garnish.Base.extend({
 
         let $contents = this.$header.add(this.$body).add(this.$footer);
 
-        // Sidebar shade
-        if (!Garnish.isMobileBrowser()) {
-            this.$sidebarShade = $('<div/>', {class: 'ee-sidebar-shade hidden'});
-            $contents = $contents.add(this.$sidebarShade);
-
-            this.addListener(this.$sidebarShade, 'click', ev => {
-                ev.stopPropagation();
-                this.hideSidebar();
-            });
-        }
-
         // Create the slideout
         this.slideout = new Craft.Slideout($contents, {
             containerElement: 'form',
@@ -160,6 +148,17 @@ Craft.BaseElementEditor = Garnish.Base.extend({
         });
         this.addListener(this.slideout.$shade, 'click', () => {
             this.maybeCloseSlideout();
+        });
+        this.addListener(this.slideout.$container, 'click', ev => {
+            const $target = $(event.target);
+
+            if (
+                this.showingSidebar &&
+                !$target.closest(this.$sidebarBtn).length &&
+                !$target.closest(this.$sidebar).length
+            ) {
+                this.hideSidebar();
+            }
         });
         this.addListener(this.slideout.$container, 'submit', ev => {
             ev.preventDefault();
@@ -418,11 +417,6 @@ Craft.BaseElementEditor = Garnish.Base.extend({
         // Hack to force CSS animations
         this.$sidebar[0].offsetWidth;
 
-        if (!Garnish.isMobileBrowser()) {
-            this.$sidebarShade
-                .removeClass('hidden');
-        }
-
         this.$sidebar.css(this._openedSidebarStyles());
 
         if (!Garnish.isMobileBrowser()) {
@@ -455,10 +449,6 @@ Craft.BaseElementEditor = Garnish.Base.extend({
         }
 
         this.$body.removeClass('no-scroll');
-
-        if (!Garnish.isMobileBrowser()) {
-            this.$sidebarShade.addClass('hidden');
-        }
 
         this.$sidebar
             .off('transitionend.element-editor')
