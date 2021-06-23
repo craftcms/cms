@@ -1664,12 +1664,10 @@ class Asset extends Element
     /**
      * Returns the HTML for asset previews.
      *
-     * @param bool $allowEdit Whether to allow the edit button to appear.
-     * @param bool $allowPreview Whether to allow the preview button to appear.
      * @return string
      * @throws InvalidConfigException
      */
-    public function getPreviewHtml(bool $allowPreview = true, bool $allowEdit = true): string
+    public function getPreviewHtml(): string
     {
         $html = '';
 
@@ -1679,9 +1677,8 @@ class Asset extends Element
             $userSession = Craft::$app->getUser();
 
             $volume = $this->getVolume();
-            $previewable = $allowPreview && Craft::$app->getAssets()->getAssetPreviewHandler($this) !== null;
+            $previewable = Craft::$app->getAssets()->getAssetPreviewHandler($this) !== null;
             $editable = (
-                $allowEdit &&
                 $this->getSupportsImageEditor() &&
                 $userSession->checkPermission("editImagesInVolume:$volume->uid") &&
                 ($userSession->getId() == $this->uploaderId || $userSession->checkPermission("editPeerImagesInVolume:$volume->uid"))
