@@ -112,41 +112,6 @@ class AssetsController extends Controller
             ],
         ];
 
-        // See if we can show a thumbnail
-        try {
-            // Is the image editable, and is the user allowed to edit?
-            $userSession = Craft::$app->getUser();
-
-            $editable = (
-                $asset->getSupportsImageEditor() &&
-                $userSession->checkPermission("editImagesInVolume:{$volume->uid}") &&
-                ($userSession->getId() == $asset->uploaderId || $userSession->checkPermission("editPeerImagesInVolume:{$volume->uid}"))
-            );
-            $hasPreview = Craft::$app->getAssets()->getAssetPreviewHandler($asset) !== null;
-            $previewHtml = Html::tag('div',
-                Html::tag('div', $asset->getPreviewThumbImg(350, 190), [
-                    'class' => 'preview-thumb',
-                ]) .
-                Html::tag(
-                    'div',
-                    ($hasPreview ? Html::tag('div', Craft::t('app', 'Preview'), ['class' => 'btn', 'id' => 'preview-btn']) : '') .
-                    ($editable ? Html::tag('div', Craft::t('app', 'Edit'), ['class' => 'btn', 'id' => 'edit-btn']) : ''),
-                    ['class' => 'buttons']
-                ),
-                [
-                    'id' => 'preview-thumb-container',
-                    'class' => array_filter([
-                        'preview-thumb-container',
-                        $asset->getHasCheckeredThumb() ? 'checkered' : null,
-                        $editable ? 'editable' : null,
-                    ]),
-                ]
-            );
-        } catch (NotSupportedException $e) {
-            // NBD
-            $previewHtml = '';
-        }
-
         // See if the user is allowed to replace the file
         $userSession = Craft::$app->getUser();
         $canReplaceFile = (
@@ -175,7 +140,7 @@ class AssetsController extends Controller
             'assetUrl' => $assetUrl,
             'title' => trim($asset->title) ?: Craft::t('app', 'Edit Asset'),
             'crumbs' => $crumbs,
-            'previewHtml' => $previewHtml,
+            'previewHtml' => $asset->getPreviewHtml(),
             'formattedSize' => $asset->getFormattedSize(0),
             'formattedSizeInBytes' => $asset->getFormattedSizeInBytes(false),
             'dimensions' => $asset->getDimensions(),
