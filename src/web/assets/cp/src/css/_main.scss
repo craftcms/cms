@@ -3684,6 +3684,7 @@ ul.tree,
       & > .preview-thumb-container {
         margin: 0 var(--neg-padding);
         height: auto;
+        min-height: 54px; // make room for the Preview / Edit buttons
 
         & + .pane-header {
           border-radius: 0;

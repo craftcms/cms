@@ -1883,7 +1883,7 @@ body.ltr .element-editor > .ee-body > .ee-sidebar { -o-transition: right linear 
 
 body.rtl .element-editor > .ee-body > .ee-sidebar { -o-transition: left linear 250ms; transition: left linear 250ms; }
 
-.element-editor > .ee-body > .ee-sidebar > .preview-thumb-container { margin: 0 var(--neg-padding); height: auto; }
+.element-editor > .ee-body > .ee-sidebar > .preview-thumb-container { margin: 0 var(--neg-padding); height: auto; min-height: 54px; }
 
 .element-editor > .ee-body > .ee-sidebar > .preview-thumb-container + .pane-header { border-radius: 0; }
 
