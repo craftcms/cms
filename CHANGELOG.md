@@ -1,5 +1,10 @@
 # Release Notes for Craft CMS 3.x
 
+## Unreleased
+
+### Fixed
+- Fixed a bug where only the first changed nested Matrix field would initially show a change badge, when making changes to an entry’s Current revision. ([#9068](https://github.com/craftcms/cms/issues/9068))
+
 ## 3.7.0-beta.3 - 2021-06-22
 
 ### Added
