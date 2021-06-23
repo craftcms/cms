@@ -1679,7 +1679,6 @@ class Asset extends Element
             $userSession = Craft::$app->getUser();
 
             $volume = $this->getVolume();
-
             $previewable = $allowPreview && Craft::$app->getAssets()->getAssetPreviewHandler($this) !== null;
             $editable = (
                 $allowEdit &&
@@ -1695,14 +1694,13 @@ class Asset extends Element
                 Html::tag(
                     'div',
                     ($previewable ? Html::tag('div', Craft::t('app', 'Preview'), ['class' => 'btn preview-btn', 'id' => 'preview-btn']) : '') .
-                    ($editable ? Html::tag('div', Craft::t('app', 'Edit'), ['class' => 'btn', 'id' => 'edit-btn']) : ''),
+                    ($editable ? Html::tag('div', Craft::t('app', 'Edit'), ['class' => 'btn edit-btn', 'id' => 'edit-btn']) : ''),
                     ['class' => 'buttons']
                 ),
                 [
                     'class' => array_filter([
                         'preview-thumb-container',
                         $this->getHasCheckeredThumb() ? 'checkered' : null,
-                        $editable ? 'editable' : null,
                     ]),
                 ]
             );

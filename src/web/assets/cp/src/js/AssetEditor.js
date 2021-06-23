@@ -12,7 +12,7 @@ Craft.AssetEditor = Craft.BaseElementEditor.extend({
 
     init: function(element, settings) {
         this.on('updateForm', () => {
-            this.addListener(this.$sidebar.find('.preview-thumb-container.editable'), 'click', 'showImageEditor');
+            this.addListener(this.$sidebar.find('.preview-thumb-container .edit-btn'), 'click', 'showImageEditor');
 
             this.$filenameInput = this.$sidebar.find('.filename');
             this.addListener(this.$filenameInput, 'focus', 'selectFilename');
