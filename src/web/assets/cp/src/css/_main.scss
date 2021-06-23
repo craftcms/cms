@@ -4002,7 +4002,10 @@ ul.tree,
   align-items: center;
   height: 190px;
   background-color: $grey900;
-  cursor: pointer;
+
+  &.editable {
+    cursor: pointer;
+  }
 
   &.loading {
     &:after {
