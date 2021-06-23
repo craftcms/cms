@@ -1720,7 +1720,7 @@ class Asset extends Element
     {
         $components = [
 
-            // Omit preview button on sidebars
+            // Omit preview button on sidebar of slideouts
             $this->getPreviewHtml(false),
 
             parent::getSidebarHtml(),
