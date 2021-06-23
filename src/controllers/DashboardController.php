@@ -201,7 +201,7 @@ class DashboardController extends Controller
             'id' => $widget->id,
             'dateCreated' => $widget->dateCreated,
             'dateUpdated' => $widget->dateUpdated,
-            'colspan' => $widget->colspan,
+            'colspan' => $widget->getColspan(),
             'type' => get_class($widget),
             'settings' => $settings,
         ]);
@@ -518,7 +518,7 @@ class DashboardController extends Controller
         $settingsJs = $view->clearJsBuffer(false);
 
         // Get the colspan (limited to the widget type's max allowed colspan)
-        $colspan = ($widget->colspan ?: 1);
+        $colspan = ($widget->getColspan() ?: 1);
 
         if (($maxColspan = $widget::maxColspan()) && $colspan > $maxColspan) {
             $colspan = $maxColspan;
