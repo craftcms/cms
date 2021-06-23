@@ -3729,15 +3729,6 @@ ul.tree,
       @include margin(0, var(--neg-padding), 0, 0);
     }
   }
-
-  & > .ee-sidebar-shade {
-    position: absolute;
-    z-index: 2;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-  }
 }
 
 @media (min-width: 1536px) {
@@ -3772,10 +3763,6 @@ ul.tree,
         height: 100%;
         box-shadow: none;
       }
-    }
-
-    & > .ee-sidebar-shade {
-      display: none !important;
     }
   }
 }
@@ -4019,6 +4006,10 @@ ul.tree,
   &.checkered img {
     background-color: $white;
     @include checkered-bg(17px);
+  }
+
+  &.editable {
+    cursor: pointer;
   }
 
   &.loading {
