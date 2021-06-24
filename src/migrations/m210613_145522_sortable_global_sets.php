@@ -6,6 +6,7 @@ use Craft;
 use craft\db\Migration;
 use craft\db\Query;
 use craft\db\Table;
+use craft\helpers\ArrayHelper;
 use craft\helpers\MigrationHelper;
 use craft\services\Globals;
 
@@ -29,14 +30,12 @@ class m210613_145522_sortable_global_sets extends Migration
             return;
         }
 
-        $uids = (new Query())
-            ->select(['uid'])
-            ->from([Table::GLOBALSETS])
-            ->orderBy(['name' => SORT_ASC])
-            ->column();
+        $globalSets = $projectConfig->get(Globals::CONFIG_GLOBALSETS_KEY) ?? [];
+        ArrayHelper::multisort($globalSets, 'name');
+        $sortOrder = 1;
 
-        foreach ($uids as $i => $uid) {
-            $projectConfig->set(Globals::CONFIG_GLOBALSETS_KEY . ".$uid.sortOrder", $i + 1);
+        foreach ($globalSets as $uid => $data) {
+            $projectConfig->set(Globals::CONFIG_GLOBALSETS_KEY . ".$uid.sortOrder", ++$sortOrder);
         }
     }
 

@@ -164,6 +164,23 @@ class Content extends Component
             throw new Exception('Cannot save the content of an unsaved element.');
         }
 
+        // Serialize the values before we start futzing with the content table & col prefix
+        $serializedFieldValues = [];
+        $fields = [];
+        $fieldLayout = $element->getFieldLayout();
+
+        if ($fieldLayout) {
+            foreach ($fieldLayout->getFields() as $field) {
+                if (
+                    (!$element->contentId || $element->isFieldDirty($field->handle)) &&
+                    $field::hasContentColumn()
+                ) {
+                    $serializedFieldValues[$field->uid] = $field->serializeValue($element->getFieldValue($field->handle), $element);
+                    $fields[$field->uid] = $field;
+                }
+            }
+        }
+
         $originalContentTable = $this->contentTable;
         $originalFieldColumnPrefix = $this->fieldColumnPrefix;
         $originalFieldContext = $this->fieldContext;
@@ -187,25 +204,19 @@ class Content extends Component
         if ($element->hasTitles() && ($title = (string)$element->title) !== '') {
             $values['title'] = $title;
         }
-        $fieldLayout = $element->getFieldLayout();
-        if ($fieldLayout) {
-            foreach ($fieldLayout->getFields() as $field) {
-                if (
-                    (!$element->contentId || $element->isFieldDirty($field->handle)) &&
-                    $field::hasContentColumn()
-                ) {
-                    $value = $field->serializeValue($element->getFieldValue($field->handle), $element);
-                    $type = $field->getContentColumnType();
-                    if (is_array($type)) {
-                        foreach (array_keys($type) as $i => $key) {
-                            $column = ElementHelper::fieldColumnFromField($field, $i !== 0 ? $key : null);
-                            $values[$column] = Db::prepareValueForDb($value[$key] ?? null);
-                        }
-                    } else {
-                        $column = ElementHelper::fieldColumnFromField($field);
-                        $values[$column] = Db::prepareValueForDb($value);
-                    }
+
+        foreach ($serializedFieldValues as $fieldUid => $value) {
+            $field = $fields[$fieldUid];
+            $type = $field->getContentColumnType();
+
+            if (is_array($type)) {
+                foreach (array_keys($type) as $i => $key) {
+                    $column = ElementHelper::fieldColumnFromField($field, $i !== 0 ? $key : null);
+                    $values[$column] = Db::prepareValueForDb($value[$key] ?? null);
                 }
+            } else {
+                $column = ElementHelper::fieldColumnFromField($field);
+                $values[$column] = Db::prepareValueForDb($value);
             }
         }
 

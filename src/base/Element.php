@@ -3858,15 +3858,15 @@ abstract class Element extends Component implements ElementInterface
                     return false;
                 }
                 if ($this->getIsUnpublishedDraft()) {
-                    $color = 'white';
+                    $icon = Html::tag('span', '', ['data' => ['icon' => 'draft']]);
                     $label = Craft::t('app', 'Draft');
                 } else {
                     $status = $this->getStatus();
                     $statusDef = static::statuses()[$status] ?? null;
-                    $color = $statusDef['color'] ?? $status;
+                    $icon = Html::tag('span', '', ['class' => ['status', $statusDef['color'] ?? $status]]);
                     $label = $statusDef['label'] ?? $statusDef ?? ucfirst($status);
                 }
-                return Html::tag('span', '', ['class' => ['status', $color]]) . $label;
+                return $icon . Html::tag('span', $label);
             },
         ], $event->metadata, [
             Craft::t('app', 'Created at') => $this->dateCreated

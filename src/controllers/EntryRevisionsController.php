@@ -475,7 +475,9 @@ class EntryRevisionsController extends BaseEntriesController
             // Publish the draft (finally!)
             $newEntry = Craft::$app->getDrafts()->publishDraft($draft);
         } catch (InvalidElementException $e) {
-            if ($draft->getIsProvisionalDraft() || $draft->getIsUnpublishedDraft()) {
+            if ($draft->getIsUnpublishedDraft()) {
+                $this->setFailFlash(Craft::t('app', 'Couldn’t create entry.'));
+            } else if ($draft->getIsProvisionalDraft()) {
                 $this->setFailFlash(Craft::t('app', 'Couldn’t save entry.'));
             } else {
                 $this->setFailFlash(Craft::t('app', 'Couldn’t apply draft.'));
@@ -494,7 +496,9 @@ class EntryRevisionsController extends BaseEntriesController
             ]);
         }
 
-        if ($draft->getIsProvisionalDraft() || $draft->getIsUnpublishedDraft()) {
+        if ($draft->getIsUnpublishedDraft()) {
+            $this->setSuccessFlash(Craft::t('app', 'Entry created.'));
+        } else if ($draft->getIsProvisionalDraft()) {
             $this->setSuccessFlash(Craft::t('app', 'Entry saved.'));
         } else {
             $this->setSuccessFlash(Craft::t('app', 'Draft applied.'));

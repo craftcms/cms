@@ -1663,11 +1663,14 @@ class Asset extends Element
     }
 
     /**
-     * @inheritdoc
+     * Returns the HTML for asset previews.
+     *
+     * @return string
+     * @throws InvalidConfigException
      */
-    public function getSidebarHtml(): string
+    public function getPreviewHtml(): string
     {
-        $components = [];
+        $html = '';
 
         // See if we can show a thumbnail
         try {
@@ -1675,28 +1678,27 @@ class Asset extends Element
             $userSession = Craft::$app->getUser();
 
             $volume = $this->getVolume();
-
+            $previewable = Craft::$app->getAssets()->getAssetPreviewHandler($this) !== null;
             $editable = (
                 $this->getSupportsImageEditor() &&
                 $userSession->checkPermission("editImagesInVolume:$volume->uid") &&
                 ($userSession->getId() == $this->uploaderId || $userSession->checkPermission("editPeerImagesInVolume:$volume->uid"))
             );
 
-            $components[] = Html::tag('div',
+            $html = Html::tag('div',
                 Html::tag('div', $this->getPreviewThumbImg(350, 190), [
                     'class' => 'preview-thumb',
                 ]) .
-                ($editable
-                    ? Html::tag(
-                        'div',
-                        Html::tag('div', Craft::t('app', 'Edit'), ['class' => 'btn']),
-                        ['class' => 'buttons']
-                    )
-                    : ''),
+                Html::tag(
+                    'div',
+                    ($previewable ? Html::tag('div', Craft::t('app', 'Preview'), ['class' => 'btn preview-btn', 'id' => 'preview-btn']) : '') .
+                    ($editable ? Html::tag('div', Craft::t('app', 'Edit'), ['class' => 'btn edit-btn', 'id' => 'edit-btn']) : ''),
+                    ['class' => 'buttons']
+                ),
                 [
                     'class' => array_filter([
                         'preview-thumb-container',
-                        $editable ? 'editable' : null,
+                        $this->getHasCheckeredThumb() ? 'checkered' : null,
                     ]),
                 ]
             );
@@ -1704,7 +1706,22 @@ class Asset extends Element
             // NBD
         }
 
-        $components[] = parent::getSidebarHtml();
+        return $html;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getSidebarHtml(): string
+    {
+        $components = [
+
+            // Omit preview button on sidebar of slideouts
+            $this->getPreviewHtml(false),
+
+            parent::getSidebarHtml(),
+        ];
+
         return implode("\n", $components);
     }
 

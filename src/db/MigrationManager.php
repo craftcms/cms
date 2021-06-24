@@ -119,7 +119,7 @@ class MigrationManager extends Component
         $migrationNames = $this->getNewMigrations();
 
         if (empty($migrationNames)) {
-            Craft::info('No new migration found. Your system is up-to-date.', __METHOD__);
+            Craft::info('No new migration found. Your system is up to date.', __METHOD__);
             return;
         }
 

@@ -70,7 +70,7 @@ class TemplateLoader implements LoaderInterface
     }
 
     /**
-     * Returns whether the cached template is still up-to-date with the latest template.
+     * Returns whether the cached template is still up to date with the latest template.
      *
      * @param string $name The template name
      * @param int $time The last modification time of the cached template

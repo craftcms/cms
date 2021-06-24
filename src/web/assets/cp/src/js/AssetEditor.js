@@ -12,7 +12,8 @@ Craft.AssetEditor = Craft.BaseElementEditor.extend({
 
     init: function(element, settings) {
         this.on('updateForm', () => {
-            this.addListener(this.$sidebar.find('.preview-thumb-container.editable'), 'click', 'showImageEditor');
+            this.addListener(this.$sidebar.find('.preview-thumb-container .edit-btn'), 'click', 'showImageEditor');
+            this.addListener(this.$sidebar.find('.preview-thumb-container .preview-btn'), 'click', 'showImagePreview');
 
             this.$filenameInput = this.$sidebar.find('.filename');
             this.addListener(this.$filenameInput, 'focus', 'selectFilename');
@@ -40,6 +41,17 @@ Craft.AssetEditor = Craft.BaseElementEditor.extend({
                 this.load();
             },
         });
+    },
+
+    showImagePreview: function() {
+        var settings = {};
+
+        if (this.$element.data('image-width')) {
+            settings.startingWidth = this.$element.data('image-width');
+            settings.startingHeight = this.$element.data('image-height');
+        }
+
+        new Craft.PreviewFileModal(this.$element.data('id'), null, settings);
     },
 
     selectFilename: function() {

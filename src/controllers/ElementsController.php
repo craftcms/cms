@@ -482,6 +482,7 @@ class ElementsController extends BaseElementsController
             'headHtml' => $view->getHeadHtml(),
             'footHtml' => $view->getBodyHtml(),
             'deltaNames' => $view->getDeltaNames(),
+            'initialDeltaValues' => $view->getInitialDeltaValues(),
             'editUrl' => $element->getCpEditUrl(),
         ];
 
