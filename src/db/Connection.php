@@ -220,11 +220,7 @@ class Connection extends \yii\db\Connection
             Table::ASSETINDEXDATA,
             Table::ASSETTRANSFORMINDEX,
             Table::SESSIONS,
-            Table::TEMPLATECACHES,
-            Table::TEMPLATECACHEQUERIES,
-            Table::TEMPLATECACHEELEMENTS,
             '{{%cache}}',
-            '{{%templatecachecriteria}}',
         ];
     }
 

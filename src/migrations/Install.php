@@ -648,25 +648,6 @@ class Install extends Migration
             'uid' => $this->uid(),
             'PRIMARY KEY([[id]])',
         ]);
-        $this->createTable(Table::TEMPLATECACHEELEMENTS, [
-            'id' => $this->primaryKey(),
-            'cacheId' => $this->integer()->notNull(),
-            'elementId' => $this->integer()->notNull(),
-        ]);
-        $this->createTable(Table::TEMPLATECACHEQUERIES, [
-            'id' => $this->primaryKey(),
-            'cacheId' => $this->integer()->notNull(),
-            'type' => $this->string()->notNull(),
-            'query' => $this->longText()->notNull(),
-        ]);
-        $this->createTable(Table::TEMPLATECACHES, [
-            'id' => $this->primaryKey(),
-            'siteId' => $this->integer()->notNull(),
-            'cacheKey' => $this->string()->notNull(),
-            'path' => $this->string(),
-            'expiryDate' => $this->dateTime()->notNull(),
-            'body' => $this->mediumText()->notNull(),
-        ]);
         $this->createTable(Table::TOKENS, [
             'id' => $this->primaryKey(),
             'token' => $this->char(32)->notNull(),
@@ -908,13 +889,6 @@ class Install extends Migration
         $this->createIndex(null, Table::TAGGROUPS, ['handle'], false);
         $this->createIndex(null, Table::TAGGROUPS, ['dateDeleted'], false);
         $this->createIndex(null, Table::TAGS, ['groupId'], false);
-        $this->createIndex(null, Table::TEMPLATECACHEELEMENTS, ['cacheId'], false);
-        $this->createIndex(null, Table::TEMPLATECACHEELEMENTS, ['elementId'], false);
-        $this->createIndex(null, Table::TEMPLATECACHEQUERIES, ['cacheId'], false);
-        $this->createIndex(null, Table::TEMPLATECACHEQUERIES, ['type'], false);
-        $this->createIndex(null, Table::TEMPLATECACHES, ['cacheKey', 'siteId', 'expiryDate', 'path'], false);
-        $this->createIndex(null, Table::TEMPLATECACHES, ['cacheKey', 'siteId', 'expiryDate'], false);
-        $this->createIndex(null, Table::TEMPLATECACHES, ['siteId'], false);
         $this->createIndex(null, Table::TOKENS, ['token'], true);
         $this->createIndex(null, Table::TOKENS, ['expiryDate'], false);
         $this->createIndex(null, Table::USERGROUPS, ['handle']);
@@ -1060,10 +1034,6 @@ class Install extends Migration
         $this->addForeignKey(null, Table::TAGGROUPS, ['fieldLayoutId'], Table::FIELDLAYOUTS, ['id'], 'SET NULL', null);
         $this->addForeignKey(null, Table::TAGS, ['groupId'], Table::TAGGROUPS, ['id'], 'CASCADE', null);
         $this->addForeignKey(null, Table::TAGS, ['id'], Table::ELEMENTS, ['id'], 'CASCADE', null);
-        $this->addForeignKey(null, Table::TEMPLATECACHEELEMENTS, ['cacheId'], Table::TEMPLATECACHES, ['id'], 'CASCADE', null);
-        $this->addForeignKey(null, Table::TEMPLATECACHEELEMENTS, ['elementId'], Table::ELEMENTS, ['id'], 'CASCADE', null);
-        $this->addForeignKey(null, Table::TEMPLATECACHEQUERIES, ['cacheId'], Table::TEMPLATECACHES, ['id'], 'CASCADE', null);
-        $this->addForeignKey(null, Table::TEMPLATECACHES, ['siteId'], Table::SITES, ['id'], 'CASCADE', 'CASCADE');
         $this->addForeignKey(null, Table::USERGROUPS_USERS, ['groupId'], Table::USERGROUPS, ['id'], 'CASCADE', null);
         $this->addForeignKey(null, Table::USERGROUPS_USERS, ['userId'], Table::USERS, ['id'], 'CASCADE', null);
         $this->addForeignKey(null, Table::USERPERMISSIONS_USERGROUPS, ['groupId'], Table::USERGROUPS, ['id'], 'CASCADE', null);

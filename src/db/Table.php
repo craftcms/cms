@@ -46,11 +46,7 @@ abstract class Table
     const SEQUENCES = '{{%sequences}}';
     const SYSTEMMESSAGES = '{{%systemmessages}}';
     const ENTRIES = '{{%entries}}';
-    /** @deprecated in 3.2.0 */
-    const ENTRYDRAFTS = '{{%entrydrafts}}';
     const ENTRYTYPES = '{{%entrytypes}}';
-    /** @deprecated in 3.2.0 */
-    const ENTRYVERSIONS = '{{%entryversions}}';
     const FIELDGROUPS = '{{%fieldgroups}}';
     const FIELDLAYOUTFIELDS = '{{%fieldlayoutfields}}';
     const FIELDLAYOUTS = '{{%fieldlayouts}}';
@@ -70,11 +66,6 @@ abstract class Table
     const PLUGINS = '{{%plugins}}';
     /** @since 3.4.0 */
     const PROJECTCONFIG = '{{%projectconfig}}';
-    /**
-     * @since 3.6.8
-     * @deprecated in 3.7.0
-     */
-    const PROJECTCONFIGNAMES = '{{%projectconfignames}}';
     const QUEUE = '{{%queue}}';
     const RELATIONS = '{{%relations}}';
     const SECTIONS = '{{%sections}}';
@@ -87,12 +78,6 @@ abstract class Table
     const STRUCTURES = '{{%structures}}';
     const TAGGROUPS = '{{%taggroups}}';
     const TAGS = '{{%tags}}';
-    /** @deprecated in 3.5.0 */
-    const TEMPLATECACHEELEMENTS = '{{%templatecacheelements}}';
-    /** @deprecated in 3.5.0 */
-    const TEMPLATECACHEQUERIES = '{{%templatecachequeries}}';
-    /** @deprecated in 3.5.0 */
-    const TEMPLATECACHES = '{{%templatecaches}}';
     const TOKENS = '{{%tokens}}';
     const USERGROUPS = '{{%usergroups}}';
     const USERGROUPS_USERS = '{{%usergroups_users}}';
