@@ -631,11 +631,12 @@ class Plugins extends Component
             }
 
             // Clean up the plugins and migrations tables
-            $id = $this->getStoredPluginInfo($handle)['id'];
-
-            Db::delete(Table::PLUGINS, [
-                'id' => $id,
-            ]);
+            $info = $this->getStoredPluginInfo($handle);
+            if ($info !== null) {
+                Db::delete(Table::PLUGINS, [
+                    'id' => $info['id'],
+                ]);
+            }
 
             Db::delete(Table::MIGRATIONS, [
                 'track' => "plugin:$handle",
