@@ -2255,8 +2255,10 @@ abstract class Element extends Component implements ElementInterface
         }
 
         foreach ($this->getOutdatedFields() as $fieldHandle) {
-            if (!$this->isFieldModified($fieldHandle)) {
-                $field = $this->fieldByHandle($fieldHandle);
+            if (
+                !$this->isFieldModified($fieldHandle) &&
+                ($field = $this->fieldByHandle($fieldHandle)) !== null
+            ) {
                 $field->copyValue($canonical, $this);
             }
         }

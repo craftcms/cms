@@ -8,6 +8,7 @@
 ### Fixed
 - Fixed a bug where only the first changed nested Matrix field would initially show a change badge, when making changes to an entry’s Current revision. ([#9068](https://github.com/craftcms/cms/issues/9068))
 - Fixed a bug where clicking on fields within element editor sidebars would close the sidebar. ([#9072](https://github.com/craftcms/cms/pull/9072))
+- Fixed an error that could occur when loading a draft. ([#9080](https://github.com/craftcms/cms/issues/9080))
 
 ## 3.7.0-beta.3 - 2021-06-22
 
