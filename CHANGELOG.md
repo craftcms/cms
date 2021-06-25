@@ -257,6 +257,7 @@
 ### Fixed
 - Fixed a button styling issue in Safari. ([#8076](https://github.com/craftcms/cms/pull/8076))
 - Fixed an error that occurred when running the `db/restore` command, if the `info` table was missing its row. ([#7028](https://github.com/craftcms/cms/issues/7028))
+- Fixed an error that occurred when uninstalling a plugin via the `plugin/uninstall` command with `--force`, if the plugin didn’t have a row in the `plugins` table.
 
 ## 3.6.17 - 2021-06-15
 
