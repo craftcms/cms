@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 3.x
 
-## Unreleased
+## 3.7.0-beta.4 - 2021-06-25
 
 ### Changed
 - Image preview thumbnails on Edit Asset pages and within asset editor slideouts now have checkered backgrounds. ([#9073](https://github.com/craftcms/cms/pull/9073))
