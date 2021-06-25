@@ -1141,11 +1141,11 @@ table.collapsed tbody [data-title] form { display: inline-block; }
 
 .element.sel.hasthumb .elementthumb img, li.sel .element.hasthumb .elementthumb img { box-shadow: 0 0 0 1px rgba(81, 95, 108, 0.1), 0 6px 4px -4px rgba(81, 95, 108, 0.2); }
 
-.element.hasthumb .elementthumb { position: absolute; display: -webkit-flex; display: flex; -webkit-justify-content: center; justify-content: center; -ms-flex-pack: center; -webkit-align-items: center; align-items: center; -ms-flex-align: center; }
+.element.hasthumb .elementthumb:not(:empty) { position: absolute; display: -webkit-flex; display: flex; -webkit-justify-content: center; justify-content: center; -ms-flex-pack: center; -webkit-align-items: center; align-items: center; -ms-flex-align: center; }
 
-.element.hasthumb .elementthumb img { display: block; -webkit-flex-shrink: 0; flex-shrink: 0; pointer-events: none; border-radius: 3px; max-width: 100%; max-height: 100%; }
+.element.hasthumb .elementthumb:not(:empty) img { display: block; -webkit-flex-shrink: 0; flex-shrink: 0; pointer-events: none; border-radius: 3px; max-width: 100%; max-height: 100%; }
 
-.element.hasthumb .elementthumb.rounded img { border-radius: 50%; }
+.element.hasthumb .elementthumb:not(:empty).rounded img { border-radius: 50%; }
 
 .element .label { display: inline-block; }
 
@@ -1177,13 +1177,13 @@ body.ltr .element.small.hasthumb, body.ltr .element.large:not(.hasthumb).hasthum
 
 body.rtl .element.small.hasthumb, body.rtl .element.large:not(.hasthumb).hasthumb { padding-right: 39px; }
 
-.element.small.hasthumb .elementthumb, .element.large:not(.hasthumb).hasthumb .elementthumb { top: calc(50% - 17px); width: 34px; height: 34px; }
+.element.small.hasthumb .elementthumb:not(:empty), .element.large:not(.hasthumb).hasthumb .elementthumb:not(:empty) { top: calc(50% - 17px); width: 34px; height: 34px; }
 
-body.ltr .element.small.hasthumb .elementthumb, body.ltr .element.large:not(.hasthumb).hasthumb .elementthumb { left: 0; }
+body.ltr .element.small.hasthumb .elementthumb:not(:empty), body.ltr .element.large:not(.hasthumb).hasthumb .elementthumb:not(:empty) { left: 0; }
 
-body.rtl .element.small.hasthumb .elementthumb, body.rtl .element.large:not(.hasthumb).hasthumb .elementthumb { right: 0; }
+body.rtl .element.small.hasthumb .elementthumb:not(:empty), body.rtl .element.large:not(.hasthumb).hasthumb .elementthumb:not(:empty) { right: 0; }
 
-.element.small.hasthumb .elementthumb.checkered img, .element.large:not(.hasthumb).hasthumb .elementthumb.checkered img { background-image: -o-linear-gradient(45deg, #e4edf6 25%, transparent 25%), -o-linear-gradient(315deg, #e4edf6 25%, transparent 25%), -o-linear-gradient(45deg, transparent 75%, #e4edf6 75%), -o-linear-gradient(315deg, transparent 75%, #e4edf6 75%); background-image: linear-gradient(45deg, #e4edf6 25%, transparent 25%), linear-gradient(135deg, #e4edf6 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #e4edf6 75%), linear-gradient(135deg, transparent 75%, #e4edf6 75%); -o-background-size: 8px 8px; background-size: 8px 8px; background-position: 0 0, 4px 0, 4px -4px, 0 4px; }
+.element.small.hasthumb .elementthumb:not(:empty).checkered img, .element.large:not(.hasthumb).hasthumb .elementthumb:not(:empty).checkered img { background-image: -o-linear-gradient(45deg, #e4edf6 25%, transparent 25%), -o-linear-gradient(315deg, #e4edf6 25%, transparent 25%), -o-linear-gradient(45deg, transparent 75%, #e4edf6 75%), -o-linear-gradient(315deg, transparent 75%, #e4edf6 75%); background-image: linear-gradient(45deg, #e4edf6 25%, transparent 25%), linear-gradient(135deg, #e4edf6 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #e4edf6 75%), linear-gradient(135deg, transparent 75%, #e4edf6 75%); -o-background-size: 8px 8px; background-size: 8px 8px; background-position: 0 0, 4px 0, 4px -4px, 0 4px; }
 
 body.ltr .element.small.hasthumb.hasstatus, body.ltr .element.large:not(.hasthumb).hasthumb.hasstatus { padding-left: 54px; }
 
@@ -1205,13 +1205,13 @@ body.ltr .element.large.hasthumb.hasstatus .status { left: 7px; }
 
 body.rtl .element.large.hasthumb.hasstatus .status { right: 7px; }
 
-.element.large.hasthumb .elementthumb { top: 7px; width: 120px; height: 120px; }
+.element.large.hasthumb .elementthumb:not(:empty) { top: 7px; width: 120px; height: 120px; }
 
-body.ltr .element.large.hasthumb .elementthumb { left: 7px; }
+body.ltr .element.large.hasthumb .elementthumb:not(:empty) { left: 7px; }
 
-body.rtl .element.large.hasthumb .elementthumb { right: 7px; }
+body.rtl .element.large.hasthumb .elementthumb:not(:empty) { right: 7px; }
 
-.element.large.hasthumb .elementthumb.checkered img { background-image: -o-linear-gradient(45deg, #e4edf6 25%, transparent 25%), -o-linear-gradient(315deg, #e4edf6 25%, transparent 25%), -o-linear-gradient(45deg, transparent 75%, #e4edf6 75%), -o-linear-gradient(315deg, transparent 75%, #e4edf6 75%); background-image: linear-gradient(45deg, #e4edf6 25%, transparent 25%), linear-gradient(135deg, #e4edf6 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #e4edf6 75%), linear-gradient(135deg, transparent 75%, #e4edf6 75%); -o-background-size: 15px 15px; background-size: 15px 15px; background-position: 0 0, 7.5px 0, 7.5px -7.5px, 0 7.5px; }
+.element.large.hasthumb .elementthumb:not(:empty).checkered img { background-image: -o-linear-gradient(45deg, #e4edf6 25%, transparent 25%), -o-linear-gradient(315deg, #e4edf6 25%, transparent 25%), -o-linear-gradient(45deg, transparent 75%, #e4edf6 75%), -o-linear-gradient(315deg, transparent 75%, #e4edf6 75%); background-image: linear-gradient(45deg, #e4edf6 25%, transparent 25%), linear-gradient(135deg, #e4edf6 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #e4edf6 75%), linear-gradient(135deg, transparent 75%, #e4edf6 75%); -o-background-size: 15px 15px; background-size: 15px 15px; background-position: 0 0, 7.5px 0, 7.5px -7.5px, 0 7.5px; }
 
 .element.large.hasthumb .label { display: block; white-space: nowrap; overflow: hidden; -o-text-overflow: ellipsis; text-overflow: ellipsis; word-wrap: normal; }
 
