@@ -11,6 +11,7 @@ use Craft;
 use craft\events\DefineBehaviorsEvent;
 use craft\helpers\Db;
 use craft\helpers\StringHelper;
+use yii\db\Schema;
 
 /**
  * Active Record base class.
@@ -135,13 +136,8 @@ abstract class ActiveRecord extends \yii\db\ActiveRecord
      */
     private function _prepareValue(string $name, $value)
     {
-        $value = Db::prepareValueForDb($value);
-
-        $columns = static::getTableSchema()->columns;
-        if (isset($columns[$name])) {
-            $value = $columns[$name]->phpTypecast($value);
-        }
-
-        return $value;
+        $dbType = static::getTableSchema()->columns[$name]->dbType ?? null;
+        $isJson = $dbType === Schema::TYPE_JSON;
+        return Db::prepareValueForDb($value, !$isJson);
     }
 }
