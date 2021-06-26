@@ -4,7 +4,7 @@
 
 ### Added
 - The control panel now displays new feature announcements. ([#8056](https://github.com/craftcms/cms/pull/8056))
-- Added the “Reduce focus visibility” user preference. ([#7790](https://github.com/craftcms/cms/issues/7790))
+- Added the “Always show focus rings” user preference. ([#7790](https://github.com/craftcms/cms/issues/7790))
 - The Entries index page now has “Create a new entry before” and “Create a new entry after” actions for entries within Structure sections. ([#870](https://github.com/craftcms/cms/issues/870))
 - Edit Entry pages now treat unpublished drafts similarly to published entries, rather than drafts. ([#7899](https://github.com/craftcms/cms/pull/7899))
 - Edit Entry pages no longer appear to create a draft when the Current revision is edited within Live Preview. Unsaved changes are now stored within a “provisional draft”, which is mostly hidden from the author. ([#7899](https://github.com/craftcms/cms/pull/7899))
