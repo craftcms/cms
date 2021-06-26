@@ -19,16 +19,16 @@ class m210624_235115_json_columns extends Migration
         // Ensure there are no active tokens (which could have contained invalid JSON)
         $this->truncateTable(Table::TOKENS);
 
-        $this->alterColumn(Table::DEPRECATIONERRORS, 'traces', $this->json());
-        $this->alterColumn(Table::ELEMENTINDEXSETTINGS, 'settings', $this->json());
-        $this->alterColumn(Table::FIELDLAYOUTTABS, 'elements', $this->json());
-        $this->alterColumn(Table::FIELDS, 'settings', $this->json());
-        $this->alterColumn(Table::GQLSCHEMAS, 'scope', $this->json());
-        $this->alterColumn(Table::SECTIONS, 'previewTargets', $this->json());
-        $this->alterColumn(Table::TOKENS, 'route', $this->json());
-        $this->alterColumn(Table::USERPREFERENCES, 'preferences', $this->json());
-        $this->alterColumn(Table::VOLUMES, 'settings', $this->json());
-        $this->alterColumn(Table::WIDGETS, 'settings', $this->json());
+        $this->convertColumnToJson(Table::DEPRECATIONERRORS, 'traces');
+        $this->convertColumnToJson(Table::ELEMENTINDEXSETTINGS, 'settings');
+        $this->convertColumnToJson(Table::FIELDLAYOUTTABS, 'elements');
+        $this->convertColumnToJson(Table::FIELDS, 'settings');
+        $this->convertColumnToJson(Table::GQLSCHEMAS, 'scope');
+        $this->convertColumnToJson(Table::SECTIONS, 'previewTargets');
+        $this->convertColumnToJson(Table::TOKENS, 'route');
+        $this->convertColumnToJson(Table::USERPREFERENCES, 'preferences');
+        $this->convertColumnToJson(Table::VOLUMES, 'settings');
+        $this->convertColumnToJson(Table::WIDGETS, 'settings');
     }
 
     /**

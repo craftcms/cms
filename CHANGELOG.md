@@ -13,6 +13,7 @@
 - Added `craft\behaviors\SessionBehavior::getError()`.
 - Added `craft\behaviors\SessionBehavior::getNotice()`.
 - Added `craft\controllers\AssetIndexesController`.
+- Added `craft\db\Migration::convertColumnToJson()`.
 - Added `craft\db\Table::ASSETINDEXINGSESSIONS`.
 - Added `craft\errors\MissingVolumeFolderException`.
 - Added `craft\helpers\Assets::downloadFile()`.
