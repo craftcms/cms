@@ -106,9 +106,10 @@ class Db
      * Prepares a value to be sent to the database.
      *
      * @param mixed $value The value to be prepared
+     * @param bool $jsonEncodeArrays Whether arrays should be JSON-encoded
      * @return mixed The prepped value
      */
-    public static function prepareValueForDb($value)
+    public static function prepareValueForDb($value, bool $jsonEncodeArrays = true)
     {
         // If the object explicitly defines its savable value, use that
         if ($value instanceof Serializable) {
@@ -121,7 +122,7 @@ class Db
         }
 
         // If it's an object or array, just JSON-encode it
-        if (is_object($value) || is_array($value)) {
+        if ($jsonEncodeArrays && (is_object($value) || is_array($value))) {
             return Json::encode($value);
         }
 

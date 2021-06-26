@@ -48,7 +48,7 @@ class Tokens extends Component
      * Craft::$app->tokens->createToken(['template' => 'template/path']);
      * ```
      *
-     * @param mixed $route Where matching requests should be routed to.
+     * @param string|array $route Where matching requests should be routed to.
      * @param int|null $usageLimit The maximum number of times this token can be
      * used. Defaults to no limit.
      * @param DateTime|null $expiryDate The date that the token expires.
@@ -66,7 +66,7 @@ class Tokens extends Component
 
         $tokenRecord = new TokenRecord();
         $tokenRecord->token = Craft::$app->getSecurity()->generateRandomString(32);
-        $tokenRecord->route = $route;
+        $tokenRecord->route = (array)$route;
 
         if ($usageLimit !== null) {
             $tokenRecord->usageCount = 0;
@@ -137,13 +137,7 @@ class Tokens extends Component
             }
         }
 
-        // Figure out where we should route the request
-        $route = $result['route'];
-
-        // Might be JSON, might not be
-        $route = Json::decodeIfJson($route);
-
-        return (array)$route;
+        return Json::decode($result['route']);
     }
 
     /**
