@@ -16,7 +16,8 @@ class m210121_145800_asset_indexing_changes extends Migration
     public function safeUp()
     {
         $this->truncateTable(Table::ASSETINDEXDATA);
-        $this->alterColumn(Table::ASSETINDEXDATA, 'sessionId', $this->integer()->notNull());
+        $this->dropColumn(Table::ASSETINDEXDATA, 'sessionId');
+        $this->addColumn(Table::ASSETINDEXDATA, 'sessionId', $this->integer()->notNull()->after('id'));
         $this->addColumn(Table::ASSETINDEXDATA, 'isDir', $this->boolean()->defaultValue(false)->after('timestamp'));
         $this->addColumn(Table::ASSETINDEXDATA, 'isSkipped', $this->boolean()->defaultValue(false)->after('recordId'));
 
