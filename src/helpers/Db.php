@@ -106,10 +106,10 @@ class Db
      * Prepares a value to be sent to the database.
      *
      * @param mixed $value The value to be prepared
-     * @param bool $jsonEncodeArrays Whether arrays should be JSON-encoded
+     * @param string|null $columnType The type of column the value will be stored in
      * @return mixed The prepped value
      */
-    public static function prepareValueForDb($value, bool $jsonEncodeArrays = true)
+    public static function prepareValueForDb($value, ?string $columnType = null)
     {
         // If the object explicitly defines its savable value, use that
         if ($value instanceof Serializable) {
@@ -121,8 +121,11 @@ class Db
             return static::prepareDateForDb($value);
         }
 
-        // If it's an object or array, just JSON-encode it
-        if ($jsonEncodeArrays && (is_object($value) || is_array($value))) {
+        // If this isn’t a JSON column and the value is an object or array, JSON-encode it
+        if (
+            !in_array($columnType, [Schema::TYPE_JSON, \yii\db\pgsql\Schema::TYPE_JSONB]) &&
+            (is_object($value) || is_array($value))
+        ) {
             return Json::encode($value);
         }
 

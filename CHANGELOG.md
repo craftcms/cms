@@ -39,7 +39,7 @@
 - Relational fields now load elements in the current site rather than the primary site, if the source element isn’t localizable. ([#7048](https://github.com/craftcms/cms/issues/7048))
 - `craft\base\Model::datetimeAttributes()` is now called from the constructor, instead of the `init()` method.
 - `craft\base\Model::setAttributes()` now normalizes date attributes into `DateTime` objects.
-- `craft\helpers\Db::prepareValueForDb()` now has a `$jsonEncodeArrays` argument.
+- `craft\helpers\Db::prepareValueForDb()` now has a `$columnType` argument.
 - `craft\services\AssetIndexer::storeIndexList()` now expects the first argument to be a generator that returns `craft\models\VolumeListing` objects.
 - `craft\services\Assets::ensureFolderByFullPathAndVolume()` now returns a `craft\models\VolumeFolder` object rather than a folder ID.
 - `craft\services\Assets::ensureTopFolder()` now returns a `craft\models\VolumeFolder` object rather than a folder ID.

@@ -136,8 +136,7 @@ abstract class ActiveRecord extends \yii\db\ActiveRecord
      */
     private function _prepareValue(string $name, $value)
     {
-        $dbType = static::getTableSchema()->columns[$name]->dbType ?? null;
-        $isJson = $dbType === Schema::TYPE_JSON;
-        return Db::prepareValueForDb($value, !$isJson);
+        $columnType = static::getTableSchema()->columns[$name]->dbType ?? null;
+        return Db::prepareValueForDb($value, $columnType);
     }
 }
