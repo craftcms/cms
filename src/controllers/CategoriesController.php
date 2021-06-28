@@ -703,11 +703,6 @@ class CategoriesController extends Controller
                 $variables['element']->siteId = $site->id;
             }
         }
-
-        // Prep the form tabs & content
-        $form = $variables['group']->getFieldLayout()->createForm($variables['element']);
-        $variables['tabs'] = $form->getTabMenu();
-        $variables['fieldsHtml'] = $form->render();
     }
 
     /**
