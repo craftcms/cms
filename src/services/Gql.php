@@ -324,7 +324,7 @@ class Gql extends Component
     const GRAPHQL_COMPLEXITY_CPU_HEAVY = 200;
 
     /**
-     * Complexity value for accessing a field that will trigger a query for every parent returned,
+     * Complexity value for accessing a field that will trigger a query for every parent returned.
      *
      * @since 3.6.0
      */
