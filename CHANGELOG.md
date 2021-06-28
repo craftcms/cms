@@ -2,11 +2,15 @@
 
 ## Unreleased
 
+### Added
+- Added `craft\web\Response::redirect()`.
+
 ### Fixed
 - Fixed a button styling issue in Safari. ([#8076](https://github.com/craftcms/cms/pull/8076))
 - Fixed an error that occurred when running the `db/restore` command, if the `info` table was missing its row. ([#7028](https://github.com/craftcms/cms/issues/7028))
 - Fixed an error that occurred when uninstalling a plugin via the `plugin/uninstall` command with `--force`, if the plugin didn’t have a row in the `plugins` table.
 - Fixed a bug where element thumbnails weren’t always getting lazy-loaded properly. ([#6621](https://github.com/craftcms/cms/issues/6621))
+- Fixed a bug where control panel requests weren’t always redirecting to the control panel when they were supposed to. ([#9081](https://github.com/craftcms/cms/issues/9081))
 
 ## 3.6.17 - 2021-06-15
 
