@@ -2,9 +2,6 @@
 
 ## Unreleased
 
-### Added
-- Added `craft\web\Response::redirect()`.
-
 ### Fixed
 - Fixed a bug where custom fields’ `getInputHtml()` methods were getting called twice for Edit Category pages, causing duplicate JavaScript code to get registered. ([#9091](https://github.com/craftcms/cms/issues/9091))
 - Fixed a SQL error that occurred when sorting an element index by a custom field. ([#9093](https://github.com/craftcms/cms/issues/9093))
@@ -263,6 +260,9 @@
 - The default `allowedFileExtensions` config setting value no longer includes `xml`.
 
 ## Unreleased (3.6)
+
+### Added
+- Added `craft\web\Response::redirect()`.
 
 ### Fixed
 - Fixed a button styling issue in Safari. ([#8076](https://github.com/craftcms/cms/pull/8076))
