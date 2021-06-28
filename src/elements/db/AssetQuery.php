@@ -40,28 +40,6 @@ use yii\db\Connection;
  */
 class AssetQuery extends ElementQuery
 {
-    /**
-     * @var bool
-     * @see _supportsUploaderParam()
-     */
-    private static $_supportsUploaderParam;
-
-    /**
-     * Returns whether the `uploader` param is supported yet.
-     *
-     * @return bool
-     * @todo remove after next beakpoint
-     */
-    private static function _supportsUploaderParam(): bool
-    {
-        if (self::$_supportsUploaderParam !== null) {
-            return self::$_supportsUploaderParam;
-        }
-
-        $schemaVersion = Craft::$app->getInstalledSchemaVersion();
-        return self::$_supportsUploaderParam = version_compare($schemaVersion, '3.4.5', '>=');
-    }
-
     // General parameters
     // -------------------------------------------------------------------------
 
@@ -829,6 +807,7 @@ class AssetQuery extends ElementQuery
         $this->query->select([
             'assets.volumeId',
             'assets.folderId',
+            'assets.uploaderId',
             'assets.filename',
             'assets.kind',
             'assets.width',
@@ -839,10 +818,6 @@ class AssetQuery extends ElementQuery
             'assets.dateModified',
             'volumeFolders.path AS folderPath',
         ]);
-
-        if (self::_supportsUploaderParam()) {
-            $this->query->addSelect('assets.uploaderId');
-        }
 
         if ($this->volumeId) {
             if ($this->volumeId === ':empty:') {
@@ -862,7 +837,7 @@ class AssetQuery extends ElementQuery
             $this->subQuery->andWhere($folderCondition);
         }
 
-        if (self::_supportsUploaderParam() && $this->uploaderId) {
+        if ($this->uploaderId) {
             $this->subQuery->andWhere(['uploaderId' => $this->uploaderId]);
         }
 

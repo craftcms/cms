@@ -68,17 +68,6 @@ class ElementQuery extends Query implements ElementQueryInterface
     const EVENT_AFTER_POPULATE_ELEMENT = 'afterPopulateElement';
 
     /**
-     * Returns whether querying for drafts/revisions is supported yet.
-     *
-     * @return bool
-     * @todo remove schema version condition after next beakpoint
-     */
-    private static function _supportsRevisionParams(): bool
-    {
-        return Craft::$app->getDb()->columnExists(Table::ELEMENTS, 'draftId');
-    }
-
-    /**
      * @var string|null The name of the [[ElementInterface]] class.
      */
     public $elementType;
@@ -1475,14 +1464,10 @@ class ElementQuery extends Query implements ElementQueryInterface
             $this->_applyStatusParam($class);
         }
 
-        // todo: remove schema version condition after next beakpoint
-        $schemaVersion = Craft::$app->getInstalledSchemaVersion();
-        if (version_compare($schemaVersion, '3.1.0', '>=')) {
-            if ($this->trashed === false) {
-                $this->subQuery->andWhere(['elements.dateDeleted' => null]);
-            } else if ($this->trashed === true) {
-                $this->subQuery->andWhere(['not', ['elements.dateDeleted' => null]]);
-            }
+        if ($this->trashed === false) {
+            $this->subQuery->andWhere(['elements.dateDeleted' => null]);
+        } else if ($this->trashed === true) {
+            $this->subQuery->andWhere(['not', ['elements.dateDeleted' => null]]);
         }
 
         if ($this->dateCreated) {
@@ -2126,11 +2111,6 @@ class ElementQuery extends Query implements ElementQueryInterface
      */
     protected function customFields(): array
     {
-        // todo: remove this after the next breakpoint
-        if (Craft::$app->getUpdates()->getIsCraftDbMigrationNeeded()) {
-            return [];
-        }
-
         $contentService = Craft::$app->getContent();
         $originalFieldContext = $contentService->fieldContext;
         $contentService->fieldContext = 'global';
@@ -2449,12 +2429,8 @@ class ElementQuery extends Query implements ElementQueryInterface
                 ]);
             $existsQuery = (new Query())
                 ->from([Table::STRUCTURES])
-                ->where('[[id]] = [[structureelements.structureId]]');
-            // todo: remove schema version condition after next beakpoint
-            $schemaVersion = Craft::$app->getInstalledSchemaVersion();
-            if (version_compare($schemaVersion, '3.1.0', '>=')) {
-                $existsQuery->andWhere(['dateDeleted' => null]);
-            }
+                ->where('[[id]] = [[structureelements.structureId]]')
+                ->andWhere(['dateDeleted' => null]);
             $this->subQuery
                 ->addSelect(['structureelements.structureId'])
                 ->leftJoin(['structureelements' => Table::STRUCTUREELEMENTS], [
@@ -2581,18 +2557,9 @@ class ElementQuery extends Query implements ElementQueryInterface
 
     /**
      * Applies draft and revision params to the query being prepared.
-     *
-     * @throws QueryAbortedException
      */
     private function _applyRevisionParams()
     {
-        if (!self::_supportsRevisionParams()) {
-            if ($this->drafts !== false || $this->revisions) {
-                throw new QueryAbortedException();
-            }
-            return;
-        }
-
         if ($this->drafts !== false) {
             if ($this->drafts === true) {
                 $this->subQuery->innerJoin(['drafts' => Table::DRAFTS], '[[drafts.id]] = [[elements.draftId]]');
@@ -2802,7 +2769,7 @@ class ElementQuery extends Query implements ElementQueryInterface
                     throw new Exception('The database connection doesn’t support fixed ordering.');
                 }
                 $this->orderBy = [new FixedOrderExpression('elements.id', $ids, $db)];
-            } else if (self::_supportsRevisionParams() && $this->revisions) {
+            } else if ($this->revisions) {
                 $this->orderBy = ['num' => SORT_DESC];
             } else if ($this->_shouldJoinStructureData()) {
                 $this->orderBy = ['structureelements.lft' => SORT_ASC] + $this->defaultOrderBy;
@@ -2879,10 +2846,12 @@ class ElementQuery extends Query implements ElementQueryInterface
             // Merge in the default columns
             $select = array_merge($select, [
                 'elements.id' => 'elements.id',
+                'elements.canonicalId' => 'elements.canonicalId',
                 'elements.fieldLayoutId' => 'elements.fieldLayoutId',
                 'elements.uid' => 'elements.uid',
                 'elements.enabled' => 'elements.enabled',
                 'elements.archived' => 'elements.archived',
+                'elements.dateLastMerged' => 'elements.dateLastMerged',
                 'elements.dateCreated' => 'elements.dateCreated',
                 'elements.dateUpdated' => 'elements.dateUpdated',
                 'siteSettingsId' => 'elements_sites.id',
@@ -2891,12 +2860,6 @@ class ElementQuery extends Query implements ElementQueryInterface
                 'elements_sites.uri' => 'elements_sites.uri',
                 'enabledForSite' => 'elements_sites.enabled',
             ]);
-
-            // todo: remove this condition after the next breakpoint
-            if (Craft::$app->getDb()->columnExists(Table::ELEMENTS, 'canonicalId')) {
-                $select['elements.canonicalId'] = 'elements.canonicalId';
-                $select['elements.dateLastMerged'] = 'elements.dateLastMerged';
-            }
 
             // If the query includes soft-deleted elements, include the date deleted
             if ($this->trashed !== false) {

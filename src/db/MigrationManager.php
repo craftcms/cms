@@ -343,19 +343,6 @@ class MigrationManager extends Component
      */
     public function addMigrationHistory(string $name)
     {
-        // TODO: Remove after next breakpoint
-        if ($this->db->columnExists(Table::MIGRATIONS, 'type')) {
-            if ($this->track !== self::TRACK_CRAFT) {
-                throw new NotSupportedException('Plugin and content migrations aren’t allowed until you update Craft.');
-            }
-            Db::insert($this->migrationTable, [
-                'type' => 'app',
-                'name' => $name,
-                'applyTime' => Db::prepareDateForDb(new \DateTime()),
-            ]);
-            return;
-        }
-
         Db::insert($this->migrationTable, [
             'track' => $this->track,
             'name' => $name,
@@ -462,61 +449,6 @@ class MigrationManager extends Component
      */
     private function _createMigrationQuery(): Query
     {
-        // TODO: Remove after next breakpoint
-        if ($this->db->columnExists($this->migrationTable, 'version', true)) {
-            $query = (new Query())
-                ->select(['version as name', 'applyTime'])
-                ->from([$this->migrationTable])
-                ->orderBy(['name' => SORT_DESC]);
-
-            if ($this->track === 'craft') {
-                $query->where(['pluginId' => null]);
-            } else {
-                $pluginId = null;
-                if (strpos($this->track, 'plugin:') === 0) {
-                    $pluginId = (new Query())
-                        ->select(['id'])
-                        ->from([Table::PLUGINS])
-                        ->where(['handle' => substr($this->track, 7)])
-                        ->scalar();
-                }
-                if ($pluginId) {
-                    $query->where(['pluginId' => $pluginId]);
-                } else {
-                    $query->where(new Expression('1 = 0'));
-                }
-            }
-
-            return $query;
-        }
-
-        // TODO: Remove after next breakpoint
-        if ($this->db->columnExists($this->migrationTable, 'type', true)) {
-            $query = (new Query())
-                ->select(['name', 'applyTime'])
-                ->from([$this->migrationTable])
-                ->orderBy(['name' => SORT_DESC]);
-
-            if ($this->track === 'craft') {
-                $query->where(['type' => 'app']);
-            } else if (strpos($this->track, 'plugin:') === 0) {
-                $pluginId = (new Query())
-                    ->select(['id'])
-                    ->from([Table::PLUGINS])
-                    ->where(['handle' => substr($this->track, 7)])
-                    ->scalar();
-                if ($pluginId) {
-                    $query->where(['pluginId' => $pluginId]);
-                } else {
-                    $query->where(new Expression('1 = 0'));
-                }
-            } else {
-                $query->where(['type' => 'content']);
-            }
-
-            return $query;
-        }
-
         return (new Query())
             ->select(['name', 'applyTime'])
             ->from([$this->migrationTable])

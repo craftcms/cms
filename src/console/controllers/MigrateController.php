@@ -230,8 +230,7 @@ class MigrateController extends BaseMigrateController
             FileHelper::createDirectory($this->migrationPath);
         }
 
-        // TODO remove after next breakpoint
-        // Make sure that the new project config structure is there before any migrations cause Project Config to look there.
+        // Make sure that the project config YAML exists in case any migrations need to check incoming YAML values
         $projectConfig = Craft::$app->getProjectConfig();
         if ($projectConfig->writeYamlAutomatically && !$projectConfig->getDoesYamlExist()) {
             $projectConfig->regenerateYamlFromConfig();

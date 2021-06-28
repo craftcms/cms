@@ -37,7 +37,6 @@ use craft\web\Request;
 use DateTime;
 use yii\base\Component;
 use yii\base\InvalidArgumentException;
-use yii\db\Exception as DbException;
 
 /**
  * The Users service provides APIs for managing users.
@@ -283,18 +282,13 @@ class Users extends Component
      */
     public function getUserPreferences(int $userId = null): array
     {
-        // TODO: Remove try/catch after next breakpoint
-        try {
-            $preferences = (new Query())
-                ->select(['preferences'])
-                ->from([Table::USERPREFERENCES])
-                ->where(['userId' => $userId])
-                ->scalar();
+        $preferences = (new Query())
+            ->select(['preferences'])
+            ->from([Table::USERPREFERENCES])
+            ->where(['userId' => $userId])
+            ->scalar();
 
-            return $preferences ? Json::decode($preferences) : [];
-        } catch (DbException $e) {
-            return [];
-        }
+        return $preferences ? Json::decode($preferences) : [];
     }
 
     /**

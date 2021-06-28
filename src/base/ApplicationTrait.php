@@ -675,26 +675,6 @@ trait ApplicationTrait
             throw new ServerErrorHttpException("The {$tableName} table is missing its row");
         }
 
-        // TODO: Remove this after the next breakpoint
-        if (isset($row['build'])) {
-            $version = $row['version'];
-
-            switch ($row['track']) {
-                case 'dev':
-                    $version .= '.0-alpha.' . $row['build'];
-                    break;
-                case 'beta':
-                    $version .= '.0-beta.' . $row['build'];
-                    break;
-                default:
-                    $version .= '.' . $row['build'];
-                    break;
-            }
-
-            $row['version'] = $version;
-        }
-        unset($row['edition'], $row['name'], $row['timezone'], $row['on'], $row['siteName'], $row['siteUrl'], $row['build'], $row['releaseDate'], $row['track'], $row['config'], $row['configMap']);
-
         return $this->_info = new Info($row);
     }
 
@@ -756,19 +736,6 @@ trait ApplicationTrait
         }
 
         $attributes = $info->getAttributes($attributeNames);
-
-        // TODO: Remove these after the next breakpoint
-        if (version_compare($info['version'], '3.5.6', '<')) {
-            unset($attributes['configVersion']);
-
-            if (version_compare($info['version'], '3.1', '<')) {
-                unset($attributes['config'], $attributes['configMap']);
-
-                if (version_compare($info['version'], '3.0', '<')) {
-                    unset($attributes['fieldVersion']);
-                }
-            }
-        }
 
         $infoRowExists = (new Query())
             ->from([Table::INFO])

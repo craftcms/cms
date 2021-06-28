@@ -1873,12 +1873,6 @@ class Fields extends Component
      */
     private function _createGroupQuery(): Query
     {
-        // todo: remove schema version condition after next beakpoint
-        $condition = null;
-        if (version_compare(Craft::$app->getInstalledSchemaVersion(), '3.6.2', '>=')) {
-            $condition = ['dateDeleted' => null];
-        }
-
         return (new Query())
             ->select([
                 'id',
@@ -1886,7 +1880,7 @@ class Fields extends Component
                 'uid',
             ])
             ->from([Table::FIELDGROUPS])
-            ->where($condition)
+            ->where(['dateDeleted' => null])
             ->orderBy(['name' => SORT_ASC]);
     }
 
@@ -1897,7 +1891,7 @@ class Fields extends Component
      */
     private function _createFieldQuery(): Query
     {
-        $query = (new Query())
+        return (new Query())
             ->select([
                 'fields.id',
                 'fields.dateCreated',
@@ -1906,7 +1900,9 @@ class Fields extends Component
                 'fields.name',
                 'fields.handle',
                 'fields.context',
+                'fields.columnSuffix',
                 'fields.instructions',
+                'fields.searchable',
                 'fields.translationMethod',
                 'fields.translationKeyFormat',
                 'fields.type',
@@ -1915,17 +1911,6 @@ class Fields extends Component
             ])
             ->from(['fields' => Table::FIELDS])
             ->orderBy(['fields.name' => SORT_ASC, 'fields.handle' => SORT_ASC]);
-
-        // todo: remove schema version condition after next beakpoint
-        $schemaVersion = Craft::$app->getInstalledSchemaVersion();
-        if (version_compare($schemaVersion, '3.1.0', '>=')) {
-            $query->addSelect(['fields.searchable']);
-        }
-        if (version_compare($schemaVersion, '3.7.0', '>=')) {
-            $query->addSelect(['fields.columnSuffix']);
-        }
-
-        return $query;
     }
 
     /**
@@ -1935,21 +1920,14 @@ class Fields extends Component
      */
     private function _createLayoutQuery(): Query
     {
-        $query = (new Query)
+        return (new Query)
             ->select([
                 'id',
                 'type',
                 'uid',
             ])
-            ->from([Table::FIELDLAYOUTS]);
-
-        // todo: remove schema version condition after next beakpoint
-        $schemaVersion = Craft::$app->getInstalledSchemaVersion();
-        if (version_compare($schemaVersion, '3.1.0', '>=')) {
-            $query->where(['dateDeleted' => null]);
-        }
-
-        return $query;
+            ->from([Table::FIELDLAYOUTS])
+            ->where(['dateDeleted' => null]);
     }
 
     /**
@@ -1959,24 +1937,17 @@ class Fields extends Component
      */
     private function _createLayoutTabQuery(): Query
     {
-        $query = (new Query())
+        return (new Query())
             ->select([
                 'id',
                 'layoutId',
                 'name',
+                'elements',
                 'sortOrder',
                 'uid',
             ])
             ->from([Table::FIELDLAYOUTTABS])
             ->orderBy(['sortOrder' => SORT_ASC]);
-
-        // todo: remove schema version condition after next beakpoint
-        $schemaVersion = Craft::$app->getInstalledSchemaVersion();
-        if (version_compare($schemaVersion, '3.5.8', '>=')) {
-            $query->addSelect(['elements']);
-        }
-
-        return $query;
     }
 
     /**

@@ -647,8 +647,7 @@ class UserQuery extends ElementQuery
 
         $this->query->select([
             'users.username',
-            // TODO: uncomment after next breakpoint
-            //'users.photoId',
+            'users.photoId',
             'users.firstName',
             'users.lastName',
             'users.email',
@@ -659,18 +658,8 @@ class UserQuery extends ElementQuery
             'users.suspended',
             'users.lastLoginDate',
             'users.lockoutDate',
-            // TODO: uncomment after next breakpoint
-            //'users.hasDashboard',
+            'users.hasDashboard',
         ]);
-
-        // TODO: remove after next breakpoint
-        $version = Craft::$app->getInfo()->version;
-        if (version_compare($version, '3.0.0-alpha.2910', '>=')) {
-            $this->query->addSelect(['users.photoId']);
-        }
-        if (version_compare($version, '3.0.4', '>=')) {
-            $this->query->addSelect(['users.hasDashboard']);
-        }
 
         if (is_bool($this->admin)) {
             $this->subQuery->andWhere(['users.admin' => $this->admin]);

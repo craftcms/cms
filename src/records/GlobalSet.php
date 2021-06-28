@@ -7,7 +7,6 @@
 
 namespace craft\records;
 
-use Craft;
 use craft\db\ActiveRecord;
 use craft\db\Query;
 use craft\db\Table;
@@ -43,21 +42,13 @@ class GlobalSet extends ActiveRecord
      */
     public static function find()
     {
-        $query = parent::find();
-
-        // todo: remove schema version condition after next beakpoint
-        $schemaVersion = Craft::$app->getInstalledSchemaVersion();
-        if (version_compare($schemaVersion, '3.1.19', '>=')) {
-            $query
-                ->where([
-                    'exists', (new Query())
-                        ->from(['e' => Table::ELEMENTS])
-                        ->where('[[e.id]] = ' . static::tableName() . '.[[id]]')
-                        ->andWhere(['e.dateDeleted' => null]),
-                ]);
-        }
-
-        return $query;
+        return parent::find()
+            ->where([
+                'exists', (new Query())
+                    ->from(['e' => Table::ELEMENTS])
+                    ->where('[[e.id]] = ' . static::tableName() . '.[[id]]')
+                    ->andWhere(['e.dateDeleted' => null]),
+            ]);
     }
 
     /**

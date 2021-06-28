@@ -640,11 +640,6 @@ class ProjectConfig extends Component
             return true;
         }
 
-        // TODO remove after next breakpoint
-        if (version_compare(Craft::$app->getInfo()->schemaVersion, '3.4.4', '<')) {
-            return false;
-        }
-
         // If the file does not exist, but should, generate it
         if ($this->getHadFileWriteIssues() || !$this->getDoesYamlExist()) {
             if ($this->writeYamlAutomatically) {
@@ -978,11 +973,6 @@ class ProjectConfig extends Component
      */
     public function getAreConfigSchemaVersionsCompatible(&$issues = [])
     {
-        // TODO remove after next breakpoint
-        if (version_compare(Craft::$app->getInfo()->version, '3.1', '<')) {
-            return true;
-        }
-
         $incomingSchema = (string)$this->get(self::CONFIG_SCHEMA_VERSION_KEY, true);
         $existingSchema = (string)Craft::$app->schemaVersion;
 

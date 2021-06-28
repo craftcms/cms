@@ -778,7 +778,7 @@ class Volumes extends Component
      */
     private function _createVolumeQuery(): Query
     {
-        $query = (new Query())
+        return (new Query())
             ->select([
                 'id',
                 'dateCreated',
@@ -787,6 +787,8 @@ class Volumes extends Component
                 'handle',
                 'hasUrls',
                 'url',
+                'titleTranslationMethod',
+                'titleTranslationKeyFormat',
                 'sortOrder',
                 'fieldLayoutId',
                 'type',
@@ -794,21 +796,8 @@ class Volumes extends Component
                 'uid',
             ])
             ->from([Table::VOLUMES])
+            ->where(['dateDeleted' => null])
             ->orderBy(['sortOrder' => SORT_ASC]);
-
-        // todo: remove schema version conditions after next beakpoint
-        $schemaVersion = Craft::$app->getInstalledSchemaVersion();
-        if (version_compare($schemaVersion, '3.1.19', '>=')) {
-            $query->where(['dateDeleted' => null]);
-        }
-        if (version_compare($schemaVersion, '3.6.0', '>=')) {
-            $query->addSelect([
-                'titleTranslationMethod',
-                'titleTranslationKeyFormat',
-            ]);
-        }
-
-        return $query;
     }
 
     /**

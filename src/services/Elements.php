@@ -582,20 +582,11 @@ class Elements extends Component
             ->from(['elements' => Table::ELEMENTS])
             ->innerJoin(['elements_sites' => Table::ELEMENTS_SITES], '[[elements_sites.elementId]] = [[elements.id]]')
             ->where([
-                'elements_sites.siteId' => $siteId,
-            ]);
-
-        // todo: remove schema version conditions after next beakpoint
-        $schemaVersion = Craft::$app->getInstalledSchemaVersion();
-        if (version_compare($schemaVersion, '3.1.0', '>=')) {
-            $query->andWhere(['elements.dateDeleted' => null]);
-        }
-        if (version_compare($schemaVersion, '3.2.6', '>=')) {
-            $query->andWhere([
                 'elements.draftId' => null,
                 'elements.revisionId' => null,
+                'elements.dateDeleted' => null,
+                'elements_sites.siteId' => $siteId,
             ]);
-        }
 
         if (Craft::$app->getDb()->getIsMysql()) {
             $query->andWhere([
@@ -2424,14 +2415,12 @@ class Elements extends Component
         $isNewElement = !$element->id;
 
         // Are we tracking changes?
-        // todo: remove the tableExists condition after the next breakpoint
         $trackChanges = (
             !$isNewElement &&
             $element->siteSettingsId &&
             $element->duplicateOf === null &&
             $element::trackChanges() &&
-            !$element->mergingCanonicalChanges &&
-            Craft::$app->getDb()->tableExists(Table::CHANGEDATTRIBUTES)
+            !$element->mergingCanonicalChanges
         );
         $dirtyAttributes = [];
 

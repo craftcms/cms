@@ -1414,20 +1414,7 @@ class Sections extends Component
      */
     private function _createSectionQuery(): Query
     {
-        // todo: remove schema version condition after next beakpoint
-        $condition = null;
-        $joinCondition = '[[structures.id]] = [[sections.structureId]]';
-        $schemaVersion = Craft::$app->getInstalledSchemaVersion();
-        if (version_compare($schemaVersion, '3.1.19', '>=')) {
-            $condition = ['sections.dateDeleted' => null];
-            $joinCondition = [
-                'and',
-                $joinCondition,
-                ['structures.dateDeleted' => null],
-            ];
-        }
-
-        $query = (new Query())
+        return (new Query())
             ->select([
                 'sections.id',
                 'sections.structureId',
@@ -1435,26 +1422,20 @@ class Sections extends Component
                 'sections.handle',
                 'sections.type',
                 'sections.enableVersioning',
+                'sections.defaultPlacement',
+                'sections.propagationMethod',
+                'sections.previewTargets',
                 'sections.uid',
                 'structures.maxLevels',
             ])
-            ->leftJoin(['structures' => Table::STRUCTURES], $joinCondition)
+            ->leftJoin(['structures' => Table::STRUCTURES], [
+                'and',
+                '[[structures.id]] = [[sections.structureId]]',
+                ['structures.dateDeleted' => null],
+            ])
             ->from(['sections' => Table::SECTIONS])
-            ->where($condition)
+            ->where(['sections.dateDeleted' => null])
             ->orderBy(['name' => SORT_ASC]);
-
-        // todo: remove schema version conditions after next beakpoint
-        if (version_compare($schemaVersion, '3.2.1', '>=')) {
-            $query->addSelect('sections.propagationMethod');
-        }
-        if (version_compare($schemaVersion, '3.2.6', '>=')) {
-            $query->addSelect('sections.previewTargets');
-        }
-        if (version_compare($schemaVersion, '3.7.5', '>=')) {
-            $query->addSelect('sections.defaultPlacement');
-        }
-
-        return $query;
     }
 
     /**
@@ -1584,7 +1565,7 @@ class Sections extends Component
      */
     private function _createEntryTypeQuery()
     {
-        $query = (new Query())
+        return (new Query())
             ->select([
                 'id',
                 'sectionId',
@@ -1593,24 +1574,13 @@ class Sections extends Component
                 'handle',
                 'sortOrder',
                 'hasTitleField',
+                'titleTranslationMethod',
+                'titleTranslationKeyFormat',
                 'titleFormat',
                 'uid',
             ])
-            ->from([Table::ENTRYTYPES]);
-
-        // todo: remove schema version conditions after next beakpoint
-        $schemaVersion = Craft::$app->getInstalledSchemaVersion();
-        if (version_compare($schemaVersion, '3.1.19', '>=')) {
-            $query->where(['dateDeleted' => null]);
-        }
-        if (version_compare($schemaVersion, '3.5.4', '>=')) {
-            $query->addSelect([
-                'titleTranslationMethod',
-                'titleTranslationKeyFormat',
-            ]);
-        }
-
-        return $query;
+            ->from([Table::ENTRYTYPES])
+            ->where(['dateDeleted' => null]);
     }
 
     /**
