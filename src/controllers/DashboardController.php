@@ -504,7 +504,7 @@ class DashboardController extends Controller
         // Get the body HTML
         $widgetBodyHtml = $widget->getBodyHtml();
 
-        if ($widgetBodyHtml === false) {
+        if ($widgetBodyHtml === null) {
             return false;
         }
 

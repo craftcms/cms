@@ -33,7 +33,7 @@ class QuickPost extends Widget
     /**
      * @inheritdoc
      */
-    public static function icon()
+    public static function icon(): ?string
     {
         return Craft::getAlias('@appicons/newspaper.svg');
     }
@@ -120,7 +120,7 @@ class QuickPost extends Widget
     /**
      * @inheritdoc
      */
-    public function getTitle(): string
+    public function getTitle(): ?string
     {
         $section = $this->_getSection();
 
@@ -134,7 +134,7 @@ class QuickPost extends Widget
     /**
      * @inheritdoc
      */
-    public function getBodyHtml()
+    public function getBodyHtml(): ?string
     {
         $view = Craft::$app->getView();
         $view->registerAssetBundle(QuickPostAsset::class);

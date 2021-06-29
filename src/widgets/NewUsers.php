@@ -40,7 +40,7 @@ class NewUsers extends Widget
     /**
      * @inheritdoc
      */
-    public static function icon()
+    public static function icon(): ?string
     {
         return Craft::getAlias('@appicons/users.svg');
     }
@@ -59,7 +59,7 @@ class NewUsers extends Widget
     /**
      * @inheritdoc
      */
-    public function getTitle(): string
+    public function getTitle(): ?string
     {
         if ($groupId = $this->userGroupId) {
             $userGroup = Craft::$app->getUserGroups()->getGroupById($groupId);
@@ -75,10 +75,10 @@ class NewUsers extends Widget
     /**
      * @inheritdoc
      */
-    public function getBodyHtml()
+    public function getBodyHtml(): ?string
     {
         if (Craft::$app->getEdition() !== Craft::Pro) {
-            return false;
+            return null;
         }
 
         $options = $this->getSettings();

@@ -33,7 +33,7 @@ class RecentEntries extends Widget
     /**
      * @inheritdoc
      */
-    public static function icon()
+    public static function icon(): ?string
     {
         return Craft::getAlias('@appicons/clock.svg');
     }
@@ -89,7 +89,7 @@ class RecentEntries extends Widget
     /**
      * @inheritdoc
      */
-    public function getTitle(): string
+    public function getTitle(): ?string
     {
         if (is_numeric($this->section)) {
             $section = Craft::$app->getSections()->getSectionById($this->section);
@@ -126,7 +126,7 @@ class RecentEntries extends Widget
     /**
      * @inheritdoc
      */
-    public function getBodyHtml()
+    public function getBodyHtml(): ?string
     {
         $params = [];
 

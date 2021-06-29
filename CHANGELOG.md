@@ -37,6 +37,11 @@
 ### Changed
 - Craft now requires PHP 7.4 or later.
 - Relational fields now load elements in the current site rather than the primary site, if the source element isn’t localizable. ([#7048](https://github.com/craftcms/cms/issues/7048))
+- Widgets’ `getBodyHtml()` methods must now have a `?string` return type declaration, and `null` should be returned rather that `false` if the widget should not be visible.
+- Widgets’ `getIcon()` methods must now have a `?string` return type declaration.
+- Widgets’ `getSubtitle()` methods must now have a `?string` return type declaration.
+- Widgets’ `getTitle()` methods can now have a `?string` return type declaration.
+- Widgets’ `maxColspan()` methods must now have an `?int` return type declaration.
 - `craft\base\Model::datetimeAttributes()` is now called from the constructor, instead of the `init()` method.
 - `craft\base\Model::setAttributes()` now normalizes date attributes into `DateTime` objects.
 - `craft\helpers\Db::prepareValueForDb()` now has a `$columnType` argument.

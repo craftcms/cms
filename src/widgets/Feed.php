@@ -31,7 +31,7 @@ class Feed extends Widget
     /**
      * @inheritdoc
      */
-    public static function icon()
+    public static function icon(): ?string
     {
         return Craft::getAlias('@appicons/feed.svg');
     }
@@ -89,7 +89,7 @@ class Feed extends Widget
     /**
      * @inheritdoc
      */
-    public function getTitle(): string
+    public function getTitle(): ?string
     {
         return $this->title;
     }
@@ -97,7 +97,7 @@ class Feed extends Widget
     /**
      * @inheritdoc
      */
-    public function getBodyHtml()
+    public function getBodyHtml(): ?string
     {
         // See if it's already cached
         $data = Craft::$app->getCache()->get("feed:$this->url");
