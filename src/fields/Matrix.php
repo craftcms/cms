@@ -16,6 +16,7 @@ use craft\base\FieldInterface;
 use craft\base\GqlInlineFragmentFieldInterface;
 use craft\base\GqlInlineFragmentInterface;
 use craft\db\Query;
+use craft\db\QueryAbortedException;
 use craft\db\Table as DbTable;
 use craft\elements\db\ElementQuery;
 use craft\elements\db\ElementQueryInterface;
@@ -580,7 +581,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
     /**
      * @inheritdoc
      */
-    public function modifyElementsQuery(ElementQueryInterface $query, $value)
+    public function modifyElementsQuery(ElementQueryInterface $query, $value): void
     {
         /** @var ElementQuery $query */
         if ($value === 'not :empty:') {
@@ -607,10 +608,8 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
                 $query->subQuery->andWhere(['not', $condition]);
             }
         } else if ($value !== null) {
-            return false;
+            throw new QueryAbortedException();
         }
-
-        return null;
     }
 
     /**
@@ -624,7 +623,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
     /**
      * @inheritdoc
      */
-    public function getTranslationDescription(ElementInterface $element = null)
+    public function getTranslationDescription(ElementInterface $element = null): ?string
     {
         if (!$element) {
             return null;
@@ -1029,7 +1028,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
     /**
      * @inheritdoc
      */
-    public function afterElementPropagate(ElementInterface $element, bool $isNew)
+    public function afterElementPropagate(ElementInterface $element, bool $isNew): void
     {
         $matrixService = Craft::$app->getMatrix();
         $resetValue = false;
@@ -1087,7 +1086,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
     /**
      * @inheritdoc
      */
-    public function afterElementRestore(ElementInterface $element)
+    public function afterElementRestore(ElementInterface $element): void
     {
         // Also restore any Matrix blocks for this element
         $elementsService = Craft::$app->getElements();

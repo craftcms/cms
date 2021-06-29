@@ -460,7 +460,7 @@ class ElementQueryConditionBuilder extends Component
                         $additionalArguments = $craftContentField->getEagerLoadingGqlConditions();
 
                         // Load additional requirements enforced by schema, enforcing permissions to see content
-                        if ($additionalArguments === false) {
+                        if ($additionalArguments === null) {
                             // If `false` was returned, make sure nothing is returned by setting a constraint that always fails.
                             $arguments = ['id' => ['and', 1, 2]];
                         } else {

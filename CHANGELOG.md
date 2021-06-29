@@ -42,6 +42,16 @@
 - Element actions’ `getMessage()` methods must now have a `?string` return type declaration.
 - Element actions’ `getTriggerHtml()` methods must now have a `?string` return type declaration.
 - Element actions’ `setElementType()` methods must now have a `void` return type declaration.
+- Fields’ `afterElementDelete()` methods must now have a `void` return type declaration.
+- Fields’ `afterElementPropagate()` methods must now have a `void` return type declaration.
+- Fields’ `afterElementRestore()` methods must now have a `void` return type declaration.
+- Fields’ `afterElementSave()` methods must now have a `void` return type declaration.
+- Fields’ `getEagerLoadingGqlConditions()` methods must now have an `?array` return type declaration, and `null` should be returned rather than `false` if the field is not eager-loadable.
+- Fields’ `getGroup()` methods must now have a `?FieldGroup` return type declaration.
+- Fields’ `getTranslationDescription()` methods must now have a `?string` return type declaration.
+- Fields’ `modifyElementIndexQuery()` methods must now have a `void` return type declaration.
+- Fields’ `modifyElementsQuery()` methods must now have a `void` return type declaration, and should throw a `QueryAbortedException` when the query should yield no results, rother than returning `false`.
+- Fields’ `setIsFresh()` methods must now have a `void` return type declaration.
 - Widgets’ `getBodyHtml()` methods must now have a `?string` return type declaration, and `null` should be returned rather that `false` if the widget should not be visible.
 - Widgets’ `getIcon()` methods must now have a `?string` return type declaration.
 - Widgets’ `getSubtitle()` methods must now have a `?string` return type declaration.

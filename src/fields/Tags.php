@@ -143,13 +143,13 @@ class Tags extends BaseRelationField
      * @inheritdoc
      * @since 3.3.0
      */
-    public function getEagerLoadingGqlConditions()
+    public function getEagerLoadingGqlConditions(): ?array
     {
         $allowedEntities = Gql::extractAllowedEntitiesFromSchema();
         $allowedTagGroupUids = $allowedEntities['taggroups'] ?? [];
 
         if (empty($allowedTagGroupUids)) {
-            return false;
+            return null;
         }
 
         $tagGroupIds = Db::idsByUids(DbTable::TAGGROUPS, $allowedTagGroupUids);

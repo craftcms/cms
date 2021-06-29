@@ -2285,14 +2285,17 @@ class ElementQuery extends Query implements ElementQueryInterface
                     $contentService->fieldColumnPrefix = $field->columnPrefix;
                 }
 
-                $fieldResponse = $field->modifyElementsQuery($this, $fieldAttributeValue);
+                $exception = null;
+                try {
+                    $field->modifyElementsQuery($this, $fieldAttributeValue);
+                } catch (QueryAbortedException $exception) {}
 
                 // Set it back
                 $contentService->fieldColumnPrefix = $originalFieldColumnPrefix;
 
                 // Need to bail early?
-                if ($fieldResponse === false) {
-                    throw new QueryAbortedException();
+                if ($exception !== null) {
+                    throw $exception;
                 }
             }
         }

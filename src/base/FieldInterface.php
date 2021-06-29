@@ -7,6 +7,7 @@
 
 namespace craft\base;
 
+use craft\db\QueryAbortedException;
 use craft\elements\db\ElementQueryInterface;
 use craft\models\GqlSchema;
 use craft\records\FieldGroup;
@@ -111,7 +112,7 @@ interface FieldInterface extends SavableComponentInterface
      * @return string|null
      * @since 3.4.0
      */
-    public function getTranslationDescription(ElementInterface $element = null);
+    public function getTranslationDescription(ElementInterface $element = null): ?string;
 
     /**
      * Returns the field’s translation key, based on a given element.
@@ -366,10 +367,11 @@ interface FieldInterface extends SavableComponentInterface
      * @param ElementQueryInterface $query The element query
      * @param mixed $value The value that was set on this field’s corresponding
      * element query param, if any.
-     * @return null|false `false` in the event that the method is sure that no
-     * elements are going to be found.
+     * @return void
+     * @throws QueryAbortedException in the event that the method is sure that
+     * no elements are going to be found.
      */
-    public function modifyElementsQuery(ElementQueryInterface $query, $value);
+    public function modifyElementsQuery(ElementQueryInterface $query, $value): void;
 
     /**
      * Modifies an element index query.
@@ -378,23 +380,25 @@ interface FieldInterface extends SavableComponentInterface
      * which contains a column for this field.
      *
      * @param ElementQueryInterface $query The element query
+     * @return void
      * @since 3.0.9
      */
-    public function modifyElementIndexQuery(ElementQueryInterface $query);
+    public function modifyElementIndexQuery(ElementQueryInterface $query): void;
 
     /**
      * Sets whether the field is fresh.
      *
      * @param bool|null $isFresh Whether the field is fresh.
+     * @return void
      */
-    public function setIsFresh(bool $isFresh = null);
+    public function setIsFresh(bool $isFresh = null): void;
 
     /**
      * Returns the field’s group.
      *
      * @return FieldGroup|null
      */
-    public function getGroup();
+    public function getGroup(): ?FieldGroup;
 
     /**
      * Returns whether the field should be included in the given GraphQL schema.
@@ -446,17 +450,19 @@ interface FieldInterface extends SavableComponentInterface
      *
      * @param ElementInterface $element The element that was just saved
      * @param bool $isNew Whether the element is brand new
+     * @return void
      */
-    public function afterElementSave(ElementInterface $element, bool $isNew);
+    public function afterElementSave(ElementInterface $element, bool $isNew): void;
 
     /**
      * Performs actions after the element has been fully saved and propagated to other sites.
      *
      * @param ElementInterface $element The element that was just saved and propagated
      * @param bool $isNew Whether the element is brand new
+     * @return void
      * @since 3.2.0
      */
-    public function afterElementPropagate(ElementInterface $element, bool $isNew);
+    public function afterElementPropagate(ElementInterface $element, bool $isNew): void;
 
     /**
      * Performs actions before an element is deleted.
@@ -470,8 +476,9 @@ interface FieldInterface extends SavableComponentInterface
      * Performs actions after the element has been deleted.
      *
      * @param ElementInterface $element The element that was just deleted
+     * @return void
      */
-    public function afterElementDelete(ElementInterface $element);
+    public function afterElementDelete(ElementInterface $element): void;
 
     /**
      * Performs actions before an element is restored.
@@ -486,7 +493,8 @@ interface FieldInterface extends SavableComponentInterface
      * Performs actions after the element has been restored.
      *
      * @param ElementInterface $element The element that was just restored
+     * @return void
      * @since 3.1.0
      */
-    public function afterElementRestore(ElementInterface $element);
+    public function afterElementRestore(ElementInterface $element): void;
 }

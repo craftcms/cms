@@ -488,7 +488,7 @@ class Assets extends BaseRelationField
     /**
      * @inheritdoc
      */
-    public function afterElementSave(ElementInterface $element, bool $isNew)
+    public function afterElementSave(ElementInterface $element, bool $isNew): void
     {
         // Figure out what we're working with and set up some initial variables.
         $isDraftOrRevision = $element && $element->id && ElementHelper::isDraftOrRevision($element);
@@ -592,13 +592,13 @@ class Assets extends BaseRelationField
      * @inheritdoc
      * @since 3.3.0
      */
-    public function getEagerLoadingGqlConditions()
+    public function getEagerLoadingGqlConditions(): ?array
     {
         $allowedEntities = Gql::extractAllowedEntitiesFromSchema();
         $allowedVolumeUids = $allowedEntities['volumes'] ?? [];
 
         if (empty($allowedVolumeUids)) {
-            return false;
+            return null;
         }
 
         $volumeIds = Db::idsByUids(DbTable::VOLUMES, $allowedVolumeUids);

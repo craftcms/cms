@@ -8,6 +8,7 @@
 namespace craft\base;
 
 use Craft;
+use craft\db\QueryAbortedException;
 use craft\elements\db\ElementQuery;
 use craft\elements\db\ElementQueryInterface;
 use craft\events\DefineFieldHtmlEvent;
@@ -21,6 +22,7 @@ use craft\helpers\Html;
 use craft\helpers\StringHelper;
 use craft\models\GqlSchema;
 use craft\records\Field as FieldRecord;
+use craft\records\FieldGroup;
 use craft\validators\HandleValidator;
 use craft\validators\UniqueValidator;
 use GraphQL\Type\Definition\Type;
@@ -323,7 +325,7 @@ abstract class Field extends SavableComponent implements FieldInterface
     /**
      * @inheritdoc
      */
-    public function getTranslationDescription(ElementInterface $element = null)
+    public function getTranslationDescription(ElementInterface $element = null): ?string
     {
         if (!$this->getIsTranslatable($element)) {
             return null;
@@ -564,7 +566,7 @@ abstract class Field extends SavableComponent implements FieldInterface
     /**
      * @inheritdoc
      */
-    public function modifyElementsQuery(ElementQueryInterface $query, $value)
+    public function modifyElementsQuery(ElementQueryInterface $query, $value): void
     {
         /** @var ElementQuery $query */
         if ($value !== null) {
@@ -573,19 +575,17 @@ abstract class Field extends SavableComponent implements FieldInterface
             // If the field type doesn't have a content column, it *must* override this method
             // if it wants to support a custom query criteria attribute
             if ($column === null) {
-                return false;
+                throw new QueryAbortedException();
             }
 
             $query->subQuery->andWhere(Db::parseParam("content.$column", $value));
         }
-
-        return null;
     }
 
     /**
      * @inheritdoc
      */
-    public function modifyElementIndexQuery(ElementQueryInterface $query)
+    public function modifyElementIndexQuery(ElementQueryInterface $query): void
     {
         if ($this instanceof EagerLoadingFieldInterface) {
             $query->andWith($this->handle);
@@ -595,7 +595,7 @@ abstract class Field extends SavableComponent implements FieldInterface
     /**
      * @inheritdoc
      */
-    public function setIsFresh(bool $isFresh = null)
+    public function setIsFresh(bool $isFresh = null): void
     {
         $this->_isFresh = $isFresh;
     }
@@ -603,7 +603,7 @@ abstract class Field extends SavableComponent implements FieldInterface
     /**
      * @inheritdoc
      */
-    public function getGroup()
+    public function getGroup(): ?FieldGroup
     {
         return Craft::$app->getFields()->getGroupById($this->groupId);
     }
@@ -683,7 +683,7 @@ abstract class Field extends SavableComponent implements FieldInterface
     /**
      * @inheritdoc
      */
-    public function afterElementSave(ElementInterface $element, bool $isNew)
+    public function afterElementSave(ElementInterface $element, bool $isNew): void
     {
         // Trigger an 'afterElementSave' event
         if ($this->hasEventHandlers(self::EVENT_AFTER_ELEMENT_SAVE)) {
@@ -697,7 +697,7 @@ abstract class Field extends SavableComponent implements FieldInterface
     /**
      * @inheritdoc
      */
-    public function afterElementPropagate(ElementInterface $element, bool $isNew)
+    public function afterElementPropagate(ElementInterface $element, bool $isNew): void
     {
         // Trigger an 'afterElementPropagate' event
         if ($this->hasEventHandlers(self::EVENT_AFTER_ELEMENT_PROPAGATE)) {
@@ -725,7 +725,7 @@ abstract class Field extends SavableComponent implements FieldInterface
     /**
      * @inheritdoc
      */
-    public function afterElementDelete(ElementInterface $element)
+    public function afterElementDelete(ElementInterface $element): void
     {
         // Trigger an 'afterElementDelete' event
         if ($this->hasEventHandlers(self::EVENT_AFTER_ELEMENT_DELETE)) {
@@ -752,7 +752,7 @@ abstract class Field extends SavableComponent implements FieldInterface
     /**
      * @inheritdoc
      */
-    public function afterElementRestore(ElementInterface $element)
+    public function afterElementRestore(ElementInterface $element): void
     {
         // Trigger an 'afterElementRestore' event
         if ($this->hasEventHandlers(self::EVENT_AFTER_ELEMENT_RESTORE)) {
