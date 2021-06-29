@@ -42,6 +42,7 @@
 - Element actions’ `getMessage()` methods must now have a `?string` return type declaration.
 - Element actions’ `getTriggerHtml()` methods must now have a `?string` return type declaration.
 - Element actions’ `setElementType()` methods must now have a `void` return type declaration.
+- Element exporters’ `setElementType()` metods must now have a `void` return type declaration.
 - Element types’ `afterDelete()` methods must now have a `void` return type declaration.
 - Element types’ `afterMoveInStructure()` methods must now have a `void` return type declaration.
 - Element types’ `afterPropagate()` methods must now have a `void` return type declaration.

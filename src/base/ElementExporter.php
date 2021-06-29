@@ -31,7 +31,7 @@ abstract class ElementExporter extends Component implements ElementExporterInter
     /**
      * @inheritdoc
      */
-    public function setElementType(string $elementType)
+    public function setElementType(string $elementType): void
     {
         $this->elementType = $elementType;
     }
