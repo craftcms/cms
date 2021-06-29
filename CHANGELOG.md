@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 3.x
 
-## Unreleased
+## 3.7.0-beta.5 - 2021-06-29
 
 ### Fixed
 - Fixed a bug where custom fields’ `getInputHtml()` methods were getting called twice for Edit Category pages, causing duplicate JavaScript code to get registered. ([#9091](https://github.com/craftcms/cms/issues/9091))
