@@ -42,6 +42,48 @@
 - Element actions’ `getMessage()` methods must now have a `?string` return type declaration.
 - Element actions’ `getTriggerHtml()` methods must now have a `?string` return type declaration.
 - Element actions’ `setElementType()` methods must now have a `void` return type declaration.
+- Element types’ `afterDelete()` methods must now have a `void` return type declaration.
+- Element types’ `afterMoveInStructure()` methods must now have a `void` return type declaration.
+- Element types’ `afterPropagate()` methods must now have a `void` return type declaration.
+- Element types’ `afterRestore()` methods must now have a `void` return type declaration.
+- Element types’ `afterSave()` methods must now have a `void` return type declaration.
+- Element types’ `findOne()` methods must now have an `?ElementInterface` return type declaration.
+- Element types’ `getAttributeStatus()` methods must now have an `?array` return type declaration.
+- Element types’ `getCpEditUrl()` methods must now have a `?string` return type declaration.
+- Element types’ `getCurrentRevision()` methods must now have an `?ElementInterface` return type declaration.
+- Element types’ `getEagerLoadedElements()` methods must now have an `?array` return type declaration.
+- Element types’ `getEnabledForSite()` methods must now have a `?bool` return type declaration.
+- Element types’ `getFieldLayout()` methods must now have a `?FieldLayout` return type declaration.
+- Element types’ `getId()` methods must now have an `?int` return type declaration.
+- Element types’ `getLink()` methods must now have a `?Markup` return type declaration.
+- Element types’ `getNext()` methods must now have an `?ElementInterface` return type declaration.
+- Element types’ `getNextSibling()` methods must now have an `?ElementInterface` return type declaration.
+- Element types’ `getParent()` methods must now have an `?ElementInterface` return type declaration.
+- Element types’ `getPrev()` methods must now have an `?ElementInterface` return type declaration.
+- Element types’ `getPrevSibling()` methods must now have an `?ElementInterface` return type declaration.
+- Element types’ `getRef()` methods must now have a `?string` return type declaration.
+- Element types’ `getStatus()` methods must now have a `?string` return type declaration.
+- Element types’ `getThumbUrl()` methods must now have a `?string` return type declaration.
+- Element types’ `getTitleTranslationDescription()` methods must now have a `?string` return type declaration.
+- Element types’ `getUriFormat()` methods must now have a `?string` return type declaration.
+- Element types’ `getUrl()` methods must now have a `?string` return type declaration.
+- Element types’ `markAsClean()` methods must now have a `void` return type declaration.
+- Element types’ `markAsDirty()` methods must now have a `void` return type declaration.
+- Element types’ `offsetExists()` methods must now have a `bool` return type declaration.
+- Element types’ `refHandle()` methods must now have a `?string` return type declaration.
+- Element types’ `setDirtyAttributes()` methods must now have a `void` return type declaration.
+- Element types’ `setEagerLoadedElementCount()` methods must now have a `void` return type declaration.
+- Element types’ `setEagerLoadedElements()` methods must now have a `void` return type declaration.
+- Element types’ `setEnabledForSite()` methods must now have a `void` return type declaration.
+- Element types’ `setFieldParamNamespace()` methods must now have a `void` return type declaration.
+- Element types’ `setFieldValue()` methods must now have a `void` return type declaration.
+- Element types’ `setFieldValues()` methods must now have a `void` return type declaration.
+- Element types’ `setFieldValuesFromRequest()` methods must now have a `void` return type declaration.
+- Element types’ `setNext()` methods must now have a `void` return type declaration.
+- Element types’ `setParent()` methods must now have a `void` return type declaration.
+- Element types’ `setPrev()` methods must now have a `void` return type declaration.
+- Element types’ `setRevisionCreatorId()` methods must now have a `void` return type declaration.
+- Element types’ `setRevisionNotes()` methods must now have a `void` return type declaration.
 - Fields’ `afterElementDelete()` methods must now have a `void` return type declaration.
 - Fields’ `afterElementPropagate()` methods must now have a `void` return type declaration.
 - Fields’ `afterElementRestore()` methods must now have a `void` return type declaration.
@@ -56,6 +98,7 @@
 - Widgets’ `getIcon()` methods must now have a `?string` return type declaration.
 - Widgets’ `getSubtitle()` methods must now have a `?string` return type declaration.
 - Widgets’ `getTitle()` methods can now have a `?string` return type declaration.
+- Widgets’ `getFieldParamNamespace()` methods can now have a `?string` return type declaration.
 - Widgets’ `maxColspan()` methods must now have an `?int` return type declaration.
 - `craft\base\Model::datetimeAttributes()` is now called from the constructor, instead of the `init()` method.
 - `craft\base\Model::setAttributes()` now normalizes date attributes into `DateTime` objects.

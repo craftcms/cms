@@ -44,6 +44,7 @@ use craft\helpers\Image;
 use craft\helpers\Template;
 use craft\helpers\UrlHelper;
 use craft\models\AssetTransform;
+use craft\models\FieldLayout;
 use craft\models\VolumeFolder;
 use craft\records\Asset as AssetRecord;
 use craft\validators\AssetLocationValidator;
@@ -163,7 +164,7 @@ class Asset extends Element
     /**
      * @inheritdoc
      */
-    public static function refHandle()
+    public static function refHandle(): ?string
     {
         return 'asset';
     }
@@ -230,7 +231,7 @@ class Asset extends Element
      * @inheritdoc
      * @since 3.4.0
      */
-    public function setEagerLoadedElements(string $handle, array $elements)
+    public function setEagerLoadedElements(string $handle, array $elements): void
     {
         if ($handle === 'uploader') {
             $uploader = $elements[0] ?? null;
@@ -1044,7 +1045,7 @@ class Asset extends Element
     /**
      * @inheritdoc
      */
-    public function getTitleTranslationDescription()
+    public function getTitleTranslationDescription(): ?string
     {
         return ElementHelper::translationDescription($this->getVolume()->titleTranslationMethod);
     }
@@ -1061,7 +1062,7 @@ class Asset extends Element
     /**
      * @inheritdoc
      */
-    public function getFieldLayout()
+    public function getFieldLayout(): ?FieldLayout
     {
         if (($fieldLayout = parent::getFieldLayout()) !== null) {
             return $fieldLayout;
@@ -1173,7 +1174,7 @@ class Asset extends Element
      * @return string|null
      * @throws InvalidConfigException
      */
-    public function getUrl($transform = null, bool $generateNow = null)
+    public function getUrl($transform = null, bool $generateNow = null): ?string
     {
         $volume = $this->getVolume();
 
@@ -1215,7 +1216,7 @@ class Asset extends Element
     /**
      * @inheritdoc
      */
-    public function getThumbUrl(int $size)
+    public function getThumbUrl(int $size): ?string
     {
         if ($this->getWidth() && $this->getHeight()) {
             [$width, $height] = Assets::scaledDimensions($this->getWidth(), $this->getHeight(), $size, $size);
@@ -1905,7 +1906,7 @@ class Asset extends Element
      * @inheritdoc
      * @throws Exception if the asset isn't new but doesn't have a row in the `assets` table for some reason
      */
-    public function afterSave(bool $isNew)
+    public function afterSave(bool $isNew): void
     {
         if (!$this->propagating) {
             $isCpRequest = Craft::$app->getRequest()->getIsCpRequest();
@@ -1982,7 +1983,7 @@ class Asset extends Element
     /**
      * @inheritdoc
      */
-    public function afterDelete()
+    public function afterDelete(): void
     {
         if (!$this->keepFileOnDelete) {
             $this->getVolume()->deleteFile($this->getPath());

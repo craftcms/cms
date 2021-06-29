@@ -769,7 +769,7 @@ abstract class Field extends SavableComponent implements FieldInterface
      * @return array|false
      * @since 3.3.0
      */
-    public function getEagerLoadingGqlConditions()
+    public function getEagerLoadingGqlConditions(): ?array
     {
         // No restrictions
         return [];

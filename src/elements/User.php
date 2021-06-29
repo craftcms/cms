@@ -30,6 +30,7 @@ use craft\helpers\StringHelper;
 use craft\helpers\UrlHelper;
 use craft\i18n\Formatter;
 use craft\i18n\Locale;
+use craft\models\FieldLayout;
 use craft\models\UserGroup;
 use craft\records\User as UserRecord;
 use craft\validators\DateTimeValidator;
@@ -148,7 +149,7 @@ class User extends Element implements IdentityInterface
     /**
      * @inheritdoc
      */
-    public static function refHandle()
+    public static function refHandle(): ?string
     {
         return 'user';
     }
@@ -844,7 +845,7 @@ class User extends Element implements IdentityInterface
     /**
      * @inheritdoc
      */
-    public function getFieldLayout()
+    public function getFieldLayout(): ?FieldLayout
     {
         return Craft::$app->getFields()->getLayoutByType(self::class);
     }
@@ -954,7 +955,7 @@ class User extends Element implements IdentityInterface
      *
      * @return string|null
      */
-    public function getRef()
+    public function getRef(): ?string
     {
         return $this->username;
     }
@@ -1130,7 +1131,7 @@ class User extends Element implements IdentityInterface
     /**
      * @inheritdoc
      */
-    public function getStatus()
+    public function getStatus(): ?string
     {
         if ($this->suspended) {
             return self::STATUS_SUSPENDED;
@@ -1172,7 +1173,7 @@ class User extends Element implements IdentityInterface
     /**
      * @inheritdoc
      */
-    public function getThumbUrl(int $size)
+    public function getThumbUrl(int $size): ?string
     {
         $photo = $this->getPhoto();
 
@@ -1391,7 +1392,7 @@ class User extends Element implements IdentityInterface
     /**
      * @inheritdoc
      */
-    public function setEagerLoadedElements(string $handle, array $elements)
+    public function setEagerLoadedElements(string $handle, array $elements): void
     {
         if ($handle === 'photo') {
             $photo = $elements[0] ?? null;
@@ -1530,7 +1531,7 @@ class User extends Element implements IdentityInterface
      * @inheritdoc
      * @throws Exception if reasons
      */
-    public function afterSave(bool $isNew)
+    public function afterSave(bool $isNew): void
     {
         // Get the user record
         if (!$isNew) {

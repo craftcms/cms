@@ -16,6 +16,7 @@ use craft\elements\db\GlobalSetQuery;
 use craft\helpers\Db;
 use craft\helpers\StringHelper;
 use craft\helpers\UrlHelper;
+use craft\models\FieldLayout;
 use craft\records\GlobalSet as GlobalSetRecord;
 use craft\validators\HandleValidator;
 use craft\validators\UniqueValidator;
@@ -64,7 +65,7 @@ class GlobalSet extends Element
     /**
      * @inheritdoc
      */
-    public static function refHandle()
+    public static function refHandle(): ?string
     {
         return 'globalset';
     }
@@ -88,7 +89,7 @@ class GlobalSet extends Element
     /**
      * @return string|null
      */
-    public function getRef()
+    public function getRef(): ?string
     {
         return $this->handle;
     }
@@ -207,7 +208,7 @@ class GlobalSet extends Element
     /**
      * @inheritdoc
      */
-    public function getFieldLayout()
+    public function getFieldLayout(): ?FieldLayout
     {
         /** @var FieldLayoutBehavior $behavior */
         $behavior = $this->getBehavior('fieldLayout');
@@ -257,7 +258,7 @@ class GlobalSet extends Element
     /**
      * @inheritdoc
      */
-    public function afterRestore()
+    public function afterRestore(): void
     {
         // Restore the field layout too
         if (

@@ -25,6 +25,7 @@ use craft\elements\db\ElementQueryInterface;
 use craft\helpers\Db;
 use craft\helpers\UrlHelper;
 use craft\models\CategoryGroup;
+use craft\models\FieldLayout;
 use craft\records\Category as CategoryRecord;
 use craft\services\Structures;
 use yii\base\Exception;
@@ -74,7 +75,7 @@ class Category extends Element
     /**
      * @inheritdoc
      */
-    public static function refHandle()
+    public static function refHandle(): ?string
     {
         return 'category';
     }
@@ -408,7 +409,7 @@ class Category extends Element
     /**
      * @inheritdoc
      */
-    public function getUriFormat()
+    public function getUriFormat(): ?string
     {
         $categoryGroupSiteSettings = $this->getGroup()->getSiteSettings();
 
@@ -469,7 +470,7 @@ class Category extends Element
     /**
      * @inheritdoc
      */
-    public function getFieldLayout()
+    public function getFieldLayout(): ?FieldLayout
     {
         return parent::getFieldLayout() ?? $this->getGroup()->getFieldLayout();
     }
@@ -551,7 +552,7 @@ class Category extends Element
      * @inheritdoc
      * @throws Exception if reasons
      */
-    public function afterSave(bool $isNew)
+    public function afterSave(bool $isNew): void
     {
         if (!$this->propagating) {
             $group = $this->getGroup();
@@ -634,7 +635,7 @@ class Category extends Element
     /**
      * @inheritdoc
      */
-    public function afterRestore()
+    public function afterRestore(): void
     {
         $structureId = $this->getGroup()->structureId;
 
@@ -657,7 +658,7 @@ class Category extends Element
     /**
      * @inheritdoc
      */
-    public function afterMoveInStructure(int $structureId)
+    public function afterMoveInStructure(int $structureId): void
     {
         // Was the category moved within its group's structure?
         if ($this->getGroup()->structureId == $structureId) {
