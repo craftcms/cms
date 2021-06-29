@@ -48,7 +48,7 @@ abstract class ElementAction extends ConfigurableComponent implements ElementAct
     /**
      * @inheritdoc
      */
-    public function setElementType(string $elementType)
+    public function setElementType(string $elementType): void
     {
         $this->elementType = $elementType;
     }
@@ -64,7 +64,7 @@ abstract class ElementAction extends ConfigurableComponent implements ElementAct
     /**
      * @inheritdoc
      */
-    public function getTriggerHtml()
+    public function getTriggerHtml(): ?string
     {
         return null;
     }
@@ -72,7 +72,7 @@ abstract class ElementAction extends ConfigurableComponent implements ElementAct
     /**
      * @inheritdoc
      */
-    public function getConfirmationMessage()
+    public function getConfirmationMessage(): ?string
     {
         return null;
     }
@@ -88,7 +88,7 @@ abstract class ElementAction extends ConfigurableComponent implements ElementAct
     /**
      * @inheritdoc
      */
-    public function getMessage()
+    public function getMessage(): ?string
     {
         return $this->_message;
     }

@@ -40,7 +40,7 @@ class DeleteAssets extends ElementAction
     /**
      * @inheritdoc
      */
-    public function getConfirmationMessage()
+    public function getConfirmationMessage(): ?string
     {
         return Craft::t('app', 'Are you sure you want to delete the selected assets?');
     }
@@ -49,7 +49,7 @@ class DeleteAssets extends ElementAction
      * @inheritdoc
      * @since 3.5.15
      */
-    public function getTriggerHtml()
+    public function getTriggerHtml(): ?string
     {
         // Only enable for deletable elements, per getIsDeletable()
         $type = Json::encode(static::class);

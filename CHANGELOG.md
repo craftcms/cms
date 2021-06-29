@@ -38,6 +38,10 @@
 - Craft now requires PHP 7.4 or later.
 - Relational fields now load elements in the current site rather than the primary site, if the source element isn’t localizable. ([#7048](https://github.com/craftcms/cms/issues/7048))
 - All components’ `getSettingsHtml()` methods must now have a `?string` return type declaration.
+- Element actions’ `getConfirmationMessage()` methods must now have a `?string` return type declaration.
+- Element actions’ `getMessage()` methods must now have a `?string` return type declaration.
+- Element actions’ `getTriggerHtml()` methods must now have a `?string` return type declaration.
+- Element actions’ `setElementType()` methods must now have a `void` return type declaration.
 - Widgets’ `getBodyHtml()` methods must now have a `?string` return type declaration, and `null` should be returned rather that `false` if the widget should not be visible.
 - Widgets’ `getIcon()` methods must now have a `?string` return type declaration.
 - Widgets’ `getSubtitle()` methods must now have a `?string` return type declaration.

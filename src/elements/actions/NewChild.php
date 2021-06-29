@@ -55,7 +55,7 @@ class NewChild extends ElementAction
     /**
      * @inheritdoc
      */
-    public function getTriggerHtml()
+    public function getTriggerHtml(): ?string
     {
         $type = Json::encode(static::class);
         $maxLevels = Json::encode($this->maxLevels);

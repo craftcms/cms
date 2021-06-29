@@ -68,7 +68,7 @@ class Delete extends ElementAction implements DeleteActionInterface
      * @inheritdoc
      * @since 3.5.0
      */
-    public function getTriggerHtml()
+    public function getTriggerHtml(): ?string
     {
         // Only enable for deletable elements, per getIsDeletable()
         $type = Json::encode(static::class);
@@ -123,7 +123,7 @@ JS;
     /**
      * @inheritdoc
      */
-    public function getConfirmationMessage()
+    public function getConfirmationMessage(): ?string
     {
         if ($this->confirmationMessage !== null) {
             return $this->confirmationMessage;

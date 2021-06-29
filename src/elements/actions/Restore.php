@@ -45,7 +45,7 @@ class Restore extends ElementAction
     /**
      * @inheritdoc
      */
-    public function getTriggerHtml()
+    public function getTriggerHtml(): ?string
     {
         return '<div class="btn formsubmit">' . $this->getTriggerLabel() . '</div>';
     }
