@@ -57,7 +57,7 @@ class Tip extends BaseUiElement
     /**
      * @inheritdoc
      */
-    public function settingsHtml()
+    public function settingsHtml(): ?string
     {
         return Cp::textareaFieldHtml([
             'label' => $this->_isTip() ? Craft::t('app', 'Tip') : Craft::t('app', 'Warning'),
@@ -72,7 +72,7 @@ class Tip extends BaseUiElement
     /**
      * @inheritdoc
      */
-    public function formHtml(ElementInterface $element = null, bool $static = false)
+    public function formHtml(ElementInterface $element = null, bool $static = false): ?string
     {
         $noteClass = $this->_isTip() ? self::STYLE_TIP : self::STYLE_WARNING;
         $tip = Markdown::process(Html::encode(Craft::t('site', $this->tip)));

@@ -50,7 +50,7 @@ abstract class FieldLayoutElement extends BaseObject implements FieldLayoutEleme
     /**
      * @inheritdoc
      */
-    public function settingsHtml()
+    public function settingsHtml(): ?string
     {
         return null;
     }

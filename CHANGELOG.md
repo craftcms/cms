@@ -95,6 +95,8 @@
 - Fields’ `modifyElementIndexQuery()` methods must now have a `void` return type declaration.
 - Fields’ `modifyElementsQuery()` methods must now have a `void` return type declaration, and should throw a `QueryAbortedException` when the query should yield no results, rother than returning `false`.
 - Fields’ `setIsFresh()` methods must now have a `void` return type declaration.
+- Field layout elements’ `formHtml()` methods must now have a `?string` return type declaration.
+- Field layout elements’ `settingsHtml()` methods must now have a `?string` return type declaration.
 - Widgets’ `getBodyHtml()` methods must now have a `?string` return type declaration, and `null` should be returned rather that `false` if the widget should not be visible.
 - Widgets’ `getIcon()` methods must now have a `?string` return type declaration.
 - Widgets’ `getSubtitle()` methods must now have a `?string` return type declaration.

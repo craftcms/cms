@@ -204,7 +204,7 @@ class CustomField extends BaseField
     /**
      * @inheritdoc
      */
-    public function formHtml(ElementInterface $element = null, bool $static = false)
+    public function formHtml(ElementInterface $element = null, bool $static = false): ?string
     {
         $view = Craft::$app->getView();
         $registerDeltas = ($element->id ?? false) && $view->getIsDeltaRegistrationActive();

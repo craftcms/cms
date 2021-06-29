@@ -185,7 +185,7 @@ abstract class BaseField extends FieldLayoutElement
     /**
      * @inheritdoc
      */
-    public function settingsHtml()
+    public function settingsHtml(): ?string
     {
         return Craft::$app->getView()->renderTemplate('_includes/forms/fld/field-settings', [
             'field' => $this,
@@ -198,7 +198,7 @@ abstract class BaseField extends FieldLayoutElement
     /**
      * @inheritdoc
      */
-    public function formHtml(ElementInterface $element = null, bool $static = false)
+    public function formHtml(ElementInterface $element = null, bool $static = false): ?string
     {
         $inputHtml = $this->inputHtml($element, $static);
         if ($inputHtml === null) {

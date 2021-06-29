@@ -65,7 +65,7 @@ class Template extends BaseUiElement
     /**
      * @inheritdoc
      */
-    public function settingsHtml()
+    public function settingsHtml(): ?string
     {
         return Cp::textFieldHtml([
             'label' => Craft::t('app', 'Template'),
@@ -81,7 +81,7 @@ class Template extends BaseUiElement
     /**
      * @inheritdoc
      */
-    public function formHtml(ElementInterface $element = null, bool $static = false)
+    public function formHtml(ElementInterface $element = null, bool $static = false): ?string
     {
         if (!$this->template) {
             return $this->_error(Craft::t('app', 'No template path has been chosen yet.'), 'warning');
