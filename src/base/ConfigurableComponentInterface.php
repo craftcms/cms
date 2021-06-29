@@ -118,5 +118,5 @@ interface ConfigurableComponentInterface extends ComponentInterface
      *
      * @return string|null
      */
-    public function getSettingsHtml();
+    public function getSettingsHtml(): ?string;
 }

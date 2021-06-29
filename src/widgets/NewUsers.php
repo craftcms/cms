@@ -94,7 +94,7 @@ class NewUsers extends Widget
     /**
      * @inheritdoc
      */
-    public function getSettingsHtml()
+    public function getSettingsHtml(): ?string
     {
         return Craft::$app->getView()->renderTemplate('_components/widgets/NewUsers/settings',
             [

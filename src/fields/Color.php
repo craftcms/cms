@@ -55,7 +55,7 @@ class Color extends Field implements PreviewableFieldInterface
     }
 
     /** @inheritdoc */
-    public function getSettingsHtml()
+    public function getSettingsHtml(): ?string
     {
         return Cp::colorFieldHtml([
             'label' => Craft::t('app', 'Default Color'),

@@ -188,7 +188,7 @@ class Date extends Field implements PreviewableFieldInterface, SortableFieldInte
     /**
      * @inheritdoc
      */
-    public function getSettingsHtml()
+    public function getSettingsHtml(): ?string
     {
         if ($this->showDate && !$this->showTime) {
             $dateTimeValue = 'showDate';

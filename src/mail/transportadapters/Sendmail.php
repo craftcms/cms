@@ -79,7 +79,7 @@ class Sendmail extends BaseTransportAdapter
      * @inheritdoc
      * @since 3.4.0
      */
-    public function getSettingsHtml()
+    public function getSettingsHtml(): ?string
     {
         return Craft::$app->getView()->renderTemplate('_components/mailertransportadapters/Sendmail/settings', [
             'adapter' => $this,

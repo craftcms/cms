@@ -393,7 +393,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
     /**
      * @inheritdoc
      */
-    public function getSettingsHtml()
+    public function getSettingsHtml(): ?string
     {
         // Get the available field types data
         $fieldTypeInfo = $this->_getFieldOptionsForConfigurator();

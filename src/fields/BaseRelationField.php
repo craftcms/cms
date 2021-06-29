@@ -271,7 +271,7 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
     /**
      * @inheritdoc
      */
-    public function getSettingsHtml()
+    public function getSettingsHtml(): ?string
     {
         $variables = $this->settingsTemplateVariables();
         return Craft::$app->getView()->renderTemplate($this->settingsTemplate, $variables);

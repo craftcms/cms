@@ -84,7 +84,7 @@ class Gmail extends BaseTransportAdapter
     /**
      * @inheritdoc
      */
-    public function getSettingsHtml()
+    public function getSettingsHtml(): ?string
     {
         return Craft::$app->getView()->renderTemplate('_components/mailertransportadapters/Gmail/settings', [
             'adapter' => $this,

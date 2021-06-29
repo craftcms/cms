@@ -215,7 +215,7 @@ class Table extends Field
     /**
      * @inheritdoc
      */
-    public function getSettingsHtml()
+    public function getSettingsHtml(): ?string
     {
         $typeOptions = [
             'checkbox' => Craft::t('app', 'Checkbox'),

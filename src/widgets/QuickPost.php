@@ -97,7 +97,7 @@ class QuickPost extends Widget
     /**
      * @inheritdoc
      */
-    public function getSettingsHtml()
+    public function getSettingsHtml(): ?string
     {
         // Find the sections the user has permission to create entries in
         $sections = [];
