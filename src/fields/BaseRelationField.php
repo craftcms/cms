@@ -704,7 +704,7 @@ JS;
     /**
      * @inheritdoc
      */
-    public function afterSave(bool $isNew)
+    public function afterSave(bool $isNew): void
     {
         // If the propagation method just changed, resave all the Matrix blocks
         if ($this->oldSettings !== null) {

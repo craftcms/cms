@@ -41,7 +41,7 @@ interface SavableComponentInterface extends ConfigurableComponentInterface
      *
      * @param bool $isNew Whether the component is brand new
      */
-    public function afterSave(bool $isNew);
+    public function afterSave(bool $isNew): void;
 
     /**
      * Performs actions before a component is deleted.

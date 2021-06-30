@@ -76,7 +76,7 @@ abstract class SavableComponent extends ConfigurableComponent implements Savable
     /**
      * @inheritdoc
      */
-    public function afterSave(bool $isNew)
+    public function afterSave(bool $isNew): void
     {
         // Trigger an 'afterSave' event
         if ($this->hasEventHandlers(self::EVENT_AFTER_SAVE)) {
