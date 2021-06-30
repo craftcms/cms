@@ -525,23 +525,18 @@ class Plugins extends Component
             $info['id'] = $db->getLastInsertID(Table::PLUGINS);
 
             $this->_setPluginMigrator($plugin);
-
-            if ($plugin->install() === false) {
-                $transaction->rollBack();
-
-                if ($db->getIsMysql()) {
-                    // Explicitly remove the plugins row just in case the transaction was implicitly committed
-                    Db::delete(Table::PLUGINS, [
-                        'handle' => $handle,
-                    ]);
-                }
-
-                return false;
-            }
-
+            $plugin->install();
             $transaction->commit();
         } catch (\Throwable $e) {
             $transaction->rollBack();
+
+            if ($db->getIsMysql()) {
+                // Explicitly remove the plugins row just in case the transaction was implicitly committed
+                Db::delete(Table::PLUGINS, [
+                    'handle' => $handle,
+                ]);
+            }
+
             throw $e;
         }
 
@@ -618,9 +613,14 @@ class Plugins extends Component
         $transaction = Craft::$app->getDb()->beginTransaction();
         try {
             // Let the plugin uninstall itself first
-            if ($plugin && $enabled && ($plugin->uninstall() === false) && !$force) {
-                $transaction->rollBack();
-                return false;
+            if ($plugin && $enabled) {
+                try {
+                    $plugin->uninstall();
+                } catch (\Throwable $e) {
+                    if (!$force) {
+                        throw $e;
+                    }
+                }
             }
 
             // Clean up the plugins and migrations tables
@@ -638,7 +638,6 @@ class Plugins extends Component
             $transaction->commit();
         } catch (\Throwable $e) {
             $transaction->rollBack();
-
             throw $e;
         }
 

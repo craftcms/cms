@@ -97,6 +97,13 @@
 - Fields’ `setIsFresh()` methods must now have a `void` return type declaration.
 - Field layout elements’ `formHtml()` methods must now have a `?string` return type declaration.
 - Field layout elements’ `settingsHtml()` methods must now have a `?string` return type declaration.
+- Plugins’ `afterSaveSettings()` methods must now have a `void` return type declaration.
+- Plugins’ `createSettingsModel()` methods must now have a `?Model` return type declaration.
+- Plugins’ `getCpNavItem()` methods must now have an `?array` return type declaration.
+- Plugins’ `getSettings()` methods must now have a `?Model` return type declaration.
+- Plugins’ `install()` methods must now have a `void` return type declaration, and no longer return `null` or `false`.
+- Plugins’ `setSettings()` methods must now have a `void` return type declaration.
+- Plugins’ `uninstall()` methods must now have a `void` return type declaration, and no longer return `null` or `false`.
 - Widgets’ `getBodyHtml()` methods must now have a `?string` return type declaration, and `null` should be returned rather that `false` if the widget should not be visible.
 - Widgets’ `getIcon()` methods must now have a `?string` return type declaration.
 - Widgets’ `getSubtitle()` methods must now have a `?string` return type declaration.
