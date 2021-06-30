@@ -1019,7 +1019,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
     /**
      * @inheritdoc
      */
-    public function beforeApplyDelete()
+    public function beforeApplyDelete(): void
     {
         Craft::$app->getMatrix()->deleteMatrixField($this);
         parent::beforeApplyDelete();
