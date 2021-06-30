@@ -37,6 +37,7 @@
 ### Changed
 - Craft now requires PHP 7.4 or later.
 - Relational fields now load elements in the current site rather than the primary site, if the source element isn’t localizable. ([#7048](https://github.com/craftcms/cms/issues/7048))
+- All components’ `afterDelete()` methods must now have a `void` return type declaration.
 - All components’ `afterSave()` methods must now have a `void` return type declaration.
 - All components’ `beforeApplyDelete()` methods must now have a `void` return type declaration.
 - All components’ `getSettingsHtml()` methods must now have a `?string` return type declaration.

@@ -60,5 +60,5 @@ interface SavableComponentInterface extends ConfigurableComponentInterface
     /**
      * Performs actions after a component is deleted.
      */
-    public function afterDelete();
+    public function afterDelete(): void;
 }
