@@ -1255,10 +1255,18 @@ class Entry extends Element
         if ($section->type === Section::TYPE_SINGLE) {
             return false;
         }
+
         $userSession = Craft::$app->getUser();
+        $userId = $userSession->getId();
+
+        if ($this->getIsDraft()) {
+            /** @var Entry|DraftBehavior $this */
+            return $this->creatorId == $userId || $userSession->checkPermission("deletePeerEntryDrafts:$section->uid");
+        }
+
         return (
             $userSession->checkPermission("deleteEntries:$section->uid") &&
-            ($this->authorId == $userSession->getId() || $userSession->checkPermission("deletePeerEntries:$section->uid"))
+            ($this->authorId == $userId || $userSession->checkPermission("deletePeerEntries:$section->uid"))
         );
     }
 
