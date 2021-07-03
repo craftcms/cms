@@ -498,7 +498,7 @@ class EntriesController extends BaseEntriesController
         // Resave the entry
         $entry->setScenario(Element::SCENARIO_ESSENTIALS);
         $entry->resaving = true;
-        Craft::$app->getElements()->saveElement($entry);
+        Craft::$app->getElements()->saveElement($entry, true, true, false);
 
         if ($draftId && !$provisional) {
             $this->setSuccessFlash(Craft::t('app', 'Draft deleted for site.'));
