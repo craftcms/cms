@@ -6,6 +6,7 @@
 - The control panel now displays new feature announcements. ([#8056](https://github.com/craftcms/cms/pull/8056))
 - Added the “Always show focus rings” user preference. ([#7790](https://github.com/craftcms/cms/issues/7790))
 - The Entries index page now has “Create a new entry before” and “Create a new entry after” actions for entries within Structure sections. ([#870](https://github.com/craftcms/cms/issues/870))
+- The Entries index page now has a “Delete for site” action for entries whose section’s Propagation Method is set to “Let each entry choose which sites it should be saved to”. ([#9119](https://github.com/craftcms/cms/pull/9119))
 - Edit Entry pages now treat unpublished drafts similarly to published entries, rather than drafts. ([#7899](https://github.com/craftcms/cms/pull/7899))
 - Edit Entry pages no longer appear to create a draft when the Current revision is edited within Live Preview. Unsaved changes are now stored within a “provisional draft”, which is mostly hidden from the author. ([#7899](https://github.com/craftcms/cms/pull/7899))
 - Category groups now have a “Default Category Placement” setting, which determines where new categories should be placed within the structure by default. ([#7759](https://github.com/craftcms/cms/issues/7759))
