@@ -497,6 +497,7 @@ class EntriesController extends BaseEntriesController
 
         // Resave the entry
         $entry->setScenario(Element::SCENARIO_ESSENTIALS);
+        $entry->resaving = true;
         Craft::$app->getElements()->saveElement($entry);
 
         if ($draftId && !$provisional) {
