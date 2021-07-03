@@ -17,6 +17,7 @@ use craft\controllers\ElementIndexesController;
 use craft\db\Query;
 use craft\db\Table;
 use craft\elements\actions\Delete;
+use craft\elements\actions\DeleteForSite;
 use craft\elements\actions\Duplicate;
 use craft\elements\actions\Edit;
 use craft\elements\actions\NewChild;
@@ -465,6 +466,10 @@ class Entry extends Element
                             'type' => Delete::class,
                             'withDescendants' => true,
                         ];
+                    }
+
+                    if ($section->propagationMethod === Section::PROPAGATION_METHOD_CUSTOM && $section->getHasMultiSiteEntries()) {
+                        $actions[] = DeleteForSite::class;
                     }
                 }
             }
@@ -1255,10 +1260,18 @@ class Entry extends Element
         if ($section->type === Section::TYPE_SINGLE) {
             return false;
         }
+
         $userSession = Craft::$app->getUser();
+        $userId = $userSession->getId();
+
+        if ($this->getIsDraft()) {
+            /** @var Entry|DraftBehavior $this */
+            return $this->creatorId == $userId || $userSession->checkPermission("deletePeerEntryDrafts:$section->uid");
+        }
+
         return (
             $userSession->checkPermission("deleteEntries:$section->uid") &&
-            ($this->authorId == $userSession->getId() || $userSession->checkPermission("deletePeerEntries:$section->uid"))
+            ($this->authorId == $userId || $userSession->checkPermission("deletePeerEntries:$section->uid"))
         );
     }
 

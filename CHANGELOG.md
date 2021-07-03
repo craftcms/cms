@@ -1,5 +1,10 @@
 # Release Notes for Craft CMS 3.x
 
+## Unreleased
+
+### Added
+- The Entries index page now has a “Delete for site” action for entries whose section’s Propagation Method is set to “Let each entry choose which sites it should be saved to”. ([#9119](https://github.com/craftcms/cms/pull/9119))
+
 ## 3.7.0-beta.5 - 2021-06-29
 
 ### Fixed
