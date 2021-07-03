@@ -1548,8 +1548,12 @@ EOD;
                     ->siteId('*')
                     ->anyStatus()
                     ->one();
-                $revisionNotes = 'Revision from ' . Craft::$app->getFormatter()->asDatetime($currentEntry->dateUpdated);
-                Craft::$app->getRevisions()->createRevision($currentEntry, $currentEntry->authorId, $revisionNotes);
+
+                // May be null if the entry is currently stored as an unpublished draft
+                if ($currentEntry) {
+                    $revisionNotes = 'Revision from ' . Craft::$app->getFormatter()->asDatetime($currentEntry->dateUpdated);
+                    Craft::$app->getRevisions()->createRevision($currentEntry, $currentEntry->authorId, $revisionNotes);
+                }
             }
         }
 

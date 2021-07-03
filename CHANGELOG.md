@@ -5,6 +5,9 @@
 ### Added
 - The Entries index page now has a “Delete for site” action for entries whose section’s Propagation Method is set to “Let each entry choose which sites it should be saved to”. ([#9119](https://github.com/craftcms/cms/pull/9119))
 
+### Changed
+- Entries now retain their original IDs when created from an unpublished draft. ([#9104](https://github.com/craftcms/cms/issues/9104))
+
 ## 3.7.0-beta.5 - 2021-06-29
 
 ### Fixed
