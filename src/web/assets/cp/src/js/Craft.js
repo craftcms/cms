@@ -709,6 +709,10 @@ $.extend(Craft,
                         options.params.processCraftHeaders = 1;
                     }
 
+                    if (Craft.httpProxy) {
+                        options.proxy = Craft.httpProxy;
+                    }
+
                     axios.request(options).then((apiResponse) => {
                         // Process the response headers
                         this._processApiHeaders(apiResponse.headers, cancelToken).then(() => {

@@ -794,6 +794,16 @@ class GeneralConfig extends BaseObject
     public $headlessMode = false;
 
     /**
+     * @var string|null The proxy server that should be used for outgoing HTTP requests.
+     *
+     * This can be set to a URL (`http://localhost`) or a URL plus a port (`http://localhost:8125`).
+     *
+     * @group System
+     * @since 3.7.0
+     */
+    public $httpProxy;
+
+    /**
      * @var mixed The image driver Craft should use to cleanse and transform images. By default Craft will use ImageMagick if it’s installed
      * and otherwise fall back to GD. You can explicitly set either `'imagick'` or `'gd'` here to override that behavior.
      * @group Image Handling
