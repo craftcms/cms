@@ -1134,16 +1134,6 @@ class GeneralConfig extends BaseObject
     public $preserveImageColorProfiles = true;
 
     /**
-     * @var string The template path segment prefix that should be used to identify “private” templates, which are templates that are not
-     * directly accessible via a matching URL.
-     *
-     * Set to an empty value to disable public template routing.
-     *
-     * @group System
-     */
-    public $privateTemplateTrigger = '_';
-
-    /**
      * @var bool When `true`, Craft will always return a successful response in the “forgot password” flow, making it difficult to enumerate users.
      *
      * When set to `false` and you go through the “forgot password” flow from the control panel login page, you’ll get distinct messages indicating
@@ -1178,6 +1168,16 @@ class GeneralConfig extends BaseObject
      * @since 3.7.0
      */
     public $previewTokenDuration = 86400;
+
+    /**
+     * @var string The template path segment prefix that should be used to identify “private” templates, which are templates that are not
+     * directly accessible via a matching URL.
+     *
+     * Set to an empty value to disable public template routing.
+     *
+     * @group System
+     */
+    public $privateTemplateTrigger = '_';
 
     /**
      * @var mixed The amount of time to wait before Craft purges pending users from the system that have not activated.
