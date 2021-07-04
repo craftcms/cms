@@ -8,6 +8,9 @@
 ### Changed
 - Entries now retain their original IDs when created from an unpublished draft. ([#9104](https://github.com/craftcms/cms/issues/9104))
 
+### Fixed
+- Fixed an error that occurred when creating a new category on multi-site installs. ([#9107](https://github.com/craftcms/cms/issues/9107))
+
 ## 3.7.0-beta.5 - 2021-06-29
 
 ### Fixed
