@@ -11,6 +11,7 @@
 - Fixed an error that occurred when uninstalling a plugin via the `plugin/uninstall` command with `--force`, if the plugin didn’t have a row in the `plugins` table.
 - Fixed a bug where element thumbnails weren’t always getting lazy-loaded properly. ([#6621](https://github.com/craftcms/cms/issues/6621))
 - Fixed a bug where control panel requests weren’t always redirecting to the control panel when they were supposed to. ([#9081](https://github.com/craftcms/cms/issues/9081))
+- Fixed a bug where control panel URLs were getting empty hashes appended to them in Firefox, adding an extra element to the browser’s session history. ([#9118](https://github.com/craftcms/cms/issues/9118))
 
 ## 3.6.17 - 2021-06-15
 
