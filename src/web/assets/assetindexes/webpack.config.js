@@ -4,6 +4,6 @@ const CraftWebpackConfig = require('../../../../CraftWebpackConfig');
 
 module.exports = new CraftWebpackConfig({
     config: {
-        entry: {'AssetIndexesUtility': './AssetIndexesUtility.js'},
+        entry: {'AssetIndexer': './AssetIndexer.ts'},
     }
 });
