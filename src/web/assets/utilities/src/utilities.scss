@@ -1,5 +1,5 @@
 @charset "UTF-8";
-@import "~craftcms-sass/mixins";
+@import "../../../../../packages/craftcms-sass/mixins";
 
 /* Utilities */
 form.utility .utility-status {
@@ -38,6 +38,6 @@ form.utility .utility-status .progressbar-status {
 
 /* Asset Index */
 .confirmmodal .body {
-  max-height: 200px;
+  max-height: 400px;
   overflow: auto;
 }

@@ -10,11 +10,9 @@ namespace craft\controllers;
 use Craft;
 use craft\base\Field;
 use craft\base\FieldInterface;
-use craft\db\Table;
 use craft\fields\MissingField;
 use craft\fields\PlainText;
 use craft\helpers\ArrayHelper;
-use craft\helpers\Db;
 use craft\helpers\UrlHelper;
 use craft\models\FieldGroup;
 use craft\web\assets\fieldsettings\FieldSettingsAsset;
@@ -150,7 +148,7 @@ class FieldsController extends Controller
         // ---------------------------------------------------------------------
 
         $supportedTranslationMethods = [];
-        /* @var string[]|FieldInterface[] $allFieldTypes */
+        /** @var string[]|FieldInterface[] $allFieldTypes */
         $allFieldTypes = $fieldsService->getAllFieldTypes();
 
         foreach ($allFieldTypes as $class) {
@@ -168,7 +166,7 @@ class FieldsController extends Controller
             $compatibleFieldTypes = $fieldsService->getCompatibleFieldTypes($field, true);
         }
 
-        /* @var string[]|FieldInterface[] $compatibleFieldTypes */
+        /** @var string[]|FieldInterface[] $compatibleFieldTypes */
         $fieldTypeOptions = [];
 
         foreach ($allFieldTypes as $class) {

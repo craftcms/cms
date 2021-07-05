@@ -52,6 +52,7 @@ before_script:
   sudo mysql_upgrade || echo "MySQL is already up to date"
 - travis_retry mysql -e 'CREATE DATABASE `craft_test`;';
 - mysql -e "SET GLOBAL sql_mode = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION';";
+- mysql_tzinfo_to_sql /usr/share/zoneinfo | mysql -uroot mysql
 - psql -U postgres -c 'CREATE DATABASE "craft_test";';
 - cp tests/.env.example.$DB tests/.env
 - |
@@ -65,6 +66,12 @@ before_script:
     sed -i 's/DB_USER=root/DB_USER=postgres/' tests/.env
   fi
 script:
+- nvm install 14
+- npm install -g npm
+- npm cache clean -f
+- npm install -g snyk
+#- snyk monitor --all-projects # Enable reachable vulns, scan and publish results to Snyk
+#- snyk test --all-projects # Enable reachable vulns
 - |
   if [[ $TASK_TESTS_COVERAGE != 1 ]]; then
     vendor/bin/codecept run unit,functional

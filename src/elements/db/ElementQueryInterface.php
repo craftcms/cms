@@ -211,6 +211,33 @@ interface ElementQueryInterface extends QueryInterface, ArrayAccess, Arrayable, 
     public function draftCreator($value);
 
     /**
+     * Narrows the query results to only provisional drafts.
+     *
+     * ---
+     *
+     * ```twig
+     * {# Fetch provisional drafts created by the current user #}
+     * {% set {elements-var} = {twig-method}
+     *     .provisionalDrafts()
+     *     .draftCreator(currentUser)
+     *     .all() %}
+     * ```
+     *
+     * ```php
+     * // Fetch provisional drafts created by the current user
+     * ${elements-var} = {php-method}
+     *     ->provisionalDrafts()
+     *     ->draftCreator(Craft::$app->user->identity)
+     *     ->all();
+     * ```
+     *
+     * @param bool|null $value The property value
+     * @return static self reference
+     * @since 3.7.0
+     */
+    public function provisionalDrafts(?bool $value = true);
+
+    /**
      * Narrows the query results to only unpublished drafts which have been saved after initial creation.
      *
      * ---

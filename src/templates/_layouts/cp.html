@@ -75,7 +75,6 @@
 {% set mainContentClasses = [
     sidebar ? 'has-sidebar',
     details ? 'has-details',
-    tabs ? 'has-tabs',
 ]|filter %}
 
 {% set showHeader = showHeader ?? true %}
@@ -117,6 +116,12 @@
     </div>
 {% endset %}
 
+{% js at head %}
+    // Remove the hash so the browser doesn't scroll to it
+    window.LOCATION_HASH = document.location.hash ? decodeURIComponent(document.location.hash.substr(1)) : null;
+    document.location.hash = '';
+{% endjs %}
+
 {% block body %}
     <div id="global-container">
         {% include '_layouts/components/global-sidebar' %}
@@ -129,6 +134,9 @@
                 <div class="flex">
                     {% include '_layouts/components/crumbs' %}
                     <div class="flex-grow"></div>
+                    <button type="button" id="announcements-btn" class="btn hidden" aria-label="{{ 'What’s New'|t('app') }}" title="{{ 'What’s New'|t('app') }}">
+                        {{ svg('@app/icons/gift.svg') }}
+                    </button>
                     <button type="button" id="user-info" class="btn menubtn" aria-label="{{ 'My Account'|t('app') }}" title="{{ 'My Account'|t('app') }}" data-menu-anchor=".header-photo">
                         {{ userPhoto }}
                     </button>
@@ -207,13 +215,19 @@
                         {# content-container #}
                         <div id="content-container">
                             {% block main %}
-                                {% block tabs %}
-                                    {% if tabs %}
-                                        {% include "_includes/tabs" %}
-                                    {% endif %}
-                                {% endblock %}
-
                                 <div id="content" class="content-pane">
+                                    {% block tabs %}
+                                        {% if tabs %}
+                                            <header id="content-header" class="pane-header">
+                                                {% include "_includes/tabs" with {
+                                                    containerAttributes: {
+                                                        id: 'tabs',
+                                                    },
+                                                } %}
+                                            </header>
+                                        {% endif %}
+                                    {% endblock %}
+
                                     {% block content %}
                                         {{ content is defined ? content }}
                                     {% endblock %}

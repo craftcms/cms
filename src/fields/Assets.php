@@ -334,10 +334,10 @@ class Assets extends BaseRelationField
         $filenames = [];
 
         // Get all the value's assets' filenames
-        /* @var AssetQuery $value */
+        /** @var AssetQuery $value */
         $value = $element->getFieldValue($this->handle);
         foreach ($value->all() as $asset) {
-            /* @var Asset $asset */
+            /** @var Asset $asset */
             $filenames[] = $asset->filename;
         }
 
@@ -400,9 +400,9 @@ class Assets extends BaseRelationField
             $this->_uploadedDataFiles = ['data' => $value['data'], 'filename' => $value['filename']];
             unset($value['data'], $value['filename']);
 
-            /* @var Asset $class */
+            /** @var Asset $class */
             $class = static::elementType();
-            /* @var ElementQuery $query */
+            /** @var ElementQuery $query */
             $query = $class::find();
 
             $targetSite = $this->targetSiteId($element);
@@ -549,8 +549,8 @@ class Assets extends BaseRelationField
         }
 
         // Are there any related assets?
-        /* @var AssetQuery $query */
-        /* @var Asset[] $assets */
+        /** @var AssetQuery $query */
+        /** @var Asset[] $assets */
         $assets = $query->all();
 
         if (!empty($assets)) {
@@ -839,7 +839,7 @@ class Assets extends BaseRelationField
                 }
 
                 $volume = Craft::$app->getVolumes()->getVolumeById($volumeId);
-                $folderId = $assetsService->ensureFolderByFullPathAndVolume($subpath, $volume);
+                $folderId = $assetsService->ensureFolderByFullPathAndVolume($subpath, $volume)->id;
             } else {
                 $folderId = $folder->id;
             }
@@ -912,7 +912,7 @@ class Assets extends BaseRelationField
             // If this is a static path, go ahead and create it
             if (!preg_match('/\{|\}/', $subpath)) {
                 $volumeId = $this->_volumeIdBySourceKey($uploadVolume);
-                $folderId = $assets->ensureFolderByFullPathAndVolume($subpath, Craft::$app->getVolumes()->getVolumeById($volumeId), false);
+                $folderId = $assets->ensureFolderByFullPathAndVolume($subpath, Craft::$app->getVolumes()->getVolumeById($volumeId), false)->id;
             }
 
             // If this is a new/disabled element, the subpath probably just contained a token that returned null, like {id}

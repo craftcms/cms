@@ -48,6 +48,18 @@
         errors: categoryGroup.getErrors('maxLevels')
     }) }}
 
+    {{ forms.selectField({
+        label: 'Default {type} Placement'|t('app', {type: 'Category'|t('app')}),
+        instructions: 'Where new {type} should be placed by default in the structure.'|t('app', {type: 'categories'|t('app')}),
+        id: 'default-placement',
+        name: 'defaultPlacement',
+        options: [
+            {label: 'Before other {type}'|t('app', {type: 'categories'|t('app')}), value: 'beginning'},
+            {label: 'After other {type}'|t('app', {type: 'categories'|t('app')}), value: 'end'},
+        ],
+        value: categoryGroup.defaultPlacement,
+    }) }}
+
     <hr>
 
     {% set siteRows = [] %}

@@ -49,6 +49,6 @@ class Site extends ActiveRecord
      */
     public function getGroup(): ActiveQueryInterface
     {
-        return $this->hasOne(SiteGroup::class, ['id' => 'siteId']);
+        return $this->hasOne(SiteGroup::class, ['id' => 'groupId']);
     }
 }

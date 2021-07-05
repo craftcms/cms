@@ -96,7 +96,7 @@ import '../../installer/src/css/install.scss';
                 $.extend(data, this.getInputData($screen.attr('id'), inputs, true));
             }
 
-            Craft.postActionRequest('install/install', data, $.proxy(this, 'allDone'), {
+            Craft.postActionRequest('install/install', data, this.allDone.bind(this), {
                 complete: $.noop
             });
         },
@@ -183,7 +183,7 @@ import '../../installer/src/css/install.scss';
             var action = 'install/validate-' + what;
             var data = this.getInputData(what, inputs, false);
 
-            Craft.postActionRequest(action, data, $.proxy(function(response, textStatus) {
+            Craft.postActionRequest(action, data, (response, textStatus) => {
                 this.loading = false;
                 $submitBtn.removeClass('sel loading');
 
@@ -205,19 +205,19 @@ import '../../installer/src/css/install.scss';
 
                             var $input = $('#' + what + '-' + input + '-field').children('.input');
                             $input.addClass('errors');
-                            ($.proxy(function($input) {
+                            ($input => {
                                 var $elements = $input.find('select,input');
                                 this.addListener($elements, 'focus,blur,textchange,change', function() {
                                     $input.removeClass('errors');
                                     this.removeListener($elements, 'focus,blur,textchange,change');
                                 });
-                            }, this))($input);
+                            })($input);
                         }
 
                         Garnish.shake(this.$currentScreen);
                     }
                 }
-            }, this));
+            });
         }
     }, {
         defaultDbPorts: {

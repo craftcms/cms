@@ -126,7 +126,7 @@ class Structures extends Component
      */
     public function fillGapsInElements(array &$elements): void
     {
-        /* @var ElementInterface|null $prevElement */
+        /** @var ElementInterface|null $prevElement */
         $prevElement = null;
         $patchedElements = [];
 
@@ -258,7 +258,7 @@ class Structures extends Component
     public function getElementLevelDelta(int $structureId, ElementInterface $element): int
     {
         $elementRecord = $this->_getElementRecord($structureId, $element);
-        /* @var StructureElement $deepestDescendant */
+        /** @var StructureElement $deepestDescendant */
         $deepestDescendant = $elementRecord
             ->children()
             ->orderBy(['level' => SORT_DESC])
@@ -508,6 +508,8 @@ class Structures extends Component
                 return false;
             }
 
+            $mutex->release($lockName);
+
             // Update the element with the latest values.
             // todo: we should be able to pull these from $elementRecord - https://github.com/creocoder/yii2-nested-sets/issues/114
             $values = (new Query())
@@ -533,8 +535,6 @@ class Structures extends Component
             $mutex->release($lockName);
             throw $e;
         }
-
-        $mutex->release($lockName);
 
         if ($mode === self::MODE_UPDATE && $this->hasEventHandlers(self::EVENT_AFTER_MOVE_ELEMENT)) {
             // Fire an 'afterMoveElement' event

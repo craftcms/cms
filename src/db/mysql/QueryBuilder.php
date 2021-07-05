@@ -40,7 +40,7 @@ class QueryBuilder extends \yii\db\mysql\QueryBuilder
     public function createTable($table, $columns, $options = null): string
     {
         // Default to InnoDb
-        if ($options === null || !preg_match('/\bENGINE\b/i', $options) === false) {
+        if ($options === null || !preg_match('/\bENGINE\b/i', $options)) {
             $options = ($options !== null ? $options . ' ' : '') . 'ENGINE = InnoDb';
         }
 

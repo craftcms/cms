@@ -15,25 +15,25 @@ import '../../pluginstoreoauth/src/pluginstore-oauth-callback.scss';
                 this.$graphic = $('#graphic');
                 this.$status = $('#status');
 
-                if (!this.settings.error) {
-                    setTimeout($.proxy(function() {
-                        this.postActionRequest();
-                    }, this), 500);
-                }  else {
-                    var errorMsg = this.settings.message ? this.settings.message : this.settings.error;
-                    this.$status.html(errorMsg);
+            if (!this.settings.error) {
+                setTimeout(() => {
+                    this.postActionRequest();
+                }, 500);
+            } else {
+                var errorMsg = this.settings.message ? this.settings.message : this.settings.error;
+                this.$status.html(errorMsg);
 
-                    setTimeout($.proxy(function() {
-                        window.location = this.settings.redirectUrl;
-                    }, this), 1000)
-                }
-            },
+                setTimeout(() => {
+                    window.location = this.settings.redirectUrl;
+                }, 1000)
+            }
+        },
 
             postActionRequest: function() {
                 var fragmentString = window.location.hash.substr(1);
                 var fragments = $.parseFragmentString(fragmentString);
 
-                Craft.postActionRequest('plugin-store/save-token', fragments, $.proxy(function(response, textStatus, jqXHR)
+            Craft.postActionRequest('plugin-store/save-token', fragments, (response, textStatus, jqXHR) => {
                 {
                     if (textStatus == 'success') {
                         if(response.error) {
@@ -42,20 +42,20 @@ import '../../pluginstoreoauth/src/pluginstore-oauth-callback.scss';
                             this.updateStatus('<p>' + Craft.t('app', 'Connected!') + '</p>');
                             this.$graphic.addClass('success');
 
-                            // Redirect to the Dashboard in half a second
-                            setTimeout($.proxy(function() {
-                                if(typeof(this.settings.redirectUrl) != 'undefined') {
-                                    window.location = this.settings.redirectUrl;
-                                } else {
-                                    window.location = Craft.getCpUrl('plugin-store');
-                                }
-                            }, this), 500);
-                        }
-                    } else {
-                        this.showFatalError(jqXHR);
+                        // Redirect to the Dashboard in half a second
+                        setTimeout(() => {
+                            if (typeof (this.settings.redirectUrl) != 'undefined') {
+                                window.location = this.settings.redirectUrl;
+                            } else {
+                                window.location = Craft.getCpUrl('plugin-store');
+                            }
+                        }, 500);
                     }
-                }, this));
-            },
+                } else {
+                    this.showFatalError(jqXHR);
+                }
+            });
+        },
 
             showFatalError: function(jqXHR) {
                 this.$graphic.addClass('error');

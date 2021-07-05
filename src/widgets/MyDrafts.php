@@ -84,6 +84,8 @@ class MyDrafts extends Widget
             ->drafts()
             ->anyStatus()
             ->draftCreator(Craft::$app->getUser()->getId())
+            ->site('*')
+            ->unique()
             ->orderBy(['dateUpdated' => SORT_DESC])
             ->limit($this->limit)
             ->all();

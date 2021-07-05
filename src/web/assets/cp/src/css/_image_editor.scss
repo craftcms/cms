@@ -1,5 +1,5 @@
 @charset "UTF-8";
-@import "~craftcms-sass/mixins";
+@import "../../../../../../packages/craftcms-sass/mixins";
 
 /* No Scroll */
 html.noscroll, html.noscroll body {
@@ -217,10 +217,6 @@ html.noscroll, html.noscroll body {
       background-repeat: no-repeat;
       margin: 0 4px;
       cursor: pointer;
-
-      &:focus {
-        outline: none;
-      }
 
       &[value="landscape"] {
         width: 30px;
@@ -479,4 +475,3 @@ html.noscroll, html.noscroll body {
     }
   }
 }
-

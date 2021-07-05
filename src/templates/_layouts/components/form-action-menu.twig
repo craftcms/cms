@@ -12,8 +12,9 @@
                         action: action.action ?? false,
                         redirect: action.redirect ?? false,
                         confirm: action.confirm ?? false,
-                        params: action.params ?? false
-                    }
+                        params: action.params ?? false,
+                        'event-data': action.eventData ?? false,
+                    },
                 } %}
                 <a {{ attr(linkAttributes) }}>
                     {% if action.shortcut ?? false %}

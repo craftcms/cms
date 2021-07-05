@@ -20,7 +20,7 @@ use craft\helpers\StringHelper;
  */
 abstract class RelationArgumentHandler extends ArgumentHandler
 {
-    /* @var array */
+    /** @var array */
     private $_memoizedValues = [];
 
     /**
@@ -35,7 +35,7 @@ abstract class RelationArgumentHandler extends ArgumentHandler
         $idSets = [];
 
         foreach ($criteriaList as $criteria) {
-            /* @var ElementQuery $elementQuery */
+            /** @var ElementQuery $elementQuery */
             $elementQuery = Craft::configure(Craft::$app->getElements()->createElementQuery($elementType), $criteria);
             $idSets[] = $elementQuery->ids();
         }
@@ -91,6 +91,13 @@ abstract class RelationArgumentHandler extends ArgumentHandler
         // Recursively parse nested arguments.
         if (ArrayHelper::isAssociative($argumentValue)) {
             $argumentValue = $this->argumentManager->prepareArguments($argumentValue);
+        } else if (is_array($argumentValue)) {
+            // Entirely possible that this a list of relation arguments.
+            foreach ($argumentValue as &$nestedArgumentValue) {
+                if (ArrayHelper::isAssociative($nestedArgumentValue)) {
+                    $nestedArgumentValue = $this->argumentManager->prepareArguments($nestedArgumentValue);
+                }
+            }
         }
 
         return $argumentValue;

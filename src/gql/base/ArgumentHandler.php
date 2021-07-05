@@ -17,10 +17,10 @@ use craft\gql\ArgumentManager;
  */
 abstract class ArgumentHandler implements ArgumentHandlerInterface
 {
-    /* @var ArgumentManager */
+    /** @var ArgumentManager */
     protected $argumentManager;
 
-    /* @var string */
+    /** @var string */
     protected $argumentName;
 
     /**

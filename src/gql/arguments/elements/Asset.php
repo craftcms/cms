@@ -114,15 +114,4 @@ class Asset extends ElementArguments
     {
         return [];
     }
-
-    /**
-     * @inheritdoc
-     */
-    public static function getStatusArguments(): array
-    {
-        $arguments = parent::getStatusArguments();
-        unset($arguments['status']);
-
-        return $arguments;
-    }
 }

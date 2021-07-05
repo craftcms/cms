@@ -12,6 +12,7 @@ use craft\base\LocalVolumeInterface;
 use craft\base\VolumeInterface;
 use craft\elements\Asset;
 use craft\enums\PeriodType;
+use craft\errors\VolumeException;
 use craft\events\RegisterAssetFileKindsEvent;
 use craft\events\SetAssetFilenameEvent;
 use craft\models\AssetTransformIndex;
@@ -95,24 +96,26 @@ class Assets
      * Get appendix for an URL based on it's Source caching settings.
      *
      * @param VolumeInterface $volume
-     * @param Asset $file
+     * @param Asset $asset
      * @param AssetTransformIndex|null $transformIndex Transform index, for which the URL is being generated, if any
      * @return string
      */
-    public static function urlAppendix(VolumeInterface $volume, Asset $file, ?AssetTransformIndex $transformIndex = null): string
+    public static function urlAppendix(VolumeInterface $volume, Asset $asset, ?AssetTransformIndex $transformIndex = null): string
     {
-        $appendix = '';
-
-        if (!empty($volume->expires) && DateTimeHelper::isValidIntervalString($volume->expires) && $file->dateModified) {
-            $focalAppendix = $file->getHasFocalPoint() ? urlencode($file->getFocalPoint(true)) : 'none';
-            $appendix = '?mtime=' . $file->dateModified->format('YmdHis') . '&focal=' . $focalAppendix;
-
-            if ($transformIndex) {
-                $appendix .= '&tmtime=' . $transformIndex->dateUpdated->format('YmdHis');
-            }
+        if (!Craft::$app->getConfig()->getGeneral()->revAssetUrls) {
+            return '';
         }
 
-        return $appendix;
+        /** @var DateTime $dateModified */
+        $dateModified = max($asset->dateModified, $transformIndex->dateUpdated ?? null);
+        $v = $dateModified->getTimestamp();
+
+        if ($asset->getHasFocalPoint()) {
+            $fp = $asset->getFocalPoint();
+            $v .= ",{$fp['x']},{$fp['y']}";
+        }
+
+        return "?$v";
     }
 
     /**
@@ -130,7 +133,7 @@ class Assets
             $baseName = pathinfo($name, PATHINFO_FILENAME);
             $extension = pathinfo($name, PATHINFO_EXTENSION);
             if ($extension) {
-                $extension = '.'.$extension;
+                $extension = '.' . $extension;
             }
         } else {
             $baseName = $name;
@@ -214,7 +217,7 @@ class Assets
 
                 // Any and all parent folders should be already mirrored
                 $folder->parentId = ($folderIdChanges[$sourceFolder->parentId] ?? $destinationFolder->id);
-                $assets->createFolder($folder, true);
+                $assets->createFolder($folder);
 
                 $folderIdChanges[$sourceFolder->id] = $folder->id;
             }
@@ -273,14 +276,9 @@ class Assets
      */
     public static function sortFolderTree(array &$tree)
     {
-        $sort = [];
-
-        foreach ($tree as $topFolder) {
-            $volume = $topFolder->getVolume();
-            $sort[] = $volume->sortOrder;
-        }
-
-        array_multisort($sort, $tree);
+        ArrayHelper::multisort($tree, function($folder) {
+            return $folder->getVolume()->sortOrder;
+        });
     }
 
     /**
@@ -382,12 +380,12 @@ class Assets
                 Asset::KIND_ACCESS => [
                     'label' => Craft::t('app', 'Access'),
                     'extensions' => [
-                        'adp',
                         'accdb',
-                        'mdb',
                         'accde',
-                        'accdt',
                         'accdr',
+                        'accdt',
+                        'adp',
+                        'mdb',
                     ],
                 ],
                 Asset::KIND_AUDIO => [
@@ -397,8 +395,8 @@ class Assets
                         'aac',
                         'act',
                         'aif',
-                        'aiff',
                         'aifc',
+                        'aiff',
                         'alac',
                         'amr',
                         'au',
@@ -453,15 +451,15 @@ class Assets
                 Asset::KIND_COMPRESSED => [
                     'label' => Craft::t('app', 'Compressed'),
                     'extensions' => [
-                        'bz2',
-                        'tar',
-                        'gz',
                         '7z',
-                        's7z',
+                        'bz2',
                         'dmg',
+                        'gz',
                         'rar',
-                        'zip',
+                        's7z',
+                        'tar',
                         'tgz',
+                        'zip',
                         'zipx',
                     ],
                 ],
@@ -469,17 +467,17 @@ class Assets
                     'label' => Craft::t('app', 'Excel'),
                     'extensions' => [
                         'xls',
-                        'xlsx',
                         'xlsm',
-                        'xltx',
+                        'xlsx',
                         'xltm',
+                        'xltx',
                     ],
                 ],
                 Asset::KIND_HTML => [
                     'label' => Craft::t('app', 'HTML'),
                     'extensions' => [
-                        'html',
                         'htm',
+                        'html',
                     ],
                 ],
                 Asset::KIND_ILLUSTRATOR => [
@@ -491,24 +489,24 @@ class Assets
                 Asset::KIND_IMAGE => [
                     'label' => Craft::t('app', 'Image'),
                     'extensions' => [
+                        'bmp',
+                        'gif',
                         'jfif',
                         'jp2',
-                        'jpx',
-                        'jpg',
-                        'jpeg',
                         'jpe',
-                        'tiff',
-                        'tif',
-                        'png',
-                        'gif',
-                        'bmp',
-                        'webp',
-                        'ppm',
-                        'pgm',
-                        'pnm',
-                        'pfm',
+                        'jpeg',
+                        'jpg',
+                        'jpx',
                         'pam',
+                        'pfm',
+                        'pgm',
+                        'png',
+                        'pnm',
+                        'ppm',
                         'svg',
+                        'tif',
+                        'tiff',
+                        'webp',
                     ],
                 ],
                 Asset::KIND_JAVASCRIPT => [
@@ -525,78 +523,83 @@ class Assets
                 ],
                 Asset::KIND_PDF => [
                     'label' => Craft::t('app', 'PDF'),
-                    'extensions' => ['pdf'],
+                    'extensions' => [
+                        'pdf',
+                    ],
                 ],
                 Asset::KIND_PHOTOSHOP => [
                     'label' => Craft::t('app', 'Photoshop'),
                     'extensions' => [
-                        'psd',
                         'psb',
+                        'psd',
                     ],
                 ],
                 Asset::KIND_PHP => [
                     'label' => Craft::t('app', 'PHP'),
-                    'extensions' => ['php'],
+                    'extensions' => [
+                        'php',
+                    ],
                 ],
                 Asset::KIND_POWERPOINT => [
                     'label' => Craft::t('app', 'PowerPoint'),
                     'extensions' => [
+                        'potx',
                         'pps',
                         'ppsm',
                         'ppsx',
                         'ppt',
                         'pptm',
                         'pptx',
-                        'potx',
                     ],
                 ],
                 Asset::KIND_TEXT => [
                     'label' => Craft::t('app', 'Text'),
                     'extensions' => [
-                        'txt',
                         'text',
+                        'txt',
                     ],
                 ],
                 Asset::KIND_VIDEO => [
                     'label' => Craft::t('app', 'Video'),
                     'extensions' => [
-                        'avchd',
                         'asf',
                         'asx',
+                        'avchd',
                         'avi',
-                        'flv',
                         'fla',
-                        'mov',
+                        'flv',
+                        'flv',
+                        'm1s',
+                        'm2s',
+                        'm2t',
+                        'm2v',
                         'm4v',
+                        'mkv',
                         'mng',
+                        'mov',
+                        'mp2v',
+                        'mp4',
+                        'mp4',
                         'mpeg',
                         'mpg',
-                        'm1s',
-                        'm2t',
-                        'mp2v',
-                        'm2v',
-                        'm2s',
-                        'mp4',
-                        'mkv',
-                        'qt',
-                        'flv',
-                        'mp4',
                         'ogg',
                         'ogv',
+                        'qt',
                         'rm',
-                        'wmv',
-                        'webm',
                         'vob',
+                        'webm',
+                        'wmv',
                     ],
                 ],
                 Asset::KIND_WORD => [
                     'label' => Craft::t('app', 'Word'),
                     'extensions' => [
                         'doc',
+                        'docm',
                         'docx',
                         'dot',
-                        'docm',
                         'dotm',
+                        'dotx',
                     ],
                 ],
                 Asset::KIND_XML => [
@@ -774,5 +777,28 @@ class Assets
             throw new InvalidArgumentException("Invalid srcset size: $size");
         }
         return [(float)$match[1], $match[2]];
+    }
+
+    /**
+     * Save a file from a volume locally.
+     *
+     * @param VolumeInterface $volume
+     * @param string $uriPath
+     * @param string $localPath
+     * @return int
+     * @throws VolumeException if stream cannot be created.
+     * @since 4.0.0
+     */
+    public static function downloadFile(VolumeInterface $volume, string $uriPath, string $localPath): int
+    {
+        $stream = $volume->getFileStream($uriPath);
+        $outputStream = fopen($localPath, 'wb');
+
+        $bytes = stream_copy_to_stream($stream, $outputStream);
+
+        fclose($stream);
+        fclose($outputStream);
+
+        return $bytes;
     }
 }

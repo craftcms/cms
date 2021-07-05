@@ -12,7 +12,7 @@ Craft.ColorInput = Garnish.Base.extend({
 
     init: function(container) {
         this.$container = $(container);
-        this.$input = this.$container.children('.color-input');
+        this.$input = this.$container.find('.color-input');
         this.$colorContainer = this.$container.children('.color');
         this.$colorPreview = this.$colorContainer.children('.color-preview');
 
@@ -34,6 +34,10 @@ Craft.ColorInput = Garnish.Base.extend({
         this.$colorContainer.removeClass('static');
         this.$colorInput = $(input)
             .addClass('color-preview-input')
+            .attr({
+                'aria-controls': this.$input.attr('id'),
+                'aria-label': Craft.t('app', 'Color picker'),
+            })
             .appendTo(this.$colorPreview);
 
         this.addListener(this.$colorInput, 'click', function (ev) {
@@ -53,26 +57,38 @@ Craft.ColorInput = Garnish.Base.extend({
     },
 
     handleTextChange: function() {
-        var val = this.$input.val();
+        let val = this.$input.val();
+
+        if (val !== (val = Craft.trim(val))) {
+            this.$input.val(val);
+        }
+
+        // Chop off the #
+        if (val.length && val[0] === '#') {
+            val = val.substr(1);
+            this.$input.val(val);
+        }
 
         // If empty, set the preview to transparent
-        if (!val.length || val === '#') {
+        if (!val.length) {
             this.$colorPreview.css('background-color', '');
             return;
         }
 
-        // Make sure the value starts with a #
-        if (val[0] !== '#') {
-            val = '#' + val;
-            this.$input.val(val);
+        // Now normalize it for the UI stuff
+        if (val.length === 3) {
+            val = val[0].repeat(2) + val[1].repeat(2) + val[2].repeat(2);
         }
 
-        this.$colorPreview.css('background-color', val);
-
-        if (this.$colorInput) {
-            this.$colorInput.val(val);
+        if (val.match(/^[0-9a-f]{6}$/i)) {
+            this.$colorPreview.css('background-color', `#${val}`);
+            if (this.$colorInput) {
+                this.$colorInput.val(`#${val}`);
+            }
+        } else {
+            this.$colorPreview.css('background-color', '');
         }
-    }
+    },
 }, {
     _browserSupportsColorInputs: null,
 

@@ -144,6 +144,7 @@ class CategoriesController extends Controller
         $group->name = $this->request->getBodyParam('name');
         $group->handle = $this->request->getBodyParam('handle');
         $group->maxLevels = $this->request->getBodyParam('maxLevels');
+        $group->defaultPlacement = $this->request->getBodyParam('defaultPlacement') ?? $group->defaultPlacement;
 
         // Site-specific settings
         $allSiteSettings = [];
@@ -259,10 +260,10 @@ class CategoriesController extends Controller
 
         $this->_prepEditCategoryVariables($variables);
 
-        /* @var Site $site */
+        /** @var Site $site */
         $site = $variables['site'];
-        /* @var Category $category */
-        $category = $variables['category'];
+        /** @var Category $category */
+        $category = $variables['element'];
 
         $this->_enforceEditCategoryPermissions($category);
 
@@ -354,7 +355,7 @@ class CategoriesController extends Controller
             ],
         ];
 
-        /* @var Category $ancestor */
+        /** @var Category $ancestor */
         foreach ($category->getAncestors()->all() as $ancestor) {
             $variables['crumbs'][] = [
                 'label' => $ancestor->title,
@@ -388,11 +389,10 @@ class CategoriesController extends Controller
                 if ($category->getStatus() === Element::STATUS_ENABLED) {
                     $variables['shareUrl'] = $category->getUrl();
                 } else {
-                    $variables['shareUrl'] = UrlHelper::actionUrl('categories/share-category',
-                        [
-                            'categoryId' => $category->id,
-                            'siteId' => $category->siteId,
-                        ]);
+                    $variables['shareUrl'] = UrlHelper::actionUrl('categories/share-category', [
+                        'categoryId' => $category->id,
+                        'siteId' => $category->siteId,
+                    ], null, false);
                 }
             }
         }
@@ -456,7 +456,7 @@ class CategoriesController extends Controller
             try {
                 $category = Craft::$app->getElements()->duplicateElement($category);
             } catch (InvalidElementException $e) {
-                /* @var Category $clone */
+                /** @var Category $clone */
                 $clone = $e->element;
 
                 if ($this->request->getAcceptsJson()) {
@@ -593,7 +593,7 @@ class CategoriesController extends Controller
         }
 
         // Create the token and redirect to the category URL with the token in place
-        $token = Craft::$app->getTokens()->createToken([
+        $token = Craft::$app->getTokens()->createPreviewToken([
             'categories/view-shared-category',
             [
                 'categoryId' => $categoryId,
@@ -660,7 +660,7 @@ class CategoriesController extends Controller
             // Only use the sites that the user has access to
             $variables['siteIds'] = Craft::$app->getSites()->getEditableSiteIds();
         } else {
-            /* @noinspection PhpUnhandledExceptionInspection */
+            /** @noinspection PhpUnhandledExceptionInspection */
             $variables['siteIds'] = [Craft::$app->getSites()->getPrimarySite()->id];
         }
 
@@ -669,7 +669,7 @@ class CategoriesController extends Controller
         }
 
         if (empty($variables['site'])) {
-            /* @noinspection PhpUnhandledExceptionInspection */
+            /** @noinspection PhpUnhandledExceptionInspection */
             $variables['site'] = Craft::$app->getSites()->getCurrentSite();
 
             if (!in_array($variables['site']->id, $variables['siteIds'], false)) {
@@ -679,7 +679,7 @@ class CategoriesController extends Controller
             $site = $variables['site'];
         } else {
             // Make sure they were requesting a valid site
-            /* @var Site $site */
+            /** @var Site $site */
             $site = $variables['site'];
             if (!in_array($site->id, $variables['siteIds'], false)) {
                 throw new ForbiddenHttpException('User not permitted to edit content in this site');
@@ -689,25 +689,20 @@ class CategoriesController extends Controller
         // Get the category
         // ---------------------------------------------------------------------
 
-        if (empty($variables['category'])) {
+        if (empty($variables['element'])) {
             if (!empty($variables['categoryId'])) {
-                $variables['category'] = Craft::$app->getCategories()->getCategoryById($variables['categoryId'], $site->id);
+                $variables['element'] = Craft::$app->getCategories()->getCategoryById($variables['categoryId'], $site->id);
 
-                if (!$variables['category']) {
+                if (!$variables['element']) {
                     throw new NotFoundHttpException('Category not found');
                 }
             } else {
-                $variables['category'] = new Category();
-                $variables['category']->groupId = $variables['group']->id;
-                $variables['category']->enabled = true;
-                $variables['category']->siteId = $site->id;
+                $variables['element'] = new Category();
+                $variables['element']->groupId = $variables['group']->id;
+                $variables['element']->enabled = true;
+                $variables['element']->siteId = $site->id;
             }
         }
-
-        // Prep the form tabs & content
-        $form = $variables['group']->getFieldLayout()->createForm($variables['category']);
-        $variables['tabs'] = $form->getTabMenu();
-        $variables['fieldsHtml'] = $form->render();
     }
 
     /**
@@ -719,7 +714,7 @@ class CategoriesController extends Controller
      */
     private function _getCategoryModel(): Category
     {
-        $categoryId = $this->request->getBodyParam('categoryId');
+        $categoryId = $this->request->getBodyParam('sourceId') ?? $this->request->getBodyParam('categoryId');
         $siteId = $this->request->getBodyParam('siteId');
 
         if ($categoryId) {
@@ -771,9 +766,21 @@ class CategoriesController extends Controller
     {
         // Set the category attributes, defaulting to the existing values for whatever is missing from the post data
         $category->slug = $this->request->getBodyParam('slug', $category->slug);
-        $category->enabled = (bool)$this->request->getBodyParam('enabled', $category->enabled);
-
         $category->title = $this->request->getBodyParam('title', $category->title);
+
+        $enabledForSite = $this->request->getBodyParam('enabledForSite');
+        if (is_array($enabledForSite)) {
+            // Make sure they are allowed to edit all of the posted site IDs
+            $editableSiteIds = Craft::$app->getSites()->getEditableSiteIds();
+            if (array_diff(array_keys($enabledForSite), $editableSiteIds)) {
+                throw new ForbiddenHttpException('User not permitted to edit the statuses for all the submitted site IDs');
+            }
+            // Set the global status to true if it's enabled for *any* sites, or if already enabled.
+            $category->enabled = in_array(true, $enabledForSite, false) || $category->enabled;
+        } else {
+            $category->enabled = (bool)$this->request->getBodyParam('enabled', $category->enabled);
+        }
+        $category->setEnabledForSite($enabledForSite ?? $category->getEnabledForSite());
 
         $fieldsLocation = $this->request->getParam('fieldsLocation', 'fields');
         $category->setFieldValuesFromRequest($fieldsLocation);

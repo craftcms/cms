@@ -36,7 +36,7 @@ class MatrixBlock extends Element
      */
     protected function resolve($source, $arguments, $context, ResolveInfo $resolveInfo)
     {
-        /* @var MatrixBlockElement $source */
+        /** @var MatrixBlockElement $source */
         $fieldName = $resolveInfo->fieldName;
 
         if ($fieldName === 'typeHandle') {

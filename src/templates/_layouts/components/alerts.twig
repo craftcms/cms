@@ -2,8 +2,8 @@
     {% set alerts = craft.cp.getAlerts() %}
     {% if alerts %}
         <ul id="alerts">
-            {% for alert in craft.cp.getAlerts() %}
-                <li>{{ alert|raw }}</li>
+            {% for alert in alerts %}
+                <li><span data-icon="alert" aria-label="{{ 'Error'|t('app') }}"></span> {{ alert|raw }}</li>
             {% endfor %}
         </ul>
     {% endif %}

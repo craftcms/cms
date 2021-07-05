@@ -20,13 +20,13 @@ use yii\web\NotFoundHttpException;
  */
 class DeprecatedPanel extends Panel
 {
-    /* @inheritdoc */
+    /** @inheritdoc */
     public function getName()
     {
         return 'Deprecated';
     }
 
-    /* @inheritdoc */
+    /** @inheritdoc */
     public function getSummary()
     {
         return Craft::$app->getView()->render('@app/views/debug/deprecated/summary', [

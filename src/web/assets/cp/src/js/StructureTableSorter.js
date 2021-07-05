@@ -15,7 +15,6 @@ Craft.StructureTableSorter = Garnish.DragSort.extend({
 
     _ancestors: null,
     _updateAncestorsFrame: null,
-    _updateAncestorsProxy: null,
 
     _draggeeLevel: null,
     _draggeeLevelDelta: null,
@@ -44,7 +43,7 @@ Craft.StructureTableSorter = Garnish.DragSort.extend({
             singleHelper: true,
             helperSpacingY: 2,
             magnetStrength: 4,
-            helper: $.proxy(this, 'getHelper'),
+            helper: this.getHelper.bind(this),
             helperLagBase: 1.5,
             axis: Garnish.Y_AXIS
         });
@@ -97,7 +96,7 @@ Craft.StructureTableSorter = Garnish.DragSort.extend({
 
             var data = this._getAjaxBaseData(this.$targetItem);
 
-            Craft.postActionRequest('structures/get-element-level-delta', data, $.proxy(function(response, textStatus) {
+            Craft.postActionRequest('structures/get-element-level-delta', data, (response, textStatus) => {
                 if (textStatus === 'success') {
                     this._loadingDraggeeLevelDelta = false;
 
@@ -106,7 +105,7 @@ Craft.StructureTableSorter = Garnish.DragSort.extend({
                         this.drag(false);
                     }
                 }
-            }, this));
+            });
         }
 
         return $draggee;
@@ -289,7 +288,7 @@ Craft.StructureTableSorter = Garnish.DragSort.extend({
                 $prevRow = $prevRow.prev();
             }
 
-            Craft.postActionRequest('structures/move-element', data, $.proxy(function(response, textStatus) {
+            Craft.postActionRequest('structures/move-element', data, (response, textStatus) => {
                 if (textStatus === 'success') {
                     if (!response.success) {
                         Craft.cp.displayError(Craft.t('app', 'A server error occurred.'));
@@ -308,7 +307,7 @@ Craft.StructureTableSorter = Garnish.DragSort.extend({
                     // See if we should run any pending tasks
                     Craft.cp.runQueue();
                 }
-            }, this));
+            });
         }
     },
 
@@ -322,10 +321,10 @@ Craft.StructureTableSorter = Garnish.DragSort.extend({
     },
 
     onPositionChange: function() {
-        Garnish.requestAnimationFrame($.proxy(function() {
+        Garnish.requestAnimationFrame(() => {
             this.trigger('positionChange');
             this.settings.onPositionChange();
-        }, this));
+        });
     },
 
     onReturnHelpersToDraggees: function() {
@@ -515,11 +514,7 @@ Craft.StructureTableSorter = Garnish.DragSort.extend({
             Garnish.cancelAnimationFrame(this._updateAncestorsFrame);
         }
 
-        if (!this._updateAncestorsProxy) {
-            this._updateAncestorsProxy = $.proxy(this, '_updateAncestors');
-        }
-
-        this._updateAncestorsFrame = Garnish.requestAnimationFrame(this._updateAncestorsProxy);
+        this._updateAncestorsFrame = Garnish.requestAnimationFrame(this._updateAncestors.bind(this));
     },
 
     _updateAncestors: function() {

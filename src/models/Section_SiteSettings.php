@@ -156,6 +156,7 @@ class Section_SiteSettings extends Model
         $rules = parent::defineRules();
         $rules[] = [['id', 'sectionId', 'siteId'], 'number', 'integerOnly' => true];
         $rules[] = [['siteId'], SiteIdValidator::class];
+        $rules[] = [['uriFormat', 'template'], 'trim'];
         $rules[] = [['template'], 'string', 'max' => 500];
 
         if ($this->getSection()->type == Section::TYPE_SINGLE) {

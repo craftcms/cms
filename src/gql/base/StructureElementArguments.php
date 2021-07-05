@@ -46,7 +46,7 @@ abstract class StructureElementArguments extends ElementArguments
             'ancestorOf' => [
                 'name' => 'ancestorOf',
                 'type' => Type::int(),
-                'description' => 'Narrows the query results to only elements that are ancestors of another element.',
+                'description' => 'Narrows the query results to only elements that are ancestors of another element, provided by its ID.',
             ],
             'ancestorDist' => [
                 'name' => 'ancestorDist',
@@ -56,7 +56,7 @@ abstract class StructureElementArguments extends ElementArguments
             'descendantOf' => [
                 'name' => 'descendantOf',
                 'type' => Type::int(),
-                'description' => 'Narrows the query results to only elements that are descendants of another element.',
+                'description' => 'Narrows the query results to only elements that are descendants of another element, provided by its ID.',
             ],
             'descendantDist' => [
                 'name' => 'descendantDist',
@@ -71,22 +71,22 @@ abstract class StructureElementArguments extends ElementArguments
             'nextSiblingOf' => [
                 'name' => 'nextSiblingOf',
                 'type' => Type::int(),
-                'description' => 'Narrows the query results to only the entry that comes immediately after another element.',
+                'description' => 'Narrows the query results to only the entry that comes immediately after another element, provided by its ID.',
             ],
             'prevSiblingOf' => [
                 'name' => 'prevSiblingOf',
                 'type' => Type::int(),
-                'description' => 'Narrows the query results to only the entry that comes immediately before another element.',
+                'description' => 'Narrows the query results to only the entry that comes immediately before another element, provided by its ID.',
             ],
             'positionedAfter' => [
                 'name' => 'positionedAfter',
                 'type' => Type::int(),
-                'description' => 'Narrows the query results to only entries that are positioned after another element.',
+                'description' => 'Narrows the query results to only entries that are positioned after another element, provided by its ID.',
             ],
             'positionedBefore' => [
                 'name' => 'positionedBefore',
                 'type' => Type::int(),
-                'description' => 'Narrows the query results to only entries that are positioned before another element.',
+                'description' => 'Narrows the query results to only entries that are positioned before another element, provided by its ID.',
             ],
         ]);
     }

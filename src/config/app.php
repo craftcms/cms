@@ -4,13 +4,16 @@ return [
     'id' => 'CraftCMS',
     'name' => 'Craft CMS',
     'version' => '4.0.0-alpha',
-    'schemaVersion' => '3.7.2',
-    'minVersionRequired' => '2.6.2788',
+    'schemaVersion' => '4.0.0',
+    'minVersionRequired' => '2.7.0-beta.3',
     'basePath' => dirname(__DIR__), // Defines the @app alias
     'runtimePath' => '@storage/runtime', // Defines the @runtime alias
     'controllerNamespace' => 'craft\controllers',
 
     'components' => [
+        'announcements' => [
+            'class' => craft\services\Announcements::class,
+        ],
         'api' => [
             'class' => craft\services\Api::class,
         ],

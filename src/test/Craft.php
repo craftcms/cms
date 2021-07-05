@@ -14,7 +14,6 @@ use Codeception\Stub;
 use Codeception\TestInterface;
 use craft\base\ElementInterface;
 use craft\config\DbConfig;
-use craft\db\Command;
 use craft\db\Query;
 use craft\db\Table;
 use craft\elements\db\ElementQuery;
@@ -423,7 +422,7 @@ class Craft extends Yii2
      */
     public function assertElementsExist(string $elementType, array $searchProperties = [], int $amount = 1, bool $searchAll = false): array
     {
-        /* @var ElementQuery $elementQuery */
+        /** @var ElementQuery $elementQuery */
         $elementQuery = $elementType::find();
         if ($searchAll) {
             $elementQuery->anyStatus();
@@ -540,7 +539,7 @@ class Craft extends Yii2
      */
     public function runQueue(string $queueItem, array $params = [])
     {
-        /* @var BaseJob $job */
+        /** @var BaseJob $job */
         $job = new $queueItem($params);
 
         if (!$job instanceof BaseJob) {

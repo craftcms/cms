@@ -147,7 +147,7 @@ Craft.FieldLayoutDesigner = Garnish.Base.extend({
                 );
 
             let menuBtn = new Garnish.MenuBtn($editBtn, {
-                onOptionSelect: $.proxy(this, 'onTabOptionSelect')
+                onOptionSelect: this.onTabOptionSelect.bind(this)
             });
             menuBtn.menu.on('show', () => {
                 if ($tab.prev('.fld-tab').length) {
@@ -223,7 +223,7 @@ Craft.FieldLayoutDesigner = Garnish.Base.extend({
     },
 
     promptForTabName: function(oldName) {
-        return prompt(Craft.t('app', 'Give your tab a name.'), oldName);
+        return Craft.escapeHtml(prompt(Craft.t('app', 'Give your tab a name.'), oldName));
     },
 
     removeTab: function($tab) {

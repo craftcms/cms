@@ -41,13 +41,13 @@ Craft.TagSelectInput = Craft.BaseElementSelectInput.extend({
         this.$addTagInput = this.$container.children('.add').children('.text');
         this.$spinner = this.$addTagInput.next();
 
-        this.addListener(this.$addTagInput, 'input', $.proxy(function() {
+        this.addListener(this.$addTagInput, 'input', () => {
             if (this.searchTimeout) {
                 clearTimeout(this.searchTimeout);
             }
 
-            this.searchTimeout = setTimeout($.proxy(this, 'searchForTags'), 500);
-        }, this));
+            this.searchTimeout = setTimeout(this.searchForTags.bind(this), 500);
+        });
 
         this.addListener(this.$addTagInput, 'keydown', function(ev) {
             if (ev.keyCode === Garnish.RETURN_KEY) {
@@ -111,11 +111,11 @@ Craft.TagSelectInput = Craft.BaseElementSelectInput.extend({
                 return;
             }
 
-            setTimeout($.proxy(function() {
+            setTimeout(() => {
                 if (this.searchMenu) {
                     this.searchMenu.hide();
                 }
-            }, this), 1);
+            }, 1);
         });
     },
 
@@ -162,7 +162,7 @@ Craft.TagSelectInput = Craft.BaseElementSelectInput.extend({
                 excludeIds: excludeIds
             };
 
-            Craft.postActionRequest('tags/search-for-tags', data, $.proxy(function(response, textStatus) {
+            Craft.postActionRequest('tags/search-for-tags', data, (response, textStatus) => {
                 // Just in case
                 if (this.searchMenu) {
                     this.killSearchMenu();
@@ -196,16 +196,16 @@ Craft.TagSelectInput = Craft.BaseElementSelectInput.extend({
 
                     this.searchMenu = new Garnish.Menu($menu, {
                         attachToElement: this.$addTagInput,
-                        onOptionSelect: $.proxy(this, 'selectTag')
+                        onOptionSelect: this.selectTag.bind(this)
                     });
 
-                    this.addListener($menu, 'mousedown', $.proxy(function() {
+                    this.addListener($menu, 'mousedown', () => {
                         this._ignoreBlur = true;
-                    }, this));
+                    });
 
                     this.searchMenu.show();
                 }
-            }, this));
+            });
         } else {
             this.$spinner.addClass('hidden');
         }
@@ -273,7 +273,7 @@ Craft.TagSelectInput = Craft.BaseElementSelectInput.extend({
                 title: title
             };
 
-            Craft.postActionRequest('tags/create-tag', data, $.proxy(function(response, textStatus) {
+            Craft.postActionRequest('tags/create-tag', data, (response, textStatus) => {
                 if (textStatus === 'success' && response.success) {
                     $element.attr('data-id', response.id);
                     $input.val(response.id);
@@ -287,7 +287,7 @@ Craft.TagSelectInput = Craft.BaseElementSelectInput.extend({
                         Craft.cp.displayError(Craft.t('app', 'A server error occurred.'));
                     }
                 }
-            }, this));
+            });
         }
     },
 

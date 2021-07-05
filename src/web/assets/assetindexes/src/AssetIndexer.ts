@@ -403,7 +403,7 @@ class AssetIndexer {
      * @param sessionId
      */
     public pruneWaitingTasks(sessionId: number): void {
-        const newTaskList: ConcurrentTask[] = [];
+        const newTaskList = [];
         let modified = false;
 
         this._prunedSessionIds.push(sessionId);

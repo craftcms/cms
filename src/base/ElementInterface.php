@@ -532,6 +532,14 @@ interface ElementInterface extends ComponentInterface
     public function getIsDraft(): bool;
 
     /**
+     * Returns whether this is a provisional draft.
+     *
+     * @return bool
+     * @since 3.7.0
+     */
+    public function getIsProvisionalDraft(): bool;
+
+    /**
      * Returns whether this is a revision.
      *
      * @return bool
@@ -565,6 +573,15 @@ interface ElementInterface extends ComponentInterface
      * @since 3.7.0
      */
     public function getCanonical(bool $anySite = false): ElementInterface;
+
+    /**
+     * Sets the canonical version of the element.
+     *
+     * @param static $element
+     * @return void
+     * @since 3.7.0
+     */
+    public function setCanonical(ElementInterface $element): void;
 
     /**
      * Returns the element’s canonical ID.
@@ -856,6 +873,15 @@ interface ElementInterface extends ComponentInterface
     public function getParent();
 
     /**
+     * Returns the parent element’s URI, if there is one.
+     *
+     * If the parent’s URI is `__home__` (the homepage URI), then `null` will be returned.
+     *
+     * @return string|null
+     */
+    public function getParentUri(): ?string;
+
+    /**
      * Sets the element’s parent.
      *
      * @param static|null $parent
@@ -993,7 +1019,7 @@ interface ElementInterface extends ComponentInterface
      */
     public function getAttributeStatus(string $attribute);
 
-    /**]
+    /**
      * Returns the attribute names that have been updated on the canonical element since the last time it was
      * merged into this element.
      *
@@ -1012,8 +1038,15 @@ interface ElementInterface extends ComponentInterface
     public function isAttributeOutdated(string $name): bool;
 
     /**
-     * Returns whether an attribute value has changed for this element, since the last time changes on the
-     * canonical element were merged in.
+     * Returns the attribute names that have changed for this element.
+     *
+     * @return string[]
+     * @since 3.7.0
+     */
+    public function getModifiedAttributes(): array;
+
+    /**
+     * Returns whether an attribute value has changed for this element.
      *
      * @param string $name
      * @return bool
@@ -1150,8 +1183,15 @@ interface ElementInterface extends ComponentInterface
     public function isFieldOutdated(string $fieldHandle): bool;
 
     /**
-     * Returns whether a field value has changed for this element, since the last time changes on the
-     * canonical element were merged in.
+     * Returns the field handles that have changed for this element.
+     *
+     * @return string[]
+     * @since 3.7.0
+     */
+    public function getModifiedFields(): array;
+
+    /**
+     * Returns whether a field value has changed for this element.
      *
      * @param string $fieldHandle
      * @return bool
@@ -1343,11 +1383,29 @@ interface ElementInterface extends ComponentInterface
     public function getTableAttributeHtml(string $attribute): string;
 
     /**
-     * Returns the HTML for the element’s editor HUD.
+     * Returns the HTML for the element’s editor slideout.
      *
-     * @return string The HTML for the editor HUD
+     * @return string The HTML for the editor slideout
+     * @deprecated in 3.7.0. Use [[getSidebarHtml()]] or [[getMetadata()]] instead.
      */
     public function getEditorHtml(): string;
+
+    /**
+     * Returns the HTML for any fields/info that should be shown within the sidebar of element editor slideouts.
+     *
+     * @return string
+     * @since 3.7.0
+     */
+    public function getSidebarHtml(): string;
+
+    /**
+     * Returns element metadata that can be shown on its edit page or within element editor slideouts.
+     *
+     * @return array The data, with keys representing the labels. The values can either be strings or callables.
+     * If a value is `false`, it will be omitted.
+     * @since 3.7.0
+     */
+    public function getMetadata(): array;
 
     /**
      * Returns the GraphQL type name for this element type.

@@ -274,7 +274,7 @@ class Sites extends Component
 
         $configPath = self::CONFIG_SITEGROUP_KEY . '.' . $group->uid;
         $configData = $group->getConfig();
-        Craft::$app->getProjectConfig()->set($configPath, $configData, "Save the “{$group->name}” site group");
+        Craft::$app->getProjectConfig()->set($configPath, $configData, "Save the “{$group->getName(false)}” site group");
 
         // Now that we have an ID, save it on the model
         if ($isNewGroup) {
@@ -388,7 +388,7 @@ class Sites extends Component
             return false;
         }
 
-        /* @var SiteGroupRecord $groupRecord */
+        /** @var SiteGroupRecord $groupRecord */
         $groupRecord = SiteGroupRecord::find()
             ->where(['id' => $group->id])
             ->one();
@@ -404,7 +404,7 @@ class Sites extends Component
             ]));
         }
 
-        Craft::$app->getProjectConfig()->remove(self::CONFIG_SITEGROUP_KEY . '.' . $group->uid, "Delete the “{$group->name}” site group");
+        Craft::$app->getProjectConfig()->remove(self::CONFIG_SITEGROUP_KEY . '.' . $group->uid, "Delete the “{$group->getName(false)}” site group");
         return true;
     }
 
@@ -737,19 +737,15 @@ class Sites extends Component
 
             // Shared attributes
             $siteRecord->uid = $siteUid;
-            $siteRecord->groupId = $groupRecord['id'];
+            $siteRecord->groupId = $groupRecord->id;
+            $siteRecord->primary = $data['primary'];
+            $siteRecord->enabled = $data['enabled'] ?? true;
             $siteRecord->name = $data['name'];
             $siteRecord->handle = $data['handle'];
             $siteRecord->language = $data['language'];
             $siteRecord->hasUrls = $data['hasUrls'];
             $siteRecord->baseUrl = $data['baseUrl'];
-            $siteRecord->primary = $data['primary'];
             $siteRecord->sortOrder = $data['sortOrder'];
-
-            // todo: remove schema version conditions after next beakpoint
-            if (version_compare(Craft::$app->getInstalledSchemaVersion(), '3.5.0', '>=')) {
-                $siteRecord->enabled = $data['enabled'] ?? true;
-            }
 
             if ($siteRecord->dateDeleted) {
                 $siteRecord->restore();
@@ -766,7 +762,7 @@ class Sites extends Component
         // Clear caches
         $this->refreshSites();
 
-        /* @var Site $site */
+        /** @var Site $site */
         $site = $this->getSiteById($siteRecord->id);
 
         // Is this the current site?
@@ -1063,7 +1059,7 @@ class Sites extends Component
             return;
         }
 
-        /* @var Site $site */
+        /** @var Site $site */
         $site = $this->getSiteById($siteRecord->id);
 
         // Fire a 'beforeApplySiteDelete' event
@@ -1153,15 +1149,15 @@ class Sites extends Component
             return;
         }
 
-        $schemaVersion = Craft::$app->getInstalledSchemaVersion();
-
-        $query = (new Query())
+        $results = (new Query())
             ->select([
                 's.id',
+                's.groupId',
                 's.name',
                 's.handle',
                 's.language',
                 's.primary',
+                's.enabled',
                 's.hasUrls',
                 's.baseUrl',
                 's.sortOrder',
@@ -1169,41 +1165,12 @@ class Sites extends Component
                 's.dateCreated',
                 's.dateUpdated',
             ])
-            ->from(['s' => Table::SITES]);
-
-        // TODO: remove the version checks after the next breakpoint
-        if (version_compare($schemaVersion, '3.0.74', '<')) {
-            $query
-                ->orderBy(['s.name' => SORT_ASC]);
-        } else {
-            $query
-                ->addSelect(['s.groupId'])
-                ->innerJoin(['sg' => Table::SITEGROUPS], '[[sg.id]] = [[s.groupId]]')
-                ->orderBy(['sg.name' => SORT_ASC, 's.sortOrder' => SORT_ASC]);
-
-            if (version_compare($schemaVersion, '3.1.7', '>=')) {
-                $query
-                    ->where(['s.dateDeleted' => null])
-                    ->andWhere(['sg.dateDeleted' => null]);
-
-                if (version_compare($schemaVersion, '3.5.12', '>=')) {
-                    $query
-                        ->addSelect(['s.enabled']);
-                }
-            }
-        }
-
-        try {
-            $results = $query->all();
-        } catch (DbException $e) {
-            // todo: remove this after the next breakpoint
-            // If the error code is 42S02 (MySQL) or 42P01 (PostgreSQL), the sites table probably doesn't exist yet
-            if (isset($e->errorInfo[0]) && in_array($e->errorInfo[0], ['42S02', '42P01'], true)) {
-                return;
-            }
-            /* @noinspection PhpUnhandledExceptionInspection */
-            throw $e;
-        }
+            ->from(['s' => Table::SITES])
+            ->innerJoin(['sg' => Table::SITEGROUPS], '[[sg.id]] = [[s.groupId]]')
+            ->where(['s.dateDeleted' => null])
+            ->andWhere(['sg.dateDeleted' => null])
+            ->orderBy(['sg.name' => SORT_ASC, 's.sortOrder' => SORT_ASC])
+            ->all();
 
         // Check for results because during installation, the transaction hasn't been committed yet.
         if (!empty($results)) {
@@ -1341,7 +1308,7 @@ class Sites extends Component
             $nonLocalizedElementTypes = [];
 
             foreach (Craft::$app->getElements()->getAllElementTypes() as $elementType) {
-                /* @var ElementInterface|string $elementType */
+                /** @var ElementInterface|string $elementType */
                 if (!$elementType::isLocalized()) {
                     $nonLocalizedElementTypes[] = $elementType;
                 }

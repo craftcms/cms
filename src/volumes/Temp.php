@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 
 namespace craft\volumes;
 
@@ -20,7 +21,7 @@ class Temp extends Local
     /**
      * @inheritdoc
      */
-    public $hasUrls = false;
+    public bool $hasUrls = false;
 
     /**
      * @inheritdoc

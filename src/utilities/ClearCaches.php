@@ -131,7 +131,7 @@ class ClearCaches extends Utility
                 'key' => 'asset',
                 'label' => Craft::t('app', 'Asset caches'),
                 'info' => Craft::t('app', 'Local copies of remote images, generated thumbnails'),
-                'action' => function () use ($pathService) {
+                'action' => function() use ($pathService) {
                     $dirs = [
                         $pathService->getAssetSourcesPath(false),
                         $pathService->getAssetThumbsPath(false),
@@ -160,7 +160,7 @@ class ClearCaches extends Utility
                 'info' => Craft::t('app', 'Contents of {path}', [
                     'path' => '`web/cpresources/`',
                 ]),
-                'action' => function () {
+                'action' => function() {
                     $basePath = Craft::$app->getConfig()->getGeneral()->resourceBasePath;
                     $request = Craft::$app->getRequest();
                     if (
@@ -190,7 +190,7 @@ class ClearCaches extends Utility
                 'key' => 'transform-indexes',
                 'label' => Craft::t('app', 'Asset transform index'),
                 'info' => Craft::t('app', 'Record of generated image transforms'),
-                'action' => function () {
+                'action' => function() {
                     Craft::$app->getDb()->createCommand()
                         ->truncateTable(Table::ASSETTRANSFORMINDEX)
                         ->execute();
@@ -199,7 +199,7 @@ class ClearCaches extends Utility
             [
                 'key' => 'asset-indexing-data',
                 'label' => Craft::t('app', 'Asset indexing data'),
-                'action' => function () {
+                'action' => function() {
                     Craft::$app->getDb()->createCommand()
                         ->truncateTable(Table::ASSETINDEXDATA)
                         ->execute();

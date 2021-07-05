@@ -1,0 +1,10 @@
+<html>
+<head>
+</head>
+<body
+  x-data="{{ 'testing' }}"
+  x-init=" () => { data.match(/<(.*?)>/) ? alert('wat') }"
+>{% html at beginBody %}Hello World{% endhtml %}
+
+</body>
+</html>

@@ -36,6 +36,7 @@ use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
 use craft\helpers\ElementHelper;
 use craft\helpers\Html;
+use craft\helpers\Json;
 use craft\helpers\UrlHelper;
 use craft\models\EntryType;
 use craft\models\Section;
@@ -241,7 +242,7 @@ class Entry extends Element
                 $sources[] = ['heading' => $heading];
 
                 foreach ($sectionsByType[$type] as $section) {
-                    /* @var Section $section */
+                    /** @var Section $section */
                     $source = [
                         'key' => 'section:' . $section->uid,
                         'label' => Craft::t('site', $section->name),
@@ -308,7 +309,7 @@ class Entry extends Element
         // Get the selected site
         $controller = Craft::$app->controller;
         if ($controller instanceof ElementIndexesController) {
-            /* @var ElementQuery $elementQuery */
+            /** @var ElementQuery $elementQuery */
             $elementQuery = $controller->getElementQuery();
         } else {
             $elementQuery = null;
@@ -341,7 +342,7 @@ class Entry extends Element
         $actions = [];
         $elementsService = Craft::$app->getElements();
 
-        /* @var Section[] $sections */
+        /** @var Section[] $sections */
         if (!empty($sections)) {
             $userSession = Craft::$app->getUser();
             $canSetStatus = true;
@@ -404,36 +405,33 @@ class Entry extends Element
                 // Channel/Structure-only actions
                 $section = $sections[0];
 
-                // New child?
                 if (
                     $section->type == Section::TYPE_STRUCTURE &&
                     $userSession->checkPermission('createEntries:' . $section->uid)
                 ) {
-                    $structure = Craft::$app->getStructures()->getStructureById($section->structureId);
+                    $newEntryUrl = 'entries/' . $section->handle . '/new';
 
-                    if ($structure) {
-                        $newEntryUrl = 'entries/' . $section->handle . '/new';
+                    if (Craft::$app->getIsMultiSite()) {
+                        $newEntryUrl .= '?site=' . $site->handle;
+                    }
 
-                        if (Craft::$app->getIsMultiSite()) {
-                            $newEntryUrl .= '?site=' . $site->handle;
-                        }
+                    $actions[] = $elementsService->createAction([
+                        'type' => NewSiblingBefore::class,
+                        'label' => Craft::t('app', 'Create a new entry before'),
+                        'newSiblingUrl' => $newEntryUrl,
+                    ]);
 
-                        $actions[] = $elementsService->createAction([
-                            'type' => NewSiblingBefore::class,
-                            'label' => Craft::t('app', 'Create a new entry before'),
-                            'newSiblingUrl' => $newEntryUrl,
-                        ]);
+                    $actions[] = $elementsService->createAction([
+                        'type' => NewSiblingAfter::class,
+                        'label' => Craft::t('app', 'Create a new entry after'),
+                        'newSiblingUrl' => $newEntryUrl,
+                    ]);
 
-                        $actions[] = $elementsService->createAction([
-                            'type' => NewSiblingAfter::class,
-                            'label' => Craft::t('app', 'Create a new entry after'),
-                            'newSiblingUrl' => $newEntryUrl,
-                        ]);
-
+                    if ($section->maxLevels != 1) {
                         $actions[] = $elementsService->createAction([
                             'type' => NewChild::class,
                             'label' => Craft::t('app', 'Create a new child entry'),
-                            'maxLevels' => $structure->maxLevels,
+                            'maxLevels' => $section->maxLevels,
                             'newChildUrl' => $newEntryUrl,
                         ]);
                     }
@@ -460,6 +458,7 @@ class Entry extends Element
 
                     if (
                         $section->type === Section::TYPE_STRUCTURE &&
+                        $section->maxLevels != 1 &&
                         $userSession->checkPermission("deletePeerEntries:$section->uid")
                     ) {
                         $actions[] = [
@@ -541,7 +540,7 @@ class Entry extends Element
     protected static function defineTableAttributes(): array
     {
         $attributes = [
-            'title' => ['label' => Craft::t('app', 'Title')],
+            'title' => ['label' => Craft::t('app', 'Entry')],
             'section' => ['label' => Craft::t('app', 'Section')],
             'type' => ['label' => Craft::t('app', 'Entry Type')],
             'author' => ['label' => Craft::t('app', 'Author')],
@@ -607,6 +606,9 @@ class Entry extends Element
             return [
                 'elementType' => User::class,
                 'map' => $map,
+                'criteria' => [
+                    'status' => null,
+                ],
             ];
         }
 
@@ -618,7 +620,7 @@ class Entry extends Element
      */
     public static function gqlTypeNameByContext($context): string
     {
-        /* @var EntryType $context */
+        /** @var EntryType $context */
         return self::_getGqlIdentifierByContext($context) . '_Entry';
     }
 
@@ -628,7 +630,7 @@ class Entry extends Element
      */
     public static function gqlMutationNameByContext($context): string
     {
-        /* @var EntryType $context */
+        /** @var EntryType $context */
         return 'save_' . self::_getGqlIdentifierByContext($context) . '_Entry';
     }
 
@@ -637,7 +639,7 @@ class Entry extends Element
      */
     public static function gqlScopesByContext($context): array
     {
-        /* @var EntryType $context */
+        /** @var EntryType $context */
         return [
             'sections.' . $context->getSection()->uid,
             'entrytypes.' . $context->uid,
@@ -651,7 +653,7 @@ class Entry extends Element
     {
         switch ($attribute) {
             case 'author':
-                $elementQuery->andWith('author');
+                $elementQuery->andWith(['author', ['status' => null]]);
                 break;
             case 'revisionNotes':
                 $elementQuery->andWith('currentRevision');
@@ -824,7 +826,7 @@ class Entry extends Element
     public function getSupportedSites(): array
     {
         $section = $this->getSection();
-        /* @var Site[] $allSites */
+        /** @var Site[] $allSites */
         $allSites = ArrayHelper::index(Craft::$app->getSites()->getAllSites(), 'id');
         $sites = [];
 
@@ -841,6 +843,7 @@ class Entry extends Element
                     ->siteId('*')
                     ->select('elements_sites.siteId')
                     ->drafts($this->getIsDraft())
+                    ->provisionalDrafts($this->getIsProvisionalDraft())
                     ->revisions($this->getIsRevision())
                     ->column();
             } else {
@@ -855,6 +858,7 @@ class Entry extends Element
                     ->siteId('*')
                     ->select('elements_sites.siteId')
                     ->drafts($this->duplicateOf->getIsDraft())
+                    ->provisionalDrafts($this->duplicateOf->getIsProvisionalDraft())
                     ->revisions($this->duplicateOf->getIsRevision())
                     ->column()
                 );
@@ -1208,7 +1212,7 @@ class Entry extends Element
      * {% endif %}
      * ```
      */
-    public function getIsEditable(): bool
+    protected function isEditable(): bool
     {
         $section = $this->getSection();
         $userSession = Craft::$app->getUser();
@@ -1245,7 +1249,7 @@ class Entry extends Element
     /**
      * @inheritdoc
      */
-    public function getIsDeletable(): bool
+    protected function isDeletable(): bool
     {
         $section = $this->getSection();
         if ($section->type === Section::TYPE_SINGLE) {
@@ -1271,7 +1275,7 @@ class Entry extends Element
      * {% endif %}
      * ```
      */
-    public function getCpEditUrl()
+    protected function cpEditUrl(): ?string
     {
         $section = $this->getSection();
 
@@ -1326,14 +1330,14 @@ class Entry extends Element
 
             case 'type':
                 try {
-                    return Craft::t('site', $this->getType()->name);
+                    return Html::encode(Craft::t('site', $this->getType()->name));
                 } catch (InvalidConfigException $e) {
                     return Craft::t('app', 'Unknown');
                 }
 
             case 'revisionNotes':
-                /* @var Entry|null $revision */
-                /* @var RevisionBehavior|null $behavior */
+                /** @var Entry|null $revision */
+                /** @var RevisionBehavior|null $behavior */
                 if (
                     ($revision = $this->getCurrentRevision()) === null ||
                     ($behavior = $revision->getBehavior('revision')) === null
@@ -1343,8 +1347,8 @@ class Entry extends Element
                 return Html::encode($behavior->revisionNotes);
 
             case 'revisionCreator':
-                /* @var Entry|null $revision */
-                /* @var RevisionBehavior|null $behavior */
+                /** @var Entry|null $revision */
+                /** @var RevisionBehavior|null $behavior */
                 if (
                     ($revision = $this->getCurrentRevision()) === null ||
                     ($behavior = $revision->getBehavior('revision')) === null ||
@@ -1362,7 +1366,7 @@ class Entry extends Element
                 $drafts = $this->getEagerLoadedElements('drafts');
 
                 foreach ($drafts as $draft) {
-                    /* @var ElementInterface|DraftBehavior $draft */
+                    /** @var ElementInterface|DraftBehavior $draft */
                     $draft->setUiLabel($draft->draftName);
                 }
 
@@ -1375,26 +1379,28 @@ class Entry extends Element
     /**
      * @inheritdoc
      */
-    public function getEditorHtml(): string
+    public function metaFieldsHtml(): string
     {
-        $html = '';
+        $fields = [];
         $view = Craft::$app->getView();
+        $section = $this->getSection();
 
-        // Show the Entry Type field?
-        if ($this->id === null) {
+        if ($section->type !== Section::TYPE_SINGLE) {
             $entryTypes = $this->getAvailableEntryTypes();
 
             if (count($entryTypes) > 1) {
                 $entryTypeOptions = [];
+                $fieldLayoutIds = [];
 
                 foreach ($entryTypes as $entryType) {
                     $entryTypeOptions[] = [
                         'label' => Craft::t('site', $entryType->name),
                         'value' => $entryType->id,
                     ];
+                    $fieldLayoutIds["type-$entryType->id"] = $entryType->fieldLayoutId;
                 }
 
-                $html .= Cp::selectFieldHtml([
+                $fields[] = Cp::selectFieldHtml([
                     'label' => Craft::t('app', 'Entry Type'),
                     'id' => 'entryType',
                     'value' => $this->typeId,
@@ -1402,24 +1408,67 @@ class Entry extends Element
                 ]);
 
                 $typeInputId = $view->namespaceInputId('entryType');
+                $fieldLayoutIdsJson = Json::encode($fieldLayoutIds);
                 $js = <<<EOD
-$('#{$typeInputId}').on('change', function(ev) {
-    var \$typeInput = $(this),
-        editor = \$typeInput.closest('.hud').data('elementEditor');
+(() => {
+    const \$typeInput = $('#$typeInputId');
+    const editor = \$typeInput.closest('.element-editor').data('elementEditor');
+    const fieldLayoutIds = $fieldLayoutIdsJson;
     if (editor) {
-        editor.setElementAttribute('typeId', \$typeInput.val());
-        editor.loadHud();
+        \$typeInput.on('change', function(ev) {
+            editor.setElementAttribute('typeId', \$typeInput.val());
+            editor.setElementAttribute('fieldLayoutId', fieldLayoutIds[`type-\${\$typeInput.val()}`]);
+            editor.load();
+        });
     }
-});
+})();
 EOD;
                 $view->registerJs($js);
             }
         }
 
-        // Render the custom fields
-        $html .= parent::getEditorHtml();
+        $fields[] = $this->slugFieldHtml();
 
-        return $html;
+        if ($section->type !== Section::TYPE_SINGLE) {
+            if (
+                Craft::$app->getEdition() === Craft::Pro &&
+                Craft::$app->getUser()->checkPermission("editPeerEntries:$section->uid")
+            ) {
+                $author = $this->getAuthor();
+                $fields[] = Cp::elementSelectFieldHtml([
+                    'label' => Craft::t('app', 'Author'),
+                    'id' => 'authorId',
+                    'name' => 'authorId',
+                    'elementType' => User::class,
+                    'selectionLabel' => Craft::t('app', 'Choose'),
+                    'criteria' => [
+                        'can' => "editEntries:$section->uid",
+                    ],
+                    'single' => true,
+                    'elements' => $author ? [$author] : null,
+                ]);
+            }
+
+            $fields[] = Cp::dateTimeFieldHtml([
+                'label' => Craft::t('app', 'Post Date'),
+                'id' => 'postDate',
+                'name' => 'postDate',
+                'value' => $this->postDate,
+                'errors' => $this->getErrors('postDate'),
+            ]);
+
+            $fields[] = Cp::dateTimeFieldHtml([
+                'label' => Craft::t('app', 'Expiry Date'),
+                'id' => 'expiryDate',
+                'name' => 'expiryDate',
+                'value' => $this->expiryDate,
+                'errors' => $this->getErrors('expiryDate'),
+            ]);
+        }
+
+        $fields[] = parent::metaFieldsHtml();
+
+        return implode('', $fields);
     }
 
     /**
@@ -1568,9 +1617,17 @@ EOD;
                 if ($this->_hasNewParent()) {
                     $mode = $isNew ? Structures::MODE_INSERT : Structures::MODE_AUTO;
                     if (!$this->newParentId) {
-                        Craft::$app->getStructures()->appendToRoot($this->structureId, $this, $mode);
+                        if ($section->defaultPlacement === Section::DEFAULT_PLACEMENT_BEGINNING) {
+                            Craft::$app->getStructures()->prependToRoot($this->structureId, $this, $mode);
+                        } else {
+                            Craft::$app->getStructures()->appendToRoot($this->structureId, $this, $mode);
+                        }
                     } else {
-                        Craft::$app->getStructures()->append($this->structureId, $this, $this->getParent(), $mode);
+                        if ($section->defaultPlacement === Section::DEFAULT_PLACEMENT_BEGINNING) {
+                            Craft::$app->getStructures()->prepend($this->structureId, $this, $this->getParent(), $mode);
+                        } else {
+                            Craft::$app->getStructures()->append($this->structureId, $this, $this->getParent(), $mode);
+                        }
                     }
                 }
 
@@ -1665,6 +1722,23 @@ EOD;
 
         if ($section->type == Section::TYPE_STRUCTURE && $section->structureId == $structureId) {
             Craft::$app->getElements()->updateElementSlugAndUri($this, true, true, true);
+
+            // If this is the canonical entry, update its drafts
+            if ($this->getIsCanonical()) {
+                $drafts = static::find()
+                    ->draftOf($this)
+                    ->anyStatus()
+                    ->siteId('*')
+                    ->unique()
+                    ->all();
+                $structuresService = Craft::$app->getStructures();
+                $lastElement = $this;
+
+                foreach ($drafts as $draft) {
+                    $structuresService->moveAfter($section->structureId, $draft, $lastElement);
+                    $lastElement = $draft;
+                }
+            }
         }
 
         parent::afterMoveInStructure($structureId);

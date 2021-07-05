@@ -25,11 +25,11 @@ class TypeManager extends Component
      *
      * ---
      * ```php
-     * use craft\events\DefineGqlTypeFields;
+     * use craft\events\DefineGqlTypeFieldsEvent;
      * use craft\gql\TypeManager;
      * use yii\base\Event;
      *
-     * Event::on(TypeManager::class, TypeManager::EVENT_DEFINE_GQL_TYPE_FIELDS, function(DefineGqlTypeFields $e) {
+     * Event::on(TypeManager::class, TypeManager::EVENT_DEFINE_GQL_TYPE_FIELDS, function(DefineGqlTypeFieldsEvent $event) {
      *     // Remove all ids, to enforce use of uids
      *     unset ($event->fields['id']);
      *

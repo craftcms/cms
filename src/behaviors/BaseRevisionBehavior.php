@@ -9,7 +9,6 @@ namespace craft\behaviors;
 
 use craft\base\ElementInterface;
 use craft\elements\User;
-use craft\helpers\ElementHelper;
 use yii\base\Behavior;
 
 /**

@@ -60,7 +60,7 @@ trait LogTargetTrait
             $ip = '-';
         }
 
-        /* @var $user User */
+        /** @var $user User */
         $user = Craft::$app->has('user', true) ? Craft::$app->get('user') : null;
         if ($user && ($identity = $user->getIdentity(false))) {
             $userID = $identity->getId();
@@ -68,7 +68,7 @@ trait LogTargetTrait
             $userID = '-';
         }
 
-        /* @var $session Session */
+        /** @var $session Session */
         $session = Craft::$app->has('session', true) ? Craft::$app->get('session') : null;
         $sessionID = $session && $session->getIsActive() ? $session->getId() : '-';
 

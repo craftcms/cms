@@ -106,7 +106,7 @@ class Element extends InterfaceType
             'siteSettingsId' => [
                 'name' => 'siteSettingsId',
                 'type' => Type::id(),
-                'description' => 'The unique identifier for an element-site relation.'
+                'description' => 'The unique identifier for an element-site relation.',
             ],
             'language' => [
                 'name' => 'language',

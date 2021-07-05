@@ -11,6 +11,7 @@ use Craft;
 use craft\events\DefineBehaviorsEvent;
 use craft\helpers\Db;
 use craft\helpers\StringHelper;
+use yii\db\Schema;
 
 /**
  * Active Record base class.
@@ -132,17 +133,10 @@ abstract class ActiveRecord extends \yii\db\ActiveRecord
      * @param mixed $value The attribute value
      * @return mixed The prepared value
      * @since 3.4.0
-     * @todo look into whether this is even necessary in Craft 4 - https://www.yiiframework.com/doc/guide/2.0/en/db-active-record#json-in-mysql-and-postgresql
      */
     private function _prepareValue(string $name, $value)
     {
-        $value = Db::prepareValueForDb($value);
-
-        $columns = static::getTableSchema()->columns;
-        if (isset($columns[$name])) {
-            $value = $columns[$name]->phpTypecast($value);
-        }
-
-        return $value;
+        $columnType = static::getTableSchema()->columns[$name]->dbType ?? null;
+        return Db::prepareValueForDb($value, $columnType);
     }
 }

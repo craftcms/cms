@@ -64,7 +64,7 @@ abstract class Resolver
     }
 
     /**
-     * Extract eager load conditions for a given resolve information. Preferrably at the very top of the query.
+     * Extract eager load conditions for a given resolve information. Preferably at the very top of the query.
      *
      * @param Node $parentNode
      * @return array

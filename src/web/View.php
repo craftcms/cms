@@ -8,6 +8,7 @@
 namespace craft\web;
 
 use Craft;
+use craft\base\ElementInterface;
 use craft\events\RegisterTemplateRootsEvent;
 use craft\events\TemplateEvent;
 use craft\helpers\Cp;
@@ -15,7 +16,6 @@ use craft\helpers\FileHelper;
 use craft\helpers\Html;
 use craft\helpers\Json;
 use craft\helpers\Path;
-use craft\helpers\Session as SessionHelper;
 use craft\helpers\StringHelper;
 use craft\web\twig\Environment;
 use craft\web\twig\Extension;
@@ -270,8 +270,9 @@ class View extends \yii\web\View
             $this->setTemplateMode(self::TEMPLATE_MODE_SITE);
         }
 
-        // Register the cp.elements.element hook
+        // Register the CP hooks
         $this->hook('cp.elements.element', [$this, '_getCpElementHtml']);
+        $this->hook('cp.elements.edit', [$this, '_prepEditElementVariables']);
     }
 
     /**
@@ -308,7 +309,7 @@ class View extends \yii\web\View
         }
 
         // Set our timezone
-        /* @var CoreExtension $core */
+        /** @var CoreExtension $core */
         $core = $twig->getExtension(CoreExtension::class);
         $core->setTimezone(Craft::$app->getTimeZone());
 
@@ -583,7 +584,7 @@ class View extends \yii\web\View
             $variables['_variables'] = $variables;
 
             // Render it!
-            /* @var TwigTemplate $templateObj */
+            /** @var TwigTemplate $templateObj */
             $templateObj = $this->_objectTemplates[$cacheKey];
             $output = $templateObj->render($variables);
         } catch (\Throwable $e) {
@@ -817,7 +818,7 @@ class View extends \yii\web\View
 
         // Should we be looking for a localized version of the template?
         if ($this->_templateMode === self::TEMPLATE_MODE_SITE && Craft::$app->getIsInstalled()) {
-            /* @noinspection PhpUnhandledExceptionInspection */
+            /** @noinspection PhpUnhandledExceptionInspection */
             $sitePath = $this->_templatesPath . DIRECTORY_SEPARATOR . Craft::$app->getSites()->getCurrentSite()->handle;
             if (is_dir($sitePath)) {
                 $basePaths[] = $sitePath;
@@ -843,7 +844,7 @@ class View extends \yii\web\View
 
         if (!empty($roots)) {
             foreach ($roots as $templateRoot => $basePaths) {
-                /* @var string[] $basePaths */
+                /** @var string[] $basePaths */
                 $templateRootLen = strlen($templateRoot);
                 if ($templateRoot === '' || strncasecmp($templateRoot . '/', $name . '/', $templateRootLen + 1) === 0) {
                     $subName = $templateRoot === '' ? $name : (strlen($name) === $templateRootLen ? '' : substr($name, $templateRootLen + 1));
@@ -1256,8 +1257,21 @@ JS;
     /**
      * Returns the initial values of delta inputs.
      *
-     * @return mixed[]
+     * @return array
      * @see setInitialDeltaValue()
+     * @since 3.7.0
+     */
+    public function getInitialDeltaValues(): array
+    {
+        return $this->_initialDeltaValues;
+    }
+
+    /**
+     * Returns the initial values of delta inputs.
+     *
+     * @return array
+     * @see setInitialDeltaValue()
+     * @deprecated in 3.7.0. Use [[getInitialDeltaValues()]] instead.
      * @since 3.4.6
      */
     public function getInitialDeltaValue()
@@ -1270,7 +1284,7 @@ JS;
      *
      * @param string $inputName
      * @param mixed $value
-     * @see getInitialDeltaValue()
+     * @see getInitialDeltaValues()
      * @since 3.4.6
      */
     public function setInitialDeltaValue(string $inputName, $value)
@@ -1424,15 +1438,39 @@ JS;
      * <input type="text" name="foo[bar][title]" id="foo-bar-title">
      * ```
      *
-     * @param string $html The HTML code
+     * When a callable is passed to `$html` (supported as of Craft 3.7), the namespace will be set via
+     * [[setNamespace()]] before the callable is executed, in time for any JavaScript code that needs to be
+     * registered by the callable.
+     *
+     * ```php
+     * $settingsHtml = Craft::$app->view->namespaceInputs(function() use ($widget) {
+     *     return $widget->getSettingsHtml();
+     * }, 'widget-settings');
+     * ```
+     *
+     * @param string|callable $html The HTML code, or a callable that returns the HTML code
      * @param string|null $namespace The namespace. Defaults to the [[getNamespace()|active namespace]].
      * @param bool $otherAttributes Whether `id`, `for`, and other attributes should be namespaced (in addition to `name`)
      * @param bool $withClasses Whether class names should be namespaced as well (affects both `class` attributes and
      * class name CSS selectors within `<style>` tags). This will only have an effect if `$otherAttributes` is `true`.
      * @return string The HTML with namespaced attributes
      */
-    public function namespaceInputs(string $html, string $namespace = null, bool $otherAttributes = true, bool $withClasses = false): string
+    public function namespaceInputs($html, string $namespace = null, bool $otherAttributes = true, bool $withClasses = false): string
     {
+        if (is_callable($html)) {
+            // If no namespace was passed in, just return the callable response directly.
+            // No need to namespace it via the currently-set namespace in this case; if there is one, it should get applied later on.
+            if ($namespace === null) {
+                return $html();
+            }
+
+            $oldNamespace = $this->getNamespace();
+            $this->setNamespace($this->namespaceInputName($namespace));
+            $response = $this->namespaceInputs($html(), $namespace, $otherAttributes, $withClasses);
+            $this->setNamespace($oldNamespace);
+            return $response;
+        }
+
         if ($html === '') {
             return $html;
         }
@@ -1813,9 +1851,9 @@ JS;
             return;
         }
 
-        if (SessionHelper::exists()) {
-            $session = Craft::$app->getSession();
-
+        // Explicitly check if the session is active here, in case the session was closed.
+        $session = Craft::$app->getSession();
+        if ($session->getIsActive()) {
             foreach ($session->getAssetBundleFlashes(true) as $name => $position) {
                 if (!is_subclass_of($name, YiiAssetBundle::class)) {
                     throw new Exception("$name is not an asset bundle");
@@ -2006,10 +2044,10 @@ JS;
     /**
      * Returns the HTML for an element in the control panel.
      *
-     * @param array &$context
+     * @param array $context
      * @return string|null
      */
-    private function _getCpElementHtml(array &$context)
+    private function _getCpElementHtml(array &$context): ?string
     {
         if (!isset($context['element'])) {
             return null;
@@ -2025,7 +2063,29 @@ JS;
             $context['element'],
             $context['context'] ?? 'index',
             $size,
-            $context['name'] ?? null
+            $context['name'] ?? null,
+            true,
+            true,
+            true,
+            true,
+            $context['single'] ?? false
         );
+    }
+
+    /**
+     * Returns the HTML for an element in the control panel.
+     *
+     * @param array $context
+     * @return void
+     */
+    private function _prepEditElementVariables(array &$context): void
+    {
+        /** @var ElementInterface $element */
+        $element = $context['element'];
+
+        [$docTitle, $title] = Cp::editElementTitles($element);
+
+        $context['docTitle'] = $docTitle;
+        $context['title'] = $title;
     }
 }

@@ -111,15 +111,17 @@ JS;
     {
         $view->registerTranslations('app', [
             '(blank)',
+            '<span class="visually-hidden">Characters left:</span> {chars, number}',
             'A server error occurred.',
             'Actions',
             'All',
             'Any changes will be lost if you leave this page.',
             'Apply this to the {number} remaining conflicts?',
+            'Apply',
             'Are you sure you want to close the editor? Any changes will be lost.',
-            'Are you sure you want to delete this draft?',
             'Are you sure you want to delete this image?',
             'Are you sure you want to delete “{name}”?',
+            'Are you sure you want to discard your changes?',
             'Are you sure you want to transfer your license to this domain?',
             'Buy {name}',
             'Cancel',
@@ -128,6 +130,8 @@ JS;
             'Clear',
             'Close Preview',
             'Close',
+            'Color hex value',
+            'Color picker',
             'Continue',
             'Copied to clipboard.',
             'Copy the URL',
@@ -136,10 +140,8 @@ JS;
             'Couldn’t delete “{name}”.',
             'Couldn’t save new order.',
             'Create',
-            'Delete draft',
             'Delete folder',
             'Delete heading',
-            'Delete it',
             'Delete their content',
             'Delete them',
             'Delete {num, plural, =1{user} other{users}} and content',
@@ -147,13 +149,14 @@ JS;
             'Delete',
             'Desktop',
             'Device type',
+            'Discard changes',
             'Display as thumbnails',
             'Display in a table',
             'Done',
             'Draft Name',
-            'Drafts',
             'Edit draft settings',
             'Edit',
+            'Edited',
             'Element',
             'Elements',
             'Enabled for {site}',
@@ -161,6 +164,7 @@ JS;
             'Enter the name of the folder',
             'Enter your password to continue.',
             'Enter your password to log back in.',
+            'Error',
             'Export Type',
             'Export',
             'Export…',
@@ -179,11 +183,11 @@ JS;
             'Information',
             'Instructions',
             'Keep both',
-            'Keep it',
             'Keep me logged in',
             'Keep them',
             'License transferred.',
             'Limit',
+            'Loading',
             'Log out now',
             'Login',
             'Make not required',
@@ -206,7 +210,9 @@ JS;
             'Next Page',
             'No limit',
             'Notes',
+            'Notice',
             'OK',
+            'Open the full edit page in a new tab',
             'Options',
             'Password',
             'Past year',
@@ -215,9 +221,8 @@ JS;
             'Pending',
             'Phone',
             'Previous Page',
-            'Publish and add another',
-            'Publish draft',
             'Really delete folder “{folder}”?',
+            'Refresh',
             'Remove',
             'Rename folder',
             'Rename',
@@ -225,10 +230,10 @@ JS;
             'Replace it',
             'Replace the folder (all existing files will be deleted)',
             'Rotate',
-            'Save and continue editing',
             'Save as a new asset',
-            'Save draft',
             'Save',
+            'Saved {timestamp} by {creator}',
+            'Saved {timestamp}',
             'Saving',
             'Score',
             'Search in subfolders',
@@ -241,6 +246,7 @@ JS;
             'Show sidebar',
             'Show',
             'Show/hide children',
+            'Showing your unsaved changes.',
             'Sort by {attribute}',
             'Source settings saved',
             'Structure',
@@ -251,6 +257,7 @@ JS;
             'The draft could not be saved.',
             'The draft has been saved.',
             'This can be left blank if you just want an unlabeled separator.',
+            'This field has been modified.',
             'This month',
             'This week',
             'This year',
@@ -265,9 +272,10 @@ JS;
             'Upload files',
             'What do you want to do with their content?',
             'What do you want to do?',
+            'Your changes could not be stored.',
+            'Your changes have been stored.',
             'Your session has ended.',
             'Your session will expire in {time}.',
-            'You’re now editing a draft.',
             'by {creator}',
             'day',
             'days',
@@ -275,10 +283,8 @@ JS;
             'hours',
             'minute',
             'minutes',
-            'saved {timestamp} by {creator}',
             'second',
             'seconds',
-            'updated {timestamp}',
             'week',
             'weeks',
             '{ctrl}C to copy.',
@@ -293,7 +299,7 @@ JS;
 
     private function _craftData(): array
     {
-        $upToDate = Craft::$app->getIsInstalled() && !Craft::$app->getUpdates()->getIsCraftDbMigrationNeeded();
+        $upToDate = Craft::$app->getIsInstalled() && !Craft::$app->getUpdates()->getAreMigrationsPending();
         $request = Craft::$app->getRequest();
         $generalConfig = Craft::$app->getConfig()->getGeneral();
         $sitesService = Craft::$app->getSites();
@@ -307,7 +313,7 @@ JS;
 
         $elementTypeNames = [];
         foreach (Craft::$app->getElements()->getAllElementTypes() as $elementType) {
-            /* @var string|ElementInterface $elementType */
+            /** @var string|ElementInterface $elementType */
             $elementTypeNames[$elementType] = [
                 $elementType::displayName(),
                 $elementType::pluralDisplayName(),
@@ -322,6 +328,7 @@ JS;
             'allowAdminChanges' => $generalConfig->allowAdminChanges,
             'allowUpdates' => $generalConfig->allowUpdates,
             'allowUppercaseInSlug' => (bool)$generalConfig->allowUppercaseInSlug,
+            'announcements' => $upToDate ? $this->_announcements() : [],
             'apiParams' => Craft::$app->apiParams,
             'asciiCharMap' => StringHelper::asciiCharMap(true, Craft::$app->language),
             'autosaveDrafts' => (bool)$generalConfig->autosaveDrafts,
@@ -341,7 +348,7 @@ JS;
             'elementTypeNames' => $elementTypeNames,
             'fileKinds' => Assets::getFileKinds(),
             'handleCasing' => $generalConfig->handleCasing,
-            'initialDeltaValues' => $view->getInitialDeltaValue(),
+            'initialDeltaValues' => $view->getInitialDeltaValues(),
             'isImagick' => Craft::$app->getImages()->getIsImagick(),
             'isMultiSite' => Craft::$app->getIsMultiSite(),
             'language' => Craft::$app->language,
@@ -387,6 +394,11 @@ JS;
         }
 
         return $data;
+    }
+
+    private function _announcements(): array
+    {
+        return Craft::$app->getAnnouncements()->get();
     }
 
     private function _datepickerOptions(Locale $formattingLocale, Locale $locale, User $currentUser = null, GeneralConfig $generalConfig): array

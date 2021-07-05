@@ -206,7 +206,7 @@ class GqlToken extends Model
     {
         if (empty($this->_scope)) {
             $schema = $this->getSchema();
-            $this->_scope = $schema ? $schema->scope : null;
+            $this->_scope = $schema->scope ?? null;
         }
 
         return $this->_scope;

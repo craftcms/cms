@@ -29,11 +29,11 @@ import '../../login/src/login.scss';
             this.$errors = $('#login-errors');
 
             new Craft.PasswordInput(this.$passwordInput, {
-                onToggleInput: $.proxy(function($newPasswordInput) {
+                onToggleInput: $newPasswordInput => {
                     this.removeListener(this.$passwordInput, 'input');
                     this.$passwordInput = $newPasswordInput;
                     this.addListener(this.$passwordInput, 'input', 'onInput');
-                }, this)
+                },
             });
 
             this.addListener(this.$loginNameInput, 'input', 'onInput')
@@ -41,6 +41,15 @@ import '../../login/src/login.scss';
             this.addListener(this.$forgotPasswordLink, 'click', 'onSwitchForm');
             this.addListener(this.$rememberPasswordLink, 'click', 'onSwitchForm');
             this.addListener(this.$form, 'submit', 'onSubmit');
+
+            // Focus first empty field in form
+            if (!Garnish.isMobileBrowser()) {
+                if (this.$loginNameInput.val()) {
+                    this.$passwordInput.focus();
+                } else {
+                    this.$loginNameInput.focus();
+                }
+            }
         },
 
         validate: function() {
@@ -109,7 +118,7 @@ import '../../login/src/login.scss';
                 loginName: this.$loginNameInput.val()
             };
 
-            Craft.postActionRequest('users/send-password-reset-email', data, $.proxy(function(response, textStatus) {
+            Craft.postActionRequest('users/send-password-reset-email', data, (response, textStatus) => {
                 if (textStatus === 'success') {
                     if (response.success) {
                         new MessageSentModal();
@@ -119,7 +128,7 @@ import '../../login/src/login.scss';
                 }
 
                 this.onSubmitResponse();
-            }, this));
+            });
         },
 
         submitLogin: function() {
@@ -129,7 +138,7 @@ import '../../login/src/login.scss';
                 rememberMe: (this.$rememberMeCheckbox.prop('checked') ? 'y' : '')
             };
 
-            Craft.postActionRequest('users/login', data, $.proxy(function(response, textStatus) {
+            Craft.postActionRequest('users/login', data, (response, textStatus) => {
                 if (textStatus === 'success') {
                     if (response.success) {
                         window.location.href = response.returnUrl;
@@ -143,7 +152,7 @@ import '../../login/src/login.scss';
                 } else {
                     this.onSubmitResponse();
                 }
-            }, this));
+            });
 
             return false;
         },

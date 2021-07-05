@@ -129,7 +129,7 @@ JS;
             return $this->confirmationMessage;
         }
 
-        /* @var ElementInterface|string $elementType */
+        /** @var ElementInterface|string $elementType */
         $elementType = $this->elementType;
 
         if ($this->hard) {
@@ -191,10 +191,12 @@ JS;
         }
 
         if ($this->hard) {
-            $ids = $query->ids();
-            if (!empty($ids)) {
+            if (!empty($deletedElementIds)) {
                 Db::delete(Table::ELEMENTS, [
-                    'id' => $ids,
+                    'id' => array_keys($deletedElementIds),
+                ]);
+                Db::delete(Table::SEARCHINDEX, [
+                    'elementId' => array_keys($deletedElementIds),
                 ]);
             }
         }
@@ -202,7 +204,7 @@ JS;
         if ($this->successMessage !== null) {
             $this->setMessage($this->successMessage);
         } else {
-            /* @var ElementInterface|string $elementType */
+            /** @var ElementInterface|string $elementType */
             $elementType = $this->elementType;
             $this->setMessage(Craft::t('app', '{type} deleted.', [
                 'type' => $elementType::pluralDisplayName(),

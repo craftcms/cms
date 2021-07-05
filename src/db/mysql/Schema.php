@@ -14,6 +14,7 @@ use craft\db\TableSchema;
 use craft\helpers\App;
 use craft\helpers\Db;
 use craft\helpers\FileHelper;
+use craft\helpers\StringHelper;
 use mikehaertl\shellcommand\Command as ShellCommand;
 use yii\base\ErrorException;
 use yii\base\NotSupportedException;
@@ -42,6 +43,11 @@ class Schema extends \yii\db\mysql\Schema
      * @var int The maximum length that objects' names can be.
      */
     public $maxObjectNameLength = 64;
+
+    /**
+     * @var string|null The path to the temporary my.cnf file used for backups and restoration.
+     */
+    public $tempMyCnfPath;
 
     /**
      * @inheritdoc
@@ -371,7 +377,7 @@ SQL;
      */
     private function _createDumpConfigFile(): string
     {
-        $filePath = FileHelper::normalizePath(sys_get_temp_dir()) . DIRECTORY_SEPARATOR . 'my.cnf';
+        $this->tempMyCnfPath = FileHelper::normalizePath(sys_get_temp_dir()) . DIRECTORY_SEPARATOR . StringHelper::randomString(12) . '.cnf';
 
         $parsed = Db::parseDsn($this->db->dsn);
         $username = $this->db->getIsPgsql() && !empty($parsed['user']) ? $parsed['user'] : $this->db->username;
@@ -387,11 +393,11 @@ SQL;
                 PHP_EOL . 'port=' . ($parsed['port'] ?? '');
         }
 
-        FileHelper::writeToFile($filePath, $contents);
-
+        FileHelper::writeToFile($this->tempMyCnfPath, '');
         // Avoid a “world-writable config file 'my.cnf' is ignored” warning
-        chmod($filePath, 0644);
+        chmod($this->tempMyCnfPath, 0600);
+        FileHelper::writeToFile($this->tempMyCnfPath, $contents, ['append']);
 
-        return $filePath;
+        return $this->tempMyCnfPath;
     }
 }

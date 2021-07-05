@@ -79,7 +79,7 @@ class UserPasswordValidator extends StringValidator
      */
     public function validateAttribute($model, $attribute)
     {
-        /* @var Model $model */
+        /** @var Model $model */
         parent::validateAttribute($model, $attribute);
 
         if ($model->hasErrors($attribute)) {

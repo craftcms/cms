@@ -196,7 +196,7 @@ class Connection extends \yii\db\Connection
     public function getBackupFilePath(): string
     {
         // Determine the backup file path
-        $systemName = mb_strtolower(FileHelper::sanitizeFilename($this->_getFixedSystemName(), [
+        $systemName = mb_strtolower(FileHelper::sanitizeFilename(Craft::$app->getSystemName(), [
             'asciiOnly' => true,
         ]));
         $filename = ($systemName ? $systemName . '--' : '') . gmdate('Y-m-d-His') . '--v' . Craft::$app->getVersion();
@@ -220,11 +220,7 @@ class Connection extends \yii\db\Connection
             Table::ASSETINDEXDATA,
             Table::ASSETTRANSFORMINDEX,
             Table::SESSIONS,
-            Table::TEMPLATECACHES,
-            Table::TEMPLATECACHEQUERIES,
-            Table::TEMPLATECACHEELEMENTS,
             '{{%cache}}',
-            '{{%templatecachecriteria}}',
         ];
     }
 
@@ -540,7 +536,11 @@ class Connection extends \yii\db\Connection
 
         // Nuke any temp connection files that might have been created.
         try {
-            @unlink(FileHelper::normalizePath(sys_get_temp_dir()) . DIRECTORY_SEPARATOR . 'my.cnf');
+            if ($this->getIsMysql()) {
+                /** @var craft\db\mysql\Schema $schema */
+                $schema = $this->getSchema();
+                @unlink($schema->tempMyCnfPath);
+            }
         } catch (InvalidArgumentException $e) {
             // the directory doesn't exist
         }
@@ -569,22 +569,5 @@ class Connection extends \yii\db\Connection
 
             throw new ShellCommandException($execCommand, $command->getExitCode(), $command->getStdErr());
         }
-    }
-
-    /**
-     * TODO: remove this method after the next breakpoint and just use `Craft::$app->getSystemName()` directly.
-     *
-     * @return string
-     */
-    private function _getFixedSystemName(): string
-    {
-        if ($this->columnExists(Table::INFO, 'siteName')) {
-            return (new Query())
-                ->select(['siteName'])
-                ->from([Table::INFO])
-                ->scalar($this) ?: 'CraftCMS';
-        }
-
-        return Craft::$app->getSystemName();
     }
 }

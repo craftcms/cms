@@ -1,8 +1,14 @@
-<div id="notifications">
+<div id="notifications" role="status">
     {% for type in ['cp-notice', 'cp-error'] %}
+        {% set icon = type == 'cp-error' ? 'alert' : 'info' %}
+        {% set label = type == 'cp-error' ? 'Error'|t('app') : 'Notice'|t('app') %}
         {% set message = craft.app.session.getFlash(type) %}
+
         {% if message %}
-            <div class="notification {{ type|replace('cp-', '') }}">{{ message }}</div>
+            <div class="notification {{ type|replace('cp-', '') }}">
+                <span data-icon="{{ icon }}" aria-label="{{ label }}"></span>
+                {{ message }}
+            </div>
         {% endif %}
     {% endfor %}
 </div>

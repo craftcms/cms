@@ -324,7 +324,7 @@ class Gql extends Component
     const GRAPHQL_COMPLEXITY_CPU_HEAVY = 200;
 
     /**
-     * Complexity value for accessing a field that will trigger a query for every parent returned,
+     * Complexity value for accessing a field that will trigger a query for every parent returned.
      *
      * @since 3.6.0
      */
@@ -411,7 +411,7 @@ class Gql extends Component
 
             foreach ($registeredTypes as $registeredType) {
                 if (method_exists($registeredType, 'getTypeGenerator')) {
-                    /* @var GeneratorInterface $typeGeneratorClass */
+                    /** @var GeneratorInterface $typeGeneratorClass */
                     $typeGeneratorClass = $registeredType::getTypeGenerator();
 
                     if (is_subclass_of($typeGeneratorClass, GeneratorInterface::class)) {
@@ -865,13 +865,27 @@ class Gql extends Component
             ->one();
 
         // If we don't have it and admin changes aren't currently supported, return null
-        if (
-            (!$result || !$result['schemaId']) &&
-            !Craft::$app->getConfig()->getGeneral()->allowAdminChanges
-        ) {
-            return null;
+        if (!Craft::$app->getConfig()->getGeneral()->allowAdminChanges) {
+            // Can't adjust for a missing token entirely
+            if (!$result) {
+                return null;
+            }
+
+            // Existing token but missing schema link
+            if (!$result['schemaId']) {
+                $schema = $this->_getPublicSchema();
+
+                // If we actually have a public schema, re-link it and bypass project-config, since the link is not stored there.
+                if ($schema) {
+                    $token = new GqlToken($result);
+                    $token->setSchema($schema);
+                    $this->_saveTokenInternal($token);
+                    return $token;
+                }
+            }
         }
 
+        // If we got here, either admin changes are allowed or the token-schema link is fine and dandy.
         $token = $result ? new GqlToken($result) : new GqlToken([
             'name' => 'Public Token',
             'accessToken' => GqlToken::PUBLIC_TOKEN,
@@ -879,7 +893,7 @@ class Gql extends Component
         ]);
 
         if (!$token->schemaId) {
-            $schema = $this->_createPublicSchema();
+            $schema = $this->_getPublicSchema() ?: $this->_createPublicSchema();
             $token->setSchema($schema);
 
             if (!$this->saveToken($token)) {
@@ -1034,7 +1048,7 @@ class Gql extends Component
             $schemaRecord->uid = $schemaUid;
             $schemaRecord->name = $data['name'];
             $schemaRecord->isPublic = (bool)($data['isPublic'] ?? false);
-            $schemaRecord->scope = (!empty($data['scope']) && is_array($data['scope'])) ? Json::encode((array)$data['scope']) : [];
+            $schemaRecord->scope = (!empty($data['scope']) && is_array($data['scope'])) ? $data['scope'] : [];
 
             // Save the schema record
             $schemaRecord->save(false);
@@ -1225,7 +1239,7 @@ class Gql extends Component
     {
         $devMode = Craft::$app->getConfig()->getGeneral()->devMode;
 
-        /* @var Error $error */
+        /** @var Error $error */
         foreach ($errors as &$error) {
             $originException = $nextException = $error;
 
@@ -1235,7 +1249,7 @@ class Gql extends Component
             }
 
             // If devMode enabled, substitute the original exception here.
-            if ($devMode) {
+            if ($devMode && !empty($originException->getMessage())) {
                 $error = $originException;
             }
 
@@ -1270,7 +1284,7 @@ class Gql extends Component
         // No cache key, if explicitly disabled
         $generalConfig = Craft::$app->getConfig()->getGeneral();
 
-        if (!$generalConfig->enableGraphQlCaching) {
+        if (!$generalConfig->enableGraphqlCaching) {
             return null;
         }
 
@@ -1332,7 +1346,7 @@ class Gql extends Component
         $this->trigger(self::EVENT_REGISTER_GQL_TYPES, $event);
 
         foreach ($event->types as $type) {
-            /* @var InterfaceType $type */
+            /** @var InterfaceType $type */
             TypeLoader::registerType($type::getName(), $type . '::getType');
         }
 
@@ -1421,7 +1435,7 @@ class Gql extends Component
         $directives = GraphQL::getStandardDirectives();
 
         foreach ($event->directives as $directive) {
-            /* @var Directive $directive */
+            /** @var Directive $directive */
             $directives[] = $directive::create();
         }
 
@@ -1688,28 +1702,34 @@ class Gql extends Component
     }
 
     /**
+     * Get the public schema, if it exists.
+     *
+     * @return GqlSchema|null
+     */
+    private function _getPublicSchema(): ?GqlSchema
+    {
+        $result = $this->_createSchemaQuery()->where(['isPublic' => true])->one();
+
+        return $result ? new GqlSchema($result) : null;
+    }
+
+    /**
      * Creates the public schema.
      *
      * @return GqlSchema
      */
     private function _createPublicSchema(): GqlSchema
     {
-        // See if it already exists, and is just missing its token
-        $result = $this->_createSchemaQuery()->where(['isPublic' => true])->one();
+        $schemaUid = StringHelper::UUID();
+        $publicSchema = new GqlSchema([
+            'name' => 'Public Schema',
+            'uid' => $schemaUid,
+            'isPublic' => true,
+        ]);
 
-        if ($result) {
-            $schema = new GqlSchema($result);
-        } else {
-            $schemaUid = StringHelper::UUID();
-            $schema = new GqlSchema([
-                'name' => 'Public Schema',
-                'uid' => $schemaUid,
-                'isPublic' => true,
-            ]);
-        }
+        $this->saveSchema($publicSchema, false);
 
-        $this->saveSchema($schema, false);
-        return $schema;
+        return $publicSchema;
     }
 
     /**

@@ -423,7 +423,7 @@ class Fields extends Component
      */
     public function deleteGroup(FieldGroup $group): bool
     {
-        /* @var FieldGroupRecord $groupRecord */
+        /** @var FieldGroupRecord $groupRecord */
         $groupRecord = FieldGroupRecord::find()
             ->where(['id' => $group->id])
             ->with('fields')
@@ -502,7 +502,7 @@ class Fields extends Component
         $fieldTypes = [];
 
         foreach ($this->getAllFieldTypes() as $fieldType) {
-            /* @var FieldInterface|string $fieldType */
+            /** @var FieldInterface|string $fieldType */
             if ($fieldType::hasContentColumn()) {
                 $fieldTypes[] = $fieldType;
             }
@@ -549,7 +549,7 @@ class Fields extends Component
                 continue;
             }
 
-            /* @var FieldInterface $tempField */
+            /** @var FieldInterface $tempField */
             $tempField = new $class();
             $tempFieldColumnType = $tempField->getContentColumnType();
 
@@ -1695,13 +1695,13 @@ class Fields extends Component
                     foreach ($columnType as $i => $type) {
                         [$key, $type] = explode(':', $type, 2);
                         $oldColumn = !$isNewField ? ElementHelper::fieldColumn(null, $oldHandle, $oldColumnSuffix, $i !== 0 ? $key : null) : null;
-                        $newColumn = ElementHelper::fieldColumn(null, $data['handle'], $data['columnSuffix'], $i !== 0 ? $key : null);
+                        $newColumn = ElementHelper::fieldColumn(null, $data['handle'], $data['columnSuffix'] ?? null, $i !== 0 ? $key : null);
                         $this->_updateColumn($db, $transaction, $contentService->contentTable, $oldColumn, $newColumn, $type);
                         $newColumns[$newColumn] = true;
                     }
                 } else {
                     $oldColumn = !$isNewField ? ElementHelper::fieldColumn(null, $oldHandle, $oldColumnSuffix) : null;
-                    $newColumn = ElementHelper::fieldColumn(null, $data['handle'], $data['columnSuffix']);;
+                    $newColumn = ElementHelper::fieldColumn(null, $data['handle'], $data['columnSuffix'] ?? null);;
                     $this->_updateColumn($db, $transaction, $contentService->contentTable, $oldColumn, $newColumn, $columnType);
                     $newColumns[$newColumn] = true;
                 }
@@ -1713,8 +1713,8 @@ class Fields extends Component
             if (!$isNewField) {
                 $this->_dropOldFieldColumns($oldHandle, $oldColumnSuffix, $newColumns);
 
-                if ($data['handle'] !== $oldHandle || $data['columnSuffix'] !== $oldColumnSuffix) {
-                    $this->_dropOldFieldColumns($data['handle'], $data['columnSuffix'], $newColumns);
+                if ($data['handle'] !== $oldHandle || ($data['columnSuffix'] ?? null) !== $oldColumnSuffix) {
+                    $this->_dropOldFieldColumns($data['handle'], $data['columnSuffix'] ?? null, $newColumns);
                 }
             }
 
@@ -1732,7 +1732,7 @@ class Fields extends Component
             $fieldRecord->name = $data['name'];
             $fieldRecord->handle = $data['handle'];
             $fieldRecord->context = $context;
-            $fieldRecord->columnSuffix = $data['columnSuffix'];
+            $fieldRecord->columnSuffix = $data['columnSuffix'] ?? null;
             $fieldRecord->instructions = $data['instructions'];
             $fieldRecord->searchable = $data['searchable'] ?? false;
             $fieldRecord->translationMethod = $data['translationMethod'];
@@ -1873,12 +1873,6 @@ class Fields extends Component
      */
     private function _createGroupQuery(): Query
     {
-        // todo: remove schema version condition after next beakpoint
-        $condition = null;
-        if (version_compare(Craft::$app->getInstalledSchemaVersion(), '3.6.2', '>=')) {
-            $condition = ['dateDeleted' => null];
-        }
-
         return (new Query())
             ->select([
                 'id',
@@ -1886,7 +1880,7 @@ class Fields extends Component
                 'uid',
             ])
             ->from([Table::FIELDGROUPS])
-            ->where($condition)
+            ->where(['dateDeleted' => null])
             ->orderBy(['name' => SORT_ASC]);
     }
 
@@ -1897,7 +1891,7 @@ class Fields extends Component
      */
     private function _createFieldQuery(): Query
     {
-        $query = (new Query())
+        return (new Query())
             ->select([
                 'fields.id',
                 'fields.dateCreated',
@@ -1908,6 +1902,7 @@ class Fields extends Component
                 'fields.context',
                 'fields.columnSuffix',
                 'fields.instructions',
+                'fields.searchable',
                 'fields.translationMethod',
                 'fields.translationKeyFormat',
                 'fields.type',
@@ -1916,14 +1911,6 @@ class Fields extends Component
             ])
             ->from(['fields' => Table::FIELDS])
             ->orderBy(['fields.name' => SORT_ASC, 'fields.handle' => SORT_ASC]);
-
-        // todo: remove schema version condition after next beakpoint
-        $schemaVersion = Craft::$app->getInstalledSchemaVersion();
-        if (version_compare($schemaVersion, '3.1.0', '>=')) {
-            $query->addSelect(['fields.searchable']);
-        }
-
-        return $query;
     }
 
     /**
@@ -1933,21 +1920,14 @@ class Fields extends Component
      */
     private function _createLayoutQuery(): Query
     {
-        $query = (new Query)
+        return (new Query)
             ->select([
                 'id',
                 'type',
                 'uid',
             ])
-            ->from([Table::FIELDLAYOUTS]);
-
-        // todo: remove schema version condition after next beakpoint
-        $schemaVersion = Craft::$app->getInstalledSchemaVersion();
-        if (version_compare($schemaVersion, '3.1.0', '>=')) {
-            $query->where(['dateDeleted' => null]);
-        }
-
-        return $query;
+            ->from([Table::FIELDLAYOUTS])
+            ->where(['dateDeleted' => null]);
     }
 
     /**
@@ -1957,24 +1937,17 @@ class Fields extends Component
      */
     private function _createLayoutTabQuery(): Query
     {
-        $query = (new Query())
+        return (new Query())
             ->select([
                 'id',
                 'layoutId',
                 'name',
+                'elements',
                 'sortOrder',
                 'uid',
             ])
             ->from([Table::FIELDLAYOUTTABS])
             ->orderBy(['sortOrder' => SORT_ASC]);
-
-        // todo: remove schema version condition after next beakpoint
-        $schemaVersion = Craft::$app->getInstalledSchemaVersion();
-        if (version_compare($schemaVersion, '3.5.8', '>=')) {
-            $query->addSelect(['elements']);
-        }
-
-        return $query;
     }
 
     /**

@@ -348,7 +348,7 @@ abstract class Field extends SavableComponent implements FieldInterface
         if ($element->isFieldModified($this->handle)) {
             return [
                 Element::ATTR_STATUS_MODIFIED,
-                Craft::t('app', 'This field was updated in this draft.'),
+                Craft::t('app', 'This field has been modified.'),
             ];
         }
 
@@ -524,10 +524,7 @@ abstract class Field extends SavableComponent implements FieldInterface
 
         return [
             'label' => Craft::t('site', $this->name),
-            'orderBy' => [
-                $column => SORT_ASC,
-                'elements.id' => SORT_ASC,
-            ],
+            'orderBy' => [$column, 'elements.id'],
             'attribute' => 'field:' . $this->id,
         ];
     }
@@ -569,7 +566,7 @@ abstract class Field extends SavableComponent implements FieldInterface
      */
     public function modifyElementsQuery(ElementQueryInterface $query, $value)
     {
-        /* @var ElementQuery $query */
+        /** @var ElementQuery $query */
         if ($value !== null) {
             $column = ElementHelper::fieldColumnFromField($this);
 

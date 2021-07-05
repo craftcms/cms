@@ -109,6 +109,10 @@ class ProjectConfig extends Component
      * @deprecated in 3.5.0
      */
     const CONFIG_ALL_KEY = '__all__';
+    /**
+     * The project config key that Craft uses to store project config names.
+     */
+    const CONFIG_NAMES_KEY = 'meta.__names__';
 
     // Regexp patterns
     // -------------------------------------------------------------------------
@@ -636,11 +640,6 @@ class ProjectConfig extends Component
             return true;
         }
 
-        // TODO remove after next breakpoint
-        if (version_compare(Craft::$app->getInfo()->schemaVersion, '3.4.4', '<')) {
-            return false;
-        }
-
         // If the file does not exist, but should, generate it
         if ($this->getHadFileWriteIssues() || !$this->getDoesYamlExist()) {
             if ($this->writeYamlAutomatically) {
@@ -974,11 +973,6 @@ class ProjectConfig extends Component
      */
     public function getAreConfigSchemaVersionsCompatible(&$issues = [])
     {
-        // TODO remove after next breakpoint
-        if (version_compare(Craft::$app->getInfo()->version, '3.1', '<')) {
-            return true;
-        }
-
         $incomingSchema = (string)$this->get(self::CONFIG_SCHEMA_VERSION_KEY, true);
         $existingSchema = (string)Craft::$app->schemaVersion;
 
@@ -1219,7 +1213,6 @@ class ProjectConfig extends Component
     public function rebuild()
     {
         $this->reset();
-        $this->_discardProjectConfigNames();
 
         $config = $this->get();
         $config['dateModified'] = DateTimeHelper::currentTimeStamp();
@@ -1249,6 +1242,8 @@ class ProjectConfig extends Component
         $this->muteEvents = true;
         $readOnly = $this->readOnly;
         $this->readOnly = false;
+
+        $this->_discardProjectConfigNames();
 
         // Process the changes
         foreach ($event->config as $path => $value) {
@@ -1319,9 +1314,9 @@ class ProjectConfig extends Component
                 throw new OperationAbortedException($message);
             }
 
-            /* @var ConfigEvent $event */
-            /* @var string[]|null $tokenMatches */
-            /* @var callable $handler */
+            /** @var ConfigEvent $event */
+            /** @var string[]|null $tokenMatches */
+            /** @var callable $handler */
             [$event, $tokenMatches, $handler] = array_shift($this->_deferredEvents);
             Craft::info('Re-triggering deferred event for ' . $event->path, __METHOD__);
             $event->tokenMatches = $tokenMatches;
@@ -1694,15 +1689,7 @@ class ProjectConfig extends Component
                 'except' => ['.*', '.*/'],
             ]);
 
-            // todo: remove this condition after the next breakpoint
-            if (Craft::$app->getDb()->tableExists(Table::PROJECTCONFIGNAMES)) {
-                $projectConfigNames = (new Query())
-                    ->select(['uid', 'name'])
-                    ->from([Table::PROJECTCONFIGNAMES])
-                    ->pairs();
-            } else {
-                $projectConfigNames = [];
-            }
+            $projectConfigNames = $this->get(self::CONFIG_NAMES_KEY);
 
             $uids = [];
             $replacements = [];
@@ -1753,11 +1740,7 @@ class ProjectConfig extends Component
     private function _discardProjectConfigNames(): void
     {
         $this->_projectConfigNameChanges = [];
-
-        // todo: remove this condition after the next breakpoint
-        if (Craft::$app->getDb()->tableExists(Table::PROJECTCONFIGNAMES)) {
-            Db::truncateTable(Table::PROJECTCONFIGNAMES);
-        }
+        $this->set(self::CONFIG_NAMES_KEY, []);
     }
 
     /**
@@ -1769,30 +1752,8 @@ class ProjectConfig extends Component
     private function _processProjectConfigNameChanges(): void
     {
         if (!empty($this->_projectConfigNameChanges)) {
-            $remove = [];
-            $set = [];
-
             foreach ($this->_projectConfigNameChanges as $uid => $name) {
-                if ($name === null) {
-                    $remove[] = $uid;
-                } else {
-                    $set[$uid] = $name;
-                }
-            }
-
-            // todo: remove this condition after the next breakpoint
-            if (Craft::$app->getDb()->tableExists(Table::PROJECTCONFIGNAMES)) {
-                if (!empty($remove)) {
-                    Db::delete(Table::PROJECTCONFIGNAMES, ['uid' => $remove]);
-                }
-
-                if (!empty($set)) {
-                    Db::delete(Table::PROJECTCONFIGNAMES, ['uid' => array_keys($set)]);
-                    array_walk($set, function(&$value, $key) {
-                        $value = [$key, $value];
-                    });
-                    Db::batchInsert(Table::PROJECTCONFIGNAMES, ['uid', 'name'], $set, false);
-                }
+                $this->set(self::CONFIG_NAMES_KEY . '.' . $uid, $name);
             }
 
             $this->_projectConfigNameChanges = [];

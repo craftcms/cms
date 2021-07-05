@@ -483,6 +483,9 @@ class Queue extends \yii\queue\cli\Queue implements QueueInterface
         if (parent::handleError($event)) {
             // Mark the job as failed
             $this->_lock(function() use ($event) {
+                if ($event->error) {
+                    Craft::$app->getErrorHandler()->logException($event->error);
+                }
                 Db::update($this->tableName, [
                     'fail' => true,
                     'dateFailed' => Db::prepareDateForDb(new \DateTime()),
@@ -518,7 +521,7 @@ class Queue extends \yii\queue\cli\Queue implements QueueInterface
 
         // Include JS that tells the browser to fire an Ajax request to kick off a new queue runner
         // (Ajax request code adapted from http://www.quirksmode.org/js/xmlhttp.html - thanks ppk!)
-        $url = Json::encode(UrlHelper::actionUrl('queue/run'));
+        $url = Json::encode(UrlHelper::actionUrl('queue/run', null, null, false));
         $js = <<<EOD
 <script type="text/javascript">
 /*<![CDATA[*/
@@ -560,21 +563,16 @@ EOD;
      */
     protected function pushMessage($message, $ttr, $delay, $priority)
     {
-        $data = [
+        Db::insert($this->tableName, [
+            'channel' => $this->channel,
             'job' => $message,
             'description' => $this->_jobDescription,
             'timePushed' => time(),
             'ttr' => $ttr,
             'delay' => $delay,
             'priority' => $priority ?: 1024,
-        ];
+        ], false, $this->db);
 
-        // todo: remove this check after the next breakpoint
-        if ($this->db->columnExists($this->tableName, 'channel')) {
-            $data['channel'] = $this->channel;
-        }
-
-        Db::insert($this->tableName, $data, false, $this->db);
         return $this->db->getLastInsertID($this->tableName);
     }
 

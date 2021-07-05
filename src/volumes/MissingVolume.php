@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 /**
  * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
@@ -17,6 +18,8 @@ use yii\base\NotSupportedException;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
+ *
+ * @property-read false $rootUrl
  */
 class MissingVolume extends Volume implements MissingComponentInterface
 {
@@ -33,33 +36,9 @@ class MissingVolume extends Volume implements MissingComponentInterface
     /**
      * @inheritdoc
      */
-    public function getFileList(string $directory, bool $recursive): array
+    public function getFileList(string $directory = '', bool $recursive = true): \Generator
     {
         throw new NotSupportedException('getFileList() is not implemented.');
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getFileMetadata(string $uri): array
-    {
-        throw new NotSupportedException('getFileMetadata() is not implemented.');
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function createFileByStream(string $path, $stream, array $config)
-    {
-        throw new NotSupportedException('createFileByStream() is not implemented.');
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function updateFileByStream(string $path, $stream, array $config)
-    {
-        throw new NotSupportedException('updateFileByStream() is not implemented.');
     }
 
     /**
@@ -73,7 +52,7 @@ class MissingVolume extends Volume implements MissingComponentInterface
     /**
      * @inheritdoc
      */
-    public function deleteFile(string $path)
+    public function deleteFile(string $path): void
     {
         throw new NotSupportedException('deleteFile() is not implemented.');
     }
@@ -81,7 +60,7 @@ class MissingVolume extends Volume implements MissingComponentInterface
     /**
      * @inheritdoc
      */
-    public function renameFile(string $path, string $newPath)
+    public function renameFile(string $path, string $newPath): void
     {
         throw new NotSupportedException('renameFile() is not implemented.');
     }
@@ -89,7 +68,7 @@ class MissingVolume extends Volume implements MissingComponentInterface
     /**
      * @inheritdoc
      */
-    public function copyFile(string $path, string $newPath)
+    public function copyFile(string $path, string $newPath): void
     {
         throw new NotSupportedException('copyFile() is not implemented.');
     }
@@ -113,63 +92,23 @@ class MissingVolume extends Volume implements MissingComponentInterface
     /**
      * @inheritdoc
      */
-    public function folderExists(string $path): bool
+    public function directoryExists(string $path): bool
     {
-        throw new NotSupportedException('folderExists() is not implemented.');
+        throw new NotSupportedException('directoryExists() is not implemented.');
     }
 
     /**
      * @inheritdoc
      */
-    public function createDir(string $path)
-    {
-        throw new NotSupportedException('createDir() is not implemented.');
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function deleteDir(string $path)
-    {
-        throw new NotSupportedException('deleteDir() is not implemented.');
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function getFileSize(string $uri): ?int
-    {
-        throw new NotSupportedException('getFileSize() is not implemented.');
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function renameDirectory(string $path, string $newName)
-    {
-        throw new NotSupportedException('renameDirectory() is not implemented.');
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function getDateModified(string $uri): ?int
-    {
-        throw new NotSupportedException('getDateModified() is not implemented.');
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function createDirectory(string $path)
+    public function createDirectory(string $path, array $config = []): void
     {
         throw new NotSupportedException('createDirectory() is not implemented.');
     }
 
     /**
-     * @inheritDoc
+     * @inheritdoc
      */
-    public function deleteDirectory(string $path)
+    public function deleteDirectory(string $path): void
     {
         throw new NotSupportedException('deleteDirectory() is not implemented.');
     }
@@ -177,8 +116,32 @@ class MissingVolume extends Volume implements MissingComponentInterface
     /**
      * @inheritdoc
      */
-    public function renameDir(string $path, string $newName)
+    public function renameDirectory(string $path, string $newName): void
     {
-        throw new NotSupportedException('renameDir() is not implemented.');
+        throw new NotSupportedException('renameDirectory() is not implemented.');
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getFileSize(string $uri): int
+    {
+        throw new NotSupportedException('getFileSize() is not implemented.');
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getDateModified(string $uri): int
+    {
+        throw new NotSupportedException('getDateModified() is not implemented.');
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function writeFileFromStream(string $path, $stream, array $config = []): void
+    {
+        throw new NotSupportedException('writeFileFromStream() is not implemented.');
     }
 }
