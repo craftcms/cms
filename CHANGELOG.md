@@ -8,6 +8,8 @@
 
 ### Changed
 - Entries now retain their original IDs when created from an unpublished draft. ([#9104](https://github.com/craftcms/cms/issues/9104))
+- Date query params now support passing in times relative to `now` (e.g. `>= now`). ([#9117](https://github.com/craftcms/cms/issues/9117))
+- `craft\helpers\DateTimeHelper::toDateTime()` now supports passing in `'now'`. ([#9117](https://github.com/craftcms/cms/issues/9117))
 
 ### Fixed
 - Fixed an error that occurred when creating a new category on multi-site installs. ([#9107](https://github.com/craftcms/cms/issues/9107))

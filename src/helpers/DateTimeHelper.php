@@ -67,6 +67,7 @@ class DateTimeHelper
      *  - MySQL DATE and DATETIME formats (http://dev.mysql.com/doc/refman/5.1/en/datetime.html)
      *  - Relaxed versions of W3C and MySQL formats (single-digit months, days, and hours)
      *  - Unix timestamps
+     * - `now`
      *  - An array with at least one of these keys defined: `datetime`, `date`, or `time`. Supported keys include:
      *      - `date` – a date string in `YYYY-MM-DD` or `YYYY-MM-DD HH:MM:SS.MU` formats or the current locale’s short date format
      *      - `time` – a time string in `HH:MM` or `HH:MM:SS` (24-hour) format or the current locale’s short time format
@@ -677,6 +678,10 @@ class DateTimeHelper
     private static function _parseDateTime(string $value, string $defaultTimeZone): ?DateTime
     {
         $value = trim($value);
+
+        if ($value === 'now') {
+            return new DateTime();
+        }
 
         if (static::isValidTimeStamp($value)) {
             return new DateTime("@$value");

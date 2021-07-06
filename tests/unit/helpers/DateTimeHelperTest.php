@@ -503,6 +503,9 @@ class DateTimeHelperTest extends Unit
     {
         return [
             'timestamp' => [new DateTime('@1625575906'), 1625575906],
+            'now' => [function() {
+                return new DateTime();
+            }, 'now'],
             'no-params' => [false, ['date' => '', 'time' => '']],
             'invalid-separator' => [false, '2018/08/09 20:00:00'],
             'invalid-separator-2' => [false, '2018.08.09 20:00:00'],
