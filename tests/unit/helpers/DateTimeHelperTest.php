@@ -124,14 +124,26 @@ class DateTimeHelperTest extends Unit
     }
 
     /**
-     * @dataProvider invalidToDateTimeFormatsDataProvider
+     * @dataProvider toDateTimeDataProvider
      *
-     * @param $format
+     * @param callable|DateTime|false $expected
+     * @param $value
      * @throws Exception
      */
-    public function testToDateTimeInvalidFormats($format)
+    public function testToDateTime($expected, $value)
     {
-        self::assertFalse(DateTimeHelper::toDateTime($format));
+        if (is_callable($expected)) {
+            $expected = $expected();
+        }
+
+        if ($expected === false) {
+            self::assertFalse(DateTimeHelper::toDateTime($value));
+        } else {
+            $timestamp = $expected->getTimestamp();
+            $date = DateTimeHelper::toDateTime($value);
+            self::assertInstanceOf(DateTime::class, $date);
+            self::assertEqualsWithDelta($timestamp, $date->getTimestamp(), 1);
+        }
     }
 
     /**
@@ -487,15 +499,16 @@ class DateTimeHelperTest extends Unit
     /**
      * @return array
      */
-    public function invalidToDateTimeFormatsDataProvider(): array
+    public function toDateTimeDataProvider(): array
     {
         return [
-            'no-params' => [['date' => '', 'time' => '']],
-            'invalid-separator' => ['2018/08/09 20:00:00'],
-            'invalid-separator-2' => ['2018.08.09 20:00:00'],
-            'null-type' => [null],
-            'empty-string' => [''],
-            'empty-array' => [[]]
+            'timestamp' => [new DateTime('@1625575906'), 1625575906],
+            'no-params' => [false, ['date' => '', 'time' => '']],
+            'invalid-separator' => [false, '2018/08/09 20:00:00'],
+            'invalid-separator-2' => [false, '2018.08.09 20:00:00'],
+            'null-type' => [false, null],
+            'empty-string' => [false, ''],
+            'empty-array' => [false, []],
         ];
     }
 

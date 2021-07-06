@@ -107,8 +107,8 @@ class DateTimeHelper
 
             // Did they specify a full timestamp ?
             if (!empty($value['datetime'])) {
-                [$date, $format] = self::_parseDateTime($value['datetime'], $timeZone);
-                if ($format === false) {
+                $dt = self::_parseDateTime($value['datetime'], $timeZone);
+                if ($dt === null) {
                     return false;
                 }
             } else {
@@ -131,17 +131,20 @@ class DateTimeHelper
                 // Add the timezone
                 $format .= ' e';
                 $date .= ' ' . $timeZone;
+
+                $dt = DateTime::createFromFormat("!$format", $date);
+                if ($dt === false) {
+                    return false;
+                }
             }
         } else {
-            [$date, $format] = self::_parseDateTime($value, $defaultTimeZone);
-            if ($format === false) {
+            $dt = self::_parseDateTime($value, $defaultTimeZone);
+            if ($dt === null) {
                 return false;
             }
         }
 
-        $dt = DateTime::createFromFormat('!' . $format, $date);
-
-        if ($dt !== false && $setToSystemTimeZone) {
+        if ($setToSystemTimeZone) {
             $dt->setTimezone(new DateTimeZone(Craft::$app->getTimeZone()));
         }
 
@@ -667,15 +670,17 @@ class DateTimeHelper
     }
 
     /**
-     * Normalizes and returns a date & time string along with the format it was set in.
-     *
      * @param string $value
      * @param string $defaultTimeZone
-     * @return array
+     * @return DateTime|null
      */
-    private static function _parseDateTime(string $value, string $defaultTimeZone): array
+    private static function _parseDateTime(string $value, string $defaultTimeZone): ?DateTime
     {
         $value = trim($value);
+
+        if (static::isValidTimeStamp($value)) {
+            return new DateTime("@$value");
+        }
 
         if (preg_match('/^
                 (?P<year>\d{4})                                  # YYYY (four digit year)
@@ -723,14 +728,10 @@ class DateTimeHelper
                 $date .= $defaultTimeZone;
             }
 
-            return [$date, $format];
+            return DateTime::createFromFormat("!$format", $date) ?: null;
         }
 
-        if (static::isValidTimeStamp($value)) {
-            return [$value, 'U'];
-        }
-
-        return [$value, false];
+        return null;
     }
 
     /**
