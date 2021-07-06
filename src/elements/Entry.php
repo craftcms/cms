@@ -1560,23 +1560,25 @@ EOD;
         // Set the structure ID for Element::attributes() and afterSave()
         if ($section->type === Section::TYPE_STRUCTURE) {
             $this->structureId = $section->structureId;
-        }
 
-        // Has the entry been assigned to a new parent?
-        if ($this->_hasNewParent()) {
-            if ($this->newParentId) {
-                $parentEntry = Craft::$app->getEntries()->getEntryById($this->newParentId, '*', [
-                    'preferSites' => [$this->siteId],
-                ]);
+            if (!$this->duplicateOf) {
+                // Has the entry been assigned to a new parent?
+                if ($this->_hasNewParent()) {
+                    if ($this->newParentId) {
+                        $parentEntry = Craft::$app->getEntries()->getEntryById($this->newParentId, '*', [
+                            'preferSites' => [$this->siteId],
+                        ]);
 
-                if (!$parentEntry) {
-                    throw new Exception('Invalid entry ID: ' . $this->newParentId);
+                        if (!$parentEntry) {
+                            throw new \Exception('Invalid entry ID: ' . $this->newParentId);
+                        }
+                    } else {
+                        $parentEntry = null;
+                    }
+
+                    $this->setParent($parentEntry);
                 }
-            } else {
-                $parentEntry = null;
             }
-
-            $this->setParent($parentEntry);
         }
 
         // Section type-specific stuff

@@ -13,6 +13,7 @@
 
 ### Fixed
 - Fixed an error that occurred when creating a new category on multi-site installs. ([#9107](https://github.com/craftcms/cms/issues/9107))
+- Fixed a bug where entries would be repositioned within their structure when a provisional draft was saved. ([#9123](https://github.com/craftcms/cms/issues/9123))
 
 ## 3.7.0-beta.5 - 2021-06-29
 
