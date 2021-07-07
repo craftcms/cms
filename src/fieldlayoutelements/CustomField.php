@@ -147,7 +147,7 @@ class CustomField extends BaseField
     /**
      * @inheritdoc
      */
-    protected function defaultLabel(ElementInterface $element = null, bool $static = false)
+    protected function defaultLabel(ElementInterface $element = null, bool $static = false): ?string
     {
         if ($this->_field->name !== '' && $this->_field->name !== null && $this->_field->name !== '__blank__') {
             return Craft::t('site', $this->_field->name);
@@ -174,7 +174,7 @@ class CustomField extends BaseField
     /**
      * @inheritdoc
      */
-    protected function statusClass(ElementInterface $element = null, bool $static = false)
+    protected function statusClass(ElementInterface $element = null, bool $static = false): ?string
     {
         if ($element && ($status = $this->_field->getStatus($element))) {
             return $status[0];
@@ -185,7 +185,7 @@ class CustomField extends BaseField
     /**
      * @inheritdoc
      */
-    protected function statusLabel(ElementInterface $element = null, bool $static = false)
+    protected function statusLabel(ElementInterface $element = null, bool $static = false): ?string
     {
         if ($element && ($status = $this->_field->getStatus($element))) {
             return $status[1];
@@ -196,7 +196,7 @@ class CustomField extends BaseField
     /**
      * @inheritdoc
      */
-    protected function defaultInstructions(ElementInterface $element = null, bool $static = false)
+    protected function defaultInstructions(ElementInterface $element = null, bool $static = false): ?string
     {
         return $this->_field->instructions ? Craft::t('site', $this->_field->instructions) : null;
     }
@@ -255,7 +255,7 @@ class CustomField extends BaseField
     /**
      * @inheritdoc
      */
-    protected function translationDescription(ElementInterface $element = null, bool $static = false)
+    protected function translationDescription(ElementInterface $element = null, bool $static = false): ?string
     {
         return $this->_field->getTranslationDescription($element);
     }

@@ -86,7 +86,7 @@ class TitleField extends StandardTextField
     /**
      * @inheritdoc
      */
-    public function defaultLabel(ElementInterface $element = null, bool $static = false)
+    public function defaultLabel(ElementInterface $element = null, bool $static = false): ?string
     {
         return Craft::t('app', 'Title');
     }
@@ -94,7 +94,7 @@ class TitleField extends StandardTextField
     /**
      * @inheritdoc
      */
-    protected function statusClass(ElementInterface $element = null, bool $static = false)
+    protected function statusClass(ElementInterface $element = null, bool $static = false): ?string
     {
         if ($element && ($status = $element->getAttributeStatus('title'))) {
             return $status[0];
@@ -105,7 +105,7 @@ class TitleField extends StandardTextField
     /**
      * @inheritdoc
      */
-    protected function statusLabel(ElementInterface $element = null, bool $static = false)
+    protected function statusLabel(ElementInterface $element = null, bool $static = false): ?string
     {
         if ($element && ($status = $element->getAttributeStatus('title'))) {
             return $status[1];

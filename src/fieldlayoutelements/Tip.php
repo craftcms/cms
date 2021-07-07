@@ -49,7 +49,7 @@ class Tip extends BaseUiElement
     /**
      * @inheritdoc
      */
-    protected function selectorIcon()
+    protected function selectorIcon(): ?string
     {
         return '@appicons/' . ($this->_isTip() ? 'tip' : 'alert') . '.svg';
     }

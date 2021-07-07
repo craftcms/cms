@@ -36,7 +36,7 @@ class Heading extends BaseUiElement
     /**
      * @inheritdoc
      */
-    protected function selectorIcon()
+    protected function selectorIcon(): ?string
     {
         return '@appicons/hash.svg';
     }
