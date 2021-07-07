@@ -43,7 +43,6 @@
 - Added `craft\base\ElementInterface::getCanonicalId()`.
 - Added `craft\base\ElementInterface::getIsCanonical()`.
 - Added `craft\base\ElementInterface::getIsDerivative()`.
-- Added `craft\base\ElementInterface::getIsProvisionalDraft()`.
 - Added `craft\base\ElementInterface::getMetadata()`.
 - Added `craft\base\ElementInterface::getModifiedAttributes()`.
 - Added `craft\base\ElementInterface::getModifiedFields()`.

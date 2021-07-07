@@ -11,6 +11,9 @@
 - Date query params now support passing in times relative to `now` (e.g. `>= now`). ([#9117](https://github.com/craftcms/cms/issues/9117))
 - `craft\helpers\DateTimeHelper::toDateTime()` now supports passing in `'now'`. ([#9117](https://github.com/craftcms/cms/issues/9117))
 
+### Deprecated
+- Deprecated `craft\base\Element::getIsProvisionalDraft()`. `$isProvisionalDraft` should be used instead.
+
 ### Fixed
 - Fixed an error that occurred when creating a new category on multi-site installs. ([#9107](https://github.com/craftcms/cms/issues/9107))
 - Fixed a bug where entries would be repositioned within their structure when a provisional draft was saved. ([#9123](https://github.com/craftcms/cms/issues/9123))

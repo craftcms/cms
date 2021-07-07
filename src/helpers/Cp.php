@@ -869,7 +869,7 @@ class Cp
 
         if ($element->getIsDraft()) {
             /** @var ElementInterface|DraftBehavior $element */
-            if ($element->getIsProvisionalDraft()) {
+            if ($element->isProvisionalDraft) {
                 $docTitle .= ' — ' . Craft::t('app', 'Edited');
             } else {
                 $docTitle .= " ($element->draftName)";
