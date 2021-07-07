@@ -17,6 +17,7 @@ use craft\gql\handlers\RelatedEntries;
 use craft\gql\handlers\RelatedTags;
 use craft\gql\handlers\RelatedUsers;
 use craft\gql\handlers\Site;
+use craft\gql\handlers\SiteId;
 
 /**
  * Class ArgumentManager
@@ -60,6 +61,7 @@ class ArgumentManager extends Component
             'relatedToTags' => RelatedTags::class,
             'relatedToUsers' => RelatedUsers::class,
             'site' => Site::class,
+            'siteId' => SiteId::class,
         ];
 
         $event = new RegisterGqlArgumentHandlersEvent([

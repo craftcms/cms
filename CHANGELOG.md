@@ -4,6 +4,7 @@
 
 ### Added
 - Added `craft\web\Response::redirect()`.
+- Added `craft\gql\handlers\Site`.
 
 ### Fixed
 - Fixed a button styling issue in Safari. ([#8076](https://github.com/craftcms/cms/pull/8076))
@@ -12,6 +13,7 @@
 - Fixed a bug where element thumbnails weren’t always getting lazy-loaded properly. ([#6621](https://github.com/craftcms/cms/issues/6621))
 - Fixed a bug where control panel requests weren’t always redirecting to the control panel when they were supposed to. ([#9081](https://github.com/craftcms/cms/issues/9081))
 - Fixed a bug where control panel URLs were getting empty hashes appended to them in Firefox, adding an extra element to the browser’s session history. ([#9118](https://github.com/craftcms/cms/issues/9118))
+- Fixed a bug where it was impossible to use `"*"` as a value for the `siteId` argument when using the GraphQL API. ([#9098](https://github.com/craftcms/cms/issues/9098))
 
 ## 3.6.17 - 2021-06-15
 
