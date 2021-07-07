@@ -1257,16 +1257,16 @@ class Entry extends Element
     protected function isDeletable(): bool
     {
         $section = $this->getSection();
-        if ($section->type === Section::TYPE_SINGLE) {
-            return false;
-        }
-
         $userSession = Craft::$app->getUser();
         $userId = $userSession->getId();
 
         if ($this->getIsDraft()) {
             /** @var Entry|DraftBehavior $this */
             return $this->creatorId == $userId || $userSession->checkPermission("deletePeerEntryDrafts:$section->uid");
+        }
+
+        if ($section->type === Section::TYPE_SINGLE) {
+            return false;
         }
 
         return (
