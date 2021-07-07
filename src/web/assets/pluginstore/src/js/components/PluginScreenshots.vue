@@ -23,15 +23,15 @@
 
 <style lang="scss">
     .screenshots {
-        @apply .overflow-auto .flex .-mx-4;
+        @apply overflow-auto flex -mx-4;
         -webkit-overflow-scrolling: touch;
 
         .screenshot {
-            @apply .px-4 .flex-no-shrink .flex-no-grow;
+            @apply px-4 flex-shrink-0 flex-grow-0;
             flex-basis: 90%;
 
             img {
-                @apply .rounded;
+                @apply rounded;
             }
         }
     }

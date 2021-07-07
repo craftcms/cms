@@ -24,15 +24,15 @@
     @import "../../../../../../../node_modules/craftcms-sass/mixins";
 
     .info-hud {
-        @apply .inline-block;
+        @apply  inline-block;
 
         .v-popover {
-            @apply .text-grey;
+            @apply text-gray-500;
             display: inline-block;
             line-height: 0;
 
             &:hover, &.open {
-                @apply .cursor-pointer .text-blue;
+                @apply cursor-pointer text-blue-500;
             }
 
             & > span {

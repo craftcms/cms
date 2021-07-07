@@ -8,7 +8,7 @@
             >
                 <template v-slot:header>
                     <div v-if="developer" class="developer-card tw-flex pb-2 items-center">
-                        <div class="avatar inline-block overflow-hidden rounded-full bg-grey mr-6 no-line-height">
+                        <div class="avatar inline-block overflow-hidden rounded-full bg-gray-500 mr-6 no-line-height">
                             <img :src="developer.photoUrl" width="120" height="120" />
                         </div>
 

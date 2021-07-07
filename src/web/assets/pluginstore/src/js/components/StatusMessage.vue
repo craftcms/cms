@@ -20,22 +20,22 @@
 
 <style lang="scss">
     .status-message {
-        @apply .flex-1 .flex .items-center .justify-center .text-center;
+        @apply flex-1 flex items-center justify-center text-center;
 
         div {
             .c-spinner {
-                @apply .mb-6;
+                @apply mb-6;
             }
 
             .c-icon {
-                @apply .mb-6;
+                @apply mb-6;
 
                 width: 48px;
                 height: 48px;
             }
 
             .message {
-                @apply .text-center;
+                @apply text-center;
             }
         }
     }

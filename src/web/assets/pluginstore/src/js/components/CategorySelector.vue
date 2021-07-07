@@ -57,7 +57,7 @@
     /* Category Selector Btn */
 
     .category-selector-btn {
-        @apply .hidden .relative;
+        @apply hidden relative;
         background: $grey050;
         border: 1px solid $hairlineColor;
         padding: 10px 20px;
@@ -66,7 +66,7 @@
 
         &:before {
             @include icon;
-            @apply .absolute .pin-r;
+            @apply absolute right-0;
             top: calc(50% - 10px);
             font-size: 16px;
             width: 43px;
@@ -75,7 +75,7 @@
         }
 
         &:hover {
-            @apply .no-underline;
+            @apply no-underline;
         }
     }
 
@@ -83,26 +83,26 @@
     /* Category Selector */
 
     .category-selector {
-        @apply .hidden .flex-col .fixed .pin-t .pin-l .bg-white .z-20;
+        @apply hidden flex-col fixed top-0 left-0 bg-white z-20;
         width: 100vw;
         height: 100vh;
         box-sizing: border-box;
 
         .category-selector-header {
             a {
-                @apply .block .text-black;
+                @apply block text-black;
                 padding: 14px 24px;
                 background: #fafafa;
                 border-bottom: 1px solid #eee;
 
                 &:hover {
-                    @apply .no-underline;
+                    @apply no-underline;
                 }
             }
         }
 
         .category-selector-body {
-            @apply .overflow-auto .h-full;
+            @apply overflow-auto h-full;
             box-sizing: border-box;
 
             ul.categories {
@@ -112,7 +112,7 @@
                     }
 
                     &:first-child:before {
-                        @apply .hidden;
+                        @apply hidden;
                     }
 
                     &:before,
@@ -135,11 +135,11 @@
 
     @media only screen and (max-width: 974px) {
         .category-selector-btn {
-            @apply .block;
+            @apply block;
         }
 
         .category-selector {
-            @apply .flex;
+            @apply flex;
         }
     }
 </style>

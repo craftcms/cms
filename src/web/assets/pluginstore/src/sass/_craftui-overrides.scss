@@ -4,30 +4,30 @@
 a.c-btn,
 button.c-btn {
   &.primary:not(.outline) {
-    @apply .bg-red .border-red .text-white;
+    @apply bg-red-500 border-red-500 text-white;
 
     &:not([disabled]) {
       &:hover {
-        @apply .bg-red-dark .border-red-dark;
+        @apply bg-red-600 border-red-600;
       }
 
       &:active {
-        @apply .bg-red-darker .border-red-darker;
+        @apply bg-red-700 border-red-700;
       }
     }
   }
 
   &.outline {
     &.primary {
-      @apply .text-red .border-red;
+      @apply text-red-500 border-red-500;
 
       &:not([disabled]) {
         &:hover {
-          @apply .text-white .bg-red;
+          @apply text-white bg-red-500;
         }
 
         &:active {
-          @apply .text-white .bg-red-darker;
+          @apply text-white bg-red-700;
         }
       }
     }
@@ -36,11 +36,11 @@ button.c-btn {
   &.loading {
     &.outline {
       &.primary .c-spinner > .animation {
-        @apply .border-red;
+        @apply border-red-500;
       }
 
       &.danger .c-spinner > .animation {
-        @apply .border-red;
+        @apply border-red-500;
       }
     }
   }

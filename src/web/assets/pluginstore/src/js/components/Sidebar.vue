@@ -47,12 +47,12 @@
     @import "../../sass/variables";
 
     ul.categories {
-        @apply .hidden;
+        @apply hidden;
     }
 
     @media only screen and (min-width: 975px) {
         ul.categories {
-            @apply .block;
+            @apply block;
         }
     }
 </style>
