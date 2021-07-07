@@ -28,9 +28,9 @@ class MissingVolume extends Volume implements MissingComponentInterface
     /**
      * @inheritdoc
      */
-    public function getRootUrl()
+    public function getRootUrl(): ?string
     {
-        return false;
+        return null;
     }
 
     /**
