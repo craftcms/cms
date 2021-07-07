@@ -63,7 +63,7 @@
     "selectize": "^0.12.6",
     "sortablejs": "^1.10.2",
     "style-loader": "^1.2.1",
-    "tailwindcss": "^2.0.3",
+    "tailwindcss": "^2.2.4",
     "terser-webpack-plugin": "^3.0.3",
     "timepicker": "^1.13.18",
     "ts-loader": "^8.0.18",
