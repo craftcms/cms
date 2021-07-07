@@ -106,7 +106,7 @@ class Announcement extends BaseJob
     /**
      * @inheritdoc
      */
-    protected function defaultDescription(): string
+    protected function defaultDescription(): ?string
     {
         return Craft::t('app', 'Pushing announcement to control panel users');
     }

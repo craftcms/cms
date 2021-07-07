@@ -79,7 +79,7 @@ class PruneRevisions extends BaseJob
     /**
      * @inheritdoc
      */
-    protected function defaultDescription(): string
+    protected function defaultDescription(): ?string
     {
         return Craft::t('app', 'Pruning extra revisions');
     }

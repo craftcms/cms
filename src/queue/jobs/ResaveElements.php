@@ -69,7 +69,7 @@ class ResaveElements extends BaseJob
     /**
      * @inheritdoc
      */
-    protected function defaultDescription(): string
+    protected function defaultDescription(): ?string
     {
         /** @var ElementQuery $query */
         $query = $this->_query();

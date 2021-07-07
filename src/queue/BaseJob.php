@@ -56,7 +56,7 @@ abstract class BaseJob extends BaseObject implements JobInterface
      *
      * @return string|null
      */
-    protected function defaultDescription()
+    protected function defaultDescription(): ?string
     {
         return null;
     }

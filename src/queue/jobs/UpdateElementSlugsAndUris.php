@@ -77,7 +77,7 @@ class UpdateElementSlugsAndUris extends BaseJob
     /**
      * @inheritdoc
      */
-    protected function defaultDescription(): string
+    protected function defaultDescription(): ?string
     {
         return Craft::t('app', 'Updating element slugs and URIs');
     }
