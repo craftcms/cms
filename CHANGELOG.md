@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 4
 
-## 3.7.0-beta.5 - 2021-06-29
+## Unreleased
 
 ### Added
 - Added the `index-assets/cleanup` command.

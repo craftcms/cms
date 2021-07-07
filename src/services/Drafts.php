@@ -336,33 +336,30 @@ class Drafts extends Component
                 if ($draft->structureId && $draft->root) {
                     Craft::$app->getStructures()->moveAfter($draft->structureId, $newSource, $draft);
                 }
-            } else {
-                // Detach the draft behavior
-                $behavior = $draft->detachBehavior('draft');
 
-                // Duplicate the draft as a new element
-                $e = null;
+                // Now delete the draft
+                $elementsService->deleteElement($draft, true);
+            } else {
+                // Just remove the draft data
+                $draftId = $draft->draftId;
+                $draft->draftId = null;
+                $draft->detachBehavior('draft');
+                $draft->setRevisionNotes($draftNotes);
+
                 try {
-                    $newSource = $elementsService->duplicateElement($draft, [
-                        'draftId' => null,
-                        'revisionNotes' => $draftNotes,
+                    $elementsService->saveElement($draft, false, true, false);
+                    Db::delete(Table::DRAFTS, [
+                        'id' => $draftId,
                     ]);
                 } catch (\Throwable $e) {
-                    // Don't throw it just yet, until we reattach the draft behavior
-                }
-
-                // Now reattach the draft behavior to the draft
-                if ($behavior !== null) {
+                    // Put everything back
+                    $draft->draftId = $draftId;
                     $draft->attachBehavior('draft', $behavior);
-                }
-
-                if ($e !== null) {
                     throw $e;
                 }
-            }
 
-            // Now delete the draft
-            $elementsService->deleteElement($draft, true);
+                $newSource = $draft;
+            }
 
             $transaction->commit();
         } catch (\Throwable $e) {

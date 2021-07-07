@@ -344,6 +344,7 @@ JS;
             'elementTypeNames' => $elementTypeNames,
             'fileKinds' => Assets::getFileKinds(),
             'handleCasing' => $generalConfig->handleCasing,
+            'httpProxy' => $this->_httpProxy($generalConfig),
             'initialDeltaValues' => $view->getInitialDeltaValues(),
             'isImagick' => Craft::$app->getImages()->getIsImagick(),
             'isMultiSite' => Craft::$app->getIsMultiSite(),
@@ -438,6 +439,29 @@ JS;
         }
 
         return $groups;
+    }
+
+    /**
+     * @param $generalConfig GeneralConfig
+     * @return array|null
+     */
+    private function _httpProxy(GeneralConfig $generalConfig): ?array
+    {
+        if (!$generalConfig->httpProxy) {
+            return null;
+        }
+
+        $parsed = parse_url($generalConfig->httpProxy);
+
+        return array_filter([
+            'host' => $parsed['host'],
+            'port' => $parsed['port'] ?? strtolower($parsed['scheme']) === 'http' ? 80 : 443,
+            'auth' => array_filter([
+                'username' => $parsed['user'] ?? null,
+                'password' => $parsed['pass'] ?? null,
+            ]),
+            'protocol' => $parsed['scheme'],
+        ]);
     }
 
     /**
