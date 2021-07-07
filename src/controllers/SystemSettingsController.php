@@ -65,7 +65,7 @@ class SystemSettingsController extends Controller
      *
      * @return Response|null
      */
-    public function actionSaveGeneralSettings()
+    public function actionSaveGeneralSettings(): ?Response
     {
         $this->requirePostRequest();
 
@@ -155,7 +155,7 @@ class SystemSettingsController extends Controller
      *
      * @return Response|null
      */
-    public function actionSaveEmailSettings()
+    public function actionSaveEmailSettings(): ?Response
     {
         $this->requirePostRequest();
 

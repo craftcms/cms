@@ -120,7 +120,7 @@ class VolumeFolder extends Model
     /**
      * @return VolumeFolder|null
      */
-    public function getParent()
+    public function getParent(): ?VolumeFolder
     {
         if (!$this->parentId) {
             return null;

@@ -783,7 +783,7 @@ JS;
      *
      * @return string|null
      */
-    public function getTargetSiteFieldHtml()
+    public function getTargetSiteFieldHtml(): ?string
     {
         /** @var ElementInterface|string $class */
         $class = static::elementType();
@@ -842,7 +842,7 @@ JS;
      *
      * @return string|null
      */
-    public function getViewModeFieldHtml()
+    public function getViewModeFieldHtml(): ?string
     {
         $supportedViewModes = $this->supportedViewModes();
 

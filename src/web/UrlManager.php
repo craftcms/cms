@@ -172,7 +172,7 @@ class UrlManager extends \yii\web\UrlManager
      *
      * @return array|null
      */
-    public function getRouteParams()
+    public function getRouteParams(): ?array
     {
         return $this->_routeParams;
     }

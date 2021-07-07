@@ -36,7 +36,7 @@ class AssetSettingsController extends Controller
      *
      * @return Response|null
      */
-    public function actionSaveAssetSettings()
+    public function actionSaveAssetSettings(): ?Response
     {
         $this->requirePostRequest();
         $projectConfig = Craft::$app->getProjectConfig();

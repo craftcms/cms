@@ -946,7 +946,7 @@ class Assets extends BaseRelationField
      * @param string $sourceKey
      * @return int|null
      */
-    public function _volumeIdBySourceKey(string $sourceKey)
+    public function _volumeIdBySourceKey(string $sourceKey): ?int
     {
         $parts = explode(':', $sourceKey, 2);
 

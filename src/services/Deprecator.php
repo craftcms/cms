@@ -195,7 +195,7 @@ class Deprecator extends Component
      * @param int $logId
      * @return DeprecationError|null
      */
-    public function getLogById(int $logId)
+    public function getLogById(int $logId): ?DeprecationError
     {
         $log = $this->_createDeprecationErrorQuery()
             ->where(['id' => $logId])

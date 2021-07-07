@@ -1151,7 +1151,7 @@ class Gql extends Component
      * @param int $id The schema's ID
      * @return GqlSchema|null
      */
-    public function getSchemaById(int $id)
+    public function getSchemaById(int $id): ?GqlSchema
     {
         $result = $this->_createSchemaQuery()
             ->where(['id' => $id])

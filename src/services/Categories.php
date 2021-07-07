@@ -177,7 +177,7 @@ class Categories extends Component
      * @param int $groupId
      * @return CategoryGroup|null
      */
-    public function getGroupById(int $groupId)
+    public function getGroupById(int $groupId): ?CategoryGroup
     {
         return $this->_groups()->firstWhere('id', $groupId);
     }
@@ -200,7 +200,7 @@ class Categories extends Component
      * @param string $groupHandle
      * @return CategoryGroup|null
      */
-    public function getGroupByHandle(string $groupHandle)
+    public function getGroupByHandle(string $groupHandle): ?CategoryGroup
     {
         return $this->_groups()->firstWhere('handle', $groupHandle, true);
     }
@@ -686,7 +686,7 @@ class Categories extends Component
      * @param int|null $siteId
      * @return Category|null
      */
-    public function getCategoryById(int $categoryId, int $siteId = null)
+    public function getCategoryById(int $categoryId, int $siteId = null): ?Category
     {
         if (!$categoryId) {
             return null;

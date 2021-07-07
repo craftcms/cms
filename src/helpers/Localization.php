@@ -84,7 +84,7 @@ class Localization
      * @param string $localeId
      * @return array|null
      */
-    public static function localeData(string $localeId)
+    public static function localeData(string $localeId): ?array
     {
         $data = null;
 

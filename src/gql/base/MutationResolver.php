@@ -71,7 +71,7 @@ abstract class MutationResolver extends Component
      * Return stored resolution data.
      *
      * @param string $key
-     * @return mixed|null
+     * @return mixed
      */
     public function getResolutionData(string $key)
     {

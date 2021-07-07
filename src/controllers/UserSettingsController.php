@@ -117,7 +117,7 @@ class UserSettingsController extends Controller
      *
      * @return Response|null
      */
-    public function actionSaveUserSettings()
+    public function actionSaveUserSettings(): ?Response
     {
         $this->requirePostRequest();
         $projectConfig = Craft::$app->getProjectConfig();

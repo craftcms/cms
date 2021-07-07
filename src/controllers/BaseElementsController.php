@@ -59,7 +59,7 @@ abstract class BaseElementsController extends Controller
      *
      * @return string|null
      */
-    protected function context()
+    protected function context(): ?string
     {
         return $this->request->getParam('context');
     }

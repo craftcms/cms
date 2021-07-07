@@ -503,7 +503,7 @@ abstract class BaseUpdaterController extends Controller
      * @param string|null $restoreAction
      * @return Response|null
      */
-    protected function runMigrations(array $handles, string $restoreAction = null)
+    protected function runMigrations(array $handles, string $restoreAction = null): ?Response
     {
         try {
             Craft::$app->getUpdates()->runMigrations($handles);

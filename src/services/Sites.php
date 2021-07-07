@@ -622,7 +622,7 @@ class Sites extends Component
      * @param bool|null $withDisabled
      * @return Site|null
      */
-    public function getSiteById(int $siteId, bool $withDisabled = null)
+    public function getSiteById(int $siteId, bool $withDisabled = null): ?Site
     {
         return $this->_allSites($withDisabled)[$siteId] ?? null;
     }
@@ -634,7 +634,7 @@ class Sites extends Component
      * @param bool|null $withDisabled
      * @return Site|null
      */
-    public function getSiteByHandle(string $siteHandle, bool $withDisabled = null)
+    public function getSiteByHandle(string $siteHandle, bool $withDisabled = null): ?Site
     {
         return ArrayHelper::firstWhere($this->_allSites($withDisabled), 'handle', $siteHandle, true);
     }

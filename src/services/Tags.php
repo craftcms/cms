@@ -147,7 +147,7 @@ class Tags extends Component
      * @param int $groupId
      * @return TagGroup|null
      */
-    public function getTagGroupById(int $groupId)
+    public function getTagGroupById(int $groupId): ?TagGroup
     {
         return $this->_tagGroups()->firstWhere('id', $groupId);
     }
@@ -158,7 +158,7 @@ class Tags extends Component
      * @param string $groupUid
      * @return TagGroup|null
      */
-    public function getTagGroupByUid(string $groupUid)
+    public function getTagGroupByUid(string $groupUid): ?TagGroup
     {
         return $this->_tagGroups()->firstWhere('uid', $groupUid, true);
     }
@@ -170,7 +170,7 @@ class Tags extends Component
      * @param string $groupHandle
      * @return TagGroup|null
      */
-    public function getTagGroupByHandle(string $groupHandle)
+    public function getTagGroupByHandle(string $groupHandle): ?TagGroup
     {
         return $this->_tagGroups()->firstWhere('handle', $groupHandle, true);
     }
@@ -457,7 +457,7 @@ class Tags extends Component
      * @param int|null $siteId
      * @return Tag|null
      */
-    public function getTagById(int $tagId, int $siteId = null)
+    public function getTagById(int $tagId, int $siteId = null): ?Tag
     {
         /** @noinspection PhpIncompatibleReturnTypeInspection */
         return Craft::$app->getElements()->getElementById($tagId, Tag::class, $siteId);

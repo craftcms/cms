@@ -37,6 +37,8 @@ use craft\validators\DateTimeValidator;
 use craft\validators\UniqueValidator;
 use craft\validators\UsernameValidator;
 use craft\validators\UserPasswordValidator;
+use DateInterval;
+use DateTime;
 use yii\base\ErrorHandler;
 use yii\base\Exception;
 use yii\base\InvalidArgumentException;
@@ -48,7 +50,7 @@ use yii\web\IdentityInterface;
 /**
  * User represents a user element.
  *
- * @property \DateTime|null $cooldownEndTime the time when the user will be over their cooldown period
+ * @property DateTime|null $cooldownEndTime the time when the user will be over their cooldown period
  * @property string|null $friendlyName the user's first name or username
  * @property string|null $fullName the user's full name
  * @property UserGroup[] $groups the user's groups
@@ -58,7 +60,7 @@ use yii\web\IdentityInterface;
  * @property array $preferences the user’s preferences
  * @property string|null $preferredLanguage the user’s preferred language
  * @property string|null $preferredLocale the user’s preferred formatting locale
- * @property \DateInterval|null $remainingCooldownTime the remaining cooldown time for this user, if they've entered their password incorrectly too many times
+ * @property DateInterval|null $remainingCooldownTime the remaining cooldown time for this user, if they've entered their password incorrectly too many times
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
@@ -534,7 +536,7 @@ class User extends Element implements IdentityInterface
     public $pending = false;
 
     /**
-     * @var \DateTime|null Last login date
+     * @var DateTime|null Last login date
      */
     public $lastLoginDate;
 
@@ -544,12 +546,12 @@ class User extends Element implements IdentityInterface
     public $invalidLoginCount;
 
     /**
-     * @var \DateTime|null Last invalid login date
+     * @var DateTime|null Last invalid login date
      */
     public $lastInvalidLoginDate;
 
     /**
-     * @var \DateTime|null Lockout date
+     * @var DateTime|null Lockout date
      */
     public $lockoutDate;
 
@@ -565,7 +567,7 @@ class User extends Element implements IdentityInterface
     public $passwordResetRequired = false;
 
     /**
-     * @var \DateTime|null Last password change date
+     * @var DateTime|null Last password change date
      */
     public $lastPasswordChangeDate;
 
@@ -585,7 +587,7 @@ class User extends Element implements IdentityInterface
     public $currentPassword;
 
     /**
-     * @var \DateTime|null Verification code issued date
+     * @var DateTime|null Verification code issued date
      */
     public $verificationCodeIssuedDate;
 
@@ -903,7 +905,7 @@ class User extends Element implements IdentityInterface
 
         // Update the session row's dateUpdated value so it doesn't get GC'd
         Db::update(Table::SESSIONS, [
-            'dateUpdated' => Db::prepareDateForDb(new \DateTime()),
+            'dateUpdated' => Db::prepareDateForDb(new DateTime()),
         ], ['id' => $tokenId]);
 
         return true;
@@ -1018,7 +1020,7 @@ class User extends Element implements IdentityInterface
      *
      * @return string|null
      */
-    public function getFullName()
+    public function getFullName(): ?string
     {
         $firstName = trim($this->firstName);
         $lastName = trim($this->lastName);
@@ -1256,9 +1258,9 @@ class User extends Element implements IdentityInterface
     /**
      * Returns the time when the user will be over their cooldown period.
      *
-     * @return \DateTime|null
+     * @return DateTime|null
      */
-    public function getCooldownEndTime()
+    public function getCooldownEndTime(): ?DateTime
     {
         // There was an old bug that where a user's lockoutDate could be null if they've
         // passed their cooldownDuration already, but there account status is still locked.
@@ -1278,9 +1280,9 @@ class User extends Element implements IdentityInterface
     /**
      * Returns the remaining cooldown time for this user, if they've entered their password incorrectly too many times.
      *
-     * @return \DateInterval|null
+     * @return DateInterval|null
      */
-    public function getRemainingCooldownTime()
+    public function getRemainingCooldownTime(): ?DateInterval
     {
         if ($this->locked) {
             $currentTime = DateTimeHelper::currentUTCDateTime();
@@ -1407,7 +1409,7 @@ class User extends Element implements IdentityInterface
      *
      * @return Asset|null
      */
-    public function getPhoto()
+    public function getPhoto(): ?Asset
     {
         if ($this->_photo === null) {
             if (!$this->photoId) {

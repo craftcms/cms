@@ -71,9 +71,9 @@ class Images extends Component
     /**
      * Returns whether image manipulations will be performed using GD or not.
      *
-     * @return bool|null
+     * @return bool
      */
-    public function getIsGd()
+    public function getIsGd(): bool
     {
         return $this->_driver === self::DRIVER_GD;
     }
@@ -375,7 +375,7 @@ class Images extends Component
      * @param string $filePath
      * @return array|null
      */
-    public function getExifData(string $filePath)
+    public function getExifData(string $filePath): ?array
     {
         if (!ImageHelper::canHaveExifData($filePath)) {
             return null;

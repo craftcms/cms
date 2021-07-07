@@ -176,7 +176,7 @@ class GqlToken extends Model
      *
      * @return GqlSchema|null
      */
-    public function getSchema()
+    public function getSchema(): ?GqlSchema
     {
         if (empty($this->_schema) && !empty($this->schemaId)) {
             $this->_schema = Craft::$app->getGql()->getSchemaById($this->schemaId);

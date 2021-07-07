@@ -67,7 +67,7 @@ class Field extends ActiveRecord
      *
      * @return string|null
      */
-    public function getOldHandle()
+    public function getOldHandle(): ?string
     {
         return $this->_oldHandle;
     }

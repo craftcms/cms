@@ -175,7 +175,7 @@ class AssetTransforms extends Component
      * @param string $handle
      * @return AssetTransform|null
      */
-    public function getTransformByHandle(string $handle)
+    public function getTransformByHandle(string $handle): ?AssetTransform
     {
         return $this->_transforms()->firstWhere('handle', $handle, true);
     }
@@ -186,7 +186,7 @@ class AssetTransforms extends Component
      * @param int $id
      * @return AssetTransform|null
      */
-    public function getTransformById(int $id)
+    public function getTransformById(int $id): ?AssetTransform
     {
         return $this->_transforms()->firstWhere('id', $id);
     }
@@ -973,7 +973,7 @@ class AssetTransforms extends Component
      * @param int $transformId
      * @return AssetTransformIndex|null
      */
-    public function getTransformIndexModelById(int $transformId)
+    public function getTransformIndexModelById(int $transformId): ?AssetTransformIndex
     {
         $result = $this->_createTransformIndexQuery()
             ->where(['id' => $transformId])
@@ -989,7 +989,7 @@ class AssetTransforms extends Component
      * @param string $transformHandle
      * @return AssetTransformIndex|null
      */
-    public function getTransformIndexModelByAssetIdAndHandle(int $assetId, string $transformHandle)
+    public function getTransformIndexModelByAssetIdAndHandle(int $assetId, string $transformHandle): ?AssetTransformIndex
     {
         $result = $this->_createTransformIndexQuery()
             ->where([
@@ -1421,7 +1421,7 @@ class AssetTransforms extends Component
     /**
      * @return AssetTransformIndex|null
      */
-    public function getActiveTransformIndex()
+    public function getActiveTransformIndex(): ?AssetTransformIndex
     {
         return $this->_activeTransformIndex;
     }

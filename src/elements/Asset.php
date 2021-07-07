@@ -773,7 +773,7 @@ class Asset extends Element
      *
      * @return int|null
      */
-    public function getVolumeId()
+    public function getVolumeId(): ?int
     {
         return (int)$this->_volumeId ?: null;
     }
@@ -1302,7 +1302,7 @@ class Asset extends Element
      *
      * @return string|null
      */
-    public function getMimeType()
+    public function getMimeType(): ?string
     {
         // todo: maybe we should be passing this off to volume types
         // so Local volumes can call FileHelper::getMimeType() (uses magic file instead of ext)

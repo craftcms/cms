@@ -104,7 +104,7 @@ class Paginate extends BaseObject
      * @param int $page
      * @return string|null
      */
-    public function getPageUrl(int $page)
+    public function getPageUrl(int $page): ?string
     {
         if ($page < 1 || $page > $this->totalPages) {
             return null;
@@ -145,7 +145,7 @@ class Paginate extends BaseObject
      *
      * @return string|null
      */
-    public function getFirstUrl()
+    public function getFirstUrl(): ?string
     {
         return $this->getPageUrl(1);
     }
@@ -155,7 +155,7 @@ class Paginate extends BaseObject
      *
      * @return string|null
      */
-    public function getLastUrl()
+    public function getLastUrl(): ?string
     {
         return $this->getPageUrl($this->totalPages);
     }
@@ -165,7 +165,7 @@ class Paginate extends BaseObject
      *
      * @return string|null
      */
-    public function getPrevUrl()
+    public function getPrevUrl(): ?string
     {
         return $this->getPageUrl($this->currentPage - 1);
     }
@@ -175,7 +175,7 @@ class Paginate extends BaseObject
      *
      * @return string|null
      */
-    public function getNextUrl()
+    public function getNextUrl(): ?string
     {
         return $this->getPageUrl($this->currentPage + 1);
     }

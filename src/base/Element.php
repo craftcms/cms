@@ -4136,7 +4136,7 @@ abstract class Element extends Component implements ElementInterface
      * @param string $handle
      * @return FieldInterface|null
      */
-    protected function fieldByHandle(string $handle)
+    protected function fieldByHandle(string $handle): ?FieldInterface
     {
         if ($this->_fieldsByHandle !== null && array_key_exists($handle, $this->_fieldsByHandle)) {
             return $this->_fieldsByHandle[$handle];

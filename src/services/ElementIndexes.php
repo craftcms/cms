@@ -50,7 +50,7 @@ class ElementIndexes extends Component
      * @param string $elementType The element type class
      * @return array|null
      */
-    public function getSettings(string $elementType)
+    public function getSettings(string $elementType): ?array
     {
         if ($this->_indexSettings === null || !array_key_exists($elementType, $this->_indexSettings)) {
             $result = (new Query())

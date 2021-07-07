@@ -334,7 +334,7 @@ class App
     /**
      * @return string|null
      */
-    public static function licenseKey()
+    public static function licenseKey(): ?string
     {
         if (defined('CRAFT_LICENSE_KEY')) {
             $licenseKey = CRAFT_LICENSE_KEY;

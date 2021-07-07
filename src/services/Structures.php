@@ -72,7 +72,7 @@ class Structures extends Component
      * @param bool $withTrashed
      * @return Structure|null
      */
-    public function getStructureById(int $structureId, bool $withTrashed = false)
+    public function getStructureById(int $structureId, bool $withTrashed = false): ?Structure
     {
         $query = (new Query())
             ->select([
@@ -98,7 +98,7 @@ class Structures extends Component
      * @param bool $withTrashed
      * @return Structure|null
      */
-    public function getStructureByUid(string $structureUid, bool $withTrashed = false)
+    public function getStructureByUid(string $structureUid, bool $withTrashed = false): ?Structure
     {
         $query = (new Query())
             ->select([

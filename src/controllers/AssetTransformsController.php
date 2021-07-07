@@ -93,7 +93,7 @@ class AssetTransformsController extends Controller
      *
      * @return Response|null
      */
-    public function actionSaveTransform()
+    public function actionSaveTransform(): ?Response
     {
         $this->requirePostRequest();
 

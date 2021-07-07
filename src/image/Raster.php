@@ -109,7 +109,7 @@ class Raster extends Image
      *
      * @return AbstractImage|null
      */
-    public function getImagineImage()
+    public function getImagineImage(): ?AbstractImage
     {
         return $this->_image;
     }

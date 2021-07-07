@@ -497,7 +497,7 @@ class FieldLayout extends Model
      * @param string $handle The field handle.
      * @return FieldInterface|null
      */
-    public function getFieldByHandle(string $handle)
+    public function getFieldByHandle(string $handle): ?FieldInterface
     {
         foreach ($this->getFields() as $field) {
             if ($field->handle === $handle) {

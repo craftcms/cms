@@ -540,7 +540,7 @@ class ElementIndexesController extends BaseElementsController
      *
      * @return ElementActionInterface[]|null
      */
-    protected function availableActions()
+    protected function availableActions(): ?array
     {
         if ($this->request->isMobileBrowser()) {
             return null;
@@ -634,7 +634,7 @@ class ElementIndexesController extends BaseElementsController
      *
      * @return array|null
      */
-    protected function actionData()
+    protected function actionData(): ?array
     {
         if (empty($this->actions)) {
             return null;

@@ -329,7 +329,7 @@ class Sections extends Component
      * @param int $sectionId
      * @return Section|null
      */
-    public function getSectionById(int $sectionId)
+    public function getSectionById(int $sectionId): ?Section
     {
         return $this->_sections()->firstWhere('id', $sectionId);
     }
@@ -370,7 +370,7 @@ class Sections extends Component
      * @param string $sectionHandle
      * @return Section|null
      */
-    public function getSectionByHandle(string $sectionHandle)
+    public function getSectionByHandle(string $sectionHandle): ?Section
     {
         return $this->_sections()->firstWhere('handle', $sectionHandle, true);
     }
@@ -1034,7 +1034,7 @@ class Sections extends Component
      * @param int $entryTypeId
      * @return EntryType|null
      */
-    public function getEntryTypeById(int $entryTypeId)
+    public function getEntryTypeById(int $entryTypeId): ?EntryType
     {
         if (!$entryTypeId) {
             return null;

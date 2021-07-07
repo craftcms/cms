@@ -1643,7 +1643,7 @@ class UsersController extends Controller
      *
      * @return Response|null
      */
-    public function actionDeleteUser()
+    public function actionDeleteUser(): ?Response
     {
         $this->requirePostRequest();
 
@@ -1731,7 +1731,7 @@ class UsersController extends Controller
      *
      * @return Response|null
      */
-    public function actionSaveFieldLayout()
+    public function actionSaveFieldLayout(): ?Response
     {
         $this->requirePostRequest();
         $this->requireAdmin();

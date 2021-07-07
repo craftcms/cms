@@ -176,7 +176,7 @@ class User extends \yii\web\User
      *
      * @return string|null
      */
-    public function getRememberedUsername()
+    public function getRememberedUsername(): ?string
     {
         return Craft::$app->getRequest()->getCookies()->getValue($this->usernameCookie['name']);
     }

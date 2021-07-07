@@ -428,7 +428,7 @@ trait ApplicationTrait
      *
      * @return int|null
      */
-    public function getLicensedEdition()
+    public function getLicensedEdition(): ?int
     {
         /** @var WebApplication|ConsoleApplication $this */
         $licensedEdition = $this->getCache()->get('licensedEdition');
@@ -445,7 +445,7 @@ trait ApplicationTrait
      *
      * @return string|null
      */
-    public function getLicensedEditionName()
+    public function getLicensedEditionName(): ?string
     {
         /** @var WebApplication|ConsoleApplication $this */
         $licensedEdition = $this->getLicensedEdition();
@@ -565,7 +565,7 @@ trait ApplicationTrait
      *
      * @return string|null
      */
-    public function getSystemUid()
+    public function getSystemUid(): ?string
     {
         /** @var WebApplication|ConsoleApplication $this */
         return $this->getInfo()->uid;
