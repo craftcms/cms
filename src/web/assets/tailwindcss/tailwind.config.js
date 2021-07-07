@@ -3,6 +3,9 @@ const tailwindConf = require('../../../../packages/craftui-tailwind/config')
 
 module.exports = {
     prefix: 'tw-',
+    corePlugins: {
+        preflight: false,
+    },
     ...tailwindConf,
     purge: [
         path.resolve(__dirname, '../../../templates/**/*.{html,twig}'),
