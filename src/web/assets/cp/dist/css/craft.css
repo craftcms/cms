@@ -2974,9 +2974,9 @@ body.rtl .matrixblock > .actions a.settings:after { margin-right: 3px; }
 
 .matrixblock:not(.static) > .fields { padding-top: 14px; }
 
-body.ltr .matrixblock:not(.static) > .fields > .flex-fields > .field > .status-badge { left: -17px; }
+body.ltr .matrixblock > .fields > .flex-fields > .field > .status-badge { left: -17px; }
 
-body.rtl .matrixblock:not(.static) > .fields > .flex-fields > .field > .status-badge { right: -17px; }
+body.rtl .matrixblock > .fields > .flex-fields > .field > .status-badge { right: -17px; }
 
 .matrixblock > .buttons { margin-top: 0; height: 30px; }
 
