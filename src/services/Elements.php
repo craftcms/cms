@@ -871,6 +871,7 @@ class Elements extends Component
             'dateCreated' => $canonical->dateCreated,
             'draftId' => null,
             'revisionId' => null,
+            'isProvisionalDraft' => false,
             'updatingFromDerivative' => true,
         ];
 
