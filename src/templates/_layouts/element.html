@@ -485,8 +485,8 @@
     {% endif %}
 {% endblock %}
 
-{% if canEditMultipleSites and element.enabled %}
-    {# get the element's statuses across all sites #}
+{# Only fetch the element’s per-site statuses if it’s enabled globally. Otherwise they don’t have any effect #}
+{% if canEditMultipleSites and element.enabled and element.id %}
     {% set siteStatusesQuery = element.find()
         .select(['elements_sites.siteId', 'elements_sites.enabled'])
         .id(element.id)
@@ -504,8 +504,10 @@
         .pairs()|map(s => s ? true : false) %}
 {% elseif canEditMultipleSites %}
     {% set siteStatusValues = {} %}
+    {# If the element isn't saved yet, assume other sites will share its current status #}
+    {% set defaultStatus = element.id ? false : (element.enabled and element.enabledForSite) %}
     {% for siteId in propEditableSiteIds %}
-        {% set siteStatusValues = siteStatusValues|merge([false]) %}
+        {% set siteStatusValues = siteStatusValues|merge([defaultStatus]) %}
     {% endfor %}
     {% set siteStatuses = combine(propEditableSiteIds, siteStatusValues) %}
 {% else %}
