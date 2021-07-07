@@ -141,7 +141,7 @@ class Raster extends Image
     /**
      * @inheritdoc
      */
-    public function loadImage(string $path)
+    public function loadImage(string $path): self
     {
         $imageService = Craft::$app->getImages();
 
@@ -197,7 +197,7 @@ class Raster extends Image
     /**
      * @inheritdoc
      */
-    public function crop(int $x1, int $x2, int $y1, int $y2)
+    public function crop(int $x1, int $x2, int $y1, int $y2): self
     {
         $width = $x2 - $x1;
         $height = $y2 - $y1;
@@ -230,7 +230,7 @@ class Raster extends Image
     /**
      * @inheritdoc
      */
-    public function scaleToFit(int $targetWidth = null, int $targetHeight = null, bool $scaleIfSmaller = true)
+    public function scaleToFit(int $targetWidth = null, int $targetHeight = null, bool $scaleIfSmaller = true): self
     {
         $this->normalizeDimensions($targetWidth, $targetHeight);
 
@@ -247,7 +247,7 @@ class Raster extends Image
     /**
      * @inheritdoc
      */
-    public function scaleAndCrop(int $targetWidth = null, int $targetHeight = null, bool $scaleIfSmaller = true, $cropPosition = 'center-center')
+    public function scaleAndCrop(int $targetWidth = null, int $targetHeight = null, bool $scaleIfSmaller = true, $cropPosition = 'center-center'): self
     {
         $this->normalizeDimensions($targetWidth, $targetHeight);
 
@@ -353,7 +353,7 @@ class Raster extends Image
     /**
      * @inheritdoc
      */
-    public function resize(int $targetWidth = null, int $targetHeight = null)
+    public function resize(int $targetWidth = null, int $targetHeight = null): self
     {
         $this->normalizeDimensions($targetWidth, $targetHeight);
 
