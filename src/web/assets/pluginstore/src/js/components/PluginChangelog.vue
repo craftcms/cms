@@ -64,14 +64,14 @@
 
 <style lang="scss">
     .plugin-changelog {
-        @apply mb-8;
+        @apply tw-mb-8;
 
         &.collapsed {
-            @apply relative overflow-hidden;
+            @apply tw-relative tw-overflow-hidden;
             height: 400px;
 
             .more {
-                @apply block absolute bottom-0 w-full pb-4;
+                @apply tw-block tw-absolute tw-bottom-0 tw-w-full tw-pb-4;
                 padding-top: 200px;
                 background: rgb(255,255,255);
                 background: linear-gradient(180deg, rgba(255,255,255,0) 0%, rgba(255,255,255,1) 80%);
@@ -79,15 +79,15 @@
         }
 
         .more {
-            @apply text-center;
+            @apply tw-text-center;
 
             a {
-                @apply inline-block;
+                @apply tw-inline-block;
             }
         }
 
         .changelog-release:last-child {
-            @apply border-b-0;
+            @apply tw-border-b-0;
         }
     }
 </style>

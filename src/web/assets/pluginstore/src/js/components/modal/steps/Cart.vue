@@ -10,13 +10,13 @@
 
                 <template v-if="cart">
                     <template v-if="cartItems.length">
-                        <table class="cart-data fullwidth">
+                        <table class="cart-data tw-w-full">
                             <thead>
                             <tr>
                                 <th></th>
                                 <th>{{ "Item"|t('app') }}</th>
                                 <th>{{ "Updates"|t('app') }}</th>
-                                <th class="w-10"></th>
+                                <th class="tw-w-10"></th>
                             </tr>
                             </thead>
                             <tbody v-for="(item, itemKey) in cartItems" :key="'item' + itemKey">
@@ -92,7 +92,7 @@
                                     <td class="blank-cell"></td>
                                     <td class="empty-cell"></td>
                                     <td class="price">
-                                        <div class="w-16">
+                                        <div class="tw-w-16">
                                             <template v-if="!removeFromCartLoading(itemKey)">
                                                 <a role="button" @click="removeFromCart(itemKey)">{{ "Remove"|t('app') }}</a>
                                             </template>
@@ -112,7 +112,7 @@
                             </tbody>
                         </table>
 
-                        <div class="py-4 flex">
+                        <div class="tw-py-4 tw-flex">
                             <btn kind="primary" @click="payment()" :loading="loadingCheckout">{{ "Checkout"|t('app') }}</btn>
                         </div>
                     </template>
@@ -334,7 +334,7 @@
                 }
 
                 .c-spinner {
-                    @apply relative ml-4;
+                    @apply tw-relative tw-ml-4;
                     top: 6px;
                 }
             }
@@ -348,7 +348,7 @@
 
         .item-name {
             .edition-badge {
-                @apply ml-2;
+                @apply tw-ml-2;
             }
         }
 
@@ -408,7 +408,7 @@
                 }
 
                 td.expiry-date {
-                    @apply w-3/5;
+                    @apply tw-w-3/5;
                 }
             }
         }

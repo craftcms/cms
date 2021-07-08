@@ -22,8 +22,8 @@
                 </template>
             </template>
         </td>
-        <td class="w-1/4">
-            <div class="text-right">
+        <td class="tw-w-1/4">
+            <div class="tw-text-right">
                 <template v-if="!addToCartLoading">
                     <a @click="addToCart()" :loading="addToCartLoading" :class="{
                         'disabled hover:no-underline': activeTrial.licenseMismatched

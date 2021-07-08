@@ -2,9 +2,9 @@
     <div class="ps-container">
         <template v-if="!loading">
             <div v-for="(featuredSection, key) in featuredSections" :key="'featuredSection-' + key">
-                <div class="flex items-baseline justify-between" :class="{'mt-8': key > 0}">
+                <div class="tw-flex tw-items-baseline tw-justify-between" :class="{'tw-mt-8': key > 0}">
                     <h2>{{ featuredSection.title }}</h2>
-                    <router-link class="right" :to="'/featured/'+featuredSection.slug">{{ "See all"|t('app') }}</router-link>
+                    <router-link class="tw-right" :to="'/featured/'+featuredSection.slug">{{ "See all"|t('app') }}</router-link>
                 </div>
 
                 <plugin-grid :plugins="featuredSection.plugins" :auto-limit="true"></plugin-grid>
@@ -18,7 +18,7 @@
                 </template>
 
                 <template v-if="activeTrialsError">
-                    <div class="mb-8">
+                    <div class="tw-mb-8">
                         <p class="error">{{activeTrialsError}}</p>
                     </div>
                 </template>
