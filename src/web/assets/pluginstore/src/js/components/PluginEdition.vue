@@ -88,13 +88,13 @@
 
 <style lang="scss">
     .plugin-editions-edition {
-        @apply tw-border tw-border-gray-400 tw-border-solid tw-p-8 tw-rounded tw-text-center tw-flex tw-flex-col;
+        @apply tw-border tw-border-gray-200 tw-border-solid tw-p-8 tw-rounded tw-text-center tw-flex tw-flex-col;
 
         .description {
             @apply tw-flex-1;
 
             .edition-name {
-                @apply tw-border-b tw-border-gray-400 tw-border-solid tw-text-gray-600 tw-inline-block tw-py-1 tw-uppercase tw-text-lg tw-font-bold;
+                @apply tw-border-b tw-border-gray-200 tw-border-solid tw-text-gray-600 tw-inline-block tw-py-1 tw-uppercase tw-text-lg tw-font-bold;
             }
 
             .price {

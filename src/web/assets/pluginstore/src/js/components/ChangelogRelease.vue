@@ -29,7 +29,7 @@
     @import "../../../../../../../node_modules/craftcms-sass/mixins";
 
     .changelog-release {
-        @apply tw-pt-2 tw-pb-4 tw-border-b tw-border-gray-400 tw-border-solid;
+        @apply tw-pt-2 tw-pb-4 tw-border-b tw-border-gray-200 tw-border-solid;
 
         .version {
             @apply tw-relative;
