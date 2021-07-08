@@ -934,7 +934,7 @@ return [
     'Notes' => '주의',
     'Nothing selected.' => '선택한 것이 없습니다.',
     'Nothing to update.' => '업데이트할 사항이 없습니다.',
-    'Notice' => 'Notice',
+    'Notice' => '알림',
     'Number' => '수',
     'OFF Label' => '끄기 라벨',
     'OK' => '확인',
