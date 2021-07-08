@@ -486,7 +486,7 @@ return [
     'Display in a table' => 'Показать в виде таблицы',
     'Documentation' => 'Документация',
     'Done' => 'Готово',
-    'Double-click entries and other editable elements to try the new editor slideout interface.' => 'Дважды щелкните записи и другие редактируемые элементы, чтобы оценить возможности нового интерфейса редактора с боковыми меню.',
+    'Double-click entries and other editable elements to try the new editor slideout interface.' => 'Дважды щелкните записи и другие редактируемые элементы, чтобы оценить возможности нового интерфейса редактора с выпадающими меню.',
     'Download backup' => 'Скачать резервную копию',
     'Download' => 'Скачать',
     'Draft Name' => 'Название черновика',
