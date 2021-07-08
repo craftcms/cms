@@ -1397,7 +1397,7 @@ return [
     'This license is tied to another Craft install. Visit {accountLink} to detach it, or buy a new license.' => 'La licenza è collegata a un\'altra installazione di Craft. Visita {accountLink} per scollegarla, oppure acquista una nuova licenza.',
     'This license isn’t allowed to run version {version}.' => 'Con questa licenza non è possibile far funzionare la versione {version}.',
     'This month' => 'Questo mese',
-    'This plugin is no longer maintained.' => 'Non si effettua più manutenzione per questo plugin.',
+    'This plugin is no longer maintained.' => 'Non si effettua più manutenzione per questo plug-in.',
     'This plugin isn’t compatible with your version of Craft.' => 'Questo plugin non è compatibile con la tua versione di Craft.',
     'This site has its own base URL' => 'Il sito dispone del proprio URL di base',
     'This update requires PHP {v1}, but your composer.json file is currently set to PHP {v2}.' => 'Questo aggiornamento richiede PHP {v1}, ma il tuo file composer.json è attualmente impostato su PHP {v2}.',
