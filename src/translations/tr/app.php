@@ -1757,7 +1757,7 @@ return [
     'stripe_error_invalid_cvc' => 'CVC numarası hatalı.',
     'stripe_error_invalid_expiry_month' => 'Son kullanma ayı geçersiz.',
     'stripe_error_invalid_expiry_year' => 'Son kullanma yılı geçersiz.',
-    'stripe_error_invalid_number' => 'The card number is incorrect.',
+    'stripe_error_invalid_number' => 'Kart numarası hatalı.',
     'stripe_error_invalid_pin' => 'Girilen PIN hatalı. Bu ret kodu sadece kart okuyucu ile yapılan ödemeler için geçerlidir.',
     'stripe_error_issuer_not_available' => 'The card issuer could not be reached, so the payment could not be authorized.',
     'stripe_error_lost_card' => 'The payment has been declined because the card is reported lost.',
