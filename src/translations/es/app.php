@@ -313,7 +313,7 @@ return [
     'Couldn’t add all items to the cart.' => 'No se han podido añadir todos los elementos al carro.',
     'Couldn’t apply new migrations.' => 'No se pudieron aplicar nuevas migraciones.',
     'Couldn’t backup the database. How would you like to proceed?' => 'No se pudo crear copia de seguridad de la base de datos. ¿Deseas proceder?',
-    'Couldn’t create entry.' => 'No se pudo crear al entrada.',
+    'Couldn’t create entry.' => 'No se pudo crear la entrada.',
     'Couldn’t delete asset.' => 'No se pudo eliminar el recurso.',
     'Couldn’t delete category.' => 'No se pudo borrar la categoría.',
     'Couldn’t delete entry.' => 'No se pudo eliminar al entrada.',
