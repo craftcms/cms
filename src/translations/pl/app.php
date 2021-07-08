@@ -934,7 +934,7 @@ return [
     'Notes' => 'Uwagi',
     'Nothing selected.' => 'Nic nie wybrano.',
     'Nothing to update.' => 'Nic do zaktualizowania.',
-    'Notice' => 'Notice',
+    'Notice' => 'Powiadomienie',
     'Number' => 'Numer',
     'OFF Label' => 'Etykieta WYŁ.',
     'OK' => 'OK',
