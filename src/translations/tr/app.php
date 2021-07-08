@@ -1306,7 +1306,7 @@ return [
     'The base URL to the assets in this volume.' => 'Bu birimdeki varlıkların temel URL\'si.',
     'The command to run Sendmail with.' => 'Sendmail\'in birlikte çalıştırılacağı komut.',
     'The database was restored successfully.' => 'Veritabanı başarıyla geri yüklendi.',
-    'The developer recommends using <a href="{url}">{name}</a> instead.' => 'The developer recommends using <a href="{url}">{name}</a> instead.',
+    'The developer recommends using <a href="{url}">{name}</a> instead.' => 'Geliştirici, bunun yerine <a href="{url}">{name}</a> kullanılmasını öneriyor.',
     'The draft could not be saved.' => 'Taslak kaydedilemedi.',
     'The draft has been saved.' => 'Taslak kaydedildi.',
     'The email address Craft CMS will use when sending email.' => 'Craft CMS\'ın eposta gönderirken kullanacağı eposta adresi.',
