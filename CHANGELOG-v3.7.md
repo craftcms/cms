@@ -149,6 +149,7 @@
 - The `{% cache %}` tag now stores any JavaScript or CSS code registered with `{% js %}`, `{% script %}`, and `{% css %}` tags. ([#7758](https://github.com/craftcms/cms/issues/7758))
 - The `date()` Twig function now supports arrays with `date` and/or `time` keys. ([#7681](https://github.com/craftcms/cms/issues/7681))
 - Date query params now support passing in times relative to `now` (e.g. `>= now`). ([#9117](https://github.com/craftcms/cms/issues/9117))
+- Object templates (such as `redirect` params and URI Format settings) now support string interpolation. ([#9138](https://github.com/craftcms/cms/discussions/9138))
 - Custom field column names now include a random string, preventing column name conflicts when deploying multiple project config changes at once. ([#6922](https://github.com/craftcms/cms/issues/6922))
 - Custom fields can now store data across multiple columns in the `content` table.
 - Channel and Structure sections’ initial entry types are now named “Default” by default. ([#7078](https://github.com/craftcms/cms/issues/7078))

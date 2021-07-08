@@ -9,6 +9,7 @@
 ### Changed
 - Entries now retain their original IDs when created from an unpublished draft. ([#9104](https://github.com/craftcms/cms/issues/9104))
 - Date query params now support passing in times relative to `now` (e.g. `>= now`). ([#9117](https://github.com/craftcms/cms/issues/9117))
+- Object templates (such as `redirect` params and URI Format settings) now support string interpolation. ([#9138](https://github.com/craftcms/cms/discussions/9138))
 - `craft\helpers\DateTimeHelper::toDateTime()` now supports passing in `'now'`. ([#9117](https://github.com/craftcms/cms/issues/9117))
 
 ### Deprecated
