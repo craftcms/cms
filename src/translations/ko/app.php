@@ -1752,7 +1752,7 @@ return [
     'stripe_error_incorrect_pin' => '입력된 PIN이 올바르지 않습니다. 이 거부 코드는 카드 리더를 사용한 결제에만 적용됩니다.',
     'stripe_error_incorrect_zip' => '우편 번호가 올바르지 않습니다.',
     'stripe_error_insufficient_funds' => '카드의 잔액이 부족하기 때문에 구매를 완료할 수 없습니다.',
-    'stripe_error_invalid_account' => 'The card, or account the card is connected to, is invalid.',
+    'stripe_error_invalid_account' => '카드 또는 카드가 연결된 계정이 잘못되었습니다.',
     'stripe_error_invalid_amount' => 'The payment amount is invalid, or exceeds the amount that is allowed.',
     'stripe_error_invalid_cvc' => 'The CVC number is incorrect.',
     'stripe_error_invalid_expiry_month' => 'The expiration month is invalid.',
