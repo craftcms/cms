@@ -92,7 +92,7 @@ class Assets
     }
 
     /**
-     * Get appendix for an URL based on it's Source caching settings.
+     * Get appendix for a URL based on its Source caching settings.
      *
      * @param VolumeInterface $volume
      * @param Asset $file
