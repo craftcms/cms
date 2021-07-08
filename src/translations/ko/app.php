@@ -1306,7 +1306,7 @@ return [
     'The base URL to the assets in this volume.' => '이 볼륨 내 자산의 기준 URL입니다.',
     'The command to run Sendmail with.' => 'Sendmail을 실행하는 명령입니다.',
     'The database was restored successfully.' => '데이터베이스가 복원되었습니다.',
-    'The developer recommends using <a href="{url}">{name}</a> instead.' => 'The developer recommends using <a href="{url}">{name}</a> instead.',
+    'The developer recommends using <a href="{url}">{name}</a> instead.' => '개발자는 대신 <a href="{url}">{name}</a> 사용을 권장합니다.',
     'The draft could not be saved.' => '드래프트를 저장할 수 없습니다.',
     'The draft has been saved.' => '드래프트가 저장되었습니다.',
     'The email address Craft CMS will use when sending email.' => 'Craft CMS가 이메일을 보낼 때 사용할 이메일 주소.',
