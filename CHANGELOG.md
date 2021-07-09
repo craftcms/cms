@@ -17,6 +17,7 @@
 - Added `craft\db\Table::ASSETINDEXINGSESSIONS`.
 - Added `craft\errors\MissingVolumeFolderException`.
 - Added `craft\helpers\Assets::downloadFile()`.
+- Added `craft\helpers\Db::parseNumericParam()`.
 - Added `craft\models\AssetIndexingSession`.
 - Added `craft\models\VolumeListing`.
 - Added `craft\records\AssetIndexingSession`.
@@ -39,6 +40,7 @@
 - Relational fields now load elements in the current site rather than the primary site, if the source element isn’t localizable. ([#7048](https://github.com/craftcms/cms/issues/7048))
 - `craft\base\Model::datetimeAttributes()` is now called from the constructor, instead of the `init()` method.
 - `craft\base\Model::setAttributes()` now normalizes date attributes into `DateTime` objects.
+- `craft\helpers\Db::parseParam()` now validates that numeric values are passed if the `$columnType` is set to a numeric column type. ([#9142](https://github.com/craftcms/cms/issues/9142))
 - `craft\helpers\Db::prepareValueForDb()` now has a `$columnType` argument.
 - `craft\services\AssetIndexer::storeIndexList()` now expects the first argument to be a generator that returns `craft\models\VolumeListing` objects.
 - `craft\services\Assets::ensureFolderByFullPathAndVolume()` now returns a `craft\models\VolumeFolder` object rather than a folder ID.

@@ -812,13 +812,13 @@ class EntryQuery extends ElementQuery
 
         if (Craft::$app->getEdition() === Craft::Pro) {
             if ($this->authorId) {
-                $this->subQuery->andWhere(Db::parseParam('entries.authorId', $this->authorId));
+                $this->subQuery->andWhere(Db::parseNumericParam('entries.authorId', $this->authorId));
             }
 
             if ($this->authorGroupId) {
                 $this->subQuery
                     ->innerJoin(['usergroups_users' => Table::USERGROUPS_USERS], '[[usergroups_users.userId]] = [[entries.authorId]]')
-                    ->andWhere(Db::parseParam('usergroups_users.groupId', $this->authorGroupId));
+                    ->andWhere(Db::parseNumericParam('usergroups_users.groupId', $this->authorGroupId));
             }
         }
 
@@ -924,7 +924,7 @@ class EntryQuery extends ElementQuery
             $this->typeId = (new Query())
                 ->select(['id'])
                 ->from([Table::ENTRYTYPES])
-                ->where(Db::parseParam('id', $this->typeId))
+                ->where(Db::parseNumericParam('id', $this->typeId))
                 ->column();
         }
     }
@@ -942,7 +942,7 @@ class EntryQuery extends ElementQuery
                 $structureId = (new Query())
                     ->select(['structureId'])
                     ->from([Table::SECTIONS])
-                    ->where(Db::parseParam('id', $this->sectionId))
+                    ->where(Db::parseNumericParam('id', $this->sectionId))
                     ->andWhere(['type' => Section::TYPE_STRUCTURE])
                     ->scalar();
                 $this->structureId = (int)$structureId ?: false;
@@ -963,7 +963,7 @@ class EntryQuery extends ElementQuery
             $this->sectionId = (new Query())
                 ->select(['id'])
                 ->from([Table::SECTIONS])
-                ->where(Db::parseParam('id', $this->sectionId))
+                ->where(Db::parseNumericParam('id', $this->sectionId))
                 ->column();
         }
     }

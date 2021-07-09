@@ -828,7 +828,7 @@ class AssetQuery extends ElementQuery
         }
 
         if ($this->folderId) {
-            $folderCondition = Db::parseParam('assets.folderId', $this->folderId);
+            $folderCondition = Db::parseNumericParam('assets.folderId', $this->folderId);
             if (is_numeric($this->folderId) && $this->includeSubfolders) {
                 $assetsService = Craft::$app->getAssets();
                 $descendants = $assetsService->getAllDescendantFolders($assetsService->getFolderById($this->folderId));
@@ -859,15 +859,15 @@ class AssetQuery extends ElementQuery
         }
 
         if ($this->width) {
-            $this->subQuery->andWhere(Db::parseParam('assets.width', $this->width));
+            $this->subQuery->andWhere(Db::parseNumericParam('assets.width', $this->width));
         }
 
         if ($this->height) {
-            $this->subQuery->andWhere(Db::parseParam('assets.height', $this->height));
+            $this->subQuery->andWhere(Db::parseNumericParam('assets.height', $this->height));
         }
 
         if ($this->size) {
-            $this->subQuery->andWhere(Db::parseParam('assets.size', $this->size));
+            $this->subQuery->andWhere(Db::parseNumericParam('assets.size', $this->size, '=', Schema::TYPE_BIGINT));
         }
 
         if ($this->dateModified) {
@@ -894,7 +894,7 @@ class AssetQuery extends ElementQuery
             $this->volumeId = (new Query())
                 ->select(['id'])
                 ->from([Table::VOLUMES])
-                ->where(Db::parseParam('id', $this->volumeId))
+                ->where(Db::parseNumericParam('id', $this->volumeId))
                 ->column();
         }
     }

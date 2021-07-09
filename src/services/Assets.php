@@ -1143,15 +1143,15 @@ class Assets extends Component
     private function _applyFolderConditions(Query $query, FolderCriteria $criteria): void
     {
         if ($criteria->id) {
-            $query->andWhere(Db::parseParam('id', $criteria->id));
+            $query->andWhere(Db::parseNumericParam('id', $criteria->id));
         }
 
         if ($criteria->volumeId) {
-            $query->andWhere(Db::parseParam('volumeId', $criteria->volumeId));
+            $query->andWhere(Db::parseNumericParam('volumeId', $criteria->volumeId));
         }
 
         if ($criteria->parentId) {
-            $query->andWhere(Db::parseParam('parentId', $criteria->parentId));
+            $query->andWhere(Db::parseNumericParam('parentId', $criteria->parentId));
         }
 
         if ($criteria->name) {

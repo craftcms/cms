@@ -1446,7 +1446,7 @@ class ElementQuery extends Query implements ElementQueryInterface
         }
 
         if ($this->id) {
-            $this->subQuery->andWhere(Db::parseParam('elements.id', $this->id));
+            $this->subQuery->andWhere(Db::parseNumericParam('elements.id', $this->id));
         }
 
         if ($this->uid) {
@@ -1454,7 +1454,7 @@ class ElementQuery extends Query implements ElementQueryInterface
         }
 
         if ($this->siteSettingsId) {
-            $this->subQuery->andWhere(Db::parseParam('elements_sites.id', $this->siteSettingsId));
+            $this->subQuery->andWhere(Db::parseNumericParam('elements_sites.id', $this->siteSettingsId));
         }
 
         if ($this->archived) {
@@ -2547,7 +2547,7 @@ class ElementQuery extends Query implements ElementQueryInterface
         }
 
         if ($this->level) {
-            $this->subQuery->andWhere(Db::parseParam('structureelements.level', $this->level));
+            $this->subQuery->andWhere(Db::parseNumericParam('structureelements.level', $this->level));
         }
 
         if ($this->leaves) {
