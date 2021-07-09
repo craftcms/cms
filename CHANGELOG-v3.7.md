@@ -23,6 +23,7 @@
 - Added the `previewTokenDuration` config setting. ([#2394](https://github.com/craftcms/cms/issues/2394))
 - Added the `revAssetUrls` config setting. ([#7847](https://github.com/craftcms/cms/issues/7847))
 - Added the `setGraphqlDatesToSystemTimeZone` config setting. ([#8016](https://github.com/craftcms/cms/pull/8016))
+- Added the `useUnbufferedConnections` database connection setting, which can be set to `true` when using MySQL to cause batched queries to be executed over separate, unbuffered database connections when using MySQL. ([#7338](https://github.com/craftcms/cms/issues/7338))
 - Added the “Validate custom fields on public registration” user setting. ([#4229](https://github.com/craftcms/cms/issues/4229))
 - Added the `|removeClass` Twig filter.
 - Added `craft\base\ApplicationTrait::getAnnouncements()`.
@@ -83,7 +84,7 @@
 - Added `craft\helpers\Cp::editElementTitles()`.
 - Added `craft\helpers\Cp::elementSelectFieldHtml()`.
 - Added `craft\helpers\Cp::metadataHtml()`.
-- Added `craft\helpers\Db::batch()` and `each()`, which can be used instead of `craft\db\Query::batch()` and `each()`, to execute batched SQL queries over a new, unbuffered database connection (if using MySQL). ([#7338](https://github.com/craftcms/cms/issues/7338))
+- Added `craft\helpers\Db::batch()` and `each()`, which can be used instead of `craft\db\Query::batch()` and `each()`, to execute batched SQL queries over a new, unbuffered database connection (if using MySQL and `useUnbufferedConnections` is `true`). ([#7338](https://github.com/craftcms/cms/issues/7338))
 - Added `craft\helpers\ElementHelper::fieldColumn()`.
 - Added `craft\helpers\ElementHelper::fieldColumnFromField()`.
 - Added `craft\helpers\ElementHelper::isDraft()`.

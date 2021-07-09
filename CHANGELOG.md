@@ -5,6 +5,7 @@
 ### Added
 - The Entries index page now has a “Delete for site” action for entries whose section’s Propagation Method is set to “Let each entry choose which sites it should be saved to”. ([#9119](https://github.com/craftcms/cms/pull/9119))
 - Added the `httpProxy` config setting, which can be used instead of setting the `proxy` Guzzle request option. ([#9105](https://github.com/craftcms/cms/issues/9105))
+- Added the `useUnbufferedConnections` database connection setting, which is `false` by default, so batched queries are no longer executed over an unbuffered MySQL connection by default. ([#9149](https://github.com/craftcms/cms/issues/9149))
 
 ### Changed
 - Entries now retain their original IDs when created from an unpublished draft. ([#9104](https://github.com/craftcms/cms/issues/9104))

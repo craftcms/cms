@@ -1335,7 +1335,7 @@ class Db
     private static function _batch(YiiQuery $query, int $batchSize, bool $each): BatchQueryResult
     {
         $db = self::db();
-        $unbuffered = $db->getIsMysql();
+        $unbuffered = $db->getIsMysql() && Craft::$app->getConfig()->getDb()->useUnbufferedConnections;
 
         if ($unbuffered) {
             $db = Craft::$app->getComponents()['db'];
