@@ -49,7 +49,7 @@
     "selectize": "^0.12.6",
     "timepicker": "^1.13.18",
     "velocity-animate": "^1.5.0",
-    "vue": "^2.6.12",
+    "vue": "^2.6.14",
     "vue-autosuggest": "^1.8.1",
     "vue-cleave": "^1.2.2",
     "vue-lodash": "^1.0.3",
