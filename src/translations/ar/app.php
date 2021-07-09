@@ -250,7 +250,7 @@ return [
     'Close' => 'إغلاق',
     'Cloud Storage Integration' => 'دمج التخزين السحابي',
     'Collapse' => 'طي',
-    'Color hex value' => 'Color hex value',
+    'Color hex value' => 'تلوين قيمة نظام العد الست عشري',
     'Color picker' => 'أداة انتقاء اللون',
     'Color' => 'اللون',
     'Column Heading' => 'عنوان العمود',
