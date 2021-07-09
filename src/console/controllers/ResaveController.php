@@ -304,7 +304,8 @@ class ResaveController extends Controller
         }
 
         if ($this->provisionalDrafts) {
-            $query->provisionalDrafts();
+            $criteria['drafts'] = true;
+            $criteria['provisionalDrafts'] = true;
         }
 
         if ($this->elementId) {
