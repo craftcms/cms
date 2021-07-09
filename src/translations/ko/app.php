@@ -1593,7 +1593,7 @@ return [
     'Whether authors should be able to upload files directly to the field, rather than requiring them to select/upload assets via the selection modal.' => '선택 모달을 통해 에셋을 선택/업로드하도록 요구하지 않고 저자가 필드에 직접 파일을 업로드할 수 있는지 여부입니다.',
     'Whether preview frames should be automatically refreshed when content changes.' => '콘텐츠가 변경되는 경우 미리보기 프레임의 새로 고침이 자동으로 수행되는지 여부입니다.',
     'Whether remotely-stored images should be downloaded and stored locally, to speed up transform generation.' => '변환 생성 속도를 높이기 위해 원격으로 저장한 이미지를 다운로드하여 로컬에 저장해야 하는지 여부입니다.',
-    'Whether the site menu should be shown for {type} selection modals.' => '{type} 선택 모달에 대한 사이트 메뉴가 표시되어야 하는지 여부.',
+    'Whether the site menu should be shown for {type} selection modals.' => '{type} 선택 모달에 대한 사이트 메뉴가 표시되어야 하는지 여부입니다.',
     'Whether to show files that the user doesn’t have permission to view, per the “View files uploaded by other users” permission.' => '"다른 사용자가 업로드한 파일 보기" 권한에 따라, 사용자에게 보기 권한이 없는 파일을 표시할지 여부입니다.',
     'Whether to show volumes that the user doesn’t have permission to view.' => '사용자에게 보기 권한이 없는 볼륨을 표시할지 여부입니다.',
     'Whether validation errors on the related {type} should prevent the source element from being saved.' => '관련 {type}의 유효화 오류가 소스 요소의 저장을 방해해야 하는지 확인합니다.',
