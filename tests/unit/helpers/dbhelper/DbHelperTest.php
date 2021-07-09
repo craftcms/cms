@@ -410,15 +410,9 @@ class DbHelperTest extends Unit
     public function parseColumnTypeDataProvider(): array
     {
         return [
-            ['test', 'test'],
-            [null, '!@#$%^&*()craftcms'],
-            ['craftcms', 'craftcms!@#$%^&*()'],
-            ['craft', 'craft,cms'],
-            ['123', '123 craft'],
-            ['craft', 'CRAFT'],
-            [null, '🎧𢵌 😀😘⛄'],
-            [null, 'Δδ'],
-            [null, '"craftcms"']
+            ['string', 'STRING(255)'],
+            ['decimal', 'DECIMAL(14,4)'],
+            [null, '"invalid"'],
         ];
     }
 
@@ -532,13 +526,14 @@ class DbHelperTest extends Unit
     public function isNumericColumnTypeDataProvider(): array
     {
         return [
-            [false, 'integer(1)'],
-            [false, 'decimal'],
-            [false, 'bigint(5)'],
-            [false, 'float'],
-            [false, '[[float]]'],
-            [false, '1234567890!@#$%^&*()'],
-            [false, 'textual'],
+            [true, 'smallint'],
+            [true, 'integer'],
+            [true, 'integer(1)'],
+            [true, 'bigint(5)'],
+            [true, 'float'],
+            [true, 'double'],
+            [true, 'decimal(14,4)'],
+            [false, 'string(255)'],
         ];
     }
 

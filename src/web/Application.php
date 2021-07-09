@@ -493,6 +493,7 @@ class Application extends \yii\web\Application
             throw new NotFoundHttpException($filePath . ' does not exist.');
         }
         $this->getResponse()
+            ->setCacheHeaders()
             ->sendFile($publishedPath, null, ['inline' => true]);
         $this->end();
     }
