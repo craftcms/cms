@@ -934,7 +934,7 @@ return [
     'Notes' => 'الملاحظات',
     'Nothing selected.' => 'لم يتم تحديد أي شيء.',
     'Nothing to update.' => 'لا يوجد شيء لتحديثه.',
-    'Notice' => 'Notice',
+    'Notice' => 'ملاحظة',
     'Number' => 'رقم',
     'OFF Label' => 'تسمية إيقاف التشغيل',
     'OK' => 'موافق',
