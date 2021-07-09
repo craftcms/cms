@@ -934,7 +934,7 @@ return [
     'Notes' => 'Anteckningar',
     'Nothing selected.' => 'Ingenting valt.',
     'Nothing to update.' => 'Inget att uppdatera.',
-    'Notice' => 'Notice',
+    'Notice' => 'Meddelande',
     'Number' => 'Nummer',
     'OFF Label' => 'AV-etikett',
     'OK' => 'OK',
