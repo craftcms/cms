@@ -389,15 +389,9 @@ class DbHelperTest extends Unit
     public function parseColumnTypeDataProvider(): array
     {
         return [
-            ['test', 'test'],
-            [null, '!@#$%^&*()craftcms'],
-            ['craftcms', 'craftcms!@#$%^&*()'],
-            ['craft', 'craft,cms'],
-            ['123', '123 craft'],
-            ['craft', 'CRAFT'],
-            [null, '🎧𢵌 😀😘⛄'],
-            [null, 'Δδ'],
-            [null, '"craftcms"']
+            ['string', 'STRING(255)'],
+            ['decimal', 'DECIMAL(14,4)'],
+            [null, '"invalid"'],
         ];
     }
 
