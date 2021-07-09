@@ -1735,7 +1735,7 @@ return [
     'seconds' => '秒',
     'seven' => '7',
     'six' => '6',
-    'stripe_error_approve_with_id' => '支払いを承認することができません。',
+    'stripe_error_approve_with_id' => '支払いをオーソリできません。',
     'stripe_error_authentication_required' => 'この取引には認証が必要なため、カードが拒否されました。',
     'stripe_error_call_issuer' => 'カードは不明な理由により拒否されました。',
     'stripe_error_card_not_supported' => 'このカードはこのタイプの購入に対応していません。',
