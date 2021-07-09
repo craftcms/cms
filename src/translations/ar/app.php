@@ -249,7 +249,7 @@ return [
     'Cloud Storage Integration' => 'دمج التخزين السحابي',
     'Collapse' => 'طي',
     'Color hex value' => 'Color hex value',
-    'Color picker' => 'Color picker',
+    'Color picker' => 'أداة انتقاء اللون',
     'Color' => 'اللون',
     'Column Heading' => 'عنوان العمود',
     'Column Type' => 'نوع العمود',
