@@ -19,7 +19,6 @@ let assetWebPackConfigFiles = fs.readdirSync(ASSETS_PATH).filter(f => {
     return fs.statSync(dirPath).isDirectory() && fs.existsSync(filePath);
 }).map(p => path.join(ASSETS_PATH, p, 'webpack.config'));
 
-let loop = 1;
 assetWebPackConfigFiles.forEach(asset => {
     let assetConfig = require(asset);
     configs.push(assetConfig);
