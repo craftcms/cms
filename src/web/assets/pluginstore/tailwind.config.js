@@ -1,10 +1,11 @@
 const tailwindConf = require('../../../../packages/craftui-tailwind/config')
+const path = require('path')
 
 module.exports = {
     prefix: 'tw-',
     ...tailwindConf,
     purge: [
-        './src/**/*.{js,jsx,ts,tsx,vue}',
+        path.resolve(__dirname, './src/**/*.{js,jsx,ts,tsx,vue}'),
         // '../../../templates/**/*.{html,twig}',
     ],
     plugins: [
