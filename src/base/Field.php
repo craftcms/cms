@@ -578,7 +578,7 @@ abstract class Field extends SavableComponent implements FieldInterface
                 throw new QueryAbortedException();
             }
 
-            $query->subQuery->andWhere(Db::parseParam("content.$column", $value));
+            $query->subQuery->andWhere(Db::parseParam("content.$column", $value, '=', false, $this->getContentColumnType()));
         }
     }
 

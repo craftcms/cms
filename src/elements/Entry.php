@@ -849,7 +849,7 @@ class Entry extends Element
                     ->siteId('*')
                     ->select('elements_sites.siteId')
                     ->drafts($this->getIsDraft())
-                    ->provisionalDrafts($this->getIsProvisionalDraft())
+                    ->provisionalDrafts($this->isProvisionalDraft)
                     ->revisions($this->getIsRevision())
                     ->column();
             } else {
@@ -864,7 +864,7 @@ class Entry extends Element
                     ->siteId('*')
                     ->select('elements_sites.siteId')
                     ->drafts($this->duplicateOf->getIsDraft())
-                    ->provisionalDrafts($this->duplicateOf->getIsProvisionalDraft())
+                    ->provisionalDrafts($this->duplicateOf->isProvisionalDraft)
                     ->revisions($this->duplicateOf->getIsRevision())
                     ->column()
                 );
@@ -1258,16 +1258,16 @@ class Entry extends Element
     protected function isDeletable(): bool
     {
         $section = $this->getSection();
-        if ($section->type === Section::TYPE_SINGLE) {
-            return false;
-        }
-
         $userSession = Craft::$app->getUser();
         $userId = $userSession->getId();
 
         if ($this->getIsDraft()) {
             /** @var Entry|DraftBehavior $this */
             return $this->creatorId == $userId || $userSession->checkPermission("deletePeerEntryDrafts:$section->uid");
+        }
+
+        if ($section->type === Section::TYPE_SINGLE) {
+            return false;
         }
 
         return (

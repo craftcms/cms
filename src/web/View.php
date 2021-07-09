@@ -617,12 +617,15 @@ class View extends \yii\web\View
     {
         $tokens = [];
 
-        // Tokenize {% verbatim %} tags
-        $template = preg_replace_callback('/\{%-?\s*verbatim\s*-?%\}.*?{%-?\s*endverbatim\s*-?%\}/s', function(array $matches) use (&$tokens) {
-            $token = 'tok_' . StringHelper::randomString(10);
-            $tokens[$token] = $matches[0];
-            return $token;
-        }, $template);
+        // Tokenize {% verbatim %} and output tags
+        $template = preg_replace_callback('/\{%-?\s*verbatim\s*-?%\}.*?{%-?\s*endverbatim\s*-?%\}|(?<!\{)\{\{(?!\{).+?(?<!\})\}\}(?!\})/s',
+            function(array $matches) use (&$tokens) {
+                $token = 'tok_' . StringHelper::randomString(10);
+                $tokens[$token] = $matches[0];
+                return $token;
+            },
+            $template
+        );
 
         // Tokenize inline code and code blocks
         $template = preg_replace_callback('/(?<!`)(`|`{3,})(?!`).*?(?<!`)\1(?!`)/s', function(array $matches) use (&$tokens) {

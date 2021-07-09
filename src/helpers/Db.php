@@ -393,7 +393,7 @@ class Db
      */
     public static function isNumericColumnType(string $columnType): bool
     {
-        return in_array(self::parseColumnLength($columnType), self::$_numericColumnTypes, true);
+        return in_array(self::parseColumnType($columnType), self::$_numericColumnTypes, true);
     }
 
     /**
@@ -451,6 +451,7 @@ class Db
      * @param bool $caseInsensitive Whether the resulting condition should be case-insensitive
      * @param string|null $columnType The database column type the param is targeting
      * @return mixed
+     * @throws InvalidArgumentException if the param value isn’t compatible with the column type.
      */
     public static function parseParam(string $column, $value, string $defaultOperator = '=', bool $caseInsensitive = false, ?string $columnType = null)
     {
@@ -499,14 +500,24 @@ class Db
             self::_normalizeEmptyValue($val);
             $operator = self::_parseParamOperator($val, $defaultOperator, $negate);
 
-            if ($columnType === Schema::TYPE_BOOLEAN) {
-                // Convert val to a boolean
-                $val = ($val && $val !== ':empty:');
-                if ($operator === '!=') {
-                    $val = !$val;
+            if ($columnType !== null) {
+                if ($columnType === Schema::TYPE_BOOLEAN) {
+                    // Convert val to a boolean
+                    $val = ($val && $val !== ':empty:');
+                    if ($operator === '!=') {
+                        $val = !$val;
+                    }
+                    $condition[] = [$column => (bool)$val];
+                    continue;
                 }
-                $condition[] = [$column => (bool)$val];
-                continue;
+
+                if (
+                    static::isNumericColumnType($columnType) &&
+                    $val !== ':empty:' &&
+                    !is_numeric($val)
+                ) {
+                    throw new InvalidArgumentException("Invalid numeric value: $val");
+                }
             }
 
             if ($val === ':empty:') {
@@ -671,6 +682,31 @@ class Db
             $condition = ['or', $condition, [$column => null]];
         }
         return $condition;
+    }
+
+    /**
+     * Parses a query param value for a numeric column and returns a
+     * [[\yii\db\QueryInterface::where()]]-compatible condition.
+     *
+     * The follow values are supported:
+     *
+     * - A number
+     * - `:empty:` or `:notempty:`
+     * - `'not x'` or `'!= x'`
+     * - `'> x'`, `'>= x'`, `'< x'`, or `'<= x'`, or a combination of those
+     *
+     * @param string $column The database column that the param is targeting.
+     * @param string|string[] $value The param value
+     * @param string $defaultOperator The default operator to apply to the values
+     * (can be `not`, `!=`, `<=`, `>=`, `<`, `>`, or `=`)
+     * @param string|null $columnType The database column type the param is targeting
+     * @return mixed
+     * @throws InvalidArgumentException if the param value isn’t numeric
+     * @since 4.0.0
+     */
+    public static function parseNumericParam(string $column, $value, string $defaultOperator = '=', ?string $columnType = Schema::TYPE_INTEGER)
+    {
+        return static::parseParam($column, $value, $defaultOperator, false, $columnType);
     }
 
     /**

@@ -237,7 +237,7 @@ class CategoryQuery extends ElementQuery
                 $structureId = (new Query())
                     ->select(['structureId'])
                     ->from([Table::CATEGORYGROUPS])
-                    ->where(Db::parseParam('id', $this->groupId))
+                    ->where(Db::parseNumericParam('id', $this->groupId))
                     ->scalar();
                 $this->structureId = (int)$structureId ?: false;
             }
@@ -257,7 +257,7 @@ class CategoryQuery extends ElementQuery
             $this->groupId = (new Query())
                 ->select(['id'])
                 ->from([Table::CATEGORYGROUPS])
-                ->where(Db::parseParam('id', $this->groupId))
+                ->where(Db::parseNumericParam('id', $this->groupId))
                 ->column();
         }
     }

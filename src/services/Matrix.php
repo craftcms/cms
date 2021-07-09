@@ -770,7 +770,7 @@ class Matrix extends Component
                     // Get the owner element across each of those sites
                     $localizedOwners = $owner::find()
                         ->drafts($owner->getIsDraft())
-                        ->provisionalDrafts($owner->getIsProvisionalDraft())
+                        ->provisionalDrafts($owner->isProvisionalDraft)
                         ->revisions($owner->getIsRevision())
                         ->id($owner->id)
                         ->siteId($otherSiteIds)
@@ -800,7 +800,7 @@ class Matrix extends Component
                             !empty($sharedPreexistingOtherSiteIds = array_intersect($preexistingOtherSiteIds, $sourceSupportedSiteIds)) &&
                             $preexistingLocalizedOwner = $owner::find()
                                 ->drafts($owner->getIsDraft())
-                                ->provisionalDrafts($owner->getIsProvisionalDraft())
+                                ->provisionalDrafts($owner->isProvisionalDraft)
                                 ->revisions($owner->getIsRevision())
                                 ->id($owner->id)
                                 ->siteId($sharedPreexistingOtherSiteIds)
@@ -902,7 +902,7 @@ class Matrix extends Component
                 // Get the original element and duplicated element for each of those sites
                 $otherSources = $target::find()
                     ->drafts($source->getIsDraft())
-                    ->provisionalDrafts($source->getIsProvisionalDraft())
+                    ->provisionalDrafts($source->isProvisionalDraft)
                     ->revisions($source->getIsRevision())
                     ->id($source->id)
                     ->siteId($otherSiteIds)
@@ -910,7 +910,7 @@ class Matrix extends Component
                     ->all();
                 $otherTargets = $target::find()
                     ->drafts($target->getIsDraft())
-                    ->provisionalDrafts($target->getIsProvisionalDraft())
+                    ->provisionalDrafts($target->isProvisionalDraft)
                     ->revisions($target->getIsRevision())
                     ->id($target->id)
                     ->siteId($otherSiteIds)

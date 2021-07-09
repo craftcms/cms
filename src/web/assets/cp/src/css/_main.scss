@@ -5967,11 +5967,11 @@ $titlebarBorderRadius: $largeBorderRadius - 1;
   &:not(.static) {
     & > .fields {
       padding-top: 14px;
-
-      & > .flex-fields > .field > .status-badge {
-        @include left(-17px);
-      }
     }
+  }
+
+  & > .fields > .flex-fields > .field > .status-badge {
+    @include left(-17px);
   }
 
   & > .buttons {

@@ -532,14 +532,6 @@ interface ElementInterface extends ComponentInterface
     public function getIsDraft(): bool;
 
     /**
-     * Returns whether this is a provisional draft.
-     *
-     * @return bool
-     * @since 3.7.0
-     */
-    public function getIsProvisionalDraft(): bool;
-
-    /**
      * Returns whether this is a revision.
      *
      * @return bool

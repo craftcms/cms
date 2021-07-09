@@ -683,7 +683,7 @@ class UserQuery extends ElementQuery
                 'exists', (new Query())
                     ->from(['ugu' => Table::USERGROUPS_USERS])
                     ->where('[[elements.id]] = [[ugu.userId]]')
-                    ->andWhere(Db::parseParam('groupId', $this->groupId)),
+                    ->andWhere(Db::parseNumericParam('groupId', $this->groupId)),
             ]);
         }
 
