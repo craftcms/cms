@@ -511,13 +511,14 @@ class DbHelperTest extends Unit
     public function isNumericColumnTypeDataProvider(): array
     {
         return [
-            [false, 'integer(1)'],
-            [false, 'decimal'],
-            [false, 'bigint(5)'],
-            [false, 'float'],
-            [false, '[[float]]'],
-            [false, '1234567890!@#$%^&*()'],
-            [false, 'textual'],
+            [true, 'smallint'],
+            [true, 'integer'],
+            [true, 'integer(1)'],
+            [true, 'bigint(5)'],
+            [true, 'float'],
+            [true, 'double'],
+            [true, 'decimal(14,4)'],
+            [false, 'string(255)'],
         ];
     }
 

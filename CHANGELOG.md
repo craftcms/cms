@@ -16,6 +16,7 @@
 - Fixed a bug where it was impossible to use `"*"` as a value for the `siteId` argument when using the GraphQL API. ([#9098](https://github.com/craftcms/cms/issues/9098))
 - Fixed a bug where dynamically-served control panel resources weren’t getting proper cache headers. ([#9140](https://github.com/craftcms/cms/issues/9140))
 - Fixed a bug where currency options weren’t sorted alphabetically within Number field settings. ([#9141](https://github.com/craftcms/cms/issues/9141))
+- Fixed a bug where `craft\helpers\Db::isNumericColumnType()` was always returning `false`.
 
 ## 3.6.17 - 2021-06-15
 
