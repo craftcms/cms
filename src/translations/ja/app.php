@@ -1747,7 +1747,7 @@ return [
     'stripe_error_expired_card' => 'カードの有効期限が切れています。',
     'stripe_error_fraudulent' => '不正使用の可能性があると Stripe が判断したため、支払いは拒否されました。',
     'stripe_error_generic_decline' => 'カードは不明な理由により拒否されました。',
-    'stripe_error_incorrect_cvc' => 'CVC 番号が正しくありません。',
+    'stripe_error_incorrect_cvc' => 'CVC 番号（セキュリティコード）が正しくありません。',
     'stripe_error_incorrect_number' => 'カード番号が正しくありません。',
     'stripe_error_incorrect_pin' => '入力された PIN が正しくありません。この支払い拒否コードは、カードリーダーを使用した支払いのみに適用されます。',
     'stripe_error_incorrect_zip' => '郵便番号が正しくありません。',
