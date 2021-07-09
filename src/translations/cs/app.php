@@ -248,7 +248,7 @@ return [
     'Close' => 'Zavřít',
     'Cloud Storage Integration' => 'Integrace cloudového úložiště',
     'Collapse' => 'Sbalit',
-    'Color hex value' => 'Hexadecimální kód barvy',
+    'Color hex value' => 'Hexadecimální hodnota barvy',
     'Color picker' => 'Nástroj pro výběr barev',
     'Color' => 'Barva',
     'Column Heading' => 'Nadpis sloupce',
