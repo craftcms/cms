@@ -365,7 +365,7 @@ return [
     'Craft isn’t installed yet.' => 'Craft はまだインストールされていません。',
     'Create a draft' => '下書きを作成',
     'Create a new entry before' => '前に新しいエントリを作成',
-    'Create a new entry after' => '後ろに新しいエントリを作成',
+    'Create a new entry after' => '後に新しいエントリを作成',
     'Create a new GraphQL Schema' => '新しいGraphQLスキーマを作成',
     'Create a new GraphQL token' => '新しいGraphQLトークンを作成',
     'Create a new asset volume' => '新しいアセットボリュームを作成',
