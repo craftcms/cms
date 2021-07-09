@@ -477,7 +477,7 @@ class EntryRevisionsController extends BaseEntriesController
         } catch (InvalidElementException $e) {
             if ($draft->getIsUnpublishedDraft()) {
                 $this->setFailFlash(Craft::t('app', 'Couldn’t create entry.'));
-            } else if ($draft->getIsProvisionalDraft()) {
+            } else if ($draft->isProvisionalDraft) {
                 $this->setFailFlash(Craft::t('app', 'Couldn’t save entry.'));
             } else {
                 $this->setFailFlash(Craft::t('app', 'Couldn’t apply draft.'));
@@ -498,7 +498,7 @@ class EntryRevisionsController extends BaseEntriesController
 
         if ($draft->getIsUnpublishedDraft()) {
             $this->setSuccessFlash(Craft::t('app', 'Entry created.'));
-        } else if ($draft->getIsProvisionalDraft()) {
+        } else if ($draft->isProvisionalDraft) {
             $this->setSuccessFlash(Craft::t('app', 'Entry saved.'));
         } else {
             $this->setSuccessFlash(Craft::t('app', 'Draft applied.'));

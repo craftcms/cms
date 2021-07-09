@@ -337,7 +337,7 @@ class ResaveController extends Controller
     }
 
     /**
-     * Resave elemetns
+     * Resave elements
      */
     private function _resaveElements(ElementQueryInterface $query): int
     {

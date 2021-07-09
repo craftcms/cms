@@ -61,7 +61,7 @@ class DraftBehavior extends BaseRevisionBehavior
     public function handleSave()
     {
         Db::update(Table::DRAFTS, [
-            'provisional' => $this->owner->getIsProvisionalDraft(),
+            'provisional' => $this->owner->isProvisionalDraft,
             'name' => $this->draftName,
             'notes' => $this->draftNotes,
             'dateLastMerged' => Db::prepareDateForDb($this->owner->dateLastMerged),

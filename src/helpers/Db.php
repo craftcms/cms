@@ -393,7 +393,7 @@ class Db
      */
     public static function isNumericColumnType(string $columnType): bool
     {
-        return in_array(self::parseColumnLength($columnType), self::$_numericColumnTypes, true);
+        return in_array(self::parseColumnType($columnType), self::$_numericColumnTypes, true);
     }
 
     /**

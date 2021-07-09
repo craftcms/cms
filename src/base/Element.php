@@ -2097,7 +2097,11 @@ abstract class Element extends Component implements ElementInterface
     }
 
     /**
-     * @inheritdoc
+     * Returns whether this is a provisional draft.
+     *
+     * @return bool
+     * @since 3.7.0
+     * @deprecated in 3.7.0. Use [[isProvisionalDraft]] instead.
      */
     public function getIsProvisionalDraft(): bool
     {
@@ -2489,7 +2493,7 @@ abstract class Element extends Component implements ElementInterface
         $cpEditUrl = $this->cpEditUrl();
 
         if ($cpEditUrl !== null) {
-            if ($this->getIsDraft() && !$this->getIsProvisionalDraft()) {
+            if ($this->getIsDraft() && !$this->isProvisionalDraft) {
                 $cpEditUrl = UrlHelper::urlWithParams($cpEditUrl, ['draftId' => $this->draftId]);
             } else if ($this->getIsRevision()) {
                 $cpEditUrl = UrlHelper::urlWithParams($cpEditUrl, ['revisionId' => $this->revisionId]);
@@ -2666,7 +2670,7 @@ abstract class Element extends Component implements ElementInterface
             ->structureId($this->structureId)
             ->siteId(['not', $this->siteId])
             ->drafts($this->getIsDraft())
-            ->provisionalDrafts($this->getIsProvisionalDraft())
+            ->provisionalDrafts($this->isProvisionalDraft)
             ->revisions($this->getIsRevision());
     }
 
@@ -3880,7 +3884,7 @@ abstract class Element extends Component implements ElementInterface
             Craft::t('app', 'Notes') => function() {
                 if ($this->getIsRevision()) {
                     $revision = $this;
-                } else if ($this->getIsCanonical() || $this->getIsProvisionalDraft()) {
+                } else if ($this->getIsCanonical() || $this->isProvisionalDraft) {
                     $element = $this->getCanonical(true);
                     $revision = $element->getCurrentRevision();
                 }
