@@ -1288,7 +1288,7 @@ return [
     'Temp files' => 'Temp fájlok',
     'Template caches' => 'Sablon cache',
     'Template that defines the Title field’s custom “translation key” format. {type} titles will be copied to all sites that produce the same key. For example, to make titles translatable based on the first two characters of the site handle, you could enter `{site.handle[:2]}`.' => 'Sablon, amely meghatározza a Cím mező egyéni „címfordítási kulcsa” formátumát. A {type} címek bemásolódnak az összes webhelyre, amely ezt a kulcsot hozza létre. Ha például azt szeretné, hogy a cím lefordítható legyen a webhelykezelő első két karaktere alapján, írja be: `{site.handle[:2]}`.',
-    'Template that defines the field’s custom “propagation key” format. Blocks will be saved to all sites that produce the same key.' => 'Sablon, amely meghatározza a mező egyéni „propagációs kulcsa” formátumát. A blokkok mentésre kerülnek az összes webhelyre, amely ezt a kulcsot hozza létre.',
+    'Template that defines the field’s custom “propagation key” format. Blocks will be saved to all sites that produce the same key.' => 'Sablon, amely meghatározza a mező egyéni „propagálási kulcsának” a formátumát. A blokkok mentésre kerülnek az összes webhelyre, amely ezt a kulcsot hozza létre.',
     'Template' => 'Sablon',
     'Templates' => 'Sablonok',
     'Temporary Uploads' => 'Átmeneti felöltések',
