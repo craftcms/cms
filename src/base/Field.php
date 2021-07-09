@@ -208,7 +208,7 @@ abstract class Field extends SavableComponent implements FieldInterface
     {
         $rules = parent::defineRules();
 
-        // Make sure the column name is under the databases maximum column length allowed, including the column prefix/suffix lengths
+        // Make sure the column name is under the database’s maximum allowed column length, including the column prefix/suffix lengths
         $maxHandleLength = Craft::$app->getDb()->getSchema()->maxObjectNameLength - strlen(Craft::$app->getContent()->fieldColumnPrefix) - 9;
 
         $rules[] = [['name'], 'string', 'max' => 255];
