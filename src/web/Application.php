@@ -498,6 +498,11 @@ class Application extends \yii\web\Application
         // Publish the directory
         [$publishedDir] = $this->getAssetManager()->publish(Craft::getAlias($sourcePath));
 
+        // Make sure the hashes match
+        if (basename($publishedDir) !== $hash) {
+            throw new NotFoundHttpException("$filePath does not exist.");
+        }
+
         $publishedPath = $publishedDir . DIRECTORY_SEPARATOR . $filePath;
         if (!file_exists($publishedPath)) {
             throw new NotFoundHttpException("$filePath does not exist.");
