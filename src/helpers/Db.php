@@ -1374,7 +1374,8 @@ class Db
      */
     private static function _batch(YiiQuery $query, int $batchSize, bool $each): BatchQueryResult
     {
-        $unbuffered = Craft::$app->getDb()->getIsMysql();
+        $db = self::db();
+        $unbuffered = $db->getIsMysql() && Craft::$app->getConfig()->getDb()->useUnbufferedConnections;
 
         if ($unbuffered) {
             $db = Craft::$app->getComponents()['db'];
@@ -1384,8 +1385,6 @@ class Db
             $db->on(Connection::EVENT_AFTER_OPEN, function() use ($db) {
                 $db->pdo->setAttribute(PDO::MYSQL_ATTR_USE_BUFFERED_QUERY, false);
             });
-        } else {
-            $db = self::db();
         }
 
         /** @var BatchQueryResult $result */
