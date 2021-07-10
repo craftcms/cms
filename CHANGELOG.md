@@ -87,9 +87,6 @@
 - Removed `craft\services\AssetIndexer::getMissingFiles()`.
 - Removed `craft\services\AssetIndexer::prepareIndexList()`.
 - Removed `craft\services\AssetIndexer::processIndexForVolume()`.
-- Removed `craft\web\View::$minifyCss`.
-- Removed `craft\web\View::$minifyJs`.
-- Removed `craft\web\View::renderTemplateMacro()`.
 - Removed `craft\web\twig\Template`.
 - Removed `craft\web\twig\variables\CategoryGroups`.
 - Removed `craft\web\twig\variables\Config`.
@@ -106,4 +103,7 @@
 - Removed `craft\web\twig\variables\UserGroups`.
 - Removed `craft\web\twig\variables\UserPermissions`.
 - Removed `craft\web\twig\variables\UserSession`.
+- Removed `craft\web\View::$minifyCss`.
+- Removed `craft\web\View::$minifyJs`.
+- Removed `craft\web\View::renderTemplateMacro()`.
 - Removed the Flysystem library. The `craftcms/flysystem-adapter` package now provides a base Flysystem adapter class.
