@@ -475,23 +475,6 @@ class FieldLayout extends Model
     }
 
     /**
-     * Returns the IDs of the custom fields included in the layout.
-     *
-     * @return int[]
-     * @deprecated in 3.5.0.
-     */
-    public function getFieldIds(): array
-    {
-        $ids = [];
-
-        foreach ($this->getFields() as $field) {
-            $ids[] = $field->id;
-        }
-
-        return $ids;
-    }
-
-    /**
      * Returns a custom field by its handle.
      *
      * @param string $handle The field handle.

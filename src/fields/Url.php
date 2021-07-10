@@ -67,15 +67,21 @@ class Url extends Field implements PreviewableFieldInterface
     ];
 
     /**
-     * @var string|null The input’s placeholder text
-     * @deprecated in 3.6.0
-     */
-    public $placeholder;
-
-    /**
      * @var int The maximum length (in bytes) the field can hold
      */
     public $maxLength = 255;
+
+    /**
+     * @inheritdoc
+     */
+    public function __construct($config = [])
+    {
+        if (array_key_exists('placeholder', $config)) {
+            unset($config['placeholder']);
+        }
+
+        parent::__construct($config);
+    }
 
     /**
      * @inheritdoc

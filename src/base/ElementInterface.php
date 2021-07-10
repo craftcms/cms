@@ -1378,7 +1378,6 @@ interface ElementInterface extends ComponentInterface
      * Returns the HTML for the element’s editor slideout.
      *
      * @return string The HTML for the editor slideout
-     * @deprecated in 3.7.0. Use [[getSidebarHtml()]] or [[getMetadata()]] instead.
      */
     public function getEditorHtml(): string;
 

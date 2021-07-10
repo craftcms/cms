@@ -177,12 +177,6 @@ class Fields extends Component
     public $oldFieldColumnPrefix = 'field_';
 
     /**
-     * @var bool Whether to ignore changes to the project config.
-     * @deprecated in 3.1.2. Use [[\craft\services\ProjectConfig::$muteEvents]] instead.
-     */
-    public $ignoreProjectConfigChanges = false;
-
-    /**
      * @var MemoizableArray|null
      * @see _groups()
      */
@@ -321,10 +315,6 @@ class Fields extends Component
      */
     public function handleChangedGroup(ConfigEvent $event)
     {
-        if ($this->ignoreProjectConfigChanges) {
-            return;
-        }
-
         $data = $event->newValue;
         $uid = $event->tokenMatches[0];
 
@@ -363,10 +353,6 @@ class Fields extends Component
      */
     public function handleDeletedGroup(ConfigEvent $event)
     {
-        if ($this->ignoreProjectConfigChanges) {
-            return;
-        }
-
         $uid = $event->tokenMatches[0];
         $groupRecord = $this->_getGroupRecord($uid);
 
@@ -886,10 +872,6 @@ class Fields extends Component
      */
     public function handleChangedField(ConfigEvent $event)
     {
-        if ($this->ignoreProjectConfigChanges) {
-            return;
-        }
-
         $data = $event->newValue;
         $fieldUid = $event->tokenMatches[0];
 
@@ -953,12 +935,7 @@ class Fields extends Component
      */
     public function handleDeletedField(ConfigEvent $event)
     {
-        if ($this->ignoreProjectConfigChanges) {
-            return;
-        }
-
         $fieldUid = $event->tokenMatches[0];
-
         $this->applyFieldDelete($fieldUid);
     }
 

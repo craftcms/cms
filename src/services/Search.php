@@ -179,25 +179,6 @@ class Search extends Component
     }
 
     /**
-     * Indexes the field values for a given element and site.
-     *
-     * @param int $elementId The ID of the element getting indexed.
-     * @param int $siteId The site ID of the content getting indexed.
-     * @param array $fields The field values, indexed by field ID.
-     * @return bool Whether the indexing was a success.
-     * @throws SiteNotFoundException
-     * @deprecated in 3.4.0. Use [[indexElementAttributes()]] instead.
-     */
-    public function indexElementFields(int $elementId, int $siteId, array $fields): bool
-    {
-        foreach ($fields as $fieldId => $value) {
-            $this->_indexElementKeywords($elementId, 'field', (string)$fieldId, $siteId, $value);
-        }
-
-        return true;
-    }
-
-    /**
      * Filters a list of element IDs by a given search query.
      *
      * @param int[] $elementIds The list of element IDs to filter by the search query.

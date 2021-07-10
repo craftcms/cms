@@ -43,20 +43,6 @@ class Drafts extends Component
     const EVENT_AFTER_CREATE_DRAFT = 'afterCreateDraft';
 
     /**
-     * @event DraftEvent The event that is triggered before source changes are merged into a draft.
-     * @since 3.4.0
-     * @deprecated in 3.7.0. Use [[Elements::EVENT_BEFORE_MERGE_CANONICAL_CHANGES]] instead.
-     */
-    const EVENT_BEFORE_MERGE_SOURCE_CHANGES = 'beforeMergeSource';
-
-    /**
-     * @event DraftEvent The event that is triggered after source changes are merged into a draft.
-     * @since 3.4.0
-     * @deprecated in 3.7.0. Use [[Elements::EVENT_AFTER_MERGE_CANONICAL_CHANGES]] instead.
-     */
-    const EVENT_AFTER_MERGE_SOURCE_CHANGES = 'afterMergeSource';
-
-    /**
      * @event DraftEvent The event that is triggered before a draft is published.
      * @since 3.6.0
      */
@@ -260,21 +246,6 @@ class Drafts extends Component
 
         // Try to save and return the result
         return Craft::$app->getElements()->saveElement($element);
-    }
-
-    /**
-     * Merges recent source element changes into a draft.
-     *
-     * @param ElementInterface $draft The draft
-     * @since 3.4.0
-     * @deprecated in 3.7.0. Use [[Elements::mergeCanonicalChanges()]] instead.
-     */
-    public function mergeSourceChanges(ElementInterface $draft)
-    {
-        try {
-            Craft::$app->getElements()->mergeCanonicalChanges($draft);
-        } catch (InvalidArgumentException $e) {
-        }
     }
 
     /**

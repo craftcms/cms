@@ -91,17 +91,6 @@ class Routes extends Component
     }
 
     /**
-     * Returns the routes defined in the control panel.
-     *
-     * @return array
-     * @deprecated in 3.1.0. Use [[\craft\services\Routes::getProjectConfigRoutes()]] instead.
-     */
-    public function getDbRoutes(): array
-    {
-        return $this->getProjectConfigRoutes();
-    }
-
-    /**
      * Returns the routes defined in the project config.
      *
      * @return array

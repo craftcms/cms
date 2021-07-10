@@ -417,18 +417,6 @@ class FileHelper extends \yii\helpers\FileHelper
     }
 
     /**
-     * Removes a file or symlink in a cross-platform way
-     *
-     * @param string $path the file to be deleted
-     * @return bool
-     * @deprecated in 3.0.0-RC11. Use [[unlink()]] instead.
-     */
-    public static function removeFile(string $path): bool
-    {
-        return static::unlink($path);
-    }
-
-    /**
      * @inheritdoc
      * @since 3.4.16
      */

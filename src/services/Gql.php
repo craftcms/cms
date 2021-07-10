@@ -18,7 +18,6 @@ use craft\events\DefineGqlValidationRulesEvent;
 use craft\events\ExecuteGqlQueryEvent;
 use craft\events\RegisterGqlDirectivesEvent;
 use craft\events\RegisterGqlMutationsEvent;
-use craft\events\RegisterGqlPermissionsEvent;
 use craft\events\RegisterGqlQueriesEvent;
 use craft\events\RegisterGqlSchemaComponentsEvent;
 use craft\events\RegisterGqlTypesEvent;
@@ -63,7 +62,6 @@ use craft\gql\types\QueryArgument;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
 use craft\helpers\Gql as GqlHelper;
-use craft\helpers\Json;
 use craft\helpers\ProjectConfig as ProjectConfigHelper;
 use craft\helpers\StringHelper;
 use craft\models\GqlSchema;
@@ -186,13 +184,6 @@ class Gql extends Component
      * ```
      */
     const EVENT_REGISTER_GQL_DIRECTIVES = 'registerGqlDirectives';
-
-    /**
-     * @event RegisterGqlPermissionsEvent The event that is triggered when registering user permissions.
-     * @since 3.4.0
-     * @deprecated in 3.5.0. Use the [[EVENT_REGISTER_GQL_SCHEMA_COMPONENTS]] event instead.
-     */
-    const EVENT_REGISTER_GQL_PERMISSIONS = 'registerGqlPermissions';
 
     /**
      * @event RegisterGqlSchemaComponentsEvent The event that is triggered when registering GraphQL schema components.
@@ -670,17 +661,6 @@ class Gql extends Component
     }
 
     /**
-     * Returns all of the known GraphQL permissions, sorted by category.
-     *
-     * @return array
-     * @deprecated in 3.5.0. Use [[\craft\services\Gql::get()]] instead.
-     */
-    public function getAllPermissions(): array
-    {
-        return $this->getAllSchemaComponents()['queries'];
-    }
-
-    /**
      * Returns all of the known GraphQL schema components.
      *
      * @return array
@@ -740,16 +720,6 @@ class Gql extends Component
 
         // Let plugins customize them and add new ones
         // ---------------------------------------------------------------------
-
-        if ($this->hasEventHandlers(self::EVENT_REGISTER_GQL_PERMISSIONS)) {
-            $deprecatedEvent = new RegisterGqlPermissionsEvent([
-                'permissions' => $queries,
-            ]);
-
-            $this->trigger(self::EVENT_REGISTER_GQL_PERMISSIONS, $deprecatedEvent);
-
-            $queries = $deprecatedEvent->permissions;
-        }
 
         $event = new RegisterGqlSchemaComponentsEvent([
             'queries' => $queries,

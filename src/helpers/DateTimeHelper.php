@@ -270,32 +270,6 @@ class DateTimeHelper
     }
 
     /**
-     * Translates the words in a formatted date string to the application’s language.
-     *
-     * @param string $str The formatted date string
-     * @param string|null $language The language code (e.g. `en-US`, `en`). If this is null, the current
-     * [[\yii\base\Application::language|application language]] will be used.
-     * @return string The translated date string
-     * @deprecated in 3.0.6. Use [[\craft\i18n\Formatter::asDate()]] instead.
-     */
-    public static function translateDate(string $str, ?string $language = null): string
-    {
-        Craft::$app->getDeprecator()->log(__METHOD__, '`' . __METHOD__ . '` is deprecated. Use `craft\i18n\Formatter::asDate()` instead.');
-
-        if ($language === null) {
-            $language = Craft::$app->language;
-        }
-
-        if (strpos($language, 'en') === 0) {
-            return $str;
-        }
-
-        $translations = self::_getDateTranslations($language);
-
-        return strtr($str, $translations);
-    }
-
-    /**
      * @param int $seconds The number of seconds
      * @param bool $showSeconds Whether to output seconds or not
      * @return string

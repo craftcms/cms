@@ -18,12 +18,6 @@ use yii\base\Event;
 class ExecuteGqlQueryEvent extends Event
 {
     /**
-     * @var string The access token used for this request.
-     * @deprecated in 3.4.0. Use [[schemaId]] instead to determine schema used.
-     */
-    public $accessToken;
-
-    /**
      * @var int The id of the schema used for this request.
      * @since 3.4.0
      */

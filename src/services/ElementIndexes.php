@@ -9,7 +9,6 @@ namespace craft\services;
 
 use Craft;
 use craft\base\ElementInterface;
-use craft\base\FieldInterface;
 use craft\base\PreviewableFieldInterface;
 use craft\base\SortableFieldInterface;
 use craft\db\Query;
@@ -377,28 +376,6 @@ class ElementIndexes extends Component
 
         $this->trigger(self::EVENT_DEFINE_SOURCE_TABLE_ATTRIBUTES, $event);
         return $event->attributes;
-    }
-
-    /**
-     * Returns the fields that are available to be shown as table attributes.
-     *
-     * @param string $elementType The element type class
-     * @return FieldInterface[]
-     * @deprecated in 3.5.0. Use [[getSourceTableAttributes()]] instead.
-     */
-    public function getAvailableTableFields(string $elementType): array
-    {
-        /** @var string|ElementInterface $elementType */
-        $fields = Craft::$app->getFields()->getFieldsByElementType($elementType);
-        $availableFields = [];
-
-        foreach ($fields as $field) {
-            if ($field instanceof PreviewableFieldInterface) {
-                $availableFields[] = $field;
-            }
-        }
-
-        return $availableFields;
     }
 
     /**

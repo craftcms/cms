@@ -140,8 +140,6 @@ abstract class Element extends Component implements ElementInterface
 
     const ATTR_STATUS_MODIFIED = 'modified';
     const ATTR_STATUS_OUTDATED = 'outdated';
-    /** @deprecated in 3.7.0 */
-    const ATTR_STATUS_CONFLICTED = 'conflicted';
 
     // Events
     // -------------------------------------------------------------------------
@@ -2097,18 +2095,6 @@ abstract class Element extends Component implements ElementInterface
     }
 
     /**
-     * Returns whether this is a provisional draft.
-     *
-     * @return bool
-     * @since 3.7.0
-     * @deprecated in 3.7.0. Use [[isProvisionalDraft]] instead.
-     */
-    public function getIsProvisionalDraft(): bool
-    {
-        return $this->isProvisionalDraft;
-    }
-
-    /**
      * @inheritdoc
      */
     public function getIsRevision(): bool
@@ -2226,18 +2212,6 @@ abstract class Element extends Component implements ElementInterface
      * @inheritdoc
      */
     public function getIsUnpublishedDraft(): bool
-    {
-        return $this->getIsUnsavedDraft();
-    }
-
-    /**
-     * Returns whether the element is an unpublished draft.
-     *
-     * @return bool
-     * @since 3.2.0
-     * @deprecated in 3.6.0. Use [[getIsUnpublishedDraft()]] instead.
-     */
-    public function getIsUnsavedDraft(): bool
     {
         return $this->getIsDraft() && $this->getIsCanonical();
     }
@@ -3215,22 +3189,6 @@ abstract class Element extends Component implements ElementInterface
         if ($this->_initialized) {
             $this->_dirtyFields[$fieldHandle] = true;
         }
-    }
-
-    /**
-     * Returns the status of a given field.
-     *
-     * @param string $fieldHandle
-     * @return array|null
-     * @since 3.4.0
-     * @deprecated in 3.7.0. Use [[FieldInterface::getStatus()]] instead.
-     */
-    function getFieldStatus(string $fieldHandle)
-    {
-        if (($field = $this->fieldByHandle($fieldHandle)) !== null) {
-            return $field->getStatus($this);
-        }
-        return null;
     }
 
     /**

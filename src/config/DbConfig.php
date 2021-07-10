@@ -193,17 +193,6 @@ class DbConfig extends BaseObject
     /**
      * Updates the DSN string based on the config setting values.
      *
-     * @throws InvalidConfigException if [[driver]] isn’t set to `mysql` or `pgsql`.
-     * @deprecated in 3.4.0.
-     */
-    public function updateDsn()
-    {
-        $this->_updateDsn();
-    }
-
-    /**
-     * Updates the DSN string based on the config setting values.
-     *
      * @throws InvalidConfigException
      */
     private function _updateDsn()

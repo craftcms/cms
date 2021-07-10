@@ -93,31 +93,31 @@ class ArrayHelperTest extends Unit
             ]
         ];
 
-        $filtered = ArrayHelper::filterByValue($array, 'name', 'array 1');
+        $filtered = ArrayHelper::where($array, 'name', 'array 1');
         self::assertCount(1, $filtered);
         self::assertSame('the first array', $filtered[0]['description']);
 
         // Set the name to empty and see if we can filter by keys with an empty value
         $array[0]['name'] = '';
-        $filtered = ArrayHelper::filterByValue($array, 'name', '');
+        $filtered = ArrayHelper::where($array, 'name', '');
         self::assertCount(1, $filtered);
         self::assertSame('the first array', $filtered[0]['description']);
 
         // Add a new key to the array that it empty and with an empty value. Make sure that when filtering empty by empty  it returns everything.
         $array[0][''] = '';
-        $filtered = ArrayHelper::filterByValue($array, '', '');
+        $filtered = ArrayHelper::where($array, '', '');
         self::assertCount(count($array), $filtered);
         self::assertSame($array, $filtered);
 
         // Filter by emojis?
         $array[0]['😀'] = '😘';
-        $filtered = ArrayHelper::filterByValue($array, '😀', '😘');
+        $filtered = ArrayHelper::where($array, '😀', '😘');
         self::assertCount(1, $filtered);
         self::assertSame('the first array', $filtered[0]['description']);
 
         // See if we can filter by an array as a value.
         self::assertSame([['name' => ['testname' => true]]],
-            ArrayHelper::filterByValue(
+            ArrayHelper::where(
                 [
                     ['name' => ['testname' => true]],
                     ['name' => '22'],
@@ -128,7 +128,7 @@ class ArrayHelperTest extends Unit
 
         // Strict will only return 1. Non strict will typecast integer to string and thus find 2.
         self::assertCount(2,
-            ArrayHelper::filterByValue(
+            ArrayHelper::where(
                 [
                     ['name' => 22],
                     ['name' => '22'],
@@ -139,7 +139,7 @@ class ArrayHelperTest extends Unit
             )
         );
         self::assertCount(1,
-            ArrayHelper::filterByValue(
+            ArrayHelper::where(
                 [
                     ['name' => 22],
                     ['name' => '22'],
@@ -152,7 +152,7 @@ class ArrayHelperTest extends Unit
 
         self::assertSame(
             [['name' => 'john']],
-            ArrayHelper::filterByValue(
+            ArrayHelper::where(
                 [
                     ['name' => 'john'],
                     ['name' => 'michael'],
@@ -164,7 +164,7 @@ class ArrayHelperTest extends Unit
 
         self::assertSame(
             [['name' => 'john']],
-            ArrayHelper::filterByValue(
+            ArrayHelper::where(
                 [
                     ['name' => 'john'],
                     ['name' => 'michael'],

@@ -74,10 +74,6 @@ class ProjectConfig extends Component
      */
     const CACHE_DURATION = 31536000; // 1 year
     /**
-     * @deprecated in 3.5.0
-     */
-    const CONFIG_KEY = 'storedConfig';
-    /**
      * @var string Filename for base config file
      * @since 3.1.0
      */

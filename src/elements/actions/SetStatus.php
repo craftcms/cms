@@ -26,24 +26,6 @@ class SetStatus extends ElementAction
      * @since 3.4.0
      */
     const DISABLED = 'disabled';
-    /**
-     * @since 3.0.30
-     * @deprecated in 3.4.0. Use `DISABLED` instead.
-     */
-    const DISABLED_GLOBALLY = 'disabled';
-    /**
-     * @since 3.0.30
-     * @deprecated in 3.4.0. Use `DISABLED` instead.
-     */
-    const DISABLED_FOR_SITE = 'disabled-for-site';
-
-    /**
-     * @var bool Whether to show the “Disabled for Site” status option.
-     *
-     * @since 3.0.30
-     * @deprecated in 3.4.0. This is no longer needed.
-     */
-    public $allowDisabledForSite = false;
 
     /**
      * @var string|null The status elements should be set to

@@ -105,23 +105,6 @@ class ArrayHelper extends \yii\helpers\ArrayHelper
     /**
      * Filters an array to only the values where a given key (the name of a
      * sub-array key or sub-object property) is set to a given value.
-     * Array keys are preserved.
-     *
-     * @param array|\Traversable $array the array that needs to be indexed or grouped
-     * @param string|\Closure $key the column name or anonymous function which result will be used to index the array
-     * @param mixed $value the value that $key should be compared with
-     * @param bool $strict whether a strict type comparison should be used when checking array element values against $value
-     * @return array the filtered array
-     * @deprecated in 3.2.0. Use [[where()]] instead.
-     */
-    public static function filterByValue($array, $key, $value = true, bool $strict = false): array
-    {
-        return static::where($array, $key, $value, $strict);
-    }
-
-    /**
-     * Filters an array to only the values where a given key (the name of a
-     * sub-array key or sub-object property) is set to a given value.
      *
      * Array keys are preserved by default.
      *

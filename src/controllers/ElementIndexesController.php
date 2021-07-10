@@ -60,12 +60,6 @@ class ElementIndexesController extends BaseElementsController
     protected $viewState;
 
     /**
-     * @var bool
-     * @deprecated in 3.4.6
-     */
-    protected $paginated = false;
-
-    /**
      * @var ElementQueryInterface|ElementQuery|null
      */
     protected $elementQuery;
@@ -98,7 +92,6 @@ class ElementIndexesController extends BaseElementsController
         $this->sourceKey = $this->request->getParam('source') ?: null;
         $this->source = $this->source();
         $this->viewState = $this->viewState();
-        $this->paginated = (bool)$this->request->getParam('paginated');
         $this->elementQuery = $this->elementQuery();
 
         if ($this->includeActions() && $this->sourceKey !== null) {
