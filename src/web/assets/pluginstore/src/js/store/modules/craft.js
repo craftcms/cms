@@ -6,7 +6,6 @@ import api from '../../api/craft'
 const state = {
     canTestEditions: null,
     countries: null,
-    craftId: null,
     craftLogo: null,
     currentUser: null,
     defaultPluginSvg: null,
@@ -147,19 +146,6 @@ const actions = {
         })
     },
 
-    getCraftIdData({commit}, {accessToken}) {
-        return new Promise((resolve, reject) => {
-            api.getCraftIdData({accessToken})
-                .then(responseData => {
-                    commit('updateCraftIdData', {responseData})
-                    resolve()
-                })
-                .catch(error => {
-                    reject(error)
-                })
-        })
-    },
-
     getPluginLicenseInfo({commit}) {
         return new Promise((resolve, reject) => {
             api.getPluginLicenseInfo()
@@ -221,16 +207,8 @@ const mutations = {
         state.CraftSolo = response.data.CraftSolo
     },
 
-    updateCraftIdData(state, {responseData}) {
-        state.craftId = responseData
-    },
-
     updateCountries(state, {responseData}) {
         state.countries = responseData.countries
-    },
-
-    updateCraftId(state, craftId) {
-        state.craftId = craftId
     },
 
     updatePluginLicenseInfo(state, {response}) {

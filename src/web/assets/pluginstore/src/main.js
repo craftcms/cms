@@ -40,7 +40,6 @@ Garnish.$doc.ready(function() {
                 cartDataLoaded: false,
                 coreDataLoaded: false,
                 craftDataLoaded: false,
-                craftIdDataLoaded: false,
                 modalStep: null,
                 pageTitle: 'Plugin Store',
                 plugin: null,
@@ -55,7 +54,6 @@ Garnish.$doc.ready(function() {
         computed: {
             ...mapState({
                 cart: state => state.cart.cart,
-                craftId: state => state.craft.craftId,
             }),
 
             /**
@@ -72,10 +70,6 @@ Garnish.$doc.ready(function() {
             cart(cart) {
                 this.$emit('cartChange', cart)
             },
-
-            craftId() {
-                this.$emit('craftIdChange')
-            }
         },
 
         methods: {
@@ -113,46 +107,6 @@ Garnish.$doc.ready(function() {
              */
             closeModal() {
                 this.showModal = false
-            },
-
-            /**
-             * Updates Craft ID.
-             *
-             * @param craftIdJson
-             */
-            updateCraftId(craftId, callback) {
-                this.$store.commit('craft/updateCraftId', craftId)
-
-                if (this.craftId && this.craftId.email !== this.cart.email) {
-                    // Update the cart’s email with the one from the Craft ID account
-                    let data = {
-                        email: this.craftId.email,
-                    }
-
-                    this.$store.dispatch('cart/saveCart', data)
-                        .then(() => {
-                            this.$emit('craftIdUpdated')
-
-                            if (callback) {
-                                callback()
-                            }
-                        })
-                        .catch((error) => {
-                            this.$root.displayError("Couldn’t update cart’s email.")
-
-                            if (callback) {
-                                callback()
-                            }
-
-                            throw error
-                        })
-                } else {
-                    this.$emit('craftIdUpdated')
-
-                    if (callback) {
-                        callback()
-                    }
-                }
             },
 
             /**
@@ -200,7 +154,7 @@ Garnish.$doc.ready(function() {
 
                 // Show actions spinner when Plugin Store data has finished loading but Craft data has not.
                 this.$on('dataLoaded', () => {
-                    if (this.pluginStoreDataLoaded && !(this.craftDataLoaded && this.cartDataLoaded && this.craftIdDataLoaded)) {
+                    if (this.pluginStoreDataLoaded && !(this.craftDataLoaded && this.cartDataLoaded)) {
                         $pluginStoreActionsSpinner.removeClass('hidden')
                     }
                 });
@@ -209,25 +163,6 @@ Garnish.$doc.ready(function() {
                 this.$on('allDataLoaded', function() {
                     $pluginStoreActions.removeClass('hidden')
                     $pluginStoreActionsSpinner.addClass('hidden')
-                })
-
-                // Craft ID
-                const $craftId = $('#craftid-account')
-                const $craftIdConnectForm = $('#craftid-connect-form')
-                const $craftIdDisconnectForm = $('#craftid-disconnect-form')
-
-                this.$on('craftIdChange', function() {
-                    if (this.craftId) {
-                        $('.label', $craftId).html(this.craftId.username)
-
-                        $craftId.removeClass('hidden')
-                        $craftIdConnectForm.addClass('hidden')
-                        $craftIdDisconnectForm.removeClass('hidden')
-                    } else {
-                        $craftId.addClass('hidden')
-                        $craftIdConnectForm.removeClass('hidden')
-                        $craftIdDisconnectForm.addClass('hidden')
-                    }
                 })
 
                 // Cancel ajax requests when an outbound link gets clicked
@@ -266,21 +201,6 @@ Garnish.$doc.ready(function() {
                     })
             },
 
-            loadCraftIdData() {
-                if (window.craftIdAccessToken) {
-                    const accessToken = window.craftIdAccessToken
-
-                    this.$store.dispatch('craft/getCraftIdData', {accessToken})
-                        .then(() => {
-                            this.craftIdDataLoaded = true
-                            this.$emit('dataLoaded')
-                        })
-                } else {
-                    this.craftIdDataLoaded = true
-                    this.$emit('dataLoaded')
-                }
-            },
-
             /**
              * Loads all the data required for the Plugin Store and cart to work.
              */
@@ -288,7 +208,6 @@ Garnish.$doc.ready(function() {
                 this.loadPluginStoreData()
 
                 this.loadCraftData(() => {
-                    this.loadCraftIdData()
                     this.loadCartData()
                 });
             },
@@ -343,10 +262,6 @@ Garnish.$doc.ready(function() {
                 }
 
                 if (!this.cartDataLoaded) {
-                    return null
-                }
-
-                if (!this.craftIdDataLoaded) {
                     return null
                 }
 
