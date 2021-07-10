@@ -949,17 +949,6 @@ class ExtensionTest extends Unit
     }
 
     /**
-     * @deprecated
-     */
-    public function testRoundFunction()
-    {
-        $this->testRenderResult(
-            '5',
-            '{{ round(4.8) }}'
-        );
-    }
-
-    /**
      * @throws LoaderError
      * @throws SyntaxError
      */
