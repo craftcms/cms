@@ -8,9 +8,9 @@
 namespace craft\web\assets\pluginstore;
 
 use Craft;
+use craft\base\HotReloadAssetBundle;
 use craft\helpers\Json;
 use craft\helpers\UrlHelper;
-use craft\web\AssetBundle;
 use craft\web\assets\cp\CpAsset;
 use craft\web\assets\vue\VueAsset;
 use yii\caching\TagDependency;
@@ -19,7 +19,7 @@ use yii\web\NotFoundHttpException;
 /**
  * Asset bundle for the Plugin Store page
  */
-class PluginStoreAsset extends AssetBundle
+class PluginStoreAsset extends HotReloadAssetBundle
 {
     const CACHE_KEY = 'pluginstore';
     const CACHE_TAG = 'pluginstore';
