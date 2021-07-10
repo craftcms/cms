@@ -490,15 +490,19 @@ class Application extends \yii\web\Application
             return;
         }
 
-        // Publish the directory
         $filePath = substr($resourceUri, strlen($hash) + 1);
         if (!Path::ensurePathIsContained($filePath)) {
             throw new BadRequestHttpException('Invalid resource path: ' . $filePath);
         }
-        $publishedPath = $this->getAssetManager()->publish(Craft::getAlias($sourcePath))[0] . DIRECTORY_SEPARATOR . $filePath;
+
+        // Publish the directory
+        [$publishedDir] = $this->getAssetManager()->publish(Craft::getAlias($sourcePath));
+
+        $publishedPath = $publishedDir . DIRECTORY_SEPARATOR . $filePath;
         if (!file_exists($publishedPath)) {
-            throw new NotFoundHttpException($filePath . ' does not exist.');
+            throw new NotFoundHttpException("$filePath does not exist.");
         }
+
         $this->getResponse()
             ->setCacheHeaders()
             ->sendFile($publishedPath, null, ['inline' => true]);
