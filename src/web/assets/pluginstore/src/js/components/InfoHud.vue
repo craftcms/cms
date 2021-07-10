@@ -1,5 +1,5 @@
 <template>
-    <div class="info-hud">
+    <div class="info-hud tw-flex tw-items-center">
         <v-popover placement="right">
             <icon icon="info-circle" />
 
