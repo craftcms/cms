@@ -403,7 +403,7 @@ interface FieldInterface extends SavableComponentInterface
     /**
      * Returns whether the field should be included in the given GraphQL schema.
      *
-     * @param GqlSchema
+     * @param GqlSchema $schema
      * @return bool
      * @since 3.6.0
      */

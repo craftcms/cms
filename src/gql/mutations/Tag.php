@@ -17,7 +17,6 @@ use craft\gql\resolvers\mutations\Tag as TagResolver;
 use craft\gql\types\generators\TagType;
 use craft\helpers\Gql;
 use craft\helpers\Gql as GqlHelper;
-use craft\models\EntryType as EntryTypeModel;
 use craft\models\TagGroup;
 use GraphQL\Type\Definition\Type;
 use yii\base\InvalidConfigException;
@@ -73,7 +72,7 @@ class Tag extends Mutation
     /**
      * Create the per-tag-group save mutation.
      *
-     * @param EntryTypeModel $tagGroup
+     * @param TagGroup $tagGroup
      * @return array
      * @throws InvalidConfigException
      */

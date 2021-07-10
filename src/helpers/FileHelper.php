@@ -292,7 +292,7 @@ class FileHelper extends \yii\helpers\FileHelper
      * Returns whether the given file path is an SVG image.
      *
      * @param string $file the file name.
-     * @param string $magicFile name of the optional magic database file (or alias), usually something like `/path/to/magic.mime`.
+     * @param string|null $magicFile name of the optional magic database file (or alias), usually something like `/path/to/magic.mime`.
      * This will be passed as the second parameter to [finfo_open()](http://php.net/manual/en/function.finfo-open.php)
      * when the `fileinfo` extension is installed. If the MIME type is being determined based via [[getMimeTypeByExtension()]]
      * and this is null, it will use the file specified by [[mimeMagicFile]].
@@ -309,7 +309,7 @@ class FileHelper extends \yii\helpers\FileHelper
      * Returns whether the given file path is an GIF image.
      *
      * @param string $file the file name.
-     * @param string $magicFile name of the optional magic database file (or alias), usually something like `/path/to/magic.mime`.
+     * @param string|null $magicFile name of the optional magic database file (or alias), usually something like `/path/to/magic.mime`.
      * This will be passed as the second parameter to [finfo_open()](http://php.net/manual/en/function.finfo-open.php)
      * when the `fileinfo` extension is installed. If the MIME type is being determined based via [[getMimeTypeByExtension()]]
      * and this is null, it will use the file specified by [[mimeMagicFile]].

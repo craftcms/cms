@@ -134,7 +134,7 @@ class Application extends \yii\console\Application
      *
      * @return User
      */
-    public function getUser()
+    public function getUser(): User
     {
         return $this->get('user');
     }

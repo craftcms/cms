@@ -655,10 +655,10 @@ class Matrix extends Component
      * Returns the content table name for a given Matrix field.
      *
      * @param MatrixField $matrixField The Matrix field.
-     * @return string|false The table name, or `false` if $useOldHandle was set to `true` and there was no old handle.
+     * @return string The table name, or `false` if `$useOldHandle` was set to `true` and there was no old handle.
      * @deprecated in 3.0.23. Use [[MatrixField::$contentTable]] instead.
      */
-    public function getContentTableName(MatrixField $matrixField)
+    public function getContentTableName(MatrixField $matrixField): string
     {
         return $matrixField->contentTable;
     }
@@ -689,7 +689,7 @@ class Matrix extends Component
      * @param int|null $siteId The site ID to return. Defaults to the current site.
      * @return MatrixBlock|null The Matrix block, or `null` if it didn’t exist.
      */
-    public function getBlockById(int $blockId, int $siteId = null)
+    public function getBlockById(int $blockId, int $siteId = null): ?MatrixBlock
     {
         /** @noinspection PhpIncompatibleReturnTypeInspection */
         return Craft::$app->getElements()->getElementById($blockId, MatrixBlock::class, $siteId);
@@ -1168,7 +1168,7 @@ class Matrix extends Component
      * Deletes blocks from an owner element
      *
      * @param MatrixField $field The Matrix field
-     * @param ElementInterface The owner element
+     * @param ElementInterface $owner The owner element
      * @param int[] $except Block IDs that should be left alone
      */
     private function _deleteOtherBlocks(MatrixField $field, ElementInterface $owner, array $except)

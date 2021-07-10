@@ -56,7 +56,7 @@ abstract class MutationResolver extends Component
      * Set a data normalizer for an argument to use for data normalization during resolving.
      *
      * @param string $argument
-     * @param callable $normalizer
+     * @param callable|null $normalizer
      */
     public function setValueNormalizer(string $argument, callable $normalizer = null)
     {

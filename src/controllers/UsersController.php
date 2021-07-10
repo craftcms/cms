@@ -2140,7 +2140,7 @@ class UsersController extends Controller
     }
 
     /**
-     * @param User|null
+     * @param User|null $user
      * @return Response
      * @throws HttpException if the verification code is invalid
      */

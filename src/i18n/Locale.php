@@ -890,10 +890,10 @@ class Locale extends BaseObject
     /**
      * Returns the locale name in its own language.
      *
-     * @return string|false
+     * @return string
      * @deprecated in 3.0.0. Use getDisplayName() instead.
      */
-    public function getNativeName()
+    public function getNativeName(): string
     {
         Craft::$app->getDeprecator()->log('Locale::getNativeName()', '`Locale::getNativeName()` has been deprecated. Use `getDisplayName()` instead.');
 

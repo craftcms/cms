@@ -190,7 +190,7 @@ class Config extends Component
      * $settings = Craft::$app->config->getConfigFromFile('foo');
      * ```
      *
-     * @param $filename
+     * @param string $filename
      * @return array
      */
     public function getConfigFromFile(string $filename): array

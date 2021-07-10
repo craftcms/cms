@@ -134,7 +134,7 @@ class UpdateController extends Controller
     /**
      * Updates Craft and/or plugins.
      *
-     * @param string $handle
+     * @param string|null $handle
      * The update handle (`all`, `craft`, or a plugin handle). You can pass
      * multiple handles separated by spaces, and you can update to a specific
      * version using the syntax `<handle>:<version>`.

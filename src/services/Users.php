@@ -155,7 +155,7 @@ class Users extends Component
      * @param int $userId The user’s ID.
      * @return User|null The user with the given ID, or `null` if a user could not be found.
      */
-    public function getUserById(int $userId)
+    public function getUserById(int $userId): ?User
     {
         /** @noinspection PhpIncompatibleReturnTypeInspection */
         return Craft::$app->getElements()->getElementById($userId, User::class);

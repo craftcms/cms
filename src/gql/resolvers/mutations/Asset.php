@@ -41,10 +41,10 @@ class Asset extends ElementMutationResolver
      * @param array $arguments
      * @param $context
      * @param ResolveInfo $resolveInfo
-     * @return mixed
+     * @return AssetElement
      * @throws \Throwable if reasons.
      */
-    public function saveAsset($source, array $arguments, $context, ResolveInfo $resolveInfo)
+    public function saveAsset($source, array $arguments, $context, ResolveInfo $resolveInfo): AssetElement
     {
         /** @var Volume $volume */
         $volume = $this->getResolutionData('volume');
@@ -112,10 +112,10 @@ class Asset extends ElementMutationResolver
      * @param array $arguments
      * @param $context
      * @param ResolveInfo $resolveInfo
-     * @return mixed
+     * @return void
      * @throws \Throwable if reasons.
      */
-    public function deleteAsset($source, array $arguments, $context, ResolveInfo $resolveInfo)
+    public function deleteAsset($source, array $arguments, $context, ResolveInfo $resolveInfo): void
     {
         $assetId = $arguments['id'];
 
@@ -124,15 +124,13 @@ class Asset extends ElementMutationResolver
         $asset = $elementService->getElementById($assetId, AssetElement::class);
 
         if (!$asset) {
-            return true;
+            return;
         }
 
         $volumeUid = Db::uidById(Table::VOLUMES, $asset->getVolumeId());
         $this->requireSchemaAction('volumes.' . $volumeUid, 'delete');
 
         $elementService->deleteElementById($assetId);
-
-        return true;
     }
 
     /**

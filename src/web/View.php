@@ -1083,7 +1083,7 @@ class View extends \yii\web\View
      * - [[POS_HEAD]]: in the head section
      * - [[POS_BEGIN]]: at the beginning of the body section
      * - [[POS_END]]: at the end of the body section
-     * @param string $key the key that identifies the HTML code. If null, it will use a hash of the HTML as the key.
+     * @param string|null $key the key that identifies the HTML code. If null, it will use a hash of the HTML as the key.
      * If two HTML code blocks are registered with the same position and key, the latter will overwrite the former.
      * @since 3.5.0
      */

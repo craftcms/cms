@@ -37,10 +37,10 @@ class Category extends ElementMutationResolver
      * @param array $arguments
      * @param $context
      * @param ResolveInfo $resolveInfo
-     * @return mixed
+     * @return CategoryElement
      * @throws \Throwable if reasons.
      */
-    public function saveCategory($source, array $arguments, $context, ResolveInfo $resolveInfo)
+    public function saveCategory($source, array $arguments, $context, ResolveInfo $resolveInfo): CategoryElement
     {
         /** @var CategoryGroup $categoryGroup */
         $categoryGroup = $this->getResolutionData('categoryGroup');
@@ -83,10 +83,10 @@ class Category extends ElementMutationResolver
      * @param array $arguments
      * @param $context
      * @param ResolveInfo $resolveInfo
-     * @return mixed
+     * @return void
      * @throws \Throwable if reasons.
      */
-    public function deleteCategory($source, array $arguments, $context, ResolveInfo $resolveInfo)
+    public function deleteCategory($source, array $arguments, $context, ResolveInfo $resolveInfo): void
     {
         $categoryId = $arguments['id'];
 
@@ -94,14 +94,12 @@ class Category extends ElementMutationResolver
         $category = $elementService->getElementById($categoryId, CategoryElement::class);
 
         if (!$category) {
-            return true;
+            return;
         }
 
         $categoryGroupUid = Db::uidById(Table::CATEGORYGROUPS, $category->groupId);
         $this->requireSchemaAction('categorygroups.' . $categoryGroupUid, 'delete');
 
         $elementService->deleteElementById($categoryId);
-
-        return true;
     }
 }

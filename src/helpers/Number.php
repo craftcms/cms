@@ -135,7 +135,7 @@ class Number
      * returned.
      *
      * @param mixed $var
-     * @return mixed
+     * @return int|string
      */
     public static function makeNumeric($var)
     {

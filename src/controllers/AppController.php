@@ -208,9 +208,10 @@ class AppController extends Controller
      * downtime after a deployment.
      *
      * @param bool $applyProjectConfigChanges
-     * @throws ServerErrorException if something went wrong
+     * @return Response
+     * @throws ServerErrorHttpException
      */
-    public function actionMigrate(bool $applyProjectConfigChanges = false)
+    public function actionMigrate(bool $applyProjectConfigChanges = false): Response
     {
         $this->requirePostRequest();
 

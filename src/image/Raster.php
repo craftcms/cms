@@ -677,9 +677,9 @@ class Raster extends Image
     }
 
     /**
-     * @return mixed
+     * @return string
      */
-    private function _getResizeFilter()
+    private function _getResizeFilter(): string
     {
         return (Craft::$app->getImages()->getIsGd() ? Imagine::FILTER_UNDEFINED : Imagine::FILTER_LANCZOS);
     }

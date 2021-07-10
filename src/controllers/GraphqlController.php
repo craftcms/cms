@@ -195,6 +195,7 @@ class GraphqlController extends Controller
      * Returns the requested GraphQL schema
      *
      * @param GqlService $gqlService
+     * @return GqlSchema
      * @throws ForbiddenHttpException
      * @throws BadRequestHttpException
      */

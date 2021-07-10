@@ -584,7 +584,7 @@ class DashboardController extends Controller
     /**
      * Returns whether we should zip the custom support attachment.
      *
-     * @param string $file
+     * @param UploadedFile $file
      * @return bool
      */
     private function _shouldZipAttachment(UploadedFile $file): bool

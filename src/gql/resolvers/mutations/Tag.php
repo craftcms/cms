@@ -34,10 +34,10 @@ class Tag extends ElementMutationResolver
      * @param array $arguments
      * @param $context
      * @param ResolveInfo $resolveInfo
-     * @return mixed
+     * @return TagElement
      * @throws \Throwable if reasons.
      */
-    public function saveTag($source, array $arguments, $context, ResolveInfo $resolveInfo)
+    public function saveTag($source, array $arguments, $context, ResolveInfo $resolveInfo): TagElement
     {
         /** @var TagGroup $tagGroup */
         $tagGroup = $this->getResolutionData('tagGroup');
@@ -77,10 +77,10 @@ class Tag extends ElementMutationResolver
      * @param array $arguments
      * @param $context
      * @param ResolveInfo $resolveInfo
-     * @return mixed
+     * @return void
      * @throws \Throwable if reasons.
      */
-    public function deleteTag($source, array $arguments, $context, ResolveInfo $resolveInfo)
+    public function deleteTag($source, array $arguments, $context, ResolveInfo $resolveInfo): void
     {
         $tagId = $arguments['id'];
 
@@ -88,14 +88,12 @@ class Tag extends ElementMutationResolver
         $tag = $elementService->getElementById($tagId, TagElement::class);
 
         if (!$tag) {
-            return true;
+            return;
         }
 
         $tagGroupUid = Db::uidById(Table::TAGGROUPS, $tag->groupId);
         $this->requireSchemaAction('taggroups.' . $tagGroupUid, 'delete');
 
         $elementService->deleteElementById($tagId);
-
-        return true;
     }
 }

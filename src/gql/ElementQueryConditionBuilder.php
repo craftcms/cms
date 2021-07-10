@@ -139,7 +139,7 @@ class ElementQueryConditionBuilder extends Component
      * Extract the query conditions based on the resolve information passed in the constructor.
      * Returns an array of [methodName => parameters] to be called on the element query.
      *
-     * @param FieldInterface $startingParentField the starting parent field for the extraction, if any
+     * @param FieldInterface|null $startingParentField the starting parent field for the extraction, if any
      * @return array
      */
     public function extractQueryConditions(FieldInterface $startingParentField = null)
@@ -185,10 +185,10 @@ class ElementQueryConditionBuilder extends Component
      * Extract the value from an argument node, even if it's an array or a GraphQL variable.
      *
      * @param Node $argumentNode
+     * @return mixed
      */
     private function _extractArgumentValue(Node $argumentNode)
     {
-
         // Deal with a raw object value.
         if ($argumentNode->kind === 'ObjectValue') {
             /** @var ObjectValueNode $argumentNode */

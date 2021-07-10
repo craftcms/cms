@@ -621,7 +621,6 @@ class Application extends \yii\web\Application
      * @return Response|null
      * @throws HttpException
      * @throws ServiceUnavailableHttpException
-     * @throws \yii\base\ExitException
      */
     private function _processUpdateLogic(Request $request)
     {

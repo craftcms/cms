@@ -109,6 +109,7 @@ class Entry extends Mutation
      * Create the per-entry-type save mutations.
      *
      * @param EntryTypeModel $entryType
+     * @param bool $createSaveDraftMutation
      * @return array
      * @throws InvalidConfigException
      */

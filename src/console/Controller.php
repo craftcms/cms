@@ -12,6 +12,7 @@ use craft\events\DefineConsoleActionsEvent;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Console;
 use craft\helpers\StringHelper;
+use ReflectionMethod;
 use Seld\CliPrompt\CliPrompt;
 use yii\base\Action;
 use yii\base\InvalidConfigException;
@@ -299,7 +300,7 @@ class Controller extends YiiController
      * @param Action $action
      * @return \ReflectionMethod
      */
-    protected function getActionMethodReflection($action)
+    protected function getActionMethodReflection($action): ReflectionMethod
     {
         if ($action instanceof CallableAction) {
             if (!isset($this->_reflections[$action->id])) {

@@ -801,7 +801,6 @@ class AssetTransforms extends Component
 
         // If we have a match, copy the file.
         if ($matchFound) {
-            /** @var array $matchFound */
             $from = $asset->folderPath . $this->getTransformSubpath($asset, new AssetTransformIndex($matchFound));
             $to = $asset->folderPath . $this->getTransformSubpath($asset, $index);
 

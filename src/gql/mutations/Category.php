@@ -18,7 +18,6 @@ use craft\gql\types\generators\CategoryType;
 use craft\helpers\Gql;
 use craft\helpers\Gql as GqlHelper;
 use craft\models\CategoryGroup;
-use craft\models\EntryType as EntryTypeModel;
 use GraphQL\Type\Definition\Type;
 
 /**
@@ -72,7 +71,7 @@ class Category extends Mutation
     /**
      * Create the per-category-group save mutation.
      *
-     * @param EntryTypeModel $categoryGroup
+     * @param CategoryGroup $categoryGroup
      * @return array
      * @throws \yii\base\InvalidConfigException
      */

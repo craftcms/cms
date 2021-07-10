@@ -21,8 +21,8 @@ use craft\models\Site;
 use craft\web\assets\installer\InstallerAsset;
 use craft\web\Controller;
 use yii\base\Exception;
-use yii\base\Response;
 use yii\web\BadRequestHttpException;
+use yii\web\Response;
 
 /** @noinspection ClassOverridesFieldOfSuperClassInspection */
 
@@ -57,11 +57,11 @@ class InstallController extends Controller
     /**
      * Index action.
      *
-     * @return Response|string The requirements check response if the server doesn’t meet Craft’s requirements, or the rendering result
+     * @return Response The requirements check response if the server doesn’t meet Craft’s requirements, or the rendering result
      * @throws \Throwable if it's an Ajax request and the server doesn’t meet Craft’s requirements
      * @throws DbConnectException if a .env file can't be found and the current DB credentials are invalid
      */
-    public function actionIndex()
+    public function actionIndex(): Response
     {
         if (($response = Craft::$app->runAction('templates/requirements-check')) !== null) {
             return $response;
@@ -116,7 +116,7 @@ class InstallController extends Controller
      *
      * @return Response
      */
-    public function actionValidateDb()
+    public function actionValidateDb(): Response
     {
         $this->requirePostRequest();
         $this->requireAcceptsJson();

@@ -78,12 +78,12 @@ class UrlManager extends \yii\web\UrlManager
     private $_routeParams = [];
 
     /**
-     * @var
+     * @var ElementInterface|null
      */
     private $_matchedElement;
 
     /**
-     * @var
+     * @var mixed|null
      */
     private $_matchedElementRoute;
 
@@ -416,7 +416,7 @@ class UrlManager extends \yii\web\UrlManager
      * Attempts to match a path with the registered URL routes.
      *
      * @param Request $request
-     * @return mixed
+     * @return array|bool
      */
     private function _getMatchedUrlRoute(Request $request)
     {
@@ -449,7 +449,7 @@ class UrlManager extends \yii\web\UrlManager
      * Attempts to match a path with a “well-known” URL.
      *
      * @param Request $request
-     * @return mixed
+     * @return array|false
      */
     private function _getMatchedDiscoverableUrlRoute(Request $request)
     {

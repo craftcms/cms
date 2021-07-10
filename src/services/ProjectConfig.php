@@ -968,10 +968,9 @@ class ProjectConfig extends Component
      *
      * @param array $issues Passed by reference and populated with issues on error in
      *                      the following format: `[$pluginName, $existingSchema, $incomingSchema]`
-     *
-     * @return bool|array
+     * @return bool
      */
-    public function getAreConfigSchemaVersionsCompatible(&$issues = [])
+    public function getAreConfigSchemaVersionsCompatible(array &$issues = []): bool
     {
         $incomingSchema = (string)$this->get(self::CONFIG_SCHEMA_VERSION_KEY, true);
         $existingSchema = (string)Craft::$app->schemaVersion;
@@ -1410,7 +1409,7 @@ class ProjectConfig extends Component
     /**
      * Return a nested array for pending config changes
      *
-     * @param array $configData config data to use. If null, the config is fetched from the project config files.
+     * @param array|null $configData config data to use. If null, the config is fetched from the project config files.
      * @param bool $existsOnly whether to just return `true` or `false` depending on whether any changes are found.
      * @return array|bool
      */
@@ -1822,8 +1821,6 @@ class ProjectConfig extends Component
     /**
      * Load internal config data by a given path.
      *
-     * @param string $path
-     * @param array $current
      * @return mixed
      */
     private function _loadInternalConfigData()

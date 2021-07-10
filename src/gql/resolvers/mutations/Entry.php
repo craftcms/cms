@@ -39,10 +39,10 @@ class Entry extends ElementMutationResolver
      * @param array $arguments
      * @param $context
      * @param ResolveInfo $resolveInfo
-     * @return mixed
+     * @return EntryElement
      * @throws \Throwable if reasons.
      */
-    public function saveEntry($source, array $arguments, $context, ResolveInfo $resolveInfo)
+    public function saveEntry($source, array $arguments, $context, ResolveInfo $resolveInfo): EntryElement
     {
         $entry = $this->getEntryElement($arguments);
 
@@ -65,10 +65,10 @@ class Entry extends ElementMutationResolver
      * @param array $arguments
      * @param $context
      * @param ResolveInfo $resolveInfo
-     * @return mixed
+     * @return void
      * @throws \Throwable if reasons.
      */
-    public function deleteEntry($source, array $arguments, $context, ResolveInfo $resolveInfo)
+    public function deleteEntry($source, array $arguments, $context, ResolveInfo $resolveInfo): void
     {
         $entryId = $arguments['id'];
         $siteId = $arguments['siteId'] ?? null;
@@ -77,15 +77,13 @@ class Entry extends ElementMutationResolver
         $entry = $elementService->getElementById($entryId, EntryElement::class, $siteId);
 
         if (!$entry) {
-            return true;
+            return;
         }
 
         $entryTypeUid = Db::uidById(Table::ENTRYTYPES, $entry->typeId);
         $this->requireSchemaAction('entrytypes.' . $entryTypeUid, 'delete');
 
         $elementService->deleteElementById($entryId);
-
-        return true;
     }
 
     /**

@@ -2361,7 +2361,7 @@ abstract class Element extends Component implements ElementInterface
     /**
      * Returns the route that should be used when the element’s URI is requested.
      *
-     * @return mixed The route that the request should use, or null if no special action should be taken
+     * @return string|array|null The route that the request should use, or null if no special action should be taken
      * @see getRoute()
      */
     protected function route()
@@ -4111,11 +4111,10 @@ abstract class Element extends Component implements ElementInterface
      *
      * @param mixed $criteria Refer to [[findOne()]] and [[findAll()]] for the explanation of this parameter
      * @param bool $one Whether this method is called by [[findOne()]] or [[findAll()]]
-     * @return static|static[]|null
+     * @return self|self[]|null
      */
     protected static function findByCondition($criteria, bool $one)
     {
-        /** @var ElementQueryInterface $query */
         $query = static::find();
 
         if ($criteria !== null) {

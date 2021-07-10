@@ -379,12 +379,12 @@ class Gql extends Component
     /**
      * Returns the GraphQL schema.
      *
-     * @param GqlSchema $schema
+     * @param GqlSchema|null $schema
      * @param bool $prebuildSchema should the schema be deep-scanned and pre-built instead of lazy-loaded
      * @return Schema
      * @throws GqlException in case of invalid schema
      */
-    public function getSchemaDef(GqlSchema $schema = null, $prebuildSchema = false): Schema
+    public function getSchemaDef(GqlSchema $schema = null, bool $prebuildSchema = false): Schema
     {
         if ($schema) {
             $this->setActiveSchema($schema);
@@ -1101,7 +1101,7 @@ class Gql extends Component
     /**
      * Deletes a GraphQL schema.
      *
-     * @param GqlSchema schema
+     * @param GqlSchema $schema
      * @return bool
      * @since 3.4.0
      */
@@ -1239,7 +1239,6 @@ class Gql extends Component
     {
         $devMode = Craft::$app->getConfig()->getGeneral()->devMode;
 
-        /** @var Error $error */
         foreach ($errors as &$error) {
             $originException = $nextException = $error;
 

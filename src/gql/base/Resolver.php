@@ -66,7 +66,7 @@ abstract class Resolver
     /**
      * Extract eager load conditions for a given resolve information. Preferably at the very top of the query.
      *
-     * @param Node $parentNode
+     * @param ResolveInfo $resolveInfo
      * @return array
      * @deprecated as of Craft 3.5.0.
      */

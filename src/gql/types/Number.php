@@ -41,9 +41,9 @@ class Number extends ScalarType
     /**
      * Returns a singleton instance to ensure one type per schema.
      *
-     * @return Number
+     * @return self
      */
-    public static function getType(): Number
+    public static function getType(): self
     {
         return GqlEntityRegistry::getEntity(self::getName()) ?: GqlEntityRegistry::createEntity(self::getName(), new self());
     }

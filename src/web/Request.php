@@ -915,11 +915,11 @@ class Request extends \yii\web\Request
      * ```
      *
      * @param string $name The parameter name.
-     * @return mixed|null The parameter value
+     * @return string The parameter value
      * @throws BadRequestHttpException if the param value doesn’t pass validation
      * @see getBodyParam()
      */
-    public function getValidatedBodyParam(string $name)
+    public function getValidatedBodyParam(string $name): ?string
     {
         $value = $this->getBodyParam($name);
 

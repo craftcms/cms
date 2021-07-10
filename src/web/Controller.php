@@ -237,7 +237,7 @@ abstract class Controller extends \yii\web\Controller
      *
      * @param string $template The name of the template to load
      * @param array $variables The variables that should be available to the template
-     * @param string $templateMode The template mode to use
+     * @param string|null $templateMode The template mode to use
      * @return YiiResponse
      * @throws InvalidArgumentException if the view file does not exist.
      */

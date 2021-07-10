@@ -404,6 +404,7 @@ class TemplateCaches extends Component
      * @param string $key
      * @param bool $global
      * @param int|null $siteId
+     * @return string
      * @throws Exception if this is a console request and `false` is passed to `$global`
      */
     private function _cacheKey(string $key, bool $global, int $siteId = null): string

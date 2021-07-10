@@ -31,7 +31,8 @@ class InvalidateTagAction extends Action
     public $label;
 
     /**
-     * @inheritdoc
+     * Invalidates caches with the configured tag.
+     *
      * @return int
      */
     public function run(): int

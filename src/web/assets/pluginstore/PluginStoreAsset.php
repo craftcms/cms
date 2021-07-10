@@ -238,8 +238,7 @@ class PluginStoreAsset extends AssetBundle
      * Return the contents of a file from the passed in path
      *
      * @param string $path
-     * @param callable $callback
-     *
+     * @param callable|null $callback
      * @return null|mixed
      */
     private function getFileContents(string $path, callable $callback = null)
