@@ -53,12 +53,6 @@ return [
         'entries' => [
             'class' => craft\services\Entries::class,
         ],
-        'entryRevisions' => [
-            'class' => craft\services\EntryRevisions::class,
-        ],
-        'feeds' => [
-            'class' => craft\feeds\Feeds::class,
-        ],
         'fields' => [
             'class' => craft\services\Fields::class,
         ],
@@ -172,9 +166,6 @@ return [
         'sites' => [
             'class' => craft\services\Sites::class,
             'currentSite' => defined('CRAFT_SITE') ? CRAFT_SITE : (defined('CRAFT_LOCALE') ? CRAFT_LOCALE : null),
-        ],
-        'systemSettings' => [
-            'class' => craft\services\SystemSettings::class,
         ],
         'i18n' => [
             'class' => craft\i18n\I18N::class,

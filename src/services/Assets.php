@@ -666,7 +666,6 @@ class Assets extends Component
                 'asset' => $asset,
                 'width' => $width,
                 'height' => $height,
-                'size' => max($width, $height),
                 'generate' => $generate,
             ]);
             $this->trigger(self::EVENT_GET_ASSET_THUMB_URL, $event);
@@ -971,18 +970,6 @@ class Assets extends Component
 
         $folder->id = $record->id;
         $folder->uid = $record->uid;
-    }
-
-    /**
-     * Return the current user's temporary upload folder.
-     *
-     * @return VolumeFolder
-     * @throws VolumeException
-     * @deprecated in 3.2.0. Use [[getUserTemporaryUploadFolder()]] instead.
-     */
-    public function getCurrentUserTemporaryUploadFolder(): VolumeFolder
-    {
-        return $this->getUserTemporaryUploadFolder();
     }
 
     /**

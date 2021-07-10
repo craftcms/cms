@@ -1151,28 +1151,6 @@ class User extends Element implements IdentityInterface
     }
 
     /**
-     * Returns the URL to the user's photo.
-     *
-     * @param int $size The width and height the photo should be sized to
-     * @return string|null
-     * @deprecated in 3.0.0. Use getPhoto().getUrl() instead.
-     */
-    public function getPhotoUrl(int $size = 100)
-    {
-        Craft::$app->getDeprecator()->log('User::getPhotoUrl()', '`User::getPhotoUrl()` has been deprecated. Use `getPhoto()` to access the photo asset (if there is one), and call its `getUrl()` method to access the photo URL.');
-        $photo = $this->getPhoto();
-
-        if ($photo) {
-            return $photo->getUrl([
-                'width' => $size,
-                'height' => $size,
-            ]);
-        }
-
-        return null;
-    }
-
-    /**
      * @inheritdoc
      */
     public function getThumbUrl(int $size): ?string

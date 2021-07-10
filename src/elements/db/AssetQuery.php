@@ -269,20 +269,6 @@ class AssetQuery extends ElementQuery
     }
 
     /**
-     * Narrows the query results based on the volume the assets belong to.
-     *
-     * @param string|string[]|VolumeInterface $value The property value
-     * @return static self reference
-     * @deprecated in 3.0.0. Use [[volume()]] instead.
-     */
-    public function source($value)
-    {
-        Craft::$app->getDeprecator()->log('AssetQuery::source()', 'The `source` asset query param has been deprecated. Use `volume` instead.');
-
-        return $this->volume($value);
-    }
-
-    /**
      * Narrows the query results based on the volumes the assets belong to, per the volumes’ IDs.
      *
      * Possible values include:
@@ -319,20 +305,6 @@ class AssetQuery extends ElementQuery
     {
         $this->volumeId = $value;
         return $this;
-    }
-
-    /**
-     * Narrows the query results based on the volumes the assets belong to, per the volumes’ IDs.
-     *
-     * @param int|int[] $value The property value
-     * @return static self reference
-     * @deprecated in Craft 3.0.0. Use [[volumeId()]] instead.
-     */
-    public function sourceId($value)
-    {
-        Craft::$app->getDeprecator()->log('AssetQuery::sourceId()', 'The `sourceId` asset query param has been deprecated. Use `volumeId` instead.');
-
-        return $this->volumeId($value);
     }
 
     /**

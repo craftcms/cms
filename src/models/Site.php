@@ -65,18 +65,6 @@ class Site extends Model
     public $hasUrls = true;
 
     /**
-     * @var string|null Original name (set if [[name]] was overridden by the config)
-     * @deprecated in 3.6.0
-     */
-    public $originalName;
-
-    /**
-     * @var string|null Original base URL (set if [[baseUrl]] was overridden by the config)
-     * @deprecated in 3.6.0
-     */
-    public $originalBaseUrl;
-
-    /**
      * @var int Sort order
      */
     public $sortOrder = 1;
@@ -275,30 +263,6 @@ class Site extends Model
     }
 
     /**
-     * Overrides the name while keeping track of the original one.
-     *
-     * @param string $name
-     * @deprecated in 3.6.0
-     */
-    public function overrideName(string $name)
-    {
-        $this->originalName = (string)$this->_name;
-        $this->setName($name);
-    }
-
-    /**
-     * Overrides the base URL while keeping track of the original one.
-     *
-     * @param string $baseUrl
-     * @deprecated in 3.6.0
-     */
-    public function overrideBaseUrl(string $baseUrl)
-    {
-        $this->originalBaseUrl = (string)$this->_baseUrl;
-        $this->setBaseUrl($baseUrl);
-    }
-
-    /**
      * Returns the locale for this site’s language.
      *
      * @return Locale
@@ -322,11 +286,11 @@ class Site extends Model
     {
         return [
             'siteGroup' => $this->getGroup()->uid,
-            'name' => $this->originalName ?? $this->_name,
+            'name' => $this->_name,
             'handle' => $this->handle,
             'language' => $this->language,
             'hasUrls' => (bool)$this->hasUrls,
-            'baseUrl' => $this->originalBaseUrl ?? ($this->_baseUrl ?: null),
+            'baseUrl' => $this->_baseUrl ?: null,
             'sortOrder' => (int)$this->sortOrder,
             'primary' => (bool)$this->primary,
             'enabled' => (bool)$this->enabled,

@@ -70,17 +70,6 @@ class Security extends \yii\base\Security
     }
 
     /**
-     * Deprecated wrapper for [[\craft\config\GeneralConfig::securityKey|Craft::$app->config->general->securityKey]].
-     *
-     * @return string
-     * @deprecated in 3.0.0-beta.27. Use [[\craft\config\GeneralConfig::securityKey|Craft::$app->config->general->securityKey]] instead.
-     */
-    public function getValidationKey(): string
-    {
-        return Craft::$app->getConfig()->getGeneral()->securityKey;
-    }
-
-    /**
      * @inheritdoc
      * @param string $data the data to be protected
      * @param string|null $key the secret key to be used for generating hash. Should be a secure

@@ -34,15 +34,6 @@ class Craft extends Yii
     const Pro = 1;
 
     /**
-     * @deprecated in 3.0.0. Use [[Solo]] instead.
-     */
-    const Personal = 0;
-    /**
-     * @deprecated in 3.0.0. Use [[Pro]] instead.
-     */
-    const Client = 1;
-
-    /**
      * @var array The default cookie configuration.
      */
     private static $_baseCookieConfig;

@@ -80,18 +80,6 @@ class ElementHelper
     }
 
     /**
-     * Creates a slug based on a given string.
-     *
-     * @param string $str
-     * @return string
-     * @deprecated in 3.5.0. Use [[normalizeSlug()]] instead.
-     */
-    public static function createSlug(string $str): string
-    {
-        return static::normalizeSlug($str);
-    }
-
-    /**
      * Normalizes a slug.
      *
      * @param string $slug

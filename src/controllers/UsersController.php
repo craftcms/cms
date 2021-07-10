@@ -311,18 +311,6 @@ class UsersController extends Controller
     }
 
     /**
-     * Returns how many seconds are left in the current user session.
-     *
-     * @return Response
-     * @deprecated in 3.4.0. Use [[actionSessionInfo()]] instead.
-     */
-    public function actionGetRemainingSessionTime(): Response
-    {
-        Craft::$app->getDeprecator()->log(__METHOD__, 'The `users/get-remaining-session-time` action is deprecated. Use `users/session-info` instead.');
-        return $this->runAction('session-info');
-    }
-
-    /**
      * Returns information about the current user session, if any.
      *
      * @return Response

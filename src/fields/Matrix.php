@@ -137,12 +137,6 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
     public $propagationKeyFormat;
 
     /**
-     * @var int Whether each site should get its own unique set of blocks
-     * @deprecated in 3.2.0. Use [[$propagationMethod]] instead
-     */
-    public $localizeBlocks = false;
-
-    /**
      * @var MatrixBlockType[]|null The field’s block types
      */
     private $_blockTypes;
@@ -173,10 +167,6 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
         if ($this->propagationKeyFormat === '') {
             $this->propagationKeyFormat = null;
         }
-
-        // todo: remove this in 4.0
-        // Set localizeBlocks in case anything is still checking it
-        $this->localizeBlocks = $this->propagationMethod === self::PROPAGATION_METHOD_NONE;
 
         parent::init();
     }

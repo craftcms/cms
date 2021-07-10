@@ -40,12 +40,6 @@ use yii\web\ServerErrorHttpException;
 class EntriesController extends BaseEntriesController
 {
     /**
-     * @event ElementEvent The event that is triggered when an entry’s template is rendered for Live Preview.
-     * @deprecated in 3.2.0
-     */
-    const EVENT_PREVIEW_ENTRY = 'previewEntry';
-
-    /**
      * Called when a user brings up an entry for editing before being displayed.
      *
      * @param string $section The section’s handle

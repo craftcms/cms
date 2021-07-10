@@ -9,7 +9,6 @@ namespace craft\db;
 
 use Composer\Util\Platform;
 use Craft;
-use craft\config\DbConfig;
 use craft\db\mysql\QueryBuilder as MysqlQueryBuilder;
 use craft\db\mysql\Schema as MysqlSchema;
 use craft\db\pgsql\QueryBuilder as PgsqlQueryBuilder;
@@ -18,7 +17,6 @@ use craft\errors\DbConnectException;
 use craft\errors\ShellCommandException;
 use craft\events\BackupEvent;
 use craft\events\RestoreEvent;
-use craft\helpers\App;
 use craft\helpers\Db;
 use craft\helpers\FileHelper;
 use craft\helpers\StringHelper;
@@ -68,19 +66,6 @@ class Connection extends \yii\db\Connection
     const EVENT_AFTER_RESTORE_BACKUP = 'afterRestoreBackup';
 
     /**
-     * Creates a new Connection instance based off the given DbConfig object.
-     *
-     * @param DbConfig $config
-     * @return static
-     * @deprecated in 3.0.18. Use [[App::dbConfig()]] instead.
-     */
-    public static function createFromConfig(DbConfig $config): Connection
-    {
-        $config = App::dbConfig($config);
-        return Craft::createObject($config);
-    }
-
-    /**
      * @var bool|null whether the database supports 4+ byte characters
      * @see getSupportsMb4()
      * @see setSupportsMb4()
@@ -105,17 +90,6 @@ class Connection extends \yii\db\Connection
     public function getIsPgsql(): bool
     {
         return $this->getDriverName() === Connection::DRIVER_PGSQL;
-    }
-
-    /**
-     * Returns the version of the DB.
-     *
-     * @return string
-     * @deprecated in 3.4.21. Use [[\yii\db\Schema::getServerVersion()]] instead.
-     */
-    public function getVersion(): string
-    {
-        return App::normalizeVersion($this->getSchema()->getServerVersion());
     }
 
     /**
@@ -425,49 +399,6 @@ class Connection extends \yii\db\Connection
     public function getIndexName(): string
     {
         return $this->_objectName('idx');
-    }
-
-    /**
-     * Ensures that an object name is within the schema's limit.
-     *
-     * @param string $name
-     * @return string
-     * @deprecated in 3.6.0
-     */
-    public function trimObjectName(string $name): string
-    {
-        $schema = $this->getSchema();
-
-        if (!isset($schema->maxObjectNameLength)) {
-            return $name;
-        }
-
-        $name = trim($name, '_');
-        $nameLength = StringHelper::length($name);
-
-        if ($nameLength > $schema->maxObjectNameLength) {
-            $parts = array_filter(explode('_', $name));
-            $totalParts = count($parts);
-            $totalLetters = $nameLength - ($totalParts - 1);
-            $maxLetters = $schema->maxObjectNameLength - ($totalParts - 1);
-
-            // Consecutive underscores could have put this name over the top
-            if ($totalLetters > $maxLetters) {
-                foreach ($parts as $i => $part) {
-                    $newLength = round($maxLetters * StringHelper::length($part) / $totalLetters);
-                    $parts[$i] = mb_substr($part, 0, $newLength);
-                }
-            }
-
-            $name = implode('_', $parts);
-
-            // Just to be safe
-            if (StringHelper::length($name) > $schema->maxObjectNameLength) {
-                $name = mb_substr($name, 0, $schema->maxObjectNameLength);
-            }
-        }
-
-        return $name;
     }
 
     /**

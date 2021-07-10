@@ -42,12 +42,6 @@ class Composer extends Component
     public $composerRepoUrl = 'https://composer.craftcms.com';
 
     /**
-     * @var bool
-     * @deprecated in 3.6.0
-     */
-    public $disablePackagist = false;
-
-    /**
      * @var bool Whether to generate a new Composer class map, rather than preloading all of the classes in the current class map
      */
     public $updateComposerClassMap = false;
@@ -287,52 +281,6 @@ class Composer extends Component
         // Invalidate opcache
         if (function_exists('opcache_reset')) {
             @opcache_reset();
-        }
-    }
-
-    /**
-     * Optimizes the Composer autoloader.
-     *
-     * @param IOInterface|null $io The IO object that Composer should be instantiated with
-     * @throws \Throwable if something goes wrong
-     * @deprecated
-     */
-    public function optimize(IOInterface $io = null)
-    {
-        if ($io === null) {
-            $io = new NullIO();
-        }
-
-        $jsonPath = $this->getJsonPath();
-
-        // Set the working directory to the composer.json dir, in case there are any relative repo paths
-        $wd = getcwd();
-        chdir(dirname($jsonPath));
-
-        // Ensure there's a home var
-        $this->_ensureHomeVar();
-
-        try {
-            $composer = $this->createComposer($io, $jsonPath);
-
-            $installationManager = $composer->getInstallationManager();
-            $localRepo = $composer->getRepositoryManager()->getLocalRepository();
-            $package = $composer->getPackage();
-            $config = $composer->getConfig();
-            $authoritative = $config->get('classmap-authoritative');
-
-            $generator = $composer->getAutoloadGenerator();
-            $generator->setClassMapAuthoritative($authoritative);
-            $generator->dump($config, $localRepo, $package, $installationManager, 'composer', true);
-        } catch (\Throwable $exception) {
-            // Swallow exception.
-        }
-
-        // Change the working directory back
-        chdir($wd);
-
-        if (isset($exception)) {
-            throw $exception;
         }
     }
 

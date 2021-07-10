@@ -645,18 +645,6 @@ class Request extends \yii\web\Request
     }
 
     /**
-     * Returns whether the current request is solely an action request.
-     *
-     * @return bool
-     * @deprecated in 3.2.0
-     */
-    public function getIsSingleActionRequest(): bool
-    {
-        $this->checkIfActionRequest();
-        return $this->_isSingleActionRequest;
-    }
-
-    /**
      * Returns the segments of the requested controller action path, if this is an [[getIsActionRequest()|action request]].
      *
      * @return array|null The action path segments, or `null` if this isn’t an action request.

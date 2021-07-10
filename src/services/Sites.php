@@ -1185,22 +1185,6 @@ class Sites extends Component
 
                 if ($site->primary) {
                     $this->_primarySite = $site;
-
-                    // todo: remove in Craft 4
-                    if (is_string($generalConfig->siteName)) {
-                        $site->overrideName($generalConfig->siteName);
-                    }
-                    if (is_string($generalConfig->siteUrl)) {
-                        $site->overrideBaseUrl($generalConfig->siteUrl);
-                    }
-                }
-
-                // todo: remove in Craft 4
-                if (is_array($generalConfig->siteName) && isset($generalConfig->siteName[$site->handle])) {
-                    $site->overrideName($generalConfig->siteName[$site->handle]);
-                }
-                if (is_array($generalConfig->siteUrl) && isset($generalConfig->siteUrl[$site->handle])) {
-                    $site->overrideBaseUrl($generalConfig->siteUrl[$site->handle]);
                 }
             }
         }

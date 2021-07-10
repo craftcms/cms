@@ -84,11 +84,6 @@ class RegisterResourceTokenParser extends AbstractTokenParser
      */
     public function parse(Token $token)
     {
-        // Is this the deprecated version?
-        if ($this->newCode !== null) {
-            \Craft::$app->getDeprecator()->log($this->tag, "`{% {$this->tag}` %} is now deprecated. Use `{$this->newCode}` instead.");
-        }
-
         $lineno = $token->getLine();
         $parser = $this->parser;
         $stream = $parser->getStream();
@@ -102,7 +97,6 @@ class RegisterResourceTokenParser extends AbstractTokenParser
             (
                 $this->_testPositionParam($stream) ||
                 $this->_testOptionsParam($stream) ||
-                $this->_testFirstParam($stream) ||
                 $stream->test(Token::BLOCK_END_TYPE)
             )
         ) {
@@ -143,8 +137,6 @@ class RegisterResourceTokenParser extends AbstractTokenParser
             $nodes['options'] = $expressionParser->parseExpression();
         }
 
-        $first = $this->_getFirstValue($stream);
-
         // Close out the tag
         $stream->expect(Token::BLOCK_END_TYPE);
 
@@ -162,7 +154,6 @@ class RegisterResourceTokenParser extends AbstractTokenParser
             'defaultPosition' => $this->defaultPosition,
             'capture' => $capture,
             'position' => $position,
-            'first' => $first,
         ];
 
         return new RegisterResourceNode($nodes, $attributes, $lineno, $this->getTag());
@@ -208,33 +199,5 @@ class RegisterResourceTokenParser extends AbstractTokenParser
     private function _testOptionsParam(TokenStream $stream): bool
     {
         return ($this->allowOptions && $stream->test(Token::NAME_TYPE, 'with'));
-    }
-
-    /**
-     * Returns whether the next token in the stream is the deprecated `first` param
-     *
-     * @param TokenStream $stream The Twig token stream
-     * @return bool
-     */
-    private function _testFirstParam(TokenStream $stream): bool
-    {
-        return ($this->newCode !== null && $first = $stream->test(Token::NAME_TYPE, 'first'));
-    }
-
-    /**
-     * Returns whether the next token in the stream is the deprecated `first` param.
-     *
-     * @param TokenStream $stream The Twig token stream
-     * @return bool
-     */
-    private function _getFirstValue(TokenStream $stream): bool
-    {
-        if ($this->_testFirstParam($stream)) {
-            $stream->next();
-
-            return true;
-        }
-
-        return false;
     }
 }

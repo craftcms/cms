@@ -912,7 +912,7 @@ JS;
         }
 
         $selectionCriteria = $this->inputSelectionCriteria();
-        $selectionCriteria['siteId'] = $this->inputSiteId($element);
+        $selectionCriteria['siteId'] = $this->targetSiteId($element);
 
         $disabledElementIds = [];
 
@@ -986,19 +986,6 @@ JS;
         $event = new ElementCriteriaEvent();
         $this->trigger(self::EVENT_DEFINE_SELECTION_CRITERIA, $event);
         return $event->criteria;
-    }
-
-    /**
-     * Returns the site ID that the input should select elements from.
-     *
-     * @param ElementInterface|null $element
-     * @return int|null
-     * @since 3.4.19
-     * @deprecated in 3.5.16
-     */
-    protected function inputSiteId(ElementInterface $element = null)
-    {
-        return $this->targetSiteId($element);
     }
 
     /**

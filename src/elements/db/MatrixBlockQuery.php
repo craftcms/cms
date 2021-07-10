@@ -63,12 +63,6 @@ class MatrixBlockQuery extends ElementQuery
     public $ownerId;
 
     /**
-     * @var mixed
-     * @deprecated in 3.2.0
-     */
-    public $ownerSiteId;
-
-    /**
      * @var bool|null Whether the owner elements can be drafts.
      * @used-by allowOwnerDrafts()
      * @since 3.3.10
@@ -108,14 +102,8 @@ class MatrixBlockQuery extends ElementQuery
     public function __set($name, $value)
     {
         switch ($name) {
-            case 'ownerSite':
-                Craft::$app->getDeprecator()->log('MatrixBlockQuery::ownerSite()', 'The `ownerSite` Matrix block query param has been deprecated. Use `site` or `siteId` instead.');
-                break;
             case 'type':
                 $this->type($value);
-                break;
-            case 'ownerLocale':
-                Craft::$app->getDeprecator()->log('MatrixBlockQuery::ownerLocale()', 'The `ownerLocale` Matrix block query param has been deprecated. Use `site` or `siteId` instead.');
                 break;
             default:
                 parent::__set($name, $value);
@@ -257,36 +245,6 @@ class MatrixBlockQuery extends ElementQuery
     public function ownerId($value)
     {
         $this->ownerId = $value;
-        return $this;
-    }
-
-    /**
-     * @return static self reference
-     * @deprecated in 3.2.0
-     */
-    public function ownerSiteId()
-    {
-        Craft::$app->getDeprecator()->log('MatrixBlockQuery::ownerSiteId()', 'The `ownerSiteId` Matrix block query param has been deprecated. Use `site` or `siteId` instead.');
-        return $this;
-    }
-
-    /**
-     * @return static self reference
-     * @deprecated in 3.2.0
-     */
-    public function ownerSite()
-    {
-        Craft::$app->getDeprecator()->log('MatrixBlockQuery::ownerSite()', 'The `ownerSite` Matrix block query param has been deprecated. Use `site` or `siteId` instead.');
-        return $this;
-    }
-
-    /**
-     * @return static self reference
-     * @deprecated in 3.0.0
-     */
-    public function ownerLocale()
-    {
-        Craft::$app->getDeprecator()->log('MatrixBlockQuery::ownerLocale()', 'The `ownerLocale` Matrix block query param has been deprecated. Use `site` or `siteId` instead.');
         return $this;
     }
 

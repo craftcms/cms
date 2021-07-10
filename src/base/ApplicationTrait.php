@@ -73,7 +73,6 @@ use yii\web\ServerErrorHttpException;
  * @property int $edition The active Craft edition
  * @property-read \craft\db\MigrationManager $contentMigrator The content migration manager
  * @property-read \craft\db\MigrationManager $migrator The application’s migration manager
- * @property-read \craft\feeds\Feeds $feeds The feeds service
  * @property-read \craft\i18n\Locale $formattingLocale The Locale object that should be used to define the formatter
  * @property-read \craft\i18n\Locale $locale The Locale object for the target language
  * @property-read \craft\mail\Mailer $mailer The mailer component
@@ -110,7 +109,6 @@ use yii\web\ServerErrorHttpException;
  * @property-read \craft\services\Sites $sites The sites service
  * @property-read \craft\services\Structures $structures The structures service
  * @property-read \craft\services\SystemMessages $systemMessages The system email messages service
- * @property-read \craft\services\SystemSettings $systemSettings The system settings service
  * @property-read \craft\services\Tags $tags The tags service
  * @property-read \craft\services\TemplateCaches $templateCaches The template caches service
  * @property-read \craft\services\Tokens $tokens The tokens service
@@ -588,18 +586,6 @@ trait ApplicationTrait
     }
 
     /**
-     * Returns whether the system is currently live.
-     *
-     * @return bool
-     * @deprecated in 3.1.0. Use [[getIsLive()]] instead.
-     */
-    public function getIsSystemOn(): bool
-    {
-        /** @var WebApplication|ConsoleApplication $this */
-        return $this->getIsLive();
-    }
-
-    /**
      * Returns whether someone is currently performing a system update.
      *
      * @return bool
@@ -1013,30 +999,6 @@ trait ApplicationTrait
     }
 
     /**
-     * Returns the entry revisions service.
-     *
-     * @return \craft\services\EntryRevisions The entry revisions service
-     * @deprecated in 3.2.0.
-     */
-    public function getEntryRevisions()
-    {
-        /** @var WebApplication|ConsoleApplication $this */
-        return $this->get('entryRevisions');
-    }
-
-    /**
-     * Returns the feeds service.
-     *
-     * @return \craft\feeds\Feeds The feeds service
-     * @deprecated in 3.4.24
-     */
-    public function getFeeds()
-    {
-        /** @var WebApplication|ConsoleApplication $this */
-        return $this->get('feeds');
-    }
-
-    /**
      * Returns the fields service.
      *
      * @return \craft\services\Fields The fields service
@@ -1288,17 +1250,6 @@ trait ApplicationTrait
     {
         /** @var WebApplication|ConsoleApplication $this */
         return $this->get('projectConfig');
-    }
-
-    /**
-     * Returns the system settings service.
-     *
-     * @return \craft\services\SystemSettings The system settings service
-     */
-    public function getSystemSettings()
-    {
-        /** @var WebApplication|ConsoleApplication $this */
-        return $this->get('systemSettings');
     }
 
     /**

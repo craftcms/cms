@@ -138,7 +138,23 @@
 - Deprecated `craft\helpers\ArrayHelper::prepend()`. `array_push()` should be used instead.
 
 ### Removed
+- Removed the `customAsciiCharMappings` config setting.
+- Removed the `siteName` config setting. Environment-specific site names can be defined via environment variables.
+- Removed the `sitUrl` config setting. Environment-specific site URLs can be defined via environment variables.
 - Removed the `suppressTemplateErrors` config setting.
+- Removed the `useCompressedJs` config setting.
+- Removed the `useProjectConfigFile` config setting. Override `craft\services\ProjectConfig::$writeYamlAutomatically` to opt into [manual YAML file generation](https://craftcms.com/docs/4.x/project-config.html#manual-yaml-file-generation).
+- Removed support for `config/volumes.php`. Environment-specific volume settings can be defined via environment variables or dependency injection.
+- Removed support for the `CRAFT_SITE_URL` PHP constant. Environment-specific site URLs can be defined via environment variables.
+- Removed the `{% includeCss %}` Twig tag. The `{% css %}` tag can be used instead.
+- Removed the `{% includeCssFile %}` Twig tag. The `{% css %}` tag can be used instead.
+- Removed the `{% includeHiResCss %}` Twig tag.
+- Removed the `{% includeJs %}` Twig tag. The `{% js %}` tag can be used instead.
+- Removed the `{% includeJsFile %}` Twig tag. The `{% js %}` tag can be used instead.
+- Removed the `getCsrfInput()` Twig function. `csrfInput()` can be used instead.
+- Removed the `getFootHtml()` Twig function. `endBody()` can be used instead.`
+- Removed the `getHeadHtml()` Twig function. `head()` can be used instead.
+- Removed the `round()` Twig function. The `|round` filter can be used instead.
 - Removed the `craft.categoryGroups` Twig variable.
 - Removed the `craft.config` Twig variable.
 - Removed the `craft.deprecator` Twig variable.
@@ -148,18 +164,114 @@
 - Removed the `craft.fields` Twig variable.
 - Removed the `craft.globals` Twig variable.
 - Removed the `craft.i18n` Twig variable.
+- Removed the `craft.isLocalized` Twig variable. `craft.app.isMultiSite` can be used instead.
+- Removed the `craft.locale` Twig variable. `craft.app.language` can be used instead.
 - Removed the `craft.request` Twig variable.
 - Removed the `craft.sections` Twig variable.
 - Removed the `craft.session` Twig variable.
 - Removed the `craft.systemSettings` Twig variable.
 - Removed the `craft.userGroups` Twig variable.
 - Removed the `craft.userPermissions` Twig variable.
+- Removed element queries’ `enabledForSite` params. `status` params can be used instead.
+- Removed element queries’ `find()` methods. `all()` can be used instead.
+- Removed element queries’ `first()` methods. `one()` can be used instead.
+- Removed element queries’ `last()` methods. The `inReverse` param combined with `one()` can be used instead.
+- Removed element queries’ `locale` params. The `site` or `siteId` param can be used instead.
+- Removed element queries’ `localeEnabled` params. `status` params can be used instead.
+- Removed element queries’ `order` params. `orderBy` can be used instead.
+- Removed element queries’ `total()` methods. `count()` can be used instead.
+- Removed asset queries’ `source` param. The `volume` param can be used instead.
+- Removed asset queries’ `sourceId` param. The `volumeId` param can be used instead.
+- Removed Matrix block queries’ `ownerLocale` param. The `site` or `siteId` param can be used instead.
+- Removed Matrix block queries’ `ownerSite` param. The `site` param can be used instead.
+- Removed Matrix block queries’ `ownerSiteId` param. The `siteId` param can be used instead.
+- Removed `Craft::Client`. `Pro` can be used instead.
+- Removed `Craft::Personal`. `Solo` can be used instead.
+- Removed `craft\base\ApplicationTrait::getEntryRevisions()`.
+- Removed `craft\base\ApplicationTrait::getFeed()`.
+- Removed `craft\base\ApplicationTrait::getIsSystemOn()`. `getIsLive()` can be used instead.
+- Removed `craft\base\Element::ATTR_STATUS_CONFLICTED`.
+- Removed `craft\base\Element::getFieldStatus()`. Fields’ `getStatus()` methods can be used instead.
+- Removed `craft\base\Element::getIsProvisionalDraft()`. `$isProvisionalDraft` can be used instead.
+- Removed `craft\base\Element::getIsUnsavedDraft()`. `getIsUnpublishedDraft()` can be used instead.
+- Removed `craft\base\Field::isEmpty()`. `isValueEmpty()` can be used instead.
 - Removed `craft\base\FlysystemVolume`.
+- Removed `craft\base\Model::getError()`. `getFirstError()` can be used instead.
 - Removed `craft\base\VolumeInterface::createDir()`. `createDirectory()` can be used instead.
 - Removed `craft\base\VolumeInterface::deleteDir()`. `deleteDirectory()` can be used instead.
 - Removed `craft\base\VolumeInterface::getFileMetadata()`. `getFileSize()` and `getDateModified()` can be used instead.
 - Removed `craft\base\VolumeInterface::renameDir()`. `renameDirectory()` can be used instead.
+- Removed `craft\base\Widget::iconPath()`. `icon()` can be used instead.
+- Removed `craft\behaviors\DraftBehavior::getDateLastMerged()`. Elements’ `$dateLastMerged` properties can be used instead.
+- Removed `craft\behaviors\DraftBehavior::getMergingChanges()`. Elements’ `$mergingCanonicalChanges` properties can be used instead.
+- Removed `craft\behaviors\DraftBehavior::getOutdatedAttributes()`. Elements’ `getOutdatedAttributes()` methods can be used instead.
+- Removed `craft\behaviors\DraftBehavior::getOutdatedFields()`. Elements’ `getOutdatedFields()` methods can be used instead.
+- Removed `craft\behaviors\DraftBehavior::isAttributeModified()`. Elements’ `isAttributeModified()` methods can be used instead.
+- Removed `craft\behaviors\DraftBehavior::isAttributeOutdated()`. Elements’ `isAttributeOutdated()` methods can be used instead.
+- Removed `craft\behaviors\DraftBehavior::isFieldModified()`. Elements’ `isFieldModified()` methods can be used instead.
+- Removed `craft\behaviors\DraftBehavior::isFieldOutdated()`. Elements’ `isFieldOutdated()` methods can be used instead.
+- Removed `craft\config\DbConfig::updateDsn()`.
+- Removed `craft\console\Request::getIsSingleActionRequest()`.
+- Removed `craft\controllers\BaseUpdaterController::ACTION_COMPOSER_OPTIMIZE`.
+- Removed `craft\controllers\BaseUpdaterController::actionComposerOptimize()`.
+- Removed `craft\controllers\Drafts`.
+- Removed `craft\controllers\ElementIndexesController::$paginated`.
+- Removed `craft\controllers\EntriesController::EVENT_PREVIEW_ENTRY`.
 - Removed `craft\controllers\UtilitiesController::actionAssetIndexPerformAction()`.
+- Removed `craft\db\Connection::createFromConfig()`. `craft\helpers\App::dbConfig()` can be used instead.
+- Removed `craft\db\Connection::getVersion()`. DB schemas’ `getServerVersion()` methods can be used instead.
+- Removed `craft\db\Connection::trimObjectName()`.
+- Removed `craft\elements\actions\DeepDuplicate`. `craft\elements\actions\Duplicate` can be used instead.
+- Removed `craft\elements\actions\SetStatus::$allowDisabledForSite`.
+- Removed `craft\elements\actions\SetStatus::DISABLED_FOR_SITE`.
+- Removed `craft\elements\actions\SetStatus::DISABLED_GLOBALLY`.
+- Removed `craft\elements\Asset::getHasUrls()`. Volumes’ `$hasUrls` properties can be used instead.
+- Removed `craft\elements\Asset::getSupportsPreview()`.
+- Removed `craft\elements\Asset::getUri()`. `getPath()` can be used instead.
+- Removed `craft\elements\MatrixBlock::$ownerSiteId`. `$siteId` can be used instead.
+- Removed `craft\elements\User::getPhotoUrl()`. `getPhoto()->getUrl()` can be used instead.
+- Removed `craft\errors\FieldNotFoundException`.
+- Removed `craft\events\DefineComponentsEvent`.
+- Removed `craft\events\ExecuteGqlQueryEvent::$accessToken`. `$schemaId` can be used instead.
+- Removed `craft\events\GetAssetThumbUrlEvent::$size`. `$width` and `$height` can be used instead.
+- Removed `craft\events\GlobalSetContentEvent`.
+- Removed `craft\events\RegisterGqlPermissionsEvent`.
+- Removed `craft\feeds\Feeds`.
+- Removed `craft\feeds\GuzzleClient`.
+- Removed `craft\fields\BaseOptionsField::optionLabel()`.
+- Removed `craft\fields\BaseRelationField::inputSiteId()`. `targetSiteId()` can be used instead.
+- Removed `craft\fields\Matrix::$localizeBlocks`. `$propagationMethod` can be used instead.
+- Removed `craft\fields\Url::$placeholder`.
+- Removed `craft\gql\base\Arguments::buildContentArguments()`. `craft\services\Gql::getContentArguments()` can be used instead.
+- Removed `craft\gql\base\Resolver::extractEagerLoadCondition()`.
+- Removed `craft\gql\base\Resolver::getArrayableArguments()`.
+- Removed `craft\gql\base\Resolver::prepareArguments()`.
+- Removed `craft\helpers\ArrayHelper::filterByValue()`. `where()` can be used instead.
+- Removed `craft\helpers\DateTimeHelper::translateDate()`. `craft\i18n\Formatter::asDate()` can be used instead.
+- Removed `craft\helpers\ElementHelper::createSlug()`. `normalizeSlug()` can be used instead.
+- Removed `craft\helpers\FileHelper::removeFile()`. `unlink()` can be used instead.
+- Removed `craft\helpers\MailerHelper::createMailer()`. `craft\helpers\mailerConfig()` can be used instead.
+- Removed `craft\helpers\Stringy`.
+- Removed `craft\helpers\UrlHelper::getProtocolForTokenizedUrl()`. `getSchemeForTokenizedUrl()` can be used instead.
+- Removed `craft\helpers\UrlHelper::urlWithProtocol()`. `urlWithScheme()` can be used instead.
+- Removed `craft\i18n\Locale::getId()`. `$id` can be used instead.
+- Removed `craft\i18n\Locale::getName()`. `getDisplayName()` can be used instead.
+- Removed `craft\i18n\Locale::getNativeName()`. `getDisplayName()` can be used instead.
+- Removed `craft\models\BaseEntryRevisionModel`.
+- Removed `craft\models\EntryDraft`.
+- Removed `craft\models\EntryVersion`.
+- Removed `craft\models\FieldLayout::getFieldIds()`. `getFields()` can be used instead.
+- Removed `craft\models\Info::getEdition()`. `Craft::$app->getEdition()` can be used instead.
+- Removed `craft\models\Info::getName()`. `Craft::$app->getSystemName()` can be used instead.
+- Removed `craft\models\Info::getOn()`. `Craft::$app->getIsLive()` can be used instead.
+- Removed `craft\models\Info::getTimezone()`. `Craft::$app->getTimeZone()` can be used instead.
+- Removed `craft\models\Section::$propagateEntries`. `$propagationMethod` can be used instead.
+- Removed `craft\models\Site::$originalBaseUrl`.
+- Removed `craft\models\Site::$originalName`.
+- Removed `craft\models\Site::overrideBaseUrl()`.
+- Removed `craft\models\Site::overrideName()`.
+- Removed `craft\queue\jobs\ApplyMatrixPropagationMethod`. `ApplyNewPropagationMethod` can be used instead.
+- Removed `craft\queue\jobs\DeleteStaleTemplateCaches`.
 - Removed `craft\services\AssetIndexer::deleteStaleIndexingData()`.
 - Removed `craft\services\AssetIndexer::extractFolderItemsFromIndexList()`.
 - Removed `craft\services\AssetIndexer::extractSkippedItemsFromIndexList()`.
@@ -167,12 +279,54 @@
 - Removed `craft\services\AssetIndexer::getMissingFiles()`.
 - Removed `craft\services\AssetIndexer::prepareIndexList()`.
 - Removed `craft\services\AssetIndexer::processIndexForVolume()`.
-- Removed `craft\web\View::$minifyCss`.
-- Removed `craft\web\View::$minifyJs`.
-- Removed `craft\web\View::renderTemplateMacro()`.
+- Removed `craft\services\Assets::getCurrentUserTemporaryUploadFolder()`. `getUserTemporaryUploadFolder()` can be used instead.
+- Removed `craft\services\Composer::$disablePackagist`.
+- Removed `craft\services\Composer::optimize()`.
+- Removed `craft\services\Content::getContentRow()`.
+- Removed `craft\services\Content::populateElementContent()`.
+- Removed `craft\services\Drafts::EVENT_AFTER_MERGE_SOURCE_CHANGES`.
+- Removed `craft\services\Drafts::EVENT_BEFORE_MERGE_SOURCE_CHANGES`.
+- Removed `craft\services\Drafts::mergeSourceChanges()`. `craft\services\Elements::mergeCanonicalChanges()` can be used instead.
+- Removed `craft\services\ElementIndexes::getAvailableTableFields()`. `getSourceTableAttributes()` can be used instead.
+- Removed `craft\services\EntryRevisions`.
+- Removed `craft\services\Fields::$ignoreProjectConfigChanges`. `craft\services\ProjectConfig::$muteEvents` can be used instead.
+- Removed `craft\services\Gql::EVENT_REGISTER_GQL_PERMISSIONS`. `EVENT_REGISTER_GQL_SCHEMA_COMPONENTS` can be used instead.
+- Removed `craft\services\Gql::getAllPermissions()`.
+- Removed `craft\services\Matrix::$ignoreProjectConfigChanges`. `craft\services\ProjectConfig::$muteEvents` can be used instead.
+- Removed `craft\services\Matrix::getContentTableName()`. Matrix fields’ `$contentTable` properties can be used instead.
+- Removed `craft\services\Matrix::getSupportedSiteIdsForField()`. `getSupportedSiteIds()` can be used instead.
+- Removed `craft\services\ProjectConfig::CONFIG_ALL_KEY`.
+- Removed `craft\services\ProjectConfig::CONFIG_KEY`.
+- Removed `craft\services\Routes::getDbRoutes()`. `getProjectConfigRoutes()` can be used instead.
+- Removed `craft\services\Search::indexElementFields()`. `indexElementAttributes()` can be used instead.
+- Removed `craft\services\Sections::isSectionTemplateValid()`.
+- Removed `craft\services\Security::getValidationKey()`. `craft\config\GeneralConfig::$securityKey` can be used instead.
+- Removed `craft\services\SystemSettings`.
+- Removed `craft\services\TemplateCaches::deleteAllCaches()`. `craft\services\Elements::invalidateAllCaches()` can be used instead.
+- Removed `craft\services\TemplateCaches::deleteCacheById()`.
+- Removed `craft\services\TemplateCaches::deleteCachesByElement()`. `craft\services\Elements::invalidateCachesForElement()` can be used instead.
+- Removed `craft\services\TemplateCaches::deleteCachesByElementId()`. `craft\services\Elements::invalidateCachesForElement()` can be used instead.
+- Removed `craft\services\TemplateCaches::deleteCachesByElementQuery()`. `craft\services\Elements::invalidateCachesForElementType()` can be used instead.
+- Removed `craft\services\TemplateCaches::deleteCachesByElementType()`. `craft\services\Elements::invalidateCachesForElementType()` can be used instead.
+- Removed `craft\services\TemplateCaches::deleteCachesByKey()`.
+- Removed `craft\services\TemplateCaches::deleteExpiredCaches()`.
+- Removed `craft\services\TemplateCaches::deleteExpiredCachesIfOverdue()`.
+- Removed `craft\services\TemplateCaches::EVENT_AFTER_DELETE_CACHES`.
+- Removed `craft\services\TemplateCaches::EVENT_BEFORE_DELETE_CACHES`.
+- Removed `craft\services\TemplateCaches::handleResponse()`.
+- Removed `craft\services\TemplateCaches::handleResponse()`.
+- Removed `craft\services\TemplateCaches::includeElementInTemplateCaches()`.
+- Removed `craft\services\TemplateCaches::includeElementQueryInTemplateCaches()`.
+- Removed `craft\services\Volumes::getVolumeOverrides()`.
+- Removed `craft\test\Fixture`. `craft\test\ActiveFixture` can be used instead.
+- Removed `craft\validators\StringValidator::$trim`. The `trim` validator can be used instead.
+- Removed `craft\web\AssetBundle::useCompressedJs()`.
+- Removed `craft\web\assets\graphiql\VendorAsset`. `craft\web\assets\graphiql\GraphiqlAsset` can be used instead.
+- Removed `craft\web\Request::getIsSingleActionRequest()`.
 - Removed `craft\web\twig\Template`.
 - Removed `craft\web\twig\variables\CategoryGroups`.
 - Removed `craft\web\twig\variables\Config`.
+- Removed `craft\web\twig\variables\CraftVariable::EVENT_DEFINE_COMPONENTS`. `EVENT_INIT` can be used instead.
 - Removed `craft\web\twig\variables\Deprecator`.
 - Removed `craft\web\twig\variables\ElementIndexes`.
 - Removed `craft\web\twig\variables\EmailMessages`.
@@ -186,4 +340,15 @@
 - Removed `craft\web\twig\variables\UserGroups`.
 - Removed `craft\web\twig\variables\UserPermissions`.
 - Removed `craft\web\twig\variables\UserSession`.
-- Removed the Flysystem library. The `craftcms/flysystem-adapter` package now provides a base Flysystem adapter class.
+- Removed `craft\web\User::destroyDebugPreferencesInSession()`.
+- Removed `craft\web\User::saveDebugPreferencesToSession()`.
+- Removed `craft\web\View::$minifyCss`.
+- Removed `craft\web\View::$minifyJs`.
+- Removed `craft\web\View::getInitialDeltaValue()`. `getInitialDeltaValues()` can be used instead.
+- Removed `craft\web\View::registerHiResCss()`.
+- Removed `craft\web\View::renderTemplateMacro()`.
+- Removed the `assets/generate-thumb` action. `assets/thumb` can be used instead.
+- Removed the `dashboard/get-feed-items` action.
+- Removed the `users/get-remaining-session-time` action. `users/session-info` can be used instead.
+- Removed the Flysystem package. The `craftcms/flysystem-adapter` package now provides a base Flysystem adapter class.
+- Removed the laminas-feed package.

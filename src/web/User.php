@@ -371,27 +371,6 @@ class User extends \yii\web\User
         return true;
     }
 
-    // Misc
-    // -------------------------------------------------------------------------
-
-    /**
-     * Saves the logged-in user’s Debug toolbar preferences to the session.
-     *
-     * @deprecated in 3.5.0
-     */
-    public function saveDebugPreferencesToSession()
-    {
-    }
-
-    /**
-     * Removes the debug preferences from the session.
-     *
-     * @deprecated in 3.5.0
-     */
-    public function destroyDebugPreferencesInSession()
-    {
-    }
-
     /**
      * @inheritdoc
      */

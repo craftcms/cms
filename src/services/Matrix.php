@@ -42,12 +42,6 @@ use yii\base\Exception;
 class Matrix extends Component
 {
     /**
-     * @var bool Whether to ignore changes to the project config.
-     * @deprecated in 3.1.2. Use [[\craft\services\ProjectConfig::$muteEvents]] instead.
-     */
-    public $ignoreProjectConfigChanges = false;
-
-    /**
      * @var
      */
     private $_blockTypesById;
@@ -260,10 +254,6 @@ class Matrix extends Component
      */
     public function handleChangedBlockType(ConfigEvent $event)
     {
-        if ($this->ignoreProjectConfigChanges) {
-            return;
-        }
-
         $blockTypeUid = $event->tokenMatches[0];
         $data = $event->newValue;
         $previousData = $event->oldValue;
@@ -390,10 +380,6 @@ class Matrix extends Component
      */
     public function handleDeletedBlockType(ConfigEvent $event)
     {
-        if ($this->ignoreProjectConfigChanges) {
-            return;
-        }
-
         $blockTypeUid = $event->tokenMatches[0];
         $blockTypeRecord = $this->_getBlockTypeRecord($blockTypeUid);
 
@@ -649,18 +635,6 @@ class Matrix extends Component
 
             throw $e;
         }
-    }
-
-    /**
-     * Returns the content table name for a given Matrix field.
-     *
-     * @param MatrixField $matrixField The Matrix field.
-     * @return string The table name, or `false` if `$useOldHandle` was set to `true` and there was no old handle.
-     * @deprecated in 3.0.23. Use [[MatrixField::$contentTable]] instead.
-     */
-    public function getContentTableName(MatrixField $matrixField): string
-    {
-        return $matrixField->contentTable;
     }
 
     /**
@@ -1021,20 +995,6 @@ class Matrix extends Component
                 $handledSiteIds[$siteId] = true;
             }
         }
-    }
-
-    /**
-     * Returns the site IDs that are supported by Matrix blocks for the given Matrix field and owner element.
-     *
-     * @param MatrixField $field
-     * @param ElementInterface $owner
-     * @return int[]
-     * @since 3.2.0
-     * @deprecated in 3.3.18. Use [[getSupportedSiteIds()]] instead.
-     */
-    public function getSupportedSiteIdsForField(MatrixField $field, ElementInterface $owner): array
-    {
-        return $this->getSupportedSiteIds($field->propagationMethod, $owner, $field->propagationKeyFormat);
     }
 
     /**

@@ -884,31 +884,6 @@ class View extends \yii\web\View
     }
 
     /**
-     * Registers a hi-res CSS code block.
-     *
-     * @param string $css the CSS code block to be registered
-     * @param array $options the HTML attributes for the style tag.
-     * @param string|null $key the key that identifies the CSS code block. If null, it will use
-     * $css as the key. If two CSS code blocks are registered with the same key, the latter
-     * will overwrite the former.
-     * @deprecated in 3.0.0. Use [[registerCss()]] and type your own media selector.
-     */
-    public function registerHiResCss(string $css, array $options = [], string $key = null)
-    {
-        Craft::$app->getDeprecator()->log('registerHiResCss', '`craft\\web\\View::registerHiResCss()` has been deprecated. Use `registerCss()` instead, and type your own media selector.');
-
-        $css = "@media only screen and (-webkit-min-device-pixel-ratio: 1.5),\n" .
-            "only screen and (   -moz-min-device-pixel-ratio: 1.5),\n" .
-            "only screen and (     -o-min-device-pixel-ratio: 3/2),\n" .
-            "only screen and (        min-device-pixel-ratio: 1.5),\n" .
-            "only screen and (        min-resolution: 1.5dppx){\n" .
-            $css . "\n" .
-            '}';
-
-        $this->registerCss($css, $options, $key);
-    }
-
-    /**
      * @inheritdoc
      */
     public function registerJs($js, $position = self::POS_READY, $key = null)
@@ -1265,19 +1240,6 @@ JS;
      * @since 3.7.0
      */
     public function getInitialDeltaValues(): array
-    {
-        return $this->_initialDeltaValues;
-    }
-
-    /**
-     * Returns the initial values of delta inputs.
-     *
-     * @return array
-     * @see setInitialDeltaValue()
-     * @deprecated in 3.7.0. Use [[getInitialDeltaValues()]] instead.
-     * @since 3.4.6
-     */
-    public function getInitialDeltaValue()
     {
         return $this->_initialDeltaValues;
     }

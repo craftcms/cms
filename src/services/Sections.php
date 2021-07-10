@@ -949,26 +949,6 @@ class Sections extends Component
         $projectConfig->muteEvents = false;
     }
 
-    /**
-     * Returns whether a section’s entries have URLs for the given site ID, and if the section’s template path is valid.
-     *
-     * @param Section $section
-     * @param int $siteId
-     * @return bool
-     * @deprecated in 3.3.0
-     */
-    public function isSectionTemplateValid(Section $section, int $siteId): bool
-    {
-        $sectionSiteSettings = $section->getSiteSettings();
-
-        if (!isset($sectionSiteSettings[$siteId]) || !$sectionSiteSettings[$siteId]->hasUrls) {
-            return false;
-        }
-
-        $template = (string)$sectionSiteSettings[$siteId]->template;
-        return Craft::$app->getView()->doesTemplateExist($template, View::TEMPLATE_MODE_SITE);
-    }
-
     // Entry Types
     // -------------------------------------------------------------------------
 

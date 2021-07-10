@@ -1433,20 +1433,6 @@ class Asset extends Element
      *
      * @param string|null $filename Filename to use. If not specified, the asset's filename will be used.
      * @return string
-     * @deprecated in 3.0.0-RC12
-     */
-    public function getUri(string $filename = null): string
-    {
-        Craft::$app->getDeprecator()->log(self::class . '::getUri()', '`' . self::class . '::getUri()` has been deprecated. Use `getPath()` instead.');
-
-        return $this->getPath($filename);
-    }
-
-    /**
-     * Returns the asset's path in the volume.
-     *
-     * @param string|null $filename Filename to use. If not specified, the asset's filename will be used.
-     * @return string
      */
     public function getPath(string $filename = null): string
     {
@@ -1524,20 +1510,6 @@ class Asset extends Element
     }
 
     /**
-     * Return whether the Asset has a URL.
-     *
-     * @return bool
-     * @deprecated in 3.0.0-RC12. Use getVolume()->hasUrls instead.
-     */
-    public function getHasUrls(): bool
-    {
-        Craft::$app->getDeprecator()->log(self::class . '::getHasUrls()', '`' . self::class . '::getHasUrls()` has been deprecated. Use `getVolume()->hasUrls` instead.');
-
-        $volume = $this->getVolume();
-        return $volume && $volume->hasUrls;
-    }
-
-    /**
      * Returns whether this asset can be edited by the image editor.
      *
      * @return bool
@@ -1546,19 +1518,6 @@ class Asset extends Element
     {
         $ext = $this->getExtension();
         return (strcasecmp($ext, 'svg') !== 0 && Image::canManipulateAsImage($ext));
-    }
-
-    /**
-     * Returns whether this asset can be previewed.
-     *
-     * @return bool
-     * @deprecated in 3.4.0. Use [[\craft\services\Assets::getAssetPreviewHandler]] instead.
-     */
-    public function getSupportsPreview(): bool
-    {
-        Craft::$app->getDeprecator()->log(self::class . '::getSupportsPreview()', '`' . self::class . '::getSupportsPreview()` has been deprecated. Use `craft\services\Assets::getAssetPreview()` instead.');
-
-        return \in_array($this->kind, [self::KIND_IMAGE, self::KIND_HTML, self::KIND_JAVASCRIPT, self::KIND_JSON], true);
     }
 
     /**

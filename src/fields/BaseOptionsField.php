@@ -493,24 +493,6 @@ abstract class BaseOptionsField extends Field implements PreviewableFieldInterfa
     }
 
     /**
-     * Returns an option's label by its value.
-     *
-     * @param string|null $value
-     * @return string|null
-     * @deprecated in 3.4.24
-     */
-    protected function optionLabel(string $value = null)
-    {
-        foreach ($this->options() as $option) {
-            if (!isset($option['optgroup']) && (string)$option['value'] === $value) {
-                return $option['label'];
-            }
-        }
-
-        return $value;
-    }
-
-    /**
      * Returns the default field value.
      *
      * @return string[]|string|null
