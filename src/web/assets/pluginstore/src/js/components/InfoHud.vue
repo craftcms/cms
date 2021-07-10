@@ -27,7 +27,7 @@
         @apply tw-inline-block;
 
         .v-popover {
-            @apply tw-text-gray-500;
+            @apply tw-text-gray-400;
             display: inline-block;
             line-height: 0;
 
