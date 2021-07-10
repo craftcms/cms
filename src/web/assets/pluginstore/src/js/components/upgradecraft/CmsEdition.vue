@@ -20,7 +20,8 @@
             <ul>
                 <li v-for="(feature, key) in features" :key="key">
                     <icon icon="check" />
-                    {{feature.name}}
+
+                    <span class="tw-inline-block tw-mx-2">{{feature.name}}</span>
 
                     <info-hud v-if="feature.description">
                         {{feature.description}}
@@ -105,7 +106,7 @@
                 @apply tw-text-left tw-mb-8;
 
                 li {
-                    @apply tw-py-2 tw-border-b tw-border-gray-300 tw-border-solid;
+                    @apply tw-flex tw-items-center tw-py-2 tw-border-b tw-border-gray-300 tw-border-solid;
 
                     &:first-child {
                         @apply tw-border-t;
