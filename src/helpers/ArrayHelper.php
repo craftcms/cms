@@ -53,9 +53,6 @@ class ArrayHelper extends \yii\helpers\ArrayHelper
     /**
      * Prepends values to an array.
      *
-     * This should be used instead of `array_unshift($array, ...$values)` when `$values` could be an empty array,
-     * as PHP < 7.3 would throw an error in that case.
-     *
      * ---
      * ```php
      * ArrayHelper::prepend($array, ...$values);
@@ -64,19 +61,15 @@ class ArrayHelper extends \yii\helpers\ArrayHelper
      * @param array &$array the array to be prepended to
      * @param mixed ...$values the values to prepend.
      * @since 3.4.0
+     * @deprecated in 4.0.0. `array_unshift()` should be used instead.
      */
     public static function prepend(array &$array, ...$values)
     {
-        if (!empty($values)) {
-            array_unshift($array, ...$values);
-        }
+        array_unshift($array, ...$values);
     }
 
     /**
      * Appends values to an array.
-     *
-     * This should be used instead of `array_push($array, ...$values)` when `$values` could be an empty array,
-     * as PHP < 7.3 would throw an error in that case.
      *
      * ---
      * ```php
@@ -86,12 +79,11 @@ class ArrayHelper extends \yii\helpers\ArrayHelper
      * @param array &$array the array to be appended to
      * @param mixed ...$values the values to append.
      * @since 3.4.0
+     * @deprecated in 4.0.0. `array_push()` should be used instead.
      */
     public static function append(array &$array, ...$values)
     {
-        if (!empty($values)) {
-            array_push($array, ...$values);
-        }
+        array_push($array, ...$values);
     }
 
     /**
@@ -368,7 +360,7 @@ class ArrayHelper extends \yii\helpers\ArrayHelper
     }
 
     /**
-     * Returns a copy of an array without items with matching the given value.
+     * Returns a copy of an array without items matching the given value.
      *
      * @param array $array
      * @param mixed $value

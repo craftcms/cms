@@ -15,7 +15,7 @@
             if ($groupSettingsBtn.length) {
                 var menuBtn = $groupSettingsBtn.data('menubtn');
 
-                menuBtn.settings.onOptionSelect = $.proxy(function(elem) {
+                menuBtn.settings.onOptionSelect = elem => {
                     var action = $(elem).data('action');
 
                     switch (action) {
@@ -28,7 +28,7 @@
                             break;
                         }
                     }
-                }, this);
+                };
             }
         },
 
@@ -40,7 +40,7 @@
                     name: name
                 };
 
-                Craft.postActionRequest('fields/save-group', data, $.proxy(function(response, textStatus) {
+                Craft.postActionRequest('fields/save-group', data, (response, textStatus) => {
                     if (textStatus === 'success') {
                         if (response.success) {
                             location.href = Craft.getUrl('settings/fields/' + response.group.id);
@@ -51,7 +51,7 @@
                             Craft.cp.displayError();
                         }
                     }
-                }, this));
+                });
             }
         },
 
@@ -65,7 +65,7 @@
                     name: newName
                 };
 
-                Craft.postActionRequest('fields/save-group', data, $.proxy(function(response, textStatus) {
+                Craft.postActionRequest('fields/save-group', data, (response, textStatus) => {
                     if (textStatus === 'success') {
                         if (response.success) {
                             this.$selectedGroup.text(response.group.name);
@@ -77,7 +77,7 @@
                             Craft.cp.displayError();
                         }
                     }
-                }, this));
+                });
             }
         },
 
@@ -91,7 +91,7 @@
                     id: this.$selectedGroup.data('id')
                 };
 
-                Craft.postActionRequest('fields/delete-group', data, $.proxy(function(response, textStatus) {
+                Craft.postActionRequest('fields/delete-group', data, (response, textStatus) => {
                     if (textStatus === 'success') {
                         if (response.success) {
                             location.href = Craft.getUrl('settings/fields');
@@ -99,7 +99,7 @@
                             Craft.cp.displayError();
                         }
                     }
-                }, this));
+                });
             }
         },
 

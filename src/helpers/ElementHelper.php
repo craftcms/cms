@@ -12,6 +12,7 @@ use craft\base\BlockElementInterface;
 use craft\base\Element;
 use craft\base\ElementInterface;
 use craft\base\Field;
+use craft\base\FieldInterface;
 use craft\db\Query;
 use craft\db\Table;
 use craft\errors\OperationAbortedException;
@@ -215,7 +216,7 @@ class ElementHelper
             if (strpos($uriFormat, '{id') !== false) {
                 $variables['id'] = $element->tempId;
             }
-            if (!$element->getSourceId() && strpos($uriFormat, '{sourceId') !== false) {
+            if (!$element->getCanonicalId() && strpos($uriFormat, '{sourceId') !== false) {
                 $variables['sourceId'] = $element->tempId;
             }
         }
@@ -258,7 +259,7 @@ class ElementHelper
             ]);
         }
 
-        if (($sourceId = $element->getSourceId()) !== null) {
+        if (($sourceId = $element->getCanonicalId()) !== null) {
             $query->andWhere([
                 'not', [
                     'elements.id' => $sourceId,
@@ -383,6 +384,30 @@ class ElementHelper
     }
 
     /**
+     * Returns whether the given element (or its root element if a block element) is a draft.
+     *
+     * @param ElementInterface $element
+     * @return bool
+     * @since 3.7.0
+     */
+    public static function isDraft(ElementInterface $element): bool
+    {
+        return static::rootElement($element)->getIsDraft();
+    }
+
+    /**
+     * Returns whether the given element (or its root element if a block element) is a revision.
+     *
+     * @param ElementInterface $element
+     * @return bool
+     * @since 3.7.0
+     */
+    public static function isRevision(ElementInterface $element): bool
+    {
+        return static::rootElement($element)->getIsRevision();
+    }
+
+    /**
      * Returns whether the given element (or its root element if a block element) is a draft or revision.
      *
      * @param ElementInterface $element
@@ -396,29 +421,17 @@ class ElementHelper
     }
 
     /**
-     * Returns the element, or if it’s a draft/revision, the source element.
+     * Returns the canonical version of an element.
      *
      * @param ElementInterface $element The source/draft/revision element
      * @param bool $anySite Whether the source element can be retrieved in any site
-     * @return ElementInterface|null
+     * @return ElementInterface
      * @since 3.3.0
+     * @deprecated in 3.7.0. Use [[ElementInterface::getCanonical()]] instead.
      */
-    public static function sourceElement(ElementInterface $element, bool $anySite = false)
+    public static function sourceElement(ElementInterface $element, bool $anySite = false): ElementInterface
     {
-        $sourceId = $element->getSourceId();
-        if ($sourceId === $element->id) {
-            return $element;
-        }
-
-        return $element::find()
-            ->id($sourceId)
-            ->siteId($anySite ? '*' : $element->siteId)
-            ->preferSites([$element->siteId])
-            ->structureId($element->structureId)
-            ->unique()
-            ->anyStatus()
-            ->ignorePlaceholders()
-            ->one();
+        return $element->getCanonical($anySite);
     }
 
     /**
@@ -543,5 +556,40 @@ class ElementHelper
                 }
                 return Craft::$app->getView()->renderObjectTemplate($translationKeyFormat, $element);
         }
+    }
+
+    /**
+     * Returns the content column name for a given field.
+     *
+     * @param FieldInterface $field
+     * @param string|null $columnKey
+     * @return string|null
+     * @since 3.7.0
+     */
+    public static function fieldColumnFromField(FieldInterface $field, ?string $columnKey = null): ?string
+    {
+        if ($field::hasContentColumn()) {
+            return static::fieldColumn($field->columnPrefix, $field->handle, $field->columnSuffix, $columnKey);
+        }
+
+        return null;
+    }
+
+    /**
+     * Returns the content column name based on the given field attributes.
+     *
+     * @param string|null $columnPrefix
+     * @param string $handle
+     * @param string|null $columnSuffix
+     * @param string|null $columnKey
+     * @return string
+     * @since 3.7.0
+     */
+    public static function fieldColumn(?string $columnPrefix, string $handle, ?string $columnSuffix, ?string $columnKey = null): string
+    {
+        return ($columnPrefix ?? Craft::$app->getContent()->fieldColumnPrefix) .
+            $handle .
+            ($columnKey ? "_$columnKey" : '') .
+            ($columnSuffix ? "_$columnSuffix" : '');
     }
 }

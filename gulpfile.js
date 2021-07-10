@@ -16,6 +16,7 @@ const jsonMinify = require('gulp-json-minify');
 const rename = require('gulp-rename');
 const sass = require('gulp-sass');
 const sourcemaps = require('gulp-sourcemaps');
+const ts = require('gulp-typescript');
 const uglify = require('gulp-uglify-es').default;
 const webpack = require('webpack-stream');
 
@@ -33,11 +34,16 @@ const cpSassGlob = [
     `!${atAssetPath}/**/*.scss`,
 ];
 
+const cpTypeScriptGlob = [
+    `${cpAssetsPath}/**/src/*.ts`
+];
+
 const cpGlobalJsGlob = [
     `${cpGlobalAssetPath}/src/js/Craft.js`,
     `${cpGlobalAssetPath}/src/js/Base*.js`,
+    `${cpGlobalAssetPath}/src/js/Tabs.js`,
     `${cpGlobalAssetPath}/src/js/*.js`,
-    `!(${cpGlobalAssetPath}/src/js/Craft.js|${cpGlobalAssetPath}/src/js/Base*.js)`,
+    `!(${cpGlobalAssetPath}/src/js/Craft.js|${cpGlobalAssetPath}/src/js/Base*.js|${cpGlobalAssetPath}/src/js/Tabs.js)`,
     `!${graphiqlAssetPath}/**/*.js`,
     `!${psAssetPath}/**/*.js`,
     `!${atAssetPath}/**/*.js`
@@ -112,6 +118,8 @@ const vueJs = [
     'node_modules/vue-autosuggest/dist/vue-autosuggest.js',
 ];
 
+const tsProject = ts.createProject('tsconfig.json');
+
 gulp.task('cp-sass', function() {
     gulp.src(cpSassGlob)
         .pipe(sourcemaps.init())
@@ -126,6 +134,15 @@ gulp.task('cp-sass', function() {
         .pipe(gulp.dest(function(file) {
             return file.base;
         }))
+});
+
+gulp.task('cp-ts', function () {
+    return gulp.src(cpTypeScriptGlob)
+        .pipe(tsProject())
+        .on('error', () => { /* Ignore compiler errors */})
+        .pipe(gulp.dest(function(file) {
+            return file.base;
+        }));
 });
 
 gulp.task('cp-global-js', function() {
@@ -155,11 +172,12 @@ gulp.task('cp-other-js', function() {
         }))
 });
 
-gulp.task('cp-js', ['cp-global-js', 'cp-other-js']);
+gulp.task('cp-js', ['cp-ts', 'cp-global-js', 'cp-other-js']);
 gulp.task('cp', ['cp-sass', 'cp-js']);
 
 gulp.task('watch', function() {
     gulp.watch(cpSassGlob, ['cp-sass']);
+    gulp.watch(cpTypeScriptGlob, ['cp-ts']);
     gulp.watch(cpGlobalAssetPath, ['cp-global-js']);
     gulp.watch(cpOtherJsGlob, ['cp-other-js']);
 });

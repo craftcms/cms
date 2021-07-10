@@ -176,6 +176,11 @@ class MigrateController extends BaseMigrateController
      */
     public function beforeAction($action)
     {
+        // Make sure this isn't a root user
+        if (!$this->checkRootUser()) {
+            return false;
+        }
+
         if ($action->id !== 'all') {
             // Validate $type
             if ($this->type) {
@@ -225,8 +230,7 @@ class MigrateController extends BaseMigrateController
             FileHelper::createDirectory($this->migrationPath);
         }
 
-        // TODO remove after next breakpoint
-        // Make sure that the new project config structure is there before any migrations cause Project Config to look there.
+        // Make sure that the project config YAML exists in case any migrations need to check incoming YAML values
         $projectConfig = Craft::$app->getProjectConfig();
         if ($projectConfig->writeYamlAutomatically && !$projectConfig->getDoesYamlExist()) {
             $projectConfig->regenerateYamlFromConfig();
@@ -305,7 +309,7 @@ class MigrateController extends BaseMigrateController
         $handles = $updatesService->getPendingMigrationHandles(!$this->noContent);
 
         if (empty($handles)) {
-            $this->stdout('No new migrations found. Your system is up-to-date.' . PHP_EOL, Console::FG_GREEN);
+            $this->stdout('No new migrations found. Your system is up to date.' . PHP_EOL, Console::FG_GREEN);
             return ExitCode::OK;
         }
 

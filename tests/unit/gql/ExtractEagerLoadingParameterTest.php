@@ -304,6 +304,9 @@ GQL;
             [
                 'query entries ($childSlug: [String]) {
                     entries  {
+                        drafts(orderBy: "desc") {
+                            id
+                        }
                         children(type: "child", slug: $childSlug) {
                             id
                             title
@@ -313,7 +316,7 @@ GQL;
                 }',
                 ['childSlug' => ['slugslug', 'slugger']],
                 [
-                    'with' => [new EagerLoadPlan(['handle' => 'children', 'alias' => 'children', 'criteria' => ['type' => 'child', 'slug' => ['slugslug', 'slugger']]])],
+                    'with' => [new EagerLoadPlan(['handle' => 'drafts', 'alias' => 'drafts', 'criteria' => ['orderBy' => 'desc']]), new EagerLoadPlan(['handle' => 'children', 'alias' => 'children', 'criteria' => ['type' => 'child', 'slug' => ['slugslug', 'slugger']]])],
                 ],
                 '[EntryInterface]',
             ],

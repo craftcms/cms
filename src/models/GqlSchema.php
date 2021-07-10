@@ -57,7 +57,7 @@ class GqlSchema extends Model
         parent::__construct($config);
 
         if (is_string($this->scope)) {
-            $this->scope = Json::decodeIfJson($this->scope);
+            $this->scope = Json::decode($this->scope);
         }
     }
 

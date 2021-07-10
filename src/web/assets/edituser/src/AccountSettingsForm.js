@@ -30,7 +30,7 @@
 
         handleCopyPasswordResetUrlBtnClick: function() {
             // Requires an elevated session
-            Craft.elevatedSessionManager.requireElevatedSession($.proxy(this, 'getPasswordResetUrl'));
+            Craft.elevatedSessionManager.requireElevatedSession(this.getPasswordResetUrl.bind(this));
         },
 
         getPasswordResetUrl: function() {
@@ -40,7 +40,7 @@
                 userId: this.userId
             };
 
-            Craft.postActionRequest('users/get-password-reset-url', data, $.proxy(function(response, textStatus) {
+            Craft.postActionRequest('users/get-password-reset-url', data, (response, textStatus) => {
                 this.$actionSpinner.addClass('hidden');
 
                 if (textStatus === 'success') {
@@ -49,7 +49,7 @@
                         value: response.url,
                     });
                 }
-            }, this));
+            });
         },
 
         handleCopyImpersonationUrlBtnClick: function() {
@@ -74,7 +74,7 @@
         showConfirmDeleteModal: function() {
             if (!this.confirmDeleteModal) {
                 this.$actionSpinner.removeClass('hidden');
-                Craft.postActionRequest('users/user-content-summary', {userId: this.userId}, $.proxy(function(response, textStatus) {
+                Craft.postActionRequest('users/user-content-summary', {userId: this.userId}, (response, textStatus) => {
                     this.$actionSpinner.addClass('hidden');
                     if (textStatus === 'success') {
                         this.confirmDeleteModal = new Craft.DeleteUserModal(this.userId, {
@@ -82,7 +82,7 @@
                             redirect: this.settings.deleteModalRedirect
                         });
                     }
-                }, this));
+                });
             } else {
                 this.confirmDeleteModal.show();
             }

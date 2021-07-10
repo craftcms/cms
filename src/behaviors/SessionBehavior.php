@@ -81,6 +81,34 @@ class SessionBehavior extends Behavior
     }
 
     /**
+     * Retrieves a notice from the user’s flash data.
+     *
+     * @return string|null
+     */
+    public function getNotice(): ?string
+    {
+        if (Craft::$app->getRequest()->getIsCpRequest()) {
+            return $this->owner->getFlash('cp-notice');
+        }
+
+        return $this->owner->getFlash('notice');
+    }
+
+    /**
+     * Retrieves an error message from the user’s flash data.
+     *
+     * @return string|null
+     */
+    public function getError(): ?string
+    {
+        if (Craft::$app->getRequest()->getIsCpRequest()) {
+            return $this->owner->getFlash('cp-error');
+        }
+
+        return $this->owner->getFlash('error');
+    }
+
+    /**
      * Queues up an asset bundle to be registered on a future request.
      *
      * Asset bundles that were queued with this method can be registered using [[getAssetBundleFlashes()]] or

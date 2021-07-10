@@ -77,7 +77,7 @@
             for (let value = this.min; value <= this.max; value += this.settings.step) {
                 this.$buttons = this.$buttons.add($('<a/>', {
                     title: this.settings.valueLabel(value),
-                    data: {value: value}
+                    data: {value}
                 }));
             }
 

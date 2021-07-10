@@ -295,6 +295,9 @@ class Globals extends Component
 
         if ($isNewSet) {
             $globalSet->uid = $globalSet->uid ?: StringHelper::UUID();
+            $globalSet->sortOrder = (new Query())
+                    ->from([Table::GLOBALSETS])
+                    ->max('[[sortOrder]]') + 1;
         } else if (!$globalSet->uid) {
             $globalSet->uid = Db::uidById(Table::GLOBALSETS, $globalSet->id);
         }
@@ -331,6 +334,7 @@ class Globals extends Component
 
             $globalSetRecord->name = $data['name'];
             $globalSetRecord->handle = $data['handle'];
+            $globalSetRecord->sortOrder = $data['sortOrder'] ?? 0;
             $globalSetRecord->uid = $globalSetUid;
 
             if (!empty($data['fieldLayouts'])) {
@@ -404,6 +408,30 @@ class Globals extends Component
 
         // Invalidate all element caches
         Craft::$app->getElements()->invalidateAllCaches();
+    }
+
+    /**
+     * Reorders global sets.
+     *
+     * @param array $setIds
+     * @return bool
+     * @throws \Throwable
+     * @since 3.7.0
+     */
+    public function reorderSets(array $setIds): bool
+    {
+        $projectConfig = Craft::$app->getProjectConfig();
+
+        $uidsByIds = Db::uidsByIds(Table::GLOBALSETS, $setIds);
+
+        foreach ($setIds as $i => $setId) {
+            if (!empty($uidsByIds[$setId])) {
+                $setUid = $uidsByIds[$setId];
+                $projectConfig->set(self::CONFIG_GLOBALSETS_KEY . ".$setUid.sortOrder", $i + 1, 'Reorder global sets');
+            }
+        }
+
+        return true;
     }
 
     /**

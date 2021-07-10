@@ -91,6 +91,9 @@ class FindAndReplace extends BaseJob
         }
 
         $columnType = $field->getContentColumnType();
+        if (is_array($columnType)) {
+            $columnType = reset($columnType);
+        }
 
         if (!preg_match('/^\w+/', $columnType, $matches)) {
             return;

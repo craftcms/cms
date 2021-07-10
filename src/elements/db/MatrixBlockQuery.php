@@ -491,7 +491,7 @@ class MatrixBlockQuery extends ElementQuery
                 return false;
             }
 
-            $this->subQuery->andWhere(Db::parseParam('matrixblocks.typeId', $this->typeId));
+            $this->subQuery->andWhere(Db::parseNumericParam('matrixblocks.typeId', $this->typeId));
         }
 
         // Ignore revision/draft blocks by default
@@ -526,7 +526,7 @@ class MatrixBlockQuery extends ElementQuery
                 ->select(['fieldId'])
                 ->distinct()
                 ->from([Table::MATRIXBLOCKS])
-                ->where(Db::parseParam('id', $this->id))
+                ->where(Db::parseNumericParam('id', $this->id))
                 ->column() ?: false;
         }
 
@@ -542,7 +542,7 @@ class MatrixBlockQuery extends ElementQuery
             $this->fieldId = (new Query())
                 ->select(['id'])
                 ->from([Table::FIELDS])
-                ->where(Db::parseParam('id', $this->fieldId))
+                ->where(Db::parseNumericParam('id', $this->fieldId))
                 ->andWhere(['type' => Matrix::class])
                 ->column();
         }

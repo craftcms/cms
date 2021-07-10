@@ -17,8 +17,5 @@
     {{ actionInput('plugins/save-plugin-settings') }}
     {{ hiddenInput('pluginHandle', plugin.handle) }}
     {{ redirectInput('settings') }}
-
-    {% namespace 'settings' %}
-        {{ settingsHtml|raw }}
-    {% endnamespace %}
+    {{ settingsHtml|raw }}
 {% endblock %}

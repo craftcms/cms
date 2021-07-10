@@ -210,9 +210,27 @@
             { value: 'siteGroup', label: 'Save blocks to other sites in the same site group'|t('app') },
             { value: 'language', label: 'Save blocks to other sites with the same language'|t('app') },
             { value: 'all', label: 'Save blocks to all sites the owner element is saved in'|t('app') },
+            { value: 'custom', label: 'Custom…'|t('app') },
         ],
-        value: matrixField.propagationMethod
+        value: matrixField.propagationMethod,
+        toggle: true,
+        targetPrefix: 'propagation-method-',
     }) }}
+
+    {% tag 'div' with {
+        id: 'propagation-method-custom',
+        class: matrixField.propagationMethod != 'custom' ? 'hidden' : null,
+    } %}
+        {{ forms.textField({
+            label: 'Propagation Key Format'|t('app'),
+            instructions: 'Template that defines the field’s custom “propagation key” format. Blocks will be saved to all sites that produce the same key.'|t('app'),
+            id: 'propagation-key-format',
+            class: 'code',
+            name: 'propagationKeyFormat',
+            value: matrixField.propagationKeyFormat,
+            errors: matrixField.getErrors('propagationKeyFormat'),
+        }) }}
+    {% endtag %}
 
     {% if matrixField.id and matrixField.propagationMethod != 'none' %}
         {% js %}

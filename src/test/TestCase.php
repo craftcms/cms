@@ -92,7 +92,7 @@ class TestCase extends Unit
     }
 
     /**
-     * Invokes a inaccessible method.
+     * Invokes an inaccessible method on an object
      *
      * @param $object
      * @param $method
@@ -105,13 +105,41 @@ class TestCase extends Unit
     protected function invokeMethod($object, $method, $args = [], $revoke = true)
     {
         $method = (new ReflectionObject($object))->getMethod($method);
+        return $this->_invokeMethodInternal($method, $object, $args, $revoke);
+    }
+
+    /**
+     * Invokes an inaccessible static method on a class
+     *
+     * @param $object
+     * @param $method
+     * @param array $args
+     * @param bool $revoke whether to make method inaccessible after execution
+     * @return mixed
+     * @throws ReflectionException
+     * @credit https://github.com/yiisoft/yii2/blob/master/tests/TestCase.php#L134
+     */
+    protected function invokeStaticMethod($className, $method, $args = [], $revoke = true) {
+        $method = (new ReflectionClass($className))->getMethod($method);
+        return $this->_invokeMethodInternal($method, null, $args, $revoke);
+    }
+
+    /**
+     * @param \ReflectionMethod $method
+     * @param $object
+     * @param array $args
+     * @param bool $revoke
+     * @return mixed
+     * @throws ReflectionException
+     */
+    private function _invokeMethodInternal(\ReflectionMethod $method, $object = null, array $args = [], bool $revoke = true)
+    {
         $method->setAccessible(true);
         $result = $method->invokeArgs($object, $args);
 
         if ($revoke) {
             $method->setAccessible(false);
         }
-
         return $result;
     }
 }

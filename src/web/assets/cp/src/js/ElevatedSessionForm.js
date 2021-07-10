@@ -68,7 +68,7 @@ Craft.ElevatedSessionForm = Garnish.Base.extend({
         // Prevent the form from submitting until the user has an elevated session
         ev.preventDefault();
         ev.stopImmediatePropagation();
-        Craft.elevatedSessionManager.requireElevatedSession($.proxy(this, 'submitForm'));
+        Craft.elevatedSessionManager.requireElevatedSession(this.submitForm.bind(this));
     },
 
     submitForm: function() {

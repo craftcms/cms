@@ -50,13 +50,12 @@
         size: 4,
     }) }}
 
-    {{ forms.selectField({
+    {{ forms.timeZoneField({
         label: "Time Zone"|t('app'),
         warning: (craft.app.config.general.timezone ? configWarning('timezone')),
         id: 'time-zone',
         name: 'timeZone',
         value: system.timeZone,
-        options: timezoneOptions
     }) }}
 
     {% if CraftEdition == CraftPro %}

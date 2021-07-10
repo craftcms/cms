@@ -1,6 +1,7 @@
 {% set id = (id ?? "time#{random()}") ~ '-time' -%}
 {% set name = name ?? null -%}
 {% set value = value ?? null -%}
+{% set outputTzParam = outputTzParam ?? true %}
 
 {% do view.registerAssetBundle('craft\\web\\assets\\timepicker\\TimepickerAsset') -%}
 
@@ -21,7 +22,7 @@
         value: (value ? value|time('short') : '')
     } -%}
     <div data-icon="time"></div>
-    {% if name -%}
+    {% if name and outputTzParam -%}
         {{ hiddenInput("#{name}[timezone]", craft.app.getTimeZone()) }}
     {%- endif -%}
 {% endtag %}

@@ -213,7 +213,7 @@ class DraftsTest extends Unit
         /** @var DraftBehavior $behavior */
         $behavior = $draft->getBehavior('draft');
         self::assertNotNull($behavior);
-        self::assertEquals($entry->id, $behavior->sourceId);
+        self::assertEquals($entry->id, $draft->getCanonicalId());
         self::assertEquals(1, $behavior->creatorId);
         self::assertSame('Test Draft', $behavior->draftName);
         self::assertNull($behavior->draftNotes);

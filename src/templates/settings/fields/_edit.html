@@ -113,16 +113,20 @@
                 }) }}
 
                 {% if 'custom' in translationMethods %}
-                    <div id="translation-method-custom" {% if field.translationMethod != 'custom' %}class="hidden"{% endif %}>
+                    {% tag 'div' with {
+                        id: 'translation-method-custom',
+                        class: field.translationMethod != 'custom' ? 'hidden' : null,
+                    } %}
                         {{ forms.textField({
                             label: "Translation Key Format"|t('app'),
                             instructions: "Template that defines the field’s custom “translation key” format. Field values will be copied to all sites that produce the same key. For example, to make the field translatable based on the first two characters of the site handle, you could enter `{site.handle[:2]}`.",
                             id: 'translation-key-format',
+                            class: 'code',
                             name: 'translationKeyFormat',
                             value: field.translationKeyFormat,
                             errors: field.getErrors('translationKeyFormat')
                         }) }}
-                    </div>
+                    {% endtag %}
                 {% endif %}
             </div>
         {% endif %}

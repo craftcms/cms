@@ -58,19 +58,24 @@ abstract class Model extends \yii\base\Model
      */
     const EVENT_DEFINE_EXTRA_FIELDS = 'defineExtraFields';
 
+    public function __construct($config = [])
+    {
+        // Normalize the DateTime attributes
+        foreach ($this->datetimeAttributes() as $attribute) {
+            if (array_key_exists($attribute, $config) && $config[$attribute] !== null) {
+                $config[$attribute] = DateTimeHelper::toDateTime($config[$attribute]);
+            }
+        }
+
+        parent::__construct($config);
+    }
+
     /**
      * @inheritdoc
      */
     public function init()
     {
         parent::init();
-
-        // Normalize the DateTime attributes
-        foreach ($this->datetimeAttributes() as $attribute) {
-            if ($this->$attribute !== null) {
-                $this->$attribute = DateTimeHelper::toDateTime($this->$attribute);
-            }
-        }
 
         if ($this->hasEventHandlers(self::EVENT_INIT)) {
             $this->trigger(self::EVENT_INIT);
@@ -164,6 +169,22 @@ abstract class Model extends \yii\base\Model
         }
 
         return $attributes;
+    }
+
+    /**
+     * @inheritdoc
+     * @since 4.0.0
+     */
+    public function setAttributes($values, $safeOnly = true)
+    {
+        // Normalize the date/time attributes
+        foreach ($this->datetimeAttributes() as $name) {
+            if (isset($values[$name])) {
+                $values[$name] = DateTimeHelper::toDateTime($values[$name]) ?: null;
+            }
+        }
+
+        parent::setAttributes($values, $safeOnly);
     }
 
     /**

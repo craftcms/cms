@@ -4,7 +4,7 @@
     Craft.PluginManager = Garnish.Base.extend({
         init: function() {
             this.getPluginLicenseInfo()
-                .then(function(response) {
+                .then(response => {
                     for (var handle in response) {
                         if (response.hasOwnProperty(handle)) {
                             if (!response[handle].isComposerInstalled) {
@@ -14,7 +14,7 @@
                             }
                         }
                     }
-                }.bind(this));
+                });
         },
 
         getPluginLicenseInfo: function() {
@@ -270,21 +270,21 @@
                 // normalize
                 var userKey = Craft.PluginManager.normalizeUserKey(key);
                 this.$keyInput.val(userKey);
-                this.updateTimeout = setTimeout($.proxy(this, 'updateLicenseStatus'), 100);
+                this.updateTimeout = setTimeout(this.updateLicenseStatus.bind(this), 100);
             }
         },
 
         updateLicenseStatus: function() {
             this.$spinner.removeClass('hidden');
-            Craft.postActionRequest('app/update-plugin-license', {handle: this.handle, key: this.getKey()}, function(response, textStatus) {
+            Craft.postActionRequest('app/update-plugin-license', {handle: this.handle, key: this.getKey()}, (response, textStatus) => {
                 if (textStatus === 'success') {
                     this.manager.getPluginLicenseInfo()
-                        .then(function(response) {
+                        .then(response => {
                             this.$spinner.addClass('hidden');
                             this.update(response[this.handle]);
-                        }.bind(this));
+                        });
                 }
-            }.bind(this))
+            });
         },
 
         update: function(info) {

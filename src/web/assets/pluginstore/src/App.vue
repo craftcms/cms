@@ -51,13 +51,12 @@
         },
 
         mounted() {
-            window.addEventListener('resize', function($event) {
+            window.addEventListener('resize', $event => {
                 this.$root.$emit('windowResize', $event)
-            }.bind(this))
-
-            window.addEventListener('scroll', function($event) {
+            });
+            window.addEventListener('scroll', $event => {
                 this.$root.$emit('windowScroll', $event)
-            }.bind(this))
+            });
         }
     }
 </script>

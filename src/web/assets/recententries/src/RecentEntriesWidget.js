@@ -17,7 +17,7 @@
             this.$tbody = this.$container.find('tbody:first');
             this.hasEntries = !!this.$tbody.length;
 
-            this.$widget.data('widget').on('destroy', $.proxy(this, 'destroy'));
+            this.$widget.data('widget').on('destroy', this.destroy.bind(this));
 
             Craft.RecentEntriesWidget.instances.push(this);
         },

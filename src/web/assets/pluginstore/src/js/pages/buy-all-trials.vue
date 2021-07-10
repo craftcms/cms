@@ -63,9 +63,9 @@ export default {
             this.buyAllTrials()
         } else {
             // wait for the cart to be ready
-            this.$root.$on('allDataLoaded', function() {
+            this.$root.$on('allDataLoaded', () => {
                 this.buyAllTrials()
-            }.bind(this))
+            })
         }
     }
 }

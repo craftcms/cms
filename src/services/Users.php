@@ -37,7 +37,6 @@ use craft\web\Request;
 use DateTime;
 use yii\base\Component;
 use yii\base\InvalidArgumentException;
-use yii\db\Exception as DbException;
 
 /**
  * The Users service provides APIs for managing users.
@@ -283,18 +282,13 @@ class Users extends Component
      */
     public function getUserPreferences(int $userId = null): array
     {
-        // TODO: Remove try/catch after next breakpoint
-        try {
-            $preferences = (new Query())
-                ->select(['preferences'])
-                ->from([Table::USERPREFERENCES])
-                ->where(['userId' => $userId])
-                ->scalar();
+        $preferences = (new Query())
+            ->select(['preferences'])
+            ->from([Table::USERPREFERENCES])
+            ->where(['userId' => $userId])
+            ->scalar();
 
-            return $preferences ? Json::decode($preferences) : [];
-        } catch (DbException $e) {
-            return [];
-        }
+        return $preferences ? Json::decode($preferences) : [];
     }
 
     /**
@@ -310,7 +304,7 @@ class Users extends Component
         Db::upsert(Table::USERPREFERENCES, [
             'userId' => $user->id,
         ], [
-            'preferences' => Json::encode($preferences),
+            'preferences' => $preferences,
         ], [], false);
     }
 
@@ -521,7 +515,7 @@ class Users extends Component
             }
         }
 
-        return Craft::$app->getAssets()->ensureFolderByFullPathAndVolume($subpath, $volume);
+        return Craft::$app->getAssets()->ensureFolderByFullPathAndVolume($subpath, $volume)->id;
     }
 
     /**
@@ -945,7 +939,7 @@ class Users extends Component
 
         $elementsService = Craft::$app->getElements();
 
-        foreach ($query->each() as $user) {
+        foreach (Db::each($query) as $user) {
             $elementsService->deleteElement($user);
             Craft::info("Just deleted pending user {$user->username} ({$user->id}), because they took too long to activate their account.", __METHOD__);
         }
@@ -1132,10 +1126,16 @@ class Users extends Component
      * Save the user field layout
      *
      * @param FieldLayout $layout
+     * @param bool $runValidation Whether the layout should be validated
      * @return bool
      */
-    public function saveLayout(FieldLayout $layout)
+    public function saveLayout(FieldLayout $layout, bool $runValidation = true)
     {
+        if ($runValidation && !$layout->validate()) {
+            Craft::info('Field layout not saved due to validation error.', __METHOD__);
+            return false;
+        }
+
         $projectConfig = Craft::$app->getProjectConfig();
         $fieldLayoutConfig = $layout->getConfig();
         $uid = StringHelper::UUID();

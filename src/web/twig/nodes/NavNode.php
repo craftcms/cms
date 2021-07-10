@@ -50,7 +50,7 @@ class NavNode extends ForNode
     /**
      * @inheritdoc
      */
-    public function compile(Compiler $compiler)
+    public function compile(Compiler $compiler): void
     {
         // Remember what 'nav' was set to before
         $compiler

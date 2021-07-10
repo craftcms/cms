@@ -17,6 +17,7 @@ coverage:
     - src/config/*
     - src/icons/*
     - src/test/internal/*
+    - src/test/templates/*
     - src/migrations/*
     - src/templates/*
     - src/translations/*

@@ -106,25 +106,33 @@ class InstallController extends Controller
             return ExitCode::OK;
         }
 
+        $user = new User();
+        $site = new Site([
+            'handle' => 'default',
+            'hasUrls' => true,
+        ]);
+
         // Validate the arguments
         $errors = [];
-        if ($this->username && !$this->validateUsername($this->username, $error)) {
-            $errors[] = $error;
+        $currentError = null;
+
+        if ($this->username && !$this->createAttributeValidator($user, 'username')($this->username, $currentError)) {
+            $errors[] = $currentError;
         }
-        if ($this->email && !$this->validateEmail($this->email, $error)) {
-            $errors[] = $error;
+        if ($this->email && !$this->createAttributeValidator($user, 'email')($this->email, $currentError)) {
+            $errors[] = $currentError;
         }
-        if ($this->password && !$this->validatePassword($this->password, $error)) {
-            $errors[] = $error;
+        if ($this->password && !$this->createAttributeValidator($user, 'newPassword')($this->password, $currentError)) {
+            $errors[] = $currentError;
         }
-        if ($this->siteName && !$this->validateSiteName($this->siteName, $error)) {
-            $errors[] = $error;
+        if ($this->siteName && !$this->createAttributeValidator($site, 'name')($this->siteName, $currentError)) {
+            $errors[] = $currentError;
         }
-        if ($this->siteUrl && !$this->validateSiteUrl($this->siteUrl, $error)) {
-            $errors[] = $error;
+        if ($this->siteUrl && !$this->createAttributeValidator($site, 'baseUrl')($this->siteUrl, $currentError)) {
+            $errors[] = $currentError;
         }
-        if ($this->language && !$this->validateLanguage($this->language, $error)) {
-            $errors[] = $error;
+        if ($this->language && !$this->createAttributeValidator($site, 'language')($this->language, $currentError)) {
+            $errors[] = $currentError;
         }
 
         if (!empty($errors)) {
@@ -136,34 +144,26 @@ class InstallController extends Controller
         $generalConfig = $configService->getGeneral();
 
         if ($generalConfig->useEmailAsUsername) {
-            $username = $email = $this->email ?: $this->prompt('Email:', ['required' => true, 'validator' => [$this, 'validateEmail']]);
+            $username = $email = $this->email ?: $this->prompt('Email:', ['required' => true, 'validator' => $this->createAttributeValidator($user, 'email')]);
         } else {
-            $username = $this->username ?: $this->prompt('Username:', ['validator' => [$this, 'validateUsername'], 'default' => 'admin']);
-            $email = $this->email ?: $this->prompt('Email:', ['required' => true, 'validator' => [$this, 'validateEmail']]);
+            $username = $this->username ?: $this->prompt('Username:', ['validator' => $this->createAttributeValidator($user, 'username'), 'default' => 'admin']);
+            $email = $this->email ?: $this->prompt('Email:', ['required' => true, 'validator' => $this->createAttributeValidator($user, 'email')]);
         }
-        $password = $this->password ?: $this->passwordPrompt(['validator' => [$this, 'validatePassword']]);
-        $siteName = $this->siteName ?: $this->prompt('Site name:', ['required' => true, 'default' => InstallHelper::defaultSiteName(), 'validator' => [$this, 'validateSiteName']]);
-        $siteUrl = $this->siteUrl ?: $this->prompt('Site URL:', ['required' => true, 'default' => InstallHelper::defaultSiteUrl(), 'validator' => [$this, 'validateSiteUrl']]);
-        $language = $this->language ?: $this->prompt('Site language:', ['default' => InstallHelper::defaultSiteLanguage(), 'validator' => [$this, 'validateLanguage']]);
+        $password = $this->password ?: $this->passwordPrompt(['validator' => $this->createAttributeValidator($user, 'newPassword')]);
+        $site->name = $this->siteName ?: $this->prompt('Site name:', ['required' => true, 'default' => InstallHelper::defaultSiteName(), 'validator' => $this->createAttributeValidator($site, 'name')]);
+        $site->baseUrl = $this->siteUrl ?: $this->prompt('Site URL:', ['required' => true, 'default' => InstallHelper::defaultSiteUrl(), 'validator' => $this->createAttributeValidator($site, 'baseUrl')]);
+        $site->language = $this->language ?: $this->prompt('Site language:', ['default' => InstallHelper::defaultSiteLanguage(), 'validator' => $this->createAttributeValidator($site, 'language')]);
 
         // Try to save the site URL to a PRIMARY_SITE_URL environment variable
         // if it's not already set to an alias or environment variable
-        if ($siteUrl[0] !== '@' && $siteUrl[0] !== '$') {
+        if ($site->baseUrl[0] !== '@' && $site->baseUrl[0] !== '$') {
             try {
-                $configService->setDotEnvVar('PRIMARY_SITE_URL', $siteUrl);
-                $siteUrl = '$PRIMARY_SITE_URL';
+                $configService->setDotEnvVar('PRIMARY_SITE_URL', $site->baseUrl);
+                $site->baseUrl = '$PRIMARY_SITE_URL';
             } catch (Exception $e) {
                 // that's fine, we'll just store the entered URL
             }
         }
-
-        $site = new Site([
-            'name' => $siteName,
-            'handle' => 'default',
-            'hasUrls' => true,
-            'baseUrl' => $siteUrl,
-            'language' => $language,
-        ]);
 
         $migration = new Install([
             'username' => $username,
@@ -207,87 +207,5 @@ class InstallController extends Controller
     {
         Console::outputWarning("The install/plugin command is deprecated.\nRunning plugin/install instead...");
         return Craft::$app->runAction('plugin/install', [$handle]);
-    }
-
-    /**
-     * @param string $value
-     * @param string|null $error
-     * @return bool
-     */
-    public function validateUsername(string $value, string &$error = null): bool
-    {
-        return $this->_validateUserAttribute('username', $value, $error);
-    }
-
-    /**
-     * @param string $value
-     * @param string|null $error
-     * @return bool
-     */
-    public function validateEmail(string $value, string &$error = null): bool
-    {
-        return $this->_validateUserAttribute('email', $value, $error);
-    }
-
-    /**
-     * @param string $value
-     * @param string|null $error
-     * @return bool
-     */
-    public function validatePassword(string $value, string &$error = null): bool
-    {
-        return $this->_validateUserAttribute('newPassword', $value, $error);
-    }
-
-    /**
-     * @param string $value
-     * @param string|null $error
-     * @return bool
-     */
-    public function validateSiteName(string $value, string &$error = null): bool
-    {
-        return $this->_validateSiteAttribute('name', $value, $error);
-    }
-
-    /**
-     * @param string $value
-     * @param string|null $error
-     * @return bool
-     */
-    public function validateSiteUrl(string $value, string &$error = null): bool
-    {
-        return $this->_validateSiteAttribute('baseUrl', $value, $error);
-    }
-
-    /**
-     * @param string $value
-     * @param string|null $error
-     * @return bool
-     */
-    public function validateLanguage(string $value, string &$error = null): bool
-    {
-        return $this->_validateSiteAttribute('language', $value, $error);
-    }
-
-    private function _validateUserAttribute(string $attribute, $value, &$error): bool
-    {
-        $user = new User([$attribute => $value]);
-        if (!$user->validate([$attribute])) {
-            $error = $user->getFirstError($attribute);
-            return false;
-        }
-        $error = null;
-        return true;
-    }
-
-    private function _validateSiteAttribute(string $attribute, $value, &$error): bool
-    {
-        $site = new Site([$attribute => $value]);
-        if (!$site->validate([$attribute])) {
-            $error = $site->getFirstError($attribute);
-            return false;
-        }
-        $error = null;
-        return true;
     }
 }

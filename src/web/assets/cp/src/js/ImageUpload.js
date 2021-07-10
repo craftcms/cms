@@ -32,10 +32,10 @@ Craft.ImageUpload = Garnish.Base.extend({
         }
 
         options.events = {};
-        options.events.fileuploadstart = $.proxy(this, '_onUploadStart');
-        options.events.fileuploadprogressall = $.proxy(this, '_onUploadProgress');
-        options.events.fileuploaddone = $.proxy(this, '_onUploadComplete');
-        options.events.fileuploadfail = $.proxy(this, '_onUploadError');
+        options.events.fileuploadstart = this._onUploadStart.bind(this);
+        options.events.fileuploadprogressall = this._onUploadProgress.bind(this);
+        options.events.fileuploaddone = this._onUploadComplete.bind(this);
+        options.events.fileuploadfail = this._onUploadError.bind(this);
 
         this.uploader = new Craft.Uploader(this.$container, options);
 
@@ -43,20 +43,20 @@ Craft.ImageUpload = Garnish.Base.extend({
     },
 
     initButtons: function() {
-        this.$container.find(this.settings.uploadButtonSelector).on('click', $.proxy(function(ev) {
+        this.$container.find(this.settings.uploadButtonSelector).on('click', ev => {
             this.$container.find(this.settings.fileInputSelector).trigger('click');
-        }, this));
+        });
 
-        this.$container.find(this.settings.deleteButtonSelector).on('click', $.proxy(function(ev) {
+        this.$container.find(this.settings.deleteButtonSelector).on('click', ev => {
             if (confirm(Craft.t('app', 'Are you sure you want to delete this image?'))) {
                 $(ev.currentTarget).parent().append('<div class="blocking-modal"></div>');
-                Craft.postActionRequest(this.settings.deleteAction, this.settings.postParameters, $.proxy(function(response, textStatus) {
+                Craft.postActionRequest(this.settings.deleteAction, this.settings.postParameters, (response, textStatus) => {
                     if (textStatus === 'success') {
                         this.refreshImage(response);
                     }
-                }, this));
+                });
             }
-        }, this));
+        });
     },
 
     refreshImage: function(response) {

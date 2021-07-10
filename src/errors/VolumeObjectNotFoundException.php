@@ -8,7 +8,7 @@
 namespace craft\errors;
 
 /**
- * Class VolumeFileNotFoundException
+ * Class VolumeObjectNotFoundException
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
@@ -20,6 +20,6 @@ class VolumeObjectNotFoundException extends VolumeException
      */
     public function getName()
     {
-        return 'Volume object not found';
+        return 'Volume object exists';
     }
 }

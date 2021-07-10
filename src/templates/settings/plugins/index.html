@@ -54,7 +54,7 @@
                                         {% endif %}
                                         {% if config.developer or config.documentationUrl or config.hasCpSettings %}
                                             <ul class="links">
-                                                {%- spaceless %}
+                                                {%- apply spaceless %}
                                                     {% if config.developer %}
                                                         <li class="link-developer">
                                                             {% if config.developerUrl %}
@@ -87,7 +87,7 @@
                                                             }) }}
                                                         </li>
                                                     {% endif %}
-                                                {% endspaceless -%}
+                                                {% endapply -%}
                                             </ul>
                                         {% endif %}
                                         {% set showLicenseKey = config.licenseKey or config.licenseKeyStatus != 'unknown' %}

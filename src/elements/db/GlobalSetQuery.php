@@ -34,7 +34,7 @@ class GlobalSetQuery extends ElementQuery
     /**
      * @inheritdoc
      */
-    protected $defaultOrderBy = ['globalsets.name' => SORT_ASC];
+    protected $defaultOrderBy = ['globalsets.sortOrder' => SORT_ASC];
 
     // General parameters
     // -------------------------------------------------------------------------
@@ -112,6 +112,7 @@ class GlobalSetQuery extends ElementQuery
         $this->query->select([
             'globalsets.name',
             'globalsets.handle',
+            'globalsets.sortOrder',
             'globalsets.uid',
         ]);
 

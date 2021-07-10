@@ -13,16 +13,16 @@
             this.$status = $('#status');
 
             if (!this.settings.error) {
-                setTimeout($.proxy(function() {
+                setTimeout(() => {
                     this.postActionRequest();
-                }, this), 500);
+                }, 500);
             } else {
                 var errorMsg = this.settings.message ? this.settings.message : this.settings.error;
                 this.$status.html(errorMsg);
 
-                setTimeout($.proxy(function() {
+                setTimeout(() => {
                     window.location = this.settings.redirectUrl;
-                }, this), 1000)
+                }, 1000)
             }
         },
 
@@ -30,7 +30,7 @@
             var fragmentString = window.location.hash.substr(1);
             var fragments = $.parseFragmentString(fragmentString);
 
-            Craft.postActionRequest('plugin-store/save-token', fragments, $.proxy(function(response, textStatus, jqXHR) {
+            Craft.postActionRequest('plugin-store/save-token', fragments, (response, textStatus, jqXHR) => {
                 if (textStatus == 'success') {
                     if (response.error) {
                         this.showError(response.error);
@@ -39,18 +39,18 @@
                         this.$graphic.addClass('success');
 
                         // Redirect to the Dashboard in half a second
-                        setTimeout($.proxy(function() {
+                        setTimeout(() => {
                             if (typeof (this.settings.redirectUrl) != 'undefined') {
                                 window.location = this.settings.redirectUrl;
                             } else {
                                 window.location = Craft.getCpUrl('plugin-store');
                             }
-                        }, this), 500);
+                        }, 500);
                     }
                 } else {
                     this.showFatalError(jqXHR);
                 }
-            }, this));
+            });
         },
 
         showFatalError: function(jqXHR) {

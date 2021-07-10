@@ -90,7 +90,7 @@ Craft.DeleteUserModal = Garnish.Modal.extend({
             modalSettings: {
                 closeOtherModals: false
             },
-            onSelectElements: $.proxy(function() {
+            onSelectElements: () => {
                 this.updateSizeAndPosition();
 
                 if (!this.$deleteActionRadios.first().prop('checked')) {
@@ -98,8 +98,8 @@ Craft.DeleteUserModal = Garnish.Modal.extend({
                 } else {
                     this.validateDeleteInputs();
                 }
-            }, this),
-            onRemoveElements: $.proxy(this, 'validateDeleteInputs'),
+            },
+            onRemoveElements: this.validateDeleteInputs.bind(this),
             selectable: false,
             editable: false
         });

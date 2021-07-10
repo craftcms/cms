@@ -51,7 +51,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend({
             this.addListener(this.$main, 'scroll', '_positionProgressBar');
 
             if (this.settings.modal) {
-                this.settings.modal.on('updateSizeAndPosition', $.proxy(this, '_positionProgressBar'));
+                this.settings.modal.on('updateSizeAndPosition', this._positionProgressBar.bind(this));
             }
         }
     },
@@ -119,25 +119,15 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend({
         this.settings.selectable = true;
         this.settings.multiSelect = true;
 
-        var onDragStartProxy = $.proxy(this, '_onDragStart'),
-            onDropTargetChangeProxy = $.proxy(this, '_onDropTargetChange');
-
         // Asset dragging
         // ---------------------------------------------------------------------
 
         this._assetDrag = new Garnish.DragDrop({
             activeDropTargetClass: 'sel',
             helperOpacity: 0.75,
-
-            filter: $.proxy(function() {
-                return this.view.getSelectedElements().has('div.element[data-movable]');
-            }, this),
-
-            helper: $.proxy(function($file) {
-                return this._getFileDragHelper($file);
-            }, this),
-
-            dropTargets: $.proxy(function() {
+            filter: () => this.view.getSelectedElements().has('div.element[data-movable]'),
+            helper: $file => this._getFileDragHelper($file),
+            dropTargets: () => {
                 // Which data attribute should we be checking?
                 var attr;
                 if (this._assetDrag.$draggee && this._assetDrag.$draggee.has('.element[data-peer-file]').length) {
@@ -157,11 +147,11 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend({
                 }
 
                 return targets;
-            }, this),
+            },
 
-            onDragStart: onDragStartProxy,
-            onDropTargetChange: onDropTargetChangeProxy,
-            onDragStop: $.proxy(this, '_onFileDragStop'),
+            onDragStart: this._onDragStart.bind(this),
+            onDropTargetChange: this._onDropTargetChange.bind(this),
+            onDragStop: this._onFileDragStop.bind(this),
             helperBaseZindex: 800
         });
 
@@ -172,7 +162,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend({
             activeDropTargetClass: 'sel',
             helperOpacity: 0.75,
 
-            filter: $.proxy(function() {
+            filter: () => {
                 // Return each of the selected <a>'s parent <li>s, except for top level drag attempts.
                 var $selected = this.sourceSelect.getSelectedItems(),
                     draggees = [];
@@ -190,9 +180,9 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend({
                 }
 
                 return $(draggees);
-            }, this),
+            },
 
-            helper: $.proxy(function($draggeeHelper) {
+            helper: $draggeeHelper => {
                 var $helperSidebar = $('<div class="sidebar" style="padding-top: 0; padding-bottom: 0;"/>'),
                     $helperNav = $('<nav/>').appendTo($helperSidebar),
                     $helperUl = $('<ul/>').appendTo($helperNav);
@@ -209,9 +199,9 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend({
                 });
 
                 return $helperSidebar;
-            }, this),
+            },
 
-            dropTargets: $.proxy(function() {
+            dropTargets: () => {
                 var targets = [];
 
                 // Tag the dragged folder and it's subfolders
@@ -235,11 +225,11 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend({
                 }
 
                 return targets;
-            }, this),
+            },
 
-            onDragStart: onDragStartProxy,
-            onDropTargetChange: onDropTargetChangeProxy,
-            onDragStop: $.proxy(this, '_onFolderDragStop')
+            onDragStart: this._onDragStart.bind(this),
+            onDropTargetChange: this._onDropTargetChange.bind(this),
+            onDragStop: this._onFolderDragStop.bind(this),
         });
     },
 
@@ -283,7 +273,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend({
                 }
 
                 // Define the callback for when all file moves are complete
-                var onMoveFinish = $.proxy(function(responseArray) {
+                var onMoveFinish = responseArray => {
                     this.promptHandler.resetPrompts();
 
                     // Loop trough all the responses
@@ -330,7 +320,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend({
 
                     if (this.promptHandler.getPromptCount()) {
                         // Define callback for completing all prompts
-                        var promptCallback = $.proxy(function(returnData) {
+                        var promptCallback = returnData => {
                             var newParameterArray = [];
 
                             // Loop trough all returned data and prepare a new request array
@@ -376,7 +366,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend({
                                 // Move conflicting files again with resolutions now
                                 this._performBatchRequests(newParameterArray, onMoveFinish);
                             }
-                        }, this);
+                        };
 
                         this._assetDrag.fadeOutHelpers();
                         this.promptHandler.showBatchPrompts(promptCallback);
@@ -384,7 +374,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend({
                         performAfterMoveActions.apply(this);
                         this._assetDrag.fadeOutHelpers();
                     }
-                }, this);
+                };
 
                 // Initiate the file move with the built array, index of 0 and callback to use when done
                 this._performBatchRequests(parameterArray, onMoveFinish);
@@ -475,7 +465,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend({
 
                 var newSourceKey = '';
 
-                var onMoveFinish = function(responseArray) {
+                var onMoveFinish = responseArray => {
                     this.promptHandler.resetPrompts();
 
                     // Loop trough all the responses
@@ -510,7 +500,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend({
 
                     if (this.promptHandler.getPromptCount()) {
                         // Define callback for completing all prompts
-                        var promptCallback = $.proxy(function(returnData) {
+                        var promptCallback = returnData => {
                             this.promptHandler.resetPrompts();
 
                             var newParameterArray = [];
@@ -541,7 +531,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend({
 
                             // Start working on them lists, baby
                             if (newParameterArray.length === 0) {
-                                $.proxy(this, '_performActualFolderMove', fileMoveList, folderIds, newSourceKey)();
+                                this._performActualFolderMove(fileMoveList, folderIds, newSourceKey);
                             } else {
                                 // Start working
                                 this.setIndexBusy();
@@ -551,16 +541,16 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend({
 
                                 this._performBatchRequests(newParameterArray, onMoveFinish);
                             }
-                        }, this);
+                        };
 
                         this.promptHandler.showBatchPrompts(promptCallback);
 
                         this.setIndexAvailable();
                         this.progressBar.hideProgressBar();
                     } else {
-                        $.proxy(this, '_performActualFolderMove', fileMoveList, folderIds, newSourceKey)();
+                        this._performActualFolderMove(fileMoveList, folderIds, newSourceKey);
                     }
-                }.bind(this);
+                };
 
                 // Initiate the folder move with the built array, index of 0 and callback to use when done
                 this._performBatchRequests(parameterArray, onMoveFinish);
@@ -587,13 +577,13 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend({
         this.progressBar.setItemCount(1);
         this.progressBar.showProgressBar();
 
-        var moveCallback = function(folderDeleteList) {
+        var moveCallback = folderDeleteList => {
             // Delete the old folders
             var counter = 0;
             var limit = folderDeleteList.length;
             for (var i = 0; i < folderDeleteList.length; i++) {
                 // When all folders are deleted, reload the sources.
-                Craft.postActionRequest('assets/delete-folder', {folderId: folderDeleteList[i]}, function() {
+                Craft.postActionRequest('assets/delete-folder', {folderId: folderDeleteList[i]}, () => {
                     if (++counter === limit) {
                         this.setIndexAvailable();
                         this.progressBar.hideProgressBar();
@@ -601,9 +591,9 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend({
                         this.setInstanceState('selectedSource', newSourceKey);
                         this.refreshSources();
                     }
-                }.bind(this));
+                });
             }
-        }.bind(this);
+        };
 
         if (fileMoveList.length > 0) {
             var parameterArray = [];
@@ -697,9 +687,9 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend({
         };
 
         options.events = {
-            fileuploadstart: $.proxy(this, '_onUploadStart'),
-            fileuploadprogressall: $.proxy(this, '_onUploadProgress'),
-            fileuploaddone: $.proxy(this, '_onUploadComplete')
+            fileuploadstart: this._onUploadStart.bind(this),
+            fileuploadprogressall: this._onUploadProgress.bind(this),
+            fileuploaddone: this._onUploadComplete.bind(this),
         };
 
         if (this.settings.criteria && typeof this.settings.criteria.kind !== 'undefined') {
@@ -710,14 +700,14 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend({
 
         this.uploader = new Craft.Uploader(this.$uploadButton, options);
 
-        this.$uploadButton.on('click', $.proxy(function() {
+        this.$uploadButton.on('click', () => {
             if (this.$uploadButton.hasClass('disabled')) {
                 return;
             }
             if (!this.isIndexBusy) {
                 this.$uploadButton.parent().find('input[name=assets-upload]').trigger('click');
             }
-        }, this));
+        });
 
         this.base();
     },
@@ -880,7 +870,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend({
             if (response.error) {
                 alert(Craft.t('app', 'Upload failed. The error message was: “{error}”', {error: response.error}));
             } else {
-                alert(Craft.t('app', 'Upload failed for {filename}.', {filename: filename}));
+                alert(Craft.t('app', 'Upload failed for {filename}.', {filename}));
             }
 
             doReload = false;
@@ -892,7 +882,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend({
             this.progressBar.hideProgressBar();
 
             if (this.promptHandler.getPromptCount()) {
-                this.promptHandler.showBatchPrompts($.proxy(this, '_uploadFollowup'));
+                this.promptHandler.showBatchPrompts(this._uploadFollowup.bind(this));
             } else {
                 if (doReload) {
                     this._updateAfterUpload();
@@ -926,19 +916,19 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend({
 
         this.promptHandler.resetPrompts();
 
-        var finalCallback = function() {
+        var finalCallback = () => {
             this.setIndexAvailable();
             this.progressBar.hideProgressBar();
             this._updateAfterUpload();
-        }.bind(this);
+        };
 
         this.progressBar.setItemCount(returnData.length);
 
-        var doFollowup = function(parameterArray, parameterIndex, callback) {
+        var doFollowup = (parameterArray, parameterIndex, callback) => {
             var postData = {};
             var action = null;
 
-            var followupCallback = function(data, textStatus) {
+            var followupCallback = (data, textStatus) => {
                 if (textStatus === 'success' && data.assetId) {
                     this._uploadedAssetIds.push(data.assetId);
                 } else if (data.error) {
@@ -953,7 +943,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend({
                 } else {
                     doFollowup(parameterArray, parameterIndex, callback);
                 }
-            }.bind(this);
+            };
 
             if (parameterArray[parameterIndex].choice === 'replace') {
                 action = 'assets/replace-file';
@@ -975,7 +965,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend({
             } else {
                 Craft.postActionRequest(action, postData, followupCallback);
             }
-        }.bind(this);
+        };
 
         this.progressBar.showProgressBar();
         doFollowup(returnData, 0, finalCallback);
@@ -987,9 +977,9 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend({
      */
     onUpdateElements: function() {
         this._onUpdateElements(false, this.view.getAllElements());
-        this.view.on('appendElements', $.proxy(function(ev) {
+        this.view.on('appendElements', ev => {
             this._onUpdateElements(true, ev.newElements);
-        }, this));
+        });
 
         this.base();
     },
@@ -1148,7 +1138,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend({
                 this.dropTargetFolder = this._getSourceByKey(folderId);
 
                 if (this._hasSubfolders(this.dropTargetFolder) && !this._isExpanded(this.dropTargetFolder)) {
-                    this._expandDropTargetFolderTimeout = setTimeout($.proxy(this, '_expandFolder'), 500);
+                    this._expandDropTargetFolderTimeout = setTimeout(this._expandFolder.bind(this), 500);
                 }
             } else {
                 this.dropTargetFolder = null;
@@ -1221,12 +1211,29 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend({
             return;
         }
 
-        var menuOptions = [{label: Craft.t('app', 'New subfolder'), onClick: $.proxy(this, '_createSubfolder', $source)}];
+        var menuOptions = [
+            {
+                label: Craft.t('app', 'New subfolder'),
+                onClick: () => {
+                    this._createSubfolder($source);
+                },
+            },
+        ];
 
         // For all folders that are not top folders
         if (this.settings.context === 'index' && this._getSourceLevel($source) > 1) {
-            menuOptions.push({label: Craft.t('app', 'Rename folder'), onClick: $.proxy(this, '_renameFolder', $source)});
-            menuOptions.push({label: Craft.t('app', 'Delete folder'), onClick: $.proxy(this, '_deleteFolder', $source)});
+            menuOptions.push({
+                label: Craft.t('app', 'Rename folder'),
+                onClick: () => {
+                    this._renameFolder($source);
+                },
+            });
+            menuOptions.push({
+                label: Craft.t('app', 'Delete folder'),
+                onClick: () => {
+                    this._deleteFolder($source);
+                },
+            });
         }
 
         new Garnish.ContextMenu($source, menuOptions, {menuClass: 'menu'});
@@ -1243,7 +1250,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend({
 
             this.setIndexBusy();
 
-            Craft.postActionRequest('assets/create-folder', params, $.proxy(function(data, textStatus) {
+            Craft.postActionRequest('assets/create-folder', params, (data, textStatus) => {
                 this.setIndexAvailable();
 
                 if (textStatus === 'success' && data.success) {
@@ -1271,7 +1278,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend({
                 if (textStatus === 'success' && data.error) {
                     alert(data.error);
                 }
-            }, this));
+            });
         }
     },
 
@@ -1283,7 +1290,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend({
 
             this.setIndexBusy();
 
-            Craft.postActionRequest('assets/delete-folder', params, $.proxy(function(data, textStatus) {
+            Craft.postActionRequest('assets/delete-folder', params, (data, textStatus) => {
                 this.setIndexAvailable();
 
                 if (textStatus === 'success' && data.success) {
@@ -1299,7 +1306,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend({
                 if (textStatus === 'success' && data.error) {
                     alert(data.error);
                 }
-            }, this));
+            });
         }
     },
 
@@ -1318,7 +1325,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend({
 
             this.setIndexBusy();
 
-            Craft.postActionRequest('assets/rename-folder', params, $.proxy(function(data, textStatus) {
+            Craft.postActionRequest('assets/rename-folder', params, (data, textStatus) => {
                 this.setIndexAvailable();
 
                 if (textStatus === 'success' && data.success) {
@@ -1333,7 +1340,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend({
                 if (textStatus === 'success' && data.error) {
                     alert(data.error);
                 }
-            }, this), 'json');
+            }, 'json');
         }
     },
 
@@ -1426,8 +1433,8 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend({
     _performBatchRequests: function(parameterArray, finalCallback) {
         var responseArray = [];
 
-        var doRequest = function(parameters) {
-            Craft.postActionRequest(parameters.action, parameters.params, function(data, textStatus) {
+        var doRequest = parameters => {
+            Craft.postActionRequest(parameters.action, parameters.params, (data, textStatus) => {
                 this.progressBar.incrementProcessedItemCount(1);
                 this.progressBar.updateProgressBar();
 
@@ -1441,8 +1448,8 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend({
                 if (responseArray.length >= parameterArray.length) {
                     finalCallback(responseArray);
                 }
-            }.bind(this));
-        }.bind(this);
+            });
+        };
 
         for (var i = 0; i < parameterArray.length; i++) {
             doRequest(parameterArray[i]);

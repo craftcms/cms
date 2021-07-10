@@ -1,4 +1,4 @@
-{%- spaceless %}
+{%- apply spaceless %}
 
 {% set id = id ?? "checkbox#{random()}" %}
 {% set label = checkboxLabel ?? label ?? null %}
@@ -38,4 +38,4 @@
     {% endif %}
 </label>
 
-{% endspaceless -%}
+{% endapply -%}

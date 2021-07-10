@@ -12,6 +12,7 @@ use craft\base\LocalVolumeInterface;
 use craft\base\VolumeInterface;
 use craft\elements\Asset;
 use craft\enums\PeriodType;
+use craft\errors\VolumeException;
 use craft\events\RegisterAssetFileKindsEvent;
 use craft\events\SetAssetFilenameEvent;
 use craft\models\AssetTransformIndex;
@@ -95,24 +96,26 @@ class Assets
      * Get appendix for a URL based on its Source caching settings.
      *
      * @param VolumeInterface $volume
-     * @param Asset $file
+     * @param Asset $asset
      * @param AssetTransformIndex|null $transformIndex Transform index, for which the URL is being generated, if any
      * @return string
      */
-    public static function urlAppendix(VolumeInterface $volume, Asset $file, ?AssetTransformIndex $transformIndex = null): string
+    public static function urlAppendix(VolumeInterface $volume, Asset $asset, ?AssetTransformIndex $transformIndex = null): string
     {
-        $appendix = '';
-
-        if (!empty($volume->expires) && DateTimeHelper::isValidIntervalString($volume->expires) && $file->dateModified) {
-            $focalAppendix = $file->getHasFocalPoint() ? urlencode($file->getFocalPoint(true)) : 'none';
-            $appendix = '?mtime=' . $file->dateModified->format('YmdHis') . '&focal=' . $focalAppendix;
-
-            if ($transformIndex) {
-                $appendix .= '&tmtime=' . $transformIndex->dateUpdated->format('YmdHis');
-            }
+        if (!Craft::$app->getConfig()->getGeneral()->revAssetUrls) {
+            return '';
         }
 
-        return $appendix;
+        /** @var DateTime $dateModified */
+        $dateModified = max($asset->dateModified, $transformIndex->dateUpdated ?? null);
+        $v = $dateModified->getTimestamp();
+
+        if ($asset->getHasFocalPoint()) {
+            $fp = $asset->getFocalPoint();
+            $v .= ",{$fp['x']},{$fp['y']}";
+        }
+
+        return "?$v";
     }
 
     /**
@@ -214,7 +217,7 @@ class Assets
 
                 // Any and all parent folders should be already mirrored
                 $folder->parentId = ($folderIdChanges[$sourceFolder->parentId] ?? $destinationFolder->id);
-                $assets->createFolder($folder, true);
+                $assets->createFolder($folder);
 
                 $folderIdChanges[$sourceFolder->id] = $folder->id;
             }
@@ -273,14 +276,9 @@ class Assets
      */
     public static function sortFolderTree(array &$tree)
     {
-        $sort = [];
-
-        foreach ($tree as $topFolder) {
-            $volume = $topFolder->getVolume();
-            $sort[] = $volume->sortOrder;
-        }
-
-        array_multisort($sort, $tree);
+        ArrayHelper::multisort($tree, function($folder) {
+            return $folder->getVolume()->sortOrder;
+        });
     }
 
     /**
@@ -473,16 +471,6 @@ class Assets
                         'xlsx',
                         'xltm',
                         'xltx',
-                    ],
-                ],
-                Asset::KIND_FLASH => [
-                    'label' => Craft::t('app', 'Flash'),
-                    'extensions' => [
-                        'fla',
-                        'flv',
-                        'swc',
-                        'swf',
-                        'swt',
                     ],
                 ],
                 Asset::KIND_HTML => [
@@ -789,5 +777,28 @@ class Assets
             throw new InvalidArgumentException("Invalid srcset size: $size");
         }
         return [(float)$match[1], $match[2]];
+    }
+
+    /**
+     * Save a file from a volume locally.
+     *
+     * @param VolumeInterface $volume
+     * @param string $uriPath
+     * @param string $localPath
+     * @return int
+     * @throws VolumeException if stream cannot be created.
+     * @since 4.0.0
+     */
+    public static function downloadFile(VolumeInterface $volume, string $uriPath, string $localPath): int
+    {
+        $stream = $volume->getFileStream($uriPath);
+        $outputStream = fopen($localPath, 'wb');
+
+        $bytes = stream_copy_to_stream($stream, $outputStream);
+
+        fclose($stream);
+        fclose($outputStream);
+
+        return $bytes;
     }
 }

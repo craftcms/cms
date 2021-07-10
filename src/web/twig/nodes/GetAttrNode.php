@@ -37,7 +37,7 @@ class GetAttrNode extends GetAttrExpression
     /**
      * @inheritdoc
      */
-    public function compile(Compiler $compiler)
+    public function compile(Compiler $compiler): void
     {
         $env = $compiler->getEnvironment();
 

@@ -83,19 +83,14 @@ trait SoftDeleteTrait
     {
         $query = parent::find();
 
-        // todo: remove schema version condition after next beakpoint
-        $schemaVersion = Craft::$app->getInstalledSchemaVersion();
-        if (version_compare($schemaVersion, '3.1.19', '>=')) {
-            if ($query instanceof ActiveQuery) {
-                $alias = $query->getAlias();
-                $column = "$alias.dateDeleted";
-            } else {
-                $column = 'dateDeleted';
-            }
-            $query->where([$column => null]);
+        if ($query instanceof ActiveQuery) {
+            $alias = $query->getAlias();
+            $column = "$alias.dateDeleted";
+        } else {
+            $column = 'dateDeleted';
         }
 
-        return $query;
+        return $query->where([$column => null]);
     }
 
     /**

@@ -9,6 +9,7 @@ namespace crafttests\unit\helpers\dbhelper;
 
 use Codeception\Test\Unit;
 use Craft;
+use craft\db\Query;
 use craft\db\Table;
 use craft\helpers\Db;
 use craft\test\mockclasses\serializable\Serializable;
@@ -275,6 +276,26 @@ class DbHelperTest extends Unit
     public function testPrepareValuesForDb(array $expected, $values)
     {
         self::assertSame($expected, Db::prepareValuesForDb($values));
+    }
+
+    /**
+     *
+     */
+    public function testBatch()
+    {
+        $result = Db::batch((new Query())->from([Table::SITES]), 50);
+        self::assertFalse($result->each);
+        self::assertSame(50, $result->batchSize);
+    }
+
+    /**
+     *
+     */
+    public function testEach()
+    {
+        $result = Db::each((new Query())->from([Table::SITES]), 50);
+        self::assertTrue($result->each);
+        self::assertSame(50, $result->batchSize);
     }
 
     /**

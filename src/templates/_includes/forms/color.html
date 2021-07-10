@@ -17,7 +17,7 @@
     {%- set containerAttributes = containerAttributes|merge(('<div ' ~ block('attr') ~ '>')|parseAttr, recursive=true) %}
 {% endif %}
 
-{% spaceless %}
+{% apply spaceless %}
     {% tag 'div' with containerAttributes %}
         {% tag 'div' with {
             class: ['color', 'static', small ? 'small']|filter,
@@ -44,7 +44,7 @@
             }) }}
         </div>
     {% endtag %}
-{% endspaceless -%}
+{% endapply -%}
 
 {% js %}
     new Craft.ColorInput('#{{ containerId|namespaceInputId }}');

@@ -26,47 +26,47 @@ class AssetLocationValidator extends Validator
     /**
      * @var string The folder ID attribute on the model
      */
-    public $folderIdAttribute = 'folderId';
+    public string $folderIdAttribute = 'folderId';
 
     /**
      * @var string The filename attribute on the model
      */
-    public $filenameAttribute = 'filename';
+    public string $filenameAttribute = 'filename';
 
     /**
      * @var string The suggested filename attribute on the model
      */
-    public $suggestedFilenameAttribute = 'suggestedFilename';
+    public string $suggestedFilenameAttribute = 'suggestedFilename';
 
     /**
      * @var string The conflicting filename attribute on the model
      */
-    public $conflictingFilenameAttribute = 'conflictingFilename';
+    public string $conflictingFilenameAttribute = 'conflictingFilename';
 
     /**
      * @var string The error code attribute on the model
      */
-    public $errorCodeAttribute = 'locationError';
+    public string $errorCodeAttribute = 'locationError';
 
     /**
      * @var string[]|null Allowed file extensions
      */
-    public $allowedExtensions;
+    public ?array $allowedExtensions = null;
 
     /**
      * @var string|null User-defined error message used when the extension is disallowed.
      */
-    public $disallowedExtension;
+    public ?string $disallowedExtension = null;
 
     /**
      * @var string|null User-defined error message used when a file already exists with the same name.
      */
-    public $filenameConflict;
+    public ?string $filenameConflict = null;
 
     /**
      * @var bool Whether Asset should avoid filename conflicts when saved.
      */
-    public $avoidFilenameConflicts;
+    public bool $avoidFilenameConflicts;
 
     /**
      * @inheritdoc

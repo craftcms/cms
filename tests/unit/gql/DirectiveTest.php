@@ -20,6 +20,7 @@ use craft\gql\types\elements\Asset as GqlAssetType;
 use craft\gql\types\elements\Entry as GqlEntryType;
 use craft\helpers\Json;
 use craft\helpers\StringHelper;
+use craft\models\AssetTransform;
 use craft\services\Config;
 use craft\test\mockclasses\elements\ExampleElement;
 use craft\test\mockclasses\gql\MockDirective;
@@ -88,6 +89,14 @@ class DirectiveTest extends Unit
             'assets',
             [
                 'getAssetUrl' => function($asset, $parameters, $generateNow) {
+                    if (is_array($parameters)) {
+                        $parameters = Craft::$app->getAssetTransforms()->normalizeTransform($parameters);
+                    }
+
+                    if ($parameters instanceof AssetTransform) {
+                        $parameters = array_filter($parameters->toArray(['mode', 'width', 'height', 'format', 'position', 'interlace', 'quality']));
+                    }
+
                     $transformed = is_array($parameters) ? implode('-', $parameters) : $parameters;
                     return $transformed . ($generateNow ? ($asset->filename . '-generateNow') : ($asset->filename . 'generateLater'));
                 }

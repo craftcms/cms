@@ -29,7 +29,7 @@
     {% endfor %}
     {{ forms.selectField({
         label: "Section"|t('app'),
-        instructions: "Which section do you want to publish entries to?"|t('app'),
+        instructions: 'Which section do you want to save entries to?'|t('app'),
         id: 'section',
         name: 'section',
         options: sectionOptions,
@@ -54,7 +54,7 @@
             {% else %}
                 {{ forms.selectField({
                     label: "Entry Type"|t('app'),
-                    instructions: "Which type of entries do you want to publish?"|t('app'),
+                    instructions: "Which type of entries do you want to create?"|t('app'),
                     id: 'entryType',
                     name: 'sections['~section.id~'][entryType]',
                     options: entryTypeOptions,

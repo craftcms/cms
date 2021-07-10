@@ -69,14 +69,14 @@ Craft.CustomizeSourcesModal = Garnish.Modal.extend({
             elementType: this.elementIndex.elementType
         };
 
-        Craft.postActionRequest('element-index-settings/get-customize-sources-modal-data', data, $.proxy(function(response, textStatus) {
+        Craft.postActionRequest('element-index-settings/get-customize-sources-modal-data', data, (response, textStatus) => {
             this.$loadingSpinner.remove();
 
             if (textStatus === 'success') {
                 this.$saveBtn.removeClass('disabled');
                 this.buildModal(response);
             }
-        }, this));
+        });
 
         this.addListener(this.$newHeadingBtn, 'click', 'handleNewHeadingBtnClick');
         this.addListener(this.$cancelBtn, 'click', 'hide');
@@ -92,9 +92,9 @@ Craft.CustomizeSourcesModal = Garnish.Modal.extend({
         this.sourceSort = new Garnish.DragSort({
             handle: '.move',
             axis: 'y',
-            onSortChange: $.proxy(function() {
+            onSortChange: () => {
                 this.updateSourcesOnSave = true;
-            }, this)
+            },
         });
 
         // Create the sources
@@ -163,7 +163,7 @@ Craft.CustomizeSourcesModal = Garnish.Modal.extend({
         this.$saveSpinner.removeClass('hidden');
         var data = this.$container.serialize() + '&elementType=' + this.elementIndex.elementType;
 
-        Craft.postActionRequest('element-index-settings/save-customize-sources-modal-settings', data, $.proxy(function(response, textStatus) {
+        Craft.postActionRequest('element-index-settings/save-customize-sources-modal-settings', data, (response, textStatus) => {
             this.$saveSpinner.addClass('hidden');
 
             if (textStatus === 'success' && response.success) {
@@ -217,7 +217,7 @@ Craft.CustomizeSourcesModal = Garnish.Modal.extend({
                 var error = (textStatus === 'success' && response.error ? response.error : Craft.t('app', 'A server error occurred.'));
                 Craft.cp.displayError(error);
             }
-        }, this));
+        });
     },
 
     appendSource: function($source, $lastSource) {

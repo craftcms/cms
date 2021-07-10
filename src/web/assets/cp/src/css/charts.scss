@@ -1,5 +1,5 @@
 @charset "UTF-8";
-@import "../../../../../../node_modules/craftcms-sass/mixins";
+@import "../../../../../../packages/craftcms-sass/mixins";
 
 .cp-chart {
   margin: 0;
@@ -61,5 +61,3 @@
   user-select: none;
   pointer-events: none;
 }
-
-

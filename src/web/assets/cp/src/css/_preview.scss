@@ -1,5 +1,5 @@
 @charset "UTF-8";
-@import "../../../../../../node_modules/craftcms-sass/mixins";
+@import "../../../../../../packages/craftcms-sass/mixins";
 
 .lp-editor-container,
 .lp-preview-container {
@@ -90,6 +90,14 @@
 
     @supports (-moz-appearance:none) {
       background-color: transparentize($grey100, 0.25);
+    }
+
+    .buttons {
+      margin: 0;
+
+      .btn + .btn {
+        @include margin-left(7px);
+      }
     }
 
     & + .lp-iframe-container {

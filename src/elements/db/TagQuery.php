@@ -204,7 +204,7 @@ class TagQuery extends ElementQuery
             $this->groupId = (new Query())
                 ->select(['id'])
                 ->from([Table::TAGGROUPS])
-                ->where(Db::parseParam('id', $this->groupId))
+                ->where(Db::parseNumericParam('id', $this->groupId))
                 ->column();
         }
     }

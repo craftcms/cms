@@ -9,7 +9,6 @@ namespace craft\web\twig;
 
 use Craft;
 use Twig\Environment as TwigEnvironment;
-use Twig\Error\Error;
 use Twig\Extension\EscaperExtension;
 use Twig\Loader\LoaderInterface;
 use Twig\Source;
@@ -34,32 +33,11 @@ class Environment extends TwigEnvironment
     /**
      * @inheritdoc
      */
-    public function loadTemplate($name, $index = null)
-    {
-        try {
-            /** @noinspection PhpInternalEntityUsedInspection */
-            return parent::loadTemplate($name, $index);
-        } catch (Error $e) {
-            if (Craft::$app->getConfig()->getGeneral()->suppressTemplateErrors) {
-                // Just log it and return an empty template
-                Craft::$app->getErrorHandler()->logException($e);
-
-                return Craft::$app->getView()->renderString('');
-            }
-
-            throw $e;
-        }
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function compileSource(Source $source)
+    public function compileSource(Source $source): string
     {
         Craft::beginProfile($source->getName(), __METHOD__);
         $result = parent::compileSource($source);
         Craft::endProfile($source->getName(), __METHOD__);
-
         return $result;
     }
 

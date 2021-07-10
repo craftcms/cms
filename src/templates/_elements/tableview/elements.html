@@ -1,4 +1,4 @@
-{% spaceless %}
+{% apply spaceless %}
 
 {% set structure = structure is defined ? structure : null -%}
 {% set structureEditable = structureEditable is defined ? structureEditable : false -%}
@@ -31,4 +31,4 @@
     </tr>
 {% endfor %}
 
-{% endspaceless -%}
+{% endapply -%}

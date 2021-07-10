@@ -16,6 +16,7 @@
     photoSubpath: null,
     requireEmailVerification: true,
     allowPublicRegistration: false,
+    validateOnPublicRegistration: false,
     suspendByDefault: false,
     defaultGroup: null,
 }|merge(settings) %}
@@ -85,6 +86,13 @@
             }) }}
 
             <div id="publicRegistrationSettings" class="nested-fields{% if not settings.allowPublicRegistration %} hidden{% endif %}">
+                {{ forms.checkboxField({
+                    label: 'Validate custom fields on public registration'|t('app'),
+                    instructions: 'Whether custom fields should be validated during public registration.'|t('app'),
+                    name: 'validateOnPublicRegistration',
+                    checked: settings.validateOnPublicRegistration,
+                }) }}
+
                 {{ forms.checkboxField({
                     label: 'Suspend users by default'|t('app'),
                     instructions: 'Should users who register their own accounts be suspended by default? This will prevent them from receiving an activation email.'|t('app'),

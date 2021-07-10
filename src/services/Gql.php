@@ -1048,7 +1048,7 @@ class Gql extends Component
             $schemaRecord->uid = $schemaUid;
             $schemaRecord->name = $data['name'];
             $schemaRecord->isPublic = (bool)($data['isPublic'] ?? false);
-            $schemaRecord->scope = (!empty($data['scope']) && is_array($data['scope'])) ? Json::encode((array)$data['scope']) : [];
+            $schemaRecord->scope = (!empty($data['scope']) && is_array($data['scope'])) ? $data['scope'] : [];
 
             // Save the schema record
             $schemaRecord->save(false);
@@ -1249,7 +1249,7 @@ class Gql extends Component
             }
 
             // If devMode enabled, substitute the original exception here.
-            if ($devMode) {
+            if ($devMode && !empty($originException->getMessage())) {
                 $error = $originException;
             }
 
@@ -1284,7 +1284,7 @@ class Gql extends Component
         // No cache key, if explicitly disabled
         $generalConfig = Craft::$app->getConfig()->getGeneral();
 
-        if (!$generalConfig->enableGraphQlCaching) {
+        if (!$generalConfig->enableGraphqlCaching) {
             return null;
         }
 

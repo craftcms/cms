@@ -1,161 +1,80 @@
-{% extends "_layouts/cp" %}
+{% extends "_layouts/element" %}
 {% import "_includes/forms" as forms %}
 
-{% set fullPageForm = true %}
-{% set saveShortcutRedirect = continueEditingUrl %}
-{% set retainScrollOnSaveShortcut = true %}
-{% do view.setIsDeltaRegistrationActive(true) %}
-
-{% set groupHandle = group.handle %}
-{% set isNewCategory = category.id ? false : true %}
-
-{% set formActions = [
-    {
-        label: 'Save and continue editing'|t('app'),
-        redirect: continueEditingUrl|hash,
-        shortcut: true,
-        retainScroll: true,
-    },
-    {
-        label: 'Save and add another'|t('app'),
-        redirect: nextCategoryUrl|hash,
-        shortcut: true,
-        shift: true,
-    },
-    not isNewCategory ? {
-        label: 'Save as a new {type}'|t('app', {
-            type: category.lowerDisplayName(),
-        }),
-        params: {
-            duplicate: '1',
-        },
-        redirect: (continueEditingUrl~'#')|hash,
-    },
-    not isNewCategory ? {
-        destructive: true,
-        label: 'Delete {type}'|t('app', {
-            type: category.lowerDisplayName()
-        }),
-        action: 'categories/delete-category',
-        redirect: 'categories#'|hash,
-        confirm: 'Are you sure you want to delete this {type}?'|t('app', {
-            type: category.lowerDisplayName(),
-        }),
-    }
-]|filter %}
+{% set redirectUrl = "categories/#{group.handle}" %}
+{% set canUpdateSource = true %}
+{% set saveSourceAction = 'categories/save-category' %}
+{% set deleteSourceAction = 'categories/delete-category' %}
 
 {% hook "cp.categories.edit" %}
 
-{% block header %}
-    <div class="flex flex-nowrap">
-        {{ block('pageTitle') }}
-        {{ block('contextMenu') }}
-    </div>
-    <div class="flex">
-        {% if showPreviewBtn or shareUrl is defined %}
-            <div class="btngroup">
-                {% if showPreviewBtn %}
-                    <button type="button" class="btn livepreviewbtn" data-icon="view">{{ "Preview"|t('app') }}</button>
-                {% endif %}
-                {% if shareUrl is defined %}
-                    <a href="{{ shareUrl }}" class="btn sharebtn" data-icon="share" rel="noopener" target="_blank">{{ 'View'|t('app') }}</a>
-                {% endif %}
-            </div>
-        {% endif %}
-        {{ block('actionButton') }}
-    </div>
-{% endblock %}
-
-{% block contextMenu %}
-    {% if craft.app.getIsMultiSite() %}
-        {% set parentIdParam = craft.app.request.getParam('parentId.0') ?: craft.app.request.getParam('parentId') %}
-        {% set urlFormat = url("categories/#{groupHandle}/#{craft.app.request.getSegment(3)}/{handle}", (parentIdParam ? { parentId: parentIdParam })) %}
-        {% include "_elements/sitemenu" with {
-            siteIds: siteIds,
-            selectedSiteId: category.siteId,
-            urlFormat: urlFormat
-        } only %}
-    {% endif %}
-{% endblock %}
-
-
-{% block content %}
-    {{ actionInput('categories/save-category') }}
-    {{ redirectInput('categories/'~groupHandle) }}
-
-    {{ hiddenInput('groupId', group.id) }}
-    {% if category.id %}{{ hiddenInput('categoryId', category.id) }}{% endif %}
-    {% if craft.app.getIsMultiSite() %}{{ hiddenInput('siteId', category.siteId) }}{% endif %}
-
-    <div id="fields">
-        {{ fieldsHtml|raw }}
-    </div>
-
-    {# Give plugins a chance to add other things here #}
-    {% hook "cp.categories.edit.content" %}
-{% endblock %}
-
-{% block details %}
-    <div id="settings" class="meta">
-
-        {{ forms.textField({
-            label: "Slug"|t('app'),
-            siteId: category.siteId,
-            id: 'slug',
-            name: 'slug',
-            autocorrect: false,
-            autocapitalize: false,
-            value: category.slug,
-            placeholder: "Enter slug"|t('app'),
-            errors: (category.getErrors('slug')|merge(category.getErrors('uri')))
-        }) }}
-
-        {% if parentOptionCriteria is defined %}
-            {{ forms.elementSelectField({
-                label: "Parent"|t('app'),
-                id: 'parentId',
-                name: 'parentId',
-                elementType: elementType,
-                selectionLabel: "Choose"|t('app'),
-                sources: ['group:'~group.uid],
-                criteria: parentOptionCriteria,
-                limit: 1,
-                elements: (parent is defined and parent ? [parent]),
-                errors: category.getErrors('parent')
-            }) }}
-        {% endif %}
-
-        {{ forms.lightswitchField({
-            label: "Enabled"|t('app'),
-            id: 'enabled',
-            name: 'enabled',
-            on: category.enabled
-        }) }}
-
-    </div>
-
-    {% if category.id %}
-        <div class="meta read-only">
-            <div class="data">
-                <h5 class="heading">{{ "Date Created"|t('app') }}</h5>
-                <div class="value">{{ category.dateCreated|datetime('short') }}</div>
-            </div>
-            <div class="data">
-                <h5 class="heading">{{ "Date Updated"|t('app') }}</h5>
-                <div class="value">{{ category.dateUpdated|datetime('short') }}</div>
-            </div>
+{% block actionButton %}
+    {% if showPreviewBtn or shareUrl is defined %}
+        <div class="btngroup">
+            {% if showPreviewBtn %}
+                <button type="button" class="btn livepreviewbtn" data-icon="view">{{ "Preview"|t('app') }}</button>
+            {% endif %}
+            {% if shareUrl is defined %}
+                <a href="{{ shareUrl }}" class="btn sharebtn" data-icon="share" rel="noopener" target="_blank">{{ 'View'|t('app') }}</a>
+            {% endif %}
         </div>
     {% endif %}
 
-    {# Give plugins a chance to add other stuff here #}
+    {{ parent() }}
+{% endblock %}
+
+{% block content %}
+    {{ hiddenInput('groupId', group.id) }}
+    {{ parent() }}
+    {% hook 'cp.categories.edit.content' %}
+{% endblock %}
+
+{% block details %}
+    {{ parent() }}
     {% hook "cp.categories.edit.details" %}
 {% endblock %}
 
+{% block settings %}
+    {{ forms.textField({
+        label: "Slug"|t('app'),
+        siteId: element.siteId,
+        id: 'slug',
+        name: 'slug',
+        autocorrect: false,
+        autocapitalize: false,
+        value: element.slug,
+        placeholder: "Enter slug"|t('app'),
+        errors: (element.getErrors('slug')|merge(element.getErrors('uri')))
+    }) }}
 
-{% if not category.slug %}
+    {% if parentOptionCriteria is defined %}
+        {{ forms.elementSelectField({
+            label: "Parent"|t('app'),
+            id: 'parentId',
+            name: 'parentId',
+            elementType: elementType,
+            selectionLabel: "Choose"|t('app'),
+            sources: ['group:'~group.uid],
+            criteria: parentOptionCriteria,
+            limit: 1,
+            elements: (parent is defined and parent ? [parent]),
+            errors: element.getErrors('parent')
+        }) }}
+    {% endif %}
+
+    {{ parent() }}
+    {% hook "cp.categories.edit.settings" %}
+{% endblock %}
+
+{% block meta %}
+    {% hook "cp.categories.edit.meta" %}
+    {{ parent() }}
+{% endblock %}
+
+{% if not element.slug %}
     {% js %}
         window.slugGenerator = new Craft.SlugGenerator('#title', '#slug', {
-            charMap: {{ craft.cp.getAsciiCharMap(category.site.language)|json_encode|raw }}
+            charMap: {{ craft.cp.getAsciiCharMap(element.site.language)|json_encode|raw }}
         });
     {% endjs %}
 {% endif %}

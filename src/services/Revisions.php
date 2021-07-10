@@ -16,7 +16,6 @@ use craft\errors\InvalidElementException;
 use craft\events\RevisionEvent;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Db;
-use craft\helpers\ElementHelper;
 use craft\helpers\Queue;
 use craft\queue\jobs\PruneRevisions;
 use yii\base\Component;
@@ -145,17 +144,17 @@ class Revisions extends Component
         try {
             // Create the revision row
             Db::insert(Table::REVISIONS, [
-                'sourceId' => $source->id,
+                'sourceId' => $source->id, // todo: remove in v4
                 'creatorId' => $creatorId,
                 'num' => $num,
                 'notes' => $notes,
             ], false);
 
             // Duplicate the element
+            $newAttributes['canonicalId'] = $source->id;
             $newAttributes['revisionId'] = $db->getLastInsertID(Table::REVISIONS);
             $newAttributes['behaviors']['revision'] = [
                 'class' => RevisionBehavior::class,
-                'sourceId' => $source->id,
                 'creatorId' => $creatorId,
                 'revisionNum' => $num,
                 'revisionNotes' => $notes,
@@ -211,12 +210,12 @@ class Revisions extends Component
     public function revertToRevision(ElementInterface $revision, int $creatorId): ElementInterface
     {
         /** @var ElementInterface|RevisionBehavior $revision */
-        $source = ElementHelper::sourceElement($revision);
+        $canonical = $revision->getCanonical();
 
         // Fire a 'beforeRevertToRevision' event
         if ($this->hasEventHandlers(self::EVENT_BEFORE_REVERT_TO_REVISION)) {
             $this->trigger(self::EVENT_BEFORE_REVERT_TO_REVISION, new RevisionEvent([
-                'source' => $source,
+                'source' => $canonical,
                 'creatorId' => $creatorId,
                 'revisionNum' => $revision->revisionNum,
                 'revisionNotes' => $revision->revisionNotes,
@@ -224,26 +223,11 @@ class Revisions extends Component
             ]));
         }
 
-        $transaction = Craft::$app->getDb()->beginTransaction();
-        try {
-            // "Duplicate" the revision with the source element's ID, UID, and content ID
-            $newSource = Craft::$app->getElements()->duplicateElement($revision, [
-                'id' => $source->id,
-                'uid' => $source->uid,
-                'root' => $source->root,
-                'lft' => $source->lft,
-                'rgt' => $source->rgt,
-                'level' => $source->level,
-                'revisionId' => null,
-                'revisionCreatorId' => $creatorId,
-                'revisionNotes' => Craft::t('app', 'Reverted to revision {num}.', ['num' => $revision->revisionNum]),
-            ]);
-
-            $transaction->commit();
-        } catch (\Throwable $e) {
-            $transaction->rollBack();
-            throw $e;
-        }
+        // "Duplicate" the revision with the source element's ID, UID, and content ID
+        $newSource = Craft::$app->getElements()->updateCanonicalElement($revision, [
+            'revisionCreatorId' => $creatorId,
+            'revisionNotes' => Craft::t('app', 'Reverted to revision {num}.', ['num' => $revision->revisionNum]),
+        ]);
 
         // Fire an 'afterRevertToRevision' event
         if ($this->hasEventHandlers(self::EVENT_AFTER_REVERT_TO_REVISION)) {

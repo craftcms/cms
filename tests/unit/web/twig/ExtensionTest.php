@@ -479,6 +479,17 @@ class ExtensionTest extends Unit
     /**
      *
      */
+    public function testRemoveClassFilter()
+    {
+        $this->testRenderResult('<div>', '{{ \'<div class="foo">\'|removeClass("foo") }}');
+        $this->testRenderResult('<div class="bar">', '{{ \'<div class="foo bar">\'|removeClass("foo") }}');
+        $this->testRenderResult('<div class="baz">', '{{ \'<div class="foo bar baz">\'|removeClass(["foo", "bar"]) }}');
+        $this->testRenderResult('foo', '{{ \'foo\'|removeClass("foo") }}');
+    }
+
+    /**
+     *
+     */
     public function testReplaceFilter()
     {
         $this->testRenderResult(
@@ -873,6 +884,14 @@ class ExtensionTest extends Unit
             'foo',
             '{{ "foo"|percentage }}'
         );
+    }
+
+    /**
+     *
+     */
+    public function testWidontFilter()
+    {
+        $this->testRenderResult('foo bar&nbsp;baz', '{{ "foo bar baz"|widont }}');
     }
 
     /**

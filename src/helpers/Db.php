@@ -7,15 +7,19 @@
 
 namespace craft\helpers;
 
+use Closure;
 use Craft;
 use craft\base\Serializable;
 use craft\db\Connection;
 use craft\db\mysql\Schema as MysqlSchema;
 use craft\db\Query;
+use PDO;
 use yii\base\Exception;
 use yii\base\InvalidArgumentException;
 use yii\base\NotSupportedException;
+use yii\db\BatchQueryResult;
 use yii\db\Exception as DbException;
+use yii\db\Query as YiiQuery;
 use yii\db\Schema;
 
 /**
@@ -102,9 +106,10 @@ class Db
      * Prepares a value to be sent to the database.
      *
      * @param mixed $value The value to be prepared
+     * @param string|null $columnType The type of column the value will be stored in
      * @return mixed The prepped value
      */
-    public static function prepareValueForDb($value)
+    public static function prepareValueForDb($value, ?string $columnType = null)
     {
         // If the object explicitly defines its savable value, use that
         if ($value instanceof Serializable) {
@@ -116,8 +121,11 @@ class Db
             return static::prepareDateForDb($value);
         }
 
-        // If it's an object or array, just JSON-encode it
-        if (is_object($value) || is_array($value)) {
+        // If this isn’t a JSON column and the value is an object or array, JSON-encode it
+        if (
+            !in_array($columnType, [Schema::TYPE_JSON, \yii\db\pgsql\Schema::TYPE_JSONB]) &&
+            (is_object($value) || is_array($value))
+        ) {
             return Json::encode($value);
         }
 
@@ -443,6 +451,7 @@ class Db
      * @param bool $caseInsensitive Whether the resulting condition should be case-insensitive
      * @param string|null $columnType The database column type the param is targeting
      * @return mixed
+     * @throws InvalidArgumentException if the param value isn’t compatible with the column type.
      */
     public static function parseParam(string $column, $value, string $defaultOperator = '=', bool $caseInsensitive = false, ?string $columnType = null)
     {
@@ -491,14 +500,24 @@ class Db
             self::_normalizeEmptyValue($val);
             $operator = self::_parseParamOperator($val, $defaultOperator, $negate);
 
-            if ($columnType === Schema::TYPE_BOOLEAN) {
-                // Convert val to a boolean
-                $val = ($val && $val !== ':empty:');
-                if ($operator === '!=') {
-                    $val = !$val;
+            if ($columnType !== null) {
+                if ($columnType === Schema::TYPE_BOOLEAN) {
+                    // Convert val to a boolean
+                    $val = ($val && $val !== ':empty:');
+                    if ($operator === '!=') {
+                        $val = !$val;
+                    }
+                    $condition[] = [$column => (bool)$val];
+                    continue;
                 }
-                $condition[] = [$column => (bool)$val];
-                continue;
+
+                if (
+                    static::isNumericColumnType($columnType) &&
+                    $val !== ':empty:' &&
+                    !is_numeric($val)
+                ) {
+                    throw new InvalidArgumentException("Invalid numeric value: $val");
+                }
             }
 
             if ($val === ':empty:') {
@@ -663,6 +682,31 @@ class Db
             $condition = ['or', $condition, [$column => null]];
         }
         return $condition;
+    }
+
+    /**
+     * Parses a query param value for a numeric column and returns a
+     * [[\yii\db\QueryInterface::where()]]-compatible condition.
+     *
+     * The follow values are supported:
+     *
+     * - A number
+     * - `:empty:` or `:notempty:`
+     * - `'not x'` or `'!= x'`
+     * - `'> x'`, `'>= x'`, `'< x'`, or `'<= x'`, or a combination of those
+     *
+     * @param string $column The database column that the param is targeting.
+     * @param string|string[] $value The param value
+     * @param string $defaultOperator The default operator to apply to the values
+     * (can be `not`, `!=`, `<=`, `>=`, `<`, `>`, or `=`)
+     * @param string|null $columnType The database column type the param is targeting
+     * @return mixed
+     * @throws InvalidArgumentException if the param value isn’t numeric
+     * @since 4.0.0
+     */
+    public static function parseNumericParam(string $column, $value, string $defaultOperator = '=', ?string $columnType = Schema::TYPE_INTEGER)
+    {
+        return static::parseParam($column, $value, $defaultOperator, false, $columnType);
     }
 
     /**
@@ -1259,5 +1303,108 @@ class Db
         return [
             $column => count($values) === 1 ? $values[0] : $values,
         ];
+    }
+
+    /**
+     * Starts a batch query, similar to [[YiiQuery::batch()]].
+     *
+     * Each iteration will be a batch of rows.
+     *
+     * ```php
+     * foreach (Db::batch($query) as $batch) {
+     *     foreach ($batch as $row) {
+     *         // ...
+     *     }
+     * }
+     * ```
+     *
+     * If using MySQL and `$db` is null, a new [unbuffered](https://www.php.net/manual/en/mysqlinfo.concepts.buffering.php)
+     * DB connection will be created for the query so that the data can actually be retrieved in batches,
+     * to work around [limitations](https://www.yiiframework.com/doc/guide/2.0/en/db-query-builder#batch-query-mysql)
+     * with query batching in MySQL. Therefore keep in mind that the data retrieved by the batch query won’t
+     * reflect any changes that have been made over the main DB connection, if a transaction is currently
+     * active.
+     *
+     * @param YiiQuery $query The query that should be executed
+     * @param int $batchSize The number of rows to be fetched in each batch
+     * @return BatchQueryResult The batched query to be iterated on
+     * @since 3.7.0
+     */
+    public static function batch(YiiQuery $query, int $batchSize = 100): BatchQueryResult
+    {
+        return self::_batch($query, $batchSize, false);
+    }
+
+    /**
+     * Starts a batch query and retrieves data row by row.
+     *
+     * This method is similar to [[batch()]] except that in each iteration of the result,
+     * only one row of data is returned.
+     *
+     * ```php
+     * foreach (Db::each($query) as $row) {
+     *     // ...
+     * }
+     * ```
+     *
+     * If using MySQL and `$db` is null, a new [unbuffered](https://www.php.net/manual/en/mysqlinfo.concepts.buffering.php)
+     * DB connection will be created for the query so that the data can actually be retrieved in batches,
+     * to work around [limitations](https://www.yiiframework.com/doc/guide/2.0/en/db-query-builder#batch-query-mysql)
+     * with query batching in MySQL. Therefore keep in mind that the data retrieved by the batch query won’t
+     * reflect any changes that have been made over the main DB connection, if a transaction is currently
+     * active.
+     *
+     * @param YiiQuery $query The query that should be executed
+     * @param int $batchSize The number of rows to be fetched in each batch
+     * @return BatchQueryResult The batched query to be iterated on
+     * @since 3.7.0
+     */
+    public static function each(YiiQuery $query, int $batchSize = 100): BatchQueryResult
+    {
+        return self::_batch($query, $batchSize, true);
+    }
+
+    /**
+     * Starts a new batch query for batch() and each().
+     *
+     * @param YiiQuery $query
+     * @param int $batchSize
+     * @param bool $each
+     * @return BatchQueryResult
+     */
+    private static function _batch(YiiQuery $query, int $batchSize, bool $each): BatchQueryResult
+    {
+        $db = self::db();
+        $unbuffered = $db->getIsMysql() && Craft::$app->getConfig()->getDb()->useUnbufferedConnections;
+
+        if ($unbuffered) {
+            $db = Craft::$app->getComponents()['db'];
+            if (!is_object($db) || $db instanceof Closure) {
+                $db = Craft::createObject($db);
+            }
+            $db->on(Connection::EVENT_AFTER_OPEN, function() use ($db) {
+                $db->pdo->setAttribute(PDO::MYSQL_ATTR_USE_BUFFERED_QUERY, false);
+            });
+        }
+
+        /** @var BatchQueryResult $result */
+        $result = Craft::createObject([
+            'class' => BatchQueryResult::class,
+            'query' => $query,
+            'batchSize' => $batchSize,
+            'db' => $db,
+            'each' => $each,
+        ]);
+
+        if ($unbuffered) {
+            $result->on(BatchQueryResult::EVENT_FINISH, function() use ($db) {
+                $db->close();
+            });
+            $result->on(BatchQueryResult::EVENT_RESET, function() use ($db) {
+                $db->close();
+            });
+        }
+
+        return $result;
     }
 }

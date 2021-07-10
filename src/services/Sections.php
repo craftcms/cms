@@ -503,13 +503,15 @@ class Sections extends Component
             if (!$entryTypeExists) {
                 $entryType = new EntryType();
                 $entryType->sectionId = $section->id;
-                $entryType->name = $section->name;
-                $entryType->handle = $section->handle;
 
                 if ($section->type === Section::TYPE_SINGLE) {
+                    $entryType->name = $section->name;
+                    $entryType->handle = $section->handle;
                     $entryType->hasTitleField = false;
                     $entryType->titleFormat = '{section.name|raw}';
                 } else {
+                    $entryType->name = Craft::t('app', 'Default');
+                    $entryType->handle = 'default';
                     $entryType->hasTitleField = true;
                     $entryType->titleFormat = null;
                 }
@@ -581,6 +583,7 @@ class Sections extends Component
             $sectionRecord->type = $data['type'];
             $sectionRecord->enableVersioning = (bool)$data['enableVersioning'];
             $sectionRecord->propagationMethod = $data['propagationMethod'] ?? Section::PROPAGATION_METHOD_ALL;
+            $sectionRecord->defaultPlacement = $data['defaultPlacement'] ?? Section::DEFAULT_PLACEMENT_END;
             $sectionRecord->previewTargets = isset($data['previewTargets']) && is_array($data['previewTargets'])
                 ? ProjectConfigHelper::unpackAssociativeArray($data['previewTargets'])
                 : null;
@@ -850,7 +853,7 @@ class Sections extends Component
                 ->sectionId($sectionRecord->id);
             $elementsService = Craft::$app->getElements();
             foreach (Craft::$app->getSites()->getAllSiteIds() as $siteId) {
-                foreach ($entryQuery->siteId($siteId)->each() as $entry) {
+                foreach (Db::each($entryQuery->siteId($siteId)) as $entry) {
                     $elementsService->deleteElement($entry);
                 }
             }
@@ -1367,7 +1370,7 @@ class Sections extends Component
 
             $elementsService = Craft::$app->getElements();
             foreach (Craft::$app->getSites()->getAllSiteIds() as $siteId) {
-                foreach ($entryQuery->siteId($siteId)->each() as $entry) {
+                foreach (Db::each($entryQuery->siteId($siteId)) as $entry) {
                     /** @var Entry $entry */
                     $entry->deletedWithEntryType = true;
                     $elementsService->deleteElement($entry);
@@ -1411,20 +1414,7 @@ class Sections extends Component
      */
     private function _createSectionQuery(): Query
     {
-        // todo: remove schema version condition after next beakpoint
-        $condition = null;
-        $joinCondition = '[[structures.id]] = [[sections.structureId]]';
-        $schemaVersion = Craft::$app->getInstalledSchemaVersion();
-        if (version_compare($schemaVersion, '3.1.19', '>=')) {
-            $condition = ['sections.dateDeleted' => null];
-            $joinCondition = [
-                'and',
-                $joinCondition,
-                ['structures.dateDeleted' => null],
-            ];
-        }
-
-        $query = (new Query())
+        return (new Query())
             ->select([
                 'sections.id',
                 'sections.structureId',
@@ -1432,23 +1422,20 @@ class Sections extends Component
                 'sections.handle',
                 'sections.type',
                 'sections.enableVersioning',
+                'sections.defaultPlacement',
+                'sections.propagationMethod',
+                'sections.previewTargets',
                 'sections.uid',
                 'structures.maxLevels',
             ])
-            ->leftJoin(['structures' => Table::STRUCTURES], $joinCondition)
+            ->leftJoin(['structures' => Table::STRUCTURES], [
+                'and',
+                '[[structures.id]] = [[sections.structureId]]',
+                ['structures.dateDeleted' => null],
+            ])
             ->from(['sections' => Table::SECTIONS])
-            ->where($condition)
+            ->where(['sections.dateDeleted' => null])
             ->orderBy(['name' => SORT_ASC]);
-
-        // todo: remove schema version conditions after next beakpoint
-        if (version_compare($schemaVersion, '3.2.1', '>=')) {
-            $query->addSelect('sections.propagationMethod');
-        }
-        if (version_compare($schemaVersion, '3.2.6', '>=')) {
-            $query->addSelect('sections.previewTargets');
-        }
-
-        return $query;
     }
 
     /**
@@ -1533,13 +1520,14 @@ class Sections extends Component
         $elementsService = Craft::$app->getElements();
         $otherEntriesQuery = Entry::find()
             ->drafts(null)
+            ->provisionalDrafts(null)
             ->sectionId($section->id)
             ->siteId('*')
             ->unique()
             ->id(['not', $entry->id])
             ->anyStatus();
 
-        foreach ($otherEntriesQuery->each() as $entry) {
+        foreach (Db::each($otherEntriesQuery) as $entry) {
             $elementsService->deleteElement($entry, true);
         }
 
@@ -1567,7 +1555,7 @@ class Sections extends Component
         $structuresService = Craft::$app->getStructures();
 
         /** @var Entry $entry */
-        foreach ($query->each() as $entry) {
+        foreach (Db::each($query) as $entry) {
             $structuresService->appendToRoot($sectionRecord->structureId, $entry, Structures::MODE_INSERT);
         }
     }
@@ -1577,7 +1565,7 @@ class Sections extends Component
      */
     private function _createEntryTypeQuery()
     {
-        $query = (new Query())
+        return (new Query())
             ->select([
                 'id',
                 'sectionId',
@@ -1586,24 +1574,13 @@ class Sections extends Component
                 'handle',
                 'sortOrder',
                 'hasTitleField',
+                'titleTranslationMethod',
+                'titleTranslationKeyFormat',
                 'titleFormat',
                 'uid',
             ])
-            ->from([Table::ENTRYTYPES]);
-
-        // todo: remove schema version conditions after next beakpoint
-        $schemaVersion = Craft::$app->getInstalledSchemaVersion();
-        if (version_compare($schemaVersion, '3.1.19', '>=')) {
-            $query->where(['dateDeleted' => null]);
-        }
-        if (version_compare($schemaVersion, '3.5.4', '>=')) {
-            $query->addSelect([
-                'titleTranslationMethod',
-                'titleTranslationKeyFormat',
-            ]);
-        }
-
-        return $query;
+            ->from([Table::ENTRYTYPES])
+            ->where(['dateDeleted' => null]);
     }
 
     /**

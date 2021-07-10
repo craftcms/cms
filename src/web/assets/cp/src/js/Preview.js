@@ -19,6 +19,7 @@ Craft.Preview = Garnish.Base.extend({
     $targetMenu: null,
     $deviceTypeContainer: null,
     $orientationBtn: null,
+    $refreshBtn: null,
     $deviceMask: null,
     $devicePreviewContainer: null,
     $iframe: null,
@@ -65,7 +66,7 @@ Craft.Preview = Garnish.Base.extend({
     init: function(draftEditor) {
         this.draftEditor = draftEditor;
 
-        this._updateIframeProxy = $.proxy(this, 'updateIframe');
+        this._updateIframeProxy = this.updateIframe.bind(this);
 
         this.$tempInput = $('<input/>', {type: 'hidden', name: '__PREVIEW_FIELDS__', value: '1'});
         this.$fieldPlaceholder = $('<div/>');
@@ -211,17 +212,30 @@ Craft.Preview = Garnish.Base.extend({
                 }).appendTo(this.$deviceTypeContainer);
 
                 $('<div class="flex-grow"/>').appendTo(this.$previewHeader);
+                const $buttonContainer = $('<div class="buttons"/>').appendTo(this.$previewHeader);
 
                 // Orientation toggle
                 this.$orientationBtn = $('<button/>', {
                     type: 'button',
                     'class': 'btn disabled',
-                    'data-icon': 'refresh',
+                    'data-icon': 'rotate',
                     disabled: '',
                     'aria-hidden': '',
                     'text': Craft.t('app', 'Rotate')
-                }).appendTo(this.$previewHeader);
+                }).appendTo($buttonContainer);
                 this.addListener(this.$orientationBtn, 'click', 'switchOrientation');
+
+                // Refresh button
+                this.$refreshBtn = $('<button/>', {
+                    type: 'button',
+                    class: 'btn hidden',
+                    text: Craft.t('app', 'Refresh'),
+                    'data-icon': 'refresh',
+                }).appendTo($buttonContainer);
+                this._updateRefreshBtn();
+                this.addListener(this.$refreshBtn, 'click', () => {
+                    this.updateIframe(false, true);
+                });
 
                 // Get the last stored orientation
                 this.deviceOrientation = Craft.getLocalStorage('LivePreview.orientation');
@@ -300,12 +314,26 @@ Craft.Preview = Garnish.Base.extend({
         this.trigger('open');
     },
 
+    _activeTarget: function() {
+        return this.draftEditor.settings.previewTargets[this.activeTarget];
+    },
+
+    _updateRefreshBtn: function() {
+        const target = this._activeTarget();
+        if (target.refresh !== 'undefined' && !target.refresh) {
+            this.$refreshBtn.removeClass('hidden');
+        } else {
+            this.$refreshBtn.addClass('hidden');
+        }
+    },
+
     switchTarget: function(i) {
         this.activeTarget = i;
         this.$targetBtn.text(this.draftEditor.settings.previewTargets[i].label);
         this.$targetMenu.find('a.sel').removeClass('sel');
         this.$targetMenu.find('a').eq(i).addClass('sel');
         this.updateIframe(true);
+        this._updateRefreshBtn();
         this.trigger('switchTarget', {
             previewTarget: this.draftEditor.settings.previewTargets[i],
         });
@@ -417,7 +445,7 @@ Craft.Preview = Garnish.Base.extend({
         return Craft.previewIframeResizerOptions !== false;
     },
 
-    updateIframe: function(resetScroll) {
+    updateIframe: function(resetScroll, forceRefresh) {
         if (!this.isActive) {
             return false;
         }
@@ -425,8 +453,9 @@ Craft.Preview = Garnish.Base.extend({
         // Ignore non-boolean resetScroll values
         resetScroll = resetScroll === true;
 
-        var target = this.draftEditor.settings.previewTargets[this.activeTarget];
-        var refresh = !!(
+        const target = this._activeTarget();
+        const refresh = !!(
+            forceRefresh ||
             this.draftId !== (this.draftId = this.draftEditor.settings.draftId) ||
             !this.$iframe ||
             resetScroll ||
@@ -667,8 +696,7 @@ Craft.Preview = Garnish.Base.extend({
         if (this.deviceAnimationTimeout) {
             clearTimeout(this.deviceAnimationTimeout);
         }
-        this.deviceAnimationTimeout = setTimeout($.proxy(function() {
-
+        this.deviceAnimationTimeout = setTimeout(() => {
             // Then make the size change to the preview container
             if (this.deviceOrientation === 'landscape') {
                 this.$devicePreviewContainer.css({
@@ -693,7 +721,7 @@ Craft.Preview = Garnish.Base.extend({
             this.$iframeContainer.removeClass('lp-iframe-container--updating');
             this.isDeviceUpdating = false;
 
-        }, this), 300);
+        }, 300);
     },
 
     resetDevicePreview: function()

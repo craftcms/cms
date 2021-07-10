@@ -19,7 +19,7 @@ Craft.charts.DataTable = Garnish.Base.extend({
         let columns = data.columns;
         let rows = data.rows;
 
-        rows.forEach($.proxy(function(d) {
+        rows.forEach(d => {
             $.each(d, function(cellIndex) {
                 var column = columns[cellIndex];
 
@@ -27,12 +27,12 @@ Craft.charts.DataTable = Garnish.Base.extend({
 
                 switch (column.type) {
                     case 'date':
-                        parseTime = d3.timeParse("%Y-%m-%d");
+                        parseTime = d3.timeParse('%Y-%m-%d');
                         d[cellIndex] = parseTime(d[cellIndex]);
                         break;
 
                     case 'datetime':
-                        parseTime = d3.timeParse("%Y-%m-%d %H:00:00");
+                        parseTime = d3.timeParse('%Y-%m-%d %H:00:00');
                         d[cellIndex] = parseTime(d[cellIndex]);
                         break;
 
@@ -48,7 +48,7 @@ Craft.charts.DataTable = Garnish.Base.extend({
                     // do nothing
                 }
             });
-        }, this));
+        });
 
         this.columns = columns;
         this.rows = rows;
@@ -78,16 +78,16 @@ Craft.charts.Tip = Garnish.Base.extend({
     },
 
     setPosition: function(position) {
-        this.$tip.css("left", position.left + "px");
-        this.$tip.css("top", position.top + "px");
+        this.$tip.css('left', `${position.left}px`);
+        this.$tip.css('top', `${position.top}px`);
     },
 
     show: function() {
-        this.$tip.css("display", 'block');
+        this.$tip.css('display', 'block');
     },
 
     hide: function() {
-        this.$tip.css("display", 'none');
+        this.$tip.css('display', 'none');
     }
 });
 
@@ -125,9 +125,9 @@ Craft.charts.BaseChart = Garnish.Base.extend({
 
         this.setSettings(globalSettings);
 
-        d3.select(window).on('resize', $.proxy(function() {
+        d3.select(window).on('resize', () => {
             this.resize();
-        }, this));
+        });
     },
 
     setSettings: function(settings, defaults) {
@@ -157,7 +157,7 @@ Craft.charts.BaseChart = Garnish.Base.extend({
             className += ' ' + this.settings.chartClass;
         }
 
-        this.$chart = $('<div class="' + className + '" />').appendTo(this.$container);
+        this.$chart = $(`<div class="${className}" />`).appendTo(this.$container);
     },
 
     resize: function() {
@@ -185,14 +185,14 @@ Craft.charts.BaseChart = Garnish.Base.extend({
             percentFormat: ',.2%',
             currencyFormat: '$,.2f',
             shortDateFormats: {
-                day: "%-m/%-d",
-                month: "%-m/%y",
-                year: "%Y"
+                day: '%-m/%-d',
+                month: '%-m/%y',
+                year: '%Y'
             }
         },
         margin: {top: 0, right: 0, bottom: 0, left: 0},
         chartClass: null,
-        colors: ["#0594D1", "#DE3800", "#FF9A00", "#009802", "#9B009B"]
+        colors: ['#0594D1', '#DE3800', '#FF9A00', '#009802', '#9B009B']
     }
 });
 
@@ -232,12 +232,12 @@ Craft.charts.Area = Craft.charts.BaseChart.extend({
             translateY: margin.top
         };
 
-        this.svg = d3.select(this.$chart.get(0)).append("svg")
-            .attr("width", svg.width)
-            .attr("height", svg.height);
+        this.svg = d3.select(this.$chart.get(0)).append('svg')
+            .attr('width', svg.width)
+            .attr('height', svg.height);
 
-        this.drawingArea = this.svg.append("g")
-            .attr("transform", "translate(" + svg.translateX + "," + svg.translateY + ")");
+        this.drawingArea = this.svg.append('g')
+            .attr('transform', `translate(${svg.translateX},${svg.translateY})`);
 
         // Draw elements
 
@@ -256,9 +256,9 @@ Craft.charts.Area = Craft.charts.BaseChart.extend({
             .tickFormat(this.getXFormatter())
             .ticks(xTicks);
 
-        this.drawingArea.append("g")
-            .attr("class", "x ticks-axis")
-            .attr("transform", "translate(0, " + this.height + ")")
+        this.drawingArea.append('g')
+            .attr('class', 'x ticks-axis')
+            .attr('transform', `translate(0, ${this.height})`)
             .call(xAxis);
 
         // Draw Y ticks
@@ -273,8 +273,8 @@ Craft.charts.Area = Craft.charts.BaseChart.extend({
                 .tickValues(this.getYTickValues())
                 .ticks(yTicks);
 
-            this.drawingArea.append("g")
-                .attr("class", "y ticks-axis")
+            this.drawingArea.append('g')
+                .attr('class', 'y ticks-axis')
                 .call(yAxis);
         } else {
             yAxis = d3.axisRight(y)
@@ -282,9 +282,9 @@ Craft.charts.Area = Craft.charts.BaseChart.extend({
                 .tickValues(this.getYTickValues())
                 .ticks(yTicks);
 
-            this.drawingArea.append("g")
-                .attr("class", "y ticks-axis")
-                .attr("transform", "translate(" + this.width + ",0)")
+            this.drawingArea.append('g')
+                .attr('class', 'y ticks-axis')
+                .attr('transform', `translate(${this.width},0)`)
                 .call(yAxis);
         }
 
@@ -297,9 +297,9 @@ Craft.charts.Area = Craft.charts.BaseChart.extend({
         if (this.settings.xAxis.showAxis) {
             var x = this.getX();
             var xAxis = d3.axisBottom(x).ticks(0).tickSizeOuter(0);
-            this.drawingArea.append("g")
-                .attr("class", "x axis")
-                .attr("transform", "translate(0, " + this.height + ")")
+            this.drawingArea.append('g')
+                .attr('class', 'x axis')
+                .attr('transform', `translate(0, ${this.height})`)
                 .call(xAxis);
         }
 
@@ -310,15 +310,15 @@ Craft.charts.Area = Craft.charts.BaseChart.extend({
 
             if (this.orientation === 'rtl') {
                 yAxis = d3.axisLeft(y).ticks(0);
-                this.drawingArea.append("g")
-                    .attr("class", "y axis")
-                    .attr("transform", "translate(" + (this.width - chartPadding) + ", 0)")
+                this.drawingArea.append('g')
+                    .attr('class', 'y axis')
+                    .attr('transform', `translate(${this.width - chartPadding}, 0)`)
                     .call(yAxis);
             } else {
                 yAxis = d3.axisRight(y).ticks(0);
-                this.drawingArea.append("g")
-                    .attr("class", "y axis")
-                    .attr("transform", "translate(" + chartPadding + ", 0)")
+                this.drawingArea.append('g')
+                    .attr('class', 'y axis')
+                    .attr('transform', `translate(${chartPadding}, 0)`)
                     .call(yAxis);
             }
         }
@@ -333,12 +333,12 @@ Craft.charts.Area = Craft.charts.BaseChart.extend({
         if (this.settings.xAxis.gridlines) {
             var xLineAxis = d3.axisBottom(x);
 
-            this.drawingArea.append("g")
-                .attr("class", "x grid-line")
-                .attr("transform", "translate(0," + this.height + ")")
+            this.drawingArea.append('g')
+                .attr('class', 'x grid-line')
+                .attr('transform', `translate(0,${this.height})`)
                 .call(xLineAxis
                     .tickSize(-this.height, 0, 0)
-                    .tickFormat("")
+                    .tickFormat('')
                 );
         }
 
@@ -347,12 +347,12 @@ Craft.charts.Area = Craft.charts.BaseChart.extend({
         if (this.settings.yAxis.gridlines) {
             var yLineAxis = d3.axisLeft(y);
 
-            this.drawingArea.append("g")
-                .attr("class", "y grid-line")
-                .attr("transform", "translate(0 , 0)")
+            this.drawingArea.append('g')
+                .attr('class', 'y grid-line')
+                .attr('transform', 'translate(0 , 0)')
                 .call(yLineAxis
                     .tickSize(-(this.width), 0)
-                    .tickFormat("")
+                    .tickFormat('')
                     .tickValues(this.getYTickValues())
                     .ticks(yTicks)
                 );
@@ -369,14 +369,14 @@ Craft.charts.Area = Craft.charts.BaseChart.extend({
             });
 
         this.drawingArea
-            .append("g")
-            .attr("class", "chart-line")
-            .append("path")
+            .append('g')
+            .attr('class', 'chart-line')
+            .append('path')
             .datum(this.dataTable.rows)
             .style('fill', 'none')
             .style('stroke', this.settings.colors[0])
             .style('stroke-width', '3px')
-            .attr("d", line);
+            .attr('d', line);
 
         // Area
 
@@ -390,34 +390,28 @@ Craft.charts.Area = Craft.charts.BaseChart.extend({
             });
 
         this.drawingArea
-            .append("g")
-            .attr("class", "chart-area")
-            .append("path")
+            .append('g')
+            .attr('class', 'chart-area')
+            .append('path')
             .datum(this.dataTable.rows)
             .style('fill', this.settings.colors[0])
             .style('fill-opacity', '0.3')
-            .attr("d", area);
+            .attr('d', area);
 
         // Plots
 
         if (this.settings.plots) {
             this.drawingArea.append('g')
-                .attr("class", "plots")
-                .selectAll("circle")
+                .attr('class', 'plots')
+                .selectAll('circle')
                 .data(this.dataTable.rows)
                 .enter()
-                .append("circle")
+                .append('circle')
                 .style('fill', this.settings.colors[0])
-                .attr("class", $.proxy(function(d, index) {
-                    return 'plot plot-' + index;
-                }, this))
-                .attr("r", 4)
-                .attr("cx", $.proxy(function(d) {
-                    return x(d[0]);
-                }, this))
-                .attr("cy", $.proxy(function(d) {
-                    return y(d[1]);
-                }, this));
+                .attr('class', (d, index) => `plot plot-${index}`)
+                .attr('r', 4)
+                .attr('cx', d => x(d[0]))
+                .attr('cy', d => y(d[1]));
         }
     },
 
@@ -444,22 +438,20 @@ Craft.charts.Area = Craft.charts.BaseChart.extend({
             var y = this.getY();
 
             this.drawingArea.append('g')
-                .attr("class", "tip-triggers")
-                .selectAll("rect")
+                .attr('class', 'tip-triggers')
+                .selectAll('rect')
                 .data(this.dataTable.rows)
-                .enter().append("rect")
-                .attr("class", "tip-trigger")
+                .enter().append('rect')
+                .attr('class', 'tip-trigger')
                 .style('fill', 'transparent')
                 .style('fill-opacity', '1')
-                .attr("width", tipTriggerWidth)
-                .attr("height", this.height)
-                .attr("x", $.proxy(function(d) {
-                    return x(d[0]) - tipTriggerWidth / 2;
-                }, this))
-                .on("mouseover", $.proxy(function(d, index) {
+                .attr('width', tipTriggerWidth)
+                .attr('height', this.height)
+                .attr('x', d => x(d[0]) - tipTriggerWidth / 2)
+                .on('mouseover', (d, index) => {
                     // Expand plot
 
-                    this.drawingArea.select('.plot-' + index).attr("r", 5);
+                    this.drawingArea.select('.plot-' + index).attr('r', 5);
 
                     // Set tip content
 
@@ -509,14 +501,14 @@ Craft.charts.Area = Craft.charts.BaseChart.extend({
                     // Show tip
 
                     this.tip.show();
-                }, this))
-                .on("mouseout", $.proxy(function(d, index) {
+                })
+                .on('mouseout', (d, index) => {
                     // Unexpand Plot
-                    this.drawingArea.select('.plot-' + index).attr("r", 4);
+                    this.drawingArea.select('.plot-' + index).attr('r', 4);
 
                     // Hide tip
                     this.tip.hide();
-                }, this));
+                });
         }
     },
 
@@ -528,7 +520,7 @@ Craft.charts.Area = Craft.charts.BaseChart.extend({
         var values = this.getYTickValues();
         var yTicksMaxWidth = 0;
 
-        $.each(values, $.proxy(function(key, value) {
+        $.each(values, (key, value) => {
             var characterWidth = 8;
 
             var formatter = this.getYFormatter();
@@ -539,7 +531,7 @@ Craft.charts.Area = Craft.charts.BaseChart.extend({
             if (computedTickWidth > yTicksMaxWidth) {
                 yTicksMaxWidth = computedTickWidth;
             }
-        }, this));
+        });
 
         yTicksMaxWidth += 10;
 
@@ -662,18 +654,18 @@ Craft.charts.utils = {
         };
 
         if (duration.hours < 10) {
-            duration.hours = "0" + duration.hours;
+            duration.hours = `0${duration.hours}`;
         }
 
         if (duration.minutes < 10) {
-            duration.minutes = "0" + duration.minutes;
+            duration.minutes = `0${duration.minutes}`;
         }
 
         if (duration.seconds < 10) {
-            duration.seconds = "0" + duration.seconds;
+            duration.seconds = `0${duration.seconds}`;
         }
 
-        return duration.hours + ':' + duration.minutes + ':' + duration.seconds;
+        return `${duration.hours}:${duration.minutes}:${duration.seconds}`;
     },
 
     getTimeFormatter: function(timeFormatLocale, chartSettings) {
@@ -685,7 +677,7 @@ Craft.charts.utils = {
                 return timeFormatLocale.format(chartSettings.formats.shortDateFormats.month);
 
             case 'hour':
-                return timeFormatLocale.format(chartSettings.formats.shortDateFormats.day + " %H:00:00");
+                return timeFormatLocale.format(`${chartSettings.formats.shortDateFormats.day} %H:00:00`);
 
             default:
                 return timeFormatLocale.format(chartSettings.formats.shortDateFormats.day);

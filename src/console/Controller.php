@@ -50,11 +50,11 @@ class Controller extends YiiController
      *             'action' => function($params): int {
      *                 // @var ResaveController $controller
      *                 $controller = Craft::$app->controller;
-     *                 $query = Product::find();
+     *                 $criteria = [];
      *                 if ($controller->type) {
-     *                     $query->type(explode(',', $controller->type));
+     *                     $criteria['type'] = explode(',', $controller->type);
      *                 }
-     *                 return $controller->saveElements($query);
+     *                 return $controller->resaveElements(Product::class, $criteria);
      *             }
      *         ];
      *     }
@@ -159,6 +159,19 @@ class Controller extends YiiController
 
             $this->_actions[$id] = $action;
         }
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function beforeAction($action)
+    {
+        // Make sure this isn't a root user
+        if (!$this->checkRootUser()) {
+            return false;
+        }
+
+        return parent::beforeAction($action);
     }
 
     /**

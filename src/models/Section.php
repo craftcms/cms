@@ -39,10 +39,13 @@ class Section extends Model
     const PROPAGATION_METHOD_SITE_GROUP = 'siteGroup';
     const PROPAGATION_METHOD_LANGUAGE = 'language';
     const PROPAGATION_METHOD_ALL = 'all';
-    /**
-     * @since 3.5.0
-     */
+    /** @since 3.5.0 */
     const PROPAGATION_METHOD_CUSTOM = 'custom';
+
+    /** @since 3.7.0 */
+    const DEFAULT_PLACEMENT_BEGINNING = 'beginning';
+    /** @since 3.7.0 */
+    const DEFAULT_PLACEMENT_END = 'end';
 
     /**
      * @var int|null ID
@@ -98,6 +101,12 @@ class Section extends Model
      * @deprecated in 3.2.0. Use [[$propagationMethod]] instead
      */
     public $propagateEntries = true;
+
+    /**
+     * @var string Default placement
+     * @since 3.7.0
+     */
+    public $defaultPlacement = self::DEFAULT_PLACEMENT_END;
 
     /**
      * @var array Preview targets
@@ -182,6 +191,7 @@ class Section extends Model
         $rules[] = [['name', 'handle', 'type', 'propagationMethod', 'siteSettings'], 'required'];
         $rules[] = [['name', 'handle'], 'string', 'max' => 255];
         $rules[] = [['siteSettings'], 'validateSiteSettings'];
+        $rules[] = [['defaultPlacement'], 'in', 'range' => [self::DEFAULT_PLACEMENT_BEGINNING, self::DEFAULT_PLACEMENT_END]];
         $rules[] = [['previewTargets'], 'validatePreviewTargets'];
         return $rules;
     }
@@ -367,6 +377,7 @@ class Section extends Model
             'enableVersioning' => (bool)$this->enableVersioning,
             'propagationMethod' => $this->propagationMethod,
             'siteSettings' => [],
+            'defaultPlacement' => $this->defaultPlacement ?? self::DEFAULT_PLACEMENT_END,
         ];
 
         if (!empty($this->previewTargets)) {

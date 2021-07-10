@@ -72,6 +72,12 @@ trait FieldTrait
     public $columnPrefix;
 
     /**
+     * @var string|null The field’s content column suffix
+     * @since 3.7.0
+     */
+    public $columnSuffix;
+
+    /**
      * @var string|null The field's UID
      */
     public $uid;

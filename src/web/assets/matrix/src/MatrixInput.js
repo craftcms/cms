@@ -63,21 +63,21 @@
             this.blockSort = new Garnish.DragSort($blocks, {
                 handle: '> .actions > .move',
                 axis: 'y',
-                filter: $.proxy(function() {
+                filter: () => {
                     // Only return all the selected items if the target item is selected
                     if (this.blockSort.$targetItem.hasClass('sel')) {
                         return this.blockSelect.getSelectedItems();
                     } else {
                         return this.blockSort.$targetItem;
                     }
-                }, this),
+                },
                 collapseDraggees: true,
                 magnetStrength: 4,
                 helperLagBase: 1.5,
                 helperOpacity: 0.9,
-                onSortChange: $.proxy(function() {
+                onSortChange: () => {
                     this.blockSelect.resetItemOrder();
-                }, this)
+                },
             });
 
             this.blockSelect = new Garnish.Select(this.$blockContainer, $blocks, {
@@ -112,16 +112,15 @@
 
             new Garnish.MenuBtn(this.$addBlockMenuBtn,
                 {
-                    onOptionSelect: $.proxy(function(option) {
-                        var type = $(option).data('type');
-                        this.addBlock(type);
-                    }, this)
+                    onOptionSelect: option => {
+                        this.addBlock($(option).data('type'));
+                    },
                 });
 
             this.updateAddBlockBtn();
 
             this.addListener(this.$container, 'resize', 'setNewBlockBtn');
-            Garnish.$doc.ready($.proxy(this, 'setNewBlockBtn'));
+            Garnish.$doc.ready(this.setNewBlockBtn.bind(this));
 
             this.trigger('afterInit');
         },
@@ -152,13 +151,13 @@
 
                         // Because Safari is awesome
                         if (navigator.userAgent.indexOf('Safari') !== -1) {
-                            Garnish.requestAnimationFrame($.proxy(function() {
+                            Garnish.requestAnimationFrame(() => {
                                 this.$addBlockBtnGroup.css('opacity', 0.99);
 
-                                Garnish.requestAnimationFrame($.proxy(function() {
+                                Garnish.requestAnimationFrame(() => {
                                     this.$addBlockBtnGroup.css('opacity', '');
-                                }, this));
-                            }, this));
+                                });
+                            });
                         }
                     }
                 }
@@ -281,7 +280,7 @@
             $block.css(this.getHiddenBlockCss($block)).velocity({
                 opacity: 1,
                 'margin-bottom': 10
-            }, 'fast', $.proxy(function() {
+            }, 'fast', () => {
                 $block.css('margin-bottom', '');
                 Garnish.$bod.append(footHtml);
                 Craft.initUiElements($fieldsContainer);
@@ -303,7 +302,7 @@
                         window.draftEditor.resume();
                     }
                 });
-            }, this));
+            });
         },
 
         getBlockTypeByHandle: function(handle) {
@@ -434,7 +433,7 @@
 
             this.$actionMenu = menuBtn.menu.$container;
 
-            menuBtn.menu.settings.onOptionSelect = $.proxy(this, 'onMenuOptionSelect');
+            menuBtn.menu.settings.onOptionSelect = this.onMenuOptionSelect.bind(this);
 
             menuBtn.menu.on('show', () => {
                 this.$container.addClass('active');
@@ -544,10 +543,10 @@
                 this.$container.css({height: 16});
             }
 
-            setTimeout($.proxy(function() {
+            setTimeout(() => {
                 this.$actionMenu.find('a[data-action=collapse]:first').parent().addClass('hidden');
                 this.$actionMenu.find('a[data-action=expand]:first').parent().removeClass('hidden');
-            }, this), 200);
+            }, 200);
 
             // Remember that?
             if (!this.isNew) {
@@ -580,15 +579,15 @@
             var displayValue = this.$fieldsContainer.css('display') || 'block';
             this.$container.height(collapsedContainerHeight);
             this.$fieldsContainer.hide().velocity('fadeIn', {duration: 'fast', display: displayValue});
-            this.$container.velocity({height: expandedContainerHeight}, 'fast', $.proxy(function() {
+            this.$container.velocity({height: expandedContainerHeight}, 'fast', () => {
                 this.$previewContainer.html('');
                 this.$container.height('auto');
-            }, this));
+            });
 
-            setTimeout($.proxy(function() {
+            setTimeout(() => {
                 this.$actionMenu.find('a[data-action=collapse]:first').parent().removeClass('hidden');
                 this.$actionMenu.find('a[data-action=expand]:first').parent().addClass('hidden');
-            }, this), 200);
+            }, 200);
 
             // Remember that?
             if (!this.isNew && typeof Storage !== 'undefined') {
@@ -614,10 +613,10 @@
             this.$container.children('input[name$="[enabled]"]:first').val('');
             this.$container.addClass('disabled');
 
-            setTimeout($.proxy(function() {
+            setTimeout(() => {
                 this.$actionMenu.find('a[data-action=disable]:first').parent().addClass('hidden');
                 this.$actionMenu.find('a[data-action=enable]:first').parent().removeClass('hidden');
-            }, this), 200);
+            }, 200);
 
             this.collapse(true);
         },
@@ -626,10 +625,10 @@
             this.$container.children('input[name$="[enabled]"]:first').val('1');
             this.$container.removeClass('disabled');
 
-            setTimeout($.proxy(function() {
+            setTimeout(() => {
                 this.$actionMenu.find('a[data-action=disable]:first').parent().removeClass('hidden');
                 this.$actionMenu.find('a[data-action=enable]:first').parent().addClass('hidden');
-            }, this), 200);
+            }, 200);
         },
 
         moveUp: function() {
@@ -730,7 +729,7 @@
                 window.draftEditor.pause();
             }
 
-            this.$container.velocity(this.matrix.getHiddenBlockCss(this.$container), 'fast', $.proxy(function() {
+            this.$container.velocity(this.matrix.getHiddenBlockCss(this.$container), 'fast', () => {
                 this.$container.remove();
                 this.matrix.updateAddBlockBtn();
 
@@ -742,7 +741,7 @@
                 this.matrix.trigger('blockDeleted', {
                     $block: this.$container,
                 });
-            }, this));
+            });
         }
     });
 })(jQuery);

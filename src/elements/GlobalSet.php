@@ -96,7 +96,7 @@ class GlobalSet extends Element
     /**
      * @inheritdoc
      */
-    public function getIsEditable(): bool
+    protected function isEditable(): bool
     {
         return Craft::$app->getUser()->checkPermission("editGlobalSet:$this->uid");
     }
@@ -149,6 +149,12 @@ class GlobalSet extends Element
      * @var string|null Handle
      */
     public $handle;
+
+    /**
+     * @var int Sort order
+     * @since 3.7.0
+     */
+    public $sortOrder;
 
     /**
      * Use the global set's name as its string representation.
@@ -211,7 +217,7 @@ class GlobalSet extends Element
     /**
      * @inheritdoc
      */
-    public function getCpEditUrl()
+    protected function cpEditUrl(): ?string
     {
         if (Craft::$app->getIsMultiSite()) {
             return UrlHelper::cpUrl('globals/' . $this->getSite()->handle . '/' . $this->handle);
@@ -275,6 +281,7 @@ class GlobalSet extends Element
         $config = [
             'name' => $this->name,
             'handle' => $this->handle,
+            'sortOrder' => (int)$this->sortOrder,
         ];
 
         $fieldLayout = $this->getFieldLayout();

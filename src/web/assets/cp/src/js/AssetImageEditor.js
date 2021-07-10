@@ -117,7 +117,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend({
 
         this.maxImageSize = this.getMaxImageSize();
 
-        Craft.postActionRequest('assets/image-editor', {assetId: assetId}, $.proxy(this, 'loadEditor'));
+        Craft.postActionRequest('assets/image-editor', {assetId}, this.loadEditor.bind(this));
     },
 
     /**
@@ -162,9 +162,9 @@ Craft.AssetImageEditor = Garnish.Modal.extend({
         this.$croppingCanvas.height(this.editorHeight);
 
         this.canvas.enableRetinaScaling = true;
-        this.renderImage = function() {
+        this.renderImage = () => {
             Garnish.requestAnimationFrame(this.canvas.renderAll.bind(this.canvas));
-        }.bind(this);
+        };
 
         // Load the image from URL
         var imageUrl = Craft.getActionUrl('assets/edit-image', {
@@ -174,7 +174,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend({
         });
 
         // Load image and set up the initial properties
-        fabric.Image.fromURL(imageUrl, $.proxy(function(imageObject) {
+        fabric.Image.fromURL(imageUrl, imageObject => {
             this.image = imageObject;
             this.image.set({
                 originX: 'center',
@@ -241,7 +241,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend({
 
             // Make sure verything gets fired for the first tab
             this.$tabs.first().trigger('click');
-        }, this));
+        });
     },
 
     /**
@@ -262,14 +262,14 @@ Craft.AssetImageEditor = Garnish.Modal.extend({
             cacheBust: this.cacheBust
         });
 
-        this.image.setSrc(imageUrl, function(imageObject) {
+        this.image.setSrc(imageUrl, imageObject => {
             this.originalHeight = imageObject.getHeight();
             this.originalWidth = imageObject.getWidth();
             this.lastLoadedDimensions = {width: this.originalHeight, height: this.originalWidth};
             this.updateSizeAndPosition();
             this.renderImage();
             this.imageIsLoading = false;
-        }.bind(this));
+        });
     },
 
     /**
@@ -592,16 +592,16 @@ Craft.AssetImageEditor = Garnish.Modal.extend({
 
         // Straighten slider
         this.straighteningInput = new Craft.SlideRuleInput("slide-rule", {
-            onStart: function() {
+            onStart: () => {
                 this._showGrid();
-            }.bind(this),
-            onChange: function(slider) {
+            },
+            onChange: slider => {
                 this.straighten(slider);
-            }.bind(this),
-            onEnd: function() {
+            },
+            onEnd: () => {
                 this._hideGrid();
                 this._cleanupFocalPointAfterStraighten();
-            }.bind(this)
+            },
         });
 
         // Cropper scale modifier key
@@ -932,20 +932,20 @@ Craft.AssetImageEditor = Garnish.Modal.extend({
 
             this.viewport.animate(viewportProperties, {
                 duration: this.settings.animationDuration,
-                onComplete: function() {
+                onComplete: () => {
                     // If we're zooming the image in or out, better do the same to viewport
                     var temp = this.viewport.height * scaleFactor;
                     this.viewport.height = this.viewport.width * scaleFactor;
                     this.viewport.width = temp;
                     this.viewport.set({angle: 0});
-                }.bind(this)
+                },
             });
 
             // Animate the rotation and dimension change
             this.image.animate(imageProperties, {
                 onChange: this.canvas.renderAll.bind(this.canvas),
                 duration: this.settings.animationDuration,
-                onComplete: function() {
+                onComplete: () => {
                     var cleanAngle = parseFloat((this.image.angle + 360) % 360);
                     this.image.set({angle: cleanAngle});
                     this.animationInProgress = false;
@@ -956,7 +956,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend({
                     } else {
                         this._resetFocalPointPosition();
                     }
-                }.bind(this)
+                },
             });
         }
     },
@@ -1018,14 +1018,14 @@ Craft.AssetImageEditor = Garnish.Modal.extend({
             this.image.animate(properties, {
                 onChange: this.canvas.renderAll.bind(this.canvas),
                 duration: this.settings.animationDuration,
-                onComplete: function() {
+                onComplete: () => {
                     this.animationInProgress = false;
                     if (this.focalPoint) {
                         // Well this is handy
                         this._adjustFocalPointByAngle(0);
                         this.canvas.add(this.focalPoint);
                     }
-                }.bind(this)
+                },
             });
         }
     },
@@ -1301,7 +1301,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend({
         postData.flipData = this.flipData;
         postData.zoom = this.zoomRatio;
 
-        Craft.postActionRequest('assets/save-image', postData, function(data) {
+        Craft.postActionRequest('assets/save-image', postData, data => {
             this.$buttons.find('.btn').removeClass('disabled').end().find('.spinner').remove();
 
             if (data.error) {
@@ -1312,7 +1312,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend({
             this.onSave();
             this.hide();
             Craft.cp.runQueue();
-        }.bind(this));
+        });
     },
 
     /**
@@ -1488,7 +1488,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend({
             top: this.editorHeight / 2
         };
 
-        var callback = function() {
+        var callback = () => {
             this._setFittedImageVerticeCoordinates();
 
             // Restore cropper
@@ -1512,7 +1512,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend({
                 this.focalPoint.top = this.image.top + (this.focalPointState.offsetY * sizeFactor * this.zoomRatio);
                 this.canvas.add(this.focalPoint);
             }
-        }.bind(this);
+        };
 
         this._editorModeTransition(callback, imageProperties, viewportProperties);
     },
@@ -1556,7 +1556,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend({
             this._resetFocalPointPosition();
         }
 
-        var callback = function() {
+        var callback = () => {
             // Reposition focal point correctly
             if (this.focalPoint) {
                 var sizeFactor = this.getScaledImageDimensions().width / this.focalPointState.imageDimensions.width;
@@ -1564,7 +1564,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend({
                 this.focalPoint.top = this.image.top + (this.focalPointState.offsetY * sizeFactor * this.zoomRatio);
                 this.canvas.add(this.focalPoint);
             }
-        }.bind(this);
+        };
 
         this._editorModeTransition(callback, imageProperties, viewportProperties);
     },
@@ -1590,11 +1590,11 @@ Craft.AssetImageEditor = Garnish.Modal.extend({
             this.image.animate(imageProperties, {
                 onChange: this.canvas.renderAll.bind(this.canvas),
                 duration: this.settings.animationDuration,
-                onComplete: function() {
+                onComplete: () => {
                     callback();
                     this.animationInProgress = false;
                     this.renderImage();
-                }.bind(this)
+                },
             });
 
             this.viewport.animate(viewportProperties, {
@@ -1684,9 +1684,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend({
             height: this.editorHeight
         });
 
-        this.renderCropper = function() {
-            Garnish.requestAnimationFrame(this.croppingCanvas.renderAll.bind(this.croppingCanvas));
-        }.bind(this);
+        this.renderCropper = () => Garnish.requestAnimationFrame(this.croppingCanvas.renderAll.bind(this.croppingCanvas));
 
         $('#cropping-canvas', this.$editorContainer).css({
             position: 'absolute',
@@ -2180,17 +2178,17 @@ Craft.AssetImageEditor = Garnish.Modal.extend({
 
         // Make sure to redraw cropper handles and gridlines when resizing
         this.clipper.animate(this.enforceCroppingConstraint._.properties, {
-            onChange: function() {
+            onChange: () => {
                 this._redrawCropperElements();
                 this.croppingCanvas.renderAll();
-            }.bind(this),
+            },
             duration: this.settings.animationDuration,
-            onComplete: function() {
+            onComplete: () => {
                 this._redrawCropperElements();
                 this.animationInProgress = false;
                 this.renderCropper();
                 this.storeCropperState();
-            }.bind(this)
+            },
         });
     },
 

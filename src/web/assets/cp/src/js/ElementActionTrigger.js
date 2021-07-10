@@ -29,7 +29,7 @@ Craft.ElementActionTrigger = Garnish.Base.extend({
         }
 
         this.updateTrigger();
-        Craft.elementIndex.on('selectionChange', $.proxy(this, 'updateTrigger'));
+        Craft.elementIndex.on('selectionChange', this.updateTrigger.bind(this));
     },
 
     updateTrigger: function() {

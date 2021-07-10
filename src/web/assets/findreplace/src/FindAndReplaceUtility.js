@@ -26,7 +26,7 @@
                 this.progressBar.$progressBar.velocity('stop').velocity({
                     opacity: 1
                 }, {
-                    complete: $.proxy(function() {
+                    complete: () => {
                         var postData = Garnish.getPostData(this.$form),
                             params = Craft.expandPostArray(postData);
 
@@ -34,19 +34,18 @@
                             params: params
                         };
 
-                        Craft.postActionRequest(params.action, data, $.proxy(function(response, textStatus) {
-                                if (response && response.error) {
-                                    alert(response.error);
-                                }
+                        Craft.postActionRequest(params.action, data, (response, textStatus) => {
+                            if (response && response.error) {
+                                alert(response.error);
+                            }
 
-                                this.updateProgressBar();
+                            this.updateProgressBar();
 
-                                setTimeout($.proxy(this, 'onComplete'), 300);
-                            }, this),
-                            {
-                                complete: $.noop
-                            });
-                    }, this)
+                            setTimeout(this.onComplete.bind(this), 300);
+                        }, {
+                            complete: $.noop
+                        });
+                    },
                 });
 
                 if (this.$allDone) {
@@ -70,11 +69,12 @@
             }
 
             this.progressBar.$progressBar.velocity({opacity: 0}, {
-                duration: 'fast', complete: $.proxy(function() {
+                duration: 'fast',
+                complete: () => {
                     this.$allDone.velocity({opacity: 1}, {duration: 'fast'});
                     this.$trigger.removeClass('disabled');
                     this.$trigger.trigger('focus');
-                }, this)
+                },
             });
 
             // Just in case the tool created a new task...

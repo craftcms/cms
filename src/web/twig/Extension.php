@@ -262,6 +262,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
             new TwigFilter('prepend', [$this, 'prependFilter'], ['is_safe' => ['html']]),
             new TwigFilter('purify', [$this, 'purifyFilter'], ['is_safe' => ['html']]),
             new TwigFilter('push', [$this, 'pushFilter']),
+            new TwigFilter('removeClass', [$this, 'removeClassFilter'], ['is_safe' => ['html']]),
             new TwigFilter('replace', [$this, 'replaceFilter']),
             new TwigFilter('rss', [$this, 'rssFilter'], ['needs_environment' => true]),
             new TwigFilter('snake', [$this, 'snakeFilter']),
@@ -276,6 +277,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
             new TwigFilter('unshift', [$this, 'unshiftFilter']),
             new TwigFilter('values', 'array_values'),
             new TwigFilter('where', [ArrayHelper::class, 'where']),
+            new TwigFilter('widont', [$this, 'widontFilter'], ['is_safe' => ['html']]),
             new TwigFilter('without', [$this, 'withoutFilter']),
             new TwigFilter('withoutKey', [$this, 'withoutKeyFilter']),
         ];
@@ -582,6 +584,18 @@ class Extension extends AbstractExtension implements GlobalsInterface
     }
 
     /**
+     * Inserts a non-breaking space between the last two words of a string.
+     *
+     * @param string $string
+     * @return string
+     * @since 3.7.0
+     */
+    public function widontFilter(string $string): string
+    {
+        return Html::widont($string);
+    }
+
+    /**
      * Returns an array without certain values.
      *
      * @param mixed $arr
@@ -734,6 +748,33 @@ class Extension extends AbstractExtension implements GlobalsInterface
         array_shift($args);
         array_unshift($array, ...$args);
         return $array;
+    }
+
+    /**
+     * Removes a class (or classes) from the given HTML tag.
+     *
+     * @param string $tag The HTML tag to modify
+     * @param string|string[] $class
+     * @return string The modified HTML tag
+     * @since 3.7.0
+     */
+    public function removeClassFilter(string $tag, $class): string
+    {
+        try {
+            $oldClasses = Html::parseTagAttributes($tag)['class'] ?? [];
+            $newClasses = array_filter($oldClasses, function(string $oldClass) use ($class) {
+                return is_string($class) ? $oldClass !== $class : !in_array($oldClass, $class, true);
+            });
+
+            $newTag = Html::modifyTagAttributes($tag, ['class' => false]);
+            if (!empty($newClasses)) {
+                $newTag = Html::modifyTagAttributes($newTag, ['class' => $newClasses]);
+            }
+            return $newTag;
+        } catch (InvalidArgumentException $e) {
+            Craft::warning($e->getMessage(), __METHOD__);
+            return $tag;
+        }
     }
 
     /**
@@ -1136,6 +1177,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
             new TwigFunction('cpUrl', [UrlHelper::class, 'cpUrl']),
             new TwigFunction('create', [Craft::class, 'createObject']),
             new TwigFunction('dataUrl', [$this, 'dataUrlFunction']),
+            new TwigFunction('date', [$this, 'dateFunction'], ['needs_environment' => true]),
             new TwigFunction('expression', [$this, 'expressionFunction']),
             new TwigFunction('floor', 'floor'),
             new TwigFunction('getenv', [App::class, 'env']),
@@ -1204,6 +1246,27 @@ class Extension extends AbstractExtension implements GlobalsInterface
         }
 
         return Html::dataUrl(Craft::getAlias($file), $mimeType);
+    }
+
+    /**
+     * Converts an input to a [[\DateTime]] instance.
+     *
+     * @param TwigEnvironment $env
+     * @param \DateTimeInterface|string|array|null $date A date, or null to use the current time
+     * @param \DateTimeZone|string|false|null $timezone The target timezone, `null` to use the default, `false` to leave unchanged
+     * @return \DateTimeInterface
+     */
+    public function dateFunction(TwigEnvironment $env, $date = null, $timezone = null): DateTimeInterface
+    {
+        // Support for date/time arrays
+        if (is_array($date)) {
+            $date = DateTimeHelper::toDateTime($date, false, false);
+            if ($date === false) {
+                throw new InvalidArgumentException('Invalid date passed to date() function');
+            }
+        }
+
+        return twig_date_converter($env, $date, $timezone);
     }
 
     /**

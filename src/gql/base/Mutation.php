@@ -7,6 +7,8 @@
 
 namespace craft\gql\base;
 
+use craft\base\Field;
+
 /**
  * Class Mutation
  *
@@ -28,7 +30,7 @@ abstract class Mutation
      * Load content fields and value normalizers on the resolver, based on content fields.
      *
      * @param MutationResolver $resolver
-     * @param array $contentFields
+     * @param Field[] $contentFields
      * @return null
      */
     protected static function prepareResolver(MutationResolver $resolver, array $contentFields)
