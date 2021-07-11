@@ -2173,7 +2173,7 @@ abstract class Element extends Component implements ElementInterface
      */
     public function getCanonicalId(): ?int
     {
-        return $this->getSourceId();
+        return $this->_canonicalId ?? $this->id;
     }
 
     /**
@@ -2199,7 +2199,8 @@ abstract class Element extends Component implements ElementInterface
      */
     public function getSourceId()
     {
-        return $this->_canonicalId ?? $this->id;
+        Craft::$app->getDeprecator()->log(__METHOD__, 'Elements’ `getSourceId()` method has been deprecated. Use `getCanonicalId()` instead.');
+        return $this->getCanonicalId();
     }
 
     /**
@@ -2211,15 +2212,8 @@ abstract class Element extends Component implements ElementInterface
      */
     public function getSourceUid(): string
     {
-        if ($this->getIsCanonical()) {
-            return $this->uid;
-        }
-        return static::find()
-            ->id($this->_canonicalId)
-            ->siteId($this->siteId)
-            ->anyStatus()
-            ->select(['elements.uid'])
-            ->scalar();
+        Craft::$app->getDeprecator()->log(__METHOD__, 'Elements’ `getSourceUid()` method has been deprecated. Use `getCanonical(true)->uid` instead.');
+        return $this->getCanonical(true)->uid;
     }
 
     /**
@@ -2227,7 +2221,7 @@ abstract class Element extends Component implements ElementInterface
      */
     public function getIsUnpublishedDraft(): bool
     {
-        return $this->getIsUnsavedDraft();
+        return $this->getIsDraft() && $this->getIsCanonical();
     }
 
     /**
@@ -2239,7 +2233,7 @@ abstract class Element extends Component implements ElementInterface
      */
     public function getIsUnsavedDraft(): bool
     {
-        return $this->getIsDraft() && $this->getIsCanonical();
+        return $this->getIsUnpublishedDraft();
     }
 
     /**
