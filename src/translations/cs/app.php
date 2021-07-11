@@ -547,7 +547,7 @@ return [
     'Edit “{title}”' => 'Upravit "{title}"',
     'Edit' => 'Upravit',
     'Edited' => 'Upraveno',
-    'Editor Slideouts' => 'Editor Slideouts',
+    'Editor Slideouts' => 'Výsuvná okna editoru',
     'Element' => 'Najít oficiálního partnera Craft ',
     'Elements duplicated.' => 'Prvky duplikovány.',
     'Elements' => 'Prvky',
