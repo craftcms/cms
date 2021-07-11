@@ -171,6 +171,9 @@
 - `craft\helpers\Cp::elementHtml()` now has a `$single` argument.
 - `craft\helpers\DateTimeHelper::toDateTime()` now supports passing in `'now'`. ([#9117](https://github.com/craftcms/cms/issues/9117))
 - `craft\services\AssetTransforms::normalizeTransform()` now accepts transform configs arrays that specify a base transform which should be extended, via a `transform` key set to the stored transform’s handle. ([#7892](https://github.com/craftcms/cms/issues/7892))
+- `craft\services\Drafts::EVENT_AFTER_APPLY_DRAFT` is no longer deprecated.
+- `craft\services\Drafts::EVENT_BEFORE_APPLY_DRAFT` is no longer deprecated.
+- `craft\services\Drafts::applyDraft()` is no longer deprecated.
 - `craft\services\Users::saveLayout()` now has a `$runValidation` argument, which is `true` by default.
 - `craft\web\View::clearJsBuffer()` now has a `$combine` argument.
 - `craft\web\View::namespaceInputs()` now accepts a callback function for the first argument, which simplifies the process of setting and resetting the registered namespace before and after generating the to-be-namespaced HTML.
@@ -197,8 +200,11 @@
 - Deprecated `craft\services\Content::getContentRow()`.
 - Deprecated `craft\services\Content::populateElementContent()`.
 - Deprecated `craft\services\Drafts::EVENT_AFTER_MERGE_SOURCE_CHANGES`.
+- Deprecated `craft\services\Drafts::EVENT_AFTER_PUBLISH_DRAFT`. `EVENT_AFTER_APPLY_DRAFT` should be used instead.
 - Deprecated `craft\services\Drafts::EVENT_BEFORE_MERGE_SOURCE_CHANGES`.
+- Deprecated `craft\services\Drafts::EVENT_BEFORE_PUBLISH_DRAFT`. `EVENT_BEFORE_APPLY_DRAFT` should be used instead.
 - Deprecated `craft\services\Drafts::mergeSourceChanges()`.
+- Deprecated `craft\services\Drafts::publishDraft()`. `applyDraft()` should be used instead.
 - Deprecated `craft\web\View::getInitialDeltaValue()`.
 
 ### Removed

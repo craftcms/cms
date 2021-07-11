@@ -1,5 +1,17 @@
 # Release Notes for Craft CMS 3.x
 
+## Unreleased
+
+### Changed
+- `craft\services\Drafts::applyDraft()` is no longer deprecated.
+- `craft\services\Drafts::EVENT_AFTER_APPLY_DRAFT` is no longer deprecated.
+- `craft\services\Drafts::EVENT_BEFORE_APPLY_DRAFT` is no longer deprecated.
+
+### Deprecated
+- Deprecated `craft\services\Drafts::EVENT_AFTER_PUBLISH_DRAFT`. `EVENT_AFTER_APPLY_DRAFT` should be used instead.
+- Deprecated `craft\services\Drafts::EVENT_BEFORE_PUBLISH_DRAFT`. `EVENT_BEFORE_APPLY_DRAFT` should be used instead.
+- Deprecated `craft\services\Drafts::publishDraft()`. `applyDraft()` should be used instead.
+
 ## 3.7.0-beta.6 - 2021-07-09
 
 ### Added

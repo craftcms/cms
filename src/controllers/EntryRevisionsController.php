@@ -472,8 +472,8 @@ class EntryRevisionsController extends BaseEntriesController
                 throw new InvalidElementException($draft);
             }
 
-            // Publish the draft (finally!)
-            $newEntry = Craft::$app->getDrafts()->publishDraft($draft);
+            // Apply the draft (finally!)
+            $newEntry = Craft::$app->getDrafts()->applyDraft($draft);
         } catch (InvalidElementException $e) {
             if ($draft->getIsUnpublishedDraft()) {
                 $this->setFailFlash(Craft::t('app', 'Couldn’t create entry.'));
