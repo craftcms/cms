@@ -35,9 +35,7 @@
     @apply tw-flex-row;
 
     .ps-sidebar {
-      @apply tw-border-b-0 tw-border-r tw-overflow-auto;
-      max-width: 225px;
-
+      @apply tw-border-b-0 tw-border-r tw-overflow-auto tw-w-60;
 
       .categories {
         display: block;
