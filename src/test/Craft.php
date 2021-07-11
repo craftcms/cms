@@ -225,25 +225,30 @@ class Craft extends Yii2
     {
         ob_start();
         try {
-            // Prevent's a static properties bug.
-            ProjectConfig::reset();
+            $dbSetupConfig = $this->_getConfig('dbSetup');
+            $clean = (isset($dbSetupConfig['clean']) && $dbSetupConfig['clean'] === true);
+            $setupCraft = (isset($dbSetupConfig['setupCraft']) && $dbSetupConfig['setupCraft'] == true);
+
+            // Prevents a static properties bug.
+            // Only reset PC when cleaning
+            if ($clean) {
+                ProjectConfig::reset();
+            }
 
             App::maxPowerCaptain();
 
-            $dbSetupConfig = $this->_getConfig('dbSetup');
-
             // Setup the project config from the passed file.
-            if ($projectConfig = TestSetup::useProjectConfig()) {
+            if (($clean && $setupCraft) && $projectConfig = TestSetup::useProjectConfig()) {
                 TestSetup::setupProjectConfig();
             }
 
             // Get rid of everything.
-            if (isset($dbSetupConfig['clean']) && $dbSetupConfig['clean'] === true) {
+            if ($clean) {
                 TestSetup::cleanseDb(\Craft::$app->getDb());
             }
 
             // Install the db from install.php
-            if (isset($dbSetupConfig['setupCraft']) && $dbSetupConfig['setupCraft'] === true) {
+            if ($setupCraft) {
                 TestSetup::setupCraftDb(\Craft::$app->getDb());
             }
 
@@ -262,7 +267,7 @@ class Craft extends Yii2
             }
 
             // Add any plugins
-            if ($plugins = $this->_getConfig('plugins')) {
+            if (($clean && $setupCraft) && $plugins = $this->_getConfig('plugins')) {
                 foreach ($plugins as $plugin) {
                     $this->installPlugin($plugin);
                 }
