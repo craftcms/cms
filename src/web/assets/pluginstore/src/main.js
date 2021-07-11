@@ -18,6 +18,7 @@ import Btn from './js/components/ui/Btn'
 import Dropdown from './js/components/ui/Dropdown'
 import Icon from './js/components/ui/Icon'
 import Spinner from './js/components/ui/Spinner'
+
 Vue.filter('currency', currency)
 Vue.filter('escapeHtml', escapeHtml)
 Vue.filter('formatDate', formatDate)
@@ -28,6 +29,7 @@ Vue.component('btn', Btn)
 Vue.component('dropdown', Dropdown)
 Vue.component('icon', Icon)
 Vue.component('spinner', Spinner)
+
 Garnish.$doc.ready(function() {
     Craft.initUiElements()
 
