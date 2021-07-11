@@ -24,8 +24,6 @@
     @import "../../../../../../../node_modules/craftcms-sass/mixins";
 
     .info-hud {
-        @apply tw-inline-block;
-
         .v-popover {
             @apply tw-text-gray-400;
             display: inline-block;
