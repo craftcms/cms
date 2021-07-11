@@ -18,12 +18,12 @@
             </div>
 
             <template v-if="plugin.abandoned">
-                <p class="error">{{ "Abandoned"|t('app') }}</p>
+                <div class="error">{{ "Abandoned"|t('app') }}</div>
             </template>
             <template v-else>
-                <p class="light">
+                <div class="light">
                   {{ fullPriceLabel }}
-                </p>
+                </div>
             </template>
 
             <div v-if="isPluginInstalled(plugin.handle)" class="installed"
