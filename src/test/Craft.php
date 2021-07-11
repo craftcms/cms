@@ -417,7 +417,7 @@ class Craft extends Yii2
      * @param string $elementType
      * @param array $searchProperties
      * @param int $amount
-     * @param bool $searchAll - Whether anyStatus() and trashed(null) should be applied
+     * @param bool $searchAll Whether `status(null)` and `trashed(null)` should be applied
      * @return array
      */
     public function assertElementsExist(string $elementType, array $searchProperties = [], int $amount = 1, bool $searchAll = false): array
@@ -425,7 +425,7 @@ class Craft extends Yii2
         /** @var ElementQuery $elementQuery */
         $elementQuery = $elementType::find();
         if ($searchAll) {
-            $elementQuery->anyStatus();
+            $elementQuery->status(null);
             $elementQuery->trashed(null);
         }
 

@@ -1422,30 +1422,6 @@ interface ElementQueryInterface extends QueryInterface, ArrayAccess, Arrayable, 
      */
     public function positionedAfter($value);
 
-    /**
-     * Removes element filters based on their statuses.
-     *
-     * ---
-     *
-     * ```twig
-     * {# Fetch all {elements}, regardless of status #}
-     * {% set {elements-var} = {twig-method}
-     *     .anyStatus()
-     *     .all() %}
-     * ```
-     *
-     * ```php
-     * // Fetch all {elements}, regardless of status
-     * ${elements-var} = {php-method}
-     *     ->anyStatus()
-     *     ->all();
-     * ```
-     *
-     * @return static self reference
-     * @since 3.0.17
-     */
-    public function anyStatus();
-
     // Query preparation/execution
     // -------------------------------------------------------------------------
 

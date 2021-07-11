@@ -51,6 +51,7 @@
 - Updated vue-autosuggest to 2.2.0.
 
 ### Deprecated
+- Deprecated the `anyStatus` element query param. `status(null)` should be used instead.
 - Deprecated `craft\base\VolumeInterface::createFileByStream()`.
 - Deprecated `craft\base\VolumeInterface::saveFileLocally()`.
 - Deprecated `craft\base\VolumeInterface::updateFileByStream()`.

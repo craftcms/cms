@@ -109,7 +109,7 @@ class Categories extends BaseRelationField
             $categories = Category::find()
                 ->siteId($this->targetSiteId($element))
                 ->id(array_values(array_filter($value)))
-                ->anyStatus()
+                ->status(null)
                 ->all();
 
             // Fill in any gaps

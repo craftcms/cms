@@ -286,7 +286,7 @@ class CategoriesController extends Controller
                     $maxDepth = Category::find()
                         ->select('level')
                         ->descendantOf($category)
-                        ->anyStatus()
+                        ->status(null)
                         ->leaves()
                         ->scalar();
                     $depth = 1 + ($maxDepth ?: $category->level) - $category->level;
@@ -301,7 +301,7 @@ class CategoriesController extends Controller
                 // Prevent the current category, or any of its descendants, from being options
                 $excludeIds = Category::find()
                     ->descendantOf($category)
-                    ->anyStatus()
+                    ->status(null)
                     ->ids();
 
                 $excludeIds[] = $category->id;
@@ -317,7 +317,7 @@ class CategoriesController extends Controller
 
             if ($parentId === null && $category->id !== null) {
                 $parentId = $category->getAncestors(1)
-                    ->anyStatus()
+                    ->status(null)
                     ->ids();
             }
 

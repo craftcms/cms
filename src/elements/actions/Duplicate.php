@@ -115,7 +115,7 @@ class Duplicate extends ElementAction
             }
 
             if ($this->deep) {
-                $children = $element->getChildren()->anyStatus()->all();
+                $children = $element->getChildren()->status(null)->all();
                 $this->_duplicateElements($children, $successCount, $failCount, $duplicatedElementIds, $duplicate);
             }
         }

@@ -418,7 +418,7 @@ class Categories extends Component
                 // Get all of the category IDs in this group
                 $categoryIds = Category::find()
                     ->groupId($groupRecord->id)
-                    ->anyStatus()
+                    ->status(null)
                     ->ids();
 
                 // Are there any sites left?
@@ -441,7 +441,7 @@ class Categories extends Component
                                 $category = Category::find()
                                     ->id($categoryId)
                                     ->siteId($siteId)
-                                    ->anyStatus()
+                                    ->status(null)
                                     ->one();
 
                                 if ($category) {
@@ -573,7 +573,7 @@ class Categories extends Component
         try {
             // Delete the categories
             $categories = Category::find()
-                ->anyStatus()
+                ->status(null)
                 ->groupId($categoryGroupRecord->id)
                 ->all();
             $elementsService = Craft::$app->getElements();

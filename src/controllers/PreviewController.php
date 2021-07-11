@@ -114,7 +114,7 @@ class PreviewController extends Controller
         /** @var ElementInterface $elementType */
         $query = $elementType::find()
             ->siteId($siteId)
-            ->anyStatus();
+            ->status(null);
 
         if ($draftId) {
             $query

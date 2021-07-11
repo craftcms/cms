@@ -245,7 +245,7 @@ class UtilitiesController extends Controller
 
                 /** @var Asset[] $assets */
                 $assets = Asset::find()
-                    ->anyStatus()
+                    ->status(null)
                     ->id($params['deleteAsset'])
                     ->all();
 

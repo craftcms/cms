@@ -843,7 +843,7 @@ class Entry extends Element
         ) {
             if ($this->id) {
                 $currentSites = static::find()
-                    ->anyStatus()
+                    ->status(null)
                     ->id($this->id)
                     ->siteId('*')
                     ->select('elements_sites.siteId')
@@ -858,7 +858,7 @@ class Entry extends Element
             // If this is being duplicated from another element (e.g. a draft), include any sites the source element is saved to as well
             if (!empty($this->duplicateOf->id)) {
                 array_push($currentSites, ...static::find()
-                    ->anyStatus()
+                    ->status(null)
                     ->id($this->duplicateOf->id)
                     ->siteId('*')
                     ->select('elements_sites.siteId')
@@ -1540,13 +1540,13 @@ EOD;
             $hasRevisions = self::find()
                 ->revisionOf($this)
                 ->siteId('*')
-                ->anyStatus()
+                ->status(null)
                 ->exists();
             if (!$hasRevisions) {
                 $currentEntry = self::find()
                     ->id($this->id)
                     ->siteId('*')
-                    ->anyStatus()
+                    ->status(null)
                     ->one();
 
                 // May be null if the entry is currently stored as an unpublished draft
@@ -1692,7 +1692,7 @@ EOD;
         if ($this->structureId) {
             // Remember the parent ID, in case the entry needs to be restored later
             $parentId = $this->getAncestors(1)
-                ->anyStatus()
+                ->status(null)
                 ->select(['elements.id'])
                 ->scalar();
             if ($parentId) {
@@ -1746,7 +1746,7 @@ EOD;
             if ($this->getIsCanonical()) {
                 $drafts = static::find()
                     ->draftOf($this)
-                    ->anyStatus()
+                    ->status(null)
                     ->siteId('*')
                     ->unique()
                     ->all();
@@ -1817,7 +1817,7 @@ EOD;
         $oldParentQuery->ancestorOf($this);
         $oldParentQuery->ancestorDist(1);
         $oldParentQuery->siteId($this->siteId);
-        $oldParentQuery->anyStatus();
+        $oldParentQuery->status(null);
         $oldParentQuery->select('elements.id');
         $oldParentId = $oldParentQuery->scalar();
 

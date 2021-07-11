@@ -849,7 +849,7 @@ class Sections extends Component
             // All entries *should* be deleted by now via their entry types, but loop through all the sites in case
             // there are any lingering entries from unsupported sites
             $entryQuery = Entry::find()
-                ->anyStatus()
+                ->status(null)
                 ->sectionId($sectionRecord->id);
             $elementsService = Craft::$app->getElements();
             foreach (Craft::$app->getSites()->getAllSiteIds() as $siteId) {
@@ -1187,7 +1187,7 @@ class Sections extends Component
                 ->draftOf(false)
                 ->sectionId($entryTypeRecord->sectionId)
                 ->typeId($entryTypeRecord->id)
-                ->anyStatus()
+                ->status(null)
                 ->trashed()
                 ->siteId('*')
                 ->unique()
@@ -1345,7 +1345,7 @@ class Sections extends Component
             $entryQuery = Entry::find()
                 ->drafts(null)
                 ->draftOf(false)
-                ->anyStatus()
+                ->status(null)
                 ->typeId($entryTypeRecord->id);
 
             $elementsService = Craft::$app->getElements();
@@ -1464,7 +1464,7 @@ class Sections extends Component
         $entry = Entry::find()
             ->typeId($entryTypeIds)
             ->siteId($siteIds)
-            ->anyStatus()
+            ->status(null)
             ->one();
 
         // Otherwise create a new one
@@ -1505,7 +1505,7 @@ class Sections extends Component
             ->siteId('*')
             ->unique()
             ->id(['not', $entry->id])
-            ->anyStatus();
+            ->status(null);
 
         foreach (Db::each($otherEntriesQuery) as $entry) {
             $elementsService->deleteElement($entry, true);
@@ -1528,7 +1528,7 @@ class Sections extends Component
             ->sectionId($sectionRecord->id)
             ->siteId('*')
             ->unique()
-            ->anyStatus()
+            ->status(null)
             ->orderBy(['elements.id' => SORT_ASC])
             ->withStructure(false);
 

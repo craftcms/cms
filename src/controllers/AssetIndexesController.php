@@ -201,7 +201,7 @@ class AssetIndexesController extends Controller
         if (!empty($deleteFiles)) {
             Craft::$app->getAssetTransforms()->deleteTransformIndexDataByAssetIds($deleteFiles);
             $assets = Asset::find()
-                ->anyStatus()
+                ->status(null)
                 ->id($deleteFiles)
                 ->all();
 

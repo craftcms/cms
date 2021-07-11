@@ -98,7 +98,7 @@ class Drafts extends Component
         $query = $element::find()
             ->draftOf($element)
             ->siteId($element->siteId)
-            ->anyStatus()
+            ->status(null)
             ->orderBy(['dateUpdated' => SORT_DESC]);
 
         if (!$permission || !$user->can($permission)) {
@@ -271,7 +271,7 @@ class Drafts extends Component
                 ->id($draft->id)
                 ->siteId($canonical->siteId)
                 ->structureId($canonical->structureId)
-                ->anyStatus()
+                ->status(null)
                 ->one();
             if ($draft === null) {
                 throw new Exception("Could not load the draft for site ID $canonical->siteId");
@@ -404,7 +404,7 @@ class Drafts extends Component
             $elementType = $draftInfo['type'];
             $draft = $elementType::find()
                 ->draftId($draftInfo['draftId'])
-                ->anyStatus()
+                ->status(null)
                 ->siteId('*')
                 ->one();
 

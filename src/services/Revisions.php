@@ -100,7 +100,7 @@ class Revisions extends Component
                     return $source::find()
                         ->revisionOf($source)
                         ->siteId($source->siteId)
-                        ->anyStatus()
+                        ->status(null)
                         ->andWhere(['revisions.num' => $lastRevisionNum])
                         ->one();
                 });

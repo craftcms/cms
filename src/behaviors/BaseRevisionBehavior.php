@@ -47,7 +47,7 @@ abstract class BaseRevisionBehavior extends Behavior
 
             $this->_creator = User::find()
                     ->id($this->creatorId)
-                    ->anyStatus()
+                    ->status(null)
                     ->one()
                 ?? false;
         }

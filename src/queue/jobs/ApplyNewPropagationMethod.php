@@ -49,7 +49,7 @@ class ApplyNewPropagationMethod extends BaseJob
         $query = $elementType::find()
             ->siteId('*')
             ->unique()
-            ->anyStatus();
+            ->status(null);
 
         if (!empty($this->criteria)) {
             Craft::configure($query, $this->criteria);
@@ -82,7 +82,7 @@ class ApplyNewPropagationMethod extends BaseJob
                     ->id($element->id)
                     ->siteId($otherSiteIds)
                     ->structureId($element->structureId)
-                    ->anyStatus()
+                    ->status(null)
                     ->orderBy(null)
                     ->indexBy('siteId')
                     ->all();

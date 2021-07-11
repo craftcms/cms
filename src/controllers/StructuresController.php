@@ -72,7 +72,7 @@ class StructuresController extends Controller
             ->provisionalDrafts(null)
             ->id($elementId)
             ->siteId($siteId)
-            ->anyStatus()
+            ->status(null)
             ->structureId($structureId)
             ->one();
 

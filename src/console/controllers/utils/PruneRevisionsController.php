@@ -98,7 +98,7 @@ class PruneRevisionsController extends Controller
                 ->revisionOf($element['id'])
                 ->siteId('*')
                 ->unique()
-                ->anyStatus()
+                ->status(null)
                 ->orderBy(['num' => SORT_DESC])
                 ->offset($this->maxRevisions)
                 ->all();

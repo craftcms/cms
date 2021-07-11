@@ -2134,7 +2134,7 @@ abstract class Element extends Component implements ElementInterface
                     ->preferSites([$this->siteId])
                     ->structureId($this->structureId)
                     ->unique()
-                    ->anyStatus()
+                    ->status(null)
                     ->ignorePlaceholders()
                     ->one() ?? false;
         }
@@ -2703,7 +2703,7 @@ abstract class Element extends Component implements ElementInterface
                 $this->_parent = reset($ancestors);
             } else {
                 $this->_parent = $ancestors
-                        ->anyStatus()
+                        ->status(null)
                         ->one()
                     ?? false;
             }
@@ -2817,7 +2817,7 @@ abstract class Element extends Component implements ElementInterface
             $query->structureId = $this->structureId;
             $query->prevSiblingOf = $this;
             $query->siteId = $this->siteId;
-            $query->anyStatus();
+            $query->status(null);
             $this->_prevSibling = $query->one();
 
             if ($this->_prevSibling === null) {
@@ -2839,7 +2839,7 @@ abstract class Element extends Component implements ElementInterface
             $query->structureId = $this->structureId;
             $query->nextSiblingOf = $this;
             $query->siteId = $this->siteId;
-            $query->anyStatus();
+            $query->status(null);
             $this->_nextSibling = $query->one();
 
             if ($this->_nextSibling === null) {
@@ -3506,7 +3506,7 @@ abstract class Element extends Component implements ElementInterface
             $this->_currentRevision = static::find()
                 ->revisionOf($canonical->id)
                 ->dateCreated($canonical->dateUpdated)
-                ->anyStatus()
+                ->status(null)
                 ->orderBy(['num' => SORT_DESC])
                 ->one() ?: false;
         }
