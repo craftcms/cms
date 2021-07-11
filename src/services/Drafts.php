@@ -56,20 +56,6 @@ class Drafts extends Component
     const EVENT_AFTER_APPLY_DRAFT = 'afterApplyDraft';
 
     /**
-     * @event DraftEvent The event that is triggered before a draft is applied to its canonical element.
-     * @since 3.6.0
-     * @deprecated in 3.7.0. Use [[EVENT_BEFORE_APPLY_DRAFT]] instead.
-     */
-    const EVENT_BEFORE_PUBLISH_DRAFT = self::EVENT_BEFORE_APPLY_DRAFT;
-
-    /**
-     * @event DraftEvent The event that is triggered after a draft is applied to its canonical element.
-     * @since 3.6.0
-     * @deprecated in 3.7.0. Use [[EVENT_AFTER_APPLY_DRAFT]] instead.
-     */
-    const EVENT_AFTER_PUBLISH_DRAFT = self::EVENT_AFTER_APPLY_DRAFT;
-
-    /**
      * @var Connection|array|string The database connection to use
      * @since 3.5.4
      */
@@ -361,21 +347,6 @@ class Drafts extends Component
         }
 
         return $newSource;
-    }
-
-    /**
-     * Applies a draft to its canonical element, and deletes the draft.
-     *
-     * If an unpublished draft is passed, its draft data will simply be removed from it.
-     *
-     * @param ElementInterface $draft The draft
-     * @return ElementInterface The canonical element with the draft applied to it
-     * @throws \Throwable
-     * @deprecated in 3.7.0. Use [[applyDraft()]] instead.
-     */
-    public function publishDraft(ElementInterface $draft): ElementInterface
-    {
-        return $this->applyDraft($draft);
     }
 
     /**

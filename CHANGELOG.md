@@ -207,8 +207,11 @@
 - Removed `craft\services\Content::getContentRow()`.
 - Removed `craft\services\Content::populateElementContent()`.
 - Removed `craft\services\Drafts::EVENT_AFTER_MERGE_SOURCE_CHANGES`.
+- Removed `craft\services\Drafts::EVENT_AFTER_PUBLISH_DRAFT`.
 - Removed `craft\services\Drafts::EVENT_BEFORE_MERGE_SOURCE_CHANGES`.
+- Removed `craft\services\Drafts::EVENT_BEFORE_PUBLISH_DRAFT`.
 - Removed `craft\services\Drafts::mergeSourceChanges()`. `craft\services\Elements::mergeCanonicalChanges()` can be used instead.
+- Removed `craft\services\Drafts::publishDraft()`.
 - Removed `craft\services\ElementIndexes::getAvailableTableFields()`. `getSourceTableAttributes()` can be used instead.
 - Removed `craft\services\EntryRevisions`.
 - Removed `craft\services\Fields::$ignoreProjectConfigChanges`. `craft\services\ProjectConfig::$muteEvents` can be used instead.
