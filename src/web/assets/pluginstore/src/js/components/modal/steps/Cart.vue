@@ -113,7 +113,7 @@
                         </table>
 
                         <div class="tw-py-4 tw-flex">
-                            <btn kind="primary" @click="payment()" :loading="loadingCheckout">{{ "Checkaout"|t('app') }}</btn>
+                            <btn kind="primary" @click="payment()" :loading="loadingCheckout">{{ "Checkout"|t('app') }}</btn>
                         </div>
                     </template>
 
