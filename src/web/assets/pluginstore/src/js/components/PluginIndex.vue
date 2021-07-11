@@ -1,6 +1,6 @@
 <template>
     <div>
-        <div class="tw-border-b tw-border-solid tw-border-gray-200 tw-py-2 tw-flex tw-justify-between">
+        <div class="tw-border-b tw-border-solid tw-border-gray-200 tw-pb-4 tw-flex tw-justify-between tw-items-center">
             <slot name="header"></slot>
 
             <template v-if="!disableSorting">
