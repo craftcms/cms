@@ -46,25 +46,28 @@ class Drafts extends Component
      * @event DraftEvent The event that is triggered before a draft is published.
      * @since 3.6.0
      */
-    const EVENT_BEFORE_PUBLISH_DRAFT = 'beforePublishDraft';
+    const EVENT_BEFORE_APPLY_DRAFT = 'beforeApplyDraft';
 
     /**
-     * @event DraftEvent The event that is triggered after a draft is published.
+     * @event DraftEvent The event that is triggered after a draft is applied to its canonical element.
+     * @see applyDraft()
+     * @since 3.1.0
+     */
+    const EVENT_AFTER_APPLY_DRAFT = 'afterApplyDraft';
+
+    /**
+     * @event DraftEvent The event that is triggered before a draft is applied to its canonical element.
      * @since 3.6.0
+     * @deprecated in 3.7.0. Use [[EVENT_BEFORE_APPLY_DRAFT]] instead.
      */
-    const EVENT_AFTER_PUBLISH_DRAFT = 'afterPublishDraft';
+    const EVENT_BEFORE_PUBLISH_DRAFT = self::EVENT_BEFORE_APPLY_DRAFT;
 
     /**
-     * @event DraftEvent The event that is triggered before a draft is published.
-     * @deprecated in 3.6.0. Use [[EVENT_BEFORE_PUBLISH_DRAFT]] instead.
+     * @event DraftEvent The event that is triggered after a draft is applied to its canonical element.
+     * @since 3.6.0
+     * @deprecated in 3.7.0. Use [[EVENT_AFTER_APPLY_DRAFT]] instead.
      */
-    const EVENT_BEFORE_APPLY_DRAFT = self::EVENT_BEFORE_PUBLISH_DRAFT;
-
-    /**
-     * @event DraftEvent The event that is triggered after a draft is published.
-     * @deprecated in 3.6.0. Use [[EVENT_AFTER_PUBLISH_DRAFT]] instead.
-     */
-    const EVENT_AFTER_APPLY_DRAFT = self::EVENT_AFTER_PUBLISH_DRAFT;
+    const EVENT_AFTER_PUBLISH_DRAFT = self::EVENT_AFTER_APPLY_DRAFT;
 
     /**
      * @var Connection|array|string The database connection to use
@@ -249,14 +252,16 @@ class Drafts extends Component
     }
 
     /**
-     * Publishes a draft.
+     * Applies a draft to its canonical element, and deletes the draft.
+     *
+     * If an unpublished draft is passed, its draft data will simply be removed from it.
      *
      * @param ElementInterface $draft The draft
-     * @return ElementInterface The updated source element
+     * @return ElementInterface The canonical element with the draft applied to it
      * @throws \Throwable
      * @since 3.6.0
      */
-    public function publishDraft(ElementInterface $draft): ElementInterface
+    public function applyDraft(ElementInterface $draft): ElementInterface
     {
         /** @var ElementInterface|DraftBehavior $draft */
         /** @var DraftBehavior $behavior */
@@ -278,9 +283,9 @@ class Drafts extends Component
             }
         }
 
-        // Fire a 'beforePublishDraft' event
-        if ($this->hasEventHandlers(self::EVENT_BEFORE_PUBLISH_DRAFT)) {
-            $this->trigger(self::EVENT_BEFORE_PUBLISH_DRAFT, new DraftEvent([
+        // Fire a 'beforeApplyDraft' event
+        if ($this->hasEventHandlers(self::EVENT_BEFORE_APPLY_DRAFT)) {
+            $this->trigger(self::EVENT_BEFORE_APPLY_DRAFT, new DraftEvent([
                 'source' => $canonical,
                 'creatorId' => $behavior->creatorId,
                 'draftName' => $behavior->draftName,
@@ -344,9 +349,9 @@ class Drafts extends Component
             throw $e;
         }
 
-        // Fire an 'afterPublishDraft' event
-        if ($this->hasEventHandlers(self::EVENT_AFTER_PUBLISH_DRAFT)) {
-            $this->trigger(self::EVENT_AFTER_PUBLISH_DRAFT, new DraftEvent([
+        // Fire an 'afterApplyDraft' event
+        if ($this->hasEventHandlers(self::EVENT_AFTER_APPLY_DRAFT)) {
+            $this->trigger(self::EVENT_AFTER_APPLY_DRAFT, new DraftEvent([
                 'source' => $newSource,
                 'creatorId' => $behavior->creatorId,
                 'draftName' => $behavior->draftName,
@@ -359,16 +364,18 @@ class Drafts extends Component
     }
 
     /**
-     * Publishes a draft.
+     * Applies a draft to its canonical element, and deletes the draft.
+     *
+     * If an unpublished draft is passed, its draft data will simply be removed from it.
      *
      * @param ElementInterface $draft The draft
-     * @return ElementInterface The updated source element
+     * @return ElementInterface The canonical element with the draft applied to it
      * @throws \Throwable
-     * @deprecated in 3.6.0. Use [[publishDraft()]] instead.
+     * @deprecated in 3.7.0. Use [[applyDraft()]] instead.
      */
-    public function applyDraft(ElementInterface $draft): ElementInterface
+    public function publishDraft(ElementInterface $draft): ElementInterface
     {
-        return $this->publishDraft($draft);
+        return $this->applyDraft($draft);
     }
 
     /**

@@ -140,7 +140,7 @@ class Entry extends ElementMutationResolver
         $this->requireSchemaAction('entrytypes.' . $entryTypeUid, 'save');
 
         /** @var Entry $draft */
-        $draft = Craft::$app->getDrafts()->publishDraft($draft);
+        $draft = Craft::$app->getDrafts()->applyDraft($draft);
 
         return $draft->id;
     }
