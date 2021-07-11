@@ -8,8 +8,8 @@
 namespace craft\web\assets\installer;
 
 use craft\helpers\Json;
-use craft\web\AssetBundle;
 use craft\web\assets\cp\CpAsset;
+use yii\web\AssetBundle;
 
 /**
  * Asset bundle for the Installer

@@ -7,11 +7,11 @@
 
 namespace craft\web\assets\queuemanager;
 
-use craft\web\AssetBundle;
 use craft\web\assets\cp\CpAsset;
 use craft\web\assets\momentjs\MomentJsAsset;
 use craft\web\assets\vue\VueAsset;
 use craft\web\View;
+use yii\web\AssetBundle;
 
 /**
  * Asset bundle for the Queue manager

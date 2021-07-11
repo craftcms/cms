@@ -56,6 +56,7 @@
 - Deprecated `craft\base\VolumeInterface::updateFileByStream()`.
 - Deprecated `craft\helpers\ArrayHelper::append()`. `array_unshift()` should be used instead.
 - Deprecated `craft\helpers\ArrayHelper::prepend()`. `array_push()` should be used instead.
+- Deprecated `craft\web\AssetBundle`. `yii\web\AssetBundle` should be used instead.
 
 ### Removed
 - Removed the `customAsciiCharMappings` config setting.

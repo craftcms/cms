@@ -7,7 +7,7 @@
 
 namespace craft\web\assets\axios;
 
-use craft\web\AssetBundle;
+use yii\web\AssetBundle;
 
 /**
  * Vue asset bundle.

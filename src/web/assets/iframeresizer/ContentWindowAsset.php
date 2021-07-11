@@ -7,7 +7,7 @@
 
 namespace craft\web\assets\iframeresizer;
 
-use craft\web\AssetBundle;
+use yii\web\AssetBundle;
 
 /**
  * Iframe Resizer Content Window asset bundle.

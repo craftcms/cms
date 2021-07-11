@@ -7,8 +7,8 @@
 
 namespace craft\web\assets\editsection;
 
-use craft\web\AssetBundle;
 use craft\web\assets\cp\CpAsset;
+use yii\web\AssetBundle;
 
 /**
  * Asset bundle for Edit Section pages
