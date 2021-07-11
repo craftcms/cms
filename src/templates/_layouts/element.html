@@ -62,7 +62,7 @@
     {% set isNewlySupportedSite = not element.find()
         .id(element.getSourceId())
         .siteId(element.siteId)
-        .anyStatus()
+        .status(null)
         .exists() %}
 {% else %}
     {% set isNewlySupportedSite = false %}
@@ -491,7 +491,7 @@
         .select(['elements_sites.siteId', 'elements_sites.enabled'])
         .id(element.id)
         .siteId(propEditableSiteIds)
-        .anyStatus()
+        .status(null)
         .asArray() %}
     {% if isProvisionalDraft %}
         {% do siteStatusesQuery.provisionalDrafts() %}

@@ -91,7 +91,7 @@ class Tags extends BaseRelationField
 
         if ($value instanceof ElementQueryInterface) {
             $value = $value
-                ->anyStatus()
+                ->status(null)
                 ->all();
         } else if (!is_array($value)) {
             $value = [];

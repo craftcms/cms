@@ -575,8 +575,6 @@ class TestSetup
             [Elements::class, ['getElements', 'elements']],
             [SystemMessages::class, ['getSystemMessages', 'systemMessages']],
             [Entries::class, ['getEntries', 'entries']],
-            [EntryRevisions::class, ['getEntryRevisions', 'entryRevisions']],
-            [Feeds::class, ['getFeeds', 'feeds']],
             [Fields::class, ['getFields', 'fields']],
             [Globals::class, ['getGlobals', 'globals']],
             [Images::class, ['getImages', 'images']],

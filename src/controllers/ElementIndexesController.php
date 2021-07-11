@@ -448,7 +448,7 @@ class ElementIndexesController extends BaseElementsController
                 ->orderBy(null)
                 ->positionedAfter(null)
                 ->positionedBefore(null)
-                ->anyStatus();
+                ->status(null);
 
             // Get the actual elements
             $collapsedElementsQuery = clone $descendantQuery;

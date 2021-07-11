@@ -131,11 +131,13 @@
 - Updated vue-autosuggest to 2.2.0.
 
 ### Deprecated
+- Deprecated the `anyStatus` element query param. `status(null)` should be used instead.
 - Deprecated `craft\base\VolumeInterface::createFileByStream()`.
 - Deprecated `craft\base\VolumeInterface::saveFileLocally()`.
 - Deprecated `craft\base\VolumeInterface::updateFileByStream()`.
 - Deprecated `craft\helpers\ArrayHelper::append()`. `array_unshift()` should be used instead.
 - Deprecated `craft\helpers\ArrayHelper::prepend()`. `array_push()` should be used instead.
+- Deprecated `craft\web\AssetBundle`. `yii\web\AssetBundle` should be used instead.
 
 ### Removed
 - Removed the `customAsciiCharMappings` config setting.
@@ -285,8 +287,11 @@
 - Removed `craft\services\Content::getContentRow()`.
 - Removed `craft\services\Content::populateElementContent()`.
 - Removed `craft\services\Drafts::EVENT_AFTER_MERGE_SOURCE_CHANGES`.
+- Removed `craft\services\Drafts::EVENT_AFTER_PUBLISH_DRAFT`.
 - Removed `craft\services\Drafts::EVENT_BEFORE_MERGE_SOURCE_CHANGES`.
+- Removed `craft\services\Drafts::EVENT_BEFORE_PUBLISH_DRAFT`.
 - Removed `craft\services\Drafts::mergeSourceChanges()`. `craft\services\Elements::mergeCanonicalChanges()` can be used instead.
+- Removed `craft\services\Drafts::publishDraft()`.
 - Removed `craft\services\ElementIndexes::getAvailableTableFields()`. `getSourceTableAttributes()` can be used instead.
 - Removed `craft\services\EntryRevisions`.
 - Removed `craft\services\Fields::$ignoreProjectConfigChanges`. `craft\services\ProjectConfig::$muteEvents` can be used instead.

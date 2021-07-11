@@ -106,7 +106,7 @@ class RepairController extends Controller
         $elements = $query
             ->siteId('*')
             ->unique()
-            ->anyStatus()
+            ->status(null)
             ->withStructure(false)
             ->addSelect([
                 'structureelements.root',

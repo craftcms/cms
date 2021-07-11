@@ -141,7 +141,7 @@ class Structures extends Component
             ) {
                 // Merge in any missing ancestors
                 $ancestorQuery = $element->getAncestors()
-                    ->anyStatus();
+                    ->status(null);
 
                 if ($prevElement) {
                     $ancestorQuery->andWhere(['>', 'structureelements.lft', $prevElement->lft]);

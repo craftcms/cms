@@ -58,7 +58,7 @@ class PruneRevisions extends BaseJob
         $extraRevisions = $class::find()
             ->revisionOf($this->sourceId)
             ->siteId($this->siteId)
-            ->anyStatus()
+            ->status(null)
             ->orderBy(['num' => SORT_DESC])
             ->offset($this->maxRevisions)
             ->all();

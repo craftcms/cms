@@ -450,7 +450,7 @@ class User extends Element implements IdentityInterface
         $user = static::find()
             ->addSelect(['users.password'])
             ->id($id)
-            ->anyStatus()
+            ->status(null)
             ->one();
 
         if ($user === null) {
@@ -466,7 +466,7 @@ class User extends Element implements IdentityInterface
         if ($previousUserId = Session::get(self::IMPERSONATE_KEY)) {
             $previousUser = static::find()
                 ->id($previousUserId)
-                ->anyStatus()
+                ->status(null)
                 ->one();
 
             if ($previousUser && $previousUser->can('impersonateUsers')) {
@@ -810,7 +810,7 @@ class User extends Element implements IdentityInterface
     public function validateUnverifiedEmail(string $attribute, $params, InlineValidator $validator)
     {
         $query = self::find()
-            ->anyStatus();
+            ->status(null);
 
         if (Craft::$app->getDb()->getIsMysql()) {
             $query->where([
@@ -1631,7 +1631,7 @@ class User extends Element implements IdentityInterface
                     ->siteId('*')
                     ->unique()
                     ->authorId($this->id)
-                    ->anyStatus();
+                    ->status(null);
 
                 foreach (Db::each($entryQuery) as $entry) {
                     $elementsService->deleteElement($entry);

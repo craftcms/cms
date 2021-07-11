@@ -536,7 +536,7 @@ class Elements extends Component
         $query = $this->createElementQuery($elementType);
         $query->$property = $elementId;
         $query->siteId = $siteId;
-        $query->anyStatus();
+        $query->status(null);
 
         // Is this a draft/revision?
         if (!empty($data['draftId'])) {
@@ -810,7 +810,7 @@ class Elements extends Component
                 ->provisionalDrafts(null)
                 ->id($element->id)
                 ->siteId(ArrayHelper::withoutValue($supportedSiteIds, $element->id))
-                ->anyStatus()
+                ->status(null)
                 ->all();
 
             foreach ($siteElements as $siteElement) {
@@ -1218,7 +1218,7 @@ class Elements extends Component
                     $siteQuery = $this->createElementQuery(get_class($element))
                         ->id($element->id ?: false)
                         ->siteId($siteInfo['siteId'])
-                        ->anyStatus();
+                        ->status(null);
 
                     if ($element->getIsDraft()) {
                         $siteQuery
@@ -1402,7 +1402,7 @@ class Elements extends Component
         $query = $this->createElementQuery(get_class($element))
             ->descendantOf($element)
             ->descendantDist(1)
-            ->anyStatus()
+            ->status(null)
             ->siteId($element->siteId);
 
         if ($queue) {
@@ -1752,7 +1752,7 @@ class Elements extends Component
                         $siteElement = $this->createElementQuery($class)
                             ->id($element->id)
                             ->siteId($siteId)
-                            ->anyStatus()
+                            ->status(null)
                             ->trashed(null)
                             ->one();
                         if ($siteElement) {
@@ -1982,7 +1982,7 @@ class Elements extends Component
                     $refNames = array_keys($tokensByName);
                     $elementQuery = $this->createElementQuery($elementType)
                         ->siteId($siteId)
-                        ->anyStatus();
+                        ->status(null);
 
                     if ($refType === 'id') {
                         $elementQuery->id($refNames);

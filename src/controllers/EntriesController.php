@@ -126,7 +126,7 @@ class EntriesController extends BaseEntriesController
             // Prevent the current entry, or any of its descendants, from being options
             $excludeIds = Entry::find()
                 ->descendantOf($entry)
-                ->anyStatus()
+                ->status(null)
                 ->ids();
             $excludeIds[] = $entry->getCanonicalId();
 
@@ -143,7 +143,7 @@ class EntriesController extends BaseEntriesController
                     $maxDepth = Entry::find()
                         ->select('level')
                         ->descendantOf($entry)
-                        ->anyStatus()
+                        ->status(null)
                         ->leaves()
                         ->scalar();
                     $depth = 1 + ($maxDepth ?: $entry->level) - $entry->level;
@@ -163,7 +163,7 @@ class EntriesController extends BaseEntriesController
                     $parentId = $entry->newParentId;
                 } else {
                     $parentId = $entry->getAncestors(1)
-                        ->anyStatus()
+                        ->status(null)
                         ->ids();
                 }
             }
@@ -465,7 +465,7 @@ class EntriesController extends BaseEntriesController
             ->siteId(['not', $siteId])
             ->preferSites($editableSiteIds)
             ->unique()
-            ->anyStatus();
+            ->status(null);
 
         if ($draftId) {
             $query
@@ -635,7 +635,7 @@ class EntriesController extends BaseEntriesController
                         ->siteId($siteIds)
                         ->preferSites([$site->id])
                         ->unique()
-                        ->anyStatus()
+                        ->status(null)
                         ->one();
                     if ($sourceEntry) {
                         return $this->redirect($sourceEntry->getCpEditUrl(), 301);
@@ -706,14 +706,14 @@ class EntriesController extends BaseEntriesController
                 ->draftId($draftId)
                 ->structureId($section->structureId)
                 ->siteId($site->id)
-                ->anyStatus()
+                ->status(null)
                 ->one();
         } else if ($revisionId) {
             $entry = Entry::find()
                 ->revisionId($revisionId)
                 ->structureId($section->structureId)
                 ->siteId($site->id)
-                ->anyStatus()
+                ->status(null)
                 ->one();
         } else {
             // First check if there's a provisional draft
@@ -722,7 +722,7 @@ class EntriesController extends BaseEntriesController
                 ->draftOf($entryId)
                 ->draftCreator(Craft::$app->getUser()->getIdentity())
                 ->siteId($site->id)
-                ->anyStatus()
+                ->status(null)
                 ->one();
 
             if ($entry) {
@@ -736,7 +736,7 @@ class EntriesController extends BaseEntriesController
                     ->id($entryId)
                     ->structureId($section->structureId)
                     ->siteId($site->id)
-                    ->anyStatus()
+                    ->status(null)
                     ->one();
             }
         }
@@ -751,13 +751,13 @@ class EntriesController extends BaseEntriesController
                 $entry = Entry::find()
                     ->draftId($draftId)
                     ->siteId($site->id)
-                    ->anyStatus()
+                    ->status(null)
                     ->one();
             } else if ($revisionId) {
                 $entry = Entry::find()
                     ->revisionId($revisionId)
                     ->siteId($site->id)
-                    ->anyStatus()
+                    ->status(null)
                     ->one();
             }
 
@@ -766,7 +766,7 @@ class EntriesController extends BaseEntriesController
                 $sourceEntry = Entry::find()
                     ->id($entryId)
                     ->siteId($site->id)
-                    ->anyStatus()
+                    ->status(null)
                     ->one();
                 if ($sourceEntry) {
                     // Insert the draft/revision alongside the source entry

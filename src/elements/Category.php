@@ -617,7 +617,7 @@ class Category extends Element
         if ($this->structureId) {
             // Remember the parent ID, in case the entry needs to be restored later
             $parentId = $this->getAncestors(1)
-                ->anyStatus()
+                ->status(null)
                 ->select(['elements.id'])
                 ->scalar();
             if ($parentId) {
@@ -669,7 +669,7 @@ class Category extends Element
             $newRelationValues = [];
 
             $ancestorIds = $this->getAncestors()
-                ->anyStatus()
+                ->status(null)
                 ->ids();
 
             $sources = (new Query())
@@ -758,7 +758,7 @@ class Category extends Element
         $oldParentQuery->ancestorOf($this);
         $oldParentQuery->ancestorDist(1);
         $oldParentQuery->siteId($this->siteId);
-        $oldParentQuery->anyStatus();
+        $oldParentQuery->status(null);
         $oldParentQuery->select('elements.id');
         $oldParentId = $oldParentQuery->scalar();
 

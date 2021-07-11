@@ -53,7 +53,7 @@ class Entry extends ElementMutationResolver
 
         return Craft::$app->getElements()->createElementQuery(EntryElement::class)
             ->siteId($entry->siteId)
-            ->anyStatus()
+            ->status(null)
             ->id($entry->id)
             ->one();
     }
@@ -128,7 +128,7 @@ class Entry extends ElementMutationResolver
      */
     public function publishDraft($source, array $arguments, $context, ResolveInfo $resolveInfo)
     {
-        $draft = Craft::$app->getElements()->createElementQuery(EntryElement::class)->anyStatus()->draftId($arguments['id'])->one();
+        $draft = Craft::$app->getElements()->createElementQuery(EntryElement::class)->status(null)->draftId($arguments['id'])->one();
 
         if (!$draft) {
             throw new Error('Unable to perform the action.');
@@ -138,7 +138,7 @@ class Entry extends ElementMutationResolver
         $this->requireSchemaAction('entrytypes.' . $entryTypeUid, 'save');
 
         /** @var Entry $draft */
-        $draft = Craft::$app->getDrafts()->publishDraft($draft);
+        $draft = Craft::$app->getDrafts()->applyDraft($draft);
 
         return $draft->id;
     }
@@ -170,7 +170,7 @@ class Entry extends ElementMutationResolver
         if ($canIdentify) {
             // Prepare the element query
             $siteId = $arguments['siteId'] ?? Craft::$app->getSites()->getPrimarySite()->id;
-            $entryQuery = $elementService->createElementQuery(EntryElement::class)->anyStatus()->siteId($siteId);
+            $entryQuery = $elementService->createElementQuery(EntryElement::class)->status(null)->siteId($siteId);
             $entryQuery = $this->identifyEntry($entryQuery, $arguments);
 
             $entry = $entryQuery->one();

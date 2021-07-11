@@ -686,7 +686,7 @@ class Matrix extends Component
             $saveAll = false;
         } else {
             $blocksQuery = clone $query;
-            $blocks = $blocksQuery->anyStatus()->all();
+            $blocks = $blocksQuery->status(null)->all();
             $saveAll = true;
         }
         $blockIds = [];
@@ -748,14 +748,14 @@ class Matrix extends Component
                         ->revisions($owner->getIsRevision())
                         ->id($owner->id)
                         ->siteId($otherSiteIds)
-                        ->anyStatus()
+                        ->status(null)
                         ->all();
 
                     // Duplicate Matrix blocks, ensuring we don't process the same blocks more than once
                     $handledSiteIds = [];
 
                     $cachedQuery = clone $query;
-                    $cachedQuery->anyStatus();
+                    $cachedQuery->status(null);
                     $cachedQuery->setCachedResult($blocks);
                     $owner->setFieldValue($field->handle, $cachedQuery);
 
@@ -778,7 +778,7 @@ class Matrix extends Component
                                 ->revisions($owner->getIsRevision())
                                 ->id($owner->id)
                                 ->siteId($sharedPreexistingOtherSiteIds)
-                                ->anyStatus()
+                                ->status(null)
                                 ->one()
                         ) {
                             // Just resave Matrix blocks for that one site, and let them propagate over to the new site(s) from there
@@ -829,7 +829,7 @@ class Matrix extends Component
         /** @var MatrixBlock[] $blocks */
         if (($blocks = $query->getCachedResult()) === null) {
             $blocksQuery = clone $query;
-            $blocks = $blocksQuery->anyStatus()->all();
+            $blocks = $blocksQuery->status(null)->all();
         }
         $newBlockIds = [];
 
@@ -880,7 +880,7 @@ class Matrix extends Component
                     ->revisions($source->getIsRevision())
                     ->id($source->id)
                     ->siteId($otherSiteIds)
-                    ->anyStatus()
+                    ->status(null)
                     ->all();
                 $otherTargets = $target::find()
                     ->drafts($target->getIsDraft())
@@ -888,7 +888,7 @@ class Matrix extends Component
                     ->revisions($target->getIsRevision())
                     ->id($target->id)
                     ->siteId($otherSiteIds)
-                    ->anyStatus()
+                    ->status(null)
                     ->indexBy('siteId')
                     ->all();
 
@@ -930,7 +930,7 @@ class Matrix extends Component
         $canonicalOwners = $owner::find()
             ->id($owner->getCanonicalId())
             ->siteId('*')
-            ->anyStatus()
+            ->status(null)
             ->ignorePlaceholders()
             ->all();
 
@@ -1134,7 +1134,7 @@ class Matrix extends Component
     private function _deleteOtherBlocks(MatrixField $field, ElementInterface $owner, array $except)
     {
         $deleteBlocks = MatrixBlock::find()
-            ->anyStatus()
+            ->status(null)
             ->ownerId($owner->id)
             ->fieldId($field->id)
             ->siteId($owner->siteId)

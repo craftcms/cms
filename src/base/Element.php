@@ -2134,7 +2134,7 @@ abstract class Element extends Component implements ElementInterface
                     ->preferSites([$this->siteId])
                     ->structureId($this->structureId)
                     ->unique()
-                    ->anyStatus()
+                    ->status(null)
                     ->ignorePlaceholders()
                     ->one() ?? false;
         }
@@ -2159,7 +2159,7 @@ abstract class Element extends Component implements ElementInterface
      */
     public function getCanonicalId(): ?int
     {
-        return $this->getSourceId();
+        return $this->_canonicalId ?? $this->id;
     }
 
     /**
@@ -2185,7 +2185,8 @@ abstract class Element extends Component implements ElementInterface
      */
     public function getSourceId()
     {
-        return $this->_canonicalId ?? $this->id;
+        Craft::$app->getDeprecator()->log(__METHOD__, 'Elements’ `getSourceId()` method has been deprecated. Use `getCanonicalId()` instead.');
+        return $this->getCanonicalId();
     }
 
     /**
@@ -2197,15 +2198,8 @@ abstract class Element extends Component implements ElementInterface
      */
     public function getSourceUid(): string
     {
-        if ($this->getIsCanonical()) {
-            return $this->uid;
-        }
-        return static::find()
-            ->id($this->_canonicalId)
-            ->siteId($this->siteId)
-            ->anyStatus()
-            ->select(['elements.uid'])
-            ->scalar();
+        Craft::$app->getDeprecator()->log(__METHOD__, 'Elements’ `getSourceUid()` method has been deprecated. Use `getCanonical(true)->uid` instead.');
+        return $this->getCanonical(true)->uid;
     }
 
     /**
@@ -2709,7 +2703,7 @@ abstract class Element extends Component implements ElementInterface
                 $this->_parent = reset($ancestors);
             } else {
                 $this->_parent = $ancestors
-                        ->anyStatus()
+                        ->status(null)
                         ->one()
                     ?? false;
             }
@@ -2823,7 +2817,7 @@ abstract class Element extends Component implements ElementInterface
             $query->structureId = $this->structureId;
             $query->prevSiblingOf = $this;
             $query->siteId = $this->siteId;
-            $query->anyStatus();
+            $query->status(null);
             $this->_prevSibling = $query->one();
 
             if ($this->_prevSibling === null) {
@@ -2845,7 +2839,7 @@ abstract class Element extends Component implements ElementInterface
             $query->structureId = $this->structureId;
             $query->nextSiblingOf = $this;
             $query->siteId = $this->siteId;
-            $query->anyStatus();
+            $query->status(null);
             $this->_nextSibling = $query->one();
 
             if ($this->_nextSibling === null) {
@@ -3512,7 +3506,7 @@ abstract class Element extends Component implements ElementInterface
             $this->_currentRevision = static::find()
                 ->revisionOf($canonical->id)
                 ->dateCreated($canonical->dateUpdated)
-                ->anyStatus()
+                ->status(null)
                 ->orderBy(['num' => SORT_DESC])
                 ->one() ?: false;
         }

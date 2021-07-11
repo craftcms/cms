@@ -701,7 +701,7 @@ class UsersController extends Controller
                 $user = User::find()
                     ->addSelect(['users.password', 'users.passwordResetRequired'])
                     ->id($userId === 'current' ? $userSession->getId() : $userId)
-                    ->anyStatus()
+                    ->status(null)
                     ->one();
             } else if ($edition === Craft::Pro) {
                 // Registering a new user
@@ -1059,7 +1059,7 @@ class UsersController extends Controller
         if ($userId) {
             $user = User::find()
                 ->id($userId)
-                ->anyStatus()
+                ->status(null)
                 ->addSelect(['users.password', 'users.passwordResetRequired'])
                 ->one();
 
@@ -1481,7 +1481,7 @@ class UsersController extends Controller
 
         $user = User::find()
             ->id($userId)
-            ->anyStatus()
+            ->status(null)
             ->addSelect(['users.password'])
             ->one();
 
@@ -1606,7 +1606,7 @@ class UsersController extends Controller
                 ->authorId($userIds)
                 ->siteId('*')
                 ->unique()
-                ->anyStatus()
+                ->status(null)
                 ->count();
 
             if ($entryCount) {
@@ -2091,7 +2091,7 @@ class UsersController extends Controller
         /** @var User|null $user */
         $user = User::find()
             ->uid($uid)
-            ->anyStatus()
+            ->status(null)
             ->addSelect(['users.password'])
             ->one();
 

@@ -1234,7 +1234,11 @@ class ElementQuery extends Query implements ElementQueryInterface
     }
 
     /**
-     * @inheritdoc
+     * Sets the [[status()|status]] param to `null`.
+     *
+     * @return static self reference
+     * @since 3.0.17
+     * @deprecated in 4.0.0. `status(null)` should be used instead.
      */
     public function anyStatus()
     {
@@ -2465,7 +2469,7 @@ class ElementQuery extends Query implements ElementQueryInterface
                 ->id($this->$property)
                 ->siteId($this->siteId)
                 ->structureId($this->structureId)
-                ->anyStatus()
+                ->status(null)
                 ->one();
 
             if ($this->$property === null) {

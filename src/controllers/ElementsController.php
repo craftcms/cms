@@ -216,7 +216,7 @@ class ElementsController extends BaseElementsController
             $categories = Category::find()
                 ->id($categoryIds)
                 ->siteId($this->request->getParam('siteId'))
-                ->anyStatus()
+                ->status(null)
                 ->all();
 
             // Fill in the gaps

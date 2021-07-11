@@ -175,7 +175,7 @@ class Users extends Component
     {
         $query = User::find()
             ->addSelect(['users.password', 'users.passwordResetRequired'])
-            ->anyStatus();
+            ->status(null);
 
         if (Craft::$app->getDb()->getIsMysql()) {
             $query
@@ -213,7 +213,7 @@ class Users extends Component
     {
         return User::find()
             ->uid($uid)
-            ->anyStatus()
+            ->status(null)
             ->one();
     }
 

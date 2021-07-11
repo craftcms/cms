@@ -657,7 +657,7 @@ class Volumes extends Component
 
             // Delete the assets
             $assets = Asset::find()
-                ->anyStatus()
+                ->status(null)
                 ->volumeId($volumeRecord->id)
                 ->all();
             $elementsService = Craft::$app->getElements();

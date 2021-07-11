@@ -82,7 +82,7 @@ class MyDrafts extends Widget
     {
         $drafts = Entry::find()
             ->drafts()
-            ->anyStatus()
+            ->status(null)
             ->draftCreator(Craft::$app->getUser()->getId())
             ->site('*')
             ->unique()

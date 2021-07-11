@@ -667,7 +667,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
         }
 
         if ($value instanceof MatrixBlockQuery) {
-            $value = $value->getCachedResult() ?? $value->limit(null)->anyStatus()->all();
+            $value = $value->getCachedResult() ?? $value->limit(null)->status(null)->all();
         }
 
         $view = Craft::$app->getView();
@@ -1056,7 +1056,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
         // Delete any Matrix blocks that belong to this element(s)
         foreach (Craft::$app->getSites()->getAllSiteIds() as $siteId) {
             $matrixBlocksQuery = MatrixBlock::find();
-            $matrixBlocksQuery->anyStatus();
+            $matrixBlocksQuery->status(null);
             $matrixBlocksQuery->siteId($siteId);
             $matrixBlocksQuery->ownerId($element->id);
 
@@ -1082,7 +1082,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
         $elementsService = Craft::$app->getElements();
         foreach (ElementHelper::supportedSitesForElement($element) as $siteInfo) {
             $blocks = MatrixBlock::find()
-                ->anyStatus()
+                ->status(null)
                 ->siteId($siteInfo['siteId'])
                 ->ownerId($element->id)
                 ->trashed()
@@ -1206,7 +1206,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
                 ->fieldId($this->id)
                 ->ownerId($element->id)
                 ->siteId($element->siteId)
-                ->anyStatus()
+                ->status(null)
                 ->indexBy('id')
                 ->all();
         } else {

@@ -246,7 +246,7 @@ class EntryRevisionsController extends BaseEntriesController
                     ->draftId($draftId)
                     ->provisionalDrafts($provisional)
                     ->siteId($siteId)
-                    ->anyStatus()
+                    ->status(null)
                     ->one();
                 if (!$draft) {
                     throw new NotFoundHttpException('Entry draft not found');
@@ -257,7 +257,7 @@ class EntryRevisionsController extends BaseEntriesController
                 $entry = Entry::find()
                     ->id($entryId)
                     ->siteId($siteId)
-                    ->anyStatus()
+                    ->status(null)
                     ->one();
                 if (!$entry) {
                     throw new NotFoundHttpException('Entry not found');
@@ -353,7 +353,7 @@ class EntryRevisionsController extends BaseEntriesController
             ->draftId($draftId)
             ->provisionalDrafts($provisional)
             ->siteId('*')
-            ->anyStatus()
+            ->status(null)
             ->one();
 
         if (!$draft) {
@@ -410,7 +410,7 @@ class EntryRevisionsController extends BaseEntriesController
             ->provisionalDrafts($provisional)
             ->siteId($siteId)
             ->structureId($structureId)
-            ->anyStatus()
+            ->status(null)
             ->one();
 
         if (!$draft) {
@@ -472,8 +472,8 @@ class EntryRevisionsController extends BaseEntriesController
                 throw new InvalidElementException($draft);
             }
 
-            // Publish the draft (finally!)
-            $newEntry = Craft::$app->getDrafts()->publishDraft($draft);
+            // Apply the draft (finally!)
+            $newEntry = Craft::$app->getDrafts()->applyDraft($draft);
         } catch (InvalidElementException $e) {
             if ($draft->getIsUnpublishedDraft()) {
                 $this->setFailFlash(Craft::t('app', 'Couldn’t create entry.'));
@@ -524,7 +524,7 @@ class EntryRevisionsController extends BaseEntriesController
             ->revisionId($revisionId)
             ->siteId('*')
             ->unique()
-            ->anyStatus()
+            ->status(null)
             ->one();
 
         if (!$revision) {

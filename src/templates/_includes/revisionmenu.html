@@ -9,7 +9,7 @@
 {% set drafts = element.id and canHaveDrafts ? element.find()
     .draftOf(element)
     .siteId(element.siteId)
-    .anyStatus()
+    .status(null)
     .orderBy({dateUpdated: SORT_DESC})
     .with(['draftCreator'])
     .all() : [] %}
@@ -19,7 +19,7 @@
     {% set revisions = element.find()
         .revisionOf(element.getCanonicalId())
         .siteId(element.siteId)
-        .anyStatus()
+        .status(null)
         .offset(1)
         .limit(maxRevisions ? min(maxRevisions - 1, 10) : 10)
         .orderBy({dateCreated: SORT_DESC})
