@@ -14,12 +14,14 @@ import StatusMessage from './js/components/StatusMessage'
 import App from './App'
 import './js/plugins/vue-awesome-swiper'
 
+import Btn from './js/components/ui/Btn'
 Vue.filter('currency', currency)
 Vue.filter('escapeHtml', escapeHtml)
 Vue.filter('formatDate', formatDate)
 Vue.filter('formatNumber', formatNumber)
 Vue.filter('t', t)
 
+Vue.component('btn', Btn)
 Garnish.$doc.ready(function() {
     Craft.initUiElements()
 
