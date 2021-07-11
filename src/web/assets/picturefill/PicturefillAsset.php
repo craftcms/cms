@@ -17,14 +17,12 @@ class PicturefillAsset extends AssetBundle
     /**
      * @inheritdoc
      */
-    public function init()
-    {
-        $this->sourcePath = '@lib/picturefill';
+    public $sourcePath = __DIR__ . '/dist';
 
-        $this->js = [
-            'picturefill.js',
-        ];
-
-        parent::init();
-    }
+    /**
+     * @inheritdoc
+     */
+    public $js = [
+        'picturefill.js',
+    ];
 }

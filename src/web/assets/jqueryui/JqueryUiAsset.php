@@ -18,7 +18,7 @@ class JqueryUiAsset extends AssetBundle
     /**
      * @inheritdoc
      */
-    public $sourcePath = '@lib/jquery-ui';
+    public $sourcePath = __DIR__ . '/dist';
 
     /**
      * @inheritdoc
@@ -31,6 +31,6 @@ class JqueryUiAsset extends AssetBundle
      * @inheritdoc
      */
     public $js = [
-        'jquery-ui.js',
+        'jquery-ui.min.js',
     ];
 }

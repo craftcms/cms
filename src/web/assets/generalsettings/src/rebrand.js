@@ -1,3 +1,5 @@
+import '../../generalsettings/src/rebrand.scss';
+
 (function($) {
     /** global: Craft */
     /** global: Garnish */

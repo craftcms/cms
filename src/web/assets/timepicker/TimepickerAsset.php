@@ -18,18 +18,19 @@ class TimepickerAsset extends AssetBundle
     /**
      * @inheritdoc
      */
-    public function init()
-    {
-        $this->sourcePath = '@lib/timepicker';
+    public $sourcePath = __DIR__ . '/dist';
 
-        $this->depends = [
-            JqueryAsset::class,
-        ];
+    /**
+     * @inheritdoc
+     */
+    public $js = [
+        'jquery.timepicker.js',
+    ];
 
-        $this->js = [
-            'jquery.timepicker.js',
-        ];
-
-        parent::init();
-    }
+    /**
+     * @inheritdoc
+     */
+    public $depends = [
+        JqueryAsset::class,
+    ];
 }

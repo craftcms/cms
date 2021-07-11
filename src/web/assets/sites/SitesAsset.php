@@ -33,6 +33,6 @@ class SitesAsset extends AssetBundle
      * @inheritdoc
      */
     public $js = [
-        'sites.min.js',
+        'SitesAdmin.min.js',
     ];
 }

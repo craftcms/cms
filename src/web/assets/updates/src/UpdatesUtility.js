@@ -1,3 +1,5 @@
+import '../../updates/src/UpdatesUtility.scss';
+
 (function($) {
     /** global: Craft */
     /** global: Garnish */

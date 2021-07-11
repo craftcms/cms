@@ -1,3 +1,5 @@
+import '../../dashboard/src/dashboard.scss';
+
 (function($) {
     /** global: Craft */
     /** global: Garnish */

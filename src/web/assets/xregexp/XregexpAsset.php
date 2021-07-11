@@ -17,14 +17,12 @@ class XregexpAsset extends AssetBundle
     /**
      * @inheritdoc
      */
-    public function init()
-    {
-        $this->sourcePath = '@lib/xregexp';
+    public $sourcePath = __DIR__ . '/dist';
 
-        $this->js = [
-            'xregexp-all.js',
-        ];
-
-        parent::init();
-    }
+    /**
+     * @inheritdoc
+     */
+    public $js = [
+        'xregexp-all.js',
+    ];
 }

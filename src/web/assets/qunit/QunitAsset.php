@@ -17,18 +17,19 @@ class QunitAsset extends AssetBundle
     /**
      * @inheritdoc
      */
-    public function init()
-    {
-        $this->sourcePath = '@lib/qunit';
+    public $sourcePath = __DIR__ . '/dist';
 
-        $this->css = [
-            'qunit-2.1.1.css',
-        ];
+    /**
+     * @inheritdoc
+     */
+    public $js = [
+        'qunit.js',
+    ];
 
-        $this->js = [
-            'qunit-2.1.1.js',
-        ];
-
-        parent::init();
-    }
+    /**
+     * @inheritdoc
+     */
+    public $css = [
+        'css/qunit.css',
+    ];
 }

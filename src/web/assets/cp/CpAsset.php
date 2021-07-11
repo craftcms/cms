@@ -32,7 +32,9 @@ use craft\web\assets\jquerytouchevents\JqueryTouchEventsAsset;
 use craft\web\assets\jqueryui\JqueryUiAsset;
 use craft\web\assets\picturefill\PicturefillAsset;
 use craft\web\assets\selectize\SelectizeAsset;
+use craft\web\assets\tailwindcss\TailwindCssAsset;
 use craft\web\assets\velocity\VelocityAsset;
+use craft\web\assets\vue\VueAsset;
 use craft\web\assets\xregexp\XregexpAsset;
 use craft\web\View;
 use yii\web\JqueryAsset;
@@ -67,6 +69,8 @@ class CpAsset extends AssetBundle
         XregexpAsset::class,
         FabricAsset::class,
         IframeResizerAsset::class,
+        VueAsset::class,
+        TailwindCssAsset::class,
     ];
 
     /**

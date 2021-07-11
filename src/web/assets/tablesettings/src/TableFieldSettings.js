@@ -182,7 +182,7 @@
                     role: 'button',
                     'data-icon': 'settings'
                 });
-                $('<div/>', {'class': 'flex flex-nowrap'})
+                $('<div/>', {'class': 'flex flex-no-wrap'})
                     .appendTo($typeCell)
                     .append($typeSelectContainer)
                     .append(this.$settingsBtn);

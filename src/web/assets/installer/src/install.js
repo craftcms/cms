@@ -1,3 +1,5 @@
+import '../../installer/src/css/install.scss';
+
 (function($) {
     /** global: Craft */
     /** global: Garnish */

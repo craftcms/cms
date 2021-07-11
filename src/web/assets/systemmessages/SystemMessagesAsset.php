@@ -32,14 +32,14 @@ class SystemMessagesAsset extends AssetBundle
      * @inheritdoc
      */
     public $css = [
-        'system_messages.css',
+        'css/SystemMessages.css',
     ];
 
     /**
      * @inheritdoc
      */
     public $js = [
-        'system_messages.min.js',
+        'SystemMessages.min.js',
     ];
 
     /**
