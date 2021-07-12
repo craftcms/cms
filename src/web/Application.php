@@ -270,18 +270,13 @@ class Application extends \yii\web\Application
     {
         $result = parent::runAction($route, $params);
 
-        if ($result !== null) {
-            if ($result instanceof Response) {
-                return $result;
-            }
-
-            $response = $this->getResponse();
-            $response->data = $result;
-
-            return $response;
+        if ($result === null || $result instanceof Response) {
+            return $result;
         }
 
-        return null;
+        $response = $this->getResponse();
+        $response->data = $result;
+        return $response;
     }
 
     /**
