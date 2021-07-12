@@ -29,7 +29,7 @@ class PluginStoreAsset extends AssetBundle
     /**
      * @var array
      */
-    private $files;
+    private $files = [];
 
     /**
      * @var bool
@@ -148,10 +148,10 @@ class PluginStoreAsset extends AssetBundle
      * @param array $config
      * @param string $type
      *
-     * @return null|array
+     * @return array|null
      * @throws \yii\base\Exception
      */
-    private function getManifestFile($config, $type = 'modern')
+    private function getManifestFile($config, $type = 'modern'): ?array
     {
         $pluginStoreService = Craft::$app->getPluginStore();
         $useDevServer = $pluginStoreService->useDevServer;
@@ -165,7 +165,20 @@ class PluginStoreAsset extends AssetBundle
                 : $config['server']['manifestPath'];
 
             $path = $this->combinePaths($manifestPath, $config['manifest'][$type]);
-            $manifest = $this->getJsonFile($path);
+
+            // Resolve any aliases
+            $path = Craft::getAlias($path, false) ?: $path;
+
+            // Make sure it's a full URL
+            if (!UrlHelper::isAbsoluteUrl($path) && !is_file($path)) {
+                try {
+                    $path = UrlHelper::siteUrl($path);
+                } catch (\Throwable $e) {
+                    Craft::error($e->getMessage(), __METHOD__);
+                }
+            }
+
+            $manifest = $this->getFileContents($path);
 
             // If the manifest isn't found, and it was hot, fall back on non-hot
             if ($manifest === null) {
@@ -183,121 +196,63 @@ class PluginStoreAsset extends AssetBundle
     }
 
     /**
-     * Return the contents of a JSON file from a URI path
-     *
-     * @param string $path
-     *
-     * @return null|array
-     * @throws \yii\base\Exception
-     */
-    private function getJsonFile(string $path)
-    {
-        return $this->getFileFromUri($path, [$this, 'jsonFileDecode']);
-    }
-
-    /**
-     * Return the contents of a file from a URI path
-     *
-     * @param string $path
-     * @param callable|null $callback
-     * @param bool $pathOnly
-     *
-     * @return null|mixed
-     * @throws \yii\base\Exception
-     */
-    private function getFileFromUri(string $path, callable $callback = null, bool $pathOnly = false)
-    {
-        // Resolve any aliases
-        $alias = Craft::getAlias($path, false);
-        if ($alias) {
-            $path = $alias;
-        }
-        // If we only want the file via path, make sure it exists
-        if ($pathOnly && !is_file($path)) {
-            Craft::warning(Craft::t(
-                'app',
-                'File does not exist: {path}',
-                ['path' => $path]
-            ), __METHOD__);
-
-            return '';
-        }
-        // Make sure it's a full URL
-        if (!UrlHelper::isAbsoluteUrl($path) && !is_file($path)) {
-            try {
-                $path = UrlHelper::siteUrl($path);
-            } catch (\Throwable $e) {
-                Craft::error($e->getMessage(), __METHOD__);
-            }
-        }
-
-        return $this->getFileContents($path, $callback);
-    }
-
-    /**
      * Return the contents of a file from the passed in path
      *
      * @param string $path
-     * @param callable $callback
-     *
-     * @return null|mixed
+     * @return array|null
      */
-    private function getFileContents(string $path, callable $callback = null)
+    private function getFileContents(string $path): ?array
     {
         // Return the memoized manifest if it exists
-        if (!empty($this->files[$path])) {
-            return $this->files[$path];
-        }
-        // Create the dependency tags
-        $dependency = new TagDependency([
-            'tags' => [
-                self::CACHE_TAG,
-                self::CACHE_TAG . $path,
-            ],
-        ]);
-        // Set the cache duration based on devMode
-        $cacheDuration = YII_DEBUG ? self::DEVMODE_CACHE_DURATION : null;
-        // Get the result from the cache, or parse the file
-        $cache = Craft::$app->getCache();
-        $file = $cache->getOrSet(
-            self::CACHE_KEY . $path,
-            function() use ($path, $callback) {
-                $result = null;
-                if (UrlHelper::isAbsoluteUrl($path)) {
-                    /**
-                     * Silly work-around for what appears to be a file_get_contents bug with https
-                     * http://stackoverflow.com/questions/10524748/why-im-getting-500-error-when-using-file-get-contents-but-works-in-a-browser
-                     */
-                    $opts = [
-                        'ssl' => [
-                            'verify_peer' => false,
-                            'verify_peer_name' => false,
-                        ],
-                        'http' => [
-                            'ignore_errors' => true,
-                            'header' => "User-Agent:Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.8.1.13) Gecko/20080311 Firefox/2.0.0.13\r\n",
-                        ],
-                    ];
-                    $context = stream_context_create($opts);
-                    $contents = @file_get_contents($path, false, $context);
-                } else {
-                    $contents = @file_get_contents($path);
-                }
-                if ($contents) {
-                    $result = $contents;
-                    if ($callback) {
-                        $result = $callback($result);
+        if (!array_key_exists($path, $this->files)) {
+            // Create the dependency tags
+            $dependency = new TagDependency([
+                'tags' => [
+                    self::CACHE_TAG,
+                    self::CACHE_TAG . $path,
+                ],
+            ]);
+
+            // Set the cache duration based on devMode
+            $cacheDuration = YII_DEBUG ? self::DEVMODE_CACHE_DURATION : null;
+
+            // Get the result from the cache, or parse the file
+            $this->files[$path] = Craft::$app->getCache()->getOrSet(
+                self::CACHE_KEY . $path,
+                function() use ($path): ?array {
+                    if (UrlHelper::isAbsoluteUrl($path)) {
+                        /**
+                         * Silly work-around for what appears to be a file_get_contents bug with https
+                         * http://stackoverflow.com/questions/10524748/why-im-getting-500-error-when-using-file-get-contents-but-works-in-a-browser
+                         */
+                        $opts = [
+                            'ssl' => [
+                                'verify_peer' => false,
+                                'verify_peer_name' => false,
+                            ],
+                            'http' => [
+                                'ignore_errors' => true,
+                                'header' => "User-Agent:Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.8.1.13) Gecko/20080311 Firefox/2.0.0.13\r\n",
+                            ],
+                        ];
+                        $context = stream_context_create($opts);
+                        $contents = @file_get_contents($path, false, $context);
+                    } else {
+                        $contents = @file_get_contents($path);
                     }
-                }
 
-                return $result;
-            },
-            $cacheDuration,
-            $dependency
-        );
-        $this->files[$path] = $file;
+                    if (!$contents) {
+                        return null;
+                    }
 
-        return $file;
+                    return Json::decode($contents);
+                },
+                $cacheDuration,
+                $dependency
+            );
+        }
+
+        return $this->files[$path];
     }
 
     /**
@@ -345,15 +300,5 @@ class PluginStoreAsset extends AssetBundle
             throw new NotFoundHttpException($error);
         }
         Craft::error($error, __METHOD__);
-    }
-
-    /**
-     * @param $string
-     *
-     * @return mixed
-     */
-    private function jsonFileDecode($string)
-    {
-        return Json::decodeIfJson($string);
     }
 }
