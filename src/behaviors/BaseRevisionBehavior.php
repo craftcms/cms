@@ -72,7 +72,7 @@ abstract class BaseRevisionBehavior extends Behavior
      * @return ElementInterface|null
      * @deprecated in 3.2.9. Use [[ElementInterface::getCanonical()]] instead.
      */
-    public function getSource()
+    public function getSource(): ?ElementInterface
     {
         Craft::$app->getDeprecator()->log(__METHOD__, 'Elements’ `getSource()` method has been deprecated. Use `getCanonical()` instead.');
         if ($this->owner->getIsCanonical()) {

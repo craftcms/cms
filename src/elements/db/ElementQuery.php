@@ -1544,7 +1544,7 @@ class ElementQuery extends Query implements ElementQueryInterface
      * @return ElementInterface[]|null $elements The resulting elements, or null if setCachedResult() was never called or the criteria has changed
      * @see setCachedResult()
      */
-    public function getCachedResult()
+    public function getCachedResult(): ?array
     {
         if ($this->_result === null) {
             return null;

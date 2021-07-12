@@ -2183,7 +2183,7 @@ abstract class Element extends Component implements ElementInterface
      * @since 3.2.0
      * @deprecated in 3.7.0. Use [[getCanonicalId()]] instead.
      */
-    public function getSourceId()
+    public function getSourceId(): ?int
     {
         Craft::$app->getDeprecator()->log(__METHOD__, 'Elements’ `getSourceId()` method has been deprecated. Use `getCanonicalId()` instead.');
         return $this->getCanonicalId();
@@ -4156,7 +4156,7 @@ abstract class Element extends Component implements ElementInterface
      * @param int $dir
      * @return ElementInterface|null
      */
-    private function _getRelativeElement($criteria, int $dir)
+    private function _getRelativeElement($criteria, int $dir): ?ElementInterface
     {
         if ($this->id === null) {
             return null;

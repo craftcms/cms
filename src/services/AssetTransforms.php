@@ -198,7 +198,7 @@ class AssetTransforms extends Component
      * @return AssetTransform|null
      * @since 3.1.0
      */
-    public function getTransformByUid(string $uid)
+    public function getTransformByUid(string $uid): ?AssetTransform
     {
         return $this->_transforms()->firstWhere('uid', $uid, true);
     }
@@ -828,7 +828,7 @@ class AssetTransforms extends Component
      * @return AssetTransform|null
      * @throws AssetTransformException if $transform is an invalid transform handle
      */
-    public function normalizeTransform($transform)
+    public function normalizeTransform($transform): ?AssetTransform
     {
         if (!$transform) {
             return null;

@@ -436,7 +436,7 @@ class FieldLayout extends Model
      * @return array|null
      * @since 3.1.0
      */
-    public function getConfig()
+    public function getConfig(): ?array
     {
         $tabConfigs = [];
 

@@ -1153,7 +1153,7 @@ class Entry extends Element
      * @return User|null
      * @throws InvalidConfigException if [[authorId]] is set but invalid
      */
-    public function getAuthor()
+    public function getAuthor(): ?User
     {
         if ($this->_author === null) {
             if ($this->authorId === null) {

@@ -458,7 +458,7 @@ class Request extends \yii\web\Request
      * @param int $num Which segment to return (1-indexed).
      * @return string|null The matching segment, or `null` if there wasn’t one.
      */
-    public function getSegment(int $num)
+    public function getSegment(int $num): ?string
     {
         $segments = $this->getSegments();
 
@@ -649,7 +649,7 @@ class Request extends \yii\web\Request
      *
      * @return array|null The action path segments, or `null` if this isn’t an action request.
      */
-    public function getActionSegments()
+    public function getActionSegments(): ?array
     {
         $this->checkIfActionRequest();
         return $this->_actionSegments;
@@ -718,7 +718,7 @@ class Request extends \yii\web\Request
      * @return string|null
      * @since 3.5.0
      */
-    public function getMimeType()
+    public function getMimeType(): ?string
     {
         if (($contentType = parent::getContentType()) === null) {
             return null;
@@ -1281,7 +1281,7 @@ class Request extends \yii\web\Request
      * @return string|null
      * @since 3.3.8
      */
-    public function getNormalizedContentType()
+    public function getNormalizedContentType(): ?string
     {
         $rawContentType = $this->getContentType();
         if (($pos = strpos($rawContentType, ';')) !== false) {
@@ -1746,7 +1746,7 @@ class Request extends \yii\web\Request
      * @param int $filterOptions
      * @return string|null
      */
-    private function _validateIp(string $ip, int $filterOptions)
+    private function _validateIp(string $ip, int $filterOptions): ?string
     {
         $ip = trim($ip);
         return filter_var($ip, FILTER_VALIDATE_IP, $filterOptions) !== false ? $ip : null;

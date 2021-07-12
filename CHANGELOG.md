@@ -71,6 +71,7 @@
 - Plugins’ `afterSaveSettings()` methods must now have a `void` return type declaration.
 - Plugins’ `createSettingsModel()` methods must now have a `?Model` return type declaration.
 - Plugins’ `getCpNavItem()` methods must now have an `?array` return type declaration.
+- Plugins’ `settingsHtml()` methods must now have a `?string` return type declaration.
 - Queue jobs’ `defaultDescription()` methods must now have a `?string` return type declaration.
 - Utilities’ `iconPath()` methods must now have a `?string` return type declaration.
 - Volumes’ `getRootUrl()` methods must now have a `?string` return type declaration, and `null` should be returned rather than `false` if the volume doesn’t have a root URL.

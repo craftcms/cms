@@ -44,7 +44,7 @@ class UserSettingsController extends Controller
      * @return Response|null
      * @throws BadRequestHttpException
      */
-    public function actionSaveGroup()
+    public function actionSaveGroup(): ?Response
     {
         $this->requirePostRequest();
 

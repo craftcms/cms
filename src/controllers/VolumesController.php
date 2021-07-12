@@ -159,7 +159,7 @@ class VolumesController extends Controller
      * @return Response|null
      * @throws BadRequestHttpException
      */
-    public function actionSaveVolume()
+    public function actionSaveVolume(): ?Response
     {
         $this->requirePostRequest();
 

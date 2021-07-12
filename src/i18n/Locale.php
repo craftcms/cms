@@ -303,7 +303,7 @@ class Locale extends BaseObject
      *
      * @return string|null The locale’s script ID, if it has one.
      */
-    public function getScriptID()
+    public function getScriptID(): ?string
     {
         // Find sub tags
         if (strpos($this->id, '-') !== false) {
@@ -325,7 +325,7 @@ class Locale extends BaseObject
      *
      * @return string|null The locale’s territory ID, if it has one.
      */
-    public function getTerritoryID()
+    public function getTerritoryID(): ?string
     {
         // Find sub tags
         if (strpos($this->id, '-') !== false) {
@@ -712,7 +712,7 @@ class Locale extends BaseObject
      * @param int $attribute The attribute to return. Values: Locale::
      * @return string|null The attribute.
      */
-    public function getTextAttribute(int $attribute)
+    public function getTextAttribute(int $attribute): ?string
     {
         if (Craft::$app->getI18n()->getIsIntlLoaded()) {
             $formatter = new NumberFormatter($this->id, NumberFormatter::DECIMAL);
@@ -749,7 +749,7 @@ class Locale extends BaseObject
      * Accepted values: Locale::STYLE_DECIMAL, ::STYLE_CURRENCY, ::STYLE_PERCENT, ::STYLE_SCIENTIFIC
      * @return string|null The pattern
      */
-    public function getNumberPattern(int $style)
+    public function getNumberPattern(int $style): ?string
     {
         if (Craft::$app->getI18n()->getIsIntlLoaded()) {
             $formatter = new NumberFormatter($this->id, $style);
@@ -781,7 +781,7 @@ class Locale extends BaseObject
      * ::SYMBOL_INFINITY, ::SYMBOL_NAN, ::SYMBOL_SIGNIFICANT_DIGIT, ::SYMBOL_MONETARY_GROUPING_SEPARATOR
      * @return string|null The symbol.
      */
-    public function getNumberSymbol(int $symbol)
+    public function getNumberSymbol(int $symbol): ?string
     {
         if (Craft::$app->getI18n()->getIsIntlLoaded()) {
             $formatter = new NumberFormatter($this->id, NumberFormatter::DECIMAL);

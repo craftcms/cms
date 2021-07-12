@@ -1551,7 +1551,7 @@ class ProjectConfig extends Component
      * @param array|string $path Path used to traverse the array. Either an array or a dot.based.path
      * @param mixed $value Value to set at the destination. If null, will return the value, unless deleting
      * @param bool $delete Whether to delete the value at the destination or not.
-     * @return mixed|null
+     * @return mixed
      */
     private function _traverseDataArray(array &$data, $path, $value = null, $delete = false)
     {

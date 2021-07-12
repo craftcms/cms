@@ -123,7 +123,7 @@ class CategoriesController extends Controller
      * @return Response|null
      * @throws BadRequestHttpException
      */
-    public function actionSaveGroup()
+    public function actionSaveGroup(): ?Response
     {
         $this->requirePostRequest();
         $this->requireAdmin();
@@ -440,7 +440,7 @@ class CategoriesController extends Controller
      * @return Response|null
      * @throws ServerErrorHttpException
      */
-    public function actionSaveCategory()
+    public function actionSaveCategory(): ?Response
     {
         $this->requirePostRequest();
 
@@ -528,7 +528,7 @@ class CategoriesController extends Controller
      * @return Response|null
      * @throws NotFoundHttpException if the requested category cannot be found
      */
-    public function actionDeleteCategory()
+    public function actionDeleteCategory(): ?Response
     {
         $this->requirePostRequest();
 

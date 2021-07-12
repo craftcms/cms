@@ -225,7 +225,7 @@ class Sites extends Component
      * @param int $groupId The site group’s ID
      * @return SiteGroup|null The site group, or null if it doesn’t exist
      */
-    public function getGroupById(int $groupId)
+    public function getGroupById(int $groupId): ?SiteGroup
     {
         return $this->_groups()->firstWhere('id', $groupId);
     }
@@ -237,7 +237,7 @@ class Sites extends Component
      * @return SiteGroup|null The site group, or null if it doesn’t exist
      * @since 3.5.8
      */
-    public function getGroupByUid(string $uid)
+    public function getGroupByUid(string $uid): ?SiteGroup
     {
         return $this->_groups()->firstWhere('uid', $uid, true);
     }

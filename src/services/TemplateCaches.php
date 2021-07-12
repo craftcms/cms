@@ -45,7 +45,7 @@ class TemplateCaches extends Component
      * @return string|null
      * @throws Exception if this is a console request and `false` is passed to `$global`
      */
-    public function getTemplateCache(string $key, bool $global, bool $registerScripts = false)
+    public function getTemplateCache(string $key, bool $global, bool $registerScripts = false): ?string
     {
         // Make sure template caching is enabled
         if ($this->_isTemplateCachingEnabled() === false) {

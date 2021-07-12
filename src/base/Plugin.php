@@ -317,7 +317,7 @@ class Plugin extends Module implements PluginInterface
      *
      * @return Migration|null The plugin’s installation migration
      */
-    protected function createInstallMigration()
+    protected function createInstallMigration(): ?Migration
     {
         // See if there's an Install migration in the plugin’s migrations folder
         $migrator = $this->getMigrator();
@@ -384,7 +384,7 @@ class Plugin extends Module implements PluginInterface
      *
      * @return string|null The rendered settings HTML
      */
-    protected function settingsHtml()
+    protected function settingsHtml(): ?string
     {
         return null;
     }
@@ -395,7 +395,7 @@ class Plugin extends Module implements PluginInterface
      * @return string|null
      * @see getCpNavItem()
      */
-    protected function cpNavIconPath()
+    protected function cpNavIconPath(): ?string
     {
         $path = $this->getBasePath() . DIRECTORY_SEPARATOR . 'icon-mask.svg';
 

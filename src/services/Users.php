@@ -171,7 +171,7 @@ class Users extends Component
      * @param string $usernameOrEmail The user’s username or email.
      * @return User|null The user with the given username/email, or `null` if a user could not be found.
      */
-    public function getUserByUsernameOrEmail(string $usernameOrEmail)
+    public function getUserByUsernameOrEmail(string $usernameOrEmail): ?User
     {
         $query = User::find()
             ->addSelect(['users.password', 'users.passwordResetRequired'])
@@ -209,7 +209,7 @@ class Users extends Component
      * @param string $uid The user’s UID.
      * @return User|null The user with the given UID, or `null` if a user could not be found.
      */
-    public function getUserByUid(string $uid)
+    public function getUserByUid(string $uid): ?User
     {
         return User::find()
             ->uid($uid)

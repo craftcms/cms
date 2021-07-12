@@ -562,7 +562,7 @@ class UpdateController extends Controller
      *
      * @return int|null
      */
-    private function _checkCraftLicense()
+    private function _checkCraftLicense(): ?int
     {
         if (!App::licenseKey()) {
             if (defined('CRAFT_LICENSE_KEY')) {

@@ -921,7 +921,7 @@ class Asset extends Element
      * @return Markup|null
      * @throws InvalidArgumentException
      */
-    public function getImg($transform = null, array $sizes = null)
+    public function getImg($transform = null, array $sizes = null): ?Markup
     {
         if ($this->kind !== self::KIND_IMAGE) {
             return null;
@@ -1120,7 +1120,7 @@ class Asset extends Element
      * @return User|null
      * @since 3.4.0
      */
-    public function getUploader()
+    public function getUploader(): ?User
     {
         if ($this->_uploader !== null) {
             return $this->_uploader;
@@ -1360,7 +1360,7 @@ class Asset extends Element
      * @return string|null
      * @since 3.4.0
      */
-    public function getFormattedSize(int $decimals = null, bool $short = true)
+    public function getFormattedSize(int $decimals = null, bool $short = true): ?string
     {
         if ($this->size === null) {
             return null;
@@ -1378,7 +1378,7 @@ class Asset extends Element
      * @return string|null
      * @since 3.4.0
      */
-    public function getFormattedSizeInBytes(bool $short = true)
+    public function getFormattedSizeInBytes(bool $short = true): ?string
     {
         $params = [
             'n' => $this->size,
@@ -1396,7 +1396,7 @@ class Asset extends Element
      * @return string|null
      * @since 3.4.0
      */
-    public function getDimensions()
+    public function getDimensions(): ?string
     {
         $width = $this->getWidth();
         $height = $this->getHeight();

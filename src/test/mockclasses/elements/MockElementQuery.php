@@ -8,6 +8,7 @@
 namespace craft\test\mockclasses\elements;
 
 use Craft;
+use craft\base\ElementInterface;
 use craft\elements\db\ElementQuery;
 use craft\helpers\StringHelper;
 
@@ -144,7 +145,7 @@ class MockElementQuery extends ElementQuery
     /**
      * Return a return value.
      *
-     * @return mixed|null
+     * @return array|ElementInterface|null
      */
     public function one($db = null)
     {

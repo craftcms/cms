@@ -405,7 +405,7 @@ class Structures extends Component
      * @param ElementInterface|int $element
      * @return StructureElement|null
      */
-    private function _getElementRecord(int $structureId, $element)
+    private function _getElementRecord(int $structureId, $element): ?StructureElement
     {
         $elementId = is_numeric($element) ? $element : $element->id;
 

@@ -362,7 +362,7 @@ class CommandTest
     /**
      * @return CommandTestItem|null
      */
-    protected function getNextItem()
+    protected function getNextItem(): ?CommandTestItem
     {
         if ($this->currentIndex === null) {
             $this->currentIndex = 0;

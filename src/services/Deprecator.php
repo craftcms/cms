@@ -368,7 +368,7 @@ class Deprecator extends Component
      * @param int|null $actualCodeLine
      * @return int|null
      */
-    private function _findTemplateLine(TwigTemplate $template, int $actualCodeLine = null)
+    private function _findTemplateLine(TwigTemplate $template, int $actualCodeLine = null): ?int
     {
         if ($actualCodeLine === null) {
             return null;

@@ -568,7 +568,7 @@ class Gql extends Component
      * @return array|null
      * @since 3.3.12
      */
-    public function getCachedResult($cacheKey)
+    public function getCachedResult($cacheKey): ?array
     {
         return Craft::$app->getCache()->get($cacheKey) ?: null;
     }
@@ -654,7 +654,7 @@ class Gql extends Component
      * @return GqlSchema|null
      * @throws Exception
      */
-    public function getPublicSchema()
+    public function getPublicSchema(): ?GqlSchema
     {
         $token = $this->getPublicToken();
         return $token ? $token->getSchema() : null;
@@ -755,7 +755,7 @@ class Gql extends Component
      * @return GqlToken|null
      * @since 3.4.0
      */
-    public function getTokenById(int $id)
+    public function getTokenById(int $id): ?GqlToken
     {
         $result = $this->_createTokenQuery()
             ->where(['id' => $id])
@@ -771,7 +771,7 @@ class Gql extends Component
      * @return GqlToken|null
      * @since 3.4.0
      */
-    public function getTokenByName(string $tokenName)
+    public function getTokenByName(string $tokenName): ?GqlToken
     {
         $result = $this->_createTokenQuery()
             ->where(['name' => $tokenName])
@@ -828,7 +828,7 @@ class Gql extends Component
      * @return GqlToken|null
      * @since 3.5.0
      */
-    public function getPublicToken()
+    public function getPublicToken(): ?GqlToken
     {
         $result = $this->_createTokenQuery()
             ->where(['accessToken' => GqlToken::PUBLIC_TOKEN])
@@ -1137,7 +1137,7 @@ class Gql extends Component
      * @return GqlSchema|null
      * @since 3.4.0
      */
-    public function getSchemaByUid(string $uid)
+    public function getSchemaByUid(string $uid): ?GqlSchema
     {
         $result = $this->_createSchemaQuery()
             ->where(['uid' => $uid])
@@ -1248,7 +1248,7 @@ class Gql extends Component
         $context,
         array $variables = null,
         string $operationName = null
-    )
+    ): ?string
     {
         // No cache key, if explicitly disabled
         $generalConfig = Craft::$app->getConfig()->getGeneral();

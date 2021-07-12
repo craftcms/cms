@@ -1191,7 +1191,7 @@ JS;
      *
      * @return string|null The namespace.
      */
-    public function getNamespace()
+    public function getNamespace(): ?string
     {
         return $this->_namespace;
     }
@@ -1884,7 +1884,7 @@ JS;
      * @param string $name The name of the template to be looking for.
      * @return string|null The matching file path, or `null`.
      */
-    private function _resolveTemplate(string $basePath, string $name)
+    private function _resolveTemplate(string $basePath, string $name): ?string
     {
         // Normalize the path and name
         $basePath = FileHelper::normalizePath($basePath);

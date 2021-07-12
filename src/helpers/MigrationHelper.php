@@ -28,7 +28,7 @@ class MigrationHelper
      * @return string|null The foreign key name, or null if it doesn't exist
      * @since 3.0.27
      */
-    public static function findForeignKey(string $tableName, $columns)
+    public static function findForeignKey(string $tableName, $columns): ?string
     {
         $db = Craft::$app->getDb();
         $schema = $db->getSchema();
@@ -722,7 +722,7 @@ class MigrationHelper
      * @param Connection|null $db
      * @return string|null
      */
-    private static function _findIndex(string $tableName, $columns, bool $unique = false, ?Connection $db = null)
+    private static function _findIndex(string $tableName, $columns, bool $unique = false, ?Connection $db = null): ?string
     {
         if (is_string($columns)) {
             $columns = StringHelper::split($columns);

@@ -1245,7 +1245,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
      * @return PluginInterface|null The plugin, or `null` if it's not installed
      * @since 3.1.0
      */
-    public function pluginFunction(string $handle)
+    public function pluginFunction(string $handle): ?PluginInterface
     {
         return Craft::$app->getPlugins()->getPlugin($handle);
     }

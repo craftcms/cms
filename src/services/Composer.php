@@ -84,7 +84,7 @@ class Composer extends Component
      * @return string|null
      * @throws Exception if composer.json can't be located
      */
-    public function getLockPath()
+    public function getLockPath(): ?string
     {
         $jsonPath = $this->getJsonPath();
         // Logic based on \Composer\Factory::createComposer()

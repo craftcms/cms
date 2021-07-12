@@ -266,7 +266,7 @@ class Application extends \yii\web\Application
      * @param array $params
      * @return Response|null The result of the action, normalized into a Response object
      */
-    public function runAction($route, $params = [])
+    public function runAction($route, $params = []): ?Response
     {
         $result = parent::runAction($route, $params);
 
@@ -559,7 +559,7 @@ class Application extends \yii\web\Application
      * @return Response|null
      * @throws \Throwable if reasons
      */
-    private function _processActionRequest(Request $request)
+    private function _processActionRequest(Request $request): ?Response
     {
         if ($request->getIsActionRequest()) {
             $route = implode('/', $request->getActionSegments());
@@ -588,7 +588,7 @@ class Application extends \yii\web\Application
      * @param Request $request
      * @return Response|null
      */
-    private function _processRequirementsCheck(Request $request)
+    private function _processRequirementsCheck(Request $request): ?Response
     {
         // Only run for CP requests and if we're not in the middle of an update.
         if (

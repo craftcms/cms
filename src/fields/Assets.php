@@ -963,7 +963,7 @@ class Assets extends BaseRelationField
      *
      * @return VolumeInterface|null
      */
-    private function _uploadVolume()
+    private function _uploadVolume(): ?VolumeInterface
     {
         if ($this->useSingleFolder) {
             $sourceKey = $this->singleUploadLocationSource;

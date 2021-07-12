@@ -1323,7 +1323,7 @@ class User extends Element implements IdentityInterface
      *
      * @return string|null The preferred language
      */
-    public function getPreferredLanguage()
+    public function getPreferredLanguage(): ?string
     {
         return $this->_validateLocale($this->getPreference('language'));
     }
@@ -1347,7 +1347,7 @@ class User extends Element implements IdentityInterface
      * @param string|null $locale
      * @return string|null
      */
-    private function _validateLocale(string $locale = null)
+    private function _validateLocale(string $locale = null): ?string
     {
         if ($locale !== null && in_array($locale, Craft::$app->getI18n()->getAppLocaleIds(), true)) {
             return $locale;
@@ -1675,7 +1675,7 @@ class User extends Element implements IdentityInterface
      *
      * @return null|string
      */
-    private function _getAuthError()
+    private function _getAuthError(): ?string
     {
         switch ($this->getStatus()) {
             case self::STATUS_ARCHIVED:

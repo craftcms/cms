@@ -289,7 +289,7 @@ class Plugins extends Component
      * @param string $handle The plugin’s handle
      * @return PluginInterface|null The plugin, or null if it doesn’t exist
      */
-    public function getPlugin(string $handle)
+    public function getPlugin(string $handle): ?PluginInterface
     {
         $this->loadPlugins();
 
@@ -306,7 +306,7 @@ class Plugins extends Component
      * @param string $packageName The plugin’s package name
      * @return PluginInterface|null The plugin, or null if it doesn’t exist
      */
-    public function getPluginByPackageName(string $packageName)
+    public function getPluginByPackageName(string $packageName): ?PluginInterface
     {
         $this->loadPlugins();
 
@@ -327,7 +327,7 @@ class Plugins extends Component
      * @param string $class
      * @return string|null The plugin handle, or null if it can’t be determined
      */
-    public function getPluginHandleByClass(string $class)
+    public function getPluginHandleByClass(string $class): ?string
     {
         if (array_key_exists($class, $this->_classPluginHandles)) {
             return $this->_classPluginHandles[$class];
@@ -828,7 +828,7 @@ class Plugins extends Component
      * @param string $handle The plugin handle
      * @return array|null The stored info, if there is any
      */
-    public function getStoredPluginInfo(string $handle)
+    public function getStoredPluginInfo(string $handle): ?array
     {
         $this->loadPlugins();
 
@@ -865,7 +865,7 @@ class Plugins extends Component
      * @param string|null $handle The plugin handle. If null is passed, info for all Composer-installed plugins will be returned.
      * @return array|null The plugin info, or null if an unknown handle was passed.
      */
-    public function getComposerPluginInfo(string $handle = null)
+    public function getComposerPluginInfo(string $handle = null): ?array
     {
         if ($handle === null) {
             return $this->_composerPluginInfo;
@@ -1143,7 +1143,7 @@ class Plugins extends Component
      * @return string|null The plugin’s license key, or null if it isn’t known
      * @throws InvalidLicenseKeyException
      */
-    public function getPluginLicenseKey(string $handle)
+    public function getPluginLicenseKey(string $handle): ?string
     {
         return $this->normalizePluginLicenseKey(Craft::parseEnv($this->getStoredPluginInfo($handle)['licenseKey'] ?? null));
     }
@@ -1187,7 +1187,7 @@ class Plugins extends Component
      * @return string|null
      * @throws InvalidLicenseKeyException
      */
-    public function normalizePluginLicenseKey(string $licenseKey = null)
+    public function normalizePluginLicenseKey(string $licenseKey = null): ?string
     {
         if (empty($licenseKey)) {
             return null;

@@ -51,7 +51,7 @@ class GqlEntityRegistry
      * @return string|null
      * @since 3.6.0
      */
-    public static function getPrefix()
+    public static function getPrefix(): ?string
     {
         if (self::$_prefix === null) {
             self::$_prefix = Craft::$app->getConfig()->getGeneral()->gqlTypePrefix;

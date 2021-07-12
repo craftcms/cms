@@ -293,7 +293,7 @@ class SitesController extends Controller
      * @return Response|null
      * @throws BadRequestHttpException
      */
-    public function actionSaveSite()
+    public function actionSaveSite(): ?Response
     {
         $this->requirePostRequest();
 

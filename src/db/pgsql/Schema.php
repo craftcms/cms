@@ -204,7 +204,7 @@ class Schema extends \yii\db\pgsql\Schema
      * @param string $name table name
      * @return TableSchema|null driver dependent table metadata. Null if the table does not exist.
      */
-    public function loadTableSchema($name)
+    public function loadTableSchema($name): ?TableSchema
     {
         $table = new TableSchema();
         $this->resolveTableNames($table, $name);

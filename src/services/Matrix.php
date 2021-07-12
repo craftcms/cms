@@ -124,7 +124,7 @@ class Matrix extends Component
      * @param int $blockTypeId The block type ID.
      * @return MatrixBlockType|null The block type, or `null` if it didn’t exist.
      */
-    public function getBlockTypeById(int $blockTypeId)
+    public function getBlockTypeById(int $blockTypeId): ?MatrixBlockType
     {
         if ($this->_blockTypesById !== null && array_key_exists($blockTypeId, $this->_blockTypesById)) {
             return $this->_blockTypesById[$blockTypeId];

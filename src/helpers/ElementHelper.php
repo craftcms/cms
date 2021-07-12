@@ -457,7 +457,7 @@ class ElementHelper
      * @param string|null $context The context
      * @return array|null The source definition, or null if it cannot be found
      */
-    public static function findSource(string $elementType, string $sourceKey, ?string $context = null)
+    public static function findSource(string $elementType, string $sourceKey, ?string $context = null): ?array
     {
         /** @var string|ElementInterface $elementType */
         $path = explode('/', $sourceKey);
@@ -502,7 +502,7 @@ class ElementHelper
      * @return string|null
      * @since 3.5.0
      */
-    public static function translationDescription(string $translationMethod)
+    public static function translationDescription(string $translationMethod): ?string
     {
         switch ($translationMethod) {
             case Field::TRANSLATION_METHOD_SITE:

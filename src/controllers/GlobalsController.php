@@ -239,7 +239,7 @@ class GlobalsController extends Controller
      * @return Response|null
      * @throws NotFoundHttpException if the requested global set cannot be found
      */
-    public function actionSaveContent()
+    public function actionSaveContent(): ?Response
     {
         $this->requirePostRequest();
 

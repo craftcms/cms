@@ -263,7 +263,7 @@ class GraphqlController extends Controller
      * @param GqlService $gqlService
      * @return GqlToken|null
      */
-    private function _publicToken(GqlService $gqlService)
+    private function _publicToken(GqlService $gqlService): ?GqlToken
     {
         try {
             $token = $gqlService->getPublicToken();

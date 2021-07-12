@@ -46,7 +46,7 @@ abstract class BaseJob extends BaseObject implements JobInterface
     /**
      * @inheritdoc
      */
-    public function getDescription()
+    public function getDescription(): ?string
     {
         return $this->description ?? $this->defaultDescription();
     }

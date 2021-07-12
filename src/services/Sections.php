@@ -350,7 +350,7 @@ class Sections extends Component
      * @return Section|null
      * @since 3.1.0
      */
-    public function getSectionByUid(string $uid)
+    public function getSectionByUid(string $uid): ?Section
     {
         return $this->_sections()->firstWhere('uid', $uid, true);
     }

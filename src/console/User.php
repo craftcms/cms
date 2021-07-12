@@ -95,7 +95,7 @@ class User extends Component
      * @return int|null
      * @see getIdentity()
      */
-    public function getId()
+    public function getId(): ?int
     {
         $identity = $this->getIdentity();
 

@@ -171,7 +171,7 @@ class Dashboard extends Component
      * @param int $id The widget’s ID
      * @return WidgetInterface|null The widget, or null if it doesn’t exist
      */
-    public function getWidgetById(int $id)
+    public function getWidgetById(int $id): ?WidgetInterface
     {
         $result = $this->_createWidgetsQuery()
             ->where(['id' => $id, 'userId' => Craft::$app->getUser()->getIdentity()->id])

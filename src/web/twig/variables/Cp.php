@@ -574,7 +574,7 @@ class Cp extends Component
      * @return array|null
      * @since 3.1.9
      */
-    public function getAsciiCharMap(string $language)
+    public function getAsciiCharMap(string $language): ?array
     {
         if ($language === Craft::$app->language) {
             return null;

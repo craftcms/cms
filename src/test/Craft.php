@@ -570,7 +570,7 @@ class Craft extends Yii2
      * @param string $fieldHandle
      * @return FieldLayout|null
      */
-    public function getFieldLayoutByFieldHandle(string $fieldHandle)
+    public function getFieldLayoutByFieldHandle(string $fieldHandle): ?FieldLayout
     {
         if (!$field = \Craft::$app->getFields()->getFieldByHandle($fieldHandle)) {
             return null;

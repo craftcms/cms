@@ -292,7 +292,7 @@ JS;
      * @return Response|null
      * @throws BadRequestHttpException
      */
-    public function actionSaveField()
+    public function actionSaveField(): ?Response
     {
         $this->requirePostRequest();
 

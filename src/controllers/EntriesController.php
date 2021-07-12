@@ -523,7 +523,7 @@ class EntriesController extends BaseEntriesController
      * @return Response|null
      * @throws BadRequestHttpException if the requested entry cannot be found
      */
-    public function actionDeleteEntry()
+    public function actionDeleteEntry(): ?Response
     {
         $this->requirePostRequest();
 
@@ -699,7 +699,7 @@ class EntriesController extends BaseEntriesController
      * @param int|null $revisionId
      * @return Entry|null
      */
-    private function _loadEntry(Site $site, Section $section, int $entryId, int $draftId = null, int $revisionId = null)
+    private function _loadEntry(Site $site, Section $section, int $entryId, int $draftId = null, int $revisionId = null): ?Entry
     {
         if ($draftId) {
             $entry = Entry::find()

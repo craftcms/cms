@@ -192,7 +192,7 @@ JS;
      *
      * @return Section|null
      */
-    private function _getSection()
+    private function _getSection(): ?Section
     {
         if ($this->_section === null) {
             if ($this->section) {

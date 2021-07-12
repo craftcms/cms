@@ -162,7 +162,7 @@ class Tags extends BaseRelationField
      *
      * @return TagGroup|null
      */
-    private function _getTagGroup()
+    private function _getTagGroup(): ?TagGroup
     {
         $tagGroupId = $this->_getTagGroupId();
 

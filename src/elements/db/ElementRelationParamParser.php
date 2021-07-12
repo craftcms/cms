@@ -483,7 +483,7 @@ class ElementRelationParamParser extends BaseObject
      * @param array|null &$fieldHandleParts
      * @return FieldInterface|null
      */
-    private function _getField($field, array &$fieldHandleParts = null)
+    private function _getField($field, array &$fieldHandleParts = null): ?FieldInterface
     {
         if (is_numeric($field)) {
             $fieldHandleParts = null;

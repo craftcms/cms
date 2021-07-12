@@ -282,7 +282,7 @@ class PluginStoreController extends Controller
      *
      * @return string|null
      */
-    private function getCraftIdAccessToken()
+    private function getCraftIdAccessToken(): ?string
     {
         $craftIdAccessToken = null;
         $pluginStoreService = Craft::$app->getPluginStore();

@@ -114,7 +114,7 @@ class SectionsController extends Controller
      * @return Response|null
      * @throws BadRequestHttpException if any invalid site IDs are specified in the request
      */
-    public function actionSaveSection()
+    public function actionSaveSection(): ?Response
     {
         $this->requirePostRequest();
 
@@ -311,7 +311,7 @@ class SectionsController extends Controller
      * @return Response|null
      * @throws BadRequestHttpException
      */
-    public function actionSaveEntryType()
+    public function actionSaveEntryType(): ?Response
     {
         $this->requirePostRequest();
 

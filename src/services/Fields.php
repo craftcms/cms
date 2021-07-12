@@ -252,7 +252,7 @@ class Fields extends Component
      * @param int $groupId The field group’s ID
      * @return FieldGroup|null The field group, or null if it doesn’t exist
      */
-    public function getGroupById(int $groupId)
+    public function getGroupById(int $groupId): ?FieldGroup
     {
         return $this->_groups()->firstWhere('id', $groupId);
     }
@@ -651,7 +651,7 @@ class Fields extends Component
      * @param int $fieldId The field’s ID
      * @return FieldInterface|null The field, or null if it doesn’t exist
      */
-    public function getFieldById(int $fieldId)
+    public function getFieldById(int $fieldId): ?FieldInterface
     {
         return $this->_fields(false)->firstWhere('id', $fieldId);
     }
@@ -662,7 +662,7 @@ class Fields extends Component
      * @param string $fieldUid The field’s UID
      * @return FieldInterface|null The field, or null if it doesn’t exist
      */
-    public function getFieldByUid(string $fieldUid)
+    public function getFieldByUid(string $fieldUid): ?FieldInterface
     {
         return $this->_fields(false)->firstWhere('uid', $fieldUid, true);
     }
@@ -685,7 +685,7 @@ class Fields extends Component
      * Set to `false` to get all fields regardless of context.
      * @return FieldInterface|null The field, or null if it doesn’t exist
      */
-    public function getFieldByHandle(string $handle, $context = null)
+    public function getFieldByHandle(string $handle, $context = null): ?FieldInterface
     {
         return $this->_fields($context)->firstWhere('handle', $handle, true);
     }
@@ -1058,7 +1058,7 @@ class Fields extends Component
      * @param int $layoutId The field layout’s ID
      * @return FieldLayout|null The field layout, or null if it doesn’t exist
      */
-    public function getLayoutById(int $layoutId)
+    public function getLayoutById(int $layoutId): ?FieldLayout
     {
         if ($this->_layoutsById !== null && array_key_exists($layoutId, $this->_layoutsById)) {
             return $this->_layoutsById[$layoutId];

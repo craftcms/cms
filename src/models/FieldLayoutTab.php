@@ -163,7 +163,7 @@ class FieldLayoutTab extends Model
      * @return array|null
      * @since 3.5.0
      */
-    public function getConfig()
+    public function getConfig(): ?array
     {
         if (empty($this->elements)) {
             return null;
@@ -197,7 +197,7 @@ class FieldLayoutTab extends Model
      * @return FieldLayout|null The tab’s layout.
      * @throws InvalidConfigException if [[groupId]] is set but invalid
      */
-    public function getLayout()
+    public function getLayout(): ?FieldLayout
     {
         if ($this->_layout !== null) {
             return $this->_layout;

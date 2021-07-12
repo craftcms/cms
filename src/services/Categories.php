@@ -189,7 +189,7 @@ class Categories extends Component
      * @return CategoryGroup|null
      * @since 3.1.0
      */
-    public function getGroupByUid(string $uid)
+    public function getGroupByUid(string $uid): ?CategoryGroup
     {
         return $this->_groups()->firstWhere('uid', $uid, true);
     }
@@ -740,7 +740,7 @@ class Categories extends Component
      * @param CategoryGroupRecord|null $groupRecord
      * @return CategoryGroup|null
      */
-    private function _createCategoryGroupFromRecord(CategoryGroupRecord $groupRecord = null)
+    private function _createCategoryGroupFromRecord(CategoryGroupRecord $groupRecord = null): ?CategoryGroup
     {
         if (!$groupRecord) {
             return null;

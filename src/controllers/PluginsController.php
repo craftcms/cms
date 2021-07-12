@@ -158,7 +158,7 @@ class PluginsController extends Controller
      * @return Response|null
      * @throws NotFoundHttpException if the requested plugin cannot be found
      */
-    public function actionSavePluginSettings()
+    public function actionSavePluginSettings(): ?Response
     {
         $this->requirePostRequest();
         $pluginHandle = $this->request->getRequiredBodyParam('pluginHandle');

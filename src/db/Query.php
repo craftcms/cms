@@ -11,6 +11,7 @@ use craft\base\ClonefixTrait;
 use craft\events\DefineBehaviorsEvent;
 use craft\helpers\ArrayHelper;
 use yii\base\Exception;
+use yii\base\Model;
 use yii\db\Connection as YiiConnection;
 
 /**
@@ -157,7 +158,7 @@ class Query extends \yii\db\Query
 
     /**
      * @inheritdoc
-     * @return array|null the first row (in terms of an array) of the query result. Null is returned if the query
+     * @return array|Model|null the first row (in terms of an array) of the query result. Null is returned if the query
      * results in nothing.
      */
     public function one($db = null)
@@ -223,7 +224,7 @@ class Query extends \yii\db\Query
      * @param int $n The offset of the row to return. If [[offset]] is set, $offset will be added to it.
      * @param YiiConnection|null $db The database connection used to generate the SQL statement.
      * If this parameter is not given, the `db` application component will be used.
-     * @return array|null The row (in terms of an array) of the query result. Null is returned if the query
+     * @return array|Model|null The row (in terms of an array) of the query result. Null is returned if the query
      * results in nothing.
      */
     public function nth(int $n, YiiConnection $db = null)

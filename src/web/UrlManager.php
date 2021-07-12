@@ -299,7 +299,7 @@ class UrlManager extends \yii\web\UrlManager
      *
      * @return array|null The rules, or null if it's a console request
      */
-    private function _getRules()
+    private function _getRules(): ?array
     {
         $request = Craft::$app->getRequest();
 

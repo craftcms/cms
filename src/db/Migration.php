@@ -36,12 +36,9 @@ abstract class Migration extends \yii\db\Migration
     // -------------------------------------------------------------------------
 
     /**
-     * This method contains the logic to be executed when applying this migration.
-     *
-     * Child classes may override this method to provide actual migration logic.
-     *
+     * @inheritdoc
      * @param bool $throwExceptions Whether exceptions should be thrown
-     * @return false|null
+     * @return mixed
      * @throws \Throwable
      */
     public function up(bool $throwExceptions = false)
@@ -72,13 +69,9 @@ abstract class Migration extends \yii\db\Migration
     }
 
     /**
-     * This method contains the logic to be executed when removing this migration.
-     *
-     * The default implementation throws an exception indicating the migration cannot be removed.
-     * Child classes may override this method if the corresponding migrations can be removed.
-     *
+     * @inheritdoc
      * @param bool $throwExceptions Whether exceptions should be thrown
-     * @return false|null
+     * @return mixed
      * @throws \Throwable
      */
     public function down(bool $throwExceptions = false)

@@ -143,7 +143,7 @@ class UsersController extends Controller
      * @return Response|null
      * @throws BadRequestHttpException
      */
-    public function actionLogin()
+    public function actionLogin(): ?Response
     {
         $userSession = Craft::$app->getUser();
         if (!$userSession->getIsGuest()) {
@@ -420,7 +420,7 @@ class UsersController extends Controller
      * @return Response|null
      * @throws NotFoundHttpException if the requested user cannot be found
      */
-    public function actionSendPasswordResetEmail()
+    public function actionSendPasswordResetEmail(): ?Response
     {
         $this->requirePostRequest();
         $errors = [];
@@ -1394,7 +1394,7 @@ class UsersController extends Controller
      * @return Response|null
      * @throws BadRequestHttpException if the uploaded file is not an image
      */
-    public function actionUploadUserPhoto()
+    public function actionUploadUserPhoto(): ?Response
     {
         $this->requireAcceptsJson();
 
@@ -1554,7 +1554,7 @@ class UsersController extends Controller
      * @return Response|null
      * @throws ForbiddenHttpException if a non-admin is attempting to suspend an admin
      */
-    public function actionSuspendUser()
+    public function actionSuspendUser(): ?Response
     {
         $this->requirePostRequest();
         $this->requirePermission('moderateUsers');
@@ -1686,7 +1686,7 @@ class UsersController extends Controller
      * @return Response|null
      * @throws ForbiddenHttpException if a non-admin is attempting to unsuspend an admin
      */
-    public function actionUnsuspendUser()
+    public function actionUnsuspendUser(): ?Response
     {
         $this->requirePostRequest();
         $this->requirePermission('moderateUsers');
@@ -1770,7 +1770,7 @@ class UsersController extends Controller
      * @return Response|null
      * @throws ServiceUnavailableHttpException
      */
-    private function _handleLoginFailure(string $authError = null, User $user = null)
+    private function _handleLoginFailure(string $authError = null, User $user = null): ?Response
     {
         // Delay randomly between 0 and 1.5 seconds.
         usleep(random_int(0, 1500000));
@@ -2167,7 +2167,7 @@ class UsersController extends Controller
      * @param User $user The user that was just activated
      * @return Response|null
      */
-    private function _onAfterActivateUser(User $user)
+    private function _onAfterActivateUser(User $user): ?Response
     {
         $this->_maybeLoginUserAfterAccountActivation($user);
 
@@ -2199,7 +2199,7 @@ class UsersController extends Controller
      * @param User $user The user to redirect
      * @return Response|null
      */
-    private function _redirectUserToCp(User $user)
+    private function _redirectUserToCp(User $user): ?Response
     {
         // Can they access the CP?
         if ($user->can('accessCp')) {
@@ -2242,7 +2242,7 @@ class UsersController extends Controller
      * @param string|null $loginName
      * @return Response|null
      */
-    private function _handleSendPasswordResetError(array $errors, string $loginName = null)
+    private function _handleSendPasswordResetError(array $errors, string $loginName = null): ?Response
     {
         if ($this->request->getAcceptsJson()) {
             /** @noinspection CallableParameterUseCaseInTypeContextInspection */

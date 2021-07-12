@@ -466,7 +466,7 @@ class Elements extends Component
      * @param array $criteria
      * @return ElementInterface|null The matching element, or `null`.
      */
-    public function getElementById(int $elementId, string $elementType = null, $siteId = null, array $criteria = [])
+    public function getElementById(int $elementId, string $elementType = null, $siteId = null, array $criteria = []): ?ElementInterface
     {
         return $this->_elementById('id', $elementId, $elementType, $siteId, $criteria);
     }
@@ -502,7 +502,7 @@ class Elements extends Component
      * @param array $criteria
      * @return ElementInterface|null The matching element, or `null`.
      */
-    private function _elementById(string $property, $elementId, string $elementType = null, $siteId = null, array $criteria = [])
+    private function _elementById(string $property, $elementId, string $elementType = null, $siteId = null, array $criteria = []): ?ElementInterface
     {
         if (!$elementId) {
             return null;
@@ -560,7 +560,7 @@ class Elements extends Component
      * @param bool $enabledOnly Whether to only look for an enabled element. Defaults to `false`.
      * @return ElementInterface|null The matching element, or `null`.
      */
-    public function getElementByUri(string $uri, int $siteId = null, bool $enabledOnly = false)
+    public function getElementByUri(string $uri, int $siteId = null, bool $enabledOnly = false): ?ElementInterface
     {
         if ($uri === '') {
             $uri = Element::HOMEPAGE_URI;
@@ -616,7 +616,7 @@ class Elements extends Component
      * @param int $elementId The element’s ID
      * @return string|null The element’s class, or null if it could not be found
      */
-    public function getElementTypeById(int $elementId)
+    public function getElementTypeById(int $elementId): ?string
     {
         return $this->_elementTypeById('id', $elementId);
     }
@@ -628,7 +628,7 @@ class Elements extends Component
      * @return string|null The element’s class, or null if it could not be found
      * @since 3.5.13
      */
-    public function getElementTypeByUid(string $uid)
+    public function getElementTypeByUid(string $uid): ?string
     {
         return $this->_elementTypeById('uid', $uid);
     }
@@ -640,7 +640,7 @@ class Elements extends Component
      * @param int|string $elementId The element’s ID/UID
      * @return string|null The element’s class, or null if it could not be found
      */
-    private function _elementTypeById(string $property, $elementId)
+    private function _elementTypeById(string $property, $elementId): ?string
     {
         $class = (new Query())
             ->select(['type'])
@@ -1879,7 +1879,7 @@ class Elements extends Component
      * @param string $refHandle The element class handle
      * @return string|null The element class, or null if it could not be found
      */
-    public function getElementTypeByRefHandle(string $refHandle)
+    public function getElementTypeByRefHandle(string $refHandle): ?string
     {
         if (array_key_exists($refHandle, $this->_elementTypesByRefHandle)) {
             return $this->_elementTypesByRefHandle[$refHandle];
@@ -2058,7 +2058,7 @@ class Elements extends Component
      * @return ElementInterface|null The placeholder element if one exists, or null.
      * @see setPlaceholderElement()
      */
-    public function getPlaceholderElement(int $sourceId, int $siteId)
+    public function getPlaceholderElement(int $sourceId, int $siteId): ?ElementInterface
     {
         return $this->_placeholderElements[$sourceId][$siteId] ?? null;
     }
