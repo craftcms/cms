@@ -592,7 +592,7 @@ class ElementIndexesController extends BaseElementsController
      * @return ElementExporterInterface[]|null
      * @since 3.4.0
      */
-    protected function availableExporters(): ?ElementExporterInterface
+    protected function availableExporters(): ?array
     {
         if ($this->request->isMobileBrowser()) {
             return null;
