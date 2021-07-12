@@ -51,7 +51,6 @@ class Drafts extends Component
     /**
      * @event DraftEvent The event that is triggered after a draft is applied to its canonical element.
      * @see applyDraft()
-     * @since 3.1.0
      */
     const EVENT_AFTER_APPLY_DRAFT = 'afterApplyDraft';
 
