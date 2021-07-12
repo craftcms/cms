@@ -682,7 +682,7 @@ class User extends Element implements IdentityInterface
     /**
      * @inheritdoc
      */
-    public function attributes()
+    public function attributes(): array
     {
         $names = parent::attributes();
         $names[] = 'cooldownEndTime';
@@ -698,7 +698,7 @@ class User extends Element implements IdentityInterface
     /**
      * @inheritdoc
      */
-    public function extraFields()
+    public function extraFields(): array
     {
         $names = parent::extraFields();
         $names[] = 'groups';
@@ -723,7 +723,7 @@ class User extends Element implements IdentityInterface
     /**
      * @inheritdoc
      */
-    public function attributeLabels()
+    public function attributeLabels(): array
     {
         $labels = parent::attributeLabels();
         $labels['currentPassword'] = Craft::t('app', 'Current Password');

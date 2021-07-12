@@ -104,7 +104,7 @@ class EntryType extends Model
     /**
      * @inheritdoc
      */
-    public function attributeLabels()
+    public function attributeLabels(): array
     {
         return [
             'handle' => Craft::t('app', 'Handle'),

@@ -39,7 +39,7 @@ class FieldGroup extends Model
     /**
      * @inheritdoc
      */
-    public function attributeLabels()
+    public function attributeLabels(): array
     {
         return [
             'name' => Craft::t('app', 'Name'),

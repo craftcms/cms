@@ -60,7 +60,7 @@ class Gmail extends BaseTransportAdapter
     /**
      * @inheritdoc
      */
-    public function attributeLabels()
+    public function attributeLabels(): array
     {
         return [
             'username' => Craft::t('app', 'Username'),

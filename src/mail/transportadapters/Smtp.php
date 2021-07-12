@@ -82,7 +82,7 @@ class Smtp extends BaseTransportAdapter
     /**
      * @inheritdoc
      */
-    public function attributeLabels()
+    public function attributeLabels(): array
     {
         return [
             'host' => Craft::t('app', 'Host Name'),

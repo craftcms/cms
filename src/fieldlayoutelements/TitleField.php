@@ -69,7 +69,7 @@ class TitleField extends StandardTextField
     /**
      * @inheritdoc
      */
-    public function fields()
+    public function fields(): array
     {
         $fields = parent::fields();
         unset(

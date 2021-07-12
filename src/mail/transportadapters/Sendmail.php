@@ -49,7 +49,7 @@ class Sendmail extends BaseTransportAdapter
      * @inheritdoc
      * @since 3.4.0
      */
-    public function attributeLabels()
+    public function attributeLabels(): array
     {
         return [
             'command' => Craft::t('app', 'Sendmail Command'),

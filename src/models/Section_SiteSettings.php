@@ -133,7 +133,7 @@ class Section_SiteSettings extends Model
     /**
      * @inheritdoc
      */
-    public function attributeLabels()
+    public function attributeLabels(): array
     {
         $labels = [
             'template' => Craft::t('app', 'Template'),

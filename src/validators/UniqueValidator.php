@@ -109,7 +109,7 @@ class UniqueValidator extends YiiUniqueValidator
     /**
      * @inheritdoc
      */
-    public function addError($model, $attribute, $message, $params = [])
+    public function addError($model, $attribute, $message, $params = []): void
     {
         // Use the original model if there is one
         if ($this->originalModel !== null) {

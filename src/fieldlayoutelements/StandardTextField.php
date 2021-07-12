@@ -107,7 +107,7 @@ class StandardTextField extends StandardField
     /**
      * @inheritdoc
      */
-    public function fields()
+    public function fields(): array
     {
         $fields = parent::fields();
 

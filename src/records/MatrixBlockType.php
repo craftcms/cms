@@ -36,7 +36,7 @@ class MatrixBlockType extends ActiveRecord
     /**
      * @inheritdoc
      */
-    public function rules()
+    public function rules(): array
     {
         return [
             [['name'], 'unique', 'targetAttribute' => ['name', 'fieldId']],

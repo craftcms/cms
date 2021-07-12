@@ -127,7 +127,7 @@ class MemoizableArray extends \ArrayObject
     /**
      * @inheritdoc
      */
-    public function append($value)
+    public function append($value): void
     {
         parent::append($value);
         $this->_memoized = [];
@@ -136,7 +136,7 @@ class MemoizableArray extends \ArrayObject
     /**
      * @inheritdoc
      */
-    public function asort(int $sort_flags = SORT_REGULAR)
+    public function asort(int $sort_flags = SORT_REGULAR): void
     {
         parent::asort($sort_flags);
         $this->_memoized = [];
@@ -145,16 +145,17 @@ class MemoizableArray extends \ArrayObject
     /**
      * @inheritdoc
      */
-    public function exchangeArray($input)
+    public function exchangeArray($input): array
     {
-        parent::exchangeArray($input);
+        $return = parent::exchangeArray($input);
         $this->_memoized = [];
+        return $return;
     }
 
     /**
      * @inheritdoc
      */
-    public function ksort(int $sort_flags = SORT_REGULAR)
+    public function ksort(int $sort_flags = SORT_REGULAR): void
     {
         parent::ksort($sort_flags);
         $this->_memoized = [];
@@ -163,7 +164,7 @@ class MemoizableArray extends \ArrayObject
     /**
      * @inheritdoc
      */
-    public function natcasesort()
+    public function natcasesort(): void
     {
         parent::natcasesort();
         $this->_memoized = [];
@@ -172,7 +173,7 @@ class MemoizableArray extends \ArrayObject
     /**
      * @inheritdoc
      */
-    public function natsort()
+    public function natsort(): void
     {
         parent::natsort();
         $this->_memoized = [];
@@ -181,7 +182,7 @@ class MemoizableArray extends \ArrayObject
     /**
      * @inheritdoc
      */
-    public function offsetSet($index, $newval)
+    public function offsetSet($index, $newval): void
     {
         parent::offsetSet($index, $newval);
         $this->_memoized = [];
@@ -190,7 +191,7 @@ class MemoizableArray extends \ArrayObject
     /**
      * @inheritdoc
      */
-    public function offsetUnset($index)
+    public function offsetUnset($index): void
     {
         parent::offsetUnset($index);
         $this->_memoized = [];
@@ -199,7 +200,7 @@ class MemoizableArray extends \ArrayObject
     /**
      * @inheritdoc
      */
-    public function uasort($cmp_function)
+    public function uasort($cmp_function): void
     {
         parent::uasort($cmp_function);
         $this->_memoized = [];
@@ -208,7 +209,7 @@ class MemoizableArray extends \ArrayObject
     /**
      * @inheritdoc
      */
-    public function uksort($cmp_function)
+    public function uksort($cmp_function): void
     {
         parent::uksort($cmp_function);
         $this->_memoized = [];

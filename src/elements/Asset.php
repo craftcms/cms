@@ -1765,7 +1765,7 @@ class Asset extends Element
     /**
      * @inheritdoc
      */
-    public function attributes()
+    public function attributes(): array
     {
         $names = parent::attributes();
         $names[] = 'extension';
@@ -1783,7 +1783,7 @@ class Asset extends Element
     /**
      * @inheritdoc
      */
-    public function extraFields()
+    public function extraFields(): array
     {
         $names = parent::extraFields();
         $names[] = 'folder';

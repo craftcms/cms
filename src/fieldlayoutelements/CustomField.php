@@ -114,7 +114,7 @@ class CustomField extends BaseField
     /**
      * @inheritdoc
      */
-    public function fields()
+    public function fields(): array
     {
         $fields = parent::fields();
         $fields['fieldUid'] = 'fieldUid';

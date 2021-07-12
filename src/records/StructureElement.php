@@ -35,7 +35,7 @@ class StructureElement extends ActiveRecord
     /**
      * @inheritdoc
      */
-    public function rules()
+    public function rules(): array
     {
         return [
             [['root', 'lft', 'rgt'], 'number', 'min' => 0, 'max' => 4294967295, 'integerOnly' => true],

@@ -111,7 +111,7 @@ class CategoryGroup_SiteSettings extends Model
     /**
      * @inheritdoc
      */
-    public function attributeLabels()
+    public function attributeLabels(): array
     {
         return [
             'template' => Craft::t('app', 'Template'),

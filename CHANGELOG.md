@@ -40,10 +40,14 @@
 - Relational fields now load elements in the current site rather than the primary site, if the source element isn’t localizable. ([#7048](https://github.com/craftcms/cms/issues/7048))
 - All components’ `afterDelete()` methods must now have a `void` return type declaration.
 - All components’ `afterSave()` methods must now have a `void` return type declaration.
+- All components’ `attributes()` methods must now have an `array` return type declaration.
 - All components’ `beforeApplyDelete()` methods must now have a `void` return type declaration.
 - All components’ `behaviors()` methods must now have a `void` return type declaration.
+- All components’ `extraFields()` methods must now have an `array` return type declaration.
+- All components’ `fields()` methods must now have an `array` return type declaration.
 - All components’ `getSettingsHtml()` methods must now have a `?string` return type declaration.
 - All components’ `init()` methods must now have a `void` return type declaration.
+- All components’ `rules()` methods must now have an `array` return type declaration.
 - Controllers’ `beforeAction()` methods must now have a `bool` return type declaration.
 - Element actions’ `getConfirmationMessage()` methods must now have a `?string` return type declaration.
 - Element actions’ `getMessage()` methods must now have a `?string` return type declaration.
@@ -54,6 +58,7 @@
 - Element types’ `afterPropagate()` methods must now have a `void` return type declaration.
 - Element types’ `afterRestore()` methods must now have a `void` return type declaration.
 - Element types’ `afterSave()` methods must now have a `void` return type declaration.
+- Element types’ `attributeLabels()` methods must now have an `array` return type declaration.
 - Element types’ `getCpEditUrl()` methods must now have a `?string` return type declaration.
 - Element types’ `getFieldLayout()` methods must now have a `?FieldLayout` return type declaration.
 - Element types’ `getRef()` methods must now have a `?string` return type declaration.

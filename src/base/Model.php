@@ -96,7 +96,7 @@ abstract class Model extends \yii\base\Model
     /**
      * @inheritdoc
      */
-    public function rules()
+    public function rules(): array
     {
         $rules = $this->defineRules();
 
@@ -175,7 +175,7 @@ abstract class Model extends \yii\base\Model
      * @inheritdoc
      * @since 4.0.0
      */
-    public function setAttributes($values, $safeOnly = true)
+    public function setAttributes($values, $safeOnly = true): void
     {
         // Normalize the date/time attributes
         foreach ($this->datetimeAttributes() as $name) {
@@ -190,7 +190,7 @@ abstract class Model extends \yii\base\Model
     /**
      * @inheritdoc
      */
-    public function fields()
+    public function fields(): array
     {
         $fields = parent::fields();
 
@@ -215,7 +215,7 @@ abstract class Model extends \yii\base\Model
     /**
      * @inheritdoc
      */
-    public function extraFields()
+    public function extraFields(): array
     {
         $fields = parent::extraFields();
         $event = new DefineFieldsEvent([
@@ -247,7 +247,7 @@ abstract class Model extends \yii\base\Model
     /**
      * @inheritdoc
      */
-    public function hasErrors($attribute = null)
+    public function hasErrors($attribute = null): bool
     {
         $includeNested = $attribute !== null && StringHelper::endsWith($attribute, '.*');
 

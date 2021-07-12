@@ -1732,7 +1732,7 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @inheritdoc
      */
-    public function attributes()
+    public function attributes(): array
     {
         $names = parent::attributes();
 
@@ -1776,7 +1776,7 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @inheritdoc
      */
-    public function extraFields()
+    public function extraFields(): array
     {
         return [
             'ancestors',
@@ -1797,7 +1797,7 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @inheritdoc
      */
-    public function getAttributeLabel($attribute)
+    public function getAttributeLabel($attribute): string
     {
         // Is this the "field:handle" syntax?
         if (strncmp($attribute, 'field:', 6) === 0) {
@@ -1810,7 +1810,7 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @inheritdoc
      */
-    public function attributeLabels()
+    public function attributeLabels(): array
     {
         $labels = [
             'dateCreated' => Craft::t('app', 'Date Created'),
@@ -2068,7 +2068,7 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @inheritdoc
      */
-    public function addError($attribute, $error = '')
+    public function addError($attribute, $error = ''): void
     {
         if (strncmp($attribute, 'field:', 6) === 0) {
             $attribute = substr($attribute, 6);

@@ -184,7 +184,7 @@ class Site extends Model
     /**
      * @inheritdoc
      */
-    public function attributeLabels()
+    public function attributeLabels(): array
     {
         return [
             'baseUrl' => Craft::t('app', 'Base URL'),
@@ -225,7 +225,7 @@ class Site extends Model
     /**
      * @inheritdoc
      */
-    public function attributes()
+    public function attributes(): array
     {
         $attributes = parent::attributes();
         $attributes[] = 'name';

@@ -41,7 +41,7 @@ class AssetIndexingSession extends ActiveRecord
     /**
      * @inheritdoc
      */
-    public function rules()
+    public function rules(): array
     {
         return [
             [['totalEntries', 'processedEntries'], 'number', 'integerOnly' => true],
