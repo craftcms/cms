@@ -140,11 +140,11 @@ class MatrixBlockQuery extends ElementQuery
      * ```
      *
      * @param string|string[]|MatrixField|null $value The property value
-     * @return static self reference
+     * @return self self reference
      * @uses $fieldId
      * @since 3.4.0
      */
-    public function field($value)
+    public function field($value): self
     {
         if ($value instanceof MatrixField) {
             $this->fieldId = [$value->id];
@@ -201,10 +201,10 @@ class MatrixBlockQuery extends ElementQuery
      * ```
      *
      * @param int|int[]|null $value The property value
-     * @return static self reference
+     * @return self self reference
      * @uses $fieldId
      */
-    public function fieldId($value)
+    public function fieldId($value): self
     {
         $this->fieldId = $value;
         return $this;
@@ -239,10 +239,10 @@ class MatrixBlockQuery extends ElementQuery
      * ```
      *
      * @param int|int[]|null $value The property value
-     * @return static self reference
+     * @return self self reference
      * @uses $ownerId
      */
-    public function ownerId($value)
+    public function ownerId($value): self
     {
         $this->ownerId = $value;
         return $this;
@@ -268,10 +268,10 @@ class MatrixBlockQuery extends ElementQuery
      * ```
      *
      * @param ElementInterface $owner The owner element
-     * @return static self reference
+     * @return self self reference
      * @uses $ownerId
      */
-    public function owner(ElementInterface $owner)
+    public function owner(ElementInterface $owner): self
     {
         $this->ownerId = [$owner->id];
         $this->siteId = $owner->siteId;
@@ -289,11 +289,11 @@ class MatrixBlockQuery extends ElementQuery
      * | `false` | which cannot belong to a draft.
      *
      * @param bool|null $value The property value
-     * @return static self reference
+     * @return self self reference
      * @uses $allowOwnerDrafts
      * @since 3.3.10
      */
-    public function allowOwnerDrafts($value = true)
+    public function allowOwnerDrafts($value = true): self
     {
         $this->allowOwnerDrafts = $value;
         return $this;
@@ -310,11 +310,11 @@ class MatrixBlockQuery extends ElementQuery
      * | `false` | which cannot belong to a revision.
      *
      * @param bool|null $value The property value
-     * @return static self reference
+     * @return self self reference
      * @uses $allowOwnerDrafts
      * @since 3.3.10
      */
-    public function allowOwnerRevisions($value = true)
+    public function allowOwnerRevisions($value = true): self
     {
         $this->allowOwnerRevisions = $value;
         return $this;
@@ -350,10 +350,10 @@ class MatrixBlockQuery extends ElementQuery
      * ```
      *
      * @param string|string[]|MatrixBlockType|null $value The property value
-     * @return static self reference
+     * @return self self reference
      * @uses $typeId
      */
-    public function type($value)
+    public function type($value): self
     {
         if ($value instanceof MatrixBlockType) {
             $this->typeId = $value->id;
@@ -399,10 +399,10 @@ class MatrixBlockQuery extends ElementQuery
      * ```
      *
      * @param int|int[]|null $value The property value
-     * @return static self reference
+     * @return self self reference
      * @uses $typeId
      */
-    public function typeId($value)
+    public function typeId($value): self
     {
         $this->typeId = $value;
         return $this;

@@ -212,10 +212,10 @@ class UserQuery extends ElementQuery
      * ```
      *
      * @param bool $value The property value (defaults to true)
-     * @return static self reference
+     * @return self self reference
      * @uses $admin
      */
-    public function admin(bool $value = true)
+    public function admin(bool $value = true): self
     {
         $this->admin = $value;
         return $this;
@@ -241,10 +241,10 @@ class UserQuery extends ElementQuery
      * ```
      *
      * @param bool $value The property value (defaults to true)
-     * @return static self reference
+     * @return self self reference
      * @uses $hasPhoto
      */
-    public function hasPhoto(bool $value = true)
+    public function hasPhoto(bool $value = true): self
     {
         $this->hasPhoto = $value;
         return $this;
@@ -272,10 +272,10 @@ class UserQuery extends ElementQuery
      * ```
      *
      * @param string|int|null $value The property value
-     * @return static self reference
+     * @return self self reference
      * @uses $can
      */
-    public function can($value)
+    public function can($value): self
     {
         $this->can = $value;
         return $this;
@@ -311,10 +311,10 @@ class UserQuery extends ElementQuery
      * ```
      *
      * @param string|string[]|UserGroup|null $value The property value
-     * @return static self reference
+     * @return self self reference
      * @uses $groupId
      */
-    public function group($value)
+    public function group($value): self
     {
         if ($value instanceof UserGroup) {
             $this->groupId = $value->id;
@@ -360,10 +360,10 @@ class UserQuery extends ElementQuery
      * ```
      *
      * @param int|int[]|null $value The property value
-     * @return static self reference
+     * @return self self reference
      * @uses $groupId
      */
-    public function groupId($value)
+    public function groupId($value): self
     {
         $this->groupId = $value;
         return $this;
@@ -397,10 +397,10 @@ class UserQuery extends ElementQuery
      * ```
      *
      * @param string|string[]|null $value The property value
-     * @return static self reference
+     * @return self self reference
      * @uses $email
      */
-    public function email($value)
+    public function email($value): self
     {
         $this->email = $value;
         return $this;
@@ -439,10 +439,10 @@ class UserQuery extends ElementQuery
      * ```
      *
      * @param string|string[]|null $value The property value
-     * @return static self reference
+     * @return self self reference
      * @uses $username
      */
-    public function username($value)
+    public function username($value): self
     {
         $this->username = $value;
         return $this;
@@ -475,10 +475,10 @@ class UserQuery extends ElementQuery
      * ```
      *
      * @param string|string[]|null $value The property value
-     * @return static self reference
+     * @return self self reference
      * @uses $firstName
      */
-    public function firstName($value)
+    public function firstName($value): self
     {
         $this->firstName = $value;
         return $this;
@@ -511,10 +511,10 @@ class UserQuery extends ElementQuery
      * ```
      *
      * @param string|string[]|null $value The property value
-     * @return static self reference
+     * @return self self reference
      * @uses $lastName
      */
-    public function lastName($value)
+    public function lastName($value): self
     {
         $this->lastName = $value;
         return $this;
@@ -552,10 +552,10 @@ class UserQuery extends ElementQuery
      * ```
      *
      * @param mixed $value The property value
-     * @return static self reference
+     * @return self self reference
      * @uses $lastLoginDate
      */
-    public function lastLoginDate($value)
+    public function lastLoginDate($value): self
     {
         $this->lastLoginDate = $value;
         return $this;
@@ -590,7 +590,7 @@ class UserQuery extends ElementQuery
      *     ->all();
      * ```
      */
-    public function status($value)
+    public function status($value): self
     {
         return parent::status($value);
     }
@@ -623,11 +623,11 @@ class UserQuery extends ElementQuery
      * ```
      *
      * @param bool $value The property value (defaults to true)
-     * @return static self reference
+     * @return self self reference
      * @uses $withGroups
      * @since 3.6.0
      */
-    public function withGroups(bool $value = true)
+    public function withGroups(bool $value = true): self
     {
         $this->withGroups = true;
         return $this;

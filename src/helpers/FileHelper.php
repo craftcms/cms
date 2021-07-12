@@ -484,7 +484,7 @@ class FileHelper extends \yii\helpers\FileHelper
      * @param string $path the directory to be checked
      * @return int Unix timestamp representing the last modification time
      */
-    public static function lastModifiedTime($path)
+    public static function lastModifiedTime($path): int
     {
         if (is_file($path)) {
             return filemtime($path);

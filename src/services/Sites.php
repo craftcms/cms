@@ -1233,7 +1233,7 @@ class Sites extends Component
      * @param bool|null $withDisabled
      * @return Site[]
      */
-    private function _allSites(bool $withDisabled = null)
+    private function _allSites(bool $withDisabled = null): array
     {
         if ($withDisabled === null) {
             $request = Craft::$app->getRequest();

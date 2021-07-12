@@ -126,7 +126,7 @@ class UsersController extends Controller
     /**
      * @inheritdoc
      */
-    public function beforeAction($action)
+    public function beforeAction($action): bool
     {
         // Don't enable CSRF validation for login requests if the user is already logged-in.
         // (Guards against double-clicking a Login button.)
@@ -197,7 +197,7 @@ class UsersController extends Controller
      * @throws BadRequestHttpException
      * @throws ForbiddenHttpException
      */
-    public function actionImpersonate()
+    public function actionImpersonate(): ?Response
     {
         $this->requirePostRequest();
 
@@ -277,7 +277,7 @@ class UsersController extends Controller
      * @throws ForbiddenHttpException
      * @since 3.6.0
      */
-    public function actionImpersonateWithToken(int $userId, int $prevUserId)
+    public function actionImpersonateWithToken(int $userId, int $prevUserId): ?Response
     {
         $this->requireToken();
 
@@ -488,7 +488,7 @@ class UsersController extends Controller
      * @return Response
      * @throws BadRequestHttpException if the existing password submitted with the request is invalid
      */
-    public function actionGetPasswordResetUrl()
+    public function actionGetPasswordResetUrl(): Response
     {
         $this->requirePermission('administrateUsers');
 
@@ -1035,7 +1035,7 @@ class UsersController extends Controller
      * @throws BadRequestHttpException if attempting to create a client account, and one already exists
      * @throws ForbiddenHttpException if attempting public registration but public registration is not allowed
      */
-    public function actionSaveUser()
+    public function actionSaveUser(): ?Response
     {
         $this->requirePostRequest();
 
@@ -1913,7 +1913,7 @@ class UsersController extends Controller
      * @return void
      * @throws \Throwable if reasons
      */
-    private function _processUserPhoto(User $user)
+    private function _processUserPhoto(User $user): void
     {
         // Delete their photo?
         $users = Craft::$app->getUsers();

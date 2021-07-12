@@ -331,7 +331,7 @@ class Elements extends Component
      * @see startCollectingCacheTags()
      * @see stopCollectingCacheTags()
      */
-    public function getIsCollectingCacheTags()
+    public function getIsCollectingCacheTags(): bool
     {
         return $this->_cacheTags !== null;
     }
@@ -486,7 +486,7 @@ class Elements extends Component
      * @return ElementInterface|null The matching element, or `null`.
      * @since 3.5.13
      */
-    public function getElementByUid(string $uid, string $elementType = null, $siteId = null, array $criteria = [])
+    public function getElementByUid(string $uid, string $elementType = null, $siteId = null, array $criteria = []): ?ElementInterface
     {
         return $this->_elementById('uid', $uid, $elementType, $siteId, $criteria);
     }

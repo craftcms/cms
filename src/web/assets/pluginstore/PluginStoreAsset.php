@@ -90,7 +90,7 @@ class PluginStoreAsset extends AssetBundle
      * @throws NotFoundHttpException
      * @throws \yii\base\Exception
      */
-    private function getModule(array $config, string $moduleName, string $type = 'modern', bool $soft = true)
+    private function getModule(array $config, string $moduleName, string $type = 'modern', bool $soft = true): ?string
     {
         // Get the module entry
         $module = $this->getModuleEntry($config, $moduleName, $type, $soft);
@@ -120,7 +120,7 @@ class PluginStoreAsset extends AssetBundle
      * @throws NotFoundHttpException
      * @throws \yii\base\Exception
      */
-    private function getModuleEntry(array $config, string $moduleName, string $type = 'modern', bool $soft = false)
+    private function getModuleEntry(array $config, string $moduleName, string $type = 'modern', bool $soft = false): ?string
     {
         $module = null;
         // Get the manifest file

@@ -201,7 +201,7 @@ trait PrimaryReplicaTrait
      * @return PDO|null the PDO instance for the currently active replica connection. `null` is returned if no
      * replica connections are available and `$fallbackToPrimary` is false.
      */
-    public function getReplicaPdo(bool $fallbackToPrimary = true)
+    public function getReplicaPdo(bool $fallbackToPrimary = true): ?PDO
     {
         return $this->getSlavePdo($fallbackToPrimary);
     }
@@ -239,7 +239,7 @@ trait PrimaryReplicaTrait
      * @return Connection|null the currently active primary connection. `null` is returned if no primary connection
      * is available.
      */
-    public function getPrimary()
+    public function getPrimary(): ?Connection
     {
         return $this->getMaster();
     }

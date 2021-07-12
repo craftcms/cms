@@ -1590,7 +1590,7 @@ abstract class Element extends Component implements ElementInterface
      *
      * @return string
      */
-    public function __toString()
+    public function __toString(): string
     {
         if ($this->title !== null && $this->title !== '') {
             return (string)$this->title;

@@ -122,7 +122,7 @@ class Cp extends Component
      *
      * @return string
      */
-    public function craftIdAccountUrl()
+    public function craftIdAccountUrl(): string
     {
         return Craft::$app->getPluginStore()->craftIdEndpoint . '/account';
     }

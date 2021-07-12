@@ -128,7 +128,7 @@ abstract class Controller extends \yii\web\Controller
      * @throws ServiceUnavailableHttpException if the system is offline and the user isn't allowed to access it
      * @throws UnauthorizedHttpException
      */
-    public function beforeAction($action)
+    public function beforeAction($action): bool
     {
         // Don't enable CSRF validation for Live Preview requests
         if ($this->request->getIsLivePreview()) {

@@ -31,7 +31,7 @@ class LivePreviewController extends Controller
     /**
      * @inheritdoc
      */
-    public function beforeAction($action)
+    public function beforeAction($action): bool
     {
         // Mark this as a Live Preview request
         if ($action->id === 'preview') {

@@ -416,7 +416,7 @@ class TestSetup
      *
      * @return array The project config in either yaml or as an array.
      */
-    public static function getSeedProjectConfigData()
+    public static function getSeedProjectConfigData(): array
     {
         if (!empty(self::$_parsedProjectConfig)) {
             return self::$_parsedProjectConfig;

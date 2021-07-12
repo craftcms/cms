@@ -26,7 +26,7 @@ trait PrefixedMutexTrait
      * @param int $timeout
      * @return bool
      */
-    public function acquire($name, $timeout = 0)
+    public function acquire($name, $timeout = 0): bool
     {
         return parent::acquire($this->_name($name), $timeout);
     }
@@ -35,7 +35,7 @@ trait PrefixedMutexTrait
      * @param string $name
      * @return bool
      */
-    public function release($name)
+    public function release($name): bool
     {
         return parent::release($this->_name($name));
     }
@@ -44,7 +44,7 @@ trait PrefixedMutexTrait
      * @param string $name
      * @return bool
      */
-    public function isAcquired($name)
+    public function isAcquired($name): bool
     {
         return parent::isAcquired($this->_name($name));
     }

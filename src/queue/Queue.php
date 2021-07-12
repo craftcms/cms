@@ -580,7 +580,7 @@ EOD;
      * @return array|null The payload, or null if there aren't any jobs to reserve
      * @throws Exception in case it hasn't waited the lock
      */
-    protected function reserve()
+    protected function reserve(): ?array
     {
         $payload = null;
 
@@ -626,7 +626,7 @@ EOD;
      * @param string|resource $job
      * @return string
      */
-    private function _jobData($job)
+    private function _jobData($job): string
     {
         if (is_resource($job)) {
             $job = stream_get_contents($job);

@@ -246,7 +246,7 @@ class Paginate extends BaseObject
      * @param int $max The maximum number of links to return
      * @return string[]
      */
-    public function getDynamicRangeUrls($max = 10)
+    public function getDynamicRangeUrls($max = 10): array
     {
         $start = max(1, $this->currentPage - floor($max / 2));
         $end = min($this->totalPages, $start + $max - 1);

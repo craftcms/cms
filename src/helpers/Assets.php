@@ -127,7 +127,7 @@ class Assets
      * @param bool $preventPluginModifications if set to true, will prevent plugins from modify
      * @return string
      */
-    public static function prepareAssetName(string $name, bool $isFilename = true, bool $preventPluginModifications = false)
+    public static function prepareAssetName(string $name, bool $isFilename = true, bool $preventPluginModifications = false): string
     {
         if ($isFilename) {
             $baseName = pathinfo($name, PATHINFO_FILENAME);
@@ -764,7 +764,7 @@ class Assets
      * @throws InvalidArgumentException if the size can’t be parsed
      * @since 3.5.0
      */
-    public static function parseSrcsetSize($size)
+    public static function parseSrcsetSize($size): array
     {
         if (is_numeric($size)) {
             $size = $size . 'w';

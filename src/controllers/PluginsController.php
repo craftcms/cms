@@ -26,7 +26,7 @@ class PluginsController extends Controller
     /**
      * @inheritdoc
      */
-    public function beforeAction($action)
+    public function beforeAction($action): bool
     {
         // All plugin actions require an admin
         $this->requireAdmin();

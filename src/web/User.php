@@ -213,7 +213,7 @@ class User extends \yii\web\User
      * @throws ForbiddenHttpException if the request doesn’t accept a redirect response
      * @since 3.4.0
      */
-    public function guestRequired()
+    public function guestRequired(): Response
     {
         if (!$this->checkRedirectAcceptable()) {
             throw new ForbiddenHttpException(Craft::t('app', 'Guest Required'));

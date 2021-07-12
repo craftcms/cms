@@ -670,7 +670,7 @@ class User extends Element implements IdentityInterface
      *
      * @return string
      */
-    public function __toString()
+    public function __toString(): string
     {
         try {
             return $this->getName() ?: static::class;
@@ -1336,7 +1336,7 @@ class User extends Element implements IdentityInterface
      * @return string|null The preferred locale
      * @since 3.5.0
      */
-    public function getPreferredLocale()
+    public function getPreferredLocale(): ?string
     {
         return $this->_validateLocale($this->getPreference('locale'));
     }

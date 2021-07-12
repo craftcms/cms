@@ -336,7 +336,7 @@ class UtilitiesController extends Controller
      * @throws ForbiddenHttpException if the user doesn't have access to the DB Backup utility
      * @throws Exception if the backup could not be created
      */
-    public function actionDbBackupPerformAction()
+    public function actionDbBackupPerformAction(): ?Response
     {
         $this->requirePermission('utility:db-backup');
 
@@ -393,7 +393,7 @@ class UtilitiesController extends Controller
      * @return Response
      * @throws ForbiddenHttpException if the user doesn't have access to the Migrations utility
      */
-    public function actionApplyNewMigrations()
+    public function actionApplyNewMigrations(): Response
     {
         $this->requirePermission('utility:migrations');
 
@@ -414,7 +414,7 @@ class UtilitiesController extends Controller
      *
      * @return array
      */
-    private function _utilityInfo()
+    private function _utilityInfo(): array
     {
         $info = [];
 

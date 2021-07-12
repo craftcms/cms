@@ -43,7 +43,7 @@ class DeprecationException extends Exception
     /**
      * @inheritdoc
      */
-    public function getName()
+    public function getName(): string
     {
         return 'Deprecation Error';
     }

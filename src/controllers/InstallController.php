@@ -44,7 +44,7 @@ class InstallController extends Controller
     /**
      * @inheritdoc
      */
-    public function beforeAction($action)
+    public function beforeAction($action): bool
     {
         // Return a 404 if Craft is already installed
         if (!YII_DEBUG && Craft::$app->getIsInstalled()) {

@@ -156,9 +156,9 @@ class ProjectConfig
     /**
      * Resets the static memoization variables.
      *
-     * @return null
+     * @return void
      */
-    public static function reset()
+    public static function reset(): void
     {
         static::$_processedFields = false;
         static::$_processedSites = false;

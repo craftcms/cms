@@ -580,7 +580,7 @@ class App
      * @since 3.0.18
      * @deprecated in 3.6.0. Override `components.log.targets` instead
      */
-    public static function logConfig()
+    public static function logConfig(): ?array
     {
         // Using Yii's Dispatcher class here is intentional
         return [

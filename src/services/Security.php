@@ -129,7 +129,7 @@ class Security extends \yii\base\Security
      * @see decryptByKey()
      * @see encryptByPassword()
      */
-    public function encryptByKey($data, $inputKey = null, $info = null)
+    public function encryptByKey($data, $inputKey = null, $info = null): string
     {
         if ($inputKey === null) {
             $inputKey = Craft::$app->getConfig()->getGeneral()->securityKey;

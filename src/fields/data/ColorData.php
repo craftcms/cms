@@ -48,7 +48,7 @@ class ColorData extends BaseObject implements Serializable
     /**
      * @return string
      */
-    public function __toString()
+    public function __toString(): string
     {
         return $this->_hex;
     }

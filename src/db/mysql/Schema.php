@@ -136,7 +136,7 @@ class Schema extends \yii\db\mysql\Schema
      * @param int|string|array $length length or precision of the column. See [[ColumnSchemaBuilder::$length]].
      * @return ColumnSchemaBuilder column schema builder instance
      */
-    public function createColumnSchemaBuilder($type, $length = null)
+    public function createColumnSchemaBuilder($type, $length = null): ColumnSchemaBuilder
     {
         return new ColumnSchemaBuilder($type, $length, $this->db);
     }
@@ -272,7 +272,7 @@ class Schema extends \yii\db\mysql\Schema
      * @return TableSchema|null driver dependent table metadata. Null if the table does not exist.
      * @throws \Exception
      */
-    protected function loadTableSchema($name)
+    protected function loadTableSchema($name): ?TableSchema
     {
         $table = new TableSchema;
         $this->resolveTableNames($table, $name);

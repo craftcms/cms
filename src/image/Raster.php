@@ -19,6 +19,7 @@ use Imagine\Gd\Imagine as GdImagine;
 use Imagine\Image\AbstractFont as Font;
 use Imagine\Image\AbstractImage;
 use Imagine\Image\Box;
+use Imagine\Image\BoxInterface;
 use Imagine\Image\ImageInterface as Imagine;
 use Imagine\Image\Metadata\ExifMetadataReader;
 use Imagine\Image\Palette\RGB;
@@ -395,9 +396,9 @@ class Raster extends Image
      * Rotates the image by the given degrees.
      *
      * @param float $degrees
-     * @return static Self reference
+     * @return self Self reference
      */
-    public function rotate(float $degrees)
+    public function rotate(float $degrees): self
     {
         $this->_image->rotate($degrees);
 
@@ -411,24 +412,22 @@ class Raster extends Image
     /**
      * Flips the image horizontally.
      *
-     * @return static Self reference
+     * @return self Self reference
      */
-    public function flipHorizontally()
+    public function flipHorizontally(): self
     {
         $this->_image->flipHorizontally();
-
         return $this;
     }
 
     /**
      * Flips the image vertically.
      *
-     * @return static Self reference
+     * @return self Self reference
      */
-    public function flipVertically()
+    public function flipVertically(): self
     {
         $this->_image->flipVertically();
-
         return $this;
     }
 
@@ -436,12 +435,11 @@ class Raster extends Image
      * Sets the image quality.
      *
      * @param int $quality
-     * @return static Self reference
+     * @return self Self reference
      */
-    public function setQuality(int $quality)
+    public function setQuality(int $quality): self
     {
         $this->_quality = $quality;
-
         return $this;
     }
 
@@ -449,9 +447,9 @@ class Raster extends Image
      * Sets the interlace setting.
      *
      * @param string $interlace
-     * @return static Self reference
+     * @return self Self reference
      */
-    public function setInterlace(string $interlace)
+    public function setInterlace(string $interlace): self
     {
         $this->_image->interlace($interlace);
 
@@ -497,10 +495,10 @@ class Raster extends Image
      * Loads an image from an SVG string.
      *
      * @param string $svgContent
-     * @return static Self reference
+     * @return self Self reference
      * @throws ImageException if the SVG string cannot be loaded.
      */
-    public function loadFromSVG(string $svgContent)
+    public function loadFromSVG(string $svgContent): self
     {
         try {
             $this->_image = $this->_instance->load($svgContent);
@@ -574,10 +572,10 @@ class Raster extends Image
      *
      * @param string $text
      * @param int $angle
-     * @return \Imagine\Image\BoxInterface
+     * @return BoxInterface
      * @throws ImageException if attempting to create text box with no font properties
      */
-    public function getTextBox(string $text, int $angle = 0)
+    public function getTextBox(string $text, int $angle = 0): BoxInterface
     {
         if ($this->_font === null) {
             throw new ImageException(Craft::t('app', 'No font properties have been set. Call Raster::setFontProperties() first.'));
@@ -608,9 +606,9 @@ class Raster extends Image
     /**
      * Disable animation if this is an animated image.
      *
-     * @return $this
+     * @return self Self-reference
      */
-    public function disableAnimation()
+    public function disableAnimation(): self
     {
         $this->_isAnimatedGif = false;
 

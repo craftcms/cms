@@ -697,7 +697,7 @@ class Asset extends Element
     /**
      * @inheritdoc
      */
-    public function __toString()
+    public function __toString(): string
     {
         try {
             if ($this->_transform !== null && ($url = (string)$this->getUrl())) {

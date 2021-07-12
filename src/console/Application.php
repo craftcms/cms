@@ -150,7 +150,7 @@ class Application extends \yii\console\Application
      * @see has()
      * @see set()
      */
-    public function get($id, $throwException = true)
+    public function get($id, $throwException = true): ?object
     {
         // Is this the first time the queue component is requested?
         $isFirstQueue = $id === 'queue' && !$this->has($id, true);

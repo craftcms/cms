@@ -86,10 +86,10 @@ class CategoryQuery extends ElementQuery
      * Sets the [[$editable]] property.
      *
      * @param bool $value The property value (defaults to true)
-     * @return static self reference
+     * @return self self reference
      * @uses $editable
      */
-    public function editable(bool $value = true)
+    public function editable(bool $value = true): self
     {
         $this->editable = $value;
         return $this;
@@ -125,10 +125,10 @@ class CategoryQuery extends ElementQuery
      * ```
      *
      * @param string|string[]|CategoryGroup|null $value The property value
-     * @return static self reference
+     * @return self self reference
      * @uses $groupId
      */
-    public function group($value)
+    public function group($value): self
     {
         if ($value instanceof CategoryGroup) {
             $this->structureId = ($value->structureId ?: false);
@@ -175,10 +175,10 @@ class CategoryQuery extends ElementQuery
      * ```
      *
      * @param int|int[]|null $value The property value
-     * @return static self reference
+     * @return self self reference
      * @uses $groupId
      */
-    public function groupId($value)
+    public function groupId($value): self
     {
         $this->groupId = $value;
         return $this;

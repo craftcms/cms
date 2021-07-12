@@ -52,7 +52,7 @@ abstract class BaseUpdaterController extends Controller
      * @throws NotFoundHttpException if it's not a control panel request
      * @throws BadRequestHttpException if there's invalid data in the request
      */
-    public function beforeAction($action)
+    public function beforeAction($action): bool
     {
         // This controller is only available to the CP
         if (!$this->request->getIsCpRequest()) {
@@ -287,7 +287,7 @@ abstract class BaseUpdaterController extends Controller
      *
      * @return bool Whether composer.json can be found
      */
-    protected function ensureComposerJson()
+    protected function ensureComposerJson(): bool
     {
         try {
             Craft::$app->getComposer()->getJsonPath();

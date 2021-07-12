@@ -138,7 +138,7 @@ class MigrateController extends BaseMigrateController
      * @param string $actionID the action id of the current request
      * @return string[] the names of the options valid for the action
      */
-    public function options($actionID)
+    public function options($actionID): array
     {
         $options = parent::options($actionID);
 
@@ -174,7 +174,7 @@ class MigrateController extends BaseMigrateController
     /**
      * @inheritdoc
      */
-    public function beforeAction($action)
+    public function beforeAction($action): bool
     {
         // Make sure this isn't a root user
         if (!$this->checkRootUser()) {
@@ -414,7 +414,7 @@ class MigrateController extends BaseMigrateController
      *
      * @return int the status of the action execution. 0 means normal, other values mean abnormal.
      */
-    public function actionUp($limit = 0)
+    public function actionUp($limit = 0): int
     {
         $res = parent::actionUp($limit) ?? ExitCode::OK;
 

@@ -93,7 +93,7 @@ class TypeManager extends Component
      * @param string $typeName
      * @return array
      */
-    private function _triggerEvent(array $fields, string $typeName)
+    private function _triggerEvent(array $fields, string $typeName): array
     {
         if ($this->hasEventHandlers(self::EVENT_DEFINE_GQL_TYPE_FIELDS)) {
             $event = new DefineGqlTypeFieldsEvent([

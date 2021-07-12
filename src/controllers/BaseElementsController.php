@@ -24,7 +24,7 @@ abstract class BaseElementsController extends Controller
     /**
      * @inheritdoc
      */
-    public function beforeAction($action)
+    public function beforeAction($action): bool
     {
         // All actions require CP requests
         $this->requireCpRequest();

@@ -38,13 +38,6 @@ interface PluginInterface
     public function getHandle(): string;
 
     /**
-     * Returns the plugin’s current version.
-     *
-     * @return string The plugin’s current version
-     */
-    public function getVersion();
-
-    /**
      * Installs the plugin.
      *
      * @return void

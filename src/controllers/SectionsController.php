@@ -34,7 +34,7 @@ class SectionsController extends Controller
     /**
      * @inheritdoc
      */
-    public function beforeAction($action)
+    public function beforeAction($action): bool
     {
         // All section actions require an admin
         $this->requireAdmin();

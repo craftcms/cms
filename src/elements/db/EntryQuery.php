@@ -245,10 +245,10 @@ class EntryQuery extends ElementQuery
      * Sets the [[$editable]] property.
      *
      * @param bool $value The property value (defaults to true)
-     * @return static self reference
+     * @return self self reference
      * @uses $editable
      */
-    public function editable(bool $value = true)
+    public function editable(bool $value = true): self
     {
         $this->editable = $value;
         return $this;
@@ -284,10 +284,10 @@ class EntryQuery extends ElementQuery
      * ```
      *
      * @param string|string[]|Section|null $value The property value
-     * @return static self reference
+     * @return self self reference
      * @uses $sectionId
      */
-    public function section($value)
+    public function section($value): self
     {
         // If the value is a section handle, swap it with the section
         if (is_string($value) && ($section = Craft::$app->getSections()->getSectionByHandle($value))) {
@@ -343,10 +343,10 @@ class EntryQuery extends ElementQuery
      * ```
      *
      * @param int|int[]|null $value The property value
-     * @return static self reference
+     * @return self self reference
      * @uses $sectionId
      */
-    public function sectionId($value)
+    public function sectionId($value): self
     {
         $this->sectionId = $value;
         return $this;
@@ -384,10 +384,10 @@ class EntryQuery extends ElementQuery
      * ```
      *
      * @param string|string[]|EntryType|null $value The property value
-     * @return static self reference
+     * @return self self reference
      * @uses $typeId
      */
-    public function type($value)
+    public function type($value): self
     {
         if ($value instanceof EntryType) {
             $this->typeId = [$value->id];
@@ -433,10 +433,10 @@ class EntryQuery extends ElementQuery
      * ```
      *
      * @param int|int[]|null $value The property value
-     * @return static self reference
+     * @return self self reference
      * @uses $typeId
      */
-    public function typeId($value)
+    public function typeId($value): self
     {
         $this->typeId = $value;
         return $this;
@@ -471,10 +471,10 @@ class EntryQuery extends ElementQuery
      * ```
      *
      * @param int|int[]|null $value The property value
-     * @return static self reference
+     * @return self self reference
      * @uses $authorId
      */
-    public function authorId($value)
+    public function authorId($value): self
     {
         $this->authorId = $value;
         return $this;
@@ -510,10 +510,10 @@ class EntryQuery extends ElementQuery
      * ```
      *
      * @param string|string[]|UserGroup|null $value The property value
-     * @return static self reference
+     * @return self self reference
      * @uses $authorGroupId
      */
-    public function authorGroup($value)
+    public function authorGroup($value): self
     {
         if ($value instanceof UserGroup) {
             $this->authorGroupId = $value->id;
@@ -559,10 +559,10 @@ class EntryQuery extends ElementQuery
      * ```
      *
      * @param int|int[]|null $value The property value
-     * @return static self reference
+     * @return self self reference
      * @uses $authorGroupId
      */
-    public function authorGroupId($value)
+    public function authorGroupId($value): self
     {
         $this->authorGroupId = $value;
         return $this;
@@ -602,10 +602,10 @@ class EntryQuery extends ElementQuery
      * ```
      *
      * @param mixed $value The property value
-     * @return static self reference
+     * @return self self reference
      * @uses $postDate
      */
-    public function postDate($value)
+    public function postDate($value): self
     {
         $this->postDate = $value;
         return $this;
@@ -642,10 +642,10 @@ class EntryQuery extends ElementQuery
      * ```
      *
      * @param string|\DateTime $value The property value
-     * @return static self reference
+     * @return self self reference
      * @uses $before
      */
-    public function before($value)
+    public function before($value): self
     {
         $this->before = $value;
         return $this;
@@ -682,10 +682,10 @@ class EntryQuery extends ElementQuery
      * ```
      *
      * @param string|\DateTime $value The property value
-     * @return static self reference
+     * @return self self reference
      * @uses $after
      */
-    public function after($value)
+    public function after($value): self
     {
         $this->after = $value;
         return $this;
@@ -725,10 +725,10 @@ class EntryQuery extends ElementQuery
      * ```
      *
      * @param mixed $value The property value
-     * @return static self reference
+     * @return self self reference
      * @uses $expiryDate
      */
-    public function expiryDate($value)
+    public function expiryDate($value): self
     {
         $this->expiryDate = $value;
         return $this;
@@ -763,7 +763,7 @@ class EntryQuery extends ElementQuery
      *     ->all();
      * ```
      */
-    public function status($value)
+    public function status($value): self
     {
         return parent::status($value);
     }

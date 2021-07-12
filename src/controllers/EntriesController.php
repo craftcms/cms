@@ -289,7 +289,7 @@ class EntriesController extends BaseEntriesController
      * @throws ServerErrorHttpException if reasons
      * @throws ForbiddenHttpException
      */
-    public function actionSaveEntry(bool $duplicate = false)
+    public function actionSaveEntry(bool $duplicate = false): ?Response
     {
         $this->requirePostRequest();
 
@@ -427,7 +427,7 @@ class EntriesController extends BaseEntriesController
      * @throws ServerErrorHttpException if reasons
      * @since 3.2.3
      */
-    public function actionDuplicateEntry()
+    public function actionDuplicateEntry(): ?Response
     {
         return $this->runAction('save-entry', ['duplicate' => true]);
     }
@@ -440,7 +440,7 @@ class EntriesController extends BaseEntriesController
      * @throws BadRequestHttpException
      * @since 3.6.0
      */
-    public function actionDeleteForSite()
+    public function actionDeleteForSite(): ?Response
     {
         $this->requirePostRequest();
 
@@ -568,7 +568,7 @@ class EntriesController extends BaseEntriesController
      * @throws NotFoundHttpException if the requested section or entry cannot be found
      * @throws ForbiddenHttpException if the user is not permitted to edit content in the requested site
      */
-    private function _prepEditEntryVariables(array &$variables)
+    private function _prepEditEntryVariables(array &$variables): ?Response
     {
         // Get the section
         // ---------------------------------------------------------------------

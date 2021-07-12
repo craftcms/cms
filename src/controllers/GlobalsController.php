@@ -35,7 +35,7 @@ class GlobalsController extends Controller
      * @return Response
      * @throws ForbiddenHttpException if the user isn't authorized to edit any global sets
      */
-    public function actionIndex()
+    public function actionIndex(): Response
     {
         $editableSets = Craft::$app->getGlobals()->getEditableSets();
 
@@ -53,7 +53,7 @@ class GlobalsController extends Controller
      * @throws NotFoundHttpException if the requested global set cannot be found
      * @throws BadRequestHttpException
      */
-    public function actionSaveSet()
+    public function actionSaveSet(): ?Response
     {
         $this->requirePostRequest();
         $this->requireAdmin();

@@ -52,7 +52,7 @@ class TemplatesController extends Controller
     /**
      * @inheritdoc
      */
-    public function beforeAction($action)
+    public function beforeAction($action): bool
     {
         $actionSegments = $this->request->getActionSegments();
         if (isset($actionSegments[0]) && strtolower($actionSegments[0]) === 'templates') {

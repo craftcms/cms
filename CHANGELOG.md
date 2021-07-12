@@ -42,9 +42,11 @@
 - All components’ `afterSave()` methods must now have a `void` return type declaration.
 - All components’ `beforeApplyDelete()` methods must now have a `void` return type declaration.
 - All components’ `getSettingsHtml()` methods must now have a `?string` return type declaration.
+- Controllers’ `beforeAction()` methods must now have a `bool` return type declaration.
 - Element actions’ `getConfirmationMessage()` methods must now have a `?string` return type declaration.
 - Element actions’ `getMessage()` methods must now have a `?string` return type declaration.
 - Element actions’ `getTriggerHtml()` methods must now have a `?string` return type declaration.
+- Element types’ `__toString()` methods must now have a `string` return type declaration.
 - Element types’ `afterDelete()` methods must now have a `void` return type declaration.
 - Element types’ `afterMoveInStructure()` methods must now have a `void` return type declaration.
 - Element types’ `afterPropagate()` methods must now have a `void` return type declaration.
@@ -58,6 +60,7 @@
 - Element types’ `getTitleTranslationDescription()` methods must now have a `?string` return type declaration.
 - Element types’ `getUriFormat()` methods must now have a `?string` return type declaration.
 - Element types’ `refHandle()` methods must now have a `?string` return type declaration.
+- Element queries’ `status()` methods must now have a `self` return type declaration.
 - Fields’ `afterElementDelete()` methods must now have a `void` return type declaration.
 - Fields’ `afterElementPropagate()` methods must now have a `void` return type declaration.
 - Fields’ `afterElementRestore()` methods must now have a `void` return type declaration.

@@ -502,7 +502,7 @@ class Application extends \yii\web\Application
      * @throws ServiceUnavailableHttpException
      * @throws \yii\base\ExitException
      */
-    private function _processInstallRequest(Request $request)
+    private function _processInstallRequest(Request $request): ?Response
     {
         $isCpRequest = $request->getIsCpRequest();
         $isInstalled = $this->getIsInstalled();
@@ -617,7 +617,7 @@ class Application extends \yii\web\Application
      * @throws HttpException
      * @throws ServiceUnavailableHttpException
      */
-    private function _processUpdateLogic(Request $request)
+    private function _processUpdateLogic(Request $request): ?Response
     {
         $this->_unregisterDebugModule();
 

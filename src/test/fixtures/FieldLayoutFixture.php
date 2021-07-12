@@ -107,7 +107,7 @@ abstract class FieldLayoutFixture extends DbFixture
      *
      * @return array the data rows to be inserted into the database table.
      */
-    protected function getData()
+    protected function getData(): array
     {
         return $this->loadData($this->dataFile);
     }

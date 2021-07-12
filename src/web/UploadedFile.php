@@ -25,10 +25,10 @@ class UploadedFile extends \yii\web\UploadedFile
      *
      * @param string $name The name of the file input field
      * @param bool $ensureTempFileExists Whether to only return the instance if its temp files still exists
-     * @return static|null The instance of the uploaded file. null is returned if no file is uploaded for the
+     * @return self|null The instance of the uploaded file. null is returned if no file is uploaded for the
      * specified name.
      */
-    public static function getInstanceByName($name, bool $ensureTempFileExists = true)
+    public static function getInstanceByName($name, bool $ensureTempFileExists = true): ?self
     {
         /** @var static $instance */
         $instance = parent::getInstanceByName(self::_normalizeName($name));
@@ -112,7 +112,7 @@ class UploadedFile extends \yii\web\UploadedFile
      * @throws InvalidConfigException when the `fileinfo` PHP extension is not installed and `$checkExtension` is `false`.
      * @since 3.1.7
      */
-    public function getMimeType(string $magicFile = null, bool $checkExtension = true)
+    public function getMimeType(string $magicFile = null, bool $checkExtension = true): ?string
     {
         $mimeType = null;
 

@@ -107,10 +107,10 @@ class TagQuery extends ElementQuery
      * ```
      *
      * @param string|string[]|TagGroup|null $value The property value
-     * @return static self reference
+     * @return self self reference
      * @uses $groupId
      */
-    public function group($value)
+    public function group($value): self
     {
         if ($value instanceof TagGroup) {
             $this->groupId = [$value->id];
@@ -156,10 +156,10 @@ class TagQuery extends ElementQuery
      * ```
      *
      * @param int|int[]|null $value The property value
-     * @return static self reference
+     * @return self self reference
      * @uses $groupId
      */
-    public function groupId($value)
+    public function groupId($value): self
     {
         $this->groupId = $value;
         return $this;

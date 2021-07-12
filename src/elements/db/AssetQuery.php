@@ -247,10 +247,10 @@ class AssetQuery extends ElementQuery
      * ```
      *
      * @param string|string[]|VolumeInterface|null $value The property value
-     * @return static self reference
+     * @return self self reference
      * @uses $volumeId
      */
-    public function volume($value)
+    public function volume($value): self
     {
         if ($value instanceof VolumeInterface) {
             $this->volumeId = [$value->id];
@@ -298,10 +298,10 @@ class AssetQuery extends ElementQuery
      * ```
      *
      * @param int|int[]|string|null $value The property value
-     * @return static self reference
+     * @return self self reference
      * @uses $volumeId
      */
-    public function volumeId($value)
+    public function volumeId($value): self
     {
         $this->volumeId = $value;
         return $this;
@@ -342,10 +342,10 @@ class AssetQuery extends ElementQuery
      * :::
      *
      * @param int|int[]|null $value The property value
-     * @return static self reference
+     * @return self self reference
      * @uses $folderId
      */
-    public function folderId($value)
+    public function folderId($value): self
     {
         $this->folderId = $value;
         return $this;
@@ -378,11 +378,11 @@ class AssetQuery extends ElementQuery
      * ```
      *
      * @param int|User|null $value The property value
-     * @return static self reference
+     * @return self self reference
      * @uses $uploaderId
      * @since 3.4.0
      */
-    public function uploader($value)
+    public function uploader($value): self
     {
         if ($value instanceof User) {
             $this->uploaderId = $value->id;
@@ -426,10 +426,10 @@ class AssetQuery extends ElementQuery
      * ```
      *
      * @param string|string[]|null $value The property value
-     * @return static self reference
+     * @return self self reference
      * @uses $filename
      */
-    public function filename($value)
+    public function filename($value): self
     {
         $this->filename = $value;
         return $this;
@@ -485,10 +485,10 @@ class AssetQuery extends ElementQuery
      * ```
      *
      * @param string|string[]|null $value The property value
-     * @return static self reference
+     * @return self self reference
      * @uses $kind
      */
-    public function kind($value)
+    public function kind($value): self
     {
         $this->kind = $value;
         return $this;
@@ -524,10 +524,10 @@ class AssetQuery extends ElementQuery
      * ```
      *
      * @param mixed $value The property value
-     * @return static self reference
+     * @return self self reference
      * @uses $width
      */
-    public function width($value)
+    public function width($value): self
     {
         $this->width = $value;
         return $this;
@@ -563,10 +563,10 @@ class AssetQuery extends ElementQuery
      * ```
      *
      * @param mixed $value The property value
-     * @return static self reference
+     * @return self self reference
      * @uses $height
      */
-    public function height($value)
+    public function height($value): self
     {
         $this->height = $value;
         return $this;
@@ -600,10 +600,10 @@ class AssetQuery extends ElementQuery
      * ```
      *
      * @param mixed $value The property value
-     * @return static self reference
+     * @return self self reference
      * @uses $size
      */
-    public function size($value)
+    public function size($value): self
     {
         $this->size = $value;
         return $this;
@@ -641,10 +641,10 @@ class AssetQuery extends ElementQuery
      * ```
      *
      * @param mixed $value The property value
-     * @return static self reference
+     * @return self self reference
      * @uses $dateModified
      */
-    public function dateModified($value)
+    public function dateModified($value): self
     {
         $this->dateModified = $value;
         return $this;
@@ -678,10 +678,10 @@ class AssetQuery extends ElementQuery
      * :::
      *
      * @param bool $value The property value (defaults to true)
-     * @return static self reference
+     * @return self self reference
      * @uses $includeSubfolders
      */
-    public function includeSubfolders(bool $value = true)
+    public function includeSubfolders(bool $value = true): self
     {
         $this->includeSubfolders = $value;
         return $this;
@@ -734,7 +734,7 @@ class AssetQuery extends ElementQuery
      * @return self The query object itself
      * @uses $withTransforms
      */
-    public function withTransforms(array $value = null)
+    public function withTransforms(array $value = null): self
     {
         $this->withTransforms = $value;
         return $this;

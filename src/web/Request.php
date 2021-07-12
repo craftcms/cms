@@ -1167,7 +1167,7 @@ class Request extends \yii\web\Request
      * @return CookieCollection the cookie collection.
      * @since 3.5.0
      */
-    public function getRawCookies()
+    public function getRawCookies(): CookieCollection
     {
         if ($this->_rawCookies === null) {
             $this->_rawCookies = new CookieCollection($this->loadRawCookies(), [
@@ -1185,7 +1185,7 @@ class Request extends \yii\web\Request
      * @return Cookie[]
      * @since 3.5.0
      */
-    protected function loadRawCookies()
+    protected function loadRawCookies(): array
     {
         $cookies = [];
 

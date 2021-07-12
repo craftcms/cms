@@ -928,7 +928,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
      * @param callable|null $arrow
      * @return array
      */
-    public function filterFilter(TwigEnvironment $env, $arr, $arrow = null)
+    public function filterFilter(TwigEnvironment $env, $arr, $arrow = null): array
     {
         if ($arrow === null) {
             return array_filter($arr);
@@ -1313,7 +1313,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
      * (This argument is deprecated. The `|attr` filter should be used instead.)
      * @return string
      */
-    public function svgFunction($svg, bool $sanitize = null, bool $namespace = null, string $class = null)
+    public function svgFunction($svg, bool $sanitize = null, bool $namespace = null, string $class = null): string
     {
         if ($svg instanceof Asset) {
             try {

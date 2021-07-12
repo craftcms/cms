@@ -1205,7 +1205,7 @@ class Gql extends Component
      * @return Error[]
      * @since 3.6.2
      */
-    public function handleQueryErrors(array $errors, callable $formatter)
+    public function handleQueryErrors(array $errors, callable $formatter): array
     {
         $devMode = Craft::$app->getConfig()->getGeneral()->devMode;
 

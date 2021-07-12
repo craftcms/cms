@@ -74,9 +74,9 @@ class Response extends \yii\web\Response
     /**
      * Sets headers that will instruct the client to cache this response.
      *
-     * @return static self reference
+     * @return self self reference
      */
-    public function setCacheHeaders()
+    public function setCacheHeaders(): self
     {
         $cacheTime = 31536000; // 1 year
         $this->getHeaders()
@@ -89,10 +89,10 @@ class Response extends \yii\web\Response
     /**
      * Sets headers that will instruct the client to not cache this response.
      *
-     * @return static self reference
+     * @return self self reference
      * @since 3.5.0
      */
-    public function setNoCacheHeaders()
+    public function setNoCacheHeaders(): self
     {
         $this->getHeaders()
             ->set('Expires', '0')
@@ -105,9 +105,9 @@ class Response extends \yii\web\Response
      * Sets a Last-Modified header based on a given file path.
      *
      * @param string $path The file to read the last modified date from.
-     * @return static self reference
+     * @return self self reference
      */
-    public function setLastModifiedHeader(string $path)
+    public function setLastModifiedHeader(string $path): self
     {
         $modifiedTime = filemtime($path);
 
@@ -127,7 +127,7 @@ class Response extends \yii\web\Response
      * @return CookieCollection the cookie collection.
      * @since 3.5.0
      */
-    public function getRawCookies()
+    public function getRawCookies(): CookieCollection
     {
         if ($this->_rawCookies === null) {
             $this->_rawCookies = new CookieCollection();
@@ -173,13 +173,12 @@ class Response extends \yii\web\Response
      * @param string $filePath
      * @param string|null $attachmentName
      * @param array $options
-     * @return static self reference
+     * @return self self reference
      */
-    public function sendFile($filePath, $attachmentName = null, $options = [])
+    public function sendFile($filePath, $attachmentName = null, $options = []): self
     {
         $this->_clearOutputBuffer();
         parent::sendFile($filePath, $attachmentName, $options);
-
         return $this;
     }
 
@@ -188,14 +187,13 @@ class Response extends \yii\web\Response
      * @param string $content
      * @param string $attachmentName
      * @param array $options
-     * @return static self reference
+     * @return self self reference
      * @throws HttpException
      */
-    public function sendContentAsFile($content, $attachmentName, $options = [])
+    public function sendContentAsFile($content, $attachmentName, $options = []): self
     {
         $this->_clearOutputBuffer();
         parent::sendContentAsFile($content, $attachmentName, $options);
-
         return $this;
     }
 

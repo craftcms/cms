@@ -176,7 +176,7 @@ abstract class Field extends SavableComponent implements FieldInterface
      *
      * @return string
      */
-    public function __toString()
+    public function __toString(): string
     {
         try {
             return (string)Craft::t('site', $this->name) ?: static::class;

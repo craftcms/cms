@@ -1543,7 +1543,7 @@ class Sections extends Component
     /**
      * @return Query
      */
-    private function _createEntryTypeQuery()
+    private function _createEntryTypeQuery(): Query
     {
         return (new Query())
             ->select([

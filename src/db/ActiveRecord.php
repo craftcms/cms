@@ -38,7 +38,7 @@ abstract class ActiveRecord extends \yii\db\ActiveRecord
      * @inheritdoc
      * @return ActiveQuery the newly created [[ActiveQuery]] instance.
      */
-    public static function find()
+    public static function find(): ActiveQuery
     {
         return Craft::createObject(ActiveQuery::class, [static::class]);
     }

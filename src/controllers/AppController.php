@@ -52,7 +52,7 @@ class AppController extends Controller
     /**
      * @inheritdoc
      */
-    public function beforeAction($action)
+    public function beforeAction($action): bool
     {
         if ($action->id === 'migrate') {
             $this->enableCsrfValidation = false;
@@ -94,7 +94,7 @@ class AppController extends Controller
      * @throws BadRequestHttpException
      * @since 3.3.16
      */
-    public function actionProcessApiResponseHeaders()
+    public function actionProcessApiResponseHeaders(): Response
     {
         $this->requireCpRequest();
         $headers = $this->request->getRequiredBodyParam('headers');

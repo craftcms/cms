@@ -142,7 +142,7 @@ class ElementQueryConditionBuilder extends Component
      * @param FieldInterface|null $startingParentField the starting parent field for the extraction, if any
      * @return array
      */
-    public function extractQueryConditions(FieldInterface $startingParentField = null)
+    public function extractQueryConditions(FieldInterface $startingParentField = null): array
     {
         $startingNode = $this->_resolveInfo->fieldNodes[0];
 
@@ -170,7 +170,7 @@ class ElementQueryConditionBuilder extends Component
      * @param ArgumentNode[] $argumentNodes
      * @return array
      */
-    private function _extractArguments($argumentNodes)
+    private function _extractArguments($argumentNodes): array
     {
         $arguments = [];
 
@@ -328,7 +328,7 @@ class ElementQueryConditionBuilder extends Component
      * @param Node $node
      * @return array
      */
-    private function _extractTransformDirectiveArguments(Node $node)
+    private function _extractTransformDirectiveArguments(Node $node): array
     {
         $arguments = [];
         $directives = $node->directives ?? [];
@@ -348,7 +348,7 @@ class ElementQueryConditionBuilder extends Component
      * @param $arguments
      * @return array
      */
-    private function _prepareTransformArguments($arguments)
+    private function _prepareTransformArguments($arguments): array
     {
         if (empty($arguments)) {
             return [];
@@ -364,7 +364,7 @@ class ElementQueryConditionBuilder extends Component
      *
      * @return bool
      */
-    private function _isInsideAssetQuery()
+    private function _isInsideAssetQuery(): bool
     {
         if ($this->_resolveInfo->returnType instanceof WrappingType) {
             return $this->_resolveInfo->returnType->getWrappedType()->name === AssetInterface::getName();
@@ -622,7 +622,7 @@ class ElementQueryConditionBuilder extends Component
      * @param null $parentField
      * @return bool
      */
-    public function canNodeBeAliased(string $nodeName, $parentField = null)
+    public function canNodeBeAliased(string $nodeName, $parentField = null): bool
     {
         return !$this->_isAdditionalEagerLoadableNode($nodeName, $parentField) || $this->_canSpecialFieldBeAliased($nodeName);
     }

@@ -264,7 +264,7 @@ class Fields extends Component
      * @return FieldGroup|null The field group, or null if it doesn’t exist
      * @since 3.3.0
      */
-    public function getGroupByUid(string $groupUid)
+    public function getGroupByUid(string $groupUid): ?FieldGroup
     {
         return $this->_groups()->firstWhere('uid', $groupUid, true);
     }

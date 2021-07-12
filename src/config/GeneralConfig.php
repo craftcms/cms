@@ -1889,7 +1889,7 @@ class GeneralConfig extends BaseObject
      * @see setPasswordRequestPath
      * @since 3.5.14
      */
-    public function getSetPasswordRequestPath(string $siteHandle = null)
+    public function getSetPasswordRequestPath(string $siteHandle = null): ?string
     {
         return ConfigHelper::localizedValue($this->setPasswordRequestPath, $siteHandle);
     }
