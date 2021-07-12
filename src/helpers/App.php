@@ -317,8 +317,9 @@ class App
      * Sets PHP’s memory limit to the maximum specified by the
      * <config3:phpMaxMemoryLimit> config setting, and gives the script an
      * unlimited amount of time to execute.
+     *
      */
-    public static function maxPowerCaptain()
+    public static function maxPowerCaptain(): void
     {
         // Don't mess with the memory_limit, even at the config's request, if it's already set to -1 or >= 1.5GB
         $memoryLimit = static::phpConfigValueInBytes('memory_limit');

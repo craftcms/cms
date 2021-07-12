@@ -43,7 +43,7 @@ class PruneRevisions extends BaseJob
     /**
      * @inheritdoc
      */
-    public function execute($queue)
+    public function execute($queue): void
     {
         if (!$this->maxRevisions) {
             // Make sure maxRevisions is still set

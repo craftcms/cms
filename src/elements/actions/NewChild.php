@@ -37,7 +37,7 @@ class NewChild extends ElementAction
     /**
      * @inheritdoc
      */
-    public function init()
+    public function init(): void
     {
         if ($this->label === null) {
             $this->label = Craft::t('app', 'New child');

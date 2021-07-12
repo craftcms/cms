@@ -44,7 +44,7 @@ class QueueLogBehavior extends VerboseBehavior
     /**
      * @param ExecEvent $event
      */
-    public function beforeExec(ExecEvent $event)
+    public function beforeExec(ExecEvent $event): void
     {
         if (!$this->_jobExecuted) {
             $this->_changeLogFile();
@@ -83,7 +83,7 @@ class QueueLogBehavior extends VerboseBehavior
     /**
      * Changes the file that logs will get flushed to.
      */
-    private function _changeLogFile()
+    private function _changeLogFile(): void
     {
         $logDispatcher = Craft::$app->getLog();
 

@@ -20,7 +20,11 @@ use GraphQL\Error\Error;
  */
 trait StructureMutationTrait
 {
-    protected function performStructureOperations(ElementInterface $element, array $arguments)
+    /**
+     * @param ElementInterface $element
+     * @param array $arguments
+     */
+    protected function performStructureOperations(ElementInterface $element, array $arguments): void
     {
         /** @var Element $element */
         $structureId = $element->structureId;

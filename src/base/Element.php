@@ -793,7 +793,7 @@ abstract class Element extends Component implements ElementInterface
      * @param ElementQueryInterface $elementQuery
      * @param string $attribute
      */
-    protected static function prepElementQueryForTableAttribute(ElementQueryInterface $elementQuery, string $attribute)
+    protected static function prepElementQueryForTableAttribute(ElementQueryInterface $elementQuery, string $attribute): void
     {
         /** @var ElementQuery $elementQuery */
         // Is this a custom field?
@@ -1686,7 +1686,7 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @inheritdoc
      */
-    public function behaviors()
+    public function behaviors(): array
     {
         $behaviors = parent::behaviors();
         $behaviors['customFields'] = CustomFieldBehavior::class;
@@ -1696,7 +1696,7 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @inheritdoc
      */
-    public function init()
+    public function init(): void
     {
         // Typecast DB values
         $this->id = (int)$this->id ?: null;
@@ -1977,7 +1977,7 @@ abstract class Element extends Component implements ElementInterface
      * @param string $attribute The field handle
      * @param array|null $params
      */
-    public function validateCustomFieldAttribute(string $attribute, array $params = null)
+    public function validateCustomFieldAttribute(string $attribute, array $params = null): void
     {
         /** @var array|null $params */
         [$field, $method, $fieldParams] = $params;
@@ -2009,7 +2009,7 @@ abstract class Element extends Component implements ElementInterface
      *
      * @param string $attribute
      */
-    public function validateCustomFieldContentSize(string $attribute)
+    public function validateCustomFieldContentSize(string $attribute): void
     {
         $field = $this->fieldByHandle($attribute);
         $columnType = $field->getContentColumnType();
@@ -2029,7 +2029,6 @@ abstract class Element extends Component implements ElementInterface
      * @param FieldInterface $field
      * @param string $columnType
      * @param mixed $value
-     * @return void
      */
     private function _validateCustomFieldContentSizeInternal(string $attribute, FieldInterface $field, string $columnType, $value): void
     {
@@ -4038,7 +4037,7 @@ abstract class Element extends Component implements ElementInterface
      * @param string $fieldHandle The field handle
      * @throws InvalidFieldException if the element doesn’t have a field with the handle specified by `$fieldHandle`
      */
-    protected function normalizeFieldValue(string $fieldHandle)
+    protected function normalizeFieldValue(string $fieldHandle): void
     {
         // Have we already normalized this value?
         if (isset($this->_normalizedFieldValues[$fieldHandle])) {

@@ -44,7 +44,7 @@ class RevisionBehavior extends BaseRevisionBehavior
     /**
      * Deletes the row in the `drafts` table after the draft element is deleted.
      */
-    public function handleDelete()
+    public function handleDelete(): void
     {
         Db::delete(Table::REVISIONS, [
             'id' => $this->owner->revisionId,

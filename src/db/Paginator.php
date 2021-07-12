@@ -106,7 +106,7 @@ class Paginator extends BaseObject
      * @inheritdoc
      * @throws InvalidConfigException
      */
-    public function init()
+    public function init(): void
     {
         parent::init();
 
@@ -169,7 +169,7 @@ class Paginator extends BaseObject
      *
      * @param int $currentPage
      */
-    public function setCurrentPage(int $currentPage)
+    public function setCurrentPage(int $currentPage): void
     {
         $currentPage = max(1, $currentPage);
         $currentPage = min($this->getTotalPages(), $currentPage);
@@ -224,7 +224,7 @@ class Paginator extends BaseObject
      * @param array
      * @since 3.1.22
      */
-    public function setPageResults(array $pageResults)
+    public function setPageResults(array $pageResults): void
     {
         $this->_pageResults = $pageResults;
     }

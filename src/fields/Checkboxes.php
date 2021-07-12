@@ -45,7 +45,7 @@ class Checkboxes extends BaseOptionsField
     /**
      * @inheritdoc
      */
-    public function init()
+    public function init(): void
     {
         parent::init();
         $this->multi = true;

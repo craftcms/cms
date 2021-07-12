@@ -357,7 +357,7 @@ class Dashboard extends Component
     /**
      * Adds the default widgets to the logged-in user.
      */
-    private function _addDefaultUserWidgets()
+    private function _addDefaultUserWidgets(): void
     {
         $user = Craft::$app->getUser()->getIdentity();
 
@@ -423,7 +423,7 @@ class Dashboard extends Component
      * @param int $widgetId
      * @throws WidgetNotFoundException
      */
-    private function _noWidgetExists(int $widgetId)
+    private function _noWidgetExists(int $widgetId): void
     {
         throw new WidgetNotFoundException("No widget exists with the ID '{$widgetId}'");
     }

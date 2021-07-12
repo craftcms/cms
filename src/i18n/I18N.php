@@ -50,7 +50,7 @@ class I18N extends \yii\i18n\I18N
     /**
      * @inheritdoc
      */
-    public function init()
+    public function init(): void
     {
         parent::init();
 
@@ -88,7 +88,7 @@ class I18N extends \yii\i18n\I18N
      * @return array An array of locale IDs.
      * @link http://php.net/manual/en/resourcebundle.locales.php
      */
-    public function getAllLocaleIds()
+    public function getAllLocaleIds(): array
     {
         if ($this->_allLocaleIds === null) {
             if ($this->getIsIntlLoaded()) {
@@ -184,7 +184,6 @@ class I18N extends \yii\i18n\I18N
     /**
      * Defines the list of supported app locale IDs.
      *
-     * @return void
      */
     private function _defineAppLocales(): void
     {
@@ -371,8 +370,10 @@ class I18N extends \yii\i18n\I18N
     /**
      * Returns whether [[translate()]] should wrap translations with `@` characters,
      * per the `translationDebugOutput` config setting.
+     *
+     * @return bool
      */
-    private function _shouldAddTranslationDebugOutput()
+    private function _shouldAddTranslationDebugOutput(): bool
     {
         if ($this->_translationDebugOutput === null) {
             $this->_translationDebugOutput = (bool)Craft::$app->getConfig()->getGeneral()->translationDebugOutput;

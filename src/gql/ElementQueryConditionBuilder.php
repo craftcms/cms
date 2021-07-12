@@ -118,7 +118,7 @@ class ElementQueryConditionBuilder extends Component
      *
      * @param ResolveInfo $resolveInfo
      */
-    public function setResolveInfo(ResolveInfo $resolveInfo)
+    public function setResolveInfo(ResolveInfo $resolveInfo): void
     {
         $this->_resolveInfo = $resolveInfo;
         $this->_fragments = $this->_resolveInfo->fragments;
@@ -130,7 +130,7 @@ class ElementQueryConditionBuilder extends Component
      * @param ArgumentManager $argumentManager
      * @since 3.6.0
      */
-    public function setArgumentManager(ArgumentManager $argumentManager)
+    public function setArgumentManager(ArgumentManager $argumentManager): void
     {
         $this->_argumentManager = $argumentManager;
     }

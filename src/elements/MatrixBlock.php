@@ -324,7 +324,7 @@ class MatrixBlock extends Element implements BlockElementInterface
      *
      * @param ElementInterface|null $owner
      */
-    public function setOwner(ElementInterface $owner = null)
+    public function setOwner(ElementInterface $owner = null): void
     {
         $this->_owner = $owner;
     }

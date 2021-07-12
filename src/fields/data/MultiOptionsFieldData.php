@@ -35,7 +35,7 @@ class MultiOptionsFieldData extends \ArrayObject
      *
      * @param OptionData[] $options
      */
-    public function setOptions(array $options)
+    public function setOptions(array $options): void
     {
         $this->_options = $options;
     }

@@ -135,7 +135,7 @@ interface ElementInterface extends ComponentInterface
      * ```php
      * class Product extends Element
      * {
-     *     public static function find()
+     *     public static function find(): ElementQueryInterface
      *     {
      *         // use ProductQuery instead of the default ElementQuery
      *         return new ProductQuery(get_called_class());
@@ -149,7 +149,7 @@ interface ElementInterface extends ComponentInterface
      * ```php
      * class Customer extends ActiveRecord
      * {
-     *     public static function find()
+     *     public static function find(): ElementQueryInterface
      *     {
      *         return parent::find()->limit(50);
      *     }
@@ -450,7 +450,8 @@ interface ElementInterface extends ComponentInterface
      * use craft\db\Query;
      * use craft\helpers\ArrayHelper;
      *
-     * public static function eagerLoadingMap(array $sourceElements, string $handle) {
+     * public static function eagerLoadingMap(array $sourceElements, string $handle)
+     * {
      *     switch ($handle) {
      *         case 'author':
      *             $bookIds = ArrayHelper::getColumn($sourceElements, 'id');
@@ -570,7 +571,6 @@ interface ElementInterface extends ComponentInterface
      * Sets the canonical version of the element.
      *
      * @param static $element
-     * @return void
      * @since 3.7.0
      */
     public function setCanonical(ElementInterface $element): void;
@@ -589,7 +589,6 @@ interface ElementInterface extends ComponentInterface
      * Sets the element’s canonical ID.
      *
      * @param int|null $canonicalId
-     * @return void
      * @since 3.7.0
      */
     public function setCanonicalId(?int $canonicalId): void;
@@ -605,7 +604,6 @@ interface ElementInterface extends ComponentInterface
     /**
      * Merges changes from a given canonical element into this one.
      *
-     * @return void
      * @see \craft\services\Elements::mergeCanonicalChanges()
      * @since 3.7.0
      */
@@ -713,7 +711,6 @@ interface ElementInterface extends ComponentInterface
      * Defines what the element should be called within the control panel.
      *
      * @param string|null $label
-     * @return void
      * @since 3.6.3
      */
     public function setUiLabel(?string $label): void;
@@ -808,7 +805,6 @@ interface ElementInterface extends ComponentInterface
      * This can also be set to an array of site ID/site-enabled mappings.
      *
      * @param bool|bool[] $enabledForSite
-     * @return void
      * @since 3.4.0
      */
     public function setEnabledForSite($enabledForSite): void;
@@ -847,7 +843,6 @@ interface ElementInterface extends ComponentInterface
      * Sets the default next element.
      *
      * @param static|false $element
-     * @return void
      */
     public function setNext($element): void;
 
@@ -855,7 +850,6 @@ interface ElementInterface extends ComponentInterface
      * Sets the default previous element.
      *
      * @param static|false $element
-     * @return void
      */
     public function setPrev($element): void;
 
@@ -879,7 +873,6 @@ interface ElementInterface extends ComponentInterface
      * Sets the element’s parent.
      *
      * @param static|null $parent
-     * @return void
      */
     public function setParent(ElementInterface $parent = null): void;
 
@@ -1071,7 +1064,6 @@ interface ElementInterface extends ComponentInterface
      *
      * @param string[] $names
      * @param bool $merge Whether these attributes should be merged with existing dirty attributes
-     * @return void
      * @see getDirtyAttributes()
      * @since 3.5.0
      */
@@ -1140,7 +1132,6 @@ interface ElementInterface extends ComponentInterface
      * Sets the element’s custom field values.
      *
      * @param array $values The custom field values (handle => value)
-     * @return void
      */
     public function setFieldValues(array $values): void;
 
@@ -1158,7 +1149,6 @@ interface ElementInterface extends ComponentInterface
      *
      * @param string $fieldHandle The field handle whose value needs to be set
      * @param mixed $value The value to set on the field
-     * @return void
      */
     public function setFieldValue(string $fieldHandle, $value): void;
 
@@ -1217,7 +1207,6 @@ interface ElementInterface extends ComponentInterface
     /**
      * Marks all fields and attributes as dirty.
      *
-     * @return void
      * @since 3.4.10
      */
     public function markAsDirty(): void;
@@ -1225,7 +1214,6 @@ interface ElementInterface extends ComponentInterface
     /**
      * Resets the record of dirty attributes and fields.
      *
-     * @return void
      * @since 3.4.0
      */
     public function markAsClean(): void;
@@ -1242,7 +1230,6 @@ interface ElementInterface extends ComponentInterface
      * Sets the element’s custom field values, when the values have come from post data.
      *
      * @param string $paramNamespace The field param namespace
-     * @return void
      */
     public function setFieldValuesFromRequest(string $paramNamespace): void;
 
@@ -1257,7 +1244,6 @@ interface ElementInterface extends ComponentInterface
      * Sets the namespace used by custom field params on the request.
      *
      * @param string $namespace The field param namespace
-     * @return void
      */
     public function setFieldParamNamespace(string $namespace): void;
 
@@ -1303,7 +1289,6 @@ interface ElementInterface extends ComponentInterface
      *
      * @param string $handle The handle that was used to eager-load the elements
      * @param ElementInterface[] $elements The eager-loaded elements
-     * @return void
      */
     public function setEagerLoadedElements(string $handle, array $elements): void;
 
@@ -1321,7 +1306,6 @@ interface ElementInterface extends ComponentInterface
      *
      * @param string $handle The handle to load the elements with in the future
      * @param int $count The eager-loaded element count
-     * @return void
      * @since 3.4.0
      */
     public function setEagerLoadedElementCount(string $handle, int $count): void;
@@ -1337,7 +1321,6 @@ interface ElementInterface extends ComponentInterface
      * Sets the revision creator ID to be saved.
      *
      * @param int|null $creatorId
-     * @return void
      * @since 3.2.0
      */
     public function setRevisionCreatorId(int $creatorId = null): void;
@@ -1346,7 +1329,6 @@ interface ElementInterface extends ComponentInterface
      * Sets the revision notes to be saved.
      *
      * @param string|null $notes
-     * @return void
      * @since 3.2.0
      */
     public function setRevisionNotes(string $notes = null): void;
@@ -1435,7 +1417,6 @@ interface ElementInterface extends ComponentInterface
      * Performs actions after an element is saved.
      *
      * @param bool $isNew Whether the element is brand new
-     * @return void
      */
     public function afterSave(bool $isNew): void;
 
@@ -1447,7 +1428,6 @@ interface ElementInterface extends ComponentInterface
      * :::
      *
      * @param bool $isNew Whether the element is brand new
-     * @return void
      * @since 3.2.0
      */
     public function afterPropagate(bool $isNew): void;
@@ -1462,7 +1442,6 @@ interface ElementInterface extends ComponentInterface
     /**
      * Performs actions after an element is deleted.
      *
-     * @return void
      */
     public function afterDelete(): void;
 
@@ -1477,7 +1456,6 @@ interface ElementInterface extends ComponentInterface
     /**
      * Performs actions after an element is restored.
      *
-     * @return void
      * @since 3.1.0
      */
     public function afterRestore(): void;
@@ -1494,7 +1472,6 @@ interface ElementInterface extends ComponentInterface
      * Performs actions after an element is moved within a structure.
      *
      * @param int $structureId The structure ID
-     * @return void
      */
     public function afterMoveInStructure(int $structureId): void;
 }

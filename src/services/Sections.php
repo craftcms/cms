@@ -561,7 +561,7 @@ class Sections extends Component
      *
      * @param ConfigEvent $event
      */
-    public function handleChangedSection(ConfigEvent $event)
+    public function handleChangedSection(ConfigEvent $event): void
     {
         ProjectConfigHelper::ensureAllSitesProcessed();
         ProjectConfigHelper::ensureAllFieldsProcessed();
@@ -825,7 +825,7 @@ class Sections extends Component
      *
      * @param ConfigEvent $event
      */
-    public function handleDeletedSection(ConfigEvent $event)
+    public function handleDeletedSection(ConfigEvent $event): void
     {
         $uid = $event->tokenMatches[0];
         $sectionRecord = $this->_getSectionRecord($uid);
@@ -893,7 +893,7 @@ class Sections extends Component
      *
      * @param DeleteSiteEvent $event
      */
-    public function pruneDeletedSite(DeleteSiteEvent $event)
+    public function pruneDeletedSite(DeleteSiteEvent $event): void
     {
         $siteUid = $event->site->uid;
 
@@ -914,7 +914,7 @@ class Sections extends Component
      * @param FieldEvent $event
      * @since 3.1.20
      */
-    public function pruneDeletedField(FieldEvent $event)
+    public function pruneDeletedField(FieldEvent $event): void
     {
         $field = $event->field;
         $fieldUid = $field->uid;
@@ -1111,7 +1111,7 @@ class Sections extends Component
      *
      * @param ConfigEvent $event
      */
-    public function handleChangedEntryType(ConfigEvent $event)
+    public function handleChangedEntryType(ConfigEvent $event): void
     {
         $entryTypeUid = $event->tokenMatches[0];
         $data = $event->newValue;
@@ -1318,7 +1318,7 @@ class Sections extends Component
      *
      * @param ConfigEvent $event
      */
-    public function handleDeletedEntryType(ConfigEvent $event)
+    public function handleDeletedEntryType(ConfigEvent $event): void
     {
         $uid = $event->tokenMatches[0];
         $entryTypeRecord = $this->_getEntryTypeRecord($uid);
@@ -1521,7 +1521,7 @@ class Sections extends Component
      * @throws Exception if reasons
      * @see saveSection()
      */
-    private function _populateNewStructure(SectionRecord $sectionRecord)
+    private function _populateNewStructure(SectionRecord $sectionRecord): void
     {
         // Add all of the entries to the structure
         $query = Entry::find()

@@ -387,7 +387,7 @@ class InstallController extends Controller
      * @param DbConfig $dbConfig The DbConfig object
      * @param string $prefix The post param prefix to use
      */
-    private function _populateDbConfig(DbConfig $dbConfig, string $prefix = '')
+    private function _populateDbConfig(DbConfig $dbConfig, string $prefix = ''): void
     {
         $driver = $this->request->getRequiredBodyParam("{$prefix}driver");
         $server = $this->request->getBodyParam("{$prefix}server") ?: '127.0.0.1';

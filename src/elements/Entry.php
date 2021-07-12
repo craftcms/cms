@@ -655,7 +655,7 @@ class Entry extends Element
     /**
      * @inheritdoc
      */
-    protected static function prepElementQueryForTableAttribute(ElementQueryInterface $elementQuery, string $attribute)
+    protected static function prepElementQueryForTableAttribute(ElementQueryInterface $elementQuery, string $attribute): void
     {
         switch ($attribute) {
             case 'author':
@@ -781,7 +781,7 @@ class Entry extends Element
      * @inheritdoc
      * @since 3.5.0
      */
-    public function init()
+    public function init(): void
     {
         parent::init();
         $this->_oldTypeId = $this->typeId;
@@ -1174,7 +1174,7 @@ class Entry extends Element
      *
      * @param User|null $author
      */
-    public function setAuthor(User $author = null)
+    public function setAuthor(User $author = null): void
     {
         $this->_author = $author;
     }
@@ -1490,7 +1490,7 @@ EOD;
      *
      * @since 3.0.3
      */
-    public function updateTitle()
+    public function updateTitle(): void
     {
         $entryType = $this->getType();
         if (!$entryType->hasTitleField) {

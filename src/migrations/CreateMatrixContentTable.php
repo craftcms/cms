@@ -44,7 +44,7 @@ class CreateMatrixContentTable extends Migration
     /**
      * Adds the foreign keys.
      */
-    public function addForeignKeys()
+    public function addForeignKeys(): void
     {
         $this->addForeignKey(null, $this->tableName, ['elementId'], Table::ELEMENTS, ['id'], 'CASCADE', null);
         $this->addForeignKey(null, $this->tableName, ['siteId'], Table::SITES, ['id'], 'CASCADE', 'CASCADE');

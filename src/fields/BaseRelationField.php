@@ -223,7 +223,7 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
     /**
      * @inheritdoc
      */
-    public function init()
+    public function init(): void
     {
         parent::init();
 
@@ -303,7 +303,7 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
      *
      * @param ElementInterface $element
      */
-    public function validateRelatedElements(ElementInterface $element)
+    public function validateRelatedElements(ElementInterface $element): void
     {
         // Prevent circular relations from worrying about this entry
         $sourceId = $element->getCanonicalId();

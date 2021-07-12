@@ -318,7 +318,7 @@ class Globals extends Component
      *
      * @param ConfigEvent $event
      */
-    public function handleChangedGlobalSet(ConfigEvent $event)
+    public function handleChangedGlobalSet(ConfigEvent $event): void
     {
         $globalSetUid = $event->tokenMatches[0];
         $data = $event->newValue;
@@ -473,7 +473,7 @@ class Globals extends Component
      *
      * @param ConfigEvent $event
      */
-    public function handleDeletedGlobalSet(ConfigEvent $event)
+    public function handleDeletedGlobalSet(ConfigEvent $event): void
     {
         $uid = $event->tokenMatches[0];
         $globalSetRecord = $this->_getGlobalSetRecord($uid);
@@ -513,7 +513,7 @@ class Globals extends Component
      *
      * @param FieldEvent $event
      */
-    public function pruneDeletedField(FieldEvent $event)
+    public function pruneDeletedField(FieldEvent $event): void
     {
         $field = $event->field;
         $fieldUid = $field->uid;

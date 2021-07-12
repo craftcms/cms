@@ -73,7 +73,7 @@ class CategoryQuery extends ElementQuery
     /**
      * @inheritdoc
      */
-    public function init()
+    public function init(): void
     {
         if ($this->withStructure === null) {
             $this->withStructure = true;
@@ -214,7 +214,7 @@ class CategoryQuery extends ElementQuery
      *
      * @throws QueryAbortedException
      */
-    private function _applyEditableParam()
+    private function _applyEditableParam(): void
     {
         if ($this->editable) {
             // Limit the query to only the category groups the user has permission to edit
@@ -227,7 +227,7 @@ class CategoryQuery extends ElementQuery
     /**
      * Applies the 'groupId' param to the query being prepared.
      */
-    private function _applyGroupIdParam()
+    private function _applyGroupIdParam(): void
     {
         if ($this->groupId) {
             $this->subQuery->andWhere(['categories.groupId' => $this->groupId]);
@@ -247,7 +247,7 @@ class CategoryQuery extends ElementQuery
     /**
      * Normalizes the groupId param to an array of IDs or null
      */
-    private function _normalizeGroupId()
+    private function _normalizeGroupId(): void
     {
         if (empty($this->groupId)) {
             $this->groupId = is_array($this->groupId) ? [] : null;
@@ -265,7 +265,7 @@ class CategoryQuery extends ElementQuery
     /**
      * Applies the 'ref' param to the query being prepared.
      */
-    private function _applyRefParam()
+    private function _applyRefParam(): void
     {
         if (!$this->ref) {
             return;

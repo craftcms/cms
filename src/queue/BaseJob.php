@@ -35,7 +35,7 @@ abstract class BaseJob extends BaseObject implements JobInterface
     /**
      * @inheritdoc
      */
-    public function init()
+    public function init(): void
     {
         parent::init();
 
@@ -68,7 +68,7 @@ abstract class BaseJob extends BaseObject implements JobInterface
      * @param float $progress A number between 0 and 1
      * @param string|null $label The progress label
      */
-    protected function setProgress($queue, float $progress, string $label = null)
+    protected function setProgress($queue, float $progress, string $label = null): void
     {
         $progress = round(100 * $progress);
 

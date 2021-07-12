@@ -297,7 +297,7 @@ class Users extends Component
      * @param User $user The user
      * @param array $preferences The user’s new preferences
      */
-    public function saveUserPreferences(User $user, array $preferences)
+    public function saveUserPreferences(User $user, array $preferences): void
     {
         $preferences = $user->mergePreferences($preferences);
 
@@ -414,7 +414,7 @@ class Users extends Component
      * @throws ImageException if the file provided is not a manipulatable image
      * @throws VolumeException if the user photo Volume is not provided or is invalid
      */
-    public function saveUserPhoto(string $fileLocation, User $user, string $filename = null)
+    public function saveUserPhoto(string $fileLocation, User $user, string $filename = null): void
     {
         $filename = AssetsHelper::prepareAssetName($filename ?? pathinfo($fileLocation, PATHINFO_BASENAME), true, true);
 
@@ -454,7 +454,7 @@ class Users extends Component
      * @param User $user
      * @since 3.5.14
      */
-    public function relocateUserPhoto(User $user)
+    public function relocateUserPhoto(User $user): void
     {
         if (!$user->photoId || ($photo = $user->getPhoto()) === null) {
             return;
@@ -540,7 +540,7 @@ class Users extends Component
      *
      * @param User $user The user
      */
-    public function handleValidLogin(User $user)
+    public function handleValidLogin(User $user): void
     {
         $now = DateTimeHelper::currentUTCDateTime();
 
@@ -566,7 +566,7 @@ class Users extends Component
      *
      * @param User $user The user
      */
-    public function handleInvalidLogin(User $user)
+    public function handleInvalidLogin(User $user): void
     {
         $userRecord = $this->_getUserRecordById($user->id);
         $now = DateTimeHelper::currentUTCDateTime();
@@ -920,8 +920,9 @@ class Users extends Component
      * setting, and if it is set to a valid duration, it will delete any user
      * accounts that were created that duration ago, and have still not
      * activated their account.
+     *
      */
-    public function purgeExpiredPendingUsers()
+    public function purgeExpiredPendingUsers(): void
     {
         $generalConfig = Craft::$app->getConfig()->getGeneral();
 
@@ -1090,7 +1091,7 @@ class Users extends Component
      *
      * @param ConfigEvent $event
      */
-    public function handleChangedUserFieldLayout(ConfigEvent $event)
+    public function handleChangedUserFieldLayout(ConfigEvent $event): void
     {
         // Use this because we want this to trigger this if anything changes inside but ONLY ONCE
         static $parsed = false;
@@ -1188,7 +1189,7 @@ class Users extends Component
      *
      * @param FieldEvent $event
      */
-    public function pruneDeletedField(FieldEvent $event)
+    public function pruneDeletedField(FieldEvent $event): void
     {
         $field = $event->field;
         $fieldUid = $field->uid;

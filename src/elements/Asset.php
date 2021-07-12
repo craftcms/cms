@@ -469,7 +469,7 @@ class Asset extends Element
     /**
      * @inheritdoc
      */
-    protected static function prepElementQueryForTableAttribute(ElementQueryInterface $elementQuery, string $attribute)
+    protected static function prepElementQueryForTableAttribute(ElementQueryInterface $elementQuery, string $attribute): void
     {
         if ($attribute === 'uploader') {
             $elementQuery->andWith('uploader');
@@ -762,7 +762,7 @@ class Asset extends Element
      * @inheritdoc
      * @since 3.5.0
      */
-    public function init()
+    public function init(): void
     {
         parent::init();
         $this->_oldVolumeId = $this->_volumeId;
@@ -783,7 +783,7 @@ class Asset extends Element
      *
      * @param int|null $id
      */
-    public function setVolumeId(int $id = null)
+    public function setVolumeId(int $id = null): void
     {
         if ($id !== $this->getVolumeId()) {
             $this->_volumeId = $id;
@@ -1144,7 +1144,7 @@ class Asset extends Element
      * @param User|null $uploader
      * @since 3.4.0
      */
-    public function setUploader(User $uploader = null)
+    public function setUploader(User $uploader = null): void
     {
         $this->_uploader = $uploader;
     }
@@ -1326,7 +1326,7 @@ class Asset extends Element
      *
      * @param int|float|null $height the image height
      */
-    public function setHeight($height)
+    public function setHeight($height): void
     {
         $this->_height = $height;
     }
@@ -1347,7 +1347,7 @@ class Asset extends Element
      *
      * @param int|float|null $width the image width
      */
-    public function setWidth($width)
+    public function setWidth($width): void
     {
         $this->_width = $width;
     }
@@ -1423,7 +1423,7 @@ class Asset extends Element
      *
      * @param string $uri
      */
-    public function setTransformSource(string $uri)
+    public function setTransformSource(string $uri): void
     {
         $this->_transformSource = $uri;
     }
@@ -1557,7 +1557,7 @@ class Asset extends Element
      * @param $value string|array|null
      * @throws \InvalidArgumentException if $value is invalid
      */
-    public function setFocalPoint($value)
+    public function setFocalPoint($value): void
     {
         if (is_array($value)) {
             if (!isset($value['x'], $value['y'])) {

@@ -113,7 +113,7 @@ class CommandTest
     /**
      * @throws InvalidArgumentException
      */
-    public function run()
+    public function run(): void
     {
         if (!isset($this->desiredExitCode)) {
             throw new InvalidArgumentException('Please enter a desired exit code');
@@ -224,7 +224,7 @@ class CommandTest
     /**
      * @throws InvalidConfigException
      */
-    protected function setupController()
+    protected function setupController(): void
     {
         $controllerArray = Craft::$app->createController($this->command);
         if (!$controllerArray) {

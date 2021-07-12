@@ -98,7 +98,7 @@ class VolumeFolder extends Model
      *
      * @param VolumeFolder[] $children
      */
-    public function setChildren(array $children)
+    public function setChildren(array $children): void
     {
         $this->_children = $children;
     }

@@ -52,7 +52,7 @@ class ProjectConfig
     /**
      * Ensures all field config changes are processed immediately in a safe manner.
      */
-    public static function ensureAllFieldsProcessed()
+    public static function ensureAllFieldsProcessed(): void
     {
         $projectConfig = Craft::$app->getProjectConfig();
 
@@ -81,7 +81,7 @@ class ProjectConfig
      *
      * @param bool $force Whether to proceed even if YAML changes are not currently being applied
      */
-    public static function ensureAllSitesProcessed(bool $force = false)
+    public static function ensureAllSitesProcessed(bool $force = false): void
     {
         $projectConfig = Craft::$app->getProjectConfig();
 
@@ -108,7 +108,7 @@ class ProjectConfig
     /**
      * Ensure all user group config changes are processed immediately in a safe manner.
      */
-    public static function ensureAllUserGroupsProcessed()
+    public static function ensureAllUserGroupsProcessed(): void
     {
         $projectConfig = Craft::$app->getProjectConfig();
 
@@ -132,7 +132,7 @@ class ProjectConfig
     /**
      * Ensure all GraphQL schema config changes are processed immediately in a safe manner.
      */
-    public static function ensureAllGqlSchemasProcessed()
+    public static function ensureAllGqlSchemasProcessed(): void
     {
         $projectConfig = Craft::$app->getProjectConfig();
 
@@ -156,7 +156,6 @@ class ProjectConfig
     /**
      * Resets the static memoization variables.
      *
-     * @return void
      */
     public static function reset(): void
     {
@@ -381,7 +380,7 @@ class ProjectConfig
      * @param $result
      * @since 3.4.0
      */
-    public static function flattenConfigArray($array, $path, &$result)
+    public static function flattenConfigArray($array, $path, &$result): void
     {
         foreach ($array as $key => $value) {
             $thisPath = ltrim($path . '.' . $key, '.');
@@ -517,7 +516,7 @@ class ProjectConfig
      * @param int|null $timestamp The updated `dateModified` value. If `null`, the current time will be used.
      * @since 3.5.14
      */
-    public static function touch(?int $timestamp = null)
+    public static function touch(?int $timestamp = null): void
     {
         if ($timestamp === null) {
             $timestamp = time();

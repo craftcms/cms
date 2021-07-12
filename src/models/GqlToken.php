@@ -191,7 +191,7 @@ class GqlToken extends Model
      * @param GqlSchema $schema
      * @since 3.5.0
      */
-    public function setSchema(GqlSchema $schema)
+    public function setSchema(GqlSchema $schema): void
     {
         $this->_schema = $schema;
         $this->schemaId = $schema->id;

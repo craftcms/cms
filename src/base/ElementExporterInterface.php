@@ -29,7 +29,6 @@ interface ElementExporterInterface extends ComponentInterface
      * Sets the element type on the exporter.
      *
      * @param string $elementType
-     * @return void
      */
     public function setElementType(string $elementType): void;
 

@@ -91,7 +91,7 @@ class EntryType extends Model
     /**
      * @inheritdoc
      */
-    public function behaviors()
+    public function behaviors(): array
     {
         $behaviors = parent::behaviors();
         $behaviors['fieldLayout'] = [
@@ -153,7 +153,6 @@ class EntryType extends Model
     /**
      * Validates the field layout.
      *
-     * @return void
      * @since 3.7.0
      */
     public function validateFieldLayout(): void

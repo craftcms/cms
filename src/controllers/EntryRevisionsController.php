@@ -563,7 +563,7 @@ class EntryRevisionsController extends BaseEntriesController
      *
      * @param Entry $draft
      */
-    private function _setDraftAttributesFromPost(Entry $draft)
+    private function _setDraftAttributesFromPost(Entry $draft): void
     {
         /** @var Entry|DraftBehavior $draft */
         $draft->typeId = $this->request->getBodyParam('typeId');

@@ -283,7 +283,7 @@ class UserGroups extends Component
      *
      * @param ConfigEvent $event
      */
-    public function handleChangedUserGroup(ConfigEvent $event)
+    public function handleChangedUserGroup(ConfigEvent $event): void
     {
         $uid = $event->tokenMatches[0];
         $data = $event->newValue;
@@ -317,7 +317,7 @@ class UserGroups extends Component
      *
      * @param ConfigEvent $event
      */
-    public function handleDeletedUserGroup(ConfigEvent $event)
+    public function handleDeletedUserGroup(ConfigEvent $event): void
     {
         $uid = $event->tokenMatches[0];
 

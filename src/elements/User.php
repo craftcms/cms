@@ -395,7 +395,7 @@ class User extends Element implements IdentityInterface
     /**
      * @inheritdoc
      */
-    protected static function prepElementQueryForTableAttribute(ElementQueryInterface $elementQuery, string $attribute)
+    protected static function prepElementQueryForTableAttribute(ElementQueryInterface $elementQuery, string $attribute): void
     {
         /** @var UserQuery $elementQuery */
         if ($attribute === 'groups') {
@@ -643,7 +643,7 @@ class User extends Element implements IdentityInterface
     /**
      * @inheritdoc
      */
-    public function init()
+    public function init(): void
     {
         parent::init();
 
@@ -807,7 +807,7 @@ class User extends Element implements IdentityInterface
      * @param array|null $params
      * @param InlineValidator $validator
      */
-    public function validateUnverifiedEmail(string $attribute, $params, InlineValidator $validator)
+    public function validateUnverifiedEmail(string $attribute, $params, InlineValidator $validator): void
     {
         $query = self::find()
             ->status(null);
@@ -985,7 +985,7 @@ class User extends Element implements IdentityInterface
      *
      * @param UserGroup[] $groups An array of UserGroup objects.
      */
-    public function setGroups(array $groups)
+    public function setGroups(array $groups): void
     {
         if (Craft::$app->getEdition() === Craft::Pro) {
             $this->_groups = $groups;
@@ -1077,7 +1077,6 @@ class User extends Element implements IdentityInterface
      * Sets the user’s name.
      *
      * @param string $name
-     * @return void
      * @since 3.7.0
      */
     public function setName(string $name): void
@@ -1122,7 +1121,6 @@ class User extends Element implements IdentityInterface
      * Sets the user’s friendly name.
      *
      * @param string $friendlyName
-     * @return void
      * @since 3.7.0
      */
     public function setFriendlyName(string $friendlyName): void
@@ -1405,7 +1403,7 @@ class User extends Element implements IdentityInterface
      *
      * @param Asset|null $photo
      */
-    public function setPhoto(Asset $photo = null)
+    public function setPhoto(Asset $photo = null): void
     {
         $this->_photo = $photo;
         $this->photoId = $photo->id ?? null;

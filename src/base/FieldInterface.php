@@ -57,7 +57,7 @@ interface FieldInterface extends SavableComponentInterface
      * If the values can be of more than one type, return multiple types separated by `|`s.
      *
      * ```php
-     * public static function phpDocType()
+     * public static function valueType(): string
      * {
      *      return 'int|mixed|\\craft\\elements\\db\\ElementQuery';
      * }
@@ -211,7 +211,7 @@ interface FieldInterface extends SavableComponentInterface
      * So here’s what a getInputHtml() method that includes field-targeting JavaScript code might look like:
      *
      * ```php
-     * public function getInputHtml($value, $element)
+     * public function getInputHtml($value, $element): string
      * {
      *     // Generate a valid ID based on the input name
      *     $id = craft\helpers\Html::id($name);
@@ -352,7 +352,6 @@ interface FieldInterface extends SavableComponentInterface
      *
      * @param ElementInterface $from
      * @param ElementInterface $to
-     * @return void
      * @since 3.7.0
      */
     public function copyValue(ElementInterface $from, ElementInterface $to): void;
@@ -367,7 +366,6 @@ interface FieldInterface extends SavableComponentInterface
      * @param ElementQueryInterface $query The element query
      * @param mixed $value The value that was set on this field’s corresponding
      * element query param, if any.
-     * @return void
      * @throws QueryAbortedException in the event that the method is sure that
      * no elements are going to be found.
      */
@@ -380,7 +378,6 @@ interface FieldInterface extends SavableComponentInterface
      * which contains a column for this field.
      *
      * @param ElementQueryInterface $query The element query
-     * @return void
      * @since 3.0.9
      */
     public function modifyElementIndexQuery(ElementQueryInterface $query): void;
@@ -389,7 +386,6 @@ interface FieldInterface extends SavableComponentInterface
      * Sets whether the field is fresh.
      *
      * @param bool|null $isFresh Whether the field is fresh.
-     * @return void
      */
     public function setIsFresh(bool $isFresh = null): void;
 
@@ -450,7 +446,6 @@ interface FieldInterface extends SavableComponentInterface
      *
      * @param ElementInterface $element The element that was just saved
      * @param bool $isNew Whether the element is brand new
-     * @return void
      */
     public function afterElementSave(ElementInterface $element, bool $isNew): void;
 
@@ -459,7 +454,6 @@ interface FieldInterface extends SavableComponentInterface
      *
      * @param ElementInterface $element The element that was just saved and propagated
      * @param bool $isNew Whether the element is brand new
-     * @return void
      * @since 3.2.0
      */
     public function afterElementPropagate(ElementInterface $element, bool $isNew): void;
@@ -476,7 +470,6 @@ interface FieldInterface extends SavableComponentInterface
      * Performs actions after the element has been deleted.
      *
      * @param ElementInterface $element The element that was just deleted
-     * @return void
      */
     public function afterElementDelete(ElementInterface $element): void;
 
@@ -493,7 +486,6 @@ interface FieldInterface extends SavableComponentInterface
      * Performs actions after the element has been restored.
      *
      * @param ElementInterface $element The element that was just restored
-     * @return void
      * @since 3.1.0
      */
     public function afterElementRestore(ElementInterface $element): void;

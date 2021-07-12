@@ -116,7 +116,7 @@ class Composer extends Component
      * @param IOInterface|null $io The IO object that Composer should be instantiated with
      * @throws \Throwable if something goes wrong
      */
-    public function install(array $requirements = null, IOInterface $io = null)
+    public function install(array $requirements = null, IOInterface $io = null): void
     {
         App::maxPowerCaptain();
 
@@ -213,7 +213,7 @@ class Composer extends Component
      * @param IOInterface|null $io The IO object that Composer should be instantiated with
      * @throws \Throwable if something goes wrong
      */
-    public function uninstall(array $packages, IOInterface $io = null)
+    public function uninstall(array $packages, IOInterface $io = null): void
     {
         App::maxPowerCaptain();
         $this->backupComposerFiles();
@@ -289,7 +289,7 @@ class Composer extends Component
      *
      * @param string $className
      */
-    public function logComposerClass(string $className)
+    public function logComposerClass(string $className): void
     {
         $this->_composerClasses[] = $className;
     }
@@ -297,7 +297,7 @@ class Composer extends Component
     /**
      * Ensures that HOME/APPDATA or COMPOSER_HOME env vars have been set.
      */
-    protected function _ensureHomeVar()
+    protected function _ensureHomeVar(): void
     {
         // Must call getenv() instead of App::env() here because Composer\Factory doesn’t check $_SERVER
         if (!getenv('COMPOSER_HOME') && !getenv(Platform::isWindows() ? 'APPDATA' : 'HOME')) {
@@ -314,7 +314,7 @@ class Composer extends Component
      * @param string $jsonPath
      * @param array $requirements
      */
-    protected function updateRequirements(IOInterface $io, string $jsonPath, array $requirements)
+    protected function updateRequirements(IOInterface $io, string $jsonPath, array $requirements): void
     {
         $requireKey = 'require';
         $requireDevKey = 'require-dev';
@@ -466,7 +466,7 @@ class Composer extends Component
     /**
      * Preloads Composer classes in case Composer needs to update itself
      */
-    protected function preloadComposerClasses()
+    protected function preloadComposerClasses(): void
     {
         $classes = require dirname(__DIR__) . '/config/composer-classes.php';
 
@@ -478,7 +478,7 @@ class Composer extends Component
     /**
      * Backs up the composer.json and composer.lock files to `storage/composer-backups/`
      */
-    protected function backupComposerFiles()
+    protected function backupComposerFiles(): void
     {
         $backupsDir = Craft::$app->getPath()->getComposerBackupsPath();
         $jsonBackupPath = $backupsDir . DIRECTORY_SEPARATOR . 'composer.json';

@@ -9,6 +9,7 @@ namespace craft\controllers;
 
 use craft\web\Controller;
 use yii\web\NotFoundHttpException;
+use yii\web\Response;
 
 class NotFoundController extends Controller
 {
@@ -20,9 +21,10 @@ class NotFoundController extends Controller
     /**
      * Just return a 404 error.
      *
+     * @return Response
      * @throws NotFoundHttpException
      */
-    public function actionIndex()
+    public function actionIndex(): Response
     {
         throw new NotFoundHttpException();
     }

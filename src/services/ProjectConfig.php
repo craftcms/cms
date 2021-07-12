@@ -383,7 +383,7 @@ class ProjectConfig extends Component
     /**
      * @inheritdoc
      */
-    public function init()
+    public function init(): void
     {
         Craft::$app->on(Application::EVENT_AFTER_REQUEST, function() {
             $this->saveModifiedConfigData();
@@ -401,7 +401,7 @@ class ProjectConfig extends Component
      *
      * @internal
      */
-    public function reset()
+    public function reset(): void
     {
         $this->_storedConfig = null;
         $this->_loadedConfig = null;
@@ -465,7 +465,7 @@ class ProjectConfig extends Component
      * @throws ServerErrorHttpException
      * @throws \yii\base\InvalidConfigException
      */
-    public function set(string $path, $value, string $message = null, bool $updateTimestamp = true, $rebuilding = false)
+    public function set(string $path, $value, string $message = null, bool $updateTimestamp = true, bool $rebuilding = false): void
     {
         // If we haven't yet pulled in the YAML changes, then anything in there should be discarded
         if (empty($this->_appliedConfig)) {
@@ -528,7 +528,7 @@ class ProjectConfig extends Component
      * @param string $path The config item path
      * @param string|null $message The message describing changes.
      */
-    public function remove(string $path, string $message = null)
+    public function remove(string $path, string $message = null): void
     {
         $this->set($path, null, $message);
     }
@@ -536,7 +536,7 @@ class ProjectConfig extends Component
     /**
      * Regenerates `project.yaml` based on the loaded project config.
      */
-    public function regenerateYamlFromConfig()
+    public function regenerateYamlFromConfig(): void
     {
         $loadedConfig = $this->_getLoadedConfig();
         $this->_saveConfig($loadedConfig);
@@ -547,7 +547,7 @@ class ProjectConfig extends Component
     /**
      * Applies changes in `project.yaml` to the project config.
      */
-    public function applyYamlChanges()
+    public function applyYamlChanges(): void
     {
         $mutex = Craft::$app->getMutex();
         $lockName = 'project-config-sync';
@@ -583,7 +583,7 @@ class ProjectConfig extends Component
      *
      * @param array $configData
      */
-    public function applyConfigChanges(array $configData)
+    public function applyConfigChanges(array $configData): void
     {
         $this->_applyingYamlChanges = true;
 
@@ -681,7 +681,7 @@ class ProjectConfig extends Component
      * @param bool $force Whether the config change should be processed regardless of previous records,
      * or whether YAML changes are currently being applied
      */
-    public function processConfigChanges(string $path, bool $triggerUpdate = false, $message = null, bool $force = false)
+    public function processConfigChanges(string $path, bool $triggerUpdate = false, $message = null, bool $force = false): void
     {
         if ($force || $this->getIsApplyingYamlChanges()) {
             $this->_processConfigChangesInternal($path, $triggerUpdate, $message, $force);
@@ -696,7 +696,7 @@ class ProjectConfig extends Component
      * @param string|null $message The message describing changes, if modifications are made.
      * @param bool $force Whether the config change should be processed regardless of previous records
      */
-    private function _processConfigChangesInternal(string $path, bool $triggerUpdate = false, string $message = null, bool $force = false)
+    private function _processConfigChangesInternal(string $path, bool $triggerUpdate = false, string $message = null, bool $force = false): void
     {
         if (!$force && !empty($this->_parsedChanges[$path])) {
             return;
@@ -769,7 +769,7 @@ class ProjectConfig extends Component
     /**
      * Updates the stored config after the request ends.
      */
-    public function updateStoredConfigAfterRequest()
+    public function updateStoredConfigAfterRequest(): void
     {
         $this->_updateInternalConfig = true;
     }
@@ -777,7 +777,7 @@ class ProjectConfig extends Component
     /**
      * Updates cached config file modified times after the request ends.
      */
-    public function updateParsedConfigTimesAfterRequest()
+    public function updateParsedConfigTimesAfterRequest(): void
     {
         if ($this->_waitingToUpdateParsedConfigTimes) {
             return;
@@ -792,9 +792,9 @@ class ProjectConfig extends Component
      *
      * @since 3.5.0
      */
-    public function ignorePendingChanges()
+    public function ignorePendingChanges(): void
     {
-        return Craft::$app->getCache()->set(
+        Craft::$app->getCache()->set(
             self::IGNORE_CACHE_KEY,
             $this->_getConfigFileModifiedTime(),
             self::CACHE_DURATION,
@@ -822,7 +822,7 @@ class ProjectConfig extends Component
      * @param bool|null $writeYaml Whether to update the YAML files. Defaults to [[$writeYamlAutomatically]].
      * @throws ErrorException
      */
-    public function saveModifiedConfigData(bool $writeYaml = null)
+    public function saveModifiedConfigData(bool $writeYaml = null): void
     {
         $this->_processProjectConfigNameChanges();
 
@@ -1115,7 +1115,7 @@ class ProjectConfig extends Component
      * @param callable $handler
      * @since 3.1.13
      */
-    public function defer(ConfigEvent $event, callable $handler)
+    public function defer(ConfigEvent $event, callable $handler): void
     {
         Craft::info('Deferring event handler for ' . $event->path, __METHOD__);
         $this->_deferredEvents[] = [$event, $event->tokenMatches, $handler];
@@ -1130,7 +1130,7 @@ class ProjectConfig extends Component
      * @param mixed $data The data to be passed to the event handler when the event is triggered.
      * When the event handler is invoked, this data can be accessed via [[ConfigEvent::data]].
      */
-    public function registerChangeEventHandler(string $event, string $path, $handler, $data = null)
+    public function registerChangeEventHandler(string $event, string $path, $handler, $data = null): void
     {
         $specificity = substr_count($path, '.');
         $pattern = '/^(?P<path>' . preg_quote($path, '/') . ')(?P<extra>\..+)?$/';
@@ -1148,7 +1148,7 @@ class ProjectConfig extends Component
      * @param ConfigEvent $event
      * @since 3.4.0
      */
-    public function handleChangeEvent(ConfigEvent $event)
+    public function handleChangeEvent(ConfigEvent $event): void
     {
         if (empty($this->_changeEventHandlers[$event->name])) {
             return;
@@ -1185,7 +1185,7 @@ class ProjectConfig extends Component
      * @param string $event The event name
      * @since 3.4.0
      */
-    private function _sortChangeEventHandlers(string $event)
+    private function _sortChangeEventHandlers(string $event): void
     {
         if (isset($this->_sortedChangeEventHandlers[$event])) {
             return;
@@ -1205,7 +1205,7 @@ class ProjectConfig extends Component
      * @throws \Throwable if reasons
      * @since 3.1.20
      */
-    public function rebuild()
+    public function rebuild(): void
     {
         $this->reset();
 
@@ -1268,7 +1268,7 @@ class ProjectConfig extends Component
      * @param array $changes array nested array with keys `removedItems`, `changedItems` and `newItems`
      * @throws OperationAbortedException
      */
-    private function _applyChanges(array $changes)
+    private function _applyChanges(array $changes): void
     {
         Craft::info('Looking for pending changes', __METHOD__);
 
@@ -1538,7 +1538,7 @@ class ProjectConfig extends Component
      *
      * @param array $data
      */
-    private function _saveConfig(array $data)
+    private function _saveConfig(array $data): void
     {
         $this->_appliedConfig = $data;
         $this->_isConfigModified = true;
@@ -1595,7 +1595,7 @@ class ProjectConfig extends Component
      * @param array $configData config data to be saved as history
      * @throws Exception
      */
-    private function _storeYamlHistory(array $configData)
+    private function _storeYamlHistory(array $configData): void
     {
         $basePath = Craft::$app->getPath()->getConfigDeltaPath() . '/' . self::CONFIG_DELTA_FILENAME;
 
@@ -1660,7 +1660,7 @@ class ProjectConfig extends Component
     /**
      * Updates the config version used for cache invalidation.
      */
-    private function _updateConfigVersion()
+    private function _updateConfigVersion(): void
     {
         $info = Craft::$app->getInfo();
         $info->configVersion = StringHelper::randomString(12);
@@ -1672,7 +1672,7 @@ class ProjectConfig extends Component
      *
      * @throws Exception if something goes wrong
      */
-    private function _updateYamlFiles()
+    private function _updateYamlFiles(): void
     {
         $config = ProjectConfigHelper::splitConfigIntoComponents($this->_appliedConfig);
 
@@ -1729,7 +1729,6 @@ class ProjectConfig extends Component
     /**
      * Discard all project config names.
      *
-     * @return void
      * @throws \yii\db\Exception
      */
     private function _discardProjectConfigNames(): void
@@ -1741,7 +1740,6 @@ class ProjectConfig extends Component
     /**
      * Process any queued up project config name changes.
      *
-     * @return void
      * @throws \yii\db\Exception
      */
     private function _processProjectConfigNameChanges(): void
@@ -1775,7 +1773,7 @@ class ProjectConfig extends Component
      * @param mixed|null $newValue
      * @param string|null $message message describing the changes made.
      */
-    private function _updateInternalConfig(string $path, $oldValue, $newValue, string $message = null)
+    private function _updateInternalConfig(string $path, $oldValue, $newValue, string $message = null): void
     {
         $currentLoadedConfig = $this->_getLoadedConfig();
         $this->_traverseDataArray($currentLoadedConfig, $path, $newValue, $newValue === null);
@@ -2186,7 +2184,6 @@ class ProjectConfig extends Component
      *
      * @param string $lastPathSegment
      * @param array $data
-     * @return void
      */
     private function _setContainedProjectConfigNames(string $lastPathSegment, array $data): void
     {
@@ -2207,7 +2204,6 @@ class ProjectConfig extends Component
      *
      * @param string $lastPathSegment
      * @param array $data
-     * @return void
      */
     private function _removeContainedProjectConfigNames(string $lastPathSegment, array $data): void
     {

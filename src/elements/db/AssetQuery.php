@@ -852,7 +852,7 @@ class AssetQuery extends ElementQuery
     /**
      * Normalizes the volumeId param to an array of IDs or null
      */
-    private function _normalizeVolumeId()
+    private function _normalizeVolumeId(): void
     {
         if ($this->volumeId === ':empty:') {
             return;

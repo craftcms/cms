@@ -58,8 +58,7 @@ class Schema extends \yii\db\pgsql\Schema
      * @param string $name The savepoint name.
      * @throws Exception
      */
-
-    public function releaseSavepoint($name)
+    public function releaseSavepoint($name): void
     {
         try {
             parent::releaseSavepoint($name);
@@ -79,7 +78,7 @@ class Schema extends \yii\db\pgsql\Schema
      * @param string $name The savepoint name.
      * @throws Exception
      */
-    public function rollBackSavepoint($name)
+    public function rollBackSavepoint($name): void
     {
         try {
             parent::rollBackSavepoint($name);
@@ -222,7 +221,7 @@ class Schema extends \yii\db\pgsql\Schema
      *
      * @param TableSchema $table the table metadata
      */
-    protected function findConstraints($table)
+    protected function findConstraints($table): void
     {
         parent::findConstraints($table);
 

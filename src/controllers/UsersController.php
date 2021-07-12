@@ -360,9 +360,9 @@ class UsersController extends Controller
     /**
      * Starts an elevated user session.
      *
-     * return Response
+     * @return Response
      */
-    public function actionStartElevatedSession()
+    public function actionStartElevatedSession(): Response
     {
         $password = $this->request->getBodyParam('currentPassword') ?? $this->request->getBodyParam('password');
 
@@ -1866,7 +1866,7 @@ class UsersController extends Controller
      *
      * @throws NotFoundHttpException
      */
-    private function _noUserExists()
+    private function _noUserExists(): void
     {
         throw new NotFoundHttpException('User not found');
     }
@@ -1910,7 +1910,6 @@ class UsersController extends Controller
 
     /**
      * @param User $user
-     * @return void
      * @throws \Throwable if reasons
      */
     private function _processUserPhoto(User $user): void
@@ -1981,7 +1980,7 @@ class UsersController extends Controller
      * @param User $currentUser
      * @throws ForbiddenHttpException if the user account doesn't have permission to assign the attempted permissions
      */
-    private function _saveUserPermissions(User $user, User $currentUser)
+    private function _saveUserPermissions(User $user, User $currentUser): void
     {
         if (!$currentUser->can('assignUserPermissions')) {
             return;
@@ -2031,7 +2030,7 @@ class UsersController extends Controller
      * @param User $currentUser
      * @throws ForbiddenHttpException if the user account doesn't have permission to assign the attempted groups
      */
-    private function _saveUserGroups(User $user, User $currentUser)
+    private function _saveUserGroups(User $user, User $currentUser): void
     {
         if (!$currentUser->can('assignUserGroups')) {
             return;

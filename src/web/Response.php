@@ -206,7 +206,7 @@ class Response extends \yii\web\Response
      * @see http://stackoverflow.com/a/141026
      * @throws \Throwable An exception will be thrown if content has already been output.
      */
-    public function sendAndClose()
+    public function sendAndClose(): void
     {
         // Make sure nothing has been output yet
         if (headers_sent()) {
@@ -278,8 +278,9 @@ class Response extends \yii\web\Response
      *
      * Need to check the OB status first, or else some PHP versions will throw an E_NOTICE
      * since we have a custom error handler (http://pear.php.net/bugs/bug.php?id=9670).
+     *
      */
-    private function _clearOutputBuffer()
+    private function _clearOutputBuffer(): void
     {
         if (ob_get_length() !== false) {
             // If zlib.output_compression is enabled, then ob_clean() will corrupt the results of output buffering.

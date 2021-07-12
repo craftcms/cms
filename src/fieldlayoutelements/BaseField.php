@@ -366,7 +366,7 @@ abstract class BaseField extends FieldLayoutElement
      * @param bool $static Whether the form should be static (non-interactive)
      * @return string|null
      */
-    abstract protected function inputHtml(ElementInterface $element = null, bool $static = false);
+    abstract protected function inputHtml(ElementInterface $element = null, bool $static = false): ?string;
 
     /**
      * Returns the field’s tip text.

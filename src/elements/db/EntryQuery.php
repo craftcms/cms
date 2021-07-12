@@ -232,7 +232,7 @@ class EntryQuery extends ElementQuery
     /**
      * @inheritdoc
      */
-    public function init()
+    public function init(): void
     {
         if ($this->withStructure === null) {
             $this->withStructure = true;
@@ -880,7 +880,7 @@ class EntryQuery extends ElementQuery
      *
      * @throws QueryAbortedException
      */
-    private function _applyEditableParam()
+    private function _applyEditableParam(): void
     {
         if (!$this->editable) {
             return;
@@ -914,7 +914,7 @@ class EntryQuery extends ElementQuery
      *
      * @throws InvalidConfigException
      */
-    private function _normalizeTypeId()
+    private function _normalizeTypeId(): void
     {
         if (empty($this->typeId)) {
             $this->typeId = is_array($this->typeId) ? [] : null;
@@ -932,7 +932,7 @@ class EntryQuery extends ElementQuery
     /**
      * Applies the 'sectionId' param to the query being prepared.
      */
-    private function _applySectionIdParam()
+    private function _applySectionIdParam(): void
     {
         if ($this->sectionId) {
             $this->subQuery->andWhere(['entries.sectionId' => $this->sectionId]);
@@ -953,7 +953,7 @@ class EntryQuery extends ElementQuery
     /**
      * Normalizes the sectionId param to an array of IDs or null
      */
-    private function _normalizeSectionId()
+    private function _normalizeSectionId(): void
     {
         if (empty($this->sectionId)) {
             $this->sectionId = is_array($this->sectionId) ? [] : null;
@@ -971,7 +971,7 @@ class EntryQuery extends ElementQuery
     /**
      * Applies the 'ref' param to the query being prepared.
      */
-    private function _applyRefParam()
+    private function _applyRefParam(): void
     {
         if (!$this->ref) {
             return;

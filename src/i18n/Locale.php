@@ -518,7 +518,6 @@ class Locale extends BaseObject
      * ```
      *
      * @param array $formats
-     * @return void
      * @since 3.6.0
      */
     public function setDateTimeFormats(array $formats): void

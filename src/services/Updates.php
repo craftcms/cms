@@ -225,7 +225,7 @@ class Updates extends Component
      * @throws MigrateException
      * @see getPendingMigrationHandles()
      */
-    public function runMigrations(array $handles)
+    public function runMigrations(array $handles): void
     {
         // Make sure Craft is first
         if (ArrayHelper::remove($handles, 'craft') !== null) {

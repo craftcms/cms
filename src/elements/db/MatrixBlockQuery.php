@@ -477,7 +477,7 @@ class MatrixBlockQuery extends ElementQuery
      *
      * @throws QueryAbortedException
      */
-    private function _normalizeFieldId()
+    private function _normalizeFieldId(): void
     {
         if ($this->fieldId === null && $this->id) {
             $this->fieldId = (new Query())
@@ -511,7 +511,7 @@ class MatrixBlockQuery extends ElementQuery
      *
      * @throws InvalidConfigException
      */
-    private function _normalizeOwnerId()
+    private function _normalizeOwnerId(): void
     {
         if (empty($this->ownerId)) {
             $this->ownerId = null;

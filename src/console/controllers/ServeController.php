@@ -31,7 +31,7 @@ class ServeController extends BaseServeController
     /**
      * @inheritdoc
      */
-    public function init()
+    public function init(): void
     {
         parent::init();
         $this->checkTty();

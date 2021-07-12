@@ -43,9 +43,9 @@ class Field extends ActiveRecord
     private $_oldColumnSuffix;
 
     /**
-     * Initializes the application component.
+     * @inheritdoc
      */
-    public function init()
+    public function init(): void
     {
         parent::init();
 
@@ -56,7 +56,7 @@ class Field extends ActiveRecord
     /**
      * Store the old handle.
      */
-    public function storeOldData()
+    public function storeOldData(): void
     {
         $this->_oldHandle = $this->handle;
         $this->_oldColumnSuffix = $this->columnSuffix;

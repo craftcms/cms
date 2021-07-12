@@ -183,7 +183,7 @@ class UrlManager extends \yii\web\UrlManager
      * @param array $params The route params
      * @param bool $merge Whether these params should be merged with existing params
      */
-    public function setRouteParams(array $params, bool $merge = true)
+    public function setRouteParams(array $params, bool $merge = true): void
     {
         if ($merge) {
             $this->_routeParams = ArrayHelper::merge($this->_routeParams, $params);
@@ -239,7 +239,7 @@ class UrlManager extends \yii\web\UrlManager
      * @param ElementInterface|false|null $element
      * @since 3.2.3
      */
-    public function setMatchedElement($element)
+    public function setMatchedElement($element): void
     {
         if ($element instanceof ElementInterface) {
             if ($route = $element->getRoute()) {

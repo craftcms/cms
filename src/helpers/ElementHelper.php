@@ -118,7 +118,7 @@ class ElementHelper
      * @param ElementInterface $element
      * @throws OperationAbortedException if a unique URI could not be found
      */
-    public static function setUniqueUri(ElementInterface $element)
+    public static function setUniqueUri(ElementInterface $element): void
     {
         $uriFormat = $element->getUriFormat();
 
@@ -428,7 +428,7 @@ class ElementHelper
      *
      * @param ElementInterface[] $elements The array of elements.
      */
-    public static function setNextPrevOnElements(array $elements)
+    public static function setNextPrevOnElements(array $elements): void
     {
         /** @var ElementInterface $lastElement */
         $lastElement = null;

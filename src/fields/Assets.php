@@ -198,7 +198,7 @@ class Assets extends BaseRelationField
     /**
      * @inheritdoc
      */
-    public function init()
+    public function init(): void
     {
         parent::init();
 
@@ -324,7 +324,7 @@ class Assets extends BaseRelationField
      *
      * @param ElementInterface $element
      */
-    public function validateFileType(ElementInterface $element)
+    public function validateFileType(ElementInterface $element): void
     {
         // Make sure the field restricts file types
         if (!$this->restrictFiles) {
@@ -363,7 +363,7 @@ class Assets extends BaseRelationField
      *
      * @param ElementInterface $element
      */
-    public function validateFileSize(ElementInterface $element)
+    public function validateFileSize(ElementInterface $element): void
     {
         $maxSize = AssetsHelper::getMaxUploadSize();
 

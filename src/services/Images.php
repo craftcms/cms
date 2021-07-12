@@ -55,7 +55,7 @@ class Images extends Component
     /**
      * Decide on the image driver being used.
      */
-    public function init()
+    public function init(): void
     {
         if (strtolower(Craft::$app->getConfig()->getGeneral()->imageDriver) === 'gd') {
             $this->_driver = self::DRIVER_GD;
@@ -278,7 +278,7 @@ class Images extends Component
      * @param string $filePath
      * @throws Exception if $filePath is a malformed SVG image
      */
-    public function cleanImage(string $filePath)
+    public function cleanImage(string $filePath): void
     {
         $cleanedByRotation = false;
         $cleanedByStripping = false;

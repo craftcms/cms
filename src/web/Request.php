@@ -200,7 +200,7 @@ class Request extends \yii\web\Request
     /**
      * @inheritdoc
      */
-    public function init()
+    public function init(): void
     {
         parent::init();
 
@@ -598,7 +598,7 @@ class Request extends \yii\web\Request
      * @param bool|null $isCpRequest
      * @since 3.5.0
      */
-    public function setIsCpRequest(bool $isCpRequest = null)
+    public function setIsCpRequest(bool $isCpRequest = null): void
     {
         $this->_isCpRequest = $isCpRequest;
     }
@@ -707,7 +707,7 @@ class Request extends \yii\web\Request
      *
      * @param bool $isLivePreview
      */
-    public function setIsLivePreview(bool $isLivePreview)
+    public function setIsLivePreview(bool $isLivePreview): void
     {
         $this->_isLivePreview = $isLivePreview;
     }
@@ -1092,7 +1092,7 @@ class Request extends \yii\web\Request
      * when validating the IP address. Options include `FILTER_FLAG_IPV4`,
      * `FILTER_FLAG_IPV6`, `FILTER_FLAG_NO_PRIV_RANGE`, and `FILTER_FLAG_NO_RES_RANGE`.
      */
-    public function getUserIP(int $filterOptions = 0)
+    public function getUserIP(int $filterOptions = 0): ?string
     {
         if ($this->_ipAddress === null) {
             foreach ($this->ipHeaders as $ipHeader) {
@@ -1118,7 +1118,7 @@ class Request extends \yii\web\Request
      * when validating the IP address. Options include `FILTER_FLAG_IPV4`,
      * `FILTER_FLAG_IPV6`, `FILTER_FLAG_NO_PRIV_RANGE`, and `FILTER_FLAG_NO_RES_RANGE`.
      */
-    public function getRemoteIP(int $filterOptions = 0)
+    public function getRemoteIP(int $filterOptions = 0): ?string
     {
         $ip = parent::getRemoteIP();
         return $ip ? $this->_validateIp($ip, $filterOptions) : null;
@@ -1238,7 +1238,7 @@ class Request extends \yii\web\Request
     /**
      * Regenerates a CSRF token.
      */
-    public function regenCsrfToken()
+    public function regenCsrfToken(): void
     {
         $this->_craftCsrfToken = $this->getCsrfToken(true);
     }
@@ -1295,7 +1295,7 @@ class Request extends \yii\web\Request
      * @inheritdoc
      * @internal Based on \yii\web\Request::resolve(), but we don't modify $_GET/$this->_queryParams in the process.
      */
-    public function resolve()
+    public function resolve(): array
     {
         if (($result = Craft::$app->getUrlManager()->parseRequest($this)) === false) {
             throw new NotFoundHttpException(Craft::t('yii', 'Page not found.'));
@@ -1566,7 +1566,6 @@ class Request extends \yii\web\Request
      * @param bool $force Whether to recheck even if we already know
      * @param bool $checkToken Whether to check if there’s a token on the request and use that.
      * @param bool $checkSpecialPaths Whether to check for special URIs that should route to controller actions
-     * @return void
      * @since 3.7.0
      */
     public function checkIfActionRequest(bool $force = false, bool $checkToken = true, bool $checkSpecialPaths = true): void

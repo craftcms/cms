@@ -170,7 +170,7 @@ class GlobalSet extends Element
     /**
      * @inheritdoc
      */
-    public function behaviors()
+    public function behaviors(): array
     {
         $behaviors = parent::behaviors();
         $behaviors['fieldLayout'] = [

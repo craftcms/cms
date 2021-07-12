@@ -638,7 +638,7 @@ class CategoriesController extends Controller
      * @throws NotFoundHttpException if the requested category group or category cannot be found
      * @throws ForbiddenHttpException if the user is not permitted to edit content in the requested site
      */
-    private function _prepEditCategoryVariables(array &$variables)
+    private function _prepEditCategoryVariables(array &$variables): void
     {
         // Get the category group
         // ---------------------------------------------------------------------
@@ -746,7 +746,7 @@ class CategoriesController extends Controller
      *
      * @param Category $category
      */
-    private function _enforceEditCategoryPermissions(Category $category)
+    private function _enforceEditCategoryPermissions(Category $category): void
     {
         if (Craft::$app->getIsMultiSite()) {
             // Make sure they have access to this site
@@ -762,7 +762,7 @@ class CategoriesController extends Controller
      *
      * @param Category $category
      */
-    private function _populateCategoryModel(Category $category)
+    private function _populateCategoryModel(Category $category): void
     {
         // Set the category attributes, defaulting to the existing values for whatever is missing from the post data
         $category->slug = $this->request->getBodyParam('slug', $category->slug);

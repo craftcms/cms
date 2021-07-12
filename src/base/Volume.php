@@ -96,7 +96,6 @@ abstract class Volume extends SavableComponent implements VolumeInterface
     /**
      * Validates the field layout.
      *
-     * @return void
      * @since 3.7.0
      */
     public function validateFieldLayout(): void

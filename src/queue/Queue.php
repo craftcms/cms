@@ -101,7 +101,7 @@ class Queue extends \yii\queue\cli\Queue implements QueueInterface
     /**
      * @inheritdoc
      */
-    public function init()
+    public function init(): void
     {
         parent::init();
 
@@ -162,9 +162,9 @@ class Queue extends \yii\queue\cli\Queue implements QueueInterface
     }
 
     /**
-     *
+     * @inheritdoc
      */
-    public function status($id)
+    public function status($id): int
     {
         $payload = $this->db->usePrimary(function() use ($id) {
             return $this->_createJobQuery()
@@ -208,7 +208,7 @@ class Queue extends \yii\queue\cli\Queue implements QueueInterface
     /**
      * @inheritdoc
      */
-    public function retry(string $id)
+    public function retry(string $id): void
     {
         $this->_lock(function() use ($id) {
             Db::update($this->tableName, [
@@ -229,7 +229,7 @@ class Queue extends \yii\queue\cli\Queue implements QueueInterface
     /**
      * @inheritdoc
      */
-    public function retryAll()
+    public function retryAll(): void
     {
         $this->_lock(function() {
             // Move expired messages into waiting list
@@ -266,7 +266,7 @@ class Queue extends \yii\queue\cli\Queue implements QueueInterface
     /**
      * @inheritdoc
      */
-    public function releaseAll()
+    public function releaseAll(): void
     {
         $this->_lock(function() {
             Db::delete($this->tableName, [
@@ -278,7 +278,7 @@ class Queue extends \yii\queue\cli\Queue implements QueueInterface
     /**
      * @inheritdoc
      */
-    public function setProgress(int $progress, string $label = null)
+    public function setProgress(int $progress, string $label = null): void
     {
         $this->_lock(function() use ($progress, $label) {
             $data = [
@@ -503,7 +503,7 @@ class Queue extends \yii\queue\cli\Queue implements QueueInterface
     /**
      * Figure out how to initiate a new worker.
      */
-    public function handleResponse()
+    public function handleResponse(): void
     {
         // Prevent this from getting called twice
         $response = Craft::$app->getResponse();
@@ -645,7 +645,7 @@ EOD;
     /**
      * Moves expired messages into waiting list.
      */
-    private function _moveExpired()
+    private function _moveExpired(): void
     {
         if ($this->_reserveTime !== time()) {
             $this->_lock(function() {
@@ -765,7 +765,6 @@ EOD;
      * Acquires a lock and then executes the provided callback
      *
      * @param callable $callback
-     * @return void
      * @throws Exception
      */
     private function _lock(callable $callback): void

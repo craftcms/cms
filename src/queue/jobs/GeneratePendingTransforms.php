@@ -21,7 +21,7 @@ class GeneratePendingTransforms extends BaseJob
     /**
      * @inheritdoc
      */
-    public function execute($queue)
+    public function execute($queue): void
     {
         // Get all of the pending transform index IDs
         $indexIds = Craft::$app->getAssetTransforms()->getPendingTransformIndexIds();

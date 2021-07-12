@@ -22,7 +22,7 @@ class QueryBuilder extends \yii\db\mysql\QueryBuilder
     /**
      * @inheritdoc
      */
-    public function init()
+    public function init(): void
     {
         parent::init();
 

@@ -558,7 +558,7 @@ class Raster extends Image
      * @param int $size font size to use
      * @param string $color font color to use in hex format
      */
-    public function setFontProperties(string $fontFile, int $size, string $color)
+    public function setFontProperties(string $fontFile, int $size, string $color): void
     {
         if ($this->_palette === null) {
             $this->_palette = new RGB();
@@ -593,7 +593,7 @@ class Raster extends Image
      * @param int $angle
      * @throws ImageException If attempting to create text box with no font properties et.
      */
-    public function writeText(string $text, int $x, int $y, int $angle = 0)
+    public function writeText(string $text, int $x, int $y, int $angle = 0): void
     {
         if ($this->_font === null) {
             throw new ImageException(Craft::t('app', 'No font properties have been set. Call ImageHelper::setFontProperties() first.'));

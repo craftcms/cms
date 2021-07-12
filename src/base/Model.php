@@ -73,7 +73,7 @@ abstract class Model extends \yii\base\Model
     /**
      * @inheritdoc
      */
-    public function init()
+    public function init(): void
     {
         parent::init();
 
@@ -85,7 +85,7 @@ abstract class Model extends \yii\base\Model
     /**
      * @inheritdoc
      */
-    public function behaviors()
+    public function behaviors(): array
     {
         // Fire a 'defineBehaviors' event
         $event = new DefineBehaviorsEvent();
@@ -118,7 +118,7 @@ abstract class Model extends \yii\base\Model
      *
      * @param Validator|array $rule
      */
-    private function _normalizeRule(&$rule)
+    private function _normalizeRule(&$rule): void
     {
         if (is_array($rule) && isset($rule[1]) && $rule[1] instanceof \Closure) {
             // Wrap the closure in another one, so InlineValidator doesn’t bind it to the model
@@ -231,7 +231,7 @@ abstract class Model extends \yii\base\Model
      * @param \yii\base\Model $model The other model
      * @param string $attrPrefix The prefix that should be added to error attributes when adding them to this model
      */
-    public function addModelErrors(\yii\base\Model $model, string $attrPrefix = '')
+    public function addModelErrors(\yii\base\Model $model, string $attrPrefix = ''): void
     {
         if ($attrPrefix !== '') {
             $attrPrefix = rtrim($attrPrefix, '.') . '.';

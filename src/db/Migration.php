@@ -194,7 +194,7 @@ abstract class Migration extends \yii\db\Migration
      * @param bool $includeAuditColumns Whether to include the data for the audit columns
      * (dateCreated, dateUpdated, uid).
      */
-    public function insert($table, $columns, $includeAuditColumns = true)
+    public function insert($table, $columns, $includeAuditColumns = true): void
     {
         echo "    > insert into $table ...";
         $time = microtime(true);
@@ -214,7 +214,7 @@ abstract class Migration extends \yii\db\Migration
      * @param array $rows The rows to be batch inserted into the table.
      * @param bool $includeAuditColumns Whether `dateCreated`, `dateUpdated`, and `uid` values should be added to $columns.
      */
-    public function batchInsert($table, $columns, $rows, $includeAuditColumns = true)
+    public function batchInsert($table, $columns, $rows, $includeAuditColumns = true): void
     {
         echo "    > batch insert into $table ...";
         $time = microtime(true);
@@ -236,7 +236,7 @@ abstract class Migration extends \yii\db\Migration
      * @param bool $includeAuditColumns Whether `dateCreated`, `dateUpdated`, and `uid` values should be added to $columns.
      * @since 2.0.14
      */
-    public function upsert($table, $insertColumns, $updateColumns = true, $params = [], bool $includeAuditColumns = true)
+    public function upsert($table, $insertColumns, $updateColumns = true, $params = [], bool $includeAuditColumns = true): void
     {
         if (is_bool($params)) {
             $includeAuditColumns = $params;
@@ -261,7 +261,7 @@ abstract class Migration extends \yii\db\Migration
      * @param array $params The parameters to be bound to the command.
      * @param bool $includeAuditColumns Whether the `dateUpdated` value should be added to $columns.
      */
-    public function update($table, $columns, $condition = '', $params = [], $includeAuditColumns = true)
+    public function update($table, $columns, $condition = '', $params = [], $includeAuditColumns = true): void
     {
         echo "    > update in $table ...";
         $time = microtime(true);
@@ -279,7 +279,7 @@ abstract class Migration extends \yii\db\Migration
      * @param string $pk The primary key column name
      * @since 3.5.2
      */
-    public function deleteDuplicates(string $table, array $columns, string $pk = 'id')
+    public function deleteDuplicates(string $table, array $columns, string $pk = 'id'): void
     {
         $time = $this->beginCommand("delete duplicates from $table");
         $this->db->createCommand()->deleteDuplicates($table, $columns, $pk)->execute();
@@ -297,7 +297,7 @@ abstract class Migration extends \yii\db\Migration
      * refer to [[Query::where()]] on how to specify condition.
      * @param array $params The parameters to be bound to the command.
      */
-    public function replace(string $table, string $column, string $find, string $replace, $condition = '', array $params = [])
+    public function replace(string $table, string $column, string $find, string $replace, $condition = '', array $params = []): void
     {
         echo "    > replace \"$find\" with \"$replace\" in $table.$column ...";
         $time = microtime(true);
@@ -315,7 +315,7 @@ abstract class Migration extends \yii\db\Migration
      *
      * @param string $table The table to be dropped. The name will be properly quoted by the method.
      */
-    public function dropTableIfExists(string $table)
+    public function dropTableIfExists(string $table): void
     {
         echo "    > dropping $table if it exists ...";
         $time = microtime(true);
@@ -331,7 +331,7 @@ abstract class Migration extends \yii\db\Migration
      * @param string $oldName the sequence to be renamed. The name will be properly quoted by the method.
      * @param string $newName the new sequence name. The name will be properly quoted by the method.
      */
-    public function renameSequence(string $oldName, string $newName)
+    public function renameSequence(string $oldName, string $newName): void
     {
         echo "    > rename sequence $oldName to $newName ...";
         $time = microtime(true);
@@ -402,7 +402,7 @@ abstract class Migration extends \yii\db\Migration
      * @param array $params The parameters to be bound to the command.
      * @since 3.1.0
      */
-    public function softDelete(string $table, $condition = '', array $params = [])
+    public function softDelete(string $table, $condition = '', array $params = []): void
     {
         echo "    > soft delete from $table ...";
         $time = microtime(true);
@@ -421,7 +421,7 @@ abstract class Migration extends \yii\db\Migration
      * @param array $params The parameters to be bound to the command.
      * @since 3.1.0
      */
-    public function restore(string $table, $condition = '', array $params = [])
+    public function restore(string $table, $condition = '', array $params = []): void
     {
         echo "    > restore from $table ...";
         $time = microtime(true);
@@ -436,7 +436,6 @@ abstract class Migration extends \yii\db\Migration
      *
      * @param string $table The table whose column is to be changed. The table name will be properly quoted by the method.
      * @param string $column The name of the column to be changed. The name will be properly quoted by the method.
-     * @return void
      * @since 4.0.0
      */
     public function convertColumnToJson(string $table, string $column): void
@@ -456,7 +455,7 @@ abstract class Migration extends \yii\db\Migration
     /**
      * @param \Throwable|\Exception $e
      */
-    private function _printException($e)
+    private function _printException($e): void
     {
         // Copied from \yii\db\Migration::printException(), only because it’s private
         echo 'Exception: ' . $e->getMessage() . ' (' . $e->getFile() . ':' . $e->getLine() . ")\n";

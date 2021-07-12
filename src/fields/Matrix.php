@@ -162,7 +162,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
     /**
      * @inheritdoc
      */
-    public function init()
+    public function init(): void
     {
         if ($this->propagationKeyFormat === '') {
             $this->propagationKeyFormat = null;
@@ -270,7 +270,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
      *
      * @param MatrixBlockType|array $blockTypes The block type settings or actual MatrixBlockType model instances
      */
-    public function setBlockTypes($blockTypes)
+    public function setBlockTypes($blockTypes): void
     {
         $this->_blockTypes = [];
         $defaultFieldConfig = [
@@ -519,7 +519,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
      * @param ElementInterface|null $element
      * @since 3.4.0
      */
-    private function _populateQuery(MatrixBlockQuery $query, ElementInterface $element = null)
+    private function _populateQuery(MatrixBlockQuery $query, ElementInterface $element = null): void
     {
         // Existing element?
         if ($element && $element->id) {
@@ -772,7 +772,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
      *
      * @param ElementInterface $element
      */
-    public function validateBlocks(ElementInterface $element)
+    public function validateBlocks(ElementInterface $element): void
     {
         /** @var MatrixBlockQuery $value */
         $value = $element->getFieldValue($this->handle);

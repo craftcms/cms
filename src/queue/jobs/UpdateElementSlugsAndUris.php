@@ -63,7 +63,7 @@ class UpdateElementSlugsAndUris extends BaseJob
     /**
      * @inheritdoc
      */
-    public function execute($queue)
+    public function execute($queue): void
     {
         $this->_totalToProcess = 0;
         $this->_totalProcessed = 0;
@@ -102,7 +102,7 @@ class UpdateElementSlugsAndUris extends BaseJob
      * @param Queue|QueueInterface $queue
      * @param ElementQuery|ElementQueryInterface $query
      */
-    private function _processElements($queue, $query)
+    private function _processElements($queue, $query): void
     {
         $this->_totalToProcess += $query->count();
         $elementsService = Craft::$app->getElements();

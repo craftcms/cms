@@ -130,7 +130,7 @@ class GlobalSetQuery extends ElementQuery
     /**
      * Applies the 'ref' param to the query being prepared.
      */
-    private function _applyRefParam()
+    private function _applyRefParam(): void
     {
         if (!$this->ref) {
             return;
@@ -144,7 +144,7 @@ class GlobalSetQuery extends ElementQuery
      *
      * @throws QueryAbortedException
      */
-    private function _applyEditableParam()
+    private function _applyEditableParam(): void
     {
         if ($this->editable) {
             // Limit the query to only the global sets the user has permission to edit

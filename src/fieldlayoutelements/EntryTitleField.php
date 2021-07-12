@@ -61,7 +61,7 @@ class EntryTitleField extends TitleField
     /**
      * @inheritdoc
      */
-    public function inputHtml(ElementInterface $element = null, bool $static = false)
+    public function inputHtml(ElementInterface $element = null, bool $static = false): ?string
     {
         if (!$element instanceof Entry) {
             throw new InvalidArgumentException('EntryTitleField can only be used in entry field layouts.');

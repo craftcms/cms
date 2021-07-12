@@ -52,7 +52,7 @@ class Schema extends \yii\db\mysql\Schema
     /**
      * @inheritdoc
      */
-    public function init()
+    public function init(): void
     {
         parent::init();
 
@@ -93,7 +93,7 @@ class Schema extends \yii\db\mysql\Schema
      * @param string $name The savepoint name.
      * @throws Exception
      */
-    public function releaseSavepoint($name)
+    public function releaseSavepoint($name): void
     {
         try {
             parent::releaseSavepoint($name);
@@ -113,7 +113,7 @@ class Schema extends \yii\db\mysql\Schema
      * @param string $name The savepoint name.
      * @throws Exception
      */
-    public function rollBackSavepoint($name)
+    public function rollBackSavepoint($name): void
     {
         try {
             parent::rollBackSavepoint($name);
@@ -292,7 +292,7 @@ class Schema extends \yii\db\mysql\Schema
      * @param TableSchema $table the table metadata
      * @throws Exception
      */
-    protected function findConstraints($table)
+    protected function findConstraints($table): void
     {
         // This is almost directly copied from yii\db\mysql\Schema::findConstraints() (Yii 2.0.37) except:
         // - addition of DELETE_RULE & UPDATE_RULE in the SELECT clause

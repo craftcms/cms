@@ -125,7 +125,7 @@ class Section extends Model
     /**
      * @inheritdoc
      */
-    public function init()
+    public function init(): void
     {
         if ($this->previewTargets === null) {
             $this->previewTargets = [
@@ -189,7 +189,7 @@ class Section extends Model
     /**
      * Validates the site settings.
      */
-    public function validateSiteSettings()
+    public function validateSiteSettings(): void
     {
         // If this is an existing section, make sure they aren't moving it to a
         // completely different set of sites in one fell swoop
@@ -215,7 +215,7 @@ class Section extends Model
     /**
      * Validates the preview targets.
      */
-    public function validatePreviewTargets()
+    public function validatePreviewTargets(): void
     {
         $hasErrors = false;
 
@@ -271,7 +271,7 @@ class Section extends Model
      *
      * @param Section_SiteSettings[] $siteSettings Array of Section_SiteSettings objects.
      */
-    public function setSiteSettings(array $siteSettings)
+    public function setSiteSettings(array $siteSettings): void
     {
         $this->_siteSettings = ArrayHelper::index($siteSettings, 'siteId');
 
@@ -296,7 +296,7 @@ class Section extends Model
      * @param array $errors
      * @param int $siteId
      */
-    public function addSiteSettingsErrors(array $errors, int $siteId)
+    public function addSiteSettingsErrors(array $errors, int $siteId): void
     {
         foreach ($errors as $attribute => $siteErrors) {
             $key = $attribute . '-' . $siteId;
@@ -332,7 +332,7 @@ class Section extends Model
      * @param EntryType[] $entryTypes
      * @since 3.1.0
      */
-    public function setEntryTypes(array $entryTypes)
+    public function setEntryTypes(array $entryTypes): void
     {
         $this->_entryTypes = $entryTypes;
     }

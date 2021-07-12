@@ -40,14 +40,12 @@ interface PluginInterface
     /**
      * Installs the plugin.
      *
-     * @return void
      */
     public function install(): void;
 
     /**
      * Uninstalls the plugin.
      *
-     * @return void
      */
     public function uninstall(): void;
 
@@ -69,7 +67,6 @@ interface PluginInterface
      * Sets the plugin settings
      *
      * @param array $settings The plugin settings that should be set on the settings model
-     * @return void
      */
     public function setSettings(array $settings): void;
 
@@ -137,7 +134,6 @@ interface PluginInterface
     /**
      * Performs actions after the plugin’s settings are saved.
      *
-     * @return void
      * @since 3.0.16
      */
     public function afterSaveSettings(): void;

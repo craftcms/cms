@@ -745,7 +745,7 @@ class UserQuery extends ElementQuery
      *
      * @throws QueryAbortedException
      */
-    private function _applyCanParam()
+    private function _applyCanParam(): void
     {
         if ($this->can !== false && empty($this->can)) {
             return;

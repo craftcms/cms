@@ -334,7 +334,7 @@ class UpdateController extends Controller
      * @param string $oldPackageName
      * @param Update $update
      */
-    private function _updateRequirements(array &$requirements, array &$info, string $handle, string $from, string $to = null, string $oldPackageName, Update $update)
+    private function _updateRequirements(array &$requirements, array &$info, string $handle, string $from, string $to = null, string $oldPackageName, Update $update): void
     {
         if ($update->status === Update::STATUS_EXPIRED) {
             $this->stdout("Skipping {$handle} because its license has expired." . PHP_EOL, Console::FG_GREY);
@@ -460,7 +460,7 @@ class UpdateController extends Controller
     /**
      * Reverts Composer changes.
      */
-    private function _revertComposerChanges()
+    private function _revertComposerChanges(): void
     {
         // See if we have composer.json and composer.lock backups
         $backupsDir = Craft::$app->getPath()->getComposerBackupsPath();
@@ -529,7 +529,7 @@ class UpdateController extends Controller
      * @param string $status
      * @param string|null $phpConstraint
      */
-    private function _outputUpdate(string $handle, string $from, string $to, bool $critical, string $status, string $phpConstraint = null)
+    private function _outputUpdate(string $handle, string $from, string $to, bool $critical, string $status, string $phpConstraint = null): void
     {
         $expired = $status === Update::STATUS_EXPIRED;
         $grey = $expired ? Console::FG_GREY : null;

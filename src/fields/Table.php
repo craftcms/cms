@@ -93,7 +93,7 @@ class Table extends Field
     /**
      * @inheritdoc
      */
-    public function init()
+    public function init(): void
     {
         parent::init();
 
@@ -159,9 +159,9 @@ class Table extends Field
     }
 
     /**
-     * Validatse the column configs.
+     * Validates the column configs.
      */
-    public function validateColumns()
+    public function validateColumns(): void
     {
         foreach ($this->columns as &$col) {
             if ($col['handle']) {
@@ -348,7 +348,7 @@ class Table extends Field
      *
      * @param ElementInterface $element
      */
-    public function validateTableData(ElementInterface $element)
+    public function validateTableData(ElementInterface $element): void
     {
         $value = $element->getFieldValue($this->handle);
 

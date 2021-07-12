@@ -63,7 +63,7 @@ class ArrayHelper extends \yii\helpers\ArrayHelper
      * @since 3.4.0
      * @deprecated in 4.0.0. `array_unshift()` should be used instead.
      */
-    public static function prepend(array &$array, ...$values)
+    public static function prepend(array &$array, ...$values): void
     {
         array_unshift($array, ...$values);
     }
@@ -81,7 +81,7 @@ class ArrayHelper extends \yii\helpers\ArrayHelper
      * @since 3.4.0
      * @deprecated in 4.0.0. `array_push()` should be used instead.
      */
-    public static function append(array &$array, ...$values)
+    public static function append(array &$array, ...$values): void
     {
         array_push($array, ...$values);
     }
@@ -93,7 +93,7 @@ class ArrayHelper extends \yii\helpers\ArrayHelper
      * @param mixed $value the value to prepend/append to the array
      * @param bool $prepend `true` will prepend the value; `false` will append it
      */
-    public static function prependOrAppend(array &$array, $value, bool $prepend)
+    public static function prependOrAppend(array &$array, $value, bool $prepend): void
     {
         if ($prepend) {
             array_unshift($array, $value);
@@ -321,7 +321,7 @@ class ArrayHelper extends \yii\helpers\ArrayHelper
      * @param string $newKey new key name of the array element
      * @param mixed $default the default value to be set if the specified old key does not exist
      */
-    public static function rename(array &$array, string $oldKey, string $newKey, $default = null)
+    public static function rename(array &$array, string $oldKey, string $newKey, $default = null): void
     {
         if (!array_key_exists($newKey, $array) || array_key_exists($oldKey, $array)) {
             $array[$newKey] = static::remove($array, $oldKey, $default);
@@ -361,7 +361,7 @@ class ArrayHelper extends \yii\helpers\ArrayHelper
      * @param array $array
      * @since 3.1.17.1
      */
-    public static function ensureNonAssociative(array &$array)
+    public static function ensureNonAssociative(array &$array): void
     {
         if (static::isAssociative($array, false)) {
             $array = array_values($array);

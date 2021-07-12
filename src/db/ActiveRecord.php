@@ -59,7 +59,7 @@ abstract class ActiveRecord extends \yii\db\ActiveRecord
      * @inheritdoc
      * @since 3.4.0
      */
-    public function behaviors()
+    public function behaviors(): array
     {
         // Fire a 'defineBehaviors' event
         $event = new DefineBehaviorsEvent();
@@ -91,7 +91,7 @@ abstract class ActiveRecord extends \yii\db\ActiveRecord
      *
      * @since 3.1.0
      */
-    protected function prepareForDb()
+    protected function prepareForDb(): void
     {
         $now = Db::prepareDateForDb(new \DateTime());
 

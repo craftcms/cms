@@ -263,7 +263,7 @@ trait ApplicationTrait
      * @param bool|null $useUserLanguage Whether the user's preferred language should be used.
      * If null, the user’s preferred language will be used if this is a control panel request or a console request.
      */
-    public function updateTargetLanguage(bool $useUserLanguage = null)
+    public function updateTargetLanguage(bool $useUserLanguage = null): void
     {
         // Defend against an infinite updateTargetLanguage() loop
         if ($this->_gettingLanguage === true) {
@@ -365,7 +365,7 @@ trait ApplicationTrait
      *
      * @param bool|null $value
      */
-    public function setIsInstalled($value = true)
+    public function setIsInstalled($value = true): void
     {
         $this->_isInstalled = $value;
     }
@@ -524,7 +524,7 @@ trait ApplicationTrait
      * @param bool $orBetter If true, makes $edition the minimum edition required.
      * @throws WrongEditionException if attempting to do something not allowed by the current Craft edition
      */
-    public function requireEdition(int $edition, bool $orBetter = true)
+    public function requireEdition(int $edition, bool $orBetter = true): void
     {
         if ($this->getIsInstalled() && !$this->getProjectConfig()->getIsApplyingYamlChanges()) {
             $installedEdition = $this->getEdition();
@@ -683,7 +683,7 @@ trait ApplicationTrait
      *
      * @since 3.1.33
      */
-    public function saveInfoAfterRequest()
+    public function saveInfoAfterRequest(): void
     {
         if (!$this->_waitingToSaveInfo) {
             $this->_waitingToSaveInfo = true;
@@ -707,7 +707,7 @@ trait ApplicationTrait
      * @since 3.1.33
      * @internal
      */
-    public function saveInfoAfterRequestHandler()
+    public function saveInfoAfterRequestHandler(): void
     {
         $info = $this->getInfo();
         if (!$this->saveInfo($info)) {
@@ -1320,7 +1320,7 @@ trait ApplicationTrait
     /**
      * Initializes things that should happen before the main Application::init()
      */
-    private function _preInit()
+    private function _preInit(): void
     {
         // Load the request before anything else, so everything else can safely check Craft::$app->has('request', true)
         // to avoid possible recursive fatal errors in the request initialization
@@ -1342,7 +1342,7 @@ trait ApplicationTrait
     /**
      * Initializes things that should happen after the main Application::init()
      */
-    private function _postInit()
+    private function _postInit(): void
     {
         // Register field layout listeners
         $this->_registerFieldLayoutListener();
@@ -1369,7 +1369,7 @@ trait ApplicationTrait
     /**
      * Sets the system timezone.
      */
-    private function _setTimeZone()
+    private function _setTimeZone(): void
     {
         $timezone = $this->getConfig()->getGeneral()->timezone;
 
@@ -1420,7 +1420,7 @@ trait ApplicationTrait
     /**
      * Register event listeners for field layouts.
      */
-    private function _registerFieldLayoutListener()
+    private function _registerFieldLayoutListener(): void
     {
         Event::on(FieldLayout::class, FieldLayout::EVENT_DEFINE_STANDARD_FIELDS, function(DefineFieldLayoutFieldsEvent $event) {
             /** @var FieldLayout $fieldLayout */
@@ -1444,7 +1444,7 @@ trait ApplicationTrait
     /**
      * Register event listeners for config changes.
      */
-    private function _registerConfigListeners()
+    private function _registerConfigListeners(): void
     {
         $this->getProjectConfig()
             // Field groups

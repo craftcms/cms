@@ -86,7 +86,7 @@ class Install extends Migration
     /**
      * Creates the tables.
      */
-    public function createTables()
+    public function createTables(): void
     {
         $this->createTable(Table::ANNOUNCEMENTS, [
             'id' => $this->primaryKey(),
@@ -776,7 +776,7 @@ class Install extends Migration
     /**
      * Creates the indexes.
      */
-    public function createIndexes()
+    public function createIndexes(): void
     {
         $this->createIndex(null, Table::ANNOUNCEMENTS, ['userId', 'unread', 'dateRead', 'dateCreated'], false);
         $this->createIndex(null, Table::ANNOUNCEMENTS, ['dateRead'], false);
@@ -961,7 +961,7 @@ class Install extends Migration
     /**
      * Adds the foreign keys.
      */
-    public function addForeignKeys()
+    public function addForeignKeys(): void
     {
         $this->addForeignKey(null, Table::ANNOUNCEMENTS, ['userId'], Table::USERS, ['id'], 'CASCADE', null);
         $this->addForeignKey(null, Table::ANNOUNCEMENTS, ['pluginId'], Table::PLUGINS, ['id'], 'CASCADE', null);
@@ -1052,7 +1052,7 @@ class Install extends Migration
     /**
      * Populates the DB with the default data.
      */
-    public function insertDefaultData()
+    public function insertDefaultData(): void
     {
         // Populate the info table
         echo '    > populating the info table ... ';
@@ -1158,7 +1158,7 @@ class Install extends Migration
      *
      * @throws \Throwable if reasons
      */
-    private function _installPlugins()
+    private function _installPlugins(): void
     {
         $projectConfig = Craft::$app->getProjectConfig();
         $pluginsService = Craft::$app->getPlugins();

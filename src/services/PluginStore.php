@@ -67,7 +67,7 @@ class PluginStore extends Component
      *
      * @param array $tokenArray
      */
-    public function saveToken(array $tokenArray)
+    public function saveToken(array $tokenArray): void
     {
         $oneDay = new DateTime();
         $oneDay->add(new DateInterval('P1D'));
@@ -152,7 +152,7 @@ class PluginStore extends Component
     /**
      * Deletes an OAuth token.
      */
-    public function deleteToken()
+    public function deleteToken(): void
     {
         // Delete DB token
 

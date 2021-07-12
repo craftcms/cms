@@ -190,7 +190,7 @@ class TagQuery extends ElementQuery
      *
      * @throws QueryAbortedException
      */
-    private function _normalizeGroupId()
+    private function _normalizeGroupId(): void
     {
         if ($this->groupId === false) {
             throw new QueryAbortedException();

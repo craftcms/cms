@@ -145,7 +145,7 @@ class Plugins extends Component
     /**
      * @inheritdoc
      */
-    public function init()
+    public function init(): void
     {
         $generalConfig = Craft::$app->getConfig()->getGeneral();
         $this->_forceDisabledPlugins = is_array($generalConfig->disabledPlugins) ? array_flip($generalConfig->disabledPlugins) : $generalConfig->disabledPlugins;
@@ -178,7 +178,7 @@ class Plugins extends Component
     /**
      * Loads the enabled plugins.
      */
-    public function loadPlugins()
+    public function loadPlugins(): void
     {
         if ($this->_pluginsLoaded === true || $this->_loadingPlugins === true || Craft::$app->getIsInstalled() === false) {
             return;
@@ -673,7 +673,7 @@ class Plugins extends Component
      * @throws InvalidArgumentException if $edition is invalid
      * @throws \Throwable if reasons
      */
-    public function switchEdition(string $handle, string $edition)
+    public function switchEdition(string $handle, string $edition): void
     {
         $info = $this->getPluginInfo($handle);
 
@@ -1228,7 +1228,7 @@ class Plugins extends Component
      * @param string|null $licensedEdition The plugin's licensed edition, if the key is valid
      * @throws InvalidPluginException if the plugin isn't installed
      */
-    public function setPluginLicenseKeyStatus(string $handle, string $licenseKeyStatus = null, string $licensedEdition = null)
+    public function setPluginLicenseKeyStatus(string $handle, string $licenseKeyStatus = null, string $licensedEdition = null): void
     {
         $pluginInfo = $this->getPluginInfo($handle);
 
@@ -1292,7 +1292,7 @@ class Plugins extends Component
      *
      * @param PluginInterface $plugin The plugin
      */
-    private function _registerPlugin(PluginInterface $plugin)
+    private function _registerPlugin(PluginInterface $plugin): void
     {
         $this->_plugins[$plugin->id] = $plugin;
         Craft::$app->setModule($plugin->id, $plugin);
@@ -1303,7 +1303,7 @@ class Plugins extends Component
      *
      * @param PluginInterface $plugin The plugin
      */
-    private function _unregisterPlugin(PluginInterface $plugin)
+    private function _unregisterPlugin(PluginInterface $plugin): void
     {
         unset($this->_plugins[$plugin->id]);
         Craft::$app->setModule($plugin->id, null);
@@ -1314,7 +1314,7 @@ class Plugins extends Component
      *
      * @param PluginInterface $plugin The plugin
      */
-    private function _setPluginMigrator(PluginInterface $plugin)
+    private function _setPluginMigrator(PluginInterface $plugin): void
     {
         $ref = new \ReflectionClass($plugin);
         $ns = $ref->getNamespaceName();
@@ -1329,7 +1329,7 @@ class Plugins extends Component
     /**
      * Load disabled plugin info.
      */
-    private function _loadDisabledPluginInfo()
+    private function _loadDisabledPluginInfo(): void
     {
         if ($this->_disabledPluginInfo === null) {
             $pluginInfo = $this->_createPluginQuery()

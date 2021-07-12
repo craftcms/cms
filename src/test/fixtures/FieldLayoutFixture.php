@@ -49,7 +49,7 @@ abstract class FieldLayoutFixture extends DbFixture
      * @throws Throwable
      * @throws YiiBaseException
      */
-    public function load()
+    public function load(): void
     {
         $fieldsService = Craft::$app->getFields();
 
@@ -146,7 +146,7 @@ abstract class FieldLayoutFixture extends DbFixture
      *
      * @throws NotSupportedException
      */
-    public function afterUnload()
+    public function afterUnload(): void
     {
         $this->db->getSchema()->refresh();
     }
@@ -155,7 +155,7 @@ abstract class FieldLayoutFixture extends DbFixture
      * @param Model $model
      * @throws InvalidArgumentException
      */
-    protected function throwModelError(Model $model)
+    protected function throwModelError(Model $model): void
     {
         throw new InvalidArgumentException(
             implode(

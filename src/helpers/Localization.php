@@ -112,7 +112,7 @@ class Localization
      *
      * @param MissingTranslationEvent $event
      */
-    public static function findMissingTranslation(MissingTranslationEvent $event)
+    public static function findMissingTranslation(MissingTranslationEvent $event): void
     {
         // Look for translation file from most to least specific.  So nl_nl.php gets checked before nl.php, for example.
         $translationFiles = [];

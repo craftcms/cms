@@ -42,7 +42,7 @@ class ApplyNewPropagationMethod extends BaseJob
     /**
      * @inheritdoc
      */
-    public function execute($queue)
+    public function execute($queue): void
     {
         /** @var string|ElementInterface $elementType */
         $elementType = $this->elementType;

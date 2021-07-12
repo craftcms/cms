@@ -146,7 +146,7 @@ class AssetTransformIndex extends Model
      *
      * @param AssetTransform $transform
      */
-    public function setTransform(AssetTransform $transform)
+    public function setTransform(AssetTransform $transform): void
     {
         $this->_transform = $transform;
     }

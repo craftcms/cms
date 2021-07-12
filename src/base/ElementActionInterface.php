@@ -42,7 +42,6 @@ interface ElementActionInterface extends ConfigurableComponentInterface
      * Sets the element type on the action.
      *
      * @param string $elementType
-     * @return void
      */
     public function setElementType(string $elementType): void;
 

@@ -252,7 +252,7 @@ class Matrix extends Component
      *
      * @param ConfigEvent $event
      */
-    public function handleChangedBlockType(ConfigEvent $event)
+    public function handleChangedBlockType(ConfigEvent $event): void
     {
         $blockTypeUid = $event->tokenMatches[0];
         $data = $event->newValue;
@@ -378,7 +378,7 @@ class Matrix extends Component
      * @param ConfigEvent $event
      * @throws \Throwable if reasons
      */
-    public function handleDeletedBlockType(ConfigEvent $event)
+    public function handleDeletedBlockType(ConfigEvent $event): void
     {
         $blockTypeUid = $event->tokenMatches[0];
         $blockTypeRecord = $this->_getBlockTypeRecord($blockTypeUid);
@@ -676,7 +676,7 @@ class Matrix extends Component
      * @param ElementInterface $owner The element the field is associated with
      * @throws \Throwable if reasons
      */
-    public function saveField(MatrixField $field, ElementInterface $owner)
+    public function saveField(MatrixField $field, ElementInterface $owner): void
     {
         $elementsService = Craft::$app->getElements();
         /** @var MatrixBlockQuery $query */
@@ -821,7 +821,7 @@ class Matrix extends Component
      * @throws \Throwable if reasons
      * @since 3.2.0
      */
-    public function duplicateBlocks(MatrixField $field, ElementInterface $source, ElementInterface $target, bool $checkOtherSites = false)
+    public function duplicateBlocks(MatrixField $field, ElementInterface $source, ElementInterface $target, bool $checkOtherSites = false): void
     {
         $elementsService = Craft::$app->getElements();
         /** @var MatrixBlockQuery $query */
@@ -921,7 +921,6 @@ class Matrix extends Component
      *
      * @param MatrixField $field The Matrix field
      * @param ElementInterface $owner The element the field is associated with
-     * @return void
      * @since 3.7.0
      */
     public function mergeCanonicalChanges(MatrixField $field, ElementInterface $owner): void
@@ -1113,7 +1112,7 @@ class Matrix extends Component
      *
      * @param string $tableName
      */
-    private function _createContentTable(string $tableName)
+    private function _createContentTable(string $tableName): void
     {
         $migration = new CreateMatrixContentTable([
             'tableName' => $tableName,
@@ -1131,7 +1130,7 @@ class Matrix extends Component
      * @param ElementInterface $owner The owner element
      * @param int[] $except Block IDs that should be left alone
      */
-    private function _deleteOtherBlocks(MatrixField $field, ElementInterface $owner, array $except)
+    private function _deleteOtherBlocks(MatrixField $field, ElementInterface $owner, array $except): void
     {
         $deleteBlocks = MatrixBlock::find()
             ->status(null)

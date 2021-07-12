@@ -103,7 +103,10 @@ JS;
         $view->registerJs($js, View::POS_HEAD);
     }
 
-    private function _registerTranslations(View $view)
+    /**
+     * @param View $view
+     */
+    private function _registerTranslations(View $view): void
     {
         $view->registerTranslations('app', [
             '(blank)',

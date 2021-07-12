@@ -223,7 +223,7 @@ class Tags extends Component
      *
      * @param ConfigEvent $event
      */
-    public function handleChangedTagGroup(ConfigEvent $event)
+    public function handleChangedTagGroup(ConfigEvent $event): void
     {
         $tagGroupUid = $event->tokenMatches[0];
         $data = $event->newValue;
@@ -344,7 +344,7 @@ class Tags extends Component
      *
      * @param ConfigEvent $event
      */
-    public function handleDeletedTagGroup(ConfigEvent $event)
+    public function handleDeletedTagGroup(ConfigEvent $event): void
     {
         $uid = $event->tokenMatches[0];
         $tagGroupRecord = $this->_getTagGroupRecord($uid);
@@ -412,7 +412,7 @@ class Tags extends Component
      *
      * @param FieldEvent $event
      */
-    public function pruneDeletedField(FieldEvent $event)
+    public function pruneDeletedField(FieldEvent $event): void
     {
         $field = $event->field;
         $fieldUid = $field->uid;

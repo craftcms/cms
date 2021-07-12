@@ -154,7 +154,7 @@ class Craft extends Yii2
      * @throws Throwable
      * @throws YiiBaseErrorException
      */
-    public function _before(TestInterface $test)
+    public function _before(TestInterface $test): void
     {
         self::$currentTest = $test;
 
@@ -221,7 +221,7 @@ class Craft extends Yii2
     /**
      * @throws Throwable
      */
-    public function setupDb()
+    public function setupDb(): void
     {
         ob_start();
         try {
@@ -289,7 +289,7 @@ class Craft extends Yii2
      * @throws Throwable
      * @throws InvalidPluginException
      */
-    public function installPlugin(array $plugin)
+    public function installPlugin(array $plugin): void
     {
         if (!\Craft::$app->getPlugins()->installPlugin($plugin['handle'])) {
             throw new InvalidConfigException('Invalid plugin handle: ' . $plugin['handle'] . '');
@@ -345,7 +345,7 @@ class Craft extends Yii2
         $callback,
         string $eventInstance = '',
         array $eventValues = []
-    )
+    ): void
     {
         // Add this event.
         $eventTriggered = false;
@@ -443,7 +443,7 @@ class Craft extends Yii2
      * @param callable $callable
      * @param string $message
      */
-    public function assertTestFails(callable $callable, string $message = '')
+    public function assertTestFails(callable $callable, string $message = ''): void
     {
         $failed = false;
         try {
@@ -470,7 +470,7 @@ class Craft extends Yii2
      * @param float $secondsDelta
      * @throws \Exception
      */
-    public function assertEqualDates(TestInterface $test, string $dateOne, string $dateTwo, float $secondsDelta = 5.0)
+    public function assertEqualDates(TestInterface $test, string $dateOne, string $dateTwo, float $secondsDelta = 5.0): void
     {
         $dateOne = new DateTime($dateOne);
         $dateTwo = new DateTime($dateTwo);
@@ -487,7 +487,7 @@ class Craft extends Yii2
      * @param array $constructorParams
      * @throws InvalidConfigException
      */
-    public function mockMethods(Module $module, string $component, array $params = [], array $constructorParams = [])
+    public function mockMethods(Module $module, string $component, array $params = [], array $constructorParams = []): void
     {
         $componentInstance = $module->get($component);
 
@@ -500,14 +500,13 @@ class Craft extends Yii2
      * @param array $constructorParams
      * @throws InvalidConfigException
      */
-    public function mockCraftMethods(string $component, array $params = [], array $constructorParams = [])
+    public function mockCraftMethods(string $component, array $params = [], array $constructorParams = []): void
     {
         $this->mockMethods(\Craft::$app, $component, $params, $constructorParams);
     }
 
     /**
      * @param array $params
-     * @return void
      * @since 3.6.11
      */
     public function mockDbMethods(array $params = []): void
@@ -537,7 +536,7 @@ class Craft extends Yii2
      * @param array $params
      * @throws InvalidArgumentException
      */
-    public function runQueue(string $queueItem, array $params = [])
+    public function runQueue(string $queueItem, array $params = []): void
     {
         /** @var BaseJob $job */
         $job = new $queueItem($params);
@@ -554,7 +553,7 @@ class Craft extends Yii2
     /**
      * @param string $description
      */
-    public function assertPushedToQueue(string $description)
+    public function assertPushedToQueue(string $description): void
     {
         if (\Craft::$app->getQueue() instanceof Queue) {
             $this->assertTrue((new Query())
@@ -608,7 +607,7 @@ class Craft extends Yii2
      * @param $event
      * @param EventItem $eventRequirements
      */
-    protected function validateEventValue($event, EventItem $eventRequirements)
+    protected function validateEventValue($event, EventItem $eventRequirements): void
     {
         $eventPropItem = $event->{$eventRequirements->eventPropName};
         $desiredValue = $eventRequirements->desiredValue;
@@ -644,7 +643,7 @@ class Craft extends Yii2
      * @param TestCase $test
      * @throws ReflectionException
      */
-    protected function mockModulesAndPlugins(TestCase $test)
+    protected function mockModulesAndPlugins(TestCase $test): void
     {
         foreach ($this->_getConfig('plugins') as $plugin) {
             $moduleClass = $plugin['class'];
@@ -663,7 +662,7 @@ class Craft extends Yii2
      * @param string $moduleClass
      * @throws ReflectionException
      */
-    protected function addModule(TestCase $test, string $moduleClass)
+    protected function addModule(TestCase $test, string $moduleClass): void
     {
         if (!method_exists($moduleClass, 'getComponentMap')) {
             return;

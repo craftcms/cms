@@ -98,7 +98,7 @@ abstract class ElementAction extends ConfigurableComponent implements ElementAct
      *
      * @param string $message The message that should be displayed to the user after the action is performed.
      */
-    protected function setMessage(string $message)
+    protected function setMessage(string $message): void
     {
         $this->_message = $message;
     }

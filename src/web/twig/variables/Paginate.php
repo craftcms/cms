@@ -93,7 +93,7 @@ class Paginate extends BaseObject
      * @param string $basePath
      * @since 3.1.28
      */
-    public function setBasePath(string $basePath)
+    public function setBasePath(string $basePath): void
     {
         $this->_basePath = $basePath;
     }

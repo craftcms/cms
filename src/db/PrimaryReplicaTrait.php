@@ -77,7 +77,7 @@ trait PrimaryReplicaTrait
      * @param bool $value
      * @internal
      */
-    public function setEnableReplicas(bool $value)
+    public function setEnableReplicas(bool $value): void
     {
         $this->enableSlaves = $value;
     }
@@ -99,7 +99,7 @@ trait PrimaryReplicaTrait
      * @param array $value
      * @internal
      */
-    public function setReplicas(array $value)
+    public function setReplicas(array $value): void
     {
         $this->slaves = $value;
     }
@@ -121,7 +121,7 @@ trait PrimaryReplicaTrait
      * @param array $value
      * @internal
      */
-    public function setReplicaConfig(array $value)
+    public function setReplicaConfig(array $value): void
     {
         $this->slaveConfig = $value;
     }
@@ -143,7 +143,7 @@ trait PrimaryReplicaTrait
      * @param array $value
      * @internal
      */
-    public function setPrimaries(array $value)
+    public function setPrimaries(array $value): void
     {
         $this->masters = $value;
     }
@@ -165,7 +165,7 @@ trait PrimaryReplicaTrait
      * @param array $value
      * @internal
      */
-    public function setPrimaryConfig(array $value)
+    public function setPrimaryConfig(array $value): void
     {
         $this->masterConfig = $value;
     }
@@ -187,7 +187,7 @@ trait PrimaryReplicaTrait
      * @param bool $value
      * @internal
      */
-    public function setShufflePrimaries(bool $value)
+    public function setShufflePrimaries(bool $value): void
     {
         $this->shuffleMasters = $value;
     }

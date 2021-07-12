@@ -83,7 +83,7 @@ class CategoryGroup extends Model
     /**
      * @inheritdoc
      */
-    public function behaviors()
+    public function behaviors(): array
     {
         $behaviors = parent::behaviors();
         $behaviors['fieldLayout'] = [
@@ -124,7 +124,6 @@ class CategoryGroup extends Model
     /**
      * Validates the field layout.
      *
-     * @return void
      * @since 3.7.0
      */
     public function validateFieldLayout(): void
@@ -142,7 +141,7 @@ class CategoryGroup extends Model
     /**
      * Validates the site settings.
      */
-    public function validateSiteSettings()
+    public function validateSiteSettings(): void
     {
         foreach ($this->getSiteSettings() as $i => $siteSettings) {
             if (!$siteSettings->validate()) {
@@ -187,7 +186,7 @@ class CategoryGroup extends Model
      *
      * @param CategoryGroup_SiteSettings[] $siteSettings
      */
-    public function setSiteSettings(array $siteSettings)
+    public function setSiteSettings(array $siteSettings): void
     {
         $this->_siteSettings = $siteSettings;
 

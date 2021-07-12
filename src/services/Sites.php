@@ -177,7 +177,7 @@ class Sites extends Component
     /**
      * @inheritdoc
      */
-    public function init()
+    public function init(): void
     {
         // No technical reason to put this here, but it's sortof related
         if (defined('CRAFT_LOCALE')) {
@@ -289,7 +289,7 @@ class Sites extends Component
      *
      * @param ConfigEvent $event
      */
-    public function handleChangedGroup(ConfigEvent $event)
+    public function handleChangedGroup(ConfigEvent $event): void
     {
         $data = $event->newValue;
         $uid = $event->tokenMatches[0];
@@ -327,7 +327,7 @@ class Sites extends Component
      *
      * @param ConfigEvent $event
      */
-    public function handleDeletedGroup(ConfigEvent $event)
+    public function handleDeletedGroup(ConfigEvent $event): void
     {
         $uid = $event->tokenMatches[0];
         $groupRecord = $this->_getGroupRecord($uid);
@@ -471,7 +471,7 @@ class Sites extends Component
      * @param Site|string|int|null $site the current site, or its handle/ID, or null
      * @throws InvalidArgumentException if $site is invalid
      */
-    public function setCurrentSite($site)
+    public function setCurrentSite($site): void
     {
         // In case this was called from the constructor...
         $this->_loadAllSites();
@@ -712,7 +712,7 @@ class Sites extends Component
      * @param ConfigEvent $event
      * @throws \Throwable
      */
-    public function handleChangedSite(ConfigEvent $event)
+    public function handleChangedSite(ConfigEvent $event): void
     {
         $siteUid = $event->tokenMatches[0];
         $data = $event->newValue;
@@ -1050,7 +1050,7 @@ class Sites extends Component
      * @throws \Throwable
      * @throws \yii\base\NotSupportedException
      */
-    public function handleDeletedSite(ConfigEvent $event)
+    public function handleDeletedSite(ConfigEvent $event): void
     {
         $siteUid = $event->tokenMatches[0];
         $siteRecord = $this->_getSiteRecord($siteUid);
@@ -1125,7 +1125,7 @@ class Sites extends Component
      * @throws DbException
      * @since 3.5.13
      */
-    public function refreshSites()
+    public function refreshSites(): void
     {
         $this->_allSitesById = null;
         $this->_enabledSitesById = null;
@@ -1136,7 +1136,7 @@ class Sites extends Component
     /**
      * Loads all the sites.
      */
-    private function _loadAllSites()
+    private function _loadAllSites(): void
     {
         if ($this->_allSitesById !== null) {
             return;
@@ -1269,7 +1269,7 @@ class Sites extends Component
      * @param int $newPrimarySiteId
      * @throws \Throwable
      */
-    private function _processNewPrimarySite(int $oldPrimarySiteId, int $newPrimarySiteId)
+    private function _processNewPrimarySite(int $oldPrimarySiteId, int $newPrimarySiteId): void
     {
         App::maxPowerCaptain();
 

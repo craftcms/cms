@@ -35,7 +35,6 @@ class Announcements extends Component
      * @param string|callable $heading The announcement heading. Set to a callable if the heading text should be translated with `Craft::t()`.
      * @param string|callable $body The announcement body. Set to a callable if the heading text should be translated with `Craft::t()`.
      * @param string|null $pluginHandle The plugin handle, if this announcement belongs to a plugin
-     * @return void
      */
     public function push($heading, $body, ?string $pluginHandle = null): void
     {
@@ -112,7 +111,6 @@ class Announcements extends Component
      * Marks the user’s announcements as read.
      *
      * @param int[] $ids
-     * @return void
      */
     public function markAsRead(array $ids): void
     {

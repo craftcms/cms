@@ -216,7 +216,6 @@ class FieldLayout extends Model
     /**
      * Validates the field selections.
      *
-     * @return void
      * @since 3.7.0
      */
     public function validateFields(): void
@@ -301,7 +300,7 @@ class FieldLayout extends Model
      * @param array|FieldLayoutTab[] $tabs An array of the layout’s tabs, which can either be FieldLayoutTab
      * objects or arrays defining the tab’s attributes.
      */
-    public function setTabs($tabs)
+    public function setTabs($tabs): void
     {
         $this->_tabs = [];
         foreach ($tabs as $tab) {
@@ -496,7 +495,7 @@ class FieldLayout extends Model
      *
      * @param FieldInterface[]|null $fields
      */
-    public function setFields(array $fields = null)
+    public function setFields(array $fields = null): void
     {
         $this->_customFields = $fields;
     }

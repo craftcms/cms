@@ -274,7 +274,7 @@ class Assets
      *
      * @param VolumeFolder[] &$tree array passed by reference of the sortable folders.
      */
-    public static function sortFolderTree(array &$tree)
+    public static function sortFolderTree(array &$tree): void
     {
         ArrayHelper::multisort($tree, function($folder) {
             return $folder->getVolume()->sortOrder;
@@ -373,7 +373,7 @@ class Assets
     /**
      * Builds the internal file kinds array, if it hasn't been built already.
      */
-    private static function _buildFileKinds()
+    private static function _buildFileKinds(): void
     {
         if (self::$_fileKinds === null) {
             self::$_fileKinds = [

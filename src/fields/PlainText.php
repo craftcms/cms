@@ -118,7 +118,7 @@ class PlainText extends Field implements PreviewableFieldInterface, SortableFiel
     /**
      * @inheritdoc
      */
-    public function init()
+    public function init(): void
     {
         parent::init();
 
@@ -159,7 +159,7 @@ class PlainText extends Field implements PreviewableFieldInterface, SortableFiel
      *
      * @param string $attribute
      */
-    public function validateFieldLimit(string $attribute)
+    public function validateFieldLimit(string $attribute): void
     {
         if ($bytes = $this->$attribute) {
             if ($attribute === 'charLimit') {

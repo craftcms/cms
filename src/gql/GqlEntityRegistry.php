@@ -66,7 +66,7 @@ class GqlEntityRegistry
      * @param string $prefix
      * @since 3.6.0
      */
-    public static function setPrefix(string $prefix)
+    public static function setPrefix(string $prefix): void
     {
         self::$_prefix = $prefix;
     }
@@ -75,7 +75,7 @@ class GqlEntityRegistry
      * Get a registered entity.
      *
      * @param string $entityName
-     * @return bool|mixed
+     * @return mixed
      */
     public static function getEntity(string $entityName)
     {
@@ -112,7 +112,7 @@ class GqlEntityRegistry
     /**
      * Flush all registered entities.
      */
-    public static function flush()
+    public static function flush(): void
     {
         self::$_entities = [];
     }

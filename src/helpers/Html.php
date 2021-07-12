@@ -629,7 +629,7 @@ class Html extends \yii\helpers\Html
      * @param string $html
      * @param string $namespace
      */
-    private static function _namespaceInputs(string &$html, string $namespace)
+    private static function _namespaceInputs(string &$html, string $namespace): void
     {
         $html = preg_replace('/(?<![\w\-])(name=(\'|"))([^\'"\[\]]+)([^\'"]*)\2/i', '$1' . $namespace . '[$3]$4$2', $html);
     }
@@ -674,7 +674,7 @@ class Html extends \yii\helpers\Html
      * @param string $namespace
      * @param bool $withClasses
      */
-    private static function _namespaceAttributes(string &$html, string $namespace, bool $withClasses)
+    private static function _namespaceAttributes(string &$html, string $namespace, bool $withClasses): void
     {
         // normalize the namespace
         $namespace = static::id($namespace);

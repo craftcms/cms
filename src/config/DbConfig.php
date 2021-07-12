@@ -169,7 +169,7 @@ class DbConfig extends BaseObject
      * @inheritdoc
      * @throws InvalidConfigException
      */
-    public function init()
+    public function init(): void
     {
         // If $url was set, parse it to set other properties
         if ($this->url) {
@@ -195,7 +195,7 @@ class DbConfig extends BaseObject
      *
      * @throws InvalidConfigException
      */
-    private function _updateDsn()
+    private function _updateDsn(): void
     {
         if (!$this->driver) {
             $this->driver = Connection::DRIVER_MYSQL;

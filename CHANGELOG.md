@@ -41,7 +41,9 @@
 - All components’ `afterDelete()` methods must now have a `void` return type declaration.
 - All components’ `afterSave()` methods must now have a `void` return type declaration.
 - All components’ `beforeApplyDelete()` methods must now have a `void` return type declaration.
+- All components’ `behaviors()` methods must now have a `void` return type declaration.
 - All components’ `getSettingsHtml()` methods must now have a `?string` return type declaration.
+- All components’ `init()` methods must now have a `void` return type declaration.
 - Controllers’ `beforeAction()` methods must now have a `bool` return type declaration.
 - Element actions’ `getConfirmationMessage()` methods must now have a `?string` return type declaration.
 - Element actions’ `getMessage()` methods must now have a `?string` return type declaration.
@@ -59,6 +61,7 @@
 - Element types’ `getThumbUrl()` methods must now have a `?string` return type declaration.
 - Element types’ `getTitleTranslationDescription()` methods must now have a `?string` return type declaration.
 - Element types’ `getUriFormat()` methods must now have a `?string` return type declaration.
+- Element types’ `prepElementQueryForTableAttribute()` methods must now have a `void` return type declaration.
 - Element types’ `refHandle()` methods must now have a `?string` return type declaration.
 - Element queries’ `status()` methods must now have a `self` return type declaration.
 - Fields’ `afterElementDelete()` methods must now have a `void` return type declaration.
@@ -68,9 +71,9 @@
 - Fields’ `getEagerLoadingGqlConditions()` methods must now have an `?array` return type declaration, and `null` should be returned rather than `false` if the field is not eager-loadable.
 - Fields’ `modifyElementIndexQuery()` methods must now have a `void` return type declaration.
 - Fields’ `modifyElementsQuery()` methods must now have a `void` return type declaration, and should throw a `QueryAbortedException` when the query should yield no results, rother than returning `false`.
-- Field layout elements’ `formHtml()` methods must now have a `?string` return type declaration.
+- Field layout elements’ `inputHtml()` methods must now have a `?string` return type declaration.
+- Field layout elements’ `selectorIcon()` methods must now have a `?string` return type declaration.
 - Field layout elements’ `settingsHtml()` methods must now have a `?string` return type declaration.
-- Field layout UI elements’ `selectorIcon()` methods must now have a `?string` return type declaration.
 - Plugins’ `afterSaveSettings()` methods must now have a `void` return type declaration.
 - Plugins’ `createSettingsModel()` methods must now have a `?Model` return type declaration.
 - Plugins’ `getCpNavItem()` methods must now have an `?array` return type declaration.

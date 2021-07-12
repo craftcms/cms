@@ -45,7 +45,7 @@ use yii2tech\ar\softdelete\SoftDeleteBehavior;
  *     behaviors as softDeleteBehaviors;
  * }
  *
- * public function behaviors()
+ * public function behaviors(): array
  * {
  *     $behaviors = $this->softDeleteBehaviors();
  *     $behaviors['myBehavior'] = MyBehavior::class;
@@ -57,7 +57,7 @@ use yii2tech\ar\softdelete\SoftDeleteBehavior;
  * add a condition to exclude soft-deleted rows.
  *
  * ```php
- * public static function find()
+ * public static function find(): ElementQueryInterface
  * {
  *     // @var MyActiveQuery $query
  *     $query = Craft::createObject(MyActiveQuery::class, [static::class]);
@@ -111,7 +111,7 @@ trait SoftDeleteTrait
     /**
      * @inheritdoc
      */
-    public function behaviors()
+    public function behaviors(): array
     {
         $behaviors = parent::behaviors();
         $behaviors['softDelete'] = [

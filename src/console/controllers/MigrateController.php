@@ -118,7 +118,7 @@ class MigrateController extends BaseMigrateController
     /**
      * @inheritdoc
      */
-    public function init()
+    public function init(): void
     {
         parent::init();
         $this->checkTty();
@@ -261,9 +261,10 @@ class MigrateController extends BaseMigrateController
      *
      * @param string $name the name of the new migration. This should only contain
      * letters, digits, and underscores.
+     * @return int
      * @throws Exception if the name argument is invalid.
      */
-    public function actionCreate($name)
+    public function actionCreate($name): int
     {
         if (!preg_match('/^\w+$/', $name)) {
             throw new Exception('The migration name should contain letters, digits and/or underscore characters only.');
@@ -451,7 +452,7 @@ class MigrateController extends BaseMigrateController
     /**
      * Clears all compiled templates.
      */
-    private function _clearCompiledTemplates()
+    private function _clearCompiledTemplates(): void
     {
         try {
             FileHelper::clearDirectory(Craft::$app->getPath()->getCompiledTemplatesPath(false));

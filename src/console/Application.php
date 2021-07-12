@@ -38,9 +38,9 @@ class Application extends \yii\console\Application
     use ApplicationTrait;
 
     /**
-     * Initializes the console app by creating the command runner.
+     * @inheritdoc
      */
-    public function init()
+    public function init(): void
     {
         $this->state = self::STATE_INIT;
         $this->_preInit();

@@ -61,7 +61,7 @@ abstract class BaseRevisionBehavior extends Behavior
      * @param User|null $creator
      * @since 3.5.0
      */
-    public function setCreator(User $creator = null)
+    public function setCreator(User $creator = null): void
     {
         $this->_creator = $creator ?? false;
     }

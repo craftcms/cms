@@ -82,7 +82,7 @@ class CustomField extends BaseField
      *
      * @param FieldInterface $field
      */
-    public function setField(FieldInterface $field)
+    public function setField(FieldInterface $field): void
     {
         $this->_field = $field;
     }
@@ -103,7 +103,7 @@ class CustomField extends BaseField
      * @param string $uid
      * @throws InvalidArgumentException if $uid is invalid
      */
-    public function setFieldUid(string $uid)
+    public function setFieldUid(string $uid): void
     {
         if (($field = \Craft::$app->getFields()->getFieldByUid($uid)) === null) {
             throw new InvalidArgumentException("Invalid field UID: $uid");
@@ -228,7 +228,7 @@ class CustomField extends BaseField
     /**
      * @inheritdoc
      */
-    protected function inputHtml(ElementInterface $element = null, bool $static = false): string
+    protected function inputHtml(ElementInterface $element = null, bool $static = false): ?string
     {
         $value = $element ? $element->getFieldValue($this->_field->handle) : $this->_field->normalizeValue(null);
 

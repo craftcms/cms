@@ -43,7 +43,7 @@ class PropagateElements extends BaseJob
     /**
      * @inheritdoc
      */
-    public function execute($queue)
+    public function execute($queue): void
     {
         /** @var ElementQuery $query */
         $query = $this->_query();

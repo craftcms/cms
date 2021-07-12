@@ -22,7 +22,7 @@ class Request extends \yii\console\Request
     /**
      * @inheritdoc
      */
-    public function init()
+    public function init(): void
     {
         parent::init();
 

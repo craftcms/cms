@@ -34,11 +34,11 @@ class Security extends \yii\base\Security
     private $_blowFishHashCost;
 
     /**
+     * @inheritdoc
      */
-    public function init()
+    public function init(): void
     {
         parent::init();
-
         $this->_blowFishHashCost = Craft::$app->getConfig()->getGeneral()->blowfishHashCost;
     }
 

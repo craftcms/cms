@@ -98,7 +98,7 @@ class Site extends Model
      * @inheritdoc
      * @since 3.5.0
      */
-    public function init()
+    public function init(): void
     {
         // Typecast DB values
         $this->id = (int)$this->id ?: null;
@@ -164,7 +164,7 @@ class Site extends Model
     /**
      * @inheritdoc
      */
-    public function behaviors()
+    public function behaviors(): array
     {
         $behaviors = parent::behaviors();
         $behaviors['parser'] = [

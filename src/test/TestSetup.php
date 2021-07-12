@@ -126,7 +126,7 @@ class TestSetup
     /**
      * Taken from the Yii2 Module $i->_after
      */
-    public static function tearDownCraft()
+    public static function tearDownCraft(): void
     {
         $_SESSION = [];
         $_FILES = [];
@@ -379,7 +379,7 @@ class TestSetup
      * @param string $projectConfigFolder - Whether to override the folder specified in codeception.yml with a custom folder.
      * @throws ErrorException
      */
-    public static function setupProjectConfig(string $projectConfigFolder = null)
+    public static function setupProjectConfig(string $projectConfigFolder = null): void
     {
         if (!$projectConfigFolder) {
             $config = \craft\test\Craft::$instance->_getConfig('projectConfig');
@@ -400,10 +400,10 @@ class TestSetup
     }
 
     /**
-     * @param $path
+     * @param string $path
      * @throws ErrorException
      */
-    public static function removeProjectConfigFolders($path)
+    public static function removeProjectConfigFolders(string $path): void
     {
         // Clear any existing.
         if (is_dir($path)) {
@@ -447,7 +447,7 @@ class TestSetup
      * @param Connection $connection
      * @throws Exception
      */
-    public static function setupCraftDb(Connection $connection)
+    public static function setupCraftDb(Connection $connection): void
     {
         if ($connection->schema->getTableNames() !== []) {
             throw new Exception('Not allowed to setup the DB if it has not been cleansed');
@@ -501,7 +501,7 @@ class TestSetup
      * @return MockObject
      * @credit https://github.com/nerds-and-company/schematic/blob/master/tests/_support/Helper/Unit.php
      */
-    public static function getMockApp(CodeceptionTestCase $test, array $serviceMap = [], string $appClass = '')
+    public static function getMockApp(CodeceptionTestCase $test, array $serviceMap = [], string $appClass = ''): MockObject
     {
         $appClass = $appClass ?: self::appClass();
         $serviceMap = $serviceMap ?: self::getCraftServiceMap();
@@ -545,7 +545,7 @@ class TestSetup
      * @return MockObject
      * @credit https://github.com/nerds-and-company/schematic/blob/master/tests/_support/Helper/Unit.php
      */
-    public static function getMock(CodeceptionTestCase $test, string $class)
+    public static function getMock(CodeceptionTestCase $test, string $class): MockObject
     {
         return $test->getMockBuilder($class)
             ->disableOriginalConstructor()

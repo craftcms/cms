@@ -115,7 +115,7 @@ abstract class Image extends BaseObject
      * @param int|string|null $width
      * @param int|string|null $height
      */
-    protected function normalizeDimensions(&$width, &$height)
+    protected function normalizeDimensions(&$width, &$height): void
     {
         // See if $width is in "XxY" format
         if (preg_match('/^([\d]+|AUTO)x([\d]+|AUTO)/', $width, $matches)) {

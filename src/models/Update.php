@@ -87,7 +87,7 @@ class Update extends Model
     /**
      * @inheritdoc
      */
-    public function init()
+    public function init(): void
     {
         parent::init();
 

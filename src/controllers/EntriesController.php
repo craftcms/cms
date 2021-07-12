@@ -813,7 +813,7 @@ class EntriesController extends BaseEntriesController
      *
      * @param Entry $entry
      */
-    private function _populateEntryModel(Entry $entry)
+    private function _populateEntryModel(Entry $entry): void
     {
         // Set the entry attributes, defaulting to the existing values for whatever is missing from the post data
         $entry->typeId = $this->request->getBodyParam('typeId', $entry->typeId);

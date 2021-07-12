@@ -77,7 +77,6 @@ class Tag extends ElementMutationResolver
      * @param array $arguments
      * @param $context
      * @param ResolveInfo $resolveInfo
-     * @return void
      * @throws \Throwable if reasons.
      */
     public function deleteTag($source, array $arguments, $context, ResolveInfo $resolveInfo): void

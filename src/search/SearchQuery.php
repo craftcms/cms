@@ -69,7 +69,7 @@ class SearchQuery
     /**
      * Parses the query into an array of tokens.
      */
-    private function _parse()
+    private function _parse(): void
     {
         for ($token = strtok($this->_query, ' '); $token !== false; $token = strtok(' ')) {
             $appendToPrevious = false;

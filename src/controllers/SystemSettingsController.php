@@ -187,7 +187,7 @@ class SystemSettingsController extends Controller
     /**
      * Tests the email settings.
      */
-    public function actionTestEmailSettings()
+    public function actionTestEmailSettings(): void
     {
         $this->requirePostRequest();
 

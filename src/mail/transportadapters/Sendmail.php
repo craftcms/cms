@@ -33,7 +33,7 @@ class Sendmail extends BaseTransportAdapter
      * @inheritdoc
      * @since 3.4.0
      */
-    public function behaviors()
+    public function behaviors(): array
     {
         $behaviors = parent::behaviors();
         $behaviors['parser'] = [

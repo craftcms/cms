@@ -78,7 +78,7 @@ class StreamLogTarget extends BaseTarget
     /**
      * @inheritdoc
      */
-    public function init()
+    public function init(): void
     {
         if (empty($this->fp) && empty($this->url)) {
             throw new InvalidConfigException("Either 'url' or 'fp' must be set.");
@@ -89,10 +89,9 @@ class StreamLogTarget extends BaseTarget
      * @param resource $value An open and writeable resource. This can also be
      * one of PHP's pre-defined resources like `STDIN` or `STDERR`, which are
      * available in CLI context.
-     *
      * @throws InvalidConfigException
      */
-    public function setFp($value)
+    public function setFp($value): void
     {
         if (!is_resource($value)) {
             throw new InvalidConfigException("Invalid resource.");
@@ -125,7 +124,7 @@ class StreamLogTarget extends BaseTarget
     /**
      * Close the file handle if it was opened by this class
      */
-    public function closeFp()
+    public function closeFp(): void
     {
         if ($this->openedFp && $this->fp !== null) {
             @fclose($this->fp);
@@ -140,7 +139,7 @@ class StreamLogTarget extends BaseTarget
      * @throws InvalidConfigException If unable to open the stream for writing
      * @throws LogRuntimeException If unable to write to the log
      */
-    public function export()
+    public function export(): void
     {
         $text = implode("\n", array_map([$this, 'formatMessage'], $this->messages)) . "\n";
 

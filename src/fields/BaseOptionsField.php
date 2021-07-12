@@ -50,7 +50,7 @@ abstract class BaseOptionsField extends Field implements PreviewableFieldInterfa
     /**
      * @inheritdoc
      */
-    public function init()
+    public function init(): void
     {
         parent::init();
 
@@ -107,7 +107,7 @@ abstract class BaseOptionsField extends Field implements PreviewableFieldInterfa
      *
      * @since 3.3.5
      */
-    public function validateOptions()
+    public function validateOptions(): void
     {
         $labels = [];
         $values = [];

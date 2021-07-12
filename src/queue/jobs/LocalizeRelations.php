@@ -29,7 +29,7 @@ class LocalizeRelations extends BaseJob
     /**
      * @inheritdoc
      */
-    public function execute($queue)
+    public function execute($queue): void
     {
         $relations = (new Query())
             ->select(['id', 'sourceId', 'sourceSiteId', 'targetId', 'sortOrder'])

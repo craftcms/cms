@@ -26,7 +26,6 @@ class Queue
      * @param int|null $priority
      * @param int|null $delay
      * @param int|null $ttr
-     * @return void The new job ID
      */
     public static function push(JobInterface $job, ?int $priority = null, ?int $delay = null, ?int $ttr = null): void
     {

@@ -80,7 +80,7 @@ class TypeManager extends Component
     /**
      * Flush all prepared field definitions.
      */
-    public static function flush()
+    public static function flush(): void
     {
         // TODO looking at you, static method flush.
         self::$_definitions = [];

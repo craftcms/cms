@@ -63,7 +63,7 @@ class Drafts extends Component
     /**
      * @inheritdoc
      */
-    public function init()
+    public function init(): void
     {
         parent::init();
         $this->db = Instance::ensure($this->db, Connection::class);
@@ -351,7 +351,6 @@ class Drafts extends Component
     /**
      * Deletes any sourceless drafts that were never formally saved.
      *
-     * @return void
      */
     public function purgeUnsavedDrafts(): void
     {

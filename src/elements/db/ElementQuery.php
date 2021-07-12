@@ -554,7 +554,7 @@ class ElementQuery extends Query implements ElementQueryInterface
      * @param mixed $value The value
      * @throws NotSupportedException if $name is numeric
      */
-    public function offsetSet($name, $value)
+    public function offsetSet($name, $value): void
     {
         if (is_numeric($name)) {
             throw new NotSupportedException('ElementQuery does not support setting an element using array syntax.');
@@ -570,7 +570,7 @@ class ElementQuery extends Query implements ElementQueryInterface
      * @param string $name The offset to unset
      * @throws NotSupportedException if $name is numeric
      */
-    public function offsetUnset($name)
+    public function offsetUnset($name): void
     {
         if (is_numeric($name)) {
             throw new NotSupportedException('ElementQuery does not support unsetting an element using array syntax.');
@@ -583,7 +583,7 @@ class ElementQuery extends Query implements ElementQueryInterface
     /**
      * @inheritdoc
      */
-    public function behaviors()
+    public function behaviors(): array
     {
         $behaviors = parent::behaviors();
         /** @noinspection PhpUndefinedClassInspection */
@@ -1568,7 +1568,7 @@ class ElementQuery extends Query implements ElementQueryInterface
      * @param ElementInterface[] $elements The resulting elements.
      * @see getCachedResult()
      */
-    public function setCachedResult(array $elements)
+    public function setCachedResult(array $elements): void
     {
         $this->_result = $elements;
         $this->_resultCriteria = $this->getCriteria();
@@ -1581,7 +1581,7 @@ class ElementQuery extends Query implements ElementQueryInterface
      * @see setCachedResult()
      * @since 3.4.0
      */
-    public function clearCachedResult()
+    public function clearCachedResult(): void
     {
         $this->_result = $this->_resultCriteria = null;
     }
@@ -1965,7 +1965,7 @@ class ElementQuery extends Query implements ElementQueryInterface
      *
      * @param string $table The unprefixed table name. This will also be used as the table’s alias within the query.
      */
-    protected function joinElementTable(string $table)
+    protected function joinElementTable(string $table): void
     {
         $joinTable = [$table => "{{%$table}}"];
         $this->query->innerJoin($joinTable, "[[{$table}.id]] = [[subquery.elementsId]]");
@@ -2030,7 +2030,7 @@ class ElementQuery extends Query implements ElementQueryInterface
      * @param string $class
      * @throws QueryAbortedException
      */
-    private function _joinContentTable(string $class)
+    private function _joinContentTable(string $class): void
     {
         /** @var ElementInterface|string $class */
         // Join in the content table on both queries
@@ -2106,7 +2106,7 @@ class ElementQuery extends Query implements ElementQueryInterface
      * @param string $class
      * @throws QueryAbortedException
      */
-    private function _applyStatusParam(string $class)
+    private function _applyStatusParam(string $class): void
     {
         /** @var string|ElementInterface $class */
         if (!$this->status || !$class::hasStatuses()) {
@@ -2141,7 +2141,7 @@ class ElementQuery extends Query implements ElementQueryInterface
      *
      * @throws QueryAbortedException
      */
-    private function _applyRelatedToParam()
+    private function _applyRelatedToParam(): void
     {
         if (!$this->relatedTo) {
             return;
@@ -2178,7 +2178,7 @@ class ElementQuery extends Query implements ElementQueryInterface
      * @param string $class
      * @throws QueryAbortedException
      */
-    private function _applyStructureParams(string $class)
+    private function _applyStructureParams(string $class): void
     {
         if (!$this->_shouldJoinStructureData()) {
             $structureParams = [
@@ -2360,7 +2360,7 @@ class ElementQuery extends Query implements ElementQueryInterface
     /**
      * Applies draft and revision params to the query being prepared.
      */
-    private function _applyRevisionParams()
+    private function _applyRevisionParams(): void
     {
         if ($this->drafts !== false) {
             if ($this->drafts === true) {
@@ -2444,7 +2444,7 @@ class ElementQuery extends Query implements ElementQueryInterface
     /**
      * Normalizes the siteId param value.
      */
-    private function _normalizeSiteId()
+    private function _normalizeSiteId(): void
     {
         if (!$this->siteId) {
             // Default to the current site
@@ -2491,7 +2491,7 @@ class ElementQuery extends Query implements ElementQueryInterface
      * @throws Exception if the DB connection doesn't support fixed ordering
      * @throws QueryAbortedException
      */
-    private function _applySearchParam(Connection $db)
+    private function _applySearchParam(Connection $db): void
     {
         $this->_searchScores = null;
 
@@ -2544,7 +2544,7 @@ class ElementQuery extends Query implements ElementQueryInterface
      * @throws Exception if the DB connection doesn't support fixed ordering
      * @throws QueryAbortedException
      */
-    private function _applyOrderByParams(Connection $db)
+    private function _applyOrderByParams(Connection $db): void
     {
         if (
             $this->orderBy === null ||
@@ -2636,7 +2636,7 @@ class ElementQuery extends Query implements ElementQueryInterface
     /**
      * Applies the 'select' param to the query being prepared.
      */
-    private function _applySelectParam()
+    private function _applySelectParam(): void
     {
         // Select all columns defined by [[select]]
         $select = array_merge((array)$this->select);
@@ -2680,7 +2680,7 @@ class ElementQuery extends Query implements ElementQueryInterface
     /**
      * Applies the 'join' params to the query being prepared.
      */
-    private function _applyJoinParams()
+    private function _applyJoinParams(): void
     {
         if ($this->join !== null) {
             foreach ($this->join as $join) {
@@ -2695,7 +2695,7 @@ class ElementQuery extends Query implements ElementQueryInterface
      *
      * @param Connection $db
      */
-    private function _applyUniqueParam(Connection $db)
+    private function _applyUniqueParam(Connection $db): void
     {
         if (
             !$this->unique ||

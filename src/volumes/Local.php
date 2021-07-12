@@ -72,7 +72,7 @@ class Local extends Volume implements LocalVolumeInterface
     /**
      * @inheritdoc
      */
-    public function init()
+    public function init(): void
     {
         parent::init();
 

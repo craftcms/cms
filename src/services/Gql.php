@@ -326,7 +326,7 @@ class Gql extends Component
      *
      * @param GqlToken $token
      */
-    private function _saveTokenInternal(GqlToken $token)
+    private function _saveTokenInternal(GqlToken $token): void
     {
         $isNewToken = !$token->id;
 
@@ -556,7 +556,7 @@ class Gql extends Component
      *
      * @since 3.3.12
      */
-    public function invalidateCaches()
+    public function invalidateCaches(): void
     {
         TagDependency::invalidate(Craft::$app->getCache(), self::CACHE_TAG);
     }
@@ -581,7 +581,7 @@ class Gql extends Component
      * @param TagDependency|null $dependency
      * @since 3.3.12
      */
-    public function setCachedResult(string $cacheKey, array $result, TagDependency $dependency = null)
+    public function setCachedResult(string $cacheKey, array $result, TagDependency $dependency = null): void
     {
         if ($dependency === null) {
             $dependency = new TagDependency();
@@ -614,7 +614,7 @@ class Gql extends Component
      * @param GqlSchema|null $schema The schema, or `null` to unset the active schema
      * @throws Exception
      */
-    public function setActiveSchema(GqlSchema $schema = null)
+    public function setActiveSchema(GqlSchema $schema = null): void
     {
         $this->_schema = $schema;
     }
@@ -737,7 +737,7 @@ class Gql extends Component
     /**
      * Flush all GraphQL caches, registries and loaders.
      */
-    public function flushCaches()
+    public function flushCaches(): void
     {
         $this->_schema = null;
         $this->_schemaDef = null;
@@ -915,10 +915,9 @@ class Gql extends Component
      * Handle public token settings being updated.
      *
      * @param ConfigEvent $event
-     *
      * @since 3.5.0
      */
-    public function handleChangedPublicToken(ConfigEvent $event)
+    public function handleChangedPublicToken(ConfigEvent $event): void
     {
         $data = $event->newValue;
 
@@ -1004,7 +1003,7 @@ class Gql extends Component
      * @param ConfigEvent $event
      * @since 3.4.0
      */
-    public function handleChangedSchema(ConfigEvent $event)
+    public function handleChangedSchema(ConfigEvent $event): void
     {
         $schemaUid = $event->tokenMatches[0];
         $data = $event->newValue;
@@ -1088,7 +1087,7 @@ class Gql extends Component
      * @param ConfigEvent $event
      * @since 3.4.0
      */
-    public function handleDeletedSchema(ConfigEvent $event)
+    public function handleDeletedSchema(ConfigEvent $event): void
     {
         $uid = $event->tokenMatches[0];
         $schemaRecord = $this->_getSchemaRecord($uid);
@@ -1325,7 +1324,7 @@ class Gql extends Component
     /**
      * Get GraphQL query definitions
      */
-    private function _registerGqlQueries()
+    private function _registerGqlQueries(): void
     {
         $queryList = [
             // Queries
@@ -1353,7 +1352,7 @@ class Gql extends Component
     /**
      * Get GraphQL mutation definitions
      */
-    private function _registerGqlMutations()
+    private function _registerGqlMutations(): void
     {
         $mutationList = [
             // Mutations
@@ -1364,7 +1363,6 @@ class Gql extends Component
             GlobalSetMutation::getMutations(),
             AssetMutation::getMutations(),
         ];
-
 
         $event = new RegisterGqlMutationsEvent([
             'mutations' => array_merge(...$mutationList),

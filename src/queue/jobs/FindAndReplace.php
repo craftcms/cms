@@ -42,7 +42,7 @@ class FindAndReplace extends BaseJob
      * @inheritdoc
      * @throws Exception
      */
-    public function execute($queue)
+    public function execute($queue): void
     {
         // Find all the textual field columns
         $this->_textColumns = [
@@ -84,7 +84,7 @@ class FindAndReplace extends BaseJob
      * @param string $table
      * @param string $fieldColumnPrefix
      */
-    private function _checkField(FieldInterface $field, string $table, string $fieldColumnPrefix)
+    private function _checkField(FieldInterface $field, string $table, string $fieldColumnPrefix): void
     {
         if (!$field::hasContentColumn()) {
             return;
@@ -120,7 +120,7 @@ class FindAndReplace extends BaseJob
      * @param Matrix $matrixField
      * @throws Exception if the content table can't be determined
      */
-    private function _checkMatrixField(Matrix $matrixField)
+    private function _checkMatrixField(Matrix $matrixField): void
     {
         $blockTypes = Craft::$app->getMatrix()->getBlockTypesByFieldId($matrixField->id);
 

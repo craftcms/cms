@@ -336,7 +336,6 @@ class Plugin extends Module implements PluginInterface
     /**
      * Performs actions before the plugin is installed.
      *
-     * @return void
      */
     protected function beforeInstall(): void
     {
@@ -345,7 +344,6 @@ class Plugin extends Module implements PluginInterface
     /**
      * Performs actions after the plugin is installed.
      *
-     * @return void
      */
     protected function afterInstall(): void
     {
@@ -354,7 +352,6 @@ class Plugin extends Module implements PluginInterface
     /**
      * Performs actions before the plugin is uninstalled.
      *
-     * @return void
      */
     protected function beforeUninstall(): void
     {
@@ -363,7 +360,6 @@ class Plugin extends Module implements PluginInterface
     /**
      * Performs actions after the plugin is uninstalled.
      *
-     * @return void
      */
     protected function afterUninstall(): void
     {

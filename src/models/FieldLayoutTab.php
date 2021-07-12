@@ -47,7 +47,7 @@ class FieldLayoutTab extends Model
      * @param array $config
      * @since 3.5.0
      */
-    public static function updateConfig(array &$config)
+    public static function updateConfig(array &$config): void
     {
         if (!array_key_exists('fields', $config)) {
             return;
@@ -112,7 +112,7 @@ class FieldLayoutTab extends Model
     /**
      * @inheritdoc
      */
-    public function init()
+    public function init(): void
     {
         parent::init();
 
@@ -219,7 +219,7 @@ class FieldLayoutTab extends Model
      *
      * @param FieldLayout $layout The tab’s layout.
      */
-    public function setLayout(FieldLayout $layout)
+    public function setLayout(FieldLayout $layout): void
     {
         $this->_layout = $layout;
     }
@@ -253,7 +253,7 @@ class FieldLayoutTab extends Model
      *
      * @param FieldInterface[] $fields
      */
-    public function setFields(array $fields)
+    public function setFields(array $fields): void
     {
         ArrayHelper::multisort($fields, 'sortOrder');
         $this->_fields = $fields;

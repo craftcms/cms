@@ -66,7 +66,7 @@ class Section_SiteSettings extends Model
      * @inheritdoc
      * @since 3.5.0
      */
-    public function init()
+    public function init(): void
     {
         // Typecast DB values
         $this->id = (int)$this->id ?: null;
@@ -106,7 +106,7 @@ class Section_SiteSettings extends Model
      *
      * @param Section $section
      */
-    public function setSection(Section $section)
+    public function setSection(Section $section): void
     {
         $this->_section = $section;
     }

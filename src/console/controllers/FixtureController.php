@@ -25,7 +25,7 @@ class FixtureController extends BaseFixtureController
     /**
      * @inheritdoc
      */
-    public function init()
+    public function init(): void
     {
         parent::init();
         $this->checkTty();

@@ -1165,7 +1165,7 @@ class Db
      *
      * @since 3.5.12.1
      */
-    public static function reset()
+    public static function reset(): void
     {
         if (self::$_db) {
             self::$_db->close();
@@ -1216,7 +1216,7 @@ class Db
      *
      * @param mixed &$value The param value.
      */
-    private static function _normalizeEmptyValue(&$value)
+    private static function _normalizeEmptyValue(&$value): void
     {
         if ($value === null) {
             $value = ':empty:';

@@ -90,7 +90,7 @@ interface ConfigurableComponentInterface extends ComponentInterface
      * So here’s what a getSettingsHtml() method that includes field-targeting JavaScript code might look like:
      *
      * ```php
-     * public function getSettingsHtml()
+     * public function getSettingsHtml(): ?string
      * {
      *     // Figure out what the ID is going to be namespaced into
      *     $id = 'foo';

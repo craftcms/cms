@@ -189,7 +189,6 @@ class ProjectConfigController extends Controller
      * Called when a project config item has started getting processed.
      *
      * @param ConfigEvent $event
-     * @return void
      * @since 3.6.10
      */
     public function onStartProcessingItem(ConfigEvent $event): void
@@ -217,7 +216,6 @@ class ProjectConfigController extends Controller
      * Called when a project config item has finished getting processed.
      *
      * @param ConfigEvent $event
-     * @return void
      * @since 3.6.10
      */
     public function onFinishProcessingItem(ConfigEvent $event): void
@@ -310,7 +308,7 @@ class ProjectConfigController extends Controller
      *
      * @param string[] $handles
      */
-    private function _uninstallPlugins(array $handles)
+    private function _uninstallPlugins(array $handles): void
     {
         $pluginsService = Craft::$app->getPlugins();
 

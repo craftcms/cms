@@ -24,7 +24,7 @@ class RequireGuestNode extends Node
      *
      * @param Compiler $compiler
      */
-    public function compile(Compiler $compiler)
+    public function compile(Compiler $compiler): void
     {
         $compiler
             ->addDebugInfo($this)

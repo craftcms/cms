@@ -135,7 +135,7 @@ class AssetTransforms extends Component
     /**
      * @inheritdoc
      */
-    public function init()
+    public function init(): void
     {
         parent::init();
         $this->db = Instance::ensure($this->db, Connection::class);
@@ -263,7 +263,7 @@ class AssetTransforms extends Component
      *
      * @param ConfigEvent $event
      */
-    public function handleChangedTransform(ConfigEvent $event)
+    public function handleChangedTransform(ConfigEvent $event): void
     {
         $transformUid = $event->tokenMatches[0];
         $data = $event->newValue;
@@ -380,7 +380,7 @@ class AssetTransforms extends Component
      *
      * @param ConfigEvent $event
      */
-    public function handleDeletedTransform(ConfigEvent $event)
+    public function handleDeletedTransform(ConfigEvent $event): void
     {
         $transformUid = $event->tokenMatches[0];
 
@@ -438,7 +438,7 @@ class AssetTransforms extends Component
      * @param Asset[]|array $assets The assets or asset data to eager-load transforms for
      * @param array $transforms The transform definitions to eager-load
      */
-    public function eagerLoadTransforms(array $assets, array $transforms)
+    public function eagerLoadTransforms(array $assets, array $transforms): void
     {
         if (empty($assets) || empty($transforms)) {
             return;
@@ -1032,7 +1032,7 @@ class AssetTransforms extends Component
      *
      * @param int $assetId
      */
-    public function deleteTransformIndexDataByAssetId(int $assetId)
+    public function deleteTransformIndexDataByAssetId(int $assetId): void
     {
         Db::delete(Table::ASSETTRANSFORMINDEX, [
             'assetId' => $assetId,
@@ -1045,7 +1045,7 @@ class AssetTransforms extends Component
      * @param int[] $assetIds
      * @since 4.0.0
      */
-    public function deleteTransformIndexDataByAssetIds(array $assetIds)
+    public function deleteTransformIndexDataByAssetIds(array $assetIds): void
     {
         Db::delete(Table::ASSETTRANSFORMINDEX, [
             'assetId' => $assetIds,
@@ -1057,7 +1057,7 @@ class AssetTransforms extends Component
      *
      * @param int $indexId
      */
-    public function deleteTransformIndex(int $indexId)
+    public function deleteTransformIndex(int $indexId): void
     {
         Db::delete(Table::ASSETTRANSFORMINDEX, [
             'id' => $indexId,
@@ -1153,7 +1153,7 @@ class AssetTransforms extends Component
      *
      * @param string $imageSource
      */
-    public function queueSourceForDeletingIfNecessary($imageSource)
+    public function queueSourceForDeletingIfNecessary($imageSource): void
     {
         if (!($this->getCachedCloudImageSize() > 0)) {
             $this->_sourcesToBeDeleted[] = $imageSource;
@@ -1167,7 +1167,7 @@ class AssetTransforms extends Component
     /**
      * Delete all image sources queued up for deletion.
      */
-    public function deleteQueuedSourceFiles()
+    public function deleteQueuedSourceFiles(): void
     {
         $this->_sourcesToBeDeleted = array_unique($this->_sourcesToBeDeleted);
         foreach ($this->_sourcesToBeDeleted as $source) {
@@ -1181,7 +1181,7 @@ class AssetTransforms extends Component
      * @param string $source
      * @param string $destination
      */
-    public function storeLocalSource(string $source, string $destination = '')
+    public function storeLocalSource(string $source, string $destination = ''): void
     {
         if (!$destination) {
             $source = $destination;
@@ -1323,7 +1323,7 @@ class AssetTransforms extends Component
      *
      * @param Asset $asset
      */
-    public function deleteAllTransformData(Asset $asset)
+    public function deleteAllTransformData(Asset $asset): void
     {
         $this->deleteResizedAssetVersion($asset);
         $this->deleteCreatedTransformsForAsset($asset);
@@ -1341,7 +1341,7 @@ class AssetTransforms extends Component
      *
      * @param Asset $asset
      */
-    public function deleteResizedAssetVersion(Asset $asset)
+    public function deleteResizedAssetVersion(Asset $asset): void
     {
         $dirs = [
             Craft::$app->getPath()->getAssetThumbsPath(),
@@ -1371,7 +1371,7 @@ class AssetTransforms extends Component
      *
      * @param Asset $asset
      */
-    public function deleteCreatedTransformsForAsset(Asset $asset)
+    public function deleteCreatedTransformsForAsset(Asset $asset): void
     {
         $transformIndexes = $this->getAllCreatedTransformsForAsset($asset);
 
@@ -1428,7 +1428,7 @@ class AssetTransforms extends Component
     /**
      * @param AssetTransformIndex $index
      */
-    public function setActiveTransformIndex(AssetTransformIndex $index)
+    public function setActiveTransformIndex(AssetTransformIndex $index): void
     {
         $this->_activeTransformIndex = $index;
     }
@@ -1533,7 +1533,7 @@ class AssetTransforms extends Component
      * @param AssetTransformIndex $index
      * @throws AssetTransformException If a transform index has an invalid transform assigned.
      */
-    private function _createTransformForAsset(Asset $asset, AssetTransformIndex $index)
+    private function _createTransformForAsset(Asset $asset, AssetTransformIndex $index): void
     {
         if (!Image::canManipulateAsImage(pathinfo($asset->filename, PATHINFO_EXTENSION))) {
             return;

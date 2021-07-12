@@ -1706,7 +1706,7 @@ class GeneralConfig extends BaseObject
     /**
      * @inheritdoc
      */
-    public function init()
+    public function init(): void
     {
         // Merge extraAllowedFileExtensions into allowedFileExtensions
         if (is_string($this->allowedFileExtensions)) {
