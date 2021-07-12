@@ -169,7 +169,7 @@ class ResolveEntryMutationsTest extends TestCase
      *
      * @throws \Exception
      */
-    public function testApplyDraft()
+    public function testPublishDraft()
     {
         $this->tester->mockCraftMethods('elements', [
             'createElementQuery' => Expected::once((new MockElementQuery())->setReturnValues([new Entry(['typeId' => 2])]))
@@ -181,7 +181,7 @@ class ResolveEntryMutationsTest extends TestCase
             'applyDraft' => Expected::once(new Entry(['id' => 1])),
         ]);
 
-        $resolver->applyDraft(null, ['id' => 2], null, $this->make(ResolveInfo::class));
+        $resolver->publishDraft(null, ['id' => 2], null, $this->make(ResolveInfo::class));
     }
 
     public function getEntryElementDataProvider()
