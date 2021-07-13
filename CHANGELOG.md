@@ -12,6 +12,9 @@
 - Deprecated `craft\services\Drafts::EVENT_BEFORE_PUBLISH_DRAFT`. `EVENT_BEFORE_APPLY_DRAFT` should be used instead.
 - Deprecated `craft\services\Drafts::publishDraft()`. `applyDraft()` should be used instead.
 
+### Fixed
+- Fixed a bug where value normalizers for GraphQL mutations would not be executed in nested field. ([#9139](https://github.com/craftcms/cms/issues/9139))
+
 ## 3.7.0-beta.6 - 2021-07-09
 
 ### Added
