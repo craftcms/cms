@@ -22,6 +22,7 @@ use yii\db\ActiveQueryInterface;
  * @property string $type Type
  * @property bool $enableVersioning Enable versioning
  * @property bool $propagationMethod Propagation method
+ * @property string $defaultPlacement Default placement
  * @property array $previewTargets Preview targets
  * @property Section_SiteSettings[] $siteSettings Site settings
  * @property Structure $structure Structure

@@ -46,13 +46,13 @@
                 data: this.data
             };
 
-            Craft.postActionRequest(this.actionPrefix + '/' + action, data, $.proxy(function(response, textStatus, jqXHR) {
+            Craft.postActionRequest(this.actionPrefix + '/' + action, data, (response, textStatus, jqXHR) => {
                 if (textStatus === 'success') {
                     this.setState(response);
                 } else {
                     this.handleFatalError(jqXHR);
                 }
-            }, this), {
+            }, {
                 complete: $.noop
             });
         },

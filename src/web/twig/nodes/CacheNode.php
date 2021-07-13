@@ -73,7 +73,7 @@ class CacheNode extends Node
 
         $compiler
             ->raw(";\n")
-            ->write("\$cacheBody{$n} = \$cacheService->getTemplateCache(\$cacheKey{$n}, {$global});\n")
+            ->write("\$cacheBody{$n} = \$cacheService->getTemplateCache(\$cacheKey{$n}, {$global}, true);\n")
             ->outdent()
             ->write("} else {\n")
             ->indent()
@@ -84,7 +84,7 @@ class CacheNode extends Node
             ->indent()
             ->write("if (!\$ignoreCache{$n}) {\n")
             ->indent()
-            ->write("\$cacheService->startTemplateCache();\n")
+            ->write("\$cacheService->startTemplateCache(true);\n")
             ->outdent()
             ->write("}\n")
             ->write("ob_start();\n")
@@ -120,7 +120,7 @@ class CacheNode extends Node
         }
 
         $compiler
-            ->raw(", \$cacheBody{$n});\n")
+            ->raw(", \$cacheBody{$n}, true);\n")
             ->outdent()
             ->write("}\n")
             ->outdent()

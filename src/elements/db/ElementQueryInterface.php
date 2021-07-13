@@ -211,6 +211,33 @@ interface ElementQueryInterface extends QueryInterface, ArrayAccess, Arrayable, 
     public function draftCreator($value);
 
     /**
+     * Narrows the query results to only provisional drafts.
+     *
+     * ---
+     *
+     * ```twig
+     * {# Fetch provisional drafts created by the current user #}
+     * {% set {elements-var} = {twig-method}
+     *     .provisionalDrafts()
+     *     .draftCreator(currentUser)
+     *     .all() %}
+     * ```
+     *
+     * ```php
+     * // Fetch provisional drafts created by the current user
+     * ${elements-var} = {php-method}
+     *     ->provisionalDrafts()
+     *     ->draftCreator(Craft::$app->user->identity)
+     *     ->all();
+     * ```
+     *
+     * @param bool|null $value The property value
+     * @return static self reference
+     * @since 3.7.0
+     */
+    public function provisionalDrafts(?bool $value = true);
+
+    /**
      * Narrows the query results to only unpublished drafts which have been saved after initial creation.
      *
      * ---
@@ -421,6 +448,40 @@ interface ElementQueryInterface extends QueryInterface, ArrayAccess, Arrayable, 
      * @return static self reference
      */
     public function uid($value);
+
+    /**
+     * Narrows the query results based on the {elements}’ IDs in the `elements_sites` table.
+     *
+     * Possible values include:
+     *
+     * | Value | Fetches {elements}…
+     * | - | -
+     * | `1` | with an `elements_sites` ID of 1.
+     * | `'not 1'` | not with an `elements_sites` ID of 1.
+     * | `[1, 2]` | with an `elements_sites` ID of 1 or 2.
+     * | `['not', 1, 2]` | not with an `elements_sites` ID of 1 or 2.
+     *
+     * ---
+     *
+     * ```twig
+     * {# Fetch the {element} by its ID in the elements_sites table #}
+     * {% set {element-var} = {twig-method}
+     *     .siteSettingsId(1)
+     *     .one() %}
+     * ```
+     *
+     * ```php
+     * // Fetch the {element} by its ID in the elements_sites table
+     * ${element-var} = {php-method}
+     *     ->siteSettingsId(1)
+     *     ->one();
+     * ```
+     *
+     * @param int|int[]|null $value The property value
+     * @return static self reference
+     * @since 3.7.0
+     */
+    public function siteSettingsId($value);
 
     /**
      * Causes the query results to be returned in the order specified by [[id()]].

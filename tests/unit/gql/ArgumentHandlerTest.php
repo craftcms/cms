@@ -44,7 +44,7 @@ class ArgumentHandlerTest extends Unit
     {
         $gql = Craft::$app->getGql();
         $gql->flushCaches();
-        Craft::$app->getConfig()->getGeneral()->enableGraphQlCaching = false;
+        Craft::$app->getConfig()->getGeneral()->enableGraphqlCaching = false;
 
         Event::on(Gql::class, Gql::EVENT_REGISTER_GQL_QUERIES, function(RegisterGqlQueriesEvent $event) {
             $event->queries['integrationQuery'] = [

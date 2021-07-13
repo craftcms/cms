@@ -28,9 +28,7 @@ Craft.TableElementIndexView = Craft.BaseElementIndexView.extend({
             this.elementIndex.getSelectedSortAttribute() === 'structure' &&
             Garnish.hasAttr(this.$table, 'data-structure-id')
         ) {
-            this.structureTableSort = new Craft.StructureTableSorter(this, this.getAllElements(), {
-                onSortChange: $.proxy(this, '_onStructureTableSortChange')
-            });
+            this.structureTableSort = new Craft.StructureTableSorter(this, this.getAllElements());
         } else {
             this.structureTableSort = null;
         }
@@ -64,7 +62,7 @@ Craft.TableElementIndexView = Craft.BaseElementIndexView.extend({
 
                 $header
                     .addClass('ordered ' + selectedSortDir)
-                    .on('click', $.proxy(this, '_handleSelectedSortHeaderClick'));
+                    .on('click', this._handleSelectedSortHeaderClick.bind(this));
             } else {
                 // Is this attribute sortable?
                 var $sortAttribute = this.elementIndex.getSortAttributeOption(attr);
@@ -72,7 +70,7 @@ Craft.TableElementIndexView = Craft.BaseElementIndexView.extend({
                 if ($sortAttribute.length) {
                     $header
                         .addClass('orderable')
-                        .on('click', $.proxy(this, '_handleUnselectedSortHeaderClick'));
+                        .on('click', this._handleUnselectedSortHeaderClick.bind(this));
                 }
             }
         }
@@ -141,11 +139,11 @@ Craft.TableElementIndexView = Craft.BaseElementIndexView.extend({
             params: {
                 includeTableAttributesForSource: this.elementIndex.sourceKey
             },
-            onSaveElement: $.proxy(function(response) {
+            onSaveElement: response => {
                 if (response.tableAttributes) {
                     this._updateTableAttributes($element, response.tableAttributes);
                 }
-            }, this),
+            },
             elementIndex: this.elementIndex
         });
     },

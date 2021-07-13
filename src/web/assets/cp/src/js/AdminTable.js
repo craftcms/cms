@@ -27,7 +27,7 @@ Craft.AdminTable = Garnish.Base.extend({
 
         if (this.settings.sortable) {
             this.sorter = new Craft.DataTableSorter(this.$table, {
-                onSortChange: $.proxy(this, 'reorderItems')
+                onSortChange: this.reorderItems.bind(this),
             });
         }
 
@@ -76,7 +76,7 @@ Craft.AdminTable = Garnish.Base.extend({
             ids: JSON.stringify(ids)
         };
 
-        Craft.postActionRequest(this.settings.reorderAction, data, $.proxy(function(response, textStatus) {
+        Craft.postActionRequest(this.settings.reorderAction, data, (response, textStatus) => {
             if (textStatus === 'success') {
                 if (response.success) {
                     this.onReorderItems(ids);
@@ -85,7 +85,7 @@ Craft.AdminTable = Garnish.Base.extend({
                     Craft.cp.displayError(Craft.t('app', this.settings.reorderFailMessage));
                 }
             }
-        }, this));
+        });
     },
 
     handleDeleteBtnClick: function(event) {
@@ -103,7 +103,7 @@ Craft.AdminTable = Garnish.Base.extend({
 
     confirmDeleteItem: function($row) {
         var name = this.getItemName($row);
-        return confirm(Craft.t('app', this.settings.confirmDeleteMessage, {name: name}));
+        return confirm(Craft.t('app', this.settings.confirmDeleteMessage, {name}));
     },
 
     deleteItem: function($row) {
@@ -111,11 +111,11 @@ Craft.AdminTable = Garnish.Base.extend({
             id: this.getItemId($row)
         };
 
-        Craft.postActionRequest(this.settings.deleteAction, data, $.proxy(function(response, textStatus) {
+        Craft.postActionRequest(this.settings.deleteAction, data, (response, textStatus) => {
             if (textStatus === 'success') {
                 this.handleDeleteItemResponse(response, $row);
             }
-        }, this));
+        });
     },
 
     handleDeleteItemResponse: function(response, $row) {
@@ -132,9 +132,9 @@ Craft.AdminTable = Garnish.Base.extend({
             this.updateUI();
             this.onDeleteItem(id);
 
-            Craft.cp.displayNotice(Craft.t('app', this.settings.deleteSuccessMessage, {name: name}));
+            Craft.cp.displayNotice(Craft.t('app', this.settings.deleteSuccessMessage, {name}));
         } else {
-            Craft.cp.displayError(Craft.t('app', this.settings.deleteFailMessage, {name: name}));
+            Craft.cp.displayError(Craft.t('app', this.settings.deleteFailMessage, {name}));
         }
     },
 

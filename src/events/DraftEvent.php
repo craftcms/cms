@@ -20,7 +20,8 @@ use yii\base\Event;
 class DraftEvent extends Event
 {
     /**
-     * @var ElementInterface|null The source element
+     * @var ElementInterface|null The canonical element
+     * @todo rename to canonical in v4
      */
     public $source;
 
@@ -28,6 +29,11 @@ class DraftEvent extends Event
      * @var int The creator ID
      */
     public $creatorId;
+
+    /**
+     * @var bool Whether this is a provisional draft
+     */
+    public $provisional = false;
 
     /**
      * @var string|null The draft name

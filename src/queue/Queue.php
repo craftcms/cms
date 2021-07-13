@@ -483,6 +483,9 @@ class Queue extends \yii\queue\cli\Queue implements QueueInterface
         if (parent::handleError($event)) {
             // Mark the job as failed
             $this->_lock(function() use ($event) {
+                if ($event->error) {
+                    Craft::$app->getErrorHandler()->logException($event->error);
+                }
                 Db::update($this->tableName, [
                     'fail' => true,
                     'dateFailed' => Db::prepareDateForDb(new \DateTime()),

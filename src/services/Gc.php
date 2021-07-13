@@ -8,6 +8,8 @@
 namespace craft\services;
 
 use Craft;
+use craft\config\GeneralConfig;
+use craft\db\Query;
 use craft\db\Table;
 use craft\elements\Asset;
 use craft\elements\Category;
@@ -18,6 +20,9 @@ use craft\elements\Tag;
 use craft\elements\User;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
+use craft\records\Volume;
+use craft\records\VolumeFolder;
+use DateTime;
 use yii\base\Component;
 
 /**
@@ -64,6 +69,7 @@ class Gc extends Component
         Craft::$app->getDrafts()->purgeUnsavedDrafts();
         Craft::$app->getUsers()->purgeExpiredPendingUsers();
         $this->_deleteStaleSessions();
+        $this->_deleteStaleAnnouncements();
 
         $this->hardDelete([
             Table::ELEMENTS, // elements should always go first
@@ -72,7 +78,6 @@ class Gc extends Component
             Table::FIELDGROUPS,
             Table::SECTIONS,
             Table::TAGGROUPS,
-            Table::VOLUMES,
         ]);
 
         $this->deletePartialElements(Asset::class, Table::ASSETS, 'id');
@@ -103,6 +108,37 @@ class Gc extends Component
             Table::FIELDLAYOUTS,
             Table::SITES,
         ]);
+
+        $this->hardDeleteVolumes();
+    }
+
+    /**
+     * Hard delete eligible volumes, deleting the folders one by one to avoid nested dependency errors.
+     */
+    public function hardDeleteVolumes()
+    {
+        $generalConfig = Craft::$app->getConfig()->getGeneral();
+        if (!$generalConfig->softDeleteDuration && !$this->deleteAllTrashed) {
+            return;
+        }
+
+        $condition = $this->getHardDeleteConditions($generalConfig);
+
+        $volumes = (new Query())->select(['id'])->from([Table::VOLUMES])->where($condition)->all();
+        $volumeIds = [];
+
+        foreach ($volumes as $volume) {
+            $volumeIds[] = $volume['id'];
+        }
+
+        $folders = (new Query())->select(['id', 'path'])->from([Table::VOLUMEFOLDERS])->where(['volumeId' => $volumeIds])->all();
+        usort($folders, function ($a, $b) { return substr_count($a['path'], '/') < substr_count($b['path'], '/');});
+
+        foreach ($folders as $folder) {
+            VolumeFolder::deleteAll(['id' => $folder['id']]);
+        }
+
+        Volume::deleteAll(['id' => $volumeIds]);
     }
 
     /**
@@ -117,18 +153,7 @@ class Gc extends Component
             return;
         }
 
-        $condition = ['not', ['dateDeleted' => null]];
-
-        if (!$this->deleteAllTrashed) {
-            $expire = DateTimeHelper::currentUTCDateTime();
-            $interval = DateTimeHelper::secondsToInterval($generalConfig->softDeleteDuration);
-            $pastTime = $expire->sub($interval);
-            $condition = [
-                'and',
-                $condition,
-                ['<', 'dateDeleted', Db::prepareDateForDb($pastTime)],
-            ];
-        }
+        $condition = $this->getHardDeleteConditions($generalConfig);
 
         if (!is_array($tables)) {
             $tables = [$tables];
@@ -195,6 +220,17 @@ SQL;
     }
 
     /**
+     * Deletes any feature announcement rows that have gone stale.
+     *
+     * @return void
+     */
+    private function _deleteStaleAnnouncements(): void
+    {
+        Db::delete(Table::ANNOUNCEMENTS, ['<', 'dateRead', Db::prepareDateForDb(new DateTime('7 days ago'))]);
+    }
+
+
+    /**
      * Deletes any orphaned rows in the `drafts` and `revisions` tables.
      *
      * @return void
@@ -224,5 +260,26 @@ SQL;
 
             $db->createCommand($sql)->execute();
         }
+    }
+
+    /**
+     * @param GeneralConfig $generalConfig
+     * @return array
+     */
+    protected function getHardDeleteConditions(GeneralConfig $generalConfig): array
+    {
+        $condition = ['not', ['dateDeleted' => null]];
+
+        if (!$this->deleteAllTrashed) {
+            $expire = DateTimeHelper::currentUTCDateTime();
+            $interval = DateTimeHelper::secondsToInterval($generalConfig->softDeleteDuration);
+            $pastTime = $expire->sub($interval);
+            $condition = [
+                'and',
+                $condition,
+                ['<', 'dateDeleted', Db::prepareDateForDb($pastTime)],
+            ];
+        }
+        return $condition;
     }
 }

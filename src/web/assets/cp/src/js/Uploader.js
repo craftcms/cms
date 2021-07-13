@@ -48,7 +48,7 @@ Craft.Uploader = Garnish.Base.extend({
 
         this.settings = settings;
 
-        this.uploader.on('fileuploadadd', $.proxy(this, 'onFileAdd'));
+        this.uploader.on('fileuploadadd', this.onFileAdd.bind(this));
     },
 
     /**
@@ -96,7 +96,7 @@ Craft.Uploader = Garnish.Base.extend({
         }
 
         // Make sure that file API is there before relying on it
-        data.process().done($.proxy(function() {
+        data.process().done(() => {
             var file = data.files[0];
             var pass = true;
             if (validateExtension) {
@@ -129,7 +129,7 @@ Craft.Uploader = Garnish.Base.extend({
                 this._validFileCounter = 0;
                 this.processErrorMessages();
             }
-        }, this));
+        });
 
         return true;
     },

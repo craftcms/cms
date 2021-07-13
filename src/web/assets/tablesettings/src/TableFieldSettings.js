@@ -46,8 +46,8 @@
                 defaultValues: {
                     type: 'singleline'
                 },
-                onAddRow: $.proxy(this, 'onAddColumn'),
-                onDeleteRow: $.proxy(this, 'reconstructDefaultsTable')
+                onAddRow: this.onAddColumn.bind(this),
+                onDeleteRow: this.reconstructDefaultsTable.bind(this)
             });
         },
 
@@ -148,7 +148,7 @@
             }
 
             this.fieldSettings.initColumnSettingInputs(this.$tbody);
-            this.sorter.settings.onSortChange = $.proxy(this.fieldSettings.reconstructDefaultsTable, this.fieldSettings);
+            this.sorter.settings.onSortChange = this.fieldSettings.reconstructDefaultsTable.bind(this.fieldSettings);
             return true;
         },
 
@@ -214,8 +214,8 @@
                     .html(this.table.fieldSettings.dropdownSettingsHtml.replace(/__ID__/g, id));
 
                 this.optionsTable = new Craft.EditableTable(id, '__NAME__', this.table.fieldSettings.dropdownSettingsCols, {
-                    onAddRow: $.proxy(this, 'handleOptionsRowChange'),
-                    onDeleteRow: $.proxy(this, 'handleOptionsRowChange')
+                    onAddRow: this.handleOptionsRowChange.bind(this),
+                    onDeleteRow: this.handleOptionsRowChange.bind(this)
                 });
 
                 if (this.options && this.options.length) {
@@ -237,7 +237,7 @@
                 }).appendTo($body);
 
                 this.settingsModal = new Garnish.Modal($modal, {
-                    onHide: $.proxy(this, 'handleSettingsModalHide')
+                    onHide: this.handleSettingsModalHide.bind(this)
                 });
 
                 this.addListener($closeButton, 'click', function() {
@@ -247,9 +247,9 @@
                 this.settingsModal.show();
             }
 
-            setTimeout($.proxy(function() {
+            setTimeout(() => {
                 this.optionsTable.$tbody.find('textarea').first().trigger('focus')
-            }, this), 100);
+            }, 100);
         },
 
         handleOptionsRowChange: function() {

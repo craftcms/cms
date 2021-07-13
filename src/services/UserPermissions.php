@@ -161,8 +161,9 @@ class UserPermissions extends Component
         $sections = Craft::$app->getSections()->getAllSections();
 
         foreach ($sections as $section) {
-            $label = Craft::t('app', 'Section - {section}',
-                ['section' => Craft::t('site', $section->name)]);
+            $label = Craft::t('app', 'Section - {section}', [
+                'section' => Craft::t('site', $section->name),
+            ]);
 
             if ($section->type == Section::TYPE_SINGLE) {
                 $permissions[$label] = $this->_getSingleEntryPermissions($section);

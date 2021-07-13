@@ -17,6 +17,7 @@ use craft\db\Table;
 use craft\elements\Asset;
 use craft\elements\Category;
 use craft\elements\Entry;
+use craft\elements\Tag;
 use craft\errors\DbConnectException;
 use craft\errors\SiteNotFoundException;
 use craft\errors\WrongEditionException;
@@ -76,6 +77,7 @@ use yii\web\ServerErrorHttpException;
  * @property-read \craft\i18n\Locale $formattingLocale The Locale object that should be used to define the formatter
  * @property-read \craft\i18n\Locale $locale The Locale object for the target language
  * @property-read \craft\mail\Mailer $mailer The mailer component
+ * @property-read \craft\services\Announcements $announcements The announcements service
  * @property-read \craft\services\Api $api The API service
  * @property-read \craft\services\AssetIndexer $assetIndexer The asset indexer service
  * @property-read \craft\services\Assets $assets The assets service
@@ -245,9 +247,7 @@ trait ApplicationTrait
         $this->_gettingLanguage = true;
 
         if ($useUserLanguage === null) {
-            /** @var WebRequest|ConsoleRequest $request */
-            $request = $this->getRequest();
-            $useUserLanguage = $request->getIsConsoleRequest() || $request->getIsCpRequest();
+            $useUserLanguage = $this->getRequest()->getIsCpRequest();
         }
 
         $this->language = $this->getTargetLanguage($useUserLanguage);
@@ -263,13 +263,29 @@ trait ApplicationTrait
     public function getTargetLanguage(bool $useUserLanguage = true): string
     {
         /** @var WebApplication|ConsoleApplication $this */
-        // Use the browser language if Craft isn't installed or is updating
-        if (!$this->getIsInstalled() || $this->getUpdates()->getIsCraftDbMigrationNeeded()) {
+        // Use the fallback language for console requests, or if Craft isn't installed or is updating
+        if (
+            $this instanceof ConsoleApplication ||
+            !$this->getIsInstalled() ||
+            $this->getUpdates()->getIsCraftDbMigrationNeeded()
+        ) {
             return $this->_getFallbackLanguage();
         }
 
         if ($useUserLanguage) {
-            return $this->_getUserLanguage();
+            // If the user is logged in *and* has a primary language set, use that
+            // (don't actually try to fetch the user, as plugins haven't been loaded yet)
+            $id = Session::get($this->getUser()->idParam);
+            if (
+                $id &&
+                ($language = $this->getUsers()->getUserPreference($id, 'language')) !== null &&
+                Craft::$app->getI18n()->validateAppLocaleId($language)
+            ) {
+                return $language;
+            }
+
+            // Fall back on the default CP language, if there is one, otherwise the browser language
+            return Craft::$app->getConfig()->getGeneral()->defaultCpLanguage ?? $this->_getFallbackLanguage();
         }
 
         /** @noinspection PhpUnhandledExceptionInspection */
@@ -839,6 +855,18 @@ trait ApplicationTrait
 
     // Service Getters
     // -------------------------------------------------------------------------
+
+    /**
+     * Returns the announcements service.
+     *
+     * @return \craft\services\Announcements The announcements service
+     * @since 3.7.0
+     */
+    public function getAnnouncements()
+    {
+        /** @var WebApplication|ConsoleApplication $this */
+        return $this->get('announcements');
+    }
 
     /**
      * Returns the API service.
@@ -1489,31 +1517,6 @@ trait ApplicationTrait
     }
 
     /**
-     * Tries to find a language match with the user's preferred language.
-     *
-     * @return string
-     */
-    private function _getUserLanguage(): string
-    {
-        /** @var WebApplication|ConsoleApplication $this */
-        // If the user is logged in *and* has a primary language set, use that
-        if ($this instanceof WebApplication) {
-            // Don't actually try to fetch the user, as plugins haven't been loaded yet.
-            $id = Session::get($this->getUser()->idParam);
-            if (
-                $id &&
-                ($language = $this->getUsers()->getUserPreference($id, 'language')) !== null &&
-                Craft::$app->getI18n()->validateAppLocaleId($language)
-            ) {
-                return $language;
-            }
-        }
-
-        // Fall back on the default CP language, if there is one, otherwise the browser language
-        return Craft::$app->getConfig()->getGeneral()->defaultCpLanguage ?? $this->_getFallbackLanguage();
-    }
-
-    /**
      * Tries to find a language match with the browser's preferred language(s).
      *
      * If not uses the app's sourceLanguage.
@@ -1543,11 +1546,12 @@ trait ApplicationTrait
             $fieldLayout = $event->sender;
 
             switch ($fieldLayout->type) {
+                case Category::class:
+                case Tag::class:
+                    $event->fields[] = TitleField::class;
+                    break;
                 case Asset::class:
                     $event->fields[] = AssetTitleField::class;
-                    break;
-                case Category::class:
-                    $event->fields[] = TitleField::class;
                     break;
                 case Entry::class:
                     $event->fields[] = EntryTitleField::class;

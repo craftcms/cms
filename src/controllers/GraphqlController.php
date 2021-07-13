@@ -159,8 +159,8 @@ class GraphqlController extends Controller
         // Check for the cache-bust header
         $gqlCacheHeader = $this->request->getHeaders()->get('x-craft-gql-cache', null, true);
         if ($gqlCacheHeader === 'no-cache') {
-            $cacheSetting = Craft::$app->getConfig()->getGeneral()->enableGraphQlCaching;
-            Craft::$app->getConfig()->getGeneral()->enableGraphQlCaching = false;
+            $cacheSetting = Craft::$app->getConfig()->getGeneral()->enableGraphqlCaching;
+            Craft::$app->getConfig()->getGeneral()->enableGraphqlCaching = false;
         }
 
         $result = [];
@@ -185,7 +185,7 @@ class GraphqlController extends Controller
         }
 
         if ($gqlCacheHeader === 'no-cache') {
-            Craft::$app->getConfig()->getGeneral()->enableGraphQlCaching = $cacheSetting;
+            Craft::$app->getConfig()->getGeneral()->enableGraphqlCaching = $cacheSetting;
         }
 
         return $this->asJson($singleQuery ? reset($result) : $result);

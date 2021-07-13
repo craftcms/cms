@@ -9,6 +9,7 @@ namespace craftunit\gql\mutations;
 
 use Codeception\Stub\Expected;
 use Craft;
+use craft\base\Model;
 use craft\elements\Entry;
 use craft\gql\resolvers\mutations\Entry as EntryResolver;
 use craft\models\EntryType;
@@ -164,7 +165,7 @@ class ResolveEntryMutationsTest extends TestCase
     }
 
     /**
-     * Test publishing a draft.
+     * Test applying a draft.
      *
      * @throws \Exception
      */
@@ -177,7 +178,7 @@ class ResolveEntryMutationsTest extends TestCase
             'requireSchemaAction' => Expected::once(true)
         ]);
         $this->tester->mockCraftMethods('drafts', [
-            'publishDraft' => Expected::once(new Entry(['id' => 1])),
+            'applyDraft' => Expected::once(new Entry(['id' => 1])),
         ]);
 
         $resolver->publishDraft(null, ['id' => 2], null, $this->make(ResolveInfo::class));

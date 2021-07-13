@@ -27,11 +27,11 @@
             this.$errors = $('#login-errors');
 
             new Craft.PasswordInput(this.$passwordInput, {
-                onToggleInput: $.proxy(function($newPasswordInput) {
+                onToggleInput: $newPasswordInput => {
                     this.removeListener(this.$passwordInput, 'input');
                     this.$passwordInput = $newPasswordInput;
                     this.addListener(this.$passwordInput, 'input', 'onInput');
-                }, this)
+                },
             });
 
             this.addListener(this.$loginNameInput, 'input', 'onInput')
@@ -116,7 +116,7 @@
                 loginName: this.$loginNameInput.val()
             };
 
-            Craft.postActionRequest('users/send-password-reset-email', data, $.proxy(function(response, textStatus) {
+            Craft.postActionRequest('users/send-password-reset-email', data, (response, textStatus) => {
                 if (textStatus === 'success') {
                     if (response.success) {
                         new MessageSentModal();
@@ -126,7 +126,7 @@
                 }
 
                 this.onSubmitResponse();
-            }, this));
+            });
         },
 
         submitLogin: function() {
@@ -136,7 +136,7 @@
                 rememberMe: (this.$rememberMeCheckbox.prop('checked') ? 'y' : '')
             };
 
-            Craft.postActionRequest('users/login', data, $.proxy(function(response, textStatus) {
+            Craft.postActionRequest('users/login', data, (response, textStatus) => {
                 if (textStatus === 'success') {
                     if (response.success) {
                         window.location.href = response.returnUrl;
@@ -150,7 +150,7 @@
                 } else {
                     this.onSubmitResponse();
                 }
-            }, this));
+            });
 
             return false;
         },

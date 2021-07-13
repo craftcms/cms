@@ -47,9 +47,9 @@ Craft.LightSwitch = Garnish.Base.extend({
         this.dragger = new Garnish.BaseDrag(this.$outerContainer, {
             axis: Garnish.X_AXIS,
             ignoreHandleSelector: null,
-            onDragStart: $.proxy(this, '_onDragStart'),
-            onDrag: $.proxy(this, '_onDrag'),
-            onDragStop: $.proxy(this, '_onDragStop')
+            onDragStart: this._onDragStart.bind(this),
+            onDrag: this._onDrag.bind(this),
+            onDragStop: this._onDragStop.bind(this)
         });
 
         // Does the input have on/off labels?
@@ -69,7 +69,7 @@ Craft.LightSwitch = Garnish.Base.extend({
         this.$outerContainer.addClass('dragging');
         var animateCss = {};
         animateCss['margin-' + Craft.left] = 0;
-        this.$innerContainer.velocity('stop').velocity(animateCss, Craft.LightSwitch.animationDuration, $.proxy(this, '_onSettle'));
+        this.$innerContainer.velocity('stop').velocity(animateCss, Craft.LightSwitch.animationDuration, this._onSettle.bind(this));
 
         this.$input.val(this.settings.value);
         this.$outerContainer.addClass('on');
@@ -90,7 +90,7 @@ Craft.LightSwitch = Garnish.Base.extend({
         this.$outerContainer.addClass('dragging');
         var animateCss = {};
         animateCss['margin-' + Craft.left] = this._getOffMargin();
-        this.$innerContainer.velocity('stop').velocity(animateCss, Craft.LightSwitch.animationDuration, $.proxy(this, '_onSettle'));
+        this.$innerContainer.velocity('stop').velocity(animateCss, Craft.LightSwitch.animationDuration, this._onSettle.bind(this));
 
         this.$input.val('');
         this.$outerContainer.removeClass('on');
@@ -111,7 +111,7 @@ Craft.LightSwitch = Garnish.Base.extend({
         this.$outerContainer.addClass('dragging');
         var animateCss = {};
         animateCss['margin-' + Craft.left] = this._getOffMargin() / 2;
-        this.$innerContainer.velocity('stop').velocity(animateCss, Craft.LightSwitch.animationDuration, $.proxy(this, '_onSettle'));
+        this.$innerContainer.velocity('stop').velocity(animateCss, Craft.LightSwitch.animationDuration, this._onSettle.bind(this));
 
         this.$input.val(this.settings.indeterminateValue);
         this.$outerContainer.removeClass('on');

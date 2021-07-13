@@ -1,5 +1,10 @@
 @charset "UTF-8";
-@import "../../../../../../node_modules/craftcms-sass/mixins";
+@import "../../../../../../packages/craftcms-sass/mixins";
+
+:root {
+  --padding: 24px;
+  --neg-padding: -24px;
+}
 
 $sidebarWidth: 226px;
 $detailsWidth: 350px;
@@ -13,12 +18,16 @@ html {
 
 body {
   min-height: 100vh;
-}
 
-*:focus {
-  outline-style: solid;
-  outline-color: transparent;
-  box-shadow: $darkFocusRing;
+  :focus {
+    outline-style: solid;
+    outline-color: transparent;
+  }
+
+  &:not(.reduce-focus-visibility) :focus,
+  &.reduce-focus-visibility :focus-visible {
+    box-shadow: $darkFocusRing;
+  }
 }
 
 #global-container {
@@ -26,6 +35,15 @@ body {
   display: flex;
   flex-direction: column;
   min-height: 100vh;
+  @include left(0);
+
+  body.ltr & {
+    transition: left 250ms ease-out;
+  }
+
+  body.rtl & {
+    transition: right 250ms ease-out;
+  }
 }
 
 /* global sidebar */
@@ -45,8 +63,16 @@ $sidebarLinkSecondaryColor: $grey200;
   @include light-on-dark-text;
   background-color: $grey800;
 
-  *:focus {
-    box-shadow: $lightFocusRing;
+  body:not(.reduce-focus-visibility) & {
+    :focus {
+      box-shadow: $lightFocusRing;
+    }
+  }
+
+  body.reduce-focus-visibility & {
+    :focus-visible {
+      box-shadow: $lightFocusRing;
+    }
   }
 
   a {
@@ -487,12 +513,81 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
   display: none;
 }
 
+#announcements-btn {
+  @include header-btn;
+  width: 40px;
+  position: relative;
+
+  &.unread:after {
+    content: '';
+    display: block;
+    position: absolute;
+    top: 3px;
+    @include right(7px);
+    width: 7px;
+    height: 7px;
+    border-radius: 4px;
+    background-color: $blue600;
+  }
+
+  svg {
+    width: 22px;
+    height: 22px;
+    @include svg-mask($darkHairlineColor);
+  }
+
+  &:hover,
+  &:active,
+  &.active {
+    svg {
+      @include svg-mask($linkColor);
+    }
+  }
+}
+
+#announcements {
+  max-width: 350px;
+
+  .announcement {
+    &:not(:first-child) {
+      margin-top: 20px;
+    }
+
+    .timestamp {
+      margin-top: -3px;
+      font-size: 12px;
+      color: $lightTextColor;
+      margin-bottom: 3px;
+    }
+
+    h2 {
+      position: relative;
+      margin: 0 0 3px;
+    }
+
+    &.unread h2:after {
+      content: '';
+      display: block;
+      position: absolute;
+      top: 7px;
+      @include left(-13px);
+      width: 7px;
+      height: 7px;
+      border-radius: 4px;
+      background-color: $blue600;
+    }
+
+    p {
+      margin: 0;
+    }
+  }
+}
+
 #user-info {
   display: flex;
   flex-direction: row;
   align-items: center;
-  @include padding(0, 11px, 0, 14px);
-  @include margin-right(14px);
+  @include padding-right(25px);
   height: 100%;
   background-color: transparent;
   border-radius: 0;
@@ -634,7 +729,7 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
   }
 
   h1 {
-    line-height: 32px;
+    line-height: 34px;
     margin-top: 0;
     margin-bottom: 0;
     min-width: 0;
@@ -798,80 +893,6 @@ $toolbarIconColor: darken($inputColor, 10%);
   }
 }
 
-#tabs {
-  margin: -10px -12px 0;
-  padding: 10px 12px 0;
-  overflow: hidden;
-  display: flex;
-  align-items: center;
-
-  ul {
-    display: flex;
-    flex-direction: row;
-    max-width: calc(100% - 40px);
-
-    li {
-      max-width: 100%;
-
-      & + li {
-        @include margin-left(-12px);
-      }
-
-      a {
-        display: block;
-        position: relative;
-        border-radius: $mediumBorderRadius $mediumBorderRadius 0 0;
-        padding: 12px 24px;
-        max-width: 100%;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        box-sizing: border-box;
-        line-height: 1.2;
-
-        &:hover {
-          text-decoration: none;
-        }
-
-        &:not(.sel) {
-          color: $mediumDarkTextColor;
-
-          &:hover {
-            color: $textColor;
-            background-image: linear-gradient(to bottom, $grey050, transparentize($grey050, 0.5));
-          }
-        }
-
-        &.sel {
-          @include pane;
-          z-index: 1;
-          color: $textColor;
-          cursor: default;
-          background-clip: padding-box;
-        }
-      }
-    }
-  }
-
-  #overflow-tab-btn {
-    margin-left: 10px;
-    width: 30px;
-    height: 17px;
-    padding: 0;
-    line-height: 16px;
-    border-radius: $smallBorderRadius;
-    color: $mediumDarkTextColor;
-
-    &:before {
-      margin: 0;
-    }
-
-    &:after {
-      display: none;
-    }
-  }
-}
-
 .content-pane {
   @include pane;
   border-radius: $largeBorderRadius;
@@ -879,15 +900,6 @@ $toolbarIconColor: darken($inputColor, 10%);
   background-clip: padding-box;
   padding: 24px;
   word-wrap: break-word;
-
-  &.square {
-    body.ltr & {
-      border-top-left-radius: 0;
-    }
-    body.rtl & {
-      border-top-right-radius: 0;
-    }
-  }
 
   & > hr {
     margin-left: -24px;
@@ -926,18 +938,10 @@ $toolbarIconColor: darken($inputColor, 10%);
   @include padding-left(14px);
   width: $detailsWidth + 38;
 
-  #main-content.has-tabs & {
-    padding-top: 40px;
-  }
-
   &.fixed {
     position: fixed;
     overflow-y: auto;
     padding-top: 14px;
-
-    #main-content.has-tabs & {
-      padding-top: 54px;
-    }
   }
 
   .meta {
@@ -945,21 +949,25 @@ $toolbarIconColor: darken($inputColor, 10%);
     border-radius: $largeBorderRadius;
     padding: 0 24px;
 
-    &:not(.read-only):not(.warning) {
+    &:not(.warning) {
       @include pane;
+    }
+
+    &:not(.read-only):not(.warning) {
       background-color: $grey050;
     }
 
     &.read-only {
-      padding-top: 14px;
-      padding-bottom: 14px;
-      background-color: $grey200;
+      padding-top: 8px;
+      padding-bottom: 8px;
+      color: $lightTextColor;
+      background-color: transparent;
     }
 
     &.warning {
       border: 2px solid $yellow300;
       padding: 19px 22px;
-      background: $grey050;
+      background: $white;
       color: $textColor !important;
 
       p {
@@ -985,12 +993,18 @@ $toolbarIconColor: darken($inputColor, 10%);
       margin: 0 -24px !important;
 
       &:first-child {
-        border-top-left-radius: $largeBorderRadius;
+        &,
+        & > .status-badge {
+          border-top-left-radius: $largeBorderRadius;
+        }
         border-top-right-radius: $largeBorderRadius;
       }
 
       &:last-child {
-        border-bottom-left-radius: $largeBorderRadius;
+        &,
+        & > .status-badge {
+          border-bottom-left-radius: $largeBorderRadius;
+        }
         border-bottom-right-radius: $largeBorderRadius;
       }
 
@@ -1000,11 +1014,8 @@ $toolbarIconColor: darken($inputColor, 10%);
       }
     }
 
-    & > .field {
-      .status-badge {
-        @include left(4px);
-        top: calc(50% - 8px);
-      }
+    & > .field  > .status-badge {
+      @include left(-2px);
     }
 
     .text::placeholder,
@@ -1027,13 +1038,20 @@ $toolbarIconColor: darken($inputColor, 10%);
     background-image: url(../images/spinner_details.gif);
   }
 
+  @include placeholder-styles($grey500);
+
   .text {
     background-color: transparent;
+    resize: none;
   }
 
   & > .text {
     border-radius: $largeBorderRadius;
     margin-bottom: 14px;
+
+    &:not(:focus) {
+      border-color: transparentize($inputColor, 0.6);
+    }
   }
 }
 
@@ -1042,14 +1060,6 @@ $toolbarIconColor: darken($inputColor, 10%);
   #global-container {
     @include left(-$sidebarWidth);
     width: calc(100vw + #{$sidebarWidth});
-
-    body.ltr & {
-      transition: left 250ms ease-in-out;
-    }
-
-    body.rtl & {
-      transition: right 250ms ease-in-out;
-    }
 
     body.ltr.showing-nav & {
       left: 0;

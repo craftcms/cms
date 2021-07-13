@@ -1,16 +1,18 @@
 <template>
     <div :id="tableId" class="vue-admin-table" :class="{ 'vue-admin-table-padded': padded }">
         <div v-show="showToolbar" class="toolbar">
-            <div class="flex">
-
+            <div class="flex flex-nowrap">
                 <div v-for="(action,index) in actions" :key="index">
                     <admin-table-action-button
                         :label="action.label"
                         :icon="action.icon"
                         :action="action.action"
                         :actions="action.actions"
+                        :allow-multiple="action.allowMultiple"
                         :ids="checks"
                         :enabled="checks.length ? true : false"
+                        :error="action.error"
+                        :ajax="action.ajax"
                         v-on:reload="reload"
                     >
                     </admin-table-action-button>
@@ -28,6 +30,19 @@
                     <div class="clear hidden" :title="searchClearTitle"></div>
                 </div>
 
+                <div class="vue-admin-table-buttons" v-if="buttons && buttons.length">
+                    <div class="flex">
+                        <div v-for="(button, index) in buttons" :key="index">
+                            <admin-table-button
+                                :label="button.label"
+                                :icon="button.icon"
+                                :href="button.href"
+                                :btn-class="button.class"
+                                :enabled="button.enabled"
+                            ></admin-table-button>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -45,7 +60,7 @@
                             :api-url="apiUrl"
                             :css="tableCss"
                             :data="tableData"
-                            :detail-row-component="detailRow"
+                            :detail-row-component="detailRowComponent"
                             :fields="fields"
                             :per-page="perPage"
                             pagination-path="pagination"
@@ -88,7 +103,7 @@
                             </template>
                         </template>
                         <template slot="detail" slot-scope="props">
-                            <div class="detail-cursor-pointer" @click="handleDetailRow(props.rowData.id)" v-if="props.rowData.detail.content && props.rowData.detail.handle" v-html="props.rowData.detail.handle">asd</div>
+                            <div class="detail-cursor-pointer" @click="handleDetailRow(props.rowData.id)" v-if="props.rowData.detail.content && props.rowData.detail.handle" v-html="props.rowData.detail.handle"></div>
                             <div class="detail-cursor-pointer" @click="handleDetailRow(props.rowData.id)" v-if="props.rowData.detail.content && (!props.rowData.detail.handle || props.rowData.detail.handle == undefined) && (Object.keys(props.rowData.detail.content).length || props.rowData.detail.content.length)" data-icon="info" :title="props.rowData.detail.title"></div>
                         </template>
                         <template slot="reorder" slot-scope="props">
@@ -127,16 +142,18 @@
     import AdminTableCheckbox from './js/components/AdminTableCheckbox';
     import AdminTableActionButton from './js/components/AdminTableActionButton';
     import AdminTableDetailRow from './js/components/AdminTableDetailRow';
+    import AdminTableButton from './js/components/AdminTableButton';
     import Sortable from 'sortablejs'
     import {debounce, map} from 'lodash'
 
     export default {
         components: {
-            Vuetable,
-            AdminTablePagination,
+            AdminTableActionButton,
             AdminTableCheckbox,
             AdminTableDeleteButton,
-            AdminTableActionButton
+            AdminTablePagination,
+            AdminTableButton,
+            Vuetable,
         },
 
         props: {
@@ -150,6 +167,10 @@
             allowMultipleSelections: {
                 type: Boolean,
                 default: true,
+            },
+            buttons: {
+                type: Array,
+                default: () => { return []; },
             },
             checkboxes: {
                 type: Boolean,
@@ -498,6 +519,20 @@
                 return (this.$refs.vuetable.tableData.length > 1 && this.reorderAction && this.$el.querySelector(this.tableBodySelector) && (!this.$refs.vuetable.tablePagination))
             },
 
+            detailRowComponent() {
+                if (!this.tableData || this.tableData.length == 0) {
+                    return '';
+                }
+
+                if (!this.tableData.some(r => {
+                    return Object.keys(r).indexOf('detail') >= 0;
+                })) {
+                    return '';
+                }
+
+                return this.detailRow;
+            },
+
             disabledCheckboxesCount() {
                 let checkboxCount = 0;
 
@@ -649,6 +684,14 @@
 
     table.data.vue-admin-table-dragging tbody tr:not(.disabled):hover td {
         background-color: transparent;
+    }
+
+    .vue-admin-table-buttons {
+        margin-left: auto;
+    }
+
+    .vue-admin-table-buttons .flex:not(.flex-nowrap) > * {
+        margin-bottom: 0;
     }
 
     .detail-cursor-pointer {

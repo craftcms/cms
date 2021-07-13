@@ -23,11 +23,11 @@
 
             this.addListener(this.$widgetManagerBtn, 'click', 'showWidgetManager');
 
-            Garnish.$doc.ready($.proxy(function() {
+            Garnish.$doc.ready(() => {
                 this.$grid = $('#dashboard-grid');
                 this.grid = this.$grid.data('grid');
-                $('#newwidgetmenubtn').data('menubtn').menu.on('optionselect', $.proxy(this, 'handleNewWidgetOptionSelect'));
-            }, this));
+                $('#newwidgetmenubtn').data('menubtn').menu.on('optionselect', this.handleNewWidgetOptionSelect.bind(this));
+            });
         },
 
         getTypeInfo: function(type, property, defaultValue) {
@@ -195,12 +195,12 @@
 
                 this.widgetManager = new Garnish.HUD(this.$widgetManagerBtn, $form, {
                     hudClass: 'hud widgetmanagerhud',
-                    onShow: $.proxy(function() {
+                    onShow: () => {
                         this.$widgetManagerBtn.addClass('active');
-                    }, this),
-                    onHide: $.proxy(function() {
+                    },
+                    onHide: () => {
                         this.$widgetManagerBtn.removeClass('active');
-                    }, this)
+                    },
                 });
 
                 this.widgetAdminTable = new Craft.AdminTable({
@@ -209,7 +209,7 @@
                     sortable: true,
                     reorderAction: 'dashboard/reorder-user-widgets',
                     deleteAction: 'dashboard/delete-user-widget',
-                    onReorderItems: $.proxy(function(ids) {
+                    onReorderItems: ids => {
                         var lastWidget = null;
 
                         for (var i = 0; i < ids.length; i++) {
@@ -225,12 +225,10 @@
                         }
 
                         this.grid.resetItemOrder();
-                    }, this),
-                    onDeleteItem: $.proxy(function(id) {
-                        var widget = this.widgets[id];
-
-                        widget.destroy();
-                    }, this)
+                    },
+                    onDeleteItem: id => {
+                        this.widgets[id].destroy();
+                    },
                 });
             } else {
                 this.widgetManager.show();
@@ -345,10 +343,10 @@
         refreshSettings: function() {
             this.$settingsContainer.html(this.settingsHtml);
 
-            Garnish.requestAnimationFrame($.proxy(function() {
+            Garnish.requestAnimationFrame(() => {
                 Craft.initUiElements(this.$settingsContainer);
                 this.initSettingsFn();
-            }, this));
+            });
         },
 
         showSettings: function() {
@@ -364,7 +362,7 @@
                 this.$container
                     .addClass('flipped')
                     .velocity({height: this.$back.height()}, {
-                        complete: $.proxy(this, 'onShowBack')
+                        complete: this.onShowBack.bind(this)
                     });
             });
         },
@@ -376,7 +374,7 @@
                 this.$container
                     .removeClass('flipped')
                     .velocity({height: this.$front.height()}, {
-                        complete: $.proxy(this, 'onShowFront')
+                        complete: this.onShowFront.bind(this)
                     });
             });
         },
@@ -388,7 +386,7 @@
             var action = this.$container.hasClass('new') ? 'dashboard/create-widget' : 'dashboard/save-widget-settings',
                 data = this.$settingsForm.serialize();
 
-            Craft.postActionRequest(action, data, $.proxy(function(response, textStatus) {
+            Craft.postActionRequest(action, data, (response, textStatus) => {
                 this.$settingsSpinner.addClass('hidden');
 
                 if (textStatus === 'success') {
@@ -416,7 +414,7 @@
                         }
                     }
                 }
-            }, this));
+            });
         },
 
         update: function(response) {
@@ -505,9 +503,9 @@
             this.$front.addClass('hidden');
 
             // Focus on the first input
-            setTimeout($.proxy(function() {
+            setTimeout(() => {
                 this.$settingsForm.find(':focusable:first').trigger('focus');
-            }, this), 1);
+            }, 1);
         },
 
         updateContainerHeight: function() {
@@ -577,10 +575,10 @@
             this.$container.addClass('scaleout');
             this.base();
 
-            setTimeout($.proxy(function() {
+            setTimeout(() => {
                 window.dashboard.grid.removeItems(this.$gridItem);
                 this.$gridItem.remove();
-            }, this), 200);
+            }, 200);
         }
     });
 })(jQuery);

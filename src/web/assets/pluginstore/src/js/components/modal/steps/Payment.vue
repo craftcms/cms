@@ -271,7 +271,7 @@
                 this.couponCodeSuccess = false
                 this.couponCodeError = false
 
-                this.couponCodeTimeout = setTimeout(function() {
+                this.couponCodeTimeout = setTimeout(() => {
                     this.couponCodeLoading = true
 
                     const data = {
@@ -290,7 +290,7 @@
                             this.staticCartTotal = this.cart.totalPrice
                             this.couponCodeLoading = false
                         })
-                }.bind(this), 500)
+                }, 500)
             },
 
             onCountryChange(iso) {

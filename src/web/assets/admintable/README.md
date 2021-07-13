@@ -57,6 +57,7 @@ new Craft.VueAdminTable({...options...});
 | reorderFailMessage        | String   | `Couldn’t reorder items`                    | Message to be displayed as the fail notice after reorder failure. |
 | search                    | Bool     | `false`                                     | Whether or not to show the search field.                     |
 | searchPlaceholder         | String   | `Search`                                    | Search placeholder text.                                     |
+| buttons                   | Array    | `[]`                                        | Array of buttons to be placed in the toolbar.                                     |
 | tableData                 | Array    | `null`                                      | Array of objects used to populate the table data for data mode. |
 | tableDataEndpoint         | String   | `null`                                      | Endpoint for api mode to retrieve table data, pagination and table metadata (e.g. total count). |
 
@@ -182,8 +183,8 @@ The table below explains all available attributes for data in the detail column.
 | ----------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
 | `handle` (optional)     | The HTML for what will be clicked to show the detail row. If omitted an "info" icon will be displayed.                                       |
 | `title` (optional)      | Content for the title attribute on the clickable show/hide toggle.                                                                           |
-| `content`               | HTML to be displayed in the detail row. If using the `showAsList` option this can be an array that will be converted to a key -> value list. | 
-| `showAsList` (optional) | Default: `false`. When set to `true` and `content` is an array of data a key -> value list will be shown in the detail row.                  | 
+| `content`               | HTML to be displayed in the detail row. If using the `showAsList` option this can be an array that will be converted to a key -> value list. |
+| `showAsList` (optional) | Default: `false`. When set to `true` and `content` is an array of data a key -> value list will be shown in the detail row.                  |
 
 #### Special Column Examples
 
@@ -290,11 +291,11 @@ new Craft.VueAdminTable({
 
 ## Action buttons
 
-Action buttons can be used in conjunction with checkboxes to all bulk actions e.g. bulk enabling/disabling a set of records.
+Action buttons can be used in conjunction with checkboxes to perform singular or bulk actions e.g. bulk enabling/disabling a set of records.
 
-Action buttons are provided as an array of objects. 
+Action buttons are provided as an array of objects and come in two varieties, a menu button which is a dropdown style button with sub actions or a single action button.
 
-### Top level button
+### Menu action button options
 
 | Name            | Description                                                  |
 | --------------- | ------------------------------------------------------------ |
@@ -302,7 +303,7 @@ Action buttons are provided as an array of objects.
 | icon (optional) | icon to show in the top level button                         |
 | actions         | array of actions for use in the dropdown when the button is clicked (spec below) |
 
-###Sub buttons
+####Sub action buttons
 
 | Name          | Type   | Description                                                  |
 | ------------- | ------ | ------------------------------------------------------------ |
@@ -313,12 +314,18 @@ Action buttons are provided as an array of objects.
 | ajax          | Bool   | whether this action should be posted via ajax                |
 | status        | string | status icon to pass to the button                            |
 | allowMultiple | Bool   | whether or not to allow the action to be run if multiple items are selected |
+| separator     | Bool   | optionally add a separating line above the button (not available on single action buttons) |
+
+### Single action button options
+
+Single action buttons have all the same options as **Sub action buttons** *except separator* (see above).
 
 ### Example
 
 ```js
 var actions = [
     {
+      	// Menu button example
         label: Craft.t('app', 'Set Status'),
         actions: [
             {
@@ -340,9 +347,14 @@ var actions = [
                 action: 'controller/refresh',
                 param: 'refresh',
                 value: 'all',
-                allowMultiple: false
+                allowMultiple: false,
+              	separator: true
             }
         ]
+    },
+  	{
+        label: Craft.t('app', 'Delete'),
+        action: 'controller/delete',
     }
 ];
 
@@ -350,5 +362,39 @@ new Craft.VueAdminTable({
   ...
   actions: actions,
   ...
+});
+```
+
+## Buttons
+
+The buttons are simple button links that can appear in the top right of the table toolbar. As an example these are useful if you would like to link to the creation of a "New record" for the table.
+
+### Options
+
+The `buttons` option is an array of objects.
+
+Each object has the following parameters. __References to "button" is only from a visual standpoint, buttons are anchor elements.__
+
+| Name | Description |
+| ---- | ----------- |
+| `label` | The link label |
+| `icon` _(optional)_ | The link icon |
+| `href` | The link’s `href` attribute |
+| `enabled` | Whether the link should be enabled. This can either be a boolean or a callback function that returns a boolean. |
+
+
+### Example
+
+```js
+new Craft.VueAdminTable({
+    // ...
+    buttons: [
+        {
+            label: 'Create New Thing',
+            icon: 'plus',
+            href: '{{ cpUrl("my-plugin/thing/new") }}',
+            enabled: () => true,
+        }
+    ],
 });
 ```

@@ -20,6 +20,7 @@ use yii\db\ActiveQueryInterface;
  * @property int $fieldLayoutId Field layout ID
  * @property string $name Name
  * @property string $handle Handle
+ * @property string $defaultPlacement Default placement
  * @property Structure $structure Structure
  * @property FieldLayout $fieldLayout Field layout
  * @property CategoryGroup_SiteSettings[] $siteSettings Site settings

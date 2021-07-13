@@ -20,6 +20,7 @@ use yii\web\Response;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.4.0
+ * @deprecated in 3.7.0
  */
 class DraftsController extends Controller
 {
@@ -52,7 +53,7 @@ class DraftsController extends Controller
             throw new BadRequestHttpException('Invalid draft ID: ' . $draftId);
         }
 
-        Craft::$app->getDrafts()->mergeSourceChanges($draft);
+        Craft::$app->getElements()->mergeCanonicalChanges($draft);
 
         // Redirect to the requested URL to reload the draft
         $this->setSuccessFlash(Craft::t('app', 'Recent {type} changes merged.', [

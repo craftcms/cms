@@ -7,9 +7,9 @@
 
 namespace craft\behaviors;
 
+use Craft;
 use craft\base\ElementInterface;
 use craft\elements\User;
-use craft\helpers\ElementHelper;
 use yii\base\Behavior;
 
 /**
@@ -17,26 +17,16 @@ use yii\base\Behavior;
  *
  * @property ElementInterface $owner
  * @property User|null $creator
+ * @property-read $sourceId
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.5.0
  */
 abstract class BaseRevisionBehavior extends Behavior
 {
     /**
-     * @var int|null The source element’s ID
-     */
-    public $sourceId;
-
-    /**
      * @var int|null The creator’s ID
      */
     public $creatorId;
-
-    /**
-     * @var ElementInterface|null
-     * @see source()
-     */
-    private $_source;
 
     /**
      * @var User|null|false The creator
@@ -77,32 +67,30 @@ abstract class BaseRevisionBehavior extends Behavior
     }
 
     /**
-     * Returns the source element.
-     *
-     * @return ElementInterface|null
-     * @since 3.5.0
-     */
-    protected function source()
-    {
-        if (!$this->sourceId) {
-            return null;
-        }
-
-        if ($this->_source !== null) {
-            return $this->_source;
-        }
-
-        return $this->_source = ElementHelper::sourceElement($this->owner);
-    }
-
-    /**
      * Returns the draft/revision’s source element.
      *
      * @return ElementInterface|null
-     * @deprecated in 3.2.9. Use [[ElementHelper::sourceElement()]] instead.
+     * @deprecated in 3.2.9. Use [[ElementInterface::getCanonical()]] instead.
      */
     public function getSource()
     {
-        return $this->source();
+        Craft::$app->getDeprecator()->log(__METHOD__, 'Elements’ `getSource()` method has been deprecated. Use `getCanonical()` instead.');
+        if ($this->owner->getIsCanonical()) {
+            return null;
+        }
+        return $this->owner->getCanonical();
+    }
+
+    /**
+     * Returns the draft/revision's source element ID.
+     *
+     * @return int
+     * @since 3.7.0
+     * @deprecated in 3.7.0. Use [[ElementInterface::getCanonicalId()]] instead.
+     */
+    public function getSourceId(): int
+    {
+        Craft::$app->getDeprecator()->log(__METHOD__, 'Elements’ `getSourceId()` method has been deprecated. Use `getCanonicalId()` instead.');
+        return $this->owner->getCanonicalId();
     }
 }

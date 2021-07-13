@@ -158,12 +158,12 @@ interface VolumeInterface extends SavableComponentInterface
     public function getFileStream(string $uriPath);
 
     /**
-     * Returns whether a folder exists at the given path.
+     * Returns whether a directory exists at the given path.
      *
      * @param string $path The folder path to check
      * @return bool
      */
-    public function folderExists(string $path): bool;
+    public function directoryExists(string $path): bool;
 
     /**
      * Creates a directory.

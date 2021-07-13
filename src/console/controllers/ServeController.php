@@ -36,4 +36,17 @@ class ServeController extends BaseServeController
         parent::init();
         $this->checkTty();
     }
+
+    /**
+     * @inheritdoc
+     */
+    public function beforeAction($action)
+    {
+        // Make sure this isn't a root user
+        if (!$this->checkRootUser()) {
+            return false;
+        }
+
+        return parent::beforeAction($action);
+    }
 }

@@ -90,7 +90,7 @@
             this.$currentScreen.velocity({opacity: 0}, {display: 'none'});
             this.$nextScreen.velocity({opacity: 1});
             this.$pane.velocity({height: this.$nextScreen.outerHeight()}, {
-                complete: $.proxy(this, 'handleScreenAnimationComplete')
+                complete: this.handleScreenAnimationComplete.bind(this)
             });
 
             this.currentScreen = this.initScreen(screen);
@@ -204,7 +204,7 @@
 
             if (this.mode === BaseSearchScreen.MODE_SEARCH) {
                 this.clearSearchTimeout();
-                this.searchTimeout = setTimeout($.proxy(this, 'search'), 500);
+                this.searchTimeout = setTimeout(this.search.bind(this), 500);
 
                 if (text) {
                     this.$searchParams.html('');
@@ -274,8 +274,8 @@
                 $.ajax({
                     url: url,
                     dataType: 'json',
-                    success: $.proxy(this, 'handleSearchSuccess'),
-                    error: $.proxy(this, 'hideSearchResults')
+                    success: this.handleSearchSuccess.bind(this),
+                    error: this.hideSearchResults.bind(this)
                 });
             } else {
                 this.hideSearchResults();
@@ -317,9 +317,9 @@
                     .velocity('stop')
                     .height(startResultsHeight)
                     .velocity({height: endResultsHeight}, {
-                        complete: $.proxy(function() {
+                        complete: () => {
                             this.$searchResultsContainer.height('auto');
-                        }, this)
+                        },
                     });
             } else {
                 this.hideSearchResults();
@@ -335,9 +335,9 @@
                 .velocity('stop')
                 .height(this.$searchResultsContainer.height())
                 .velocity({height: 0}, {
-                    complete: $.proxy(function() {
+                    complete: () => {
                         this.$searchResultsContainer.addClass('hidden');
-                    }, this)
+                    },
                 });
 
             this.showingResults = false;
@@ -435,9 +435,9 @@
                 this.$formContainer
                     .velocity('stop')
                     .velocity({height: $in.height()}, {
-                        complete: $.proxy(function() {
+                        complete: () => {
                             this.$formContainer.css({height: 'auto'});
-                        }, this)
+                        },
                     });
             } else {
                 $out.addClass('hidden');

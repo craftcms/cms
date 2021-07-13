@@ -53,7 +53,7 @@ class FieldLayoutTest extends Unit
         self::assertCount(2, $matrixRows);
 
         foreach ($matrixRows as $row) {
-            self::assertSame('Some text', $row['field_aBlock_firstSubfield']);
+            self::assertSame('Some text', $row['field_aBlock_firstSubfield_aaaaaaaa']);
         }
     }
 }
