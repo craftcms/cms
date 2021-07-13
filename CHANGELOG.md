@@ -7,7 +7,7 @@
 - Added `craft\gql\handlers\Site`.
 
 ### Changed
-- Added a margin around the image editor to separate cropping handles from browser and screen edges. ([#9143](https://github.com/craftcms/cms/issues/9143))
+- Increased the margin around the image editor on small viewports. ([#9143](https://github.com/craftcms/cms/issues/9143))
 
 ### Fixed
 - Fixed a button styling issue in Safari. ([#8076](https://github.com/craftcms/cms/pull/8076))
