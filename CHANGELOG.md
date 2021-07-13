@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 3.x
 
-## Unreleased
+## 3.6.18 - 2021-07-13
 
 ### Added
 - Added `craft\web\Response::redirect()`.
