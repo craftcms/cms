@@ -14,6 +14,7 @@
 
 ### Fixed
 - Fixed a bug where value normalizers for GraphQL mutations would not be executed in nested field. ([#9139](https://github.com/craftcms/cms/issues/9139))
+- Fixed a SQL error that occurred when hard-deleting a volume that had subfolders nested more than 15 levels deep. ([#8073](https://github.com/craftcms/cms/issues/8073))
 
 ## 3.7.0-beta.6 - 2021-07-09
 
