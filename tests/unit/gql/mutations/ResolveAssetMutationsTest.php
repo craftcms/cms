@@ -98,6 +98,7 @@ class ResolveAssetMutationsTest extends TestCase
                 $assetToSave->id = $assetToSave->id ?? $assetId;
                 return $assetToSave;
             },
+            'recursivelyNormalizeArgumentValues' => function ($resolveInfo, $values) { return $values; }
         ]);
 
         if ($exception) {
