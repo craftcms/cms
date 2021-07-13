@@ -2204,7 +2204,7 @@ $elementInnerSpacing: 5px;
   }
 
   &.hasthumb {
-    .elementthumb {
+    .elementthumb:not(:empty) {
       position: absolute;
       display: flex;
       justify-content: center;
@@ -2267,7 +2267,7 @@ $elementInnerSpacing: 5px;
     &.hasthumb {
       @include padding-left($smallThumbSize + $elementInnerSpacing);
 
-      .elementthumb {
+      .elementthumb:not(:empty) {
         top: calc(50% - 17px);
         @include left(0);
         width: $smallThumbSize;
@@ -2304,7 +2304,7 @@ $elementInnerSpacing: 5px;
       }
     }
 
-    .elementthumb {
+    .elementthumb:not(:empty) {
       top: $baseElementSidePadding;
       @include left($baseElementSidePadding);
       width: $largeThumbSize;

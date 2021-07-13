@@ -438,7 +438,7 @@ class Application extends \yii\web\Application
                 'mail' => MailPanel::class,
             ],
         ]);
-        /* @var DebugModule $module */
+        /** @var DebugModule $module */
         $module = $this->getModule('debug');
         $module->bootstrap($this);
     }
@@ -490,16 +490,26 @@ class Application extends \yii\web\Application
             return;
         }
 
-        // Publish the directory
         $filePath = substr($resourceUri, strlen($hash) + 1);
         if (!Path::ensurePathIsContained($filePath)) {
             throw new BadRequestHttpException('Invalid resource path: ' . $filePath);
         }
-        $publishedPath = $this->getAssetManager()->publish(Craft::getAlias($sourcePath))[0] . DIRECTORY_SEPARATOR . $filePath;
-        if (!file_exists($publishedPath)) {
-            throw new NotFoundHttpException($filePath . ' does not exist.');
+
+        // Publish the directory
+        [$publishedDir] = $this->getAssetManager()->publish(Craft::getAlias($sourcePath));
+
+        // Make sure the hashes match
+        if (basename($publishedDir) !== $hash) {
+            throw new NotFoundHttpException("$filePath does not exist.");
         }
+
+        $publishedPath = $publishedDir . DIRECTORY_SEPARATOR . $filePath;
+        if (!file_exists($publishedPath)) {
+            throw new NotFoundHttpException("$filePath does not exist.");
+        }
+
         $this->getResponse()
+            ->setCacheHeaders()
             ->sendFile($publishedPath, null, ['inline' => true]);
         $this->end();
     }

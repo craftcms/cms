@@ -10,3 +10,4 @@ excluded_target_languages:
   - id
   - ky
   - cy
+commit_message: "[ci skip]"

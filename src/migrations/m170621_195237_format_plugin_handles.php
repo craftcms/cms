@@ -20,7 +20,7 @@ class m170621_195237_format_plugin_handles extends Migration
         $path = Craft::$app->getVendorPath() . DIRECTORY_SEPARATOR . 'craftcms' . DIRECTORY_SEPARATOR . 'plugins.php';
 
         if (file_exists($path)) {
-            /* @var array $plugins */
+            /** @var array $plugins */
             $plugins = require $path;
 
             foreach ($plugins as $plugin) {

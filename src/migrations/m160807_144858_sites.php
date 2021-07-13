@@ -579,7 +579,7 @@ class m160807_144858_sites extends Migration
             $language = 'en-US';
         }
 
-        /* @noinspection PhpUndefinedVariableInspection */
+        /** @noinspection PhpUndefinedVariableInspection */
         return $language;
     }
 }

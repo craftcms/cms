@@ -8,10 +8,8 @@
 namespace craft\controllers;
 
 use Craft;
-use craft\db\Table;
 use craft\errors\InvalidPluginException;
 use craft\helpers\ArrayHelper;
-use craft\helpers\Db;
 use craft\services\Plugins;
 use yii\base\NotSupportedException;
 use yii\web\Response;

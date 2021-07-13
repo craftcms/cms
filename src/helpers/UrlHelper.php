@@ -320,7 +320,7 @@ class UrlHelper
         $path = trim($path, '/');
         $url = self::_createUrl($path, $params, $scheme, false);
 
-        /* @noinspection UnSafeIsSetOverArrayInspection - FP */
+        /** @noinspection UnSafeIsSetOverArrayInspection - FP */
         if (isset($currentSite)) {
             // Restore the original current site
             $sites->setCurrentSite($currentSite);

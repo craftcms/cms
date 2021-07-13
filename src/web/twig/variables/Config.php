@@ -20,7 +20,7 @@ use yii\base\InvalidArgumentException;
  */
 class Config
 {
-    /* @noinspection MagicMethodsValidityInspection */
+    /** @noinspection MagicMethodsValidityInspection */
     /**
      * Returns whether a config item exists.
      *
@@ -32,7 +32,7 @@ class Config
         return isset(Craft::$app->getConfig()->getGeneral()->$name);
     }
 
-    /* @noinspection MagicMethodsValidityInspection */
+    /** @noinspection MagicMethodsValidityInspection */
     /**
      * Returns a config item.
      *

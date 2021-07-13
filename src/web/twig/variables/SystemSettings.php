@@ -18,7 +18,7 @@ use Craft;
  */
 class SystemSettings
 {
-    /* @noinspection MagicMethodsValidityInspection */
+    /** @noinspection MagicMethodsValidityInspection */
     /**
      * Returns whether a setting category exists.
      *
@@ -30,7 +30,7 @@ class SystemSettings
         return true;
     }
 
-    /* @noinspection MagicMethodsValidityInspection */
+    /** @noinspection MagicMethodsValidityInspection */
     /**
      * Returns the system settings for a category.
      *

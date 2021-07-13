@@ -157,7 +157,7 @@ class Plugins extends Component
         $path = Craft::$app->getVendorPath() . DIRECTORY_SEPARATOR . 'craftcms' . DIRECTORY_SEPARATOR . 'plugins.php';
 
         if (file_exists($path)) {
-            /* @var array $plugins */
+            /** @var array $plugins */
             $plugins = require $path;
 
             foreach ($plugins as $packageName => $plugin) {
@@ -631,11 +631,12 @@ class Plugins extends Component
             }
 
             // Clean up the plugins and migrations tables
-            $id = $this->getStoredPluginInfo($handle)['id'];
-
-            Db::delete(Table::PLUGINS, [
-                'id' => $id,
-            ]);
+            $info = $this->getStoredPluginInfo($handle);
+            if ($info !== null) {
+                Db::delete(Table::PLUGINS, [
+                    'id' => $info['id'],
+                ]);
+            }
 
             Db::delete(Table::MIGRATIONS, [
                 'track' => "plugin:$handle",
@@ -684,7 +685,7 @@ class Plugins extends Component
     {
         $info = $this->getPluginInfo($handle);
 
-        /* @var string|PluginInterface $class */
+        /** @var string|PluginInterface $class */
         $class = $info['class'];
 
         if (!in_array($edition, $class::editions(), true)) {
@@ -905,7 +906,7 @@ class Plugins extends Component
             unset($config['aliases']);
         }
 
-        /* @var string|PluginInterface $class */
+        /** @var string|PluginInterface $class */
         $class = $config['class'];
 
         // Make sure the class exists and it implements PluginInterface

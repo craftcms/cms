@@ -2,7 +2,7 @@ blank_issues_enabled: false
 contact_links:
   - name: Feature Request
     url: https://github.com/craftcms/cms/discussions/new?category=ideas
-    about: Start a new discussion about your idea.
+    about: Start a new discussion about your idea
   - name: Documentation
     url: https://docs.craftcms.com/
     about: Read the official documentation
