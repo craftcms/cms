@@ -1,5 +1,9 @@
 # Release Notes for Craft CMS 3.x
 
+## Unreleased
+
+### Fixed deprecation warnings that occurred on some edit pages. ([#9556](https://github.com/craftcms/cms/pull/9556))
+
 ## 3.7.0 - 2021-07-13
 
 > {tip} Read through the [Upgrading to Craft 3.7](https://craftcms.com/knowledge-base/upgrading-to-craft-3-7) guide before updating.
