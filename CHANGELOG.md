@@ -1,108 +1,21 @@
 # Release Notes for Craft CMS 3.x
 
-## Unreleased
-
-### Changed
-- `craft\services\Drafts::applyDraft()` is no longer deprecated.
-- `craft\services\Drafts::EVENT_AFTER_APPLY_DRAFT` is no longer deprecated.
-- `craft\services\Drafts::EVENT_BEFORE_APPLY_DRAFT` is no longer deprecated.
-
-### Deprecated
-- Deprecated `craft\services\Drafts::EVENT_AFTER_PUBLISH_DRAFT`. `EVENT_AFTER_APPLY_DRAFT` should be used instead.
-- Deprecated `craft\services\Drafts::EVENT_BEFORE_PUBLISH_DRAFT`. `EVENT_BEFORE_APPLY_DRAFT` should be used instead.
-- Deprecated `craft\services\Drafts::publishDraft()`. `applyDraft()` should be used instead.
-
-### Fixed
-- Fixed a bug where value normalizers for GraphQL mutations would not be executed in nested field. ([#9139](https://github.com/craftcms/cms/issues/9139))
-- Fixed a SQL error that occurred when hard-deleting a volume that had subfolders nested more than 15 levels deep. ([#8073](https://github.com/craftcms/cms/issues/8073))
-
-## 3.7.0-beta.6 - 2021-07-09
-
-### Added
-- The Entries index page now has a “Delete for site” action for entries whose section’s Propagation Method is set to “Let each entry choose which sites it should be saved to”. ([#9119](https://github.com/craftcms/cms/pull/9119))
-- Added the `httpProxy` config setting, which can be used instead of setting the `proxy` Guzzle request option. ([#9105](https://github.com/craftcms/cms/issues/9105))
-- Added the `useUnbufferedConnections` database connection setting, which is `false` by default, so batched queries are no longer executed over an unbuffered MySQL connection by default. ([#9149](https://github.com/craftcms/cms/issues/9149))
-
-### Changed
-- Entries now retain their original IDs when created from an unpublished draft. ([#9104](https://github.com/craftcms/cms/issues/9104))
-- Date query params now support passing in times relative to `now` (e.g. `>= now`). ([#9117](https://github.com/craftcms/cms/issues/9117))
-- Object templates (such as `redirect` params and URI Format settings) now support string interpolation. ([#9138](https://github.com/craftcms/cms/discussions/9138))
-- `craft\helpers\DateTimeHelper::toDateTime()` now supports passing in `'now'`. ([#9117](https://github.com/craftcms/cms/issues/9117))
-
-### Deprecated
-- Deprecated `craft\base\Element::getIsProvisionalDraft()`. `$isProvisionalDraft` should be used instead.
-
-### Fixed
-- Fixed an error that occurred when creating a new category on multi-site installs. ([#9107](https://github.com/craftcms/cms/issues/9107))
-- Fixed a bug where entries would be repositioned within their structure when a provisional draft was saved. ([#9123](https://github.com/craftcms/cms/issues/9123))
-- Fixed a bug where Matrix blocks weren’t always getting duplicated properly when creating new  entry revisions. ([#9128](https://github.com/craftcms/cms/issues/9128))
-
-## 3.7.0-beta.5 - 2021-06-29
-
-### Fixed
-- Fixed a bug where custom fields’ `getInputHtml()` methods were getting called twice for Edit Category pages, causing duplicate JavaScript code to get registered. ([#9091](https://github.com/craftcms/cms/issues/9091))
-- Fixed a SQL error that occurred when sorting an element index by a custom field. ([#9093](https://github.com/craftcms/cms/issues/9093))
-
-## 3.7.0-beta.4 - 2021-06-25
-
-### Changed
-- Image preview thumbnails on Edit Asset pages and within asset editor slideouts now have checkered backgrounds. ([#9073](https://github.com/craftcms/cms/pull/9073))
-
-### Fixed
-- Fixed a bug where only the first changed nested Matrix field would initially show a change badge, when making changes to an entry’s Current revision. ([#9068](https://github.com/craftcms/cms/issues/9068))
-- Fixed a bug where clicking on fields within element editor sidebars would close the sidebar. ([#9072](https://github.com/craftcms/cms/pull/9072))
-- Fixed an error that could occur when loading a draft. ([#9080](https://github.com/craftcms/cms/issues/9080))
-
-## 3.7.0-beta.3 - 2021-06-22
-
-### Added
-- Added `craft\mail\Message::$error`. ([#8091](https://github.com/craftcms/cms/pull/8091))
-- Added `craft\web\View::getInitialDeltaValues()`.
-
-### Changed
-- Unpublished drafts’ primary action is now labelled “Create entry” rather than “Save”. ([#8094](https://github.com/craftcms/cms/issues/8094))
-- Unpublished drafts’ Save buttons’ context menus now include a “Save draft” action. ([#7899](https://github.com/craftcms/cms/pull/7899))
-
-### Deprecated
-- Deprecated `craft\web\View::getInitialDeltaValue()`.
-
-### Fixed
-- Fixed an error that occurred when running CLI commands on Windows. ([#8089](https://github.com/craftcms/cms/issues/8089))
-- Fixed an error that could occur when updating to Craft 3.7 if there were any soft-deleted global sets. ([#8079](https://github.com/craftcms/cms/issues/8079))
-- Fixed a bug where Dropdown fields weren’t always saving properly within element editor slideouts, if left unchanged. ([#8090](https://github.com/craftcms/cms/issues/8090))
-- Fixed a SQL error that could occur when saving an element.
-- Fixed a bug where applying a (provisional) draft to an entry could result in other drafts getting duplicate Matrix blocks. ([#8092](https://github.com/craftcms/cms/issues/8092))
-- Fixed a bug where fields nested within Matrix fields weren’t responsive for newly-created Matrix blocks. ([#9056](https://github.com/craftcms/cms/issues/9056))
-
-## 3.7.0-beta.2 - 2021-06-17
-
-### Added
-- Added the `--hard` option to the `users/delete` command. ([#8083](https://github.com/craftcms/cms/pull/8083))
-- Added `craft\console\ControllerTrait::createAttributeValidator()`. ([#8066](https://github.com/craftcms/cms/pull/8066))
-
-### Changed
-- Element editor slideouts’ sidebars are now always shown when the viewport is at least 1536px wide. ([#8075](https://github.com/craftcms/cms/issues/8075))
-- Template requests now respond with a `Content-Length` header. ([#8070](https://github.com/craftcms/cms/issues/8070))
-
-### Fixed
-- Fixed an infinite recursion bug that could occur when validating date values.
-- Fixed a bug where it wasn’t possible to choose the parent entry when creating new Structure section entries. ([#8074](https://github.com/craftcms/cms/issues/8074))
-- Fixed a bug where element selection fields could get multiple “Choose” buttons. ([#8074](https://github.com/craftcms/cms/issues/8074))
-- Fixed a SQL error that occurred when deleting a volume folder that had subfolders nested more than 15 levels deep. ([#8073](https://github.com/craftcms/cms/issues/8073))
-- Fixed a bug where exported CSV files weren’t being imported with an UTF-8 encoding by Excel. ([#8067](https://github.com/craftcms/cms/issues/8067))
-
-## 3.7.0-beta.1 - 2021-06-15
+## 3.7.0 - 2021-07-13
 
 > {tip} Read through the [Upgrading to Craft 3.7](https://craftcms.com/knowledge-base/upgrading-to-craft-3-7) guide before updating.
 
 ### Added
 - The control panel now displays new feature announcements. ([#8056](https://github.com/craftcms/cms/pull/8056))
-- Added the “Reduce focus visibility” user preference. ([#7790](https://github.com/craftcms/cms/issues/7790))
+- Added the “Always show focus rings” user preference. ([#7790](https://github.com/craftcms/cms/issues/7790))
 - The Entries index page now has “Create a new entry before” and “Create a new entry after” actions for entries within Structure sections. ([#870](https://github.com/craftcms/cms/issues/870))
+- The Entries index page now has a “Delete for site” action for entries whose section’s Propagation Method is set to “Let each entry choose which sites it should be saved to”. ([#9119](https://github.com/craftcms/cms/pull/9119))
 - Edit Entry pages now treat unpublished drafts similarly to published entries, rather than drafts. ([#7899](https://github.com/craftcms/cms/pull/7899))
 - Edit Entry pages no longer appear to create a draft when the Current revision is edited within Live Preview. Unsaved changes are now stored within a “provisional draft”, which is mostly hidden from the author. ([#7899](https://github.com/craftcms/cms/pull/7899))
 - Category groups now have a “Default Category Placement” setting, which determines where new categories should be placed within the structure by default. ([#7759](https://github.com/craftcms/cms/issues/7759))
 - Structure sections now have a “Default Entry Placement” setting, which determines where new entries should be placed within the structure by default. ([#7759](https://github.com/craftcms/cms/issues/7759))
+- The Assets index page now remembers the selected subfolder between page loads. ([#9546](https://github.com/craftcms/cms/discussions/9546))
+- It’s now possible to deep-link to a specific subfolder on the Assets index page.
+- Edit Asset pages now redirect back to the subfolder the asset is located in on save.
 - It’s now possible to reorder global sets. ([#8052](https://github.com/craftcms/cms/pull/8052))
 - Date fields now have a “Show Time Zone” setting, allowing authors to choose which time zone the date is set to, rather than using the system time zone.
 - Matrix fields can now be set to custom propagation methods, based on a propagation key template. ([#7610](https://github.com/craftcms/cms/issues/7610))
@@ -111,9 +24,11 @@
 - Added the `siteSettingsId` element query and GraphQL API query parameter for all elements.
 - Added the `preferSites` GraphQL API query argument for all elements. ([#8006](https://github.com/craftcms/cms/pull/8006))
 - Added the `ancestors`, `descendants`, `drafts`, `draftCreator`, `revisions`, `currentRevision`, and `revisionCreator` fields to entry GraphQL queries. ([#7950]((https://github.com/craftcms/cms/issues/7950)))
+- Added the `httpProxy` config setting, which can be used instead of setting the `proxy` Guzzle request option. ([#9105](https://github.com/craftcms/cms/issues/9105))
 - Added the `previewTokenDuration` config setting. ([#2394](https://github.com/craftcms/cms/issues/2394))
 - Added the `revAssetUrls` config setting. ([#7847](https://github.com/craftcms/cms/issues/7847))
 - Added the `setGraphqlDatesToSystemTimeZone` config setting. ([#8016](https://github.com/craftcms/cms/pull/8016))
+- Added the `useUnbufferedConnections` database connection setting, which can be set to `true` when using MySQL to cause batched queries to be executed over separate, unbuffered database connections when using MySQL. ([#7338](https://github.com/craftcms/cms/issues/7338))
 - Added the “Validate custom fields on public registration” user setting. ([#4229](https://github.com/craftcms/cms/issues/4229))
 - Added the `|removeClass` Twig filter.
 - Added `craft\base\ApplicationTrait::getAnnouncements()`.
@@ -134,7 +49,6 @@
 - Added `craft\base\ElementInterface::getCanonicalId()`.
 - Added `craft\base\ElementInterface::getIsCanonical()`.
 - Added `craft\base\ElementInterface::getIsDerivative()`.
-- Added `craft\base\ElementInterface::getIsProvisionalDraft()`.
 - Added `craft\base\ElementInterface::getMetadata()`.
 - Added `craft\base\ElementInterface::getModifiedAttributes()`.
 - Added `craft\base\ElementInterface::getModifiedFields()`.
@@ -157,6 +71,7 @@
 - Added `craft\base\FieldInterface::getStatus()`.
 - Added `craft\base\FieldTrait::$columnSuffix`.
 - Added `craft\console\ControllerTrait::checkRootUser()`.
+- Added `craft\console\ControllerTrait::createAttributeValidator()`. ([#8066](https://github.com/craftcms/cms/pull/8066))
 - Added `craft\console\controllers\ResaveController::resaveElements()`.
 - Added `craft\elements\User::EVENT_DEFINE_FRIENDLY_NAME`. ([#8027](https://github.com/craftcms/cms/issues/8027))
 - Added `craft\elements\User::EVENT_DEFINE_NAME`. ([#8027](https://github.com/craftcms/cms/issues/8027))
@@ -174,13 +89,14 @@
 - Added `craft\helpers\Cp::editElementTitles()`.
 - Added `craft\helpers\Cp::elementSelectFieldHtml()`.
 - Added `craft\helpers\Cp::metadataHtml()`.
-- Added `craft\helpers\Db::batch()` and `each()`, which can be used instead of `craft\db\Query::batch()` and `each()`, to execute batched SQL queries over a new, unbuffered database connection (if using MySQL). ([#7338](https://github.com/craftcms/cms/issues/7338))
+- Added `craft\helpers\Db::batch()` and `each()`, which can be used instead of `craft\db\Query::batch()` and `each()`, to execute batched SQL queries over a new, unbuffered database connection (if using MySQL and `useUnbufferedConnections` is `true`). ([#7338](https://github.com/craftcms/cms/issues/7338))
 - Added `craft\helpers\ElementHelper::fieldColumn()`.
 - Added `craft\helpers\ElementHelper::fieldColumnFromField()`.
 - Added `craft\helpers\ElementHelper::isDraft()`.
 - Added `craft\helpers\ElementHelper::isRevision()`.
 - Added `craft\helpers\Html::parseTagAttribute()`.
 - Added `craft\helpers\Html::widont()`.
+- Added `craft\mail\Message::$error`. ([#8091](https://github.com/craftcms/cms/pull/8091))
 - Added `craft\models\CategoryGroup::$defaultPlacement`.
 - Added `craft\models\CategoryGroup::DEFAULT_PLACEMENT_BEGINNING`.
 - Added `craft\models\CategoryGroup::DEFAULT_PLACEMENT_END`.
@@ -200,6 +116,7 @@
 - Added `craft\web\Request::checkIfActionRequest()`.
 - Added `craft\web\View::clearCssBuffer()`.
 - Added `craft\web\View::clearScriptBuffer()`.
+- Added `craft\web\View::getInitialDeltaValues()`.
 - Added `craft\web\View::startCssBuffer()`.
 - Added `craft\web\View::startScriptBuffer()`.
 - Added `craft\web\twig\variables\Cp::getTimeZoneOptions()`.
@@ -215,6 +132,7 @@
 - When changes from an entry’s Current revision are merged into a draft, Matrix field changes are now merged on a per-block basis. ([#5503](https://github.com/craftcms/cms/issues/5503), [#7710](https://github.com/craftcms/cms/pull/7710))
 - Inline element editors now use slideouts rather than HUDs, and include the element’s fully-rendered field layout (including tabs and custom UI elements), meta fields (Slug, Post Date, etc.) and metadata, plus a link to open the element’s dedicated edit page in a new browser tab. ([#8017](https://github.com/craftcms/cms/pull/8017))
 - The “Publish draft” button has been relabelled to “Apply draft”.
+- Entries now retain their original IDs when created from an unpublished draft. ([#9104](https://github.com/craftcms/cms/issues/9104))
 - Matrix blocks now retain their original IDs and UIDs when a draft is published. ([#7710](https://github.com/craftcms/cms/pull/7710))
 - Improved the styling of field status indicators.
 - Field status indicators now appear immediately after a field’s value is changed and saved successfully to a draft.
@@ -236,6 +154,8 @@
 - The `defaultCpLanguage` config setting no longer affects console requests. ([#7747](https://github.com/craftcms/cms/issues/7747))
 - The `{% cache %}` tag now stores any JavaScript or CSS code registered with `{% js %}`, `{% script %}`, and `{% css %}` tags. ([#7758](https://github.com/craftcms/cms/issues/7758))
 - The `date()` Twig function now supports arrays with `date` and/or `time` keys. ([#7681](https://github.com/craftcms/cms/issues/7681))
+- Date query params now support passing in times relative to `now` (e.g. `>= now`). ([#9117](https://github.com/craftcms/cms/issues/9117))
+- Object templates (such as `redirect` params and URI Format settings) now support string interpolation. ([#9138](https://github.com/craftcms/cms/discussions/9138))
 - Custom field column names now include a random string, preventing column name conflicts when deploying multiple project config changes at once. ([#6922](https://github.com/craftcms/cms/issues/6922))
 - Custom fields can now store data across multiple columns in the `content` table.
 - Channel and Structure sections’ initial entry types are now named “Default” by default. ([#7078](https://github.com/craftcms/cms/issues/7078))
@@ -248,12 +168,17 @@
 - Admin tables can now include single action buttons.
 - Admin tables now support separators in menu button lists.
 - Site group names can now be set to environment variables. ([#8044](https://github.com/craftcms/cms/issues/8044))
+- Template requests now respond with a `Content-Length` header. ([#8070](https://github.com/craftcms/cms/issues/8070))
 - Exceptions thrown by queue jobs are now logged. ([#8060](https://github.com/craftcms/cms/issues/8060))
 - `craft\base\Element::__set()` now detects whether a custom field value is being set, and if so, passes the value through `setFieldValue()`. ([#7726](https://github.com/craftcms/cms/issues/7726))
 - `craft\base\Element::getCpEditUrl()` now includes a `draftId`/`revisionId` query string param in the returned URL if the element is a draft or revision. ([#7832](https://github.com/craftcms/cms/issues/7832))
 - `craft\base\FieldInterface::getContentColumnType()` can now return an array, if the field stores content across multiple columns.
 - `craft\helpers\Cp::elementHtml()` now has a `$single` argument.
+- `craft\helpers\DateTimeHelper::toDateTime()` now supports passing in `'now'`. ([#9117](https://github.com/craftcms/cms/issues/9117))
 - `craft\services\AssetTransforms::normalizeTransform()` now accepts transform configs arrays that specify a base transform which should be extended, via a `transform` key set to the stored transform’s handle. ([#7892](https://github.com/craftcms/cms/issues/7892))
+- `craft\services\Drafts::EVENT_AFTER_APPLY_DRAFT` is no longer deprecated.
+- `craft\services\Drafts::EVENT_BEFORE_APPLY_DRAFT` is no longer deprecated.
+- `craft\services\Drafts::applyDraft()` is no longer deprecated.
 - `craft\services\Users::saveLayout()` now has a `$runValidation` argument, which is `true` by default.
 - `craft\web\View::clearJsBuffer()` now has a `$combine` argument.
 - `craft\web\View::namespaceInputs()` now accepts a callback function for the first argument, which simplifies the process of setting and resetting the registered namespace before and after generating the to-be-namespaced HTML.
@@ -280,8 +205,12 @@
 - Deprecated `craft\services\Content::getContentRow()`.
 - Deprecated `craft\services\Content::populateElementContent()`.
 - Deprecated `craft\services\Drafts::EVENT_AFTER_MERGE_SOURCE_CHANGES`.
+- Deprecated `craft\services\Drafts::EVENT_AFTER_PUBLISH_DRAFT`. `EVENT_AFTER_APPLY_DRAFT` should be used instead.
 - Deprecated `craft\services\Drafts::EVENT_BEFORE_MERGE_SOURCE_CHANGES`.
+- Deprecated `craft\services\Drafts::EVENT_BEFORE_PUBLISH_DRAFT`. `EVENT_BEFORE_APPLY_DRAFT` should be used instead.
 - Deprecated `craft\services\Drafts::mergeSourceChanges()`.
+- Deprecated `craft\services\Drafts::publishDraft()`. `applyDraft()` should be used instead.
+- Deprecated `craft\web\View::getInitialDeltaValue()`.
 
 ### Removed
 - Removed support for the “Flash” file kind. ([#7626](https://github.com/craftcms/cms/issues/7626))
@@ -292,6 +221,11 @@
 - Fixed a bug where it wasn’t easily possible to submit forms to controller actions from Live Preview pages. ([#7885](https://github.com/craftcms/cms/issues/7885))
 - Fixed a bug where it was possible to choose a different parent entry when editing a draft, even though the change wouldn’t stick when publishing the draft.
 - Fixed a bug where changing an entry’s parent wouldn’t update any of its drafts.
+- Fixed a SQL error that occurred when deleting a volume folder that had subfolders nested more than 15 levels deep. ([#8073](https://github.com/craftcms/cms/issues/8073))
+- Fixed a SQL error that occurred when hard-deleting a volume that had subfolders nested more than 15 levels deep. ([#8073](https://github.com/craftcms/cms/issues/8073))
+- Fixed a bug where exported CSV files weren’t being imported with an UTF-8 encoding by Excel. ([#8067](https://github.com/craftcms/cms/issues/8067))
+- Fixed a bug where Dropdown fields weren’t always saving properly within element editor slideouts, if left unchanged. ([#8090](https://github.com/craftcms/cms/issues/8090))
+- Fixed a bug where value normalizers for GraphQL mutations would not be executed in nested field. ([#9139](https://github.com/craftcms/cms/issues/9139))
 
 ### Security
 - The default `allowedFileExtensions` config setting value no longer includes `xml`.
