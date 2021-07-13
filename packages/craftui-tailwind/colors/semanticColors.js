@@ -73,7 +73,7 @@ module.exports = function(colors) {
             'primary-gradient-2': { light: 'rgba(255, 255, 255, 1)', dark: 'rgba(39, 48, 63, 1)' },
 
             // Shadows
-            'shadow-1': { light: 'rgba(0, 0, 0, 0.1)', dark: 'rgba(0, 0, 0, 0.1)' },
+            'shadow-1': { light: 'rgba(0, 0, 0, 0.1)', dark: 'rgba(0, 0, 0, 1)' },
             'shadow-04': { light: 'rgba(0, 0, 0, 0.04)', dark: 'rgba(0, 0, 0, 0.04)' },
             'shadow-05': { light: 'rgba(0, 0, 0, 0.05)', dark: 'rgba(0, 0, 0, 0.05)' },
             'shadow-06': { light: 'rgba(0, 0, 0, 0.06)', dark: 'rgba(0, 0, 0, 0.06)' },
