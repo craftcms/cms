@@ -33,6 +33,7 @@ abstract class Table
     /** @since 3.4.0 */
     const CHANGEDFIELDS = '{{%changedfields}}';
     const CONTENT = '{{%content}}';
+    const CRAFTIDTOKENS = '{{%craftidtokens}}';
     const DEPRECATIONERRORS = '{{%deprecationerrors}}';
     /** @since 3.2.0 */
     const DRAFTS = '{{%drafts}}';
