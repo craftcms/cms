@@ -11,6 +11,9 @@
 - Edit Entry pages no longer appear to create a draft when the Current revision is edited within Live Preview. Unsaved changes are now stored within a “provisional draft”, which is mostly hidden from the author. ([#7899](https://github.com/craftcms/cms/pull/7899))
 - Category groups now have a “Default Category Placement” setting, which determines where new categories should be placed within the structure by default. ([#7759](https://github.com/craftcms/cms/issues/7759))
 - Structure sections now have a “Default Entry Placement” setting, which determines where new entries should be placed within the structure by default. ([#7759](https://github.com/craftcms/cms/issues/7759))
+- The Assets index page now remembers the selected subfolder between page loads. ([#9546](https://github.com/craftcms/cms/discussions/9546))
+- It’s now possible to deep-link to a specific subfolder on the Assets index page.
+- Edit Asset pages now redirect back to the subfolder the asset is located in on save.
 - It’s now possible to reorder global sets. ([#8052](https://github.com/craftcms/cms/pull/8052))
 - Date fields now have a “Show Time Zone” setting, allowing authors to choose which time zone the date is set to, rather than using the system time zone.
 - Matrix fields can now be set to custom propagation methods, based on a propagation key template. ([#7610](https://github.com/craftcms/cms/issues/7610))

@@ -99,7 +99,9 @@ class AssetsController extends Controller
         $this->requireVolumePermissionByAsset('viewVolume', $asset);
         $this->requirePeerVolumePermissionByAsset('viewPeerFilesInVolume', $asset);
 
+
         $volume = $asset->getVolume();
+        $uri = "assets/$volume->handle";
 
         $crumbs = [
             [
@@ -108,9 +110,18 @@ class AssetsController extends Controller
             ],
             [
                 'label' => Craft::t('site', $volume->name),
-                'url' => UrlHelper::url("assets/{$volume->handle}"),
+                'url' => UrlHelper::url($uri),
             ],
         ];
+
+        $subfolders = explode('/', trim($asset->folderPath, '/'));
+        foreach ($subfolders as $subfolder) {
+            $uri .= "/$subfolder";
+            $crumbs[] = [
+                'label' => $subfolder,
+                'url' => UrlHelper::url($uri),
+            ];
+        }
 
         // See if the user is allowed to replace the file
         $userSession = Craft::$app->getUser();
