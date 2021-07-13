@@ -277,7 +277,7 @@ body {
     --craftui-global-interactive-tertiary-hover: #d4d4d8;
     --craftui-global-primary-gradient-1: rgba(39, 48, 63, 0);
     --craftui-global-primary-gradient-2: rgba(39, 48, 63, 1);
-    --craftui-global-shadow-1: rgba(0, 0, 0, 0.1);
+    --craftui-global-shadow-1: rgba(0, 0, 0, 1);
     --craftui-global-shadow-04: rgba(0, 0, 0, 0.04);
     --craftui-global-shadow-05: rgba(0, 0, 0, 0.05);
     --craftui-global-shadow-06: rgba(0, 0, 0, 0.06);
