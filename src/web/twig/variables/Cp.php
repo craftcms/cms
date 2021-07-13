@@ -118,6 +118,16 @@ class Cp extends Component
     const EVENT_REGISTER_CP_SETTINGS = 'registerCpSettings';
 
     /**
+     * Returns the Craft ID account URL.
+     *
+     * @return string
+     */
+    public function craftIdAccountUrl()
+    {
+        return Craft::$app->getPluginStore()->craftIdEndpoint . '/account';
+    }
+
+    /**
      * Returns the control panel nav items.
      *
      * Each control panel nav item should be defined by an array with the following keys:

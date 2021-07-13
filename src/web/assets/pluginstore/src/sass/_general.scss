@@ -125,6 +125,32 @@ input.error {
       background: $primaryColor;
     }
   }
+
+  #craftid-account {
+    &:hover {
+      @apply tw-no-underline;
+    }
+
+    .photo {
+      svg {
+        @apply tw-align-middle;
+        @include margin-right(7px);
+        width: 22px;
+        height: 22px;
+        border-radius: 100%;
+      }
+    }
+
+    &:hover .label {
+      @apply tw-no-underline;
+    }
+  }
+
+  #craftid-connect-form {
+    .ssl-status {
+      @apply tw-inline-block;
+    }
+  }
 }
 
 /* Tables */
