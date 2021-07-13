@@ -63,7 +63,7 @@ class SiteGroup extends Model
     /**
      * @inheritdoc
      */
-    public function attributes()
+    public function attributes(): array
     {
         $attributes = parent::attributes();
         $attributes[] = 'name';
@@ -73,7 +73,7 @@ class SiteGroup extends Model
     /**
      * @inheritdoc
      */
-    public function attributeLabels()
+    public function attributeLabels(): array
     {
         return [
             'name' => Craft::t('app', 'Name'),

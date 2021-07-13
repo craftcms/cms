@@ -36,7 +36,7 @@ HTML;
     /**
      * @inheritdoc
      */
-    public function formHtml(ElementInterface $element = null, bool $static = false)
+    public function formHtml(ElementInterface $element = null, bool $static = false): ?string
     {
         return Html::tag('hr');
     }

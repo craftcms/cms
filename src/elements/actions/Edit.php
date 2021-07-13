@@ -27,7 +27,7 @@ class Edit extends ElementAction
     /**
      * @inheritdoc
      */
-    public function init()
+    public function init(): void
     {
         if ($this->label === null) {
             $this->label = Craft::t('app', 'Edit');
@@ -45,7 +45,7 @@ class Edit extends ElementAction
     /**
      * @inheritdoc
      */
-    public function getTriggerHtml()
+    public function getTriggerHtml(): ?string
     {
         $type = Json::encode(static::class);
 

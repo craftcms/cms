@@ -28,7 +28,7 @@ class Structure extends ActiveRecord
     /**
      * @inheritdoc
      */
-    public function rules()
+    public function rules(): array
     {
         return [
             [['maxLevels'], 'number', 'min' => 1, 'max' => 65535, 'integerOnly' => true],

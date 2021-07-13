@@ -35,7 +35,7 @@ abstract class BaseJob extends BaseObject implements JobInterface
     /**
      * @inheritdoc
      */
-    public function init()
+    public function init(): void
     {
         parent::init();
 
@@ -46,7 +46,7 @@ abstract class BaseJob extends BaseObject implements JobInterface
     /**
      * @inheritdoc
      */
-    public function getDescription()
+    public function getDescription(): ?string
     {
         return $this->description ?? $this->defaultDescription();
     }
@@ -56,7 +56,7 @@ abstract class BaseJob extends BaseObject implements JobInterface
      *
      * @return string|null
      */
-    protected function defaultDescription()
+    protected function defaultDescription(): ?string
     {
         return null;
     }
@@ -68,7 +68,7 @@ abstract class BaseJob extends BaseObject implements JobInterface
      * @param float $progress A number between 0 and 1
      * @param string|null $label The progress label
      */
-    protected function setProgress($queue, float $progress, string $label = null)
+    protected function setProgress($queue, float $progress, string $label = null): void
     {
         $progress = round(100 * $progress);
 

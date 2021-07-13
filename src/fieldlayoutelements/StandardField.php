@@ -127,7 +127,7 @@ abstract class StandardField extends BaseField
     /**
      * @inheritdoc
      */
-    protected function tip(ElementInterface $element = null, bool $static = false)
+    protected function tip(ElementInterface $element = null, bool $static = false): ?string
     {
         return $this->tip;
     }
@@ -135,7 +135,7 @@ abstract class StandardField extends BaseField
     /**
      * @inheritdoc
      */
-    protected function warning(ElementInterface $element = null, bool $static = false)
+    protected function warning(ElementInterface $element = null, bool $static = false): ?string
     {
         return $this->warning;
     }

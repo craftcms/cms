@@ -72,7 +72,7 @@ class Structures extends Component
      * @param bool $withTrashed
      * @return Structure|null
      */
-    public function getStructureById(int $structureId, bool $withTrashed = false)
+    public function getStructureById(int $structureId, bool $withTrashed = false): ?Structure
     {
         $query = (new Query())
             ->select([
@@ -98,7 +98,7 @@ class Structures extends Component
      * @param bool $withTrashed
      * @return Structure|null
      */
-    public function getStructureByUid(string $structureUid, bool $withTrashed = false)
+    public function getStructureByUid(string $structureUid, bool $withTrashed = false): ?Structure
     {
         $query = (new Query())
             ->select([
@@ -121,7 +121,6 @@ class Structures extends Component
      * Patches an array of entries, filling in any gaps in the tree.
      *
      * @param ElementInterface[] $elements
-     * @return void
      * @since 3.6.0
      */
     public function fillGapsInElements(array &$elements): void
@@ -164,7 +163,6 @@ class Structures extends Component
      *
      * @param ElementInterface[] $elements
      * @param int $branchLimit
-     * @return void
      * @since 3.6.0
      */
     public function applyBranchLimitToElements(array &$elements, int $branchLimit): void
@@ -405,7 +403,7 @@ class Structures extends Component
      * @param ElementInterface|int $element
      * @return StructureElement|null
      */
-    private function _getElementRecord(int $structureId, $element)
+    private function _getElementRecord(int $structureId, $element): ?StructureElement
     {
         $elementId = is_numeric($element) ? $element : $element->id;
 

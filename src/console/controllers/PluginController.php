@@ -45,7 +45,7 @@ class PluginController extends Controller
     /**
      * @inheritdoc
      */
-    public function beforeAction($action)
+    public function beforeAction($action): bool
     {
         Console::ensureProjectConfigFileExists();
         return parent::beforeAction($action);

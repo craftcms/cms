@@ -91,7 +91,7 @@ class User extends \yii\web\User
      * @param UserElement $user
      * @see afterLogin()
      */
-    public function sendUsernameCookie(UserElement $user)
+    public function sendUsernameCookie(UserElement $user): void
     {
         $generalConfig = Craft::$app->getConfig()->getGeneral();
 
@@ -136,7 +136,7 @@ class User extends \yii\web\User
      *
      * @see getReturnUrl()
      */
-    public function removeReturnUrl()
+    public function removeReturnUrl(): void
     {
         SessionHelper::remove($this->returnUrlParam);
     }
@@ -176,7 +176,7 @@ class User extends \yii\web\User
      *
      * @return string|null
      */
-    public function getRememberedUsername()
+    public function getRememberedUsername(): ?string
     {
         return Craft::$app->getRequest()->getCookies()->getValue($this->usernameCookie['name']);
     }
@@ -201,7 +201,7 @@ class User extends \yii\web\User
      * {% endif %}
      * ```
      */
-    public function getIsGuest()
+    public function getIsGuest(): bool
     {
         return parent::getIsGuest();
     }
@@ -213,7 +213,7 @@ class User extends \yii\web\User
      * @throws ForbiddenHttpException if the request doesn’t accept a redirect response
      * @since 3.4.0
      */
-    public function guestRequired()
+    public function guestRequired(): Response
     {
         if (!$this->checkRedirectAcceptable()) {
             throw new ForbiddenHttpException(Craft::t('app', 'Guest Required'));
@@ -454,7 +454,7 @@ class User extends \yii\web\User
      * @param int $userId
      * @since 3.1.1
      */
-    public function generateToken(int $userId)
+    public function generateToken(int $userId): void
     {
         $token = Craft::$app->getSecurity()->generateRandomString(100);
 
@@ -568,10 +568,10 @@ class User extends \yii\web\User
     }
 
     /**
-     * @param string $authError
-     * @param UserElement $user
+     * @param string|null $authError
+     * @param UserElement|null $user
      */
-    private function _handleLoginFailure(string $authError = null, UserElement $user = null)
+    private function _handleLoginFailure(string $authError = null, UserElement $user = null): void
     {
         $message = UserHelper::getLoginFailureMessage($authError, $user);
 

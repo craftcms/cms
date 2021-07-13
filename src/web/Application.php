@@ -84,7 +84,7 @@ class Application extends \yii\web\Application
     /**
      * Initializes the application.
      */
-    public function init()
+    public function init(): void
     {
         $this->state = self::STATE_INIT;
         $this->_preInit();
@@ -266,7 +266,7 @@ class Application extends \yii\web\Application
      * @param array $params
      * @return Response|null The result of the action, normalized into a Response object
      */
-    public function runAction($route, $params = [])
+    public function runAction($route, $params = []): ?Response
     {
         $result = parent::runAction($route, $params);
 
@@ -329,7 +329,7 @@ class Application extends \yii\web\Application
      * @throws InvalidConfigException
      * @throws \yii\base\Exception
      */
-    protected function ensureResourcePathExists()
+    protected function ensureResourcePathExists(): void
     {
         $generalConfig = $this->getConfig()->getGeneral();
 
@@ -351,7 +351,7 @@ class Application extends \yii\web\Application
      * @throws UnauthorizedHttpException
      * @since 3.5.0
      */
-    protected function authenticate()
+    protected function authenticate(): void
     {
         if (!Craft::$app->getConfig()->getGeneral()->enableBasicHttpAuth) {
             return;
@@ -380,7 +380,7 @@ class Application extends \yii\web\Application
     /**
      * Bootstraps the Debug Toolbar if necessary.
      */
-    protected function debugBootstrap()
+    protected function debugBootstrap(): void
     {
         $request = $this->getRequest();
 
@@ -434,13 +434,12 @@ class Application extends \yii\web\Application
     /**
      * Unregisters the Debug module's end body event.
      */
-    private function _unregisterDebugModule()
+    private function _unregisterDebugModule(): void
     {
         $debug = $this->getModule('debug', false);
 
         if ($debug !== null) {
-            $this->getView()->off(View::EVENT_END_BODY,
-                [$debug, 'renderToolbar']);
+            $this->getView()->off(View::EVENT_END_BODY, [$debug, 'renderToolbar']);
         }
     }
 
@@ -451,7 +450,7 @@ class Application extends \yii\web\Application
      * @throws BadRequestHttpException
      * @throws NotFoundHttpException
      */
-    private function _processResourceRequest(Request $request)
+    private function _processResourceRequest(Request $request): void
     {
         // Does this look like a resource request?
         $resourceBaseUri = parse_url(Craft::getAlias($this->getConfig()->getGeneral()->resourceBaseUrl), PHP_URL_PATH);
@@ -502,7 +501,7 @@ class Application extends \yii\web\Application
      * @throws ServiceUnavailableHttpException
      * @throws \yii\base\ExitException
      */
-    private function _processInstallRequest(Request $request)
+    private function _processInstallRequest(Request $request): ?Response
     {
         $isCpRequest = $request->getIsCpRequest();
         $isInstalled = $this->getIsInstalled();
@@ -559,7 +558,7 @@ class Application extends \yii\web\Application
      * @return Response|null
      * @throws \Throwable if reasons
      */
-    private function _processActionRequest(Request $request)
+    private function _processActionRequest(Request $request): ?Response
     {
         if ($request->getIsActionRequest()) {
             $route = implode('/', $request->getActionSegments());
@@ -588,7 +587,7 @@ class Application extends \yii\web\Application
      * @param Request $request
      * @return Response|null
      */
-    private function _processRequirementsCheck(Request $request)
+    private function _processRequirementsCheck(Request $request): ?Response
     {
         // Only run for CP requests and if we're not in the middle of an update.
         if (
@@ -616,9 +615,8 @@ class Application extends \yii\web\Application
      * @return Response|null
      * @throws HttpException
      * @throws ServiceUnavailableHttpException
-     * @throws \yii\base\ExitException
      */
-    private function _processUpdateLogic(Request $request)
+    private function _processUpdateLogic(Request $request): ?Response
     {
         $this->_unregisterDebugModule();
 

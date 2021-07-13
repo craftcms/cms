@@ -55,7 +55,7 @@ class MailSettings extends Model
     /**
      * @inheritdoc
      */
-    public function behaviors()
+    public function behaviors(): array
     {
         $behaviors = parent::behaviors();
         $behaviors['parser'] = [
@@ -73,7 +73,7 @@ class MailSettings extends Model
     /**
      * @inheritdoc
      */
-    public function attributeLabels()
+    public function attributeLabels(): array
     {
         return [
             'fromEmail' => Craft::t('app', 'System Email Address'),

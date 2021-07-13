@@ -24,7 +24,7 @@ class EventTriggeringComponent extends Component
     /**
      * Triggers an event.
      */
-    public function triggerEvent()
+    public function triggerEvent(): void
     {
         $event = new Event();
         $event->sender = ['22' => '44', '33' => '55'];
@@ -35,7 +35,7 @@ class EventTriggeringComponent extends Component
     /**
      * Triggers an event with standard class
      */
-    public function triggerEventWithStdClass()
+    public function triggerEventWithStdClass(): void
     {
         $stdClass = new stdClass();
         $stdClass->a = '22';

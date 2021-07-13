@@ -78,7 +78,7 @@ class Lightswitch extends Field implements PreviewableFieldInterface, SortableFi
     /**
      * @inheritdoc
      */
-    public function init()
+    public function init(): void
     {
         parent::init();
 
@@ -102,7 +102,7 @@ class Lightswitch extends Field implements PreviewableFieldInterface, SortableFi
     /**
      * @inheritdoc
      */
-    public function getSettingsHtml()
+    public function getSettingsHtml(): ?string
     {
         return
             Cp::lightswitchFieldHtml([
@@ -172,16 +172,15 @@ class Lightswitch extends Field implements PreviewableFieldInterface, SortableFi
     /**
      * @inheritdoc
      */
-    public function modifyElementsQuery(ElementQueryInterface $query, $value)
+    public function modifyElementsQuery(ElementQueryInterface $query, $value): void
     {
         /** @var ElementQuery $query */
         if ($value === null) {
-            return null;
+            return;
         }
 
         $column = ElementHelper::fieldColumnFromField($this);
         $query->subQuery->andWhere(Db::parseBooleanParam("content.$column", $value, (bool)$this->default));
-        return null;
     }
 
     /**

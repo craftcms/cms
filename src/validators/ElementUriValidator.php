@@ -24,7 +24,7 @@ class ElementUriValidator extends UriValidator
     /**
      * @inheritdoc
      */
-    public function init()
+    public function init(): void
     {
         parent::init();
 

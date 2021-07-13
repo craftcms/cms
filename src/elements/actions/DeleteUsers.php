@@ -72,7 +72,7 @@ class DeleteUsers extends ElementAction implements DeleteActionInterface
     /**
      * @inheritdoc
      */
-    public function getTriggerHtml()
+    public function getTriggerHtml(): ?string
     {
         if ($this->hard) {
             return '<div class="btn formsubmit">' . $this->getTriggerLabel() . '</div>';
@@ -131,7 +131,7 @@ JS;
     /**
      * @inheritdoc
      */
-    public function getConfirmationMessage()
+    public function getConfirmationMessage(): ?string
     {
         if ($this->hard) {
             return Craft::t('app', 'Are you sure you want to permanently delete the selected {type}?', [

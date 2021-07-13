@@ -30,12 +30,15 @@ use craft\helpers\StringHelper;
 use craft\helpers\UrlHelper;
 use craft\i18n\Formatter;
 use craft\i18n\Locale;
+use craft\models\FieldLayout;
 use craft\models\UserGroup;
 use craft\records\User as UserRecord;
 use craft\validators\DateTimeValidator;
 use craft\validators\UniqueValidator;
 use craft\validators\UsernameValidator;
 use craft\validators\UserPasswordValidator;
+use DateInterval;
+use DateTime;
 use yii\base\ErrorHandler;
 use yii\base\Exception;
 use yii\base\InvalidArgumentException;
@@ -47,7 +50,7 @@ use yii\web\IdentityInterface;
 /**
  * User represents a user element.
  *
- * @property \DateTime|null $cooldownEndTime the time when the user will be over their cooldown period
+ * @property DateTime|null $cooldownEndTime the time when the user will be over their cooldown period
  * @property string|null $friendlyName the user's first name or username
  * @property string|null $fullName the user's full name
  * @property UserGroup[] $groups the user's groups
@@ -57,7 +60,7 @@ use yii\web\IdentityInterface;
  * @property array $preferences the user’s preferences
  * @property string|null $preferredLanguage the user’s preferred language
  * @property string|null $preferredLocale the user’s preferred formatting locale
- * @property \DateInterval|null $remainingCooldownTime the remaining cooldown time for this user, if they've entered their password incorrectly too many times
+ * @property DateInterval|null $remainingCooldownTime the remaining cooldown time for this user, if they've entered their password incorrectly too many times
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
@@ -148,7 +151,7 @@ class User extends Element implements IdentityInterface
     /**
      * @inheritdoc
      */
-    public static function refHandle()
+    public static function refHandle(): ?string
     {
         return 'user';
     }
@@ -392,7 +395,7 @@ class User extends Element implements IdentityInterface
     /**
      * @inheritdoc
      */
-    protected static function prepElementQueryForTableAttribute(ElementQueryInterface $elementQuery, string $attribute)
+    protected static function prepElementQueryForTableAttribute(ElementQueryInterface $elementQuery, string $attribute): void
     {
         /** @var UserQuery $elementQuery */
         if ($attribute === 'groups') {
@@ -533,7 +536,7 @@ class User extends Element implements IdentityInterface
     public $pending = false;
 
     /**
-     * @var \DateTime|null Last login date
+     * @var DateTime|null Last login date
      */
     public $lastLoginDate;
 
@@ -543,12 +546,12 @@ class User extends Element implements IdentityInterface
     public $invalidLoginCount;
 
     /**
-     * @var \DateTime|null Last invalid login date
+     * @var DateTime|null Last invalid login date
      */
     public $lastInvalidLoginDate;
 
     /**
-     * @var \DateTime|null Lockout date
+     * @var DateTime|null Lockout date
      */
     public $lockoutDate;
 
@@ -564,7 +567,7 @@ class User extends Element implements IdentityInterface
     public $passwordResetRequired = false;
 
     /**
-     * @var \DateTime|null Last password change date
+     * @var DateTime|null Last password change date
      */
     public $lastPasswordChangeDate;
 
@@ -584,7 +587,7 @@ class User extends Element implements IdentityInterface
     public $currentPassword;
 
     /**
-     * @var \DateTime|null Verification code issued date
+     * @var DateTime|null Verification code issued date
      */
     public $verificationCodeIssuedDate;
 
@@ -640,7 +643,7 @@ class User extends Element implements IdentityInterface
     /**
      * @inheritdoc
      */
-    public function init()
+    public function init(): void
     {
         parent::init();
 
@@ -667,7 +670,7 @@ class User extends Element implements IdentityInterface
      *
      * @return string
      */
-    public function __toString()
+    public function __toString(): string
     {
         try {
             return $this->getName() ?: static::class;
@@ -679,7 +682,7 @@ class User extends Element implements IdentityInterface
     /**
      * @inheritdoc
      */
-    public function attributes()
+    public function attributes(): array
     {
         $names = parent::attributes();
         $names[] = 'cooldownEndTime';
@@ -695,7 +698,7 @@ class User extends Element implements IdentityInterface
     /**
      * @inheritdoc
      */
-    public function extraFields()
+    public function extraFields(): array
     {
         $names = parent::extraFields();
         $names[] = 'groups';
@@ -720,7 +723,7 @@ class User extends Element implements IdentityInterface
     /**
      * @inheritdoc
      */
-    public function attributeLabels()
+    public function attributeLabels(): array
     {
         $labels = parent::attributeLabels();
         $labels['currentPassword'] = Craft::t('app', 'Current Password');
@@ -804,7 +807,7 @@ class User extends Element implements IdentityInterface
      * @param array|null $params
      * @param InlineValidator $validator
      */
-    public function validateUnverifiedEmail(string $attribute, $params, InlineValidator $validator)
+    public function validateUnverifiedEmail(string $attribute, $params, InlineValidator $validator): void
     {
         $query = self::find()
             ->status(null);
@@ -844,7 +847,7 @@ class User extends Element implements IdentityInterface
     /**
      * @inheritdoc
      */
-    public function getFieldLayout()
+    public function getFieldLayout(): ?FieldLayout
     {
         return Craft::$app->getFields()->getLayoutByType(self::class);
     }
@@ -902,7 +905,7 @@ class User extends Element implements IdentityInterface
 
         // Update the session row's dateUpdated value so it doesn't get GC'd
         Db::update(Table::SESSIONS, [
-            'dateUpdated' => Db::prepareDateForDb(new \DateTime()),
+            'dateUpdated' => Db::prepareDateForDb(new DateTime()),
         ], ['id' => $tokenId]);
 
         return true;
@@ -954,7 +957,7 @@ class User extends Element implements IdentityInterface
      *
      * @return string|null
      */
-    public function getRef()
+    public function getRef(): ?string
     {
         return $this->username;
     }
@@ -982,7 +985,7 @@ class User extends Element implements IdentityInterface
      *
      * @param UserGroup[] $groups An array of UserGroup objects.
      */
-    public function setGroups(array $groups)
+    public function setGroups(array $groups): void
     {
         if (Craft::$app->getEdition() === Craft::Pro) {
             $this->_groups = $groups;
@@ -1017,7 +1020,7 @@ class User extends Element implements IdentityInterface
      *
      * @return string|null
      */
-    public function getFullName()
+    public function getFullName(): ?string
     {
         $firstName = trim($this->firstName);
         $lastName = trim($this->lastName);
@@ -1074,7 +1077,6 @@ class User extends Element implements IdentityInterface
      * Sets the user’s name.
      *
      * @param string $name
-     * @return void
      * @since 3.7.0
      */
     public function setName(string $name): void
@@ -1119,7 +1121,6 @@ class User extends Element implements IdentityInterface
      * Sets the user’s friendly name.
      *
      * @param string $friendlyName
-     * @return void
      * @since 3.7.0
      */
     public function setFriendlyName(string $friendlyName): void
@@ -1130,7 +1131,7 @@ class User extends Element implements IdentityInterface
     /**
      * @inheritdoc
      */
-    public function getStatus()
+    public function getStatus(): ?string
     {
         if ($this->suspended) {
             return self::STATUS_SUSPENDED;
@@ -1150,7 +1151,7 @@ class User extends Element implements IdentityInterface
     /**
      * @inheritdoc
      */
-    public function getThumbUrl(int $size)
+    public function getThumbUrl(int $size): ?string
     {
         $photo = $this->getPhoto();
 
@@ -1233,9 +1234,9 @@ class User extends Element implements IdentityInterface
     /**
      * Returns the time when the user will be over their cooldown period.
      *
-     * @return \DateTime|null
+     * @return DateTime|null
      */
-    public function getCooldownEndTime()
+    public function getCooldownEndTime(): ?DateTime
     {
         // There was an old bug that where a user's lockoutDate could be null if they've
         // passed their cooldownDuration already, but there account status is still locked.
@@ -1255,9 +1256,9 @@ class User extends Element implements IdentityInterface
     /**
      * Returns the remaining cooldown time for this user, if they've entered their password incorrectly too many times.
      *
-     * @return \DateInterval|null
+     * @return DateInterval|null
      */
-    public function getRemainingCooldownTime()
+    public function getRemainingCooldownTime(): ?DateInterval
     {
         if ($this->locked) {
             $currentTime = DateTimeHelper::currentUTCDateTime();
@@ -1320,7 +1321,7 @@ class User extends Element implements IdentityInterface
      *
      * @return string|null The preferred language
      */
-    public function getPreferredLanguage()
+    public function getPreferredLanguage(): ?string
     {
         return $this->_validateLocale($this->getPreference('language'));
     }
@@ -1333,7 +1334,7 @@ class User extends Element implements IdentityInterface
      * @return string|null The preferred locale
      * @since 3.5.0
      */
-    public function getPreferredLocale()
+    public function getPreferredLocale(): ?string
     {
         return $this->_validateLocale($this->getPreference('locale'));
     }
@@ -1344,7 +1345,7 @@ class User extends Element implements IdentityInterface
      * @param string|null $locale
      * @return string|null
      */
-    private function _validateLocale(string $locale = null)
+    private function _validateLocale(string $locale = null): ?string
     {
         if ($locale !== null && in_array($locale, Craft::$app->getI18n()->getAppLocaleIds(), true)) {
             return $locale;
@@ -1369,7 +1370,7 @@ class User extends Element implements IdentityInterface
     /**
      * @inheritdoc
      */
-    public function setEagerLoadedElements(string $handle, array $elements)
+    public function setEagerLoadedElements(string $handle, array $elements): void
     {
         if ($handle === 'photo') {
             $photo = $elements[0] ?? null;
@@ -1384,7 +1385,7 @@ class User extends Element implements IdentityInterface
      *
      * @return Asset|null
      */
-    public function getPhoto()
+    public function getPhoto(): ?Asset
     {
         if ($this->_photo === null) {
             if (!$this->photoId) {
@@ -1402,7 +1403,7 @@ class User extends Element implements IdentityInterface
      *
      * @param Asset|null $photo
      */
-    public function setPhoto(Asset $photo = null)
+    public function setPhoto(Asset $photo = null): void
     {
         $this->_photo = $photo;
         $this->photoId = $photo->id ?? null;
@@ -1508,7 +1509,7 @@ class User extends Element implements IdentityInterface
      * @inheritdoc
      * @throws Exception if reasons
      */
-    public function afterSave(bool $isNew)
+    public function afterSave(bool $isNew): void
     {
         // Get the user record
         if (!$isNew) {
@@ -1672,7 +1673,7 @@ class User extends Element implements IdentityInterface
      *
      * @return null|string
      */
-    private function _getAuthError()
+    private function _getAuthError(): ?string
     {
         switch ($this->getStatus()) {
             case self::STATUS_ARCHIVED:

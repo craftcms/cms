@@ -24,7 +24,7 @@ abstract class BaseElementsController extends Controller
     /**
      * @inheritdoc
      */
-    public function beforeAction($action)
+    public function beforeAction($action): bool
     {
         // All actions require CP requests
         $this->requireCpRequest();
@@ -59,7 +59,7 @@ abstract class BaseElementsController extends Controller
      *
      * @return string|null
      */
-    protected function context()
+    protected function context(): ?string
     {
         return $this->request->getParam('context');
     }

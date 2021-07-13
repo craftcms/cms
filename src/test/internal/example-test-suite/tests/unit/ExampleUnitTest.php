@@ -14,9 +14,8 @@ class ExampleUnitTest extends Unit
     protected $tester;
 
     /**
-     *
      */
-    public function testCraftEdition()
+    public function testCraftEdition(): void
     {
         Craft::$app->setEdition(Craft::Pro);
 

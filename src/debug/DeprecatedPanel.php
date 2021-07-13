@@ -67,7 +67,7 @@ class DeprecatedPanel extends Panel
     }
 
     /**
-     *
+     * @inheritdoc
      */
     public function save()
     {

@@ -98,7 +98,7 @@ class VolumeFolder extends Model
      *
      * @param VolumeFolder[] $children
      */
-    public function setChildren(array $children)
+    public function setChildren(array $children): void
     {
         $this->_children = $children;
     }
@@ -120,7 +120,7 @@ class VolumeFolder extends Model
     /**
      * @return VolumeFolder|null
      */
-    public function getParent()
+    public function getParent(): ?VolumeFolder
     {
         if (!$this->parentId) {
             return null;

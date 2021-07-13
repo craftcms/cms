@@ -18,7 +18,7 @@ class VolumeObjectNotFoundException extends VolumeException
     /**
      * @return string the user-friendly name of this exception
      */
-    public function getName()
+    public function getName(): string
     {
         return 'Volume object exists';
     }

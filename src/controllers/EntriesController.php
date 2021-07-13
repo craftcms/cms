@@ -289,7 +289,7 @@ class EntriesController extends BaseEntriesController
      * @throws ServerErrorHttpException if reasons
      * @throws ForbiddenHttpException
      */
-    public function actionSaveEntry(bool $duplicate = false)
+    public function actionSaveEntry(bool $duplicate = false): ?Response
     {
         $this->requirePostRequest();
 
@@ -427,7 +427,7 @@ class EntriesController extends BaseEntriesController
      * @throws ServerErrorHttpException if reasons
      * @since 3.2.3
      */
-    public function actionDuplicateEntry()
+    public function actionDuplicateEntry(): ?Response
     {
         return $this->runAction('save-entry', ['duplicate' => true]);
     }
@@ -440,7 +440,7 @@ class EntriesController extends BaseEntriesController
      * @throws BadRequestHttpException
      * @since 3.6.0
      */
-    public function actionDeleteForSite()
+    public function actionDeleteForSite(): ?Response
     {
         $this->requirePostRequest();
 
@@ -523,7 +523,7 @@ class EntriesController extends BaseEntriesController
      * @return Response|null
      * @throws BadRequestHttpException if the requested entry cannot be found
      */
-    public function actionDeleteEntry()
+    public function actionDeleteEntry(): ?Response
     {
         $this->requirePostRequest();
 
@@ -568,7 +568,7 @@ class EntriesController extends BaseEntriesController
      * @throws NotFoundHttpException if the requested section or entry cannot be found
      * @throws ForbiddenHttpException if the user is not permitted to edit content in the requested site
      */
-    private function _prepEditEntryVariables(array &$variables)
+    private function _prepEditEntryVariables(array &$variables): ?Response
     {
         // Get the section
         // ---------------------------------------------------------------------
@@ -699,7 +699,7 @@ class EntriesController extends BaseEntriesController
      * @param int|null $revisionId
      * @return Entry|null
      */
-    private function _loadEntry(Site $site, Section $section, int $entryId, int $draftId = null, int $revisionId = null)
+    private function _loadEntry(Site $site, Section $section, int $entryId, int $draftId = null, int $revisionId = null): ?Entry
     {
         if ($draftId) {
             $entry = Entry::find()
@@ -813,7 +813,7 @@ class EntriesController extends BaseEntriesController
      *
      * @param Entry $entry
      */
-    private function _populateEntryModel(Entry $entry)
+    private function _populateEntryModel(Entry $entry): void
     {
         // Set the entry attributes, defaulting to the existing values for whatever is missing from the post data
         $entry->typeId = $this->request->getBodyParam('typeId', $entry->typeId);

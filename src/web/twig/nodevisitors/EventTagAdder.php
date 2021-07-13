@@ -138,7 +138,6 @@ class EventTagAdder extends BaseEventTagVisitor
      * Inserts a new event function node at a specific point in a given text node’s data.
      *
      * @param TextNode $node
-     * @param Environment $env
      * @param int $pos
      * @param string $functionName
      * @return Node

@@ -65,7 +65,7 @@ class Console extends \yii\helpers\Console
      * @param bool $withScriptName Whether the current script name (e.g. `craft`) should be prepended to the command.
      * @since 3.0.38
      */
-    public static function outputCommand(string $command, bool $withScriptName = true)
+    public static function outputCommand(string $command, bool $withScriptName = true): void
     {
         if ($withScriptName) {
             try {
@@ -90,7 +90,7 @@ class Console extends \yii\helpers\Console
      * @param bool $center
      * @since 3.0.38
      */
-    public static function outputWarning(string $text, bool $center = true)
+    public static function outputWarning(string $text, bool $center = true): void
     {
         $xPad = 4;
         $lines = explode("\n", $text);
@@ -129,7 +129,7 @@ class Console extends \yii\helpers\Console
      *
      * @since 3.5.0
      */
-    public static function ensureProjectConfigFileExists()
+    public static function ensureProjectConfigFileExists(): void
     {
         $projectConfig = Craft::$app->getProjectConfig();
 

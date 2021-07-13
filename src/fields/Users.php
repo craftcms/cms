@@ -88,7 +88,7 @@ class Users extends BaseRelationField
      * @inheritdoc
      * @since 3.3.0
      */
-    public function getEagerLoadingGqlConditions()
+    public function getEagerLoadingGqlConditions(): ?array
     {
         $allowedEntities = Gql::extractAllowedEntitiesFromSchema();
         $allowedGroupUids = $allowedEntities['usergroups'] ?? [];
@@ -98,7 +98,7 @@ class Users extends BaseRelationField
         }
 
         if (empty($allowedGroupUids)) {
-            return false;
+            return null;
         }
 
         $groupIds = Db::idsByUids(DbTable::USERGROUPS, $allowedGroupUids);

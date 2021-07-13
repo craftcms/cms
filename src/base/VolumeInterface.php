@@ -36,9 +36,9 @@ interface VolumeInterface extends SavableComponentInterface
      *
      * The URL should end in a `/`.
      *
-     * @return string|false The root URL, or `false` if there isn’t one
+     * @return string|null The root URL, or `null` if there isn’t one
      */
-    public function getRootUrl();
+    public function getRootUrl(): ?string;
 
     /**
      * List files.

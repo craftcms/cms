@@ -118,7 +118,7 @@ class ElementQueryConditionBuilder extends Component
      *
      * @param ResolveInfo $resolveInfo
      */
-    public function setResolveInfo(ResolveInfo $resolveInfo)
+    public function setResolveInfo(ResolveInfo $resolveInfo): void
     {
         $this->_resolveInfo = $resolveInfo;
         $this->_fragments = $this->_resolveInfo->fragments;
@@ -130,7 +130,7 @@ class ElementQueryConditionBuilder extends Component
      * @param ArgumentManager $argumentManager
      * @since 3.6.0
      */
-    public function setArgumentManager(ArgumentManager $argumentManager)
+    public function setArgumentManager(ArgumentManager $argumentManager): void
     {
         $this->_argumentManager = $argumentManager;
     }
@@ -139,10 +139,10 @@ class ElementQueryConditionBuilder extends Component
      * Extract the query conditions based on the resolve information passed in the constructor.
      * Returns an array of [methodName => parameters] to be called on the element query.
      *
-     * @param FieldInterface $startingParentField the starting parent field for the extraction, if any
+     * @param FieldInterface|null $startingParentField the starting parent field for the extraction, if any
      * @return array
      */
-    public function extractQueryConditions(FieldInterface $startingParentField = null)
+    public function extractQueryConditions(FieldInterface $startingParentField = null): array
     {
         $startingNode = $this->_resolveInfo->fieldNodes[0];
 
@@ -170,7 +170,7 @@ class ElementQueryConditionBuilder extends Component
      * @param ArgumentNode[] $argumentNodes
      * @return array
      */
-    private function _extractArguments($argumentNodes)
+    private function _extractArguments($argumentNodes): array
     {
         $arguments = [];
 
@@ -185,10 +185,10 @@ class ElementQueryConditionBuilder extends Component
      * Extract the value from an argument node, even if it's an array or a GraphQL variable.
      *
      * @param Node $argumentNode
+     * @return mixed
      */
     private function _extractArgumentValue(Node $argumentNode)
     {
-
         // Deal with a raw object value.
         if ($argumentNode->kind === 'ObjectValue') {
             /** @var ObjectValueNode $argumentNode */
@@ -328,7 +328,7 @@ class ElementQueryConditionBuilder extends Component
      * @param Node $node
      * @return array
      */
-    private function _extractTransformDirectiveArguments(Node $node)
+    private function _extractTransformDirectiveArguments(Node $node): array
     {
         $arguments = [];
         $directives = $node->directives ?? [];
@@ -348,7 +348,7 @@ class ElementQueryConditionBuilder extends Component
      * @param $arguments
      * @return array
      */
-    private function _prepareTransformArguments($arguments)
+    private function _prepareTransformArguments($arguments): array
     {
         if (empty($arguments)) {
             return [];
@@ -364,7 +364,7 @@ class ElementQueryConditionBuilder extends Component
      *
      * @return bool
      */
-    private function _isInsideAssetQuery()
+    private function _isInsideAssetQuery(): bool
     {
         if ($this->_resolveInfo->returnType instanceof WrappingType) {
             return $this->_resolveInfo->returnType->getWrappedType()->name === AssetInterface::getName();
@@ -460,7 +460,7 @@ class ElementQueryConditionBuilder extends Component
                         $additionalArguments = $craftContentField->getEagerLoadingGqlConditions();
 
                         // Load additional requirements enforced by schema, enforcing permissions to see content
-                        if ($additionalArguments === false) {
+                        if ($additionalArguments === null) {
                             // If `false` was returned, make sure nothing is returned by setting a constraint that always fails.
                             $arguments = ['id' => ['and', 1, 2]];
                         } else {
@@ -622,7 +622,7 @@ class ElementQueryConditionBuilder extends Component
      * @param null $parentField
      * @return bool
      */
-    public function canNodeBeAliased(string $nodeName, $parentField = null)
+    public function canNodeBeAliased(string $nodeName, $parentField = null): bool
     {
         return !$this->_isAdditionalEagerLoadableNode($nodeName, $parentField) || $this->_canSpecialFieldBeAliased($nodeName);
     }

@@ -43,7 +43,7 @@ abstract class BaseElementFixture extends DbFixture
     /**
      * @inheritdoc
      */
-    public function init()
+    public function init(): void
     {
         parent::init();
 

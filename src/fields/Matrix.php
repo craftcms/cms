@@ -16,6 +16,7 @@ use craft\base\FieldInterface;
 use craft\base\GqlInlineFragmentFieldInterface;
 use craft\base\GqlInlineFragmentInterface;
 use craft\db\Query;
+use craft\db\QueryAbortedException;
 use craft\db\Table as DbTable;
 use craft\elements\db\ElementQuery;
 use craft\elements\db\ElementQueryInterface;
@@ -161,7 +162,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
     /**
      * @inheritdoc
      */
-    public function init()
+    public function init(): void
     {
         if ($this->propagationKeyFormat === '') {
             $this->propagationKeyFormat = null;
@@ -269,7 +270,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
      *
      * @param MatrixBlockType|array $blockTypes The block type settings or actual MatrixBlockType model instances
      */
-    public function setBlockTypes($blockTypes)
+    public function setBlockTypes($blockTypes): void
     {
         $this->_blockTypes = [];
         $defaultFieldConfig = [
@@ -383,7 +384,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
     /**
      * @inheritdoc
      */
-    public function getSettingsHtml()
+    public function getSettingsHtml(): ?string
     {
         // Get the available field types data
         $fieldTypeInfo = $this->_getFieldOptionsForConfigurator();
@@ -518,7 +519,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
      * @param ElementInterface|null $element
      * @since 3.4.0
      */
-    private function _populateQuery(MatrixBlockQuery $query, ElementInterface $element = null)
+    private function _populateQuery(MatrixBlockQuery $query, ElementInterface $element = null): void
     {
         // Existing element?
         if ($element && $element->id) {
@@ -570,7 +571,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
     /**
      * @inheritdoc
      */
-    public function modifyElementsQuery(ElementQueryInterface $query, $value)
+    public function modifyElementsQuery(ElementQueryInterface $query, $value): void
     {
         /** @var ElementQuery $query */
         if ($value === 'not :empty:') {
@@ -597,10 +598,8 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
                 $query->subQuery->andWhere(['not', $condition]);
             }
         } else if ($value !== null) {
-            return false;
+            throw new QueryAbortedException();
         }
-
-        return null;
     }
 
     /**
@@ -614,7 +613,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
     /**
      * @inheritdoc
      */
-    public function getTranslationDescription(ElementInterface $element = null)
+    public function getTranslationDescription(ElementInterface $element = null): ?string
     {
         if (!$element) {
             return null;
@@ -773,7 +772,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
      *
      * @param ElementInterface $element
      */
-    public function validateBlocks(ElementInterface $element)
+    public function validateBlocks(ElementInterface $element): void
     {
         /** @var MatrixBlockQuery $value */
         $value = $element->getFieldValue($this->handle);
@@ -985,7 +984,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
     /**
      * @inheritdoc
      */
-    public function afterSave(bool $isNew)
+    public function afterSave(bool $isNew): void
     {
         Craft::$app->getMatrix()->saveSettings($this, false);
 
@@ -1010,7 +1009,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
     /**
      * @inheritdoc
      */
-    public function beforeApplyDelete()
+    public function beforeApplyDelete(): void
     {
         Craft::$app->getMatrix()->deleteMatrixField($this);
         parent::beforeApplyDelete();
@@ -1019,7 +1018,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
     /**
      * @inheritdoc
      */
-    public function afterElementPropagate(ElementInterface $element, bool $isNew)
+    public function afterElementPropagate(ElementInterface $element, bool $isNew): void
     {
         $matrixService = Craft::$app->getMatrix();
         $resetValue = false;
@@ -1077,7 +1076,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
     /**
      * @inheritdoc
      */
-    public function afterElementRestore(ElementInterface $element)
+    public function afterElementRestore(ElementInterface $element): void
     {
         // Also restore any Matrix blocks for this element
         $elementsService = Craft::$app->getElements();

@@ -43,7 +43,7 @@ class UpdateSearchIndex extends BaseJob
     /**
      * @inheritdoc
      */
-    public function execute($queue)
+    public function execute($queue): void
     {
         $class = $this->elementType;
         $elements = $class::find()
@@ -65,7 +65,7 @@ class UpdateSearchIndex extends BaseJob
     /**
      * @inheritdoc
      */
-    protected function defaultDescription(): string
+    protected function defaultDescription(): ?string
     {
         return Craft::t('app', 'Updating search indexes');
     }

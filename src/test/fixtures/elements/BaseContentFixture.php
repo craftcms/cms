@@ -54,7 +54,7 @@ abstract class BaseContentFixture extends DbFixture
     /**
      * @inheritdoc
      */
-    public function init()
+    public function init(): void
     {
         parent::init();
 

@@ -45,7 +45,7 @@ class MyDrafts extends Widget
     /**
      * @inheritdoc
      */
-    public static function icon()
+    public static function icon(): ?string
     {
         return Craft::getAlias('@appicons/draft.svg');
     }
@@ -63,7 +63,7 @@ class MyDrafts extends Widget
     /**
      * @inheritdoc
      */
-    public function getSettingsHtml()
+    public function getSettingsHtml(): ?string
     {
         return Cp::textFieldHtml([
             'label' => Craft::t('app', 'Limit'),
@@ -78,7 +78,7 @@ class MyDrafts extends Widget
     /**
      * @inheritdoc
      */
-    public function getBodyHtml()
+    public function getBodyHtml(): ?string
     {
         $drafts = Entry::find()
             ->drafts()

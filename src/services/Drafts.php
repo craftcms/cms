@@ -51,7 +51,6 @@ class Drafts extends Component
     /**
      * @event DraftEvent The event that is triggered after a draft is applied to its canonical element.
      * @see applyDraft()
-     * @since 3.1.0
      */
     const EVENT_AFTER_APPLY_DRAFT = 'afterApplyDraft';
 
@@ -64,7 +63,7 @@ class Drafts extends Component
     /**
      * @inheritdoc
      */
-    public function init()
+    public function init(): void
     {
         parent::init();
         $this->db = Instance::ensure($this->db, Connection::class);
@@ -352,7 +351,6 @@ class Drafts extends Component
     /**
      * Deletes any sourceless drafts that were never formally saved.
      *
-     * @return void
      */
     public function purgeUnsavedDrafts(): void
     {

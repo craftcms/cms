@@ -21,10 +21,10 @@ interface JobInterface extends \yii\queue\JobInterface
      *
      * @return string|null
      */
-    public function getDescription();
+    public function getDescription(): ?string;
 
     /**
      * @param \yii\queue\Queue|QueueInterface $queue The queue the job belongs to
      */
-    public function execute($queue);
+    public function execute($queue): void;
 }

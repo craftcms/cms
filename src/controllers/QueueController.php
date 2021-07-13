@@ -39,7 +39,7 @@ class QueueController extends Controller
      * @inheritdoc
      * @throws ServerErrorHttpException if the `queue` component doesn’t implement [[QueueInterface]]
      */
-    public function beforeAction($action)
+    public function beforeAction($action): bool
     {
         if (!parent::beforeAction($action)) {
             return false;

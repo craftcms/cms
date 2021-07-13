@@ -248,7 +248,7 @@ class Routes extends Component
      *
      * @param DeleteSiteEvent $event
      */
-    public function handleDeletedSite(DeleteSiteEvent $event)
+    public function handleDeletedSite(DeleteSiteEvent $event): void
     {
         $projectConfig = Craft::$app->getProjectConfig();
         $routes = $projectConfig->get(self::CONFIG_ROUTES_KEY) ?? [];
@@ -263,9 +263,9 @@ class Routes extends Component
     /**
      * Updates the route order.
      *
-     * @param array $routeIds An array of each of the route IDs, in their new order.
+     * @param array $routeUids An array of each of the route UIDs, in their new order.
      */
-    public function updateRouteOrder(array $routeUids)
+    public function updateRouteOrder(array $routeUids): void
     {
         foreach ($routeUids as $order => $routeUid) {
             Craft::$app->getProjectConfig()->set(self::CONFIG_ROUTES_KEY . '.' . $routeUid . '.sortOrder', $order + 1, 'Reorder routes');

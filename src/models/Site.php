@@ -98,7 +98,7 @@ class Site extends Model
      * @inheritdoc
      * @since 3.5.0
      */
-    public function init()
+    public function init(): void
     {
         // Typecast DB values
         $this->id = (int)$this->id ?: null;
@@ -141,7 +141,7 @@ class Site extends Model
      * @return string|null
      * @since 3.1.0
      */
-    public function getBaseUrl(bool $parse = true)
+    public function getBaseUrl(bool $parse = true): ?string
     {
         if ($this->_baseUrl) {
             return $parse ? rtrim(Craft::parseEnv($this->_baseUrl), '/') . '/' : $this->_baseUrl;
@@ -164,7 +164,7 @@ class Site extends Model
     /**
      * @inheritdoc
      */
-    public function behaviors()
+    public function behaviors(): array
     {
         $behaviors = parent::behaviors();
         $behaviors['parser'] = [
@@ -184,7 +184,7 @@ class Site extends Model
     /**
      * @inheritdoc
      */
-    public function attributeLabels()
+    public function attributeLabels(): array
     {
         return [
             'baseUrl' => Craft::t('app', 'Base URL'),
@@ -225,7 +225,7 @@ class Site extends Model
     /**
      * @inheritdoc
      */
-    public function attributes()
+    public function attributes(): array
     {
         $attributes = parent::attributes();
         $attributes[] = 'name';

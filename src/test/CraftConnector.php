@@ -48,7 +48,7 @@ class CraftConnector extends Yii2
      * @param bool $disableRequiredUserAgent
      * @throws ConfigurationException
      */
-    public function findAndLoginUser($user, bool $disableRequiredUserAgent = true)
+    public function findAndLoginUser($user, bool $disableRequiredUserAgent = true): void
     {
         $oldRequirement = Craft::$app->getConfig()->getGeneral()->requireUserAgentAndIpForSession;
         if ($disableRequiredUserAgent) {
@@ -81,7 +81,7 @@ class CraftConnector extends Yii2
      * @param Application $app
      * @throws InvalidPluginException
      */
-    public function resetRequest(Application $app)
+    public function resetRequest(Application $app): void
     {
         parent::resetRequest($app);
         $app->getRequest()->setIsConsoleRequest(false);
@@ -115,9 +115,9 @@ class CraftConnector extends Yii2
     }
 
     /**
-     * @inheritDoc
+     * @inheritdoc
      */
-    public function resetApplication($closeSession = true)
+    public function resetApplication($closeSession = true): void
     {
         parent::resetApplication($closeSession);
         Db::reset();

@@ -57,7 +57,7 @@ class DraftBehavior extends BaseRevisionBehavior
     /**
      * Updates the row in the `drafts` table after the draft element is saved.
      */
-    public function handleSave()
+    public function handleSave(): void
     {
         Db::update(Table::DRAFTS, [
             'provisional' => $this->owner->isProvisionalDraft,
@@ -73,7 +73,7 @@ class DraftBehavior extends BaseRevisionBehavior
     /**
      * Deletes the row in the `drafts` table after the draft element is deleted.
      */
-    public function handleDelete()
+    public function handleDelete(): void
     {
         if ($this->owner->hardDelete) {
             Db::delete(Table::DRAFTS, [

@@ -93,7 +93,7 @@ class Paginate extends BaseObject
      * @param string $basePath
      * @since 3.1.28
      */
-    public function setBasePath(string $basePath)
+    public function setBasePath(string $basePath): void
     {
         $this->_basePath = $basePath;
     }
@@ -104,7 +104,7 @@ class Paginate extends BaseObject
      * @param int $page
      * @return string|null
      */
-    public function getPageUrl(int $page)
+    public function getPageUrl(int $page): ?string
     {
         if ($page < 1 || $page > $this->totalPages) {
             return null;
@@ -145,7 +145,7 @@ class Paginate extends BaseObject
      *
      * @return string|null
      */
-    public function getFirstUrl()
+    public function getFirstUrl(): ?string
     {
         return $this->getPageUrl(1);
     }
@@ -155,7 +155,7 @@ class Paginate extends BaseObject
      *
      * @return string|null
      */
-    public function getLastUrl()
+    public function getLastUrl(): ?string
     {
         return $this->getPageUrl($this->totalPages);
     }
@@ -165,7 +165,7 @@ class Paginate extends BaseObject
      *
      * @return string|null
      */
-    public function getPrevUrl()
+    public function getPrevUrl(): ?string
     {
         return $this->getPageUrl($this->currentPage - 1);
     }
@@ -175,7 +175,7 @@ class Paginate extends BaseObject
      *
      * @return string|null
      */
-    public function getNextUrl()
+    public function getNextUrl(): ?string
     {
         return $this->getPageUrl($this->currentPage + 1);
     }
@@ -246,7 +246,7 @@ class Paginate extends BaseObject
      * @param int $max The maximum number of links to return
      * @return string[]
      */
-    public function getDynamicRangeUrls($max = 10)
+    public function getDynamicRangeUrls($max = 10): array
     {
         $start = max(1, $this->currentPage - floor($max / 2));
         $end = min($this->totalPages, $start + $max - 1);

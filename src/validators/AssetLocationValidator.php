@@ -71,7 +71,7 @@ class AssetLocationValidator extends Validator
     /**
      * @inheritdoc
      */
-    public function init()
+    public function init(): void
     {
         parent::init();
 
@@ -149,7 +149,7 @@ class AssetLocationValidator extends Validator
      * @param string $message
      * @param array $params
      */
-    public function addLocationError(Model $model, string $attribute, string $errorCode, string $message, array $params = [])
+    public function addLocationError(Model $model, string $attribute, string $errorCode, string $message, array $params = []): void
     {
         $this->addError($model, $attribute, $message, $params);
 

@@ -61,7 +61,7 @@ class PhpMessageSource extends \yii\i18n\PhpMessageSource
      * @return array|null
      * @throws Exception
      */
-    private function _loadOverrideMessages(string $category, string $language)
+    private function _loadOverrideMessages(string $category, string $language): ?array
     {
         // Save the current base path to restore later.
         $oldBasePath = $this->basePath;

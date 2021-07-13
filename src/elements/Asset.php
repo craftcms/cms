@@ -44,6 +44,7 @@ use craft\helpers\Image;
 use craft\helpers\Template;
 use craft\helpers\UrlHelper;
 use craft\models\AssetTransform;
+use craft\models\FieldLayout;
 use craft\models\VolumeFolder;
 use craft\records\Asset as AssetRecord;
 use craft\validators\AssetLocationValidator;
@@ -163,7 +164,7 @@ class Asset extends Element
     /**
      * @inheritdoc
      */
-    public static function refHandle()
+    public static function refHandle(): ?string
     {
         return 'asset';
     }
@@ -230,7 +231,7 @@ class Asset extends Element
      * @inheritdoc
      * @since 3.4.0
      */
-    public function setEagerLoadedElements(string $handle, array $elements)
+    public function setEagerLoadedElements(string $handle, array $elements): void
     {
         if ($handle === 'uploader') {
             $uploader = $elements[0] ?? null;
@@ -468,7 +469,7 @@ class Asset extends Element
     /**
      * @inheritdoc
      */
-    protected static function prepElementQueryForTableAttribute(ElementQueryInterface $elementQuery, string $attribute)
+    protected static function prepElementQueryForTableAttribute(ElementQueryInterface $elementQuery, string $attribute): void
     {
         if ($attribute === 'uploader') {
             $elementQuery->andWith('uploader');
@@ -696,7 +697,7 @@ class Asset extends Element
     /**
      * @inheritdoc
      */
-    public function __toString()
+    public function __toString(): string
     {
         try {
             if ($this->_transform !== null && ($url = (string)$this->getUrl())) {
@@ -761,7 +762,7 @@ class Asset extends Element
      * @inheritdoc
      * @since 3.5.0
      */
-    public function init()
+    public function init(): void
     {
         parent::init();
         $this->_oldVolumeId = $this->_volumeId;
@@ -772,7 +773,7 @@ class Asset extends Element
      *
      * @return int|null
      */
-    public function getVolumeId()
+    public function getVolumeId(): ?int
     {
         return (int)$this->_volumeId ?: null;
     }
@@ -782,7 +783,7 @@ class Asset extends Element
      *
      * @param int|null $id
      */
-    public function setVolumeId(int $id = null)
+    public function setVolumeId(int $id = null): void
     {
         if ($id !== $this->getVolumeId()) {
             $this->_volumeId = $id;
@@ -920,7 +921,7 @@ class Asset extends Element
      * @return Markup|null
      * @throws InvalidArgumentException
      */
-    public function getImg($transform = null, array $sizes = null)
+    public function getImg($transform = null, array $sizes = null): ?Markup
     {
         if ($this->kind !== self::KIND_IMAGE) {
             return null;
@@ -1044,7 +1045,7 @@ class Asset extends Element
     /**
      * @inheritdoc
      */
-    public function getTitleTranslationDescription()
+    public function getTitleTranslationDescription(): ?string
     {
         return ElementHelper::translationDescription($this->getVolume()->titleTranslationMethod);
     }
@@ -1061,7 +1062,7 @@ class Asset extends Element
     /**
      * @inheritdoc
      */
-    public function getFieldLayout()
+    public function getFieldLayout(): ?FieldLayout
     {
         if (($fieldLayout = parent::getFieldLayout()) !== null) {
             return $fieldLayout;
@@ -1119,7 +1120,7 @@ class Asset extends Element
      * @return User|null
      * @since 3.4.0
      */
-    public function getUploader()
+    public function getUploader(): ?User
     {
         if ($this->_uploader !== null) {
             return $this->_uploader;
@@ -1143,7 +1144,7 @@ class Asset extends Element
      * @param User|null $uploader
      * @since 3.4.0
      */
-    public function setUploader(User $uploader = null)
+    public function setUploader(User $uploader = null): void
     {
         $this->_uploader = $uploader;
     }
@@ -1173,7 +1174,7 @@ class Asset extends Element
      * @return string|null
      * @throws InvalidConfigException
      */
-    public function getUrl($transform = null, bool $generateNow = null)
+    public function getUrl($transform = null, bool $generateNow = null): ?string
     {
         $volume = $this->getVolume();
 
@@ -1215,7 +1216,7 @@ class Asset extends Element
     /**
      * @inheritdoc
      */
-    public function getThumbUrl(int $size)
+    public function getThumbUrl(int $size): ?string
     {
         if ($this->getWidth() && $this->getHeight()) {
             [$width, $height] = Assets::scaledDimensions($this->getWidth(), $this->getHeight(), $size, $size);
@@ -1301,7 +1302,7 @@ class Asset extends Element
      *
      * @return string|null
      */
-    public function getMimeType()
+    public function getMimeType(): ?string
     {
         // todo: maybe we should be passing this off to volume types
         // so Local volumes can call FileHelper::getMimeType() (uses magic file instead of ext)
@@ -1325,7 +1326,7 @@ class Asset extends Element
      *
      * @param int|float|null $height the image height
      */
-    public function setHeight($height)
+    public function setHeight($height): void
     {
         $this->_height = $height;
     }
@@ -1346,7 +1347,7 @@ class Asset extends Element
      *
      * @param int|float|null $width the image width
      */
-    public function setWidth($width)
+    public function setWidth($width): void
     {
         $this->_width = $width;
     }
@@ -1359,7 +1360,7 @@ class Asset extends Element
      * @return string|null
      * @since 3.4.0
      */
-    public function getFormattedSize(int $decimals = null, bool $short = true)
+    public function getFormattedSize(int $decimals = null, bool $short = true): ?string
     {
         if ($this->size === null) {
             return null;
@@ -1377,7 +1378,7 @@ class Asset extends Element
      * @return string|null
      * @since 3.4.0
      */
-    public function getFormattedSizeInBytes(bool $short = true)
+    public function getFormattedSizeInBytes(bool $short = true): ?string
     {
         $params = [
             'n' => $this->size,
@@ -1395,7 +1396,7 @@ class Asset extends Element
      * @return string|null
      * @since 3.4.0
      */
-    public function getDimensions()
+    public function getDimensions(): ?string
     {
         $width = $this->getWidth();
         $height = $this->getHeight();
@@ -1422,7 +1423,7 @@ class Asset extends Element
      *
      * @param string $uri
      */
-    public function setTransformSource(string $uri)
+    public function setTransformSource(string $uri): void
     {
         $this->_transformSource = $uri;
     }
@@ -1556,7 +1557,7 @@ class Asset extends Element
      * @param $value string|array|null
      * @throws \InvalidArgumentException if $value is invalid
      */
-    public function setFocalPoint($value)
+    public function setFocalPoint($value): void
     {
         if (is_array($value)) {
             if (!isset($value['x'], $value['y'])) {
@@ -1764,7 +1765,7 @@ class Asset extends Element
     /**
      * @inheritdoc
      */
-    public function attributes()
+    public function attributes(): array
     {
         $names = parent::attributes();
         $names[] = 'extension';
@@ -1782,7 +1783,7 @@ class Asset extends Element
     /**
      * @inheritdoc
      */
-    public function extraFields()
+    public function extraFields(): array
     {
         $names = parent::extraFields();
         $names[] = 'folder';
@@ -1864,7 +1865,7 @@ class Asset extends Element
      * @inheritdoc
      * @throws Exception if the asset isn't new but doesn't have a row in the `assets` table for some reason
      */
-    public function afterSave(bool $isNew)
+    public function afterSave(bool $isNew): void
     {
         if (!$this->propagating) {
             $isCpRequest = Craft::$app->getRequest()->getIsCpRequest();
@@ -1941,7 +1942,7 @@ class Asset extends Element
     /**
      * @inheritdoc
      */
-    public function afterDelete()
+    public function afterDelete(): void
     {
         if (!$this->keepFileOnDelete) {
             $this->getVolume()->deleteFile($this->getPath());

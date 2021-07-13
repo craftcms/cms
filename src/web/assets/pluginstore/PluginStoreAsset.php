@@ -39,7 +39,7 @@ class PluginStoreAsset extends AssetBundle
     /**
      * @inheritdoc
      */
-    public function init()
+    public function init(): void
     {
         $this->sourcePath = __DIR__ . '/dist/';
 
@@ -90,7 +90,7 @@ class PluginStoreAsset extends AssetBundle
      * @throws NotFoundHttpException
      * @throws \yii\base\Exception
      */
-    private function getModule(array $config, string $moduleName, string $type = 'modern', bool $soft = true)
+    private function getModule(array $config, string $moduleName, string $type = 'modern', bool $soft = true): ?string
     {
         // Get the module entry
         $module = $this->getModuleEntry($config, $moduleName, $type, $soft);
@@ -120,7 +120,7 @@ class PluginStoreAsset extends AssetBundle
      * @throws NotFoundHttpException
      * @throws \yii\base\Exception
      */
-    private function getModuleEntry(array $config, string $moduleName, string $type = 'modern', bool $soft = false)
+    private function getModuleEntry(array $config, string $moduleName, string $type = 'modern', bool $soft = false): ?string
     {
         $module = null;
         // Get the manifest file
@@ -291,10 +291,9 @@ class PluginStoreAsset extends AssetBundle
     /**
      * @param string $error
      * @param bool $soft
-     *
      * @throws NotFoundHttpException
      */
-    private function reportError(string $error, $soft = false)
+    private function reportError(string $error, bool $soft = false): void
     {
         if (YII_DEBUG && !$soft) {
             throw new NotFoundHttpException($error);

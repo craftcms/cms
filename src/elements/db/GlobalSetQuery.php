@@ -55,10 +55,10 @@ class GlobalSetQuery extends ElementQuery
      * Sets the [[$editable]] property.
      *
      * @param bool $value The property value (defaults to true)
-     * @return static self reference
+     * @return self self reference
      * @uses $editable
      */
-    public function editable(bool $value = true)
+    public function editable(bool $value = true): self
     {
         $this->editable = $value;
         return $this;
@@ -93,10 +93,10 @@ class GlobalSetQuery extends ElementQuery
      * ```
      *
      * @param string|string[]|null $value The property value
-     * @return static self reference
+     * @return self self reference
      * @uses $handle
      */
-    public function handle($value)
+    public function handle($value): self
     {
         $this->handle = $value;
         return $this;
@@ -130,7 +130,7 @@ class GlobalSetQuery extends ElementQuery
     /**
      * Applies the 'ref' param to the query being prepared.
      */
-    private function _applyRefParam()
+    private function _applyRefParam(): void
     {
         if (!$this->ref) {
             return;
@@ -144,7 +144,7 @@ class GlobalSetQuery extends ElementQuery
      *
      * @throws QueryAbortedException
      */
-    private function _applyEditableParam()
+    private function _applyEditableParam(): void
     {
         if ($this->editable) {
             // Limit the query to only the global sets the user has permission to edit

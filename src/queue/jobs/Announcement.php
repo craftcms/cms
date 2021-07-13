@@ -42,7 +42,7 @@ class Announcement extends BaseJob
      * @inheritdoc
      * @throws Exception
      */
-    public function execute($queue)
+    public function execute($queue): void
     {
         if ($this->pluginHandle !== null) {
             $pluginInfo = Craft::$app->getPlugins()->getStoredPluginInfo($this->pluginHandle);
@@ -106,7 +106,7 @@ class Announcement extends BaseJob
     /**
      * @inheritdoc
      */
-    protected function defaultDescription(): string
+    protected function defaultDescription(): ?string
     {
         return Craft::t('app', 'Pushing announcement to control panel users');
     }

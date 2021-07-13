@@ -78,12 +78,12 @@ class UrlManager extends \yii\web\UrlManager
     private $_routeParams = [];
 
     /**
-     * @var
+     * @var ElementInterface|null
      */
     private $_matchedElement;
 
     /**
-     * @var
+     * @var mixed|null
      */
     private $_matchedElementRoute;
 
@@ -172,7 +172,7 @@ class UrlManager extends \yii\web\UrlManager
      *
      * @return array|null
      */
-    public function getRouteParams()
+    public function getRouteParams(): ?array
     {
         return $this->_routeParams;
     }
@@ -183,7 +183,7 @@ class UrlManager extends \yii\web\UrlManager
      * @param array $params The route params
      * @param bool $merge Whether these params should be merged with existing params
      */
-    public function setRouteParams(array $params, bool $merge = true)
+    public function setRouteParams(array $params, bool $merge = true): void
     {
         if ($merge) {
             $this->_routeParams = ArrayHelper::merge($this->_routeParams, $params);
@@ -239,7 +239,7 @@ class UrlManager extends \yii\web\UrlManager
      * @param ElementInterface|false|null $element
      * @since 3.2.3
      */
-    public function setMatchedElement($element)
+    public function setMatchedElement($element): void
     {
         if ($element instanceof ElementInterface) {
             if ($route = $element->getRoute()) {
@@ -299,7 +299,7 @@ class UrlManager extends \yii\web\UrlManager
      *
      * @return array|null The rules, or null if it's a console request
      */
-    private function _getRules()
+    private function _getRules(): ?array
     {
         $request = Craft::$app->getRequest();
 
@@ -416,7 +416,7 @@ class UrlManager extends \yii\web\UrlManager
      * Attempts to match a path with the registered URL routes.
      *
      * @param Request $request
-     * @return mixed
+     * @return array|bool
      */
     private function _getMatchedUrlRoute(Request $request)
     {
@@ -449,7 +449,7 @@ class UrlManager extends \yii\web\UrlManager
      * Attempts to match a path with a “well-known” URL.
      *
      * @param Request $request
-     * @return mixed
+     * @return array|false
      */
     private function _getMatchedDiscoverableUrlRoute(Request $request)
     {

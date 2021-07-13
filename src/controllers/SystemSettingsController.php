@@ -38,7 +38,7 @@ class SystemSettingsController extends Controller
     /**
      * @inheritdoc
      */
-    public function beforeAction($action)
+    public function beforeAction($action): bool
     {
         // All system setting actions require an admin
         $this->requireAdmin();
@@ -65,7 +65,7 @@ class SystemSettingsController extends Controller
      *
      * @return Response|null
      */
-    public function actionSaveGeneralSettings()
+    public function actionSaveGeneralSettings(): ?Response
     {
         $this->requirePostRequest();
 
@@ -155,7 +155,7 @@ class SystemSettingsController extends Controller
      *
      * @return Response|null
      */
-    public function actionSaveEmailSettings()
+    public function actionSaveEmailSettings(): ?Response
     {
         $this->requirePostRequest();
 
@@ -187,7 +187,7 @@ class SystemSettingsController extends Controller
     /**
      * Tests the email settings.
      */
-    public function actionTestEmailSettings()
+    public function actionTestEmailSettings(): void
     {
         $this->requirePostRequest();
 

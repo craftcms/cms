@@ -65,7 +65,7 @@ class UserPasswordValidator extends StringValidator
     /**
      * @inheritdoc
      */
-    public function init()
+    public function init(): void
     {
         parent::init();
 
@@ -79,7 +79,6 @@ class UserPasswordValidator extends StringValidator
      */
     public function validateAttribute($model, $attribute)
     {
-        /** @var Model $model */
         parent::validateAttribute($model, $attribute);
 
         if ($model->hasErrors($attribute)) {
@@ -98,7 +97,7 @@ class UserPasswordValidator extends StringValidator
     /**
      * @inheritdoc
      */
-    public function isEmpty($value)
+    public function isEmpty($value): bool
     {
         if ($this->isEmpty !== null) {
             return call_user_func($this->isEmpty, $value);

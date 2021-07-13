@@ -52,7 +52,7 @@ class Schema extends \yii\db\mysql\Schema
     /**
      * @inheritdoc
      */
-    public function init()
+    public function init(): void
     {
         parent::init();
 
@@ -93,7 +93,7 @@ class Schema extends \yii\db\mysql\Schema
      * @param string $name The savepoint name.
      * @throws Exception
      */
-    public function releaseSavepoint($name)
+    public function releaseSavepoint($name): void
     {
         try {
             parent::releaseSavepoint($name);
@@ -113,7 +113,7 @@ class Schema extends \yii\db\mysql\Schema
      * @param string $name The savepoint name.
      * @throws Exception
      */
-    public function rollBackSavepoint($name)
+    public function rollBackSavepoint($name): void
     {
         try {
             parent::rollBackSavepoint($name);
@@ -136,7 +136,7 @@ class Schema extends \yii\db\mysql\Schema
      * @param int|string|array $length length or precision of the column. See [[ColumnSchemaBuilder::$length]].
      * @return ColumnSchemaBuilder column schema builder instance
      */
-    public function createColumnSchemaBuilder($type, $length = null)
+    public function createColumnSchemaBuilder($type, $length = null): ColumnSchemaBuilder
     {
         return new ColumnSchemaBuilder($type, $length, $this->db);
     }
@@ -272,7 +272,7 @@ class Schema extends \yii\db\mysql\Schema
      * @return TableSchema|null driver dependent table metadata. Null if the table does not exist.
      * @throws \Exception
      */
-    protected function loadTableSchema($name)
+    protected function loadTableSchema($name): ?TableSchema
     {
         $table = new TableSchema;
         $this->resolveTableNames($table, $name);
@@ -292,7 +292,7 @@ class Schema extends \yii\db\mysql\Schema
      * @param TableSchema $table the table metadata
      * @throws Exception
      */
-    protected function findConstraints($table)
+    protected function findConstraints($table): void
     {
         // This is almost directly copied from yii\db\mysql\Schema::findConstraints() (Yii 2.0.37) except:
         // - addition of DELETE_RULE & UPDATE_RULE in the SELECT clause

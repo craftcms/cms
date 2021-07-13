@@ -42,7 +42,7 @@ class ApplyNewPropagationMethod extends BaseJob
     /**
      * @inheritdoc
      */
-    public function execute($queue)
+    public function execute($queue): void
     {
         /** @var string|ElementInterface $elementType */
         $elementType = $this->elementType;
@@ -125,7 +125,7 @@ class ApplyNewPropagationMethod extends BaseJob
     /**
      * @inheritdoc
      */
-    protected function defaultDescription(): string
+    protected function defaultDescription(): ?string
     {
         return Craft::t('app', 'Applying new propagation method to elements');
     }

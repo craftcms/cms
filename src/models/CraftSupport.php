@@ -52,7 +52,7 @@ class CraftSupport extends Model
     /**
      * @inheritdoc
      */
-    public function attributeLabels()
+    public function attributeLabels(): array
     {
         return [
             'attachment' => Craft::t('app', 'Attachment'),

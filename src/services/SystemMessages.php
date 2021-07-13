@@ -109,7 +109,7 @@ class SystemMessages extends Component
      * @param string $key
      * @return SystemMessage|null
      */
-    public function getDefaultMessage(string $key)
+    public function getDefaultMessage(string $key): ?SystemMessage
     {
         return $this->getAllDefaultMessages()[$key] ?? null;
     }
@@ -159,7 +159,7 @@ class SystemMessages extends Component
      * @param string|null $language
      * @return SystemMessage|null
      */
-    public function getMessage(string $key, string $language = null)
+    public function getMessage(string $key, string $language = null): ?SystemMessage
     {
         // Get the default message (and ensure $key is valid)
         if (($default = $this->getDefaultMessage($key)) === null) {

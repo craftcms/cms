@@ -93,10 +93,7 @@ class Image
      *
      * @param string $file The path to the PNG file.
      * @return array|bool Info embedded in the PNG file, or `false` if it wasn’t found.
-     * @license Apache 2.0
-     * @version 0.1.0
      * @link http://www.libpng.org/pub/png/spec/iso/index-object.html#11IHDR
-     * @author Tom Klingenberg <lastflood.net>
      */
     public static function pngImageInfo(string $file)
     {
@@ -170,7 +167,7 @@ class Image
      *
      * @param string $imagePath
      */
-    public static function cleanImageByPath(string $imagePath)
+    public static function cleanImageByPath(string $imagePath): void
     {
         $extension = pathinfo($imagePath, PATHINFO_EXTENSION);
 
@@ -340,7 +337,7 @@ class Image
      *
      * @param \Imagick $imagick
      */
-    public static function cleanExifDataFromImagickImage(\Imagick $imagick)
+    public static function cleanExifDataFromImagickImage(\Imagick $imagick): void
     {
         $config = Craft::$app->getConfig()->getGeneral();
 

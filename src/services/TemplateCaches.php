@@ -45,7 +45,7 @@ class TemplateCaches extends Component
      * @return string|null
      * @throws Exception if this is a console request and `false` is passed to `$global`
      */
-    public function getTemplateCache(string $key, bool $global, bool $registerScripts = false)
+    public function getTemplateCache(string $key, bool $global, bool $registerScripts = false): ?string
     {
         // Make sure template caching is enabled
         if ($this->_isTemplateCachingEnabled() === false) {
@@ -80,7 +80,7 @@ class TemplateCaches extends Component
      * included in the cache. If this is `true`, be sure to pass `$withScripts = true` to [[endTemplateCache()]]
      * as well.
      */
-    public function startTemplateCache(bool $withScripts = false)
+    public function startTemplateCache(bool $withScripts = false): void
     {
         // Make sure template caching is enabled
         if ($this->_isTemplateCachingEnabled() === false) {
@@ -111,7 +111,7 @@ class TemplateCaches extends Component
      * @throws Exception if this is a console request and `false` is passed to `$global`
      * @throws \Throwable
      */
-    public function endTemplateCache(string $key, bool $global, ?string $duration, $expiration, string $body, bool $withScripts = false)
+    public function endTemplateCache(string $key, bool $global, ?string $duration, $expiration, string $body, bool $withScripts = false): void
     {
         // Make sure template caching is enabled
         if ($this->_isTemplateCachingEnabled() === false) {
@@ -215,6 +215,7 @@ class TemplateCaches extends Component
      * @param string $key
      * @param bool $global
      * @param int|null $siteId
+     * @return string
      * @throws Exception if this is a console request and `false` is passed to `$global`
      */
     private function _cacheKey(string $key, bool $global, int $siteId = null): string

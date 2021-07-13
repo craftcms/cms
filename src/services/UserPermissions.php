@@ -448,7 +448,7 @@ class UserPermissions extends Component
      *
      * @param ConfigEvent $event
      */
-    public function handleChangedGroupPermissions(ConfigEvent $event)
+    public function handleChangedGroupPermissions(ConfigEvent $event): void
     {
         // Ensure all user groups are ready to roll
         ProjectConfigHelper::ensureAllUserGroupsProcessed();

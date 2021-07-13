@@ -21,7 +21,7 @@ class RelatedCategories extends RelationArgumentHandler
     protected $argumentName = 'relatedToCategories';
 
     /**
-     * @inheritDoc
+     * @inheritdoc
      */
     protected function handleArgument($argumentValue)
     {

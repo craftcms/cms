@@ -107,7 +107,7 @@ class StandardTextField extends StandardField
     /**
      * @inheritdoc
      */
-    public function fields()
+    public function fields(): array
     {
         $fields = parent::fields();
 
@@ -120,7 +120,7 @@ class StandardTextField extends StandardField
     /**
      * @inheritdoc
      */
-    protected function inputHtml(ElementInterface $element = null, bool $static = false)
+    protected function inputHtml(ElementInterface $element = null, bool $static = false): ?string
     {
         $id = $this->id();
         return Craft::$app->getView()->renderTemplate('_includes/forms/text', [

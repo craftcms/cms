@@ -17,6 +17,7 @@ use craft\elements\db\MatrixBlockQuery;
 use craft\fields\Matrix;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Db;
+use craft\models\FieldLayout;
 use craft\models\MatrixBlockType;
 use craft\models\MatrixBlockType as MatrixBlockTypeModel;
 use craft\records\MatrixBlock as MatrixBlockRecord;
@@ -69,7 +70,7 @@ class MatrixBlock extends Element implements BlockElementInterface
     /**
      * @inheritdoc
      */
-    public static function refHandle()
+    public static function refHandle(): ?string
     {
         return 'matrixblock';
     }
@@ -213,7 +214,7 @@ class MatrixBlock extends Element implements BlockElementInterface
     /**
      * @inheritdoc
      */
-    public function attributes()
+    public function attributes(): array
     {
         $names = parent::attributes();
         $names[] = 'owner';
@@ -223,7 +224,7 @@ class MatrixBlock extends Element implements BlockElementInterface
     /**
      * @inheritdoc
      */
-    public function extraFields()
+    public function extraFields(): array
     {
         $names = parent::extraFields();
         $names[] = 'owner';
@@ -276,7 +277,7 @@ class MatrixBlock extends Element implements BlockElementInterface
     /**
      * @inheritdoc
      */
-    public function getFieldLayout()
+    public function getFieldLayout(): ?FieldLayout
     {
         return parent::getFieldLayout() ?? $this->getType()->getFieldLayout();
     }
@@ -323,7 +324,7 @@ class MatrixBlock extends Element implements BlockElementInterface
      *
      * @param ElementInterface|null $owner
      */
-    public function setOwner(ElementInterface $owner = null)
+    public function setOwner(ElementInterface $owner = null): void
     {
         $this->_owner = $owner;
     }
@@ -372,7 +373,7 @@ class MatrixBlock extends Element implements BlockElementInterface
     /**
      * @inheritdoc
      */
-    public function getEagerLoadedElements(string $handle)
+    public function getEagerLoadedElements(string $handle): ?array
     {
         // See if we have this stored with a block type-specific handle
         $blockTypeHandle = $this->getType()->handle . ':' . $handle;
@@ -387,7 +388,7 @@ class MatrixBlock extends Element implements BlockElementInterface
     /**
      * @inheritdoc
      */
-    public function setEagerLoadedElements(string $handle, array $elements)
+    public function setEagerLoadedElements(string $handle, array $elements): void
     {
         // See if this was eager-loaded with a block type-specific handle
         $blockTypeHandlePrefix = $this->getType()->handle . ':';
@@ -415,7 +416,7 @@ class MatrixBlock extends Element implements BlockElementInterface
      * @inheritdoc
      * @throws Exception if reasons
      */
-    public function afterSave(bool $isNew)
+    public function afterSave(bool $isNew): void
     {
         if (!$this->propagating) {
             // Get the block record
@@ -462,7 +463,7 @@ class MatrixBlock extends Element implements BlockElementInterface
     /**
      * @inheritdoc
      */
-    public function afterDelete()
+    public function afterDelete(): void
     {
         if (Craft::$app->getRequest()->getIsCpRequest() && !Craft::$app->getResponse()->isSent) {
             // Tell the browser to forget about this block

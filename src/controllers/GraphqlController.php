@@ -48,7 +48,7 @@ class GraphqlController extends Controller
      * @inheritdoc
      * @throws NotFoundHttpException
      */
-    public function beforeAction($action)
+    public function beforeAction($action): bool
     {
         if (!Craft::$app->getConfig()->getGeneral()->enableGql) {
             throw new NotFoundHttpException(Craft::t('yii', 'Page not found.'));
@@ -195,6 +195,7 @@ class GraphqlController extends Controller
      * Returns the requested GraphQL schema
      *
      * @param GqlService $gqlService
+     * @return GqlSchema
      * @throws ForbiddenHttpException
      * @throws BadRequestHttpException
      */
@@ -262,7 +263,7 @@ class GraphqlController extends Controller
      * @param GqlService $gqlService
      * @return GqlToken|null
      */
-    private function _publicToken(GqlService $gqlService)
+    private function _publicToken(GqlService $gqlService): ?GqlToken
     {
         try {
             $token = $gqlService->getPublicToken();
@@ -429,7 +430,7 @@ class GraphqlController extends Controller
      * @throws \yii\base\Exception
      * @since 3.4.0
      */
-    public function actionSaveToken()
+    public function actionSaveToken(): ?Response
     {
         $this->requirePostRequest();
         $this->requireAdmin(false);
@@ -576,7 +577,7 @@ class GraphqlController extends Controller
      * @throws NotFoundHttpException
      * @since 3.4.0
      */
-    public function actionSavePublicSchema()
+    public function actionSavePublicSchema(): ?Response
     {
         $this->requirePostRequest();
         $this->requireAdmin();
@@ -623,7 +624,7 @@ class GraphqlController extends Controller
      * @throws \yii\base\Exception
      * @since 3.4.0
      */
-    public function actionSaveSchema()
+    public function actionSaveSchema(): ?Response
     {
         $this->requirePostRequest();
         $this->requireAdmin();

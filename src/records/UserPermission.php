@@ -23,7 +23,7 @@ class UserPermission extends ActiveRecord
     /**
      * @inheritdoc
      */
-    public function rules()
+    public function rules(): array
     {
         return [
             [['name'], 'unique'],

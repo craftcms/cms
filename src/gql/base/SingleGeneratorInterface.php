@@ -19,7 +19,7 @@ interface SingleGeneratorInterface
      * Generate a single GraphQL type based on a context.
      *
      * @param mixed $context Context for generated types
-     * @return mixed|null
+     * @return mixed
      * @since 3.5.0
      */
     public static function generateType($context);

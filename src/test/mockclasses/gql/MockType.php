@@ -33,16 +33,25 @@ class MockType extends ScalarType
         return 'mockType';
     }
 
+    /**
+     * @inheritdoc
+     */
     public function serialize($value)
     {
         return 'mock';
     }
 
+    /**
+     * @inheritdoc
+     */
     public function parseValue($value)
     {
         return 'mock';
     }
 
+    /**
+     * @inheritdoc
+     */
     public function parseLiteral($valueNode, array $variables = null)
     {
         return 'mock';

@@ -18,7 +18,7 @@ use GraphQL\Type\Definition\Type;
 class Structure
 {
     /**
-     * @inheritdoc
+     * Returns the mutation arguments.
      */
     public static function getArguments(): array
     {

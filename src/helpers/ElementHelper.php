@@ -118,7 +118,7 @@ class ElementHelper
      * @param ElementInterface $element
      * @throws OperationAbortedException if a unique URI could not be found
      */
-    public static function setUniqueUri(ElementInterface $element)
+    public static function setUniqueUri(ElementInterface $element): void
     {
         $uriFormat = $element->getUriFormat();
 
@@ -428,7 +428,7 @@ class ElementHelper
      *
      * @param ElementInterface[] $elements The array of elements.
      */
-    public static function setNextPrevOnElements(array $elements)
+    public static function setNextPrevOnElements(array $elements): void
     {
         /** @var ElementInterface $lastElement */
         $lastElement = null;
@@ -457,7 +457,7 @@ class ElementHelper
      * @param string|null $context The context
      * @return array|null The source definition, or null if it cannot be found
      */
-    public static function findSource(string $elementType, string $sourceKey, ?string $context = null)
+    public static function findSource(string $elementType, string $sourceKey, ?string $context = null): ?array
     {
         /** @var string|ElementInterface $elementType */
         $path = explode('/', $sourceKey);
@@ -502,7 +502,7 @@ class ElementHelper
      * @return string|null
      * @since 3.5.0
      */
-    public static function translationDescription(string $translationMethod)
+    public static function translationDescription(string $translationMethod): ?string
     {
         switch ($translationMethod) {
             case Field::TRANSLATION_METHOD_SITE:

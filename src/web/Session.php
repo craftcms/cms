@@ -57,7 +57,7 @@ class Session extends \yii\web\Session
      * {% endfor %}
      * ```
      */
-    public function getAllFlashes($delete = false)
+    public function getAllFlashes($delete = false): array
     {
         return parent::getAllFlashes($delete);
     }
@@ -78,7 +78,7 @@ class Session extends \yii\web\Session
      * {% endif %}
      * ```
      */
-    public function hasFlash($key)
+    public function hasFlash($key): bool
     {
         return parent::hasFlash($key);
     }

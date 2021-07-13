@@ -138,7 +138,7 @@ class Db
      * @param mixed $date The date to be prepared
      * @return string|null The prepped date, or `null` if it could not be prepared
      */
-    public static function prepareDateForDb($date)
+    public static function prepareDateForDb($date): ?string
     {
         $date = DateTimeHelper::toDateTime($date);
 
@@ -939,7 +939,7 @@ class Db
      * @return int|null
      * @since 3.1.0
      */
-    public static function idByUid(string $table, string $uid, ?Connection $db = null)
+    public static function idByUid(string $table, string $uid, ?Connection $db = null): ?int
     {
         if ($db === null) {
             $db = self::db();
@@ -985,7 +985,7 @@ class Db
      * @return string|null
      * @since 3.1.0
      */
-    public static function uidById(string $table, int $id, ?Connection $db = null)
+    public static function uidById(string $table, int $id, ?Connection $db = null): ?string
     {
         if ($db === null) {
             $db = self::db();
@@ -1165,7 +1165,7 @@ class Db
      *
      * @since 3.5.12.1
      */
-    public static function reset()
+    public static function reset(): void
     {
         if (self::$_db) {
             self::$_db->close();
@@ -1216,7 +1216,7 @@ class Db
      *
      * @param mixed &$value The param value.
      */
-    private static function _normalizeEmptyValue(&$value)
+    private static function _normalizeEmptyValue(&$value): void
     {
         if ($value === null) {
             $value = ':empty:';

@@ -52,7 +52,7 @@ class ArgumentManager extends Component
 
     private $_handlersCreated = false;
 
-    public function init()
+    public function init(): void
     {
         $handlers = [
             'relatedToEntries' => RelatedEntries::class,

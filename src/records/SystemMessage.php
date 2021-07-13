@@ -27,7 +27,7 @@ class SystemMessage extends ActiveRecord
     /**
      * @inheritdoc
      */
-    public function rules()
+    public function rules(): array
     {
         return [
             [['key'], 'unique', 'targetAttribute' => ['key', 'language']],

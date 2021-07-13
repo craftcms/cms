@@ -56,7 +56,7 @@ class Gc extends Component
      * @param bool $force Whether garbage collection should be forced. If left as `false`, then
      * garbage collection will only run if a random condition passes, factoring in [[probability]].
      */
-    public function run(bool $force = false)
+    public function run(bool $force = false): void
     {
         if (!$force && mt_rand(0, 1000000) >= $this->probability) {
             return;
@@ -112,7 +112,7 @@ class Gc extends Component
      *
      * @param string|string[] $tables The table(s) to delete rows from. They must have a `dateDeleted` column.
      */
-    public function hardDelete($tables)
+    public function hardDelete($tables): void
     {
         $generalConfig = Craft::$app->getConfig()->getGeneral();
         if (!$generalConfig->softDeleteDuration && !$this->deleteAllTrashed) {
@@ -147,7 +147,6 @@ class Gc extends Component
      * @param string $elementType The element type
      * @param string $table The extension table name
      * @param string $fk The column name that contains the foreign key to `elements.id`
-     * @return void
      * @since 3.6.6
      */
     public function deletePartialElements(string $elementType, string $table, string $fk): void
@@ -181,7 +180,7 @@ SQL;
     /**
      * Deletes any session rows that have gone stale.
      */
-    private function _deleteStaleSessions()
+    private function _deleteStaleSessions(): void
     {
         $generalConfig = Craft::$app->getConfig()->getGeneral();
 
@@ -199,7 +198,6 @@ SQL;
     /**
      * Deletes any feature announcement rows that have gone stale.
      *
-     * @return void
      */
     private function _deleteStaleAnnouncements(): void
     {
@@ -210,7 +208,6 @@ SQL;
     /**
      * Deletes any orphaned rows in the `drafts` and `revisions` tables.
      *
-     * @return void
      */
     private function _deleteOrphanedDraftsAndRevisions(): void
     {

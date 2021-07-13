@@ -30,7 +30,7 @@ abstract class FieldLayoutElement extends BaseObject implements FieldLayoutEleme
     /**
      * @inheritdoc
      */
-    public function fields()
+    public function fields(): array
     {
         $fields = $this->baseFields();
         if (!$this->hasCustomWidth()) {
@@ -50,7 +50,7 @@ abstract class FieldLayoutElement extends BaseObject implements FieldLayoutEleme
     /**
      * @inheritdoc
      */
-    public function settingsHtml()
+    public function settingsHtml(): ?string
     {
         return null;
     }

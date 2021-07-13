@@ -53,7 +53,7 @@ class SessionBehavior extends Behavior
      *
      * @param string $message The message.
      */
-    public function setNotice(string $message)
+    public function setNotice(string $message): void
     {
         if (Craft::$app->getRequest()->getIsCpRequest()) {
             $this->owner->setFlash('cp-notice', $message);
@@ -71,7 +71,7 @@ class SessionBehavior extends Behavior
      *
      * @param string $message The message.
      */
-    public function setError(string $message)
+    public function setError(string $message): void
     {
         if (Craft::$app->getRequest()->getIsCpRequest()) {
             $this->owner->setFlash('cp-error', $message);
@@ -119,7 +119,7 @@ class SessionBehavior extends Behavior
      * @throws Exception if $name isn't an asset bundle class name
      * @see getAssetBundleFlashes()
      */
-    public function addAssetBundleFlash(string $name, int $position = null)
+    public function addAssetBundleFlash(string $name, int $position = null): void
     {
         if (!is_subclass_of($name, AssetBundle::class)) {
             throw new Exception("$name is not an asset bundle");
@@ -155,7 +155,7 @@ class SessionBehavior extends Behavior
      * @see getJsFlashes()
      * @see View::registerJs()
      */
-    public function addJsFlash(string $js, int $position = View::POS_READY, string $key = null)
+    public function addJsFlash(string $js, int $position = View::POS_READY, string $key = null): void
     {
         $scripts = $this->getJsFlashes();
         $scripts[] = [$js, $position, $key];
@@ -182,7 +182,7 @@ class SessionBehavior extends Behavior
      *
      * @param string $action
      */
-    public function authorize(string $action)
+    public function authorize(string $action): void
     {
         $access = $this->owner->get($this->authAccessParam, []);
 
@@ -197,7 +197,7 @@ class SessionBehavior extends Behavior
      *
      * @param string $action
      */
-    public function deauthorize(string $action)
+    public function deauthorize(string $action): void
     {
         $access = $this->owner->get($this->authAccessParam, []);
         $index = array_search($action, $access, true);

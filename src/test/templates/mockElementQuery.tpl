@@ -96,7 +96,7 @@ class {className} extends {element}Query
     /**
      * Return a return value.
      *
-     * @return mixed|null
+     * @return array|null
      */
     public function one($db = null) {
         return !empty($this->returnValues) ? reset($this->returnValues) : null;

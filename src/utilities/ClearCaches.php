@@ -71,7 +71,7 @@ class ClearCaches extends Utility
     /**
      * @inheritdoc
      */
-    public static function iconPath()
+    public static function iconPath(): ?string
     {
         return Craft::getAlias('@appicons/trash.svg');
     }

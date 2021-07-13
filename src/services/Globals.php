@@ -212,7 +212,7 @@ class Globals extends Component
      * @param int|null $siteId
      * @return GlobalSet|null
      */
-    public function getSetById(int $globalSetId, int $siteId = null)
+    public function getSetById(int $globalSetId, int $siteId = null): ?GlobalSet
     {
         /** @noinspection PhpUnhandledExceptionInspection */
         $currentSiteId = Craft::$app->getSites()->getCurrentSite()->id;
@@ -247,7 +247,7 @@ class Globals extends Component
      * @param int|null $siteId
      * @return GlobalSet|null
      */
-    public function getSetByHandle(string $globalSetHandle, int $siteId = null)
+    public function getSetByHandle(string $globalSetHandle, int $siteId = null): ?GlobalSet
     {
         /** @noinspection PhpUnhandledExceptionInspection */
         $currentSiteId = Craft::$app->getSites()->getCurrentSite()->id;
@@ -318,7 +318,7 @@ class Globals extends Component
      *
      * @param ConfigEvent $event
      */
-    public function handleChangedGlobalSet(ConfigEvent $event)
+    public function handleChangedGlobalSet(ConfigEvent $event): void
     {
         $globalSetUid = $event->tokenMatches[0];
         $data = $event->newValue;
@@ -473,7 +473,7 @@ class Globals extends Component
      *
      * @param ConfigEvent $event
      */
-    public function handleDeletedGlobalSet(ConfigEvent $event)
+    public function handleDeletedGlobalSet(ConfigEvent $event): void
     {
         $uid = $event->tokenMatches[0];
         $globalSetRecord = $this->_getGlobalSetRecord($uid);
@@ -513,7 +513,7 @@ class Globals extends Component
      *
      * @param FieldEvent $event
      */
-    public function pruneDeletedField(FieldEvent $event)
+    public function pruneDeletedField(FieldEvent $event): void
     {
         $field = $event->field;
         $fieldUid = $field->uid;

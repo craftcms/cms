@@ -40,6 +40,7 @@ use craft\helpers\Html;
 use craft\helpers\Json;
 use craft\helpers\UrlHelper;
 use craft\models\EntryType;
+use craft\models\FieldLayout;
 use craft\models\Section;
 use craft\models\Site;
 use craft\records\Entry as EntryRecord;
@@ -107,7 +108,7 @@ class Entry extends Element
     /**
      * @inheritdoc
      */
-    public static function refHandle()
+    public static function refHandle(): ?string
     {
         return 'entry';
     }
@@ -654,7 +655,7 @@ class Entry extends Element
     /**
      * @inheritdoc
      */
-    protected static function prepElementQueryForTableAttribute(ElementQueryInterface $elementQuery, string $attribute)
+    protected static function prepElementQueryForTableAttribute(ElementQueryInterface $elementQuery, string $attribute): void
     {
         switch ($attribute) {
             case 'author':
@@ -780,7 +781,7 @@ class Entry extends Element
      * @inheritdoc
      * @since 3.5.0
      */
-    public function init()
+    public function init(): void
     {
         parent::init();
         $this->_oldTypeId = $this->typeId;
@@ -789,7 +790,7 @@ class Entry extends Element
     /**
      * @inheritdoc
      */
-    public function extraFields()
+    public function extraFields(): array
     {
         $names = parent::extraFields();
         $names[] = 'author';
@@ -936,7 +937,7 @@ class Entry extends Element
      * @inheritdoc
      * @throws InvalidConfigException if [[siteId]] is not set to a site ID that the entry's section is enabled for
      */
-    public function getUriFormat()
+    public function getUriFormat(): ?string
     {
         $sectionSiteSettings = $this->getSection()->getSiteSettings();
 
@@ -1003,7 +1004,7 @@ class Entry extends Element
      *
      * @return string|null
      */
-    public function getRef()
+    public function getRef(): ?string
     {
         return $this->getSection()->handle . '/' . $this->slug;
     }
@@ -1019,7 +1020,7 @@ class Entry extends Element
     /**
      * @inheritdoc
      */
-    public function getTitleTranslationDescription()
+    public function getTitleTranslationDescription(): ?string
     {
         return ElementHelper::translationDescription($this->getType()->titleTranslationMethod);
     }
@@ -1036,7 +1037,7 @@ class Entry extends Element
     /**
      * @inheritdoc
      */
-    public function getFieldLayout()
+    public function getFieldLayout(): ?FieldLayout
     {
         if (($fieldLayout = parent::getFieldLayout()) !== null) {
             return $fieldLayout;
@@ -1152,7 +1153,7 @@ class Entry extends Element
      * @return User|null
      * @throws InvalidConfigException if [[authorId]] is set but invalid
      */
-    public function getAuthor()
+    public function getAuthor(): ?User
     {
         if ($this->_author === null) {
             if ($this->authorId === null) {
@@ -1173,7 +1174,7 @@ class Entry extends Element
      *
      * @param User|null $author
      */
-    public function setAuthor(User $author = null)
+    public function setAuthor(User $author = null): void
     {
         $this->_author = $author;
     }
@@ -1181,7 +1182,7 @@ class Entry extends Element
     /**
      * @inheritdoc
      */
-    public function getStatus()
+    public function getStatus(): ?string
     {
         $status = parent::getStatus();
 
@@ -1316,7 +1317,7 @@ class Entry extends Element
     /**
      * @inheritdoc
      */
-    public function setEagerLoadedElements(string $handle, array $elements)
+    public function setEagerLoadedElements(string $handle, array $elements): void
     {
         if ($handle === 'author') {
             $this->_author = $elements[0] ?? false;
@@ -1489,7 +1490,7 @@ EOD;
      *
      * @since 3.0.3
      */
-    public function updateTitle()
+    public function updateTitle(): void
     {
         $entryType = $this->getType();
         if (!$entryType->hasTitleField) {
@@ -1603,7 +1604,7 @@ EOD;
      * @inheritdoc
      * @throws Exception if reasons
      */
-    public function afterSave(bool $isNew)
+    public function afterSave(bool $isNew): void
     {
         if (!$this->propagating) {
             $section = $this->getSection();
@@ -1665,7 +1666,7 @@ EOD;
     /**
      * @inheritdoc
      */
-    public function afterPropagate(bool $isNew)
+    public function afterPropagate(bool $isNew): void
     {
         parent::afterPropagate($isNew);
 
@@ -1710,7 +1711,7 @@ EOD;
     /**
      * @inheritdoc
      */
-    public function afterRestore()
+    public function afterRestore(): void
     {
         $section = $this->getSection();
         if ($section->type === Section::TYPE_STRUCTURE) {
@@ -1734,7 +1735,7 @@ EOD;
     /**
      * @inheritdoc
      */
-    public function afterMoveInStructure(int $structureId)
+    public function afterMoveInStructure(int $structureId): void
     {
         // Was the entry moved within its section's structure?
         $section = $this->getSection();

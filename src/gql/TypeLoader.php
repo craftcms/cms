@@ -45,7 +45,7 @@ class TypeLoader
      * @param string $type
      * @param callable $loader
      */
-    public static function registerType(string $type, callable $loader)
+    public static function registerType(string $type, callable $loader): void
     {
         self::$_typeLoaders[$type] = $loader;
     }
@@ -53,7 +53,7 @@ class TypeLoader
     /**
      * Flush all registered type loaders.
      */
-    public static function flush()
+    public static function flush(): void
     {
         self::$_typeLoaders = [];
     }

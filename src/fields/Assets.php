@@ -198,7 +198,7 @@ class Assets extends BaseRelationField
     /**
      * @inheritdoc
      */
-    public function init()
+    public function init(): void
     {
         parent::init();
 
@@ -293,7 +293,7 @@ class Assets extends BaseRelationField
     /**
      * @inheritdoc
      */
-    public function getSettingsHtml()
+    public function getSettingsHtml(): ?string
     {
         $this->singleUploadLocationSource = $this->_volumeSourceToFolderSource($this->singleUploadLocationSource);
         $this->defaultUploadLocationSource = $this->_volumeSourceToFolderSource($this->defaultUploadLocationSource);
@@ -324,7 +324,7 @@ class Assets extends BaseRelationField
      *
      * @param ElementInterface $element
      */
-    public function validateFileType(ElementInterface $element)
+    public function validateFileType(ElementInterface $element): void
     {
         // Make sure the field restricts file types
         if (!$this->restrictFiles) {
@@ -363,7 +363,7 @@ class Assets extends BaseRelationField
      *
      * @param ElementInterface $element
      */
-    public function validateFileSize(ElementInterface $element)
+    public function validateFileSize(ElementInterface $element): void
     {
         $maxSize = AssetsHelper::getMaxUploadSize();
 
@@ -488,7 +488,7 @@ class Assets extends BaseRelationField
     /**
      * @inheritdoc
      */
-    public function afterElementSave(ElementInterface $element, bool $isNew)
+    public function afterElementSave(ElementInterface $element, bool $isNew): void
     {
         // Figure out what we're working with and set up some initial variables.
         $isDraftOrRevision = $element && $element->id && ElementHelper::isDraftOrRevision($element);
@@ -592,13 +592,13 @@ class Assets extends BaseRelationField
      * @inheritdoc
      * @since 3.3.0
      */
-    public function getEagerLoadingGqlConditions()
+    public function getEagerLoadingGqlConditions(): ?array
     {
         $allowedEntities = Gql::extractAllowedEntitiesFromSchema();
         $allowedVolumeUids = $allowedEntities['volumes'] ?? [];
 
         if (empty($allowedVolumeUids)) {
-            return false;
+            return null;
         }
 
         $volumeIds = Db::idsByUids(DbTable::VOLUMES, $allowedVolumeUids);
@@ -946,7 +946,7 @@ class Assets extends BaseRelationField
      * @param string $sourceKey
      * @return int|null
      */
-    public function _volumeIdBySourceKey(string $sourceKey)
+    public function _volumeIdBySourceKey(string $sourceKey): ?int
     {
         $parts = explode(':', $sourceKey, 2);
 
@@ -963,7 +963,7 @@ class Assets extends BaseRelationField
      *
      * @return VolumeInterface|null
      */
-    private function _uploadVolume()
+    private function _uploadVolume(): ?VolumeInterface
     {
         if ($this->useSingleFolder) {
             $sourceKey = $this->singleUploadLocationSource;

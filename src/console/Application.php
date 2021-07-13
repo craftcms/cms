@@ -38,9 +38,9 @@ class Application extends \yii\console\Application
     use ApplicationTrait;
 
     /**
-     * Initializes the console app by creating the command runner.
+     * @inheritdoc
      */
-    public function init()
+    public function init(): void
     {
         $this->state = self::STATE_INIT;
         $this->_preInit();
@@ -134,7 +134,7 @@ class Application extends \yii\console\Application
      *
      * @return User
      */
-    public function getUser()
+    public function getUser(): User
     {
         return $this->get('user');
     }
@@ -150,7 +150,7 @@ class Application extends \yii\console\Application
      * @see has()
      * @see set()
      */
-    public function get($id, $throwException = true)
+    public function get($id, $throwException = true): ?object
     {
         // Is this the first time the queue component is requested?
         $isFirstQueue = $id === 'queue' && !$this->has($id, true);

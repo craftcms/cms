@@ -121,7 +121,7 @@ abstract class Api
      *
      * @param string[][]|string[] The response headers
      */
-    public static function processResponseHeaders(array $headers)
+    public static function processResponseHeaders(array $headers): void
     {
         // Normalize the headers
         $headers = self::_normalizeHeaders(($headers));

@@ -21,7 +21,7 @@ class GarnishAsset extends AssetBundle
     /**
      * @inheritdoc
      */
-    public function init()
+    public function init(): void
     {
         $this->sourcePath = '@lib/garnishjs';
 

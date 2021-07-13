@@ -475,7 +475,7 @@ EOD;
      *
      * @param string $command
      */
-    private function _outputCommand(string $command)
+    private function _outputCommand(string $command): void
     {
         $script = FileHelper::normalizePath($this->request->getScriptFile());
         if (!Platform::isWindows() && ($home = App::env('HOME')) !== false) {

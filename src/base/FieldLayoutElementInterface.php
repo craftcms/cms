@@ -36,7 +36,7 @@ interface FieldLayoutElementInterface extends Arrayable
      *
      * @return string|null
      */
-    public function settingsHtml();
+    public function settingsHtml(): ?string;
 
     /**
      * Returns the element’s form HTMl.
@@ -47,5 +47,5 @@ interface FieldLayoutElementInterface extends Arrayable
      * @param bool $static Whether the form should be static (non-interactive)
      * @return string|null
      */
-    public function formHtml(ElementInterface $element = null, bool $static = false);
+    public function formHtml(ElementInterface $element = null, bool $static = false): ?string;
 }

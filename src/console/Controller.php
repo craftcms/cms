@@ -12,6 +12,7 @@ use craft\events\DefineConsoleActionsEvent;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Console;
 use craft\helpers\StringHelper;
+use ReflectionMethod;
 use Seld\CliPrompt\CliPrompt;
 use yii\base\Action;
 use yii\base\InvalidConfigException;
@@ -122,7 +123,7 @@ class Controller extends YiiController
      * @inheritdoc
      * @throws InvalidConfigException
      */
-    public function init()
+    public function init(): void
     {
         parent::init();
         $this->checkTty();
@@ -164,7 +165,7 @@ class Controller extends YiiController
     /**
      * @inheritdoc
      */
-    public function beforeAction($action)
+    public function beforeAction($action): bool
     {
         // Make sure this isn't a root user
         if (!$this->checkRootUser()) {
@@ -299,7 +300,7 @@ class Controller extends YiiController
      * @param Action $action
      * @return \ReflectionMethod
      */
-    protected function getActionMethodReflection($action)
+    protected function getActionMethodReflection($action): ReflectionMethod
     {
         if ($action instanceof CallableAction) {
             if (!isset($this->_reflections[$action->id])) {

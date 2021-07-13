@@ -132,6 +132,7 @@ abstract class ElementMutationResolver extends MutationResolver
      * Save an element.
      *
      * @param ElementInterface $element
+     * @return ElementInterface
      * @throws UserError if validation errors.
      */
     protected function saveElement(ElementInterface $element): ElementInterface

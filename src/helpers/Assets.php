@@ -127,7 +127,7 @@ class Assets
      * @param bool $preventPluginModifications if set to true, will prevent plugins from modify
      * @return string
      */
-    public static function prepareAssetName(string $name, bool $isFilename = true, bool $preventPluginModifications = false)
+    public static function prepareAssetName(string $name, bool $isFilename = true, bool $preventPluginModifications = false): string
     {
         if ($isFilename) {
             $baseName = pathinfo($name, PATHINFO_FILENAME);
@@ -274,7 +274,7 @@ class Assets
      *
      * @param VolumeFolder[] &$tree array passed by reference of the sortable folders.
      */
-    public static function sortFolderTree(array &$tree)
+    public static function sortFolderTree(array &$tree): void
     {
         ArrayHelper::multisort($tree, function($folder) {
             return $folder->getVolume()->sortOrder;
@@ -373,7 +373,7 @@ class Assets
     /**
      * Builds the internal file kinds array, if it hasn't been built already.
      */
-    private static function _buildFileKinds()
+    private static function _buildFileKinds(): void
     {
         if (self::$_fileKinds === null) {
             self::$_fileKinds = [
@@ -764,7 +764,7 @@ class Assets
      * @throws InvalidArgumentException if the size can’t be parsed
      * @since 3.5.0
      */
-    public static function parseSrcsetSize($size)
+    public static function parseSrcsetSize($size): array
     {
         if (is_numeric($size)) {
             $size = $size . 'w';

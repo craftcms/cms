@@ -15,6 +15,7 @@ use craft\base\ElementInterface;
 use craft\base\Field;
 use craft\base\PreviewableFieldInterface;
 use craft\db\Query;
+use craft\db\QueryAbortedException;
 use craft\db\Table as DbTable;
 use craft\elements\db\ElementQuery;
 use craft\elements\db\ElementQueryInterface;
@@ -222,7 +223,7 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
     /**
      * @inheritdoc
      */
-    public function init()
+    public function init(): void
     {
         parent::init();
 
@@ -271,7 +272,7 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
     /**
      * @inheritdoc
      */
-    public function getSettingsHtml()
+    public function getSettingsHtml(): ?string
     {
         $variables = $this->settingsTemplateVariables();
         return Craft::$app->getView()->renderTemplate($this->settingsTemplate, $variables);
@@ -302,7 +303,7 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
      *
      * @param ElementInterface $element
      */
-    public function validateRelatedElements(ElementInterface $element)
+    public function validateRelatedElements(ElementInterface $element): void
     {
         // Prevent circular relations from worrying about this entry
         $sourceId = $element->getCanonicalId();
@@ -453,10 +454,10 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
     /**
      * @inheritdoc
      */
-    public function modifyElementsQuery(ElementQueryInterface $query, $value)
+    public function modifyElementsQuery(ElementQueryInterface $query, $value): void
     {
         if (empty($value)) {
-            return null;
+            return;
         }
 
         if (!is_array($value)) {
@@ -514,19 +515,17 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
         }
 
         if (empty($conditions)) {
-            return false;
+            throw new QueryAbortedException();
         }
 
         array_unshift($conditions, 'or');
         $query->subQuery->andWhere($conditions);
-
-        return null;
     }
 
     /**
      * @inheritdoc
      */
-    public function modifyElementIndexQuery(ElementQueryInterface $query)
+    public function modifyElementIndexQuery(ElementQueryInterface $query): void
     {
         $criteria = [
             'status' => null,
@@ -705,7 +704,7 @@ JS;
     /**
      * @inheritdoc
      */
-    public function afterSave(bool $isNew)
+    public function afterSave(bool $isNew): void
     {
         // If the propagation method just changed, resave all the Matrix blocks
         if ($this->oldSettings !== null) {
@@ -723,7 +722,7 @@ JS;
     /**
      * @inheritdoc
      */
-    public function afterElementSave(ElementInterface $element, bool $isNew)
+    public function afterElementSave(ElementInterface $element, bool $isNew): void
     {
         // Skip if nothing changed, or the element is just propagating and we're not localizing relations
         if (
@@ -784,7 +783,7 @@ JS;
      *
      * @return string|null
      */
-    public function getTargetSiteFieldHtml()
+    public function getTargetSiteFieldHtml(): ?string
     {
         /** @var ElementInterface|string $class */
         $class = static::elementType();
@@ -843,7 +842,7 @@ JS;
      *
      * @return string|null
      */
-    public function getViewModeFieldHtml()
+    public function getViewModeFieldHtml(): ?string
     {
         $supportedViewModes = $this->supportedViewModes();
 

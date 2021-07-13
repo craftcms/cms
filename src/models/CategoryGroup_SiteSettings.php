@@ -84,7 +84,7 @@ class CategoryGroup_SiteSettings extends Model
      *
      * @param CategoryGroup $group
      */
-    public function setGroup(CategoryGroup $group)
+    public function setGroup(CategoryGroup $group): void
     {
         $this->_group = $group;
     }
@@ -111,7 +111,7 @@ class CategoryGroup_SiteSettings extends Model
     /**
      * @inheritdoc
      */
-    public function attributeLabels()
+    public function attributeLabels(): array
     {
         return [
             'template' => Craft::t('app', 'Template'),

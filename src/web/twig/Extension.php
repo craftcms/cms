@@ -54,6 +54,7 @@ use DateInterval;
 use DateTime;
 use DateTimeInterface;
 use DateTimeZone;
+use Traversable;
 use Twig\Environment as TwigEnvironment;
 use Twig\Error\RuntimeError;
 use Twig\Extension\AbstractExtension;
@@ -512,7 +513,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
      * JSON_HEX_APOS, JSON_NUMERIC_CHECK, JSON_PRETTY_PRINT, JSON_UNESCAPED_SLASHES,
      * JSON_FORCE_OBJECT
      * @param int $depth The maximum depth
-     * @return mixed The JSON encoded value.
+     * @return string|false The JSON encoded value.
      */
     public function jsonEncodeFilter($value, int $options = null, int $depth = 512)
     {
@@ -757,9 +758,9 @@ class Extension extends AbstractExtension implements GlobalsInterface
      * @param string|null $format The target format, null to use the default
      * @param DateTimeZone|string|false|null $timezone The target timezone, null to use the default, false to leave unchanged
      * @param string|null $locale The target locale the date should be formatted for. By default the current system locale will be used.
-     * @return mixed|string
+     * @return string
      */
-    public function dateFilter(TwigEnvironment $env, $date, string $format = null, $timezone = null, string $locale = null)
+    public function dateFilter(TwigEnvironment $env, $date, string $format = null, $timezone = null, string $locale = null): string
     {
         if ($date instanceof \DateInterval) {
             return \twig_date_format_filter($env, $date, $format, $timezone);
@@ -856,9 +857,9 @@ class Extension extends AbstractExtension implements GlobalsInterface
      * @param string|null $format The target format, null to use the default
      * @param DateTimeZone|string|false|null $timezone The target timezone, null to use the default, false to leave unchanged
      * @param string|null $locale The target locale the date should be formatted for. By default the current systme locale will be used.
-     * @return mixed|string
+     * @return string
      */
-    public function timeFilter(TwigEnvironment $env, $date, string $format = null, $timezone = null, string $locale = null)
+    public function timeFilter(TwigEnvironment $env, $date, string $format = null, $timezone = null, string $locale = null): string
     {
         // Is this a custom PHP date format?
         if ($format !== null && !in_array($format, [Locale::LENGTH_SHORT, Locale::LENGTH_MEDIUM, Locale::LENGTH_LONG, Locale::LENGTH_FULL], true)) {
@@ -886,9 +887,9 @@ class Extension extends AbstractExtension implements GlobalsInterface
      * @param string|null $format The target format, null to use the default
      * @param DateTimeZone|string|false|null $timezone The target timezone, null to use the default, false to leave unchanged
      * @param string|null $locale The target locale the date should be formatted for. By default the current systme locale will be used.
-     * @return mixed|string
+     * @return string
      */
-    public function datetimeFilter(TwigEnvironment $env, $date, string $format = null, $timezone = null, string $locale = null)
+    public function datetimeFilter(TwigEnvironment $env, $date, string $format = null, $timezone = null, string $locale = null): string
     {
         // Is this a custom PHP date format?
         if ($format !== null && !in_array($format, [Locale::LENGTH_SHORT, Locale::LENGTH_MEDIUM, Locale::LENGTH_LONG, Locale::LENGTH_FULL], true)) {
@@ -927,7 +928,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
      * @param callable|null $arrow
      * @return array
      */
-    public function filterFilter(TwigEnvironment $env, $arr, $arrow = null)
+    public function filterFilter(TwigEnvironment $env, $arr, $arrow = null): array
     {
         if ($arrow === null) {
             return array_filter($arr);
@@ -1244,7 +1245,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
      * @return PluginInterface|null The plugin, or `null` if it's not installed
      * @since 3.1.0
      */
-    public function pluginFunction(string $handle)
+    public function pluginFunction(string $handle): ?PluginInterface
     {
         return Craft::$app->getPlugins()->getPlugin($handle);
     }
@@ -1282,12 +1283,12 @@ class Extension extends AbstractExtension implements GlobalsInterface
     /**
      * Shuffles an array.
      *
-     * @param mixed $arr
-     * @return mixed
+     * @param array|Traversable $arr
+     * @return array
      */
-    public function shuffleFunction($arr)
+    public function shuffleFunction($arr): array
     {
-        if ($arr instanceof \Traversable) {
+        if ($arr instanceof Traversable) {
             $arr = iterator_to_array($arr, false);
         } else {
             $arr = array_merge($arr);
@@ -1312,7 +1313,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
      * (This argument is deprecated. The `|attr` filter should be used instead.)
      * @return string
      */
-    public function svgFunction($svg, bool $sanitize = null, bool $namespace = null, string $class = null)
+    public function svgFunction($svg, bool $sanitize = null, bool $namespace = null, string $class = null): string
     {
         if ($svg instanceof Asset) {
             try {
@@ -1391,7 +1392,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
     }
 
     /**
-     * @inheritdoc
+     * Registers global variables.
      */
     public function getGlobals(): array
     {

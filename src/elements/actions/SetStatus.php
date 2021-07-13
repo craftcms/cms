@@ -54,7 +54,7 @@ class SetStatus extends ElementAction
     /**
      * @inheritdoc
      */
-    public function getTriggerHtml()
+    public function getTriggerHtml(): ?string
     {
         return Craft::$app->getView()->renderTemplate('_components/elementactions/SetStatus/trigger');
     }

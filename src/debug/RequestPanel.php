@@ -18,7 +18,7 @@ use Craft;
 class RequestPanel extends \yii\debug\panels\RequestPanel
 {
     /**
-     *
+     * @inheritdoc
      */
     public function save()
     {

@@ -29,7 +29,7 @@ abstract class CategoryFixture extends BaseElementFixture
     /**
      * @inheritdoc
      */
-    public function init()
+    public function init(): void
     {
         parent::init();
 

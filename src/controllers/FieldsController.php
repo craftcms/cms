@@ -35,7 +35,7 @@ class FieldsController extends Controller
     /**
      * @inheritdoc
      */
-    public function beforeAction($action)
+    public function beforeAction($action): bool
     {
         // All field actions require an admin
         $this->requireAdmin();
@@ -292,7 +292,7 @@ JS;
      * @return Response|null
      * @throws BadRequestHttpException
      */
-    public function actionSaveField()
+    public function actionSaveField(): ?Response
     {
         $this->requirePostRequest();
 

@@ -101,7 +101,7 @@ class TagsController extends Controller
      * @return Response|null
      * @throws BadRequestHttpException
      */
-    public function actionSaveTagGroup()
+    public function actionSaveTagGroup(): ?Response
     {
         $this->requirePostRequest();
         $this->requireAdmin();

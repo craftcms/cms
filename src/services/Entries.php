@@ -35,7 +35,7 @@ class Entries extends Component
      * @param array $criteria
      * @return Entry|null The entry with the given ID, or `null` if an entry could not be found.
      */
-    public function getEntryById(int $entryId, $siteId = null, array $criteria = [])
+    public function getEntryById(int $entryId, $siteId = null, array $criteria = []): ?Entry
     {
         if (!$entryId) {
             return null;

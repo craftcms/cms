@@ -72,7 +72,7 @@ class Local extends Volume implements LocalVolumeInterface
     /**
      * @inheritdoc
      */
-    public function init()
+    public function init(): void
     {
         parent::init();
 
@@ -104,7 +104,7 @@ class Local extends Volume implements LocalVolumeInterface
     /**
      * @inheritdoc
      */
-    public function getSettingsHtml()
+    public function getSettingsHtml(): ?string
     {
         return Craft::$app->getView()->renderTemplate('_components/volumes/Local/settings',
             [
@@ -116,7 +116,7 @@ class Local extends Volume implements LocalVolumeInterface
      * @inheritdoc
      * @since 3.4.0
      */
-    public function afterSave(bool $isNew)
+    public function afterSave(bool $isNew): void
     {
         // If the folder doesn't exist yet, create it with a .gitignore file
         $path = $this->getRootPath();

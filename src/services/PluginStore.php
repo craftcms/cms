@@ -67,7 +67,7 @@ class PluginStore extends Component
      *
      * @param array $tokenArray
      */
-    public function saveToken(array $tokenArray)
+    public function saveToken(array $tokenArray): void
     {
         $oneDay = new DateTime();
         $oneDay->add(new DateInterval('P1D'));
@@ -120,7 +120,7 @@ class PluginStore extends Component
      *
      * @return CraftIdToken|null
      */
-    public function getToken()
+    public function getToken(): ?CraftIdToken
     {
         $userId = Craft::$app->getUser()->getIdentity()->id;
 
@@ -152,7 +152,7 @@ class PluginStore extends Component
     /**
      * Deletes an OAuth token.
      */
-    public function deleteToken()
+    public function deleteToken(): void
     {
         // Delete DB token
 
@@ -198,7 +198,7 @@ class PluginStore extends Component
      * @param $userId
      * @return CraftIdToken|null
      */
-    public function getTokenByUserId($userId)
+    public function getTokenByUserId($userId): ?CraftIdToken
     {
         $record = OauthTokenRecord::findOne(['userId' => $userId, 'provider' => 'craftid']);
 

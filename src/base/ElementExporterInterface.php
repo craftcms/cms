@@ -30,7 +30,7 @@ interface ElementExporterInterface extends ComponentInterface
      *
      * @param string $elementType
      */
-    public function setElementType(string $elementType);
+    public function setElementType(string $elementType): void;
 
     /**
      * Creates the export data for elements fetched with the given element query.

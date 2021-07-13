@@ -20,7 +20,7 @@ class Site extends ArgumentHandler
     protected $argumentName = 'site';
 
     /**
-     * @inheritDoc
+     * @inheritdoc
      */
     protected function handleArgument($argumentValue)
     {

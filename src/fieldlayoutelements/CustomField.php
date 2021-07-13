@@ -82,7 +82,7 @@ class CustomField extends BaseField
      *
      * @param FieldInterface $field
      */
-    public function setField(FieldInterface $field)
+    public function setField(FieldInterface $field): void
     {
         $this->_field = $field;
     }
@@ -103,7 +103,7 @@ class CustomField extends BaseField
      * @param string $uid
      * @throws InvalidArgumentException if $uid is invalid
      */
-    public function setFieldUid(string $uid)
+    public function setFieldUid(string $uid): void
     {
         if (($field = \Craft::$app->getFields()->getFieldByUid($uid)) === null) {
             throw new InvalidArgumentException("Invalid field UID: $uid");
@@ -114,7 +114,7 @@ class CustomField extends BaseField
     /**
      * @inheritdoc
      */
-    public function fields()
+    public function fields(): array
     {
         $fields = parent::fields();
         $fields['fieldUid'] = 'fieldUid';
@@ -147,7 +147,7 @@ class CustomField extends BaseField
     /**
      * @inheritdoc
      */
-    protected function defaultLabel(ElementInterface $element = null, bool $static = false)
+    protected function defaultLabel(ElementInterface $element = null, bool $static = false): ?string
     {
         if ($this->_field->name !== '' && $this->_field->name !== null && $this->_field->name !== '__blank__') {
             return Craft::t('site', $this->_field->name);
@@ -174,7 +174,7 @@ class CustomField extends BaseField
     /**
      * @inheritdoc
      */
-    protected function statusClass(ElementInterface $element = null, bool $static = false)
+    protected function statusClass(ElementInterface $element = null, bool $static = false): ?string
     {
         if ($element && ($status = $this->_field->getStatus($element))) {
             return $status[0];
@@ -185,7 +185,7 @@ class CustomField extends BaseField
     /**
      * @inheritdoc
      */
-    protected function statusLabel(ElementInterface $element = null, bool $static = false)
+    protected function statusLabel(ElementInterface $element = null, bool $static = false): ?string
     {
         if ($element && ($status = $this->_field->getStatus($element))) {
             return $status[1];
@@ -196,7 +196,7 @@ class CustomField extends BaseField
     /**
      * @inheritdoc
      */
-    protected function defaultInstructions(ElementInterface $element = null, bool $static = false)
+    protected function defaultInstructions(ElementInterface $element = null, bool $static = false): ?string
     {
         return $this->_field->instructions ? Craft::t('site', $this->_field->instructions) : null;
     }
@@ -204,7 +204,7 @@ class CustomField extends BaseField
     /**
      * @inheritdoc
      */
-    public function formHtml(ElementInterface $element = null, bool $static = false)
+    public function formHtml(ElementInterface $element = null, bool $static = false): ?string
     {
         $view = Craft::$app->getView();
         $registerDeltas = ($element->id ?? false) && $view->getIsDeltaRegistrationActive();
@@ -228,7 +228,7 @@ class CustomField extends BaseField
     /**
      * @inheritdoc
      */
-    protected function inputHtml(ElementInterface $element = null, bool $static = false): string
+    protected function inputHtml(ElementInterface $element = null, bool $static = false): ?string
     {
         $value = $element ? $element->getFieldValue($this->_field->handle) : $this->_field->normalizeValue(null);
 
@@ -255,7 +255,7 @@ class CustomField extends BaseField
     /**
      * @inheritdoc
      */
-    protected function translationDescription(ElementInterface $element = null, bool $static = false)
+    protected function translationDescription(ElementInterface $element = null, bool $static = false): ?string
     {
         return $this->_field->getTranslationDescription($element);
     }

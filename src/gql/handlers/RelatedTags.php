@@ -21,7 +21,7 @@ class RelatedTags extends RelationArgumentHandler
     protected $argumentName = 'relatedToTags';
 
     /**
-     * @inheritDoc
+     * @inheritdoc
      */
     protected function handleArgument($argumentValue)
     {

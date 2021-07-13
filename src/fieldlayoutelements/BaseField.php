@@ -185,7 +185,7 @@ abstract class BaseField extends FieldLayoutElement
     /**
      * @inheritdoc
      */
-    public function settingsHtml()
+    public function settingsHtml(): ?string
     {
         return Craft::$app->getView()->renderTemplate('_includes/forms/fld/field-settings', [
             'field' => $this,
@@ -198,7 +198,7 @@ abstract class BaseField extends FieldLayoutElement
     /**
      * @inheritdoc
      */
-    public function formHtml(ElementInterface $element = null, bool $static = false)
+    public function formHtml(ElementInterface $element = null, bool $static = false): ?string
     {
         $inputHtml = $this->inputHtml($element, $static);
         if ($inputHtml === null) {
@@ -292,7 +292,7 @@ abstract class BaseField extends FieldLayoutElement
      *
      * @return string|null
      */
-    public function label()
+    public function label(): ?string
     {
         if ($this->label !== null && $this->label !== '' && $this->label !== '__blank__') {
             return Craft::t('site', $this->label);
@@ -307,7 +307,7 @@ abstract class BaseField extends FieldLayoutElement
      * @param bool $static Whether the form should be static (non-interactive)
      * @return string|null
      */
-    protected function defaultLabel(ElementInterface $element = null, bool $static = false)
+    protected function defaultLabel(ElementInterface $element = null, bool $static = false): ?string
     {
         return null;
     }
@@ -330,7 +330,7 @@ abstract class BaseField extends FieldLayoutElement
      * @param bool $static Whether the form should be static (non-interactive)
      * @return string|null
      */
-    protected function statusClass(ElementInterface $element = null, bool $static = false)
+    protected function statusClass(ElementInterface $element = null, bool $static = false): ?string
     {
         return null;
     }
@@ -342,7 +342,7 @@ abstract class BaseField extends FieldLayoutElement
      * @param bool $static Whether the form should be static (non-interactive)
      * @return string|null
      */
-    protected function statusLabel(ElementInterface $element = null, bool $static = false)
+    protected function statusLabel(ElementInterface $element = null, bool $static = false): ?string
     {
         return null;
     }
@@ -354,7 +354,7 @@ abstract class BaseField extends FieldLayoutElement
      * @param bool $static Whether the form should be static (non-interactive)
      * @return string|null
      */
-    protected function defaultInstructions(ElementInterface $element = null, bool $static = false)
+    protected function defaultInstructions(ElementInterface $element = null, bool $static = false): ?string
     {
         return null;
     }
@@ -366,7 +366,7 @@ abstract class BaseField extends FieldLayoutElement
      * @param bool $static Whether the form should be static (non-interactive)
      * @return string|null
      */
-    abstract protected function inputHtml(ElementInterface $element = null, bool $static = false);
+    abstract protected function inputHtml(ElementInterface $element = null, bool $static = false): ?string;
 
     /**
      * Returns the field’s tip text.
@@ -375,7 +375,7 @@ abstract class BaseField extends FieldLayoutElement
      * @param bool $static Whether the form should be static (non-interactive)
      * @return string|null
      */
-    protected function tip(ElementInterface $element = null, bool $static = false)
+    protected function tip(ElementInterface $element = null, bool $static = false): ?string
     {
         return $this->tip ? Craft::t('site', $this->tip) : null;
     }
@@ -387,7 +387,7 @@ abstract class BaseField extends FieldLayoutElement
      * @param bool $static Whether the form should be static (non-interactive)
      * @return string|null
      */
-    protected function warning(ElementInterface $element = null, bool $static = false)
+    protected function warning(ElementInterface $element = null, bool $static = false): ?string
     {
         return $this->warning ? Craft::t('site', $this->warning) : null;
     }
@@ -429,7 +429,7 @@ abstract class BaseField extends FieldLayoutElement
      * @param bool $static Whether the form should be static (non-interactive)
      * @return string|null
      */
-    protected function translationDescription(ElementInterface $element = null, bool $static = false)
+    protected function translationDescription(ElementInterface $element = null, bool $static = false): ?string
     {
         return null;
     }

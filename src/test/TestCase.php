@@ -45,7 +45,7 @@ class TestCase extends Unit
      * @throws ReflectionException
      * @credit https://github.com/yiisoft/yii2/blob/master/tests/TestCase.php#L155
      */
-    protected function setInaccessibleProperty($object, $propertyName, $value, $revoke = true)
+    protected function setInaccessibleProperty($object, $propertyName, $value, bool $revoke = true): void
     {
         $class = new ReflectionClass($object);
 
@@ -72,7 +72,7 @@ class TestCase extends Unit
      * @throws ReflectionException
      * @credit https://github.com/yiisoft/yii2/blob/master/tests/TestCase.php#L176
      */
-    protected function getInaccessibleProperty($object, $propertyName, $revoke = true)
+    protected function getInaccessibleProperty($object, $propertyName, bool $revoke = true)
     {
         $class = new ReflectionClass($object);
 
@@ -102,7 +102,7 @@ class TestCase extends Unit
      * @throws ReflectionException
      * @credit https://github.com/yiisoft/yii2/blob/master/tests/TestCase.php#L134
      */
-    protected function invokeMethod($object, $method, $args = [], $revoke = true)
+    protected function invokeMethod($object, $method, array $args = [], bool $revoke = true)
     {
         $method = (new ReflectionObject($object))->getMethod($method);
         return $this->_invokeMethodInternal($method, $object, $args, $revoke);
@@ -119,7 +119,8 @@ class TestCase extends Unit
      * @throws ReflectionException
      * @credit https://github.com/yiisoft/yii2/blob/master/tests/TestCase.php#L134
      */
-    protected function invokeStaticMethod($className, $method, $args = [], $revoke = true) {
+    protected function invokeStaticMethod($className, $method, array $args = [], bool $revoke = true)
+    {
         $method = (new ReflectionClass($className))->getMethod($method);
         return $this->_invokeMethodInternal($method, null, $args, $revoke);
     }

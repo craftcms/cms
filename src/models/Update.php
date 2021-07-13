@@ -87,7 +87,7 @@ class Update extends Model
     /**
      * @inheritdoc
      */
-    public function init()
+    public function init(): void
     {
         parent::init();
 
@@ -128,7 +128,7 @@ class Update extends Model
      *
      * @return UpdateRelease|null
      */
-    public function getLatest()
+    public function getLatest(): ?UpdateRelease
     {
         return $this->releases[0] ?? null;
     }

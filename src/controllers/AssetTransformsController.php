@@ -28,7 +28,7 @@ class AssetTransformsController extends Controller
     /**
      * @inheritdoc
      */
-    public function beforeAction($action)
+    public function beforeAction($action): bool
     {
         // All asset transform actions require an admin
         $this->requireAdmin();
@@ -93,7 +93,7 @@ class AssetTransformsController extends Controller
      *
      * @return Response|null
      */
-    public function actionSaveTransform()
+    public function actionSaveTransform(): ?Response
     {
         $this->requirePostRequest();
 

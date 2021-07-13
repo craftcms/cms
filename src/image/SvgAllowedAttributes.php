@@ -19,9 +19,9 @@ use enshrined\svgSanitize\data\AttributeInterface;
 class SvgAllowedAttributes implements AttributeInterface
 {
     /**
-     * @inheritDoc
+     * @inheritdoc
      */
-    public static function getAttributes()
+    public static function getAttributes(): array
     {
         return array_merge(AllowedAttributes::getAttributes(), ['filterUnits']);
     }

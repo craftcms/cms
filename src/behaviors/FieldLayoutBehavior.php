@@ -50,7 +50,7 @@ class FieldLayoutBehavior extends Behavior
      * @inheritdoc
      * @throws InvalidConfigException if the behavior was not configured properly
      */
-    public function init()
+    public function init(): void
     {
         parent::init();
 
@@ -95,7 +95,7 @@ class FieldLayoutBehavior extends Behavior
      *
      * @param int|string|callable $id
      */
-    public function setFieldLayoutId($id)
+    public function setFieldLayoutId($id): void
     {
         $this->_fieldLayoutId = $id;
     }
@@ -132,7 +132,7 @@ class FieldLayoutBehavior extends Behavior
      *
      * @param FieldLayout $fieldLayout
      */
-    public function setFieldLayout(FieldLayout $fieldLayout)
+    public function setFieldLayout(FieldLayout $fieldLayout): void
     {
         $this->_fieldLayout = $fieldLayout;
     }
@@ -162,7 +162,7 @@ class FieldLayoutBehavior extends Behavior
      *
      * @param FieldInterface[] $fields
      */
-    public function setFields(array $fields)
+    public function setFields(array $fields): void
     {
         $this->_fields = $fields;
     }

@@ -40,7 +40,7 @@ class DashboardController extends Controller
     /**
      * @inheritdoc
      */
-    public function beforeAction($action)
+    public function beforeAction($action): bool
     {
         if (!parent::beforeAction($action)) {
             return false;
@@ -455,7 +455,7 @@ class DashboardController extends Controller
         // Get the body HTML
         $widgetBodyHtml = $widget->getBodyHtml();
 
-        if ($widgetBodyHtml === false) {
+        if ($widgetBodyHtml === null) {
             return false;
         }
 
@@ -535,7 +535,7 @@ class DashboardController extends Controller
     /**
      * Returns whether we should zip the custom support attachment.
      *
-     * @param string $file
+     * @param UploadedFile $file
      * @return bool
      */
     private function _shouldZipAttachment(UploadedFile $file): bool

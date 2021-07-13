@@ -39,7 +39,6 @@ class Session
      *
      * @param string $key the session variable name
      * @param mixed $value the session variable value
-     * @return void
      */
     public static function set(string $key, $value): void
     {
@@ -63,7 +62,6 @@ class Session
     /**
      * Removes all session variables.
      *
-     * @return void
      */
     public static function removeAll(): void
     {
@@ -126,7 +124,7 @@ class Session
      *
      * @since 3.5.12.1
      */
-    public static function reset()
+    public static function reset(): void
     {
         self::$_session = null;
         self::$_exists = false;

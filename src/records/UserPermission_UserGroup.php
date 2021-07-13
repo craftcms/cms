@@ -27,7 +27,7 @@ class UserPermission_UserGroup extends ActiveRecord
     /**
      * @inheritdoc
      */
-    public function rules()
+    public function rules(): array
     {
         return [
             [['permissionId'], 'unique', 'targetAttribute' => ['permissionId', 'groupId']],

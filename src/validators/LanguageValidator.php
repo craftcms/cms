@@ -34,7 +34,7 @@ class LanguageValidator extends Validator
     /**
      * @inheritdoc
      */
-    public function init()
+    public function init(): void
     {
         if ($this->notAllowed === null) {
             if ($this->onlySiteLanguages) {

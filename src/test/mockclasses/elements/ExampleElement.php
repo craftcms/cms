@@ -31,7 +31,7 @@ class ExampleElement extends Element
     /**
      * @inheritdoc
      */
-    public function getUriFormat()
+    public function getUriFormat(): ?string
     {
         return $this->uriFormat;
     }

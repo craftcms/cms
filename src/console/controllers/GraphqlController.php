@@ -102,7 +102,7 @@ class GraphqlController extends Controller
      * @throws BadRequestHttpException
      * @throws \yii\base\Exception
      */
-    protected function getGqlSchema()
+    protected function getGqlSchema(): ?\craft\models\GqlSchema
     {
         if ($this->fullSchema) {
             return Gql::createFullAccessSchema();

@@ -19,6 +19,9 @@ use GraphQL\Type\Definition\InputObjectType;
  */
 class Category extends InputObjectType
 {
+    /**
+     * @return mixed
+     */
     public static function getType()
     {
         $typeName = 'CategoryCriteriaInput';

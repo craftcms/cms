@@ -65,7 +65,7 @@ abstract class BaseUiElement extends FieldLayoutElement
      *
      * @return string|null
      */
-    protected function selectorIcon()
+    protected function selectorIcon(): ?string
     {
         return null;
     }

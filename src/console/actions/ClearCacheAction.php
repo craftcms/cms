@@ -37,7 +37,8 @@ class ClearCacheAction extends Action
     public $params;
 
     /**
-     * @inheritdoc
+     * Clears the caches.
+     *
      * @return int
      */
     public function run(): int

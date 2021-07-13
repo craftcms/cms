@@ -47,7 +47,7 @@ abstract class MutationResolver extends Component
      * @param string $key
      * @param $value
      */
-    public function setResolutionData(string $key, $value)
+    public function setResolutionData(string $key, $value): void
     {
         $this->_resolutionData[$key] = $value;
     }
@@ -56,9 +56,9 @@ abstract class MutationResolver extends Component
      * Set a data normalizer for an argument to use for data normalization during resolving.
      *
      * @param string $argument
-     * @param callable $normalizer
+     * @param callable|null $normalizer
      */
-    public function setValueNormalizer(string $argument, callable $normalizer = null)
+    public function setValueNormalizer(string $argument, callable $normalizer = null): void
     {
         if ($normalizer === null) {
             unset($this->_valueNormalizers[$argument]);
@@ -71,7 +71,7 @@ abstract class MutationResolver extends Component
      * Return stored resolution data.
      *
      * @param string $key
-     * @return mixed|null
+     * @return mixed
      */
     public function getResolutionData(string $key)
     {
@@ -101,10 +101,9 @@ abstract class MutationResolver extends Component
      *
      * @param string $scope
      * @param string $action
-     *
      * @throws \Exception if reasons
      */
-    protected function requireSchemaAction(string $scope, string $action)
+    protected function requireSchemaAction(string $scope, string $action): void
     {
         if (!Gql::canSchema($scope, $action)) {
             throw new Error('Unable to perform the action.');

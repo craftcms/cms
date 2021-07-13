@@ -50,7 +50,7 @@ abstract class BaseOptionsField extends Field implements PreviewableFieldInterfa
     /**
      * @inheritdoc
      */
-    public function init()
+    public function init(): void
     {
         parent::init();
 
@@ -107,7 +107,7 @@ abstract class BaseOptionsField extends Field implements PreviewableFieldInterfa
      *
      * @since 3.3.5
      */
-    public function validateOptions()
+    public function validateOptions(): void
     {
         $labels = [];
         $values = [];
@@ -175,7 +175,7 @@ abstract class BaseOptionsField extends Field implements PreviewableFieldInterfa
     /**
      * @inheritdoc
      */
-    public function getSettingsHtml()
+    public function getSettingsHtml(): ?string
     {
         if (empty($this->options)) {
             // Give it a default row
@@ -313,7 +313,7 @@ abstract class BaseOptionsField extends Field implements PreviewableFieldInterfa
      * @inheritdoc
      * @since 3.4.6
      */
-    public function modifyElementsQuery(ElementQueryInterface $query, $value)
+    public function modifyElementsQuery(ElementQueryInterface $query, $value): void
     {
         // foo => *"foo"*
         if ($this->multi) {
@@ -330,7 +330,7 @@ abstract class BaseOptionsField extends Field implements PreviewableFieldInterfa
             }
         }
 
-        return parent::modifyElementsQuery($query, $value);
+        parent::modifyElementsQuery($query, $value);
     }
 
     /**

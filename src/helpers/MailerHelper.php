@@ -95,7 +95,7 @@ class MailerHelper
      * @return array|null
      * @since 3.5.0
      */
-    public static function normalizeEmails($emails)
+    public static function normalizeEmails($emails): ?array
     {
         if (empty($emails)) {
             return null;

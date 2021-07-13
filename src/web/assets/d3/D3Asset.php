@@ -33,7 +33,7 @@ class D3Asset extends AssetBundle
     /**
      * @inheritdoc
      */
-    public function init()
+    public function init(): void
     {
         $this->sourcePath = '@lib/d3';
 
@@ -130,7 +130,7 @@ class D3Asset extends AssetBundle
      * @param string $file
      * @return string|null
      */
-    private function _def(string $dir, string $file)
+    private function _def(string $dir, string $file): ?string
     {
         $path = $dir . DIRECTORY_SEPARATOR . $file . '.json';
         return file_exists($path) ? file_get_contents($path) : null;

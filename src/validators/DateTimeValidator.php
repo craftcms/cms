@@ -53,7 +53,7 @@ class DateTimeValidator extends Validator
     /**
      * @inheritdoc
      */
-    public function init()
+    public function init(): void
     {
         parent::init();
 
@@ -116,7 +116,10 @@ class DateTimeValidator extends Validator
         }
     }
 
-    public function isEmpty($value)
+    /**
+     * @inheritdoc
+     */
+    public function isEmpty($value): bool
     {
         if ($this->isEmpty !== null) {
             return parent::isEmpty($value);

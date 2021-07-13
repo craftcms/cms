@@ -30,5 +30,5 @@ abstract class Resolver
      * @param mixed $context The context shared between all resolvers
      * @param ResolveInfo $resolveInfo The resolve information
      */
-    abstract public static function resolve($source, array $arguments, $context, ResolveInfo $resolveInfo);
+    abstract public static function resolve($source, array $arguments, $context, ResolveInfo $resolveInfo): void;
 }

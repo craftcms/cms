@@ -31,9 +31,8 @@ abstract class Mutation
      *
      * @param MutationResolver $resolver
      * @param Field[] $contentFields
-     * @return null
      */
-    protected static function prepareResolver(MutationResolver $resolver, array $contentFields)
+    protected static function prepareResolver(MutationResolver $resolver, array $contentFields): void
     {
         $fieldList = [];
 

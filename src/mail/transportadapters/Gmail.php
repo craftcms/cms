@@ -44,7 +44,7 @@ class Gmail extends BaseTransportAdapter
     /**
      * @inheritdoc
      */
-    public function behaviors()
+    public function behaviors(): array
     {
         $behaviors = parent::behaviors();
         $behaviors['parser'] = [
@@ -60,7 +60,7 @@ class Gmail extends BaseTransportAdapter
     /**
      * @inheritdoc
      */
-    public function attributeLabels()
+    public function attributeLabels(): array
     {
         return [
             'username' => Craft::t('app', 'Username'),
@@ -84,7 +84,7 @@ class Gmail extends BaseTransportAdapter
     /**
      * @inheritdoc
      */
-    public function getSettingsHtml()
+    public function getSettingsHtml(): ?string
     {
         return Craft::$app->getView()->renderTemplate('_components/mailertransportadapters/Gmail/settings', [
             'adapter' => $this,

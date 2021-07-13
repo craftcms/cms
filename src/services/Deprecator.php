@@ -62,7 +62,7 @@ class Deprecator extends Component
      * @inheritdoc
      * @since 3.4.12
      */
-    public function init()
+    public function init(): void
     {
         if (!$this->throwExceptions && $this->logTarget === 'db') {
             Craft::$app->on(Application::EVENT_AFTER_REQUEST, [$this, 'storeLogs'], null, false);
@@ -80,7 +80,7 @@ class Deprecator extends Component
      * @param int|null $line
      * @throws DeprecationException
      */
-    public function log(string $key, string $message, string $file = null, int $line = null)
+    public function log(string $key, string $message, string $file = null, int $line = null): void
     {
         if ($this->logTarget === false) {
             return;
@@ -116,7 +116,7 @@ class Deprecator extends Component
      *
      * @since 3.4.12
      */
-    public function storeLogs()
+    public function storeLogs(): void
     {
         $db = Craft::$app->getDb();
 
@@ -195,7 +195,7 @@ class Deprecator extends Component
      * @param int $logId
      * @return DeprecationError|null
      */
-    public function getLogById(int $logId)
+    public function getLogById(int $logId): ?DeprecationError
     {
         $log = $this->_createDeprecationErrorQuery()
             ->where(['id' => $logId])
@@ -368,7 +368,7 @@ class Deprecator extends Component
      * @param int|null $actualCodeLine
      * @return int|null
      */
-    private function _findTemplateLine(TwigTemplate $template, int $actualCodeLine = null)
+    private function _findTemplateLine(TwigTemplate $template, int $actualCodeLine = null): ?int
     {
         if ($actualCodeLine === null) {
             return null;

@@ -317,8 +317,9 @@ class App
      * Sets PHP’s memory limit to the maximum specified by the
      * <config3:phpMaxMemoryLimit> config setting, and gives the script an
      * unlimited amount of time to execute.
+     *
      */
-    public static function maxPowerCaptain()
+    public static function maxPowerCaptain(): void
     {
         // Don't mess with the memory_limit, even at the config's request, if it's already set to -1 or >= 1.5GB
         $memoryLimit = static::phpConfigValueInBytes('memory_limit');
@@ -334,7 +335,7 @@ class App
     /**
      * @return string|null
      */
-    public static function licenseKey()
+    public static function licenseKey(): ?string
     {
         if (defined('CRAFT_LICENSE_KEY')) {
             $licenseKey = CRAFT_LICENSE_KEY;
@@ -580,7 +581,7 @@ class App
      * @since 3.0.18
      * @deprecated in 3.6.0. Override `components.log.targets` instead
      */
-    public static function logConfig()
+    public static function logConfig(): ?array
     {
         // Using Yii's Dispatcher class here is intentional
         return [

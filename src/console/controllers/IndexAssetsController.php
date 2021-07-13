@@ -296,7 +296,7 @@ class IndexAssetsController extends Controller
      * @param MissingAssetException[] $missingRecords
      * @return MissingAssetException|null
      */
-    private function _chooseMissingRecord(string $path, array $missingRecords)
+    private function _chooseMissingRecord(string $path, array $missingRecords): ?MissingAssetException
     {
         if (count($missingRecords) === 1) {
             // Only one asset with the same name. Probably safe to just go with that.

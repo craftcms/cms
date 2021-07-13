@@ -90,7 +90,7 @@ class GqlSchema extends Model
     /**
      * Return whether this schema can perform an action
      *
-     * @param $name
+     * @param string $name
      * @return bool
      */
     public function has(string $name): bool

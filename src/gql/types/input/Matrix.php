@@ -26,12 +26,11 @@ class Matrix extends InputObjectType
     /**
      * Create the type for a matrix field.
      *
-     * @param $context
+     * @param MatrixField $context
      * @return bool|mixed
      */
     public static function getType(MatrixField $context)
     {
-        /** @var MatrixField $context */
         $typeName = $context->handle . '_MatrixInput';
 
         if ($inputType = GqlEntityRegistry::getEntity($typeName)) {

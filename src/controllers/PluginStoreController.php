@@ -33,7 +33,7 @@ class PluginStoreController extends Controller
     /**
      * @inheritdoc
      */
-    public function beforeAction($action)
+    public function beforeAction($action): bool
     {
         // All plugin store actions require an admin
         $this->requireAdmin(false);
@@ -252,7 +252,7 @@ class PluginStoreController extends Controller
      * @throws \craft\errors\InvalidLicenseKeyException
      * @throws \craft\errors\InvalidPluginException
      */
-    public function actionSavePluginLicenseKeys()
+    public function actionSavePluginLicenseKeys(): Response
     {
         $payload = Json::decode($this->request->getRawBody(), true);
         $pluginLicenseKeys = (isset($payload['pluginLicenseKeys']) ? $payload['pluginLicenseKeys'] : []);
@@ -282,7 +282,7 @@ class PluginStoreController extends Controller
      *
      * @return string|null
      */
-    private function getCraftIdAccessToken()
+    private function getCraftIdAccessToken(): ?string
     {
         $craftIdAccessToken = null;
         $pluginStoreService = Craft::$app->getPluginStore();

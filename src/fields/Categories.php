@@ -182,13 +182,13 @@ class Categories extends BaseRelationField
      * @inheritdoc
      * @since 3.3.0
      */
-    public function getEagerLoadingGqlConditions()
+    public function getEagerLoadingGqlConditions(): ?array
     {
         $allowedEntities = Gql::extractAllowedEntitiesFromSchema();
         $allowedCategoryUids = $allowedEntities['categorygroups'] ?? [];
 
         if (empty($allowedCategoryUids)) {
-            return false;
+            return null;
         }
 
         $categoryIds = Db::idsByUids(DbTable::CATEGORYGROUPS, $allowedCategoryUids);

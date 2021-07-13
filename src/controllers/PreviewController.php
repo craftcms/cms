@@ -32,7 +32,7 @@ class PreviewController extends Controller
     /**
      * @inheritdoc
      */
-    public function beforeAction($action)
+    public function beforeAction($action): bool
     {
         // Don't require CSRF validation for POSTed preview requests
         if ($action->id === 'preview') {

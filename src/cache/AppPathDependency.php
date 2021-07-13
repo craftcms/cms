@@ -27,7 +27,7 @@ class AppPathDependency extends Dependency
     /**
      * @inheritdoc
      */
-    public function init()
+    public function init(): void
     {
         $this->reusable = true;
         parent::init();

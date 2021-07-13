@@ -39,7 +39,7 @@ class StructuresController extends Controller
      * @inheritdoc
      * @throws NotFoundHttpException if the requested element cannot be found
      */
-    public function beforeAction($action)
+    public function beforeAction($action): bool
     {
         $this->requirePostRequest();
         $this->requireAcceptsJson();

@@ -8,6 +8,7 @@
 namespace craft\test\mockclasses\elements;
 
 use Craft;
+use craft\base\ElementInterface;
 use craft\elements\db\ElementQuery;
 use craft\helpers\StringHelper;
 
@@ -76,12 +77,11 @@ class MockElementQuery extends ElementQuery
      * Set the return values.
      *
      * @param array $values
-     * @return static
+     * @return self
      */
-    public function setReturnValues(array $values = [])
+    public function setReturnValues(array $values = []): self
     {
         $this->returnValues = $values;
-
         return $this;
     }
 
@@ -102,7 +102,7 @@ class MockElementQuery extends ElementQuery
      * @param $name
      * @return bool
      */
-    public function __isset($name)
+    public function __isset($name): bool
     {
         return array_key_exists($name, $this->properties);
     }
@@ -122,12 +122,11 @@ class MockElementQuery extends ElementQuery
      *
      * @param $method
      * @param $arguments
-     * @return static
+     * @return self
      */
-    public function __call($method, $arguments)
+    public function __call($method, $arguments): self
     {
         $this->properties[$method] = reset($arguments);
-
         return $this;
     }
 
@@ -144,7 +143,7 @@ class MockElementQuery extends ElementQuery
     /**
      * Return a return value.
      *
-     * @return mixed|null
+     * @return array|ElementInterface|null
      */
     public function one($db = null)
     {

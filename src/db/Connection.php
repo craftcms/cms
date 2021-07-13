@@ -110,7 +110,7 @@ class Connection extends \yii\db\Connection
      *
      * @param bool $supportsMb4
      */
-    public function setSupportsMb4(bool $supportsMb4)
+    public function setSupportsMb4(bool $supportsMb4): void
     {
         $this->_supportsMb4 = $supportsMb4;
     }
@@ -223,7 +223,7 @@ class Connection extends \yii\db\Connection
      * @throws Exception if the backupCommand config setting is false
      * @throws ShellCommandException in case of failure
      */
-    public function backupTo(string $filePath)
+    public function backupTo(string $filePath): void
     {
         // Fire a 'beforeCreateBackup' event
         $event = new BackupEvent([
@@ -286,7 +286,7 @@ class Connection extends \yii\db\Connection
      * @throws Exception if the restoreCommand config setting is false
      * @throws ShellCommandException in case of failure
      */
-    public function restore(string $filePath)
+    public function restore(string $filePath): void
     {
         // Fire a 'beforeRestoreBackup' event
         if ($this->hasEventHandlers(self::EVENT_BEFORE_RESTORE_BACKUP)) {
@@ -461,7 +461,7 @@ class Connection extends \yii\db\Connection
      * @param ShellCommand $command
      * @throws ShellCommandException
      */
-    private function _executeDatabaseShellCommand(ShellCommand $command)
+    private function _executeDatabaseShellCommand(ShellCommand $command): void
     {
         $success = $command->execute();
 

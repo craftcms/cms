@@ -26,7 +26,7 @@ class UserSettingsController extends Controller
     /**
      * @inheritdoc
      */
-    public function beforeAction($action)
+    public function beforeAction($action): bool
     {
         // All user settings actions require an admin
         $this->requireAdmin();
@@ -44,7 +44,7 @@ class UserSettingsController extends Controller
      * @return Response|null
      * @throws BadRequestHttpException
      */
-    public function actionSaveGroup()
+    public function actionSaveGroup(): ?Response
     {
         $this->requirePostRequest();
 
@@ -117,7 +117,7 @@ class UserSettingsController extends Controller
      *
      * @return Response|null
      */
-    public function actionSaveUserSettings()
+    public function actionSaveUserSettings(): ?Response
     {
         $this->requirePostRequest();
         $projectConfig = Craft::$app->getProjectConfig();

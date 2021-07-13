@@ -1050,7 +1050,7 @@ class Assets extends Component
      * @return AssetPreviewHandlerInterface|null
      * @since 3.4.0
      */
-    public function getAssetPreviewHandler(Asset $asset)
+    public function getAssetPreviewHandler(Asset $asset): ?AssetPreviewHandlerInterface
     {
         // Give plugins a chance to register their own preview handlers
         if ($this->hasEventHandlers(self::EVENT_REGISTER_PREVIEW_HANDLER)) {

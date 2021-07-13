@@ -21,7 +21,7 @@ class RelatedEntries extends RelationArgumentHandler
     protected $argumentName = 'relatedToEntries';
 
     /**
-     * @inheritDoc
+     * @inheritdoc
      */
     protected function handleArgument($argumentValue)
     {

@@ -34,7 +34,7 @@ class SitesController extends Controller
     /**
      * @inheritdoc
      */
-    public function beforeAction($action)
+    public function beforeAction($action): bool
     {
         // All actions require an admin account
         $this->requireAdmin();
@@ -293,7 +293,7 @@ class SitesController extends Controller
      * @return Response|null
      * @throws BadRequestHttpException
      */
-    public function actionSaveSite()
+    public function actionSaveSite(): ?Response
     {
         $this->requirePostRequest();
 

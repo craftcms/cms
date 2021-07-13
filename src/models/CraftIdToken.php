@@ -58,7 +58,7 @@ class CraftIdToken extends Model
      *
      * @return bool
      */
-    public function hasExpired()
+    public function hasExpired(): bool
     {
         $now = new DateTime();
         $expiryDate = $this->expiryDate;
@@ -71,7 +71,7 @@ class CraftIdToken extends Model
      *
      * @return int
      */
-    public function getRemainingSeconds()
+    public function getRemainingSeconds(): int
     {
         $now = new DateTime();
         $expiryDate = $this->expiryDate;

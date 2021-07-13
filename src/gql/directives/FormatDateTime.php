@@ -110,7 +110,9 @@ class FormatDateTime extends Directive
     }
 
     /**
-     * @inheritdoc
+     * Returns the default time zone to be used.
+     *
+     * @todo Rename to defaultTimeZone() in Craft 4
      */
     public static function defaultTimezone(): string
     {

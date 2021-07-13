@@ -34,7 +34,7 @@ class Temp extends Local
     /**
      * @inheritdoc
      */
-    public function init()
+    public function init(): void
     {
         parent::init();
 
@@ -52,7 +52,7 @@ class Temp extends Local
     /**
      * @inheritdoc
      */
-    public function getSettingsHtml()
+    public function getSettingsHtml(): ?string
     {
         return null;
     }

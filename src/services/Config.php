@@ -184,7 +184,7 @@ class Config extends Component
      * $settings = Craft::$app->config->getConfigFromFile('foo');
      * ```
      *
-     * @param $filename
+     * @param string $filename
      * @return array
      */
     public function getConfigFromFile(string $filename): array
@@ -236,7 +236,7 @@ class Config extends Component
      * @param string $value The environment variable value
      * @throws Exception if the .env file doesn't exist
      */
-    public function setDotEnvVar($name, $value)
+    public function setDotEnvVar($name, $value): void
     {
         $path = $this->getDotEnvPath();
 

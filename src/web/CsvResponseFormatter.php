@@ -58,7 +58,7 @@ class CsvResponseFormatter extends Component implements ResponseFormatterInterfa
      *
      * @param YiiResponse $response the response to be formatted.
      */
-    public function format($response)
+    public function format($response): void
     {
         if (stripos($this->contentType, 'charset') === false) {
             $this->contentType .= '; charset=' . $response->charset;

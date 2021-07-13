@@ -91,7 +91,7 @@ class Search extends Component
     /**
      * @inheritdoc
      */
-    public function init()
+    public function init(): void
     {
         parent::init();
 
@@ -321,7 +321,7 @@ class Search extends Component
      *
      * @since 3.2.10
      */
-    public function deleteOrphanedIndexes()
+    public function deleteOrphanedIndexes(): void
     {
         $db = Craft::$app->getDb();
         $searchIndexTable = Table::SEARCHINDEX;
@@ -355,7 +355,7 @@ SQL;
      * @param string $dirtyKeywords
      * @throws SiteNotFoundException
      */
-    private function _indexElementKeywords(int $elementId, string $attribute, string $fieldId, int $siteId, string $dirtyKeywords)
+    private function _indexElementKeywords(int $elementId, string $attribute, string $fieldId, int $siteId, string $dirtyKeywords): void
     {
         $attribute = strtolower($attribute);
 
