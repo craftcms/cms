@@ -11,8 +11,12 @@ use Codeception\Stub\Expected;
 use Craft;
 use craft\base\Element;
 use craft\elements\Entry;
+use craft\fields\Matrix;
+use craft\fields\Number;
 use craft\fields\PlainText;
 use craft\gql\base\ElementMutationResolver;
+use craft\gql\base\Mutation;
+use craft\gql\GqlEntityRegistry;
 use craft\gql\resolvers\mutations\Entry as EntryMutationResolver;
 use craft\helpers\StringHelper;
 use craft\models\GqlSchema;
@@ -20,6 +24,9 @@ use craft\services\Elements;
 use craft\test\TestCase;
 use GraphQL\Error\Error;
 use GraphQL\Error\UserError;
+use GraphQL\Type\Definition\FieldArgument;
+use GraphQL\Type\Definition\InputObjectType;
+use GraphQL\Type\Definition\ResolveInfo;
 use GraphQL\Type\Definition\Type;
 
 class GeneralMutationResolverTest extends TestCase
@@ -53,10 +60,10 @@ class GeneralMutationResolverTest extends TestCase
             'three' => ['four', 'five']
         ];
         $valueNormalizers = [
-            'reverseArgument' => function (string $value) {
+            'reverseArgument' => function(string $value) {
                 return strrev($value);
             },
-            'allCaps' => function (string $value) {
+            'allCaps' => function(string $value) {
                 return strtoupper($value);
             }
         ];
@@ -77,7 +84,7 @@ class GeneralMutationResolverTest extends TestCase
         self::assertSame($this->resolver->getResolutionData($testKey), $testString);
         self::assertNull($this->resolver->getResolutionData(uniqid('test', true)));
 
-        $normalizer = function ($value) {
+        $normalizer = function($value) {
             return strlen($value);
         };
 
@@ -245,5 +252,88 @@ class GeneralMutationResolverTest extends TestCase
 
         // Ensure scenario changed for enabled elements with the default scenario
         self::assertNotSame($scenario, $entry->getScenario());
+    }
+
+    public function testNestedNormalizers()
+    {
+        $values = [];
+
+        /// Setting values on an entry will store this for us.
+        $entry = $this->make(Entry::class, [
+            'setFieldValue' => function($name, $value) use (&$values) {
+                $values[$name] = $value;
+            }
+        ]);
+
+        // Set up the normalizer to make some measurable impact
+        $normalizer = function($value) {
+            $value['normalized'] = true;
+            return $value;
+        };
+
+        // Create both input types
+        $nestedObjectType = GqlEntityRegistry::createEntity('nestedType', new InputObjectType([
+            'name' => 'nestedType',
+            'fields' => [
+                'nestedValue' => [
+                    'name' => 'nestedValue',
+                    'type' => Type::string(),
+                ],
+            ],
+            'normalizeValue' => $normalizer
+        ]));
+
+        $parentObjectType = GqlEntityRegistry::createEntity('parentType', new InputObjectType([
+            'name' => 'parentType',
+            'fields' => [
+                'nested' => [
+                    'name' => 'nested',
+                    'type' => $nestedObjectType
+                ]
+            ],
+            'normalizeValue' => $normalizer
+        ]));
+
+        // Set up the mutation resolve to return our mock entry and pretend to save the entry, when asked to
+        // Also mock our input type definitions
+        $mutationResolver = $this->make(EntryMutationResolver::class, [
+            'getEntryElement' => $entry,
+            'saveElement' => function($entry) {
+                return $entry;
+            },
+            'performStructureOperations' => true,
+            'argumentTypeDefsByName' => [
+                'parentField' => $parentObjectType
+            ]
+        ]);
+
+        // Finish setting up for the test
+        $contentFields = [
+            $this->make(Matrix::class, [
+                'handle' => 'parentField',
+                'getContentGqlMutationArgumentType' => $parentObjectType
+            ])
+        ];
+        $this->invokeStaticMethod(Mutation::class, 'prepareResolver', [$mutationResolver, $contentFields]);
+
+        $resolveInfo = $this->make(ResolveInfo::class);
+
+        $arguments = [
+            'parentField' => [
+                'nested' => [
+                    'nestedValue' => 'foo'
+                ]
+            ]
+        ];
+
+        // Finally, do that ONE thing
+        $mutationResolver->saveEntry(null, $arguments, null, $resolveInfo);
+
+        $expected = $arguments['parentField'];
+        $expected['nested'] = $normalizer($expected['nested']);
+        $expected = $normalizer($expected);
+
+        // And validate all the normalizers have executed
+        self::assertEquals($expected, $values['parentField']);
     }
 }

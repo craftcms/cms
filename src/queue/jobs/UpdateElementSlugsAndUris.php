@@ -12,6 +12,7 @@ use craft\base\ElementInterface;
 use craft\elements\db\ElementQuery;
 use craft\elements\db\ElementQueryInterface;
 use craft\errors\OperationAbortedException;
+use craft\helpers\Db;
 use craft\queue\BaseJob;
 use craft\queue\QueueInterface;
 use yii\queue\Queue;
@@ -106,7 +107,7 @@ class UpdateElementSlugsAndUris extends BaseJob
         $this->_totalToProcess += $query->count();
         $elementsService = Craft::$app->getElements();
 
-        foreach ($query->each() as $element) {
+        foreach (Db::each($query) as $element) {
             /** @var ElementInterface $element */
             $this->setProgress($queue, $this->_totalProcessed++ / $this->_totalToProcess);
 

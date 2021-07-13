@@ -5,6 +5,7 @@ namespace craft\migrations;
 use craft\db\Migration;
 use craft\db\Query;
 use craft\db\Table;
+use craft\helpers\Db;
 
 /**
  * m190607_230042_entry_revision_error_tables migration.
@@ -34,7 +35,7 @@ class m190607_230042_entry_revision_error_tables extends Migration
                 ->from([Table::ENTRYDRAFTS])
                 ->where(['not', ['error' => null]]);
 
-            foreach ($query->each() as $row) {
+            foreach (Db::each($query) as $row) {
                 $this->insert('{{%entrydrafterrors}}', [
                     'draftId' => $row['id'],
                     'error' => $row['error'],
@@ -62,7 +63,7 @@ class m190607_230042_entry_revision_error_tables extends Migration
                 ->from([Table::ENTRYVERSIONS])
                 ->where(['not', ['error' => null]]);
 
-            foreach ($query->each() as $row) {
+            foreach (Db::each($query) as $row) {
                 $this->insert('{{%entryversionerrors}}', [
                     'versionId' => $row['id'],
                     'error' => $row['error'],

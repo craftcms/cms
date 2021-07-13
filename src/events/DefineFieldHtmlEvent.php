@@ -8,7 +8,6 @@
 namespace craft\events;
 
 use craft\base\ElementInterface;
-use yii\base\Event;
 
 /**
  * DefineFieldHtmlEvent is used to define the HTML for a field input.
@@ -16,7 +15,7 @@ use yii\base\Event;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.5.0
  */
-class DefineFieldHtmlEvent extends Event
+class DefineFieldHtmlEvent extends DefineHtmlEvent
 {
     /**
      * @var mixed The field’s value
@@ -27,9 +26,4 @@ class DefineFieldHtmlEvent extends Event
      * @var ElementInterface|null The element the field is associated with, if there is one
      */
     public $element;
-
-    /**
-     * @var string The field’s input HTML
-     */
-    public $html;
 }

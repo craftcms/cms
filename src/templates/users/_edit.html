@@ -250,6 +250,12 @@
                         {% block input %}
                             {% from '_includes/forms' import checkboxField %}
                             {{ checkboxField({
+                                label: 'Always show focus rings'|t('app'),
+                                name: 'alwaysShowFocusRings',
+                                id: 'alwaysShowFocusRings',
+                                checked: user.getPreference('alwaysShowFocusRings') ?? a11yDefaults['alwaysShowFocusRings'] ?? false,
+                            }) }}
+                            {{ checkboxField({
                                 label: 'Use shapes to represent statuses'|t('app'),
                                 name: 'useShapes',
                                 id: 'useShapes',
@@ -351,7 +357,7 @@
                     </div>
                 </div>
 
-                {% if user.getStatus() == 'locked' and craft.app.config.general.cooldownDuration and user.remainingCooldownTime %}
+                {% if user.locked and craft.app.config.general.cooldownDuration and user.remainingCooldownTime %}
                     <div class="data">
                         <h5 class="heading">{{ "Cooldown Time Remaining"|t('app') }}</h5>
                         <p class="value">{{ user.remainingCooldownTime|duration }}</p>

@@ -179,7 +179,7 @@ Craft.BaseElementSelectorModal = Garnish.Modal.extend({
             data.showSiteMenu = this.settings.showSiteMenu ? '1' : '0';
         }
 
-        Craft.postActionRequest('elements/get-modal-body', data, $.proxy(function(response, textStatus) {
+        Craft.postActionRequest('elements/get-modal-body', data, (response, textStatus) => {
             if (textStatus === 'success') {
                 this.$body.html(response.html);
 
@@ -197,7 +197,7 @@ Craft.BaseElementSelectorModal = Garnish.Modal.extend({
                     selectable: true,
                     multiSelect: this.settings.multiSelect,
                     buttonContainer: this.$secondaryButtons,
-                    onSelectionChange: $.proxy(this, 'onSelectionChange'),
+                    onSelectionChange: this.onSelectionChange.bind(this),
                     hideSidebar: this.settings.hideSidebar,
                     defaultSiteId: this.settings.defaultSiteId,
                     defaultSource: this.settings.defaultSource
@@ -212,7 +212,7 @@ Craft.BaseElementSelectorModal = Garnish.Modal.extend({
                     }
                 });
             }
-        }, this));
+        });
     }
 }, {
     defaults: {

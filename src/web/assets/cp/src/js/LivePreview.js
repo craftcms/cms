@@ -29,8 +29,6 @@ Craft.LivePreview = Garnish.Base.extend({
     dragStartEditorWidth: null,
 
     _slideInOnIframeLoad: false,
-    _handleSuccessProxy: null,
-    _handleErrorProxy: null,
     _forceUpdateIframeProxy: null,
 
     _scrollX: null,
@@ -59,9 +57,7 @@ Craft.LivePreview = Garnish.Base.extend({
         // Set the base post data
         this.basePostData = $.extend({}, this.settings.previewParams);
 
-        this._handleSuccessProxy = $.proxy(this, 'handleSuccess');
-        this._handleErrorProxy = $.proxy(this, 'handleError');
-        this._forceUpdateIframeProxy = $.proxy(this, 'forceUpdateIframe');
+        this._forceUpdateIframeProxy = this.forceUpdateIframe.bind(this);
 
         // Find the DOM elements
         this.$extraFields = $(this.settings.extraFields);
@@ -74,11 +70,11 @@ Craft.LivePreview = Garnish.Base.extend({
         // Event Listeners
         this.addListener(this.$trigger, 'activate', 'toggle');
 
-        Craft.cp.on('beforeSaveShortcut', $.proxy(function() {
+        Craft.cp.on('beforeSaveShortcut', () => {
             if (this.inPreviewMode) {
                 this.moveFieldsBack();
             }
-        }, this));
+        });
     },
 
     get editorWidth() {
@@ -155,9 +151,9 @@ Craft.LivePreview = Garnish.Base.extend({
 
             this.dragger = new Garnish.BaseDrag(this.$dragHandle, {
                 axis: Garnish.X_AXIS,
-                onDragStart: $.proxy(this, '_onDragStart'),
-                onDrag: $.proxy(this, '_onDrag'),
-                onDragStop: $.proxy(this, '_onDragStop')
+                onDragStart: this._onDragStart.bind(this),
+                onDrag: this._onDrag.bind(this),
+                onDragStop: this._onDragStop.bind(this)
             });
 
             this.addListener($closeBtn, 'click', 'exit');
@@ -211,12 +207,12 @@ Craft.LivePreview = Garnish.Base.extend({
     createToken: function() {
         Craft.postActionRequest('live-preview/create-token', {
             previewAction: this.settings.previewAction
-        }, $.proxy(function(response, textStatus) {
+        }, (response, textStatus) => {
             if (textStatus === 'success') {
                 this.token = response.token;
                 this.enter();
             }
-        }, this));
+        });
     },
 
     save: function() {
@@ -235,20 +231,20 @@ Craft.LivePreview = Garnish.Base.extend({
         $('html').addClass('noscroll');
         this.$shade.velocity('fadeIn');
 
-        this.$editorContainer.show().velocity('stop').animateLeft(0, 'slow', $.proxy(function() {
+        this.$editorContainer.show().velocity('stop').animateLeft(0, 'slow', () => {
             this.trigger('slideIn');
             Garnish.$win.trigger('resize');
-        }, this));
+        });
 
-        this.$previewContainer.show().velocity('stop').animateRight(0, 'slow', $.proxy(function() {
-            this.updateIframeInterval = setInterval($.proxy(this, 'updateIframe'), 1000);
+        this.$previewContainer.show().velocity('stop').animateRight(0, 'slow', () => {
+            this.updateIframeInterval = setInterval(this.updateIframe.bind(this), 1000);
 
             this.addListener(Garnish.$bod, 'keyup', function(ev) {
                 if (ev.keyCode === Garnish.ESC_KEY) {
                     this.exit();
                 }
             });
-        }, this));
+        });
     },
 
     exit: function() {
@@ -271,17 +267,17 @@ Craft.LivePreview = Garnish.Base.extend({
 
         this.$shade.delay(200).velocity('fadeOut');
 
-        this.$editorContainer.velocity('stop').animateLeft(-this.editorWidthInPx, 'slow', $.proxy(function() {
+        this.$editorContainer.velocity('stop').animateLeft(-this.editorWidthInPx, 'slow', () => {
             for (var i = 0; i < this.fields.length; i++) {
                 this.fields[i].$newClone.remove();
             }
             this.$editorContainer.hide();
             this.trigger('slideOut');
-        }, this));
+        });
 
-        this.$previewContainer.velocity('stop').animateRight(-this.getIframeWidth(), 'slow', $.proxy(function() {
+        this.$previewContainer.velocity('stop').animateRight(-this.getIframeWidth(), 'slow', () => {
             this.$previewContainer.hide();
-        }, this));
+        });
 
         Garnish.off(Craft.BaseElementEditor, 'saveElement', this._forceUpdateIframeProxy);
 
@@ -353,8 +349,8 @@ Craft.LivePreview = Garnish.Base.extend({
                     withCredentials: true
                 },
                 crossDomain: true,
-                success: this._handleSuccessProxy,
-                error: this._handleErrorProxy
+                success: this.handleSuccess.bind(this),
+                error: this.handleError.bind(this),
             });
 
             return true;
@@ -393,12 +389,12 @@ Craft.LivePreview = Garnish.Base.extend({
             this.removeListener($iframe, 'load');
         });
 
-        Garnish.requestAnimationFrame($.proxy(function() {
+        Garnish.requestAnimationFrame(() => {
             $iframe[0].contentWindow.document.open();
             $iframe[0].contentWindow.document.write(html);
             $iframe[0].contentWindow.document.close();
             this.onResponse();
-        }, this));
+        });
     },
 
     handleError: function() {

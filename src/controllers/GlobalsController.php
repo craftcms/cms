@@ -10,6 +10,7 @@ namespace craft\controllers;
 use Craft;
 use craft\base\Element;
 use craft\elements\GlobalSet;
+use craft\helpers\Json;
 use craft\helpers\UrlHelper;
 use craft\web\Controller;
 use yii\web\BadRequestHttpException;
@@ -91,6 +92,23 @@ class GlobalsController extends Controller
 
         $this->setSuccessFlash(Craft::t('app', 'Global set saved.'));
         return $this->redirectToPostedUrl($globalSet);
+    }
+
+    /**
+     * Reorders global sets.
+     *
+     * @return Response
+     * @since 3.7.0
+     */
+    public function actionReorderSets(): Response
+    {
+        $this->requirePostRequest();
+        $this->requireAcceptsJson();
+
+        $setIds = Json::decode($this->request->getRequiredBodyParam('ids'));
+        Craft::$app->getGlobals()->reorderSets($setIds);
+
+        return $this->asJson(['success' => true]);
     }
 
     /**

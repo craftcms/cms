@@ -1,5 +1,5 @@
 @charset "UTF-8";
-@import "../../../../../../node_modules/craftcms-sass/mixins";
+@import "../../../../../../packages/craftcms-sass/mixins";
 
 $base: 24px;
 $tabPadding: 14px;
@@ -22,6 +22,10 @@ $gridColor: hsl(212, 50%, 95%);
   box-shadow: none;
   @include padding-right($tabWidth + 1);
   min-height: 500px;
+
+  .errors > & {
+    border: 1px solid $errorColor !important;
+  }
 
   .fld-workspace {
     flex: 1;

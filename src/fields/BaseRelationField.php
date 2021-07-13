@@ -305,7 +305,7 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
     public function validateRelatedElements(ElementInterface $element)
     {
         // Prevent circular relations from worrying about this entry
-        $sourceId = $element->getSourceId();
+        $sourceId = $element->getCanonicalId();
         $sourceValidates = self::$_relatedElementValidates[$sourceId][$element->siteId] ?? null;
         self::$_relatedElementValidates[$sourceId][$element->siteId] = true;
 
@@ -919,14 +919,14 @@ JS;
 
         if (!$this->allowSelfRelations && $element) {
             if ($element->id) {
-                $disabledElementIds[] = $element->getSourceId();
+                $disabledElementIds[] = $element->getCanonicalId();
             }
             if ($element instanceof BlockElementInterface) {
                 $el = $element;
                 do {
                     try {
                         $el = $el->getOwner();
-                        $disabledElementIds[] = $el->getSourceId();
+                        $disabledElementIds[] = $el->getCanonicalId();
                     } catch (InvalidConfigException $e) {
                         break;
                     }

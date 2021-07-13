@@ -36,8 +36,9 @@ const cpSassGlob = [
 const cpGlobalJsGlob = [
     `${cpGlobalAssetPath}/src/js/Craft.js`,
     `${cpGlobalAssetPath}/src/js/Base*.js`,
+    `${cpGlobalAssetPath}/src/js/Tabs.js`,
     `${cpGlobalAssetPath}/src/js/*.js`,
-    `!(${cpGlobalAssetPath}/src/js/Craft.js|${cpGlobalAssetPath}/src/js/Base*.js)`,
+    `!(${cpGlobalAssetPath}/src/js/Craft.js|${cpGlobalAssetPath}/src/js/Base*.js|${cpGlobalAssetPath}/src/js/Tabs.js)`,
     `!${graphiqlAssetPath}/**/*.js`,
     `!${psAssetPath}/**/*.js`,
     `!${atAssetPath}/**/*.js`

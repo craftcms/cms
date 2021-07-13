@@ -51,7 +51,7 @@ class UpdatesAsset extends AssetBundle
 
         if ($view instanceof View) {
             $view->registerTranslations('app', [
-                'You’re all up-to-date!',
+                'You’re all up to date!',
                 'Critical',
                 'Update all',
             ]);

@@ -6,6 +6,7 @@ use Craft;
 use craft\db\Migration;
 use craft\db\Query;
 use craft\db\Table;
+use craft\helpers\Db;
 use craft\helpers\StringHelper;
 
 /**
@@ -36,7 +37,7 @@ class m190529_204501_fix_duplicate_uids extends Migration
             ])
             ->orderBy(['id' => SORT_ASC]);
 
-        foreach ($query->each() as $result) {
+        foreach (Db::each($query) as $result) {
             if (!isset($uids[$result['uid']])) {
                 // This is the first time this UID was issued
                 $uids[$result['uid']] = true;

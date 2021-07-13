@@ -66,7 +66,7 @@ Craft.BaseInputGenerator = Garnish.Base.extend({
             clearTimeout(this.timeout);
         }
 
-        this.timeout = setTimeout($.proxy(this, 'updateTarget'), 250);
+        this.timeout = setTimeout(this.updateTarget.bind(this), 250);
     },
 
     onTargetTextChange: function() {

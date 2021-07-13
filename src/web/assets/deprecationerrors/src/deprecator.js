@@ -43,13 +43,13 @@
                 logId: $(ev.currentTarget).closest('tr').data('id')
             };
 
-            Craft.postActionRequest('utilities/get-deprecation-error-traces-modal', data, $.proxy(function(response, textStatus) {
+            Craft.postActionRequest('utilities/get-deprecation-error-traces-modal', data, (response, textStatus) => {
                 this.tracesModal.$container.removeClass('loading');
 
                 if (textStatus === 'success') {
                     this.$tracesModalBody.html(response.html);
                 }
-            }, this));
+            });
         },
 
         deleteLog: function(ev) {

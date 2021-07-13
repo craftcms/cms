@@ -53,7 +53,6 @@
     {% if status %}
         {{ tag('div', {
             class: ['status-badge', status[0]],
-            text: status[1][0:1]|upper,
             title: status[1],
             aria: {
                 label: status[1],

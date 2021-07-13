@@ -181,6 +181,11 @@ class Mailer extends \yii\swiftmailer\Mailer
             $eMessage = substr($eMessage, 0, strpos($eMessage, 'Stack trace:') - 1);
             Craft::warning('Error sending email: ' . $eMessage);
 
+            // Save the exception on the message, for plugins to make use of
+            if ($message instanceof Message) {
+                $message->error = $e;
+            }
+
             $this->afterSend($message, false);
             return false;
         }

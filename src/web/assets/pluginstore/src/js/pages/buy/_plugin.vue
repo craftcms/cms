@@ -115,9 +115,9 @@
                 this.buyPlugin(plugin, edition)
             } else {
                 // wait for the cart to be ready
-                this.$root.$on('allDataLoaded', function() {
+                this.$root.$on('allDataLoaded', () => {
                     this.buyPlugin(plugin, edition)
-                }.bind(this))
+                });
             }
         }
     }

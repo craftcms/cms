@@ -2,12 +2,9 @@
 <head>
 </head>
 <body
-    x-init="$watch('modalOpen', (newValue) => {
-      // do something
-      })"
-    >
-  {% html at beginBody %}
-    Hello World
-  {% endhtml %}
+  x-data="{{ 'testing' }}"
+  x-init=" () => { data.match(/<(.*?)>/) ? alert('wat') }"
+>{% html at beginBody %}Hello World{% endhtml %}
+
 </body>
 </html>

@@ -836,6 +836,11 @@ class AssetTransforms extends Component
         }
 
         if (is_array($transform)) {
+            if (array_key_exists('transform', $transform)) {
+                $baseTransform = $this->normalizeTransform(ArrayHelper::remove($transform, 'transform'));
+                return $this->extendTransform($baseTransform, $transform);
+            }
+
             return new AssetTransform($transform);
         }
 

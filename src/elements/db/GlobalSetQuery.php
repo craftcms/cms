@@ -52,6 +52,19 @@ class GlobalSetQuery extends ElementQuery
     public $handle;
 
     /**
+     * @inheritdoc
+     */
+    public function __construct(string $elementType, array $config = [])
+    {
+        // todo: set this from the property def in v4
+        if (version_compare(Craft::$app->getInstalledSchemaVersion(), '3.7.6', '>=')) {
+            $this->defaultOrderBy = ['globalsets.sortOrder' => SORT_ASC];
+        }
+
+        parent::__construct($elementType, $config);
+    }
+
+    /**
      * Sets the [[$editable]] property.
      *
      * @param bool $value The property value (defaults to true)
@@ -112,6 +125,7 @@ class GlobalSetQuery extends ElementQuery
         $this->query->select([
             'globalsets.name',
             'globalsets.handle',
+            'globalsets.sortOrder',
             'globalsets.uid',
         ]);
 

@@ -46,7 +46,7 @@ class Entry extends ElementMutationResolver
     {
         $entry = $this->getEntryElement($arguments);
 
-        $entry = $this->populateElementWithData($entry, $arguments);
+        $entry = $this->populateElementWithData($entry, $arguments, $resolveInfo);
 
         $entry = $this->saveElement($entry);
         $this->performStructureOperations($entry, $arguments);
@@ -140,7 +140,7 @@ class Entry extends ElementMutationResolver
         $this->requireSchemaAction('entrytypes.' . $entryTypeUid, 'save');
 
         /** @var Entry $draft */
-        $draft = Craft::$app->getDrafts()->publishDraft($draft);
+        $draft = Craft::$app->getDrafts()->applyDraft($draft);
 
         return $draft->id;
     }
