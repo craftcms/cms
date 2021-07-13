@@ -1125,7 +1125,11 @@ class Asset extends Element
             return null;
         }
 
-        if ($this->getMimeType() === 'image/gif' && !Craft::$app->getConfig()->getGeneral()->transformGifs) {
+        if (($this->getMimeType() === 'image/gif'
+                && !Craft::$app->getConfig()->getGeneral()->transformGifs
+            ) || ($this->getMimeType() === 'image/svg+xml'
+                && !Craft::$app->getConfig()->getGeneral()->transformSvgs)
+            ) {
             return AssetsHelper::generateUrl($volume, $this);
         }
 

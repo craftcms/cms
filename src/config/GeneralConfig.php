@@ -941,7 +941,7 @@ class GeneralConfig extends BaseObject
      * Set to `0` to disable this feature.
      *
      * See [[ConfigHelper::durationInSeconds()]] for a list of supported value types.
-     * 
+     *
      * ::: tip
      * Users will only be purged when [garbage collection](https://craftcms.com/docs/3.x/gc.html) is run.
      * :::
@@ -1245,6 +1245,13 @@ class GeneralConfig extends BaseObject
      * @group Image Handling
      */
     public $transformGifs = true;
+
+    /**
+     * @var bool Whether SVG files should be transformed.
+     * @since 3.7.0
+     * @group Image Handling
+     */
+    public $transformSvgs = true;
 
     /**
      * @var bool Whether translated messages should be wrapped in special characters to help find any strings that are not being run through
