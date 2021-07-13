@@ -3956,7 +3956,7 @@ html.noscroll, html.noscroll body { overflow: hidden; height: 100%; }
 
 .modal.imageeditor .body .image-container { -webkit-flex-grow: 1; flex-grow: 1; display: -webkit-flex; display: flex; -webkit-flex-direction: column; flex-direction: column; position: relative; overflow: hidden; }
 
-.modal.imageeditor .body .image-container .image { text-align: center; -webkit-flex-grow: 1; flex-grow: 1; position: relative; }
+.modal.imageeditor .body .image-container .image { text-align: center; -webkit-flex-grow: 1; flex-grow: 1; position: relative; margin: 14px; }
 
 .modal.imageeditor .body .image-container .image canvas { position: absolute; top: 0; left: 0; }
 
