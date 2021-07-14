@@ -1248,7 +1248,7 @@ class GeneralConfig extends BaseObject
 
     /**
      * @var bool Whether SVG files should be transformed.
-     * @since 3.7.0
+     * @since 3.7.1
      * @group Image Handling
      */
     public $transformSvgs = true;
