@@ -139,7 +139,7 @@ abstract class BaseUpdaterController extends Controller
                 return $this->send([
                     'error' => $error,
                     'options' => [
-                        ['label' => Craft::t('app', 'Learn how'), 'url' => 'https://craftcms.com/guides/php-ini'],
+                        ['label' => Craft::t('app', 'Learn how'), 'url' => 'https://craftcms.com/knowledge-base/php-ini'],
                         $this->actionOption(Craft::t('app', 'Check again'), self::ACTION_PRECHECK),
                         $this->actionOption(Craft::t('app', 'Continue anyway'), $postState['nextAction'], $postState),
                     ],
@@ -405,7 +405,7 @@ abstract class BaseUpdaterController extends Controller
         $state['options'] = [
             [
                 'label' => Craft::t('app', 'Troubleshoot'),
-                'url' => 'https://craftcms.com/guides/failed-updates',
+                'url' => 'https://craftcms.com/knowledge-base/failed-updates',
             ],
             [
                 'label' => Craft::t('app', 'Send for help'),
@@ -542,7 +542,7 @@ abstract class BaseUpdaterController extends Controller
 
             $options[] = [
                 'label' => Craft::t('app', 'Troubleshoot'),
-                'url' => 'https://craftcms.com/guides/failed-updates',
+                'url' => 'https://craftcms.com/knowledge-base/failed-updates',
             ];
 
             if ($ownerHandle !== 'craft' && ($plugin = Craft::$app->getPlugins()->getPlugin($ownerHandle)) !== null) {
