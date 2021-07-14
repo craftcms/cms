@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+### Added
+- Added the `transformSvgs` config setting. ([#9557](https://github.com/craftcms/cms/pull/9557))
+
 ### Fixed
 - Fixed deprecation warnings that occurred on some edit pages. ([#9556](https://github.com/craftcms/cms/pull/9556))
 - Fixed an error that occurred when updating from Craft 3.6.7 or earlier.
