@@ -18,6 +18,7 @@
 - Fixed a bug where multiple tab bars could appear on Edit Entry pages, if the Entry Type had been changed multiple times. ([#9562](https://github.com/craftcms/cms/issues/9562))
 - Fixed a bug where some control panel icons had unhelpful `<title>` tags and other cruft. ([#9563](https://github.com/craftcms/cms/pull/9563))
 - Fixed a bug where the “Create a draft” button on Edit Entry pages wasn’t working properly for users that didn’t have permission to publish changes to the entry. ([#9570](https://github.com/craftcms/cms/issues/9570))
+- Fixed a bug where Edit Entry pages could show a provisional draft immediately after saving published changes to the entry, if the save was initiated at the same time that the provisional draft was getting created. ([#9568](https://github.com/craftcms/cms/issues/9568))
 
 ## 3.7.0 - 2021-07-13
 
