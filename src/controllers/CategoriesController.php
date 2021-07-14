@@ -336,13 +336,6 @@ class CategoriesController extends Controller
         // Body class
         $variables['bodyClass'] = 'edit-category site--' . $site->handle;
 
-        // Page title
-        if ($category->id === null) {
-            $variables['title'] = Craft::t('app', 'Create a new category');
-        } else {
-            $variables['docTitle'] = $variables['title'] = trim($category->title) ?: Craft::t('app', 'Edit Category');
-        }
-
         // Breadcrumbs
         $variables['crumbs'] = [
             [

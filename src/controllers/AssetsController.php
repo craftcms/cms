@@ -149,7 +149,6 @@ class AssetsController extends Controller
             'element' => $asset,
             'volume' => $volume,
             'assetUrl' => $assetUrl,
-            'title' => trim($asset->title) ?: Craft::t('app', 'Edit Asset'),
             'crumbs' => $crumbs,
             'previewHtml' => $asset->getPreviewHtml(),
             'formattedSize' => $asset->getFormattedSize(0),
