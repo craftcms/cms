@@ -5,6 +5,9 @@
 ### Added
 - Added the `transformSvgs` config setting. ([#9557](https://github.com/craftcms/cms/pull/9557))
 
+### Changed
+- Console requests no longer force Dev Mode to be enabled. ([#5256](https://github.com/craftcms/cms/issues/5256))
+
 ### Fixed
 - Fixed deprecation warnings that occurred on some edit pages. ([#9556](https://github.com/craftcms/cms/pull/9556))
 - Fixed an error that occurred when updating from Craft 3.6.7 or earlier.
