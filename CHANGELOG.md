@@ -12,6 +12,7 @@
 - Fixed a bug where it wasn’t possible to filter by status on the Categories index page. ([#9555](https://github.com/craftcms/cms/issues/9555))
 - Fixed a bug where Edit Category pages didn’t have a “Save and add another” action.
 - Fixed a bug where moving an asset with an invalid file extension would be treated as if there was a conflicting asset in the destination directory. ([#9147](https://github.com/craftcms/cms/issues/9147))
+- Fixed a bug where multiple tab bars could appear on Edit Entry pages, if the Entry Type had been changed multiple times. ([#9562](https://github.com/craftcms/cms/issues/9562))
 
 ## 3.7.0 - 2021-07-13
 

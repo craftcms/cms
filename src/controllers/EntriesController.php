@@ -280,6 +280,9 @@ class EntriesController extends BaseEntriesController
         return $this->asJson([
             'tabsHtml' => count($tabs) > 1 ? $view->renderTemplate('_includes/tabs', [
                 'tabs' => $tabs,
+                'containerAttributes' => [
+                    'id' => 'tabs',
+                ]
             ]) : null,
             'fieldsHtml' => $form->render(),
             'headHtml' => $view->getHeadHtml(),
