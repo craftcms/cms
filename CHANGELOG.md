@@ -16,6 +16,7 @@
 - Fixed a bug where Edit Category pages didn’t have a “Save and add another” action.
 - Fixed a bug where moving an asset with an invalid file extension would be treated as if there was a conflicting asset in the destination directory. ([#9147](https://github.com/craftcms/cms/issues/9147))
 - Fixed a bug where multiple tab bars could appear on Edit Entry pages, if the Entry Type had been changed multiple times. ([#9562](https://github.com/craftcms/cms/issues/9562))
+- Fixed a bug where some control panel icons had unhelpful `<title>` tags and other cruft. ([#9563](https://github.com/craftcms/cms/pull/9563))
 
 ## 3.7.0 - 2021-07-13
 
