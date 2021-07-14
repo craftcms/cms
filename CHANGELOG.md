@@ -2,7 +2,9 @@
 
 ## Unreleased
 
-### Fixed deprecation warnings that occurred on some edit pages. ([#9556](https://github.com/craftcms/cms/pull/9556))
+### Fixed
+- Fixed deprecation warnings that occurred on some edit pages. ([#9556](https://github.com/craftcms/cms/pull/9556))
+- Fixed a migration error that occurred when updating to Craft 3.7 in some cases.
 
 ## 3.7.0 - 2021-07-13
 

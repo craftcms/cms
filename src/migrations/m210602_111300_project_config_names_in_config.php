@@ -17,16 +17,20 @@ class m210602_111300_project_config_names_in_config extends Migration
      */
     public function safeUp()
     {
-        $names = (new Query())->select(['uid', 'name'])->from(['{{%projectconfignames}}'])->pairs();
+        $tableExists = Craft::$app->getDb()->getSchema()->getTableSchema('{{%projectconfignames}}');
 
-        $projectConfig = Craft::$app->getProjectConfig();
-        $schemaVersion = $projectConfig->get('system.schemaVersion', true);
+        if ($tableExists) {
+            $names = (new Query())->select(['uid', 'name'])->from(['{{%projectconfignames}}'])->pairs();
 
-        if (version_compare($schemaVersion, '3.7.4', '<')) {
-            $projectConfig->set(ProjectConfig::CONFIG_NAMES_KEY, $names);
+            $projectConfig = Craft::$app->getProjectConfig();
+            $schemaVersion = $projectConfig->get('system.schemaVersion', true);
+
+            if (version_compare($schemaVersion, '3.7.4', '<')) {
+                $projectConfig->set(ProjectConfig::CONFIG_NAMES_KEY, $names);
+            }
+
+            $this->dropTableIfExists('{{%projectconfignames}}');
         }
-
-        $this->dropTableIfExists('{{%projectconfignames}}');
     }
 
     /**
