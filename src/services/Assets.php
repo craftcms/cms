@@ -198,10 +198,15 @@ class Assets extends Component
      */
     public function moveAsset(Asset $asset, VolumeFolder $folder, string $filename = ''): bool
     {
-        // Set the new combined target location, and save it
-        $asset->newFilename = $filename;
         $asset->newFolderId = $folder->id;
-        $asset->setScenario(Asset::SCENARIO_FILEOPS);
+
+        // If the filename hasn’t changed, then we can use the `move` scenario
+        if ($filename === '' || $filename === $asset->filename) {
+            $asset->setScenario(Asset::SCENARIO_MOVE);
+        } else {
+            $asset->newFilename = $filename;
+            $asset->setScenario(Asset::SCENARIO_FILEOPS);
+        }
 
         return Craft::$app->getElements()->saveElement($asset);
     }

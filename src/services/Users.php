@@ -473,7 +473,7 @@ class Users extends Component
             return;
         }
 
-        $photo->setScenario(Asset::SCENARIO_FILEOPS);
+        $photo->setScenario(Asset::SCENARIO_MOVE);
         $photo->avoidFilenameConflicts = true;
         $photo->newFolderId = $folderId;
         Craft::$app->getElements()->saveElement($photo);
