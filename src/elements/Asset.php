@@ -1855,9 +1855,12 @@ class Asset extends Element
     public function beforeSave(bool $isNew): bool
     {
         // newFolderId/newFilename => newLocation.
+        if ($this->newFilename === '') {
+            $this->newFilename = null;
+        }
         if ($this->newFolderId !== null || $this->newFilename !== null) {
             $folderId = $this->newFolderId ?: $this->folderId;
-            $filename = $this->newFilename ?: $this->filename;
+            $filename = $this->newFilename ?? $this->filename;
             $this->newLocation = "{folder:$folderId}$filename";
             $this->newFolderId = $this->newFilename = null;
         }
