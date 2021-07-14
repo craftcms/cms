@@ -854,7 +854,7 @@ class Cp
         $title = trim((string)$element->title);
 
         if ($title === '') {
-            if ($element->getIsUnpublishedDraft()) {
+            if (!$element->id || $element->getIsUnpublishedDraft()) {
                 $title = Craft::t('app', 'Create a new {type}', [
                     'type' => $element::lowerDisplayName(),
                 ]);
