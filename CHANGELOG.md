@@ -6,6 +6,8 @@
 - Fixed deprecation warnings that occurred on some edit pages. ([#9556](https://github.com/craftcms/cms/pull/9556))
 - Fixed an error that occurred when updating from Craft 3.6.7 or earlier.
 - Fixed a bug where progress bar labels weren’t always removed correctly.
+- Fixed a bug where it wasn’t possible to filter by status on the Categories index page. ([#9555](https://github.com/craftcms/cms/issues/9555))
+- Fixed a bug where Edit Category pages didn’t have a “Save and add another” action.
 
 ## 3.7.0 - 2021-07-13
 
