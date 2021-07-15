@@ -577,6 +577,11 @@ class GeneralConfig extends BaseObject
      * ],
      * ```
      *
+     * ::: warning
+     * This should not be set on a per-environment basis, as it could result in plugin schema version mismatches
+     * between environments, which will prevent project config changes from getting applied.
+     * :::
+     *
      * @since 3.1.9
      * @group System
      */
