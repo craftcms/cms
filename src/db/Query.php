@@ -157,8 +157,7 @@ class Query extends \yii\db\Query
 
     /**
      * @inheritdoc
-     * @return array|null the first row (in terms of an array) of the query result. Null is returned if the query
-     * results in nothing.
+     * @return mixed|null first row of the query result array, or `null` if there are no query results.
      */
     public function one($db = null)
     {

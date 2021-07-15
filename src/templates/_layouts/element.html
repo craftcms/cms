@@ -263,11 +263,11 @@
         {% if not isUnpublishedDraft and saveDraftAction %}
             <div id="save-draft-btn-container">
                 {{ tag('button', {
-                    type: 'button',
+                    type: canUpdateSource and saveSourceAction ? 'button' : 'submit',
                     class: [
                         'btn',
                         'formsubmit',
-                        not (canUpdateSource and saveSourceAction) ? 'secondary',
+                        not (canUpdateSource and saveSourceAction) ? 'submit',
                     ]|filter,
                     text: 'Create a draft'|t('app'),
                     data: {

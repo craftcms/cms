@@ -1,5 +1,13 @@
 # Release Notes for Craft CMS 3.x
 
+## 3.7.2 - 2021-07-15
+
+### Fixed
+- Fixed a SQL error that could occur when updating to Craft 3.7. ([#9574](https://github.com/craftcms/cms/issues/9574))
+- Fixed a bug where Edit Entries pages were displaying a “Delete draft” action for provisional drafts.
+- Fixed a 404 error that occurred when linking to a volume’s subfolder on the Assets index page, if the subfolder contained a dash. ([#9579](https://github.com/craftcms/cms/issues/9579))
+- Fixed a bug where Craft was logging errors and warnings to `stdout` when Dev Mode was disabled, if the `CRAFT_STREAM_LOG` PHP constant was set. ([#9572](https://github.com/craftcms/cms/pull/9572))
+
 ## 3.7.1 - 2021-07-14
 
 ### Added
