@@ -64,11 +64,14 @@ class CraftWebpackConfig {
             };
         }
 
+        const devHost = process.env.DEV_SERVER_HOST ? process.env.DEV_SERVER_HOST : 'localhost'
+        const devPort = process.env.DEV_SERVER_PORT ? process.env.DEV_SERVER_PORT : '8085'
+
         this.devServer = {
             contentBase: process.env.DEV_SERVER_CONTENT_BASE ? process.env.DEV_SERVER_CONTENT_BASE : path.join(this.basePath, 'dist'),
-            host: process.env.DEV_SERVER_HOST ? process.env.DEV_SERVER_HOST : 'localhost',
-            port: process.env.DEV_SERVER_PORT ? process.env.DEV_SERVER_PORT : '8085',
-            publicPath: process.env.DEV_SERVER_PUBLIC ? process.env.DEV_SERVER_PUBLIC : (this.https ? 'https' : 'http') + '://localhost:8085/'
+            host: devHost,
+            port: devPort,
+            publicPath: process.env.DEV_SERVER_PUBLIC ? process.env.DEV_SERVER_PUBLIC : (this.https ? 'https' : 'http') + `://${devHost}:${devPort}/`
         };
 
         // Settings
@@ -86,7 +89,7 @@ class CraftWebpackConfig {
         }
 
         // Prevent dependents from running when building from the root
-        if (process.env.INIT_CWD != path.resolve(__dirname) && this.type != 'lib' && this.basePath.replace(path.resolve(__dirname, 'src/web/assets'), '') != '/tailwindcss') {
+        if (this.nodeEnv === 'production' && process.env.INIT_CWD != path.resolve(__dirname) && this.type != 'lib' && this.basePath.replace(path.resolve(__dirname, 'src/web/assets'), '') != '/tailwindcss') {
             let TailwindWebpackConfig = require(path.resolve(__dirname, './src/web/assets/tailwindcss/webpack.config.js'));
             return [
                 merge(this[this.type](), this.config),

@@ -61,7 +61,7 @@ class HotReloadAssetBundle extends AssetBundle
     {
         parent::init();
 
-        $reflector = new \ReflectionClass(self::class);
+        $reflector = new \ReflectionClass(get_called_class());
         $this->_assetDir = dirname($reflector->getFileName());
 
         $this->_loadEnvFile();
