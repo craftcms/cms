@@ -320,7 +320,7 @@ class UrlHelper
         $path = trim($path, '/');
         $url = self::_createUrl($path, $params, $scheme, false);
 
-        /* @noinspection UnSafeIsSetOverArrayInspection - FP */
+        /** @noinspection UnSafeIsSetOverArrayInspection - FP */
         if (isset($currentSite)) {
             // Restore the original current site
             $sites->setCurrentSite($currentSite);
@@ -564,35 +564,6 @@ class UrlHelper
     public static function prependCpTrigger(string $path): string
     {
         return implode('/', array_filter([Craft::$app->getConfig()->getGeneral()->cpTrigger, $path]));
-    }
-
-    // Deprecated Methods
-    // -------------------------------------------------------------------------
-
-    /**
-     * Returns a URL with a specific scheme.
-     *
-     * @param string $url the URL
-     * @param string $scheme the scheme ('http' or 'https')
-     * @return string
-     * @deprecated in 3.0.0. Use [[urlWithScheme()]] instead.
-     */
-    public static function urlWithProtocol(string $url, string $scheme): string
-    {
-        return static::urlWithScheme($url, $scheme);
-    }
-
-    /**
-     * Returns what the scheme part of the URL should be (http/https)
-     * for any tokenized URLs in Craft (email verification links, password reset
-     * urls, share entry URLs, etc.
-     *
-     * @return string
-     * @deprecated in 3.0.0. Use [[getSchemeForTokenizedUrl()]] instead.
-     */
-    public static function getProtocolForTokenizedUrl(): string
-    {
-        return static::getSchemeForTokenizedUrl();
     }
 
     /**

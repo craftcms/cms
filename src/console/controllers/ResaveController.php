@@ -304,7 +304,8 @@ class ResaveController extends Controller
         }
 
         if ($this->provisionalDrafts) {
-            $query->provisionalDrafts();
+            $criteria['drafts'] = true;
+            $criteria['provisionalDrafts'] = true;
         }
 
         if ($this->elementId) {
@@ -337,12 +338,12 @@ class ResaveController extends Controller
     }
 
     /**
-     * Resave elemetns
+     * Resave elements
      */
     private function _resaveElements(ElementQueryInterface $query): int
     {
-        /* @var ElementQuery $query */
-        /* @var ElementInterface $elementType */
+        /** @var ElementQuery $query */
+        /** @var ElementInterface $elementType */
         $elementType = $query->elementType;
         $count = (int)$query->count();
 

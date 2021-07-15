@@ -113,7 +113,7 @@ class UsersController extends Controller
     {
         $users = User::find()
             ->admin()
-            ->anyStatus()
+            ->status(null)
             ->orderBy(['username' => SORT_ASC])
             ->all();
         $total = count($users);

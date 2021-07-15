@@ -55,7 +55,7 @@
                     }
                 } else {
                     $graphic.addClass('success');
-                    $status.text(Craft.t('app', 'You’re all up-to-date!'));
+                    $status.text(Craft.t('app', 'You’re all up to date!'));
                 }
             });
         },

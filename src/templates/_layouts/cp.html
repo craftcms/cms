@@ -119,7 +119,7 @@
 {% js at head %}
     // Remove the hash so the browser doesn't scroll to it
     window.LOCATION_HASH = document.location.hash ? decodeURIComponent(document.location.hash.substr(1)) : null;
-    document.location.hash = '';
+    history.replaceState(undefined, undefined, window.location.href.match(/^[^#]*/)[0]);
 {% endjs %}
 
 {% block body %}

@@ -140,8 +140,6 @@ abstract class Element extends Component implements ElementInterface
 
     const ATTR_STATUS_MODIFIED = 'modified';
     const ATTR_STATUS_OUTDATED = 'outdated';
-    /* @deprecated in 3.7.0 */
-    const ATTR_STATUS_CONFLICTED = 'conflicted';
 
     // Events
     // -------------------------------------------------------------------------
@@ -797,7 +795,7 @@ abstract class Element extends Component implements ElementInterface
      */
     protected static function prepElementQueryForTableAttribute(ElementQueryInterface $elementQuery, string $attribute)
     {
-        /* @var ElementQuery $elementQuery */
+        /** @var ElementQuery $elementQuery */
         // Is this a custom field?
         if (preg_match('/^field:(\d+)$/', $attribute, $matches)) {
             $fieldId = $matches[1];
@@ -1981,7 +1979,7 @@ abstract class Element extends Component implements ElementInterface
      */
     public function validateCustomFieldAttribute(string $attribute, array $params = null)
     {
-        /* @var array|null $params */
+        /** @var array|null $params */
         [$field, $method, $fieldParams] = $params;
 
         if (is_string($method)) {
@@ -2099,14 +2097,6 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @inheritdoc
      */
-    public function getIsProvisionalDraft(): bool
-    {
-        return $this->isProvisionalDraft;
-    }
-
-    /**
-     * @inheritdoc
-     */
     public function getIsRevision(): bool
     {
         return !empty($this->revisionId);
@@ -2144,7 +2134,7 @@ abstract class Element extends Component implements ElementInterface
                     ->preferSites([$this->siteId])
                     ->structureId($this->structureId)
                     ->unique()
-                    ->anyStatus()
+                    ->status(null)
                     ->ignorePlaceholders()
                     ->one() ?? false;
         }
@@ -2169,7 +2159,7 @@ abstract class Element extends Component implements ElementInterface
      */
     public function getCanonicalId(): ?int
     {
-        return $this->getSourceId();
+        return $this->_canonicalId ?? $this->id;
     }
 
     /**
@@ -2195,7 +2185,8 @@ abstract class Element extends Component implements ElementInterface
      */
     public function getSourceId()
     {
-        return $this->_canonicalId ?? $this->id;
+        Craft::$app->getDeprecator()->log(__METHOD__, 'Elements’ `getSourceId()` method has been deprecated. Use `getCanonicalId()` instead.');
+        return $this->getCanonicalId();
     }
 
     /**
@@ -2207,33 +2198,14 @@ abstract class Element extends Component implements ElementInterface
      */
     public function getSourceUid(): string
     {
-        if ($this->getIsCanonical()) {
-            return $this->uid;
-        }
-        return static::find()
-            ->id($this->_canonicalId)
-            ->siteId($this->siteId)
-            ->anyStatus()
-            ->select(['elements.uid'])
-            ->scalar();
+        Craft::$app->getDeprecator()->log(__METHOD__, 'Elements’ `getSourceUid()` method has been deprecated. Use `getCanonical(true)->uid` instead.');
+        return $this->getCanonical(true)->uid;
     }
 
     /**
      * @inheritdoc
      */
     public function getIsUnpublishedDraft(): bool
-    {
-        return $this->getIsUnsavedDraft();
-    }
-
-    /**
-     * Returns whether the element is an unpublished draft.
-     *
-     * @return bool
-     * @since 3.2.0
-     * @deprecated in 3.6.0. Use [[getIsUnpublishedDraft()]] instead.
-     */
-    public function getIsUnsavedDraft(): bool
     {
         return $this->getIsDraft() && $this->getIsCanonical();
     }
@@ -2255,8 +2227,10 @@ abstract class Element extends Component implements ElementInterface
         }
 
         foreach ($this->getOutdatedFields() as $fieldHandle) {
-            if (!$this->isFieldModified($fieldHandle)) {
-                $field = $this->fieldByHandle($fieldHandle);
+            if (
+                !$this->isFieldModified($fieldHandle) &&
+                ($field = $this->fieldByHandle($fieldHandle)) !== null
+            ) {
                 $field->copyValue($canonical, $this);
             }
         }
@@ -2487,7 +2461,7 @@ abstract class Element extends Component implements ElementInterface
         $cpEditUrl = $this->cpEditUrl();
 
         if ($cpEditUrl !== null) {
-            if ($this->getIsDraft() && !$this->getIsProvisionalDraft()) {
+            if ($this->getIsDraft() && !$this->isProvisionalDraft) {
                 $cpEditUrl = UrlHelper::urlWithParams($cpEditUrl, ['draftId' => $this->draftId]);
             } else if ($this->getIsRevision()) {
                 $cpEditUrl = UrlHelper::urlWithParams($cpEditUrl, ['revisionId' => $this->revisionId]);
@@ -2664,7 +2638,7 @@ abstract class Element extends Component implements ElementInterface
             ->structureId($this->structureId)
             ->siteId(['not', $this->siteId])
             ->drafts($this->getIsDraft())
-            ->provisionalDrafts($this->getIsProvisionalDraft())
+            ->provisionalDrafts($this->isProvisionalDraft)
             ->revisions($this->getIsRevision());
     }
 
@@ -2729,7 +2703,7 @@ abstract class Element extends Component implements ElementInterface
                 $this->_parent = reset($ancestors);
             } else {
                 $this->_parent = $ancestors
-                        ->anyStatus()
+                        ->status(null)
                         ->one()
                     ?? false;
             }
@@ -2838,12 +2812,12 @@ abstract class Element extends Component implements ElementInterface
     public function getPrevSibling()
     {
         if ($this->_prevSibling === null) {
-            /* @var ElementQuery $query */
+            /** @var ElementQuery $query */
             $query = $this->_prevSibling = static::find();
             $query->structureId = $this->structureId;
             $query->prevSiblingOf = $this;
             $query->siteId = $this->siteId;
-            $query->anyStatus();
+            $query->status(null);
             $this->_prevSibling = $query->one();
 
             if ($this->_prevSibling === null) {
@@ -2860,12 +2834,12 @@ abstract class Element extends Component implements ElementInterface
     public function getNextSibling()
     {
         if ($this->_nextSibling === null) {
-            /* @var ElementQuery $query */
+            /** @var ElementQuery $query */
             $query = $this->_nextSibling = static::find();
             $query->structureId = $this->structureId;
             $query->nextSiblingOf = $this;
             $query->siteId = $this->siteId;
-            $query->anyStatus();
+            $query->status(null);
             $this->_nextSibling = $query->one();
 
             if ($this->_nextSibling === null) {
@@ -3212,22 +3186,6 @@ abstract class Element extends Component implements ElementInterface
     }
 
     /**
-     * Returns the status of a given field.
-     *
-     * @param string $fieldHandle
-     * @return array|null
-     * @since 3.4.0
-     * @deprecated in 3.7.0. Use [[FieldInterface::getStatus()]] instead.
-     */
-    function getFieldStatus(string $fieldHandle)
-    {
-        if (($field = $this->fieldByHandle($fieldHandle)) !== null) {
-            return $field->getStatus($this);
-        }
-        return null;
-    }
-
-    /**
      * @inheritdoc
      */
     public function getOutdatedFields(): array
@@ -3450,7 +3408,7 @@ abstract class Element extends Component implements ElementInterface
             return null;
         }
 
-        /* @var ElementInterface[] $elements */
+        /** @var ElementInterface[] $elements */
         $elements = $this->_eagerLoadedElements[$handle];
         ElementHelper::setNextPrevOnElements($elements);
         return $elements;
@@ -3469,13 +3427,13 @@ abstract class Element extends Component implements ElementInterface
                 $this->_currentRevision = $elements[0] ?? false;
                 break;
             case 'draftCreator':
-                /* @var DraftBehavior|null $behavior */
+                /** @var DraftBehavior|null $behavior */
                 if ($behavior = $this->getBehavior('draft')) {
                     $behavior->setCreator($elements[0] ?? null);
                 }
                 break;
             case 'revisionCreator':
-                /* @var RevisionBehavior|null $behavior */
+                /** @var RevisionBehavior|null $behavior */
                 if ($behavior = $this->getBehavior('revision')) {
                     $behavior->setCreator($elements[0] ?? null);
                 }
@@ -3548,7 +3506,7 @@ abstract class Element extends Component implements ElementInterface
             $this->_currentRevision = static::find()
                 ->revisionOf($canonical->id)
                 ->dateCreated($canonical->dateUpdated)
-                ->anyStatus()
+                ->status(null)
                 ->orderBy(['num' => SORT_DESC])
                 ->one() ?: false;
         }
@@ -3858,15 +3816,15 @@ abstract class Element extends Component implements ElementInterface
                     return false;
                 }
                 if ($this->getIsUnpublishedDraft()) {
-                    $color = 'white';
+                    $icon = Html::tag('span', '', ['data' => ['icon' => 'draft']]);
                     $label = Craft::t('app', 'Draft');
                 } else {
                     $status = $this->getStatus();
                     $statusDef = static::statuses()[$status] ?? null;
-                    $color = $statusDef['color'] ?? $status;
+                    $icon = Html::tag('span', '', ['class' => ['status', $statusDef['color'] ?? $status]]);
                     $label = $statusDef['label'] ?? $statusDef ?? ucfirst($status);
                 }
-                return Html::tag('span', '', ['class' => ['status', $color]]) . $label;
+                return $icon . Html::tag('span', $label);
             },
         ], $event->metadata, [
             Craft::t('app', 'Created at') => $this->dateCreated
@@ -3878,7 +3836,7 @@ abstract class Element extends Component implements ElementInterface
             Craft::t('app', 'Notes') => function() {
                 if ($this->getIsRevision()) {
                     $revision = $this;
-                } else if ($this->getIsCanonical() || $this->getIsProvisionalDraft()) {
+                } else if ($this->getIsCanonical() || $this->isProvisionalDraft) {
                     $element = $this->getCanonical(true);
                     $revision = $element->getCurrentRevision();
                 }
@@ -4109,7 +4067,7 @@ abstract class Element extends Component implements ElementInterface
      */
     protected static function findByCondition($criteria, bool $one)
     {
-        /* @var ElementQueryInterface $query */
+        /** @var ElementQueryInterface $query */
         $query = static::find();
 
         if ($criteria !== null) {
@@ -4206,7 +4164,7 @@ abstract class Element extends Component implements ElementInterface
         }
 
         if ($criteria instanceof ElementQueryInterface) {
-            /* @var ElementQuery $criteria */
+            /** @var ElementQuery $criteria */
             $query = clone $criteria;
         } else {
             $query = static::find()
@@ -4217,7 +4175,7 @@ abstract class Element extends Component implements ElementInterface
             }
         }
 
-        /* @var ElementQuery $query */
+        /** @var ElementQuery $query */
         $elementIds = $query->ids();
         $key = array_search($this->getCanonicalId(), $elementIds, false);
 

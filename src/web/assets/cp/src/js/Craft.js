@@ -709,6 +709,10 @@ $.extend(Craft,
                         options.params.processCraftHeaders = 1;
                     }
 
+                    if (Craft.httpProxy) {
+                        options.proxy = Craft.httpProxy;
+                    }
+
                     axios.request(options).then((apiResponse) => {
                         // Process the response headers
                         this._processApiHeaders(apiResponse.headers, cancelToken).then(() => {
@@ -892,9 +896,10 @@ $.extend(Craft,
          * @param {string} newData
          * @param {object} deltaNames
          * @param {function} [callback] Callback function that should be called whenever a new group of modified params has been found
+         * @param {object} [initialDeltaValues] Initial delta values. If undefined, `Craft.initialDeltaValues` will be used.
          * @return {string}
          */
-        findDeltaData: function(oldData, newData, deltaNames, callback) {
+        findDeltaData: function(oldData, newData, deltaNames, callback, initialDeltaValues) {
             // Sort the delta namespaces from least -> most specific
             deltaNames.sort(function(a, b) {
                 if (a.length === b.length) {
@@ -904,7 +909,10 @@ $.extend(Craft,
             });
 
             // Group all of the old & new params by namespace
-            var groupedOldParams = this._groupParamsByDeltaNames(oldData.split('&'), deltaNames, false, true);
+            if (typeof initialDeltaValues === 'undefined') {
+                initialDeltaValues = Craft.initialDeltaValues;
+            }
+            var groupedOldParams = this._groupParamsByDeltaNames(oldData.split('&'), deltaNames, false, initialDeltaValues);
             var groupedNewParams = this._groupParamsByDeltaNames(newData.split('&'), deltaNames, true, false);
 
             // Figure out which of the new params should actually be posted
@@ -929,7 +937,15 @@ $.extend(Craft,
             return params.join('&');
         },
 
-        _groupParamsByDeltaNames: function(params, deltaNames, withRoot, useInitialValues) {
+        /**
+         * @param {object} params
+         * @param {object} deltaNames
+         * @param {boolean} withRoot
+         * @param {boolean|object} initialValues
+         * @returns {{}}
+         * @private
+         */
+        _groupParamsByDeltaNames: function(params, deltaNames, withRoot, initialValues) {
             var grouped = {};
 
             if (withRoot) {
@@ -959,10 +975,10 @@ $.extend(Craft,
                 }
             }
 
-            if (useInitialValues) {
-                for (let name in Craft.initialDeltaValues) {
-                    if (Craft.initialDeltaValues.hasOwnProperty(name)) {
-                        grouped[name] = [encodeURIComponent(name) + '=' + $.param(Craft.initialDeltaValues[name])];
+            if (initialValues) {
+                for (let name in initialValues) {
+                    if (initialValues.hasOwnProperty(name)) {
+                        grouped[name] = [encodeURIComponent(name) + '=' + $.param(initialValues[name])];
                     }
                 }
             }
@@ -2069,9 +2085,9 @@ $.extend($.fn,
                     action: $btn.data('action'),
                     redirect: $btn.data('redirect'),
                     params: params,
-                    data: {
+                    data: $.extend({
                         customTrigger: $btn,
-                    }
+                    }, $btn.data('event-data')),
                 });
             });
         },

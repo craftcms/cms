@@ -290,7 +290,7 @@ class Elements extends Component
             $config = ['type' => $config];
         }
 
-        /* @noinspection PhpIncompatibleReturnTypeInspection */
+        /** @noinspection PhpIncompatibleReturnTypeInspection */
         return ComponentHelper::createComponent($config, ElementInterface::class);
     }
 
@@ -536,7 +536,7 @@ class Elements extends Component
         $query = $this->createElementQuery($elementType);
         $query->$property = $elementId;
         $query->siteId = $siteId;
-        $query->anyStatus();
+        $query->status(null);
 
         // Is this a draft/revision?
         if (!empty($data['draftId'])) {
@@ -567,7 +567,7 @@ class Elements extends Component
         }
 
         if ($siteId === null) {
-            /* @noinspection PhpUnhandledExceptionInspection */
+            /** @noinspection PhpUnhandledExceptionInspection */
             $siteId = Craft::$app->getSites()->getCurrentSite()->id;
         }
 
@@ -582,20 +582,11 @@ class Elements extends Component
             ->from(['elements' => Table::ELEMENTS])
             ->innerJoin(['elements_sites' => Table::ELEMENTS_SITES], '[[elements_sites.elementId]] = [[elements.id]]')
             ->where([
-                'elements_sites.siteId' => $siteId,
-            ]);
-
-        // todo: remove schema version conditions after next beakpoint
-        $schemaVersion = Craft::$app->getInstalledSchemaVersion();
-        if (version_compare($schemaVersion, '3.1.0', '>=')) {
-            $query->andWhere(['elements.dateDeleted' => null]);
-        }
-        if (version_compare($schemaVersion, '3.2.6', '>=')) {
-            $query->andWhere([
                 'elements.draftId' => null,
                 'elements.revisionId' => null,
+                'elements.dateDeleted' => null,
+                'elements_sites.siteId' => $siteId,
             ]);
-        }
 
         if (Craft::$app->getDb()->getIsMysql()) {
             $query->andWhere([
@@ -819,7 +810,7 @@ class Elements extends Component
                 ->provisionalDrafts(null)
                 ->id($element->id)
                 ->siteId(ArrayHelper::withoutValue($supportedSiteIds, $element->id))
-                ->anyStatus()
+                ->status(null)
                 ->all();
 
             foreach ($siteElements as $siteElement) {
@@ -871,6 +862,7 @@ class Elements extends Component
             'dateCreated' => $canonical->dateCreated,
             'draftId' => null,
             'revisionId' => null,
+            'isProvisionalDraft' => false,
             'updatingFromDerivative' => true,
         ];
 
@@ -1134,7 +1126,10 @@ class Elements extends Component
 
         $behaviors = ArrayHelper::remove($newAttributes, 'behaviors', []);
         $mainClone->setRevisionNotes(ArrayHelper::remove($newAttributes, 'revisionNotes'));
-        $mainClone->setAttributes($newAttributes, false);
+
+        // Note: must use Craft::configure() rather than setAttributes() here,
+        // so we're not limited to whatever attributes() returns
+        Craft::configure($mainClone, $newAttributes);
 
         // Attach behaviors
         foreach ($behaviors as $name => $behavior) {
@@ -1160,8 +1155,8 @@ class Elements extends Component
 
         // If we are duplicating a draft as another draft, create a new draft row
         if ($mainClone->draftId && $mainClone->draftId === $element->draftId) {
-            /* @var ElementInterface|DraftBehavior $element */
-            /* @var DraftBehavior $draftBehavior */
+            /** @var ElementInterface|DraftBehavior $element */
+            /** @var DraftBehavior $draftBehavior */
             $draftBehavior = $mainClone->getBehavior('draft');
             $draftsService = Craft::$app->getDrafts();
             // Are we duplicating a draft of a published element?
@@ -1223,7 +1218,7 @@ class Elements extends Component
                     $siteQuery = $this->createElementQuery(get_class($element))
                         ->id($element->id ?: false)
                         ->siteId($siteInfo['siteId'])
-                        ->anyStatus();
+                        ->status(null);
 
                     if ($element->getIsDraft()) {
                         $siteQuery
@@ -1263,7 +1258,9 @@ class Elements extends Component
                         $siteClone->attachBehavior($name, $behavior);
                     }
 
-                    $siteClone->setAttributes($newAttributes, false);
+                    // Note: must use Craft::configure() rather than setAttributes() here,
+                    // so we're not limited to whatever attributes() returns
+                    Craft::configure($siteClone, $newAttributes);
                     $siteClone->siteId = $siteInfo['siteId'];
 
                     // Clone any field values that are objects
@@ -1405,7 +1402,7 @@ class Elements extends Component
         $query = $this->createElementQuery(get_class($element))
             ->descendantOf($element)
             ->descendantDist(1)
-            ->anyStatus()
+            ->status(null)
             ->siteId($element->siteId);
 
         if ($queue) {
@@ -1532,7 +1529,7 @@ class Elements extends Component
             }
 
             // Update any reference tags
-            /* @var ElementInterface|null $elementType */
+            /** @var ElementInterface|null $elementType */
             $elementType = $this->getElementTypeById($prevailingElement->id);
 
             if ($elementType !== null && ($refHandle = $elementType::refHandle()) !== null) {
@@ -1584,9 +1581,9 @@ class Elements extends Component
      */
     public function deleteElementById(int $elementId, string $elementType = null, int $siteId = null, bool $hardDelete = false): bool
     {
-        /* @var ElementInterface|string|null $elementType */
+        /** @var ElementInterface|string|null $elementType */
         if ($elementType === null) {
-            /* @noinspection CallableParameterUseCaseInTypeContextInspection */
+            /** @noinspection CallableParameterUseCaseInTypeContextInspection */
             $elementType = $this->getElementTypeById($elementId);
 
             if ($elementType === null) {
@@ -1755,7 +1752,7 @@ class Elements extends Component
                         $siteElement = $this->createElementQuery($class)
                             ->id($element->id)
                             ->siteId($siteId)
-                            ->anyStatus()
+                            ->status(null)
                             ->trashed(null)
                             ->one();
                         if ($siteElement) {
@@ -1889,7 +1886,7 @@ class Elements extends Component
         }
 
         foreach ($this->getAllElementTypes() as $class) {
-            /* @var string|ElementInterface $class */
+            /** @var string|ElementInterface $class */
             if (
                 ($elementRefHandle = $class::refHandle()) !== null &&
                 strcasecmp($elementRefHandle, $refHandle) === 0
@@ -1985,7 +1982,7 @@ class Elements extends Component
                     $refNames = array_keys($tokensByName);
                     $elementQuery = $this->createElementQuery($elementType)
                         ->siteId($siteId)
-                        ->anyStatus();
+                        ->status(null);
 
                     if ($refType === 'id') {
                         $elementQuery->id($refNames);
@@ -2173,7 +2170,7 @@ class Elements extends Component
      */
     public function eagerLoadElements(string $elementType, array $elements, $with)
     {
-        /* @var ElementInterface|string $elementType */
+        /** @var ElementInterface|string $elementType */
         // Bail if there aren't even any elements
         if (empty($elements)) {
             return;
@@ -2213,7 +2210,7 @@ class Elements extends Component
                 }
 
                 // Get the eager-loading map from the source element type
-                /* @var ElementInterface|string $elementType */
+                /** @var ElementInterface|string $elementType */
                 $map = $elementType::eagerLoadingMap($filteredElements, $plan->handle);
 
                 if ($map === null) {
@@ -2415,18 +2412,16 @@ class Elements extends Component
      */
     private function _saveElementInternal(ElementInterface $element, bool $runValidation = true, bool $propagate = true, bool $updateSearchIndex = null): bool
     {
-        /* @var ElementInterface|DraftBehavior|RevisionBehavior $element */
+        /** @var ElementInterface|DraftBehavior|RevisionBehavior $element */
         $isNewElement = !$element->id;
 
         // Are we tracking changes?
-        // todo: remove the tableExists condition after the next breakpoint
         $trackChanges = (
             !$isNewElement &&
             $element->siteSettingsId &&
             $element->duplicateOf === null &&
             $element::trackChanges() &&
-            !$element->mergingCanonicalChanges &&
-            Craft::$app->getDb()->tableExists(Table::CHANGEDATTRIBUTES)
+            !$element->mergingCanonicalChanges
         );
         $dirtyAttributes = [];
 

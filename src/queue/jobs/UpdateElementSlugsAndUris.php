@@ -93,7 +93,7 @@ class UpdateElementSlugsAndUris extends BaseJob
 
         return $class::find()
             ->siteId($this->siteId)
-            ->anyStatus();
+            ->status(null);
     }
 
     /**
@@ -108,7 +108,7 @@ class UpdateElementSlugsAndUris extends BaseJob
         $elementsService = Craft::$app->getElements();
 
         foreach (Db::each($query) as $element) {
-            /* @var ElementInterface $element */
+            /** @var ElementInterface $element */
             $this->setProgress($queue, $this->_totalProcessed++ / $this->_totalToProcess);
 
             $oldSlug = $element->slug;

@@ -852,54 +852,6 @@ class Locale extends BaseObject
         return $currency;
     }
 
-    // Deprecated Methods
-    // -------------------------------------------------------------------------
-
-    /**
-     * Returns the locale ID.
-     *
-     * @return string
-     * @deprecated in 3.0.0. Use id instead.
-     */
-    public function getId(): string
-    {
-        Craft::$app->getDeprecator()->log('Locale::getId()', '`Locale::getId()` has been deprecated. Use the `id` property instead.');
-
-        return $this->id;
-    }
-
-    /**
-     * Returns the locale name in a given language.
-     *
-     * @param string|null $targetLocaleId
-     * @return string|null
-     * @deprecated in 3.0.0. Use getDisplayName() instead.
-     */
-    public function getName(string $targetLocaleId = null)
-    {
-        Craft::$app->getDeprecator()->log('Locale::getName()', '`Locale::getName()` has been deprecated. Use `getDisplayName()` instead.');
-
-        // In Craft 2, getName() with no $targetLocaleId would default to the active language
-        if ($targetLocaleId === null) {
-            $targetLocaleId = Craft::$app->language;
-        }
-
-        return $this->getDisplayName($targetLocaleId);
-    }
-
-    /**
-     * Returns the locale name in its own language.
-     *
-     * @return string|false
-     * @deprecated in 3.0.0. Use getDisplayName() instead.
-     */
-    public function getNativeName()
-    {
-        Craft::$app->getDeprecator()->log('Locale::getNativeName()', '`Locale::getNativeName()` has been deprecated. Use `getDisplayName()` instead.');
-
-        return $this->getDisplayName();
-    }
-
     /**
      * Returns a localized date/time format.
      *
@@ -952,19 +904,19 @@ class Locale extends BaseObject
             // Convert length to IntlDateFormatter constants
             switch ($length) {
                 case self::LENGTH_FULL:
-                    /* @noinspection CallableParameterUseCaseInTypeContextInspection */
+                    /** @noinspection CallableParameterUseCaseInTypeContextInspection */
                     $length = IntlDateFormatter::FULL;
                     break;
                 case self::LENGTH_LONG:
-                    /* @noinspection CallableParameterUseCaseInTypeContextInspection */
+                    /** @noinspection CallableParameterUseCaseInTypeContextInspection */
                     $length = IntlDateFormatter::LONG;
                     break;
                 case self::LENGTH_MEDIUM:
-                    /* @noinspection CallableParameterUseCaseInTypeContextInspection */
+                    /** @noinspection CallableParameterUseCaseInTypeContextInspection */
                     $length = IntlDateFormatter::MEDIUM;
                     break;
                 case self::LENGTH_SHORT:
-                    /* @noinspection CallableParameterUseCaseInTypeContextInspection */
+                    /** @noinspection CallableParameterUseCaseInTypeContextInspection */
                     $length = IntlDateFormatter::SHORT;
                     break;
                 default:

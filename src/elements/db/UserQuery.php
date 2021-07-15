@@ -647,8 +647,7 @@ class UserQuery extends ElementQuery
 
         $this->query->select([
             'users.username',
-            // TODO: uncomment after next breakpoint
-            //'users.photoId',
+            'users.photoId',
             'users.firstName',
             'users.lastName',
             'users.email',
@@ -659,19 +658,10 @@ class UserQuery extends ElementQuery
             'users.suspended',
             'users.lastLoginDate',
             'users.lockoutDate',
-            // TODO: uncomment after next breakpoint
-            //'users.hasDashboard',
+            'users.hasDashboard',
         ]);
 
         // TODO: remove after next breakpoint
-        $version = Craft::$app->getInfo()->version;
-        if (version_compare($version, '3.0.0-alpha.2910', '>=')) {
-            $this->query->addSelect(['users.photoId']);
-        }
-        if (version_compare($version, '3.0.4', '>=')) {
-            $this->query->addSelect(['users.hasDashboard']);
-        }
-
         if (version_compare(Craft::$app->getInfo()->schemaVersion, '4.0.0', '>=')) {
             $this->leftJoin(['authenticator' => Table::AUTH_AUTHENTICATOR], '[[authenticator.userId]] = [[users.id]]');
             $this->query->addSelect([
@@ -702,7 +692,7 @@ class UserQuery extends ElementQuery
                 'exists', (new Query())
                     ->from(['ugu' => Table::USERGROUPS_USERS])
                     ->where('[[elements.id]] = [[ugu.userId]]')
-                    ->andWhere(Db::parseParam('groupId', $this->groupId)),
+                    ->andWhere(Db::parseNumericParam('groupId', $this->groupId)),
             ]);
         }
 

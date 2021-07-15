@@ -79,7 +79,7 @@ class Routes extends Component
             ) {
                 $siteRoutes = ArrayHelper::remove($routes, $site->handle);
 
-                /* @noinspection PhpUnhandledExceptionInspection */
+                /** @noinspection PhpUnhandledExceptionInspection */
                 if ($site->handle === $sitesService->getCurrentSite()->handle) {
                     // Merge them so that the localized routes come first
                     $routes = array_merge($siteRoutes, $routes);
@@ -88,17 +88,6 @@ class Routes extends Component
         }
 
         return $routes;
-    }
-
-    /**
-     * Returns the routes defined in the control panel.
-     *
-     * @return array
-     * @deprecated in 3.1.0. Use [[\craft\services\Routes::getProjectConfigRoutes()]] instead.
-     */
-    public function getDbRoutes(): array
-    {
-        return $this->getProjectConfigRoutes();
     }
 
     /**

@@ -85,7 +85,7 @@ class DraftsTest extends Unit
         $draft->slug = 'not-pending';
 
         // Houston.... Ready for take-off
-        $this->drafts->publishDraft($draft);
+        $this->drafts->applyDraft($draft);
 
         // Re-get the entry (By the same id)
         $newEntry = Entry::find()->id($entry->id)->one();
@@ -128,7 +128,7 @@ class DraftsTest extends Unit
         $revision = Entry::find()
             ->revisionOf($entry)
             ->siteId($entry->siteId)
-            ->anyStatus()
+            ->status(null)
             ->orderBy(['num' => SORT_DESC])
             ->one();
 
@@ -191,7 +191,7 @@ class DraftsTest extends Unit
         $v1 = Entry::find()
             ->revisionOf($entry)
             ->siteId($entry->siteId)
-            ->anyStatus()
+            ->status(null)
             ->orderBy(['num' => SORT_DESC])
             ->offset(1)
             ->one();

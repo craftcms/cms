@@ -272,21 +272,4 @@ abstract class Model extends \yii\base\Model
 
         return false;
     }
-
-    // Deprecated Methods
-    // -------------------------------------------------------------------------
-
-    /**
-     * Returns the first error of the specified attribute.
-     *
-     * @param string $attribute The attribute name.
-     * @return string|null The error message, or null if there are no errors.
-     * @deprecated in 3.0.0. Use [[getFirstError()]] instead.
-     */
-    public function getError(string $attribute)
-    {
-        Craft::$app->getDeprecator()->log('Model::getError()', '`getError()` has been deprecated. Use `getFirstError()` instead.');
-
-        return $this->getFirstError($attribute);
-    }
 }

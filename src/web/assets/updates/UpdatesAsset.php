@@ -7,9 +7,9 @@
 
 namespace craft\web\assets\updates;
 
-use craft\web\AssetBundle;
 use craft\web\assets\cp\CpAsset;
 use craft\web\View;
+use yii\web\AssetBundle;
 
 /**
  * Asset bundle for the Updates utility
@@ -51,7 +51,7 @@ class UpdatesAsset extends AssetBundle
 
         if ($view instanceof View) {
             $view->registerTranslations('app', [
-                'You’re all up-to-date!',
+                'You’re all up to date!',
                 'Critical',
                 'Update all',
             ]);

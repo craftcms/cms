@@ -117,6 +117,18 @@ class DbConfig extends BaseObject
      */
     public $user = 'root';
 
+    /**
+     * @var bool Whether batched queries should be executed on a separate, unbuffered database connection.
+     *
+     * This setting only applies to MySQL. It can be enabled when working with high volume content, to prevent
+     * PHP from running out of memory when querying too much data at once. (See
+     * <https://www.yiiframework.com/doc/guide/2.0/en/db-query-builder#batch-query-mysql> for an explanation
+     * of MySQL’s batch query limitations.)
+     *
+     * @since 3.7.0
+     */
+    public $useUnbufferedConnections = false;
+
     // Deprecated Properties
     // -------------------------------------------------------------------------
 
@@ -176,17 +188,6 @@ class DbConfig extends BaseObject
         if ($this->dsn === null) {
             $this->_updateDsn();
         }
-    }
-
-    /**
-     * Updates the DSN string based on the config setting values.
-     *
-     * @throws InvalidConfigException if [[driver]] isn’t set to `mysql` or `pgsql`.
-     * @deprecated in 3.4.0.
-     */
-    public function updateDsn()
-    {
-        $this->_updateDsn();
     }
 
     /**

@@ -269,7 +269,7 @@ class FieldLayout extends Model
         }
 
         // Make sure that we aren't missing any mandatory fields
-        /* @var BaseField[] $missingFields */
+        /** @var BaseField[] $missingFields */
         $missingFields = [];
         foreach ($this->getAvailableStandardFields() as $field) {
             if ($field->mandatory() && !isset($this->_fields[$field->attribute()])) {
@@ -472,23 +472,6 @@ class FieldLayout extends Model
         }
 
         return $this->_customFields = Craft::$app->getFields()->getFieldsByLayoutId($this->id);
-    }
-
-    /**
-     * Returns the IDs of the custom fields included in the layout.
-     *
-     * @return int[]
-     * @deprecated in 3.5.0.
-     */
-    public function getFieldIds(): array
-    {
-        $ids = [];
-
-        foreach ($this->getFields() as $field) {
-            $ids[] = $field->id;
-        }
-
-        return $ids;
     }
 
     /**

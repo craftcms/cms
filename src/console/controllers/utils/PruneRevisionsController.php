@@ -90,7 +90,7 @@ class PruneRevisionsController extends Controller
                 continue;
             }
 
-            /* @var ElementInterface|string $elementType */
+            /** @var ElementInterface|string $elementType */
             $elementType = $element['type'];
             $deleteCount = $element['count'] - $this->maxRevisions;
             $this->stdout('- ' . $elementType::displayName() . " {$element['id']} ({$deleteCount} revisions) ... ");
@@ -98,7 +98,7 @@ class PruneRevisionsController extends Controller
                 ->revisionOf($element['id'])
                 ->siteId('*')
                 ->unique()
-                ->anyStatus()
+                ->status(null)
                 ->orderBy(['num' => SORT_DESC])
                 ->offset($this->maxRevisions)
                 ->all();

@@ -43,42 +43,17 @@ class Drafts extends Component
     const EVENT_AFTER_CREATE_DRAFT = 'afterCreateDraft';
 
     /**
-     * @event DraftEvent The event that is triggered before source changes are merged into a draft.
-     * @since 3.4.0
-     * @deprecated in 3.7.0. Use [[Elements::EVENT_BEFORE_MERGE_CANONICAL_CHANGES]] instead.
-     */
-    const EVENT_BEFORE_MERGE_SOURCE_CHANGES = 'beforeMergeSource';
-
-    /**
-     * @event DraftEvent The event that is triggered after source changes are merged into a draft.
-     * @since 3.4.0
-     * @deprecated in 3.7.0. Use [[Elements::EVENT_AFTER_MERGE_CANONICAL_CHANGES]] instead.
-     */
-    const EVENT_AFTER_MERGE_SOURCE_CHANGES = 'afterMergeSource';
-
-    /**
      * @event DraftEvent The event that is triggered before a draft is published.
      * @since 3.6.0
      */
-    const EVENT_BEFORE_PUBLISH_DRAFT = 'beforePublishDraft';
+    const EVENT_BEFORE_APPLY_DRAFT = 'beforeApplyDraft';
 
     /**
-     * @event DraftEvent The event that is triggered after a draft is published.
-     * @since 3.6.0
+     * @event DraftEvent The event that is triggered after a draft is applied to its canonical element.
+     * @see applyDraft()
+     * @since 3.1.0
      */
-    const EVENT_AFTER_PUBLISH_DRAFT = 'afterPublishDraft';
-
-    /**
-     * @event DraftEvent The event that is triggered before a draft is published.
-     * @deprecated in 3.6.0. Use [[EVENT_BEFORE_PUBLISH_DRAFT]] instead.
-     */
-    const EVENT_BEFORE_APPLY_DRAFT = self::EVENT_BEFORE_PUBLISH_DRAFT;
-
-    /**
-     * @event DraftEvent The event that is triggered after a draft is published.
-     * @deprecated in 3.6.0. Use [[EVENT_AFTER_PUBLISH_DRAFT]] instead.
-     */
-    const EVENT_AFTER_APPLY_DRAFT = self::EVENT_AFTER_PUBLISH_DRAFT;
+    const EVENT_AFTER_APPLY_DRAFT = 'afterApplyDraft';
 
     /**
      * @var Connection|array|string The database connection to use
@@ -112,7 +87,7 @@ class Drafts extends Component
         $query = $element::find()
             ->draftOf($element)
             ->siteId($element->siteId)
-            ->anyStatus()
+            ->status(null)
             ->orderBy(['dateUpdated' => SORT_DESC]);
 
         if (!$permission || !$user->can($permission)) {
@@ -263,32 +238,19 @@ class Drafts extends Component
     }
 
     /**
-     * Merges recent source element changes into a draft.
+     * Applies a draft to its canonical element, and deletes the draft.
+     *
+     * If an unpublished draft is passed, its draft data will simply be removed from it.
      *
      * @param ElementInterface $draft The draft
-     * @since 3.4.0
-     * @deprecated in 3.7.0. Use [[Elements::mergeCanonicalChanges()]] instead.
-     */
-    public function mergeSourceChanges(ElementInterface $draft)
-    {
-        try {
-            Craft::$app->getElements()->mergeCanonicalChanges($draft);
-        } catch (InvalidArgumentException $e) {
-        }
-    }
-
-    /**
-     * Publishes a draft.
-     *
-     * @param ElementInterface $draft The draft
-     * @return ElementInterface The updated source element
+     * @return ElementInterface The canonical element with the draft applied to it
      * @throws \Throwable
      * @since 3.6.0
      */
-    public function publishDraft(ElementInterface $draft): ElementInterface
+    public function applyDraft(ElementInterface $draft): ElementInterface
     {
-        /* @var ElementInterface|DraftBehavior $draft */
-        /* @var DraftBehavior $behavior */
+        /** @var ElementInterface|DraftBehavior $draft */
+        /** @var DraftBehavior $behavior */
         $behavior = $draft->getBehavior('draft');
         $canonical = $draft->getCanonical(true);
 
@@ -300,16 +262,16 @@ class Drafts extends Component
                 ->id($draft->id)
                 ->siteId($canonical->siteId)
                 ->structureId($canonical->structureId)
-                ->anyStatus()
+                ->status(null)
                 ->one();
             if ($draft === null) {
                 throw new Exception("Could not load the draft for site ID $canonical->siteId");
             }
         }
 
-        // Fire a 'beforePublishDraft' event
-        if ($this->hasEventHandlers(self::EVENT_BEFORE_PUBLISH_DRAFT)) {
-            $this->trigger(self::EVENT_BEFORE_PUBLISH_DRAFT, new DraftEvent([
+        // Fire a 'beforeApplyDraft' event
+        if ($this->hasEventHandlers(self::EVENT_BEFORE_APPLY_DRAFT)) {
+            $this->trigger(self::EVENT_BEFORE_APPLY_DRAFT, new DraftEvent([
                 'source' => $canonical,
                 'creatorId' => $behavior->creatorId,
                 'draftName' => $behavior->draftName,
@@ -336,33 +298,30 @@ class Drafts extends Component
                 if ($draft->structureId && $draft->root) {
                     Craft::$app->getStructures()->moveAfter($draft->structureId, $newSource, $draft);
                 }
-            } else {
-                // Detach the draft behavior
-                $behavior = $draft->detachBehavior('draft');
 
-                // Duplicate the draft as a new element
-                $e = null;
+                // Now delete the draft
+                $elementsService->deleteElement($draft, true);
+            } else {
+                // Just remove the draft data
+                $draftId = $draft->draftId;
+                $draft->draftId = null;
+                $draft->detachBehavior('draft');
+                $draft->setRevisionNotes($draftNotes);
+
                 try {
-                    $newSource = $elementsService->duplicateElement($draft, [
-                        'draftId' => null,
-                        'revisionNotes' => $draftNotes,
+                    $elementsService->saveElement($draft, false, true, false);
+                    Db::delete(Table::DRAFTS, [
+                        'id' => $draftId,
                     ]);
                 } catch (\Throwable $e) {
-                    // Don't throw it just yet, until we reattach the draft behavior
-                }
-
-                // Now reattach the draft behavior to the draft
-                if ($behavior !== null) {
+                    // Put everything back
+                    $draft->draftId = $draftId;
                     $draft->attachBehavior('draft', $behavior);
-                }
-
-                if ($e !== null) {
                     throw $e;
                 }
-            }
 
-            // Now delete the draft
-            $elementsService->deleteElement($draft, true);
+                $newSource = $draft;
+            }
 
             $transaction->commit();
         } catch (\Throwable $e) {
@@ -376,9 +335,9 @@ class Drafts extends Component
             throw $e;
         }
 
-        // Fire an 'afterPublishDraft' event
-        if ($this->hasEventHandlers(self::EVENT_AFTER_PUBLISH_DRAFT)) {
-            $this->trigger(self::EVENT_AFTER_PUBLISH_DRAFT, new DraftEvent([
+        // Fire an 'afterApplyDraft' event
+        if ($this->hasEventHandlers(self::EVENT_AFTER_APPLY_DRAFT)) {
+            $this->trigger(self::EVENT_AFTER_APPLY_DRAFT, new DraftEvent([
                 'source' => $newSource,
                 'creatorId' => $behavior->creatorId,
                 'draftName' => $behavior->draftName,
@@ -388,19 +347,6 @@ class Drafts extends Component
         }
 
         return $newSource;
-    }
-
-    /**
-     * Publishes a draft.
-     *
-     * @param ElementInterface $draft The draft
-     * @return ElementInterface The updated source element
-     * @throws \Throwable
-     * @deprecated in 3.6.0. Use [[publishDraft()]] instead.
-     */
-    public function applyDraft(ElementInterface $draft): ElementInterface
-    {
-        return $this->publishDraft($draft);
     }
 
     /**
@@ -432,11 +378,11 @@ class Drafts extends Component
         $elementsService = Craft::$app->getElements();
 
         foreach ($drafts as $draftInfo) {
-            /* @var ElementInterface|string $elementType */
+            /** @var ElementInterface|string $elementType */
             $elementType = $draftInfo['type'];
             $draft = $elementType::find()
                 ->draftId($draftInfo['draftId'])
-                ->anyStatus()
+                ->status(null)
                 ->siteId('*')
                 ->one();
 

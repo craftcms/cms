@@ -37,7 +37,6 @@ use craft\web\Request;
 use DateTime;
 use yii\base\Component;
 use yii\base\InvalidArgumentException;
-use yii\db\Exception as DbException;
 
 /**
  * The Users service provides APIs for managing users.
@@ -158,7 +157,7 @@ class Users extends Component
      */
     public function getUserById(int $userId)
     {
-        /* @noinspection PhpIncompatibleReturnTypeInspection */
+        /** @noinspection PhpIncompatibleReturnTypeInspection */
         return Craft::$app->getElements()->getElementById($userId, User::class);
     }
 
@@ -176,7 +175,7 @@ class Users extends Component
     {
         $query = User::find()
             ->addSelect(['users.password', 'users.passwordResetRequired'])
-            ->anyStatus();
+            ->status(null);
 
         if (Craft::$app->getDb()->getIsMysql()) {
             $query
@@ -214,7 +213,7 @@ class Users extends Component
     {
         return User::find()
             ->uid($uid)
-            ->anyStatus()
+            ->status(null)
             ->one();
     }
 
@@ -283,18 +282,13 @@ class Users extends Component
      */
     public function getUserPreferences(int $userId = null): array
     {
-        // TODO: Remove try/catch after next breakpoint
-        try {
-            $preferences = (new Query())
-                ->select(['preferences'])
-                ->from([Table::USERPREFERENCES])
-                ->where(['userId' => $userId])
-                ->scalar();
+        $preferences = (new Query())
+            ->select(['preferences'])
+            ->from([Table::USERPREFERENCES])
+            ->where(['userId' => $userId])
+            ->scalar();
 
-            return $preferences ? Json::decode($preferences) : [];
-        } catch (DbException $e) {
-            return [];
-        }
+        return $preferences ? Json::decode($preferences) : [];
     }
 
     /**
@@ -310,7 +304,7 @@ class Users extends Component
         Db::upsert(Table::USERPREFERENCES, [
             'userId' => $user->id,
         ], [
-            'preferences' => Json::encode($preferences),
+            'preferences' => $preferences,
         ], [], false);
     }
 

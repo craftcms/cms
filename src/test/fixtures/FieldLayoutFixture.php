@@ -79,7 +79,7 @@ abstract class FieldLayoutFixture extends DbFixture
                     }
 
                     $required = ArrayHelper::remove($fieldConfig, 'required') ?? false;
-                    /* @var FieldInterface $field */
+                    /** @var FieldInterface $field */
                     $field = $this->_fields[] = Component::createComponent($fieldConfig, FieldInterface::class);
 
                     if (!$fieldsService->saveField($field)) {

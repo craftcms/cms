@@ -532,14 +532,6 @@ interface ElementInterface extends ComponentInterface
     public function getIsDraft(): bool;
 
     /**
-     * Returns whether this is a provisional draft.
-     *
-     * @return bool
-     * @since 3.7.0
-     */
-    public function getIsProvisionalDraft(): bool;
-
-    /**
      * Returns whether this is a revision.
      *
      * @return bool
@@ -1386,7 +1378,6 @@ interface ElementInterface extends ComponentInterface
      * Returns the HTML for the element’s editor slideout.
      *
      * @return string The HTML for the editor slideout
-     * @deprecated in 3.7.0. Use [[getSidebarHtml()]] or [[getMetadata()]] instead.
      */
     public function getEditorHtml(): string;
 

@@ -111,10 +111,10 @@ class PreviewController extends Controller
         // Make sure a token was used to get here
         $this->requireToken();
 
-        /* @var ElementInterface $elementType */
+        /** @var ElementInterface $elementType */
         $query = $elementType::find()
             ->siteId($siteId)
-            ->anyStatus();
+            ->status(null);
 
         if ($draftId) {
             $query

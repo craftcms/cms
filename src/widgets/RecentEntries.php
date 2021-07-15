@@ -101,7 +101,7 @@ class RecentEntries extends Widget
             }
         }
 
-        /* @noinspection UnSafeIsSetOverArrayInspection - FP */
+        /** @noinspection UnSafeIsSetOverArrayInspection - FP */
         if (!isset($title)) {
             $title = Craft::t('app', 'Recent Entries');
         }
@@ -175,7 +175,7 @@ class RecentEntries extends Widget
         }
 
         $query = Entry::find();
-        $query->anyStatus();
+        $query->status(null);
         $query->siteId($targetSiteId);
         $query->sectionId($targetSectionId);
         $query->editable(true);

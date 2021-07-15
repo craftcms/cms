@@ -7,8 +7,10 @@
 
 namespace craft\web\assets\login;
 
-use craft\web\AssetBundle;
+use craft\validators\UserPasswordValidator;
 use craft\web\assets\cp\CpAsset;
+use craft\web\View;
+use yii\web\AssetBundle;
 
 /**
  * Asset bundle for the Login page

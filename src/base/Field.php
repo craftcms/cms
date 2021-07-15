@@ -208,7 +208,7 @@ abstract class Field extends SavableComponent implements FieldInterface
     {
         $rules = parent::defineRules();
 
-        // Make sure the column name is under the databases maximum column length allowed, including the column prefix/suffix lengths
+        // Make sure the column name is under the database’s maximum allowed column length, including the column prefix/suffix lengths
         $maxHandleLength = Craft::$app->getDb()->getSchema()->maxObjectNameLength - strlen(Craft::$app->getContent()->fieldColumnPrefix) - 9;
 
         $rules[] = [['name'], 'string', 'max' => 255];
@@ -438,21 +438,6 @@ abstract class Field extends SavableComponent implements FieldInterface
      */
     public function isValueEmpty($value, ElementInterface $element): bool
     {
-        $reflection = new \ReflectionMethod($this, 'isEmpty');
-        if ($reflection->getDeclaringClass()->getName() !== self::class) {
-            Craft::$app->getDeprecator()->log('Field::isEmpty()', 'Fields’ `isEmpty()` method has been deprecated. Use `isValueEmpty()` instead.');
-        }
-
-        return $this->isEmpty($value);
-    }
-
-    /**
-     * @param mixed $value
-     * @return bool
-     * @deprecated in 3.0.0-RC15. Use [[isValueEmpty()]] instead.
-     */
-    public function isEmpty($value): bool
-    {
         // Default to yii\validators\Validator::isEmpty()'s behavior
         return $value === null || $value === [] || $value === '';
     }
@@ -524,10 +509,7 @@ abstract class Field extends SavableComponent implements FieldInterface
 
         return [
             'label' => Craft::t('site', $this->name),
-            'orderBy' => [
-                $column => SORT_ASC,
-                'elements.id' => SORT_ASC,
-            ],
+            'orderBy' => [$column, 'elements.id'],
             'attribute' => 'field:' . $this->id,
         ];
     }
@@ -569,7 +551,7 @@ abstract class Field extends SavableComponent implements FieldInterface
      */
     public function modifyElementsQuery(ElementQueryInterface $query, $value)
     {
-        /* @var ElementQuery $query */
+        /** @var ElementQuery $query */
         if ($value !== null) {
             $column = ElementHelper::fieldColumnFromField($this);
 
@@ -579,7 +561,7 @@ abstract class Field extends SavableComponent implements FieldInterface
                 return false;
             }
 
-            $query->subQuery->andWhere(Db::parseParam("content.$column", $value));
+            $query->subQuery->andWhere(Db::parseParam("content.$column", $value, '=', false, $this->getContentColumnType()));
         }
 
         return null;

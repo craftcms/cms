@@ -47,13 +47,8 @@ class RegisterResourceNode extends Node implements NodeCaptureInterface
         }
 
         if ($position === null && $this->getAttribute('allowPosition')) {
-            if ($this->getAttribute('first')) {
-                // TODO: Remove this in Craft 4, along with the deprecated `first` param
-                $position = 'head';
-            } else {
-                // Default to endBody
-                $position = 'endBody';
-            }
+            // Default to endBody
+            $position = 'endBody';
         }
 
         if ($position !== null) {
@@ -99,13 +94,13 @@ class RegisterResourceNode extends Node implements NodeCaptureInterface
                 if ($positionOption) {
                     // Do we have to merge the position with other options?
                     if ($options !== null) {
-                        /* @noinspection PhpUndefinedVariableInspection */
+                        /** @noinspection PhpUndefinedVariableInspection */
                         $compiler
                             ->raw('array_merge(')
                             ->subcompile($options)
                             ->raw(", ['position' => $positionPhp])");
                     } else {
-                        /* @noinspection PhpUndefinedVariableInspection */
+                        /** @noinspection PhpUndefinedVariableInspection */
                         $compiler
                             ->raw("['position' => $positionPhp]");
                     }

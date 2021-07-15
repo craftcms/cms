@@ -123,9 +123,9 @@ class Search extends Component
         }
 
         // Figure out which fields to update, and which to ignore
-        /* @var FieldInterface[] $updateFields */
+        /** @var FieldInterface[] $updateFields */
         $updateFields = [];
-        /* @var string[] $ignoreFieldIds */
+        /** @var string[] $ignoreFieldIds */
         $ignoreFieldIds = [];
         if ($element::hasContent() && ($fieldLayout = $element->getFieldLayout()) !== null) {
             if ($fieldHandles !== null) {
@@ -174,25 +174,6 @@ class Search extends Component
 
         // Release the lock
         $mutex->release($lockKey);
-
-        return true;
-    }
-
-    /**
-     * Indexes the field values for a given element and site.
-     *
-     * @param int $elementId The ID of the element getting indexed.
-     * @param int $siteId The site ID of the content getting indexed.
-     * @param array $fields The field values, indexed by field ID.
-     * @return bool Whether the indexing was a success.
-     * @throws SiteNotFoundException
-     * @deprecated in 3.4.0. Use [[indexElementAttributes()]] instead.
-     */
-    public function indexElementFields(int $elementId, int $siteId, array $fields): bool
-    {
-        foreach ($fields as $fieldId => $value) {
-            $this->_indexElementKeywords($elementId, 'field', (string)$fieldId, $siteId, $value);
-        }
 
         return true;
     }
@@ -378,7 +359,7 @@ SQL;
     {
         $attribute = strtolower($attribute);
 
-        /* @var Site $site */
+        /** @var Site $site */
         $site = Craft::$app->getSites()->getSiteById($siteId, true);
 
         // Clean 'em up
@@ -886,7 +867,7 @@ SQL;
         $cleanKeywordsLength = strlen($cleanKeywords);
 
         // Give ourselves a little wiggle room.
-        /* @noinspection CallableParameterUseCaseInTypeContextInspection */
+        /** @noinspection CallableParameterUseCaseInTypeContextInspection */
         $maxSize = ceil($maxSize * 0.95);
 
         if ($cleanKeywordsLength > $maxSize) {

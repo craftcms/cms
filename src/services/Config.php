@@ -101,7 +101,7 @@ class Config extends Component
 
         // todo: remove this eventually
         if ($category === self::CATEGORY_GENERAL) {
-            /* @var GeneralConfig $config */
+            /** @var GeneralConfig $config */
             if ($config->securityKey === null) {
                 $keyPath = Craft::$app->getPath()->getRuntimePath() . DIRECTORY_SEPARATOR . 'validation.key';
                 if (file_exists($keyPath)) {
@@ -116,12 +116,6 @@ class Config extends Component
                     $config->securityKey = $key;
                 }
                 Craft::$app->getDeprecator()->log('validation.key', "The auto-generated validation key stored at `{$keyPath}` has been deprecated. Copy its value to the `securityKey` config setting in `config/general.php`.");
-            }
-            if ($config->siteUrl === null && defined('CRAFT_SITE_URL')) {
-                Craft::$app->getDeprecator()->log('CRAFT_SITE_URL', 'The `CRAFT_SITE_URL` constant has been deprecated. ' .
-                    'You can set your sites’ Base URL settings on a per-environment basis using aliases or environment variables. ' .
-                    'See [Environmental Configuration](https://craftcms.com/docs/3.x/config/#environmental-configuration) for more info.');
-                $config->siteUrl = CRAFT_SITE_URL;
             }
         }
 

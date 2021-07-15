@@ -789,38 +789,6 @@ interface ElementQueryInterface extends QueryInterface, ArrayAccess, Arrayable, 
     public function preferSites(array $value = null);
 
     /**
-     * Narrows the query results based on whether the {elements} are enabled in the site they’re being queried in, per the [[site()]] parameter.
-     *
-     * Possible values include:
-     *
-     * | Value | Fetches {elements}…
-     * | - | -
-     * | `true` _(default)_ | that are enabled in the site.
-     * | `false` | whether they are enabled or not in the site.
-     *
-     * ---
-     *
-     * ```twig
-     * {# Fetch all {elements}, including ones disabled for this site #}
-     * {% set {elements-var} = {twig-method}
-     *     .enabledForSite(false)
-     *     .all() %}
-     * ```
-     *
-     * ```php
-     * // Fetch all {elements}, including ones disabled for this site
-     * ${elements-var} = {php-method}
-     *     ->enabledForSite(false)
-     *     ->all();
-     * ```
-     *
-     * @param bool $value The property value (defaults to true)
-     * @return static self reference
-     * @deprecated in 3.5.0. [[status()]] should be used instead.
-     */
-    public function enabledForSite(bool $value = true);
-
-    /**
      * Narrows the query results to only {elements} that are related to certain other elements.
      *
      * See [Relations](https://craftcms.com/docs/3.x/relations.html) for a full explanation of how to work with this parameter.
@@ -1453,30 +1421,6 @@ interface ElementQueryInterface extends QueryInterface, ArrayAccess, Arrayable, 
      * @return static self reference
      */
     public function positionedAfter($value);
-
-    /**
-     * Removes element filters based on their statuses.
-     *
-     * ---
-     *
-     * ```twig
-     * {# Fetch all {elements}, regardless of status #}
-     * {% set {elements-var} = {twig-method}
-     *     .anyStatus()
-     *     .all() %}
-     * ```
-     *
-     * ```php
-     * // Fetch all {elements}, regardless of status
-     * ${elements-var} = {php-method}
-     *     ->anyStatus()
-     *     ->all();
-     * ```
-     *
-     * @return static self reference
-     * @since 3.0.17
-     */
-    public function anyStatus();
 
     // Query preparation/execution
     // -------------------------------------------------------------------------

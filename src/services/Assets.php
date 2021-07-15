@@ -331,7 +331,7 @@ class Assets extends Component
 
         foreach ($folders as $folder) {
             $descendants = $this->getAllDescendantFolders($folder);
-            usort($descendants, static fn ($a, $b) => substr_count($a->path, '/') < substr_count($b->path, '/'));
+            usort($descendants, static fn($a, $b) => substr_count($a->path, '/') < substr_count($b->path, '/'));
 
             foreach ($descendants as $descendant) {
                 VolumeFolderRecord::deleteAll(['id' => $descendant->id]);
@@ -489,7 +489,7 @@ class Assets extends Component
      */
     public function getAllDescendantFolders(VolumeFolder $parentFolder, string $orderBy = 'path'): array
     {
-        /* @var $query Query */
+        /** @var $query Query */
         $query = $this->_createFolderQuery()
             ->where([
                 'and',
@@ -666,7 +666,6 @@ class Assets extends Component
                 'asset' => $asset,
                 'width' => $width,
                 'height' => $height,
-                'size' => max($width, $height),
                 'generate' => $generate,
             ]);
             $this->trigger(self::EVENT_GET_ASSET_THUMB_URL, $event);
@@ -974,18 +973,6 @@ class Assets extends Component
     }
 
     /**
-     * Return the current user's temporary upload folder.
-     *
-     * @return VolumeFolder
-     * @throws VolumeException
-     * @deprecated in 3.2.0. Use [[getUserTemporaryUploadFolder()]] instead.
-     */
-    public function getCurrentUserTemporaryUploadFolder(): VolumeFolder
-    {
-        return $this->getUserTemporaryUploadFolder();
-    }
-
-    /**
      * Returns the given user's temporary upload folder.
      *
      * If no user is provided, the currently-logged in user will be used (if there is one), or a folder named after
@@ -1143,15 +1130,15 @@ class Assets extends Component
     private function _applyFolderConditions(Query $query, FolderCriteria $criteria): void
     {
         if ($criteria->id) {
-            $query->andWhere(Db::parseParam('id', $criteria->id));
+            $query->andWhere(Db::parseNumericParam('id', $criteria->id));
         }
 
         if ($criteria->volumeId) {
-            $query->andWhere(Db::parseParam('volumeId', $criteria->volumeId));
+            $query->andWhere(Db::parseNumericParam('volumeId', $criteria->volumeId));
         }
 
         if ($criteria->parentId) {
-            $query->andWhere(Db::parseParam('parentId', $criteria->parentId));
+            $query->andWhere(Db::parseNumericParam('parentId', $criteria->parentId));
         }
 
         if ($criteria->name) {

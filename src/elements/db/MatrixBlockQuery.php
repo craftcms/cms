@@ -63,12 +63,6 @@ class MatrixBlockQuery extends ElementQuery
     public $ownerId;
 
     /**
-     * @var mixed
-     * @deprecated in 3.2.0
-     */
-    public $ownerSiteId;
-
-    /**
      * @var bool|null Whether the owner elements can be drafts.
      * @used-by allowOwnerDrafts()
      * @since 3.3.10
@@ -108,14 +102,8 @@ class MatrixBlockQuery extends ElementQuery
     public function __set($name, $value)
     {
         switch ($name) {
-            case 'ownerSite':
-                Craft::$app->getDeprecator()->log('MatrixBlockQuery::ownerSite()', 'The `ownerSite` Matrix block query param has been deprecated. Use `site` or `siteId` instead.');
-                break;
             case 'type':
                 $this->type($value);
-                break;
-            case 'ownerLocale':
-                Craft::$app->getDeprecator()->log('MatrixBlockQuery::ownerLocale()', 'The `ownerLocale` Matrix block query param has been deprecated. Use `site` or `siteId` instead.');
                 break;
             default:
                 parent::__set($name, $value);
@@ -257,36 +245,6 @@ class MatrixBlockQuery extends ElementQuery
     public function ownerId($value)
     {
         $this->ownerId = $value;
-        return $this;
-    }
-
-    /**
-     * @return static self reference
-     * @deprecated in 3.2.0
-     */
-    public function ownerSiteId()
-    {
-        Craft::$app->getDeprecator()->log('MatrixBlockQuery::ownerSiteId()', 'The `ownerSiteId` Matrix block query param has been deprecated. Use `site` or `siteId` instead.');
-        return $this;
-    }
-
-    /**
-     * @return static self reference
-     * @deprecated in 3.2.0
-     */
-    public function ownerSite()
-    {
-        Craft::$app->getDeprecator()->log('MatrixBlockQuery::ownerSite()', 'The `ownerSite` Matrix block query param has been deprecated. Use `site` or `siteId` instead.');
-        return $this;
-    }
-
-    /**
-     * @return static self reference
-     * @deprecated in 3.0.0
-     */
-    public function ownerLocale()
-    {
-        Craft::$app->getDeprecator()->log('MatrixBlockQuery::ownerLocale()', 'The `ownerLocale` Matrix block query param has been deprecated. Use `site` or `siteId` instead.');
         return $this;
     }
 
@@ -463,7 +421,7 @@ class MatrixBlockQuery extends ElementQuery
         // Figure out which content table to use
         $this->contentTable = null;
         if ($this->fieldId && count($this->fieldId) === 1) {
-            /* @var MatrixField $matrixField */
+            /** @var MatrixField $matrixField */
             $matrixField = Craft::$app->getFields()->getFieldById(reset($this->fieldId));
             if ($matrixField) {
                 $this->contentTable = $matrixField->contentTable;
@@ -491,7 +449,7 @@ class MatrixBlockQuery extends ElementQuery
                 return false;
             }
 
-            $this->subQuery->andWhere(Db::parseParam('matrixblocks.typeId', $this->typeId));
+            $this->subQuery->andWhere(Db::parseNumericParam('matrixblocks.typeId', $this->typeId));
         }
 
         // Ignore revision/draft blocks by default
@@ -526,7 +484,7 @@ class MatrixBlockQuery extends ElementQuery
                 ->select(['fieldId'])
                 ->distinct()
                 ->from([Table::MATRIXBLOCKS])
-                ->where(Db::parseParam('id', $this->id))
+                ->where(Db::parseNumericParam('id', $this->id))
                 ->column() ?: false;
         }
 
@@ -542,7 +500,7 @@ class MatrixBlockQuery extends ElementQuery
             $this->fieldId = (new Query())
                 ->select(['id'])
                 ->from([Table::FIELDS])
-                ->where(Db::parseParam('id', $this->fieldId))
+                ->where(Db::parseNumericParam('id', $this->fieldId))
                 ->andWhere(['type' => Matrix::class])
                 ->column();
         }
@@ -570,7 +528,7 @@ class MatrixBlockQuery extends ElementQuery
     protected function customFields(): array
     {
         // This method won't get called if $this->fieldId isn't set to a single int
-        /* @var MatrixField $matrixField */
+        /** @var MatrixField $matrixField */
         $matrixField = Craft::$app->getFields()->getFieldById(reset($this->fieldId));
         return $matrixField->getBlockTypeFields();
     }

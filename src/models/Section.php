@@ -97,12 +97,6 @@ class Section extends Model
     public $propagationMethod = self::PROPAGATION_METHOD_ALL;
 
     /**
-     * @var bool Propagate entries
-     * @deprecated in 3.2.0. Use [[$propagationMethod]] instead
-     */
-    public $propagateEntries = true;
-
-    /**
      * @var string Default placement
      * @since 3.7.0
      */
@@ -143,10 +137,6 @@ class Section extends Model
                 ],
             ];
         }
-
-        // todo: remove this in 4.0
-        // Set propagateEntries in case anything is still checking it
-        $this->propagateEntries = $this->propagationMethod !== self::PROPAGATION_METHOD_NONE;
 
         parent::init();
     }

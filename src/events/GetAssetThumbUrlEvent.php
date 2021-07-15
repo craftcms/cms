@@ -35,12 +35,6 @@ class GetAssetThumbUrlEvent extends Event
     public $height;
 
     /**
-     * @var int Requested thumbnail size (width and height)
-     * @deprecated in 3.0.0-RC7. Use [[width]] and [[height]] instead
-     */
-    public $size;
-
-    /**
      * @var bool Whether the thumbnail should be generated if it doesn't exist yet.
      */
     public $generate;

@@ -371,27 +371,6 @@ class User extends \yii\web\User
         return true;
     }
 
-    // Misc
-    // -------------------------------------------------------------------------
-
-    /**
-     * Saves the logged-in user’s Debug toolbar preferences to the session.
-     *
-     * @deprecated in 3.5.0
-     */
-    public function saveDebugPreferencesToSession()
-    {
-    }
-
-    /**
-     * Removes the debug preferences from the session.
-     *
-     * @deprecated in 3.5.0
-     */
-    public function destroyDebugPreferencesInSession()
-    {
-    }
-
     /**
      * @inheritdoc
      */
@@ -425,7 +404,7 @@ class User extends \yii\web\User
      */
     protected function afterLogin($identity, $cookieBased, $duration)
     {
-        /* @var UserElement $identity */
+        /** @var UserElement $identity */
 
         if ($duration > 0) {
             // Store the duration on the session
@@ -460,7 +439,7 @@ class User extends \yii\web\User
             SessionHelper::remove($this->tokenParam);
 
             if ($identity) {
-                /* @var UserElement $identity */
+                /** @var UserElement $identity */
                 // Generate a new session token
                 $this->generateToken($identity->id);
             }
@@ -554,7 +533,7 @@ class User extends \yii\web\User
      */
     protected function afterLogout($identity)
     {
-        /* @var UserElement $identity */
+        /** @var UserElement $identity */
         // Delete the impersonation session, if there is one
         SessionHelper::remove(UserElement::IMPERSONATE_KEY);
 

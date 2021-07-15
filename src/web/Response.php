@@ -8,6 +8,7 @@
 namespace craft\web;
 
 use Craft;
+use craft\helpers\UrlHelper;
 use yii\web\Cookie;
 use yii\web\CookieCollection;
 use yii\web\HttpException;
@@ -146,7 +147,7 @@ class Response extends \yii\web\Response
             return;
         }
         foreach ($this->getRawCookies() as $cookie) {
-            /* @var Cookie $cookie */
+            /** @var Cookie $cookie */
             setcookie($cookie->name, $cookie->value, [
                 'expires' => $cookie->expire,
                 'path' => $cookie->path,
@@ -156,6 +157,15 @@ class Response extends \yii\web\Response
                 'sameSite' => !empty($cookie->sameSite) ? $cookie->sameSite : null,
             ]);
         }
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function redirect($url, $statusCode = 302, $checkAjax = true)
+    {
+        $url = UrlHelper::url($url);
+        return parent::redirect($url, $statusCode, $checkAjax);
     }
 
     /**

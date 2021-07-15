@@ -133,7 +133,7 @@ class Tag extends Element
      */
     public static function gqlTypeNameByContext($context): string
     {
-        /* @var TagGroup $context */
+        /** @var TagGroup $context */
         return $context->handle . '_Tag';
     }
 
@@ -143,7 +143,7 @@ class Tag extends Element
      */
     public static function gqlScopesByContext($context): array
     {
-        /* @var TagGroup $context */
+        /** @var TagGroup $context */
         return ['taggroups.' . $context->uid];
     }
 
@@ -153,7 +153,7 @@ class Tag extends Element
      */
     public static function gqlMutationNameByContext($context): string
     {
-        /* @var TagGroup $context */
+        /** @var TagGroup $context */
         return 'save_' . $context->handle . '_Tag';
     }
 

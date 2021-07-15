@@ -17,6 +17,7 @@ use craft\controllers\ElementIndexesController;
 use craft\db\Query;
 use craft\db\Table;
 use craft\elements\actions\Delete;
+use craft\elements\actions\DeleteForSite;
 use craft\elements\actions\Duplicate;
 use craft\elements\actions\Edit;
 use craft\elements\actions\NewChild;
@@ -242,7 +243,7 @@ class Entry extends Element
                 $sources[] = ['heading' => $heading];
 
                 foreach ($sectionsByType[$type] as $section) {
-                    /* @var Section $section */
+                    /** @var Section $section */
                     $source = [
                         'key' => 'section:' . $section->uid,
                         'label' => Craft::t('site', $section->name),
@@ -309,7 +310,7 @@ class Entry extends Element
         // Get the selected site
         $controller = Craft::$app->controller;
         if ($controller instanceof ElementIndexesController) {
-            /* @var ElementQuery $elementQuery */
+            /** @var ElementQuery $elementQuery */
             $elementQuery = $controller->getElementQuery();
         } else {
             $elementQuery = null;
@@ -342,7 +343,7 @@ class Entry extends Element
         $actions = [];
         $elementsService = Craft::$app->getElements();
 
-        /* @var Section[] $sections */
+        /** @var Section[] $sections */
         if (!empty($sections)) {
             $userSession = Craft::$app->getUser();
             $canSetStatus = true;
@@ -465,6 +466,10 @@ class Entry extends Element
                             'type' => Delete::class,
                             'withDescendants' => true,
                         ];
+                    }
+
+                    if ($section->propagationMethod === Section::PROPAGATION_METHOD_CUSTOM && $section->getHasMultiSiteEntries()) {
+                        $actions[] = DeleteForSite::class;
                     }
                 }
             }
@@ -620,7 +625,7 @@ class Entry extends Element
      */
     public static function gqlTypeNameByContext($context): string
     {
-        /* @var EntryType $context */
+        /** @var EntryType $context */
         return self::_getGqlIdentifierByContext($context) . '_Entry';
     }
 
@@ -630,7 +635,7 @@ class Entry extends Element
      */
     public static function gqlMutationNameByContext($context): string
     {
-        /* @var EntryType $context */
+        /** @var EntryType $context */
         return 'save_' . self::_getGqlIdentifierByContext($context) . '_Entry';
     }
 
@@ -639,7 +644,7 @@ class Entry extends Element
      */
     public static function gqlScopesByContext($context): array
     {
-        /* @var EntryType $context */
+        /** @var EntryType $context */
         return [
             'sections.' . $context->getSection()->uid,
             'entrytypes.' . $context->uid,
@@ -826,7 +831,7 @@ class Entry extends Element
     public function getSupportedSites(): array
     {
         $section = $this->getSection();
-        /* @var Site[] $allSites */
+        /** @var Site[] $allSites */
         $allSites = ArrayHelper::index(Craft::$app->getSites()->getAllSites(), 'id');
         $sites = [];
 
@@ -838,12 +843,12 @@ class Entry extends Element
         ) {
             if ($this->id) {
                 $currentSites = static::find()
-                    ->anyStatus()
+                    ->status(null)
                     ->id($this->id)
                     ->siteId('*')
                     ->select('elements_sites.siteId')
                     ->drafts($this->getIsDraft())
-                    ->provisionalDrafts($this->getIsProvisionalDraft())
+                    ->provisionalDrafts($this->isProvisionalDraft)
                     ->revisions($this->getIsRevision())
                     ->column();
             } else {
@@ -853,12 +858,12 @@ class Entry extends Element
             // If this is being duplicated from another element (e.g. a draft), include any sites the source element is saved to as well
             if (!empty($this->duplicateOf->id)) {
                 array_push($currentSites, ...static::find()
-                    ->anyStatus()
+                    ->status(null)
                     ->id($this->duplicateOf->id)
                     ->siteId('*')
                     ->select('elements_sites.siteId')
                     ->drafts($this->duplicateOf->getIsDraft())
-                    ->provisionalDrafts($this->duplicateOf->getIsProvisionalDraft())
+                    ->provisionalDrafts($this->duplicateOf->isProvisionalDraft)
                     ->revisions($this->duplicateOf->getIsRevision())
                     ->column()
                 );
@@ -1252,13 +1257,21 @@ class Entry extends Element
     protected function isDeletable(): bool
     {
         $section = $this->getSection();
+        $userSession = Craft::$app->getUser();
+        $userId = $userSession->getId();
+
+        if ($this->getIsDraft()) {
+            /** @var Entry|DraftBehavior $this */
+            return $this->creatorId == $userId || $userSession->checkPermission("deletePeerEntryDrafts:$section->uid");
+        }
+
         if ($section->type === Section::TYPE_SINGLE) {
             return false;
         }
-        $userSession = Craft::$app->getUser();
+
         return (
             $userSession->checkPermission("deleteEntries:$section->uid") &&
-            ($this->authorId == $userSession->getId() || $userSession->checkPermission("deletePeerEntries:$section->uid"))
+            ($this->authorId == $userId || $userSession->checkPermission("deletePeerEntries:$section->uid"))
         );
     }
 
@@ -1336,8 +1349,8 @@ class Entry extends Element
                 }
 
             case 'revisionNotes':
-                /* @var Entry|null $revision */
-                /* @var RevisionBehavior|null $behavior */
+                /** @var Entry|null $revision */
+                /** @var RevisionBehavior|null $behavior */
                 if (
                     ($revision = $this->getCurrentRevision()) === null ||
                     ($behavior = $revision->getBehavior('revision')) === null
@@ -1347,8 +1360,8 @@ class Entry extends Element
                 return Html::encode($behavior->revisionNotes);
 
             case 'revisionCreator':
-                /* @var Entry|null $revision */
-                /* @var RevisionBehavior|null $behavior */
+                /** @var Entry|null $revision */
+                /** @var RevisionBehavior|null $behavior */
                 if (
                     ($revision = $this->getCurrentRevision()) === null ||
                     ($behavior = $revision->getBehavior('revision')) === null ||
@@ -1366,7 +1379,7 @@ class Entry extends Element
                 $drafts = $this->getEagerLoadedElements('drafts');
 
                 foreach ($drafts as $draft) {
-                    /* @var ElementInterface|DraftBehavior $draft */
+                    /** @var ElementInterface|DraftBehavior $draft */
                     $draft->setUiLabel($draft->draftName);
                 }
 
@@ -1527,39 +1540,45 @@ EOD;
             $hasRevisions = self::find()
                 ->revisionOf($this)
                 ->siteId('*')
-                ->anyStatus()
+                ->status(null)
                 ->exists();
             if (!$hasRevisions) {
                 $currentEntry = self::find()
                     ->id($this->id)
                     ->siteId('*')
-                    ->anyStatus()
+                    ->status(null)
                     ->one();
-                $revisionNotes = 'Revision from ' . Craft::$app->getFormatter()->asDatetime($currentEntry->dateUpdated);
-                Craft::$app->getRevisions()->createRevision($currentEntry, $currentEntry->authorId, $revisionNotes);
+
+                // May be null if the entry is currently stored as an unpublished draft
+                if ($currentEntry) {
+                    $revisionNotes = 'Revision from ' . Craft::$app->getFormatter()->asDatetime($currentEntry->dateUpdated);
+                    Craft::$app->getRevisions()->createRevision($currentEntry, $currentEntry->authorId, $revisionNotes);
+                }
             }
         }
 
         // Set the structure ID for Element::attributes() and afterSave()
         if ($section->type === Section::TYPE_STRUCTURE) {
             $this->structureId = $section->structureId;
-        }
 
-        // Has the entry been assigned to a new parent?
-        if ($this->_hasNewParent()) {
-            if ($this->newParentId) {
-                $parentEntry = Craft::$app->getEntries()->getEntryById($this->newParentId, '*', [
-                    'preferSites' => [$this->siteId],
-                ]);
+            if (!$this->duplicateOf) {
+                // Has the entry been assigned to a new parent?
+                if ($this->_hasNewParent()) {
+                    if ($this->newParentId) {
+                        $parentEntry = Craft::$app->getEntries()->getEntryById($this->newParentId, '*', [
+                            'preferSites' => [$this->siteId],
+                        ]);
 
-                if (!$parentEntry) {
-                    throw new Exception('Invalid entry ID: ' . $this->newParentId);
+                        if (!$parentEntry) {
+                            throw new \Exception('Invalid entry ID: ' . $this->newParentId);
+                        }
+                    } else {
+                        $parentEntry = null;
+                    }
+
+                    $this->setParent($parentEntry);
                 }
-            } else {
-                $parentEntry = null;
             }
-
-            $this->setParent($parentEntry);
         }
 
         // Section type-specific stuff
@@ -1673,7 +1692,7 @@ EOD;
         if ($this->structureId) {
             // Remember the parent ID, in case the entry needs to be restored later
             $parentId = $this->getAncestors(1)
-                ->anyStatus()
+                ->status(null)
                 ->select(['elements.id'])
                 ->scalar();
             if ($parentId) {
@@ -1727,7 +1746,7 @@ EOD;
             if ($this->getIsCanonical()) {
                 $drafts = static::find()
                     ->draftOf($this)
-                    ->anyStatus()
+                    ->status(null)
                     ->siteId('*')
                     ->unique()
                     ->all();
@@ -1798,7 +1817,7 @@ EOD;
         $oldParentQuery->ancestorOf($this);
         $oldParentQuery->ancestorDist(1);
         $oldParentQuery->siteId($this->siteId);
-        $oldParentQuery->anyStatus();
+        $oldParentQuery->status(null);
         $oldParentQuery->select('elements.id');
         $oldParentId = $oldParentQuery->scalar();
 

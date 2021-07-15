@@ -2262,7 +2262,7 @@ $elementInnerSpacing: 5px;
   }
 
   &.hasthumb {
-    .elementthumb {
+    .elementthumb:not(:empty) {
       position: absolute;
       display: flex;
       justify-content: center;
@@ -2325,7 +2325,7 @@ $elementInnerSpacing: 5px;
     &.hasthumb {
       @include padding-left($smallThumbSize + $elementInnerSpacing);
 
-      .elementthumb {
+      .elementthumb:not(:empty) {
         top: calc(50% - 17px);
         @include left(0);
         width: $smallThumbSize;
@@ -2362,7 +2362,7 @@ $elementInnerSpacing: 5px;
       }
     }
 
-    .elementthumb {
+    .elementthumb:not(:empty) {
       top: $baseElementSidePadding;
       @include left($baseElementSidePadding);
       width: $largeThumbSize;
@@ -3411,6 +3411,16 @@ ul.tree,
       width: calc(100% - 112px);
     }
 
+    & > .data > .value {
+      display: flex;
+      align-items: center;
+
+      & > [data-icon="draft"] {
+        margin-top: -2px;
+        @include margin-right(8px);
+      }
+    }
+
     & > .field.lightswitch-field > .input {
       flex: 0;
       width: auto;
@@ -3674,7 +3684,7 @@ ul.tree,
       & > .preview-thumb-container {
         margin: 0 var(--neg-padding);
         height: auto;
-        max-height: 190px;
+        min-height: 54px; // make room for the Preview / Edit buttons
 
         & + .pane-header {
           border-radius: 0;
@@ -3719,15 +3729,6 @@ ul.tree,
       @include margin(0, var(--neg-padding), 0, 0);
     }
   }
-
-  & > .ee-sidebar-shade {
-    position: absolute;
-    z-index: 2;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-  }
 }
 
 @media (min-width: 1536px) {
@@ -3762,10 +3763,6 @@ ul.tree,
         height: 100%;
         box-shadow: none;
       }
-    }
-
-    & > .ee-sidebar-shade {
-      display: none !important;
     }
   }
 }
@@ -4005,7 +4002,15 @@ ul.tree,
   align-items: center;
   height: 190px;
   background-color: $grey900;
-  cursor: pointer;
+
+  &.checkered img {
+    background-color: $white;
+    @include checkered-bg(17px);
+  }
+
+  &.editable {
+    cursor: pointer;
+  }
 
   &.loading {
     &:after {
@@ -4032,11 +4037,12 @@ ul.tree,
     flex-direction: column;
     align-items: center;
     width: 100%;
+    height: 100%;
 
     img {
       display: block;
       max-width: 100%;
-      max-height: 100%;
+      max-height: 190px;
     }
   }
 
@@ -5961,11 +5967,11 @@ $titlebarBorderRadius: $largeBorderRadius - 1;
   &:not(.static) {
     & > .fields {
       padding-top: 14px;
-
-      & > .flex-fields > .field > .status-badge {
-        @include left(-17px);
-      }
     }
+  }
+
+  & > .fields > .flex-fields > .field > .status-badge {
+    @include left(-17px);
   }
 
   & > .buttons {

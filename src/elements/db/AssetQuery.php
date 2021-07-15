@@ -40,28 +40,6 @@ use yii\db\Connection;
  */
 class AssetQuery extends ElementQuery
 {
-    /**
-     * @var bool
-     * @see _supportsUploaderParam()
-     */
-    private static $_supportsUploaderParam;
-
-    /**
-     * Returns whether the `uploader` param is supported yet.
-     *
-     * @return bool
-     * @todo remove after next beakpoint
-     */
-    private static function _supportsUploaderParam(): bool
-    {
-        if (self::$_supportsUploaderParam !== null) {
-            return self::$_supportsUploaderParam;
-        }
-
-        $schemaVersion = Craft::$app->getInstalledSchemaVersion();
-        return self::$_supportsUploaderParam = version_compare($schemaVersion, '3.4.5', '>=');
-    }
-
     // General parameters
     // -------------------------------------------------------------------------
 
@@ -291,20 +269,6 @@ class AssetQuery extends ElementQuery
     }
 
     /**
-     * Narrows the query results based on the volume the assets belong to.
-     *
-     * @param string|string[]|VolumeInterface $value The property value
-     * @return static self reference
-     * @deprecated in 3.0.0. Use [[volume()]] instead.
-     */
-    public function source($value)
-    {
-        Craft::$app->getDeprecator()->log('AssetQuery::source()', 'The `source` asset query param has been deprecated. Use `volume` instead.');
-
-        return $this->volume($value);
-    }
-
-    /**
      * Narrows the query results based on the volumes the assets belong to, per the volumes’ IDs.
      *
      * Possible values include:
@@ -341,20 +305,6 @@ class AssetQuery extends ElementQuery
     {
         $this->volumeId = $value;
         return $this;
-    }
-
-    /**
-     * Narrows the query results based on the volumes the assets belong to, per the volumes’ IDs.
-     *
-     * @param int|int[] $value The property value
-     * @return static self reference
-     * @deprecated in Craft 3.0.0. Use [[volumeId()]] instead.
-     */
-    public function sourceId($value)
-    {
-        Craft::$app->getDeprecator()->log('AssetQuery::sourceId()', 'The `sourceId` asset query param has been deprecated. Use `volumeId` instead.');
-
-        return $this->volumeId($value);
     }
 
     /**
@@ -829,6 +779,7 @@ class AssetQuery extends ElementQuery
         $this->query->select([
             'assets.volumeId',
             'assets.folderId',
+            'assets.uploaderId',
             'assets.filename',
             'assets.kind',
             'assets.width',
@@ -840,10 +791,6 @@ class AssetQuery extends ElementQuery
             'volumeFolders.path AS folderPath',
         ]);
 
-        if (self::_supportsUploaderParam()) {
-            $this->query->addSelect('assets.uploaderId');
-        }
-
         if ($this->volumeId) {
             if ($this->volumeId === ':empty:') {
                 $this->subQuery->andWhere(['assets.volumeId' => null]);
@@ -853,7 +800,7 @@ class AssetQuery extends ElementQuery
         }
 
         if ($this->folderId) {
-            $folderCondition = Db::parseParam('assets.folderId', $this->folderId);
+            $folderCondition = Db::parseNumericParam('assets.folderId', $this->folderId);
             if (is_numeric($this->folderId) && $this->includeSubfolders) {
                 $assetsService = Craft::$app->getAssets();
                 $descendants = $assetsService->getAllDescendantFolders($assetsService->getFolderById($this->folderId));
@@ -862,7 +809,7 @@ class AssetQuery extends ElementQuery
             $this->subQuery->andWhere($folderCondition);
         }
 
-        if (self::_supportsUploaderParam() && $this->uploaderId) {
+        if ($this->uploaderId) {
             $this->subQuery->andWhere(['uploaderId' => $this->uploaderId]);
         }
 
@@ -884,15 +831,15 @@ class AssetQuery extends ElementQuery
         }
 
         if ($this->width) {
-            $this->subQuery->andWhere(Db::parseParam('assets.width', $this->width));
+            $this->subQuery->andWhere(Db::parseNumericParam('assets.width', $this->width));
         }
 
         if ($this->height) {
-            $this->subQuery->andWhere(Db::parseParam('assets.height', $this->height));
+            $this->subQuery->andWhere(Db::parseNumericParam('assets.height', $this->height));
         }
 
         if ($this->size) {
-            $this->subQuery->andWhere(Db::parseParam('assets.size', $this->size));
+            $this->subQuery->andWhere(Db::parseNumericParam('assets.size', $this->size, '=', Schema::TYPE_BIGINT));
         }
 
         if ($this->dateModified) {
@@ -919,7 +866,7 @@ class AssetQuery extends ElementQuery
             $this->volumeId = (new Query())
                 ->select(['id'])
                 ->from([Table::VOLUMES])
-                ->where(Db::parseParam('id', $this->volumeId))
+                ->where(Db::parseNumericParam('id', $this->volumeId))
                 ->column();
         }
     }

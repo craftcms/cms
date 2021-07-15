@@ -50,7 +50,6 @@ use craft\services\Sections;
 use craft\services\Sites;
 use craft\services\Structures;
 use craft\services\SystemMessages;
-use craft\services\SystemSettings;
 use craft\services\Tags;
 use craft\services\TemplateCaches;
 use craft\services\Tokens;
@@ -576,8 +575,6 @@ class TestSetup
             [Elements::class, ['getElements', 'elements']],
             [SystemMessages::class, ['getSystemMessages', 'systemMessages']],
             [Entries::class, ['getEntries', 'entries']],
-            [EntryRevisions::class, ['getEntryRevisions', 'entryRevisions']],
-            [Feeds::class, ['getFeeds', 'feeds']],
             [Fields::class, ['getFields', 'fields']],
             [Globals::class, ['getGlobals', 'globals']],
             [Images::class, ['getImages', 'images']],
@@ -597,7 +594,6 @@ class TestSetup
             [Sections::class, ['getSections', 'sections']],
             [Sites::class, ['getSites', 'sites']],
             [Structures::class, ['getStructures', 'structures']],
-            [SystemSettings::class, ['getSystemSettings', 'systemSettings']],
             [SystemMessages::class, ['getSystemMessages', 'systemMessages']],
             [Tags::class, ['getTags', 'tags']],
             [TemplateCaches::class, ['getTemplateCaches', 'templateCaches']],

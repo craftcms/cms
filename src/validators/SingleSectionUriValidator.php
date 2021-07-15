@@ -33,7 +33,7 @@ class SingleSectionUriValidator extends UriFormatValidator
 
         parent::validateAttribute($model, $attribute);
 
-        /* @var Section_SiteSettings $model */
+        /** @var Section_SiteSettings $model */
         $section = $model->getSection();
 
         // Make sure no other elements are using this URI already

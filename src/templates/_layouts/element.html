@@ -62,7 +62,7 @@
     {% set isNewlySupportedSite = not element.find()
         .id(element.getSourceId())
         .siteId(element.siteId)
-        .anyStatus()
+        .status(null)
         .exists() %}
 {% else %}
     {% set isNewlySupportedSite = false %}
@@ -127,27 +127,36 @@
 {% if isLikeCurrent %}
     {% if canUpdateSource and saveSourceAction %}
         {% set formActions = formActions|push({
-            label: 'Save and continue editing'|t('app'),
+            label: isUnpublishedDraft ? 'Create and continue editing'|t('app') : 'Save and continue editing'|t('app'),
             redirect: hashedCpEditUrl,
             shortcut: true,
             retainScroll: true,
-            data: {
+            eventData: {
                 autosave: false,
             },
         }) %}
         {% if addAnotherRedirectUrl %}
             {% set formActions = formActions|push({
-                label: 'Save and add another'|t('app'),
+                label: isUnpublishedDraft ? 'Create and add another'|t('app') : 'Save and add another'|t('app'),
                 action: isUnpublishedDraft ? publishDraftAction : null,
                 redirect: addAnotherRedirectUrl|hash,
                 shortcut: true,
                 shift: true,
-                data: {
+                eventData: {
                     autosave: false,
                 },
             }) %}
         {% endif %}
-        {% if not isUnpublishedDraft and canDuplicateSource and duplicateSourceAction %}
+        {% if isUnpublishedDraft %}
+            {% set formActions = formActions|push({
+                label: 'Save draft'|t('app'),
+                action: saveDraftAction,
+                redirect: (redirectUrl ~ '#')|hash,
+                eventData: {
+                    autosave: false,
+                },
+            }) %}
+        {% elseif canDuplicateSource and duplicateSourceAction %}
             {% set formActions = formActions|push({
                 label: 'Save as a new {type}'|t('app', {
                     type: element.lowerDisplayName(),
@@ -160,12 +169,12 @@
     {% if canDeleteForSite %}
         {% set formActions = formActions|push({
             destructive: true,
-            label: 'Delete {type} for this site'|t('app', {
+            label: isUnpublishedDraft ? 'Delete draft for this site'|t('app') : 'Delete {type} for this site'|t('app', {
                 type: element.lowerDisplayName()
             }),
             action: deleteForSiteAction,
             redirect: (redirectUrl ~ '#')|hash,
-            confirm: 'Are you sure you want to delete the {type} for this site?'|t('app', {
+            confirm: isUnpublishedDraft ? 'Are you sure you want to delete the draft for this site?'|t('app') : 'Are you sure you want to delete the {type} for this site?'|t('app', {
                 type: element.lowerDisplayName(),
             }),
         }) %}
@@ -176,12 +185,12 @@
     ) %}
         {% set formActions = formActions|push({
             destructive: true,
-            label: 'Delete {type}'|t('app', {
+            label: isUnpublishedDraft ? 'Delete draft'|t('app') : 'Delete {type}'|t('app', {
                 type: element.lowerDisplayName()
             }),
             action: isUnpublishedDraft ? deleteDraftAction : deleteSourceAction,
             redirect: (redirectUrl ~ '#')|hash,
-            confirm: 'Are you sure you want to delete this {type}?'|t('app', {
+            confirm: isUnpublishedDraft ? 'Are you sure you want to delete this draft?'|t('app') : 'Are you sure you want to delete this {type}?'|t('app', {
                 type: element.lowerDisplayName(),
             }),
         }) %}
@@ -276,7 +285,11 @@
         {% endif %}
         {% if canUpdateSource and saveSourceAction %}
             <div id="save-btn-container" class="btngroup submit">
-                <button type="submit" class="btn submit">{{ 'Save'|t('app') }}</button>
+                <button type="submit" class="btn submit">
+                    {{ isUnpublishedDraft ? 'Create {type}'|t('app', {
+                        type: element.lowerDisplayName(),
+                    }) : 'Save'|t('app') }}
+                </button>
                 <button type="button" class="btn submit menubtn"></button>
                 {% include '_layouts/components/form-action-menu' %}
             </div>
@@ -409,7 +422,14 @@
                 {% endif %}
                 <div class="data">
                     <h5 class="heading">{{ 'Status'|t('app') }}</h5>
-                    <div id="status-value" class="value"><span class="status {{ statusColor }}"></span>{{ statusLabel }}</div>
+                    <div id="status-value" class="value">
+                        {% if isUnpublishedDraft %}
+                            <span data-icon="draft"></span>
+                        {% else %}
+                            <span class="status {{ statusColor }}"></span>
+                        {% endif %}
+                        <span>{{ statusLabel }}</span>
+                    </div>
                 </div>
             {% endif %}
             <div class="data">
@@ -465,13 +485,13 @@
     {% endif %}
 {% endblock %}
 
-{% if canEditMultipleSites and element.enabled %}
-    {# get the element's statuses across all sites #}
+{# Only fetch the element’s per-site statuses if it’s enabled globally. Otherwise they don’t have any effect #}
+{% if canEditMultipleSites and element.enabled and element.id %}
     {% set siteStatusesQuery = element.find()
         .select(['elements_sites.siteId', 'elements_sites.enabled'])
         .id(element.id)
         .siteId(propEditableSiteIds)
-        .anyStatus()
+        .status(null)
         .asArray() %}
     {% if isProvisionalDraft %}
         {% do siteStatusesQuery.provisionalDrafts() %}
@@ -484,8 +504,10 @@
         .pairs()|map(s => s ? true : false) %}
 {% elseif canEditMultipleSites %}
     {% set siteStatusValues = {} %}
+    {# If the element isn't saved yet, assume other sites will share its current status #}
+    {% set defaultStatus = element.id ? false : (element.enabled and element.enabledForSite) %}
     {% for siteId in propEditableSiteIds %}
-        {% set siteStatusValues = siteStatusValues|merge([false]) %}
+        {% set siteStatusValues = siteStatusValues|merge([defaultStatus]) %}
     {% endfor %}
     {% set siteStatuses = combine(propEditableSiteIds, siteStatusValues) %}
 {% else %}

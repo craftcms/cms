@@ -105,11 +105,11 @@ class Categories extends BaseRelationField
     public function normalizeValue($value, ElementInterface $element = null)
     {
         if (is_array($value)) {
-            /* @var Category[] $categories */
+            /** @var Category[] $categories */
             $categories = Category::find()
                 ->siteId($this->targetSiteId($element))
                 ->id(array_values(array_filter($value)))
-                ->anyStatus()
+                ->status(null)
                 ->all();
 
             // Fill in any gaps

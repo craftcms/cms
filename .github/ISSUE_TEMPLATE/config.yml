@@ -1,0 +1,20 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Feature Request
+    url: https://github.com/craftcms/cms/discussions/new?category=ideas
+    about: Start a new discussion about your idea
+  - name: Documentation
+    url: https://docs.craftcms.com/
+    about: Read the official documentation
+  - name: Knowledge Base
+    url: https://craftcms.com/knowledge-base
+    about: Find answers to common problems
+  - name: Developer Support Services
+    url: https://craftcms.com/support-services
+    about: Priority developer support from the team that makes Craft
+  - name: Craft Discord
+    url: https://craftcms.com/discord
+    about: Meet the community
+  - name: Stack Exchange
+    url: http://craftcms.stackexchange.com/
+    about: Get help and help others

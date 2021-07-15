@@ -19,7 +19,6 @@ use craft\i18n\Locale;
 use craft\models\Section;
 use craft\services\Authentication;
 use craft\services\Sites;
-use craft\web\AssetBundle;
 use craft\web\assets\axios\AxiosAsset;
 use craft\web\assets\d3\D3Asset;
 use craft\web\assets\datepickeri18n\DatepickerI18nAsset;
@@ -36,6 +35,7 @@ use craft\web\assets\selectize\SelectizeAsset;
 use craft\web\assets\velocity\VelocityAsset;
 use craft\web\assets\xregexp\XregexpAsset;
 use craft\web\View;
+use yii\web\AssetBundle;
 use yii\web\JqueryAsset;
 
 /**
@@ -310,7 +310,7 @@ JS;
 
         $elementTypeNames = [];
         foreach (Craft::$app->getElements()->getAllElementTypes() as $elementType) {
-            /* @var string|ElementInterface $elementType */
+            /** @var string|ElementInterface $elementType */
             $elementTypeNames[$elementType] = [
                 $elementType::displayName(),
                 $elementType::pluralDisplayName(),
@@ -347,7 +347,8 @@ JS;
             'elementTypeNames' => $elementTypeNames,
             'fileKinds' => Assets::getFileKinds(),
             'handleCasing' => $generalConfig->handleCasing,
-            'initialDeltaValues' => $view->getInitialDeltaValue(),
+            'httpProxy' => $this->_httpProxy($generalConfig),
+            'initialDeltaValues' => $view->getInitialDeltaValues(),
             'isImagick' => Craft::$app->getImages()->getIsImagick(),
             'isMultiSite' => Craft::$app->getIsMultiSite(),
             'language' => Craft::$app->language,
@@ -383,7 +384,6 @@ JS;
             'timezone' => Craft::$app->getTimeZone(),
             'tokenParam' => $generalConfig->tokenParam,
             'translations' => ['' => ''], // force encode as JS object
-            'useCompressedJs' => (bool)$generalConfig->useCompressedJs,
             'usePathInfo' => (bool)$generalConfig->usePathInfo,
             'username' => $currentUser->username ?? null,
         ];
@@ -442,6 +442,29 @@ JS;
         }
 
         return $groups;
+    }
+
+    /**
+     * @param $generalConfig GeneralConfig
+     * @return array|null
+     */
+    private function _httpProxy(GeneralConfig $generalConfig): ?array
+    {
+        if (!$generalConfig->httpProxy) {
+            return null;
+        }
+
+        $parsed = parse_url($generalConfig->httpProxy);
+
+        return array_filter([
+            'host' => $parsed['host'],
+            'port' => $parsed['port'] ?? strtolower($parsed['scheme']) === 'http' ? 80 : 443,
+            'auth' => array_filter([
+                'username' => $parsed['user'] ?? null,
+                'password' => $parsed['pass'] ?? null,
+            ]),
+            'protocol' => $parsed['scheme'],
+        ]);
     }
 
     /**

@@ -7,7 +7,7 @@
 
 namespace craft\web\assets\elementresizedetector;
 
-use craft\web\AssetBundle;
+use yii\web\AssetBundle;
 
 /**
  * ElementResizeDetector asset bundle.

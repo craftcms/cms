@@ -74,10 +74,6 @@ class ProjectConfig extends Component
      */
     const CACHE_DURATION = 31536000; // 1 year
     /**
-     * @deprecated in 3.5.0
-     */
-    const CONFIG_KEY = 'storedConfig';
-    /**
      * @var string Filename for base config file
      * @since 3.1.0
      */
@@ -640,11 +636,6 @@ class ProjectConfig extends Component
             return true;
         }
 
-        // TODO remove after next breakpoint
-        if (version_compare(Craft::$app->getInfo()->schemaVersion, '3.4.4', '<')) {
-            return false;
-        }
-
         // If the file does not exist, but should, generate it
         if ($this->getHadFileWriteIssues() || !$this->getDoesYamlExist()) {
             if ($this->writeYamlAutomatically) {
@@ -978,11 +969,6 @@ class ProjectConfig extends Component
      */
     public function getAreConfigSchemaVersionsCompatible(&$issues = [])
     {
-        // TODO remove after next breakpoint
-        if (version_compare(Craft::$app->getInfo()->version, '3.1', '<')) {
-            return true;
-        }
-
         $incomingSchema = (string)$this->get(self::CONFIG_SCHEMA_VERSION_KEY, true);
         $existingSchema = (string)Craft::$app->schemaVersion;
 
@@ -1324,9 +1310,9 @@ class ProjectConfig extends Component
                 throw new OperationAbortedException($message);
             }
 
-            /* @var ConfigEvent $event */
-            /* @var string[]|null $tokenMatches */
-            /* @var callable $handler */
+            /** @var ConfigEvent $event */
+            /** @var string[]|null $tokenMatches */
+            /** @var callable $handler */
             [$event, $tokenMatches, $handler] = array_shift($this->_deferredEvents);
             Craft::info('Re-triggering deferred event for ' . $event->path, __METHOD__);
             $event->tokenMatches = $tokenMatches;

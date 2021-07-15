@@ -134,7 +134,7 @@ class Category extends Element
      */
     public static function gqlTypeNameByContext($context): string
     {
-        /* @var CategoryGroup $context */
+        /** @var CategoryGroup $context */
         return $context->handle . '_Category';
     }
 
@@ -144,7 +144,7 @@ class Category extends Element
      */
     public static function gqlScopesByContext($context): array
     {
-        /* @var CategoryGroup $context */
+        /** @var CategoryGroup $context */
         return ['categorygroups.' . $context->uid];
     }
 
@@ -154,7 +154,7 @@ class Category extends Element
      */
     public static function gqlMutationNameByContext($context): string
     {
-        /* @var CategoryGroup $context */
+        /** @var CategoryGroup $context */
         return 'save_' . $context->handle . '_Category';
     }
 
@@ -209,7 +209,7 @@ class Category extends Element
         // Get the selected site
         $controller = Craft::$app->controller;
         if ($controller instanceof ElementIndexesController) {
-            /* @var ElementQuery $elementQuery */
+            /** @var ElementQuery $elementQuery */
             $elementQuery = $controller->getElementQuery();
         } else {
             $elementQuery = null;
@@ -616,7 +616,7 @@ class Category extends Element
         if ($this->structureId) {
             // Remember the parent ID, in case the entry needs to be restored later
             $parentId = $this->getAncestors(1)
-                ->anyStatus()
+                ->status(null)
                 ->select(['elements.id'])
                 ->scalar();
             if ($parentId) {
@@ -668,7 +668,7 @@ class Category extends Element
             $newRelationValues = [];
 
             $ancestorIds = $this->getAncestors()
-                ->anyStatus()
+                ->status(null)
                 ->ids();
 
             $sources = (new Query())
@@ -757,7 +757,7 @@ class Category extends Element
         $oldParentQuery->ancestorOf($this);
         $oldParentQuery->ancestorDist(1);
         $oldParentQuery->siteId($this->siteId);
-        $oldParentQuery->anyStatus();
+        $oldParentQuery->status(null);
         $oldParentQuery->select('elements.id');
         $oldParentId = $oldParentQuery->scalar();
 

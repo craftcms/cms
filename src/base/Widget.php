@@ -54,17 +54,6 @@ abstract class Widget extends SavableComponent implements WidgetInterface
     }
 
     /**
-     * Returns the path to the widget’s SVG icon.
-     *
-     * @return string|null
-     * @deprecated in 3.2.0. Use [[icon()]] instead.
-     */
-    public static function iconPath()
-    {
-        return null;
-    }
-
-    /**
      * @inheritdoc
      */
     protected function defineRules(): array

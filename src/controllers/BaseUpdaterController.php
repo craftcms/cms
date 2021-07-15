@@ -35,10 +35,6 @@ abstract class BaseUpdaterController extends Controller
     const ACTION_RECHECK_COMPOSER = 'recheck-composer';
     const ACTION_COMPOSER_INSTALL = 'composer-install';
     const ACTION_COMPOSER_REMOVE = 'composer-remove';
-    /**
-     * @deprecated
-     */
-    const ACTION_COMPOSER_OPTIMIZE = 'composer-optimize';
     const ACTION_FINISH = 'finish';
 
     /**
@@ -207,37 +203,6 @@ abstract class BaseUpdaterController extends Controller
             Craft::error('Error updating Composer requirements: ' . $e->getMessage() . "\nOutput: " . $io->getOutput(), __METHOD__);
             Craft::$app->getErrorHandler()->logException($e);
             return $this->sendComposerError(Craft::t('app', 'Composer was unable to remove the plugin.'), $e, $io->getOutput());
-        }
-
-        return $this->send($this->postComposerInstallState());
-    }
-
-    /**
-     * Optimizes the Composer autoloader.
-     *
-     * @return Response
-     * @deprecated
-     */
-    public function actionComposerOptimize(): Response
-    {
-        $io = new BufferIO();
-
-        try {
-            Craft::$app->getComposer()->optimize($io);
-            Craft::info("Optimized the Composer autoloader.\nOutput: " . $io->getOutput(), __METHOD__);
-        } catch (\Throwable $e) {
-            Craft::error('Error optimizing the Composer autoloader: ' . $e->getMessage() . "\nOutput: " . $io->getOutput(), __METHOD__);
-            Craft::$app->getErrorHandler()->logException($e);
-            $continueOption = $this->postComposerInstallState();
-            $continueOption['label'] = Craft::t('app', 'Continue');
-            return $this->send([
-                'error' => Craft::t('app', 'Composer was unable to optimize the autoloader.'),
-                'errorDetails' => $this->_composerErrorDetails($e, $io->getOutput()),
-                'options' => [
-                    $this->actionOption(Craft::t('app', 'Try again'), self::ACTION_COMPOSER_OPTIMIZE),
-                    $continueOption,
-                ],
-            ]);
         }
 
         return $this->send($this->postComposerInstallState());
@@ -510,11 +475,11 @@ abstract class BaseUpdaterController extends Controller
         } catch (MigrateException $e) {
             $ownerName = $e->ownerName;
             $ownerHandle = $e->ownerHandle;
-            /* @var \Throwable $e */
+            /** @var \Throwable $e */
             $e = $e->getPrevious();
 
             if ($e instanceof MigrationException) {
-                /* @var \Throwable|null $previous */
+                /** @var \Throwable|null $previous */
                 $previous = $e->getPrevious();
                 $migration = $e->migration;
                 $output = $e->output;
@@ -596,10 +561,10 @@ abstract class BaseUpdaterController extends Controller
             $migration = $output = null;
 
             if ($e instanceof MigrateException) {
-                /* @var \Throwable $e */
+                /** @var \Throwable $e */
                 $e = $e->getPrevious();
                 if ($e instanceof MigrationException) {
-                    /* @var \Throwable|null $previous */
+                    /** @var \Throwable|null $previous */
                     $previous = $e->getPrevious();
                     $migration = $e->migration;
                     $output = $e->output;

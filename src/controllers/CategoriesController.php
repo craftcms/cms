@@ -260,9 +260,9 @@ class CategoriesController extends Controller
 
         $this->_prepEditCategoryVariables($variables);
 
-        /* @var Site $site */
+        /** @var Site $site */
         $site = $variables['site'];
-        /* @var Category $category */
+        /** @var Category $category */
         $category = $variables['element'];
 
         $this->_enforceEditCategoryPermissions($category);
@@ -286,7 +286,7 @@ class CategoriesController extends Controller
                     $maxDepth = Category::find()
                         ->select('level')
                         ->descendantOf($category)
-                        ->anyStatus()
+                        ->status(null)
                         ->leaves()
                         ->scalar();
                     $depth = 1 + ($maxDepth ?: $category->level) - $category->level;
@@ -301,7 +301,7 @@ class CategoriesController extends Controller
                 // Prevent the current category, or any of its descendants, from being options
                 $excludeIds = Category::find()
                     ->descendantOf($category)
-                    ->anyStatus()
+                    ->status(null)
                     ->ids();
 
                 $excludeIds[] = $category->id;
@@ -317,7 +317,7 @@ class CategoriesController extends Controller
 
             if ($parentId === null && $category->id !== null) {
                 $parentId = $category->getAncestors(1)
-                    ->anyStatus()
+                    ->status(null)
                     ->ids();
             }
 
@@ -355,7 +355,7 @@ class CategoriesController extends Controller
             ],
         ];
 
-        /* @var Category $ancestor */
+        /** @var Category $ancestor */
         foreach ($category->getAncestors()->all() as $ancestor) {
             $variables['crumbs'][] = [
                 'label' => $ancestor->title,
@@ -456,7 +456,7 @@ class CategoriesController extends Controller
             try {
                 $category = Craft::$app->getElements()->duplicateElement($category);
             } catch (InvalidElementException $e) {
-                /* @var Category $clone */
+                /** @var Category $clone */
                 $clone = $e->element;
 
                 if ($this->request->getAcceptsJson()) {
@@ -660,7 +660,7 @@ class CategoriesController extends Controller
             // Only use the sites that the user has access to
             $variables['siteIds'] = Craft::$app->getSites()->getEditableSiteIds();
         } else {
-            /* @noinspection PhpUnhandledExceptionInspection */
+            /** @noinspection PhpUnhandledExceptionInspection */
             $variables['siteIds'] = [Craft::$app->getSites()->getPrimarySite()->id];
         }
 
@@ -669,7 +669,7 @@ class CategoriesController extends Controller
         }
 
         if (empty($variables['site'])) {
-            /* @noinspection PhpUnhandledExceptionInspection */
+            /** @noinspection PhpUnhandledExceptionInspection */
             $variables['site'] = Craft::$app->getSites()->getCurrentSite();
 
             if (!in_array($variables['site']->id, $variables['siteIds'], false)) {
@@ -679,7 +679,7 @@ class CategoriesController extends Controller
             $site = $variables['site'];
         } else {
             // Make sure they were requesting a valid site
-            /* @var Site $site */
+            /** @var Site $site */
             $site = $variables['site'];
             if (!in_array($site->id, $variables['siteIds'], false)) {
                 throw new ForbiddenHttpException('User not permitted to edit content in this site');
@@ -703,11 +703,6 @@ class CategoriesController extends Controller
                 $variables['element']->siteId = $site->id;
             }
         }
-
-        // Prep the form tabs & content
-        $form = $variables['group']->getFieldLayout()->createForm($variables['element']);
-        $variables['tabs'] = $form->getTabMenu();
-        $variables['fieldsHtml'] = $form->render();
     }
 
     /**

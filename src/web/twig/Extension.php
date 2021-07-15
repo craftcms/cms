@@ -151,59 +151,6 @@ class Extension extends AbstractExtension implements GlobalsInterface
             new RequirePermissionTokenParser(),
             new SwitchTokenParser(),
             new TagTokenParser(),
-
-            // Deprecated tags
-            new RegisterResourceTokenParser('includeCss', 'Craft::$app->getView()->registerCss', [
-                'allowTagPair' => true,
-                'allowOptions' => true,
-                'newCode' => '{% css %}',
-            ]),
-            new RegisterResourceTokenParser('includeHiResCss', 'Craft::$app->getView()->registerHiResCss', [
-                'allowTagPair' => true,
-                'allowOptions' => true,
-                'newCode' => '{% css %}',
-            ]),
-            new RegisterResourceTokenParser('includeCssFile', 'Craft::$app->getView()->registerCssFile', [
-                'allowOptions' => true,
-                'newCode' => '{% css "/url/to/file.css" %}',
-            ]),
-            new RegisterResourceTokenParser('includeJs', 'Craft::$app->getView()->registerJs', [
-                'allowTagPair' => true,
-                'allowPosition' => true,
-                'allowRuntimePosition' => true,
-                'newCode' => '{% js %}',
-            ]),
-            new RegisterResourceTokenParser('includeJsFile', 'Craft::$app->getView()->registerJsFile', [
-                'allowPosition' => true,
-                'allowOptions' => true,
-                'newCode' => '{% js "/url/to/file.js" %}',
-            ]),
-
-            new RegisterResourceTokenParser('includecss', 'Craft::$app->getView()->registerCss', [
-                'allowTagPair' => true,
-                'allowOptions' => true,
-                'newCode' => '{% css %}',
-            ]),
-            new RegisterResourceTokenParser('includehirescss', 'Craft::$app->getView()->registerHiResCss', [
-                'allowTagPair' => true,
-                'allowOptions' => true,
-                'newCode' => '{% css %}',
-            ]),
-            new RegisterResourceTokenParser('includecssfile', 'Craft::$app->getView()->registerCssFile', [
-                'allowOptions' => true,
-                'newCode' => '{% css "/url/to/file.css" %}',
-            ]),
-            new RegisterResourceTokenParser('includejs', 'Craft::$app->getView()->registerJs', [
-                'allowTagPair' => true,
-                'allowPosition' => true,
-                'allowRuntimePosition' => true,
-                'newCode' => '{% js %}',
-            ]),
-            new RegisterResourceTokenParser('includejsfile', 'Craft::$app->getView()->registerJsFile', [
-                'allowPosition' => true,
-                'allowOptions' => true,
-                'newCode' => '{% js "/url/to/file.js" %}',
-            ]),
         ];
     }
 
@@ -314,11 +261,11 @@ class Extension extends AbstractExtension implements GlobalsInterface
     public function translateFilter($message, $category = null, $params = null, $language = null): string
     {
         // The front end site doesn't need to specify the category
-        /* @noinspection CallableParameterUseCaseInTypeContextInspection */
+        /** @noinspection CallableParameterUseCaseInTypeContextInspection */
         if (is_array($category)) {
-            /* @noinspection CallableParameterUseCaseInTypeContextInspection */
+            /** @noinspection CallableParameterUseCaseInTypeContextInspection */
             $language = $params;
-            /* @noinspection CallableParameterUseCaseInTypeContextInspection */
+            /** @noinspection CallableParameterUseCaseInTypeContextInspection */
             $params = $category;
             $category = 'site';
         } else if ($category === null) {
@@ -1078,7 +1025,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
             }
         }
 
-        /* @noinspection UnSafeIsSetOverArrayInspection - FP */
+        /** @noinspection UnSafeIsSetOverArrayInspection - FP */
         if (isset($index) && $index !== false) {
             return $index;
         }
@@ -1186,7 +1133,6 @@ class Extension extends AbstractExtension implements GlobalsInterface
             new TwigFunction('plugin', [$this, 'pluginFunction']),
             new TwigFunction('raw', [TemplateHelper::class, 'raw']),
             new TwigFunction('renderObjectTemplate', [$this, 'renderObjectTemplate']),
-            new TwigFunction('round', [$this, 'roundFunction']),
             new TwigFunction('seq', [$this, 'seqFunction']),
             new TwigFunction('shuffle', [$this, 'shuffleFunction']),
             new TwigFunction('siteUrl', [UrlHelper::class, 'siteUrl']),
@@ -1210,11 +1156,6 @@ class Extension extends AbstractExtension implements GlobalsInterface
             new TwigFunction('head', [$this->view, 'head']),
             new TwigFunction('beginBody', [$this->view, 'beginBody']),
             new TwigFunction('endBody', [$this->view, 'endBody']),
-
-            // Deprecated functions
-            new TwigFunction('getCsrfInput', [$this, 'getCsrfInput'], ['is_safe' => ['html'], 'deprecated' => '3.0.0', 'alternative' => 'csrfInput()']),
-            new TwigFunction('getHeadHtml', [$this, 'getHeadHtml'], ['is_safe' => ['html'], 'deprecated' => '3.0.0', 'alternative' => 'head()']),
-            new TwigFunction('getFootHtml', [$this, 'getFootHtml'], ['is_safe' => ['html'], 'deprecated' => '3.0.0', 'alternative' => 'endBody()']),
         ];
     }
 
@@ -1306,22 +1247,6 @@ class Extension extends AbstractExtension implements GlobalsInterface
     public function pluginFunction(string $handle)
     {
         return Craft::$app->getPlugins()->getPlugin($handle);
-    }
-
-    /**
-     * Rounds the given value.
-     *
-     * @param int|float $value
-     * @param int $precision
-     * @param int $mode
-     * @return int|float
-     * @deprecated in 3.0.0. Use Twig's |round filter instead.
-     */
-    public function roundFunction($value, int $precision = 0, int $mode = PHP_ROUND_HALF_UP)
-    {
-        Craft::$app->getDeprecator()->log('round()', 'The `round()` function has been deprecated. Use Twig’s `|round` filter instead.');
-
-        return round($value, $precision, $mode);
     }
 
     /**
@@ -1520,7 +1445,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
         // Only set these things when Craft is installed and not being updated
         if ($isInstalled && !Craft::$app->getUpdates()->getIsCraftDbMigrationNeeded()) {
             $globals['systemName'] = Craft::$app->getSystemName();
-            /* @noinspection PhpUnhandledExceptionInspection */
+            /** @noinspection PhpUnhandledExceptionInspection */
             $site = Craft::$app->getSites()->getCurrentSite();
             $globals['currentSite'] = $site;
             $globals['siteName'] = Craft::t('site', $site->getName());
@@ -1540,48 +1465,5 @@ class Extension extends AbstractExtension implements GlobalsInterface
         }
 
         return $globals;
-    }
-
-    // Deprecated Methods
-    // -------------------------------------------------------------------------
-
-    /**
-     * @return string
-     * @deprecated in Craft 3.0. Use csrfInput() instead.
-     */
-    public function getCsrfInput(): string
-    {
-        Craft::$app->getDeprecator()->log('getCsrfInput', '`getCsrfInput()` has been deprecated. Use `csrfInput()` instead.');
-        return Html::csrfInput();
-    }
-
-    /**
-     * @return string
-     * @deprecated in Craft 3.0. Use head() instead.
-     */
-    public function getHeadHtml(): string
-    {
-        Craft::$app->getDeprecator()->log('getHeadHtml', '`getHeadHtml()` has been deprecated. Use `head()` instead.');
-
-        ob_start();
-        ob_implicit_flush(false);
-        $this->view->head();
-
-        return ob_get_clean();
-    }
-
-    /**
-     * @return string
-     * @deprecated in Craft 3.0. Use endBody() instead.
-     */
-    public function getFootHtml(): string
-    {
-        Craft::$app->getDeprecator()->log('getFootHtml', '`getFootHtml()` has been deprecated. Use `endBody()` instead.');
-
-        ob_start();
-        ob_implicit_flush(false);
-        $this->view->endBody();
-
-        return ob_get_clean();
     }
 }

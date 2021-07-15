@@ -60,12 +60,6 @@ class ElementIndexesController extends BaseElementsController
     protected $viewState;
 
     /**
-     * @var bool
-     * @deprecated in 3.4.6
-     */
-    protected $paginated = false;
-
-    /**
      * @var ElementQueryInterface|ElementQuery|null
      */
     protected $elementQuery;
@@ -98,7 +92,6 @@ class ElementIndexesController extends BaseElementsController
         $this->sourceKey = $this->request->getParam('source') ?: null;
         $this->source = $this->source();
         $this->viewState = $this->viewState();
-        $this->paginated = (bool)$this->request->getParam('paginated');
         $this->elementQuery = $this->elementQuery();
 
         if ($this->includeActions() && $this->sourceKey !== null) {
@@ -180,7 +173,7 @@ class ElementIndexesController extends BaseElementsController
 
         // Find that action from the list of available actions for the source
         if (!empty($this->actions)) {
-            /* @var ElementAction $availableAction */
+            /** @var ElementAction $availableAction */
             foreach ($this->actions as $availableAction) {
                 if ($actionClass === get_class($availableAction)) {
                     $action = clone $availableAction;
@@ -189,7 +182,7 @@ class ElementIndexesController extends BaseElementsController
             }
         }
 
-        /* @noinspection UnSafeIsSetOverArrayInspection - FP */
+        /** @noinspection UnSafeIsSetOverArrayInspection - FP */
         if (!isset($action)) {
             throw new BadRequestHttpException('Element action is not supported by the element type');
         }
@@ -209,7 +202,7 @@ class ElementIndexesController extends BaseElementsController
         }
 
         // Perform the action
-        /* @var ElementQuery $actionCriteria */
+        /** @var ElementQuery $actionCriteria */
         $actionCriteria = clone $this->elementQuery;
         $actionCriteria->offset = 0;
         $actionCriteria->limit = null;
@@ -314,7 +307,7 @@ class ElementIndexesController extends BaseElementsController
                     break;
                 case Response::FORMAT_XML:
                     Craft::$app->language = 'en-US';
-                    /* @var string|ElementInterface $elementType */
+                    /** @var string|ElementInterface $elementType */
                     $elementType = $this->elementType;
                     $this->response->formatters[Response::FORMAT_XML]['rootTag'] = $elementType::pluralLowerDisplayName();
                     break;
@@ -417,7 +410,7 @@ class ElementIndexesController extends BaseElementsController
      */
     protected function elementQuery(): ElementQueryInterface
     {
-        /* @var string|ElementInterface $elementType */
+        /** @var string|ElementInterface $elementType */
         $elementType = $this->elementType;
         $query = $elementType::find();
 
@@ -455,7 +448,7 @@ class ElementIndexesController extends BaseElementsController
                 ->orderBy(null)
                 ->positionedAfter(null)
                 ->positionedBefore(null)
-                ->anyStatus();
+                ->status(null);
 
             // Get the actual elements
             $collapsedElementsQuery = clone $descendantQuery;
@@ -499,7 +492,7 @@ class ElementIndexesController extends BaseElementsController
      */
     protected function elementResponseData(bool $includeContainer, bool $includeActions): array
     {
-        /* @var string|ElementInterface $elementType */
+        /** @var string|ElementInterface $elementType */
         $elementType = $this->elementType;
         $responseData = [];
         $view = $this->getView();
@@ -546,7 +539,7 @@ class ElementIndexesController extends BaseElementsController
             return null;
         }
 
-        /* @var string|ElementInterface $elementType */
+        /** @var string|ElementInterface $elementType */
         $elementType = $this->elementType;
         $actions = $elementType::actions($this->sourceKey);
 
@@ -605,7 +598,7 @@ class ElementIndexesController extends BaseElementsController
             return null;
         }
 
-        /* @var string|ElementInterface $elementType */
+        /** @var string|ElementInterface $elementType */
         $elementType = $this->elementType;
         $exporters = $elementType::exporters($this->sourceKey);
 
@@ -642,7 +635,7 @@ class ElementIndexesController extends BaseElementsController
 
         $actionData = [];
 
-        /* @var ElementAction $action */
+        /** @var ElementAction $action */
         foreach ($this->actions as $action) {
             $actionData[] = [
                 'type' => get_class($action),

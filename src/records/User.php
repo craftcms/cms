@@ -63,16 +63,9 @@ class User extends ActiveRecord
      */
     public static function find()
     {
-        $query = parent::find()
-            ->innerJoinWith(['element element']);
-
-        // todo: remove schema version condition after next beakpoint
-        $schemaVersion = Craft::$app->getInstalledSchemaVersion();
-        if (version_compare($schemaVersion, '3.1.19', '>=')) {
-            $query->where(['element.dateDeleted' => null]);
-        }
-
-        return $query;
+        return parent::find()
+            ->innerJoinWith(['element element'])
+            ->where(['element.dateDeleted' => null]);
     }
 
     /**

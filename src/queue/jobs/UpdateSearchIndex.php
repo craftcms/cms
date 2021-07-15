@@ -51,7 +51,7 @@ class UpdateSearchIndex extends BaseJob
             ->provisionalDrafts(null)
             ->id($this->elementId)
             ->siteId($this->siteId)
-            ->anyStatus()
+            ->status(null)
             ->all();
         $total = count($elements);
         $searchService = Craft::$app->getSearch();

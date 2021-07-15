@@ -209,14 +209,14 @@ class ElementsController extends BaseElementsController
     {
         $categoryIds = $this->request->getParam('categoryIds', []);
 
-        /* @var Category[] $categories */
+        /** @var Category[] $categories */
         $categories = [];
 
         if (!empty($categoryIds)) {
             $categories = Category::find()
                 ->id($categoryIds)
                 ->siteId($this->request->getParam('siteId'))
-                ->anyStatus()
+                ->status(null)
                 ->all();
 
             // Fill in the gaps
@@ -284,7 +284,7 @@ class ElementsController extends BaseElementsController
         $elementsService = Craft::$app->getElements();
 
         $elementId = $this->request->getBodyParam('elementId');
-        /* @noinspection PhpUnhandledExceptionInspection */
+        /** @noinspection PhpUnhandledExceptionInspection */
         $siteId = $this->request->getBodyParam('siteId') ?: Craft::$app->getSites()->getCurrentSite()->id;
 
         // Determine the element type
@@ -482,6 +482,7 @@ class ElementsController extends BaseElementsController
             'headHtml' => $view->getHeadHtml(),
             'footHtml' => $view->getBodyHtml(),
             'deltaNames' => $view->getDeltaNames(),
+            'initialDeltaValues' => $view->getInitialDeltaValues(),
             'editUrl' => $element->getCpEditUrl(),
         ];
 

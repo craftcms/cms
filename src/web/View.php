@@ -309,7 +309,7 @@ class View extends \yii\web\View
         }
 
         // Set our timezone
-        /* @var CoreExtension $core */
+        /** @var CoreExtension $core */
         $core = $twig->getExtension(CoreExtension::class);
         $core->setTimezone(Craft::$app->getTimeZone());
 
@@ -584,7 +584,7 @@ class View extends \yii\web\View
             $variables['_variables'] = $variables;
 
             // Render it!
-            /* @var TwigTemplate $templateObj */
+            /** @var TwigTemplate $templateObj */
             $templateObj = $this->_objectTemplates[$cacheKey];
             $output = $templateObj->render($variables);
         } catch (\Throwable $e) {
@@ -617,12 +617,15 @@ class View extends \yii\web\View
     {
         $tokens = [];
 
-        // Tokenize {% verbatim %} tags
-        $template = preg_replace_callback('/\{%-?\s*verbatim\s*-?%\}.*?{%-?\s*endverbatim\s*-?%\}/s', function(array $matches) use (&$tokens) {
-            $token = 'tok_' . StringHelper::randomString(10);
-            $tokens[$token] = $matches[0];
-            return $token;
-        }, $template);
+        // Tokenize {% verbatim %} and output tags
+        $template = preg_replace_callback('/\{%-?\s*verbatim\s*-?%\}.*?{%-?\s*endverbatim\s*-?%\}|(?<!\{)\{\{(?!\{).+?(?<!\})\}\}(?!\})/s',
+            function(array $matches) use (&$tokens) {
+                $token = 'tok_' . StringHelper::randomString(10);
+                $tokens[$token] = $matches[0];
+                return $token;
+            },
+            $template
+        );
 
         // Tokenize inline code and code blocks
         $template = preg_replace_callback('/(?<!`)(`|`{3,})(?!`).*?(?<!`)\1(?!`)/s', function(array $matches) use (&$tokens) {
@@ -818,7 +821,7 @@ class View extends \yii\web\View
 
         // Should we be looking for a localized version of the template?
         if ($this->_templateMode === self::TEMPLATE_MODE_SITE && Craft::$app->getIsInstalled()) {
-            /* @noinspection PhpUnhandledExceptionInspection */
+            /** @noinspection PhpUnhandledExceptionInspection */
             $sitePath = $this->_templatesPath . DIRECTORY_SEPARATOR . Craft::$app->getSites()->getCurrentSite()->handle;
             if (is_dir($sitePath)) {
                 $basePaths[] = $sitePath;
@@ -844,7 +847,7 @@ class View extends \yii\web\View
 
         if (!empty($roots)) {
             foreach ($roots as $templateRoot => $basePaths) {
-                /* @var string[] $basePaths */
+                /** @var string[] $basePaths */
                 $templateRootLen = strlen($templateRoot);
                 if ($templateRoot === '' || strncasecmp($templateRoot . '/', $name . '/', $templateRootLen + 1) === 0) {
                     $subName = $templateRoot === '' ? $name : (strlen($name) === $templateRootLen ? '' : substr($name, $templateRootLen + 1));
@@ -878,31 +881,6 @@ class View extends \yii\web\View
     public function getSiteTemplateRoots(): array
     {
         return $this->_getTemplateRoots('site');
-    }
-
-    /**
-     * Registers a hi-res CSS code block.
-     *
-     * @param string $css the CSS code block to be registered
-     * @param array $options the HTML attributes for the style tag.
-     * @param string|null $key the key that identifies the CSS code block. If null, it will use
-     * $css as the key. If two CSS code blocks are registered with the same key, the latter
-     * will overwrite the former.
-     * @deprecated in 3.0.0. Use [[registerCss()]] and type your own media selector.
-     */
-    public function registerHiResCss(string $css, array $options = [], string $key = null)
-    {
-        Craft::$app->getDeprecator()->log('registerHiResCss', '`craft\\web\\View::registerHiResCss()` has been deprecated. Use `registerCss()` instead, and type your own media selector.');
-
-        $css = "@media only screen and (-webkit-min-device-pixel-ratio: 1.5),\n" .
-            "only screen and (   -moz-min-device-pixel-ratio: 1.5),\n" .
-            "only screen and (     -o-min-device-pixel-ratio: 3/2),\n" .
-            "only screen and (        min-device-pixel-ratio: 1.5),\n" .
-            "only screen and (        min-resolution: 1.5dppx){\n" .
-            $css . "\n" .
-            '}';
-
-        $this->registerCss($css, $options, $key);
     }
 
     /**
@@ -1257,11 +1235,11 @@ JS;
     /**
      * Returns the initial values of delta inputs.
      *
-     * @return mixed[]
+     * @return array
      * @see setInitialDeltaValue()
-     * @since 3.4.6
+     * @since 3.7.0
      */
-    public function getInitialDeltaValue()
+    public function getInitialDeltaValues(): array
     {
         return $this->_initialDeltaValues;
     }
@@ -1271,7 +1249,7 @@ JS;
      *
      * @param string $inputName
      * @param mixed $value
-     * @see getInitialDeltaValue()
+     * @see getInitialDeltaValues()
      * @since 3.4.6
      */
     public function setInitialDeltaValue(string $inputName, $value)

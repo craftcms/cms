@@ -17,7 +17,6 @@ use craft\mail\transportadapters\Gmail;
 use craft\mail\transportadapters\Sendmail;
 use craft\mail\transportadapters\Smtp;
 use craft\mail\transportadapters\TransportAdapterInterface;
-use craft\models\MailSettings;
 use yii\base\Event;
 use yii\helpers\Inflector;
 
@@ -80,26 +79,13 @@ class MailerHelper
      */
     public static function createTransportAdapter(string $type, ?array $settings = null): TransportAdapterInterface
     {
-        /* @var BaseTransportAdapter $adapter */
+        /** @var BaseTransportAdapter $adapter */
         $adapter = Component::createComponent([
             'type' => $type,
             'settings' => $settings,
         ], TransportAdapterInterface::class);
 
         return $adapter;
-    }
-
-    /**
-     * Creates a mailer component based on the given mail settings.
-     *
-     * @param MailSettings $settings
-     * @return Mailer
-     * @deprecated in 3.0.18. Use [[App::mailerConfig()]] instead.
-     */
-    public static function createMailer(MailSettings $settings): Mailer
-    {
-        $config = App::mailerConfig($settings);
-        return Craft::createObject($config);
     }
 
     /**
@@ -161,7 +147,7 @@ class MailerHelper
 
         // Use the transport adapter settings if it was sent
         if ($transportAdapter !== null) {
-            /* @var BaseTransportAdapter $transportAdapter */
+            /** @var BaseTransportAdapter $transportAdapter */
             foreach ($transportAdapter->settingsAttributes() as $name) {
                 $transportSettings[$transportAdapter->getAttributeLabel($name)] = $transportAdapter->$name;
             }

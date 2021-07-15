@@ -434,7 +434,7 @@ class MigrationHelper
         $fks = [];
 
         foreach ($allTables as $otherTable) {
-            /* @var TableSchema $otherTable */
+            /** @var TableSchema $otherTable */
             $counter = 0;
 
             foreach ($otherTable->foreignKeys as $fkName => $fk) {

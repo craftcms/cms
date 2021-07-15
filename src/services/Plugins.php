@@ -20,12 +20,10 @@ use craft\helpers\ArrayHelper;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
 use craft\helpers\FileHelper;
-use craft\helpers\Json;
 use craft\helpers\ProjectConfig as ProjectConfigHelper;
 use craft\helpers\StringHelper;
 use yii\base\Component;
 use yii\base\InvalidArgumentException;
-use yii\db\Exception;
 use yii\helpers\Inflector;
 use yii\web\HttpException;
 
@@ -157,7 +155,7 @@ class Plugins extends Component
         $path = Craft::$app->getVendorPath() . DIRECTORY_SEPARATOR . 'craftcms' . DIRECTORY_SEPARATOR . 'plugins.php';
 
         if (file_exists($path)) {
-            /* @var array $plugins */
+            /** @var array $plugins */
             $plugins = require $path;
 
             foreach ($plugins as $packageName => $plugin) {
@@ -195,14 +193,9 @@ class Plugins extends Component
         }
 
         // Find all of the installed plugins
-        // todo: remove try/catch after next breakpoint
-        try {
-            $pluginInfo = $this->_createPluginQuery()
-                ->indexBy('handle')
-                ->all();
-        } catch (Exception $e) {
-            $pluginInfo = [];
-        }
+        $pluginInfo = $this->_createPluginQuery()
+            ->indexBy('handle')
+            ->all();
 
         $this->_enabledPluginInfo = [];
 
@@ -631,11 +624,12 @@ class Plugins extends Component
             }
 
             // Clean up the plugins and migrations tables
-            $id = $this->getStoredPluginInfo($handle)['id'];
-
-            Db::delete(Table::PLUGINS, [
-                'id' => $id,
-            ]);
+            $info = $this->getStoredPluginInfo($handle);
+            if ($info !== null) {
+                Db::delete(Table::PLUGINS, [
+                    'id' => $info['id'],
+                ]);
+            }
 
             Db::delete(Table::MIGRATIONS, [
                 'track' => "plugin:$handle",
@@ -684,7 +678,7 @@ class Plugins extends Component
     {
         $info = $this->getPluginInfo($handle);
 
-        /* @var string|PluginInterface $class */
+        /** @var string|PluginInterface $class */
         $class = $info['class'];
 
         if (!in_array($edition, $class::editions(), true)) {
@@ -905,7 +899,7 @@ class Plugins extends Component
             unset($config['aliases']);
         }
 
-        /* @var string|PluginInterface $class */
+        /** @var string|PluginInterface $class */
         $class = $config['class'];
 
         // Make sure the class exists and it implements PluginInterface
@@ -1264,24 +1258,17 @@ class Plugins extends Component
      */
     private function _createPluginQuery(): Query
     {
-        $query = (new Query())
+        return (new Query())
             ->select([
                 'id',
                 'handle',
                 'version',
                 'schemaVersion',
                 'licenseKeyStatus',
+                'licensedEdition',
                 'installDate',
             ])
             ->from([Table::PLUGINS]);
-
-        // todo: remove schema version condition after next beakpoint
-        $schemaVersion = Craft::$app->getInstalledSchemaVersion();
-        if (version_compare($schemaVersion, '3.1.19', '>=')) {
-            $query->addSelect(['licensedEdition']);
-        }
-
-        return $query;
     }
 
     /**
@@ -1384,16 +1371,6 @@ class Plugins extends Component
      */
     private function _getPluginConfigData(string $handle): array
     {
-        // todo: remove this after the next breakpoint
-        if (version_compare(Craft::$app->getInfo()->version, '3.1', '<')) {
-            $row = (new Query())->from([Table::PLUGINS])->where(['handle' => $handle])->one();
-            if (!$row) {
-                throw new InvalidPluginException($handle);
-            }
-            $row['settings'] = Json::decodeIfJson((string)($row['settings'] ?? '[]'));
-            return $row;
-        }
-
         $projectConfig = Craft::$app->getProjectConfig();
         $configKey = self::CONFIG_PLUGINS_KEY . '.' . $handle;
         $data = $projectConfig->get($configKey) ?? $projectConfig->get($configKey, true);

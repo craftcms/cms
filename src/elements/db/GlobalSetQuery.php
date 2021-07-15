@@ -34,7 +34,7 @@ class GlobalSetQuery extends ElementQuery
     /**
      * @inheritdoc
      */
-    protected $defaultOrderBy = ['globalsets.name' => SORT_ASC];
+    protected $defaultOrderBy = ['globalsets.sortOrder' => SORT_ASC];
 
     // General parameters
     // -------------------------------------------------------------------------
@@ -50,19 +50,6 @@ class GlobalSetQuery extends ElementQuery
      * @used-by handle()
      */
     public $handle;
-
-    /**
-     * @inheritdoc
-     */
-    public function __construct(string $elementType, array $config = [])
-    {
-        // todo: set this from the property def in v4
-        if (version_compare(Craft::$app->getInstalledSchemaVersion(), '3.7.6', '>=')) {
-            $this->defaultOrderBy = ['globalsets.sortOrder' => SORT_ASC];
-        }
-
-        parent::__construct($elementType, $config);
-    }
 
     /**
      * Sets the [[$editable]] property.

@@ -30,13 +30,6 @@ class StringValidator extends \yii\validators\StringValidator
     public $containsMb4;
 
     /**
-     * @var bool whether the string should be trimmed of whitespace
-     * @since 3.0.18
-     * @deprecated in 3.0.32. Use Yii’s `'trim'` validator instead.
-     */
-    public $trim = false;
-
-    /**
      * @inheritdoc
      */
     public function init()
@@ -54,10 +47,6 @@ class StringValidator extends \yii\validators\StringValidator
     public function validateAttribute($model, $attribute)
     {
         $value = $model->$attribute;
-
-        if (is_string($value) && $this->trim) {
-            $model->$attribute = $value = trim($value);
-        }
 
         parent::validateAttribute($model, $attribute);
 

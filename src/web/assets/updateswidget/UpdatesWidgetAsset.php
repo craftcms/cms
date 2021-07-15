@@ -7,9 +7,9 @@
 
 namespace craft\web\assets\updateswidget;
 
-use craft\web\AssetBundle;
 use craft\web\assets\cp\CpAsset;
 use craft\web\View;
+use yii\web\AssetBundle;
 
 /**
  * Asset bundle for Updates widgets
@@ -47,7 +47,7 @@ class UpdatesWidgetAsset extends AssetBundle
                 'One update available!',
                 '{total} updates available!',
                 'Go to Updates',
-                'Congrats! You’re up-to-date.',
+                'Congrats! You’re up to date.',
                 'Check again',
             ]);
         }

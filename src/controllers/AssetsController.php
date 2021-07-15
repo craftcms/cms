@@ -17,6 +17,7 @@ use craft\fields\Assets as AssetsField;
 use craft\helpers\App;
 use craft\helpers\Assets;
 use craft\helpers\Db;
+use craft\helpers\Html;
 use craft\helpers\Image;
 use craft\helpers\StringHelper;
 use craft\helpers\UrlHelper;
@@ -35,7 +36,7 @@ use yii\web\Response;
 use yii\web\ServerErrorHttpException;
 use ZipArchive;
 
-/* @noinspection ClassOverridesFieldOfSuperClassInspection */
+/** @noinspection ClassOverridesFieldOfSuperClassInspection */
 
 /**
  * The AssetsController class is a controller that handles various actions related to asset tasks, such as uploading
@@ -112,37 +113,6 @@ class AssetsController extends Controller
             ],
         ];
 
-        // See if we can show a thumbnail
-        try {
-            // Is the image editable, and is the user allowed to edit?
-            $userSession = Craft::$app->getUser();
-
-            $editable = (
-                $asset->getSupportsImageEditor() &&
-                $userSession->checkPermission("editImagesInVolume:{$volume->uid}") &&
-                ($userSession->getId() == $asset->uploaderId || $userSession->checkPermission("editPeerImagesInVolume:{$volume->uid}"))
-            );
-
-            $previewHtml = '<div id="preview-thumb-container" class="preview-thumb-container">' .
-                '<div class="preview-thumb">' .
-                $asset->getPreviewThumbImg(350, 190) .
-                '</div>' .
-                '<div class="buttons">';
-
-            if (Craft::$app->getAssets()->getAssetPreviewHandler($asset) !== null) {
-                $previewHtml .= '<div class="btn" id="preview-btn">' . Craft::t('app', 'Preview') . '</div>';
-            }
-
-            if ($editable) {
-                $previewHtml .= '<div class="btn" id="edit-btn">' . Craft::t('app', 'Edit') . '</div>';
-            }
-
-            $previewHtml .= '</div></div>';
-        } catch (NotSupportedException $e) {
-            // NBD
-            $previewHtml = '';
-        }
-
         // See if the user is allowed to replace the file
         $userSession = Craft::$app->getUser();
         $canReplaceFile = (
@@ -171,7 +141,7 @@ class AssetsController extends Controller
             'assetUrl' => $assetUrl,
             'title' => trim($asset->title) ?: Craft::t('app', 'Edit Asset'),
             'crumbs' => $crumbs,
-            'previewHtml' => $previewHtml,
+            'previewHtml' => $asset->getPreviewHtml(),
             'formattedSize' => $asset->getFormattedSize(0),
             'formattedSizeInBytes' => $asset->getFormattedSizeInBytes(false),
             'dimensions' => $asset->getDimensions(),
@@ -232,7 +202,7 @@ class AssetsController extends Controller
         $siteId = $this->request->getBodyParam('siteId');
         $assetVariable = $this->request->getValidatedBodyParam('assetVariable') ?? 'asset';
 
-        /* @var Asset|null $asset */
+        /** @var Asset|null $asset */
         $asset = Asset::find()
             ->id($assetId)
             ->siteId($siteId)
@@ -977,7 +947,7 @@ class AssetsController extends Controller
 
             $imageSize = Image::imageSize($imageCopy);
 
-            /* @var Raster $image */
+            /** @var Raster $image */
             $image = Craft::$app->getImages()->loadImage($imageCopy, true, max($imageSize));
 
             // TODO Is this hacky? It seems hacky.
@@ -1141,22 +1111,6 @@ class AssetsController extends Controller
 
         return $this->response
             ->sendFile($zipPath, 'assets.zip');
-    }
-
-    /**
-     * Generates a thumbnail.
-     *
-     * @param string $uid The asset's UID
-     * @param int $width The thumbnail width
-     * @param int $height The thumbnail height
-     * @return Response
-     * @throws \craft\errors\DeprecationException
-     * @deprecated in 3.0.13. Use [[actionThumb()]] instead.
-     */
-    public function actionGenerateThumb(string $uid, int $width, int $height): Response
-    {
-        Craft::$app->getDeprecator()->log(__METHOD__, 'The `assets/generate-thumb` action has been deprecated. Use `assets/thumb` instead.');
-        return $this->actionThumb($uid, $width, $height);
     }
 
     /**

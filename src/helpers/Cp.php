@@ -382,7 +382,7 @@ class Cp
             $encodedLabel = Html::encode($label);
 
             if ($showDraftName && $isDraft && !$element->getIsUnpublishedDraft()) {
-                /* @var DraftBehavior|ElementInterface $element */
+                /** @var DraftBehavior|ElementInterface $element */
                 $encodedLabel .= Html::tag('span', $element->draftName ?: Craft::t('app', 'Draft'), [
                     'class' => 'draft-label',
                 ]);
@@ -869,7 +869,7 @@ class Cp
 
         if ($element->getIsDraft()) {
             /** @var ElementInterface|DraftBehavior $element */
-            if ($element->getIsProvisionalDraft()) {
+            if ($element->isProvisionalDraft) {
                 $docTitle .= ' — ' . Craft::t('app', 'Edited');
             } else {
                 $docTitle .= " ($element->draftName)";

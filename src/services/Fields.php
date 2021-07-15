@@ -177,12 +177,6 @@ class Fields extends Component
     public $oldFieldColumnPrefix = 'field_';
 
     /**
-     * @var bool Whether to ignore changes to the project config.
-     * @deprecated in 3.1.2. Use [[\craft\services\ProjectConfig::$muteEvents]] instead.
-     */
-    public $ignoreProjectConfigChanges = false;
-
-    /**
      * @var MemoizableArray|null
      * @see _groups()
      */
@@ -321,10 +315,6 @@ class Fields extends Component
      */
     public function handleChangedGroup(ConfigEvent $event)
     {
-        if ($this->ignoreProjectConfigChanges) {
-            return;
-        }
-
         $data = $event->newValue;
         $uid = $event->tokenMatches[0];
 
@@ -363,10 +353,6 @@ class Fields extends Component
      */
     public function handleDeletedGroup(ConfigEvent $event)
     {
-        if ($this->ignoreProjectConfigChanges) {
-            return;
-        }
-
         $uid = $event->tokenMatches[0];
         $groupRecord = $this->_getGroupRecord($uid);
 
@@ -423,7 +409,7 @@ class Fields extends Component
      */
     public function deleteGroup(FieldGroup $group): bool
     {
-        /* @var FieldGroupRecord $groupRecord */
+        /** @var FieldGroupRecord $groupRecord */
         $groupRecord = FieldGroupRecord::find()
             ->where(['id' => $group->id])
             ->with('fields')
@@ -502,7 +488,7 @@ class Fields extends Component
         $fieldTypes = [];
 
         foreach ($this->getAllFieldTypes() as $fieldType) {
-            /* @var FieldInterface|string $fieldType */
+            /** @var FieldInterface|string $fieldType */
             if ($fieldType::hasContentColumn()) {
                 $fieldTypes[] = $fieldType;
             }
@@ -549,7 +535,7 @@ class Fields extends Component
                 continue;
             }
 
-            /* @var FieldInterface $tempField */
+            /** @var FieldInterface $tempField */
             $tempField = new $class();
             $tempFieldColumnType = $tempField->getContentColumnType();
 
@@ -886,10 +872,6 @@ class Fields extends Component
      */
     public function handleChangedField(ConfigEvent $event)
     {
-        if ($this->ignoreProjectConfigChanges) {
-            return;
-        }
-
         $data = $event->newValue;
         $fieldUid = $event->tokenMatches[0];
 
@@ -953,12 +935,7 @@ class Fields extends Component
      */
     public function handleDeletedField(ConfigEvent $event)
     {
-        if ($this->ignoreProjectConfigChanges) {
-            return;
-        }
-
         $fieldUid = $event->tokenMatches[0];
-
         $this->applyFieldDelete($fieldUid);
     }
 
@@ -1873,12 +1850,6 @@ class Fields extends Component
      */
     private function _createGroupQuery(): Query
     {
-        // todo: remove schema version condition after next beakpoint
-        $condition = null;
-        if (version_compare(Craft::$app->getInstalledSchemaVersion(), '3.6.2', '>=')) {
-            $condition = ['dateDeleted' => null];
-        }
-
         return (new Query())
             ->select([
                 'id',
@@ -1886,7 +1857,7 @@ class Fields extends Component
                 'uid',
             ])
             ->from([Table::FIELDGROUPS])
-            ->where($condition)
+            ->where(['dateDeleted' => null])
             ->orderBy(['name' => SORT_ASC]);
     }
 
@@ -1897,7 +1868,7 @@ class Fields extends Component
      */
     private function _createFieldQuery(): Query
     {
-        $query = (new Query())
+        return (new Query())
             ->select([
                 'fields.id',
                 'fields.dateCreated',
@@ -1906,7 +1877,9 @@ class Fields extends Component
                 'fields.name',
                 'fields.handle',
                 'fields.context',
+                'fields.columnSuffix',
                 'fields.instructions',
+                'fields.searchable',
                 'fields.translationMethod',
                 'fields.translationKeyFormat',
                 'fields.type',
@@ -1915,17 +1888,6 @@ class Fields extends Component
             ])
             ->from(['fields' => Table::FIELDS])
             ->orderBy(['fields.name' => SORT_ASC, 'fields.handle' => SORT_ASC]);
-
-        // todo: remove schema version condition after next beakpoint
-        $schemaVersion = Craft::$app->getInstalledSchemaVersion();
-        if (version_compare($schemaVersion, '3.1.0', '>=')) {
-            $query->addSelect(['fields.searchable']);
-        }
-        if (version_compare($schemaVersion, '3.7.0', '>=')) {
-            $query->addSelect(['fields.columnSuffix']);
-        }
-
-        return $query;
     }
 
     /**
@@ -1935,21 +1897,14 @@ class Fields extends Component
      */
     private function _createLayoutQuery(): Query
     {
-        $query = (new Query)
+        return (new Query)
             ->select([
                 'id',
                 'type',
                 'uid',
             ])
-            ->from([Table::FIELDLAYOUTS]);
-
-        // todo: remove schema version condition after next beakpoint
-        $schemaVersion = Craft::$app->getInstalledSchemaVersion();
-        if (version_compare($schemaVersion, '3.1.0', '>=')) {
-            $query->where(['dateDeleted' => null]);
-        }
-
-        return $query;
+            ->from([Table::FIELDLAYOUTS])
+            ->where(['dateDeleted' => null]);
     }
 
     /**
@@ -1959,24 +1914,17 @@ class Fields extends Component
      */
     private function _createLayoutTabQuery(): Query
     {
-        $query = (new Query())
+        return (new Query())
             ->select([
                 'id',
                 'layoutId',
                 'name',
+                'elements',
                 'sortOrder',
                 'uid',
             ])
             ->from([Table::FIELDLAYOUTTABS])
             ->orderBy(['sortOrder' => SORT_ASC]);
-
-        // todo: remove schema version condition after next beakpoint
-        $schemaVersion = Craft::$app->getInstalledSchemaVersion();
-        if (version_compare($schemaVersion, '3.5.8', '>=')) {
-            $query->addSelect(['elements']);
-        }
-
-        return $query;
     }
 
     /**

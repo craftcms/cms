@@ -35,7 +35,7 @@ class TableRowType implements GeneratorInterface, SingleGeneratorInterface
      */
     public static function getName($context = null): string
     {
-        /* @var TableField $context */
+        /** @var TableField $context */
         return $context->handle . '_TableRow';
     }
 
@@ -44,7 +44,7 @@ class TableRowType implements GeneratorInterface, SingleGeneratorInterface
      */
     public static function generateType($context): ObjectType
     {
-        /* @var TableField $context */
+        /** @var TableField $context */
         $typeName = self::getName($context);
         $contentFields = TableRow::prepareRowFieldDefinition($context->columns, $typeName);
 

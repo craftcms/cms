@@ -87,7 +87,7 @@ abstract class BaseEntriesController extends Controller
 
         if ($entry->getIsDraft()) {
             // If it's another user's draft, make sure they have permission to edit those
-            /* @var Entry|DraftBehavior $entry */
+            /** @var Entry|DraftBehavior $entry */
             if ($entry->creatorId != $userId) {
                 $this->requirePermission('editPeerEntryDrafts' . $permissionSuffix);
             }
@@ -112,15 +112,7 @@ abstract class BaseEntriesController extends Controller
      */
     protected function enforceDeleteEntryPermissions(Entry $entry)
     {
-        $currentUser = Craft::$app->getUser()->getIdentity();
-        $section = $entry->getSection();
-
-        if ($entry->getIsDraft()) {
-            /* @var Entry|DraftBehavior $entry */
-            if (!$entry->creatorId || $entry->creatorId != $currentUser->id) {
-                $this->requirePermission("deletePeerEntryDrafts:$section->uid");
-            }
-        } else if (!$entry->getIsDeletable()) {
+        if (!$entry->getIsDeletable()) {
             throw new ForbiddenHttpException('User is not permitted to perform this action');
         }
     }

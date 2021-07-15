@@ -401,7 +401,7 @@ class User extends Element implements IdentityInterface
      */
     protected static function prepElementQueryForTableAttribute(ElementQueryInterface $elementQuery, string $attribute)
     {
-        /* @var UserQuery $elementQuery */
+        /** @var UserQuery $elementQuery */
         if ($attribute === 'groups') {
             $elementQuery->withGroups();
         } else {
@@ -454,14 +454,14 @@ class User extends Element implements IdentityInterface
         $user = static::find()
             ->addSelect(['users.password'])
             ->id($id)
-            ->anyStatus()
+            ->status(null)
             ->one();
 
         if ($user === null) {
             return null;
         }
 
-        /* @var static $user */
+        /** @var static $user */
         if ($user->getStatus() === self::STATUS_ACTIVE) {
             return $user;
         }
@@ -470,7 +470,7 @@ class User extends Element implements IdentityInterface
         if ($previousUserId = Session::get(self::IMPERSONATE_KEY)) {
             $previousUser = static::find()
                 ->id($previousUserId)
-                ->anyStatus()
+                ->status(null)
                 ->one();
 
             if ($previousUser && $previousUser->can('impersonateUsers')) {
@@ -824,7 +824,7 @@ class User extends Element implements IdentityInterface
     public function validateUnverifiedEmail(string $attribute, $params, InlineValidator $validator)
     {
         $query = self::find()
-            ->anyStatus();
+            ->status(null);
 
         if (Craft::$app->getDb()->getIsMysql()) {
             $query->where([
@@ -1255,28 +1255,6 @@ class User extends Element implements IdentityInterface
         }
 
         return self::STATUS_ACTIVE;
-    }
-
-    /**
-     * Returns the URL to the user's photo.
-     *
-     * @param int $size The width and height the photo should be sized to
-     * @return string|null
-     * @deprecated in 3.0.0. Use getPhoto().getUrl() instead.
-     */
-    public function getPhotoUrl(int $size = 100)
-    {
-        Craft::$app->getDeprecator()->log('User::getPhotoUrl()', '`User::getPhotoUrl()` has been deprecated. Use `getPhoto()` to access the photo asset (if there is one), and call its `getUrl()` method to access the photo URL.');
-        $photo = $this->getPhoto();
-
-        if ($photo) {
-            return $photo->getUrl([
-                'width' => $size,
-                'height' => $size,
-            ]);
-        }
-
-        return null;
     }
 
     /**
@@ -1761,7 +1739,7 @@ class User extends Element implements IdentityInterface
                     ->siteId('*')
                     ->unique()
                     ->authorId($this->id)
-                    ->anyStatus();
+                    ->status(null);
 
                 foreach (Db::each($entryQuery) as $entry) {
                     $elementsService->deleteElement($entry);

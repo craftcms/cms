@@ -657,11 +657,14 @@ Craft.DraftEditor = Garnish.Base.extend({
 
             // Prep the data to be saved, keeping track of the first input name for each delta group
             let modifiedFieldNames = [];
-            let preparedData = this.prepareData(data, (deltaName, params)  => {
-                if (!this.settings.isUnpublishedDraft && params.length) {
-                    modifiedFieldNames.push(decodeURIComponent(params[0].split('=')[0]));
-                }
-            });
+            if (!this.settings.isUnpublishedDraft) {
+                Craft.findDeltaData(Craft.cp.$primaryForm.data('initialSerializedValue') || '', data, Craft.deltaNames, (deltaName, params)  => {
+                    if (params.length) {
+                        modifiedFieldNames.push(decodeURIComponent(params[0].split('=')[0]));
+                    }
+                });
+            }
+            let preparedData = this.prepareData(data);
 
             // Are we saving a provisional draft?
             if (this.settings.isProvisionalDraft || !this.settings.draftId) {
@@ -850,10 +853,9 @@ Craft.DraftEditor = Garnish.Base.extend({
 
     /**
      * @param {string} data
-     * @param {function} [deltaCallback] Callback function that should be passed to `Craft.findDeltaData()`
      * @returns {string}
      */
-    prepareData: function(data, deltaCallback) {
+    prepareData: function(data) {
         // Swap out element IDs with their duplicated ones
         data = this.swapDuplicatedElementIds(data);
 
@@ -871,7 +873,7 @@ Craft.DraftEditor = Garnish.Base.extend({
 
         // Filter out anything that hasn't changed
         const initialData = this.swapDuplicatedElementIds(Craft.cp.$primaryForm.data('initialSerializedValue') || '');
-        return Craft.findDeltaData(initialData, data, this.getDeltaNames(), deltaCallback);
+        return Craft.findDeltaData(initialData, data, this.getDeltaNames());
     },
 
     /**
@@ -1055,6 +1057,7 @@ Craft.DraftEditor = Garnish.Base.extend({
         // then trigger an autosave
         if (
             this.settings.draftId &&
+            !this.settings.isUnpublishedDraft &&
             !this.settings.isProvisionalDraft &&
             (typeof ev.autosave === 'undefined' || ev.autosave) &&
             (ev.saveShortcut || (ev.customTrigger && ev.customTrigger.data('action') === this.settings.saveDraftAction))

@@ -559,7 +559,7 @@ class Table extends Field
 
         switch ($type) {
             case 'color':
-                /* @var ColorData $value */
+                /** @var ColorData $value */
                 $value = $value->getHex();
                 $validator = new ColorValidator();
                 break;

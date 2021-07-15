@@ -563,21 +563,16 @@ EOD;
      */
     protected function pushMessage($message, $ttr, $delay, $priority)
     {
-        $data = [
+        Db::insert($this->tableName, [
+            'channel' => $this->channel,
             'job' => $message,
             'description' => $this->_jobDescription,
             'timePushed' => time(),
             'ttr' => $ttr,
             'delay' => $delay,
             'priority' => $priority ?: 1024,
-        ];
+        ], false, $this->db);
 
-        // todo: remove this check after the next breakpoint
-        if ($this->db->columnExists($this->tableName, 'channel')) {
-            $data['channel'] = $this->channel;
-        }
-
-        Db::insert($this->tableName, $data, false, $this->db);
         return $this->db->getLastInsertID($this->tableName);
     }
 

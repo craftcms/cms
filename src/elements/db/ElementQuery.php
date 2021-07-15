@@ -68,17 +68,6 @@ class ElementQuery extends Query implements ElementQueryInterface
     const EVENT_AFTER_POPULATE_ELEMENT = 'afterPopulateElement';
 
     /**
-     * Returns whether querying for drafts/revisions is supported yet.
-     *
-     * @return bool
-     * @todo remove schema version condition after next beakpoint
-     */
-    private static function _supportsRevisionParams(): bool
-    {
-        return Craft::$app->getDb()->columnExists(Table::ELEMENTS, 'draftId');
-    }
-
-    /**
      * @var string|null The name of the [[ElementInterface]] class.
      */
     public $elementType;
@@ -281,13 +270,6 @@ class ElementQuery extends Query implements ElementQueryInterface
      * @since 3.2.0
      */
     public $preferSites = false;
-
-    /**
-     * @var bool Whether the elements must be enabled for the chosen site.
-     * @used-by enabledForSite()
-     * @deprecated in 3.5.0
-     */
-    public $enabledForSite = false;
 
     /**
      * @var bool Whether the elements must be “leaves” in the structure.
@@ -495,87 +477,15 @@ class ElementQuery extends Query implements ElementQueryInterface
     /**
      * @inheritdoc
      */
-    public function __isset($name)
-    {
-        if ($name === 'order') {
-            Craft::$app->getDeprecator()->log('ElementQuery::order()', 'The `order` element query param has been deprecated. Use `orderBy` instead.');
-
-            return $this->orderBy !== null;
-        }
-
-        return parent::__isset($name);
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function __get($name)
-    {
-        // We must ensure $name is a string; if it is 0 then each of these cases could match.
-        // (https://stackoverflow.com/a/8146455)
-        switch ((string)$name) {
-            case 'locale':
-                Craft::$app->getDeprecator()->log('ElementQuery::locale()', 'The `locale` element query param has been deprecated. Use `site` or `siteId` instead.');
-                if ($this->siteId && is_numeric($this->siteId) && ($site = Craft::$app->getSites()->getSiteById($this->siteId))) {
-                    return $site->handle;
-                }
-
-                return null;
-
-            case 'order':
-                Craft::$app->getDeprecator()->log('ElementQuery::order()', 'The `order` element query param has been deprecated. Use `orderBy` instead.');
-
-                return $this->orderBy;
-
-            default:
-                return parent::__get($name);
-        }
-    }
-
-    /**
-     * @inheritdoc
-     */
     public function __set($name, $value)
     {
         switch ($name) {
             case 'site':
                 $this->site($value);
                 break;
-            case 'localeEnabled':
-                Craft::$app->getDeprecator()->log('ElementQuery::localeEnabled()', 'The `localeEnabled` element query param has been deprecated. `status()` should be used instead.');
-                $this->enabledForSite = $value;
-                break;
-            case 'locale':
-                Craft::$app->getDeprecator()->log('ElementQuery::locale()', 'The `locale` element query param has been deprecated. Use `site` or `siteId` instead.');
-                $this->site($value);
-                break;
-            case 'order':
-                Craft::$app->getDeprecator()->log('ElementQuery::order()', 'The `order` element query param has been deprecated. Use `orderBy` instead.');
-                $this->orderBy = $value;
-                break;
             default:
                 parent::__set($name, $value);
         }
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function __call($name, $params)
-    {
-        if ($name === 'order') {
-            Craft::$app->getDeprecator()->log('ElementQuery::order()', 'The `order` element query param has been deprecated. Use `orderBy` instead.');
-
-            if (count($params) == 1) {
-                $this->orderBy = $params[0];
-            } else {
-                $this->orderBy = $params;
-            }
-
-            return $this;
-        }
-
-        return parent::__call($name, $params);
     }
 
     /**
@@ -617,7 +527,7 @@ class ElementQuery extends Query implements ElementQueryInterface
             return $exists;
         }
 
-        /* @noinspection ImplicitMagicMethodCallInspection */
+        /** @noinspection ImplicitMagicMethodCallInspection */
         return $this->__isset($name);
     }
 
@@ -633,7 +543,7 @@ class ElementQuery extends Query implements ElementQueryInterface
             return $element;
         }
 
-        /* @noinspection ImplicitMagicMethodCallInspection */
+        /** @noinspection ImplicitMagicMethodCallInspection */
         return $this->__get($name);
     }
 
@@ -650,7 +560,7 @@ class ElementQuery extends Query implements ElementQueryInterface
             throw new NotSupportedException('ElementQuery does not support setting an element using array syntax.');
         }
 
-        /* @noinspection ImplicitMagicMethodCallInspection */
+        /** @noinspection ImplicitMagicMethodCallInspection */
         $this->__set($name, $value);
     }
 
@@ -666,7 +576,7 @@ class ElementQuery extends Query implements ElementQueryInterface
             throw new NotSupportedException('ElementQuery does not support unsetting an element using array syntax.');
         }
 
-        /* @noinspection ImplicitMagicMethodCallInspection */
+        /** @noinspection ImplicitMagicMethodCallInspection */
         return $this->__unset($name);
     }
 
@@ -676,7 +586,7 @@ class ElementQuery extends Query implements ElementQueryInterface
     public function behaviors()
     {
         $behaviors = parent::behaviors();
-        /* @noinspection PhpUndefinedClassInspection */
+        /** @noinspection PhpUndefinedClassInspection */
         $behaviors['customFields'] = [
             'class' => CustomFieldBehavior::class,
             'hasMethods' => true,
@@ -1050,20 +960,6 @@ class ElementQuery extends Query implements ElementQueryInterface
     }
 
     /**
-     * Sets the [[$site]] property.
-     *
-     * @param string $value The property value
-     * @return static self reference
-     * @deprecated in 3.0.0. Use [[site]] or [[siteId]] instead.
-     */
-    public function locale(string $value)
-    {
-        Craft::$app->getDeprecator()->log('ElementQuery::locale()', 'The `locale` element query param has been deprecated. Use `site` or `siteId` instead.');
-        $this->site($value);
-        return $this;
-    }
-
-    /**
      * @inheritdoc
      * @uses $unique
      * @since 3.2.0
@@ -1082,31 +978,6 @@ class ElementQuery extends Query implements ElementQueryInterface
     public function preferSites(array $value = null)
     {
         $this->preferSites = $value;
-        return $this;
-    }
-
-    /**
-     * @inheritdoc
-     * @uses $enabledForSite
-     */
-    public function enabledForSite(bool $value = true)
-    {
-        Craft::$app->getDeprecator()->log('ElementQuery::enabledForSite()', 'The `enabledForSite` element query param has been deprecated. `status()` should be used instead.');
-        $this->enabledForSite = $value;
-        return $this;
-    }
-
-    /**
-     * Sets the [[$enabledForSite]] property.
-     *
-     * @param mixed $value The property value (defaults to true)
-     * @return static self reference
-     * @deprecated in 3.0.0. [[status()]] should be used instead.
-     */
-    public function localeEnabled($value = true)
-    {
-        Craft::$app->getDeprecator()->log('ElementQuery::localeEnabled()', 'The `localeEnabled` element query param has been deprecated. `status()` should be used instead.');
-        $this->enabledForSite = $value;
         return $this;
     }
 
@@ -1363,12 +1234,15 @@ class ElementQuery extends Query implements ElementQueryInterface
     }
 
     /**
-     * @inheritdoc
+     * Sets the [[status()|status]] param to `null`.
+     *
+     * @return static self reference
+     * @since 3.0.17
+     * @deprecated in 4.0.0. `status(null)` should be used instead.
      */
     public function anyStatus()
     {
         $this->status = null;
-        $this->enabledForSite = false;
         return $this;
     }
 
@@ -1398,7 +1272,7 @@ class ElementQuery extends Query implements ElementQueryInterface
         } catch (SiteNotFoundException $e) {
             // Fail silently if Craft isn't installed yet or is in the middle of updating
             if (Craft::$app->getIsInstalled() && !Craft::$app->getUpdates()->getIsCraftDbMigrationNeeded()) {
-                /* @noinspection PhpUnhandledExceptionInspection */
+                /** @noinspection PhpUnhandledExceptionInspection */
                 throw $e;
             }
             throw new QueryAbortedException($e->getMessage(), 0, $e);
@@ -1457,7 +1331,7 @@ class ElementQuery extends Query implements ElementQueryInterface
         }
 
         if ($this->id) {
-            $this->subQuery->andWhere(Db::parseParam('elements.id', $this->id));
+            $this->subQuery->andWhere(Db::parseNumericParam('elements.id', $this->id));
         }
 
         if ($this->uid) {
@@ -1465,7 +1339,7 @@ class ElementQuery extends Query implements ElementQueryInterface
         }
 
         if ($this->siteSettingsId) {
-            $this->subQuery->andWhere(Db::parseParam('elements_sites.id', $this->siteSettingsId));
+            $this->subQuery->andWhere(Db::parseNumericParam('elements_sites.id', $this->siteSettingsId));
         }
 
         if ($this->archived) {
@@ -1475,14 +1349,10 @@ class ElementQuery extends Query implements ElementQueryInterface
             $this->_applyStatusParam($class);
         }
 
-        // todo: remove schema version condition after next beakpoint
-        $schemaVersion = Craft::$app->getInstalledSchemaVersion();
-        if (version_compare($schemaVersion, '3.1.0', '>=')) {
-            if ($this->trashed === false) {
-                $this->subQuery->andWhere(['elements.dateDeleted' => null]);
-            } else if ($this->trashed === true) {
-                $this->subQuery->andWhere(['not', ['elements.dateDeleted' => null]]);
-            }
+        if ($this->trashed === false) {
+            $this->subQuery->andWhere(['elements.dateDeleted' => null]);
+        } else if ($this->trashed === true) {
+            $this->subQuery->andWhere(['not', ['elements.dateDeleted' => null]]);
         }
 
         if ($this->dateCreated) {
@@ -1503,10 +1373,6 @@ class ElementQuery extends Query implements ElementQueryInterface
 
         if ($this->uri) {
             $this->subQuery->andWhere(Db::parseParam('elements_sites.uri', $this->uri, '=', true));
-        }
-
-        if ($this->enabledForSite) {
-            $this->subQuery->andWhere(['elements_sites.enabled' => true]);
         }
 
         $this->_applyRelatedToParam();
@@ -1758,7 +1624,7 @@ class ElementQuery extends Query implements ElementQueryInterface
         }
 
         // Add custom field properties
-        /* @var CustomFieldBehavior $behavior */
+        /** @var CustomFieldBehavior $behavior */
         $behavior = $this->getBehavior('customFields');
         foreach ((new \ReflectionClass($behavior))->getProperties(ReflectionProperty::IS_PUBLIC) as $property) {
             if (
@@ -1951,88 +1817,6 @@ class ElementQuery extends Query implements ElementQueryInterface
         return $element;
     }
 
-    // Deprecated Methods
-    // -------------------------------------------------------------------------
-
-    /**
-     * Sets the [[$orderBy]] property.
-     *
-     * @param string $value The property value
-     * @return static self reference
-     * @deprecated in Craft 3.0. Use [[orderBy()]] instead.
-     */
-    public function order(string $value)
-    {
-        Craft::$app->getDeprecator()->log('ElementQuery::order()', 'The `order` element query param has been deprecated. Use `orderBy` instead.');
-
-        return $this->orderBy($value);
-    }
-
-    /**
-     * Returns all elements that match the criteria.
-     *
-     * @param array|null $attributes Any last-minute parameters that should be added.
-     * @return ElementInterface[] The matched elements.
-     * @deprecated in Craft 3.0. Use all() instead.
-     */
-    public function find(array $attributes = null): array
-    {
-        Craft::$app->getDeprecator()->log('ElementQuery::find()', 'The `find()` function used to query for elements is now deprecated. Use `all()` instead.');
-        $this->_setAttributes($attributes);
-
-        return $this->all();
-    }
-
-    /**
-     * Returns the first element that matches the criteria.
-     *
-     * @param array|null $attributes
-     * @return ElementInterface|null
-     * @deprecated in Craft 3.0. Use one() instead.
-     */
-    public function first(array $attributes = null)
-    {
-        Craft::$app->getDeprecator()->log('ElementQuery::first()', 'The `first()` function used to query for elements is now deprecated. Use `one()` instead.');
-        $this->_setAttributes($attributes);
-
-        return $this->one();
-    }
-
-    /**
-     * Returns the last element that matches the criteria.
-     *
-     * @param array|null $attributes
-     * @return ElementInterface|null
-     * @deprecated in Craft 3.0. Use nth() instead.
-     */
-    public function last(array $attributes = null)
-    {
-        Craft::$app->getDeprecator()->log('ElementQuery::last()', 'The `last()` function used to query for elements is now deprecated. Use `inReverse().one()` instead.');
-        $this->_setAttributes($attributes);
-        $count = $this->count();
-        $offset = $this->offset;
-        $this->offset = 0;
-        $result = $this->nth($count - 1);
-        $this->offset = $offset;
-
-        return $result;
-    }
-
-    /**
-     * Returns the total elements that match the criteria.
-     *
-     * @param array|null $attributes
-     * @return int
-     * @deprecated in Craft 3.0. Use count() instead.
-     */
-    public function total(array $attributes = null): int
-    {
-        Craft::$app->getDeprecator()->log('ElementQuery::total()', 'The `total()` function used to query for elements is now deprecated. Use `count()` instead.');
-        $this->_setAttributes($attributes);
-
-        return $this->count();
-    }
-
     /**
      * This method is called at the beginning of preparing an element query for the query builder.
      *
@@ -2126,11 +1910,6 @@ class ElementQuery extends Query implements ElementQueryInterface
      */
     protected function customFields(): array
     {
-        // todo: remove this after the next breakpoint
-        if (Craft::$app->getUpdates()->getIsCraftDbMigrationNeeded()) {
-            return [];
-        }
-
         $contentService = Craft::$app->getContent();
         $originalFieldContext = $contentService->fieldContext;
         $contentService->fieldContext = 'global';
@@ -2253,7 +2032,7 @@ class ElementQuery extends Query implements ElementQueryInterface
      */
     private function _joinContentTable(string $class)
     {
-        /* @var ElementInterface|string $class */
+        /** @var ElementInterface|string $class */
         // Join in the content table on both queries
         $joinCondition = [
             'and',
@@ -2326,7 +2105,7 @@ class ElementQuery extends Query implements ElementQueryInterface
      */
     private function _applyStatusParam(string $class)
     {
-        /* @var string|ElementInterface $class */
+        /** @var string|ElementInterface $class */
         if (!$this->status || !$class::hasStatuses()) {
             return;
         }
@@ -2449,12 +2228,8 @@ class ElementQuery extends Query implements ElementQueryInterface
                 ]);
             $existsQuery = (new Query())
                 ->from([Table::STRUCTURES])
-                ->where('[[id]] = [[structureelements.structureId]]');
-            // todo: remove schema version condition after next beakpoint
-            $schemaVersion = Craft::$app->getInstalledSchemaVersion();
-            if (version_compare($schemaVersion, '3.1.0', '>=')) {
-                $existsQuery->andWhere(['dateDeleted' => null]);
-            }
+                ->where('[[id]] = [[structureelements.structureId]]')
+                ->andWhere(['dateDeleted' => null]);
             $this->subQuery
                 ->addSelect(['structureelements.structureId'])
                 ->leftJoin(['structureelements' => Table::STRUCTUREELEMENTS], [
@@ -2571,7 +2346,7 @@ class ElementQuery extends Query implements ElementQueryInterface
         }
 
         if ($this->level) {
-            $this->subQuery->andWhere(Db::parseParam('structureelements.level', $this->level));
+            $this->subQuery->andWhere(Db::parseNumericParam('structureelements.level', $this->level));
         }
 
         if ($this->leaves) {
@@ -2581,18 +2356,9 @@ class ElementQuery extends Query implements ElementQueryInterface
 
     /**
      * Applies draft and revision params to the query being prepared.
-     *
-     * @throws QueryAbortedException
      */
     private function _applyRevisionParams()
     {
-        if (!self::_supportsRevisionParams()) {
-            if ($this->drafts !== false || $this->revisions) {
-                throw new QueryAbortedException();
-            }
-            return;
-        }
-
         if ($this->drafts !== false) {
             if ($this->drafts === true) {
                 $this->subQuery->innerJoin(['drafts' => Table::DRAFTS], '[[drafts.id]] = [[elements.draftId]]');
@@ -2700,7 +2466,7 @@ class ElementQuery extends Query implements ElementQueryInterface
                 ->id($this->$property)
                 ->siteId($this->siteId)
                 ->structureId($this->structureId)
-                ->anyStatus()
+                ->status(null)
                 ->one();
 
             if ($this->$property === null) {
@@ -2802,7 +2568,7 @@ class ElementQuery extends Query implements ElementQueryInterface
                     throw new Exception('The database connection doesn’t support fixed ordering.');
                 }
                 $this->orderBy = [new FixedOrderExpression('elements.id', $ids, $db)];
-            } else if (self::_supportsRevisionParams() && $this->revisions) {
+            } else if ($this->revisions) {
                 $this->orderBy = ['num' => SORT_DESC];
             } else if ($this->_shouldJoinStructureData()) {
                 $this->orderBy = ['structureelements.lft' => SORT_ASC] + $this->defaultOrderBy;
@@ -2879,10 +2645,12 @@ class ElementQuery extends Query implements ElementQueryInterface
             // Merge in the default columns
             $select = array_merge($select, [
                 'elements.id' => 'elements.id',
+                'elements.canonicalId' => 'elements.canonicalId',
                 'elements.fieldLayoutId' => 'elements.fieldLayoutId',
                 'elements.uid' => 'elements.uid',
                 'elements.enabled' => 'elements.enabled',
                 'elements.archived' => 'elements.archived',
+                'elements.dateLastMerged' => 'elements.dateLastMerged',
                 'elements.dateCreated' => 'elements.dateCreated',
                 'elements.dateUpdated' => 'elements.dateUpdated',
                 'siteSettingsId' => 'elements_sites.id',
@@ -2891,12 +2659,6 @@ class ElementQuery extends Query implements ElementQueryInterface
                 'elements_sites.uri' => 'elements_sites.uri',
                 'enabledForSite' => 'elements_sites.enabled',
             ]);
-
-            // todo: remove this condition after the next breakpoint
-            if (Craft::$app->getDb()->columnExists(Table::ELEMENTS, 'canonicalId')) {
-                $select['elements.canonicalId'] = 'elements.canonicalId';
-                $select['elements.dateLastMerged'] = 'elements.dateLastMerged';
-            }
 
             // If the query includes soft-deleted elements, include the date deleted
             if ($this->trashed !== false) {

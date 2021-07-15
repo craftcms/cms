@@ -118,7 +118,7 @@ class Categories extends Component
         if ($this->_groups === null) {
             $groups = [];
 
-            /* @var CategoryGroupRecord[] $groupRecords */
+            /** @var CategoryGroupRecord[] $groupRecords */
             $groupRecords = CategoryGroupRecord::find()
                 ->orderBy(['name' => SORT_ASC])
                 ->with('structure')
@@ -402,7 +402,7 @@ class Categories extends Component
                 // site rows
                 $affectedSiteUids = array_keys($siteData);
 
-                /* @noinspection PhpUndefinedVariableInspection */
+                /** @noinspection PhpUndefinedVariableInspection */
                 foreach ($allOldSiteSettingsRecords as $siteId => $siteSettingsRecord) {
                     $siteUid = array_search($siteId, $siteIdMap, false);
                     if (!in_array($siteUid, $affectedSiteUids, false)) {
@@ -418,7 +418,7 @@ class Categories extends Component
                 // Get all of the category IDs in this group
                 $categoryIds = Category::find()
                     ->groupId($groupRecord->id)
-                    ->anyStatus()
+                    ->status(null)
                     ->ids();
 
                 // Are there any sites left?
@@ -441,7 +441,7 @@ class Categories extends Component
                                 $category = Category::find()
                                     ->id($categoryId)
                                     ->siteId($siteId)
-                                    ->anyStatus()
+                                    ->status(null)
                                     ->one();
 
                                 if ($category) {
@@ -559,7 +559,7 @@ class Categories extends Component
             return;
         }
 
-        /* @var CategoryGroup $group */
+        /** @var CategoryGroup $group */
         $group = $this->getGroupById($categoryGroupRecord->id);
 
         // Fire a 'beforeApplyGroupDelete' event
@@ -573,7 +573,7 @@ class Categories extends Component
         try {
             // Delete the categories
             $categories = Category::find()
-                ->anyStatus()
+                ->status(null)
                 ->groupId($categoryGroupRecord->id)
                 ->all();
             $elementsService = Craft::$app->getElements();
@@ -705,7 +705,7 @@ class Categories extends Component
             return null;
         }
 
-        /* @noinspection PhpIncompatibleReturnTypeInspection */
+        /** @noinspection PhpIncompatibleReturnTypeInspection */
         return Craft::$app->getElements()->getElementById($categoryId, Category::class, $siteId, [
             'structureId' => $structureId,
         ]);

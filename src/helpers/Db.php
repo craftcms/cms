@@ -106,9 +106,10 @@ class Db
      * Prepares a value to be sent to the database.
      *
      * @param mixed $value The value to be prepared
+     * @param string|null $columnType The type of column the value will be stored in
      * @return mixed The prepped value
      */
-    public static function prepareValueForDb($value)
+    public static function prepareValueForDb($value, ?string $columnType = null)
     {
         // If the object explicitly defines its savable value, use that
         if ($value instanceof Serializable) {
@@ -120,8 +121,11 @@ class Db
             return static::prepareDateForDb($value);
         }
 
-        // If it's an object or array, just JSON-encode it
-        if (is_object($value) || is_array($value)) {
+        // If this isn’t a JSON column and the value is an object or array, JSON-encode it
+        if (
+            !in_array($columnType, [Schema::TYPE_JSON, \yii\db\pgsql\Schema::TYPE_JSONB]) &&
+            (is_object($value) || is_array($value))
+        ) {
             return Json::encode($value);
         }
 
@@ -132,11 +136,9 @@ class Db
      * Prepares a date to be sent to the database.
      *
      * @param mixed $date The date to be prepared
-     * @param bool $stripSeconds Whether the seconds should be omitted from the formatted string
      * @return string|null The prepped date, or `null` if it could not be prepared
-     * @todo Remove the $stripSeconds argument in Craft 4
      */
-    public static function prepareDateForDb($date, bool $stripSeconds = false)
+    public static function prepareDateForDb($date)
     {
         $date = DateTimeHelper::toDateTime($date);
 
@@ -146,9 +148,6 @@ class Db
 
         $date = clone $date;
         $date->setTimezone(new \DateTimeZone('UTC'));
-        if ($stripSeconds) {
-            return $date->format('Y-m-d H:i') . ':00';
-        }
         return $date->format('Y-m-d H:i:s');
     }
 
@@ -389,7 +388,7 @@ class Db
      */
     public static function isNumericColumnType(string $columnType): bool
     {
-        return in_array(self::parseColumnLength($columnType), self::$_numericColumnTypes, true);
+        return in_array(self::parseColumnType($columnType), self::$_numericColumnTypes, true);
     }
 
     /**
@@ -447,6 +446,7 @@ class Db
      * @param bool $caseInsensitive Whether the resulting condition should be case-insensitive
      * @param string|null $columnType The database column type the param is targeting
      * @return mixed
+     * @throws InvalidArgumentException if the param value isn’t compatible with the column type.
      */
     public static function parseParam(string $column, $value, string $defaultOperator = '=', bool $caseInsensitive = false, ?string $columnType = null)
     {
@@ -495,14 +495,24 @@ class Db
             self::_normalizeEmptyValue($val);
             $operator = self::_parseParamOperator($val, $defaultOperator, $negate);
 
-            if ($columnType === Schema::TYPE_BOOLEAN) {
-                // Convert val to a boolean
-                $val = ($val && $val !== ':empty:');
-                if ($operator === '!=') {
-                    $val = !$val;
+            if ($columnType !== null) {
+                if ($columnType === Schema::TYPE_BOOLEAN) {
+                    // Convert val to a boolean
+                    $val = ($val && $val !== ':empty:');
+                    if ($operator === '!=') {
+                        $val = !$val;
+                    }
+                    $condition[] = [$column => (bool)$val];
+                    continue;
                 }
-                $condition[] = [$column => (bool)$val];
-                continue;
+
+                if (
+                    static::isNumericColumnType($columnType) &&
+                    $val !== ':empty:' &&
+                    !is_numeric($val)
+                ) {
+                    throw new InvalidArgumentException("Invalid numeric value: $val");
+                }
             }
 
             if ($val === ':empty:') {
@@ -670,6 +680,31 @@ class Db
     }
 
     /**
+     * Parses a query param value for a numeric column and returns a
+     * [[\yii\db\QueryInterface::where()]]-compatible condition.
+     *
+     * The follow values are supported:
+     *
+     * - A number
+     * - `:empty:` or `:notempty:`
+     * - `'not x'` or `'!= x'`
+     * - `'> x'`, `'>= x'`, `'< x'`, or `'<= x'`, or a combination of those
+     *
+     * @param string $column The database column that the param is targeting.
+     * @param string|string[] $value The param value
+     * @param string $defaultOperator The default operator to apply to the values
+     * (can be `not`, `!=`, `<=`, `>=`, `<`, `>`, or `=`)
+     * @param string|null $columnType The database column type the param is targeting
+     * @return mixed
+     * @throws InvalidArgumentException if the param value isn’t numeric
+     * @since 4.0.0
+     */
+    public static function parseNumericParam(string $column, $value, string $defaultOperator = '=', ?string $columnType = Schema::TYPE_INTEGER)
+    {
+        return static::parseParam($column, $value, $defaultOperator, false, $columnType);
+    }
+
+    /**
      * Returns whether a given DB connection’s schema supports a column type.
      *
      * @param string $type
@@ -683,7 +718,7 @@ class Db
             $db = self::db();
         }
 
-        /* @var \craft\db\mysql\Schema|\craft\db\pgsql\Schema $schema */
+        /** @var \craft\db\mysql\Schema|\craft\db\pgsql\Schema $schema */
         $schema = $db->getSchema();
 
         return isset($schema->typeMap[$type]);
@@ -1334,7 +1369,8 @@ class Db
      */
     private static function _batch(YiiQuery $query, int $batchSize, bool $each): BatchQueryResult
     {
-        $unbuffered = Craft::$app->getDb()->getIsMysql();
+        $db = self::db();
+        $unbuffered = $db->getIsMysql() && Craft::$app->getConfig()->getDb()->useUnbufferedConnections;
 
         if ($unbuffered) {
             $db = Craft::$app->getComponents()['db'];
@@ -1344,11 +1380,9 @@ class Db
             $db->on(Connection::EVENT_AFTER_OPEN, function() use ($db) {
                 $db->pdo->setAttribute(PDO::MYSQL_ATTR_USE_BUFFERED_QUERY, false);
             });
-        } else {
-            $db = self::db();
         }
 
-        /* @var BatchQueryResult $result */
+        /** @var BatchQueryResult $result */
         $result = Craft::createObject([
             'class' => BatchQueryResult::class,
             'query' => $query,

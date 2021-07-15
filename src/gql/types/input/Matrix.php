@@ -31,7 +31,7 @@ class Matrix extends InputObjectType
      */
     public static function getType(MatrixField $context)
     {
-        /* @var MatrixField $context */
+        /** @var MatrixField $context */
         $typeName = $context->handle . '_MatrixInput';
 
         if ($inputType = GqlEntityRegistry::getEntity($typeName)) {
@@ -54,7 +54,7 @@ class Matrix extends InputObjectType
 
             // Get the field input types
             foreach ($fields as $field) {
-                /* @var Field $field */
+                /** @var Field $field */
                 $blockTypeFields[$field->handle] = $field->getContentGqlMutationArgumentType();
             }
 
