@@ -8,6 +8,7 @@
 namespace craft\services;
 
 use Craft;
+use craft\base\Element;
 use craft\base\ElementInterface;
 use craft\behaviors\DraftBehavior;
 use craft\db\Connection;
@@ -352,8 +353,11 @@ class Drafts extends Component
                 $draft->detachBehavior('draft');
                 $draft->setRevisionNotes($draftNotes);
 
+                // We still need to validate so the SlugValidator gets run
+                $draft->setScenario(Element::SCENARIO_ESSENTIALS);
+
                 try {
-                    $elementsService->saveElement($draft, false, true, false);
+                    $elementsService->saveElement($draft);
                     Db::delete(Table::DRAFTS, [
                         'id' => $draftId,
                     ]);
