@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 3.x
 
-## Unreleased
+## 3.7.1 - 2021-07-14
 
 ### Added
 - Added the `transformSvgs` config setting. ([#9557](https://github.com/craftcms/cms/pull/9557))
