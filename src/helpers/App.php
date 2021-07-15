@@ -622,13 +622,13 @@ class App
 
             // Only log errors and warnings, unless Craft is running in Dev Mode or it's being installed/updated
             // (Explicitly check GeneralConfig::$devMode here, because YII_DEBUG is always `1` for console requests.)
-            $devModeLogging = (
+            $onlyLogErrors = (
                 !Craft::$app->getConfig()->getGeneral()->devMode &&
                 Craft::$app->getIsInstalled() &&
                 !Craft::$app->getUpdates()->getIsCraftDbMigrationNeeded()
             );
 
-            if ($devModeLogging) {
+            if ($onlyLogErrors) {
                 $fileTargetConfig['levels'] = Logger::LEVEL_ERROR | Logger::LEVEL_WARNING;
             }
 
@@ -644,7 +644,7 @@ class App
 
                 $targets[Dispatcher::TARGET_STDERR] = $streamErrLogTarget;
 
-                if ($devModeLogging) {
+                if (!$onlyLogErrors) {
                     $streamOutLogTarget = [
                         'class' => StreamLogTarget::class,
                         'url' => 'php://stdout',
