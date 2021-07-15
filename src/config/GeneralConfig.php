@@ -1553,6 +1553,13 @@ class GeneralConfig extends BaseObject
     public $transformGifs = true;
 
     /**
+     * @var bool Whether SVG files should be transformed.
+     * @since 3.7.1
+     * @group Image Handling
+     */
+    public $transformSvgs = true;
+
+    /**
      * @var bool Whether translated messages should be wrapped in special characters to help find any strings that are not being run through
      * `Craft::t()` or the `|translate` filter.
      * @group System

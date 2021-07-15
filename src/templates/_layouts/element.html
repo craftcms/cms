@@ -60,7 +60,7 @@
     {% set isNewlySupportedSite = true %}
 {% elseif isDraft %}
     {% set isNewlySupportedSite = not element.find()
-        .id(element.getSourceId())
+        .id(element.getCanonicalId())
         .siteId(element.siteId)
         .anyStatus()
         .exists() %}
@@ -262,20 +262,22 @@
     {% if isLikeCurrent %}
         {% if not isUnpublishedDraft and saveDraftAction %}
             <div id="save-draft-btn-container">
-                {% if canUpdateSource and saveSourceAction %}
-                    {{ tag('button', {
-                        type: 'button',
-                        class: 'btn formsubmit',
-                        text: 'Create a draft'|t('app'),
-                        data: {
-                            action: saveDraftAction,
-                            redirect: hashedCpEditUrl,
-                            param: 'dropProvisional',
-                            value: 1,
-                        },
-                    }) }}
-                {% else %}
-                    <button type="submit" class="btn submit">{{ 'Create a draft'|t('app') }}</button>
+                {{ tag('button', {
+                    type: 'button',
+                    class: [
+                        'btn',
+                        'formsubmit',
+                        not (canUpdateSource and saveSourceAction) ? 'secondary',
+                    ]|filter,
+                    text: 'Create a draft'|t('app'),
+                    data: {
+                        action: saveDraftAction,
+                        redirect: hashedCpEditUrl,
+                        param: 'dropProvisional',
+                        value: 1,
+                    },
+                }) }}
+                {% if not (canUpdateSource and saveSourceAction) %}
                     {% if formActions|length %}
                         <button type="button" class="btn menubtn" aria-label="{{ 'Actions'|t('app') }}" data-icon="settings"></button>
                         {% include '_layouts/components/form-action-menu' %}
@@ -360,7 +362,7 @@
 
 {% block content %}
     {% if not isRevision %}
-        {{ hiddenInput('sourceId', element.getSourceId()) }}
+        {{ hiddenInput('sourceId', element.getCanonicalId()) }}
     {% else %}
         {{ hiddenInput('revisionId', entry.revisionId) }}
     {% endif %}
@@ -518,7 +520,7 @@
 
 {% set settings = {
     elementType: className(element),
-    sourceId: element.getSourceId(),
+    sourceId: element.getCanonicalId(),
     siteId: element.siteId,
     isUnpublishedDraft: isUnpublishedDraft,
     enabled: element.enabled ? true : false,

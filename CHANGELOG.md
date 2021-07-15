@@ -1,5 +1,26 @@
 # Release Notes for Craft CMS 3.x
 
+## 3.7.1 - 2021-07-14
+
+### Added
+- Added the `transformSvgs` config setting. ([#9557](https://github.com/craftcms/cms/pull/9557))
+
+### Changed
+- Console requests no longer force Dev Mode to be enabled. ([#5256](https://github.com/craftcms/cms/issues/5256))
+
+### Fixed
+- Fixed deprecation warnings that occurred on some edit pages. ([#9556](https://github.com/craftcms/cms/pull/9556))
+- Fixed an error that occurred when updating from Craft 3.6.7 or earlier.
+- Fixed a bug where progress bar labels weren’t always removed correctly.
+- Fixed a bug where it wasn’t possible to filter by status on the Categories index page. ([#9555](https://github.com/craftcms/cms/issues/9555))
+- Fixed a bug where Edit Category pages didn’t have a “Save and add another” action.
+- Fixed a bug where moving an asset with an invalid file extension would be treated as if there was a conflicting asset in the destination directory. ([#9147](https://github.com/craftcms/cms/issues/9147))
+- Fixed a bug where multiple tab bars could appear on Edit Entry pages, if the Entry Type had been changed multiple times. ([#9562](https://github.com/craftcms/cms/issues/9562))
+- Fixed a bug where some control panel icons had unhelpful `<title>` tags and other cruft. ([#9563](https://github.com/craftcms/cms/pull/9563))
+- Fixed a bug where the “Create a draft” button on Edit Entry pages wasn’t working properly for users that didn’t have permission to publish changes to the entry. ([#9570](https://github.com/craftcms/cms/issues/9570))
+- Fixed a bug where Edit Entry pages could show a provisional draft immediately after saving published changes to the entry, if the save was initiated at the same time that the provisional draft was getting created. ([#9568](https://github.com/craftcms/cms/issues/9568))
+- Fixed a bug where entry slugs weren’t getting auto-generated on first save, if their title was generated based on a custom Title Format. ([#9561](https://github.com/craftcms/cms/issues/9561))
+
 ## 3.7.0 - 2021-07-13
 
 > {tip} Read through the [Upgrading to Craft 3.7](https://craftcms.com/knowledge-base/upgrading-to-craft-3-7) guide before updating.
@@ -2934,7 +2955,7 @@
 
 > {warning} If `useProjectConfigFile` is enabled and you are using the GraphQL API, restore a fresh database backup from your production environment before updating your development environment. Otherwise you may lose your GraphQL schema data when updating production.
 
-> {warning} There have been some changes in behavior that plugin developers should be aware of! See [Updating Plugins for Craft 3.4](https://craftcms.com/guides/updating-plugins-for-craft-34) for details.
+> {warning} There have been some changes in behavior that plugin developers should be aware of! See [Updating Plugins for Craft 3.4](https://craftcms.com/knowledge-base/updating-plugins-for-craft-34) for details.
 
 > {tip} Element search indexing is a little smarter in Craft 3.4. It’s recommended that you resave all your entries from your terminal **after** you’ve finished updating.
 >
@@ -5369,7 +5390,7 @@
 - Craft now attempts to disable PHP’s memory and time limits before running Composer operations.
 - Craft no longer respects the `phpMaxMemoryLimit` config setting if PHP’s `memory_limit` setting is already set to `-1` (no limit).
 - Craft now respects Composer’s [classmap-authoritative](https://getcomposer.org/doc/06-config.md#classmap-authoritative) config setting.
-- Craft now links to the [Troubleshooting Failed Updates](https://craftcms.com/guides/failed-updates) guide when an update fails.
+- Craft now links to the [Troubleshooting Failed Updates](https://craftcms.com/knowledge-base/failed-updates) guide when an update fails.
 - `craft\services\Composer::install()` can now behave like the `composer install` command, if `$requirements` is `null`.
 - `craft\services\Composer::install()` now has a `$whitelist` argument, which can be set to an array of packages to whitelist, or `false` to disable the whitelist.
 
