@@ -1,5 +1,10 @@
 # Release Notes for Craft CMS 3.x
 
+## Unreleased
+
+### Fixed
+- Fixed a SQL error that could occur when updating to Craft 3.7. ([#9574](https://github.com/craftcms/cms/issues/9574))
+
 ## 3.7.1 - 2021-07-14
 
 ### Added
