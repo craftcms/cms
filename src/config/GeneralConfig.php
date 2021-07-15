@@ -1491,7 +1491,7 @@ class GeneralConfig extends BaseObject
     public $secureHeaders;
 
     /**
-     * @var array|null list of headers to check for determining whether the connection is made via HTTPS.
+     * @var array|null List of headers to check for determining whether the connection is made via HTTPS.
      *
      * See [[\yii\web\Request::secureProtocolHeaders]] for more details.
      *
