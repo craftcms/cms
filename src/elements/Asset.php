@@ -921,7 +921,7 @@ class Asset extends Element
         }
 
         $filename = $this->getFilename(false);
-        $path = "assets/$volume->handle/$this->id-$filename";
+        $path = "assets/edit/$this->id-$filename";
 
         $params = [];
         if (Craft::$app->getIsMultiSite()) {

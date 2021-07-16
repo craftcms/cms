@@ -65,6 +65,7 @@ abstract class Volume extends SavableComponent implements VolumeInterface
             'reservedWords' => [
                 'dateCreated',
                 'dateUpdated',
+                'edit',
                 'id',
                 'title',
                 'uid',
