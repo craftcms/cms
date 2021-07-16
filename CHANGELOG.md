@@ -10,6 +10,7 @@
 
 ### Fixed
 - Fixed a bug where object templates didn’t support string interpolation within normal Twig tags. ([#9138](https://github.com/craftcms/cms/discussions/9138))
+- Fixed an error that could occur after applying project config changes.
 
 ## 3.7.2 - 2021-07-15
 
