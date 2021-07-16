@@ -63,11 +63,11 @@ abstract class Volume extends SavableComponent implements VolumeInterface
             ['handle'],
             HandleValidator::class,
             'reservedWords' => [
-                'id',
                 'dateCreated',
                 'dateUpdated',
-                'uid',
+                'id',
                 'title',
+                'uid',
             ],
         ];
         $rules[] = [['fieldLayout'], 'validateFieldLayout'];
