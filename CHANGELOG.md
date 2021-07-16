@@ -14,6 +14,7 @@
 - Fixed a bug where object templates didn’t support string interpolation within normal Twig tags. ([#9138](https://github.com/craftcms/cms/discussions/9138))
 - Fixed an error that could occur after applying project config changes.
 - Fixed a bug where assets’ control panel URLs were getting routed to the Assets index page. ([#9583](https://github.com/craftcms/cms/issues/9583))
+- Fixed a visual bug where field status indicators were overlapping the prior field in the same row. ([#9585](https://github.com/craftcms/cms/issues/9585))
 
 ## 3.7.2 - 2021-07-15
 

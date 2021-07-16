@@ -2319,11 +2319,11 @@ body.rtl .chars-left { margin: -27px 0 0 7px ; }
 
 .flex > .field, .flex > fieldset { margin-top: 0; margin-bottom: 0; }
 
-.field > .status-badge { position: absolute; top: 0; width: 2px; height: 100%; content: ''; cursor: help; border: solid transparent; border-width: 0 2px; background-clip: content-box; }
+.field > .status-badge { position: absolute; top: 0; width: 2px; height: 100%; content: ''; cursor: help; }
 
-body.ltr .field > .status-badge { left: -26px; }
+body.ltr .field > .status-badge { left: -25px; }
 
-body.rtl .field > .status-badge { right: -26px; }
+body.rtl .field > .status-badge { right: -25px; }
 
 .field > .status-badge.modified { background-color: #1992D4; }
 
@@ -2974,9 +2974,11 @@ body.rtl .matrixblock > .actions a.settings:after { margin-right: 3px; }
 
 .matrixblock:not(.static) > .fields { padding-top: 14px; }
 
-body.ltr .matrixblock > .fields > .flex-fields > .field > .status-badge { left: -17px; }
+.matrixblock > .fields > .flex-fields > .field:before { display: none; }
 
-body.rtl .matrixblock > .fields > .flex-fields > .field > .status-badge { right: -17px; }
+body.ltr .matrixblock > .fields > .flex-fields > .field > .status-badge { left: -15px; }
+
+body.rtl .matrixblock > .fields > .flex-fields > .field > .status-badge { right: -15px; }
 
 .matrixblock > .buttons { margin-top: 0; height: 30px; }
 
@@ -3655,21 +3657,43 @@ body.ltr .content.has-sidebar:not(.hiding-sidebar) { margin-left: 226px; }
 body.rtl .content.has-sidebar:not(.hiding-sidebar) { margin-right: 226px; }
 
 /* flexbox field layouts */
-#content :not(.meta) > .flex-fields { display: -webkit-flex; display: flex; -webkit-flex-wrap: wrap; flex-wrap: wrap; -webkit-align-content: flex-start; align-content: flex-start; margin: 0 -14px -24px 0; width: calc(100% + 14px); }
+#content :not(.meta) > .flex-fields { display: -webkit-flex; display: flex; -webkit-flex-wrap: wrap; flex-wrap: wrap; -webkit-align-content: flex-start; align-content: flex-start; width: calc(100% + 48px); }
 
-#content :not(.meta) > .flex-fields > h2 { margin: 0 -10px 24px -24px !important; padding: 0 10px 0 24px; width: calc(100% + 34px); }
+body.ltr #content :not(.meta) > .flex-fields { margin: 0 -24px -24px -24px ; }
+
+body.rtl #content :not(.meta) > .flex-fields { margin: 0 -24px -24px -24px ; }
+
+#content :not(.meta) > .flex-fields > h2 { padding: 0 24px; width: calc(100% + 48px); }
+
+body.ltr #content :not(.meta) > .flex-fields > h2 { margin: 0 -24px 24px -24px !important; }
+
+body.rtl #content :not(.meta) > .flex-fields > h2 { margin: 0 -24px 24px -24px !important; }
 
 #content :not(.meta) > .flex-fields > h2:not(:first-child) { padding-top: 24px; border-top: 1px solid rgba(51, 64, 77, 0.1); }
 
-#content :not(.meta) > .flex-fields > hr { margin: 0 -10px 24px -24px; width: calc(100% + 34px); }
+#content :not(.meta) > .flex-fields > hr { width: calc(100% + 48px); }
 
-#content :not(.meta) > .flex-fields > :not(h2):not(hr), #content :not(.meta) > .flex-fields > :not(h2):not(hr):last-child { margin: 0 14px 24px 0 !important; width: calc(100% - 14px); }
+body.ltr #content :not(.meta) > .flex-fields > hr { margin: 0 -24px 24px -24px ; }
 
-@media only screen and (min-width: 1426px) { #content :not(.meta) > .flex-fields > :not(h2):not(hr).width-25, #content :not(.meta) > .flex-fields > :not(h2):not(hr):last-child.width-25 { width: calc(25% - 14px); }
-  #content :not(.meta) > .flex-fields > :not(h2):not(hr).width-50, #content :not(.meta) > .flex-fields > :not(h2):not(hr):last-child.width-50 { width: calc(50% - 14px); }
-  #content :not(.meta) > .flex-fields > :not(h2):not(hr).width-75, #content :not(.meta) > .flex-fields > :not(h2):not(hr):last-child.width-75 { width: calc(75% - 14px); } }
+body.rtl #content :not(.meta) > .flex-fields > hr { margin: 0 -24px 24px -24px ; }
 
-@media only screen and (min-width: 500px) and (max-width: 1425px) { #content :not(.meta) > .flex-fields > :not(h2):not(hr).width-25, #content :not(.meta) > .flex-fields > :not(h2):not(hr).width-50, #content :not(.meta) > .flex-fields > :not(h2):not(hr):last-child.width-25, #content :not(.meta) > .flex-fields > :not(h2):not(hr):last-child.width-50 { width: calc(50% - 14px); } }
+#content :not(.meta) > .flex-fields > :not(h2):not(hr), #content :not(.meta) > .flex-fields > :not(h2):not(hr):last-child { position: relative; width: calc(100% - 48px); box-sizing: border-box; }
+
+body.ltr #content :not(.meta) > .flex-fields > :not(h2):not(hr), body.ltr #content :not(.meta) > .flex-fields > :not(h2):not(hr):last-child { margin: 0 24px 24px 24px !important; }
+
+body.rtl #content :not(.meta) > .flex-fields > :not(h2):not(hr), body.rtl #content :not(.meta) > .flex-fields > :not(h2):not(hr):last-child { margin: 0 24px 24px 24px !important; }
+
+@media only screen and (min-width: 1536px) { #content :not(.meta) > .flex-fields > :not(h2):not(hr).width-25, #content :not(.meta) > .flex-fields > :not(h2):not(hr):last-child.width-25 { width: calc(25% - 48px); }
+  #content :not(.meta) > .flex-fields > :not(h2):not(hr).width-50, #content :not(.meta) > .flex-fields > :not(h2):not(hr):last-child.width-50 { width: calc(50% - 48px); }
+  #content :not(.meta) > .flex-fields > :not(h2):not(hr).width-75, #content :not(.meta) > .flex-fields > :not(h2):not(hr):last-child.width-75 { width: calc(75% - 48px); } }
+
+@media only screen and (min-width: 500px) and (max-width: 1535px) { #content :not(.meta) > .flex-fields > :not(h2):not(hr).width-25, #content :not(.meta) > .flex-fields > :not(h2):not(hr).width-50, #content :not(.meta) > .flex-fields > :not(h2):not(hr):last-child.width-25, #content :not(.meta) > .flex-fields > :not(h2):not(hr):last-child.width-50 { width: calc(50% - 48px); } }
+
+#content :not(.meta) > .flex-fields > :not(h2):not(hr):before, #content :not(.meta) > .flex-fields > :not(h2):not(hr):last-child:before { position: absolute; top: 0; width: 1px; height: 100%; content: ''; background-color: rgba(51, 64, 77, 0.1); }
+
+body.ltr #content :not(.meta) > .flex-fields > :not(h2):not(hr):before, body.ltr #content :not(.meta) > .flex-fields > :not(h2):not(hr):last-child:before { left: -25px; }
+
+body.rtl #content :not(.meta) > .flex-fields > :not(h2):not(hr):before, body.rtl #content :not(.meta) > .flex-fields > :not(h2):not(hr):last-child:before { right: -25px; }
 
 /* retina */
 @media only screen and (-webkit-min-device-pixel-ratio: 1.5), only screen and (-moz-min-device-pixel-ratio: 1.5), only screen and (-o-min-device-pixel-ratio: 3 / 2), only screen and (min-device-pixel-ratio: 1.5), only screen and (-o-min-device-pixel-ratio: 3/2), only screen and (min-resolution: 1.5dppx) { #details .spinner { background-image: url(../images/spinner_details_2x.gif); -o-background-size: 20px; background-size: 20px; }
@@ -3693,6 +3717,10 @@ body.rtl .content.has-sidebar:not(.hiding-sidebar) { margin-right: 226px; }
 .lp-editor-container .lp-editor { -webkit-flex: 1; flex: 1; padding: 24px; overflow: auto; box-sizing: border-box; }
 
 .lp-editor-container .lp-editor > .field:last-child { margin-bottom: 24px !important; }
+
+body.ltr .lp-editor-container .lp-editor > .field > .status-badge { left: -24px; }
+
+body.rtl .lp-editor-container .lp-editor > .field > .status-badge { right: -24px; }
 
 .lp-editor-container .lp-draghandle { position: absolute; z-index: 6; top: 0; width: 4px; height: 100%; cursor: col-resize; }
 
