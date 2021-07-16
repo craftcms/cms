@@ -544,10 +544,10 @@ class GeneralConfig extends BaseObject
     public $defaultWeekStartDay = 1;
 
     /**
-     * @var bool By default, Craft will require a ‘password’ field to be submitted on front-end, public user registrations. Setting this to `true`
-     * will no longer require it on the initial registration form.
+     * @var bool By default, Craft requires a front-end “password” field for public user registrations. Setting this to `true`
+     * removes that requirement for the initial registration form.
      *
-     * If you have email verification enabled, new users will set their password once they’ve clicked on the verification link in the email.
+     * If you have email verification enabled, new users will set their password once they’ve followed the verification link in the email.
      * If you don’t, the only way they can set their password is to go through your “forgot password” workflow.
      *
      * @group Security
