@@ -1,5 +1,13 @@
 # Release Notes for Craft CMS 3.x
 
+## Unreleased
+
+### Added
+- Added the `sendContentLengthHeader` config setting.
+
+### Changed
+- Template requests no longer respond with a `Content-Length` header, unless the `sendContentLengthHeader` config setting is enabled. ([#8070](https://github.com/craftcms/cms/issues/8070))
+
 ## 3.7.2 - 2021-07-15
 
 ### Fixed

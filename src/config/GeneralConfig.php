@@ -1387,6 +1387,13 @@ class GeneralConfig extends BaseObject
     public $securityKey;
 
     /**
+     * @var bool Whether a `Content-Length` header should be sent with responses.
+     * @since 3.7.3
+     * @group System
+     */
+    public $sendContentLengthHeader = false;
+
+    /**
      * @var bool Whether an `X-Powered-By: Craft CMS` header should be sent, helping services like [BuiltWith](https://builtwith.com/) and
      * [Wappalyzer](https://www.wappalyzer.com/) identify that the site is running on Craft.
      * @group System
