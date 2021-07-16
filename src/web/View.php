@@ -983,7 +983,7 @@ class View extends \yii\web\View
     /**
      * Starts a JavaScript buffer.
      *
-     * JavaScript buffers work similarly to [output buffers](http://php.net/manual/en/intro.outcontrol.php) in PHP.
+     * JavaScript buffers work similarly to [output buffers](https://php.net/manual/en/intro.outcontrol.php) in PHP.
      * Once you’ve started a JavaScript buffer, any JavaScript code registered with [[registerJs()]] will be included
      * in a buffer, and you will have the opportunity to fetch all of that code via [[clearJsBuffer()]] without
      * having it actually get output to the page.

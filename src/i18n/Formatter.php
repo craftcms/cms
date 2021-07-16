@@ -159,15 +159,15 @@ class Formatter extends \yii\i18n\Formatter
      * @param int|string|DateTime $value The value to be formatted. The following
      * types of value are supported:
      * - an int representing a UNIX timestamp
-     * - a string that can be [parsed to create a DateTime object](http://php.net/manual/en/datetime.formats.php).
+     * - a string that can be [parsed to create a DateTime object](https://php.net/manual/en/datetime.formats.php).
      *   The timestamp is assumed to be in [[defaultTimeZone]] unless a time zone is explicitly given.
-     * - a PHP [DateTime](http://php.net/manual/en/class.datetime.php) object
+     * - a PHP [DateTime](https://php.net/manual/en/class.datetime.php) object
      * @param string|null $format The format used to convert the value into a date string.
      * If null, [[dateFormat]] will be used.
      * This can be "short", "medium", "long", or "full", which represents a preset format of different lengths.
      * It can also be a custom format as specified in the [ICU manual](http://userguide.icu-project.org/formatparse/datetime).
      * Alternatively this can be a string prefixed with `php:` representing a format that can be recognized by the
-     * PHP [date()](http://php.net/manual/en/function.date.php)-function.
+     * PHP [date()](https://php.net/manual/en/function.date.php)-function.
      * @param bool $withPreposition Whether a preposition should be included in the returned string
      * (e.g. “**at** 12:00 PM” or “**on** Wednesday”).
      * @return string the formatted result.
@@ -211,7 +211,7 @@ class Formatter extends \yii\i18n\Formatter
     /**
      * Formats the value as a currency number.
      *
-     * This function does not requires the [PHP intl extension](http://php.net/manual/en/book.intl.php) to be installed
+     * This function does not requires the [PHP intl extension](https://php.net/manual/en/book.intl.php) to be installed
      * to work but it is highly recommended to install it to get good formatting results.
      *
      * @param mixed $value the value to be formatted.
@@ -338,9 +338,9 @@ class Formatter extends \yii\i18n\Formatter
      * @param int|string|DateTime $value The value to be formatted. The following
      * types of value are supported:
      * - an int representing a UNIX timestamp
-     * - a string that can be [parsed to create a DateTime object](http://php.net/manual/en/datetime.formats.php).
+     * - a string that can be [parsed to create a DateTime object](https://php.net/manual/en/datetime.formats.php).
      *   The timestamp is assumed to be in [[defaultTimeZone]] unless a time zone is explicitly given.
-     * - a PHP [DateTime](http://php.net/manual/en/class.datetime.php) object
+     * - a PHP [DateTime](https://php.net/manual/en/class.datetime.php) object
      * @param string $format The format used to convert the value into a date string.
      * @param string $type 'date', 'time', or 'datetime'.
      * @return string the formatted result.

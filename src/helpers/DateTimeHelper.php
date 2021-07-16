@@ -72,7 +72,7 @@ class DateTimeHelper
      *      - `date` – a date string in `YYYY-MM-DD` or `YYYY-MM-DD HH:MM:SS.MU` formats or the current locale’s short date format
      *      - `time` – a time string in `HH:MM` or `HH:MM:SS` (24-hour) format or the current locale’s short time format
      *      - `datetime` – A timestamp in any of the non-array formats supported by this method
-     *      - `timezone` – A [valid PHP timezone](http://php.net/manual/en/timezones.php). If set, this will override
+     *      - `timezone` – A [valid PHP timezone](https://php.net/manual/en/timezones.php). If set, this will override
      *        the assumed timezone per `$assumeSystemTimeZone`.
      *
      * @param string|int|array|null $value The value that should be converted to a DateTime object.
@@ -222,8 +222,8 @@ class DateTimeHelper
 
     /**
      * Determines whether the given value is an ISO-8601-formatted date, as formatted by either
-     * [DateTime::ATOM](http://php.net/manual/en/class.datetime.php#datetime.constants.atom) or
-     * [DateTime::ISO8601](http://php.net/manual/en/class.datetime.php#datetime.constants.iso8601) (with or without
+     * [DateTime::ATOM](https://php.net/manual/en/class.datetime.php#datetime.constants.atom) or
+     * [DateTime::ISO8601](https://php.net/manual/en/class.datetime.php#datetime.constants.iso8601) (with or without
      * the colon between the hours and minutes of the timezone).
      *
      * @param mixed $value The timestamp to check

@@ -233,7 +233,7 @@ class Locale extends BaseObject
     public $id;
 
     /**
-     * @var array|null The configured locale data, used if the [PHP intl extension](http://php.net/manual/en/book.intl.php) isn’t loaded.
+     * @var array|null The configured locale data, used if the [PHP intl extension](https://php.net/manual/en/book.intl.php) isn’t loaded.
      */
     private $_data;
 
