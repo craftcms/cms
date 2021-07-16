@@ -8,6 +8,9 @@
 ### Changed
 - Template requests no longer respond with a `Content-Length` header, unless the `sendContentLengthHeader` config setting is enabled. ([#8070](https://github.com/craftcms/cms/issues/8070))
 
+### Fixed
+- Fixed a bug where object templates didn’t support string interpolation within normal Twig tags. ([#9138](https://github.com/craftcms/cms/discussions/9138))
+
 ## 3.7.2 - 2021-07-15
 
 ### Fixed

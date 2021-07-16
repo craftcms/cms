@@ -678,8 +678,18 @@ class View extends \yii\web\View
     {
         $tokens = [];
 
-        // Tokenize {% verbatim %} and output tags
-        $template = preg_replace_callback('/\{%-?\s*verbatim\s*-?%\}.*?{%-?\s*endverbatim\s*-?%\}|(?<!\{)\{\{(?!\{).+?(?<!\})\}\}(?!\})/s',
+        // Tokenize {% verbatim %} ... {% endverbatim %} tags in their entirety
+        $template = preg_replace_callback('/\{%-?\s*verbatim\s*-?%\}.*?{%-?\s*endverbatim\s*-?%\}/s',
+            function(array $matches) use (&$tokens) {
+                $token = 'tok_' . StringHelper::randomString(10);
+                $tokens[$token] = $matches[0];
+                return $token;
+            },
+            $template
+        );
+
+        // Tokenize any remaining Twig tags (including print tags)
+        $template = preg_replace_callback('/\{%-?\s*\w+.*?%\}|(?<!\{)\{\{(?!\{).+?(?<!\})\}\}(?!\})/s',
             function(array $matches) use (&$tokens) {
                 $token = 'tok_' . StringHelper::randomString(10);
                 $tokens[$token] = $matches[0];
