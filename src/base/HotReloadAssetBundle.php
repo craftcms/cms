@@ -88,7 +88,7 @@ class HotReloadAssetBundle extends AssetBundle
         }
 
         $dotEnv = Dotenv::create($envFilePath, self::ENV_FILENAME);
-        $dotEnv->load();
+        $dotEnv->overload();
 
         $this->_envLoaded = true;
     }
