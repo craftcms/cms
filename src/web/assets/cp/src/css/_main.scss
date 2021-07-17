@@ -2102,6 +2102,11 @@ table {
             }
           }
 
+          &:focus {
+            position: relative;
+            z-index: 1;
+          }
+
           &.sel {
             th,
             td {
@@ -2818,6 +2823,7 @@ table.editable {
         padding: 4px 10px;
 
         &.focus {
+          position: relative;
           box-shadow: inset 0 0 0 1px $hairlineColor;
         }
 

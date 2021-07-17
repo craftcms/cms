@@ -1,5 +1,10 @@
 # Release Notes for Craft CMS 3.x
 
+## Unreleased
+
+### Fixed
+- Fixed styling issues in the control panel. ([#9590](https://github.com/craftcms/cms/issues/9590), [#9592](https://github.com/craftcms/cms/issues/9592))
+
 ## 3.7.3 - 2021-07-16
 
 ### Added
