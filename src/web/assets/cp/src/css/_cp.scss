@@ -1406,13 +1406,13 @@ $toolbarIconColor: darken($inputColor, 10%);
   display: flex;
   flex-wrap: wrap;
   align-content: flex-start;
-  @include margin(0, -24px, -24px, -24px);
+  margin: 0 -24px -24px;
   width: calc(100% + 48px);
 
   & > h2 {
-    @include margin(0, -24px, 24px, -24px, !important);
+    margin: 0 0 24px !important;
     padding: 0 24px;
-    width: calc(100% + 48px);
+    width: 100%;
 
     &:not(:first-child) {
       padding-top: 24px;
@@ -1421,14 +1421,14 @@ $toolbarIconColor: darken($inputColor, 10%);
   }
 
   & > hr {
-    @include margin(0, -24px, 24px, -24px);
+    margin: 0 0 24px;
     width: calc(100% + 48px);
   }
 
   & > :not(h2):not(hr) {
     &, &:last-child {
       position: relative;
-      @include margin(0, 24px, 24px, 24px, !important);
+      margin: 0 24px 24px !important;
       width: calc(100% - 48px);
       box-sizing: border-box;
 
@@ -1460,7 +1460,8 @@ $toolbarIconColor: darken($inputColor, 10%);
         width: 1px;
         height: 100%;
         content: '';
-        background-color: $hairlineColor;
+        // same BG color as the hairline around the content pane’s 1px shadow
+        background-color: transparentize($grey200, 0.5);
       }
     }
   }

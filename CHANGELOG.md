@@ -1,5 +1,14 @@
 # Release Notes for Craft CMS 3.x
 
+## 3.7.3.1 - 2021-07-17
+
+### Changed
+- Improved the performance of Edit Entry pages. ([#9575](https://github.com/craftcms/cms/issues/9575))
+
+### Fixed
+- Fixed styling issues in the control panel. ([#9590](https://github.com/craftcms/cms/issues/9590), [#9592](https://github.com/craftcms/cms/issues/9592))
+- Fixed a bug where entry drafts could label fields as being modified on the canonical entry, even when they weren’t.
+
 ## 3.7.3 - 2021-07-16
 
 ### Added

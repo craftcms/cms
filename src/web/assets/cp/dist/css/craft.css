@@ -1082,6 +1082,8 @@ body.rtl table.data thead th.ordered.loading { background-position: 0 16px; }
 
 table.data tbody tr:not(.disabled):hover th, table.data tbody tr:not(.disabled):hover td { background-color: #f3f7fc; }
 
+table.data tbody tr:not(.disabled):focus { position: relative; z-index: 1; }
+
 table.data tbody tr:not(.disabled).sel th, table.data tbody tr:not(.disabled).sel td { background-color: #cdd8e4; }
 
 table.data tbody th, table.data tbody td { padding-top: 7px; padding-bottom: 7px; background-clip: padding-box; }
@@ -1478,7 +1480,7 @@ body.rtl table.editable tbody tr th ~ td:not(:first-child) { border-right: 1px s
 
 table.editable tbody tr td { vertical-align: top; text-align: center; background-color: #fff; padding: 4px 10px; }
 
-table.editable tbody tr td.focus { box-shadow: inset 0 0 0 1px rgba(51, 64, 77, 0.1); }
+table.editable tbody tr td.focus { position: relative; box-shadow: inset 0 0 0 1px rgba(51, 64, 77, 0.1); }
 
 table.editable tbody tr td.textual { padding: 0; }
 
@@ -1677,7 +1679,7 @@ body.rtl .missing-component .install-plugin .icon { right: 0; }
 /* ----------------------------------------
 /*  Panes, Modals and HUDs
 /* ----------------------------------------*/
-.pane { background: #fff; box-shadow: 0 0 0 1px rgba(154, 165, 177, 0.25), 0 2px 12px rgba(205, 216, 228, 0.5); position: relative; margin: 14px 0; padding: 24px; border-radius: 5px; word-wrap: break-word; box-sizing: border-box; }
+.pane { background: #fff; box-shadow: 0 0 0 1px #cdd8e4, 0 2px 12px rgba(205, 216, 228, 0.5); position: relative; margin: 14px 0; padding: 24px; border-radius: 5px; word-wrap: break-word; box-sizing: border-box; }
 
 .pane:focus { box-shadow: 0 0 0 1px #127FBF, 0 0 0 3px rgba(18, 127, 191, 0.5); }
 
@@ -1717,7 +1719,7 @@ body.rtl .pane-tabs ul li:not(:first-child) a { margin-right: 4px; }
 
 .pane-tabs ul li a:not(.sel):hover { background-color: rgba(154, 165, 177, 0.15); }
 
-.pane-tabs ul li a.sel { cursor: default; color: #3f4d5a; background: #fff; box-shadow: 0 0 0 1px rgba(154, 165, 177, 0.25), 0 2px 12px rgba(205, 216, 228, 0.5); }
+.pane-tabs ul li a.sel { cursor: default; color: #3f4d5a; background: #fff; box-shadow: 0 0 0 1px #cdd8e4, 0 2px 12px rgba(205, 216, 228, 0.5); }
 
 .pane-tabs ul li a.sel:focus { box-shadow: 0 0 0 1px #127FBF, 0 0 0 3px rgba(18, 127, 191, 0.5); }
 
@@ -1875,7 +1877,7 @@ body.rtl .slideout:not(.so-mobile) { -o-transition: right linear 250ms; transiti
 
 .element-editor > .ee-body { -webkit-flex: 1; flex: 1; margin: -24px var(--neg-padding) 0; padding: 24px var(--padding); overflow: hidden auto; position: relative; }
 
-.element-editor > .ee-body > .ee-sidebar { position: absolute; top: 0; background: #fff; box-shadow: 0 0 0 1px rgba(154, 165, 177, 0.25), 0 2px 12px rgba(205, 216, 228, 0.5); width: 350px; height: 100%; max-width: 100%; box-sizing: border-box; padding: 0 var(--padding); background-color: #e4edf6; overflow: hidden auto; z-index: 1; }
+.element-editor > .ee-body > .ee-sidebar { position: absolute; top: 0; background: #fff; box-shadow: 0 0 0 1px #cdd8e4, 0 2px 12px rgba(205, 216, 228, 0.5); width: 350px; height: 100%; max-width: 100%; box-sizing: border-box; padding: 0 var(--padding); background-color: #e4edf6; overflow: hidden auto; z-index: 1; }
 
 .element-editor > .ee-body > .ee-sidebar:focus { box-shadow: 0 0 0 1px #127FBF, 0 0 0 3px rgba(18, 127, 191, 0.5); }
 
@@ -1893,7 +1895,7 @@ body.rtl .element-editor > .ee-body > .ee-sidebar { -o-transition: left linear 2
 
 .element-editor > .ee-body > .ee-sidebar > .meta.read-only { padding-top: 14px; padding-bottom: 14px; }
 
-.element-editor > .ee-footer { position: relative; display: -webkit-flex; display: flex; -webkit-flex-direction: row; flex-direction: row; margin: 0 var(--neg-padding) -24px; padding: var(--padding); background: #fff; box-shadow: 0 0 0 1px rgba(154, 165, 177, 0.25), 0 2px 12px rgba(205, 216, 228, 0.5); background-color: #f3f7fc; z-index: 3; }
+.element-editor > .ee-footer { position: relative; display: -webkit-flex; display: flex; -webkit-flex-direction: row; flex-direction: row; margin: 0 var(--neg-padding) -24px; padding: var(--padding); background: #fff; box-shadow: 0 0 0 1px #cdd8e4, 0 2px 12px rgba(205, 216, 228, 0.5); background-color: #f3f7fc; z-index: 3; }
 
 .element-editor > .ee-footer:focus { box-shadow: 0 0 0 1px #127FBF, 0 0 0 3px rgba(18, 127, 191, 0.5); }
 
@@ -3240,7 +3242,7 @@ body.rtl #page-container { padding-right: 226px; }
 
 #alerts li a.go:hover { border-color: #CF1124; -o-transition: border-color linear 100ms; transition: border-color linear 100ms; }
 
-#global-header { margin-bottom: 14px; background: #fff; box-shadow: 0 0 0 1px rgba(154, 165, 177, 0.25), 0 2px 12px rgba(205, 216, 228, 0.5); background: #f3f7fc; }
+#global-header { margin-bottom: 14px; background: #fff; box-shadow: 0 0 0 1px #cdd8e4, 0 2px 12px rgba(205, 216, 228, 0.5); background: #f3f7fc; }
 
 #global-header:focus { box-shadow: 0 0 0 1px #127FBF, 0 0 0 3px rgba(18, 127, 191, 0.5); }
 
@@ -3405,7 +3407,7 @@ body.rtl #sidebar-container { margin-right: -24px; }
 
 #sidebar nav li a:not(.sel):hover { background-color: #cdd8e4; }
 
-#sidebar nav li a.sel { background: #fff; box-shadow: 0 0 0 1px rgba(154, 165, 177, 0.25), 0 2px 12px rgba(205, 216, 228, 0.5); background-color: #f3f7fc; }
+#sidebar nav li a.sel { background: #fff; box-shadow: 0 0 0 1px #cdd8e4, 0 2px 12px rgba(205, 216, 228, 0.5); background-color: #f3f7fc; }
 
 #sidebar nav li a.sel:focus { box-shadow: 0 0 0 1px #127FBF, 0 0 0 3px rgba(18, 127, 191, 0.5); }
 
@@ -3417,7 +3419,7 @@ body.rtl #sidebar-container { margin-right: -24px; }
 
 #content-container #main-content.has-sidebar.has-details { width: calc(100% - 226px - 350px - 38px); max-width: calc(100% - 226px - 350px - 38px); }
 
-.content-pane { background: #fff; box-shadow: 0 0 0 1px rgba(154, 165, 177, 0.25), 0 2px 12px rgba(205, 216, 228, 0.5); border-radius: 5px; position: relative; background-clip: padding-box; padding: 24px; word-wrap: break-word; }
+.content-pane { background: #fff; box-shadow: 0 0 0 1px #cdd8e4, 0 2px 12px rgba(205, 216, 228, 0.5); border-radius: 5px; position: relative; background-clip: padding-box; padding: 24px; word-wrap: break-word; }
 
 .content-pane:focus { box-shadow: 0 0 0 1px #127FBF, 0 0 0 3px rgba(18, 127, 191, 0.5); }
 
@@ -3449,7 +3451,7 @@ body.rtl #details { padding-right: 14px; }
 
 #details .meta { margin-bottom: 14px; border-radius: 5px; padding: 0 24px; }
 
-#details .meta:not(.warning) { background: #fff; box-shadow: 0 0 0 1px rgba(154, 165, 177, 0.25), 0 2px 12px rgba(205, 216, 228, 0.5); }
+#details .meta:not(.warning) { background: #fff; box-shadow: 0 0 0 1px #cdd8e4, 0 2px 12px rgba(205, 216, 228, 0.5); }
 
 #details .meta:not(.warning):focus { box-shadow: 0 0 0 1px #127FBF, 0 0 0 3px rgba(18, 127, 191, 0.5); }
 
@@ -3657,31 +3659,15 @@ body.ltr .content.has-sidebar:not(.hiding-sidebar) { margin-left: 226px; }
 body.rtl .content.has-sidebar:not(.hiding-sidebar) { margin-right: 226px; }
 
 /* flexbox field layouts */
-#content :not(.meta) > .flex-fields { display: -webkit-flex; display: flex; -webkit-flex-wrap: wrap; flex-wrap: wrap; -webkit-align-content: flex-start; align-content: flex-start; width: calc(100% + 48px); }
+#content :not(.meta) > .flex-fields { display: -webkit-flex; display: flex; -webkit-flex-wrap: wrap; flex-wrap: wrap; -webkit-align-content: flex-start; align-content: flex-start; margin: 0 -24px -24px; width: calc(100% + 48px); }
 
-body.ltr #content :not(.meta) > .flex-fields { margin: 0 -24px -24px -24px ; }
-
-body.rtl #content :not(.meta) > .flex-fields { margin: 0 -24px -24px -24px ; }
-
-#content :not(.meta) > .flex-fields > h2 { padding: 0 24px; width: calc(100% + 48px); }
-
-body.ltr #content :not(.meta) > .flex-fields > h2 { margin: 0 -24px 24px -24px !important; }
-
-body.rtl #content :not(.meta) > .flex-fields > h2 { margin: 0 -24px 24px -24px !important; }
+#content :not(.meta) > .flex-fields > h2 { margin: 0 0 24px !important; padding: 0 24px; width: 100%; }
 
 #content :not(.meta) > .flex-fields > h2:not(:first-child) { padding-top: 24px; border-top: 1px solid rgba(51, 64, 77, 0.1); }
 
-#content :not(.meta) > .flex-fields > hr { width: calc(100% + 48px); }
+#content :not(.meta) > .flex-fields > hr { margin: 0 0 24px; width: calc(100% + 48px); }
 
-body.ltr #content :not(.meta) > .flex-fields > hr { margin: 0 -24px 24px -24px ; }
-
-body.rtl #content :not(.meta) > .flex-fields > hr { margin: 0 -24px 24px -24px ; }
-
-#content :not(.meta) > .flex-fields > :not(h2):not(hr), #content :not(.meta) > .flex-fields > :not(h2):not(hr):last-child { position: relative; width: calc(100% - 48px); box-sizing: border-box; }
-
-body.ltr #content :not(.meta) > .flex-fields > :not(h2):not(hr), body.ltr #content :not(.meta) > .flex-fields > :not(h2):not(hr):last-child { margin: 0 24px 24px 24px !important; }
-
-body.rtl #content :not(.meta) > .flex-fields > :not(h2):not(hr), body.rtl #content :not(.meta) > .flex-fields > :not(h2):not(hr):last-child { margin: 0 24px 24px 24px !important; }
+#content :not(.meta) > .flex-fields > :not(h2):not(hr), #content :not(.meta) > .flex-fields > :not(h2):not(hr):last-child { position: relative; margin: 0 24px 24px !important; width: calc(100% - 48px); box-sizing: border-box; }
 
 @media only screen and (min-width: 1536px) { #content :not(.meta) > .flex-fields > :not(h2):not(hr).width-25, #content :not(.meta) > .flex-fields > :not(h2):not(hr):last-child.width-25 { width: calc(25% - 48px); }
   #content :not(.meta) > .flex-fields > :not(h2):not(hr).width-50, #content :not(.meta) > .flex-fields > :not(h2):not(hr):last-child.width-50 { width: calc(50% - 48px); }
@@ -3689,7 +3675,7 @@ body.rtl #content :not(.meta) > .flex-fields > :not(h2):not(hr), body.rtl #conte
 
 @media only screen and (min-width: 500px) and (max-width: 1535px) { #content :not(.meta) > .flex-fields > :not(h2):not(hr).width-25, #content :not(.meta) > .flex-fields > :not(h2):not(hr).width-50, #content :not(.meta) > .flex-fields > :not(h2):not(hr):last-child.width-25, #content :not(.meta) > .flex-fields > :not(h2):not(hr):last-child.width-50 { width: calc(50% - 48px); } }
 
-#content :not(.meta) > .flex-fields > :not(h2):not(hr):before, #content :not(.meta) > .flex-fields > :not(h2):not(hr):last-child:before { position: absolute; top: 0; width: 1px; height: 100%; content: ''; background-color: rgba(51, 64, 77, 0.1); }
+#content :not(.meta) > .flex-fields > :not(h2):not(hr):before, #content :not(.meta) > .flex-fields > :not(h2):not(hr):last-child:before { position: absolute; top: 0; width: 1px; height: 100%; content: ''; background-color: rgba(205, 216, 228, 0.5); }
 
 body.ltr #content :not(.meta) > .flex-fields > :not(h2):not(hr):before, body.ltr #content :not(.meta) > .flex-fields > :not(h2):not(hr):last-child:before { left: -25px; }
 
