@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+### Changed
+- Improved the performance of Edit Entry pages. ([#9575](https://github.com/craftcms/cms/issues/9575))
+
 ### Fixed
 - Fixed styling issues in the control panel. ([#9590](https://github.com/craftcms/cms/issues/9590), [#9592](https://github.com/craftcms/cms/issues/9592))
 
