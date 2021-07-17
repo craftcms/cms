@@ -544,10 +544,10 @@ class GeneralConfig extends BaseObject
     public $defaultWeekStartDay = 1;
 
     /**
-     * @var bool By default, Craft will require a ‘password’ field to be submitted on front-end, public user registrations. Setting this to `true`
-     * will no longer require it on the initial registration form.
+     * @var bool By default, Craft requires a front-end “password” field for public user registrations. Setting this to `true`
+     * removes that requirement for the initial registration form.
      *
-     * If you have email verification enabled, new users will set their password once they’ve clicked on the verification link in the email.
+     * If you have email verification enabled, new users will set their password once they’ve followed the verification link in the email.
      * If you don’t, the only way they can set their password is to go through your “forgot password” workflow.
      *
      * @group Security
@@ -1060,7 +1060,7 @@ class GeneralConfig extends BaseObject
      * @var string|null The maximum amount of memory Craft will try to reserve during memory-intensive operations such as zipping,
      * unzipping and updating. Defaults to an empty string, which means it will use as much memory as it can.
      *
-     * See <http://php.net/manual/en/faq.using.php#faq.using.shorthandbytes> for a list of acceptable values.
+     * See <https://php.net/manual/en/faq.using.php#faq.using.shorthandbytes> for a list of acceptable values.
      *
      * @group System
      */
@@ -1341,7 +1341,7 @@ class GeneralConfig extends BaseObject
      *
      * ::: tip
      * This setting should be disabled for servers running Win32, or with Apache’s mod_deflate/mod_gzip installed,
-     * where PHP’s [flush()](http://php.net/manual/en/function.flush.php) method won’t work.
+     * where PHP’s [flush()](https://php.net/manual/en/function.flush.php) method won’t work.
      * :::
      * @group System
      */
@@ -1385,6 +1385,13 @@ class GeneralConfig extends BaseObject
      * @group Security
      */
     public $securityKey;
+
+    /**
+     * @var bool Whether a `Content-Length` header should be sent with responses.
+     * @since 3.7.3
+     * @group System
+     */
+    public $sendContentLengthHeader = false;
 
     /**
      * @var bool Whether an `X-Powered-By: Craft CMS` header should be sent, helping services like [BuiltWith](https://builtwith.com/) and
@@ -1491,7 +1498,7 @@ class GeneralConfig extends BaseObject
     public $secureHeaders;
 
     /**
-     * @var array|null list of headers to check for determining whether the connection is made via HTTPS.
+     * @var array|null List of headers to check for determining whether the connection is made via HTTPS.
      *
      * See [[\yii\web\Request::secureProtocolHeaders]] for more details.
      *
@@ -1544,7 +1551,7 @@ class GeneralConfig extends BaseObject
     /**
      * @var string|null The timezone of the site. If set, it will take precedence over the Timezone setting in Settings → General.
      *
-     * This can be set to one of PHP’s [supported timezones](http://php.net/manual/en/timezones.php).
+     * This can be set to one of PHP’s [supported timezones](https://php.net/manual/en/timezones.php).
      *
      * @group System
      */
@@ -1687,7 +1694,7 @@ class GeneralConfig extends BaseObject
      *
      * If not set to `true` or `false`, Craft will try to detect if the underlying file system supports exclusive file locking and cache the results.
      *
-     * @see http://php.net/manual/en/function.file-put-contents.php
+     * @see https://php.net/manual/en/function.file-put-contents.php
      * @group System
      */
     public $useFileLocks;

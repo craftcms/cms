@@ -1,5 +1,22 @@
 # Release Notes for Craft CMS 3.x
 
+## 3.7.3 - 2021-07-16
+
+### Added
+- Added the `sendContentLengthHeader` config setting.
+
+### Changed
+- Template requests no longer respond with a `Content-Length` header, unless the `sendContentLengthHeader` config setting is enabled. ([#8070](https://github.com/craftcms/cms/issues/8070))
+- Edit Asset pages are now located at `assets/edit/<id>-<filename>` rather than `assets/<volume>/<id>-<filename>`.
+- `edit` is now a reserved volume handle.
+- Number fields no longer allow non-numeric input. ([#9586](https://github.com/craftcms/cms/issues/9586))
+
+### Fixed
+- Fixed a bug where object templates didn’t support string interpolation within normal Twig tags. ([#9138](https://github.com/craftcms/cms/discussions/9138))
+- Fixed an error that could occur after applying project config changes.
+- Fixed a bug where assets’ control panel URLs were getting routed to the Assets index page. ([#9583](https://github.com/craftcms/cms/issues/9583))
+- Fixed a visual bug where field status indicators were overlapping the prior field in the same row. ([#9585](https://github.com/craftcms/cms/issues/9585))
+
 ## 3.7.2 - 2021-07-15
 
 ### Fixed
@@ -5367,7 +5384,7 @@
 - Added `craft\helpers\App::testIniSet()`.
 
 ### Changed
-- Craft now warns if `ini_set()` is disabled and [memory_limit](http://php.net/manual/en/ini.core.php#ini.memory-limit) is less than `256M` or [max_execution_time](http://php.net/manual/en/info.configuration.php#ini.max-execution-time) is less than `120` before performing Composer operations.
+- Craft now warns if `ini_set()` is disabled and [memory_limit](https://php.net/manual/en/ini.core.php#ini.memory-limit) is less than `256M` or [max_execution_time](https://php.net/manual/en/info.configuration.php#ini.max-execution-time) is less than `120` before performing Composer operations.
 - `craft\helpers\App::maxPowerCaptain()` now attempts to set the `memory_limit` to `1536M` rather than `-1`.
 
 ## 3.0.39 - 2019-01-29
@@ -5382,7 +5399,7 @@
 
 ### Added
 - Added the `update` command, which can be used to [update Craft from the terminal](https://docs.craftcms.com/v3/updating.html#updating-from-the-terminal).
-- Craft now warns if PHP is running in Safe Mode with a [max_execution_time](http://php.net/manual/en/info.configuration.php#ini.max-execution-time) of less than 120 seconds, before performing Composer operations.
+- Craft now warns if PHP is running in Safe Mode with a [max_execution_time](https://php.net/manual/en/info.configuration.php#ini.max-execution-time) of less than 120 seconds, before performing Composer operations.
 - Craft now stores backups of `composer.json` and `composer.lock` files in `storage/composer-backups/` before running Composer operations.
 - Added `craft\db\Connection::getBackupFilePath()`.
 - Added `craft\helpers\App::phpConfigValueInBytes()`.
@@ -6402,7 +6419,7 @@
 - Queue requests are now logged to `storage/logs/queue.log`.
 - Craft 3 now requires PHP 7.0.0 or later.
 - Craft 3 now requires MySQL 5.5+ or PostgreSQL 9.5+.
-- Craft now takes advantage of the [PHP Intl extension](http://php.net/manual/en/book.intl.php) when available.
+- Craft now takes advantage of the [PHP Intl extension](https://php.net/manual/en/book.intl.php) when available.
 - Craft now uses Stringy for better string processing support.
 - Craft now uses Flysystem for better asset volume support.
 - Craft now uses Swiftmailer for better email sending support.

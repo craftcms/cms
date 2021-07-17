@@ -1063,7 +1063,7 @@ class StringHelper extends \yii\helpers\StringHelper
      * @param string $pattern The regular expression pattern.
      * @param string $replacement The string to replace with.
      * @param string $options Matching conditions to be used. Defaults to 'msr'. See
-     * [here](http://php.net/manual/en/function.mb-ereg-replace.php) for all options.
+     * [here](https://php.net/manual/en/function.mb-ereg-replace.php) for all options.
      * @return string The resulting string after the replacements.
      */
     public static function regexReplace(string $str, string $pattern, string $replacement, string $options = 'msr'): string

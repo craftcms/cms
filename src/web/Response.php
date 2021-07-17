@@ -211,7 +211,7 @@ class Response extends \yii\web\Response
     /**
      * Attempts to closes the connection with the HTTP client, without ending PHP script execution.
      *
-     * This method relies on [flush()](http://php.net/manual/en/function.flush.php), which may not actually work if
+     * This method relies on [flush()](https://php.net/manual/en/function.flush.php), which may not actually work if
      * mod_deflate or mod_gzip is installed, or if this is a Win32 server.
      *
      * @see http://stackoverflow.com/a/141026

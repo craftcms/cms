@@ -222,7 +222,7 @@ class TemplatesController extends Controller
             'statusCode' => $statusCode,
         ], get_object_vars($exception));
 
-        // If this is a PHP error and html_errors (http://php.net/manual/en/errorfunc.configuration.php#ini.html-errors)
+        // If this is a PHP error and html_errors (https://php.net/manual/en/errorfunc.configuration.php#ini.html-errors)
         // is enabled, then allow the HTML not get encoded
         if ($exception instanceof ErrorException && App::phpConfigValueAsBool('html_errors')) {
             $variables['message'] = Template::raw($variables['message']);
