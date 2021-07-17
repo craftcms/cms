@@ -3,7 +3,8 @@
   "main": "gulpfile.js",
   "scripts": {
     "build": "NODE_ENV=production webpack --progress --config $INIT_CWD/webpack.config.js",
-    "serve": "NODE_ENV=development webpack-dev-server --config $INIT_CWD/webpack.config.js"
+    "serve": "NODE_ENV=development webpack-dev-server --config $INIT_CWD/webpack.config.js",
+    "servetail": "NODE_ENV=development webpack-dev-server --config $INIT_CWD/webpack.config.js & NODE_ENV=development webpack-dev-server --config $INIT_CWD/../tailwindcss/webpack.config.js"
   },
   "devDependencies": {
     "@babel/core": "^7.14.0",
@@ -13,6 +14,7 @@
     "@benmajor/jquery-touch-events": "^2.0.3",
     "@vue/babel-preset-app": "^4.4.1",
     "accounting": "^0.4.1",
+    "autoprefixer": "^10.3.1",
     "axios": "^0.21.1",
     "babel-eslint": "^10.1.0",
     "babel-loader": "^8.2.2",
