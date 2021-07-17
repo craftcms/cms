@@ -113,7 +113,7 @@
 /******/
 /******/ 	var hotApplyOnUpdate = true;
 /******/ 	// eslint-disable-next-line no-unused-vars
-/******/ 	var hotCurrentHash = "e21de9c643d3fcdfcc71";
+/******/ 	var hotCurrentHash = "26cf12231de6d8581b6e";
 /******/ 	var hotRequestTimeout = 10000;
 /******/ 	var hotCurrentModuleData = {};
 /******/ 	var hotCurrentChildModule;
@@ -6850,6 +6850,28 @@ var _axios = external_axios_default.a.create({
   },
 
   /**
+   * Get Craft ID data.
+   */
+  getCraftIdData: function getCraftIdData(_ref) {
+    var accessToken = _ref.accessToken;
+    return new Promise(function (resolve, reject) {
+      Craft.sendApiRequest('GET', 'account', {
+        cancelToken: craft_cancelTokenSource.token,
+        headers: {
+          'Authorization': 'Bearer ' + accessToken
+        }
+      }).then(function (responseData) {
+        resolve(responseData);
+      })["catch"](function (error) {
+        if (external_axios_default.a.isCancel(error)) {// request cancelled
+        } else {
+          reject(error);
+        }
+      });
+    });
+  },
+
+  /**
    * Get countries.
    */
   getCountries: function getCountries() {
@@ -6948,6 +6970,7 @@ var _axios = external_axios_default.a.create({
 var craft_state = {
   canTestEditions: null,
   countries: null,
+  craftId: null,
   craftLogo: null,
   currentUser: null,
   defaultPluginSvg: null,
@@ -7081,8 +7104,24 @@ var craft_actions = {
       });
     });
   },
-  getPluginLicenseInfo: function getPluginLicenseInfo(_ref2) {
+  getCraftIdData: function getCraftIdData(_ref2, _ref3) {
     var commit = _ref2.commit;
+    var accessToken = _ref3.accessToken;
+    return new Promise(function (resolve, reject) {
+      craft.getCraftIdData({
+        accessToken: accessToken
+      }).then(function (responseData) {
+        commit('updateCraftIdData', {
+          responseData: responseData
+        });
+        resolve();
+      })["catch"](function (error) {
+        reject(error);
+      });
+    });
+  },
+  getPluginLicenseInfo: function getPluginLicenseInfo(_ref4) {
+    var commit = _ref4.commit;
     return new Promise(function (resolve, reject) {
       craft.getPluginLicenseInfo().then(function (response) {
         commit('updatePluginLicenseInfo', {
@@ -7094,10 +7133,10 @@ var craft_actions = {
       });
     });
   },
-  switchPluginEdition: function switchPluginEdition(_ref3, _ref4) {
-    var dispatch = _ref3.dispatch;
-    var pluginHandle = _ref4.pluginHandle,
-        edition = _ref4.edition;
+  switchPluginEdition: function switchPluginEdition(_ref5, _ref6) {
+    var dispatch = _ref5.dispatch;
+    var pluginHandle = _ref6.pluginHandle,
+        edition = _ref6.edition;
     return new Promise(function (resolve, reject) {
       craft.switchPluginEdition(pluginHandle, edition).then(function (switchPluginEditionResponse) {
         dispatch('getPluginLicenseInfo').then(function (getPluginLicenseInfoResponse) {
@@ -7128,8 +7167,8 @@ var craft_actions = {
  */
 
 var craft_mutations = {
-  updateCraftData: function updateCraftData(state, _ref5) {
-    var response = _ref5.response;
+  updateCraftData: function updateCraftData(state, _ref7) {
+    var response = _ref7.response;
     state.canTestEditions = response.data.canTestEditions;
     state.craftLogo = response.data.craftLogo;
     state.currentUser = response.data.currentUser;
@@ -7141,12 +7180,19 @@ var craft_mutations = {
     state.CraftPro = response.data.CraftPro;
     state.CraftSolo = response.data.CraftSolo;
   },
-  updateCountries: function updateCountries(state, _ref6) {
-    var responseData = _ref6.responseData;
+  updateCraftIdData: function updateCraftIdData(state, _ref8) {
+    var responseData = _ref8.responseData;
+    state.craftId = responseData;
+  },
+  updateCountries: function updateCountries(state, _ref9) {
+    var responseData = _ref9.responseData;
     state.countries = responseData.countries;
   },
-  updatePluginLicenseInfo: function updatePluginLicenseInfo(state, _ref7) {
-    var response = _ref7.response;
+  updateCraftId: function updateCraftId(state, craftId) {
+    state.craftId = craftId;
+  },
+  updatePluginLicenseInfo: function updatePluginLicenseInfo(state, _ref10) {
+    var response = _ref10.response;
     state.pluginLicenseInfo = response.data;
   }
 };
@@ -9093,6 +9139,7 @@ Garnish.$doc.ready(function () {
         cartDataLoaded: false,
         coreDataLoaded: false,
         craftDataLoaded: false,
+        craftIdDataLoaded: false,
         modalStep: null,
         pageTitle: 'Plugin Store',
         plugin: null,
@@ -9106,6 +9153,9 @@ Garnish.$doc.ready(function () {
     computed: main_objectSpread(main_objectSpread({}, Object(external_Vuex_["mapState"])({
       cart: function cart(state) {
         return state.cart.cart;
+      },
+      craftId: function craftId(state) {
+        return state.craft.craftId;
       }
     })), {}, {
       /**
@@ -9120,6 +9170,9 @@ Garnish.$doc.ready(function () {
     watch: {
       cart: function cart(_cart) {
         this.$emit('cartChange', _cart);
+      },
+      craftId: function craftId() {
+        this.$emit('craftIdChange');
       }
     },
     methods: {
@@ -9159,15 +9212,54 @@ Garnish.$doc.ready(function () {
       },
 
       /**
+       * Updates Craft ID.
+       *
+       * @param craftIdJson
+       */
+      updateCraftId: function updateCraftId(craftId, callback) {
+        var _this = this;
+
+        this.$store.commit('craft/updateCraftId', craftId);
+
+        if (this.craftId && this.craftId.email !== this.cart.email) {
+          // Update the cart’s email with the one from the Craft ID account
+          var data = {
+            email: this.craftId.email
+          };
+          this.$store.dispatch('cart/saveCart', data).then(function () {
+            _this.$emit('craftIdUpdated');
+
+            if (callback) {
+              callback();
+            }
+          })["catch"](function (error) {
+            _this.$root.displayError("Couldn’t update cart’s email.");
+
+            if (callback) {
+              callback();
+            }
+
+            throw error;
+          });
+        } else {
+          this.$emit('craftIdUpdated');
+
+          if (callback) {
+            callback();
+          }
+        }
+      },
+
+      /**
        * Initializes components that live outside of the Vue app.
        */
       initializeOuterComponents: function initializeOuterComponents() {
-        var _this = this;
+        var _this2 = this;
 
         // Header Title
         var $headerTitle = $('#header h1');
         $headerTitle.on('click', function () {
-          _this.$router.push({
+          _this2.$router.push({
             path: '/'
           });
         }); // Cart button
@@ -9176,7 +9268,7 @@ Garnish.$doc.ready(function () {
         $cartButton.on('click', function (e) {
           e.preventDefault();
 
-          _this.openModal('cart');
+          _this2.openModal('cart');
         });
         $cartButton.keydown(function (e) {
           switch (e.which) {
@@ -9186,7 +9278,7 @@ Garnish.$doc.ready(function () {
               // Space
               e.preventDefault();
 
-              _this.openModal('cart');
+              _this2.openModal('cart');
 
               break;
           }
@@ -9205,7 +9297,7 @@ Garnish.$doc.ready(function () {
         var $pluginStoreActionsSpinner = $('#pluginstore-actions-spinner'); // Show actions spinner when Plugin Store data has finished loading but Craft data has not.
 
         this.$on('dataLoaded', function () {
-          if (_this.pluginStoreDataLoaded && !(_this.craftDataLoaded && _this.cartDataLoaded)) {
+          if (_this2.pluginStoreDataLoaded && !(_this2.craftDataLoaded && _this2.cartDataLoaded && _this2.craftIdDataLoaded)) {
             $pluginStoreActionsSpinner.removeClass('hidden');
           }
         }); // Hide actions spinner when Plugin Store data and Craft data have finished loading.
@@ -9213,12 +9305,28 @@ Garnish.$doc.ready(function () {
         this.$on('allDataLoaded', function () {
           $pluginStoreActions.removeClass('hidden');
           $pluginStoreActionsSpinner.addClass('hidden');
+        }); // Craft ID
+
+        var $craftId = $('#craftid-account');
+        var $craftIdConnectForm = $('#craftid-connect-form');
+        var $craftIdDisconnectForm = $('#craftid-disconnect-form');
+        this.$on('craftIdChange', function () {
+          if (this.craftId) {
+            $('.label', $craftId).html(this.craftId.username);
+            $craftId.removeClass('hidden');
+            $craftIdConnectForm.addClass('hidden');
+            $craftIdDisconnectForm.removeClass('hidden');
+          } else {
+            $craftId.addClass('hidden');
+            $craftIdConnectForm.removeClass('hidden');
+            $craftIdDisconnectForm.addClass('hidden');
+          }
         }); // Cancel ajax requests when an outbound link gets clicked
 
         $('a[href]').on('click', function () {
-          _this.$store.dispatch('craft/cancelRequests');
+          _this2.$store.dispatch('craft/cancelRequests');
 
-          _this.$store.dispatch('pluginStore/cancelRequests');
+          _this2.$store.dispatch('pluginStore/cancelRequests');
         });
       },
 
@@ -9226,12 +9334,12 @@ Garnish.$doc.ready(function () {
        * Loads the cart data.
        */
       loadCartData: function loadCartData() {
-        var _this2 = this;
+        var _this3 = this;
 
         this.$store.dispatch('cart/getCart').then(function () {
-          _this2.cartDataLoaded = true;
+          _this3.cartDataLoaded = true;
 
-          _this2.$emit('dataLoaded');
+          _this3.$emit('dataLoaded');
         });
       },
 
@@ -9239,30 +9347,49 @@ Garnish.$doc.ready(function () {
        * Loads Craft data.
        */
       loadCraftData: function loadCraftData(afterSuccess) {
-        var _this3 = this;
+        var _this4 = this;
 
         this.$store.dispatch('craft/getCraftData').then(function () {
-          _this3.craftDataLoaded = true;
+          _this4.craftDataLoaded = true;
 
-          _this3.$emit('dataLoaded');
+          _this4.$emit('dataLoaded');
 
           if (typeof afterSuccess === 'function') {
             afterSuccess();
           }
         })["catch"](function () {
-          _this3.craftDataLoaded = true;
+          _this4.craftDataLoaded = true;
         });
+      },
+      loadCraftIdData: function loadCraftIdData() {
+        var _this5 = this;
+
+        if (window.craftIdAccessToken) {
+          var accessToken = window.craftIdAccessToken;
+          this.$store.dispatch('craft/getCraftIdData', {
+            accessToken: accessToken
+          }).then(function () {
+            _this5.craftIdDataLoaded = true;
+
+            _this5.$emit('dataLoaded');
+          });
+        } else {
+          this.craftIdDataLoaded = true;
+          this.$emit('dataLoaded');
+        }
       },
 
       /**
        * Loads all the data required for the Plugin Store and cart to work.
        */
       loadData: function loadData() {
-        var _this4 = this;
+        var _this6 = this;
 
         this.loadPluginStoreData();
         this.loadCraftData(function () {
-          _this4.loadCartData();
+          _this6.loadCraftIdData();
+
+          _this6.loadCartData();
         });
       },
 
@@ -9270,26 +9397,26 @@ Garnish.$doc.ready(function () {
        * Loads the Plugin Store’s plugin data.
        */
       loadPluginStoreData: function loadPluginStoreData() {
-        var _this5 = this;
+        var _this7 = this;
 
         // core data
         this.$store.dispatch('pluginStore/getCoreData').then(function () {
-          _this5.coreDataLoaded = true;
+          _this7.coreDataLoaded = true;
 
-          _this5.$emit('dataLoaded');
+          _this7.$emit('dataLoaded');
         })["catch"](function (error) {
           if (external_axios_default.a.isCancel(error)) {// Request canceled
           } else {
-            _this5.pluginStoreDataError = true;
-            _this5.statusMessage = _this5.$options.filters.t('The Plugin Store is not available, please try again later.', 'app');
+            _this7.pluginStoreDataError = true;
+            _this7.statusMessage = _this7.$options.filters.t('The Plugin Store is not available, please try again later.', 'app');
             throw error;
           }
         }); // plugin license info
 
         this.$store.dispatch('craft/getPluginLicenseInfo').then(function () {
-          _this5.pluginLicenseInfoLoaded = true;
+          _this7.pluginLicenseInfoLoaded = true;
 
-          _this5.$emit('dataLoaded');
+          _this7.$emit('dataLoaded');
         })["catch"](function (error) {
           if (external_axios_default.a.isCancel(error)) {// Request canceled
           } else {
@@ -9313,6 +9440,10 @@ Garnish.$doc.ready(function () {
         }
 
         if (!this.cartDataLoaded) {
+          return null;
+        }
+
+        if (!this.craftIdDataLoaded) {
           return null;
         }
 

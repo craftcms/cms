@@ -25,6 +25,7 @@ module.exports = function(colors) {
             'text': { light: colors.black, dark: colors.white },
             'text-inverse': { light: colors.white, dark: colors.black },
             'warning': { light: colors.yellow[800], dark: colors.yellow[200] },
+            'spinner': { light: colors.gray[400], dark: colors.gray[500] },
         },
         borderColor: {
             'danger': { light: colors.red[400], dark: colors.red[400] },
