@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 3.x
 
-## Unreleased
+## 3.7.3.1 - 2021-07-17
 
 ### Changed
 - Improved the performance of Edit Entry pages. ([#9575](https://github.com/craftcms/cms/issues/9575))
