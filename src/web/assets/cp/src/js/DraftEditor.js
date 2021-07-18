@@ -23,7 +23,6 @@ Craft.DraftEditor = Garnish.Base.extend({
     siteIds: null,
     newSiteIds: null,
 
-    initialSerializedValue: null,
     lastSerializedValue: null,
     listeningForChanges: false,
     pauseLevel: 0,
@@ -245,11 +244,12 @@ Craft.DraftEditor = Garnish.Base.extend({
             serializedStatuses += '&' + encodeURIComponent($input.attr('name')) + '=' + $input.val();
         }
 
-        this._storeInitializedSerializedValue();
-
         Craft.cp.$primaryForm.data('initialSerializedValue',
             Craft.cp.$primaryForm.data('initialSerializedValue').replace(originalSerializedStatus, serializedStatuses));
-        this.initialSerializedValue = this.initialSerializedValue.replace(originalSerializedStatus, serializedStatuses);
+
+        if (this.lastSerializedValue) {
+            this.lastSerializedValue = this.lastSerializedValue.replace(originalSerializedStatus, serializedStatuses);
+        }
 
         // Are there additional sites that can be added?
         if (this.settings.addlSiteIds && this.settings.addlSiteIds.length) {
@@ -258,12 +258,6 @@ Craft.DraftEditor = Garnish.Base.extend({
 
         this.$globalLightswitch.on('change', this._updateSiteStatuses.bind(this));
         this._updateGlobalStatus();
-    },
-
-    _storeInitializedSerializedValue: function() {
-        if (this.initialSerializedValue === null) {
-            this.initialSerializedValue = Craft.cp.$primaryForm.data('initialSerializedValue') || '';
-        }
     },
 
     /**
@@ -864,9 +858,8 @@ Craft.DraftEditor = Garnish.Base.extend({
      * @returns {string}
      */
     prepareData: function(data, deltaCallback) {
-        // Filter out anything that hasn't changed
-        this._storeInitializedSerializedValue();
-        data = Craft.findDeltaData(this.initialSerializedValue, data, Craft.deltaNames, deltaCallback);
+        // Filter out anything that hasn't changed since the last time the form was submitted
+        data = Craft.findDeltaData(Craft.cp.$primaryForm.data('initialSerializedValue'), data, Craft.deltaNames, deltaCallback);
 
         // Swap out element IDs with their duplicated ones
         data = this.swapDuplicatedElementIds(data);
