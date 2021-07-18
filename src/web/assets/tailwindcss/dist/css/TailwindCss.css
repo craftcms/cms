@@ -181,6 +181,7 @@ body {
   --craftui-textcolor-text: #000;
   --craftui-textcolor-text-inverse: #fff;
   --craftui-textcolor-warning: #854d0e;
+  --craftui-textcolor-spinner: #a1a1aa;
   --craftui-bordercolor-danger: #f87171;
   --craftui-bordercolor-field: #d4d4d8;
   --craftui-bordercolor-info: #60a5fa;
@@ -245,6 +246,7 @@ body {
     --craftui-textcolor-text: #fff;
     --craftui-textcolor-text-inverse: #000;
     --craftui-textcolor-warning: #fef08a;
+    --craftui-textcolor-spinner: #71717a;
     --craftui-bordercolor-danger: #f87171;
     --craftui-bordercolor-field: #52525b;
     --craftui-bordercolor-info: #60a5fa;
