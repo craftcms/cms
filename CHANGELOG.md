@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 3.x
 
-## Unreleased
+## 3.7.3.2 - 2021-07-18
 
 ### Fixed
 - Fixed a bug where Edit Entry pages weren’t submitting changes to fields if they had been changed back to their original value they had on page load. ([#9575](https://github.com/craftcms/cms/issues/9575))
