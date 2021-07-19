@@ -953,11 +953,12 @@ $.extend(Craft,
             }
 
             var n, paramName;
+            params = params.map(o => decodeURIComponent(o))
 
             paramLoop: for (var p = 0; p < params.length; p++) {
                 // loop through the delta names from most -> least specific
                 for (n = deltaNames.length - 1; n >= 0; n--) {
-                    paramName = decodeURIComponent(params[p]).substr(0, deltaNames[n].length + 1);
+                    paramName = params[p].substr(0, deltaNames[n].length + 1);
                     if (
                         paramName === deltaNames[n] + '=' ||
                         paramName === deltaNames[n] + '['
@@ -965,13 +966,13 @@ $.extend(Craft,
                         if (typeof grouped[deltaNames[n]] === 'undefined') {
                             grouped[deltaNames[n]] = [];
                         }
-                        grouped[deltaNames[n]].push(params[p]);
+                        grouped[deltaNames[n]].push(encodeURIComponent(params[p]));
                         continue paramLoop;
                     }
                 }
 
                 if (withRoot) {
-                    grouped.__root__.push(params[p]);
+                    grouped.__root__.push(encodeURIComponent(params[p]));
                 }
             }
 
