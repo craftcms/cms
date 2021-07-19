@@ -953,6 +953,8 @@ $.extend(Craft,
             }
 
             var n, paramName;
+            const encodeURIComponentExceptEqualChar = (o) => encodeURIComponent(o).replace('%3D', '=')
+
             params = params.map(o => decodeURIComponent(o))
 
             paramLoop: for (var p = 0; p < params.length; p++) {
@@ -966,7 +968,7 @@ $.extend(Craft,
                         if (typeof grouped[deltaNames[n]] === 'undefined') {
                             grouped[deltaNames[n]] = [];
                         }
-                        grouped[deltaNames[n]].push(encodeURIComponent(params[p]));
+                        grouped[deltaNames[n]].push(encodeURIComponentExceptEqualChar(params[p]));
                         continue paramLoop;
                     }
                 }
