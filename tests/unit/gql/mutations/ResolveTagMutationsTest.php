@@ -66,7 +66,8 @@ class ResolveTagMutationsTest extends TestCase
             'saveElement' => function($element) use ($tagId) {
                 $element->id = $element->id ?? $tagId;
                 return $element;
-            }
+            },
+            'recursivelyNormalizeArgumentValues' => function ($resolveInfo, $values) { return $values; }
         ]);
 
         $resolver->saveTag(null, $arguments, null, $this->make(ResolveInfo::class));

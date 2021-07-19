@@ -542,7 +542,7 @@ abstract class Field extends SavableComponent implements FieldInterface
      */
     public function copyValue(ElementInterface $from, ElementInterface $to): void
     {
-        $value = $this->serializeValue($from->getFieldValue($this->handle));
+        $value = $this->serializeValue($from->getFieldValue($this->handle), $from);
         $to->setFieldValue($this->handle, $value);
     }
 

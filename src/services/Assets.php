@@ -193,10 +193,15 @@ class Assets extends Component
      */
     public function moveAsset(Asset $asset, VolumeFolder $folder, string $filename = ''): bool
     {
-        // Set the new combined target location, and save it
-        $asset->newFilename = $filename;
         $asset->newFolderId = $folder->id;
-        $asset->setScenario(Asset::SCENARIO_FILEOPS);
+
+        // If the filename hasn’t changed, then we can use the `move` scenario
+        if ($filename === '' || $filename === $asset->filename) {
+            $asset->setScenario(Asset::SCENARIO_MOVE);
+        } else {
+            $asset->newFilename = $filename;
+            $asset->setScenario(Asset::SCENARIO_FILEOPS);
+        }
 
         return Craft::$app->getElements()->saveElement($asset);
     }
@@ -991,6 +996,9 @@ class Assets extends Component
 
         if ($user) {
             $folderName = 'user_' . $user->id;
+        } else if (Craft::$app->getRequest()->getIsConsoleRequest()){
+            // For console requests, just make up a folder name.
+            $folderName = 'temp_' . sha1(time());
         } else {
             // A little obfuscation never hurt anyone
             $folderName = 'user_' . sha1(Craft::$app->getSession()->id);

@@ -1121,6 +1121,7 @@ class Elements extends Component
         $mainClone->level = null;
         $mainClone->dateCreated = null;
         $mainClone->dateUpdated = null;
+        $mainClone->dateLastMerged = null;
         $mainClone->duplicateOf = $element;
         $mainClone->setCanonicalId(null);
 
@@ -1248,6 +1249,7 @@ class Elements extends Component
                     $siteClone->contentId = null;
                     $siteClone->dateCreated = $mainClone->dateCreated;
                     $siteClone->dateUpdated = $mainClone->dateUpdated;
+                    $siteClone->dateLastMerged = null;
                     $siteClone->setCanonicalId(null);
 
                     // Attach behaviors

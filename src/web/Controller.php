@@ -257,7 +257,10 @@ abstract class Controller extends \yii\web\Controller
         $this->response->data = $view->renderPageTemplate($template, $variables, $templateMode);
 
         $headers = $this->response->getHeaders();
-        $headers->setDefault('content-length', strlen($this->response->data));
+
+        if (Craft::$app->getConfig()->getGeneral()->sendContentLengthHeader) {
+            $headers->setDefault('content-length', strlen($this->response->data));
+        }
 
         // Set the MIME type for the request based on the matched template's file extension (unless the
         // Content-Type header was already set, perhaps by the template via the {% header %} tag)

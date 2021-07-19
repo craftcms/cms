@@ -96,6 +96,11 @@ class Asset extends Element
     // Validation scenarios
     // -------------------------------------------------------------------------
 
+    /**
+     * Validation scenario that should be used when the asset is only getting *moved*; not renamed.
+     * @since 3.7.1
+     */
+    const SCENARIO_MOVE = 'move';
     const SCENARIO_FILEOPS = 'fileOperations';
     const SCENARIO_INDEX = 'index';
     const SCENARIO_CREATE = 'create';
@@ -812,9 +817,23 @@ class Asset extends Element
         $rules[] = [['dateModified'], DateTimeValidator::class];
         $rules[] = [['filename', 'kind'], 'required'];
         $rules[] = [['kind'], 'string', 'max' => 50];
-        $rules[] = [['newLocation'], AssetLocationValidator::class, 'avoidFilenameConflicts' => $this->avoidFilenameConflicts];
-        $rules[] = [['newLocation'], 'required', 'on' => [self::SCENARIO_CREATE, self::SCENARIO_FILEOPS]];
-        $rules[] = [['tempFilePath'], 'required', 'on' => [self::SCENARIO_CREATE, self::SCENARIO_REPLACE]];
+        $rules[] = [['newLocation'], 'required', 'on' => [self::SCENARIO_CREATE, self::SCENARIO_MOVE, self::SCENARIO_FILEOPS]];
+        $rules[] = [['tempFilePath'], 'required', 'on' => [self::SCENARIO_CREATE, self::SCENARIO_MOVE, self::SCENARIO_REPLACE]];
+
+        // Validate the extension unless all we're doing is moving the file
+        $rules[] = [
+            ['newLocation'],
+            AssetLocationValidator::class,
+            'avoidFilenameConflicts' => $this->avoidFilenameConflicts,
+            'except' => [self::SCENARIO_MOVE],
+        ];
+        $rules[] = [
+            ['newLocation'],
+            AssetLocationValidator::class,
+            'avoidFilenameConflicts' => $this->avoidFilenameConflicts,
+            'allowedExtensions' => '*',
+            'on' => [self::SCENARIO_MOVE],
+        ];
 
         return $rules;
     }
@@ -901,7 +920,7 @@ class Asset extends Element
         }
 
         $filename = $this->getFilename(false);
-        $path = "assets/$volume->handle/$this->id-$filename";
+        $path = "assets/edit/$this->id-$filename";
 
         $params = [];
         if (Craft::$app->getIsMultiSite()) {
@@ -1181,7 +1200,13 @@ class Asset extends Element
             return null;
         }
 
-        if ($this->getMimeType() === 'image/gif' && !Craft::$app->getConfig()->getGeneral()->transformGifs) {
+        $mimeType = $this->getMimeType();
+        $generalConfig = Craft::$app->getConfig()->getGeneral();
+
+        if (
+            ($mimeType === 'image/gif' && !$generalConfig->transformGifs) ||
+            ($mimeType === 'image/svg+xml' && !$generalConfig->transformSvgs)
+        ) {
             return AssetsHelper::generateUrl($volume, $this);
         }
 
@@ -1815,9 +1840,12 @@ class Asset extends Element
     public function beforeSave(bool $isNew): bool
     {
         // newFolderId/newFilename => newLocation.
+        if ($this->newFilename === '') {
+            $this->newFilename = null;
+        }
         if ($this->newFolderId !== null || $this->newFilename !== null) {
             $folderId = $this->newFolderId ?: $this->folderId;
-            $filename = $this->newFilename ?: $this->filename;
+            $filename = $this->newFilename ?? $this->filename;
             $this->newLocation = "{folder:$folderId}$filename";
             $this->newFolderId = $this->newFilename = null;
         }
