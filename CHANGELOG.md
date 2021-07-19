@@ -1,5 +1,10 @@
 # Release Notes for Craft CMS 3.x
 
+## Unreleased
+
+### Fixed
+- Fixed a bug where Asset temporary folders could not be created when using CLI. ([#9597](https://github.com/craftcms/cms/pull/9597))
+
 ## 3.7.3.2 - 2021-07-18
 
 ### Fixed
