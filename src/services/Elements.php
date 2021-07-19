@@ -2427,15 +2427,7 @@ class Elements extends Component
         $isNewElement = !$element->id;
 
         // Are we tracking changes?
-        // todo: remove the tableExists condition after the next breakpoint
-        $trackChanges = (
-            !$isNewElement &&
-            $element->siteSettingsId &&
-            $element->duplicateOf === null &&
-            $element::trackChanges() &&
-            !$element->mergingCanonicalChanges &&
-            Craft::$app->getDb()->tableExists(Table::CHANGEDATTRIBUTES)
-        );
+        $trackChanges = ElementHelper::shouldTrackChanges($element);
         $dirtyAttributes = [];
 
         // Force propagation for new elements
