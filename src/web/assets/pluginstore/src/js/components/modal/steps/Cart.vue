@@ -312,7 +312,7 @@
 </script>
 
 <style lang="scss">
-    @import "../../../../../../../../../node_modules/craftcms-sass/mixins";
+    @import "../../../../../../../../../packages/craftcms-sass/mixins";
 
     table.cart-data {
         border-top: 1px solid #eee;
