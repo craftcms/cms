@@ -2835,6 +2835,9 @@ class Elements extends Component
             $siteElement->title = $element->title;
         }
 
+        // Copy the dirty attributes
+        $siteElement->setDirtyAttributes($element->getDirtyAttributes());
+
         // Copy any non-translatable field values
         if ($element::hasContent()) {
             if ($isNewSiteForElement) {
