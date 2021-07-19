@@ -11,6 +11,7 @@
 - Fixed a bug where entries were only tracking modified attributes for the site the changes were made on.
 - Fixed a bug where entries were only tracking modified relation fields for the site changes were made on. ([#9596](https://github.com/craftcms/cms/issues/9596))
 - Fixed a bug where images within rich text fields’ static previews could bleed out of their container element. ([#9603](https://github.com/craftcms/cms/issues/9603))
+- Fixed a bug where passing an empty value to `relatedTo()` and `andRelatedTo()` would yield no results on an element query. ([#9599](https://github.com/craftcms/cms/issues/9599))
 
 ## 3.7.3.2 - 2021-07-18
 
