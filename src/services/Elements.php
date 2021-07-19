@@ -2688,8 +2688,6 @@ class Elements extends Component
             throw $e;
         }
 
-        $isDraftOrRevision = ElementHelper::isDraftOrRevision($element);
-
         if (!$element->propagating) {
             // Delete the rows that don't need to be there anymore
             if (!$isNewElement) {
