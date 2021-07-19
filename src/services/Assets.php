@@ -1020,6 +1020,9 @@ class Assets extends Component
 
         if ($user) {
             $folderName = 'user_' . $user->id;
+        }elseif(Craft::$app->getRequest()->getIsConsoleRequest() ){
+            $folderName = 'temp_' . sha1(time());
+
         } else {
             // A little obfuscation never hurt anyone
             $folderName = 'user_' . sha1(Craft::$app->getSession()->id);
