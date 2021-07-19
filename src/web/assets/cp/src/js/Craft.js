@@ -974,7 +974,7 @@ $.extend(Craft,
                 }
 
                 if (withRoot) {
-                    grouped.__root__.push(encodeURIComponent(params[p]));
+                    grouped.__root__.push(encodeURIComponentExceptEqualChar(params[p]));
                 }
             }
 
