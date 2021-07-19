@@ -10,6 +10,7 @@
 - Fixed a bug where `craft\base\Field::copyValue()` wasn’t passing the source element to `$this->serializeValue()`. ([sebastian-lenz/craft-linkfield#161](https://github.com/sebastian-lenz/craft-linkfield/issues/161))
 - Fixed a bug where entries were only tracking modified attributes for the site the changes were made on.
 - Fixed a bug where entries were only tracking modified relation fields for the site changes were made on. ([#9596](https://github.com/craftcms/cms/issues/9596))
+- Fixed a bug where images within rich text fields’ static previews could bleed out of their container element. ([#9603](https://github.com/craftcms/cms/issues/9603))
 
 ## 3.7.3.2 - 2021-07-18
 
