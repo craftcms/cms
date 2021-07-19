@@ -3,7 +3,7 @@
 ## Unreleased
 
 ### Fixed
-- Fixed a bug where Asset temporary folders could not be created when using CLI. ([#9597](https://github.com/craftcms/cms/pull/9597))
+- Fixed a bug where temporary volume folders couldn’t be created for console requests. ([#9597](https://github.com/craftcms/cms/pull/9597))
 
 ## 3.7.3.2 - 2021-07-18
 
