@@ -67,7 +67,7 @@ class Category extends ElementMutationResolver
 
         $this->requireSchemaAction('categorygroups.' . $categoryGroup->uid, 'save');
 
-        $category = $this->populateElementWithData($category, $arguments);
+        $category = $this->populateElementWithData($category, $arguments, $resolveInfo);
 
         $category = $this->saveElement($category);
 

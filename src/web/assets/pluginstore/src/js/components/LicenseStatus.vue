@@ -11,7 +11,7 @@
 </script>
 
 <style lang="scss" scoped>
-    @import "../../../../../../../node_modules/craftcms-sass/mixins";
+    @import "../../../../../../../packages/craftcms-sass/mixins";
 
     .c-btn {
         &.license-status {

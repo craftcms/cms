@@ -1095,7 +1095,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
      * When sorting by multiple keys with different sorting directions, use an array of sorting directions.
      * @param int|array $sortFlag the PHP sort flag. Valid values include
      * `SORT_REGULAR`, `SORT_NUMERIC`, `SORT_STRING`, `SORT_LOCALE_STRING`, `SORT_NATURAL` and `SORT_FLAG_CASE`.
-     * Please refer to [PHP manual](http://php.net/manual/en/function.sort.php)
+     * Please refer to [PHP manual](https://php.net/manual/en/function.sort.php)
      * for more details. When sorting by multiple keys with different sort flags, use an array of sort flags.
      * @return array the sorted array
      * @throws InvalidArgumentException if the $direction or $sortFlag parameters do not have

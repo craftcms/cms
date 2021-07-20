@@ -55,8 +55,14 @@
     overflow: auto;
     box-sizing: border-box;
 
-    & > .field:last-child {
-      margin-bottom: 24px !important;
+    & > .field {
+      &:last-child {
+        margin-bottom: 24px !important;
+      }
+
+      & > .status-badge {
+        @include left(-24px);
+      }
     }
   }
 

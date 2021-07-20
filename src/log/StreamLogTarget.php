@@ -23,7 +23,7 @@ class StreamLogTarget extends BaseTarget
     use LogTargetTrait;
 
     /**
-     * @var string the URL to use. See http://php.net/manual/en/wrappers.php
+     * @var string the URL to use. See https://php.net/manual/en/wrappers.php
      * for details. This gets ignored if [[fp]] is configured.
      */
     public $url;

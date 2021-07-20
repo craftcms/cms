@@ -99,7 +99,7 @@ class Asset extends ElementMutationResolver
 
         $asset->setVolumeId($volume->id);
 
-        $asset = $this->populateElementWithData($asset, $arguments);
+        $asset = $this->populateElementWithData($asset, $arguments, $resolveInfo);
         $asset = $this->saveElement($asset);
 
         return $elementService->getElementById($asset->id, AssetElement::class);
@@ -135,7 +135,7 @@ class Asset extends ElementMutationResolver
     /**
      * @inheritDoc
      */
-    protected function populateElementWithData(Element $asset, array $arguments): Element
+    protected function populateElementWithData(Element $asset, array $arguments, ResolveInfo $resolveInfo = null): Element
     {
         if (!empty($arguments['_file'])) {
             $fileInformation = $arguments['_file'];
@@ -143,7 +143,7 @@ class Asset extends ElementMutationResolver
         }
 
         /** @var AssetElement $asset */
-        $asset = parent::populateElementWithData($asset, $arguments);
+        $asset = parent::populateElementWithData($asset, $arguments, $resolveInfo);
 
         if (!empty($fileInformation) && $this->handleUpload($asset, $fileInformation)) {
             if ($asset->id) {

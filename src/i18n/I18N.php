@@ -20,7 +20,7 @@ use yii\base\Exception;
 class I18N extends \yii\i18n\I18N
 {
     /**
-     * @var bool Whether the [PHP intl extension](http://php.net/manual/en/book.intl.php) is loaded.
+     * @var bool Whether the [PHP intl extension](https://php.net/manual/en/book.intl.php) is loaded.
      */
     private $_intlLoaded = false;
 
@@ -58,7 +58,7 @@ class I18N extends \yii\i18n\I18N
     }
 
     /**
-     * Returns whether the [Intl extension](http://php.net/manual/en/book.intl.php) is loaded.
+     * Returns whether the [Intl extension](https://php.net/manual/en/book.intl.php) is loaded.
      *
      * @return bool Whether the Intl extension is loaded.
      */
@@ -81,12 +81,12 @@ class I18N extends \yii\i18n\I18N
     /**
      * Returns an array of all known locale IDs.
      *
-     * If the [PHP intl extension](http://php.net/manual/en/book.intl.php) is loaded, then this will be based on
+     * If the [PHP intl extension](https://php.net/manual/en/book.intl.php) is loaded, then this will be based on
      * all of the locale IDs it knows about. Otherwise, it will be based on the locale data files located in
      * `vendor/craftcms/cms/src/config/locales/` and `config/locales/`.
      *
      * @return array An array of locale IDs.
-     * @link http://php.net/manual/en/resourcebundle.locales.php
+     * @link https://php.net/manual/en/resourcebundle.locales.php
      */
     public function getAllLocaleIds(): array
     {

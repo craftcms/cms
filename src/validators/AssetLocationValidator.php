@@ -49,9 +49,9 @@ class AssetLocationValidator extends Validator
     public string $errorCodeAttribute = 'locationError';
 
     /**
-     * @var string[]|null Allowed file extensions
+     * @var string[]|string|null Allowed file extensions. Set to `'*'` to allow all extensions.
      */
-    public ?array $allowedExtensions = null;
+    public $allowedExtensions = null;
 
     /**
      * @var string|null User-defined error message used when the extension is disallowed.
@@ -115,9 +115,8 @@ class AssetLocationValidator extends Validator
         // Make sure the new filename has a valid extension
         $extension = strtolower(pathinfo($filename, PATHINFO_EXTENSION));
 
-        if (!in_array($extension, $this->allowedExtensions, true)) {
+        if (is_array($this->allowedExtensions) && !in_array($extension, $this->allowedExtensions, true)) {
             $this->addLocationError($model, $attribute, Asset::ERROR_DISALLOWED_EXTENSION, $this->disallowedExtension, ['extension' => $extension]);
-
             return;
         }
 

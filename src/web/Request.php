@@ -1088,7 +1088,7 @@ class Request extends \yii\web\Request
     /**
      * @inheritdoc
      * @param int $filterOptions bitwise disjunction of flags that should be
-     * passed to [filter_var()](http://php.net/manual/en/function.filter-var.php)
+     * passed to [filter_var()](https://php.net/manual/en/function.filter-var.php)
      * when validating the IP address. Options include `FILTER_FLAG_IPV4`,
      * `FILTER_FLAG_IPV6`, `FILTER_FLAG_NO_PRIV_RANGE`, and `FILTER_FLAG_NO_RES_RANGE`.
      */
@@ -1114,7 +1114,7 @@ class Request extends \yii\web\Request
     /**
      * @inheritdoc
      * @param int $filterOptions bitwise disjunction of flags that should be
-     * passed to [filter_var()](http://php.net/manual/en/function.filter-var.php)
+     * passed to [filter_var()](https://php.net/manual/en/function.filter-var.php)
      * when validating the IP address. Options include `FILTER_FLAG_IPV4`,
      * `FILTER_FLAG_IPV6`, `FILTER_FLAG_NO_PRIV_RANGE`, and `FILTER_FLAG_NO_RES_RANGE`.
      */

@@ -264,8 +264,39 @@ class Number extends Field implements PreviewableFieldInterface, SortableFieldIn
             }
         }
 
+        $id = Html::id($this->handle);
+        $view = Craft::$app->getView();
+        $namespacedId = $view->namespaceInputId($id);
+
+        $js = <<<JS
+(function() {
+    console.log('#$id');
+    \$('#$namespacedId').on('keydown', ev => {
+        if (
+            !ev.metaKey &&
+            ![
+                9, // tab,
+                13, // return / enter
+                27, // esc
+                8, 46, // backspace, delete
+                37, 38, 39, 40, // arrows
+                173, 189, 109, // minus, subtract
+                190, 110, // period, decimal
+                188, // comma
+                48, 49, 50, 51, 52, 53, 54, 55, 56, 57, // 0-9
+                96, 97, 98, 99, 100, 101, 102, 103, 104, 105, // numpad 0-9
+            ].includes(ev.which)
+        ) {
+            ev.preventDefault();
+        }
+    });
+})();
+JS;
+
+        $view->registerJs($js);
+
         return Craft::$app->getView()->renderTemplate('_components/fieldtypes/Number/input', [
-            'id' => Html::id($this->handle),
+            'id' => $id,
             'field' => $this,
             'value' => $value,
         ]);

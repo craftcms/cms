@@ -25,6 +25,7 @@ use craft\events\ElementCriteriaEvent;
 use craft\events\ElementEvent;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Cp;
+use craft\helpers\Db;
 use craft\helpers\ElementHelper;
 use craft\helpers\Html;
 use craft\helpers\Queue;
@@ -745,6 +746,29 @@ JS;
             // Reset the field value if this is a new element
             if ($isNew) {
                 $element->setFieldValue($this->handle, null);
+            }
+
+            if (!$this->localizeRelations && ElementHelper::shouldTrackChanges($element)) {
+                // Mark the field as dirty across all of the element’s sites
+                // (this is a little hacky but there’s not really a non-hacky alternative unfortunately.)
+                $siteIds = ArrayHelper::getColumn(ElementHelper::supportedSitesForElement($element), 'siteId');
+                $siteIds = ArrayHelper::withoutValue($siteIds, $element->siteId);
+                if (!empty($siteIds)) {
+                    $userId = Craft::$app->getUser()->getId();
+                    $timestamp = Db::prepareDateForDb(new \DateTime());
+
+                    foreach ($siteIds as $siteId) {
+                        Db::upsert(DbTable::CHANGEDFIELDS, [
+                            'elementId' => $element->id,
+                            'siteId' => $siteId,
+                            'fieldId' => $this->id,
+                        ], [
+                            'dateUpdated' => $timestamp,
+                            'propagated' => $element->propagating,
+                            'userId' => $userId,
+                        ], [], false);
+                    }
+                }
             }
         }
 

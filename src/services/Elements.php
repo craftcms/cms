@@ -1120,6 +1120,7 @@ class Elements extends Component
         $mainClone->level = null;
         $mainClone->dateCreated = null;
         $mainClone->dateUpdated = null;
+        $mainClone->dateLastMerged = null;
         $mainClone->duplicateOf = $element;
         $mainClone->setCanonicalId(null);
 
@@ -1247,6 +1248,7 @@ class Elements extends Component
                     $siteClone->contentId = null;
                     $siteClone->dateCreated = $mainClone->dateCreated;
                     $siteClone->dateUpdated = $mainClone->dateUpdated;
+                    $siteClone->dateLastMerged = null;
                     $siteClone->setCanonicalId(null);
 
                     // Attach behaviors
@@ -2415,13 +2417,7 @@ class Elements extends Component
         $isNewElement = !$element->id;
 
         // Are we tracking changes?
-        $trackChanges = (
-            !$isNewElement &&
-            $element->siteSettingsId &&
-            $element->duplicateOf === null &&
-            $element::trackChanges() &&
-            !$element->mergingCanonicalChanges
-        );
+        $trackChanges = ElementHelper::shouldTrackChanges($element);
         $dirtyAttributes = [];
 
         // Force propagation for new elements
@@ -2674,8 +2670,6 @@ class Elements extends Component
             throw $e;
         }
 
-        $isDraftOrRevision = ElementHelper::isDraftOrRevision($element);
-
         if (!$element->propagating) {
             // Delete the rows that don't need to be there anymore
             if (!$isNewElement) {
@@ -2822,6 +2816,9 @@ class Elements extends Component
         ) {
             $siteElement->title = $element->title;
         }
+
+        // Copy the dirty attributes
+        $siteElement->setDirtyAttributes($element->getDirtyAttributes());
 
         // Copy any non-translatable field values
         if ($element::hasContent()) {

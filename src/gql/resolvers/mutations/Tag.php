@@ -64,7 +64,7 @@ class Tag extends ElementMutationResolver
 
         $this->requireSchemaAction('taggroups.' . $tagGroup->uid, 'save');
 
-        $tag = $this->populateElementWithData($tag, $arguments);
+        $tag = $this->populateElementWithData($tag, $arguments, $resolveInfo);
         $tag = $this->saveElement($tag);
 
         return $elementService->getElementById($tag->id, TagElement::class);

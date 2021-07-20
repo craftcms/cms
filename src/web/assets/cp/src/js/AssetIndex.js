@@ -714,12 +714,27 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend({
 
     getDefaultSourceKey: function() {
         // Did they request a specific volume in the URL?
-        if (this.settings.context === 'index' && typeof defaultVolumeHandle !== 'undefined') {
-            for (var i = 0; i < this.$sources.length; i++) {
-                var $source = $(this.$sources[i]);
-                if ($source.data('volume-handle') === defaultVolumeHandle) {
-                    return $source.data('key');
+        if (this.settings.context === 'index' && typeof window.defaultSource !== 'undefined') {
+            let defaultSourceParts = window.defaultSource.split('/');
+            let volumeSource = this.$sources.toArray().find(s => {
+                return $(s).data('volume-handle') === defaultSourceParts[0];
+            });
+            if (volumeSource) {
+                let $source = $(volumeSource);
+
+                for (let i = 1; i < defaultSourceParts.length; i++) {
+                    // does $source have a subfolder with this path name?
+                    let subfolderSource = this._getChildSources($source).toArray().find(s => {
+                        return $('> .label', s).text() === defaultSourceParts[i];
+                    });
+                    if (!subfolderSource) {
+                        break;
+                    }
+                    this._expandSource($source);
+                    $source = $(subfolderSource);
                 }
+
+                return $source.data('key');
             }
         }
 
@@ -742,12 +757,24 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend({
         // Update the URL if we're on the Assets index
         // ---------------------------------------------------------------------
 
-        if (this.settings.context === 'index' && typeof history !== 'undefined') {
-            var uri = 'assets';
-            var $rootSource = this._getRootSource($source);
-            if ($rootSource && $rootSource.data('volume-handle')) {
-                uri += '/' + $rootSource.data('volume-handle');
+        if ($source.length && this.settings.context === 'index' && typeof history !== 'undefined') {
+            // Find all the subfolder sources. At the end, $thisSource will be the root volume source
+            let nestedSources = [];
+            let $thisSource = $source;
+            let $parent;
+            while (($parent = this._getParentSource($thisSource)) && $parent.length) {
+                nestedSources.unshift($thisSource);
+                $thisSource = $parent;
             }
+
+            let uri = 'assets';
+            if ($thisSource.data('volume-handle')) {
+                uri += '/' + $thisSource.data('volume-handle');
+                nestedSources.forEach($s => {
+                    uri += '/' + $s.children('.label').text();
+                });
+            }
+
             history.replaceState({}, '', Craft.getUrl(uri));
         }
 

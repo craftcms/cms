@@ -1744,7 +1744,7 @@ class ProjectConfig extends Component
      */
     private function _processProjectConfigNameChanges(): void
     {
-        if (!empty($this->_projectConfigNameChanges)) {
+        if (!empty($this->_projectConfigNameChanges) && !$this->readOnly) {
             foreach ($this->_projectConfigNameChanges as $uid => $name) {
                 $this->set(self::CONFIG_NAMES_KEY . '.' . $uid, $name);
             }

@@ -36,7 +36,7 @@ class GlobalSet extends ElementMutationResolver
 
         $this->requireSchemaAction('globalsets.' . $globalSet->uid, 'edit');
 
-        $globalSet = $this->populateElementWithData($globalSet, $arguments);
+        $globalSet = $this->populateElementWithData($globalSet, $arguments, $resolveInfo);
 
         $globalSet = $this->saveElement($globalSet);
 

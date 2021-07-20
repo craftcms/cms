@@ -274,6 +274,9 @@ class EntriesController extends BaseEntriesController
         return $this->asJson([
             'tabsHtml' => count($tabs) > 1 ? $view->renderTemplate('_includes/tabs', [
                 'tabs' => $tabs,
+                'containerAttributes' => [
+                    'id' => 'tabs',
+                ]
             ]) : null,
             'fieldsHtml' => $form->render(),
             'headHtml' => $view->getHeadHtml(),
@@ -391,6 +394,19 @@ class EntriesController extends BaseEntriesController
             ]);
 
             return null;
+        }
+
+        // See if the user happens to have a provisional entry. If so delete it.
+        $provisional = Entry::find()
+            ->provisionalDrafts()
+            ->draftOf($entry->id)
+            ->draftCreator(Craft::$app->getUser()->getIdentity())
+            ->siteId($entry->siteId)
+            ->anyStatus()
+            ->one();
+
+        if ($provisional) {
+            Craft::$app->getElements()->deleteElement($provisional, true);
         }
 
         if ($this->request->getAcceptsJson()) {

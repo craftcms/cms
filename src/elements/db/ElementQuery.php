@@ -998,7 +998,11 @@ class ElementQuery extends Query implements ElementQueryInterface
      */
     public function andRelatedTo($value): self
     {
-        if ($this->relatedTo === null) {
+        if (!$value) {
+            return $this;
+        }
+
+        if (!$this->relatedTo) {
             return $this->relatedTo($value);
         }
 

@@ -309,6 +309,24 @@ class ElementHelper
     }
 
     /**
+     * Returns whether changes should be tracked for the given element.
+     *
+     * @param ElementInterface $element
+     * @return bool
+     * @since 3.7.4
+     */
+    public static function shouldTrackChanges(ElementInterface $element): bool
+    {
+        return (
+            $element->id &&
+            $element->siteSettingsId &&
+            $element->duplicateOf === null &&
+            $element::trackChanges() &&
+            !$element->mergingCanonicalChanges
+        );
+    }
+
+    /**
      * Returns whether the given element is editable by the current user, taking user permissions into account.
      *
      * @param ElementInterface $element
