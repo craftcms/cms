@@ -181,7 +181,7 @@
     {% endif %}
     {% if (
         (isUnpublishedDraft and canDeleteDraft and deleteDraftAction) or
-        (not isUnpublishedDraft and canDeleteSource and deleteSourceAction)
+        (not isUnpublishedDraft and not isProvisionalDraft and canDeleteSource and deleteSourceAction)
     ) %}
         {% set formActions = formActions|push({
             destructive: true,

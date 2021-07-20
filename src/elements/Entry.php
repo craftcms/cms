@@ -1260,7 +1260,7 @@ class Entry extends Element
         $userSession = Craft::$app->getUser();
         $userId = $userSession->getId();
 
-        if ($this->getIsDraft() && !$this->getIsUnpublishedDraft() && !$this->isProvisionalDraft) {
+        if ($this->getIsDraft() && !$this->getIsUnpublishedDraft()) {
             /** @var Entry|DraftBehavior $this */
             return $this->creatorId == $userId || $userSession->checkPermission("deletePeerEntryDrafts:$section->uid");
         }
