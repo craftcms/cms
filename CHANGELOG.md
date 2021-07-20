@@ -5,6 +5,9 @@
 ### Added
 - Added `craft\helpers\ElementHelper::shouldTrackChanges()`.
 
+### Changed
+- Improved the performance of delta form submissions. ([#9605](https://github.com/craftcms/cms/pull/9605))
+
 ### Fixed
 - Fixed a bug where temporary volume folders couldn’t be created for console requests. ([#9597](https://github.com/craftcms/cms/pull/9597))
 - Fixed a bug where `craft\base\Field::copyValue()` wasn’t passing the source element to `$this->serializeValue()`. ([sebastian-lenz/craft-linkfield#161](https://github.com/sebastian-lenz/craft-linkfield/issues/161))
