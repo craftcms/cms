@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+### Changed
+- Improved the performance of delta form submissions. ([#9605](https://github.com/craftcms/cms/pull/9605))
+
 ### Fixed
 - Fixed a bug where Asset temporary folders could not be created when using CLI. ([#9597](https://github.com/craftcms/cms/pull/9597))
 
