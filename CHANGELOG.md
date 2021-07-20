@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 3.x
 
-## Unreleased
+## 3.7.4 - 2021-07-19
 
 ### Added
 - Added `craft\helpers\ElementHelper::shouldTrackChanges()`.
