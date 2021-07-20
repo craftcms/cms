@@ -1,5 +1,8 @@
 # Release Notes for Craft CMS 3.x
 
+## Fixed
+- Fixed a bug where Live Preview stopped working when the device type was changed, for preview targets that had auto-refresh disabled. ([#9610](https://github.com/craftcms/cms/issues/9610))
+
 ## 3.7.4 - 2021-07-19
 
 ### Added
