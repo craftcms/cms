@@ -81,7 +81,7 @@ abstract class AssetFixture extends BaseElementFixture
     /**
      * @inheritdoc
      */
-    public function beforeLoad()
+    public function beforeLoad(): void
     {
         parent::beforeLoad();
 
@@ -93,7 +93,7 @@ abstract class AssetFixture extends BaseElementFixture
     /**
      * @inheritdoc
      */
-    public function beforeUnload()
+    public function beforeUnload(): void
     {
         parent::beforeUnload();
 

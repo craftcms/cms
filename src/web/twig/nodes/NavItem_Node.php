@@ -44,7 +44,7 @@ class NavItem_Node extends Node
     /**
      * @inheritdoc
      */
-    public function compile(Compiler $compiler)
+    public function compile(Compiler $compiler): void
     {
         $compiler
             // Get this item's level

@@ -59,7 +59,7 @@ class UpdateController extends Controller
     /**
      * @inheritdoc
      */
-    public function options($actionID)
+    public function options($actionID): array
     {
         $options = parent::options($actionID);
 
@@ -75,7 +75,7 @@ class UpdateController extends Controller
     /**
      * @inheritdoc
      */
-    public function optionAliases()
+    public function optionAliases(): array
     {
         $aliases = parent::optionAliases();
         $aliases['f'] = 'force';

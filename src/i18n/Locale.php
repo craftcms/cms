@@ -887,7 +887,7 @@ class Locale extends BaseObject
      * @return string|null The ICU date/time format
      * @throws Exception if $length is invalid
      */
-    private function _getDateTimeIcuFormat(string $length, bool $withDate, bool $withTime)
+    private function _getDateTimeIcuFormat(string $length, bool $withDate, bool $withTime): ?string
     {
         if ($length === null) {
             $length = self::LENGTH_MEDIUM;

@@ -95,7 +95,7 @@ class Schema extends \yii\db\pgsql\Schema
     /**
      * @inheritdoc
      */
-    public function getLastInsertID($sequenceName = '')
+    public function getLastInsertID($sequenceName = ''): string
     {
         if ($sequenceName !== '') {
             if (strpos($sequenceName, '.') === false) {

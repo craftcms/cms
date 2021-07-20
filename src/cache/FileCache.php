@@ -20,7 +20,7 @@ class FileCache extends YiiFileCache
     /**
      * @inheritdoc
      */
-    protected function getCacheFile($key)
+    protected function getCacheFile($key): string
     {
         if ($this->keyPrefix === '') {
             return parent::getCacheFile($key);

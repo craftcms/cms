@@ -40,7 +40,7 @@ class Command extends \yii\queue\cli\Command
     /**
      * @inheritdoc
      */
-    protected function isWorkerAction($actionID)
+    protected function isWorkerAction($actionID): bool
     {
         return in_array($actionID, ['run', 'listen'], true);
     }
@@ -48,7 +48,7 @@ class Command extends \yii\queue\cli\Command
     /**
      * @inheritdoc
      */
-    public function beforeAction($action)
+    public function beforeAction($action): bool
     {
         if (!parent::beforeAction($action)) {
             return false;
@@ -60,7 +60,7 @@ class Command extends \yii\queue\cli\Command
     /**
      * @inheritdoc
      */
-    public function actions()
+    public function actions(): array
     {
         return [
             'info' => InfoAction::class,

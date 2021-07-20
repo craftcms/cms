@@ -445,7 +445,7 @@ class User extends Element implements IdentityInterface
     /**
      * @inheritdoc
      */
-    public static function findIdentity($id)
+    public static function findIdentity($id): ?self
     {
         $user = static::find()
             ->addSelect(['users.password'])
@@ -480,7 +480,7 @@ class User extends Element implements IdentityInterface
     /**
      * @inheritdoc
      */
-    public static function findIdentityByAccessToken($token, $type = null)
+    public static function findIdentityByAccessToken($token, $type = null): ?self
     {
         throw new NotSupportedException('"findIdentityByAccessToken" is not implemented.');
     }
@@ -835,7 +835,7 @@ class User extends Element implements IdentityInterface
     /**
      * @inheritdoc
      */
-    public function scenarios()
+    public function scenarios(): array
     {
         $scenarios = parent::scenarios();
         $scenarios[self::SCENARIO_PASSWORD] = ['newPassword'];
@@ -855,7 +855,7 @@ class User extends Element implements IdentityInterface
     /**
      * @inheritdoc
      */
-    public function getAuthKey()
+    public function getAuthKey(): ?string
     {
         $token = Craft::$app->getUser()->getToken();
 
@@ -876,7 +876,7 @@ class User extends Element implements IdentityInterface
     /**
      * @inheritdoc
      */
-    public function validateAuthKey($authKey)
+    public function validateAuthKey($authKey): ?bool
     {
         $data = Json::decodeIfJson($authKey);
 

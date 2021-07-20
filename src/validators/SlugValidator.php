@@ -55,7 +55,7 @@ class SlugValidator extends Validator
     /**
      * @inheritdoc
      */
-    public function validateAttribute($model, $attribute)
+    public function validateAttribute($model, $attribute): void
     {
         $slug = $originalSlug = (string)$model->$attribute;
         $isTemp = ElementHelper::isTempSlug($slug);
@@ -88,7 +88,7 @@ class SlugValidator extends Validator
     /**
      * @inheritdoc
      */
-    protected function validateValue($value)
+    protected function validateValue($value): ?array
     {
         $value = (string)$value;
 

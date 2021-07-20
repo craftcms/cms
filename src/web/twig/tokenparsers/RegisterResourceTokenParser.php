@@ -82,7 +82,7 @@ class RegisterResourceTokenParser extends AbstractTokenParser
     /**
      * @inheritdoc
      */
-    public function parse(Token $token)
+    public function parse(Token $token): RegisterResourceNode
     {
         $lineno = $token->getLine();
         $parser = $this->parser;
@@ -162,7 +162,7 @@ class RegisterResourceTokenParser extends AbstractTokenParser
     /**
      * @inheritdoc
      */
-    public function getTag()
+    public function getTag(): string
     {
         return $this->tag;
     }

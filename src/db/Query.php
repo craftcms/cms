@@ -79,7 +79,7 @@ class Query extends \yii\db\Query
     /**
      * @inheritdoc
      */
-    public function where($condition, $params = [])
+    public function where($condition, $params = []): self
     {
         if (!$condition) {
             $condition = null;
@@ -91,7 +91,7 @@ class Query extends \yii\db\Query
     /**
      * @inheritdoc
      */
-    public function andWhere($condition, $params = [])
+    public function andWhere($condition, $params = []): self
     {
         if (!$condition) {
             return $this;
@@ -103,7 +103,7 @@ class Query extends \yii\db\Query
     /**
      * @inheritdoc
      */
-    public function orWhere($condition, $params = [])
+    public function orWhere($condition, $params = []): self
     {
         if (!$condition) {
             return $this;
@@ -147,7 +147,7 @@ class Query extends \yii\db\Query
     /**
      * @inheritdoc
      */
-    public function all($db = null)
+    public function all($db = null): array
     {
         try {
             return parent::all($db);
@@ -208,7 +208,7 @@ class Query extends \yii\db\Query
     /**
      * @inheritdoc
      */
-    public function exists($db = null)
+    public function exists($db = null): bool
     {
         try {
             return parent::exists($db);
@@ -253,7 +253,7 @@ class Query extends \yii\db\Query
     /**
      * @inheritdoc
      */
-    protected function queryScalar($selectExpression, $db)
+    protected function queryScalar($selectExpression, $db): bool
     {
         try {
             return parent::queryScalar($selectExpression, $db);

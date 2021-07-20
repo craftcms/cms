@@ -123,7 +123,7 @@ class CraftVariable extends ServiceLocator
     /**
      * @inheritdoc
      */
-    public function canGetProperty($name, $checkVars = true, $checkBehaviors = true)
+    public function canGetProperty($name, $checkVars = true, $checkBehaviors = true): bool
     {
         // Check the services
         if ($this->has($name)) {

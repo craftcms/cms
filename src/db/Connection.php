@@ -120,7 +120,7 @@ class Connection extends \yii\db\Connection
      * @throws DbConnectException if there are any issues
      * @throws \Throwable
      */
-    public function open()
+    public function open(): void
     {
         try {
             parent::open();
@@ -155,7 +155,7 @@ class Connection extends \yii\db\Connection
      * @inheritdoc
      * @since 3.4.11
      */
-    public function close()
+    public function close(): void
     {
         parent::close();
         $this->_supportsMb4 = null;

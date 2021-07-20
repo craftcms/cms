@@ -409,7 +409,7 @@ class Request extends \yii\web\Request
      * Don’t include the results of this method in places that will be cached, to avoid a cache poisoning attack.
      * :::
      */
-    public function getAbsoluteUrl()
+    public function getAbsoluteUrl(): string
     {
         return parent::getAbsoluteUrl();
     }
@@ -803,7 +803,7 @@ class Request extends \yii\web\Request
     /**
      * @inheritdoc
      */
-    public function getBodyParams()
+    public function getBodyParams(): array
     {
         if ($this->_encodedBodyParams === false) {
             $this->setBodyParams($this->_utf8AllTheThings(parent::getBodyParams()));
@@ -927,7 +927,7 @@ class Request extends \yii\web\Request
     /**
      * @inheritdoc
      */
-    public function getQueryParams()
+    public function getQueryParams(): array
     {
         if ($this->_encodedQueryParams === false) {
             $this->setQueryParams($this->_utf8AllTheThings(parent::getQueryParams()));

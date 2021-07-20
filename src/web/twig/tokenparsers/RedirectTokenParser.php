@@ -24,7 +24,7 @@ class RedirectTokenParser extends AbstractTokenParser
     /**
      * @inheritdoc
      */
-    public function parse(Token $token)
+    public function parse(Token $token): RedirectNode
     {
         $lineno = $token->getLine();
         $parser = $this->parser;
@@ -55,7 +55,7 @@ class RedirectTokenParser extends AbstractTokenParser
     /**
      * @inheritdoc
      */
-    public function getTag()
+    public function getTag(): string
     {
         return 'redirect';
     }

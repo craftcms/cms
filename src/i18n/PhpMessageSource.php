@@ -26,7 +26,7 @@ class PhpMessageSource extends \yii\i18n\PhpMessageSource
     /**
      * @inheritdoc
      */
-    protected function loadMessages($category, $language)
+    protected function loadMessages($category, $language): array
     {
         $messages = parent::loadMessages($category, $language);
 
@@ -41,7 +41,7 @@ class PhpMessageSource extends \yii\i18n\PhpMessageSource
     /**
      * @inheritdoc
      */
-    protected function loadMessagesFromFile($messageFile)
+    protected function loadMessagesFromFile($messageFile): ?array
     {
         $messages = parent::loadMessagesFromFile($messageFile);
 

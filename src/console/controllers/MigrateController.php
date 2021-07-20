@@ -22,6 +22,7 @@ use yii\base\InvalidConfigException;
 use yii\console\controllers\BaseMigrateController;
 use yii\console\Exception;
 use yii\console\ExitCode;
+use yii\db\MigrationInterface;
 use yii\helpers\Console;
 
 /**
@@ -162,7 +163,7 @@ class MigrateController extends BaseMigrateController
     /**
      * @inheritdoc
      */
-    public function optionAliases()
+    public function optionAliases(): array
     {
         $aliases = parent::optionAliases();
         $aliases['t'] = 'type';
@@ -509,7 +510,7 @@ class MigrateController extends BaseMigrateController
     /**
      * @inheritdoc
      */
-    protected function createMigration($class)
+    protected function createMigration($class): MigrationInterface
     {
         return $this->getMigrator()->createMigration($class);
     }
@@ -517,7 +518,7 @@ class MigrateController extends BaseMigrateController
     /**
      * @inheritdoc
      */
-    protected function getNewMigrations()
+    protected function getNewMigrations(): array
     {
         return $this->getMigrator()->getNewMigrations();
     }
@@ -525,7 +526,7 @@ class MigrateController extends BaseMigrateController
     /**
      * @inheritdoc
      */
-    protected function getMigrationHistory($limit)
+    protected function getMigrationHistory($limit): array
     {
         $history = $this->getMigrator()->getMigrationHistory((int)$limit);
 
@@ -538,7 +539,7 @@ class MigrateController extends BaseMigrateController
     /**
      * @inheritdoc
      */
-    protected function addMigrationHistory($version)
+    protected function addMigrationHistory($version): void
     {
         $this->getMigrator()->addMigrationHistory($version);
     }
@@ -546,7 +547,7 @@ class MigrateController extends BaseMigrateController
     /**
      * @inheritdoc
      */
-    protected function removeMigrationHistory($version)
+    protected function removeMigrationHistory($version): void
     {
         $this->getMigrator()->removeMigrationHistory($version);
     }
@@ -554,7 +555,7 @@ class MigrateController extends BaseMigrateController
     /**
      * @inheritdoc
      */
-    protected function truncateDatabase()
+    protected function truncateDatabase(): void
     {
         $this->getMigrator()->truncateHistory();
     }

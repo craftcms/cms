@@ -98,7 +98,7 @@ class Application extends \yii\web\Application
     /**
      * @inheritdoc
      */
-    public function bootstrap()
+    public function bootstrap(): void
     {
         // Ensure that the request component has been instantiated
         if (!$this->has('request', true)) {
@@ -113,7 +113,7 @@ class Application extends \yii\web\Application
     /**
      * @inheritdoc
      */
-    public function setTimeZone($value)
+    public function setTimeZone($value): void
     {
         parent::setTimeZone($value);
 
@@ -266,7 +266,7 @@ class Application extends \yii\web\Application
      * @param array $params
      * @return Response|null The result of the action, normalized into a Response object
      */
-    public function runAction($route, $params = []): ?Response
+    public function runAction($route, $params = [])
     {
         $result = parent::runAction($route, $params);
 
@@ -282,7 +282,7 @@ class Application extends \yii\web\Application
     /**
      * @inheritdoc
      */
-    public function setVendorPath($path)
+    public function setVendorPath($path): void
     {
         parent::setVendorPath($path);
 
@@ -308,7 +308,7 @@ class Application extends \yii\web\Application
     /**
      * @inheritdoc
      */
-    public function get($id, $throwException = true)
+    public function get($id, $throwException = true): ?object
     {
         // Is this the first time the queue component is requested?
         $isFirstQueue = $id === 'queue' && !$this->has($id, true);

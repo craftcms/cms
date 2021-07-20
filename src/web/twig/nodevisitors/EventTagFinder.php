@@ -84,7 +84,7 @@ class EventTagFinder extends BaseEventTagVisitor
     /**
      * @inheritdoc
      */
-    public function getPriority()
+    public function getPriority(): int
     {
         // This needs to run before EventTagAdder
         return 0;

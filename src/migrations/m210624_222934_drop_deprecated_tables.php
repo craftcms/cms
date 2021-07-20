@@ -12,7 +12,7 @@ class m210624_222934_drop_deprecated_tables extends Migration
     /**
      * @inheritdoc
      */
-    public function safeUp()
+    public function safeUp(): bool
     {
         $this->dropTableIfExists('{{%entrydrafterrors}}');
         $this->dropTableIfExists('{{%entryversionerrors}}');
@@ -23,12 +23,13 @@ class m210624_222934_drop_deprecated_tables extends Migration
         $this->dropTableIfExists('{{%templatecachequeries}}');
         $this->dropTableIfExists('{{%templatecachecriteria}}');
         $this->dropTableIfExists('{{%templatecaches}}');
+        return true;
     }
 
     /**
      * @inheritdoc
      */
-    public function safeDown()
+    public function safeDown(): bool
     {
         echo "m210624_222934_drop_deprecated_tables cannot be reverted.\n";
         return false;

@@ -45,7 +45,7 @@ class UniqueValidator extends YiiUniqueValidator
     /**
      * @inheritdoc
      */
-    public function validateAttribute($model, $attribute)
+    public function validateAttribute($model, $attribute): void
     {
         if ($targetClass = $this->targetClass) {
             // Exclude this model's row using the filter

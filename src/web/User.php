@@ -109,7 +109,7 @@ class User extends \yii\web\User
     /**
      * @inheritdoc
      */
-    public function getReturnUrl($defaultUrl = null)
+    public function getReturnUrl($defaultUrl = null): string
     {
         // Set the default based on the config, if it's not specified
         if ($defaultUrl === null) {
@@ -374,7 +374,7 @@ class User extends \yii\web\User
     /**
      * @inheritdoc
      */
-    public function login(IdentityInterface $identity, $duration = 0)
+    public function login(IdentityInterface $identity, $duration = 0): bool
     {
         $authTimeout = $this->authTimeout;
         if ($duration > 0) {
@@ -389,7 +389,7 @@ class User extends \yii\web\User
     /**
      * @inheritdoc
      */
-    protected function beforeLogin($identity, $cookieBased, $duration)
+    protected function beforeLogin($identity, $cookieBased, $duration): bool
     {
         // Only allow the login if the request meets our user agent and IP requirements
         if (!$this->_validateUserAgentAndIp()) {
@@ -402,7 +402,7 @@ class User extends \yii\web\User
     /**
      * @inheritdoc
      */
-    protected function afterLogin($identity, $cookieBased, $duration)
+    protected function afterLogin($identity, $cookieBased, $duration): void
     {
         /** @var UserElement $identity */
 
@@ -433,7 +433,7 @@ class User extends \yii\web\User
     /**
      * @inheritdoc
      */
-    public function switchIdentity($identity, $duration = 0)
+    public function switchIdentity($identity, $duration = 0): void
     {
         if ($this->enableSession) {
             SessionHelper::remove($this->tokenParam);
@@ -469,7 +469,7 @@ class User extends \yii\web\User
     /**
      * @inheritdoc
      */
-    protected function renewAuthStatus()
+    protected function renewAuthStatus(): void
     {
         // Only renew if the request meets our user agent and IP requirements
         if (!Craft::$app->getIsInstalled() || !$this->_validateUserAgentAndIp()) {
@@ -506,7 +506,7 @@ class User extends \yii\web\User
     /**
      * @inheritdoc
      */
-    protected function beforeLogout($identity)
+    protected function beforeLogout($identity): bool
     {
         if (!parent::beforeLogout($identity)) {
             return false;
@@ -531,7 +531,7 @@ class User extends \yii\web\User
     /**
      * @inheritdoc
      */
-    protected function afterLogout($identity)
+    protected function afterLogout($identity): void
     {
         /** @var UserElement $identity */
         // Delete the impersonation session, if there is one

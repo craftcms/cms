@@ -129,7 +129,7 @@ class UrlManager extends \yii\web\UrlManager
     /**
      * @inheritdoc
      */
-    public function createUrl($params)
+    public function createUrl($params): string
     {
         if (!Craft::$app->getIsInitialized()) {
             Craft::warning(__METHOD__ . "() was called before the application was fully initialized.\n" .
@@ -148,7 +148,7 @@ class UrlManager extends \yii\web\UrlManager
     /**
      * @inheritdoc
      */
-    public function createAbsoluteUrl($params, $scheme = null)
+    public function createAbsoluteUrl($params, $scheme = null): string
     {
         if (!Craft::$app->getIsInitialized()) {
             Craft::warning(__METHOD__ . "() was called before the application was fully initialized.\n" .
@@ -262,7 +262,7 @@ class UrlManager extends \yii\web\UrlManager
     /**
      * @inheritdoc
      */
-    protected function buildRules($rules)
+    protected function buildRules($rules): array
     {
         // Add support for patterns in keys even if the value is an array
         $i = 0;

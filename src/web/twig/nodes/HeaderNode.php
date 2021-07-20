@@ -21,7 +21,7 @@ class HeaderNode extends Node
     /**
      * @inheritdoc
      */
-    public function compile(Compiler $compiler)
+    public function compile(Compiler $compiler): void
     {
         $compiler
             ->write('$_headerParts = array_map(\'trim\', explode(\':\', ')

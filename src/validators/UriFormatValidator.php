@@ -33,7 +33,7 @@ class UriFormatValidator extends Validator
     /**
      * @inheritdoc
      */
-    public function validateAttribute($model, $attribute)
+    public function validateAttribute($model, $attribute): void
     {
         $uriFormat = $model->$attribute;
 

@@ -1513,7 +1513,7 @@ EOD;
     /**
      * @inheritdoc
      */
-    public function beforeValidate()
+    public function beforeValidate(): bool
     {
         if (!$this->authorId && $this->getSection()->type !== Section::TYPE_SINGLE) {
             $this->authorId = Craft::$app->getUser()->getId();

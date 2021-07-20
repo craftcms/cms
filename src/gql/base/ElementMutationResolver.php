@@ -184,7 +184,7 @@ abstract class ElementMutationResolver extends MutationResolver
      * @param array $mutationArguments
      * @return array
      */
-    protected function recursivelyNormalizeArgumentValues(ResolveInfo $resolveInfo, array $mutationArguments)
+    protected function recursivelyNormalizeArgumentValues(ResolveInfo $resolveInfo, array $mutationArguments): array
     {
         return $this->_traverseAndNormalizeArguments($resolveInfo->fieldDefinition->args ?? [], $mutationArguments);
     }

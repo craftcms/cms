@@ -24,7 +24,7 @@ class PaginateTokenParser extends AbstractTokenParser
     /**
      * @inheritdoc
      */
-    public function parse(Token $token)
+    public function parse(Token $token): PaginateNode
     {
         $lineno = $token->getLine();
         $parser = $this->parser;
@@ -54,7 +54,7 @@ class PaginateTokenParser extends AbstractTokenParser
     /**
      * @inheritdoc
      */
-    public function getTag()
+    public function getTag(): string
     {
         return 'paginate';
     }

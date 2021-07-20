@@ -73,7 +73,7 @@ class AssetManager extends \yii\web\AssetManager
     /**
      * @inheritdoc
      */
-    protected function hash($path)
+    protected function hash($path): string
     {
         if (is_callable($this->hashCallback)) {
             return call_user_func($this->hashCallback, $path);
@@ -115,7 +115,7 @@ class AssetManager extends \yii\web\AssetManager
     /**
      * @inheritdoc
      */
-    protected function publishFile($src)
+    protected function publishFile($src): array
     {
         [$file, $url] = parent::publishFile($src);
 

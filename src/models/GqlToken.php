@@ -200,7 +200,7 @@ class GqlToken extends Model
     /**
      * Return the schema's scope for this token.
      *
-     * @return array|mixed
+     * @return mixed
      */
     public function getScope()
     {

@@ -1432,7 +1432,7 @@ interface ElementQueryInterface extends QueryInterface, ArrayAccess, Arrayable, 
      * If this parameter is not given, the `db` application component will be used.
      * @return ElementInterface[]|array[] The resulting elements.
      */
-    public function all($db = null);
+    public function all($db = null): array;
 
     /**
      * Executes the query and returns a single row of result.

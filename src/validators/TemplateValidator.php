@@ -44,7 +44,7 @@ class TemplateValidator extends Validator
     /**
      * @inheritdoc
      */
-    public function validateValue($value)
+    public function validateValue($value): ?array
     {
         if (Craft::$app->getView()->resolveTemplate($value, $this->templateMode) === false) {
             return [$this->message, []];

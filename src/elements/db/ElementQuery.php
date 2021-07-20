@@ -577,7 +577,7 @@ class ElementQuery extends Query implements ElementQueryInterface
         }
 
         /** @noinspection ImplicitMagicMethodCallInspection */
-        return $this->__unset($name);
+        $this->__unset($name);
     }
 
     /**
@@ -817,7 +817,7 @@ class ElementQuery extends Query implements ElementQueryInterface
      * @inheritdoc
      * @uses $orderBy
      */
-    public function orderBy($columns)
+    public function orderBy($columns): self
     {
         parent::orderBy($columns);
 
@@ -833,7 +833,7 @@ class ElementQuery extends Query implements ElementQueryInterface
      * @inheritdoc
      * @uses $orderBy
      */
-    public function addOrderBy($columns)
+    public function addOrderBy($columns): self
     {
         // If orderBy is an empty, non-null value (leaving it up to the element query class to decide),
         // then treat this is an orderBy() call.
@@ -1257,7 +1257,7 @@ class ElementQuery extends Query implements ElementQueryInterface
      * @inheritdoc
      * @throws QueryAbortedException if it can be determined that there won’t be any results
      */
-    public function prepare($builder)
+    public function prepare($builder): Query
     {
         // Is the query already doomed?
         if ($this->id !== null && empty($this->id)) {
@@ -1402,7 +1402,7 @@ class ElementQuery extends Query implements ElementQueryInterface
      * @inheritdoc
      * @return ElementInterface[]|array The resulting elements.
      */
-    public function populate($rows)
+    public function populate($rows): array
     {
         if (empty($rows)) {
             return [];
@@ -1445,7 +1445,7 @@ class ElementQuery extends Query implements ElementQueryInterface
     /**
      * @inheritdoc
      */
-    public function all($db = null)
+    public function all($db = null): array
     {
         // Cached?
         if (($cachedResult = $this->getCachedResult()) !== null) {
@@ -1502,7 +1502,7 @@ class ElementQuery extends Query implements ElementQueryInterface
     /**
      * @inheritdoc
      */
-    public function exists($db = null)
+    public function exists($db = null): bool
     {
         return ($this->getCachedResult() !== null) ?: parent::exists($db);
     }
@@ -1979,7 +1979,7 @@ class ElementQuery extends Query implements ElementQueryInterface
     /**
      * @inheritdoc
      */
-    protected function normalizeOrderBy($columns)
+    protected function normalizeOrderBy($columns): array
     {
         // Special case for 'score' - that should be shorthand for SORT_DESC, not SORT_ASC
         if ($columns === 'score') {
@@ -2791,7 +2791,7 @@ class ElementQuery extends Query implements ElementQueryInterface
      * @param array $rows
      * @return array|ElementInterface[]
      */
-    private function _createElements(array $rows)
+    private function _createElements(array $rows): array
     {
         $elements = [];
 

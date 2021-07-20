@@ -23,7 +23,7 @@ class HeaderTokenParser extends AbstractTokenParser
     /**
      * @inheritdoc
      */
-    public function parse(Token $token)
+    public function parse(Token $token): HeaderNode
     {
         $lineno = $token->getLine();
         $parser = $this->parser;
@@ -40,7 +40,7 @@ class HeaderTokenParser extends AbstractTokenParser
     /**
      * @inheritdoc
      */
-    public function getTag()
+    public function getTag(): string
     {
         return 'header';
     }

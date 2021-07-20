@@ -38,7 +38,7 @@ class TemplateLoader implements LoaderInterface
     /**
      * @inheritdoc
      */
-    public function exists(string $name)
+    public function exists(string $name): bool
     {
         return $this->view->doesTemplateExist($name);
     }

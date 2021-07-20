@@ -134,7 +134,7 @@ class VolumeFolder extends Model
      *
      * @param VolumeFolder $folder
      */
-    public function addChild(VolumeFolder $folder)
+    public function addChild(VolumeFolder $folder): void
     {
         if ($this->_children === null) {
             $this->_children = [];

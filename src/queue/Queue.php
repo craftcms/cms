@@ -180,7 +180,7 @@ class Queue extends \yii\queue\cli\Queue implements QueueInterface
     /**
      * @inheritdoc
      */
-    public function push($job)
+    public function push($job): ?string
     {
         // Capture the description so pushMessage() can access it
         if ($job instanceof JobInterface) {
@@ -254,7 +254,7 @@ class Queue extends \yii\queue\cli\Queue implements QueueInterface
     /**
      * @inheritdoc
      */
-    public function release(string $id)
+    public function release(string $id): void
     {
         $this->_lock(function() use ($id) {
             Db::delete($this->tableName, [
@@ -475,7 +475,7 @@ class Queue extends \yii\queue\cli\Queue implements QueueInterface
     /**
      * @inheritdoc
      */
-    public function handleError(ExecEvent $event)
+    public function handleError(ExecEvent $event): bool
     {
         $this->_executingJobId = null;
 
@@ -561,7 +561,7 @@ EOD;
     /**
      * @inheritdoc
      */
-    protected function pushMessage($message, $ttr, $delay, $priority)
+    protected function pushMessage($message, $ttr, $delay, $priority): string
     {
         Db::insert($this->tableName, [
             'channel' => $this->channel,

@@ -50,7 +50,7 @@ class UrlValidator extends YiiUrlValidator
     /**
      * @inheritdoc
      */
-    public function validateValue($value)
+    public function validateValue($value): ?array
     {
         if ($this->allowAlias && strncmp($value, '@', 1) === 0) {
             $value = Craft::getAlias($value);

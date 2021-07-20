@@ -143,7 +143,7 @@ class Html extends \yii\helpers\Html
      * @inheritdoc
      * @since 3.3.0
      */
-    public static function a($text, $url = null, $options = [])
+    public static function a($text, $url = null, $options = []): string
     {
         if ($url !== null) {
             // Use UrlHelper::url() instead of Url::to()

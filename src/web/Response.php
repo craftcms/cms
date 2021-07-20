@@ -139,7 +139,7 @@ class Response extends \yii\web\Response
      * @inheritdoc
      * @since 3.5.0
      */
-    protected function sendCookies()
+    protected function sendCookies(): void
     {
         parent::sendCookies();
 
@@ -162,7 +162,7 @@ class Response extends \yii\web\Response
     /**
      * @inheritdoc
      */
-    public function redirect($url, $statusCode = 302, $checkAjax = true)
+    public function redirect($url, $statusCode = 302, $checkAjax = true): self
     {
         $url = UrlHelper::url($url);
         return parent::redirect($url, $statusCode, $checkAjax);
@@ -253,7 +253,7 @@ class Response extends \yii\web\Response
      * @inheritdoc
      * @since 3.4.0
      */
-    protected function defaultFormatters()
+    protected function defaultFormatters(): array
     {
         $formatters = parent::defaultFormatters();
         $formatters[self::FORMAT_CSV] = [
@@ -265,12 +265,10 @@ class Response extends \yii\web\Response
     /**
      * @inheritdoc
      */
-    protected function prepare()
+    protected function prepare(): void
     {
-        $return = parent::prepare();
+        parent::prepare();
         $this->_isPrepared = true;
-
-        return $return;
     }
 
     /**

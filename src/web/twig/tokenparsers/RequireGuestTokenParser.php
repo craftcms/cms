@@ -23,7 +23,7 @@ class RequireGuestTokenParser extends AbstractTokenParser
     /**
      * @inheritdoc
      */
-    public function parse(Token $token)
+    public function parse(Token $token): RequireGuestNode
     {
         $lineno = $token->getLine();
         $parser = $this->parser;
@@ -37,7 +37,7 @@ class RequireGuestTokenParser extends AbstractTokenParser
     /**
      * @inheritdoc
      */
-    public function getTag()
+    public function getTag(): string
     {
         return 'requireGuest';
     }

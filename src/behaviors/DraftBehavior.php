@@ -46,7 +46,7 @@ class DraftBehavior extends BaseRevisionBehavior
     /**
      * @inheritdoc
      */
-    public function events()
+    public function events(): array
     {
         return [
             Element::EVENT_AFTER_PROPAGATE => [$this, 'handleSave'],

@@ -32,7 +32,7 @@ class PruneRevisionsController extends Controller
     /**
      * @inheritdoc
      */
-    public function options($actionID)
+    public function options($actionID): array
     {
         $options = parent::options($actionID);
         $options[] = 'maxRevisions';

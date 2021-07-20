@@ -21,7 +21,7 @@ class CreatePhpSessionTable extends Migration
     /**
      * @inheritdoc
      */
-    public function safeUp()
+    public function safeUp(): bool
     {
         $this->createTable(Table::PHPSESSIONS, [
             'id' => $this->char(255)->notNull(),
@@ -34,13 +34,16 @@ class CreatePhpSessionTable extends Migration
         ]);
 
         $this->createIndex(null, Table::PHPSESSIONS, ['expire']);
+
+        return true;
     }
 
     /**
      * @inheritdoc
      */
-    public function safeDown()
+    public function safeDown(): bool
     {
         $this->dropTableIfExists(Table::PHPSESSIONS);
+        return true;
     }
 }

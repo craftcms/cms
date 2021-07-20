@@ -113,7 +113,7 @@ class Craft extends Yii2
     /**
      * @inheritdoc
      */
-    public function _initialize()
+    public function _initialize(): void
     {
         parent::_initialize();
 
@@ -140,7 +140,7 @@ class Craft extends Yii2
     /**
      * @inheritdoc
      */
-    public function _afterSuite()
+    public function _afterSuite(): void
     {
         parent::_afterSuite();
 
@@ -679,7 +679,7 @@ class Craft extends Yii2
      *
      * Completely based on parent except we use CraftConnector. Gives us more control
      */
-    protected function recreateClient()
+    protected function recreateClient(): void
     {
         $entryUrl = $this->_getConfig('entryUrl');
         $entryFile = $this->_getConfig('entryScript') ?: basename($entryUrl);

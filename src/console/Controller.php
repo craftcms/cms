@@ -178,7 +178,7 @@ class Controller extends YiiController
     /**
      * @inheritdoc
      */
-    public function actions()
+    public function actions(): array
     {
         return ArrayHelper::getColumn($this->_actions, 'action');
     }
@@ -186,7 +186,7 @@ class Controller extends YiiController
     /**
      * @inheritdoc
      */
-    public function options($actionID)
+    public function options($actionID): array
     {
         $options = parent::options($actionID);
 
@@ -211,7 +211,7 @@ class Controller extends YiiController
     /**
      * @inheritdoc
      */
-    public function getActionHelpSummary($action)
+    public function getActionHelpSummary($action): string
     {
         if (isset($this->_actions[$action->id])) {
             $help = $this->_actions[$action->id]['helpSummary'] ?? $this->_actions[$action->id]['help'] ?? '';
@@ -224,7 +224,7 @@ class Controller extends YiiController
     /**
      * @inheritdoc
      */
-    public function getActionHelp($action)
+    public function getActionHelp($action): string
     {
         if (isset($this->_actions[$action->id])) {
             return $this->_actions[$action->id]['help'] ?? $this->_actions[$action->id]['helpSummary'] ?? '';
@@ -236,7 +236,7 @@ class Controller extends YiiController
     /**
      * @inheritdoc
      */
-    public function getActionArgsHelp($action)
+    public function getActionArgsHelp($action): array
     {
         $args = parent::getActionArgsHelp($action);
 
@@ -254,7 +254,7 @@ class Controller extends YiiController
     /**
      * @inheritdoc
      */
-    public function getActionOptionsHelp($action)
+    public function getActionOptionsHelp($action): array
     {
         $options = parent::getActionOptionsHelp($action);
 

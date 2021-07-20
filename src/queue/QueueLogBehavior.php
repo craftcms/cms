@@ -32,7 +32,7 @@ class QueueLogBehavior extends VerboseBehavior
     /**
      * @inheritdoc
      */
-    public function events()
+    public function events(): array
     {
         return [
             Queue::EVENT_BEFORE_EXEC => 'beforeExec',
@@ -57,7 +57,7 @@ class QueueLogBehavior extends VerboseBehavior
     /**
      * @inheritdoc
      */
-    public function afterExec(ExecEvent $event)
+    public function afterExec(ExecEvent $event): void
     {
         $duration = $this->_formattedDuration();
         Craft::info(sprintf('%s - Done (time: %s)', parent::jobTitle($event), $duration), __METHOD__);
@@ -66,7 +66,7 @@ class QueueLogBehavior extends VerboseBehavior
     /**
      * @inheritdoc
      */
-    public function afterError(ExecEvent $event)
+    public function afterError(ExecEvent $event): void
     {
         $duration = $this->_formattedDuration();
 

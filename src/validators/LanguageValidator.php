@@ -50,7 +50,7 @@ class LanguageValidator extends Validator
     /**
      * @inheritdoc
      */
-    public function validateAttribute($model, $attribute)
+    public function validateAttribute($model, $attribute): void
     {
         $original = $model->$attribute;
         try {
@@ -77,7 +77,7 @@ class LanguageValidator extends Validator
     /**
      * @inheritdoc
      */
-    public function validateValue($value)
+    public function validateValue($value): ?array
     {
         if ($this->onlySiteLanguages) {
             $allowed = Craft::$app->getI18n()->getSiteLocaleIds();

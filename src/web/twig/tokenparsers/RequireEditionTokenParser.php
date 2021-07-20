@@ -23,7 +23,7 @@ class RequireEditionTokenParser extends AbstractTokenParser
     /**
      * @inheritdoc
      */
-    public function parse(Token $token)
+    public function parse(Token $token): RequireEditionNode
     {
         $lineno = $token->getLine();
         $parser = $this->parser;
@@ -40,7 +40,7 @@ class RequireEditionTokenParser extends AbstractTokenParser
     /**
      * @inheritdoc
      */
-    public function getTag()
+    public function getTag(): string
     {
         return 'requireEdition';
     }

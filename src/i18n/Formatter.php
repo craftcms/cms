@@ -265,7 +265,7 @@ class Formatter extends \yii\i18n\Formatter
     /**
      * @inheritdoc
      */
-    public function asText($value)
+    public function asText($value): string
     {
         if ($value instanceof DateTime) {
             return $this->asDatetime($value);
@@ -278,7 +278,7 @@ class Formatter extends \yii\i18n\Formatter
      * @inheritdoc
      * @since 3.4.0
      */
-    public function asShortSize($value, $decimals = null, $options = [], $textOptions = [])
+    public function asShortSize($value, $decimals = null, $options = [], $textOptions = []): string
     {
         return strtoupper(parent::asShortSize($value, $decimals, $options, $textOptions));
     }

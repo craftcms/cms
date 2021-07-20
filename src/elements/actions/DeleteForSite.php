@@ -87,7 +87,7 @@ JS;
     /**
      * @inheritdoc
      */
-    public function getConfirmationMessage()
+    public function getConfirmationMessage(): ?string
     {
         if ($this->confirmationMessage !== null) {
             return $this->confirmationMessage;

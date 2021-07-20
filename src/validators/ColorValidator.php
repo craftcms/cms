@@ -62,7 +62,7 @@ class ColorValidator extends RegularExpressionValidator
     /**
      * @inheritdoc
      */
-    public function validateAttribute($model, $attribute)
+    public function validateAttribute($model, $attribute): void
     {
         $original = $value = $model->$attribute;
 

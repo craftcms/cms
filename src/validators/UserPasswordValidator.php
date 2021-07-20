@@ -77,7 +77,7 @@ class UserPasswordValidator extends StringValidator
     /**
      * @inheritdoc
      */
-    public function validateAttribute($model, $attribute)
+    public function validateAttribute($model, $attribute): void
     {
         parent::validateAttribute($model, $attribute);
 

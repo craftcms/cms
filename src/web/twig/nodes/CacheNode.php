@@ -28,7 +28,7 @@ class CacheNode extends Node
     /**
      * @inheritdoc
      */
-    public function compile(Compiler $compiler)
+    public function compile(Compiler $compiler): void
     {
         $n = self::$_cacheCount++;
 

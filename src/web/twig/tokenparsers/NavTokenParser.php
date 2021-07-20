@@ -25,7 +25,7 @@ class NavTokenParser extends AbstractTokenParser
     /**
      * @inheritdoc
      */
-    public function getTag()
+    public function getTag(): string
     {
         return 'nav';
     }
@@ -33,7 +33,7 @@ class NavTokenParser extends AbstractTokenParser
     /**
      * @inheritdoc
      */
-    public function parse(Token $token)
+    public function parse(Token $token): NavNode
     {
         $lineno = $token->getLine();
         $parser = $this->parser;

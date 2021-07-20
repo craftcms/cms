@@ -100,7 +100,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
     /**
      * @inheritdoc
      */
-    public function getNodeVisitors()
+    public function getNodeVisitors(): array
     {
         return [
             new Profiler(),
@@ -234,7 +234,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
     /**
      * @inheritdoc
      */
-    public function getTests()
+    public function getTests(): array
     {
         return [
             new TwigTest('instance of', function($obj, $class) {

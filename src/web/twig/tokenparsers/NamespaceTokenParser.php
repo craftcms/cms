@@ -23,7 +23,7 @@ class NamespaceTokenParser extends AbstractTokenParser
     /**
      * @inheritdoc
      */
-    public function getTag()
+    public function getTag(): string
     {
         return 'namespace';
     }
@@ -31,7 +31,7 @@ class NamespaceTokenParser extends AbstractTokenParser
     /**
      * @inheritdoc
      */
-    public function parse(Token $token)
+    public function parse(Token $token): NamespaceNode
     {
         $lineno = $token->getLine();
         $parser = $this->parser;

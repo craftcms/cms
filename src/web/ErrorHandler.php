@@ -36,7 +36,7 @@ class ErrorHandler extends \yii\web\ErrorHandler
     /**
      * @inheritdoc
      */
-    public function handleException($exception)
+    public function handleException($exception): void
     {
         // Fire a 'beforeHandleException' event
         if ($this->hasEventHandlers(self::EVENT_BEFORE_HANDLE_EXCEPTION)) {
@@ -79,7 +79,7 @@ class ErrorHandler extends \yii\web\ErrorHandler
     /**
      * @inheritdoc
      */
-    public function getExceptionName($exception)
+    public function getExceptionName($exception): ?string
     {
         // Yii isn't translating its own exceptions' names, so meh
         if ($exception instanceof TwigError) {
@@ -102,7 +102,7 @@ class ErrorHandler extends \yii\web\ErrorHandler
     /**
      * @inheritdoc
      */
-    public function isCoreFile($file)
+    public function isCoreFile($file): bool
     {
         if (parent::isCoreFile($file)) {
             return true;
@@ -118,7 +118,7 @@ class ErrorHandler extends \yii\web\ErrorHandler
     /**
      * @inheritdoc
      */
-    protected function renderException($exception)
+    protected function renderException($exception): void
     {
         // Set the response format back to HTML if it's still set to raw
         if (Craft::$app->has('response')) {
@@ -150,7 +150,7 @@ class ErrorHandler extends \yii\web\ErrorHandler
     /**
      * @inheritdoc
      */
-    protected function getTypeUrl($class, $method)
+    protected function getTypeUrl($class, $method): ?string
     {
         $url = parent::getTypeUrl($class, $method);
 
@@ -174,7 +174,7 @@ class ErrorHandler extends \yii\web\ErrorHandler
     /**
      * @inheritdoc
      */
-    public function renderCallStackItem($file, $line, $class, $method, $args, $index)
+    public function renderCallStackItem($file, $line, $class, $method, $args, $index): string
     {
         if (strpos($file, 'compiled_templates') !== false) {
             try {
@@ -242,7 +242,7 @@ class ErrorHandler extends \yii\web\ErrorHandler
      * @inheritdoc
      * @since 3.4.10
      */
-    protected function shouldRenderSimpleHtml()
+    protected function shouldRenderSimpleHtml(): bool
     {
         return YII_ENV_TEST || (Craft::$app->has('request', true) && Craft::$app->request->getIsAjax());
     }

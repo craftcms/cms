@@ -99,7 +99,7 @@ class ArrayValidator extends Validator
     /**
      * @inheritdoc
      */
-    protected function validateValue($value)
+    protected function validateValue($value): ?array
     {
         if (!$value instanceof \Countable && !is_array($value)) {
             return [$this->message, []];

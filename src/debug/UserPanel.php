@@ -18,7 +18,7 @@ use Craft;
 class UserPanel extends \yii\debug\panels\UserPanel
 {
     /**
-     * @inheritoc
+     * @inheritdoc
      */
     public function save()
     {

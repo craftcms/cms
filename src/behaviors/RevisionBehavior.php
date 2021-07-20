@@ -34,7 +34,7 @@ class RevisionBehavior extends BaseRevisionBehavior
     /**
      * @inheritdoc
      */
-    public function events()
+    public function events(): array
     {
         return [
             Element::EVENT_AFTER_DELETE => [$this, 'handleDelete'],

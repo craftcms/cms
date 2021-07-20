@@ -44,7 +44,7 @@ class StringValidator extends \yii\validators\StringValidator
     /**
      * @inheritdoc
      */
-    public function validateAttribute($model, $attribute)
+    public function validateAttribute($model, $attribute): void
     {
         $value = $model->$attribute;
 
@@ -58,7 +58,7 @@ class StringValidator extends \yii\validators\StringValidator
     /**
      * @inheritdoc
      */
-    public function validateValue($value)
+    public function validateValue($value): ?array
     {
         if (!empty($result = parent::validateValue($value))) {
             return $result;

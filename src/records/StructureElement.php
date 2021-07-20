@@ -102,7 +102,7 @@ class StructureElement extends ActiveRecord
     /**
      * @inheritdoc
      */
-    public function transactions()
+    public function transactions(): array
     {
         return [
             self::SCENARIO_DEFAULT => self::OP_ALL,

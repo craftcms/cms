@@ -31,7 +31,7 @@ class FieldFixture extends ActiveFixture
     /**
      * @inheritdoc
      */
-    public function load()
+    public function load(): void
     {
         foreach ($this->getData() as $alias => $row) {
             if (isset($row['fieldType'])) {
@@ -58,7 +58,7 @@ class FieldFixture extends ActiveFixture
     /**
      * @inheritdoc
      */
-    public function unload()
+    public function unload(): void
     {
         $fieldsThatDidntSave = [];
 

@@ -23,7 +23,7 @@ class DdTokenParser extends AbstractTokenParser
     /**
      * @inheritdoc
      */
-    public function parse(Token $token)
+    public function parse(Token $token): DdNode
     {
         $lineno = $token->getLine();
         $parser = $this->parser;
@@ -41,7 +41,7 @@ class DdTokenParser extends AbstractTokenParser
     /**
      * @inheritdoc
      */
-    public function getTag()
+    public function getTag(): string
     {
         return 'dd';
     }

@@ -38,10 +38,10 @@ abstract class Migration extends \yii\db\Migration
     /**
      * @inheritdoc
      * @param bool $throwExceptions Whether exceptions should be thrown
-     * @return mixed
+     * @return bool Whether the operation was successful
      * @throws \Throwable
      */
-    public function up(bool $throwExceptions = false)
+    public function up(bool $throwExceptions = false): bool
     {
         // Copied from \yii\db\Migration::up(), but with added $e param
         $transaction = $this->db->beginTransaction();
@@ -65,16 +65,16 @@ abstract class Migration extends \yii\db\Migration
             $this->trigger(self::EVENT_AFTER_UP);
         }
 
-        return null;
+        return true;
     }
 
     /**
      * @inheritdoc
      * @param bool $throwExceptions Whether exceptions should be thrown
-     * @return mixed
+     * @return bool Whether the operation was successful
      * @throws \Throwable
      */
-    public function down(bool $throwExceptions = false)
+    public function down(bool $throwExceptions = false): bool
     {
         // Copied from \yii\db\Migration::down(), but with added $e param
         $transaction = $this->db->beginTransaction();
@@ -98,7 +98,7 @@ abstract class Migration extends \yii\db\Migration
             $this->trigger(self::EVENT_AFTER_DOWN);
         }
 
-        return null;
+        return true;
     }
 
     // Schema Builder Methods
@@ -347,13 +347,13 @@ abstract class Migration extends \yii\db\Migration
      * @param string $table the table that the primary key constraint will be added to.
      * @param string|array $columns comma separated string or array of columns that the primary key will consist of.
      */
-    public function addPrimaryKey($name, $table, $columns)
+    public function addPrimaryKey($name, $table, $columns): void
     {
         if ($name === null) {
             $name = $this->db->getPrimaryKeyName($table, $columns);
         }
 
-        return parent::addPrimaryKey($name, $table, $columns);
+        parent::addPrimaryKey($name, $table, $columns);
     }
 
     /**
@@ -366,13 +366,13 @@ abstract class Migration extends \yii\db\Migration
      * @param string $delete the ON DELETE option. Most DBMS support these options: RESTRICT, CASCADE, NO ACTION, SET DEFAULT, SET NULL
      * @param string $update the ON UPDATE option. Most DBMS support these options: RESTRICT, CASCADE, NO ACTION, SET DEFAULT, SET NULL
      */
-    public function addForeignKey($name, $table, $columns, $refTable, $refColumns, $delete = null, $update = null)
+    public function addForeignKey($name, $table, $columns, $refTable, $refColumns, $delete = null, $update = null): void
     {
         if ($name === null) {
             $name = $this->db->getForeignKeyName();
         }
 
-        return parent::addForeignKey($name, $table, $columns, $refTable, $refColumns, $delete, $update);
+        parent::addForeignKey($name, $table, $columns, $refTable, $refColumns, $delete, $update);
     }
 
     /**
@@ -384,13 +384,13 @@ abstract class Migration extends \yii\db\Migration
      * include a left parenthesis "(".
      * @param bool $unique whether to add UNIQUE constraint on the created index.
      */
-    public function createIndex($name, $table, $columns, $unique = false)
+    public function createIndex($name, $table, $columns, $unique = false): void
     {
         if ($name === null) {
             $name = $this->db->getIndexName();
         }
 
-        return parent::createIndex($name, $table, $columns, $unique);
+        parent::createIndex($name, $table, $columns, $unique);
     }
 
     /**

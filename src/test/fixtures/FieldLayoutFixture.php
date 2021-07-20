@@ -115,7 +115,7 @@ abstract class FieldLayoutFixture extends DbFixture
     /**
      * @inheritdoc
      */
-    public function unload()
+    public function unload(): void
     {
         $this->checkIntegrity(true);
 

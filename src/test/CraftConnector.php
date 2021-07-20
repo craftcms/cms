@@ -65,7 +65,7 @@ class CraftConnector extends Yii2
     /**
      * @inheritdoc
      */
-    protected function mockMailer(array $config)
+    protected function mockMailer(array $config): array
     {
         $config = parent::mockMailer($config);
         $config['components']['mailer'] = array_merge($config['components']['mailer'], [

@@ -115,7 +115,7 @@ class Gc extends Component
     /**
      * Hard delete eligible volumes, deleting the folders one by one to avoid nested dependency errors.
      */
-    public function hardDeleteVolumes()
+    public function hardDeleteVolumes(): void
     {
         $generalConfig = Craft::$app->getConfig()->getGeneral();
         if (!$generalConfig->softDeleteDuration && !$this->deleteAllTrashed) {

@@ -40,7 +40,7 @@ class FileHelper extends \yii\helpers\FileHelper
     /**
      * @inheritdoc
      */
-    public static function normalizePath($path, $ds = DIRECTORY_SEPARATOR)
+    public static function normalizePath($path, $ds = DIRECTORY_SEPARATOR): string
     {
         // Is this a UNC network share path?
         $isUnc = (strpos($path, '//') === 0 || strpos($path, '\\\\') === 0);
@@ -59,7 +59,7 @@ class FileHelper extends \yii\helpers\FileHelper
     /**
      * @inheritdoc
      */
-    public static function copyDirectory($src, $dst, $options = [])
+    public static function copyDirectory($src, $dst, $options = []): void
     {
         if (!isset($options['fileMode'])) {
             $options['fileMode'] = Craft::$app->getConfig()->getGeneral()->defaultFileMode;
@@ -75,7 +75,7 @@ class FileHelper extends \yii\helpers\FileHelper
     /**
      * @inheritdoc
      */
-    public static function createDirectory($path, $mode = null, $recursive = true)
+    public static function createDirectory($path, $mode = null, $recursive = true): bool
     {
         if ($mode === null) {
             $mode = Craft::$app->getConfig()->getGeneral()->defaultDirMode;
@@ -87,7 +87,7 @@ class FileHelper extends \yii\helpers\FileHelper
     /**
      * @inheritdoc
      */
-    public static function removeDirectory($dir, $options = [])
+    public static function removeDirectory($dir, $options = []): void
     {
         try {
             parent::removeDirectory($dir, $options);
@@ -253,7 +253,7 @@ class FileHelper extends \yii\helpers\FileHelper
     /**
      * @inheritdoc
      */
-    public static function getMimeType($file, $magicFile = null, $checkExtension = true)
+    public static function getMimeType($file, $magicFile = null, $checkExtension = true): ?string
     {
         $mimeType = parent::getMimeType($file, $magicFile, $checkExtension);
 
@@ -420,7 +420,7 @@ class FileHelper extends \yii\helpers\FileHelper
      * @inheritdoc
      * @since 3.4.16
      */
-    public static function unlink($path)
+    public static function unlink($path): bool
     {
         // BaseFileHelper::unlink() doesn't seem to catch all possible exceptions
         try {

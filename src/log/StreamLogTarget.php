@@ -163,7 +163,7 @@ class StreamLogTarget extends BaseTarget
     /**
      * @inheritdoc
      */
-    public function formatMessage($message)
+    public function formatMessage($message): string
     {
         $text = $this->prefixString . trim(parent::formatMessage($message));
         return $this->replaceNewline === null ?

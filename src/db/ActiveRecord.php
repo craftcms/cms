@@ -71,7 +71,7 @@ abstract class ActiveRecord extends \yii\db\ActiveRecord
      * @inheritdoc
      * @since 3.4.0
      */
-    public function setAttribute($name, $value)
+    public function setAttribute($name, $value): void
     {
         $value = $this->_prepareValue($name, $value);
         parent::setAttribute($name, $value);
@@ -80,7 +80,7 @@ abstract class ActiveRecord extends \yii\db\ActiveRecord
     /**
      * @inheritdoc
      */
-    public function beforeSave($insert)
+    public function beforeSave($insert): bool
     {
         $this->prepareForDb();
         return parent::beforeSave($insert);

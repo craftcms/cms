@@ -70,7 +70,7 @@ class TimeValidator extends Validator
      * @inheritdoc
      * @throws InvalidConfigException
      */
-    public function validateAttribute($model, $attribute)
+    public function validateAttribute($model, $attribute): void
     {
         $value = $model->$attribute;
         if (!$value instanceof \DateTime) {

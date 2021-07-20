@@ -35,7 +35,7 @@ class MailerController extends Controller
      * @inheritdoc
      * @since 3.5.0
      */
-    public function options($actionID)
+    public function options($actionID): array
     {
         $options = parent::options($actionID);
         if ($actionID === 'test') {

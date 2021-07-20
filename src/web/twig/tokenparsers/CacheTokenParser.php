@@ -31,7 +31,7 @@ class CacheTokenParser extends AbstractTokenParser
     /**
      * @inheritdoc
      */
-    public function parse(Token $token)
+    public function parse(Token $token): CacheNode
     {
         $lineno = $token->getLine();
         $parser = $this->parser;

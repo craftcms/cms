@@ -51,7 +51,7 @@ class Application extends \yii\console\Application
     /**
      * @inheritdoc
      */
-    public function bootstrap()
+    public function bootstrap(): void
     {
         // Ensure that the request component has been instantiated
         if (!$this->has('request', true)) {
@@ -92,7 +92,7 @@ class Application extends \yii\console\Application
     /**
      * @inheritdoc
      */
-    public function setTimeZone($value)
+    public function setTimeZone($value): void
     {
         parent::setTimeZone($value);
 

@@ -896,7 +896,7 @@ class View extends \yii\web\View
     /**
      * @inheritdoc
      */
-    public function registerJs($js, $position = self::POS_READY, $key = null)
+    public function registerJs($js, $position = self::POS_READY, $key = null): void
     {
         // Trim any whitespace and ensure it ends with a semicolon.
         $js = StringHelper::ensureRight(trim($js, " \t\n\r\0\x0B"), ';');
@@ -1024,7 +1024,7 @@ class View extends \yii\web\View
     /**
      * @inheritdoc
      */
-    public function registerJsFile($url, $options = [], $key = null)
+    public function registerJsFile($url, $options = [], $key = null): void
     {
         // If 'depends' is specified, ignore it  for now because the file will
         // get registered as an asset bundle
@@ -1082,7 +1082,7 @@ class View extends \yii\web\View
     /**
      * @inheritdoc
      */
-    public function endBody()
+    public function endBody(): void
     {
         $this->registerAssetFlashes();
         parent::endBody();
@@ -1234,7 +1234,7 @@ JS;
      * @param string $inputName
      * @since 3.4.0
      */
-    public function registerDeltaName(string $inputName)
+    public function registerDeltaName(string $inputName): void
     {
         if ($this->_registerDeltaNames) {
             $this->_deltaNames[] = $this->namespaceInputName($inputName);
@@ -1635,7 +1635,7 @@ JS;
     /**
      * @inheritdoc
      */
-    public function endPage($ajaxMode = false)
+    public function endPage($ajaxMode = false): void
     {
         if (!$ajaxMode && Craft::$app->getRequest()->getIsCpRequest()) {
             $this->_setJsProperty('registeredJsFiles', $this->_registeredJsFiles);
@@ -1760,7 +1760,7 @@ JS;
     /**
      * @inheritdoc
      */
-    protected function renderHeadHtml()
+    protected function renderHeadHtml(): string
     {
         $lines = [];
         if (!empty($this->title)) {
@@ -1781,7 +1781,7 @@ JS;
     /**
      * @inheritdoc
      */
-    protected function renderBodyBeginHtml()
+    protected function renderBodyBeginHtml(): string
     {
         $lines = [];
         if (!empty($this->_scripts[self::POS_BEGIN])) {
@@ -1799,7 +1799,7 @@ JS;
     /**
      * @inheritdoc
      */
-    protected function renderBodyEndHtml($ajaxMode)
+    protected function renderBodyEndHtml($ajaxMode): string
     {
         $lines = [];
         if (!empty($this->_scripts[self::POS_END])) {
@@ -1858,7 +1858,7 @@ JS;
     /**
      * @inheritdoc
      */
-    protected function registerAssetFiles($name)
+    protected function registerAssetFiles($name): void
     {
         // Don't re-register bundles
         if (isset($this->_registeredAssetBundles[$name])) {

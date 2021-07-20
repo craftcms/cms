@@ -68,7 +68,7 @@ class EnvAttributeParserBehavior extends Behavior
     /**
      * @inheritdoc
      */
-    public function events()
+    public function events(): array
     {
         return [
             Model::EVENT_BEFORE_VALIDATE => 'beforeValidate',

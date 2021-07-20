@@ -66,7 +66,7 @@ abstract class BaseContentFixture extends DbFixture
     /**
      * @inheritdoc
      */
-    public function load()
+    public function load(): void
     {
         foreach ($this->loadData($this->dataFile) as $key => $data) {
             $element = $this->findElement($data);
@@ -91,7 +91,7 @@ abstract class BaseContentFixture extends DbFixture
     /**
      * @inheritdoc
      */
-    public function unload()
+    public function unload(): void
     {
         $this->_elements = [];
     }

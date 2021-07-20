@@ -83,7 +83,7 @@ class Mailer extends \yii\swiftmailer\Mailer
     /**
      * @inheritdoc
      */
-    public function send($message)
+    public function send($message): bool
     {
         // fire a beforePrep event
         $this->trigger(self::EVENT_BEFORE_PREP, new MailEvent([
