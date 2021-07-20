@@ -2418,13 +2418,7 @@ class Elements extends Component
         $isNewElement = !$element->id;
 
         // Are we tracking changes?
-        $trackChanges = (
-            !$isNewElement &&
-            $element->siteSettingsId &&
-            $element->duplicateOf === null &&
-            $element::trackChanges() &&
-            !$element->mergingCanonicalChanges
-        );
+        $trackChanges = ElementHelper::shouldTrackChanges($element);
         $dirtyAttributes = [];
 
         // Force propagation for new elements
@@ -2677,8 +2671,6 @@ class Elements extends Component
             throw $e;
         }
 
-        $isDraftOrRevision = ElementHelper::isDraftOrRevision($element);
-
         if (!$element->propagating) {
             // Delete the rows that don't need to be there anymore
             if (!$isNewElement) {
@@ -2825,6 +2817,9 @@ class Elements extends Component
         ) {
             $siteElement->title = $element->title;
         }
+
+        // Copy the dirty attributes
+        $siteElement->setDirtyAttributes($element->getDirtyAttributes());
 
         // Copy any non-translatable field values
         if ($element::hasContent()) {

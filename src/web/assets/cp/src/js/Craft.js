@@ -946,18 +946,20 @@ $.extend(Craft,
          * @private
          */
         _groupParamsByDeltaNames: function(params, deltaNames, withRoot, initialValues) {
-            var grouped = {};
+            const grouped = {};
 
             if (withRoot) {
                 grouped.__root__ = [];
             }
 
-            var n, paramName;
+            const encodeURIComponentExceptEqualChar = o => encodeURIComponent(o).replace('%3D', '=');
 
-            paramLoop: for (var p = 0; p < params.length; p++) {
+            params = params.map(p => decodeURIComponent(p));
+
+            paramLoop: for (let p = 0; p < params.length; p++) {
                 // loop through the delta names from most -> least specific
-                for (n = deltaNames.length - 1; n >= 0; n--) {
-                    paramName = decodeURIComponent(params[p]).substr(0, deltaNames[n].length + 1);
+                for (let n = deltaNames.length - 1; n >= 0; n--) {
+                    const paramName = params[p].substr(0, deltaNames[n].length + 1);
                     if (
                         paramName === deltaNames[n] + '=' ||
                         paramName === deltaNames[n] + '['
@@ -965,13 +967,13 @@ $.extend(Craft,
                         if (typeof grouped[deltaNames[n]] === 'undefined') {
                             grouped[deltaNames[n]] = [];
                         }
-                        grouped[deltaNames[n]].push(params[p]);
+                        grouped[deltaNames[n]].push(encodeURIComponentExceptEqualChar(params[p]));
                         continue paramLoop;
                     }
                 }
 
                 if (withRoot) {
-                    grouped.__root__.push(params[p]);
+                    grouped.__root__.push(encodeURIComponentExceptEqualChar(params[p]));
                 }
             }
 

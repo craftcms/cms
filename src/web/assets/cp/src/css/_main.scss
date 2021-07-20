@@ -84,6 +84,10 @@ body, input, select, textarea {
   box-sizing: border-box;
 }
 
+img {
+  max-width: 100%;
+}
+
 .text,
 table.editable textarea {
   body.rtl .ltr & {
