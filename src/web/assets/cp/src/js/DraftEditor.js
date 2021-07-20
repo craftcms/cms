@@ -789,8 +789,6 @@ Craft.DraftEditor = Garnish.Base.extend({
                     this.updatePreviewTargets(response.data.previewTargets);
                 }
 
-                this.afterUpdate(data);
-
                 if (createdProvisionalDraft) {
                     this.trigger('createProvisionalDraft');
                 }
@@ -820,6 +818,7 @@ Craft.DraftEditor = Garnish.Base.extend({
                     );
                 }
 
+                this.afterUpdate(data);
                 resolve();
             }).catch(() => {
                 this._afterSaveRequest();
