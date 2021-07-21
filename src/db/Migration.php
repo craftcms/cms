@@ -194,7 +194,7 @@ abstract class Migration extends \yii\db\Migration
      * @param bool $includeAuditColumns Whether to include the data for the audit columns
      * (dateCreated, dateUpdated, uid).
      */
-    public function insert($table, $columns, $includeAuditColumns = true): void
+    public function insert($table, $columns, bool $includeAuditColumns = true): void
     {
         echo "    > insert into $table ...";
         $time = microtime(true);
@@ -214,7 +214,7 @@ abstract class Migration extends \yii\db\Migration
      * @param array $rows The rows to be batch inserted into the table.
      * @param bool $includeAuditColumns Whether `dateCreated`, `dateUpdated`, and `uid` values should be added to $columns.
      */
-    public function batchInsert($table, $columns, $rows, $includeAuditColumns = true): void
+    public function batchInsert($table, $columns, $rows, bool $includeAuditColumns = true): void
     {
         echo "    > batch insert into $table ...";
         $time = microtime(true);
@@ -261,7 +261,7 @@ abstract class Migration extends \yii\db\Migration
      * @param array $params The parameters to be bound to the command.
      * @param bool $includeAuditColumns Whether the `dateUpdated` value should be added to $columns.
      */
-    public function update($table, $columns, $condition = '', $params = [], $includeAuditColumns = true): void
+    public function update($table, $columns, $condition = '', $params = [], bool $includeAuditColumns = true): void
     {
         echo "    > update in $table ...";
         $time = microtime(true);

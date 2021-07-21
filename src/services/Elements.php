@@ -920,7 +920,7 @@ class Elements extends Component
      * @throws \Throwable if reasons
      * @since 3.2.0
      */
-    public function resaveElements(ElementQueryInterface $query, bool $continueOnError = false, $skipRevisions = true, bool $updateSearchIndex = null): void
+    public function resaveElements(ElementQueryInterface $query, bool $continueOnError = false, bool $skipRevisions = true, bool $updateSearchIndex = null): void
     {
         // Fire a 'beforeResaveElements' event
         if ($this->hasEventHandlers(self::EVENT_BEFORE_RESAVE_ELEMENTS)) {

@@ -293,7 +293,7 @@ class MatrixBlockQuery extends ElementQuery
      * @uses $allowOwnerDrafts
      * @since 3.3.10
      */
-    public function allowOwnerDrafts($value = true): self
+    public function allowOwnerDrafts(?bool $value = true): self
     {
         $this->allowOwnerDrafts = $value;
         return $this;
@@ -314,7 +314,7 @@ class MatrixBlockQuery extends ElementQuery
      * @uses $allowOwnerDrafts
      * @since 3.3.10
      */
-    public function allowOwnerRevisions($value = true): self
+    public function allowOwnerRevisions(?bool $value = true): self
     {
         $this->allowOwnerRevisions = $value;
         return $this;

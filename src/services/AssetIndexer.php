@@ -199,7 +199,7 @@ class AssetIndexer extends Component
      * @return AssetIndexingSession
      * @since 4.0.0
      */
-    public function createIndexingSession(array $volumeList, bool $cacheRemoteImages = true, $isCli = false): AssetIndexingSession
+    public function createIndexingSession(array $volumeList, bool $cacheRemoteImages = true, bool $isCli = false): AssetIndexingSession
     {
         $indexedVolumes = [];
 

@@ -79,6 +79,8 @@
 - Field layout elements’ `inputHtml()` methods must now have a `?string` return type declaration.
 - Field layout elements’ `selectorIcon()` methods must now have a `?string` return type declaration.
 - Field layout elements’ `settingsHtml()` methods must now have a `?string` return type declaration.
+- GraphQL objects’ `resolve()` methods’ `$arguments` arguments must now have an `array` type declaration.
+- GraphQL queries’ `getQueries()` methods’ `$checkToken` arguments must now have a `bool` type declaration.
 - Plugins’ `afterSaveSettings()` methods must now have a `void` return type declaration.
 - Plugins’ `createSettingsModel()` methods must now have a `?Model` return type declaration.
 - Plugins’ `getCpNavItem()` methods must now have an `?array` return type declaration.

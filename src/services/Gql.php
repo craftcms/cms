@@ -568,7 +568,7 @@ class Gql extends Component
      * @return array|null
      * @since 3.3.12
      */
-    public function getCachedResult($cacheKey): ?array
+    public function getCachedResult(string $cacheKey): ?array
     {
         return Craft::$app->getCache()->get($cacheKey) ?: null;
     }
@@ -883,7 +883,7 @@ class Gql extends Component
      * @throws Exception
      * @since 3.4.0
      */
-    public function saveToken(GqlToken $token, $runValidation = true): bool
+    public function saveToken(GqlToken $token, bool $runValidation = true): bool
     {
         if ($token->isTemporary) {
             return false;
@@ -971,7 +971,7 @@ class Gql extends Component
      * @throws Exception
      * @since 3.4.0
      */
-    public function saveSchema(GqlSchema $schema, $runValidation = true): bool
+    public function saveSchema(GqlSchema $schema, bool $runValidation = true): bool
     {
         $isNewSchema = !$schema->id;
 
@@ -1173,7 +1173,7 @@ class Gql extends Component
      * @param string $elementClass
      * @return array
      */
-    public function getContentArguments(array $contexts, $elementClass): array
+    public function getContentArguments(array $contexts, string $elementClass): array
     {
         if (!array_key_exists($elementClass, $this->_contentFieldCache)) {
             $contentArguments = [];

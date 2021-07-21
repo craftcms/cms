@@ -35,7 +35,7 @@ class TableSchema extends \yii\db\TableSchema
      * @param int $key
      * @param array $extendedForeignKey
      */
-    public function addExtendedForeignKey($key, $extendedForeignKey): void
+    public function addExtendedForeignKey(int $key, array $extendedForeignKey): void
     {
         $this->_extendedForeignKeys[$key] = $extendedForeignKey;
     }

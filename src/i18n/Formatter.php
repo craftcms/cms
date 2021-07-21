@@ -224,7 +224,7 @@ class Formatter extends \yii\i18n\Formatter
      * @throws InvalidArgumentException if the input value is not numeric.
      * @throws InvalidConfigException if no currency is given and [[currencyCode]] is not defined.
      */
-    public function asCurrency($value, $currency = null, $options = [], $textOptions = [], $stripZeros = false): string
+    public function asCurrency($value, $currency = null, $options = [], $textOptions = [], bool $stripZeros = false): string
     {
         $omitDecimals = ($stripZeros && (int)$value == $value);
 

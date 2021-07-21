@@ -236,7 +236,7 @@ class Config extends Component
      * @param string $value The environment variable value
      * @throws Exception if the .env file doesn't exist
      */
-    public function setDotEnvVar($name, $value): void
+    public function setDotEnvVar(string $name, string $value): void
     {
         $path = $this->getDotEnvPath();
 

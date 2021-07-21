@@ -430,7 +430,7 @@ class ProjectConfig extends Component
      * @param bool $getFromYaml whether data should be fetched from the project config files instead of the loaded config. Defaults to `false`.
      * @return mixed The config item value
      */
-    public function get(string $path = null, $getFromYaml = false)
+    public function get(string $path = null, bool $getFromYaml = false)
     {
         if ($getFromYaml) {
             $source = $this->_changesBeingApplied ?? $this->_getConfigurationFromYaml();
@@ -681,7 +681,7 @@ class ProjectConfig extends Component
      * @param bool $force Whether the config change should be processed regardless of previous records,
      * or whether YAML changes are currently being applied
      */
-    public function processConfigChanges(string $path, bool $triggerUpdate = false, $message = null, bool $force = false): void
+    public function processConfigChanges(string $path, bool $triggerUpdate = false, string $message = null, bool $force = false): void
     {
         if ($force || $this->getIsApplyingYamlChanges()) {
             $this->_processConfigChangesInternal($path, $triggerUpdate, $message, $force);
@@ -1039,7 +1039,7 @@ class ProjectConfig extends Component
      * When the event handler is invoked, this data can be accessed via [[ConfigEvent::data]].
      * @return static self reference
      */
-    public function onAdd(string $path, $handler, $data = null): self
+    public function onAdd(string $path, callable $handler, $data = null): self
     {
         $this->registerChangeEventHandler(self::EVENT_ADD_ITEM, $path, $handler, $data);
         return $this;
@@ -1071,7 +1071,7 @@ class ProjectConfig extends Component
      * When the event handler is invoked, this data can be accessed via [[ConfigEvent::data]].
      * @return static self reference
      */
-    public function onUpdate(string $path, $handler, $data = null): self
+    public function onUpdate(string $path, callable $handler, $data = null): self
     {
         $this->registerChangeEventHandler(self::EVENT_UPDATE_ITEM, $path, $handler, $data);
         return $this;
@@ -1102,7 +1102,7 @@ class ProjectConfig extends Component
      * When the event handler is invoked, this data can be accessed via [[ConfigEvent::data]].
      * @return static self reference
      */
-    public function onRemove(string $path, $handler, $data = null): self
+    public function onRemove(string $path, callable $handler, $data = null): self
     {
         $this->registerChangeEventHandler(self::EVENT_REMOVE_ITEM, $path, $handler, $data);
         return $this;
@@ -1130,7 +1130,7 @@ class ProjectConfig extends Component
      * @param mixed $data The data to be passed to the event handler when the event is triggered.
      * When the event handler is invoked, this data can be accessed via [[ConfigEvent::data]].
      */
-    public function registerChangeEventHandler(string $event, string $path, $handler, $data = null): void
+    public function registerChangeEventHandler(string $event, string $path, callable $handler, $data = null): void
     {
         $specificity = substr_count($path, '.');
         $pattern = '/^(?P<path>' . preg_quote($path, '/') . ')(?P<extra>\..+)?$/';
@@ -1553,7 +1553,7 @@ class ProjectConfig extends Component
      * @param bool $delete Whether to delete the value at the destination or not.
      * @return mixed
      */
-    private function _traverseDataArray(array &$data, $path, $value = null, $delete = false)
+    private function _traverseDataArray(array &$data, $path, $value = null, bool $delete = false)
     {
         if (is_string($path)) {
             $path = explode('.', $path);

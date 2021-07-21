@@ -365,7 +365,7 @@ trait ApplicationTrait
      *
      * @param bool|null $value
      */
-    public function setIsInstalled($value = true): void
+    public function setIsInstalled(?bool $value = true): void
     {
         $this->_isInstalled = $value;
     }

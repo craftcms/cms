@@ -43,10 +43,10 @@ trait GqlTypeTrait
     /**
      * Returns an instance of this schema object's type as provided by entity registry
      *
-     * @param array $fields optional fields to use
+     * @param array|null $fields optional fields to use
      * @return GqlObjectType
      */
-    public static function getType($fields = null): Type
+    public static function getType(array $fields = null): Type
     {
         return GqlEntityRegistry::getEntity(static::class) ?: GqlEntityRegistry::createEntity(static::class, new GqlObjectType([
             'name' => static::getName(),

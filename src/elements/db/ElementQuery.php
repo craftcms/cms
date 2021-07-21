@@ -875,7 +875,7 @@ class ElementQuery extends Query implements ElementQueryInterface
      * @inheritdoc
      * @uses $trashed
      */
-    public function trashed($value = true): self
+    public function trashed(?bool $value = true): self
     {
         $this->trashed = $value;
         return $this;
@@ -1525,7 +1525,7 @@ class ElementQuery extends Query implements ElementQueryInterface
     /**
      * @inheritdoc
      */
-    public function ids($db = null): array
+    public function ids(Connection $db = null): array
     {
         // TODO: Remove this in Craft 4
         // Make sure $db is not a list of attributes

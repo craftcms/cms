@@ -484,7 +484,7 @@ class FileHelper extends \yii\helpers\FileHelper
      * @param string $path the directory to be checked
      * @return int Unix timestamp representing the last modification time
      */
-    public static function lastModifiedTime($path): int
+    public static function lastModifiedTime(string $path): int
     {
         if (is_file($path)) {
             return filemtime($path);
@@ -674,7 +674,7 @@ class FileHelper extends \yii\helpers\FileHelper
      * @param array $options options for file searching. See [[findFiles()]] for available options.
      * @since 3.5.0
      */
-    public static function addFilesToZip(ZipArchive $zip, string $dir, ?string $prefix = null, $options = []): void
+    public static function addFilesToZip(ZipArchive $zip, string $dir, ?string $prefix = null, array $options = []): void
     {
         if (!is_dir($dir)) {
             return;

@@ -151,7 +151,7 @@ class PluginStoreAsset extends AssetBundle
      * @return array|null
      * @throws \yii\base\Exception
      */
-    private function getManifestFile($config, $type = 'modern'): ?array
+    private function getManifestFile(array $config, string $type = 'modern'): ?array
     {
         $pluginStoreService = Craft::$app->getPluginStore();
         $useDevServer = $pluginStoreService->useDevServer;

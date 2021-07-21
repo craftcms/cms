@@ -116,7 +116,7 @@ class ArrayHelper extends \yii\helpers\ArrayHelper
      * will be re-indexed with integers.
      * @return array the filtered array
      */
-    public static function where($array, $key, $value = true, bool $strict = false, $keepKeys = true): array
+    public static function where($array, $key, $value = true, bool $strict = false, bool $keepKeys = true): array
     {
         $result = [];
 
@@ -150,7 +150,7 @@ class ArrayHelper extends \yii\helpers\ArrayHelper
      * @return array the filtered array
      * @since 3.5.8
      */
-    public static function whereIn($array, $key, array $values, bool $strict = false, $keepKeys = true): array
+    public static function whereIn($array, $key, array $values, bool $strict = false, bool $keepKeys = true): array
     {
         $result = [];
 

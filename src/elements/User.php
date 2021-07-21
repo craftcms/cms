@@ -807,7 +807,7 @@ class User extends Element implements IdentityInterface
      * @param array|null $params
      * @param InlineValidator $validator
      */
-    public function validateUnverifiedEmail(string $attribute, $params, InlineValidator $validator): void
+    public function validateUnverifiedEmail(string $attribute, ?array $params, InlineValidator $validator): void
     {
         $query = self::find()
             ->status(null);

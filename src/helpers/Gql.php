@@ -88,7 +88,7 @@ class Gql
      * @return bool
      * @throws GqlException
      */
-    public static function canSchema(string $component, $action = 'read', ?GqlSchema $schema = null): bool
+    public static function canSchema(string $component, string $action = 'read', ?GqlSchema $schema = null): bool
     {
         try {
             $schema = static::_schema($schema);

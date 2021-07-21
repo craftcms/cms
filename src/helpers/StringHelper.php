@@ -107,7 +107,7 @@ class StringHelper extends \yii\helpers\StringHelper
      * @return string The newly appended string.
      * @since 3.3.0
      */
-    public static function appendUniqueIdentifier(string $str, $entropyExtra = '', bool $md5 = true): string
+    public static function appendUniqueIdentifier(string $str, string $entropyExtra = '', bool $md5 = true): string
     {
         return (string)BaseStringy::create($str)->appendUniqueIdentifier($entropyExtra, $md5);
     }
@@ -710,7 +710,7 @@ class StringHelper extends \yii\helpers\StringHelper
      * @return bool Whether or not $str is base64 encoded.
      * @since 3.3.0
      */
-    public static function isBase64(string $str, $emptyStringIsValid = true): bool
+    public static function isBase64(string $str, bool $emptyStringIsValid = true): bool
     {
         return BaseStringy::create($str)->isBase64($emptyStringIsValid);
     }
@@ -1397,7 +1397,7 @@ class StringHelper extends \yii\helpers\StringHelper
      * @return bool Whether or not $str starts with $substring.
      * @since 3.3.0
      */
-    public static function startsWithAny($str, array $substrings, bool $caseSensitive = true): bool
+    public static function startsWithAny(string $str, array $substrings, bool $caseSensitive = true): bool
     {
         return BaseStringy::create($str)->startsWithAny($substrings, $caseSensitive);
     }

@@ -439,7 +439,7 @@ class Connection extends \yii\db\Connection
      * @param string $file The path to the backup file
      * @return string
      */
-    private function _parseCommandTokens(string $command, $file): string
+    private function _parseCommandTokens(string $command, string $file): string
     {
         $parsed = Db::parseDsn($this->dsn);
         $username = $this->getIsPgsql() && !empty($parsed['user']) ? $parsed['user'] : $this->username;

@@ -571,7 +571,7 @@ interface ElementQueryInterface extends QueryInterface, ArrayAccess, Arrayable, 
      * @return self self reference
      * @since 3.1.0
      */
-    public function trashed($value = true): self;
+    public function trashed(?bool $value = true): self;
 
     /**
      * Narrows the query results based on the {elements}’ creation dates.
@@ -1462,7 +1462,7 @@ interface ElementQueryInterface extends QueryInterface, ArrayAccess, Arrayable, 
      * If this parameter is not given, the `db` application component will be used.
      * @return int[] The resulting element IDs. An empty array is returned if no elements are found.
      */
-    public function ids($db = null): array;
+    public function ids(Connection $db = null): array;
 
     /**
      * Converts a found row into an element instance.

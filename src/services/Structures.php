@@ -455,7 +455,7 @@ class Structures extends Component
      * @return bool Whether it was done
      * @throws \Throwable if reasons
      */
-    private function _doIt($structureId, ElementInterface $element, StructureElement $targetElementRecord, $action, $mode): bool
+    private function _doIt(int $structureId, ElementInterface $element, StructureElement $targetElementRecord, string $action, string $mode): bool
     {
         // Get a lock or bust
         $lockName = 'structure:' . $structureId;

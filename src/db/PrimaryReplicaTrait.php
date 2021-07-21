@@ -227,7 +227,7 @@ trait PrimaryReplicaTrait
      * @return Connection|null the currently active replica connection. `null` is returned if no replica connections
      * are available and `$fallbackToPrimary` is false.
      */
-    public function getReplica($fallbackToPrimary = true): ?Connection
+    public function getReplica(bool $fallbackToPrimary = true): ?Connection
     {
         return $this->getSlave($fallbackToPrimary);
     }

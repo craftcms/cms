@@ -1153,7 +1153,7 @@ class AssetTransforms extends Component
      *
      * @param string $imageSource
      */
-    public function queueSourceForDeletingIfNecessary($imageSource): void
+    public function queueSourceForDeletingIfNecessary(string $imageSource): void
     {
         if (!($this->getCachedCloudImageSize() > 0)) {
             $this->_sourcesToBeDeleted[] = $imageSource;

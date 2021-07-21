@@ -927,7 +927,7 @@ class View extends \yii\web\View
      * @param bool $combine Whether the individually registered code snippets should be combined, losing the positions and keys
      * @return string|array|false The JS code that was registered in the active JS buffer, or `false` if there isn’t one
      */
-    public function clearJsBuffer(bool $scriptTag = true, $combine = true)
+    public function clearJsBuffer(bool $scriptTag = true, bool $combine = true)
     {
         if (empty($this->_jsBuffers)) {
             return false;
@@ -1049,11 +1049,11 @@ class View extends \yii\web\View
      * - [[POS_BEGIN]]: at the beginning of the body section
      * - [[POS_END]]: at the end of the body section
      * @param array $options the HTML attributes for the `<script>` tag.
-     * @param string $key the key that identifies the generic `<script>` code block. If null, it will use
+     * @param string|null $key the key that identifies the generic `<script>` code block. If null, it will use
      * $script as the key. If two generic `<script>` code blocks are registered with the same key, the latter
      * will overwrite the former.
      */
-    public function registerScript($script, $position = self::POS_END, $options = [], $key = null): void
+    public function registerScript(string $script, int $position = self::POS_END, array $options = [], string $key = null): void
     {
         $key = $key ?: md5($script);
         $this->_scripts[$position][$key] = Html::script($script, $options);
@@ -1575,7 +1575,7 @@ JS;
      * @param bool $append whether to append the method handler to the end of the existing method list for the hook. If `false`, the method will be
      * inserted at the beginning of the existing method list.
      */
-    public function hook(string $hook, $method, bool $append = true): void
+    public function hook(string $hook, callable $method, bool $append = true): void
     {
         if ($append || empty($this->_hooks[$hook])) {
             $this->_hooks[$hook][] = $method;

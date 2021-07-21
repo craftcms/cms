@@ -88,7 +88,7 @@ class IndexAssetsController extends Controller
      * @return int
      * @since 3.1.4
      */
-    public function actionOne($handle, $startAt = 0): int
+    public function actionOne(string $handle, int $startAt = 0): int
     {
         $path = '';
 
@@ -134,7 +134,7 @@ class IndexAssetsController extends Controller
      * @throws VolumeObjectNotFoundException
      * @throws Exception
      */
-    private function _indexAssets(array $volumes, string $path = '', $startAt = 0): int
+    private function _indexAssets(array $volumes, string $path = '', int $startAt = 0): int
     {
         $assetIndexer = Craft::$app->getAssetIndexer();
         $assetService = Craft::$app->getAssets();

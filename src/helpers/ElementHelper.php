@@ -279,7 +279,7 @@ class ElementHelper
      * @return array
      * @throws Exception if any of the element's supported sites are invalid
      */
-    public static function supportedSitesForElement(ElementInterface $element, $withUnpropagatedSites = false): array
+    public static function supportedSitesForElement(ElementInterface $element, bool $withUnpropagatedSites = false): array
     {
         $sites = [];
         $siteUidMap = ArrayHelper::map(Craft::$app->getSites()->getAllSites(), 'id', 'uid');

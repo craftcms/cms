@@ -26,7 +26,7 @@ class Command extends \yii\db\Command
      * @param bool $includeAuditColumns Whether `dateCreated`, `dateUpdated`, and `uid` values should be added to $columns.
      * @return static the command object itself
      */
-    public function insert($table, $columns, $includeAuditColumns = true): Command
+    public function insert($table, $columns, bool $includeAuditColumns = true): Command
     {
         if ($includeAuditColumns) {
             $now = Db::prepareDateForDb(new \DateTime());
@@ -55,7 +55,7 @@ class Command extends \yii\db\Command
      * @param bool $includeAuditColumns Whether `dateCreated`, `dateUpdated`, and `uid` values should be added to $columns.
      * @return static The command object itself.
      */
-    public function batchInsert($table, $columns, $rows, $includeAuditColumns = true): Command
+    public function batchInsert($table, $columns, $rows, bool $includeAuditColumns = true): Command
     {
         if (empty($rows)) {
             return $this;
@@ -132,7 +132,7 @@ class Command extends \yii\db\Command
      * @param bool $includeAuditColumns Whether the `dateUpdated` value should be added to $columns.
      * @return static The command object itself.
      */
-    public function update($table, $columns, $condition = '', $params = [], $includeAuditColumns = true): Command
+    public function update($table, $columns, $condition = '', $params = [], bool $includeAuditColumns = true): Command
     {
         if ($includeAuditColumns && !isset($columns['dateUpdated'])) {
             $columns['dateUpdated'] = Db::prepareDateForDb(new \DateTime());

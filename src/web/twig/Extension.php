@@ -259,7 +259,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
      * [[\yii\base\Application::language|application language]] will be used.
      * @return string the translated message.
      */
-    public function translateFilter($message, $category = null, $params = null, $language = null): string
+    public function translateFilter($message, string $category = null, array $params = null, string $language = null): string
     {
         // The front end site doesn't need to specify the category
         /** @noinspection CallableParameterUseCaseInTypeContextInspection */
@@ -928,7 +928,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
      * @param callable|null $arrow
      * @return array
      */
-    public function filterFilter(TwigEnvironment $env, $arr, $arrow = null): array
+    public function filterFilter(TwigEnvironment $env, $arr, callable $arrow = null): array
     {
         if ($arrow === null) {
             return array_filter($arr);
