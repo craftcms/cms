@@ -4,6 +4,7 @@
 - Fixed a bug where Live Preview stopped working when the device type was changed, for preview targets that had auto-refresh disabled. ([#9610](https://github.com/craftcms/cms/issues/9610))
 - Fixed a 403 error that occurred when attempting to discard changes on an entry. ([#9602](https://github.com/craftcms/cms/issues/9602))
 - Fixed a bug where opening the image editor would cause the page to scroll to the top. ([#9612](https://github.com/craftcms/cms/issues/9612))
+
 ## 3.7.4 - 2021-07-19
 
 ### Added
