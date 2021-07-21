@@ -116,7 +116,6 @@ Craft.AssetImageEditor = Garnish.Modal.extend({
         this.removeListener(this.$shade, 'click');
 
         this.maxImageSize = this.getMaxImageSize();
-
         Craft.postActionRequest('assets/image-editor', {assetId}, this.loadEditor.bind(this));
     },
 
@@ -1433,8 +1432,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend({
      */
     show: function() {
         this.base();
-
-        $('html').addClass('noscroll');
+        Garnish.$bod.addClass('no-scroll');
     },
 
     /**
@@ -1443,7 +1441,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend({
     hide: function() {
         this.removeAllListeners();
         this.straighteningInput.removeAllListeners();
-        $('html').removeClass('noscroll');
+        Garnish.$bod.removeClass('no-scroll');
         this.base();
     },
 
