@@ -82,6 +82,7 @@ class Tag extends Mutation
         $mutationArguments = ElementMutationArguments::getArguments();
         $generatedType = TagType::generateType($tagGroup);
 
+        /** @var TagResolver $resolver */
         $resolver = Craft::createObject(TagResolver::class);
         $resolver->setResolutionData('tagGroup', $tagGroup);
         static::prepareResolver($resolver, $tagGroup->getFields());

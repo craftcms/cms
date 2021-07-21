@@ -20,6 +20,7 @@ use craft\db\Table;
 use craft\elements\Asset;
 use craft\elements\Category;
 use craft\elements\db\EagerLoadPlan;
+use craft\elements\db\ElementQuery;
 use craft\elements\db\ElementQueryInterface;
 use craft\elements\Entry;
 use craft\elements\GlobalSet;
@@ -922,6 +923,7 @@ class Elements extends Component
      */
     public function resaveElements(ElementQueryInterface $query, bool $continueOnError = false, bool $skipRevisions = true, bool $updateSearchIndex = null): void
     {
+        /** @var ElementQuery $query */
         // Fire a 'beforeResaveElements' event
         if ($this->hasEventHandlers(self::EVENT_BEFORE_RESAVE_ELEMENTS)) {
             $this->trigger(self::EVENT_BEFORE_RESAVE_ELEMENTS, new ElementQueryEvent([
@@ -1012,6 +1014,7 @@ class Elements extends Component
      */
     public function propagateElements(ElementQueryInterface $query, $siteIds = null, bool $continueOnError = false): void
     {
+        /** @var ElementQuery $query */
         // Fire a 'beforePropagateElements' event
         if ($this->hasEventHandlers(self::EVENT_BEFORE_PROPAGATE_ELEMENTS)) {
             $this->trigger(self::EVENT_BEFORE_PROPAGATE_ELEMENTS, new ElementQueryEvent([
@@ -1228,6 +1231,7 @@ class Elements extends Component
                         $siteQuery->revisions();
                     }
 
+                    /** @var Element $siteElement */
                     $siteElement = $siteQuery->one();
 
                     if ($siteElement === null) {
@@ -2413,7 +2417,7 @@ class Elements extends Component
      */
     private function _saveElementInternal(ElementInterface $element, bool $runValidation = true, bool $propagate = true, bool $updateSearchIndex = null): bool
     {
-        /** @var ElementInterface|DraftBehavior|RevisionBehavior $element */
+        /** @var Element|DraftBehavior|RevisionBehavior $element */
         $isNewElement = !$element->id;
 
         // Are we tracking changes?

@@ -9,6 +9,7 @@ namespace craft\gql\mutations;
 
 use Craft;
 use craft\base\Volume;
+use craft\base\VolumeInterface;
 use craft\elements\Asset as AssetElement;
 use craft\gql\arguments\mutations\Asset as AssetMutationArguments;
 use craft\gql\base\ElementMutationResolver;
@@ -73,16 +74,17 @@ class Asset extends Mutation
     /**
      * Create the per-volume save mutation.
      *
-     * @param Volume $volume
+     * @param VolumeInterface $volume
      * @return array
      * @throws InvalidConfigException
      */
-    public static function createSaveMutation(Volume $volume): array
+    public static function createSaveMutation(VolumeInterface $volume): array
     {
         $mutationName = AssetElement::gqlMutationNameByContext($volume);
         $mutationArguments = AssetMutationArguments::getArguments();
         $generatedType = AssetType::generateType($volume);
 
+        /** @var AssetResolver $resolver */
         $resolver = Craft::createObject(AssetResolver::class);
         $resolver->setResolutionData('volume', $volume);
         static::prepareResolver($resolver, $volume->getFields());

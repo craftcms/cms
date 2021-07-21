@@ -8,6 +8,7 @@
 namespace craft\services;
 
 use Craft;
+use craft\base\Plugin;
 use craft\base\PluginInterface;
 use craft\db\MigrationManager;
 use craft\db\Query;
@@ -933,6 +934,7 @@ class Plugins extends Component
         }
 
         // Create the plugin
+        /** @var Plugin $plugin */
         $plugin = Craft::createObject($config, [$handle, Craft::$app]);
         $this->_setPluginMigrator($plugin);
         return $plugin;

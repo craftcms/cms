@@ -124,6 +124,7 @@ class Entry extends Mutation
 
         $section = $entryType->getSection();
 
+        /** @var EntryMutationResolver $resolver */
         $resolver = Craft::createObject(EntryMutationResolver::class);
         $resolver->setResolutionData('entryType', $entryType);
         $resolver->setResolutionData('section', $section);

@@ -89,13 +89,13 @@ abstract class ElementMutationResolver extends MutationResolver
     /**
      * Populate the element with submitted data.
      *
-     * @param Element $element
+     * @param ElementInterface $element
      * @param array $arguments
      * @param ResolveInfo $resolveInfo
      * @return EntryElement
      * @throws GqlException if data not found.
      */
-    protected function populateElementWithData(Element $element, array $arguments, ResolveInfo $resolveInfo = null): Element
+    protected function populateElementWithData(ElementInterface $element, array $arguments, ResolveInfo $resolveInfo = null): ElementInterface
     {
         $normalized = false;
 

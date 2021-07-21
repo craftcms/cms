@@ -81,6 +81,7 @@ class Category extends Mutation
         $mutationArguments = array_merge(ElementMutationArguments::getArguments(), StructureArguments::getArguments());
         $generatedType = CategoryType::generateType($categoryGroup);
 
+        /** @var CategoryResolver $resolver */
         $resolver = Craft::createObject(CategoryResolver::class);
         $resolver->setResolutionData('categoryGroup', $categoryGroup);
         static::prepareResolver($resolver, $categoryGroup->getFields());

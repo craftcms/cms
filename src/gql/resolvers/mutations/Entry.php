@@ -136,7 +136,7 @@ class Entry extends ElementMutationResolver
         $entryTypeUid = Db::uidById(Table::ENTRYTYPES, $draft->typeId);
         $this->requireSchemaAction('entrytypes.' . $entryTypeUid, 'save');
 
-        /** @var Entry $draft */
+        /** @var EntryElement $draft */
         $draft = Craft::$app->getDrafts()->applyDraft($draft);
 
         return $draft->id;
@@ -169,6 +169,7 @@ class Entry extends ElementMutationResolver
         if ($canIdentify) {
             // Prepare the element query
             $siteId = $arguments['siteId'] ?? Craft::$app->getSites()->getPrimarySite()->id;
+            /** @var EntryQuery $entryQuery */
             $entryQuery = $elementService->createElementQuery(EntryElement::class)->status(null)->siteId($siteId);
             $entryQuery = $this->identifyEntry($entryQuery, $arguments);
 

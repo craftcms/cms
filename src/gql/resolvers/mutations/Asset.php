@@ -8,7 +8,7 @@
 namespace craft\gql\resolvers\mutations;
 
 use Craft;
-use craft\base\Element;
+use craft\base\ElementInterface;
 use craft\base\Volume;
 use craft\db\Table;
 use craft\elements\Asset as AssetElement;
@@ -135,7 +135,7 @@ class Asset extends ElementMutationResolver
     /**
      * @inheritDoc
      */
-    protected function populateElementWithData(Element $asset, array $arguments, ResolveInfo $resolveInfo = null): Element
+    protected function populateElementWithData(ElementInterface $asset, array $arguments, ResolveInfo $resolveInfo = null): ElementInterface
     {
         if (!empty($arguments['_file'])) {
             $fileInformation = $arguments['_file'];

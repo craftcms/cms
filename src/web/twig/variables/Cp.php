@@ -600,6 +600,7 @@ class Cp extends Component
 
         $directory = new \RecursiveDirectoryIterator($root);
 
+        /** @noinspection PhpParamsInspection */
         $filter = new \RecursiveCallbackFilterIterator($directory, function($current) {
             // Skip hidden files and directories, as well as node_modules/ folders
             if ($current->getFilename()[0] === '.' || $current->getFilename() === 'node_modules') {

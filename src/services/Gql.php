@@ -1169,7 +1169,7 @@ class Gql extends Component
     /**
      * Return the content arguments based on an element class and contexts for it.
      *
-     * @param FieldLayoutBehavior[] $contexts
+     * @param array $contexts
      * @param string $elementClass
      * @return array
      */

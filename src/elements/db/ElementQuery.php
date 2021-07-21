@@ -2606,6 +2606,7 @@ class ElementQuery extends Query implements ElementQueryInterface
 
         // Rename orderBy keys based on the real column name mapping
         // (yes this is awkward but we need to preserve the order of the keys!)
+        /** @var array $orderBy */
         $orderBy = array_merge($this->orderBy);
         $orderByColumns = array_keys($orderBy);
 

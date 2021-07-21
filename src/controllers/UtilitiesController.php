@@ -73,7 +73,7 @@ class UtilitiesController extends Controller
             throw new NotFoundHttpException('Invalid utility ID: ' . $id);
         }
 
-        /** @var UtilityInterface $class */
+        /** @var string|UtilityInterface $class */
         if ($utilitiesService->checkAuthorization($class) === false) {
             throw new ForbiddenHttpException('User not permitted to access the "' . $class::displayName() . '".');
         }
