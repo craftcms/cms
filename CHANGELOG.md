@@ -75,7 +75,7 @@
 - Fields’ `afterElementSave()` methods must now have a `void` return type declaration.
 - Fields’ `getEagerLoadingGqlConditions()` methods must now have an `?array` return type declaration, and `null` should be returned rather than `false` if the field is not eager-loadable.
 - Fields’ `modifyElementIndexQuery()` methods must now have a `void` return type declaration.
-- Fields’ `modifyElementsQuery()` methods must now have a `void` return type declaration, and should throw a `QueryAbortedException` when the query should yield no results, rother than returning `false`.
+- Fields’ `modifyElementsQuery()` methods must now have a `void` return type declaration, and should throw a `QueryAbortedException` when the query should yield no results, rather than returning `false`.
 - Field layout elements’ `inputHtml()` methods must now have a `?string` return type declaration.
 - Field layout elements’ `selectorIcon()` methods must now have a `?string` return type declaration.
 - Field layout elements’ `settingsHtml()` methods must now have a `?string` return type declaration.
