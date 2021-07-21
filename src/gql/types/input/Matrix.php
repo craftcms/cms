@@ -27,7 +27,7 @@ class Matrix extends InputObjectType
      * Create the type for a matrix field.
      *
      * @param MatrixField $context
-     * @return bool|mixed
+     * @return mixed
      */
     public static function getType(MatrixField $context)
     {

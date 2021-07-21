@@ -416,7 +416,7 @@ class UrlManager extends \yii\web\UrlManager
      * Attempts to match a path with the registered URL routes.
      *
      * @param Request $request
-     * @return array|bool
+     * @return array|false
      */
     private function _getMatchedUrlRoute(Request $request)
     {
@@ -510,7 +510,7 @@ class UrlManager extends \yii\web\UrlManager
      * Checks if the path could be a public template path and if so, returns a route to that template.
      *
      * @param Request $request
-     * @return array|bool
+     * @return array|false
      */
     private function _getTemplateRoute(Request $request)
     {

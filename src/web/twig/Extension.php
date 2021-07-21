@@ -1257,7 +1257,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
      * @param int|null $length The minimum string length that should be returned. (Numbers that are too short will be left-padded with `0`s.)
      * @param bool $next Whether the next number in the sequence should be returned (and the sequence should be incremented).
      * If set to `false`, the current number in the sequence will be returned instead.
-     * @return integer|string
+     * @return int|string
      * @throws \Throwable if reasons
      * @throws \yii\db\Exception
      * @since 3.0.31

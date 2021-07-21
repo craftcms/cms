@@ -438,7 +438,7 @@ class Gql
     /**
      * @param ValueNode|VariableNode $value
      * @param array $variableValues
-     * @return array|array[]|mixed
+     * @return mixed
      */
     private static function _convertArgumentValue($value, array $variableValues = [])
     {

@@ -143,7 +143,7 @@ class Queue extends \yii\queue\cli\Queue implements QueueInterface
     /**
      * Listens to the queue and runs new jobs.
      *
-     * @param integer $timeout The number of seconds to wait between cycles
+     * @param int $timeout The number of seconds to wait between cycles
      * @retrun int|null the exit code
      * @deprecated in 3.6.11. Use [[run()]] instead.
      */

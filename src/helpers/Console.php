@@ -31,7 +31,7 @@ class Console extends \yii\helpers\Console
      * ```
      *
      * @param string $string the string to print
-     * @return int|bool Number of bytes printed or false on error
+     * @return int|false Number of bytes printed or false on error
      */
     public static function stdout($string)
     {

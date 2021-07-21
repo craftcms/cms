@@ -143,7 +143,7 @@ class Security extends \yii\base\Security
      * @param string $data the encrypted data to decrypt
      * @param string|null $inputKey the input to use for encryption and authentication
      * @param string $info optional context and application specific information, see [[hkdf()]]
-     * @return bool|string the decrypted data or false on authentication failure
+     * @return string|false the decrypted data or false on authentication failure
      * @throws InvalidConfigException on OpenSSL not loaded
      * @throws Exception on OpenSSL error
      * @see encryptByKey()

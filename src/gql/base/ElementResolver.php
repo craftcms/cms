@@ -32,7 +32,7 @@ abstract class ElementResolver extends Resolver
      * @param array $arguments
      * @param $context
      * @param ResolveInfo $resolveInfo
-     * @return ElementInterface|null|mixed
+     * @return mixed
      */
     public static function resolveOne($source, array $arguments, $context, ResolveInfo $resolveInfo)
     {
@@ -58,7 +58,7 @@ abstract class ElementResolver extends Resolver
      * @param array $arguments
      * @param $context
      * @param ResolveInfo $resolveInfo
-     * @return ElementInterface|null|mixed
+     * @return mixed
      */
     public static function resolveCount($source, array $arguments, $context, ResolveInfo $resolveInfo)
     {

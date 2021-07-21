@@ -960,7 +960,7 @@ class Request extends \yii\web\Request
      * ```
      *
      * @param string $name The GET parameter name.
-     * @param mixed|null $defaultValue The default parameter value if the GET parameter does not exist.
+     * @param mixed $defaultValue The default parameter value if the GET parameter does not exist.
      * @return mixed The GET parameter value.
      * @see getBodyParam()
      */

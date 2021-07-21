@@ -161,7 +161,7 @@ class Asset extends ElementMutationResolver
      *
      * @param AssetElement $asset
      * @param array $fileInformation
-     * @return boolean
+     * @return bool
      * @throws \yii\base\Exception
      */
     protected function handleUpload(AssetElement $asset, array $fileInformation): bool

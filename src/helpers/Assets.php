@@ -629,8 +629,8 @@ class Assets
     /**
      * Return an image path to use in Image Editor for an Asset by id and size.
      *
-     * @param integer $assetId
-     * @param integer $size
+     * @param int $assetId
+     * @param int $size
      * @return false|string
      * @throws Exception in case of failure
      */

@@ -1769,8 +1769,8 @@ class ProjectConfig extends Component
      * is null, it will be removed instead.
      *
      * @param string $path
-     * @param mixed|null $oldValue
-     * @param mixed|null $newValue
+     * @param mixed $oldValue
+     * @param mixed $newValue
      * @param string|null $message message describing the changes made.
      */
     private function _updateInternalConfig(string $path, $oldValue, $newValue, string $message = null): void

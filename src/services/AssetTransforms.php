@@ -1209,7 +1209,7 @@ class AssetTransforms extends Component
      * Detect the auto web-safe format for the Asset. Returns null, if the Asset is not an image.
      *
      * @param Asset $asset
-     * @return mixed|string
+     * @return mixed
      * @throws AssetOperationException If attempting to detect an image format for a non-image.
      * @throws VolumeException If unable to fetch file from volume.
      * @throws InvalidConfigException If no volume can be found.

@@ -277,7 +277,7 @@ class User extends \yii\web\User
     /**
      * Returns how many seconds are left in the current elevated user session.
      *
-     * @return int|bool The number of seconds left in the current elevated user session
+     * @return int|false The number of seconds left in the current elevated user session
      * or false if it has been disabled.
      */
     public function getElevatedSessionTimeout()

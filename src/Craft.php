@@ -58,7 +58,7 @@ class Craft extends Yii
      * ```
      *
      * @param string|null $str
-     * @return string|bool|null The parsed value, or the original value if it didn’t
+     * @return string|null|false The parsed value, or the original value if it didn’t
      * reference an environment variable or alias.
      * @since 3.1.0
      */

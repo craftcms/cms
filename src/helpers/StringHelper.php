@@ -619,7 +619,7 @@ class StringHelper extends \yii\helpers\StringHelper
      * @param string $needle The substring to look for.
      * @param int $offset The offset from which to search.
      * @param bool $caseSensitive Whether to perform a case-sensitive search or not.
-     * @return int|bool The occurrence's index if found, otherwise false.
+     * @return int|false The occurrence's index if found, otherwise false.
      */
     public static function indexOf(string $str, string $needle, int $offset = 0, bool $caseSensitive = true)
     {
@@ -640,7 +640,7 @@ class StringHelper extends \yii\helpers\StringHelper
      * @param string $needle The substring to look for.
      * @param int $offset The offset from which to search.
      * @param bool $caseSensitive Whether to perform a case-sensitive search or not.
-     * @return int|bool The occurrence's last index if found, otherwise false.
+     * @return int|false The occurrence's last index if found, otherwise false.
      */
     public static function indexOfLast(string $str, string $needle, int $offset = 0, bool $caseSensitive = true)
     {

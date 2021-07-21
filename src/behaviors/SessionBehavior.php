@@ -115,7 +115,7 @@ class SessionBehavior extends Behavior
      * [[\craft\web\View::getBodyHtml()]].
      *
      * @param string $name the class name of the asset bundle (without the leading backslash)
-     * @param integer|null $position if set, this forces a minimum position for javascript files.
+     * @param int|null $position if set, this forces a minimum position for javascript files.
      * @throws Exception if $name isn't an asset bundle class name
      * @see getAssetBundleFlashes()
      */
@@ -149,7 +149,7 @@ class SessionBehavior extends Behavior
      * by calling [[getJsFlashes()]] or [[\craft\web\View::getBodyHtml()]].
      *
      * @param string $js the JS code block to be registered
-     * @param integer $position the position at which the JS script tag should
+     * @param int $position the position at which the JS script tag should
      * be inserted in a page.
      * @param string|null $key the key that identifies the JS code block.
      * @see getJsFlashes()
