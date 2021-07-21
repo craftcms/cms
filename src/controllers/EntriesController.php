@@ -579,7 +579,7 @@ class EntriesController extends BaseEntriesController
     /**
      * Preps entry edit variables.
      *
-     * @param array &$variables
+     * @param array $variables
      * @return Response|null
      * @throws NotFoundHttpException if the requested section or entry cannot be found
      * @throws ForbiddenHttpException if the user is not permitted to edit content in the requested site

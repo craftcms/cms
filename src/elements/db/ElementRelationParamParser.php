@@ -480,7 +480,7 @@ class ElementRelationParamParser extends BaseObject
      * Returns a field model based on its handle or ID.
      *
      * @param mixed $field
-     * @param array|null &$fieldHandleParts
+     * @param array|null $fieldHandleParts
      * @return FieldInterface|null
      */
     private function _getField($field, array &$fieldHandleParts = null): ?FieldInterface

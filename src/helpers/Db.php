@@ -1214,7 +1214,7 @@ class Db
     /**
      * Normalizes “empty” values.
      *
-     * @param mixed &$value The param value.
+     * @param mixed $value The param value.
      */
     private static function _normalizeEmptyValue(&$value): void
     {
@@ -1239,7 +1239,7 @@ class Db
     /**
      * Extracts the operator from a DB param and returns it.
      *
-     * @param mixed &$value Te param value.
+     * @param mixed $value Te param value.
      * @param string $default The default operator to use
      * @param bool $negate Whether to reverse whatever the selected operator is
      * @return string The operator ('!=', '<=', '>=', '<', '>', or '=')

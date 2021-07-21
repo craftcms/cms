@@ -58,7 +58,7 @@ class ArrayHelper extends \yii\helpers\ArrayHelper
      * ArrayHelper::prepend($array, ...$values);
      * ```
      *
-     * @param array &$array the array to be prepended to
+     * @param array $array the array to be prepended to
      * @param mixed ...$values the values to prepend.
      * @since 3.4.0
      * @deprecated in 4.0.0. `array_unshift()` should be used instead.
@@ -76,7 +76,7 @@ class ArrayHelper extends \yii\helpers\ArrayHelper
      * ArrayHelper::append($array, ...$values);
      * ```
      *
-     * @param array &$array the array to be appended to
+     * @param array $array the array to be appended to
      * @param mixed ...$values the values to append.
      * @since 3.4.0
      * @deprecated in 4.0.0. `array_push()` should be used instead.
@@ -89,7 +89,7 @@ class ArrayHelper extends \yii\helpers\ArrayHelper
     /**
      * Prepends or appends a value to an array.
      *
-     * @param array &$array the array to be prepended/appended to
+     * @param array $array the array to be prepended/appended to
      * @param mixed $value the value to prepend/append to the array
      * @param bool $prepend `true` will prepend the value; `false` will append it
      */

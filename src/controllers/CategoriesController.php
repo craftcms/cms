@@ -627,7 +627,7 @@ class CategoriesController extends Controller
     /**
      * Preps category category variables.
      *
-     * @param array &$variables
+     * @param array $variables
      * @throws NotFoundHttpException if the requested category group or category cannot be found
      * @throws ForbiddenHttpException if the user is not permitted to edit content in the requested site
      */

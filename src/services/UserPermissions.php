@@ -740,7 +740,7 @@ class UserPermissions extends Component
      * @param array $permissionsGroup
      * @param array $postedPermissions
      * @param array $groupPermissions
-     * @param array &$filteredPermissions
+     * @param array $filteredPermissions
      * @return bool Whether any permissions were added to $filteredPermissions
      */
     private function _findSelectedPermissions(array $permissionsGroup, array $postedPermissions, array $groupPermissions, array &$filteredPermissions): bool

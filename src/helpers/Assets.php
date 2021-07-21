@@ -272,7 +272,7 @@ class Assets
     /**
      * Sorts a folder tree by Volume sort order.
      *
-     * @param VolumeFolder[] &$tree array passed by reference of the sortable folders.
+     * @param VolumeFolder[] $tree array passed by reference of the sortable folders.
      */
     public static function sortFolderTree(array &$tree): void
     {

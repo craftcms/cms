@@ -547,7 +547,7 @@ class Table extends Field
      *
      * @param string $type The cell type
      * @param mixed $value The cell value
-     * @param string|null &$error The error text to set on the element
+     * @param string|null $error The error text to set on the element
      * @return bool Whether the value is valid
      * @see normalizeValue()
      */

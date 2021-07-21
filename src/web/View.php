@@ -1590,7 +1590,7 @@ JS;
      * This is called by [[HookNode|`{% hook %}` tags]].
      *
      * @param string $hook The hook name.
-     * @param array &$context The current template context.
+     * @param array $context The current template context.
      * @return string Whatever the hooks returned.
      */
     public function invokeHook(string $hook, array &$context): string
@@ -1665,8 +1665,8 @@ JS;
      * Performs actions before a template is rendered.
      *
      * @param mixed $template The name of the template to render
-     * @param array &$variables The variables that should be available to the template
-     * @param string &$templateMode The template mode to use when rendering the template
+     * @param array $variables The variables that should be available to the template
+     * @param string $templateMode The template mode to use when rendering the template
      * @return bool Whether the template should be rendered
      */
     public function beforeRenderTemplate(string $template, array &$variables, string &$templateMode): bool
@@ -1713,8 +1713,8 @@ JS;
      * Performs actions before a page template is rendered.
      *
      * @param mixed $template The name of the template to render
-     * @param array &$variables The variables that should be available to the template
-     * @param string &$templateMode The template mode to use when rendering the template
+     * @param array $variables The variables that should be available to the template
+     * @param string $templateMode The template mode to use when rendering the template
      * @return bool Whether the template should be rendered
      */
     public function beforeRenderPageTemplate(string $template, array &$variables, string &$templateMode): bool
