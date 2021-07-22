@@ -34,11 +34,13 @@ abstract class MutationResolver extends Component
      *
      * @param array $data Resolver data
      * @param array $valueNormalizers Data normalizers
+     * @param array $config
      */
-    public function __construct(array $data = [], array $valueNormalizers = [])
+    public function __construct(array $data = [], array $valueNormalizers = [], array $config = [])
     {
         $this->_resolutionData = $data;
         $this->_valueNormalizers = $valueNormalizers;
+        parent::__construct($config);
     }
 
     /**
