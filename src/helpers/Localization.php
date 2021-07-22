@@ -21,9 +21,9 @@ use yii\i18n\MissingTranslationEvent;
 class Localization
 {
     /**
-     * @var
+     * @var string[][]
      */
-    private static $_translations;
+    private static array $_translations = [];
 
     /**
      * Normalizes a language into the correct format (e.g. `en-US`).

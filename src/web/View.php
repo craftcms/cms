@@ -28,6 +28,7 @@ use Twig\Extension\DebugExtension;
 use Twig\Extension\ExtensionInterface;
 use Twig\Extension\StringLoaderExtension;
 use Twig\Template as TwigTemplate;
+use Twig\TemplateWrapper;
 use yii\base\Arrayable;
 use yii\base\Exception;
 use yii\base\Model;
@@ -115,9 +116,9 @@ class View extends \yii\web\View
     private ?Environment $_siteTwig = null;
 
     /**
-     * @var
+     * @var array
      */
-    private $_twigOptions;
+    private array $_twigOptions;
 
     /**
      * @var ExtensionInterface[] List of Twig extensions registered with [[registerTwigExtension()]]
@@ -125,14 +126,14 @@ class View extends \yii\web\View
     private array $_twigExtensions = [];
 
     /**
-     * @var
+     * @var string[]
      */
-    private $_templatePaths;
+    private array $_templatePaths = [];
 
     /**
-     * @var
+     * @var TemplateWrapper[]
      */
-    private $_objectTemplates;
+    private array $_objectTemplates = [];
 
     /**
      * @var string|null
@@ -160,17 +161,17 @@ class View extends \yii\web\View
     private ?string $_templatesPath = null;
 
     /**
-     * @var
+     * @var string[]
      */
-    private $_defaultTemplateExtensions;
+    private array $_defaultTemplateExtensions;
 
     /**
-     * @var
+     * @var string[]
      */
-    private $_indexTemplateFilenames;
+    private array $_indexTemplateFilenames;
 
     /**
-     * @var
+     * @var string|null
      */
     private ?string $_namespace = null;
 
@@ -222,19 +223,14 @@ class View extends \yii\web\View
     private array $_html;
 
     /**
-     * @var
+     * @var callable[][]
      */
-    private $_hooks;
+    private array $_hooks = [];
 
     /**
-     * @var
+     * @var string|null
      */
-    private $_textareaMarkers;
-
-    /**
-     * @var
-     */
-    private $_renderingTemplate;
+    private ?string $_renderingTemplate = null;
 
     /**
      * @var
@@ -1571,7 +1567,7 @@ JS;
      * ```
      *
      * @param string $hook The hook name.
-     * @param callback $method The callback function.
+     * @param callable $method The callback function.
      * @param bool $append whether to append the method handler to the end of the existing method list for the hook. If `false`, the method will be
      * inserted at the beginning of the existing method list.
      */

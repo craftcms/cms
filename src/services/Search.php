@@ -55,19 +55,14 @@ class Search extends Component
     public ?int $minFullTextWordLength = null;
 
     /**
-     * @var
+     * @var SearchQueryTerm[]
      */
-    private $_tokens;
+    private array $_terms;
 
     /**
-     * @var
+     * @var SearchQueryTerm[][]
      */
-    private $_terms;
-
-    /**
-     * @var
-     */
-    private $_groups;
+    private array $_groups;
 
     /**
      * @var bool
@@ -210,12 +205,11 @@ class Search extends Component
         }
 
         // Get tokens for query
-        $this->_tokens = $query->getTokens();
         $this->_terms = [];
         $this->_groups = [];
 
         // Set Terms and Groups based on tokens
-        foreach ($this->_tokens as $obj) {
+        foreach ($query->getTokens() as $obj) {
             if ($obj instanceof SearchQueryTermGroup) {
                 $this->_groups[] = $obj->terms;
             } else {

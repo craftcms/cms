@@ -41,7 +41,10 @@ class ElementIndexes extends Component
      */
     const EVENT_DEFINE_SOURCE_SORT_OPTIONS = 'defineSourceSortOptions';
 
-    private $_indexSettings;
+    /**
+     * @var array
+     */
+    private array $_indexSettings = [];
 
     /**
      * Returns the element index settings for a given element type.
@@ -51,7 +54,7 @@ class ElementIndexes extends Component
      */
     public function getSettings(string $elementType): ?array
     {
-        if (!isset($this->_indexSettings) || !array_key_exists($elementType, $this->_indexSettings)) {
+        if (!array_key_exists($elementType, $this->_indexSettings)) {
             $result = (new Query())
                 ->select(['settings'])
                 ->from([Table::ELEMENTINDEXSETTINGS])

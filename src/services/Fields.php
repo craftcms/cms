@@ -189,9 +189,9 @@ class Fields extends Component
     private ?MemoizableArray $_fields = null;
 
     /**
-     * @var
+     * @var FieldLayout[]|null[]
      */
-    private $_layoutsById;
+    private array $_layoutsById = [];
 
     /**
      * @var
@@ -1059,7 +1059,7 @@ class Fields extends Component
      */
     public function getLayoutById(int $layoutId): ?FieldLayout
     {
-        if (isset($this->_layoutsById) && array_key_exists($layoutId, $this->_layoutsById)) {
+        if (array_key_exists($layoutId, $this->_layoutsById)) {
             return $this->_layoutsById[$layoutId];
         }
 

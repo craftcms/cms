@@ -42,24 +42,24 @@ use yii\base\Exception;
 class Matrix extends Component
 {
     /**
-     * @var
+     * @var MatrixBlockType[]|null[]
      */
-    private $_blockTypesById;
+    private array $_blockTypesById = [];
 
     /**
-     * @var
+     * @var MatrixBlockType[][]
      */
-    private array $_blockTypesByFieldId;
+    private array $_blockTypesByFieldId = [];
 
     /**
-     * @var
+     * @var bool[]
      */
-    private $_fetchedAllBlockTypesForFieldId;
+    private array $_fetchedAllBlockTypesForFieldId = [];
 
     /**
-     * @var
+     * @var MatrixBlockTypeRecord[]
      */
-    private $_blockTypeRecordsById;
+    private array $_blockTypeRecordsById = [];
 
     /**
      * @var string[]
@@ -126,7 +126,7 @@ class Matrix extends Component
      */
     public function getBlockTypeById(int $blockTypeId): ?MatrixBlockType
     {
-        if (isset($this->_blockTypesById) && array_key_exists($blockTypeId, $this->_blockTypesById)) {
+        if (array_key_exists($blockTypeId, $this->_blockTypesById)) {
             return $this->_blockTypesById[$blockTypeId];
         }
 

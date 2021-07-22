@@ -34,9 +34,9 @@ class FindAndReplace extends BaseJob
     public ?string $replace = null;
 
     /**
-     * @var
+     * @var array
      */
-    private $_textColumns;
+    private array $_textColumns;
 
     /**
      * @inheritdoc

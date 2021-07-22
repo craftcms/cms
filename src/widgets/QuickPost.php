@@ -59,7 +59,7 @@ class QuickPost extends Widget
     public ?array $fields = null;
 
     /**
-     * @var
+     * @var Section|false
      */
     private $_section;
 

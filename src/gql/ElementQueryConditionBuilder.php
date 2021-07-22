@@ -86,7 +86,7 @@ class ElementQueryConditionBuilder extends Component
     private array $_fragments;
     private array $_eagerLoadableFieldsByContext = [];
     private array $_transformableAssetProperties = ['url', 'width', 'height'];
-    private $_additionalEagerLoadableNodes = null;
+    private array $_additionalEagerLoadableNodes;
 
 
     /**
@@ -319,7 +319,7 @@ class ElementQueryConditionBuilder extends Component
             $this->_additionalEagerLoadableNodes = $list;
         }
 
-        return (array)$this->_additionalEagerLoadableNodes;
+        return $this->_additionalEagerLoadableNodes;
     }
 
     /**

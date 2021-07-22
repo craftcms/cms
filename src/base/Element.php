@@ -1478,14 +1478,14 @@ abstract class Element extends Component implements ElementInterface
     private bool $_initialized = false;
 
     /**
-     * @var
+     * @var FieldInterface[]|null[]
      */
-    private $_fieldsByHandle;
+    private array $_fieldsByHandle = [];
 
     /**
-     * @var
+     * @var string|null
      */
-    private $_fieldParamNamePrefix;
+    private ?string $_fieldParamNamePrefix;
 
     /**
      * @var array|null Record of the fields whose values have already been normalized
@@ -3336,7 +3336,11 @@ abstract class Element extends Component implements ElementInterface
             // Do we have any post data for this field?
             if (isset($values[$field->handle])) {
                 $value = $values[$field->handle];
-            } else if (!empty($this->_fieldParamNamePrefix) && UploadedFile::getInstancesByName($this->_fieldParamNamePrefix . '.' . $field->handle)) {
+            } else if (
+                isset($this->_fieldParamNamePrefix) &&
+                $this->_fieldParamNamePrefix !== '' &&
+                UploadedFile::getInstancesByName("$this->_fieldParamNamePrefix.$field->handle")
+            ) {
                 // A file was uploaded for this field
                 $value = null;
             } else {
@@ -4092,7 +4096,7 @@ abstract class Element extends Component implements ElementInterface
      */
     protected function fieldByHandle(string $handle): ?FieldInterface
     {
-        if (isset($this->_fieldsByHandle) && array_key_exists($handle, $this->_fieldsByHandle)) {
+        if (array_key_exists($handle, $this->_fieldsByHandle)) {
             return $this->_fieldsByHandle[$handle];
         }
 

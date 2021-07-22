@@ -16,6 +16,7 @@ use craft\events\MoveElementEvent;
 use craft\models\Structure;
 use craft\records\Structure as StructureRecord;
 use craft\records\StructureElement;
+use yii\base\BaseObject;
 use yii\base\Component;
 use yii\base\Exception;
 
@@ -58,9 +59,9 @@ class Structures extends Component
     public int $mutexTimeout = 0;
 
     /**
-     * @var
+     * @var StructureElement[]
      */
-    private $_rootElementRecordsByStructureId;
+    private array $_rootElementRecordsByStructureId = [];
 
     // Structure CRUD
     // -------------------------------------------------------------------------

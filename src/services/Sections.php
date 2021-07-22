@@ -129,9 +129,9 @@ class Sections extends Component
     private ?MemoizableArray $_sections = null;
 
     /**
-     * @var
+     * @var EntryType[]
      */
-    private $_entryTypesById;
+    private array $_entryTypesById = [];
 
     /**
      * Serializer
@@ -1020,7 +1020,7 @@ class Sections extends Component
             return null;
         }
 
-        if (isset($this->_entryTypesById) && array_key_exists($entryTypeId, $this->_entryTypesById)) {
+        if (array_key_exists($entryTypeId, $this->_entryTypesById)) {
             return $this->_entryTypesById[$entryTypeId];
         }
 

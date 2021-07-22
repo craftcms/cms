@@ -26,5 +26,5 @@ class SetEagerLoadedElementsEvent extends Event
     /**
      * @param ElementInterface[] $elements The eager-loaded elements
      */
-    public $elements;
+    public array $elements;
 }

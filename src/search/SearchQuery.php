@@ -28,9 +28,9 @@ class SearchQuery
     private array $_termOptions;
 
     /**
-     * @var SearchQueryTerm[]|SearchQueryTermGroup
+     * @var SearchQueryTerm[]|SearchQueryTermGroup[]
      */
-    private $_tokens;
+    private array $_tokens = [];
 
     /**
      * Constructor
@@ -42,14 +42,13 @@ class SearchQuery
     {
         $this->_query = $query;
         $this->_termOptions = $termOptions;
-        $this->_tokens = [];
         $this->_parse();
     }
 
     /**
      * Returns the tokens.
      *
-     * @return array
+     * @return SearchQueryTerm[]|SearchQueryTermGroup[]
      */
     public function getTokens(): array
     {

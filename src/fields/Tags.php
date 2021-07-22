@@ -76,7 +76,7 @@ class Tags extends BaseRelationField
     public bool $allowLimit = false;
 
     /**
-     * @var
+     * @var int|false|null
      */
     private $_tagGroupId;
 
