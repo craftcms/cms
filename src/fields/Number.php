@@ -109,55 +109,25 @@ class Number extends Field implements PreviewableFieldInterface, SortableFieldIn
      */
     public function __construct($config = [])
     {
-        // Normalize number settings
+        // Config normalization
         foreach (['defaultValue', 'min', 'max'] as $name) {
             if (isset($config[$name]) && is_array($config[$name])) {
                 $config[$name] = Localization::normalizeNumber($config[$name]['value'], $config[$name]['locale']);
             }
         }
+        foreach (['defaultValue', 'max', 'min', 'prefix', 'suffix'] as $name) {
+            if (isset($config[$name]) && $config[$name] === '') {
+                $config[$name] = null;
+            }
+        }
+        if (isset($config['decimals']) && !$config['decimals']) {
+            $config['decimals'] = 0;
+        }
+        if (isset($config['size']) && !$config['size']) {
+            $config['size'] = null;
+        }
 
         parent::__construct($config);
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function init(): void
-    {
-        parent::init();
-
-        // Normalize $defaultValue
-        if ($this->defaultValue === '') {
-            $this->defaultValue = null;
-        }
-
-        // Normalize $max
-        if ($this->max === '') {
-            $this->max = null;
-        }
-
-        // Normalize $min
-        if ($this->min === '') {
-            $this->min = null;
-        }
-
-        // Normalize $decimals
-        if (!$this->decimals) {
-            $this->decimals = 0;
-        }
-
-        // Normalize $size
-        if (isset($this->size) && !$this->size) {
-            $this->size = null;
-        }
-
-        if ($this->prefix === '') {
-            $this->prefix = null;
-        }
-
-        if ($this->suffix === '') {
-            $this->suffix = null;
-        }
     }
 
     /**

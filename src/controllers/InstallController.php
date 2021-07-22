@@ -12,6 +12,7 @@ use craft\config\DbConfig;
 use craft\db\Connection;
 use craft\elements\User;
 use craft\errors\DbConnectException;
+use craft\errors\MigrationException;
 use craft\helpers\App;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Install as InstallHelper;
@@ -298,18 +299,21 @@ class InstallController extends Controller
             'site' => $site,
         ]);
 
-        if ($migrator->migrateUp($migration) !== false) {
-            $success = true;
-
-            // Mark all existing migrations as applied
-            foreach ($migrator->getNewMigrations() as $name) {
-                $migrator->addMigrationHistory($name);
-            }
-        } else {
-            $success = false;
+        try {
+            $migrator->migrateUp($migration);
+        } catch (MigrationException $e) {
+            return $this->asJson([
+                'success' => false,
+                'error' => $e->getMessage(),
+            ]);
         }
 
-        return $this->asJson(['success' => $success]);
+        // Mark all existing migrations as applied
+        foreach ($migrator->getNewMigrations() as $name) {
+            $migrator->addMigrationHistory($name);
+        }
+
+        return $this->asJson(['success' => true]);
     }
 
     /**

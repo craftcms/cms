@@ -93,21 +93,20 @@ class Table extends Field
     /**
      * @inheritdoc
      */
-    public function init(): void
+    public function __construct($config = [])
     {
-        parent::init();
-
-        if (!isset($this->addRowLabel)) {
-            $this->addRowLabel = Craft::t('app', 'Add a row');
+        // Config normalization
+        if (!isset($config['addRowLabel'])) {
+            $config['addRowLabel'] = Craft::t('app', 'Add a row');
         }
 
-        if (!is_array($this->columns)) {
-            $this->columns = [];
+        if (!isset($config['columns']) || !is_array($config['columns'])) {
+            $config['columns'] = [];
         } else {
-            foreach ($this->columns as $colId => &$column) {
+            foreach ($config['columns'] as $colId => &$column) {
                 // If the column doesn't specify a type, then it probably wasn't meant to be submitted
                 if (!isset($column['type'])) {
-                    unset($this->columns[$colId]);
+                    unset($config['columns'][$colId]);
                     continue;
                 }
 
@@ -124,18 +123,20 @@ class Table extends Field
             unset($column);
         }
 
-        if (!is_array($this->defaults)) {
-            $this->defaults = $this->id || $this->defaults === '' ? [] : [[]];
-        } else {
-            // Make sure the array is non-associative and with incrementing keys
-            $this->defaults = array_values($this->defaults);
+        if (isset($config['defaults'])) {
+            if (!is_array($config['defaults'])) {
+                $config['defaults'] = (!empty($config['id']) || $config['defaults'] === '') ? [] : [[]];
+            } else {
+                // Make sure the array is non-associative and with incrementing keys
+                $config['defaults'] = array_values($config['defaults']);
+            }
         }
 
         // Convert default date cell values to ISO8601 strings
-        if (!empty($this->columns) && isset($this->defaults)) {
-            foreach ($this->columns as $colId => $col) {
+        if (!empty($config['columns']) && isset($config['defaults'])) {
+            foreach ($config['columns'] as $colId => $col) {
                 if (in_array($col['type'], ['date', 'time'], true)) {
-                    foreach ($this->defaults as &$row) {
+                    foreach ($config['defaults'] as &$row) {
                         if (isset($row[$colId])) {
                             $row[$colId] = DateTimeHelper::toIso8601($row[$colId]) ?: null;
                         }
@@ -143,6 +144,8 @@ class Table extends Field
                 }
             }
         }
+
+        parent::__construct($config);
     }
 
     /**

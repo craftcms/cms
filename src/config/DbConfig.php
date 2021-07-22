@@ -150,9 +150,9 @@ class DbConfig extends BaseObject
     public string $server;
 
     /**
-     * @var int The database server port. Defaults to 3306 for MySQL and 5432 for PostgreSQL.
+     * @var int|string The database server port. Defaults to 3306 for MySQL and 5432 for PostgreSQL.
      */
-    public int $port;
+    public $port;
 
     /**
      * @var string|null MySQL only. If this is set, the CLI connection string (used for yiic) will connect to the Unix socket instead of

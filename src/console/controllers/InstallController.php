@@ -10,6 +10,7 @@ namespace craft\console\controllers;
 use Craft;
 use craft\console\Controller;
 use craft\elements\User;
+use craft\errors\MigrationException;
 use craft\helpers\Console;
 use craft\helpers\Install as InstallHelper;
 use craft\migrations\Install;
@@ -176,10 +177,11 @@ class InstallController extends Controller
         $this->stdout('*** installing Craft' . PHP_EOL, Console::FG_YELLOW);
         $start = microtime(true);
         $migrator = Craft::$app->getMigrator();
-        $result = $migrator->migrateUp($migration);
 
-        if ($result === false) {
-            $this->stderr('*** failed to install Craft' . PHP_EOL . PHP_EOL, Console::FG_RED);
+        try {
+            $migrator->migrateUp($migration);
+        } catch (MigrationException $e) {
+            $this->stderr('*** failed to install Craft: ' . $e->getMessage(). PHP_EOL . PHP_EOL, Console::FG_RED);
             return ExitCode::UNSPECIFIED_ERROR;
         }
 

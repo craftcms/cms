@@ -373,7 +373,7 @@ SQL;
             'siteId' => $site->id,
         ];
 
-        if ($cleanKeywords !== null && $cleanKeywords !== false && $cleanKeywords !== '') {
+        if ($cleanKeywords !== '') {
             // Add padding around keywords
             $cleanKeywords = ' ' . $cleanKeywords . ' ';
         }

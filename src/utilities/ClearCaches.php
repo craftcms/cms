@@ -173,9 +173,12 @@ class ClearCaches extends Utility
                             'See https://craftcms.com/docs/3.x/config/#aliases for more info.');
                     }
 
-                    FileHelper::clearDirectory(Craft::getAlias($basePath), [
-                        'except' => ['.gitignore'],
-                    ]);
+                    $basePath = Craft::getAlias($basePath);
+                    if ($basePath !== false) {
+                        FileHelper::clearDirectory($basePath, [
+                            'except' => ['.gitignore'],
+                        ]);
+                    }
                 },
             ],
             [

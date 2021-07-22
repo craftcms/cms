@@ -23,9 +23,9 @@ abstract class BaseJob extends BaseObject implements JobInterface
     public ?string $description = null;
 
     /**
-     * @var int The current progress
+     * @var int|float The current progress
      */
-    private int $_progress;
+    private $_progress;
 
     /**
      * @var string|null The current progress label

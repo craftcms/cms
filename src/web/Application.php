@@ -334,11 +334,12 @@ class Application extends \yii\web\Application
     {
         $generalConfig = $this->getConfig()->getGeneral();
 
-        if ($generalConfig->resourceBasePath === false) {
+        $resourceBasePath = Craft::getAlias($generalConfig->resourceBasePath);
+
+        if ($resourceBasePath === false) {
             return;
         }
 
-        $resourceBasePath = Craft::getAlias($generalConfig->resourceBasePath);
         @FileHelper::createDirectory($resourceBasePath);
 
         if (!is_dir($resourceBasePath) || !FileHelper::isWritable($resourceBasePath)) {
