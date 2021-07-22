@@ -19,9 +19,9 @@ use yii\base\Exception;
 class InvalidSubpathException extends Exception
 {
     /**
-     * @var string|null The invalid subpath
+     * @var string The invalid subpath
      */
-    public ?string $subpath;
+    public string $subpath;
 
     /**
      * Constructor.

@@ -18,12 +18,12 @@ trait PluginTrait
     /**
      * @var string|null The plugin’s package name
      */
-    public ?string $packageName;
+    public ?string $packageName = null;
 
     /**
      * @var string|null The plugin’s display name
      */
-    public ?string $name;
+    public ?string $name = null;
 
     /**
      * @var string|null The plugin’s schema version number
@@ -33,27 +33,27 @@ trait PluginTrait
     /**
      * @var string|null The plugin’s description
      */
-    public ?string $description;
+    public ?string $description = null;
 
     /**
      * @var string|null The plugin developer’s name
      */
-    public ?string $developer;
+    public ?string $developer = null;
 
     /**
      * @var string|null The plugin developer’s website URL
      */
-    public ?string $developerUrl;
+    public ?string $developerUrl = null;
 
     /**
      * @var string|null The plugin developer’s support email
      */
-    public ?string $developerEmail;
+    public ?string $developerEmail = null;
 
     /**
      * @var string|null The plugin’s documentation URL
      */
-    public ?string $documentationUrl;
+    public ?string $documentationUrl = null;
 
     /**
      * @var string|null The plugin’s changelog URL.
@@ -82,17 +82,17 @@ trait PluginTrait
      * - For consistency and clarity, release notes should follow [keepachangelog.com](http://keepachangelog.com/), but it’s not enforced.
      * - Release notes can contain notes using the format `> {note} Some note`. `{warning}` and `{tip}` are also supported.
      */
-    public ?string $changelogUrl;
+    public ?string $changelogUrl = null;
 
     /**
      * @var string|null The plugin’s download URL
      */
-    public ?string $downloadUrl;
+    public ?string $downloadUrl = null;
 
     /**
      * @var string|null The translation category that this plugin’s translation messages should use. Defaults to the lowercased plugin handle.
      */
-    public ?string $t9nCategory;
+    public ?string $t9nCategory = null;
 
     /**
      * @var string The language that the plugin’s messages were written in

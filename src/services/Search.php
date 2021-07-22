@@ -52,7 +52,7 @@ class Search extends Component
     /**
      * @var int|null The minimum word length that keywords must be in order to use a full-text search (MySQL only).
      */
-    public ?int $minFullTextWordLength;
+    public ?int $minFullTextWordLength = null;
 
     /**
      * @var
@@ -78,7 +78,7 @@ class Search extends Component
      * @var array|null
      * @see _isSupportedFullTextWord()
      */
-    private ?array $_mysqlStopWords;
+    private ?array $_mysqlStopWords = null;
 
     /**
      * @var int Because the `keywords` column in the search index table is a

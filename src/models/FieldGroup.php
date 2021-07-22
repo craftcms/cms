@@ -24,17 +24,17 @@ class FieldGroup extends Model
     /**
      * @var int|null ID
      */
-    public ?int $id;
+    public ?int $id = null;
 
     /**
      * @var string|null Name
      */
-    public ?string $name;
+    public ?string $name = null;
 
     /**
      * @var string|null UID
      */
-    public ?string $uid;
+    public ?string $uid = null;
 
     /**
      * @inheritdoc

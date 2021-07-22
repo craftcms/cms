@@ -61,7 +61,7 @@ class Composer extends Component
     /**
      * @var string[]|null
      */
-    private ?array $_composerClasses;
+    private ?array $_composerClasses = null;
 
     /**
      * Returns the path to composer.json.

@@ -22,7 +22,7 @@ class View extends ElementAction
     /**
      * @var string|null The trigger label
      */
-    public ?string $label;
+    public ?string $label = null;
 
     /**
      * @inheritdoc

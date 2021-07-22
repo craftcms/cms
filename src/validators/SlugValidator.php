@@ -28,13 +28,13 @@ class SlugValidator extends Validator
     /**
      * @var bool|null Whether auto-generated slugs should be limited to ASCII characters. Defaults to the `limitAutoSlugsToAscii` config setting if left null.
      */
-    public ?bool $limitAutoSlugsToAscii;
+    public ?bool $limitAutoSlugsToAscii = null;
 
     /**
      * @var string|null The language to pull ASCII character mappings for, if [[limitAutoSlugsToAscii]] is enabled.
      * @since 3.1.9
      */
-    public ?string $language;
+    public ?string $language = null;
 
     /**
      * @inheritdoc

@@ -32,5 +32,5 @@ class GetAssetUrlEvent extends Event
     /**
      * @var string|null Url to requested Asset that should be used instead.
      */
-    public ?string $url;
+    public ?string $url = null;
 }

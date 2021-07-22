@@ -28,7 +28,7 @@ class I18N extends \yii\i18n\I18N
      * @var array|null All of the known locales
      * @see getAllLocales()
      */
-    private ?array $_allLocaleIds;
+    private ?array $_allLocaleIds = null;
 
     /**
      * @var string[]
@@ -45,7 +45,7 @@ class I18N extends \yii\i18n\I18N
     /**
      * @var bool|null Whether [[translate()]] should wrap translations with `@` characters
      */
-    private ?bool $_translationDebugOutput;
+    private ?bool $_translationDebugOutput = null;
 
     /**
      * @inheritdoc

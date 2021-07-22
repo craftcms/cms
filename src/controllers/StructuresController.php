@@ -28,12 +28,12 @@ class StructuresController extends Controller
     /**
      * @var Structure|null
      */
-    private ?Structure $_structure;
+    private ?Structure $_structure = null;
 
     /**
      * @var ElementInterface|null
      */
-    private ?ElementInterface $_element;
+    private ?ElementInterface $_element = null;
 
     /**
      * @inheritdoc

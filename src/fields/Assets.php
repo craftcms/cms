@@ -100,38 +100,38 @@ class Assets extends BaseRelationField
      * "folder:X", where X is the craft\models\VolumeFolder ID
      * (only used if [[useSingleFolder]] is false)
      */
-    public ?string $defaultUploadLocationSource;
+    public ?string $defaultUploadLocationSource = null;
 
     /**
      * @var string|null The subpath that files should be uploaded to by default
      * (only used if [[useSingleFolder]] is false)
      */
-    public ?string $defaultUploadLocationSubpath;
+    public ?string $defaultUploadLocationSubpath = null;
 
     /**
      * @var string|null Where files should be restricted to, in format
      * "folder:X", where X is the craft\models\VolumeFolder ID
      * (only used if [[useSingleFolder]] is true)
      */
-    public ?string $singleUploadLocationSource;
+    public ?string $singleUploadLocationSource = null;
 
     /**
      * @var string|null The subpath that files should be restricted to
      * (only used if [[useSingleFolder]] is true)
      */
-    public ?string $singleUploadLocationSubpath;
+    public ?string $singleUploadLocationSubpath = null;
 
     /**
      * @var bool|null Whether the available assets should be restricted to
      * [[allowedKinds]]
      */
-    public ?bool $restrictFiles;
+    public ?bool $restrictFiles = null;
 
     /**
      * @var array|null The file kinds that the field should be restricted to
      * (only used if [[restrictFiles]] is true)
      */
-    public ?array $allowedKinds;
+    public ?array $allowedKinds = null;
 
     /**
      * @var bool Whether to show input sources for volumes the user doesn’t have permission to view.
@@ -175,12 +175,12 @@ class Assets extends BaseRelationField
     /**
      * @var array|null References for files uploaded as data strings for this field.
      */
-    private ?array $_uploadedDataFiles;
+    private ?array $_uploadedDataFiles = null;
 
     /**
      * @var string|null The default upload location for this field to open in modal
      */
-    private ?string $_defaultUploadLocation;
+    private ?string $_defaultUploadLocation = null;
 
     /**
      * @inheritdoc

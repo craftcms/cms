@@ -24,37 +24,37 @@ class CategoryGroup_SiteSettings extends Model
     /**
      * @var int|null ID
      */
-    public ?int $id;
+    public ?int $id = null;
 
     /**
      * @var int|null Group ID
      */
-    public ?int $groupId;
+    public ?int $groupId = null;
 
     /**
      * @var int|null Site ID
      */
-    public ?int $siteId;
+    public ?int $siteId = null;
 
     /**
      * @var bool|null Has URLs?
      */
-    public ?bool $hasUrls;
+    public ?bool $hasUrls = null;
 
     /**
      * @var string|null URI format
      */
-    public ?string $uriFormat;
+    public ?string $uriFormat = null;
 
     /**
      * @var string|null Entry template
      */
-    public ?string $template;
+    public ?string $template = null;
 
     /**
      * @var CategoryGroup|null
      */
-    private ?CategoryGroup $_group;
+    private ?CategoryGroup $_group = null;
 
     /**
      * Returns the group.

@@ -50,7 +50,7 @@ class Images extends Component
     /**
      * @var string|null Imagick version being used, if any.
      */
-    private ?string $_imagickVersion;
+    private ?string $_imagickVersion = null;
 
     /**
      * Decide on the image driver being used.

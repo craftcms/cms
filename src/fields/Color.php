@@ -44,7 +44,7 @@ class Color extends Field implements PreviewableFieldInterface
     /**
      * @var string|null The default color hex
      */
-    public ?string $defaultColor;
+    public ?string $defaultColor = null;
 
     /**
      * @inheritdoc

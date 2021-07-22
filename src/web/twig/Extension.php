@@ -78,12 +78,12 @@ class Extension extends AbstractExtension implements GlobalsInterface
     /**
      * @var View|null
      */
-    protected ?View $view;
+    protected ?View $view = null;
 
     /**
      * @var TwigEnvironment|null
      */
-    protected ?TwigEnvironment $environment;
+    protected ?TwigEnvironment $environment = null;
 
     /**
      * Constructor

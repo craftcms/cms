@@ -18,9 +18,9 @@ use yii\base\Event;
 class ConfigEvent extends Event
 {
     /**
-     * @var string|null The config path being processed
+     * @var string The config path being processed
      */
-    public ?string $path;
+    public string $path;
 
     /**
      * @var array The old config item value
@@ -37,5 +37,5 @@ class ConfigEvent extends Event
      * This wil be populated if the handler was registered using [[\craft\services\ProjectConfig::registerChangeEventHandler()]],
      * or one of its shortcut methods.
      */
-    public ?array $tokenMatches;
+    public ?array $tokenMatches = null;
 }

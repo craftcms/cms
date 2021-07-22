@@ -42,7 +42,7 @@ class Email extends Field implements PreviewableFieldInterface
     /**
      * @var string|null The input’s placeholder text
      */
-    public ?string $placeholder;
+    public ?string $placeholder = null;
 
     /**
      * @inheritdoc

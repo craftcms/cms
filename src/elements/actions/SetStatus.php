@@ -30,7 +30,7 @@ class SetStatus extends ElementAction
     /**
      * @var string|null The status elements should be set to
      */
-    public ?string $status;
+    public ?string $status = null;
 
     /**
      * @inheritdoc

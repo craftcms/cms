@@ -20,18 +20,18 @@ trait ElementTrait
     /**
      * @var int|null The element’s ID
      */
-    public ?int $id;
+    public ?int $id = null;
 
     /**
      * @var string|null The element’s temporary ID (only used if the element's URI format contains {id})
      */
-    public ?string $tempId;
+    public ?string $tempId = null;
 
     /**
      * @var int|null The ID of the draft’s row in the `drafts` table
      * @since 3.2.0
      */
-    public ?int $draftId;
+    public ?int $draftId = null;
 
     /**
      * @var int The ID of the revision’s row in the `revisions` table
@@ -48,28 +48,28 @@ trait ElementTrait
     /**
      * @var string|null The element’s UID
      */
-    public ?string $uid;
+    public ?string $uid = null;
 
     /**
      * @var int|null The ID of the element’s record in the `elements_sites` table
      * @since 3.5.2
      */
-    public ?int $siteSettingsId;
+    public ?int $siteSettingsId = null;
 
     /**
      * @var int|null The element’s field layout ID
      */
-    public ?int $fieldLayoutId;
+    public ?int $fieldLayoutId = null;
 
     /**
      * @var int|null The element’s structure ID
      */
-    public ?int $structureId;
+    public ?int $structureId = null;
 
     /**
      * @var int|null The element’s content row ID
      */
-    public ?int $contentId;
+    public ?int $contentId = null;
 
     /**
      * @var bool Whether the element is enabled
@@ -84,69 +84,69 @@ trait ElementTrait
     /**
      * @var int|null The site ID the element is associated with
      */
-    public ?int $siteId;
+    public ?int $siteId = null;
 
     /**
      * @var string|null The element’s title
      */
-    public ?string $title;
+    public ?string $title = null;
 
     /**
      * @var string|null The element’s slug
      */
-    public ?string $slug;
+    public ?string $slug = null;
 
     /**
      * @var string|null The element’s URI
      */
-    public ?string $uri;
+    public ?string $uri = null;
 
     /**
      * @var DateTime|null The date that the element was created
      */
-    public ?DateTime $dateCreated;
+    public ?DateTime $dateCreated = null;
 
     /**
      * @var DateTime|null The date that the element was last updated
      */
-    public ?DateTime $dateUpdated;
+    public ?DateTime $dateUpdated = null;
 
     /**
      * @var DateTime|null The date that the canonical element was last merged into this one
      * @since 3.7.0
      */
-    public ?DateTime $dateLastMerged;
+    public ?DateTime $dateLastMerged = null;
 
     /**
      * @var DateTime|null The date that the element was trashed
      * @since 3.2.0
      */
-    public ?DateTime $dateDeleted;
+    public ?DateTime $dateDeleted = null;
 
     /**
      * @var int|null The element’s structure’s root ID
      */
-    public ?int $root;
+    public ?int $root = null;
 
     /**
      * @var int|null The element’s left position within its structure
      */
-    public ?int $lft;
+    public ?int $lft = null;
 
     /**
      * @var int|null The element’s right position within its structure
      */
-    public ?int $rgt;
+    public ?int $rgt = null;
 
     /**
      * @var int|null The element’s level within its structure
      */
-    public ?int $level;
+    public ?int $level = null;
 
     /**
      * @var int|null The element’s search score, if the [[\craft\elements\db\ElementQuery::search]] parameter was used when querying for the element
      */
-    public ?int $searchScore;
+    public ?int $searchScore = null;
 
     /**
      * @var bool Whether the element has been soft-deleted.
@@ -185,7 +185,7 @@ trait ElementTrait
     /**
      * @var ElementInterface|null The element that this element is being duplicated by.
      */
-    public ?ElementInterface $duplicateOf;
+    public ?ElementInterface $duplicateOf = null;
 
     /**
      * @var bool Whether recent changes to the canonical element are being merged into this element.

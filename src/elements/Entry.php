@@ -685,7 +685,7 @@ class Entry extends Element
      * {{ entry.sectionId }}
      * ```
      */
-    public ?int $sectionId;
+    public ?int $sectionId = null;
 
     /**
      * @var int|null Type ID
@@ -697,7 +697,7 @@ class Entry extends Element
      * {{ entry.typeId }}
      * ```
      */
-    public ?int $typeId;
+    public ?int $typeId = null;
 
     /**
      * @var int|null Author ID
@@ -709,7 +709,7 @@ class Entry extends Element
      * {{ entry.authorId }}
      * ```
      */
-    public ?int $authorId;
+    public ?int $authorId = null;
 
     /**
      * @var \DateTime|null Post date
@@ -760,13 +760,13 @@ class Entry extends Element
     /**
      * @var int|null
      */
-    private ?int $_oldTypeId;
+    private ?int $_oldTypeId = null;
 
     /**
      * @var bool|null
      * @see _hasNewParent()
      */
-    private ?bool $_hasNewParent;
+    private ?bool $_hasNewParent = null;
 
     /**
      * @inheritdoc

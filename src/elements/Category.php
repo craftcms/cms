@@ -356,7 +356,7 @@ class Category extends Element
     /**
      * @var int|null Group ID
      */
-    public ?int $groupId;
+    public ?int $groupId = null;
 
     /**
      * @var int|false|null New parent ID
@@ -373,7 +373,7 @@ class Category extends Element
      * @var bool|null
      * @see _hasNewParent()
      */
-    private ?bool $_hasNewParent;
+    private ?bool $_hasNewParent = null;
 
     /**
      * @inheritdoc

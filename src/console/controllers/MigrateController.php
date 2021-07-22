@@ -93,7 +93,7 @@ class MigrateController extends BaseMigrateController
      * @var string|null DEPRECATED. Use `--track` instead.
      * @deprecated in 3.5.0. Use [[track]] instead.
      */
-    public ?string $type;
+    public ?string $type = null;
 
     /**
      * @var string|PluginInterface|null The handle of the plugin to use during migration operations, or the plugin itself

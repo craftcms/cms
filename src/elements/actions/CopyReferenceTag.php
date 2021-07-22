@@ -22,11 +22,6 @@ use yii\base\Exception;
 class CopyReferenceTag extends ElementAction
 {
     /**
-     * @var string|null The element type associated with this action
-     */
-    public ?string $elementType;
-
-    /**
      * @inheritdoc
      */
     public function getTriggerLabel(): string

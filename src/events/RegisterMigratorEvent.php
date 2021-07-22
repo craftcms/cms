@@ -26,5 +26,5 @@ class RegisterMigratorEvent extends Event
     /**
      * @var MigrationManager|null $migrator The migration manager to use
      */
-    public ?MigrationManager $migrator;
+    public ?MigrationManager $migrator = null;
 }

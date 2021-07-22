@@ -80,7 +80,7 @@ class UrlManager extends \yii\web\UrlManager
     /**
      * @var ElementInterface|null
      */
-    private ?ElementInterface $_matchedElement;
+    private ?ElementInterface $_matchedElement = null;
 
     /**
      * @var mixed|null

@@ -25,5 +25,5 @@ class GenerateTransformEvent extends AssetTransformImageEvent
     /**
      * @var string|null Path to the modified image that should be used instead.
      */
-    public ?string $tempPath;
+    public ?string $tempPath = null;
 }

@@ -47,7 +47,7 @@ class Routes extends Component
     /**
      * @var array|null all the routes in project config for current site
      */
-    private ?array $_projectConfigRoutes;
+    private ?array $_projectConfigRoutes = null;
 
     /**
      * Returns the routes defined in `config/routes.php`
@@ -134,7 +134,7 @@ class Routes extends Component
      * @param string|null $routeUid The route UID, if editing an existing route
      * @return string $routeUid The route UID.
      */
-    public function saveRoute(array $uriParts, string $template, string $siteUid = null, ?string $routeUid = null): string
+    public function saveRoute(array $uriParts, string $template, ?string $siteUid = null, ?string $routeUid = null): string
     {
         // Fire a 'beforeSaveRoute' event
         if ($this->hasEventHandlers(self::EVENT_BEFORE_SAVE_ROUTE)) {

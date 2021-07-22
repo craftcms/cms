@@ -179,19 +179,19 @@ use yii\web\ServerErrorHttpException;
 trait ApplicationTrait
 {
     /**
-     * @var string|null Craft’s schema version number.
+     * @var string Craft’s schema version number.
      */
-    public ?string $schemaVersion;
+    public string $schemaVersion;
 
     /**
-     * @var string|null The minimum Craft build number required to update to this build.
+     * @var string The minimum Craft build number required to update to this build.
      */
-    public ?string $minVersionRequired;
+    public string $minVersionRequired;
 
     /**
      * @var string|null The environment ID Craft is currently running in.
      */
-    public ?string $env;
+    public ?string $env = null;
 
     /**
      * @var string The base Craftnet API URL to use.
@@ -205,7 +205,7 @@ trait ApplicationTrait
      * @since 3.3.16
      * @internal
      */
-    public ?array $apiParams;
+    public ?array $apiParams = null;
 
     /**
      * @var
@@ -231,20 +231,15 @@ trait ApplicationTrait
     private bool $_isMultiSiteWithTrashed;
 
     /**
-     * @var int|null The Craft edition
+     * @var int The Craft edition
      * @see getEdition()
      */
-    private ?int $_edition;
+    private int $_edition;
 
     /**
-     * @var
+     * @var Info|null
      */
-    private Info $_info;
-
-    /**
-     * @var bool|null
-     */
-    private ?bool $_isDbConfigValid;
+    private ?Info $_info;
 
     /**
      * @var bool

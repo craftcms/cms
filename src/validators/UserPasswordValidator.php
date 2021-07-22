@@ -37,12 +37,12 @@ class UserPasswordValidator extends StringValidator
     /**
      * @var string|null The user's current (hashed) password.
      */
-    public ?string $currentPassword;
+    public ?string $currentPassword = null;
 
     /**
      * @var string|null User-defined error message used when the new password is the same as [[currentPassword]].
      */
-    public ?string $sameAsCurrent;
+    public ?string $sameAsCurrent = null;
 
     /**
      * @inheritdoc

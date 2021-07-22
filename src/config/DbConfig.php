@@ -82,7 +82,7 @@ class DbConfig extends BaseObject
      *
      * @since 3.6.4
      */
-    public ?string $collation;
+    public ?string $collation = null;
 
     /**
      * @var string The Data Source Name (“DSN”) that tells Craft how to connect to the database.
@@ -137,7 +137,7 @@ class DbConfig extends BaseObject
      *
      * If this is set, the values for [[driver]], [[user]], [[database]], [[server]], [[port]], and [[database]] will be extracted from it.
      */
-    public ?string $url;
+    public ?string $url = null;
 
     /**
      * @var string The database driver to use. Either 'mysql' for MySQL or 'pgsql' for PostgreSQL.
@@ -158,7 +158,7 @@ class DbConfig extends BaseObject
      * @var string|null MySQL only. If this is set, the CLI connection string (used for yiic) will connect to the Unix socket instead of
      * the server and port. If this is specified, then `server` and `port` settings are ignored.
      */
-    public ?string $unixSocket;
+    public ?string $unixSocket = null;
 
     /**
      * @var string The name of the database to select.

@@ -25,17 +25,17 @@ class Section_SiteSettings extends Model
     /**
      * @var int|null ID
      */
-    public ?int $id;
+    public ?int $id = null;
 
     /**
      * @var int|null Section ID
      */
-    public ?int $sectionId;
+    public ?int $sectionId = null;
 
     /**
      * @var int|null Site ID
      */
-    public ?int $siteId;
+    public ?int $siteId = null;
 
     /**
      * @var bool Enabled by default
@@ -45,22 +45,22 @@ class Section_SiteSettings extends Model
     /**
      * @var bool|null Has URLs?
      */
-    public ?bool $hasUrls;
+    public ?bool $hasUrls = null;
 
     /**
      * @var string|null URI format
      */
-    public ?string $uriFormat;
+    public ?string $uriFormat = null;
 
     /**
      * @var string|null Entry template
      */
-    public ?string $template;
+    public ?string $template = null;
 
     /**
      * @var Section|null
      */
-    private ?Section $_section;
+    private ?Section $_section = null;
 
     /**
      * @inheritdoc

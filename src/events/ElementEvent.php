@@ -19,9 +19,9 @@ use yii\base\Event;
 class ElementEvent extends Event
 {
     /**
-     * @var ElementInterface|null The element model associated with the event.
+     * @var ElementInterface The element model associated with the event.
      */
-    public ?ElementInterface $element;
+    public ElementInterface $element;
 
     /**
      * @var bool Whether the element is brand new

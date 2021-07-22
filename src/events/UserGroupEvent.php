@@ -19,9 +19,9 @@ use yii\base\Event;
 class UserGroupEvent extends Event
 {
     /**
-     * @var UserGroup|null The user group associated with this event
+     * @var UserGroup The user group associated with this event
      */
-    public ?UserGroup $userGroup;
+    public UserGroup $userGroup;
 
     /**
      * @var bool Whether the user group is brand new

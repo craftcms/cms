@@ -51,5 +51,5 @@ class ExecuteGqlQueryEvent extends Event
     /**
      * @var array|null The query result to be returned.
      */
-    public ?array $result;
+    public ?array $result = null;
 }

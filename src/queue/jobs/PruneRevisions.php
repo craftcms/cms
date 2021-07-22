@@ -38,7 +38,7 @@ class PruneRevisions extends BaseJob
      * @var int|null The maximum number of revisions an element can have
      * @since 3.5.13
      */
-    public ?int $maxRevisions;
+    public ?int $maxRevisions = null;
 
     /**
      * @inheritdoc

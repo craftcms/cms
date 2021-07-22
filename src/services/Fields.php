@@ -180,13 +180,13 @@ class Fields extends Component
      * @var MemoizableArray|null
      * @see _groups()
      */
-    private ?MemoizableArray $_groups;
+    private ?MemoizableArray $_groups = null;
 
     /**
      * @var MemoizableArray|null
      * @see _fields()
      */
-    private ?MemoizableArray $_fields;
+    private ?MemoizableArray $_fields = null;
 
     /**
      * @var

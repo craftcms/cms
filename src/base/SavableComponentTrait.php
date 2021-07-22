@@ -25,10 +25,10 @@ trait SavableComponentTrait
     /**
      * @var DateTime|null The date that the component was created
      */
-    public ?DateTime $dateCreated;
+    public ?DateTime $dateCreated = null;
 
     /**
      * @var DateTime|null The date that the component was last updated
      */
-    public ?DateTime $dateUpdated;
+    public ?DateTime $dateUpdated = null;
 }

@@ -33,33 +33,33 @@ class EntryType extends Model
     /**
      * @var int|null ID
      */
-    public ?int $id;
+    public ?int $id = null;
 
     /**
      * @var int|null Section ID
      */
-    public ?int $sectionId;
+    public ?int $sectionId = null;
 
     /**
      * @var int|null Field layout ID
      */
-    public ?int $fieldLayoutId;
+    public ?int $fieldLayoutId = null;
 
     /**
      * @var string|null Name
      */
-    public ?string $name;
+    public ?string $name = null;
 
     /**
      * @var string|null Handle
      */
-    public ?string $handle;
+    public ?string $handle = null;
 
     /**
      * @var int|null Sort order
      * @since 3.5.0
      */
-    public ?int $sortOrder;
+    public ?int $sortOrder = null;
 
     /**
      * @var bool Has title field
@@ -76,12 +76,12 @@ class EntryType extends Model
      * @var string|null Title translation key format
      * @since 3.5.0
      */
-    public ?string $titleTranslationKeyFormat;
+    public ?string $titleTranslationKeyFormat = null;
 
     /**
      * @var string|null Title format
      */
-    public ?string $titleFormat;
+    public ?string $titleFormat = null;
 
     /**
      * @var string UID

@@ -40,7 +40,7 @@ abstract class StandardField extends BaseField
      *
      * If this is not set, [[attribute()]] will be used by default.
      */
-    public ?string $id;
+    public ?string $id = null;
 
     /**
      * @var array HTML attributes for the field container
@@ -60,7 +60,7 @@ abstract class StandardField extends BaseField
     /**
      * @var string|null The field’s orientation (`ltr` or `rtl`)
      */
-    public ?string $orientation;
+    public ?string $orientation = null;
 
     /**
      * @var bool Whether the field is translatable

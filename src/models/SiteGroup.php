@@ -25,17 +25,17 @@ class SiteGroup extends Model
     /**
      * @var int|null ID
      */
-    public ?int $id;
+    public ?int $id = null;
 
     /**
      * @var string|null UID
      */
-    public ?string $uid;
+    public ?string $uid = null;
 
     /**
      * @var string|null Name
      */
-    private ?string $_name;
+    private ?string $_name = null;
 
     /**
      * Returns the site group’s name.

@@ -25,7 +25,7 @@ class DeleteUsers extends ElementAction implements DeleteActionInterface
     /**
      * @var int|null The user ID that the deleted user’s content should be transferred to
      */
-    public ?int $transferContentTo;
+    public ?int $transferContentTo = null;
 
     /**
      * @var bool Whether to permanently delete the elements.

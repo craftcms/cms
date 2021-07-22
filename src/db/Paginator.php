@@ -50,7 +50,7 @@ class Paginator extends BaseObject
      * @var YiiConnection|null The DB connection to be used with the query.
      * If null, the query will choose the connection to use.
      */
-    public ?YiiConnection $db;
+    public ?YiiConnection $db = null;
 
     /**
      * @var int The number of results to include for each page
@@ -80,7 +80,7 @@ class Paginator extends BaseObject
     /**
      * @var array|null The current page’s results
      */
-    private ?array $_pageResults;
+    private ?array $_pageResults = null;
 
     /**
      * Constructor

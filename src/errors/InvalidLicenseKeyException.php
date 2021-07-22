@@ -18,9 +18,9 @@ use yii\base\Exception;
 class InvalidLicenseKeyException extends Exception
 {
     /**
-     * @var string|null The license key
+     * @var string The license key
      */
-    public ?string $licenseKey;
+    public string $licenseKey;
 
     /**
      * Constructor.

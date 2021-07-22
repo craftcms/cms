@@ -32,17 +32,17 @@ class Svg extends Image
     /**
      * @var string|null
      */
-    private ?string $_svgContent;
+    private ?string $_svgContent = null;
 
     /**
      * @var int|null
      */
-    private ?int $_height;
+    private ?int $_height = null;
 
     /**
      * @var int|null
      */
-    private ?int $_width;
+    private ?int $_width = null;
 
     /**
      * @inheritdoc

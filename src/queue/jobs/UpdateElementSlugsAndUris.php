@@ -38,7 +38,7 @@ class UpdateElementSlugsAndUris extends BaseJob
     /**
      * @var int|null The site ID of the elements to update.
      */
-    public ?int $siteId;
+    public ?int $siteId = null;
 
     /**
      * @var bool Whether the elements’ other sites should be updated as well.

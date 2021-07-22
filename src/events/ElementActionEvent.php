@@ -19,17 +19,17 @@ use craft\elements\db\ElementQueryInterface;
 class ElementActionEvent extends CancelableEvent
 {
     /**
-     * @var ElementActionInterface|null The element action associated with the event
+     * @var ElementActionInterface The element action associated with the event
      */
-    public ?ElementActionInterface $action;
+    public ElementActionInterface $action;
 
     /**
-     * @var ElementQueryInterface|null The element query associated with the event
+     * @var ElementQueryInterface The element query associated with the event
      */
-    public ?ElementQueryInterface $criteria;
+    public ElementQueryInterface $criteria;
 
     /**
      * @var string|null The message that should be displayed in the control panel if [[$isValid]] is false
      */
-    public ?string $message;
+    public ?string $message = null;
 }

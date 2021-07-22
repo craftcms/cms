@@ -64,7 +64,7 @@ class ResaveController extends Controller
     /**
      * @var string|null The site handle to save elements from.
      */
-    public ?string $site;
+    public ?string $site = null;
 
     /**
      * @var string The status(es) of elements to resave. Can be set to multiple comma-separated statuses.
@@ -74,12 +74,12 @@ class ResaveController extends Controller
     /**
      * @var int|null The number of elements to skip.
      */
-    public ?int $offset;
+    public ?int $offset = null;
 
     /**
      * @var int|null The number of elements to resave.
      */
-    public ?int $limit;
+    public ?int $limit = null;
 
     /**
      * @var bool Whether to save the elements across all their enabled sites.
@@ -94,28 +94,28 @@ class ResaveController extends Controller
     /**
      * @var string|null The group handle(s) to save categories/tags/users from. Can be set to multiple comma-separated groups.
      */
-    public ?string $group;
+    public ?string $group = null;
 
     /**
      * @var string|null The section handle(s) to save entries from. Can be set to multiple comma-separated sections.
      */
-    public ?string $section;
+    public ?string $section = null;
 
     /**
      * @var string|null The type handle(s) of the elements to resave.
      * @since 3.1.16
      */
-    public ?string $type;
+    public ?string $type = null;
 
     /**
      * @var string|null The volume handle(s) to save assets from. Can be set to multiple comma-separated volumes.
      */
-    public ?string $volume;
+    public ?string $volume = null;
 
     /**
      * @var string|null The field handle to save Matrix blocks for.
      */
-    public ?string $field;
+    public ?string $field = null;
 
     /**
      * @inheritdoc

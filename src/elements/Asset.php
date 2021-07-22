@@ -366,10 +366,7 @@ class Asset extends Element
             }
 
             // Copy Reference Tag
-            $actions[] = [
-                'type' => CopyReferenceTag::class,
-                'elementType' => static::class,
-            ];
+            $actions[] = CopyReferenceTag::class;
 
             // Edit Image
             if ($isTemp || $userSession->checkPermission("editImagesInVolume:$volume->uid")) {
@@ -562,69 +559,69 @@ class Asset extends Element
     /**
      * @var int|null Folder ID
      */
-    public ?int $folderId;
+    public ?int $folderId = null;
 
     /**
      * @var int|null The ID of the user who first added this asset (if known)
      */
-    public ?int $uploaderId;
+    public ?int $uploaderId = null;
 
     /**
      * @var string|null Folder path
      */
-    public ?string $folderPath;
+    public ?string $folderPath = null;
 
     /**
      * @var string|null Filename
      * @todo rename to private $_basename w/ getter & setter in 4.0; and getFilename() should not include the extension (to be like PATHINFO_FILENAME). We can add a getBasename() for getting the whole thing.
      */
-    public ?string $filename;
+    public ?string $filename = null;
 
     /**
      * @var string|null Kind
      */
-    public ?string $kind;
+    public ?string $kind = null;
 
     /**
      * @var int|null Size
      */
-    public ?int $size;
+    public ?int $size = null;
 
     /**
      * @var bool|null Whether the file was kept around when the asset was deleted
      */
-    public ?bool $keptFile;
+    public ?bool $keptFile = null;
 
     /**
      * @var \DateTime|null Date modified
      */
-    public ?DateTime $dateModified;
+    public ?DateTime $dateModified = null;
 
     /**
      * @var string|null New file location
      */
-    public ?string $newLocation;
+    public ?string $newLocation = null;
 
     /**
      * @var string|null Location error code
      * @see AssetLocationValidator::validateAttribute()
      */
-    public ?string $locationError;
+    public ?string $locationError = null;
 
     /**
      * @var string|null New filename
      */
-    public ?string $newFilename;
+    public ?string $newFilename = null;
 
     /**
      * @var int|null New folder id
      */
-    public ?int $newFolderId;
+    public ?int $newFolderId = null;
 
     /**
      * @var string|null The temp file path
      */
-    public ?string $tempFilePath;
+    public ?string $tempFilePath = null;
 
     /**
      * @var bool Whether Asset should avoid filename conflicts when saved.
@@ -634,12 +631,12 @@ class Asset extends Element
     /**
      * @var string|null The suggested filename in case of a conflict.
      */
-    public ?string $suggestedFilename;
+    public ?string $suggestedFilename = null;
 
     /**
      * @var string|null The filename that was used that caused a conflict.
      */
-    public ?string $conflictingFilename;
+    public ?string $conflictingFilename = null;
 
     /**
      * @var bool Whether the asset was deleted along with its volume
@@ -657,7 +654,7 @@ class Asset extends Element
     /**
      * @var int|null Volume ID
      */
-    private ?int $_volumeId;
+    private ?int $_volumeId = null;
 
     /**
      * @var int|float|null Width
@@ -672,12 +669,12 @@ class Asset extends Element
     /**
      * @var array|null Focal point
      */
-    private ?array $_focalPoint;
+    private ?array $_focalPoint = null;
 
     /**
      * @var AssetTransform|null
      */
-    private ?AssetTransform $_transform;
+    private ?AssetTransform $_transform = null;
 
     /**
      * @var string
@@ -687,17 +684,17 @@ class Asset extends Element
     /**
      * @var VolumeInterface|null
      */
-    private ?VolumeInterface $_volume;
+    private ?VolumeInterface $_volume = null;
 
     /**
      * @var User|null
      */
-    private ?User $_uploader;
+    private ?User $_uploader = null;
 
     /**
      * @var int|null
      */
-    private ?int $_oldVolumeId;
+    private ?int $_oldVolumeId = null;
 
     /**
      * @inheritdoc

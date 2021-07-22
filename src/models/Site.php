@@ -31,22 +31,22 @@ class Site extends Model
     /**
      * @var int|null ID
      */
-    public ?int $id;
+    public ?int $id = null;
 
     /**
      * @var int|null Group ID
      */
-    public ?int $groupId;
+    public ?int $groupId = null;
 
     /**
      * @var string|null Handle
      */
-    public ?string $handle;
+    public ?string $handle = null;
 
     /**
      * @var string|null Name
      */
-    public ?string $language;
+    public ?string $language = null;
 
     /**
      * @var bool Primary site?
@@ -72,7 +72,7 @@ class Site extends Model
     /**
      * @var string|null Site UID
      */
-    public ?string $uid;
+    public ?string $uid = null;
 
     /**
      * @var \DateTime Date created
@@ -92,7 +92,7 @@ class Site extends Model
     /**
      * @var string|null Name
      */
-    private ?string $_name;
+    private ?string $_name = null;
 
     /**
      * @inheritdoc

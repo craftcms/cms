@@ -21,32 +21,32 @@ class CraftIdToken extends Model
     /**
      * @var int|null
      */
-    public ?int $id;
+    public ?int $id = null;
 
     /**
      * @var int|null
      */
-    public ?int $userId;
+    public ?int $userId = null;
 
     /**
      * @var string|null
      */
-    public ?string $accessToken;
+    public ?string $accessToken = null;
 
     /**
      * @var DateTime|null
      */
-    public ?DateTime $expiryDate;
+    public ?DateTime $expiryDate = null;
 
     /**
      * @var DateTime|null
      */
-    public ?DateTime $dateCreated;
+    public ?DateTime $dateCreated = null;
 
     /**
      * @var DateTime|null
      */
-    public ?DateTime $dateUpdated;
+    public ?DateTime $dateUpdated = null;
 
     /**
      * @var string

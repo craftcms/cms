@@ -488,32 +488,32 @@ class User extends Element implements IdentityInterface
     /**
      * @var string|null Username
      */
-    public ?string $username;
+    public ?string $username = null;
 
     /**
      * @var int|null Photo asset id
      */
-    public ?int $photoId;
+    public ?int $photoId = null;
 
     /**
      * @var string|null First name
      */
-    public ?string $firstName;
+    public ?string $firstName = null;
 
     /**
      * @var string|null Last name
      */
-    public ?string $lastName;
+    public ?string $lastName = null;
 
     /**
      * @var string|null Email
      */
-    public ?string $email;
+    public ?string $email = null;
 
     /**
      * @var string|null Password
      */
-    public ?string $password;
+    public ?string $password = null;
 
     /**
      * @var bool Admin
@@ -538,22 +538,22 @@ class User extends Element implements IdentityInterface
     /**
      * @var DateTime|null Last login date
      */
-    public ?DateTime $lastLoginDate;
+    public ?DateTime $lastLoginDate = null;
 
     /**
      * @var int|null Invalid login count
      */
-    public ?int $invalidLoginCount;
+    public ?int $invalidLoginCount = null;
 
     /**
      * @var DateTime|null Last invalid login date
      */
-    public ?DateTime $lastInvalidLoginDate;
+    public ?DateTime $lastInvalidLoginDate = null;
 
     /**
      * @var DateTime|null Lockout date
      */
-    public ?DateTime $lockoutDate;
+    public ?DateTime $lockoutDate = null;
 
     /**
      * @var bool Whether the user has a dashboard
@@ -569,54 +569,54 @@ class User extends Element implements IdentityInterface
     /**
      * @var DateTime|null Last password change date
      */
-    public ?DateTime $lastPasswordChangeDate;
+    public ?DateTime $lastPasswordChangeDate = null;
 
     /**
      * @var string|null Unverified email
      */
-    public ?string $unverifiedEmail;
+    public ?string $unverifiedEmail = null;
 
     /**
      * @var string|null New password
      */
-    public ?string $newPassword;
+    public ?string $newPassword = null;
 
     /**
      * @var string|null Current password
      */
-    public ?string $currentPassword;
+    public ?string $currentPassword = null;
 
     /**
      * @var DateTime|null Verification code issued date
      */
-    public ?DateTime $verificationCodeIssuedDate;
+    public ?DateTime $verificationCodeIssuedDate = null;
 
     /**
      * @var string|null Verification code
      */
-    public ?string $verificationCode;
+    public ?string $verificationCode = null;
 
     /**
      * @var string|null Last login attempt IP address.
      */
-    public ?string $lastLoginAttemptIp;
+    public ?string $lastLoginAttemptIp = null;
 
     /**
      * @var string|null Auth error
      */
-    public ?string $authError;
+    public ?string $authError = null;
 
     /**
      * @var self|null The user who should take over the user’s content if the user is deleted.
      */
-    public ?User $inheritorOnDelete;
+    public ?User $inheritorOnDelete = null;
 
     /**
      * @var string|null
      * @see getName()
      * @see setName()
      */
-    private ?string $_name;
+    private ?string $_name = null;
 
     /**
      * @var string|bool
@@ -633,12 +633,12 @@ class User extends Element implements IdentityInterface
     /**
      * @var UserGroup[]|null The cached list of groups the user belongs to. Set by [[getGroups()]].
      */
-    private ?array $_groups;
+    private ?array $_groups = null;
 
     /**
      * @var array|null The user’s preferences
      */
-    private ?array $_preferences;
+    private ?array $_preferences = null;
 
     /**
      * @inheritdoc

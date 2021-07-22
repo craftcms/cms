@@ -121,17 +121,17 @@ class Plugins extends Component
     /**
      * @var array|null Plugin info provided by Composer, indexed by handles
      */
-    private ?array $_composerPluginInfo;
+    private ?array $_composerPluginInfo = null;
 
     /**
      * @var array|null All of the stored info for enabled plugins, indexed by handles
      */
-    private ?array $_enabledPluginInfo;
+    private ?array $_enabledPluginInfo = null;
 
     /**
      * @var array|null All of the stored info for disabled plugins, indexed by handles
      */
-    private ?array $_disabledPluginInfo;
+    private ?array $_disabledPluginInfo = null;
 
     /**
      * @var string[]|string|null Any plugin handles that must be disabled per the `disablePlugins` config setting

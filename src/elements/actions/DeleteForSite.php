@@ -33,12 +33,12 @@ class DeleteForSite extends ElementAction
     /**
      * @var string|null The confirmation message that should be shown before the elements get deleted
      */
-    public ?string $confirmationMessage;
+    public ?string $confirmationMessage = null;
 
     /**
      * @var string|null The message that should be shown after the elements get deleted
      */
-    public ?string $successMessage;
+    public ?string $successMessage = null;
 
     /**
      * @inheritdoc

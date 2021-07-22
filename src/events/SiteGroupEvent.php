@@ -19,9 +19,9 @@ use yii\base\Event;
 class SiteGroupEvent extends Event
 {
     /**
-     * @var SiteGroup|null The site group associated with this event.
+     * @var SiteGroup The site group associated with this event.
      */
-    public ?SiteGroup $group;
+    public SiteGroup $group;
 
     /**
      * @var bool Whether the site group is brand new

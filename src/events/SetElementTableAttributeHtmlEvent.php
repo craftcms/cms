@@ -18,12 +18,12 @@ use yii\base\Event;
 class SetElementTableAttributeHtmlEvent extends Event
 {
     /**
-     * @var string|null The table attribute associated with this event.
+     * @var string The table attribute associated with this event.
      */
-    public ?string $attribute;
+    public string $attribute;
 
     /**
      * @var string|null The HTML to represent a table attribute.
      */
-    public ?string $html;
+    public ?string $html = null;
 }

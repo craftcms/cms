@@ -67,14 +67,14 @@ class MatrixBlockQuery extends ElementQuery
      * @used-by allowOwnerDrafts()
      * @since 3.3.10
      */
-    public ?bool $allowOwnerDrafts;
+    public ?bool $allowOwnerDrafts = null;
 
     /**
      * @var bool|null Whether the owner elements can be revisions.
      * @used-by allowOwnerRevisions()
      * @since 3.3.10
      */
-    public ?bool $allowOwnerRevisions;
+    public ?bool $allowOwnerRevisions = null;
 
     /**
      * @var int|int[]|null The block type ID(s) that the resulting Matrix blocks must have.

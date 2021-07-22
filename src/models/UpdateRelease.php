@@ -37,7 +37,7 @@ class UpdateRelease extends Model
     /**
      * @var string|null Notes
      */
-    public ?string $notes;
+    public ?string $notes = null;
 
     /**
      * @inheritdoc

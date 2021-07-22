@@ -144,12 +144,12 @@ class GlobalSet extends Element
     /**
      * @var string|null Name
      */
-    public ?string $name;
+    public ?string $name = null;
 
     /**
      * @var string|null Handle
      */
-    public ?string $handle;
+    public ?string $handle = null;
 
     /**
      * @var int Sort order

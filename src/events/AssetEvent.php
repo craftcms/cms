@@ -18,9 +18,9 @@ use craft\elements\Asset;
 class AssetEvent extends CancelableEvent
 {
     /**
-     * @var Asset|null The asset model associated with the event.
+     * @var Asset The asset model associated with the event.
      */
-    public ?Asset $asset;
+    public Asset $asset;
 
     /**
      * @var bool Whether the asset is brand new

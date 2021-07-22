@@ -7,6 +7,8 @@
 
 namespace craft\events;
 
+use craft\models\Site;
+
 /**
  * Site event class.
  *
@@ -16,9 +18,9 @@ namespace craft\events;
 class SiteEvent extends CancelableEvent
 {
     /**
-     * @var \craft\models\Site|null The site model associated with the event.
+     * @var Site The site model associated with the event.
      */
-    public ?\craft\models\Site $site;
+    public Site $site;
 
     /**
      * @var bool Whether the site is brand new
@@ -28,5 +30,5 @@ class SiteEvent extends CancelableEvent
     /**
      * @var int|null The old primary site ID
      */
-    public ?int $oldPrimarySiteId;
+    public ?int $oldPrimarySiteId = null;
 }

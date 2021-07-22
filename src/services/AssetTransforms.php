@@ -103,7 +103,7 @@ class AssetTransforms extends Component
      * @var MemoizableArray|null
      * @see _transforms()
      */
-    private ?MemoizableArray $_transforms;
+    private ?MemoizableArray $_transforms = null;
 
     /**
      * @var array
@@ -113,12 +113,12 @@ class AssetTransforms extends Component
     /**
      * @var array|null
      */
-    private ?array $_eagerLoadedTransformIndexes;
+    private ?array $_eagerLoadedTransformIndexes = null;
 
     /**
      * @var AssetTransformIndex|null
      */
-    private ?AssetTransformIndex $_activeTransformIndex;
+    private ?AssetTransformIndex $_activeTransformIndex = null;
 
     /**
      * Serializer

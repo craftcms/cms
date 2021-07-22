@@ -50,32 +50,32 @@ class Section extends Model
     /**
      * @var int|null ID
      */
-    public ?int $id;
+    public ?int $id = null;
 
     /**
      * @var int|null Structure ID
      */
-    public ?int $structureId;
+    public ?int $structureId = null;
 
     /**
      * @var string|null Name
      */
-    public ?string $name;
+    public ?string $name = null;
 
     /**
      * @var string|null Handle
      */
-    public ?string $handle;
+    public ?string $handle = null;
 
     /**
      * @var string|null Type
      */
-    public ?string $type;
+    public ?string $type = null;
 
     /**
      * @var int|null Max levels
      */
-    public ?int $maxLevels;
+    public ?int $maxLevels = null;
 
     /**
      * @var bool Enable versioning
@@ -110,17 +110,17 @@ class Section extends Model
     /**
      * @var string|null Section's UID
      */
-    public ?string $uid;
+    public ?string $uid = null;
 
     /**
      * @var Section_SiteSettings[]|null
      */
-    private ?array $_siteSettings;
+    private ?array $_siteSettings = null;
 
     /**
      * @var EntryType[]|null
      */
-    private ?array $_entryTypes;
+    private ?array $_entryTypes = null;
 
     /**
      * @inheritdoc

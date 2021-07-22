@@ -37,28 +37,28 @@ class ArrayValidator extends Validator
      * @var int|null maximum count. If not set, it means no maximum count limit.
      * @see tooMany for the customized message for a too long array.
      */
-    public ?int $max;
+    public ?int $max = null;
 
     /**
      * @var int|null minimum count. If not set, it means no minimum count limit.
      * @see tooFew for the customized message for a too short array.
      */
-    public ?int $min;
+    public ?int $min = null;
 
     /**
      * @var string|null user-defined error message used when the count of the value is smaller than [[min]].
      */
-    public ?string $tooFew;
+    public ?string $tooFew = null;
 
     /**
      * @var string|null user-defined error message used when the count of the value is greater than [[max]].
      */
-    public ?string $tooMany;
+    public ?string $tooMany = null;
 
     /**
      * @var string|null user-defined error message used when the count of the value is not equal to [[count]].
      */
-    public ?string $notEqual;
+    public ?string $notEqual = null;
 
     /**
      * @inheritdoc

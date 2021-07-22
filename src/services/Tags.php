@@ -65,7 +65,7 @@ class Tags extends Component
      * @var MemoizableArray|null
      * @see _tagGroups()
      */
-    private ?MemoizableArray $_tagGroups;
+    private ?MemoizableArray $_tagGroups = null;
 
     /**
      * Serializer

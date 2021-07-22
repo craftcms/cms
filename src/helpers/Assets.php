@@ -130,9 +130,11 @@ class Assets
     public static function prepareAssetName(string $name, bool $isFilename = true, bool $preventPluginModifications = false): string
     {
         if ($isFilename) {
+            /** @var string $baseName */
             $baseName = pathinfo($name, PATHINFO_FILENAME);
+            /** @var string $extension */
             $extension = pathinfo($name, PATHINFO_EXTENSION);
-            if ($extension) {
+            if ($extension !== '') {
                 $extension = '.' . $extension;
             }
         } else {

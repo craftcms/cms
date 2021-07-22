@@ -43,12 +43,12 @@ class Updates extends Component
     /**
      * @var UpdatesModel|null
      */
-    private ?UpdatesModel $_updates;
+    private ?UpdatesModel $_updates = null;
 
     /**
      * @var bool|null
      */
-    private ?bool $_isCraftDbMigrationNeeded;
+    private ?bool $_isCraftDbMigrationNeeded = null;
 
     /**
      * Returns whether the update info is cached.

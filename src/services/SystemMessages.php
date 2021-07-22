@@ -34,7 +34,7 @@ class SystemMessages extends Component
     /**
      * @var SystemMessage[]|null
      */
-    private ?array $_defaultMessages;
+    private ?array $_defaultMessages = null;
 
     /**
      * Returns all of the default system email messages, without subject/body overrides.

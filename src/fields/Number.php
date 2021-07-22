@@ -79,17 +79,17 @@ class Number extends Field implements PreviewableFieldInterface, SortableFieldIn
     /**
      * @var int|null The size of the field
      */
-    public ?int $size;
+    public ?int $size = null;
 
     /**
      * @var string|null Text that should be displayed before the input
      */
-    public ?string $prefix;
+    public ?string $prefix = null;
 
     /**
      * @var string|null Text that should be displayed after the input
      */
-    public ?string $suffix;
+    public ?string $suffix = null;
 
     /**
      * @var string How the number should be formatted in element index views.
@@ -101,7 +101,7 @@ class Number extends Field implements PreviewableFieldInterface, SortableFieldIn
      * @var string|null The currency that should be used if [[$previewFormat]] is set to `currency`.
      * @since 3.5.11
      */
-    public ?string $previewCurrency;
+    public ?string $previewCurrency = null;
 
     /**
      * @inheritdoc

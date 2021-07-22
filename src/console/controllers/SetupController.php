@@ -36,11 +36,11 @@ class SetupController extends Controller
     /**
      * @var string|null The database driver to use. Either 'mysql' for MySQL or 'pgsql' for PostgreSQL.
      */
-    public ?string $driver;
+    public ?string $driver = null;
     /**
      * @var string|null The database server name or IP address. Usually 'localhost' or '127.0.0.1'.
      */
-    public ?string $server;
+    public ?string $server = null;
     /**
      * @var int|null The database server port. Defaults to 3306 for MySQL and 5432 for PostgreSQL.
      */
@@ -52,21 +52,21 @@ class SetupController extends Controller
     /**
      * @var string|null The database password to connect with.
      */
-    public ?string $password;
+    public ?string $password = null;
     /**
      * @var string|null The name of the database to select.
      */
-    public ?string $database;
+    public ?string $database = null;
     /**
      * @var string|null The database schema to use (PostgreSQL only).
      * @see https://www.postgresql.org/docs/8.2/static/ddl-schemas.html
      */
-    public ?string $schema;
+    public ?string $schema = null;
     /**
      * @var string|null The table prefix to add to all database tables. This can
      * be no more than 5 characters, and must be all lowercase.
      */
-    public ?string $tablePrefix;
+    public ?string $tablePrefix = null;
 
     /**
      * @inheritdoc

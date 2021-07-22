@@ -120,12 +120,12 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
     /**
      * @var string|null The source key that this field can relate elements from (used if [[allowMultipleSources]] is set to false)
      */
-    public ?string $source;
+    public ?string $source = null;
 
     /**
      * @var string|null The UID of the site that this field should relate elements from
      */
-    public ?string $targetSiteId;
+    public ?string $targetSiteId = null;
 
     /**
      * @var bool Whether the site menu should be shown in element selector modals.
@@ -137,17 +137,17 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
     /**
      * @var string|null The view mode
      */
-    public ?string $viewMode;
+    public ?string $viewMode = null;
 
     /**
      * @var int|null The maximum number of relations this field can have (used if [[allowLimit]] is set to true)
      */
-    public ?int $limit;
+    public ?int $limit = null;
 
     /**
      * @var string|null The label that should be used on the selection input
      */
-    public ?string $selectionLabel;
+    public ?string $selectionLabel = null;
 
     /**
      * @var bool Whether related elements should be validated when the source element is saved.

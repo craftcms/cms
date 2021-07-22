@@ -153,23 +153,23 @@ class FieldLayout extends Model
     /**
      * @var int|null ID
      */
-    public ?int $id;
+    public ?int $id = null;
 
     /**
      * @var string|null The element type
      */
-    public ?string $type;
+    public ?string $type = null;
 
     /**
      * @var string|null UID
      */
-    public ?string $uid;
+    public ?string $uid = null;
 
     /**
      * @var string[]|null Reserved custom field handles
      * @since 3.7.0
      */
-    public ?array $reservedFieldHandles;
+    public ?array $reservedFieldHandles = null;
 
     /**
      * @var BaseField[][]

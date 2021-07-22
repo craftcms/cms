@@ -29,7 +29,7 @@ class RevisionBehavior extends BaseRevisionBehavior
     /**
      * @var string|null The revision notes
      */
-    public ?string $revisionNotes;
+    public ?string $revisionNotes = null;
 
     /**
      * @inheritdoc

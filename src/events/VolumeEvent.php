@@ -19,9 +19,9 @@ use yii\base\Event;
 class VolumeEvent extends Event
 {
     /**
-     * @var VolumeInterface|null The volume associated with the event.
+     * @var VolumeInterface The volume associated with the event.
      */
-    public ?VolumeInterface $volume;
+    public VolumeInterface $volume;
 
     /**
      * @var bool Whether the volume is brand new

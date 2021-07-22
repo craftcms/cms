@@ -27,7 +27,7 @@ class Sendmail extends BaseTransportAdapter
      * @var string|null The command to pass to the transport
      * @since 3.4.0
      */
-    public ?string $command;
+    public ?string $command = null;
 
     /**
      * @inheritdoc

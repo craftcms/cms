@@ -19,9 +19,9 @@ use yii\base\Event;
 class FieldEvent extends Event
 {
     /**
-     * @var FieldInterface|null The field associated with this event.
+     * @var FieldInterface The field associated with this event.
      */
-    public ?FieldInterface $field;
+    public FieldInterface $field;
 
     /**
      * @var bool Whether the field is brand new

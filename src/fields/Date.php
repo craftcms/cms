@@ -70,13 +70,13 @@ class Date extends Field implements PreviewableFieldInterface, SortableFieldInte
      * @var DateTime|null The minimum allowed date
      * @since 3.5.0
      */
-    public ?DateTime $min;
+    public ?DateTime $min = null;
 
     /**
      * @var DateTime|null The maximum allowed date
      * @since 3.5.0
      */
-    public ?DateTime $max;
+    public ?DateTime $max = null;
 
     /**
      * @var int The number of minutes that the timepicker options should increment by

@@ -30,7 +30,7 @@ class DraftBehavior extends BaseRevisionBehavior
     /**
      * @var string|null The draft notes
      */
-    public ?string $draftNotes;
+    public ?string $draftNotes = null;
 
     /**
      * @var bool Whether to track changes in this draft

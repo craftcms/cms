@@ -51,5 +51,5 @@ class SearchQueryTerm extends BaseObject
     /**
      * @var bool|null
      */
-    public ?bool $phrase;
+    public ?bool $phrase = null;
 }

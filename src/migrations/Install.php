@@ -41,22 +41,22 @@ class Install extends Migration
     /**
      * @var string|null The admin user’s username
      */
-    public ?string $username;
+    public ?string $username = null;
 
     /**
      * @var string|null The admin user’s password
      */
-    public ?string $password;
+    public ?string $password = null;
 
     /**
      * @var string|null The admin user’s email
      */
-    public ?string $email;
+    public ?string $email = null;
 
     /**
      * @var Site|null The default site
      */
-    public ?Site $site;
+    public ?Site $site = null;
 
     /**
      * @var bool Whether to apply the existing project config YAML files, if they exist

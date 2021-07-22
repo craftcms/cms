@@ -37,32 +37,32 @@ class CategoryGroup extends Model
     /**
      * @var int|null ID
      */
-    public ?int $id;
+    public ?int $id = null;
 
     /**
      * @var int|null Structure ID
      */
-    public ?int $structureId;
+    public ?int $structureId = null;
 
     /**
      * @var int|null Field layout ID
      */
-    public ?int $fieldLayoutId;
+    public ?int $fieldLayoutId = null;
 
     /**
      * @var string|null Name
      */
-    public ?string $name;
+    public ?string $name = null;
 
     /**
      * @var string|null Handle
      */
-    public ?string $handle;
+    public ?string $handle = null;
 
     /**
      * @var int|null Max levels
      */
-    public ?int $maxLevels;
+    public ?int $maxLevels = null;
 
     /**
      * @var string Default placement
@@ -73,7 +73,7 @@ class CategoryGroup extends Model
     /**
      * @var string|null UID
      */
-    public ?string $uid;
+    public ?string $uid = null;
 
     /**
      * @var

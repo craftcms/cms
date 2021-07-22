@@ -74,7 +74,7 @@ class AssetQuery extends ElementQuery
      * @used-by uploader()
      * @since 3.4.0
      */
-    public ?int $uploaderId;
+    public ?int $uploaderId = null;
 
     /**
      * @var string|string[]|null The filename(s) that the resulting assets must have.

@@ -56,13 +56,13 @@ class RegisterResourceTokenParser extends AbstractTokenParser
      * @var int|null The default `$position` value that should be possed to the [[method]], if it has a `$position` argument.
      * @since 3.6.11
      */
-    public ?int $defaultPosition;
+    public ?int $defaultPosition = null;
 
     /**
      * @var string|null The new template code that should be used if this tag is deprecated
      * @todo Remove this in Craft 4
      */
-    public ?string $newCode;
+    public ?string $newCode = null;
 
     /**
      * @param string $tag the tag name

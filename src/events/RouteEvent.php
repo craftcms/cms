@@ -18,15 +18,15 @@ use yii\base\Event;
 class RouteEvent extends Event
 {
     /**
-     * @var array|null The URI as defined by the user. This is an array where each element is either a
+     * @var array The URI as defined by the user. This is an array where each element is either a
      * string or an array containing the name of a subpattern and the subpattern.
      */
-    public ?array $uriParts;
+    public array $uriParts;
 
     /**
-     * @var string|null The template to route matching requests to
+     * @var string The template to route matching requests to
      */
-    public ?string $template;
+    public string $template;
 
     /**
      * @var string|null The site UID the route should be limited to, if any

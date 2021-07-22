@@ -22,12 +22,12 @@ class CraftSupport extends Model
     /**
      * @var string|null From email
      */
-    public ?string $fromEmail;
+    public ?string $fromEmail = null;
 
     /**
      * @var string|null Message
      */
-    public ?string $message;
+    public ?string $message = null;
 
     /**
      * @var bool Attach logs
@@ -47,7 +47,7 @@ class CraftSupport extends Model
     /**
      * @var UploadedFile|null Attachment
      */
-    public ?UploadedFile $attachment;
+    public ?UploadedFile $attachment = null;
 
     /**
      * @inheritdoc

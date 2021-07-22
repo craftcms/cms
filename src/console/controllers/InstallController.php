@@ -28,32 +28,32 @@ class InstallController extends Controller
     /**
      * @var string|null The default email address for the first user to create during install
      */
-    public ?string $email;
+    public ?string $email = null;
 
     /**
      * @var string|null The default username for the first user to create during install
      */
-    public ?string $username;
+    public ?string $username = null;
 
     /**
      * @var string|null The default password for the first user to create during install
      */
-    public ?string $password;
+    public ?string $password = null;
 
     /**
      * @var string|null The default site name for the first site to create during install
      */
-    public ?string $siteName;
+    public ?string $siteName = null;
 
     /**
      * @var string|null The default site url for the first site to create during install
      */
-    public ?string $siteUrl;
+    public ?string $siteUrl = null;
 
     /**
      * @var string|null The default langcode for the first site to create during install
      */
-    public ?string $language;
+    public ?string $language = null;
 
     /** @inheritdoc */
     public $defaultAction = 'craft';

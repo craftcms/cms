@@ -31,7 +31,7 @@ class AssetIndexingSession extends Model
     /**
      * @var int|null The total amount of entries.
      */
-    public ?int $totalEntries;
+    public ?int $totalEntries = null;
 
     /**
      * @var int The number of processed entries.

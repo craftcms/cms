@@ -310,7 +310,7 @@ class GeneralConfig extends BaseObject
      *
      * @group Routing
      */
-    public ?string $baseCpUrl;
+    public ?string $baseCpUrl = null;
 
     /**
      * @var int The higher the cost value, the longer it takes to generate a password hash and to verify against it.
@@ -336,7 +336,7 @@ class GeneralConfig extends BaseObject
      * @since 3.5.0
      * @group Image Handling
      */
-    public ?string $brokenImagePath;
+    public ?string $brokenImagePath = null;
 
     /**
      * @var mixed The default length of time Craft will store data, RSS feed, and template caches.
@@ -440,7 +440,7 @@ class GeneralConfig extends BaseObject
      * @var string|null The default language the control panel should use for users who haven’t set a preferred language yet.
      * @group System
      */
-    public ?string $defaultCpLanguage;
+    public ?string $defaultCpLanguage = null;
 
     /**
      * @var string|null The default locale the control panel should use for date/number formatting, for users who haven’t set
@@ -451,7 +451,7 @@ class GeneralConfig extends BaseObject
      * @since 3.5.0
      * @group System
      */
-    public ?string $defaultCpLocale;
+    public ?string $defaultCpLocale = null;
 
     /**
      * @var mixed The default permission to be set for newly-generated directories.
@@ -469,7 +469,7 @@ class GeneralConfig extends BaseObject
      *
      * @group System
      */
-    public ?int $defaultFileMode;
+    public ?int $defaultFileMode = null;
 
     /**
      * @var int The quality level Craft will use when saving JPG and PNG files. Ranges from 1 (worst quality, smallest file) to
@@ -697,7 +697,7 @@ class GeneralConfig extends BaseObject
      * @since 3.0.24
      * @group System
      */
-    public ?array $extraAppLocales;
+    public ?array $extraAppLocales = null;
 
     /**
      * @var array List of additional file kinds Craft should support. This array will get merged with the one defined in
@@ -790,7 +790,7 @@ class GeneralConfig extends BaseObject
      * @group System
      * @since 3.7.0
      */
-    public ?string $httpProxy;
+    public ?string $httpProxy = null;
 
     /**
      * @var mixed The image driver Craft should use to cleanse and transform images. By default Craft will use ImageMagick if it’s installed
@@ -853,14 +853,14 @@ class GeneralConfig extends BaseObject
      *
      * @group System
      */
-    public ?array $ipHeaders;
+    public ?array $ipHeaders = null;
 
     /**
      * @var bool|null Whether the site is currently live. If set to `true` or `false`, it will take precedence over the System Status setting
      * in Settings → General.
      * @group System
      */
-    public ?bool $isSystemLive;
+    public ?bool $isSystemLive = null;
 
     /**
      * @var bool Whether non-ASCII characters in auto-generated slugs should be converted to ASCII (i.e. ñ → n).
@@ -1048,7 +1048,7 @@ class GeneralConfig extends BaseObject
      *
      * @group System
      */
-    public ?string $phpMaxMemoryLimit;
+    public ?string $phpMaxMemoryLimit = null;
 
     /**
      * @var string The name of the PHP session cookie.
@@ -1297,7 +1297,7 @@ class GeneralConfig extends BaseObject
      *
      * @group Environment
      */
-    public ?string $restoreCommand;
+    public ?string $restoreCommand = null;
 
     /**
      * @var bool Whether asset URLs should be revved so browsers don’t load cached versions when they’re modified.
@@ -1446,7 +1446,7 @@ class GeneralConfig extends BaseObject
      *
      * @group Security
      */
-    public ?array $secureHeaders;
+    public ?array $secureHeaders = null;
 
     /**
      * @var array|null List of headers to check for determining whether the connection is made via HTTPS.
@@ -1457,7 +1457,7 @@ class GeneralConfig extends BaseObject
      *
      * @group Security
      */
-    public ?array $secureProtocolHeaders;
+    public ?array $secureProtocolHeaders = null;
 
     /**
      * @var mixed The amount of time before a soft-deleted item will be up for hard-deletion by garbage collection.
@@ -1497,7 +1497,7 @@ class GeneralConfig extends BaseObject
      *
      * @group System
      */
-    public ?string $timezone;
+    public ?string $timezone = null;
 
     /**
      * @var bool Whether GIF files should be cleansed/transformed.
@@ -1632,7 +1632,7 @@ class GeneralConfig extends BaseObject
      * @see https://php.net/manual/en/function.file-put-contents.php
      * @group System
      */
-    public ?bool $useFileLocks;
+    public ?bool $useFileLocks = null;
 
     /**
      * @var mixed The amount of time a user verification code can be used before expiring.

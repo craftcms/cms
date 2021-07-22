@@ -53,7 +53,7 @@ class ElementRelationParamParser extends BaseObject
     /**
      * @var FieldInterface[]|null The custom fields that are game for the query.
      */
-    public ?array $fields;
+    public ?array $fields = null;
 
     /**
      * Normalizes a `relatedTo` param for [[parse()]].

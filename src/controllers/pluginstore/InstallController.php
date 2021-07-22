@@ -29,7 +29,7 @@ class InstallController extends BaseUpdaterController
     /**
      * @var string|null
      */
-    private ?string $_pluginRedirect;
+    private ?string $_pluginRedirect = null;
 
     /**
      * @inheritdoc

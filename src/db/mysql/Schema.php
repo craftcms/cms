@@ -47,7 +47,7 @@ class Schema extends \yii\db\mysql\Schema
     /**
      * @var string|null The path to the temporary my.cnf file used for backups and restoration.
      */
-    public ?string $tempMyCnfPath;
+    public ?string $tempMyCnfPath = null;
 
     /**
      * @inheritdoc

@@ -105,12 +105,12 @@ class Volumes extends Component
      * @var MemoizableArray|null
      * @see _volumes()
      */
-    private ?MemoizableArray $_volumes;
+    private ?MemoizableArray $_volumes = null;
 
     /**
      * @var array|null Volume setting overrides
      */
-    private ?array $_overrides;
+    private ?array $_overrides = null;
 
     /**
      * Serializer

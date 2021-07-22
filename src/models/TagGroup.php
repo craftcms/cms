@@ -30,27 +30,27 @@ class TagGroup extends Model
     /**
      * @var int|null ID
      */
-    public ?int $id;
+    public ?int $id = null;
 
     /**
      * @var string|null Name
      */
-    public ?string $name;
+    public ?string $name = null;
 
     /**
      * @var string|null Handle
      */
-    public ?string $handle;
+    public ?string $handle = null;
 
     /**
      * @var int|null Field layout ID
      */
-    public ?int $fieldLayoutId;
+    public ?int $fieldLayoutId = null;
 
     /**
      * @var int|null Field layout ID
      */
-    public ?int $uid;
+    public ?int $uid = null;
 
     /**
      * @inheritdoc

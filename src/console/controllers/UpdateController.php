@@ -49,7 +49,7 @@ class UpdateController extends Controller
     /**
      * @var bool|null Backup the database before updating
      */
-    public ?bool $backup;
+    public ?bool $backup = null;
 
     /**
      * @var bool Run new database migrations after completing the update

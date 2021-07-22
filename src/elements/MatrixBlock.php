@@ -166,22 +166,22 @@ class MatrixBlock extends Element implements BlockElementInterface
     /**
      * @var int|null Field ID
      */
-    public ?int $fieldId;
+    public ?int $fieldId = null;
 
     /**
      * @var int|null Owner ID
      */
-    public ?int $ownerId;
+    public ?int $ownerId = null;
 
     /**
      * @var int|null Type ID
      */
-    public ?int $typeId;
+    public ?int $typeId = null;
 
     /**
      * @var int|null Sort order
      */
-    public ?int $sortOrder;
+    public ?int $sortOrder = null;
 
     /**
      * @var bool Whether the block has changed.
@@ -204,12 +204,12 @@ class MatrixBlock extends Element implements BlockElementInterface
     /**
      * @var ElementInterface|null The owner element, or false if [[ownerId]] is invalid
      */
-    private ?ElementInterface $_owner;
+    private ?ElementInterface $_owner = null;
 
     /**
      * @var ElementInterface[]|null
      */
-    private ?array $_eagerLoadedBlockTypeElements;
+    private ?array $_eagerLoadedBlockTypeElements = null;
 
     /**
      * @inheritdoc

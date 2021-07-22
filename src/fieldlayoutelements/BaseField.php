@@ -25,22 +25,22 @@ abstract class BaseField extends FieldLayoutElement
     /**
      * @var string|null The field’s label
      */
-    public ?string $label;
+    public ?string $label = null;
 
     /**
      * @var string|null The field’s instructions
      */
-    public ?string $instructions;
+    public ?string $instructions = null;
 
     /**
      * @var string|null The field’s tip text
      */
-    public ?string $tip;
+    public ?string $tip = null;
 
     /**
      * @var string|null The field’s warning text
      */
-    public ?string $warning;
+    public ?string $warning = null;
 
     /**
      * @var bool Whether the field is required.

@@ -57,17 +57,17 @@ class Table extends Field
     /**
      * @var string|null Custom add row button label
      */
-    public ?string $addRowLabel;
+    public ?string $addRowLabel = null;
 
     /**
      * @var int|null Maximum number of Rows allowed
      */
-    public ?int $maxRows;
+    public ?int $maxRows = null;
 
     /**
      * @var int|null Minimum number of Rows allowed
      */
-    public ?int $minRows;
+    public ?int $minRows = null;
 
     /**
      * @var array|null The columns that should be shown in the table

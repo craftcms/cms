@@ -80,7 +80,7 @@ class Controller extends YiiController
      * @var string|null The active action ID.
      * @see runAction()
      */
-    private ?string $_actionId;
+    private ?string $_actionId = null;
 
     /**
      * @inheritdoc

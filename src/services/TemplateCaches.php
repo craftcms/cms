@@ -34,7 +34,7 @@ class TemplateCaches extends Component
      * @var string|null The current request's path
      * @see _path()
      */
-    private ?string $_path;
+    private ?string $_path = null;
 
     /**
      * Returns a cached template by its key.

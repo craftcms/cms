@@ -28,7 +28,7 @@ class Duplicate extends ElementAction
     /**
      * @var string|null The message that should be shown after the elements get deleted
      */
-    public ?string $successMessage;
+    public ?string $successMessage = null;
 
     /**
      * @inheritdoc

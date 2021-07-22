@@ -126,7 +126,7 @@ class Sections extends Component
      * @var MemoizableArray|null
      * @see _sections()
      */
-    private ?MemoizableArray $_sections;
+    private ?MemoizableArray $_sections = null;
 
     /**
      * @var

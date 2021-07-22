@@ -24,32 +24,32 @@ class AssetTransformIndex extends Model
     /**
      * @var int|null ID
      */
-    public ?int $id;
+    public ?int $id = null;
 
     /**
      * @var int|null File ID
      */
-    public ?int $assetId;
+    public ?int $assetId = null;
 
     /**
      * @var int|null Volume ID
      */
-    public ?int $volumeId;
+    public ?int $volumeId = null;
 
     /**
      * @var string|null Filename
      */
-    public ?string $filename;
+    public ?string $filename = null;
 
     /**
      * @var string|null Format
      */
-    public ?string $format;
+    public ?string $format = null;
 
     /**
      * @var string|null Location
      */
-    public ?string $location;
+    public ?string $location = null;
 
     /**
      * @var bool File exists
@@ -84,12 +84,12 @@ class AssetTransformIndex extends Model
     /**
      * @var string|null Detected format
      */
-    public ?string $detectedFormat;
+    public ?string $detectedFormat = null;
 
     /**
      * @var AssetTransform|null The transform associated with this index
      */
-    private ?AssetTransform $_transform;
+    private ?AssetTransform $_transform = null;
 
     /**
      * @inheritdoc

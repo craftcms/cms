@@ -32,7 +32,7 @@ class StreamLogTarget extends BaseTarget
      * @var string|null a string that should replace all newline characters
      * in a log message. Default is `null` for no replacement.
      */
-    public ?string $replaceNewline;
+    public ?string $replaceNewline = null;
 
     /**
      * @var bool whether to disable the timestamp. The default is `false` which

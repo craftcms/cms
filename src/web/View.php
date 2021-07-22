@@ -107,12 +107,12 @@ class View extends \yii\web\View
     /**
      * @var Environment|null The Twig environment instance used for control panel templates
      */
-    private ?Environment $_cpTwig;
+    private ?Environment $_cpTwig = null;
 
     /**
      * @var Environment|null The Twig environment instance used for site templates
      */
-    private ?Environment $_siteTwig;
+    private ?Environment $_siteTwig = null;
 
     /**
      * @var
@@ -137,27 +137,27 @@ class View extends \yii\web\View
     /**
      * @var string|null
      */
-    private ?string $_templateMode;
+    private ?string $_templateMode = null;
 
     /**
      * @var array|null
      */
-    private ?array $_cpTemplateRoots;
+    private ?array $_cpTemplateRoots = null;
 
     /**
      * @var array|null
      */
-    private ?array $_siteTemplateRoots;
+    private ?array $_siteTemplateRoots = null;
 
     /**
      * @var array|null
      */
-    private ?array $_templateRoots;
+    private ?array $_templateRoots = null;
 
     /**
      * @var string|null The root path to look for templates in
      */
-    private ?string $_templatesPath;
+    private ?string $_templatesPath = null;
 
     /**
      * @var
@@ -172,7 +172,7 @@ class View extends \yii\web\View
     /**
      * @var
      */
-    private ?string $_namespace;
+    private ?string $_namespace = null;
 
     /**
      * @var bool Whether delta input name registration is open.

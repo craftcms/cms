@@ -75,12 +75,12 @@ class Queue extends \yii\queue\cli\Queue implements QueueInterface
     /**
      * @var string|null The description of the job being pushed into the queue
      */
-    private ?string $_jobDescription;
+    private ?string $_jobDescription = null;
 
     /**
      * @var string|null The currently-executing job ID
      */
-    private ?string $_executingJobId;
+    private ?string $_executingJobId = null;
 
     /**
      * @var int The timestamp the last job was reserved

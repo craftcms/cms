@@ -26,24 +26,24 @@ class UsersController extends Controller
      * @var string|null The user’s email
      * @since 3.7.0
      */
-    public ?string $email;
+    public ?string $email = null;
 
     /**
      * @var string|null The user’s username
      * @since 3.7.0
      */
-    public ?string $username;
+    public ?string $username = null;
 
     /**
      * @var string|null The user’s new password
      */
-    public ?string $password;
+    public ?string $password = null;
 
     /**
      * @var bool|null Whether the user should be an admin
      * @since 3.7.0
      */
-    public ?bool $admin;
+    public ?bool $admin = null;
 
     /**
      * @var string[] The group handles to assign the created user to
@@ -61,7 +61,7 @@ class UsersController extends Controller
      * @var string|null The email or username of the user to inherit content when deleting a user
      * @since 3.7.0
      */
-    public ?string $inheritor;
+    public ?string $inheritor = null;
 
     /**
      * @var bool Whether to delete the user’s content if no inheritor is specified

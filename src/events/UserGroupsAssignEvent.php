@@ -16,9 +16,9 @@ namespace craft\events;
 class UserGroupsAssignEvent extends CancelableEvent
 {
     /**
-     * @var int|null The user ID associated with this event
+     * @var int The user ID associated with this event
      */
-    public ?int $userId;
+    public int $userId;
 
     /**
      * @var int[] All of the user group IDs that the user belongs to now

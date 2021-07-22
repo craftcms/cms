@@ -19,7 +19,7 @@ class SearchQueryTermGroup
     /**
      * @var array|null
      */
-    public ?array $terms;
+    public ?array $terms = null;
 
     /**
      * Constructor

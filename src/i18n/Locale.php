@@ -235,12 +235,12 @@ class Locale extends BaseObject
     /**
      * @var array|null The configured locale data, used if the [PHP intl extension](https://php.net/manual/en/book.intl.php) isn’t loaded.
      */
-    private ?array $_data;
+    private ?array $_data = null;
 
     /**
      * @var Formatter|null The locale's formatter.
      */
-    private ?Formatter $_formatter;
+    private ?Formatter $_formatter = null;
 
     /**
      * Constructor.

@@ -19,9 +19,9 @@ use yii\base\Event;
 class WidgetEvent extends Event
 {
     /**
-     * @var WidgetInterface|null The widget associated with this event.
+     * @var WidgetInterface The widget associated with this event.
      */
-    public ?WidgetInterface $widget;
+    public WidgetInterface $widget;
 
     /**
      * @var bool Whether the widget is brand new

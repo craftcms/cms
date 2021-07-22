@@ -1425,13 +1425,13 @@ abstract class Element extends Component implements ElementInterface
      * @var string|null Revision creator ID to be saved
      * @see setRevisionCreatorId()
      */
-    protected ?string $revisionCreatorId;
+    protected ?string $revisionCreatorId = null;
 
     /**
      * @var string|null Revision notes to be saved
      * @see setRevisionNotes()
      */
-    protected ?string $revisionNotes;
+    protected ?string $revisionNotes = null;
 
     /**
      * @var int|null
@@ -1440,37 +1440,37 @@ abstract class Element extends Component implements ElementInterface
      * @see getIsCanonical()
      * @see getIsDerivative()
      */
-    private ?int $_canonicalId;
+    private ?int $_canonicalId = null;
 
     /**
-     * @var static|null
+     * @var static|false
      * @see getCanonical()
      */
-    private ?Element $_canonical;
+    private $_canonical;
 
     /**
      * @var array|null
      * @see _outdatedAttributes()
      */
-    private ?array $_outdatedAttributes;
+    private ?array $_outdatedAttributes = null;
 
     /**
      * @var array|null
      * @see _modifiedAttributes()
      */
-    private ?array $_modifiedAttributes;
+    private ?array $_modifiedAttributes = null;
 
     /**
      * @var array|null
      * @see _outdatedFields()
      */
-    private ?array $_outdatedFields;
+    private ?array $_outdatedFields = null;
 
     /**
      * @var array|null
      * @see _modifiedFields()
      */
-    private ?array $_modifiedFields;
+    private ?array $_modifiedFields = null;
 
     /**
      * @var bool
@@ -1490,7 +1490,7 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @var array|null Record of the fields whose values have already been normalized
      */
-    private ?array $_normalizedFieldValues;
+    private ?array $_normalizedFieldValues = null;
 
     /**
      * @var bool Whether all attributes and field values should be considered dirty.
@@ -1511,7 +1511,7 @@ abstract class Element extends Component implements ElementInterface
      * @var string|null The initial title value, if there was one.
      * @see getDirtyAttributes()
      */
-    private ?string $_savedTitle;
+    private ?string $_savedTitle = null;
 
     /**
      * @var array Record of dirty fields.
@@ -1521,42 +1521,42 @@ abstract class Element extends Component implements ElementInterface
     private array $_dirtyFields;
 
     /**
-     * @var
+     * @var static|false
      */
     private $_nextElement;
 
     /**
-     * @var
+     * @var static|false
      */
     private $_prevElement;
 
     /**
-     * @var
+     * @var static|false
      */
-    private ?ElementInterface $_parent;
+    private $_parent;
 
     /**
-     * @var
+     * @var static|false
      */
-    private ?ElementInterface $_prevSibling;
+    private $_prevSibling;
 
     /**
-     * @var
+     * @var static|false
      */
-    private ?ElementInterface $_nextSibling;
+    private $_nextSibling;
 
     /**
-     * @var array|null
+     * @var ElementInterface[][]
      */
-    private ?array $_eagerLoadedElements;
+    private array $_eagerLoadedElements = [];
 
     /**
-     * @var array|null
+     * @var array
      */
-    private ?array $_eagerLoadedElementCounts;
+    private array $_eagerLoadedElementCounts = [];
 
     /**
-     * @var ElementInterface|false
+     * @var static|false
      * @see getCurrentRevision()
      */
     private $_currentRevision;
@@ -1573,7 +1573,7 @@ abstract class Element extends Component implements ElementInterface
      * @see getUiLabel()
      * @see setUiLabel()
      */
-    private ?string $_uiLabel;
+    private ?string $_uiLabel = null;
 
     /**
      * @inheritdoc

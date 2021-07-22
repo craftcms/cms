@@ -169,7 +169,7 @@ abstract class Field extends SavableComponent implements FieldInterface
      * @see isFresh()
      * @see setIsFresh()
      */
-    private ?bool $_isFresh;
+    private ?bool $_isFresh = null;
 
     /**
      * Use the translated field name as the string representation.

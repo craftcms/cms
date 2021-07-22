@@ -18,14 +18,14 @@ use yii\base\Exception;
 class InvalidTypeException extends Exception
 {
     /**
-     * @var string|null The invalid class name
+     * @var string The invalid class name
      */
-    public ?string $class;
+    public string $class;
 
     /**
-     * @var string|null The base class or interface that [[$class]] was supposed to be
+     * @var string The base class or interface that [[$class]] was supposed to be
      */
-    public ?string $requiredType;
+    public string $requiredType;
 
     /**
      * Constructor.

@@ -18,9 +18,9 @@ use yii\base\Exception;
 class InvalidPluginException extends Exception
 {
     /**
-     * @var string|null The invalid plugin handle
+     * @var string The invalid plugin handle
      */
-    public ?string $handle;
+    public string $handle;
 
     /**
      * Constructor.

@@ -28,13 +28,13 @@ class TimeValidator extends Validator
      * @var string|null The minimum time allowed. Should be in the format `HH:MM`.
      * @see $tooEarly for the customized message used when the time is too early
      */
-    public ?string $min;
+    public ?string $min = null;
 
     /**
      * @var string|null The maximum time allowed. Should be in the format `HH:MM`.
      * @see $tooLate for the customized message used when the time is too late
      */
-    public ?string $max;
+    public ?string $max = null;
 
     /**
      * @var string user-defined error message used when the value is earlier than [[min]]

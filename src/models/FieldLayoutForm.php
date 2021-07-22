@@ -26,7 +26,7 @@ class FieldLayoutForm extends Model
     /**
      * @var string|null The prefix that should be applied to the tab’s HTML IDs.
      */
-    public ?string $tabIdPrefix;
+    public ?string $tabIdPrefix = null;
 
     /**
      * Returns the tab menu config.

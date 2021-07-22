@@ -50,7 +50,7 @@ class PlainText extends Field implements PreviewableFieldInterface, SortableFiel
     /**
      * @var string|null The input’s placeholder text
      */
-    public ?string $placeholder;
+    public ?string $placeholder = null;
 
     /**
      * @var bool Whether the input should use monospace font
@@ -70,18 +70,18 @@ class PlainText extends Field implements PreviewableFieldInterface, SortableFiel
     /**
      * @var int|null The maximum number of characters allowed in the field
      */
-    public ?int $charLimit;
+    public ?int $charLimit = null;
 
     /**
      * @var int|null The maximum number of bytes allowed in the field
      * @since 3.4.0
      */
-    public ?int $byteLimit;
+    public ?int $byteLimit = null;
 
     /**
      * @var string|null The type of database column the field should have in the content table
      */
-    public ?string $columnType;
+    public ?string $columnType = null;
 
     /**
      * @inheritdoc

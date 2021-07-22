@@ -19,9 +19,9 @@ use yii\base\Event;
 class FieldLayoutEvent extends Event
 {
     /**
-     * @var FieldLayout|null The field layout associated with this event.
+     * @var FieldLayout The field layout associated with this event.
      */
-    public ?FieldLayout $layout;
+    public FieldLayout $layout;
 
     /**
      * @var bool Whether the field is brand new

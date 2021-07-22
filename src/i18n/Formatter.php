@@ -30,37 +30,37 @@ class Formatter extends \yii\i18n\Formatter
     /**
      * @var array|null The localized "stand alone" month names.
      */
-    public ?array $standAloneMonthNames;
+    public ?array $standAloneMonthNames = null;
 
     /**
      * @var array|null The localized month names.
      */
-    public ?array $monthNames;
+    public ?array $monthNames = null;
 
     /**
      * @var array|null The localized "stand alone" day of the week names.
      */
-    public ?array $standAloneWeekDayNames;
+    public ?array $standAloneWeekDayNames = null;
 
     /**
      * @var array|null The localized day of the week names.
      */
-    public ?array $weekDayNames;
+    public ?array $weekDayNames = null;
 
     /**
      * @var string|null The localized AM name.
      */
-    public ?string $amName;
+    public ?string $amName = null;
 
     /**
      * @var string|null The localized PM name.
      */
-    public ?string $pmName;
+    public ?string $pmName = null;
 
     /**
      * @var array|null The locale's currency symbols.
      */
-    public ?array $currencySymbols;
+    public ?array $currencySymbols = null;
 
     /**
      * @inheritdoc

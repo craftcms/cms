@@ -32,17 +32,17 @@ class Update extends Model
     /**
      * @var float|null The price to renew the license, if expired
      */
-    public ?float $renewalPrice;
+    public ?float $renewalPrice = null;
 
     /**
      * @var string|null The renewal price's currency
      */
-    public ?string $renewalCurrency;
+    public ?string $renewalCurrency = null;
 
     /**
      * @var string|null The URL that the Renew button should link to
      */
-    public ?string $renewalUrl;
+    public ?string $renewalUrl = null;
 
     /**
      * @var UpdateRelease[] The available releases
@@ -53,7 +53,7 @@ class Update extends Model
      * @var string|null The PHP version constraint required by this version
      * @since 3.5.15
      */
-    public ?string $phpConstraint;
+    public ?string $phpConstraint = null;
 
     /**
      * @var string The package name that should be used when updating
@@ -70,19 +70,19 @@ class Update extends Model
      * @var string|null The name of the suggested replacement package
      * @since 3.6.7
      */
-    public ?string $replacementName;
+    public ?string $replacementName = null;
 
     /**
      * @var string|null The handle of the suggested replacement package
      * @since 3.6.7
      */
-    public ?string $replacementHandle;
+    public ?string $replacementHandle = null;
 
     /**
      * @var string|null The URL of the suggested replacement package
      * @since 3.6.7
      */
-    public ?string $replacementUrl;
+    public ?string $replacementUrl = null;
 
     /**
      * @inheritdoc

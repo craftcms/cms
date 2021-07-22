@@ -29,7 +29,7 @@ class SessionBehavior extends Behavior
      * @see deauthorize()
      * @see checkAuthorization()
      */
-    public ?string $authAccessParam;
+    public ?string $authAccessParam = null;
 
     /**
      * @var string the name of the flash key that stores asset bundle data

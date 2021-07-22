@@ -23,7 +23,7 @@ class TemplateLoader implements LoaderInterface
     /**
      * @var View|null
      */
-    protected ?View $view;
+    protected ?View $view = null;
 
     /**
      * Constructor

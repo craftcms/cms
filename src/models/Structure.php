@@ -22,17 +22,17 @@ class Structure extends Model
     /**
      * @var int|null ID
      */
-    public ?int $id;
+    public ?int $id = null;
 
     /**
      * @var int|null Max levels
      */
-    public ?int $maxLevels;
+    public ?int $maxLevels = null;
 
     /**
      * @var string|null UID
      */
-    public ?string $uid;
+    public ?string $uid = null;
 
     /**
      * @inheritdoc

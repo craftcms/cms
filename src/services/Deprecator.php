@@ -56,7 +56,7 @@ class Deprecator extends Component
     /**
      * @var DeprecationError[]|null All the unique deprecation errors that have been logged
      */
-    private ?array $_allLogs;
+    private ?array $_allLogs = null;
 
     /**
      * @inheritdoc

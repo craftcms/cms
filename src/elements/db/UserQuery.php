@@ -70,13 +70,13 @@ class UserQuery extends ElementQuery
      * ```
      * @used-by admin()
      */
-    public ?bool $admin;
+    public ?bool $admin = null;
 
     /**
      * @var bool|null Whether to only return users that have (or don’t have) user photos.
      * @used-by hasPhoto()
      */
-    public ?bool $hasPhoto;
+    public ?bool $hasPhoto = null;
 
     /**
      * @var string|int|false|null The permission that the resulting users must have.

@@ -26,32 +26,32 @@ class AssetTransform extends Model
     /**
      * @var int|null ID
      */
-    public ?int $id;
+    public ?int $id = null;
 
     /**
      * @var string|null Name
      */
-    public ?string $name;
+    public ?string $name = null;
 
     /**
      * @var string|null Handle
      */
-    public ?string $handle;
+    public ?string $handle = null;
 
     /**
      * @var int|null Width
      */
-    public ?int $width;
+    public ?int $width = null;
 
     /**
      * @var int|null Height
      */
-    public ?int $height;
+    public ?int $height = null;
 
     /**
      * @var string|null Format
      */
-    public ?string $format;
+    public ?string $format = null;
 
     /**
      * @var \DateTime|null Dimension change time
@@ -76,12 +76,12 @@ class AssetTransform extends Model
     /**
      * @var int|null Quality
      */
-    public ?int $quality;
+    public ?int $quality = null;
 
     /**
      * @var string|null UID
      */
-    public ?string $uid;
+    public ?string $uid = null;
 
     /**
      * @inheritdoc

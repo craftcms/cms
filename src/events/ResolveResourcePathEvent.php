@@ -25,5 +25,5 @@ class ResolveResourcePathEvent extends Event
     /**
      * @var string|null The file path that the URI should resolve to.
      */
-    public ?string $path;
+    public ?string $path = null;
 }

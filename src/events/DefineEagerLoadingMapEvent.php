@@ -31,15 +31,15 @@ class DefineEagerLoadingMapEvent extends Event
     /**
      * @var string|null The element type class to eager-load.
      */
-    public ?string $elementType;
+    public ?string $elementType = null;
 
     /**
      * @var array|null An array of element ID mappings, where each element is a sub-array with `source` and `target` keys.
      */
-    public ?array $map;
+    public ?array $map = null;
 
     /**
      * @var array|null Any criteria parameters that should be applied to the element query when fetching the eager-loaded elements.
      */
-    public ?array $criteria;
+    public ?array $criteria = null;
 }

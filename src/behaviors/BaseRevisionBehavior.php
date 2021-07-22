@@ -26,7 +26,7 @@ abstract class BaseRevisionBehavior extends Behavior
     /**
      * @var int|null The creator’s ID
      */
-    public ?int $creatorId;
+    public ?int $creatorId = null;
 
     /**
      * @var User|null|false The creator

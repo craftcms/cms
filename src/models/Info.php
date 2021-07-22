@@ -20,12 +20,12 @@ class Info extends Model
     /**
      * @var int|null ID
      */
-    public ?int $id;
+    public ?int $id = null;
 
     /**
      * @var string|null Version
      */
-    public ?string $version;
+    public ?string $version = null;
 
     /**
      * @var string Schema version
@@ -40,7 +40,7 @@ class Info extends Model
     /**
      * @var string|null Uid
      */
-    public ?string $uid;
+    public ?string $uid = null;
 
     /**
      * @var string Field version

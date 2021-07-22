@@ -68,21 +68,21 @@ class ElementQuery extends Query implements ElementQueryInterface
     const EVENT_AFTER_POPULATE_ELEMENT = 'afterPopulateElement';
 
     /**
-     * @var string|null The name of the [[ElementInterface]] class.
+     * @var string The name of the [[ElementInterface]] class.
      */
-    public ?string $elementType;
+    public string $elementType;
 
     /**
      * @var Query|null The query object created by [[prepare()]]
      * @see prepare()
      */
-    public ?Query $query;
+    public ?Query $query = null;
 
     /**
      * @var Query|null The subselect’s query object created by [[prepare()]]
      * @see prepare()
      */
-    public ?Query $subQuery;
+    public ?Query $subQuery = null;
 
     /**
      * @var string|null The content table that will be joined by this query.
@@ -92,7 +92,7 @@ class ElementQuery extends Query implements ElementQueryInterface
     /**
      * @var FieldInterface[]|null The fields that may be involved in this query.
      */
-    public ?array $customFields;
+    public ?array $customFields = null;
 
     // Result formatting attributes
     // -------------------------------------------------------------------------
@@ -136,7 +136,7 @@ class ElementQuery extends Query implements ElementQueryInterface
      * @var int|null The ID of the draft to return (from the `drafts` table)
      * @since 3.2.0
      */
-    public ?int $draftId;
+    public ?int $draftId = null;
 
     /**
      * @var int|string|false|null The source element ID that drafts should be returned for.
@@ -155,7 +155,7 @@ class ElementQuery extends Query implements ElementQueryInterface
      * @var int|null The drafts’ creator ID
      * @since 3.2.0
      */
-    public ?int $draftCreator;
+    public ?int $draftCreator = null;
 
     /**
      * @var bool Whether only unpublished drafts which have been saved after initial creation should be included in the results.
@@ -173,19 +173,19 @@ class ElementQuery extends Query implements ElementQueryInterface
      * @var int|null The ID of the revision to return (from the `revisions` table)
      * @since 3.2.0
      */
-    public ?int $revisionId;
+    public ?int $revisionId = null;
 
     /**
      * @var int|null The source element ID that revisions should be returned for
      * @since 3.2.0
      */
-    public ?int $revisionOf;
+    public ?int $revisionOf = null;
 
     /**
      * @var int|null The revisions’ creator ID
      * @since 3.2.0
      */
-    public ?int $revisionCreator;
+    public ?int $revisionCreator = null;
 
     // General parameters
     // -------------------------------------------------------------------------
@@ -346,7 +346,7 @@ class ElementQuery extends Query implements ElementQueryInterface
      * @var bool|null Whether element structure data should automatically be left-joined into the query.
      * @used-by withStructure()
      */
-    public ?bool $withStructure;
+    public ?bool $withStructure = null;
 
     /**
      * @var int|false|null The structure ID that should be used to join in the structureelements table.
@@ -365,7 +365,7 @@ class ElementQuery extends Query implements ElementQueryInterface
      * @used-by hasDescendants()
      * @since 3.0.4
      */
-    public ?bool $hasDescendants;
+    public ?bool $hasDescendants = null;
 
     /**
      * @var int|ElementInterface|null The element (or its ID) that results must be an ancestor of.
@@ -377,7 +377,7 @@ class ElementQuery extends Query implements ElementQueryInterface
      * @var int|null The maximum number of levels that results may be separated from [[ancestorOf]].
      * @used-by ancestorDist()
      */
-    public ?int $ancestorDist;
+    public ?int $ancestorDist = null;
 
     /**
      * @var int|ElementInterface|null The element (or its ID) that results must be a descendant of.
@@ -389,7 +389,7 @@ class ElementQuery extends Query implements ElementQueryInterface
      * @var int|null The maximum number of levels that results may be separated from [[descendantOf]].
      * @used-by descendantDist()
      */
-    public ?int $descendantDist;
+    public ?int $descendantDist = null;
 
     /**
      * @var int|ElementInterface|null The element (or its ID) that the results must be a sibling of.
@@ -445,18 +445,18 @@ class ElementQuery extends Query implements ElementQueryInterface
      * @var ElementInterface[]|null The cached element query result
      * @see setCachedResult()
      */
-    private ?array $_result;
+    private ?array $_result = null;
 
     /**
      * @var array|null The criteria params that were set when the cached element query result was set
      * @see setCachedResult()
      */
-    private ?array $_resultCriteria;
+    private ?array $_resultCriteria = null;
 
     /**
      * @var array|null
      */
-    private ?array $_searchScores;
+    private ?array $_searchScores = null;
 
     /**
      * Constructor

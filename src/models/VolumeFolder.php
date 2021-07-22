@@ -24,7 +24,7 @@ class VolumeFolder extends Model
     /**
      * @var int|null ID
      */
-    public ?int $id;
+    public ?int $id = null;
 
     /**
      * @var int|string|null Parent ID
@@ -34,27 +34,27 @@ class VolumeFolder extends Model
     /**
      * @var int|null Volume ID
      */
-    public ?int $volumeId;
+    public ?int $volumeId = null;
 
     /**
      * @var string|null Name
      */
-    public ?string $name;
+    public ?string $name = null;
 
     /**
      * @var string|null Path
      */
-    public ?string $path;
+    public ?string $path = null;
 
     /**
      * @var string|null UID
      */
-    public ?string $uid;
+    public ?string $uid = null;
 
     /**
      * @var VolumeFolder[]|null
      */
-    private ?array $_children;
+    private ?array $_children = null;
 
     /**
      * @inheritdoc

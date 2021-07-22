@@ -48,7 +48,7 @@ class Config extends Component
      * {% endif %}
      * ```
      */
-    public ?string $env;
+    public ?string $env = null;
 
     /**
      * @var string The path to the config directory
@@ -68,7 +68,7 @@ class Config extends Component
     /**
      * @var bool|null
      */
-    private ?bool $_dotEnvPath;
+    private ?bool $_dotEnvPath = null;
 
     /**
      * Returns all of the config settings for a given category.

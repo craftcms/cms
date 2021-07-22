@@ -50,13 +50,13 @@ class Globals extends Component
      * @var MemoizableArray[]|null
      * @see _allSets()
      */
-    private ?array $_allGlobalSets;
+    private ?array $_allGlobalSets = null;
 
     /**
      * @var GlobalSet[][]|null
      * @see getEditableSets()
      */
-    private ?array $_editableGlobalSets;
+    private ?array $_editableGlobalSets = null;
 
     /**
      * Serializer

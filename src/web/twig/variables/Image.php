@@ -20,17 +20,17 @@ class Image
     /**
      * @var string|null
      */
-    protected ?string $path;
+    protected ?string $path = null;
 
     /**
      * @var string|null
      */
-    protected ?string $url;
+    protected ?string $url = null;
 
     /**
      * @var array|null
      */
-    protected ?array $size;
+    protected ?array $size = null;
 
     /**
      * Constructor

@@ -39,12 +39,12 @@ class Feed extends Widget
     /**
      * @var string|null The feed URL
      */
-    public ?string $url;
+    public ?string $url = null;
 
     /**
      * @var string|null The feed title
      */
-    public ?string $title;
+    public ?string $title = null;
 
     /**
      * @var int The maximum number of feed items to display

@@ -259,7 +259,7 @@ class Elements extends Component
     /**
      * @var array|null
      */
-    private ?array $_placeholderElements;
+    private ?array $_placeholderElements = null;
 
     /**
      * @var array
@@ -277,7 +277,7 @@ class Elements extends Component
      * @var bool|null Whether we should be updating search indexes for elements if not told explicitly.
      * @since 3.1.2
      */
-    private ?bool $_updateSearchIndex;
+    private ?bool $_updateSearchIndex = null;
 
     /**
      * Creates an element with a given config.
@@ -322,7 +322,7 @@ class Elements extends Component
     /**
      * @var string[]|null
      */
-    private ?array $_cacheTags;
+    private ?array $_cacheTags = null;
 
     /**
      * Returns whether we are currently collecting element cache invalidation tags.

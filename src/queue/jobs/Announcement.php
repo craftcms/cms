@@ -36,7 +36,7 @@ class Announcement extends BaseJob
     /**
      * @var string|null The plugin handle
      */
-    public ?string $pluginHandle;
+    public ?string $pluginHandle = null;
 
     /**
      * @inheritdoc

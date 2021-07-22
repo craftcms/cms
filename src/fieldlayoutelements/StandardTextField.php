@@ -40,19 +40,19 @@ class StandardTextField extends StandardField
     /**
      * @var int|null The input’s `size` attribute value.
      */
-    public ?int $size;
+    public ?int $size = null;
 
     /**
      * @var string|null The input’s `name` attribute value.
      *
      * If this is not set, [[attribute()]] will be used by default.
      */
-    public ?string $name;
+    public ?string $name = null;
 
     /**
      * @var int|null The input’s `maxlength` attribute value.
      */
-    public ?int $maxlength;
+    public ?int $maxlength = null;
 
     /**
      * @var bool Whether the input should get an `autofocus` attribute.
@@ -82,27 +82,27 @@ class StandardTextField extends StandardField
     /**
      * @var string|null The input’s `title` attribute value.
      */
-    public ?string $title;
+    public ?string $title = null;
 
     /**
      * @var string|null The input’s `placeholder` attribute value.
      */
-    public ?string $placeholder;
+    public ?string $placeholder = null;
 
     /**
      * @var int|null The input’s `step` attribute value.
      */
-    public ?int $step;
+    public ?int $step = null;
 
     /**
      * @var int|null The input’s `min` attribute value.
      */
-    public ?int $min;
+    public ?int $min = null;
 
     /**
      * @var int|null The input’s `max` attribute value.
      */
-    public ?int $max;
+    public ?int $max = null;
 
     /**
      * @inheritdoc

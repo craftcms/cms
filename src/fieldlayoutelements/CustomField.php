@@ -25,7 +25,7 @@ use yii\base\InvalidArgumentException;
 class CustomField extends BaseField
 {
     /**
-     * @var FieldInterface The custom field this layout field is based on.
+     * @var FieldInterface|null The custom field this layout field is based on.
      */
     private ?FieldInterface $_field;
 
@@ -33,7 +33,7 @@ class CustomField extends BaseField
      * @inheritdoc
      * @param FieldInterface|null $field
      */
-    public function __construct(FieldInterface $field = null, $config = [])
+    public function __construct(?FieldInterface $field = null, $config = [])
     {
         $this->_field = $field;
         parent::__construct($config);

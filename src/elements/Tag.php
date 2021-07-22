@@ -161,7 +161,7 @@ class Tag extends Element
     /**
      * @var int|null Group ID
      */
-    public ?int $groupId;
+    public ?int $groupId = null;
 
     /**
      * @var bool Whether the tag was deleted along with its group

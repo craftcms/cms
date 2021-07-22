@@ -142,7 +142,7 @@ class Request extends \yii\web\Request
     /**
      * @var string[]|null
      */
-    private ?array $_actionSegments;
+    private ?array $_actionSegments = null;
 
     /**
      * @var bool
@@ -152,17 +152,17 @@ class Request extends \yii\web\Request
     /**
      * @var bool|null
      */
-    private ?bool $_isMobileBrowser;
+    private ?bool $_isMobileBrowser = null;
 
     /**
      * @var bool|null
      */
-    private ?bool $_isMobileOrTabletBrowser;
+    private ?bool $_isMobileOrTabletBrowser = null;
 
     /**
      * @var string|null
      */
-    private ?string $_ipAddress;
+    private ?string $_ipAddress = null;
 
     /**
      * @var CookieCollection Collection of raw cookies
@@ -173,7 +173,7 @@ class Request extends \yii\web\Request
     /**
      * @var string|null
      */
-    private ?string $_craftCsrfToken;
+    private ?string $_craftCsrfToken = null;
 
     /**
      * @var bool
@@ -189,13 +189,13 @@ class Request extends \yii\web\Request
      * @var bool|null Whether the request initially had a token
      * @see getHadToken()
      */
-    private ?bool $_hadToken;
+    private ?bool $_hadToken = null;
 
     /**
      * @var string|null
      * @see getToken()
      */
-    public ?string $_token;
+    public ?string $_token = null;
 
     /**
      * @inheritdoc

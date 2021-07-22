@@ -51,12 +51,12 @@ class MigrationManager extends Component
     /**
      * @var string|null The namespace that the migration classes are in
      */
-    public ?string $migrationNamespace;
+    public ?string $migrationNamespace = null;
 
     /**
      * @var string|null The path to the migrations directory
      */
-    public ?string $migrationPath;
+    public ?string $migrationPath = null;
 
     /**
      * @var Connection|array|string The DB connection object or the application component ID of the DB connection
