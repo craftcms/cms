@@ -29,12 +29,12 @@ class ClearCacheAction extends Action
     /**
      * @var string
      */
-    public $label;
+    public string $label;
 
     /**
      * @var array
      */
-    public $params;
+    public array $params;
 
     /**
      * Clears the caches.

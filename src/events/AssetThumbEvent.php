@@ -21,22 +21,22 @@ class AssetThumbEvent extends Event
     /**
      * @var Asset The Asset a thumbnail was requested for
      */
-    public $asset;
+    public Asset $asset;
 
     /**
      * @var int Requested thumbnail width
      */
-    public $width;
+    public int $width;
 
     /**
      * @var int Requested thumbnail height
      */
-    public $height;
+    public int $height;
 
     /**
      * @var bool Whether the thumbnail should be generated if it doesn't exist yet
      */
-    public $generate;
+    public bool $generate;
 
     /**
      * @var string|false|null Thumbnail path that should be used in place of the

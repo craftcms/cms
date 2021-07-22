@@ -22,17 +22,17 @@ class MissingVolumeFolderException extends VolumeException
     /**
      * @var AssetIndexData
      */
-    public $indexEntry;
+    public AssetIndexData $indexEntry;
 
     /**
      * @var VolumeInterface
      */
-    public $volume;
+    public VolumeInterface $volume;
 
     /**
      * @var string
      */
-    public $folderName;
+    public string $folderName;
 
     /**
      * Constructor

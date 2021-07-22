@@ -20,7 +20,7 @@ class InvalidFieldException extends Exception
     /**
      * @var string The invalid field handle.
      */
-    public $handle;
+    public string $handle;
 
     /**
      * Constructor.

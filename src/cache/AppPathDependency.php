@@ -22,7 +22,7 @@ class AppPathDependency extends Dependency
     /**
      * @var string Craft’s base path
      */
-    public $appPath;
+    public string $appPath;
 
     /**
      * @inheritdoc

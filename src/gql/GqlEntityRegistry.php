@@ -21,12 +21,12 @@ class GqlEntityRegistry
     /**
      * @var array
      */
-    private static $_entities = [];
+    private static array $_entities = [];
 
     /**
      * @var string
      */
-    private static $_prefix = null;
+    private static ?string $_prefix = null;
 
     /**
      * Prefix GQL type name with the configured prefix.

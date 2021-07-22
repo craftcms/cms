@@ -22,12 +22,12 @@ class Updates extends Model
     /**
      * @var Update CMS update info
      */
-    public $cms;
+    public Update $cms;
 
     /**
      * @var Update[] Plugin update info
      */
-    public $plugins = [];
+    public array $plugins = [];
 
     /**
      * @inheritdoc

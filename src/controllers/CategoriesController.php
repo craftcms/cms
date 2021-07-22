@@ -43,7 +43,7 @@ class CategoriesController extends Controller
     /**
      * @inheritdoc
      */
-    protected $allowAnonymous = ['view-shared-category'];
+    protected array $allowAnonymous = ['view-shared-category'];
 
     // Category Groups
     // -------------------------------------------------------------------------

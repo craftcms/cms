@@ -21,13 +21,13 @@ class StringValidator extends \yii\validators\StringValidator
     /**
      * @var bool whether the string should be checked for 4+ byte characters (like emoji)
      */
-    public $disallowMb4 = false;
+    public bool $disallowMb4 = false;
 
     /**
      * @var string user-defined error message used when the value contains 4+ byte characters
      * (like emoji) and the database doesn’t support it.
      */
-    public $containsMb4;
+    public string $containsMb4;
 
     /**
      * @inheritdoc

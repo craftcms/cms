@@ -48,27 +48,27 @@ class Config extends Component
      * {% endif %}
      * ```
      */
-    public $env;
+    public ?string $env;
 
     /**
      * @var string The path to the config directory
      */
-    public $configDir = '';
+    public string $configDir = '';
 
     /**
      * @var string The path to the directory containing the default application config settings
      */
-    public $appDefaultsDir = '';
+    public string $appDefaultsDir = '';
 
     /**
      * @var array
      */
-    private $_configSettings = [];
+    private array $_configSettings = [];
 
     /**
      * @var bool|null
      */
-    private $_dotEnvPath;
+    private ?bool $_dotEnvPath;
 
     /**
      * Returns all of the config settings for a given category.

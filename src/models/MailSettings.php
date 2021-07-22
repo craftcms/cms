@@ -24,33 +24,33 @@ class MailSettings extends Model
     /**
      * @var string|null The default email address that emails should be sent from
      */
-    public $fromEmail;
+    public ?string $fromEmail;
 
     /**
      * @var string|null The default Reply-To email address that emails should have
      * @since 3.4.0
      */
-    public $replyToEmail;
+    public ?string $replyToEmail;
 
     /**
      * @var string|null The default name that emails should be sent from
      */
-    public $fromName;
+    public ?string $fromName;
 
     /**
      * @var string|null The template that emails should be sent with
      */
-    public $template;
+    public ?string $template;
 
     /**
      * @var string|null The transport type that should be used
      */
-    public $transportType = Sendmail::class;
+    public ?string $transportType = Sendmail::class;
 
     /**
      * @var array|null The transport type’s settings
      */
-    public $transportSettings;
+    public ?array $transportSettings;
 
     /**
      * @inheritdoc

@@ -21,17 +21,17 @@ class ShellCommandException extends Exception
     /**
      * @var string|null The command that was executed
      */
-    public $command;
+    public ?string $command;
 
     /**
      * @var int|null The command’s exit code
      */
-    public $exitCode;
+    public ?int $exitCode;
 
     /**
      * @var string|null The command’s error output
      */
-    public $error;
+    public ?string $error;
 
     /**
      * Creates a ShellCommandException from a [[Command]] object

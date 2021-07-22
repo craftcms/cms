@@ -21,7 +21,7 @@ use craft\helpers\StringHelper;
 abstract class RelationArgumentHandler extends ArgumentHandler
 {
     /** @var array */
-    private $_memoizedValues = [];
+    private array $_memoizedValues = [];
 
     /**
      * Get the IDs of elements returned by configuring the provided element query with given criteria.

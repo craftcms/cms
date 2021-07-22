@@ -21,7 +21,7 @@ class SetEagerLoadedElementsEvent extends Event
     /**
      * @var string The handle that was used to eager-load the elements
      */
-    public $handle;
+    public string $handle;
 
     /**
      * @param ElementInterface[] $elements The eager-loaded elements

@@ -20,20 +20,20 @@ class SystemMessage extends Model
     /**
      * @var string|null Unique key for the message
      */
-    public $key;
+    public ?string $key;
 
     /**
      * @var string|null Heading to be shown on the settings page for this message
      */
-    public $heading;
+    public ?string $heading;
 
     /**
      * @var string|null Subject template
      */
-    public $subject;
+    public ?string $subject;
 
     /**
      * @var string|null Body template
      */
-    public $body;
+    public ?string $body;
 }

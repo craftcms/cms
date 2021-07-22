@@ -20,10 +20,10 @@ class AssetEvent extends CancelableEvent
     /**
      * @var Asset|null The asset model associated with the event.
      */
-    public $asset;
+    public ?Asset $asset;
 
     /**
      * @var bool Whether the asset is brand new
      */
-    public $isNew = false;
+    public bool $isNew = false;
 }

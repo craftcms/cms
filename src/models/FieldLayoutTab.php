@@ -71,43 +71,43 @@ class FieldLayoutTab extends Model
     /**
      * @var int|null ID
      */
-    public $id;
+    public ?int $id;
 
     /**
      * @var int|null Layout ID
      */
-    public $layoutId;
+    public ?int $layoutId;
 
     /**
      * @var string|null Name
      */
-    public $name;
+    public ?string $name;
 
     /**
      * @var FieldLayoutElementInterface[]|null The tab’s layout elements
      * @since 3.5.0
      */
-    public $elements;
+    public ?array $elements;
 
     /**
      * @var int|null Sort order
      */
-    public $sortOrder;
+    public ?int $sortOrder;
 
     /**
      * @var string|null UID
      */
-    public $uid;
+    public ?string $uid;
 
     /**
      * @var FieldLayout|null
      */
-    private $_layout;
+    private ?FieldLayout $_layout;
 
     /**
      * @var FieldInterface[]|null
      */
-    private $_fields;
+    private ?array $_fields;
 
     /**
      * @inheritdoc

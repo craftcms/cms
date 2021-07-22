@@ -45,34 +45,34 @@ class Paginate extends BaseObject
     /**
      * @var int
      */
-    public $first;
+    public int $first;
 
     /**
      * @var int
      */
-    public $last;
+    public int $last;
 
     /**
      * @var int
      */
-    public $total = 0;
+    public int $total = 0;
 
     /**
      * @var int
      */
-    public $currentPage;
+    public int $currentPage;
 
     /**
      * @var int
      */
-    public $totalPages = 0;
+    public int $totalPages = 0;
 
     /**
      * @var string Base path
      * @see getBasePath()
      * @see setBasePath()
      */
-    private $_basePath;
+    private string $_basePath;
 
     /**
      * Returns the base path that should be used for pagination URLs.

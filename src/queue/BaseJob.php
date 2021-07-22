@@ -20,17 +20,17 @@ abstract class BaseJob extends BaseObject implements JobInterface
     /**
      * @var string|null The configured job description
      */
-    public $description;
+    public ?string $description;
 
     /**
      * @var int The current progress
      */
-    private $_progress;
+    private int $_progress;
 
     /**
      * @var string|null The current progress label
      */
-    private $_progressLabel;
+    private ?string $_progressLabel;
 
     /**
      * @inheritdoc

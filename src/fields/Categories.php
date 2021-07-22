@@ -67,37 +67,37 @@ class Categories extends BaseRelationField
     /**
      * @inheritdoc
      */
-    public $allowLimit = false;
+    public bool $allowLimit = false;
 
     /**
      * @inheritdoc
      */
-    public $allowMultipleSources = false;
+    public bool $allowMultipleSources = false;
 
     /**
      * @var int|null Branch limit
      */
-    public $branchLimit;
+    public ?int $branchLimit;
 
     /**
      * @inheritdoc
      */
-    protected $settingsTemplate = '_components/fieldtypes/Categories/settings';
+    protected string $settingsTemplate = '_components/fieldtypes/Categories/settings';
 
     /**
      * @inheritdoc
      */
-    protected $inputTemplate = '_components/fieldtypes/Categories/input';
+    protected string $inputTemplate = '_components/fieldtypes/Categories/input';
 
     /**
      * @inheritdoc
      */
-    protected $inputJsClass = 'Craft.CategorySelectInput';
+    protected ?string $inputJsClass = 'Craft.CategorySelectInput';
 
     /**
      * @inheritdoc
      */
-    protected $sortable = false;
+    protected bool $sortable = false;
 
     /**
      * @inheritdoc

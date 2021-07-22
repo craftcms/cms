@@ -24,12 +24,12 @@ class LanguageValidator extends Validator
     /**
      * @var bool Whether to limit the value to the sites' languages
      */
-    public $onlySiteLanguages = true;
+    public bool $onlySiteLanguages = true;
 
     /**
      * @var string The error message to use if the value isn't allowed
      */
-    public $notAllowed;
+    public string $notAllowed;
 
     /**
      * @inheritdoc

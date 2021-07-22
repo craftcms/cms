@@ -43,12 +43,12 @@ class UserPermissions extends Component
     /**
      * @var
      */
-    private $_permissionsByGroupId;
+    private array $_permissionsByGroupId;
 
     /**
      * @var
      */
-    private $_permissionsByUserId;
+    private array $_permissionsByUserId;
 
     /**
      * Returns all of the known permissions, divided into groups.

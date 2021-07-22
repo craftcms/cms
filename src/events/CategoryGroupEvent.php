@@ -21,10 +21,10 @@ class CategoryGroupEvent extends Event
     /**
      * @var CategoryGroup|null The category group model associated with the event.
      */
-    public $categoryGroup;
+    public ?CategoryGroup $categoryGroup;
 
     /**
      * @var bool Whether the category group is brand new
      */
-    public $isNew = false;
+    public bool $isNew = false;
 }

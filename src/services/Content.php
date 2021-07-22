@@ -46,17 +46,17 @@ class Content extends Component
     /**
      * @var string
      */
-    public $contentTable = Table::CONTENT;
+    public string $contentTable = Table::CONTENT;
 
     /**
      * @var string
      */
-    public $fieldColumnPrefix = 'field_';
+    public string $fieldColumnPrefix = 'field_';
 
     /**
      * @var string
      */
-    public $fieldContext = 'global';
+    public string $fieldContext = 'global';
 
     /**
      * @inheritdoc

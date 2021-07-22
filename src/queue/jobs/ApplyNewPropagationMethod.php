@@ -37,7 +37,7 @@ class ApplyNewPropagationMethod extends BaseJob
      * @var array|null The element criteria that determines which elements the
      * new propagation method should be applied to
      */
-    public $criteria;
+    public ?array $criteria;
 
     /**
      * @inheritdoc

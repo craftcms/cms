@@ -23,12 +23,12 @@ class InvalidateTagAction extends Action
     /**
      * @var string
      */
-    public $tag;
+    public string $tag;
 
     /**
      * @var string
      */
-    public $label;
+    public string $label;
 
     /**
      * Invalidates caches with the configured tag.

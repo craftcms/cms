@@ -29,25 +29,25 @@ class ProjectConfig
      * @var bool Whether we've already processed all field configs.
      * @see ensureAllFieldsProcessed()
      */
-    private static $_processedFields = false;
+    private static bool $_processedFields = false;
 
     /**
      * @var bool Whether we've already processed all site configs.
      * @see ensureAllSitesProcessed()
      */
-    private static $_processedSites = false;
+    private static bool $_processedSites = false;
 
     /**
      * @var bool Whether we've already processed all user group configs.
      * @see ensureAllUserGroupsProcessed()
      */
-    private static $_processedUserGroups = false;
+    private static bool $_processedUserGroups = false;
 
     /**
      * @var bool Whether we've already processed all GraphQL schemas.
      * @see ensureAllGqlSchemasProcessed()
      */
-    private static $_processedGqlSchemas = false;
+    private static bool $_processedGqlSchemas = false;
 
     /**
      * Ensures all field config changes are processed immediately in a safe manner.

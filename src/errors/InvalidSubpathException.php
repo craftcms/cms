@@ -21,7 +21,7 @@ class InvalidSubpathException extends Exception
     /**
      * @var string|null The invalid subpath
      */
-    public $subpath;
+    public ?string $subpath;
 
     /**
      * Constructor.

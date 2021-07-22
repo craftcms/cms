@@ -40,23 +40,23 @@ class User extends \yii\web\User
      * @var string The session variable name used to store the duration of the authenticated state.
      * @since 3.6.8
      */
-    public $authDurationParam = '__duration';
+    public string $authDurationParam = '__duration';
 
     /**
      * @var string the session variable name used to store the user session token.
      */
-    public $tokenParam = '__token';
+    public string $tokenParam = '__token';
 
     /**
      * @var array The configuration of the username cookie.
      * @see Cookie
      */
-    public $usernameCookie;
+    public array $usernameCookie;
 
     /**
      * @var string The session variable name used to store the value of the expiration timestamp of the elevated session state.
      */
-    public $elevatedSessionTimeoutParam = '__elevated_timeout';
+    public string $elevatedSessionTimeoutParam = '__elevated_timeout';
 
     // Authentication
     // -------------------------------------------------------------------------

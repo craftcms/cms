@@ -47,7 +47,7 @@ class Routes extends Component
     /**
      * @var array|null all the routes in project config for current site
      */
-    private $_projectConfigRoutes;
+    private ?array $_projectConfigRoutes;
 
     /**
      * Returns the routes defined in `config/routes.php`

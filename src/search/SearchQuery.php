@@ -20,12 +20,12 @@ class SearchQuery
     /**
      * @var string
      */
-    private $_query;
+    private string $_query;
 
     /**
      * @var array
      */
-    private $_termOptions;
+    private array $_termOptions;
 
     /**
      * @var SearchQueryTerm[]|SearchQueryTermGroup

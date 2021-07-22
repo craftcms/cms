@@ -26,7 +26,7 @@ class Html extends \yii\helpers\Html
      * @var string[]
      * @see _sortedDataAttributes()
      */
-    private static $_sortedDataAttributes;
+    private static array $_sortedDataAttributes;
 
     /**
      * Will take an HTML string and an associative array of key=>value pairs, HTML encode the values and swap them back

@@ -22,17 +22,17 @@ class Restore extends ElementAction
     /**
      * @var string|null The message that should be shown after the elements get restored
      */
-    public $successMessage;
+    public ?string $successMessage;
 
     /**
      * @var string|null The message that should be shown after some elements get restored
      */
-    public $partialSuccessMessage;
+    public ?string $partialSuccessMessage;
 
     /**
      * @var string|null The message that should be shown if no elements get restored
      */
-    public $failMessage;
+    public ?string $failMessage;
 
     /**
      * @inheritdoc

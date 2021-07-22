@@ -79,12 +79,12 @@ abstract class ElementMutationResolver extends MutationResolver
      *
      * @var string[]
      */
-    protected $immutableAttributes = ['id', 'uid'];
+    protected array $immutableAttributes = ['id', 'uid'];
 
     /**
      * @var Type[] Argument type definitions by name.
      */
-    protected $argumentTypeDefsByName = [];
+    protected array $argumentTypeDefsByName = [];
 
     /**
      * Populate the element with submitted data.

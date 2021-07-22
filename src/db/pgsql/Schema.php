@@ -25,7 +25,7 @@ class Schema extends \yii\db\pgsql\Schema
     /**
      * @var int The maximum length that objects' names can be.
      */
-    public $maxObjectNameLength = 63;
+    public int $maxObjectNameLength = 63;
 
     /**
      * Creates a query builder for the database.

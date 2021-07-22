@@ -31,7 +31,7 @@ class MatrixBlockType extends ActiveRecord
     /**
      * @var bool Whether the Name and Handle attributes should validated to ensure they’re unique.
      */
-    public $validateUniques = true;
+    public bool $validateUniques = true;
 
     /**
      * @inheritdoc

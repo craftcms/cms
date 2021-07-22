@@ -26,10 +26,10 @@ class DefineFieldKeywordsEvent extends Event
     /**
      * @var ElementInterface $element The element
      */
-    public $element;
+    public ElementInterface $element;
 
     /**
      * @var string $keywords
      */
-    public $keywords = '';
+    public string $keywords = '';
 }

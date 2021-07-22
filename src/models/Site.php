@@ -31,68 +31,68 @@ class Site extends Model
     /**
      * @var int|null ID
      */
-    public $id;
+    public ?int $id;
 
     /**
      * @var int|null Group ID
      */
-    public $groupId;
+    public ?int $groupId;
 
     /**
      * @var string|null Handle
      */
-    public $handle;
+    public ?string $handle;
 
     /**
      * @var string|null Name
      */
-    public $language;
+    public ?string $language;
 
     /**
      * @var bool Primary site?
      */
-    public $primary = false;
+    public bool $primary = false;
 
     /**
      * @var bool Enabled?
      * @since 3.5.0
      */
-    public $enabled = true;
+    public bool $enabled = true;
 
     /**
      * @var bool Has URLs
      */
-    public $hasUrls = true;
+    public bool $hasUrls = true;
 
     /**
      * @var int Sort order
      */
-    public $sortOrder = 1;
+    public int $sortOrder = 1;
 
     /**
      * @var string|null Site UID
      */
-    public $uid;
+    public ?string $uid;
 
     /**
      * @var \DateTime Date created
      */
-    public $dateCreated;
+    public \DateTime $dateCreated;
 
     /**
      * @var \DateTime Date updated
      */
-    public $dateUpdated;
+    public \DateTime $dateUpdated;
 
     /**
      * @var string|null Base URL
      */
-    private $_baseUrl = '@web/';
+    private ?string $_baseUrl = '@web/';
 
     /**
      * @var string|null Name
      */
-    private $_name;
+    private ?string $_name;
 
     /**
      * @inheritdoc

@@ -50,12 +50,12 @@ class Paginator extends BaseObject
      * @var YiiConnection|null The DB connection to be used with the query.
      * If null, the query will choose the connection to use.
      */
-    public $db;
+    public ?YiiConnection $db;
 
     /**
      * @var int The number of results to include for each page
      */
-    public $pageSize = 100;
+    public int $pageSize = 100;
 
     /**
      * @var QueryInterface|YiiQuery The query being paginated
@@ -65,22 +65,22 @@ class Paginator extends BaseObject
     /**
      * @var int The total query count
      */
-    protected $totalResults;
+    protected int $totalResults;
 
     /**
      * @var int The total number of pages
      */
-    protected $totalPages;
+    protected int $totalPages;
 
     /**
      * @var int The current page
      */
-    protected $currentPage = 1;
+    protected int $currentPage = 1;
 
     /**
      * @var array|null The current page’s results
      */
-    private $_pageResults;
+    private ?array $_pageResults;
 
     /**
      * Constructor

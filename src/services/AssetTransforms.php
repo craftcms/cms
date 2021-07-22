@@ -103,22 +103,22 @@ class AssetTransforms extends Component
      * @var MemoizableArray|null
      * @see _transforms()
      */
-    private $_transforms;
+    private ?MemoizableArray $_transforms;
 
     /**
      * @var array
      */
-    private $_sourcesToBeDeleted = [];
+    private array $_sourcesToBeDeleted = [];
 
     /**
      * @var array|null
      */
-    private $_eagerLoadedTransformIndexes;
+    private ?array $_eagerLoadedTransformIndexes;
 
     /**
      * @var AssetTransformIndex|null
      */
-    private $_activeTransformIndex;
+    private ?AssetTransformIndex $_activeTransformIndex;
 
     /**
      * Serializer

@@ -22,12 +22,12 @@ class NewSiblingAfter extends ElementAction
     /**
      * @var string|null The trigger label
      */
-    public $label;
+    public ?string $label;
 
     /**
      * @var string|null The URL that the user should be taken to after clicking on this element action
      */
-    public $newSiblingUrl;
+    public ?string $newSiblingUrl;
 
     /**
      * @inheritdoc

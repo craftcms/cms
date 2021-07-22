@@ -22,7 +22,7 @@ class D3Asset extends AssetBundle
     /**
      * @var array The default language format files to use
      */
-    private $_defaultLanguages = [
+    private array $_defaultLanguages = [
         'ar' => 'ar-SA',
         'de' => 'de-DE',
         'en' => 'en-US',

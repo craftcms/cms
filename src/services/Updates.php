@@ -38,17 +38,17 @@ class Updates extends Component
     /**
      * @var string
      */
-    public $cacheKey = 'updates';
+    public string $cacheKey = 'updates';
 
     /**
      * @var UpdatesModel|null
      */
-    private $_updates;
+    private ?UpdatesModel $_updates;
 
     /**
      * @var bool|null
      */
-    private $_isCraftDbMigrationNeeded;
+    private ?bool $_isCraftDbMigrationNeeded;
 
     /**
      * Returns whether the update info is cached.

@@ -35,7 +35,7 @@ class Deprecator extends Component
      * @var bool Whether deprecation warnings should throw exceptions rather than being logged.
      * @since 3.1.18
      */
-    public $throwExceptions = false;
+    public bool $throwExceptions = false;
 
     /**
      * @var string|false Whether deprecation errors should be logged in the database ('db'),
@@ -51,12 +51,12 @@ class Deprecator extends Component
     /**
      * @var DeprecationError[] The deprecation errors that were logged in the current request
      */
-    private $_requestLogs = [];
+    private array $_requestLogs = [];
 
     /**
      * @var DeprecationError[]|null All the unique deprecation errors that have been logged
      */
-    private $_allLogs;
+    private ?array $_allLogs;
 
     /**
      * @inheritdoc

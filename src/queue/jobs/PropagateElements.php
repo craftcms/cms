@@ -31,7 +31,7 @@ class PropagateElements extends BaseJob
     /**
      * @var array|null The element criteria that determines which elements should be propagated
      */
-    public $criteria;
+    public ?array $criteria;
 
     /**
      * @var int|int[]|null The site ID(s) that the elements should be propagated to

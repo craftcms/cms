@@ -354,18 +354,18 @@ class Gql extends Component
     /**
      * @var Schema Currently loaded schema definition
      */
-    private $_schemaDef;
+    private Schema $_schemaDef;
 
     /**
      * @var GqlSchema The active GraphQL schema
      * @see setActiveSchema()
      */
-    private $_schema;
+    private GqlSchema $_schema;
 
     /**
      * @var array Cache of content fields by element class
      */
-    private $_contentFieldCache = [];
+    private array $_contentFieldCache = [];
 
     /**
      * Returns the GraphQL schema.

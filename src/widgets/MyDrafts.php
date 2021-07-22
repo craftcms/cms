@@ -40,7 +40,7 @@ class MyDrafts extends Widget
     /**
      * @var int The total number of drafts that the widget should show
      */
-    public $limit = 10;
+    public int $limit = 10;
 
     /**
      * @inheritdoc

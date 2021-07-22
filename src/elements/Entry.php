@@ -685,7 +685,7 @@ class Entry extends Element
      * {{ entry.sectionId }}
      * ```
      */
-    public $sectionId;
+    public ?int $sectionId;
 
     /**
      * @var int|null Type ID
@@ -697,7 +697,7 @@ class Entry extends Element
      * {{ entry.typeId }}
      * ```
      */
-    public $typeId;
+    public ?int $typeId;
 
     /**
      * @var int|null Author ID
@@ -709,7 +709,7 @@ class Entry extends Element
      * {{ entry.authorId }}
      * ```
      */
-    public $authorId;
+    public ?int $authorId;
 
     /**
      * @var \DateTime|null Post date
@@ -721,7 +721,7 @@ class Entry extends Element
      * {{ entry.postDate|date('short') }}
      * ```
      */
-    public $postDate;
+    public ?\DateTime $postDate;
 
     /**
      * @var \DateTime|null Expiry date
@@ -737,7 +737,7 @@ class Entry extends Element
      * {% endif %}
      * ```
      */
-    public $expiryDate;
+    public ?\DateTime $expiryDate;
 
     /**
      * @var int|false|null New parent ID
@@ -750,7 +750,7 @@ class Entry extends Element
      * @see beforeDelete()
      * @internal
      */
-    public $deletedWithEntryType = false;
+    public bool $deletedWithEntryType = false;
 
     /**
      * @var User|null|false
@@ -760,13 +760,13 @@ class Entry extends Element
     /**
      * @var int|null
      */
-    private $_oldTypeId;
+    private ?int $_oldTypeId;
 
     /**
      * @var bool|null
      * @see _hasNewParent()
      */
-    private $_hasNewParent;
+    private ?bool $_hasNewParent;
 
     /**
      * @inheritdoc

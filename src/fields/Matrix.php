@@ -103,18 +103,18 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
     /**
      * @var int|null Min blocks
      */
-    public $minBlocks;
+    public ?int $minBlocks;
 
     /**
      * @var int|null Max blocks
      */
-    public $maxBlocks;
+    public ?int $maxBlocks;
 
     /**
      * @var string Content table name
      * @since 3.0.23
      */
-    public $contentTable;
+    public string $contentTable;
 
     /**
      * @var string Propagation method
@@ -128,23 +128,23 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
      *
      * @since 3.2.0
      */
-    public $propagationMethod = self::PROPAGATION_METHOD_ALL;
+    public string $propagationMethod = self::PROPAGATION_METHOD_ALL;
 
     /**
      * @var string|null The field’s propagation key format, if [[propagationMethod]] is `custom`
      * @since 3.7.0
      */
-    public $propagationKeyFormat;
+    public ?string $propagationKeyFormat;
 
     /**
      * @var MatrixBlockType[]|null The field’s block types
      */
-    private $_blockTypes;
+    private ?array $_blockTypes;
 
     /**
      * @var MatrixBlockType[]|null The block types' fields
      */
-    private $_blockTypeFields;
+    private ?array $_blockTypeFields;
 
     /**
      * @inheritdoc

@@ -48,12 +48,12 @@ class NewUsers extends Widget
     /**
      * @var int|null The ID of the user group
      */
-    public $userGroupId;
+    public ?int $userGroupId;
 
     /**
      * @var string|null The date range
      */
-    public $dateRange;
+    public ?string $dateRange;
 
 
     /**

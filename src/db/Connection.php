@@ -70,7 +70,7 @@ class Connection extends \yii\db\Connection
      * @see getSupportsMb4()
      * @see setSupportsMb4()
      */
-    private $_supportsMb4;
+    private ?bool $_supportsMb4;
 
     /**
      * Returns whether this is a MySQL connection.

@@ -21,12 +21,12 @@ class MigrationException extends Exception
     /**
      * @var Migration The migration being executed
      */
-    public $migration;
+    public Migration $migration;
 
     /**
      * @var string|null The migration output
      */
-    public $output;
+    public ?string $output;
 
     /**
      * Constructor.

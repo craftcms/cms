@@ -21,32 +21,32 @@ class TitleField extends StandardTextField
     /**
      * @inheritdoc
      */
-    public $mandatory = true;
+    public bool $mandatory = true;
 
     /**
      * @inheritdoc
      */
-    public $attribute = 'title';
+    public string $attribute = 'title';
 
     /**
      * @inheritdoc
      */
-    public $translatable = true;
+    public bool $translatable = true;
 
     /**
      * @inheritdoc
      */
-    public $maxlength = 255;
+    public ?int $maxlength = 255;
 
     /**
      * @inheritdoc
      */
-    public $required = true;
+    public bool $required = true;
 
     /**
      * @inheritdoc
      */
-    public $autofocus = true;
+    public bool $autofocus = true;
 
     /**
      * @inheritdoc

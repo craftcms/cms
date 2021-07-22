@@ -21,7 +21,7 @@ class ElementException extends Exception
     /**
      * @var ElementInterface The element
      */
-    public $element;
+    public ElementInterface $element;
 
     /**
      * Constructor.

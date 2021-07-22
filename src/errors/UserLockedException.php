@@ -22,7 +22,7 @@ class UserLockedException extends Exception
     /**
      * @var User The user that's locked.
      */
-    public $user;
+    public User $user;
 
     /**
      * Constructor

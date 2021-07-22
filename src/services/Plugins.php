@@ -101,37 +101,37 @@ class Plugins extends Component
      * @var array[] Custom plugin configurations.
      * @since 3.4.0
      */
-    public $pluginConfigs;
+    public array $pluginConfigs;
 
     /**
      * @var bool Whether plugins have been loaded yet for this request
      */
-    private $_pluginsLoaded = false;
+    private bool $_pluginsLoaded = false;
 
     /**
      * @var bool Whether plugins are in the middle of being loaded
      */
-    private $_loadingPlugins = false;
+    private bool $_loadingPlugins = false;
 
     /**
      * @var PluginInterface[] All the enabled plugins, indexed by handles
      */
-    private $_plugins = [];
+    private array $_plugins = [];
 
     /**
      * @var array|null Plugin info provided by Composer, indexed by handles
      */
-    private $_composerPluginInfo;
+    private ?array $_composerPluginInfo;
 
     /**
      * @var array|null All of the stored info for enabled plugins, indexed by handles
      */
-    private $_enabledPluginInfo;
+    private ?array $_enabledPluginInfo;
 
     /**
      * @var array|null All of the stored info for disabled plugins, indexed by handles
      */
-    private $_disabledPluginInfo;
+    private ?array $_disabledPluginInfo;
 
     /**
      * @var string[]|string|null Any plugin handles that must be disabled per the `disablePlugins` config setting
@@ -141,7 +141,7 @@ class Plugins extends Component
     /**
      * @var string[] Cache for [[getPluginHandleByClass()]]
      */
-    private $_classPluginHandles = [];
+    private array $_classPluginHandles = [];
 
     /**
      * @inheritdoc

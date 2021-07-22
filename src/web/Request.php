@@ -72,7 +72,7 @@ class Request extends \yii\web\Request
      * @var int The highest page number that Craft should accept.
      * @since 3.1.14
      */
-    public $maxPageNum = 100000;
+    public int $maxPageNum = 100000;
 
     /**
      * @var GeneralConfig|array|string
@@ -90,112 +90,112 @@ class Request extends \yii\web\Request
      * @var string
      * @see getFullPath()
      */
-    private $_fullPath;
+    private string $_fullPath;
 
     /**
      * @var string
      * @see getPathInfo()
      */
-    private $_path;
+    private string $_path;
 
     /**
      * @var string
      * @see getFullUri()
      */
-    private $_fullUri;
+    private string $_fullUri;
 
     /**
      * @var
      */
-    private $_segments;
+    private array $_segments;
 
     /**
      * @var int
      */
-    private $_pageNum = 1;
+    private int $_pageNum = 1;
 
     /**
      * @var bool
      */
-    private $_isCpRequest;
+    private bool $_isCpRequest;
 
     /**
      * @var bool
      */
-    private $_isActionRequest = false;
+    private bool $_isActionRequest = false;
 
     /**
      * @var bool
      */
-    private $_isSingleActionRequest = false;
+    private bool $_isSingleActionRequest = false;
 
     /**
      * @var bool
      */
-    private $_isLoginRequest = false;
+    private bool $_isLoginRequest = false;
 
     /**
      * @var bool
      */
-    private $_checkedRequestType = false;
+    private bool $_checkedRequestType = false;
 
     /**
      * @var string[]|null
      */
-    private $_actionSegments;
+    private ?array $_actionSegments;
 
     /**
      * @var bool
      */
-    private $_isLivePreview = false;
+    private bool $_isLivePreview = false;
 
     /**
      * @var bool|null
      */
-    private $_isMobileBrowser;
+    private ?bool $_isMobileBrowser;
 
     /**
      * @var bool|null
      */
-    private $_isMobileOrTabletBrowser;
+    private ?bool $_isMobileOrTabletBrowser;
 
     /**
      * @var string|null
      */
-    private $_ipAddress;
+    private ?string $_ipAddress;
 
     /**
      * @var CookieCollection Collection of raw cookies
      * @see getRawCookies()
      */
-    private $_rawCookies;
+    private CookieCollection $_rawCookies;
 
     /**
      * @var string|null
      */
-    private $_craftCsrfToken;
+    private ?string $_craftCsrfToken;
 
     /**
      * @var bool
      */
-    private $_encodedQueryParams = false;
+    private bool $_encodedQueryParams = false;
 
     /**
      * @var bool
      */
-    private $_encodedBodyParams = false;
+    private bool $_encodedBodyParams = false;
 
     /**
      * @var bool|null Whether the request initially had a token
      * @see getHadToken()
      */
-    private $_hadToken;
+    private ?bool $_hadToken;
 
     /**
      * @var string|null
      * @see getToken()
      */
-    public $_token;
+    public ?string $_token;
 
     /**
      * @inheritdoc

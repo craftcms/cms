@@ -27,12 +27,12 @@ class Tip extends BaseUiElement
     /**
      * @var string The tip text
      */
-    public $tip;
+    public string $tip;
 
     /**
      * @var string The tip style (`tip` or `warning`)
      */
-    public $style = self::STYLE_TIP;
+    public string $style = self::STYLE_TIP;
 
     /**
      * @inheritdoc

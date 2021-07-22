@@ -35,12 +35,12 @@ class Field extends ActiveRecord
     /**
      * @var string|null
      */
-    private $_oldHandle;
+    private ?string $_oldHandle;
 
     /**
      * @var string|null
      */
-    private $_oldColumnSuffix;
+    private ?string $_oldColumnSuffix;
 
     /**
      * @inheritdoc

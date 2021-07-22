@@ -40,7 +40,7 @@ class Dropdown extends BaseOptionsField implements SortableFieldInterface
     /**
      * @inheritdoc
      */
-    public $optgroups = true;
+    public bool $optgroups = true;
 
     /**
      * @inheritdoc

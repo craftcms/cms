@@ -248,36 +248,36 @@ class Elements extends Component
     /**
      * @var int[] Stores a mapping of source element IDs to their duplicated element IDs.
      */
-    public static $duplicatedElementIds = [];
+    public static array $duplicatedElementIds = [];
 
     /**
      * @var int[] Stores a mapping of duplicated element IDs to their source element IDs.
      * @since 3.4.0
      */
-    public static $duplicatedElementSourceIds = [];
+    public static array $duplicatedElementSourceIds = [];
 
     /**
      * @var array|null
      */
-    private $_placeholderElements;
+    private ?array $_placeholderElements;
 
     /**
      * @var array
      * @see setPlaceholderElement()
      * @see getElementByUri()
      */
-    private $_placeholderUris;
+    private array $_placeholderUris;
 
     /**
      * @var string[]
      */
-    private $_elementTypesByRefHandle = [];
+    private array $_elementTypesByRefHandle = [];
 
     /**
      * @var bool|null Whether we should be updating search indexes for elements if not told explicitly.
      * @since 3.1.2
      */
-    private $_updateSearchIndex;
+    private ?bool $_updateSearchIndex;
 
     /**
      * Creates an element with a given config.
@@ -318,11 +318,11 @@ class Elements extends Component
     /**
      * @var array[]
      */
-    private $_cacheTagBuffers = [];
+    private array $_cacheTagBuffers = [];
     /**
      * @var string[]|null
      */
-    private $_cacheTags;
+    private ?array $_cacheTags;
 
     /**
      * Returns whether we are currently collecting element cache invalidation tags.

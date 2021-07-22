@@ -20,15 +20,15 @@ class SetAssetFilenameEvent extends Event
     /**
      * @var string|null The asset filename (sans extension).
      */
-    public $filename;
+    public ?string $filename;
 
     /**
      * @var string|null The asset filename prior to sanitation (sans extension).
      */
-    public $originalFilename;
+    public ?string $originalFilename;
 
     /**
      * @var string|null The asset extension
      */
-    public $extension;
+    public ?string $extension;
 }

@@ -25,33 +25,33 @@ class CsvResponseFormatter extends Component implements ResponseFormatterInterfa
     /**
      * @var string the Content-Type header for the response
      */
-    public $contentType = 'text/csv';
+    public string $contentType = 'text/csv';
 
     /**
      * @var bool whether the response data should include a header row
      */
-    public $includeHeaderRow = true;
+    public bool $includeHeaderRow = true;
 
     /**
      * @var string[] the header row values. The array keys of first result in
      * [[YiiResponse::$data]] will be used by default.
      */
-    public $headers;
+    public array $headers;
 
     /**
      * @var string the field delimiter (one character only)
      */
-    public $delimiter = ',';
+    public string $delimiter = ',';
 
     /**
      * @var string the field enclosure (one character only)
      */
-    public $enclosure = '"';
+    public string $enclosure = '"';
 
     /**
      * @var string the escape character (one character only)
      */
-    public $escapeChar = "\\";
+    public string $escapeChar = "\\";
 
     /**
      * Formats the specified response.

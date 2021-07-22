@@ -62,14 +62,14 @@ class Url extends Field implements PreviewableFieldInterface
      * @var string[] Allowed URL types
      * @since 3.6.0
      */
-    public $types = [
+    public array $types = [
         self::TYPE_URL,
     ];
 
     /**
      * @var int The maximum length (in bytes) the field can hold
      */
-    public $maxLength = 255;
+    public int $maxLength = 255;
 
     /**
      * @inheritdoc

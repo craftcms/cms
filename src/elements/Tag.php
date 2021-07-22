@@ -161,13 +161,13 @@ class Tag extends Element
     /**
      * @var int|null Group ID
      */
-    public $groupId;
+    public ?int $groupId;
 
     /**
      * @var bool Whether the tag was deleted along with its group
      * @see beforeDelete()
      */
-    public $deletedWithGroup = false;
+    public bool $deletedWithGroup = false;
 
     /**
      * @inheritdoc

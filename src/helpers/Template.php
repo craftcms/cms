@@ -43,14 +43,14 @@ class Template
      * @var bool Whether to enable profiling for this request
      * @see _shouldProfile()
      */
-    private static $_shouldProfile;
+    private static bool $_shouldProfile;
 
     /**
      * @var array Counters for template elements being profiled
      * @see beginProfile()
      * @see endProfile()
      */
-    private static $_profileCounters;
+    private static array $_profileCounters;
 
     /**
      * Returns the attribute value for a given array/object.

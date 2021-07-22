@@ -35,7 +35,7 @@ class FileHelper extends \yii\helpers\FileHelper
      * @var bool Whether file locks can be used when writing to files.
      * @see useFileLocks()
      */
-    private static $_useFileLocks;
+    private static bool $_useFileLocks;
 
     /**
      * @inheritdoc

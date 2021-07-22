@@ -29,12 +29,12 @@ class Gmail extends BaseTransportAdapter
     /**
      * @var string|null The username that should be used
      */
-    public $username;
+    public ?string $username;
 
     /**
      * @var string|null The password that should be used
      */
-    public $password;
+    public ?string $password;
 
     /**
      * @var string The timeout duration (in seconds)

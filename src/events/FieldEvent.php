@@ -21,10 +21,10 @@ class FieldEvent extends Event
     /**
      * @var FieldInterface|null The field associated with this event.
      */
-    public $field;
+    public ?FieldInterface $field;
 
     /**
      * @var bool Whether the field is brand new
      */
-    public $isNew = false;
+    public bool $isNew = false;
 }

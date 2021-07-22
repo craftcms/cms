@@ -23,7 +23,7 @@ class OffController extends Controller
     /**
      * @var int|null Number of seconds that the `Retry-After` HTTP header should be set to for 503 responses
      */
-    public $retry;
+    public ?int $retry;
 
     /**
      * @inheritdoc

@@ -23,12 +23,12 @@ class Duplicate extends ElementAction
     /**
      * @var bool Whether to also duplicate the selected elements’ descendants
      */
-    public $deep = false;
+    public bool $deep = false;
 
     /**
      * @var string|null The message that should be shown after the elements get deleted
      */
-    public $successMessage;
+    public ?string $successMessage;
 
     /**
      * @inheritdoc

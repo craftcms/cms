@@ -42,12 +42,12 @@ class Schema extends \yii\db\mysql\Schema
     /**
      * @var int The maximum length that objects' names can be.
      */
-    public $maxObjectNameLength = 64;
+    public int $maxObjectNameLength = 64;
 
     /**
      * @var string|null The path to the temporary my.cnf file used for backups and restoration.
      */
-    public $tempMyCnfPath;
+    public ?string $tempMyCnfPath;
 
     /**
      * @inheritdoc

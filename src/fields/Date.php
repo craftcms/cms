@@ -52,36 +52,36 @@ class Date extends Field implements PreviewableFieldInterface, SortableFieldInte
     /**
      * @var bool Whether a datepicker should be shown as part of the input
      */
-    public $showDate = true;
+    public bool $showDate = true;
 
     /**
      * @var bool Whether a timepicker should be shown as part of the input
      */
-    public $showTime = false;
+    public bool $showTime = false;
 
     /**
      * @var bool Whether the selected time zone should be stored with the field data. Otherwise the system
      * time zone will always be used.
      * @since 3.7.0
      */
-    public $showTimeZone = false;
+    public bool $showTimeZone = false;
 
     /**
      * @var DateTime|null The minimum allowed date
      * @since 3.5.0
      */
-    public $min;
+    public ?DateTime $min;
 
     /**
      * @var DateTime|null The maximum allowed date
      * @since 3.5.0
      */
-    public $max;
+    public ?DateTime $max;
 
     /**
      * @var int The number of minutes that the timepicker options should increment by
      */
-    public $minuteIncrement = 30;
+    public int $minuteIncrement = 30;
 
     /**
      * @inheritdoc

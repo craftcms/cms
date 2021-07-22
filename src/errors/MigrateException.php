@@ -20,12 +20,12 @@ class MigrateException extends Exception
     /**
      * @var string The name of the thing being updated
      */
-    public $ownerName;
+    public string $ownerName;
 
     /**
      * @var string The handle of the thing being updated
      */
-    public $ownerHandle;
+    public string $ownerHandle;
 
     /**
      * Constructor.

@@ -25,23 +25,23 @@ class DraftBehavior extends BaseRevisionBehavior
     /**
      * @var string The draft name
      */
-    public $draftName;
+    public string $draftName;
 
     /**
      * @var string|null The draft notes
      */
-    public $draftNotes;
+    public ?string $draftNotes;
 
     /**
      * @var bool Whether to track changes in this draft
      */
-    public $trackChanges = true;
+    public bool $trackChanges = true;
 
     /**
      * @var bool Whether the draft should be marked as saved (if unpublished).
      * @since 3.6.6
      */
-    public $markAsSaved = true;
+    public bool $markAsSaved = true;
 
     /**
      * @inheritdoc

@@ -22,7 +22,7 @@ class EditImage extends ElementAction
     /**
      * @var string The trigger label
      */
-    public $label;
+    public string $label;
 
     /**
      * @inheritdoc

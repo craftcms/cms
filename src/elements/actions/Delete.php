@@ -30,23 +30,23 @@ class Delete extends ElementAction implements DeleteActionInterface
      * @var bool Whether to delete the element’s descendants as well.
      * @since 3.5.0
      */
-    public $withDescendants = false;
+    public bool $withDescendants = false;
 
     /**
      * @var bool Whether to permanently delete the elements.
      * @since 3.5.0
      */
-    public $hard = false;
+    public bool $hard = false;
 
     /**
      * @var string|null The confirmation message that should be shown before the elements get deleted
      */
-    public $confirmationMessage;
+    public ?string $confirmationMessage;
 
     /**
      * @var string|null The message that should be shown after the elements get deleted
      */
-    public $successMessage;
+    public ?string $successMessage;
 
     /**
      * @inheritdoc

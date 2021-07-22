@@ -38,12 +38,12 @@ abstract class ElementAction extends ConfigurableComponent implements ElementAct
      *
      * @since 3.0.30
      */
-    protected $elementType;
+    protected ?string $elementType;
 
     /**
      * @var
      */
-    private $_message;
+    private ?string $_message;
 
     /**
      * @inheritdoc

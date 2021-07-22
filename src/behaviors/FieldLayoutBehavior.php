@@ -24,12 +24,12 @@ class FieldLayoutBehavior extends Behavior
     /**
      * @var string|null The element type that the field layout will be associated with
      */
-    public $elementType;
+    public ?string $elementType;
 
     /**
      * @var string|null The attribute on the owner that holds the field layout ID
      */
-    public $idAttribute;
+    public ?string $idAttribute;
 
     /**
      * @var int|string|callable The field layout ID, or the name of a method on the owner that will return it, or a callback function that will return it
@@ -39,12 +39,12 @@ class FieldLayoutBehavior extends Behavior
     /**
      * @var FieldLayout|null The field layout associated with the owner
      */
-    private $_fieldLayout;
+    private ?FieldLayout $_fieldLayout;
 
     /**
      * @var FieldInterface[]|null The fields associated with the owner's field layout
      */
-    private $_fields;
+    private ?array $_fields;
 
     /**
      * @inheritdoc

@@ -21,7 +21,7 @@ class TypeLoader
     /**
      * @var callable[]
      */
-    private static $_typeLoaders = [];
+    private static array $_typeLoaders = [];
 
     /**
      * @param string $type

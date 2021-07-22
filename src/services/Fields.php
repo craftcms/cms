@@ -174,19 +174,19 @@ class Fields extends Component
     /**
      * @var string
      */
-    public $oldFieldColumnPrefix = 'field_';
+    public string $oldFieldColumnPrefix = 'field_';
 
     /**
      * @var MemoizableArray|null
      * @see _groups()
      */
-    private $_groups;
+    private ?MemoizableArray $_groups;
 
     /**
      * @var MemoizableArray|null
      * @see _fields()
      */
-    private $_fields;
+    private ?MemoizableArray $_fields;
 
     /**
      * @var
@@ -196,12 +196,12 @@ class Fields extends Component
     /**
      * @var
      */
-    private $_layoutsByType;
+    private array $_layoutsByType;
 
     /**
      * @var array
      */
-    private $_savingFields = [];
+    private array $_savingFields = [];
 
     /**
      * Serializer

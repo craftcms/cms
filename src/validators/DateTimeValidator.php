@@ -29,26 +29,26 @@ class DateTimeValidator extends Validator
      * @see $tooEarly for the customized message used when the date is too early
      * @since 3.5.12
      */
-    public $min;
+    public ?string $min;
 
     /**
      * @var string|null The maximum date allowed
      * @see $tooLate for the customized message used when the date is too late
      * @since 3.5.12
      */
-    public $max;
+    public ?string $max;
 
     /**
      * @var string user-defined error message used when the value is earlier than [[min]]
      * @since 3.5.12
      */
-    public $tooEarly;
+    public string $tooEarly;
 
     /**
      * @var string user-defined error message used when the value is later than [[max]]
      * @since 3.5.12
      */
-    public $tooLate;
+    public string $tooLate;
 
     /**
      * @inheritdoc

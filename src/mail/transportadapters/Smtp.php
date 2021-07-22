@@ -29,32 +29,32 @@ class Smtp extends BaseTransportAdapter
     /**
      * @var string|null The host that should be used
      */
-    public $host;
+    public ?string $host;
 
     /**
      * @var string|null The port that should be used
      */
-    public $port;
+    public ?string $port;
 
     /**
      * @var bool|null Whether to use authentication
      */
-    public $useAuthentication;
+    public ?bool $useAuthentication;
 
     /**
      * @var string|null The username that should be used
      */
-    public $username;
+    public ?string $username;
 
     /**
      * @var string|null The password that should be used
      */
-    public $password;
+    public ?string $password;
 
     /**
      * @var string|null The encryption method that should be used, if any (ssl or tls)
      */
-    public $encryptionMethod;
+    public ?string $encryptionMethod;
 
     /**
      * @var string The timeout duration (in seconds)

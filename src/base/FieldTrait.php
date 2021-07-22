@@ -18,69 +18,69 @@ trait FieldTrait
     /**
      * @var int|null The field’s group’s ID
      */
-    public $groupId;
+    public ?int $groupId;
 
     /**
      * @var string|null The field’s name
      */
-    public $name;
+    public ?string $name;
 
     /**
      * @var string|null The field’s handle
      */
-    public $handle;
+    public ?string $handle;
 
     /**
      * @var string|null The field’s context
      */
-    public $context;
+    public ?string $context;
 
     /**
      * @var string|null The field’s instructions
      */
-    public $instructions;
+    public ?string $instructions;
 
     /**
      * @var bool Whether the field's values should be registered as search keywords on the elements.
      */
-    public $searchable = false;
+    public bool $searchable = false;
 
     /**
      * @var string The field’s translation method
      */
-    public $translationMethod = Field::TRANSLATION_METHOD_NONE;
+    public string $translationMethod = Field::TRANSLATION_METHOD_NONE;
 
     /**
      * @var string|null The field’s translation key format, if [[translationMethod]] is "custom"
      */
-    public $translationKeyFormat;
+    public ?string $translationKeyFormat;
 
     /**
      * @var string|null The field’s previous handle
      */
-    public $oldHandle;
+    public ?string $oldHandle;
 
     /**
      * @var array|null The field’s previous settings
      * @since 3.1.2
      */
-    public $oldSettings;
+    public ?array $oldSettings;
 
     /**
      * @var string|null The field’s content column prefix
      */
-    public $columnPrefix;
+    public ?string $columnPrefix;
 
     /**
      * @var string|null The field’s content column suffix
      * @since 3.7.0
      */
-    public $columnSuffix;
+    public ?string $columnSuffix;
 
     /**
      * @var string|null The field's UID
      */
-    public $uid;
+    public ?string $uid;
 
     // These properties are only populated if the field was fetched via a Field Layout
     // -------------------------------------------------------------------------
@@ -88,20 +88,20 @@ trait FieldTrait
     /**
      * @var int|null The ID of the field layout that the field was fetched from
      */
-    public $layoutId;
+    public ?int $layoutId;
 
     /**
      * @var int|null The tab ID of the field layout that the field was fetched from
      */
-    public $tabId;
+    public ?int $tabId;
 
     /**
      * @var bool|null Whether the field is required in the field layout it was fetched from
      */
-    public $required;
+    public ?bool $required;
 
     /**
      * @var int|null The field’s sort position in the field layout it was fetched from
      */
-    public $sortOrder;
+    public ?int $sortOrder;
 }

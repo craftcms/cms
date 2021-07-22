@@ -40,17 +40,17 @@ class Images extends Component
     /**
      * @var array Image formats that can be manipulated.
      */
-    public $supportedImageFormats = ['jpg', 'jpeg', 'gif', 'png'];
+    public array $supportedImageFormats = ['jpg', 'jpeg', 'gif', 'png'];
 
     /**
      * @var string Image driver.
      */
-    private $_driver = '';
+    private string $_driver = '';
 
     /**
      * @var string|null Imagick version being used, if any.
      */
-    private $_imagickVersion;
+    private ?string $_imagickVersion;
 
     /**
      * Decide on the image driver being used.

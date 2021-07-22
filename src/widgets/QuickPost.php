@@ -41,22 +41,22 @@ class QuickPost extends Widget
     /**
      * @var string The site ID that the widget should pull entries from
      */
-    public $siteId;
+    public string $siteId;
 
     /**
      * @var int|null The ID of the section that the widget should post to
      */
-    public $section;
+    public ?int $section;
 
     /**
      * @var int|null The ID of the entry type that the widget should create
      */
-    public $entryType;
+    public ?int $entryType;
 
     /**
      * @var int[]|null The IDs of the fields that the widget should show
      */
-    public $fields;
+    public ?array $fields;
 
     /**
      * @var

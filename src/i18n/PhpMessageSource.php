@@ -21,7 +21,7 @@ class PhpMessageSource extends \yii\i18n\PhpMessageSource
     /**
      * @var bool Whether the messages can be overridden by translations in the site’s translations folder
      */
-    public $allowOverrides = false;
+    public bool $allowOverrides = false;
 
     /**
      * @inheritdoc

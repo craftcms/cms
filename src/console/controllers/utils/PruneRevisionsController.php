@@ -27,7 +27,7 @@ class PruneRevisionsController extends Controller
     /**
      * @var int The maximum number of revisions an element can have.
      */
-    public $maxRevisions;
+    public int $maxRevisions;
 
     /**
      * @inheritdoc

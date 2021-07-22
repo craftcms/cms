@@ -21,10 +21,10 @@ class FieldLayoutEvent extends Event
     /**
      * @var FieldLayout|null The field layout associated with this event.
      */
-    public $layout;
+    public ?FieldLayout $layout;
 
     /**
      * @var bool Whether the field is brand new
      */
-    public $isNew = false;
+    public bool $isNew = false;
 }

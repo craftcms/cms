@@ -20,5 +20,5 @@ class UserEvent extends CancelableEvent
     /**
      * @var User|null The user model associated with the event.
      */
-    public $user;
+    public ?User $user;
 }

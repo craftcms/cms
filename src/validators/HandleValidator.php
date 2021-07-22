@@ -21,12 +21,12 @@ class HandleValidator extends Validator
     /**
      * @var string
      */
-    public static $handlePattern = '[a-zA-Z][a-zA-Z0-9_]*';
+    public static string $handlePattern = '[a-zA-Z][a-zA-Z0-9_]*';
 
     /**
      * @var array
      */
-    public static $baseReservedWords = [
+    public static array $baseReservedWords = [
         'attribute',
         'attributeLabels',
         'attributeNames',
@@ -59,7 +59,7 @@ class HandleValidator extends Validator
     /**
      * @var array
      */
-    public $reservedWords = [];
+    public array $reservedWords = [];
 
     /**
      * @inheritdoc

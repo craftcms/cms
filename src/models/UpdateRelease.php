@@ -22,22 +22,22 @@ class UpdateRelease extends Model
     /**
      * @var string Version
      */
-    public $version;
+    public string $version;
 
     /**
      * @var \DateTime|null Date
      */
-    public $date;
+    public ?\DateTime $date;
 
     /**
      * @var bool Critical
      */
-    public $critical = false;
+    public bool $critical = false;
 
     /**
      * @var string|null Notes
      */
-    public $notes;
+    public ?string $notes;
 
     /**
      * @inheritdoc

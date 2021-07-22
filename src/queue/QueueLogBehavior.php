@@ -22,12 +22,12 @@ class QueueLogBehavior extends VerboseBehavior
     /**
      * @var float timestamp
      */
-    private $_jobStartedAt;
+    private float $_jobStartedAt;
 
     /**
      * @var bool Whether any jobs have executed yet
      */
-    private $_jobExecuted = false;
+    private bool $_jobExecuted = false;
 
     /**
      * @inheritdoc

@@ -21,10 +21,10 @@ class VolumeEvent extends Event
     /**
      * @var VolumeInterface|null The volume associated with the event.
      */
-    public $volume;
+    public ?VolumeInterface $volume;
 
     /**
      * @var bool Whether the volume is brand new
      */
-    public $isNew = false;
+    public bool $isNew = false;
 }

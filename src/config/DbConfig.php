@@ -47,7 +47,7 @@ class DbConfig extends BaseObject
      * ],
      * ```
      */
-    public $attributes = [];
+    public array $attributes = [];
 
     /**
      * @var string The charset to use when creating tables.
@@ -60,7 +60,7 @@ class DbConfig extends BaseObject
      * ```
      * :::
      */
-    public $charset = 'utf8';
+    public string $charset = 'utf8';
 
     /**
      * @var string|null The collation to use when creating tables.
@@ -82,7 +82,7 @@ class DbConfig extends BaseObject
      *
      * @since 3.6.4
      */
-    public $collation;
+    public ?string $collation;
 
     /**
      * @var string The Data Source Name (“DSN”) that tells Craft how to connect to the database.
@@ -93,29 +93,29 @@ class DbConfig extends BaseObject
      * - MySQL parameters: <https://php.net/manual/en/ref.pdo-mysql.connection.php>
      * - PostgreSQL parameters: <https://php.net/manual/en/ref.pdo-pgsql.connection.php>
      */
-    public $dsn;
+    public string $dsn;
 
     /**
      * @var string The database password to connect with.
      */
-    public $password = '';
+    public string $password = '';
 
     /**
      * @var string The schema that Postgres is configured to use by default (PostgreSQL only).
      * @see https://www.postgresql.org/docs/8.2/static/ddl-schemas.html
      */
-    public $schema = 'public';
+    public string $schema = 'public';
 
     /**
      * @var string If you’re sharing Craft installs in a single database (MySQL) or a single database and using a shared schema (PostgreSQL),
      * you can set a table prefix here to avoid per-install table naming conflicts. This can be no more than 5 characters, and must be all lowercase.
      */
-    public $tablePrefix = '';
+    public string $tablePrefix = '';
 
     /**
      * @var string The database username to connect with.
      */
-    public $user = 'root';
+    public string $user = 'root';
 
     /**
      * @var bool Whether batched queries should be executed on a separate, unbuffered database connection.
@@ -127,7 +127,7 @@ class DbConfig extends BaseObject
      *
      * @since 3.7.0
      */
-    public $useUnbufferedConnections = false;
+    public bool $useUnbufferedConnections = false;
 
     // Deprecated Properties
     // -------------------------------------------------------------------------
@@ -137,33 +137,33 @@ class DbConfig extends BaseObject
      *
      * If this is set, the values for [[driver]], [[user]], [[database]], [[server]], [[port]], and [[database]] will be extracted from it.
      */
-    public $url;
+    public ?string $url;
 
     /**
      * @var string The database driver to use. Either 'mysql' for MySQL or 'pgsql' for PostgreSQL.
      */
-    public $driver;
+    public string $driver;
 
     /**
      * @var string The database server name or IP address. Usually `localhost` or `127.0.0.1`.
      */
-    public $server;
+    public string $server;
 
     /**
      * @var int The database server port. Defaults to 3306 for MySQL and 5432 for PostgreSQL.
      */
-    public $port;
+    public int $port;
 
     /**
      * @var string|null MySQL only. If this is set, the CLI connection string (used for yiic) will connect to the Unix socket instead of
      * the server and port. If this is specified, then `server` and `port` settings are ignored.
      */
-    public $unixSocket;
+    public ?string $unixSocket;
 
     /**
      * @var string The name of the database to select.
      */
-    public $database;
+    public string $database;
 
     /**
      * @inheritdoc

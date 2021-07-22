@@ -32,7 +32,7 @@ use yii\base\InvalidArgumentException;
 class Asset extends ElementMutationResolver
 {
     /** @inheritdoc */
-    protected $immutableAttributes = ['id', 'uid', 'volumeId', 'folderId'];
+    protected array $immutableAttributes = ['id', 'uid', 'volumeId', 'folderId'];
 
     /**
      * Save an asset using the passed arguments.

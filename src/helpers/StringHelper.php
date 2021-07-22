@@ -33,7 +33,7 @@ class StringHelper extends \yii\helpers\StringHelper
      * @var array Character mappings
      * @see asciiCharMap()
      */
-    private static $_asciiCharMaps;
+    private static array $_asciiCharMaps;
 
     /**
      * Gets the substring after the first occurrence of a separator.

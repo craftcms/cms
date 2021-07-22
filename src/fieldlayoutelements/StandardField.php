@@ -23,34 +23,34 @@ abstract class StandardField extends BaseField
     /**
      * @var bool Whether the field *must* be present within the layout.
      */
-    public $mandatory = false;
+    public bool $mandatory = false;
 
     /**
      * @var bool Whether the field can optionally be marked as required.
      */
-    public $requirable = false;
+    public bool $requirable = false;
 
     /**
      * @var string the element attribute this field is for.
      */
-    public $attribute;
+    public string $attribute;
 
     /**
      * @var string|null The input’s `id` attribute value.
      *
      * If this is not set, [[attribute()]] will be used by default.
      */
-    public $id;
+    public ?string $id;
 
     /**
      * @var array HTML attributes for the field container
      */
-    public $containerAttributes = [];
+    public array $containerAttributes = [];
 
     /**
      * @var array HTML attributes for the input container
      */
-    public $inputContainerAttributes = [];
+    public array $inputContainerAttributes = [];
 
     /**
      * @var string|null The ID of the field label
@@ -60,12 +60,12 @@ abstract class StandardField extends BaseField
     /**
      * @var string|null The field’s orientation (`ltr` or `rtl`)
      */
-    public $orientation;
+    public ?string $orientation;
 
     /**
      * @var bool Whether the field is translatable
      */
-    public $translatable = false;
+    public bool $translatable = false;
 
     /**
      * @inheritdoc

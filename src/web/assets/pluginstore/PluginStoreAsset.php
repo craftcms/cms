@@ -29,12 +29,12 @@ class PluginStoreAsset extends AssetBundle
     /**
      * @var array
      */
-    private $files = [];
+    private array $files = [];
 
     /**
      * @var bool
      */
-    private $isHot = false;
+    private bool $isHot = false;
 
     /**
      * @inheritdoc

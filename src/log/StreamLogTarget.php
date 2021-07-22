@@ -26,20 +26,20 @@ class StreamLogTarget extends BaseTarget
      * @var string the URL to use. See https://php.net/manual/en/wrappers.php
      * for details. This gets ignored if [[fp]] is configured.
      */
-    public $url;
+    public string $url;
 
     /**
      * @var string|null a string that should replace all newline characters
      * in a log message. Default is `null` for no replacement.
      */
-    public $replaceNewline;
+    public ?string $replaceNewline;
 
     /**
      * @var bool whether to disable the timestamp. The default is `false` which
      * will prepend every message with a timestamp created with
      * [yii\log\Target::getTime()].
      */
-    public $disableTimestamp = false;
+    public bool $disableTimestamp = false;
 
     /**
      * @var bool whether to use flock() to lock/unlock the stream before/after
@@ -47,13 +47,13 @@ class StreamLogTarget extends BaseTarget
      * processes simultaneously. Note though, that not all stream types support
      * locking. The default is `false`.
      */
-    public $enableLocking = false;
+    public bool $enableLocking = false;
 
     /**
      * @var string a string to prepend to all messages. The string will be
      * added to the very beginning (even before the timestamp).
      */
-    public $prefixString = '';
+    public string $prefixString = '';
 
     /**
      * @var
@@ -63,7 +63,7 @@ class StreamLogTarget extends BaseTarget
     /**
      * @var bool
      */
-    protected $openedFp = false;
+    protected bool $openedFp = false;
 
     /**
      *

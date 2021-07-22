@@ -74,34 +74,34 @@ class Number extends Field implements PreviewableFieldInterface, SortableFieldIn
     /**
      * @var int The number of digits allowed after the decimal point
      */
-    public $decimals = 0;
+    public int $decimals = 0;
 
     /**
      * @var int|null The size of the field
      */
-    public $size;
+    public ?int $size;
 
     /**
      * @var string|null Text that should be displayed before the input
      */
-    public $prefix;
+    public ?string $prefix;
 
     /**
      * @var string|null Text that should be displayed after the input
      */
-    public $suffix;
+    public ?string $suffix;
 
     /**
      * @var string How the number should be formatted in element index views.
      * @since 3.5.11
      */
-    public $previewFormat = self::FORMAT_DECIMAL;
+    public string $previewFormat = self::FORMAT_DECIMAL;
 
     /**
      * @var string|null The currency that should be used if [[$previewFormat]] is set to `currency`.
      * @since 3.5.11
      */
-    public $previewCurrency;
+    public ?string $previewCurrency;
 
     /**
      * @inheritdoc

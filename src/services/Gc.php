@@ -45,14 +45,14 @@ class Gc extends Component
      *
      * This number should be between 0 and 1000000. A value 0 means no GC will be performed at all unless forced.
      */
-    public $probability = 10;
+    public int $probability = 10;
 
     /**
      * @var bool whether [[hardDelete()]] should delete *all* soft-deleted rows,
      * rather than just the ones that were deleted long enough ago to be ready
      * for hard-deletion per the <config3:softDeleteDuration> config setting.
      */
-    public $deleteAllTrashed = false;
+    public bool $deleteAllTrashed = false;
 
     /**
      * Possibly runs garbage collection.

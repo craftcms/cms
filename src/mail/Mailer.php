@@ -34,7 +34,7 @@ class Mailer extends \yii\swiftmailer\Mailer
     /**
      * @var string|null The email template that should be used
      */
-    public $template;
+    public ?string $template;
 
     /**
      * @var string|array|User|User[]|null The default sender’s email address, or their user model(s).

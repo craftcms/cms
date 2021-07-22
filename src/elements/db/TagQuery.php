@@ -40,7 +40,7 @@ class TagQuery extends ElementQuery
     /**
      * @inheritdoc
      */
-    protected $defaultOrderBy = ['content.title' => SORT_ASC];
+    protected array $defaultOrderBy = ['content.title' => SORT_ASC];
 
     // General parameters
     // -------------------------------------------------------------------------

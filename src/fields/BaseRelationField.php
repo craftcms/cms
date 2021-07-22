@@ -104,13 +104,13 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
      * @var array Related elements that have been validated
      * @see _validateRelatedElement()
      */
-    private static $_relatedElementValidates = [];
+    private static array $_relatedElementValidates = [];
 
     /**
      * @var bool Whether we're listening for related element saves yet
      * @see _validateRelatedElement()
      */
-    private static $_listeningForRelatedElementSave = false;
+    private static bool $_listeningForRelatedElementSave = false;
 
     /**
      * @var string|string[]|null The source keys that this field can relate elements from (used if [[allowMultipleSources]] is set to true)
@@ -120,39 +120,39 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
     /**
      * @var string|null The source key that this field can relate elements from (used if [[allowMultipleSources]] is set to false)
      */
-    public $source;
+    public ?string $source;
 
     /**
      * @var string|null The UID of the site that this field should relate elements from
      */
-    public $targetSiteId;
+    public ?string $targetSiteId;
 
     /**
      * @var bool Whether the site menu should be shown in element selector modals.
      *
      * @since 3.5.0
      */
-    public $showSiteMenu = false;
+    public bool $showSiteMenu = false;
 
     /**
      * @var string|null The view mode
      */
-    public $viewMode;
+    public ?string $viewMode;
 
     /**
      * @var int|null The maximum number of relations this field can have (used if [[allowLimit]] is set to true)
      */
-    public $limit;
+    public ?int $limit;
 
     /**
      * @var string|null The label that should be used on the selection input
      */
-    public $selectionLabel;
+    public ?string $selectionLabel;
 
     /**
      * @var bool Whether related elements should be validated when the source element is saved.
      */
-    public $validateRelatedElements = false;
+    public bool $validateRelatedElements = false;
 
     /**
      * @var int Whether each site should get its own unique set of relations
@@ -162,43 +162,43 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
     /**
      * @var bool Whether to allow multiple source selection in the settings
      */
-    public $allowMultipleSources = true;
+    public bool $allowMultipleSources = true;
 
     /**
      * @var bool Whether to allow the Limit setting
      */
-    public $allowLimit = true;
+    public bool $allowLimit = true;
 
     /**
      * @var bool Whether elements should be allowed to relate themselves.
      * @since 3.4.21
      */
-    public $allowSelfRelations = false;
+    public bool $allowSelfRelations = false;
 
     /**
      * @var bool Whether to allow the “Large Thumbnails” view mode
      */
-    protected $allowLargeThumbsView = false;
+    protected bool $allowLargeThumbsView = false;
 
     /**
      * @var string Template to use for settings rendering
      */
-    protected $settingsTemplate = '_components/fieldtypes/elementfieldsettings';
+    protected string $settingsTemplate = '_components/fieldtypes/elementfieldsettings';
 
     /**
      * @var string Template to use for field rendering
      */
-    protected $inputTemplate = '_includes/forms/elementSelect';
+    protected string $inputTemplate = '_includes/forms/elementSelect';
 
     /**
      * @var string|null The JS class that should be initialized for the input
      */
-    protected $inputJsClass;
+    protected string $inputJsClass;
 
     /**
      * @var bool Whether the elements have a custom sort order
      */
-    protected $sortable = true;
+    protected bool $sortable = true;
 
     /**
      * @inheritdoc

@@ -20,7 +20,7 @@ class FolderCriteria extends Model
     /**
      * @var int|null ID
      */
-    public $id;
+    public ?int $id;
 
     /**
      * @var int|string|bool Parent ID
@@ -30,7 +30,7 @@ class FolderCriteria extends Model
     /**
      * @var int|null Source ID
      */
-    public $volumeId;
+    public ?int $volumeId;
 
     /**
      * @var string|string[]|null The folder name(s).
@@ -45,22 +45,22 @@ class FolderCriteria extends Model
     /**
      * @var string|null Path
      */
-    public $path;
+    public ?string $path;
 
     /**
      * @var string Order
      */
-    public $order = 'name asc';
+    public string $order = 'name asc';
 
     /**
      * @var int|null Offset
      */
-    public $offset;
+    public ?int $offset;
 
     /**
      * @var int|null Limit
      */
-    public $limit;
+    public ?int $limit;
 
     /**
      * @var string|string[]|null

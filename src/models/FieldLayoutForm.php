@@ -21,12 +21,12 @@ class FieldLayoutForm extends Model
     /**
      * @var FieldLayoutFormTab[] The form’s tabs.
      */
-    public $tabs = [];
+    public array $tabs = [];
 
     /**
      * @var string|null The prefix that should be applied to the tab’s HTML IDs.
      */
-    public $tabIdPrefix;
+    public ?string $tabIdPrefix;
 
     /**
      * Returns the tab menu config.

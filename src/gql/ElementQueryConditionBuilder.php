@@ -81,11 +81,11 @@ class ElementQueryConditionBuilder extends Component
     /**
      * @var ArgumentManager
      */
-    private $_argumentManager;
+    private ArgumentManager $_argumentManager;
 
-    private $_fragments;
-    private $_eagerLoadableFieldsByContext = [];
-    private $_transformableAssetProperties = ['url', 'width', 'height'];
+    private array $_fragments;
+    private array $_eagerLoadableFieldsByContext = [];
+    private array $_transformableAssetProperties = ['url', 'width', 'height'];
     private $_additionalEagerLoadableNodes = null;
 
 

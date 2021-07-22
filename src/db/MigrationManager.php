@@ -46,17 +46,17 @@ class MigrationManager extends Component
      * @var string The migration track (e.g. `craft`, `content`, `plugin:commerce`, etc.)
      * @since 3.5.0
      */
-    public $track;
+    public string $track;
 
     /**
      * @var string|null The namespace that the migration classes are in
      */
-    public $migrationNamespace;
+    public ?string $migrationNamespace;
 
     /**
      * @var string|null The path to the migrations directory
      */
-    public $migrationPath;
+    public ?string $migrationPath;
 
     /**
      * @var Connection|array|string The DB connection object or the application component ID of the DB connection
@@ -66,7 +66,7 @@ class MigrationManager extends Component
     /**
      * @var string The migrations table name
      */
-    public $migrationTable = Table::MIGRATIONS;
+    public string $migrationTable = Table::MIGRATIONS;
 
     /**
      * @inheritdoc

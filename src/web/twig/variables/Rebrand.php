@@ -24,12 +24,12 @@ class Rebrand
     /**
      * @var
      */
-    private $_paths = [];
+    private array $_paths = [];
 
     /**
      * @var
      */
-    private $_imageVariables = [];
+    private array $_imageVariables = [];
 
     /**
      * Returns whether a custom logo has been uploaded.

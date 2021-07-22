@@ -45,43 +45,43 @@ class PlainText extends Field implements PreviewableFieldInterface, SortableFiel
      * @var string The UI mode of the field.
      * @since 3.5.0
      */
-    public $uiMode = 'normal';
+    public string $uiMode = 'normal';
 
     /**
      * @var string|null The input’s placeholder text
      */
-    public $placeholder;
+    public ?string $placeholder;
 
     /**
      * @var bool Whether the input should use monospace font
      */
-    public $code = false;
+    public bool $code = false;
 
     /**
      * @var bool Whether the input should allow line breaks
      */
-    public $multiline = false;
+    public bool $multiline = false;
 
     /**
      * @var int The minimum number of rows the input should have, if multi-line
      */
-    public $initialRows = 4;
+    public int $initialRows = 4;
 
     /**
      * @var int|null The maximum number of characters allowed in the field
      */
-    public $charLimit;
+    public ?int $charLimit;
 
     /**
      * @var int|null The maximum number of bytes allowed in the field
      * @since 3.4.0
      */
-    public $byteLimit;
+    public ?int $byteLimit;
 
     /**
      * @var string|null The type of database column the field should have in the content table
      */
-    public $columnType;
+    public ?string $columnType;
 
     /**
      * @inheritdoc

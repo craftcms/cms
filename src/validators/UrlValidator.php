@@ -27,7 +27,7 @@ class UrlValidator extends YiiUrlValidator
      * @var bool Whether the value can begin with an alias
      * @deprecated
      */
-    public $allowAlias = false;
+    public bool $allowAlias = false;
 
     /**
      * @inheritdoc

@@ -28,7 +28,7 @@ class Category extends ElementMutationResolver
     use StructureMutationTrait;
 
     /** @inheritdoc */
-    protected $immutableAttributes = ['id', 'uid', 'groupId'];
+    protected array $immutableAttributes = ['id', 'uid', 'groupId'];
 
     /**
      * Save a category using the passed arguments.

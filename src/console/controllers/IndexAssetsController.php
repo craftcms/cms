@@ -38,17 +38,17 @@ class IndexAssetsController extends Controller
     /**
      * @var bool Whether remote-stored images should be locally cached in the process.
      */
-    public $cacheRemoteImages = false;
+    public bool $cacheRemoteImages = false;
 
     /**
      * @var bool Whether to auto-create new asset records when missing.
      */
-    public $createMissingAssets = true;
+    public bool $createMissingAssets = true;
 
     /**
      * @var bool Whether to delete all the asset records that have their files missing.
      */
-    public $deleteMissingAssets = false;
+    public bool $deleteMissingAssets = false;
 
     /**
      * @inheritdoc

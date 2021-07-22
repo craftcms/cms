@@ -31,13 +31,13 @@ class ResaveElements extends BaseJob
     /**
      * @var array|null The element criteria that determines which elements should be resaved
      */
-    public $criteria;
+    public ?array $criteria;
 
     /**
      * @var bool Whether to update the search indexes for the resaved elements.
      * @since 3.4.2
      */
-    public $updateSearchIndex = false;
+    public bool $updateSearchIndex = false;
 
     /**
      * @inheritdoc

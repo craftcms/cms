@@ -18,15 +18,15 @@ class SiteEvent extends CancelableEvent
     /**
      * @var \craft\models\Site|null The site model associated with the event.
      */
-    public $site;
+    public ?\craft\models\Site $site;
 
     /**
      * @var bool Whether the site is brand new
      */
-    public $isNew = false;
+    public bool $isNew = false;
 
     /**
      * @var int|null The old primary site ID
      */
-    public $oldPrimarySiteId;
+    public ?int $oldPrimarySiteId;
 }

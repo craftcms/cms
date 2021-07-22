@@ -26,62 +26,62 @@ class AssetTransform extends Model
     /**
      * @var int|null ID
      */
-    public $id;
+    public ?int $id;
 
     /**
      * @var string|null Name
      */
-    public $name;
+    public ?string $name;
 
     /**
      * @var string|null Handle
      */
-    public $handle;
+    public ?string $handle;
 
     /**
      * @var int|null Width
      */
-    public $width;
+    public ?int $width;
 
     /**
      * @var int|null Height
      */
-    public $height;
+    public ?int $height;
 
     /**
      * @var string|null Format
      */
-    public $format;
+    public ?string $format;
 
     /**
      * @var \DateTime|null Dimension change time
      */
-    public $dimensionChangeTime;
+    public ?\DateTime $dimensionChangeTime;
 
     /**
      * @var string Mode
      */
-    public $mode = 'crop';
+    public string $mode = 'crop';
 
     /**
      * @var string Position
      */
-    public $position = 'center-center';
+    public string $position = 'center-center';
 
     /**
      * @var string Position
      */
-    public $interlace = 'none';
+    public string $interlace = 'none';
 
     /**
      * @var int|null Quality
      */
-    public $quality;
+    public ?int $quality;
 
     /**
      * @var string|null UID
      */
-    public $uid;
+    public ?string $uid;
 
     /**
      * @inheritdoc

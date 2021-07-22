@@ -22,7 +22,7 @@ class PreviewAsset extends ElementAction
     /**
      * @var string|null The trigger label
      */
-    public $label;
+    public ?string $label;
 
     /**
      * @inheritdoc

@@ -18,7 +18,7 @@ class SingleOptionFieldData extends OptionData
     /**
      * @var OptionData[]
      */
-    private $_options = [];
+    private array $_options = [];
 
     /**
      * Returns the options.

@@ -19,7 +19,7 @@ trait PrefixedMutexTrait
      * @var string a string prefixed to every lock name. This can be used to avoid lock conflicts if
      * multiple applications are sharing the same database connection.
      */
-    public $namePrefix = '';
+    public string $namePrefix = '';
 
     /**
      * @param string $name

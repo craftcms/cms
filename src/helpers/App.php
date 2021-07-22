@@ -55,7 +55,7 @@ class App
     /**
      * @var bool
      */
-    private static $_iconv;
+    private static bool $_iconv;
 
     /**
      * Returns an environment variable, checking for it in `$_SERVER` and calling `getenv()` as a fallback.

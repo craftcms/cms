@@ -20,7 +20,7 @@ class InvalidLicenseKeyException extends Exception
     /**
      * @var string|null The license key
      */
-    public $licenseKey;
+    public ?string $licenseKey;
 
     /**
      * Constructor.

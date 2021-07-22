@@ -24,7 +24,7 @@ class NavNode extends ForNode
     /**
      * @var NavItem_Node|null
      */
-    protected $navItemNode;
+    protected ?NavItem_Node $navItemNode;
 
     /**
      * NavNode constructor.

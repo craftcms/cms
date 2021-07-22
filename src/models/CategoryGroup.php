@@ -37,48 +37,48 @@ class CategoryGroup extends Model
     /**
      * @var int|null ID
      */
-    public $id;
+    public ?int $id;
 
     /**
      * @var int|null Structure ID
      */
-    public $structureId;
+    public ?int $structureId;
 
     /**
      * @var int|null Field layout ID
      */
-    public $fieldLayoutId;
+    public ?int $fieldLayoutId;
 
     /**
      * @var string|null Name
      */
-    public $name;
+    public ?string $name;
 
     /**
      * @var string|null Handle
      */
-    public $handle;
+    public ?string $handle;
 
     /**
      * @var int|null Max levels
      */
-    public $maxLevels;
+    public ?int $maxLevels;
 
     /**
      * @var string Default placement
      * @since 3.7.0
      */
-    public $defaultPlacement = self::DEFAULT_PLACEMENT_END;
+    public string $defaultPlacement = self::DEFAULT_PLACEMENT_END;
 
     /**
      * @var string|null UID
      */
-    public $uid;
+    public ?string $uid;
 
     /**
      * @var
      */
-    private $_siteSettings;
+    private array $_siteSettings;
 
     /**
      * @inheritdoc

@@ -45,7 +45,7 @@ abstract class BaseUpdaterController extends Controller
     /**
      * @var array The data associated with the current update
      */
-    protected $data = [];
+    protected array $data = [];
 
     /**
      * @inheritdoc

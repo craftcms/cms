@@ -129,38 +129,38 @@ class Sites extends Component
      * @var MemoizableArray|null
      * @see _groups()
      */
-    private $_groups;
+    private ?MemoizableArray $_groups;
 
     /**
      * @var int[]|null
      * @see getEditableSiteIds()
      */
-    private $_editableSiteIds;
+    private ?array $_editableSiteIds;
 
     /**
      * @var Site[]
      * @see getSiteById()
      */
-    private $_allSitesById;
+    private array $_allSitesById;
 
     /**
      * @var Site[]
      * @see getSiteById()
      */
-    private $_enabledSitesById;
+    private array $_enabledSitesById;
 
     /**
      * @var Site|null the current site
      * @see getCurrentSite()
      * @see setCurrentSite()
      */
-    private $_currentSite;
+    private ?Site $_currentSite;
 
     /**
      * @var Site|null
      * @see getPrimarySite()
      */
-    private $_primarySite;
+    private ?Site $_primarySite;
 
     /**
      * Serializer

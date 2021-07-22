@@ -56,7 +56,7 @@ class DateTimeHelper
     /**
      * @var array Translation pairs for [[translateDate()]]
      */
-    private static $_translationPairs;
+    private static array $_translationPairs;
 
     /**
      * Converts a value into a DateTime object.

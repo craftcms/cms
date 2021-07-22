@@ -196,7 +196,7 @@ class Query extends \yii\db\Query
     /**
      * @inheritdoc
      */
-    public function column($db = null)
+    public function column($db = null): array
     {
         try {
             return parent::column($db);

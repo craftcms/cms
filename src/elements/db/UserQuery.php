@@ -38,7 +38,7 @@ class UserQuery extends ElementQuery
     /**
      * @inheritdoc
      */
-    protected $defaultOrderBy = ['users.username' => SORT_ASC];
+    protected array $defaultOrderBy = ['users.username' => SORT_ASC];
 
     // General parameters
     // -------------------------------------------------------------------------
@@ -70,13 +70,13 @@ class UserQuery extends ElementQuery
      * ```
      * @used-by admin()
      */
-    public $admin;
+    public ?bool $admin;
 
     /**
      * @var bool|null Whether to only return users that have (or don’t have) user photos.
      * @used-by hasPhoto()
      */
-    public $hasPhoto;
+    public ?bool $hasPhoto;
 
     /**
      * @var string|int|false|null The permission that the resulting users must have.
@@ -165,7 +165,7 @@ class UserQuery extends ElementQuery
      * @used-by withGroups()
      * @since 3.6.0
      */
-    public $withGroups = false;
+    public bool $withGroups = false;
 
     /**
      * @inheritdoc

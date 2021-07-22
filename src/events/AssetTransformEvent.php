@@ -21,10 +21,10 @@ class AssetTransformEvent extends Event
     /**
      * @var AssetTransform|null The asset transform model associated with the event.
      */
-    public $assetTransform;
+    public ?AssetTransform $assetTransform;
 
     /**
      * @var bool Whether the asset transform is brand new
      */
-    public $isNew = false;
+    public bool $isNew = false;
 }

@@ -87,13 +87,13 @@ class MigrateController extends BaseMigrateController
      * If --plugin is passed, this will automatically be set to the plugin’s track. Otherwise defaults to 'content'.
      * @since 3.5.0
      */
-    public $track = MigrationManager::TRACK_CONTENT;
+    public string $track = MigrationManager::TRACK_CONTENT;
 
     /**
      * @var string|null DEPRECATED. Use `--track` instead.
      * @deprecated in 3.5.0. Use [[track]] instead.
      */
-    public $type;
+    public ?string $type;
 
     /**
      * @var string|PluginInterface|null The handle of the plugin to use during migration operations, or the plugin itself
@@ -103,18 +103,18 @@ class MigrateController extends BaseMigrateController
     /**
      * @var bool Exclude pending content migrations.
      */
-    public $noContent = false;
+    public bool $noContent = false;
 
     /**
      * @var bool Skip backing up the database.
      * @since 3.4.3
      */
-    public $noBackup = false;
+    public bool $noBackup = false;
 
     /**
      * @var MigrationManager[] Migration managers that will be used in this request
      */
-    private $_migrators;
+    private array $_migrators;
 
     /**
      * @inheritdoc

@@ -33,60 +33,60 @@ class EntryType extends Model
     /**
      * @var int|null ID
      */
-    public $id;
+    public ?int $id;
 
     /**
      * @var int|null Section ID
      */
-    public $sectionId;
+    public ?int $sectionId;
 
     /**
      * @var int|null Field layout ID
      */
-    public $fieldLayoutId;
+    public ?int $fieldLayoutId;
 
     /**
      * @var string|null Name
      */
-    public $name;
+    public ?string $name;
 
     /**
      * @var string|null Handle
      */
-    public $handle;
+    public ?string $handle;
 
     /**
      * @var int|null Sort order
      * @since 3.5.0
      */
-    public $sortOrder;
+    public ?int $sortOrder;
 
     /**
      * @var bool Has title field
      */
-    public $hasTitleField = true;
+    public bool $hasTitleField = true;
 
     /**
      * @var string Title translation method
      * @since 3.5.0
      */
-    public $titleTranslationMethod = Field::TRANSLATION_METHOD_SITE;
+    public string $titleTranslationMethod = Field::TRANSLATION_METHOD_SITE;
 
     /**
      * @var string|null Title translation key format
      * @since 3.5.0
      */
-    public $titleTranslationKeyFormat;
+    public ?string $titleTranslationKeyFormat;
 
     /**
      * @var string|null Title format
      */
-    public $titleFormat;
+    public ?string $titleFormat;
 
     /**
      * @var string UID
      */
-    public $uid;
+    public string $uid;
 
     /**
      * @inheritdoc

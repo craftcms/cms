@@ -36,12 +36,12 @@ class Craft extends Yii
     /**
      * @var array The default cookie configuration.
      */
-    private static $_baseCookieConfig;
+    private static array $_baseCookieConfig;
 
     /**
      * @var array Field info for autoload()
      */
-    private static $_fields;
+    private static array $_fields;
 
     /**
      * Checks if a string references an environment variable (`$VARIABLE_NAME`)

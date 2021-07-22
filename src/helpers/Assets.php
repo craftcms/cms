@@ -45,13 +45,13 @@ class Assets
      * @var array Supported file kinds
      * @see getFileKinds()
      */
-    private static $_fileKinds;
+    private static array $_fileKinds;
 
     /**
      * @var array Allowed file kinds
      * @see getAllowedFileKinds()
      */
-    private static $_allowedFileKinds;
+    private static array $_allowedFileKinds;
 
     /**
      * Get a temporary file path.

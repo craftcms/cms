@@ -49,19 +49,19 @@ class Lightswitch extends Field implements PreviewableFieldInterface, SortableFi
     /**
      * @var bool Whether the lightswitch should be enabled by default
      */
-    public $default = false;
+    public bool $default = false;
 
     /**
      * @var string|null The label text to display beside the lightswitch’s enabled state
      * @since 3.5.4
      */
-    public $onLabel;
+    public ?string $onLabel;
 
     /**
      * @var string|null The label text to display beside the lightswitch’s disabled state
      * @since 3.5.4
      */
-    public $offLabel;
+    public ?string $offLabel;
 
     /**
      * @inheritdoc

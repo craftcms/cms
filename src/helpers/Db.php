@@ -36,12 +36,12 @@ class Db
     /**
      * @var array
      */
-    private static $_operators = ['not ', '!=', '<=', '>=', '<', '>', '='];
+    private static array $_operators = ['not ', '!=', '<=', '>=', '<', '>', '='];
 
     /**
      * @var string[] Numeric column types
      */
-    private static $_numericColumnTypes = [
+    private static array $_numericColumnTypes = [
         Schema::TYPE_SMALLINT,
         Schema::TYPE_INTEGER,
         Schema::TYPE_BIGINT,
@@ -53,7 +53,7 @@ class Db
     /**
      * @var string[] Textual column types
      */
-    private static $_textualColumnTypes = [
+    private static array $_textualColumnTypes = [
         Schema::TYPE_CHAR,
         Schema::TYPE_STRING,
         Schema::TYPE_TEXT,
@@ -68,7 +68,7 @@ class Db
     /**
      * @var array Types of integer columns and how many bytes they can store
      */
-    private static $_integerSizeRanges = [
+    private static array $_integerSizeRanges = [
         Schema::TYPE_SMALLINT => [-32768, 32767],
         Schema::TYPE_INTEGER => [-2147483648, 2147483647],
         Schema::TYPE_BIGINT => [-9223372036854775808, 9223372036854775807],
@@ -77,7 +77,7 @@ class Db
     /**
      * @var array Types of MySQL textual columns and how many bytes they can store
      */
-    private static $_mysqlTextSizes = [
+    private static array $_mysqlTextSizes = [
         MysqlSchema::TYPE_TINYTEXT => 255,
         Schema::TYPE_TEXT => 65535,
         MysqlSchema::TYPE_MEDIUMTEXT => 16777215,
@@ -1158,7 +1158,7 @@ class Db
     /**
      * @var Connection|null;
      */
-    private static $_db;
+    private static ?Connection $_db;
 
     /**
      * Resets the memoized database connection.

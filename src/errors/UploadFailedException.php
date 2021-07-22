@@ -20,7 +20,7 @@ class UploadFailedException extends FileException
     /**
      * @var int Error code
      */
-    public $errorCode;
+    public int $errorCode;
 
     /**
      * Constructor

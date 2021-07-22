@@ -31,12 +31,12 @@ class GraphqlController extends Controller
     /**
      * @var string The token to look up to determine the appropriate GraphQL schema
      */
-    public $token = null;
+    public ?string $token = null;
 
     /**
      * @var bool Whether full schema should be printed or dumped.
      */
-    public $fullSchema = false;
+    public bool $fullSchema = false;
 
     /**
      * @inheritdoc

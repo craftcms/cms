@@ -53,19 +53,19 @@ class Queue extends \yii\queue\cli\Queue implements QueueInterface
     /**
      * @var int The time (in seconds) to wait for mutex locks to be released when attempting to reserve new jobs.
      */
-    public $mutexTimeout = 3;
+    public int $mutexTimeout = 3;
 
     /**
      * @var string The table name the queue is stored in.
      * @since 3.4.0
      */
-    public $tableName = Table::QUEUE;
+    public string $tableName = Table::QUEUE;
 
     /**
      * @var string The `channel` column value to the queue should use.
      * @since 3.4.0
      */
-    public $channel = 'queue';
+    public string $channel = 'queue';
 
     /**
      * @inheritdoc
@@ -75,28 +75,28 @@ class Queue extends \yii\queue\cli\Queue implements QueueInterface
     /**
      * @var string|null The description of the job being pushed into the queue
      */
-    private $_jobDescription;
+    private ?string $_jobDescription;
 
     /**
      * @var string|null The currently-executing job ID
      */
-    private $_executingJobId;
+    private ?string $_executingJobId;
 
     /**
      * @var int The timestamp the last job was reserved
      */
-    private $_reserveTime;
+    private int $_reserveTime;
 
     /**
      * @var bool Whether we're already listening for the web response
      */
-    private $_listeningForResponse = false;
+    private bool $_listeningForResponse = false;
 
     /**
      * @var bool Whether a mutex lock has been acquired
      * @see _lock()
      */
-    private $_locked = false;
+    private bool $_locked = false;
 
     /**
      * @inheritdoc

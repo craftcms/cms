@@ -166,50 +166,50 @@ class MatrixBlock extends Element implements BlockElementInterface
     /**
      * @var int|null Field ID
      */
-    public $fieldId;
+    public ?int $fieldId;
 
     /**
      * @var int|null Owner ID
      */
-    public $ownerId;
+    public ?int $ownerId;
 
     /**
      * @var int|null Type ID
      */
-    public $typeId;
+    public ?int $typeId;
 
     /**
      * @var int|null Sort order
      */
-    public $sortOrder;
+    public ?int $sortOrder;
 
     /**
      * @var bool Whether the block has changed.
      * @internal
      * @since 3.4.0
      */
-    public $dirty = false;
+    public bool $dirty = false;
 
     /**
      * @var bool Collapsed
      */
-    public $collapsed = false;
+    public bool $collapsed = false;
 
     /**
      * @var bool Whether the block was deleted along with its owner
      * @see beforeDelete()
      */
-    public $deletedWithOwner = false;
+    public bool $deletedWithOwner = false;
 
     /**
      * @var ElementInterface|null The owner element, or false if [[ownerId]] is invalid
      */
-    private $_owner;
+    private ?ElementInterface $_owner;
 
     /**
      * @var ElementInterface[]|null
      */
-    private $_eagerLoadedBlockTypeElements;
+    private ?array $_eagerLoadedBlockTypeElements;
 
     /**
      * @inheritdoc

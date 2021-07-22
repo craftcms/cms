@@ -47,12 +47,12 @@ class Search extends Component
      * @var bool Whether fulltext searches should be used ever. (MySQL only.)
      * @since 3.4.10
      */
-    public $useFullText = true;
+    public bool $useFullText = true;
 
     /**
      * @var int|null The minimum word length that keywords must be in order to use a full-text search (MySQL only).
      */
-    public $minFullTextWordLength;
+    public ?int $minFullTextWordLength;
 
     /**
      * @var
@@ -72,13 +72,13 @@ class Search extends Component
     /**
      * @var bool
      */
-    private $_isMysql;
+    private bool $_isMysql;
 
     /**
      * @var array|null
      * @see _isSupportedFullTextWord()
      */
-    private $_mysqlStopWords;
+    private ?array $_mysqlStopWords;
 
     /**
      * @var int Because the `keywords` column in the search index table is a
@@ -86,7 +86,7 @@ class Search extends Component
      * for index" error with a lot of data. This value is a hard limit to
      * truncate search index data for a single row in Postgres.
      */
-    public $maxPostgresKeywordLength = 2450;
+    public int $maxPostgresKeywordLength = 2450;
 
     /**
      * @inheritdoc

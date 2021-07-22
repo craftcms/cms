@@ -74,7 +74,7 @@ class AssetQuery extends ElementQuery
      * @used-by uploader()
      * @since 3.4.0
      */
-    public $uploaderId;
+    public ?int $uploaderId;
 
     /**
      * @var string|string[]|null The filename(s) that the resulting assets must have.
@@ -182,7 +182,7 @@ class AssetQuery extends ElementQuery
      * @var bool Whether the query should search the subfolders of [[folderId]].
      * @used-by includeSubfolders()
      */
-    public $includeSubfolders = false;
+    public bool $includeSubfolders = false;
 
     /**
      * @var string|array|null The asset transform indexes that should be eager-loaded, if they exist

@@ -30,7 +30,7 @@ use craft\helpers\Json;
  */
 class MemoizableArray extends \ArrayObject
 {
-    private $_memoized = [];
+    private array $_memoized = [];
 
     /**
      * Returns all items.

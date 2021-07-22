@@ -24,7 +24,7 @@ class Template extends BaseUiElement
     /**
      * @var string The template path
      */
-    public $template;
+    public string $template;
 
     /**
      * @inheritdoc

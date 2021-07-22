@@ -24,27 +24,27 @@ class Path extends Component
     /**
      * @var
      */
-    private $_configPath;
+    private string $_configPath;
 
     /**
      * @var
      */
-    private $_storagePath;
+    private string $_storagePath;
 
     /**
      * @var
      */
-    private $_testsPath;
+    private string $_testsPath;
 
     /**
      * @var
      */
-    private $_siteTranslationsPath;
+    private string $_siteTranslationsPath;
 
     /**
      * @var
      */
-    private $_vendorPath;
+    private string $_vendorPath;
 
     /**
      * Returns the path to the `config/` directory.

@@ -21,7 +21,7 @@ class Url extends Model
     /**
      * @var string|null URL
      */
-    public $url;
+    public ?string $url;
 
     /**
      * @inheritdoc

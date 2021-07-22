@@ -52,12 +52,12 @@ class TypeManager extends Component
     /**
      * @var self
      */
-    private static $_instance;
+    private static TypeManager $_instance;
 
     /**
      * @var array A list of definitions already prepared by type name.
      */
-    private static $_definitions = [];
+    private static array $_definitions = [];
 
     /**
      * Prepare field definitions for a GraphQL type by giving plugins a chance to modify them.

@@ -68,19 +68,19 @@ class Controller extends YiiController
      * @var array Custom actions that should be available.
      * @see defineActions()
      */
-    private $_actions;
+    private array $_actions;
 
     /**
      * @var \ReflectionFunction[] Memoized reflection objects
      * @see getActionMethodReflection()
      */
-    private $_reflections = [];
+    private array $_reflections = [];
 
     /**
      * @var string|null The active action ID.
      * @see runAction()
      */
-    private $_actionId;
+    private ?string $_actionId;
 
     /**
      * @inheritdoc
@@ -200,7 +200,7 @@ class Controller extends YiiController
     /**
      * @inheritdoc
      */
-    public function runAction($id, $params = [])
+    public function runAction($id, $params = []): int
     {
         $this->_actionId = $id;
         $result = parent::runAction($id, $params);

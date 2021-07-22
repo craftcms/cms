@@ -39,18 +39,18 @@ class Composer extends Component
     /**
      * @var string
      */
-    public $composerRepoUrl = 'https://composer.craftcms.com';
+    public string $composerRepoUrl = 'https://composer.craftcms.com';
 
     /**
      * @var bool Whether to generate a new Composer class map, rather than preloading all of the classes in the current class map
      */
-    public $updateComposerClassMap = false;
+    public bool $updateComposerClassMap = false;
 
     /**
      * @var int The maximum number of composer.json and composer.lock backups to store in storage/composer-backups/
      * @since 3.0.38
      */
-    public $maxBackups = 50;
+    public int $maxBackups = 50;
 
     /**
      * @var callable|null The previous error handler.
@@ -61,7 +61,7 @@ class Composer extends Component
     /**
      * @var string[]|null
      */
-    private $_composerClasses;
+    private ?array $_composerClasses;
 
     /**
      * Returns the path to composer.json.

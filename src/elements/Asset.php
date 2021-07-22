@@ -562,102 +562,102 @@ class Asset extends Element
     /**
      * @var int|null Folder ID
      */
-    public $folderId;
+    public ?int $folderId;
 
     /**
      * @var int|null The ID of the user who first added this asset (if known)
      */
-    public $uploaderId;
+    public ?int $uploaderId;
 
     /**
      * @var string|null Folder path
      */
-    public $folderPath;
+    public ?string $folderPath;
 
     /**
      * @var string|null Filename
      * @todo rename to private $_basename w/ getter & setter in 4.0; and getFilename() should not include the extension (to be like PATHINFO_FILENAME). We can add a getBasename() for getting the whole thing.
      */
-    public $filename;
+    public ?string $filename;
 
     /**
      * @var string|null Kind
      */
-    public $kind;
+    public ?string $kind;
 
     /**
      * @var int|null Size
      */
-    public $size;
+    public ?int $size;
 
     /**
      * @var bool|null Whether the file was kept around when the asset was deleted
      */
-    public $keptFile;
+    public ?bool $keptFile;
 
     /**
      * @var \DateTime|null Date modified
      */
-    public $dateModified;
+    public ?DateTime $dateModified;
 
     /**
      * @var string|null New file location
      */
-    public $newLocation;
+    public ?string $newLocation;
 
     /**
      * @var string|null Location error code
      * @see AssetLocationValidator::validateAttribute()
      */
-    public $locationError;
+    public ?string $locationError;
 
     /**
      * @var string|null New filename
      */
-    public $newFilename;
+    public ?string $newFilename;
 
     /**
      * @var int|null New folder id
      */
-    public $newFolderId;
+    public ?int $newFolderId;
 
     /**
      * @var string|null The temp file path
      */
-    public $tempFilePath;
+    public ?string $tempFilePath;
 
     /**
      * @var bool Whether Asset should avoid filename conflicts when saved.
      */
-    public $avoidFilenameConflicts = false;
+    public bool $avoidFilenameConflicts = false;
 
     /**
      * @var string|null The suggested filename in case of a conflict.
      */
-    public $suggestedFilename;
+    public ?string $suggestedFilename;
 
     /**
      * @var string|null The filename that was used that caused a conflict.
      */
-    public $conflictingFilename;
+    public ?string $conflictingFilename;
 
     /**
      * @var bool Whether the asset was deleted along with its volume
      * @see beforeDelete()
      */
-    public $deletedWithVolume = false;
+    public bool $deletedWithVolume = false;
 
     /**
      * @var bool Whether the associated file should be preserved if the asset record is deleted.
      * @see beforeDelete()
      * @see afterDelete()
      */
-    public $keepFileOnDelete = false;
+    public bool $keepFileOnDelete = false;
 
     /**
      * @var int|null Volume ID
      */
-    private $_volumeId;
+    private ?int $_volumeId;
 
     /**
      * @var int|float|null Width
@@ -672,32 +672,32 @@ class Asset extends Element
     /**
      * @var array|null Focal point
      */
-    private $_focalPoint;
+    private ?array $_focalPoint;
 
     /**
      * @var AssetTransform|null
      */
-    private $_transform;
+    private ?AssetTransform $_transform;
 
     /**
      * @var string
      */
-    private $_transformSource = '';
+    private string $_transformSource = '';
 
     /**
      * @var VolumeInterface|null
      */
-    private $_volume;
+    private ?VolumeInterface $_volume;
 
     /**
      * @var User|null
      */
-    private $_uploader;
+    private ?User $_uploader;
 
     /**
      * @var int|null
      */
-    private $_oldVolumeId;
+    private ?int $_oldVolumeId;
 
     /**
      * @inheritdoc

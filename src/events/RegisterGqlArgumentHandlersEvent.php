@@ -20,5 +20,5 @@ class RegisterGqlArgumentHandlersEvent extends Event
     /**
      * @var array[] List of Argument handler class names.
      */
-    public $handlers = [];
+    public array $handlers = [];
 }

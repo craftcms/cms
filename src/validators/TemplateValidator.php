@@ -22,7 +22,7 @@ class TemplateValidator extends Validator
     /**
      * @var string The template mode to use when looking for the template
      */
-    public $templateMode = View::TEMPLATE_MODE_SITE;
+    public string $templateMode = View::TEMPLATE_MODE_SITE;
 
     /**
      * @var string user-defined error message used when the value is not a string.

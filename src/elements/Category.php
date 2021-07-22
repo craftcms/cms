@@ -356,7 +356,7 @@ class Category extends Element
     /**
      * @var int|null Group ID
      */
-    public $groupId;
+    public ?int $groupId;
 
     /**
      * @var int|false|null New parent ID
@@ -367,13 +367,13 @@ class Category extends Element
      * @var bool Whether the category was deleted along with its group
      * @see beforeDelete()
      */
-    public $deletedWithGroup = false;
+    public bool $deletedWithGroup = false;
 
     /**
      * @var bool|null
      * @see _hasNewParent()
      */
-    private $_hasNewParent;
+    private ?bool $_hasNewParent;
 
     /**
      * @inheritdoc

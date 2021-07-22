@@ -20,12 +20,12 @@ class InvalidTypeException extends Exception
     /**
      * @var string|null The invalid class name
      */
-    public $class;
+    public ?string $class;
 
     /**
      * @var string|null The base class or interface that [[$class]] was supposed to be
      */
-    public $requiredType;
+    public ?string $requiredType;
 
     /**
      * Constructor.

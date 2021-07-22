@@ -21,10 +21,10 @@ class ElementEvent extends Event
     /**
      * @var ElementInterface|null The element model associated with the event.
      */
-    public $element;
+    public ?ElementInterface $element;
 
     /**
      * @var bool Whether the element is brand new
      */
-    public $isNew = false;
+    public bool $isNew = false;
 }

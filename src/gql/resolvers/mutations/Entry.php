@@ -30,7 +30,7 @@ class Entry extends ElementMutationResolver
     use StructureMutationTrait;
 
     /** @inheritdoc */
-    protected $immutableAttributes = ['id', 'uid', 'draftId'];
+    protected array $immutableAttributes = ['id', 'uid', 'draftId'];
 
     /**
      * Save an entry or draft using the passed arguments.

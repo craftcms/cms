@@ -21,15 +21,15 @@ class RouteEvent extends Event
      * @var array|null The URI as defined by the user. This is an array where each element is either a
      * string or an array containing the name of a subpattern and the subpattern.
      */
-    public $uriParts;
+    public ?array $uriParts;
 
     /**
      * @var string|null The template to route matching requests to
      */
-    public $template;
+    public ?string $template;
 
     /**
      * @var string|null The site UID the route should be limited to, if any
      */
-    public $siteUid;
+    public ?string $siteUid;
 }

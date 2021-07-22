@@ -49,7 +49,7 @@ class CategoryQuery extends ElementQuery
      * @var bool Whether to only return categories that the user has permission to edit.
      * @used-by editable()
      */
-    public $editable = false;
+    public bool $editable = false;
 
     /**
      * @var int|int[]|null The category group ID(s) that the resulting categories must be in.

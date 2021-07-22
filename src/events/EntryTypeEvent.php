@@ -20,10 +20,10 @@ class EntryTypeEvent extends Event
     /**
      * @var \craft\models\EntryType|null The entry type model associated with the event.
      */
-    public $entryType;
+    public ?\craft\models\EntryType $entryType;
 
     /**
      * @var bool Whether the entry type is brand new
      */
-    public $isNew = false;
+    public bool $isNew = false;
 }

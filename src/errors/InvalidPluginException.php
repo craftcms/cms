@@ -20,7 +20,7 @@ class InvalidPluginException extends Exception
     /**
      * @var string|null The invalid plugin handle
      */
-    public $handle;
+    public ?string $handle;
 
     /**
      * Constructor.

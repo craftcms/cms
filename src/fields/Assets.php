@@ -87,100 +87,100 @@ class Assets extends BaseRelationField
     /**
      * @var bool Whether related assets should be limited to a single folder
      */
-    public $useSingleFolder = false;
+    public bool $useSingleFolder = false;
 
     /**
      * @var bool Whether it should be possible to upload files directly to the field.
      * @since 3.5.13
      */
-    public $allowUploads = true;
+    public bool $allowUploads = true;
 
     /**
      * @var string|null Where files should be uploaded to by default, in format
      * "folder:X", where X is the craft\models\VolumeFolder ID
      * (only used if [[useSingleFolder]] is false)
      */
-    public $defaultUploadLocationSource;
+    public ?string $defaultUploadLocationSource;
 
     /**
      * @var string|null The subpath that files should be uploaded to by default
      * (only used if [[useSingleFolder]] is false)
      */
-    public $defaultUploadLocationSubpath;
+    public ?string $defaultUploadLocationSubpath;
 
     /**
      * @var string|null Where files should be restricted to, in format
      * "folder:X", where X is the craft\models\VolumeFolder ID
      * (only used if [[useSingleFolder]] is true)
      */
-    public $singleUploadLocationSource;
+    public ?string $singleUploadLocationSource;
 
     /**
      * @var string|null The subpath that files should be restricted to
      * (only used if [[useSingleFolder]] is true)
      */
-    public $singleUploadLocationSubpath;
+    public ?string $singleUploadLocationSubpath;
 
     /**
      * @var bool|null Whether the available assets should be restricted to
      * [[allowedKinds]]
      */
-    public $restrictFiles;
+    public ?bool $restrictFiles;
 
     /**
      * @var array|null The file kinds that the field should be restricted to
      * (only used if [[restrictFiles]] is true)
      */
-    public $allowedKinds;
+    public ?array $allowedKinds;
 
     /**
      * @var bool Whether to show input sources for volumes the user doesn’t have permission to view.
      * @since 3.4.0
      */
-    public $showUnpermittedVolumes = false;
+    public bool $showUnpermittedVolumes = false;
 
     /**
      * @var bool Whether to show files the user doesn’t have permission to view, per the
      * “View files uploaded by other users” permission.
      * @since 3.4.0
      */
-    public $showUnpermittedFiles = false;
+    public bool $showUnpermittedFiles = false;
 
     /**
      * @var string How related assets should be presented within element index views.
      * @since 3.5.11
      */
-    public $previewMode = self::PREVIEW_MODE_FULL;
+    public string $previewMode = self::PREVIEW_MODE_FULL;
 
     /**
      * @inheritdoc
      */
-    protected $allowLargeThumbsView = true;
+    protected bool $allowLargeThumbsView = true;
 
     /**
      * @inheritdoc
      */
-    protected $settingsTemplate = '_components/fieldtypes/Assets/settings';
+    protected string $settingsTemplate = '_components/fieldtypes/Assets/settings';
 
     /**
      * @inheritdoc
      */
-    protected $inputTemplate = '_components/fieldtypes/Assets/input';
+    protected string $inputTemplate = '_components/fieldtypes/Assets/input';
 
     /**
      * @inheritdoc
      */
-    protected $inputJsClass = 'Craft.AssetSelectInput';
+    protected string $inputJsClass = 'Craft.AssetSelectInput';
 
     /**
      * @var array|null References for files uploaded as data strings for this field.
      */
-    private $_uploadedDataFiles;
+    private ?array $_uploadedDataFiles;
 
     /**
      * @var string|null The default upload location for this field to open in modal
      */
-    private $_defaultUploadLocation;
+    private ?string $_defaultUploadLocation;
 
     /**
      * @inheritdoc

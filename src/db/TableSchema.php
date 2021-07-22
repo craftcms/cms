@@ -17,7 +17,7 @@ class TableSchema extends \yii\db\TableSchema
     /**
      * @var array Holds extended foreign key information.
      */
-    private $_extendedForeignKeys = [];
+    private array $_extendedForeignKeys = [];
 
     /**
      * Returns the array of extended foreign keys.

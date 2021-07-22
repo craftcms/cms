@@ -20,48 +20,48 @@ class Info extends Model
     /**
      * @var int|null ID
      */
-    public $id;
+    public ?int $id;
 
     /**
      * @var string|null Version
      */
-    public $version;
+    public ?string $version;
 
     /**
      * @var string Schema version
      */
-    public $schemaVersion = '0';
+    public string $schemaVersion = '0';
 
     /**
      * @var bool Maintenance
      */
-    public $maintenance = false;
+    public bool $maintenance = false;
 
     /**
      * @var string|null Uid
      */
-    public $uid;
+    public ?string $uid;
 
     /**
      * @var string Field version
      * @since 3.5.6
      */
-    public $configVersion = '000000000000';
+    public string $configVersion = '000000000000';
 
     /**
      * @var string Field version
      */
-    public $fieldVersion = '000000000000';
+    public string $fieldVersion = '000000000000';
 
     /**
      * @var \DateTime|null Date updated
      */
-    public $dateUpdated;
+    public ?\DateTime $dateUpdated;
 
     /**
      * @var \DateTime|null Date created
      */
-    public $dateCreated;
+    public ?\DateTime $dateCreated;
 
     /**
      * @inheritdoc

@@ -20,22 +20,22 @@ class ConfigEvent extends Event
     /**
      * @var string|null The config path being processed
      */
-    public $path;
+    public ?string $path;
 
     /**
      * @var array The old config item value
      */
-    public $oldValue = [];
+    public array $oldValue = [];
 
     /**
      * @var array The new config item value
      */
-    public $newValue = [];
+    public array $newValue = [];
 
     /**
      * @var string[]|null Any parts of the path that were matched by `{uid}` tokens.
      * This wil be populated if the handler was registered using [[\craft\services\ProjectConfig::registerChangeEventHandler()]],
      * or one of its shortcut methods.
      */
-    public $tokenMatches;
+    public ?array $tokenMatches;
 }

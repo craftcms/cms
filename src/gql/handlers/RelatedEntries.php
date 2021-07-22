@@ -18,7 +18,7 @@ use craft\gql\base\RelationArgumentHandler;
  */
 class RelatedEntries extends RelationArgumentHandler
 {
-    protected $argumentName = 'relatedToEntries';
+    protected string $argumentName = 'relatedToEntries';
 
     /**
      * @inheritdoc

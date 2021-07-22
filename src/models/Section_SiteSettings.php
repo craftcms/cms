@@ -25,42 +25,42 @@ class Section_SiteSettings extends Model
     /**
      * @var int|null ID
      */
-    public $id;
+    public ?int $id;
 
     /**
      * @var int|null Section ID
      */
-    public $sectionId;
+    public ?int $sectionId;
 
     /**
      * @var int|null Site ID
      */
-    public $siteId;
+    public ?int $siteId;
 
     /**
      * @var bool Enabled by default
      */
-    public $enabledByDefault = true;
+    public bool $enabledByDefault = true;
 
     /**
      * @var bool|null Has URLs?
      */
-    public $hasUrls;
+    public ?bool $hasUrls;
 
     /**
      * @var string|null URI format
      */
-    public $uriFormat;
+    public ?string $uriFormat;
 
     /**
      * @var string|null Entry template
      */
-    public $template;
+    public ?string $template;
 
     /**
      * @var Section|null
      */
-    private $_section;
+    private ?Section $_section;
 
     /**
      * @inheritdoc

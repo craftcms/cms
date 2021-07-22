@@ -20,7 +20,7 @@ class UnsupportedSiteException extends ElementException
     /**
      * @var int The site ID that the element doesn’t support.
      */
-    public $siteId;
+    public int $siteId;
 
     /**
      * Constructor.

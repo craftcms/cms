@@ -120,13 +120,13 @@ class Sections extends Component
      *
      * @since 3.1.21
      */
-    public $autoResaveEntries = true;
+    public bool $autoResaveEntries = true;
 
     /**
      * @var MemoizableArray|null
      * @see _sections()
      */
-    private $_sections;
+    private ?MemoizableArray $_sections;
 
     /**
      * @var

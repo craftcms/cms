@@ -34,32 +34,32 @@ class MatrixBlockType extends Model implements GqlInlineFragmentInterface
     /**
      * @var int|null Field ID
      */
-    public $fieldId;
+    public ?int $fieldId;
 
     /**
      * @var int|null Field layout ID
      */
-    public $fieldLayoutId;
+    public ?int $fieldLayoutId;
 
     /**
      * @var string|null Name
      */
-    public $name;
+    public ?string $name;
 
     /**
      * @var string|null Handle
      */
-    public $handle;
+    public ?string $handle;
 
     /**
      * @var int|null Sort order
      */
-    public $sortOrder;
+    public ?int $sortOrder;
 
     /**
      * @var bool
      */
-    public $hasFieldErrors = false;
+    public bool $hasFieldErrors = false;
 
     /**
      * @var string|mixed

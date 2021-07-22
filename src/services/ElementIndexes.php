@@ -287,7 +287,7 @@ class ElementIndexes extends Component
      * @var array
      * @see getFieldLayoutsForSource()
      */
-    private $_fieldLayouts;
+    private array $_fieldLayouts;
 
     /**
      * Returns all the field layouts available for the given element source.

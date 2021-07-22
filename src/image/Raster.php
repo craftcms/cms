@@ -38,27 +38,27 @@ class Raster extends Image
     /**
      * @var string|null
      */
-    private $_imageSourcePath;
+    private ?string $_imageSourcePath;
 
     /**
      * @var string|null
      */
-    private $_extension;
+    private ?string $_extension;
 
     /**
      * @var bool
      */
-    private $_isAnimatedGif = false;
+    private bool $_isAnimatedGif = false;
 
     /**
      * @var int
      */
-    private $_quality = 0;
+    private int $_quality = 0;
 
     /**
      * @var AbstractImage|null
      */
-    private $_image;
+    private ?AbstractImage $_image;
 
     /**
      * @var Imagine|null
@@ -68,12 +68,12 @@ class Raster extends Image
     /**
      * @var RGB|null
      */
-    private $_palette;
+    private ?RGB $_palette;
 
     /**
      * @var Font|null
      */
-    private $_font;
+    private ?Font $_font;
 
     /**
      * @inheritdoc

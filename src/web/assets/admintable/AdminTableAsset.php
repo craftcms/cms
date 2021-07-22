@@ -19,7 +19,7 @@ class AdminTableAsset extends AssetBundle
     /**
      * @var bool
      */
-    private $useDevServer = false;
+    private bool $useDevServer = false;
 
     /**
      * @var bool

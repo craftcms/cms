@@ -24,12 +24,12 @@ class RevisionBehavior extends BaseRevisionBehavior
     /**
      * @var int The revision number
      */
-    public $revisionNum;
+    public int $revisionNum;
 
     /**
      * @var string|null The revision notes
      */
-    public $revisionNotes;
+    public ?string $revisionNotes;
 
     /**
      * @inheritdoc

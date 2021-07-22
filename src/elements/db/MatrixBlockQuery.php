@@ -44,7 +44,7 @@ class MatrixBlockQuery extends ElementQuery
     /**
      * @inheritdoc
      */
-    protected $defaultOrderBy = ['matrixblocks.sortOrder' => SORT_ASC];
+    protected array $defaultOrderBy = ['matrixblocks.sortOrder' => SORT_ASC];
 
     // General parameters
     // -------------------------------------------------------------------------
@@ -67,14 +67,14 @@ class MatrixBlockQuery extends ElementQuery
      * @used-by allowOwnerDrafts()
      * @since 3.3.10
      */
-    public $allowOwnerDrafts;
+    public ?bool $allowOwnerDrafts;
 
     /**
      * @var bool|null Whether the owner elements can be revisions.
      * @used-by allowOwnerRevisions()
      * @since 3.3.10
      */
-    public $allowOwnerRevisions;
+    public ?bool $allowOwnerRevisions;
 
     /**
      * @var int|int[]|null The block type ID(s) that the resulting Matrix blocks must have.

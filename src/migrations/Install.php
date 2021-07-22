@@ -41,28 +41,28 @@ class Install extends Migration
     /**
      * @var string|null The admin user’s username
      */
-    public $username;
+    public ?string $username;
 
     /**
      * @var string|null The admin user’s password
      */
-    public $password;
+    public ?string $password;
 
     /**
      * @var string|null The admin user’s email
      */
-    public $email;
+    public ?string $email;
 
     /**
      * @var Site|null The default site
      */
-    public $site;
+    public ?Site $site;
 
     /**
      * @var bool Whether to apply the existing project config YAML files, if they exist
      * @since 3.5.9
      */
-    public $applyProjectConfigYaml = true;
+    public bool $applyProjectConfigYaml = true;
 
     /**
      * @inheritdoc

@@ -39,17 +39,17 @@ class Feed extends Widget
     /**
      * @var string|null The feed URL
      */
-    public $url;
+    public ?string $url;
 
     /**
      * @var string|null The feed title
      */
-    public $title;
+    public ?string $title;
 
     /**
      * @var int The maximum number of feed items to display
      */
-    public $limit;
+    public int $limit;
 
     /**
      * @inheritdoc

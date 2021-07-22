@@ -34,7 +34,7 @@ class GlobalSetQuery extends ElementQuery
     /**
      * @inheritdoc
      */
-    protected $defaultOrderBy = ['globalsets.sortOrder' => SORT_ASC];
+    protected array $defaultOrderBy = ['globalsets.sortOrder' => SORT_ASC];
 
     // General parameters
     // -------------------------------------------------------------------------
@@ -43,7 +43,7 @@ class GlobalSetQuery extends ElementQuery
      * @var bool Whether to only return global sets that the user has permission to edit.
      * @used-by editable()
      */
-    public $editable = false;
+    public bool $editable = false;
 
     /**
      * @var string|string[]|null The handle(s) that the resulting global sets must have.

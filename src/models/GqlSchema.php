@@ -24,12 +24,12 @@ class GqlSchema extends Model
     /**
      * @var int|null ID
      */
-    public $id;
+    public ?int $id;
 
     /**
      * @var string Schema name
      */
-    public $name;
+    public string $name;
 
     /**
      * @var array The schema’s scope
@@ -44,13 +44,13 @@ class GqlSchema extends Model
     /**
      * @var string $uid
      */
-    public $uid;
+    public string $uid;
 
     /**
      * @var array Instance cache for the extracted scope pairs
      * @since 3.3.16
      */
-    private $_cachedPairs = [];
+    private array $_cachedPairs = [];
 
     public function __construct($config = [])
     {

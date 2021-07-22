@@ -35,17 +35,17 @@ abstract class BaseOptionsField extends Field implements PreviewableFieldInterfa
     /**
      * @var array|null The available options
      */
-    public $options;
+    public ?array $options;
 
     /**
      * @var bool Whether the field should support multiple selections
      */
-    protected $multi = false;
+    protected bool $multi = false;
 
     /**
      * @var bool Whether the field should support optgroups
      */
-    protected $optgroups = false;
+    protected bool $optgroups = false;
 
     /**
      * @inheritdoc

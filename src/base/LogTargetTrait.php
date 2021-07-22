@@ -30,7 +30,7 @@ trait LogTargetTrait
      * @since 3.0.25
      * @see Target::$prefix
      */
-    public $includeUserIp = false;
+    public bool $includeUserIp = false;
 
     /**
      * Returns a string to be prefixed to the given message.

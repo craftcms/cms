@@ -18,5 +18,5 @@ class ElementStructureEvent extends ModelEvent
     /**
      * @var int|null The structure ID
      */
-    public $structureId;
+    public ?int $structureId;
 }

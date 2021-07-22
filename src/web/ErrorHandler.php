@@ -66,7 +66,7 @@ class ErrorHandler extends \yii\web\ErrorHandler
     /**
      * @inheritdoc
      */
-    public function handleError($code, $message, $file, $line)
+    public function handleError($code, $message, $file, $line): ?bool
     {
         // Because: https://bugs.php.net/bug.php?id=74980
         if (strpos($message, 'Narrowing occurred during type inference. Please file a bug report') !== false) {

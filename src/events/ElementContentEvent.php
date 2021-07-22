@@ -21,5 +21,5 @@ class ElementContentEvent extends Event
     /**
      * @var ElementInterface|null The element model associated with the event.
      */
-    public $element;
+    public ?ElementInterface $element;
 }

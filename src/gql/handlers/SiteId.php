@@ -17,5 +17,5 @@ use craft\gql\base\ArgumentHandler;
  */
 class SiteId extends Site
 {
-    protected $argumentName = 'siteId';
+    protected string $argumentName = 'siteId';
 }

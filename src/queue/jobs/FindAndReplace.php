@@ -26,12 +26,12 @@ class FindAndReplace extends BaseJob
     /**
      * @var string|null The search text
      */
-    public $find;
+    public ?string $find;
 
     /**
      * @var string|null The replacement text
      */
-    public $replace;
+    public ?string $replace;
 
     /**
      * @var

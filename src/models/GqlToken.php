@@ -30,53 +30,53 @@ class GqlToken extends Model
     /**
      * @var int|null ID
      */
-    public $id;
+    public ?int $id;
 
     /**
      * @var string Token name
      */
-    public $name;
+    public string $name;
 
     /**
      * @var int|null ID of the associated schema.
      * @since 3.4.0
      */
-    public $schemaId;
+    public ?int $schemaId;
 
     /**
      * @var string The access token
      */
-    public $accessToken;
+    public string $accessToken;
 
     /**
      * @var bool Is the token enabled
      */
-    public $enabled = true;
+    public bool $enabled = true;
 
     /**
      * @var \DateTime|null Date expires
      */
-    public $expiryDate;
+    public ?\DateTime $expiryDate;
 
     /**
      * @var \DateTime|null Date last used
      */
-    public $lastUsed;
+    public ?\DateTime $lastUsed;
 
     /**
      * @var \DateTime|null Date created
      */
-    public $dateCreated;
+    public ?\DateTime $dateCreated;
 
     /**
      * @var string $uid
      */
-    public $uid;
+    public string $uid;
 
     /**
      * @var array The allowed scope for the token.
      */
-    private $_scope = [];
+    private array $_scope = [];
 
     /**
      * @var GqlSchema The schema for this token.
@@ -86,7 +86,7 @@ class GqlToken extends Model
     /**
      * @var bool Whether this is a temporary token
      */
-    public $isTemporary = false;
+    public bool $isTemporary = false;
 
     public function __construct($config = [])
     {

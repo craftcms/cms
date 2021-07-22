@@ -58,12 +58,12 @@ class EnvAttributeParserBehavior extends Behavior
      * ],
      * ```
      */
-    public $attributes = [];
+    public array $attributes = [];
 
     /**
      * @var array Keeps track of the original attribute values
      */
-    private $_values;
+    private array $_values;
 
     /**
      * @inheritdoc

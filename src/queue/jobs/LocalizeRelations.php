@@ -24,7 +24,7 @@ class LocalizeRelations extends BaseJob
     /**
      * @var int|null The field ID whose data should be localized
      */
-    public $fieldId;
+    public ?int $fieldId;
 
     /**
      * @inheritdoc

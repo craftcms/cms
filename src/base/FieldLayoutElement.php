@@ -25,7 +25,7 @@ abstract class FieldLayoutElement extends BaseObject implements FieldLayoutEleme
     /**
      * @var int The width (%) of the field
      */
-    public $width = 100;
+    public int $width = 100;
 
     /**
      * @inheritdoc

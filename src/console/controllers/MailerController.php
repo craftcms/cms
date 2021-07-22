@@ -29,7 +29,7 @@ class MailerController extends Controller
      * @var string The email address to send the test email to.
      * @since 3.5.0
      */
-    public $to;
+    public string $to;
 
     /**
      * @inheritdoc

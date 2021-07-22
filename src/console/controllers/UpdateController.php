@@ -44,17 +44,17 @@ class UpdateController extends Controller
     /**
      * @var bool Force the update if allowUpdates is disabled
      */
-    public $force = false;
+    public bool $force = false;
 
     /**
      * @var bool|null Backup the database before updating
      */
-    public $backup;
+    public ?bool $backup;
 
     /**
      * @var bool Run new database migrations after completing the update
      */
-    public $migrate = true;
+    public bool $migrate = true;
 
     /**
      * @inheritdoc

@@ -28,13 +28,13 @@ class TemplateCaches extends Component
      * @var bool Whether template caching should be enabled for this request
      * @see _isTemplateCachingEnabled()
      */
-    private $_enabled;
+    private bool $_enabled;
 
     /**
      * @var string|null The current request's path
      * @see _path()
      */
-    private $_path;
+    private ?string $_path;
 
     /**
      * Returns a cached template by its key.

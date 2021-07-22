@@ -181,81 +181,81 @@ trait ApplicationTrait
     /**
      * @var string|null Craft’s schema version number.
      */
-    public $schemaVersion;
+    public ?string $schemaVersion;
 
     /**
      * @var string|null The minimum Craft build number required to update to this build.
      */
-    public $minVersionRequired;
+    public ?string $minVersionRequired;
 
     /**
      * @var string|null The environment ID Craft is currently running in.
      */
-    public $env;
+    public ?string $env;
 
     /**
      * @var string The base Craftnet API URL to use.
      * @since 3.3.16
      * @internal
      */
-    public $baseApiUrl = 'https://api.craftcms.com/v1/';
+    public string $baseApiUrl = 'https://api.craftcms.com/v1/';
 
     /**
      * @var string[]|null Query params that should be appended to Craftnet API requests.
      * @since 3.3.16
      * @internal
      */
-    public $apiParams;
+    public ?array $apiParams;
 
     /**
      * @var
      */
-    private $_isInstalled;
+    private bool $_isInstalled;
 
     /**
      * @var bool Whether the application is fully initialized yet
      * @see getIsInitialized()
      */
-    private $_isInitialized = false;
+    private bool $_isInitialized = false;
 
     /**
      * @var bool
      * @see getIsMultiSite()
      */
-    private $_isMultiSite;
+    private bool $_isMultiSite;
 
     /**
      * @var bool
      * @see getIsMultiSite()
      */
-    private $_isMultiSiteWithTrashed;
+    private bool $_isMultiSiteWithTrashed;
 
     /**
      * @var int|null The Craft edition
      * @see getEdition()
      */
-    private $_edition;
+    private ?int $_edition;
 
     /**
      * @var
      */
-    private $_info;
+    private Info $_info;
 
     /**
      * @var bool|null
      */
-    private $_isDbConfigValid;
+    private ?bool $_isDbConfigValid;
 
     /**
      * @var bool
      */
-    private $_gettingLanguage = false;
+    private bool $_gettingLanguage = false;
 
     /**
      * @var bool Whether we’re listening for the request end, to update the application info
      * @see saveInfoAfterRequest()
      */
-    private $_waitingToSaveInfo = false;
+    private bool $_waitingToSaveInfo = false;
 
     /**
      * Sets the target application language.

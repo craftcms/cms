@@ -153,54 +153,54 @@ class FieldLayout extends Model
     /**
      * @var int|null ID
      */
-    public $id;
+    public ?int $id;
 
     /**
      * @var string|null The element type
      */
-    public $type;
+    public ?string $type;
 
     /**
      * @var string|null UID
      */
-    public $uid;
+    public ?string $uid;
 
     /**
      * @var string[]|null Reserved custom field handles
      * @since 3.7.0
      */
-    public $reservedFieldHandles;
+    public ?array $reservedFieldHandles;
 
     /**
      * @var BaseField[][]
      * @see getAvailableCustomFields()
      */
-    private $_availableCustomFields;
+    private array $_availableCustomFields;
 
     /**
      * @var BaseField[][]
      * @see getAvailableStandardFields()
      */
-    private $_availableStandardFields;
+    private array $_availableStandardFields;
 
     /**
      * @var FieldLayoutTab[]
      */
-    private $_tabs;
+    private array $_tabs;
 
     /**
      * @var BaseField[]
      * @see getTabs()
      * @see isFieldIncluded()
      */
-    private $_fields;
+    private array $_fields;
 
     /**
      * @var FieldInterface[]
      * @see getFields()
      * @see setFields()
      */
-    private $_customFields;
+    private array $_customFields;
 
     /**
      * @inheritdoc

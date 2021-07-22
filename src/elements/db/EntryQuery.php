@@ -56,7 +56,7 @@ class EntryQuery extends ElementQuery
      * @var bool Whether to only return entries that the user has permission to edit.
      * @used-by editable()
      */
-    public $editable = false;
+    public bool $editable = false;
 
     /**
      * @var int|int[]|null The section ID(s) that the resulting entries must be in.
@@ -192,7 +192,7 @@ class EntryQuery extends ElementQuery
     /**
      * @inheritdoc
      */
-    protected $defaultOrderBy = ['entries.postDate' => SORT_DESC];
+    protected array $defaultOrderBy = ['entries.postDate' => SORT_DESC];
 
     /**
      * @inheritdoc

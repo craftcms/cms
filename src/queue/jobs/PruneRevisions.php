@@ -27,18 +27,18 @@ class PruneRevisions extends BaseJob
     /**
      * @var int The ID of the source element.
      */
-    public $sourceId;
+    public int $sourceId;
 
     /**
      * @var int The site ID of the source element
      */
-    public $siteId;
+    public int $siteId;
 
     /**
      * @var int|null The maximum number of revisions an element can have
      * @since 3.5.13
      */
-    public $maxRevisions;
+    public ?int $maxRevisions;
 
     /**
      * @inheritdoc

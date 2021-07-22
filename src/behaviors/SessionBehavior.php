@@ -29,17 +29,17 @@ class SessionBehavior extends Behavior
      * @see deauthorize()
      * @see checkAuthorization()
      */
-    public $authAccessParam;
+    public ?string $authAccessParam;
 
     /**
      * @var string the name of the flash key that stores asset bundle data
      */
-    public $assetBundleFlashKey = '__ab';
+    public string $assetBundleFlashKey = '__ab';
 
     /**
      * @var string the name of the flash key that stores JS data
      */
-    public $jsFlashKey = '__js';
+    public string $jsFlashKey = '__js';
 
     // Flash Data
     // -------------------------------------------------------------------------

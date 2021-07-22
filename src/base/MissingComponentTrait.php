@@ -28,7 +28,7 @@ trait MissingComponentTrait
     /**
      * @var string|null The exception message that explains why the component class was invalid
      */
-    public $errorMessage;
+    public ?string $errorMessage;
 
     /**
      * @var mixed The custom settings associated with the component, if it is savable

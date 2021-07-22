@@ -55,7 +55,7 @@ class Structures extends Component
      * @var int The timeout to pass to [[\yii\mutex\Mutex::acquire()]] when acquiring a lock on the structure.
      * @since 3.0.19
      */
-    public $mutexTimeout = 0;
+    public int $mutexTimeout = 0;
 
     /**
      * @var

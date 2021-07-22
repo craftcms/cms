@@ -57,22 +57,22 @@ class Table extends Field
     /**
      * @var string|null Custom add row button label
      */
-    public $addRowLabel;
+    public ?string $addRowLabel;
 
     /**
      * @var int|null Maximum number of Rows allowed
      */
-    public $maxRows;
+    public ?int $maxRows;
 
     /**
      * @var int|null Minimum number of Rows allowed
      */
-    public $minRows;
+    public ?int $minRows;
 
     /**
      * @var array|null The columns that should be shown in the table
      */
-    public $columns = [
+    public ?array $columns = [
         'col1' => [
             'heading' => '',
             'handle' => '',
@@ -83,12 +83,12 @@ class Table extends Field
     /**
      * @var array The default row values that new elements should have
      */
-    public $defaults;
+    public array $defaults;
 
     /**
      * @var string The type of database column the field should have in the content table
      */
-    public $columnType = Schema::TYPE_TEXT;
+    public string $columnType = Schema::TYPE_TEXT;
 
     /**
      * @inheritdoc

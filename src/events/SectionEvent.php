@@ -20,10 +20,10 @@ class SectionEvent extends Event
     /**
      * @var \craft\models\Section|null The section model associated with the event.
      */
-    public $section;
+    public ?\craft\models\Section $section;
 
     /**
      * @var bool Whether the section is brand new
      */
-    public $isNew = false;
+    public bool $isNew = false;
 }

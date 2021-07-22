@@ -24,7 +24,7 @@ class PluginController extends Controller
      * @var bool Whether the plugin uninstallation should be forced.
      * @since 3.6.14
      */
-    public $force = false;
+    public bool $force = false;
 
     /**
      * @inheritdoc

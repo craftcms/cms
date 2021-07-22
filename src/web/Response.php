@@ -28,13 +28,13 @@ class Response extends \yii\web\Response
     /**
      * @var bool whether the response has been prepared.
      */
-    private $_isPrepared = false;
+    private bool $_isPrepared = false;
 
     /**
      * @var CookieCollection Collection of raw cookies
      * @see getRawCookies()
      */
-    private $_rawCookies;
+    private CookieCollection $_rawCookies;
 
     /**
      * Returns the Content-Type header (sans `charset=X`) that the response will most likely include.

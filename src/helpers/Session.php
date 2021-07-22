@@ -112,12 +112,12 @@ class Session
     /**
      * @var YiiSession
      */
-    private static $_session;
+    private static YiiSession $_session;
 
     /**
      * @var bool
      */
-    private static $_exists = false;
+    private static bool $_exists = false;
 
     /**
      * Resets the memoized database connection.

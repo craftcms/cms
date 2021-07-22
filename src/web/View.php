@@ -102,17 +102,17 @@ class View extends \yii\web\View
      *
      * @since 3.5.0
      */
-    public $allowEval = false;
+    public bool $allowEval = false;
 
     /**
      * @var Environment|null The Twig environment instance used for control panel templates
      */
-    private $_cpTwig;
+    private ?Environment $_cpTwig;
 
     /**
      * @var Environment|null The Twig environment instance used for site templates
      */
-    private $_siteTwig;
+    private ?Environment $_siteTwig;
 
     /**
      * @var
@@ -122,7 +122,7 @@ class View extends \yii\web\View
     /**
      * @var ExtensionInterface[] List of Twig extensions registered with [[registerTwigExtension()]]
      */
-    private $_twigExtensions = [];
+    private array $_twigExtensions = [];
 
     /**
      * @var
@@ -137,27 +137,27 @@ class View extends \yii\web\View
     /**
      * @var string|null
      */
-    private $_templateMode;
+    private ?string $_templateMode;
 
     /**
      * @var array|null
      */
-    private $_cpTemplateRoots;
+    private ?array $_cpTemplateRoots;
 
     /**
      * @var array|null
      */
-    private $_siteTemplateRoots;
+    private ?array $_siteTemplateRoots;
 
     /**
      * @var array|null
      */
-    private $_templateRoots;
+    private ?array $_templateRoots;
 
     /**
      * @var string|null The root path to look for templates in
      */
-    private $_templatesPath;
+    private ?string $_templatesPath;
 
     /**
      * @var
@@ -172,7 +172,7 @@ class View extends \yii\web\View
     /**
      * @var
      */
-    private $_namespace;
+    private ?string $_namespace;
 
     /**
      * @var bool Whether delta input name registration is open.
@@ -180,46 +180,46 @@ class View extends \yii\web\View
      * @see setIsDeltaRegistrationActive()
      * @see registerDeltaName()
      */
-    private $_registerDeltaNames = false;
+    private bool $_registerDeltaNames = false;
 
     /**
      * @var string[] The registered delta input names.
      * @see registerDeltaName()
      */
-    private $_deltaNames = [];
+    private array $_deltaNames = [];
 
     /**
      * @var mixed[] The initial delta input values.
      * @see setInitialDeltaValue()
      */
-    private $_initialDeltaValues = [];
+    private array $_initialDeltaValues = [];
 
     /**
      * @var array
      */
-    private $_jsBuffers = [];
+    private array $_jsBuffers = [];
 
     /**
      * @var array
      */
-    private $_scriptBuffers = [];
+    private array $_scriptBuffers = [];
 
     /**
      * @var array
      */
-    private $_cssBuffers = [];
+    private array $_cssBuffers = [];
 
     /**
      * @var array the registered generic `<script>` code blocks
      * @see registerScript()
      */
-    private $_scripts;
+    private array $_scripts;
 
     /**
      * @var array the registered generic HTML code blocks
      * @see registerHtml()
      */
-    private $_html;
+    private array $_html;
 
     /**
      * @var
@@ -239,21 +239,21 @@ class View extends \yii\web\View
     /**
      * @var
      */
-    private $_isRenderingPageTemplate = false;
+    private bool $_isRenderingPageTemplate = false;
 
     /**
      * @var string[]
      * @see registerAssetFiles()
      * @see setRegisteredAssetBundles()
      */
-    private $_registeredAssetBundles = [];
+    private array $_registeredAssetBundles = [];
 
     /**
      * @var string[]
      * @see registerJsFile()
      * @see setRegisteredJsfiles()
      */
-    private $_registeredJsFiles = [];
+    private array $_registeredJsFiles = [];
 
     /**
      * @inheritdoc

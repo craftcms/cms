@@ -23,42 +23,42 @@ class DeprecationError extends Model
     /**
      * @var int|null ID
      */
-    public $id;
+    public ?int $id;
 
     /**
      * @var string|null Key
      */
-    public $key;
+    public ?string $key;
 
     /**
      * @var string|null Fingerprint
      */
-    public $fingerprint;
+    public ?string $fingerprint;
 
     /**
      * @var DateTime|null Last occurrence
      */
-    public $lastOccurrence;
+    public ?DateTime $lastOccurrence;
 
     /**
      * @var string|null File
      */
-    public $file;
+    public ?string $file;
 
     /**
      * @var int|null Line
      */
-    public $line;
+    public ?int $line;
 
     /**
      * @var string|null Message
      */
-    public $message;
+    public ?string $message;
 
     /**
      * @var array|null Traces
      */
-    public $traces;
+    public ?array $traces;
 
     /**
      * @inheritdoc

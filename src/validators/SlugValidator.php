@@ -23,18 +23,18 @@ class SlugValidator extends Validator
     /**
      * @var string|null The source attribute that auto-generated slugs should be based on. Set to null to skip validation for blank slugs.
      */
-    public $sourceAttribute = 'title';
+    public ?string $sourceAttribute = 'title';
 
     /**
      * @var bool|null Whether auto-generated slugs should be limited to ASCII characters. Defaults to the `limitAutoSlugsToAscii` config setting if left null.
      */
-    public $limitAutoSlugsToAscii;
+    public ?bool $limitAutoSlugsToAscii;
 
     /**
      * @var string|null The language to pull ASCII character mappings for, if [[limitAutoSlugsToAscii]] is enabled.
      * @since 3.1.9
      */
-    public $language;
+    public ?string $language;
 
     /**
      * @inheritdoc

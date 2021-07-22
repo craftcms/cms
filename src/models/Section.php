@@ -50,37 +50,37 @@ class Section extends Model
     /**
      * @var int|null ID
      */
-    public $id;
+    public ?int $id;
 
     /**
      * @var int|null Structure ID
      */
-    public $structureId;
+    public ?int $structureId;
 
     /**
      * @var string|null Name
      */
-    public $name;
+    public ?string $name;
 
     /**
      * @var string|null Handle
      */
-    public $handle;
+    public ?string $handle;
 
     /**
      * @var string|null Type
      */
-    public $type;
+    public ?string $type;
 
     /**
      * @var int|null Max levels
      */
-    public $maxLevels;
+    public ?int $maxLevels;
 
     /**
      * @var bool Enable versioning
      */
-    public $enableVersioning = true;
+    public bool $enableVersioning = true;
 
     /**
      * @var string Propagation method
@@ -94,33 +94,33 @@ class Section extends Model
      *
      * @since 3.2.0
      */
-    public $propagationMethod = self::PROPAGATION_METHOD_ALL;
+    public string $propagationMethod = self::PROPAGATION_METHOD_ALL;
 
     /**
      * @var string Default placement
      * @since 3.7.0
      */
-    public $defaultPlacement = self::DEFAULT_PLACEMENT_END;
+    public string $defaultPlacement = self::DEFAULT_PLACEMENT_END;
 
     /**
      * @var array Preview targets
      */
-    public $previewTargets = null;
+    public ?array $previewTargets = null;
 
     /**
      * @var string|null Section's UID
      */
-    public $uid;
+    public ?string $uid;
 
     /**
      * @var Section_SiteSettings[]|null
      */
-    private $_siteSettings;
+    private ?array $_siteSettings;
 
     /**
      * @var EntryType[]|null
      */
-    private $_entryTypes;
+    private ?array $_entryTypes;
 
     /**
      * @inheritdoc

@@ -37,27 +37,27 @@ class ElementIndexesController extends BaseElementsController
     /**
      * @var string|null
      */
-    protected $elementType;
+    protected ?string $elementType;
 
     /**
      * @var string|null
      */
-    protected $context;
+    protected ?string $context;
 
     /**
      * @var string|null
      */
-    protected $sourceKey;
+    protected ?string $sourceKey;
 
     /**
      * @var array|null
      */
-    protected $source;
+    protected ?array $source;
 
     /**
      * @var array|null
      */
-    protected $viewState;
+    protected ?array $viewState;
 
     /**
      * @var ElementQueryInterface|ElementQuery|null
@@ -67,12 +67,12 @@ class ElementIndexesController extends BaseElementsController
     /**
      * @var ElementActionInterface[]|null
      */
-    protected $actions;
+    protected ?array $actions;
 
     /**
      * @var ElementExporterInterface[]|null
      */
-    protected $exporters;
+    protected ?array $exporters;
 
     /**
      * @inheritdoc

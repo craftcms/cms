@@ -24,22 +24,22 @@ class MissingAssetException extends Exception
     /**
      * @var AssetIndexData
      */
-    public $indexEntry;
+    public AssetIndexData $indexEntry;
 
     /**
      * @var VolumeInterface
      */
-    public $volume;
+    public VolumeInterface $volume;
 
     /**
      * @var VolumeFolder
      */
-    public $folder;
+    public VolumeFolder $folder;
 
     /**
      * @var string
      */
-    public $filename;
+    public string $filename;
 
     /**
      * Constructor

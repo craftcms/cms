@@ -21,5 +21,5 @@ class PluginEvent extends Event
     /**
      * @var PluginInterface|null The plugin associated with this event
      */
-    public $plugin;
+    public ?PluginInterface $plugin;
 }

@@ -27,28 +27,28 @@ class ProjectConfigController extends Controller
     /**
      * @var bool Whether every entry change should be force-applied.
      */
-    public $force = false;
+    public bool $force = false;
 
     /**
      * @var bool Whether to treat the loaded project config as the source of truth, instead of the YAML files.
      * @since 3.5.13
      */
-    public $invert = false;
+    public bool $invert = false;
 
     /**
      * @var int Counter of the total paths that have been processed.
      */
-    private $_pathCount = 0;
+    private int $_pathCount = 0;
 
     /**
      * @var array The config paths that are currently being processed.
      */
-    private $_processingPaths;
+    private array $_processingPaths;
 
     /**
      * @var array The config paths that have finished being processed.
      */
-    private $_completedPaths = [];
+    private array $_completedPaths = [];
 
     /**
      * @inheritdoc

@@ -27,12 +27,12 @@ class EventTagAdder extends BaseEventTagVisitor
     /**
      * @var string|null As much of the <body> tag as we’ve found so far
      */
-    private $_bodyTag;
+    private ?string $_bodyTag;
 
     /**
      * @var int|null The end position of the last <body> tag we successfully parsed in $_bodyTag
      */
-    private $_bodyAttrOffset;
+    private ?int $_bodyAttrOffset;
 
     /**
      * @inheritdoc

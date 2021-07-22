@@ -73,7 +73,7 @@ class Categories extends Component
      * @var MemoizableArray|null
      * @see _groups()
      */
-    private $_groups;
+    private ?MemoizableArray $_groups;
 
     /**
      * Serializer

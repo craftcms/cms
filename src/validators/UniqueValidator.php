@@ -35,12 +35,12 @@ class UniqueValidator extends YiiUniqueValidator
     /**
      * @var Model|null The model that is being validated
      */
-    protected $originalModel;
+    protected ?Model $originalModel;
 
     /**
      * @var bool Whether a case-insensitive check should be performed.
      */
-    public $caseInsensitive = false;
+    public bool $caseInsensitive = false;
 
     /**
      * @inheritdoc

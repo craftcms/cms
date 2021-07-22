@@ -25,12 +25,12 @@ class DbController extends Controller
     /**
      * @var bool Whether the backup should be saved as a zip file.
      */
-    public $zip = false;
+    public bool $zip = false;
 
     /**
      * @var bool Whether to overwrite an existing backup file, if a specific file path is given.
      */
-    public $overwrite = false;
+    public bool $overwrite = false;
 
     /**
      * @inheritdoc

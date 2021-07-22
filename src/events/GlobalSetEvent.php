@@ -21,10 +21,10 @@ class GlobalSetEvent extends Event
     /**
      * @var GlobalSet|null The global set model associated with the event.
      */
-    public $globalSet;
+    public ?GlobalSet $globalSet;
 
     /**
      * @var bool Whether the global set is brand new
      */
-    public $isNew = false;
+    public bool $isNew = false;
 }

@@ -70,29 +70,29 @@ class ElementQuery extends Query implements ElementQueryInterface
     /**
      * @var string|null The name of the [[ElementInterface]] class.
      */
-    public $elementType;
+    public ?string $elementType;
 
     /**
      * @var Query|null The query object created by [[prepare()]]
      * @see prepare()
      */
-    public $query;
+    public ?Query $query;
 
     /**
      * @var Query|null The subselect’s query object created by [[prepare()]]
      * @see prepare()
      */
-    public $subQuery;
+    public ?Query $subQuery;
 
     /**
      * @var string|null The content table that will be joined by this query.
      */
-    public $contentTable = Table::CONTENT;
+    public ?string $contentTable = Table::CONTENT;
 
     /**
      * @var FieldInterface[]|null The fields that may be involved in this query.
      */
-    public $customFields;
+    public ?array $customFields;
 
     // Result formatting attributes
     // -------------------------------------------------------------------------
@@ -101,21 +101,21 @@ class ElementQuery extends Query implements ElementQueryInterface
      * @var bool Whether the results should be queried in reverse.
      * @used-by inReverse()
      */
-    public $inReverse = false;
+    public bool $inReverse = false;
 
     /**
      * @var bool Whether to return each element as an array. If false (default), an object
      * of [[elementType]] will be created to represent each element.
      * @used-by asArray()
      */
-    public $asArray = false;
+    public bool $asArray = false;
 
     /**
      * @var bool Whether to ignore placeholder elements when populating the results.
      * @used-by ignorePlaceholders()
      * @since 3.2.9
      */
-    public $ignorePlaceholders = false;
+    public bool $ignorePlaceholders = false;
 
     // Drafts and revisions
     // -------------------------------------------------------------------------
@@ -124,19 +124,19 @@ class ElementQuery extends Query implements ElementQueryInterface
      * @var bool|null Whether draft elements should be returned.
      * @since 3.2.0
      */
-    public $drafts = false;
+    public ?bool $drafts = false;
 
     /**
      * @var bool|null Whether provisional drafts should be returned.
      * @since 3.7.0
      */
-    public $provisionalDrafts = false;
+    public ?bool $provisionalDrafts = false;
 
     /**
      * @var int|null The ID of the draft to return (from the `drafts` table)
      * @since 3.2.0
      */
-    public $draftId;
+    public ?int $draftId;
 
     /**
      * @var int|string|false|null The source element ID that drafts should be returned for.
@@ -155,37 +155,37 @@ class ElementQuery extends Query implements ElementQueryInterface
      * @var int|null The drafts’ creator ID
      * @since 3.2.0
      */
-    public $draftCreator;
+    public ?int $draftCreator;
 
     /**
      * @var bool Whether only unpublished drafts which have been saved after initial creation should be included in the results.
      * @since 3.6.6
      */
-    public $savedDraftsOnly = false;
+    public bool $savedDraftsOnly = false;
 
     /**
      * @var bool Whether revision elements should be returned.
      * @since 3.2.0
      */
-    public $revisions = false;
+    public bool $revisions = false;
 
     /**
      * @var int|null The ID of the revision to return (from the `revisions` table)
      * @since 3.2.0
      */
-    public $revisionId;
+    public ?int $revisionId;
 
     /**
      * @var int|null The source element ID that revisions should be returned for
      * @since 3.2.0
      */
-    public $revisionOf;
+    public ?int $revisionOf;
 
     /**
      * @var int|null The revisions’ creator ID
      * @since 3.2.0
      */
-    public $revisionCreator;
+    public ?int $revisionCreator;
 
     // General parameters
     // -------------------------------------------------------------------------
@@ -213,7 +213,7 @@ class ElementQuery extends Query implements ElementQueryInterface
      * @var bool Whether results should be returned in the order specified by [[id]].
      * @used-by fixedOrder()
      */
-    public $fixedOrder = false;
+    public bool $fixedOrder = false;
 
     /**
      * @var string|string[]|null The status(es) that the resulting elements must have.
@@ -227,7 +227,7 @@ class ElementQuery extends Query implements ElementQueryInterface
      * @var bool Whether to return only archived elements.
      * @used-by archived()
      */
-    public $archived = false;
+    public bool $archived = false;
 
     /**
      * @var bool|null Whether to return trashed (soft-deleted) elements.
@@ -235,7 +235,7 @@ class ElementQuery extends Query implements ElementQueryInterface
      * @used-by trashed()
      * @since 3.1.0
      */
-    public $trashed = false;
+    public ?bool $trashed = false;
 
     /**
      * @var mixed When the resulting elements must have been created.
@@ -262,7 +262,7 @@ class ElementQuery extends Query implements ElementQueryInterface
      * @used-by unique()
      * @since 3.2.0
      */
-    public $unique = false;
+    public bool $unique = false;
 
     /**
      * @var array|null Determines which site should be selected when querying multi-site elements.
@@ -275,7 +275,7 @@ class ElementQuery extends Query implements ElementQueryInterface
      * @var bool Whether the elements must be “leaves” in the structure.
      * @used-by leaves()
      */
-    public $leaves = false;
+    public bool $leaves = false;
 
     /**
      * @var int|array|ElementInterface|null The element relation criteria.
@@ -346,7 +346,7 @@ class ElementQuery extends Query implements ElementQueryInterface
      * @var bool|null Whether element structure data should automatically be left-joined into the query.
      * @used-by withStructure()
      */
-    public $withStructure;
+    public ?bool $withStructure;
 
     /**
      * @var int|false|null The structure ID that should be used to join in the structureelements table.
@@ -365,7 +365,7 @@ class ElementQuery extends Query implements ElementQueryInterface
      * @used-by hasDescendants()
      * @since 3.0.4
      */
-    public $hasDescendants;
+    public ?bool $hasDescendants;
 
     /**
      * @var int|ElementInterface|null The element (or its ID) that results must be an ancestor of.
@@ -377,7 +377,7 @@ class ElementQuery extends Query implements ElementQueryInterface
      * @var int|null The maximum number of levels that results may be separated from [[ancestorOf]].
      * @used-by ancestorDist()
      */
-    public $ancestorDist;
+    public ?int $ancestorDist;
 
     /**
      * @var int|ElementInterface|null The element (or its ID) that results must be a descendant of.
@@ -389,7 +389,7 @@ class ElementQuery extends Query implements ElementQueryInterface
      * @var int|null The maximum number of levels that results may be separated from [[descendantOf]].
      * @used-by descendantDist()
      */
-    public $descendantDist;
+    public ?int $descendantDist;
 
     /**
      * @var int|ElementInterface|null The element (or its ID) that the results must be a sibling of.
@@ -424,7 +424,7 @@ class ElementQuery extends Query implements ElementQueryInterface
     /**
      * @var array The default [[orderBy]] value to use if [[orderBy]] is empty but not null.
      */
-    protected $defaultOrderBy = ['elements.dateCreated' => SORT_DESC];
+    protected array $defaultOrderBy = ['elements.dateCreated' => SORT_DESC];
 
     // For internal use
     // -------------------------------------------------------------------------
@@ -445,18 +445,18 @@ class ElementQuery extends Query implements ElementQueryInterface
      * @var ElementInterface[]|null The cached element query result
      * @see setCachedResult()
      */
-    private $_result;
+    private ?array $_result;
 
     /**
      * @var array|null The criteria params that were set when the cached element query result was set
      * @see setCachedResult()
      */
-    private $_resultCriteria;
+    private ?array $_resultCriteria;
 
     /**
      * @var array|null
      */
-    private $_searchScores;
+    private ?array $_searchScores;
 
     /**
      * Constructor
@@ -1482,7 +1482,7 @@ class ElementQuery extends Query implements ElementQueryInterface
      * @inheritdoc
      * @since 3.3.16.2
      */
-    public function column($db = null)
+    public function column($db = null): array
     {
         // Avoid indexing by an ambiguous column
         if (

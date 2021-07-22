@@ -24,7 +24,7 @@ class CopyReferenceTag extends ElementAction
     /**
      * @var string|null The element type associated with this action
      */
-    public $elementType;
+    public ?string $elementType;
 
     /**
      * @inheritdoc

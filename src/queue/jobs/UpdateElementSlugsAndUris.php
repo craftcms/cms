@@ -38,27 +38,27 @@ class UpdateElementSlugsAndUris extends BaseJob
     /**
      * @var int|null The site ID of the elements to update.
      */
-    public $siteId;
+    public ?int $siteId;
 
     /**
      * @var bool Whether the elements’ other sites should be updated as well.
      */
-    public $updateOtherSites = true;
+    public bool $updateOtherSites = true;
 
     /**
      * @var bool Whether the elements’ descendants should be updated as well.
      */
-    public $updateDescendants = true;
+    public bool $updateDescendants = true;
 
     /**
      * @var int The total number of elements we are dealing with.
      */
-    private $_totalToProcess;
+    private int $_totalToProcess;
 
     /**
      * @var int The number of elements we've dealt with so far
      */
-    private $_totalProcessed;
+    private int $_totalProcessed;
 
     /**
      * @inheritdoc

@@ -30,7 +30,7 @@ class Api extends Component
     /**
      * @var Client
      */
-    public $client;
+    public Client $client;
 
     /**
      * @inheritdoc

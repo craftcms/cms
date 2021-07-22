@@ -20,15 +20,15 @@ class BatchElementActionEvent extends ElementQueryEvent
     /**
      * @var ElementInterface The element being processed
      */
-    public $element;
+    public ElementInterface $element;
 
     /**
      * @var int The element's position in the query (1-indexed)
      */
-    public $position;
+    public int $position;
 
     /**
      * @var \Throwable|null The exception that was thrown if any
      */
-    public $exception;
+    public ?\Throwable $exception;
 }

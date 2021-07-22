@@ -22,12 +22,12 @@ abstract class MutationResolver extends Component
     /**
      * @var array Data that might be useful during mutation resolution.
      */
-    private $_resolutionData;
+    private array $_resolutionData;
 
     /**
      * @var callable[] Value normalizers stored by argument name
      */
-    private $_valueNormalizers = [];
+    private array $_valueNormalizers = [];
 
     /**
      * Construct a mutation resolver and store the resolution data as well as normalizers, if any provided.

@@ -31,7 +31,7 @@ class ColorData extends BaseObject implements Serializable
     /**
      * @var string The color’s hex value
      */
-    private $_hex;
+    private string $_hex;
 
     /**
      * Constructor.

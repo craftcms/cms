@@ -49,7 +49,7 @@ class Matrix extends Component
     /**
      * @var
      */
-    private $_blockTypesByFieldId;
+    private array $_blockTypesByFieldId;
 
     /**
      * @var
@@ -64,7 +64,7 @@ class Matrix extends Component
     /**
      * @var string[]
      */
-    private $_uniqueBlockTypeAndFieldHandles = [];
+    private array $_uniqueBlockTypeAndFieldHandles = [];
 
     const CONFIG_BLOCKTYPE_KEY = 'matrixBlockTypes';
 

@@ -47,17 +47,17 @@ class Time extends Field implements PreviewableFieldInterface, SortableFieldInte
     /**
      * @var string|null The minimum allowed time
      */
-    public $min;
+    public ?string $min;
 
     /**
      * @var string|null The maximum allowed time
      */
-    public $max;
+    public ?string $max;
 
     /**
      * @var int The number of minutes that the timepicker options should increment by
      */
-    public $minuteIncrement = 30;
+    public int $minuteIncrement = 30;
 
     /**
      * @inheritdoc
