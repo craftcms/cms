@@ -33,7 +33,7 @@ class TestsController extends Controller
      *
      * @return int
      */
-    public function actionSetup(string $dst = null): int
+    public function actionSetup(?string $dst = null): int
     {
         if ($dst === null) {
             $dst = getcwd();

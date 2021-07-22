@@ -193,7 +193,7 @@ class ErrorHandler extends \yii\web\ErrorHandler
      * @return array
      * @throws \Throwable
      */
-    private function _resolveTemplateTrace(string $traceFile, int $traceLine = null): array
+    private function _resolveTemplateTrace(string $traceFile, ?int $traceLine = null): array
     {
         $contents = file_get_contents($traceFile);
         if (!preg_match('/^class (\w+)/m', $contents, $match)) {

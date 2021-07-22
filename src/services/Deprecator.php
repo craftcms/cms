@@ -80,7 +80,7 @@ class Deprecator extends Component
      * @param int|null $line
      * @throws DeprecationException
      */
-    public function log(string $key, string $message, string $file = null, int $line = null): void
+    public function log(string $key, string $message, string $file = null, ?int $line = null): void
     {
         if ($this->logTarget === false) {
             return;
@@ -169,7 +169,7 @@ class Deprecator extends Component
      * @param int|null $limit
      * @return DeprecationError[]
      */
-    public function getLogs(int $limit = null): array
+    public function getLogs(?int $limit = null): array
     {
         if ($this->_allLogs !== null) {
             return $this->_allLogs;
@@ -368,7 +368,7 @@ class Deprecator extends Component
      * @param int|null $actualCodeLine
      * @return int|null
      */
-    private function _findTemplateLine(TwigTemplate $template, int $actualCodeLine = null): ?int
+    private function _findTemplateLine(TwigTemplate $template, ?int $actualCodeLine = null): ?int
     {
         if ($actualCodeLine === null) {
             return null;

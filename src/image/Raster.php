@@ -231,7 +231,7 @@ class Raster extends Image
     /**
      * @inheritdoc
      */
-    public function scaleToFit(int $targetWidth = null, int $targetHeight = null, bool $scaleIfSmaller = true): self
+    public function scaleToFit(int $targetWidth = null, ?int $targetHeight = null, bool $scaleIfSmaller = true): self
     {
         $this->normalizeDimensions($targetWidth, $targetHeight);
 
@@ -248,7 +248,7 @@ class Raster extends Image
     /**
      * @inheritdoc
      */
-    public function scaleAndCrop(int $targetWidth = null, int $targetHeight = null, bool $scaleIfSmaller = true, $cropPosition = 'center-center'): self
+    public function scaleAndCrop(int $targetWidth = null, ?int $targetHeight = null, bool $scaleIfSmaller = true, $cropPosition = 'center-center'): self
     {
         $this->normalizeDimensions($targetWidth, $targetHeight);
 
@@ -354,7 +354,7 @@ class Raster extends Image
     /**
      * @inheritdoc
      */
-    public function resize(int $targetWidth = null, int $targetHeight = null): self
+    public function resize(int $targetWidth = null, ?int $targetHeight = null): self
     {
         $this->normalizeDimensions($targetWidth, $targetHeight);
 
@@ -689,7 +689,7 @@ class Raster extends Image
      * @param string|null $extension
      * @return array
      */
-    private function _getSaveOptions(int $quality = null, string $extension = null): array
+    private function _getSaveOptions(int $quality = null, ?string $extension = null): array
     {
         // Because it's possible for someone to set the quality to 0.
         $quality = $quality ?: $this->_quality;

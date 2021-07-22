@@ -386,7 +386,7 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
     /**
      * @inheritdoc
      */
-    public function normalizeValue($value, ElementInterface $element = null)
+    public function normalizeValue($value, ?ElementInterface $element = null)
     {
         if ($value instanceof ElementQueryInterface) {
             return $value;
@@ -447,7 +447,7 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
     /**
      * @inheritdoc
      */
-    public function serializeValue($value, ElementInterface $element = null)
+    public function serializeValue($value, ?ElementInterface $element = null)
     {
         /** @var ElementQueryInterface $value */
         return $this->_all($value, $element)->ids();
@@ -548,7 +548,7 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
     /**
      * @inheritdoc
      */
-    public function getIsTranslatable(ElementInterface $element = null): bool
+    public function getIsTranslatable(?ElementInterface $element = null): bool
     {
         return $this->localizeRelations;
     }
@@ -556,7 +556,7 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
     /**
      * @inheritdoc
      */
-    protected function inputHtml($value, ElementInterface $element = null): string
+    protected function inputHtml($value, ?ElementInterface $element = null): string
     {
         if ($element !== null && $element->hasEagerLoadedElements($this->handle)) {
             $value = $element->getEagerLoadedElements($this->handle);
@@ -916,7 +916,7 @@ JS;
      * @param ElementInterface|null $element
      * @return array
      */
-    protected function inputTemplateVariables($value = null, ElementInterface $element = null): array
+    protected function inputTemplateVariables($value = null, ?ElementInterface $element = null): array
     {
         if ($value instanceof ElementQueryInterface) {
             $value = $value
@@ -989,7 +989,7 @@ JS;
      * @param ElementInterface|null $element
      * @return array|string
      */
-    protected function inputSources(ElementInterface $element = null)
+    protected function inputSources(?ElementInterface $element = null)
     {
         if ($this->allowMultipleSources) {
             $sources = $this->sources;
@@ -1019,7 +1019,7 @@ JS;
      * @param ElementInterface|null $element
      * @return int
      */
-    protected function targetSiteId(ElementInterface $element = null): int
+    protected function targetSiteId(?ElementInterface $element = null): int
     {
         if (Craft::$app->getIsMultiSite()) {
             if ($this->targetSiteId) {
@@ -1090,7 +1090,7 @@ JS;
      * @param ElementInterface|null $element
      * @return ElementQueryInterface
      */
-    private function _all(ElementQueryInterface $query, ElementInterface $element = null): ElementQueryInterface
+    private function _all(ElementQueryInterface $query, ?ElementInterface $element = null): ElementQueryInterface
     {
         $clone = clone $query;
         $clone

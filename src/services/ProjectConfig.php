@@ -430,7 +430,7 @@ class ProjectConfig extends Component
      * @param bool $getFromYaml whether data should be fetched from the project config files instead of the loaded config. Defaults to `false`.
      * @return mixed The config item value
      */
-    public function get(string $path = null, bool $getFromYaml = false)
+    public function get(?string $path = null, bool $getFromYaml = false)
     {
         if ($getFromYaml) {
             $source = $this->_changesBeingApplied ?? $this->_getConfigurationFromYaml();
@@ -465,7 +465,7 @@ class ProjectConfig extends Component
      * @throws ServerErrorHttpException
      * @throws \yii\base\InvalidConfigException
      */
-    public function set(string $path, $value, string $message = null, bool $updateTimestamp = true, bool $rebuilding = false): void
+    public function set(string $path, $value, ?string $message = null, bool $updateTimestamp = true, bool $rebuilding = false): void
     {
         // If we haven't yet pulled in the YAML changes, then anything in there should be discarded
         if (empty($this->_appliedConfig)) {
@@ -528,7 +528,7 @@ class ProjectConfig extends Component
      * @param string $path The config item path
      * @param string|null $message The message describing changes.
      */
-    public function remove(string $path, string $message = null): void
+    public function remove(string $path, ?string $message = null): void
     {
         $this->set($path, null, $message);
     }
@@ -629,7 +629,7 @@ class ProjectConfig extends Component
      * the last time [[ignorePendingChanges()]] has been called.
      * @return bool
      */
-    public function areChangesPending(string $path = null, bool $force = false): bool
+    public function areChangesPending(?string $path = null, bool $force = false): bool
     {
         // If the path is currently being processed, return true
         if ($path !== null && array_key_exists($path, $this->_oldValuesByPath)) {
@@ -681,7 +681,7 @@ class ProjectConfig extends Component
      * @param bool $force Whether the config change should be processed regardless of previous records,
      * or whether YAML changes are currently being applied
      */
-    public function processConfigChanges(string $path, bool $triggerUpdate = false, string $message = null, bool $force = false): void
+    public function processConfigChanges(string $path, bool $triggerUpdate = false, ?string $message = null, bool $force = false): void
     {
         if ($force || $this->getIsApplyingYamlChanges()) {
             $this->_processConfigChangesInternal($path, $triggerUpdate, $message, $force);
@@ -696,7 +696,7 @@ class ProjectConfig extends Component
      * @param string|null $message The message describing changes, if modifications are made.
      * @param bool $force Whether the config change should be processed regardless of previous records
      */
-    private function _processConfigChangesInternal(string $path, bool $triggerUpdate = false, string $message = null, bool $force = false): void
+    private function _processConfigChangesInternal(string $path, bool $triggerUpdate = false, ?string $message = null, bool $force = false): void
     {
         if (!$force && !empty($this->_parsedChanges[$path])) {
             return;
@@ -822,7 +822,7 @@ class ProjectConfig extends Component
      * @param bool|null $writeYaml Whether to update the YAML files. Defaults to [[$writeYamlAutomatically]].
      * @throws ErrorException
      */
-    public function saveModifiedConfigData(bool $writeYaml = null): void
+    public function saveModifiedConfigData(?bool $writeYaml = null): void
     {
         $this->_processProjectConfigNameChanges();
 
@@ -1409,7 +1409,7 @@ class ProjectConfig extends Component
      * @param bool $existsOnly whether to just return `true` or `false` depending on whether any changes are found.
      * @return array|bool
      */
-    private function _getPendingChanges(array $configData = null, bool $existsOnly = false)
+    private function _getPendingChanges(?array $configData = null, bool $existsOnly = false)
     {
         $newItems = [];
         $changedItems = [];
@@ -1519,7 +1519,7 @@ class ProjectConfig extends Component
      * @param string|null $path
      * @return string[]
      */
-    private function _findConfigFiles(string $path = null): array
+    private function _findConfigFiles(?string $path = null): array
     {
         if ($path === null) {
             $path = Craft::$app->getPath()->getProjectConfigPath(false);
@@ -1773,7 +1773,7 @@ class ProjectConfig extends Component
      * @param mixed $newValue
      * @param string|null $message message describing the changes made.
      */
-    private function _updateInternalConfig(string $path, $oldValue, $newValue, string $message = null): void
+    private function _updateInternalConfig(string $path, $oldValue, $newValue, ?string $message = null): void
     {
         $currentLoadedConfig = $this->_getLoadedConfig();
         $this->_traverseDataArray($currentLoadedConfig, $path, $newValue, $newValue === null);

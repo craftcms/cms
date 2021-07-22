@@ -279,7 +279,7 @@ interface ElementInterface extends ComponentInterface
      * @param string|null $context The context ('index' or 'modal').
      * @return array The sources.
      */
-    public static function sources(string $context = null): array;
+    public static function sources(?string $context = null): array;
 
     /**
      * Returns all of the field layouts associated with elements from the given source.
@@ -368,7 +368,7 @@ interface ElementInterface extends ComponentInterface
      * @param bool $showCheckboxes
      * @return string The element index HTML
      */
-    public static function indexHtml(ElementQueryInterface $elementQuery, array $disabledElementIds = null, array $viewState, string $sourceKey = null, string $context = null, bool $includeContainer, bool $showCheckboxes): string;
+    public static function indexHtml(ElementQueryInterface $elementQuery, array $disabledElementIds = null, array $viewState, string $sourceKey = null, ?string $context = null, bool $includeContainer, bool $showCheckboxes): string;
 
     /**
      * Returns the sort options for the element type.
@@ -797,7 +797,7 @@ interface ElementInterface extends ComponentInterface
      * passed, but that site’s status wasn’t provided via [[setEnabledForSite()]].
      * @since 3.4.0
      */
-    public function getEnabledForSite(int $siteId = null): ?bool;
+    public function getEnabledForSite(?int $siteId = null): ?bool;
 
     /**
      * Sets whether the element is enabled for the current site.
@@ -874,7 +874,7 @@ interface ElementInterface extends ComponentInterface
      *
      * @param static|null $parent
      */
-    public function setParent(ElementInterface $parent = null): void;
+    public function setParent(?ElementInterface $parent = null): void;
 
     /**
      * Returns the element’s ancestors.
@@ -882,7 +882,7 @@ interface ElementInterface extends ComponentInterface
      * @param int|null $dist
      * @return ElementQueryInterface|static[]
      */
-    public function getAncestors(int $dist = null);
+    public function getAncestors(?int $dist = null);
 
     /**
      * Returns the element’s descendants.
@@ -890,7 +890,7 @@ interface ElementInterface extends ComponentInterface
      * @param int|null $dist
      * @return ElementQueryInterface|static[]
      */
-    public function getDescendants(int $dist = null);
+    public function getDescendants(?int $dist = null);
 
     /**
      * Returns the element’s children.
@@ -1116,7 +1116,7 @@ interface ElementInterface extends ComponentInterface
      * returned. If it is an array, only the fields in the array will be returned.
      * @return array The field values (handle => value)
      */
-    public function getFieldValues(array $fieldHandles = null): array;
+    public function getFieldValues(?array $fieldHandles = null): array;
 
     /**
      * Returns an array of the element’s serialized custom field values, indexed by their handles.
@@ -1126,7 +1126,7 @@ interface ElementInterface extends ComponentInterface
      * returned. If it is an array, only the fields in the array will be returned.
      * @return array
      */
-    public function getSerializedFieldValues(array $fieldHandles = null): array;
+    public function getSerializedFieldValues(?array $fieldHandles = null): array;
 
     /**
      * Sets the element’s custom field values.
@@ -1323,7 +1323,7 @@ interface ElementInterface extends ComponentInterface
      * @param int|null $creatorId
      * @since 3.2.0
      */
-    public function setRevisionCreatorId(int $creatorId = null): void;
+    public function setRevisionCreatorId(?int $creatorId = null): void;
 
     /**
      * Sets the revision notes to be saved.
@@ -1331,7 +1331,7 @@ interface ElementInterface extends ComponentInterface
      * @param string|null $notes
      * @since 3.2.0
      */
-    public function setRevisionNotes(string $notes = null): void;
+    public function setRevisionNotes(?string $notes = null): void;
 
     /**
      * Returns the element’s current revision, if one exists.

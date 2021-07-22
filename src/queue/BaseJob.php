@@ -68,7 +68,7 @@ abstract class BaseJob extends BaseObject implements JobInterface
      * @param float $progress A number between 0 and 1
      * @param string|null $label The progress label
      */
-    protected function setProgress($queue, float $progress, string $label = null): void
+    protected function setProgress($queue, float $progress, ?string $label = null): void
     {
         $progress = round(100 * $progress);
 

@@ -120,7 +120,7 @@ class StandardTextField extends StandardField
     /**
      * @inheritdoc
      */
-    protected function inputHtml(ElementInterface $element = null, bool $static = false): ?string
+    protected function inputHtml(?ElementInterface $element = null, bool $static = false): ?string
     {
         $id = $this->id();
         return Craft::$app->getView()->renderTemplate('_includes/forms/text', [

@@ -697,7 +697,7 @@ class Fields extends Component
      * @param string|null $context The field context (defauts to [[\craft\services\Content::$fieldContext]])
      * @return bool Whether a field with that handle exists
      */
-    public function doesFieldWithHandleExist(string $handle, string $context = null): bool
+    public function doesFieldWithHandleExist(string $handle, ?string $context = null): bool
     {
         return ArrayHelper::contains($this->getAllFields($context), 'handle', $handle, true);
     }
@@ -1239,7 +1239,7 @@ class Fields extends Component
      * @return FieldLayout The field layout
      * @throws BadRequestHttpException
      */
-    public function assembleLayoutFromPost(string $namespace = null): FieldLayout
+    public function assembleLayoutFromPost(?string $namespace = null): FieldLayout
     {
         $paramPrefix = ($namespace ? rtrim($namespace, '.') . '.' : '');
         $request = Craft::$app->getRequest();

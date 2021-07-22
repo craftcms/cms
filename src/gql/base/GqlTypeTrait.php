@@ -46,7 +46,7 @@ trait GqlTypeTrait
      * @param array|null $fields optional fields to use
      * @return GqlObjectType
      */
-    public static function getType(array $fields = null): Type
+    public static function getType(?array $fields = null): Type
     {
         return GqlEntityRegistry::getEntity(static::class) ?: GqlEntityRegistry::createEntity(static::class, new GqlObjectType([
             'name' => static::getName(),

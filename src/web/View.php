@@ -362,7 +362,7 @@ class View extends \yii\web\View
      * @throws TwigSyntaxError
      * @throws Exception if $templateMode is invalid
      */
-    public function renderTemplate(string $template, array $variables = [], string $templateMode = null): string
+    public function renderTemplate(string $template, array $variables = [], ?string $templateMode = null): string
     {
         if ($templateMode === null) {
             $templateMode = $this->getTemplateMode();
@@ -422,7 +422,7 @@ class View extends \yii\web\View
      * @throws TwigSyntaxError
      * @throws Exception if $templateMode is invalid
      */
-    public function renderPageTemplate(string $template, array $variables = [], string $templateMode = null): string
+    public function renderPageTemplate(string $template, array $variables = [], ?string $templateMode = null): string
     {
         if ($templateMode === null) {
             $templateMode = $this->getTemplateMode();
@@ -686,7 +686,7 @@ class View extends \yii\web\View
      * @return bool Whether the template exists.
      * @throws Exception
      */
-    public function doesTemplateExist(string $name, string $templateMode = null): bool
+    public function doesTemplateExist(string $name, ?string $templateMode = null): bool
     {
         if ($templateMode === null) {
             $templateMode = $this->getTemplateMode();
@@ -779,7 +779,7 @@ class View extends \yii\web\View
      * @return string|false The path to the template if it exists, or `false`.
      * @throws TwigLoaderError
      */
-    public function resolveTemplate(string $name, string $templateMode = null)
+    public function resolveTemplate(string $name, ?string $templateMode = null)
     {
         if ($templateMode === null) {
             $templateMode = $this->getTemplateMode();
@@ -1053,7 +1053,7 @@ class View extends \yii\web\View
      * $script as the key. If two generic `<script>` code blocks are registered with the same key, the latter
      * will overwrite the former.
      */
-    public function registerScript(string $script, int $position = self::POS_END, array $options = [], string $key = null): void
+    public function registerScript(string $script, int $position = self::POS_END, array $options = [], ?string $key = null): void
     {
         $key = $key ?: md5($script);
         $this->_scripts[$position][$key] = Html::script($script, $options);
@@ -1071,7 +1071,7 @@ class View extends \yii\web\View
      * If two HTML code blocks are registered with the same position and key, the latter will overwrite the former.
      * @since 3.5.0
      */
-    public function registerHtml(string $html, int $position = self::POS_END, string $key = null): void
+    public function registerHtml(string $html, int $position = self::POS_END, ?string $key = null): void
     {
         if ($key === null) {
             $key = md5($html);
@@ -1213,7 +1213,7 @@ JS;
      *
      * @param string|null $namespace The new namespace. Set to null to remove the namespace.
      */
-    public function setNamespace(string $namespace = null): void
+    public function setNamespace(?string $namespace = null): void
     {
         $this->_namespace = $namespace;
     }
@@ -1429,7 +1429,7 @@ JS;
      * class name CSS selectors within `<style>` tags). This will only have an effect if `$otherAttributes` is `true`.
      * @return string The HTML with namespaced attributes
      */
-    public function namespaceInputs($html, string $namespace = null, bool $otherAttributes = true, bool $withClasses = false): string
+    public function namespaceInputs($html, ?string $namespace = null, bool $otherAttributes = true, bool $withClasses = false): string
     {
         if (is_callable($html)) {
             // If no namespace was passed in, just return the callable response directly.
@@ -1472,7 +1472,7 @@ JS;
      * @param string|null $namespace The namespace. Defaults to the [[getNamespace()|active namespace]].
      * @return string The namespaced input name.
      */
-    public function namespaceInputName(string $inputName, string $namespace = null): string
+    public function namespaceInputName(string $inputName, ?string $namespace = null): string
     {
         if ($inputName === '') {
             return $inputName;
@@ -1498,7 +1498,7 @@ JS;
      * @param string|null $namespace The namespace. Defaults to the [[getNamespace()|active namespace]].
      * @return string The namespaced input ID.
      */
-    public function namespaceInputId(string $inputId, string $namespace = null): string
+    public function namespaceInputId(string $inputId, ?string $namespace = null): string
     {
         if ($inputId === '') {
             return $inputId;

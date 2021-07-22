@@ -72,7 +72,7 @@ class Tip extends BaseUiElement
     /**
      * @inheritdoc
      */
-    public function formHtml(ElementInterface $element = null, bool $static = false): ?string
+    public function formHtml(?ElementInterface $element = null, bool $static = false): ?string
     {
         $noteClass = $this->_isTip() ? self::STYLE_TIP : self::STYLE_WARNING;
         $tip = Markdown::process(Html::encode(Craft::t('site', $this->tip)));

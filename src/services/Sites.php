@@ -417,7 +417,7 @@ class Sites extends Component
      * @param bool|null $withDisabled
      * @return int[] All the sites’ IDs
      */
-    public function getAllSiteIds(bool $withDisabled = null): array
+    public function getAllSiteIds(?bool $withDisabled = null): array
     {
         return ArrayHelper::getColumn($this->_allSites($withDisabled), 'id', false);
     }
@@ -430,7 +430,7 @@ class Sites extends Component
      * @return Site the site
      * @throws SiteNotFoundException if no sites exist
      */
-    public function getSiteByUid(string $uid, bool $withDisabled = null): Site
+    public function getSiteByUid(string $uid, ?bool $withDisabled = null): Site
     {
         $site = ArrayHelper::firstWhere($this->_allSites($withDisabled), 'uid', $uid, true);
         if ($site === null) {
@@ -554,7 +554,7 @@ class Sites extends Component
      * @param bool|null $withDisabled
      * @return Site[] All the sites
      */
-    public function getAllSites(bool $withDisabled = null): array
+    public function getAllSites(?bool $withDisabled = null): array
     {
         return array_values($this->_allSites($withDisabled));
     }
@@ -585,7 +585,7 @@ class Sites extends Component
      * @param bool|null $withDisabled
      * @return Site[]
      */
-    public function getSitesByGroupId(int $groupId, bool $withDisabled = null): array
+    public function getSitesByGroupId(int $groupId, ?bool $withDisabled = null): array
     {
         $sites = ArrayHelper::where($this->_allSites($withDisabled), 'groupId', $groupId, false, false);
 
@@ -622,7 +622,7 @@ class Sites extends Component
      * @param bool|null $withDisabled
      * @return Site|null
      */
-    public function getSiteById(int $siteId, bool $withDisabled = null): ?Site
+    public function getSiteById(int $siteId, ?bool $withDisabled = null): ?Site
     {
         return $this->_allSites($withDisabled)[$siteId] ?? null;
     }
@@ -634,7 +634,7 @@ class Sites extends Component
      * @param bool|null $withDisabled
      * @return Site|null
      */
-    public function getSiteByHandle(string $siteHandle, bool $withDisabled = null): ?Site
+    public function getSiteByHandle(string $siteHandle, ?bool $withDisabled = null): ?Site
     {
         return ArrayHelper::firstWhere($this->_allSites($withDisabled), 'handle', $siteHandle, true);
     }
@@ -870,7 +870,7 @@ class Sites extends Component
      * @return bool Whether the site was deleted successfully
      * @throws \Throwable if reasons
      */
-    public function deleteSiteById(int $siteId, int $transferContentTo = null): bool
+    public function deleteSiteById(int $siteId, ?int $transferContentTo = null): bool
     {
         $site = $this->getSiteById($siteId);
 
@@ -890,7 +890,7 @@ class Sites extends Component
      * @throws Exception if $site is the primary site
      * @throws \Throwable if reasons
      */
-    public function deleteSite(Site $site, int $transferContentTo = null): bool
+    public function deleteSite(Site $site, ?int $transferContentTo = null): bool
     {
         // Make sure this isn't the primary site
         if ($site->id === $this->_primarySite->id) {
@@ -1233,7 +1233,7 @@ class Sites extends Component
      * @param bool|null $withDisabled
      * @return Site[]
      */
-    private function _allSites(bool $withDisabled = null): array
+    private function _allSites(?bool $withDisabled = null): array
     {
         if ($withDisabled === null) {
             $request = Craft::$app->getRequest();

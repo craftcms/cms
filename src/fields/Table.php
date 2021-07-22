@@ -329,7 +329,7 @@ class Table extends Field
     /**
      * @inheritdoc
      */
-    protected function inputHtml($value, ElementInterface $element = null): string
+    protected function inputHtml($value, ?ElementInterface $element = null): string
     {
         Craft::$app->getView()->registerAssetBundle(TimepickerAsset::class);
         return $this->_getInputHtml($value, $element, false);
@@ -371,7 +371,7 @@ class Table extends Field
     /**
      * @inheritdoc
      */
-    public function normalizeValue($value, ElementInterface $element = null)
+    public function normalizeValue($value, ?ElementInterface $element = null)
     {
         if (is_string($value) && !empty($value)) {
             $value = Json::decodeIfJson($value);
@@ -407,7 +407,7 @@ class Table extends Field
     /**
      * @inheritdoc
      */
-    public function serializeValue($value, ElementInterface $element = null)
+    public function serializeValue($value, ?ElementInterface $element = null)
     {
         if (!is_array($value) || empty($this->columns)) {
             return null;
@@ -551,7 +551,7 @@ class Table extends Field
      * @return bool Whether the value is valid
      * @see normalizeValue()
      */
-    private function _validateCellValue(string $type, $value, string &$error = null): bool
+    private function _validateCellValue(string $type, $value, ?string &$error = null): bool
     {
         if ($value === null || $value === '') {
             return true;
@@ -585,7 +585,7 @@ class Table extends Field
      * @param bool $static
      * @return string
      */
-    private function _getInputHtml($value, ElementInterface $element = null, bool $static): string
+    private function _getInputHtml($value, ?ElementInterface $element = null, bool $static): string
     {
         if (empty($this->columns)) {
             return '';

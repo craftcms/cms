@@ -52,7 +52,7 @@ class MockType extends ScalarType
     /**
      * @inheritdoc
      */
-    public function parseLiteral($valueNode, array $variables = null)
+    public function parseLiteral($valueNode, ?array $variables = null)
     {
         return 'mock';
     }

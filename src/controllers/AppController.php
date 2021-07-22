@@ -533,7 +533,7 @@ class AppController extends Controller
      * @param array|null $pluginLicenses
      * @return array
      */
-    private function _pluginLicenseInfo(array $pluginLicenses = null): array
+    private function _pluginLicenseInfo(?array $pluginLicenses = null): array
     {
         $result = [];
 

@@ -58,7 +58,7 @@ interface QueueInterface
      * @param int $progress The job progress (1-100)
      * @param string|null $label The progress label
      */
-    public function setProgress(int $progress, string $label = null): void;
+    public function setProgress(int $progress, ?string $label = null): void;
 
     /**
      * Returns whether there are any waiting jobs.
@@ -97,7 +97,7 @@ interface QueueInterface
      * @param int|null $limit
      * @return array
      */
-    public function getJobInfo(int $limit = null): array;
+    public function getJobInfo(?int $limit = null): array;
 
     /**
      * Returns detailed info about a single job.

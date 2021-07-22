@@ -65,7 +65,7 @@ class VolumesController extends Controller
      * @throws ForbiddenHttpException if the user is not an admin
      * @throws NotFoundHttpException if the requested volume cannot be found
      */
-    public function actionEditVolume(int $volumeId = null, VolumeInterface $volume = null): Response
+    public function actionEditVolume(int $volumeId = null, ?VolumeInterface $volume = null): Response
     {
         $this->requireAdmin();
 

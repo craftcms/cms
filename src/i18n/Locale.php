@@ -350,7 +350,7 @@ class Locale extends BaseObject
      * @param string|null $inLocale
      * @return string
      */
-    public function getDisplayName(string $inLocale = null): string
+    public function getDisplayName(?string $inLocale = null): string
     {
         // If no target locale is specified, default to this locale
         if ($inLocale === null) {
@@ -469,7 +469,7 @@ class Locale extends BaseObject
      * @param string $format The format type that should be returned. Values: Locale::FORMAT_ICU (default), ::FORMAT_PHP, ::FORMAT_JUI
      * @return string The localized ICU date format.
      */
-    public function getDateFormat(string $length = null, string $format = self::FORMAT_ICU): string
+    public function getDateFormat(?string $length = null, string $format = self::FORMAT_ICU): string
     {
         return $this->_getDateTimeFormat($length, true, false, $format);
     }
@@ -481,7 +481,7 @@ class Locale extends BaseObject
      * @param string $format The format type that should be returned. Values: Locale::FORMAT_ICU (default), ::FORMAT_PHP, ::FORMAT_JUI
      * @return string The localized ICU time format.
      */
-    public function getTimeFormat(string $length = null, string $format = self::FORMAT_ICU): string
+    public function getTimeFormat(?string $length = null, string $format = self::FORMAT_ICU): string
     {
         return $this->_getDateTimeFormat($length, false, true, $format);
     }
@@ -493,7 +493,7 @@ class Locale extends BaseObject
      * @param string $format The format type that should be returned. Values: Locale::FORMAT_ICU (default), ::FORMAT_PHP, ::FORMAT_JUI
      * @return string The localized ICU date + time format.
      */
-    public function getDateTimeFormat(string $length = null, string $format = self::FORMAT_ICU): string
+    public function getDateTimeFormat(?string $length = null, string $format = self::FORMAT_ICU): string
     {
         return $this->_getDateTimeFormat($length, true, true, $format);
     }
@@ -533,7 +533,7 @@ class Locale extends BaseObject
      * @param bool $standAlone Whether to return the "stand alone" month name.
      * @return string The localized month name.
      */
-    public function getMonthName(int $month, string $length = null, bool $standAlone = true): string
+    public function getMonthName(int $month, ?string $length = null, bool $standAlone = true): string
     {
         if ($length === null) {
             $length = self::LENGTH_FULL;
@@ -581,7 +581,7 @@ class Locale extends BaseObject
      * @param bool $standAlone Whether to return the "stand alone" month names.
      * @return array The localized month names.
      */
-    public function getMonthNames(string $length = null, bool $standAlone = true): array
+    public function getMonthNames(?string $length = null, bool $standAlone = true): array
     {
         $monthNames = [];
 
@@ -600,7 +600,7 @@ class Locale extends BaseObject
      * @param bool $standAlone Whether to return the "stand alone" day of the week name.
      * @return string The localized day of the week name.
      */
-    public function getWeekDayName(int $day, string $length = null, bool $standAlone = true): string
+    public function getWeekDayName(int $day, ?string $length = null, bool $standAlone = true): string
     {
         if ($length === null) {
             $length = self::LENGTH_FULL;
@@ -663,7 +663,7 @@ class Locale extends BaseObject
      * @param bool $standAlone Whether to return the "stand alone" day of the week names.
      * @return array The localized day of the week names.
      */
-    public function getWeekDayNames(string $length = null, bool $standAlone = true): array
+    public function getWeekDayNames(?string $length = null, bool $standAlone = true): array
     {
         $weekDayNames = [];
 

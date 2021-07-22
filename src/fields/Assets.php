@@ -273,7 +273,7 @@ class Assets extends BaseRelationField
     /**
      * @inheritdoc
      */
-    protected function inputHtml($value, ElementInterface $element = null): string
+    protected function inputHtml($value, ?ElementInterface $element = null): string
     {
         try {
             return parent::inputHtml($value, $element);
@@ -393,7 +393,7 @@ class Assets extends BaseRelationField
     /**
      * @inheritdoc
      */
-    public function normalizeValue($value, ElementInterface $element = null)
+    public function normalizeValue($value, ?ElementInterface $element = null)
     {
         // If data strings are passed along, make sure the array keys are retained.
         if (isset($value['data']) && !empty($value['data'])) {
@@ -446,7 +446,7 @@ class Assets extends BaseRelationField
      * @param ElementInterface|null $element
      * @return int
      */
-    public function resolveDynamicPathToFolderId(ElementInterface $element = null): int
+    public function resolveDynamicPathToFolderId(?ElementInterface $element = null): int
     {
         return $this->_determineUploadFolderId($element, true);
     }
@@ -609,7 +609,7 @@ class Assets extends BaseRelationField
     /**
      * @inheritdoc
      */
-    protected function inputSources(ElementInterface $element = null)
+    protected function inputSources(?ElementInterface $element = null)
     {
         $folderId = $this->_determineUploadFolderId($element, false);
         Craft::$app->getSession()->authorize('saveAssetInVolume:' . $folderId);
@@ -673,7 +673,7 @@ class Assets extends BaseRelationField
     /**
      * @inheritdoc
      */
-    protected function inputTemplateVariables($value = null, ElementInterface $element = null): array
+    protected function inputTemplateVariables($value = null, ?ElementInterface $element = null): array
     {
         $variables = parent::inputTemplateVariables($value, $element);
 
@@ -781,7 +781,7 @@ class Assets extends BaseRelationField
      * @throws InvalidSubpathException if the subpath cannot be parsed in full
      * @throws InvalidVolumeException if the volume root folder doesn’t exist
      */
-    private function _resolveVolumePathToFolderId(string $uploadSource, string $subpath, ElementInterface $element = null, bool $createDynamicFolders = true): int
+    private function _resolveVolumePathToFolderId(string $uploadSource, string $subpath, ?ElementInterface $element = null, bool $createDynamicFolders = true): int
     {
         $assetsService = Craft::$app->getAssets();
 
@@ -880,7 +880,7 @@ class Assets extends BaseRelationField
      * @throws InvalidSubpathException if the folder subpath is not valid
      * @throws InvalidVolumeException if there's a problem with the field's volume configuration
      */
-    private function _determineUploadFolderId(ElementInterface $element = null, bool $createDynamicFolders = true): int
+    private function _determineUploadFolderId(?ElementInterface $element = null, bool $createDynamicFolders = true): int
     {
         $userFolder = null;
         $folderId = null;

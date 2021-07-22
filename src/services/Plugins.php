@@ -462,7 +462,7 @@ class Plugins extends Component
      * @throws InvalidPluginException if the plugin doesn’t exist
      * @throws \Throwable if reasons
      */
-    public function installPlugin(string $handle, string $edition = null): bool
+    public function installPlugin(string $handle, ?string $edition = null): bool
     {
         $this->loadPlugins();
 
@@ -866,7 +866,7 @@ class Plugins extends Component
      * @param string|null $handle The plugin handle. If null is passed, info for all Composer-installed plugins will be returned.
      * @return array|null The plugin info, or null if an unknown handle was passed.
      */
-    public function getComposerPluginInfo(string $handle = null): ?array
+    public function getComposerPluginInfo(?string $handle = null): ?array
     {
         if ($handle === null) {
             return $this->_composerPluginInfo;
@@ -882,7 +882,7 @@ class Plugins extends Component
      * @return PluginInterface|null
      * @throws InvalidPluginException if $handle is invalid
      */
-    public function createPlugin(string $handle, array $info = null): ?PluginInterface
+    public function createPlugin(string $handle, ?array $info = null): ?PluginInterface
     {
         if (!isset($this->_composerPluginInfo[$handle])) {
             throw new InvalidPluginException($handle);
@@ -1161,7 +1161,7 @@ class Plugins extends Component
      * @throws InvalidPluginException if the plugin isn't installed
      * @throws InvalidLicenseKeyException if $licenseKey is invalid
      */
-    public function setPluginLicenseKey(string $handle, string $licenseKey = null): bool
+    public function setPluginLicenseKey(string $handle, ?string $licenseKey = null): bool
     {
         // Validate the license key
         $normalizedLicenseKey = $this->normalizePluginLicenseKey($licenseKey);
@@ -1189,7 +1189,7 @@ class Plugins extends Component
      * @return string|null
      * @throws InvalidLicenseKeyException
      */
-    public function normalizePluginLicenseKey(string $licenseKey = null): ?string
+    public function normalizePluginLicenseKey(?string $licenseKey = null): ?string
     {
         if (empty($licenseKey)) {
             return null;
@@ -1230,7 +1230,7 @@ class Plugins extends Component
      * @param string|null $licensedEdition The plugin's licensed edition, if the key is valid
      * @throws InvalidPluginException if the plugin isn't installed
      */
-    public function setPluginLicenseKeyStatus(string $handle, string $licenseKeyStatus = null, string $licensedEdition = null): void
+    public function setPluginLicenseKeyStatus(string $handle, string $licenseKeyStatus = null, ?string $licensedEdition = null): void
     {
         $pluginInfo = $this->getPluginInfo($handle);
 

@@ -57,7 +57,7 @@ class Heading extends BaseUiElement
     /**
      * @inheritdoc
      */
-    public function formHtml(ElementInterface $element = null, bool $static = false): ?string
+    public function formHtml(?ElementInterface $element = null, bool $static = false): ?string
     {
         return Html::tag('h2', Html::encode(Craft::t('site', $this->heading)));
     }

@@ -278,7 +278,7 @@ class Queue extends \yii\queue\cli\Queue implements QueueInterface
     /**
      * @inheritdoc
      */
-    public function setProgress(int $progress, string $label = null): void
+    public function setProgress(int $progress, ?string $label = null): void
     {
         $this->_lock(function() use ($progress, $label) {
             $data = [
@@ -431,7 +431,7 @@ class Queue extends \yii\queue\cli\Queue implements QueueInterface
     /**
      * @inheritdoc
      */
-    public function getJobInfo(int $limit = null): array
+    public function getJobInfo(?int $limit = null): array
     {
         // Move expired messages into waiting list
         $this->_moveExpired();

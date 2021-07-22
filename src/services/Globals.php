@@ -212,7 +212,7 @@ class Globals extends Component
      * @param int|null $siteId
      * @return GlobalSet|null
      */
-    public function getSetById(int $globalSetId, int $siteId = null): ?GlobalSet
+    public function getSetById(int $globalSetId, ?int $siteId = null): ?GlobalSet
     {
         /** @noinspection PhpUnhandledExceptionInspection */
         $currentSiteId = Craft::$app->getSites()->getCurrentSite()->id;
@@ -247,7 +247,7 @@ class Globals extends Component
      * @param int|null $siteId
      * @return GlobalSet|null
      */
-    public function getSetByHandle(string $globalSetHandle, int $siteId = null): ?GlobalSet
+    public function getSetByHandle(string $globalSetHandle, ?int $siteId = null): ?GlobalSet
     {
         /** @noinspection PhpUnhandledExceptionInspection */
         $currentSiteId = Craft::$app->getSites()->getCurrentSite()->id;

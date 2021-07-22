@@ -379,7 +379,7 @@ class TestSetup
      * @param string $projectConfigFolder - Whether to override the folder specified in codeception.yml with a custom folder.
      * @throws ErrorException
      */
-    public static function setupProjectConfig(string $projectConfigFolder = null): void
+    public static function setupProjectConfig(?string $projectConfigFolder = null): void
     {
         if (!$projectConfigFolder) {
             $config = \craft\test\Craft::$instance->_getConfig('projectConfig');

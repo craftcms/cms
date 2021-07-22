@@ -135,7 +135,7 @@ class Asset extends ElementMutationResolver
     /**
      * @inheritDoc
      */
-    protected function populateElementWithData(ElementInterface $asset, array $arguments, ResolveInfo $resolveInfo = null): ElementInterface
+    protected function populateElementWithData(ElementInterface $asset, array $arguments, ?ResolveInfo $resolveInfo = null): ElementInterface
     {
         if (!empty($arguments['_file'])) {
             $fileInformation = $arguments['_file'];

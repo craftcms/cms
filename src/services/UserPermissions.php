@@ -264,7 +264,7 @@ class UserPermissions extends Component
      * @param User|null $user The recipient of the permissions. If set, their current permissions will be included as well.
      * @return array
      */
-    public function getAssignablePermissions(User $user = null): array
+    public function getAssignablePermissions(?User $user = null): array
     {
         // If either user is an admin, all permissions are fair game
         if (Craft::$app->getUser()->getIsAdmin() || ($user !== null && $user->admin)) {
@@ -691,7 +691,7 @@ class UserPermissions extends Component
      * @param User|null $user The recipient of the permissions. If set, their current permissions will be included as well.
      * @return array The filtered permissions
      */
-    private function _filterUnassignablePermissions(array $permissions, User $user = null): array
+    private function _filterUnassignablePermissions(array $permissions, ?User $user = null): array
     {
         $currentUser = Craft::$app->getUser()->getIdentity();
         if (!$currentUser && !$user) {

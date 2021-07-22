@@ -175,7 +175,7 @@ class Formatter extends \yii\i18n\Formatter
      * @throws InvalidConfigException if the date format is invalid.
      * @see datetimeFormat
      */
-    public function asTimestamp($value, string $format = null, bool $withPreposition = false): string
+    public function asTimestamp($value, ?string $format = null, bool $withPreposition = false): string
     {
         /** @var DateTime $timestamp */
         /** @var bool $hasTimeInfo */

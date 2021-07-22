@@ -277,7 +277,7 @@ class Asset extends Element
     /**
      * @inheritdoc
      */
-    protected static function defineSources(string $context = null): array
+    protected static function defineSources(?string $context = null): array
     {
         $volumes = Craft::$app->getVolumes();
 
@@ -327,7 +327,7 @@ class Asset extends Element
     /**
      * @inheritdoc
      */
-    protected static function defineActions(string $source = null): array
+    protected static function defineActions(?string $source = null): array
     {
         $actions = [];
 
@@ -491,7 +491,7 @@ class Asset extends Element
      * @param User|null $user
      * @return array
      */
-    private static function _assembleSourceList(array $folders, bool $includeNestedFolders = true, User $user = null): array
+    private static function _assembleSourceList(array $folders, bool $includeNestedFolders = true, ?User $user = null): array
     {
         $sources = [];
 
@@ -510,7 +510,7 @@ class Asset extends Element
      * @param User|null $user
      * @return array
      */
-    private static function _assembleSourceInfoForFolder(VolumeFolder $folder, bool $includeNestedFolders = true, User $user = null): array
+    private static function _assembleSourceInfoForFolder(VolumeFolder $folder, bool $includeNestedFolders = true, ?User $user = null): array
     {
         $volume = $folder->getVolume();
 
@@ -788,7 +788,7 @@ class Asset extends Element
      *
      * @param int|null $id
      */
-    public function setVolumeId(int $id = null): void
+    public function setVolumeId(?int $id = null): void
     {
         if ($id !== $this->getVolumeId()) {
             $this->_volumeId = $id;
@@ -940,7 +940,7 @@ class Asset extends Element
      * @return Markup|null
      * @throws InvalidArgumentException
      */
-    public function getImg($transform = null, array $sizes = null): ?Markup
+    public function getImg($transform = null, ?array $sizes = null): ?Markup
     {
         if ($this->kind !== self::KIND_IMAGE) {
             return null;
@@ -1163,7 +1163,7 @@ class Asset extends Element
      * @param User|null $uploader
      * @since 3.4.0
      */
-    public function setUploader(User $uploader = null): void
+    public function setUploader(?User $uploader = null): void
     {
         $this->_uploader = $uploader;
     }
@@ -1193,7 +1193,7 @@ class Asset extends Element
      * @return string|null
      * @throws InvalidConfigException
      */
-    public function getUrl($transform = null, bool $generateNow = null): ?string
+    public function getUrl($transform = null, ?bool $generateNow = null): ?string
     {
         $volume = $this->getVolume();
 
@@ -1385,7 +1385,7 @@ class Asset extends Element
      * @return string|null
      * @since 3.4.0
      */
-    public function getFormattedSize(int $decimals = null, bool $short = true): ?string
+    public function getFormattedSize(?int $decimals = null, bool $short = true): ?string
     {
         if ($this->size === null) {
             return null;
@@ -1459,7 +1459,7 @@ class Asset extends Element
      * @param string|null $filename Filename to use. If not specified, the asset's filename will be used.
      * @return string
      */
-    public function getPath(string $filename = null): string
+    public function getPath(?string $filename = null): string
     {
         return $this->folderPath . ($filename ?: $this->filename);
     }

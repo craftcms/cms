@@ -102,7 +102,7 @@ class Categories extends BaseRelationField
     /**
      * @inheritdoc
      */
-    public function normalizeValue($value, ElementInterface $element = null)
+    public function normalizeValue($value, ?ElementInterface $element = null)
     {
         if (is_array($value)) {
             /** @var Category[] $categories */
@@ -130,7 +130,7 @@ class Categories extends BaseRelationField
     /**
      * @inheritdoc
      */
-    protected function inputHtml($value, ElementInterface $element = null): string
+    protected function inputHtml($value, ?ElementInterface $element = null): string
     {
         // Make sure the field is set to a valid category group
         if ($this->source) {
@@ -147,7 +147,7 @@ class Categories extends BaseRelationField
     /**
      * @inheritdoc
      */
-    protected function inputTemplateVariables($value = null, ElementInterface $element = null): array
+    protected function inputTemplateVariables($value = null, ?ElementInterface $element = null): array
     {
         $variables = parent::inputTemplateVariables($value, $element);
         $variables['branchLimit'] = $this->branchLimit;

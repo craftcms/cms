@@ -120,7 +120,7 @@ class SystemMessages extends Component
      * @param string|null $language
      * @return SystemMessage[]
      */
-    public function getAllMessages(string $language = null): array
+    public function getAllMessages(?string $language = null): array
     {
         if ($language === null) {
             $language = Craft::$app->getSites()->getPrimarySite()->language;
@@ -159,7 +159,7 @@ class SystemMessages extends Component
      * @param string|null $language
      * @return SystemMessage|null
      */
-    public function getMessage(string $key, string $language = null): ?SystemMessage
+    public function getMessage(string $key, ?string $language = null): ?SystemMessage
     {
         // Get the default message (and ensure $key is valid)
         if (($default = $this->getDefaultMessage($key)) === null) {
@@ -209,7 +209,7 @@ class SystemMessages extends Component
      * @param string|null $language
      * @return bool
      */
-    public function saveMessage(SystemMessage $message, string $language = null): bool
+    public function saveMessage(SystemMessage $message, ?string $language = null): bool
     {
         $record = $this->_getMessageRecord($message->key, $language);
 

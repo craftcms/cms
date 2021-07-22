@@ -113,7 +113,7 @@ class Tag extends Element
     /**
      * @inheritdoc
      */
-    protected static function defineSources(string $context = null): array
+    protected static function defineSources(?string $context = null): array
     {
         $sources = [];
 
@@ -204,7 +204,7 @@ class Tag extends Element
      * @param InlineValidator $validator
      * @since 3.4.12
      */
-    public function validateTitle(string $attribute, array $params = null, InlineValidator $validator): void
+    public function validateTitle(string $attribute, ?array $params = null, InlineValidator $validator): void
     {
         $query = static::find()
             ->groupId($this->groupId)

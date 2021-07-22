@@ -241,7 +241,7 @@ abstract class Controller extends \yii\web\Controller
      * @return YiiResponse
      * @throws InvalidArgumentException if the view file does not exist.
      */
-    public function renderTemplate(string $template, array $variables = [], string $templateMode = null): YiiResponse
+    public function renderTemplate(string $template, array $variables = [], ?string $templateMode = null): YiiResponse
     {
         $view = $this->getView();
 
@@ -433,7 +433,7 @@ abstract class Controller extends \yii\web\Controller
      * @param string|null $default
      * @since 3.5.0
      */
-    public function setSuccessFlash(string $default = null): void
+    public function setSuccessFlash(?string $default = null): void
     {
         $message = $this->request->getValidatedBodyParam('successMessage') ?? $default;
         if ($message !== null) {
@@ -449,7 +449,7 @@ abstract class Controller extends \yii\web\Controller
      * @param string|null $default
      * @since 3.5.0
      */
-    public function setFailFlash(string $default = null): void
+    public function setFailFlash(?string $default = null): void
     {
         $message = $this->request->getValidatedBodyParam('failMessage') ?? $default;
         if ($message !== null) {
@@ -466,7 +466,7 @@ abstract class Controller extends \yii\web\Controller
      * @return YiiResponse
      * @throws BadRequestHttpException if the redirect param was tampered with
      */
-    public function redirectToPostedUrl($object = null, string $default = null): YiiResponse
+    public function redirectToPostedUrl($object = null, ?string $default = null): YiiResponse
     {
         $url = $this->request->getValidatedBodyParam('redirect');
 

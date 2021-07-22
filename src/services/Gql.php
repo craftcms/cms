@@ -375,7 +375,7 @@ class Gql extends Component
      * @return Schema
      * @throws GqlException in case of invalid schema
      */
-    public function getSchemaDef(GqlSchema $schema = null, bool $prebuildSchema = false): Schema
+    public function getSchemaDef(?GqlSchema $schema = null, bool $prebuildSchema = false): Schema
     {
         if ($schema) {
             $this->setActiveSchema($schema);
@@ -486,7 +486,7 @@ class Gql extends Component
         GqlSchema $schema,
         string $query,
         array $variables = null,
-        string $operationName = null,
+        ?string $operationName = null,
         bool $debugMode = false
     ): array
     {
@@ -581,7 +581,7 @@ class Gql extends Component
      * @param TagDependency|null $dependency
      * @since 3.3.12
      */
-    public function setCachedResult(string $cacheKey, array $result, TagDependency $dependency = null): void
+    public function setCachedResult(string $cacheKey, array $result, ?TagDependency $dependency = null): void
     {
         if ($dependency === null) {
             $dependency = new TagDependency();
@@ -614,7 +614,7 @@ class Gql extends Component
      * @param GqlSchema|null $schema The schema, or `null` to unset the active schema
      * @throws Exception
      */
-    public function setActiveSchema(GqlSchema $schema = null): void
+    public function setActiveSchema(?GqlSchema $schema = null): void
     {
         $this->_schema = $schema;
     }
@@ -1246,7 +1246,7 @@ class Gql extends Component
         $rootValue,
         $context,
         array $variables = null,
-        string $operationName = null
+        ?string $operationName = null
     ): ?string
     {
         // No cache key, if explicitly disabled

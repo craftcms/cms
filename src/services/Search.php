@@ -111,7 +111,7 @@ class Search extends Component
      * @return bool Whether the indexing was a success.
      * @throws SiteNotFoundException
      */
-    public function indexElementAttributes(ElementInterface $element, array $fieldHandles = null): bool
+    public function indexElementAttributes(ElementInterface $element, ?array $fieldHandles = null): bool
     {
         // Acquire a lock for this element/site ID
         $mutex = Craft::$app->getMutex();

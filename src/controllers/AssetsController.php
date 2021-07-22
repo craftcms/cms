@@ -67,7 +67,7 @@ class AssetsController extends Controller
      * @throws \craft\errors\SiteNotFoundException
      * @since 3.4.0
      */
-    public function actionEditAsset(int $assetId, Asset $asset = null, string $site = null): Response
+    public function actionEditAsset(int $assetId, Asset $asset = null, ?string $site = null): Response
     {
         $sitesService = Craft::$app->getSites();
         $editableSiteIds = $sitesService->getEditableSiteIds();
@@ -1166,7 +1166,7 @@ class AssetsController extends Controller
      * @throws ServerErrorHttpException if the transform can't be generated
      * @throws \craft\errors\AssetTransformException
      */
-    public function actionGenerateTransform(int $transformId = null): Response
+    public function actionGenerateTransform(?int $transformId = null): Response
     {
         // If transform Id was not passed in, see if file id and handle were.
         $assetTransforms = Craft::$app->getAssetTransforms();
@@ -1251,7 +1251,7 @@ class AssetsController extends Controller
      * @return Response
      * @since 3.4.8
      */
-    protected function asBrokenImage(\Throwable $e = null): Response
+    protected function asBrokenImage(?\Throwable $e = null): Response
     {
         $statusCode = $e instanceof HttpException && $e->statusCode ? $e->statusCode : 500;
         return $this->response

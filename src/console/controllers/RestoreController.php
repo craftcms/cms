@@ -31,7 +31,7 @@ class RestoreController extends Controller
      * @param string|null The path to the database backup file.
      * @return int
      */
-    public function actionDb(string $path = null): int
+    public function actionDb(?string $path = null): int
     {
         Console::outputWarning("The restore command is deprecated.\nRunning db/restore instead...");
         return Craft::$app->runAction('db/restore', func_get_args());

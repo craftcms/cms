@@ -280,7 +280,7 @@ class Users extends Component
      * @param int|null $userId The user’s ID
      * @return array The user’s preferences
      */
-    public function getUserPreferences(int $userId = null): array
+    public function getUserPreferences(?int $userId = null): array
     {
         $preferences = (new Query())
             ->select(['preferences'])
@@ -316,7 +316,7 @@ class Users extends Component
      * @param mixed $default The default value, if the preference hasn’t been set
      * @return mixed The user’s preference
      */
-    public function getUserPreference(int $userId = null, string $key, $default = null)
+    public function getUserPreference(?int $userId = null, string $key, $default = null)
     {
         $preferences = $this->getUserPreferences($userId);
         return $preferences[$key] ?? $default;
@@ -414,7 +414,7 @@ class Users extends Component
      * @throws ImageException if the file provided is not a manipulatable image
      * @throws VolumeException if the user photo Volume is not provided or is invalid
      */
-    public function saveUserPhoto(string $fileLocation, User $user, string $filename = null): void
+    public function saveUserPhoto(string $fileLocation, User $user, ?string $filename = null): void
     {
         $filename = AssetsHelper::prepareAssetName($filename ?? pathinfo($fileLocation, PATHINFO_BASENAME), true, true);
 
@@ -846,7 +846,7 @@ class Users extends Component
      * @param DateTime|null $expiryDate When the message should be un-shunned. Defaults to `null` (never un-shun).
      * @return bool Whether the message was shunned successfully.
      */
-    public function shunMessageForUser(int $userId, string $message, DateTime $expiryDate = null): bool
+    public function shunMessageForUser(int $userId, string $message, ?DateTime $expiryDate = null): bool
     {
         return (bool)Db::upsert(Table::SHUNNEDMESSAGES, [
             'userId' => $userId,

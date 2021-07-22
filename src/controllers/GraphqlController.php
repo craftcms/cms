@@ -367,7 +367,7 @@ class GraphqlController extends Controller
      * @throws NotFoundHttpException
      * @since 3.4.0
      */
-    public function actionEditToken(int $tokenId = null, GqlToken $token = null): Response
+    public function actionEditToken(int $tokenId = null, ?GqlToken $token = null): Response
     {
         $this->requireAdmin(false);
 
@@ -511,7 +511,7 @@ class GraphqlController extends Controller
      * @throws NotFoundHttpException
      * @since 3.4.0
      */
-    public function actionEditSchema(int $schemaId = null, GqlSchema $schema = null): Response
+    public function actionEditSchema(int $schemaId = null, ?GqlSchema $schema = null): Response
     {
         $this->requireAdmin();
 
@@ -546,7 +546,7 @@ class GraphqlController extends Controller
      * @throws NotFoundHttpException
      * @since 3.4.0
      */
-    public function actionEditPublicSchema(GqlSchema $schema = null): Response
+    public function actionEditPublicSchema(?GqlSchema $schema = null): Response
     {
         $this->requireAdmin();
 

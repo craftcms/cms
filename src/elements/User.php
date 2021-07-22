@@ -205,7 +205,7 @@ class User extends Element implements IdentityInterface
     /**
      * @inheritdoc
      */
-    protected static function defineSources(string $context = null): array
+    protected static function defineSources(?string $context = null): array
     {
         $sources = [
             [
@@ -246,7 +246,7 @@ class User extends Element implements IdentityInterface
     /**
      * @inheritdoc
      */
-    protected static function defineActions(string $source = null): array
+    protected static function defineActions(?string $source = null): array
     {
         $actions = [];
         $elementsService = Craft::$app->getElements();
@@ -1345,7 +1345,7 @@ class User extends Element implements IdentityInterface
      * @param string|null $locale
      * @return string|null
      */
-    private function _validateLocale(string $locale = null): ?string
+    private function _validateLocale(?string $locale = null): ?string
     {
         if ($locale !== null && in_array($locale, Craft::$app->getI18n()->getAppLocaleIds(), true)) {
             return $locale;
@@ -1403,7 +1403,7 @@ class User extends Element implements IdentityInterface
      *
      * @param Asset|null $photo
      */
-    public function setPhoto(Asset $photo = null): void
+    public function setPhoto(?Asset $photo = null): void
     {
         $this->_photo = $photo;
         $this->photoId = $photo->id ?? null;

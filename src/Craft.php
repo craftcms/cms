@@ -62,7 +62,7 @@ class Craft extends Yii
      * reference an environment variable or alias.
      * @since 3.1.0
      */
-    public static function parseEnv(string $str = null)
+    public static function parseEnv(?string $str = null)
     {
         if ($str === null) {
             return null;
@@ -126,7 +126,7 @@ class Craft extends Yii
      * @param Request|null $request The request object
      * @return array The cookie config array.
      */
-    public static function cookieConfig(array $config = [], Request $request = null): array
+    public static function cookieConfig(array $config = [], ?Request $request = null): array
     {
         if (self::$_baseCookieConfig === null) {
             $generalConfig = static::$app->getConfig()->getGeneral();

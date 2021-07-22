@@ -102,7 +102,7 @@ abstract class StandardField extends BaseField
     /**
      * @inheritdoc
      */
-    protected function containerAttributes(ElementInterface $element = null, bool $static = false): array
+    protected function containerAttributes(?ElementInterface $element = null, bool $static = false): array
     {
         $attributes = parent::containerAttributes($element, $static);
         return ArrayHelper::merge($attributes, $this->containerAttributes);
@@ -111,7 +111,7 @@ abstract class StandardField extends BaseField
     /**
      * @inheritdoc
      */
-    protected function inputContainerAttributes(ElementInterface $element = null, bool $static = false): array
+    protected function inputContainerAttributes(?ElementInterface $element = null, bool $static = false): array
     {
         return $this->inputContainerAttributes;
     }
@@ -119,7 +119,7 @@ abstract class StandardField extends BaseField
     /**
      * @inheritdoc
      */
-    protected function labelAttributes(ElementInterface $element = null, bool $static = false): array
+    protected function labelAttributes(?ElementInterface $element = null, bool $static = false): array
     {
         return $this->labelAttributes;
     }
@@ -127,7 +127,7 @@ abstract class StandardField extends BaseField
     /**
      * @inheritdoc
      */
-    protected function tip(ElementInterface $element = null, bool $static = false): ?string
+    protected function tip(?ElementInterface $element = null, bool $static = false): ?string
     {
         return $this->tip;
     }
@@ -135,7 +135,7 @@ abstract class StandardField extends BaseField
     /**
      * @inheritdoc
      */
-    protected function warning(ElementInterface $element = null, bool $static = false): ?string
+    protected function warning(?ElementInterface $element = null, bool $static = false): ?string
     {
         return $this->warning;
     }
@@ -143,7 +143,7 @@ abstract class StandardField extends BaseField
     /**
      * @inheritdoc
      */
-    protected function orientation(ElementInterface $element = null, bool $static = false): string
+    protected function orientation(?ElementInterface $element = null, bool $static = false): string
     {
         return $this->orientation ?? parent::orientation($element, $static);
     }
@@ -151,7 +151,7 @@ abstract class StandardField extends BaseField
     /**
      * @inheritdoc
      */
-    protected function translatable(ElementInterface $element = null, bool $static = false): bool
+    protected function translatable(?ElementInterface $element = null, bool $static = false): bool
     {
         return $this->translatable;
     }

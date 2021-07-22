@@ -467,7 +467,7 @@ class Elements extends Component
      * @param array $criteria
      * @return ElementInterface|null The matching element, or `null`.
      */
-    public function getElementById(int $elementId, string $elementType = null, $siteId = null, array $criteria = []): ?ElementInterface
+    public function getElementById(int $elementId, ?string $elementType = null, $siteId = null, array $criteria = []): ?ElementInterface
     {
         return $this->_elementById('id', $elementId, $elementType, $siteId, $criteria);
     }
@@ -487,7 +487,7 @@ class Elements extends Component
      * @return ElementInterface|null The matching element, or `null`.
      * @since 3.5.13
      */
-    public function getElementByUid(string $uid, string $elementType = null, $siteId = null, array $criteria = []): ?ElementInterface
+    public function getElementByUid(string $uid, ?string $elementType = null, $siteId = null, array $criteria = []): ?ElementInterface
     {
         return $this->_elementById('uid', $uid, $elementType, $siteId, $criteria);
     }
@@ -503,7 +503,7 @@ class Elements extends Component
      * @param array $criteria
      * @return ElementInterface|null The matching element, or `null`.
      */
-    private function _elementById(string $property, $elementId, string $elementType = null, $siteId = null, array $criteria = []): ?ElementInterface
+    private function _elementById(string $property, $elementId, ?string $elementType = null, $siteId = null, array $criteria = []): ?ElementInterface
     {
         if (!$elementId) {
             return null;
@@ -561,7 +561,7 @@ class Elements extends Component
      * @param bool $enabledOnly Whether to only look for an enabled element. Defaults to `false`.
      * @return ElementInterface|null The matching element, or `null`.
      */
-    public function getElementByUri(string $uri, int $siteId = null, bool $enabledOnly = false): ?ElementInterface
+    public function getElementByUri(string $uri, ?int $siteId = null, bool $enabledOnly = false): ?ElementInterface
     {
         if ($uri === '') {
             $uri = Element::HOMEPAGE_URI;
@@ -753,7 +753,7 @@ class Elements extends Component
      * @throws Exception if the $element doesn’t have any supported sites
      * @throws \Throwable if reasons
      */
-    public function saveElement(ElementInterface $element, bool $runValidation = true, bool $propagate = true, bool $updateSearchIndex = null): bool
+    public function saveElement(ElementInterface $element, bool $runValidation = true, bool $propagate = true, ?bool $updateSearchIndex = null): bool
     {
         // Force propagation for new elements
         $propagate = !$element->id || $propagate;
@@ -921,7 +921,7 @@ class Elements extends Component
      * @throws \Throwable if reasons
      * @since 3.2.0
      */
-    public function resaveElements(ElementQueryInterface $query, bool $continueOnError = false, bool $skipRevisions = true, bool $updateSearchIndex = null): void
+    public function resaveElements(ElementQueryInterface $query, bool $continueOnError = false, bool $skipRevisions = true, ?bool $updateSearchIndex = null): void
     {
         /** @var ElementQuery $query */
         // Fire a 'beforeResaveElements' event
@@ -1584,7 +1584,7 @@ class Elements extends Component
      * @return bool Whether the element was deleted successfully
      * @throws \Throwable
      */
-    public function deleteElementById(int $elementId, string $elementType = null, int $siteId = null, bool $hardDelete = false): bool
+    public function deleteElementById(int $elementId, string $elementType = null, ?int $siteId = null, bool $hardDelete = false): bool
     {
         /** @var ElementInterface|string|null $elementType */
         if ($elementType === null) {
@@ -1910,7 +1910,7 @@ class Elements extends Component
      * @param int|null $defaultSiteId The default site ID to query the elements in
      * @return string The parsed string
      */
-    public function parseRefs(string $str, int $defaultSiteId = null): string
+    public function parseRefs(string $str, ?int $defaultSiteId = null): string
     {
         if (!StringHelper::contains($str, '{')) {
             return $str;
@@ -2415,7 +2415,7 @@ class Elements extends Component
      * @throws UnsupportedSiteException if the element is being saved for a site it doesn’t support
      * @throws \Throwable if reasons
      */
-    private function _saveElementInternal(ElementInterface $element, bool $runValidation = true, bool $propagate = true, bool $updateSearchIndex = null): bool
+    private function _saveElementInternal(ElementInterface $element, bool $runValidation = true, bool $propagate = true, ?bool $updateSearchIndex = null): bool
     {
         /** @var Element|DraftBehavior|RevisionBehavior $element */
         $isNewElement = !$element->id;
@@ -2907,7 +2907,7 @@ SQL;
      * @return string
      * @see parseRefs()
      */
-    private function _getRefTokenReplacement(ElementInterface $element = null, string $attribute = null, string $fallback, string $fullMatch): string
+    private function _getRefTokenReplacement(ElementInterface $element = null, ?string $attribute = null, string $fallback, string $fullMatch): string
     {
         if ($element === null) {
             // Put the ref tag back

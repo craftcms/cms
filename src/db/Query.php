@@ -123,7 +123,7 @@ class Query extends \yii\db\Query
      * @return array the query results. If the query results in nothing, an empty array will be returned.
      * @throws Exception if less than two columns were selected
      */
-    public function pairs(YiiConnection $db = null): array
+    public function pairs(?YiiConnection $db = null): array
     {
         try {
             $rows = $this->createCommand($db)->queryAll();
@@ -226,7 +226,7 @@ class Query extends \yii\db\Query
      * @return array|Model|null The row (in terms of an array) of the query result. Null is returned if the query
      * results in nothing.
      */
-    public function nth(int $n, YiiConnection $db = null)
+    public function nth(int $n, ?YiiConnection $db = null)
     {
         $offset = $this->offset;
         $this->offset = ($offset ?: 0) + $n;
@@ -245,7 +245,7 @@ class Query extends \yii\db\Query
      * @see createCommand()
      * @see \yii\db\Command::getRawSql()
      */
-    public function getRawSql(YiiConnection $db = null): string
+    public function getRawSql(?YiiConnection $db = null): string
     {
         return $this->createCommand($db)->getRawSql();
     }

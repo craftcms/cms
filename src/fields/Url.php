@@ -147,7 +147,7 @@ class Url extends Field implements PreviewableFieldInterface
     /**
      * @inheritdoc
      */
-    public function normalizeValue($value, ElementInterface $element = null)
+    public function normalizeValue($value, ?ElementInterface $element = null)
     {
         if (is_array($value) && isset($value['value'])) {
             $type = $value['type'] ?? self::TYPE_URL;
@@ -191,7 +191,7 @@ class Url extends Field implements PreviewableFieldInterface
     /**
      * @inheritdoc
      */
-    protected function inputHtml($value, ElementInterface $element = null): string
+    protected function inputHtml($value, ?ElementInterface $element = null): string
     {
         if (is_string($value)) {
             $valueType = $this->_urlType($value);

@@ -93,7 +93,7 @@ class Number extends ScalarType
     /**
      * @inheritdoc
      */
-    public function parseLiteral($valueNode, array $variables = null)
+    public function parseLiteral($valueNode, ?array $variables = null)
     {
         // Treat strings as floats
         if ($valueNode instanceof StringValueNode || $valueNode instanceof FloatValueNode) {

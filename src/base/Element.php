@@ -581,7 +581,7 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @inheritdoc
      */
-    public static function sources(string $context = null): array
+    public static function sources(?string $context = null): array
     {
         $sources = static::defineSources($context);
 
@@ -602,7 +602,7 @@ abstract class Element extends Component implements ElementInterface
      * @return array The sources.
      * @see sources()
      */
-    protected static function defineSources(string $context = null): array
+    protected static function defineSources(?string $context = null): array
     {
         return [];
     }
@@ -664,7 +664,7 @@ abstract class Element extends Component implements ElementInterface
      * @see actions()
      * @todo this shouldn't allow null in Craft 4
      */
-    protected static function defineActions(string $source = null): array
+    protected static function defineActions(?string $source = null): array
     {
         return [];
     }
@@ -735,7 +735,7 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @inheritdoc
      */
-    public static function indexHtml(ElementQueryInterface $elementQuery, array $disabledElementIds = null, array $viewState, string $sourceKey = null, string $context = null, bool $includeContainer, bool $showCheckboxes): string
+    public static function indexHtml(ElementQueryInterface $elementQuery, array $disabledElementIds = null, array $viewState, string $sourceKey = null, ?string $context = null, bool $includeContainer, bool $showCheckboxes): string
     {
         $variables = [
             'viewMode' => $viewState['mode'],
@@ -1977,7 +1977,7 @@ abstract class Element extends Component implements ElementInterface
      * @param string $attribute The field handle
      * @param array|null $params
      */
-    public function validateCustomFieldAttribute(string $attribute, array $params = null): void
+    public function validateCustomFieldAttribute(string $attribute, ?array $params = null): void
     {
         /** @var array|null $params */
         [$field, $method, $fieldParams] = $params;
@@ -2576,7 +2576,7 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @inheritdoc
      */
-    public function getEnabledForSite(int $siteId = null): ?bool
+    public function getEnabledForSite(?int $siteId = null): ?bool
     {
         if ($siteId === null) {
             $siteId = $this->siteId;
@@ -2726,7 +2726,7 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @inheritdoc
      */
-    public function setParent(ElementInterface $parent = null): void
+    public function setParent(?ElementInterface $parent = null): void
     {
         $this->_parent = $parent;
 
@@ -2740,7 +2740,7 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @inheritdoc
      */
-    public function getAncestors(int $dist = null)
+    public function getAncestors(?int $dist = null)
     {
         // Eager-loaded?
         if (($ancestors = $this->getEagerLoadedElements('ancestors')) !== null) {
@@ -2762,7 +2762,7 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @inheritdoc
      */
-    public function getDescendants(int $dist = null)
+    public function getDescendants(?int $dist = null)
     {
         // Eager-loaded?
         if (($descendants = $this->getEagerLoadedElements('descendants')) !== null) {
@@ -3116,7 +3116,7 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @inheritdoc
      */
-    public function getFieldValues(array $fieldHandles = null): array
+    public function getFieldValues(?array $fieldHandles = null): array
     {
         $values = [];
 
@@ -3132,7 +3132,7 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @inheritdoc
      */
-    public function getSerializedFieldValues(array $fieldHandles = null): array
+    public function getSerializedFieldValues(?array $fieldHandles = null): array
     {
         $serializedValues = [];
 
@@ -3478,7 +3478,7 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @inheritdoc
      */
-    public function setRevisionCreatorId(int $creatorId = null): void
+    public function setRevisionCreatorId(?int $creatorId = null): void
     {
         $this->revisionCreatorId = $creatorId;
     }
@@ -3486,7 +3486,7 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @inheritdoc
      */
-    public function setRevisionNotes(string $notes = null): void
+    public function setRevisionNotes(?string $notes = null): void
     {
         $this->revisionNotes = $notes;
     }

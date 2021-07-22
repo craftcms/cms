@@ -64,7 +64,7 @@ class Revisions extends Component
      * @return ElementInterface The new revision
      * @throws \Throwable
      */
-    public function createRevision(ElementInterface $source, int $creatorId = null, string $notes = null, array $newAttributes = [], bool $force = false): ElementInterface
+    public function createRevision(ElementInterface $source, int $creatorId = null, ?string $notes = null, array $newAttributes = [], bool $force = false): ElementInterface
     {
         // Make sure the source isn't a draft or revision
         if ($source->getIsDraft() || $source->getIsRevision()) {

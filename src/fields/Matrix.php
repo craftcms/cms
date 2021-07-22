@@ -492,7 +492,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
     /**
      * @inheritdoc
      */
-    public function normalizeValue($value, ElementInterface $element = null)
+    public function normalizeValue($value, ?ElementInterface $element = null)
     {
         if ($value instanceof ElementQueryInterface) {
             return $value;
@@ -519,7 +519,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
      * @param ElementInterface|null $element
      * @since 3.4.0
      */
-    private function _populateQuery(MatrixBlockQuery $query, ElementInterface $element = null): void
+    private function _populateQuery(MatrixBlockQuery $query, ?ElementInterface $element = null): void
     {
         // Existing element?
         if ($element && $element->id) {
@@ -541,7 +541,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
     /**
      * @inheritdoc
      */
-    public function serializeValue($value, ElementInterface $element = null)
+    public function serializeValue($value, ?ElementInterface $element = null)
     {
         /** @var MatrixBlockQuery $value */
         $serialized = [];
@@ -605,7 +605,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
     /**
      * @inheritdoc
      */
-    public function getIsTranslatable(ElementInterface $element = null): bool
+    public function getIsTranslatable(?ElementInterface $element = null): bool
     {
         return $this->propagationMethod !== self::PROPAGATION_METHOD_ALL;
     }
@@ -613,7 +613,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
     /**
      * @inheritdoc
      */
-    public function getTranslationDescription(ElementInterface $element = null): ?string
+    public function getTranslationDescription(?ElementInterface $element = null): ?string
     {
         if (!$element) {
             return null;
@@ -660,7 +660,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
      * @inheritdoc
      * @throws InvalidConfigException
      */
-    protected function inputHtml($value, ElementInterface $element = null): string
+    protected function inputHtml($value, ?ElementInterface $element = null): string
     {
         if ($element !== null && $element->hasEagerLoadedElements($this->handle)) {
             $value = $element->getEagerLoadedElements($this->handle);
@@ -1133,7 +1133,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
      * @param string $placeholderKey
      * @return array
      */
-    private function _getBlockTypeInfoForInput(ElementInterface $element = null, array $blockTypes, string $placeholderKey): array
+    private function _getBlockTypeInfoForInput(?ElementInterface $element = null, array $blockTypes, string $placeholderKey): array
     {
         $blockTypeInfo = [];
 

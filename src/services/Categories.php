@@ -686,7 +686,7 @@ class Categories extends Component
      * @param int|null $siteId
      * @return Category|null
      */
-    public function getCategoryById(int $categoryId, int $siteId = null): ?Category
+    public function getCategoryById(int $categoryId, ?int $siteId = null): ?Category
     {
         if (!$categoryId) {
             return null;
@@ -740,7 +740,7 @@ class Categories extends Component
      * @param CategoryGroupRecord|null $groupRecord
      * @return CategoryGroup|null
      */
-    private function _createCategoryGroupFromRecord(CategoryGroupRecord $groupRecord = null): ?CategoryGroup
+    private function _createCategoryGroupFromRecord(?CategoryGroupRecord $groupRecord = null): ?CategoryGroup
     {
         if (!$groupRecord) {
             return null;

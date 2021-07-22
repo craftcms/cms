@@ -396,7 +396,7 @@ class Dashboard extends Component
      * @param int|null $widgetId
      * @return WidgetRecord
      */
-    private function _getUserWidgetRecordById(int $widgetId = null): WidgetRecord
+    private function _getUserWidgetRecordById(?int $widgetId = null): WidgetRecord
     {
         $userId = Craft::$app->getUser()->getIdentity()->id;
 

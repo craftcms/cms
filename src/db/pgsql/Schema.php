@@ -113,7 +113,7 @@ class Schema extends \yii\db\pgsql\Schema
      * @param string[]|null The table names whose data should be excluded from the backup
      * @return string The command to execute
      */
-    public function getDefaultBackupCommand(array $ignoreTables = null): string
+    public function getDefaultBackupCommand(?array $ignoreTables = null): string
     {
         if ($ignoreTables === null) {
             $ignoreTables = $this->db->getIgnoredBackupTables();

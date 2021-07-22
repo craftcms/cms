@@ -79,7 +79,7 @@ class PluginStoreController extends Controller
      *
      * @return Response
      */
-    public function actionConnect(string $redirectUrl = null): Response
+    public function actionConnect(?string $redirectUrl = null): Response
     {
         $callbackUrl = UrlHelper::cpUrl('plugin-store/callback');
 

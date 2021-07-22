@@ -47,5 +47,5 @@ interface FieldLayoutElementInterface extends Arrayable
      * @param bool $static Whether the form should be static (non-interactive)
      * @return string|null
      */
-    public function formHtml(ElementInterface $element = null, bool $static = false): ?string;
+    public function formHtml(?ElementInterface $element = null, bool $static = false): ?string;
 }

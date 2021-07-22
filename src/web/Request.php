@@ -598,7 +598,7 @@ class Request extends \yii\web\Request
      * @param bool|null $isCpRequest
      * @since 3.5.0
      */
-    public function setIsCpRequest(bool $isCpRequest = null): void
+    public function setIsCpRequest(?bool $isCpRequest = null): void
     {
         $this->_isCpRequest = $isCpRequest;
     }
@@ -1425,7 +1425,7 @@ class Request extends \yii\web\Request
      * @throws BadRequestHttpException if a site token was sent, but the site doesn’t exist
      * @throws SiteNotFoundException if no sites exist
      */
-    private function _requestedSite(int &$siteScore = null): Site
+    private function _requestedSite(?int &$siteScore = null): Site
     {
         // Was a site token provided?
         $siteId = $this->getQueryParam($this->generalConfig->siteToken)
@@ -1709,7 +1709,7 @@ class Request extends \yii\web\Request
      * @param array $params
      * @return mixed
      */
-    private function _getParam(string $name = null, $defaultValue, array $params)
+    private function _getParam(?string $name = null, $defaultValue, array $params)
     {
         // Do they just want the whole array?
         if ($name === null) {

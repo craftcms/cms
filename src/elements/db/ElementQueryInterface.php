@@ -142,7 +142,7 @@ interface ElementQueryInterface extends QueryInterface, ArrayAccess, Arrayable, 
      * @return self self reference
      * @since 3.2.0
      */
-    public function draftId(int $value = null): self;
+    public function draftId(?int $value = null): self;
 
     /**
      * Narrows the query results to only drafts of a given {element}.
@@ -320,7 +320,7 @@ interface ElementQueryInterface extends QueryInterface, ArrayAccess, Arrayable, 
      * @return self self reference
      * @since 3.2.0
      */
-    public function revisionId(int $value = null): self;
+    public function revisionId(?int $value = null): self;
 
     /**
      * Narrows the query results to only revisions of a given {element}.
@@ -786,7 +786,7 @@ interface ElementQueryInterface extends QueryInterface, ArrayAccess, Arrayable, 
      * @return self self reference
      * @since 3.2.0
      */
-    public function preferSites(array $value = null): self;
+    public function preferSites(?array $value = null): self;
 
     /**
      * Narrows the query results to only {elements} that are related to certain other elements.
@@ -1052,7 +1052,7 @@ interface ElementQueryInterface extends QueryInterface, ArrayAccess, Arrayable, 
      * @param int|null $value The property value
      * @return self self reference
      */
-    public function structureId(int $value = null): self;
+    public function structureId(?int $value = null): self;
 
     /**
      * Narrows the query results based on the {elements}’ level within the structure.
@@ -1202,7 +1202,7 @@ interface ElementQueryInterface extends QueryInterface, ArrayAccess, Arrayable, 
      * @param int|null $value The property value
      * @return self self reference
      */
-    public function ancestorDist(int $value = null): self;
+    public function ancestorDist(?int $value = null): self;
 
     /**
      * Narrows the query results to only {elements} that are descendants of another {element}.
@@ -1265,7 +1265,7 @@ interface ElementQueryInterface extends QueryInterface, ArrayAccess, Arrayable, 
      * @param int|null $value The property value
      * @return self self reference
      */
-    public function descendantDist(int $value = null): self;
+    public function descendantDist(?int $value = null): self;
 
     /**
      * Narrows the query results to only {elements} that are siblings of another {element}.
@@ -1453,7 +1453,7 @@ interface ElementQueryInterface extends QueryInterface, ArrayAccess, Arrayable, 
      * @return ElementInterface|array|null The element or row of the query result. Null is returned if the query
      * results in nothing.
      */
-    public function nth(int $n, Connection $db = null);
+    public function nth(int $n, ?Connection $db = null);
 
     /**
      * Executes the query and returns the IDs of the resulting elements.
@@ -1462,7 +1462,7 @@ interface ElementQueryInterface extends QueryInterface, ArrayAccess, Arrayable, 
      * If this parameter is not given, the `db` application component will be used.
      * @return int[] The resulting element IDs. An empty array is returned if no elements are found.
      */
-    public function ids(Connection $db = null): array;
+    public function ids(?Connection $db = null): array;
 
     /**
      * Converts a found row into an element instance.

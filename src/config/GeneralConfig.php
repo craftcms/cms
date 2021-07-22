@@ -1786,7 +1786,7 @@ class GeneralConfig extends BaseObject
      * @return string
      * @see activateAccountSuccessPath
      */
-    public function getActivateAccountSuccessPath(string $siteHandle = null): string
+    public function getActivateAccountSuccessPath(?string $siteHandle = null): string
     {
         return ConfigHelper::localizedValue($this->activateAccountSuccessPath, $siteHandle);
     }
@@ -1799,7 +1799,7 @@ class GeneralConfig extends BaseObject
      * @see verifyEmailPath
      * @since 3.4.0
      */
-    public function getVerifyEmailPath(string $siteHandle = null): string
+    public function getVerifyEmailPath(?string $siteHandle = null): string
     {
         return ConfigHelper::localizedValue($this->verifyEmailPath, $siteHandle);
     }
@@ -1812,7 +1812,7 @@ class GeneralConfig extends BaseObject
      * @see verifyEmailSuccessPath
      * @since 3.1.20
      */
-    public function getVerifyEmailSuccessPath(string $siteHandle = null): string
+    public function getVerifyEmailSuccessPath(?string $siteHandle = null): string
     {
         return ConfigHelper::localizedValue($this->verifyEmailSuccessPath, $siteHandle);
     }
@@ -1824,7 +1824,7 @@ class GeneralConfig extends BaseObject
      * @return string
      * @see invalidUserTokenPath
      */
-    public function getInvalidUserTokenPath(string $siteHandle = null): string
+    public function getInvalidUserTokenPath(?string $siteHandle = null): string
     {
         return ConfigHelper::localizedValue($this->invalidUserTokenPath, $siteHandle);
     }
@@ -1836,7 +1836,7 @@ class GeneralConfig extends BaseObject
      * @return mixed
      * @see loginPath
      */
-    public function getLoginPath(string $siteHandle = null)
+    public function getLoginPath(?string $siteHandle = null)
     {
         return ConfigHelper::localizedValue($this->loginPath, $siteHandle);
     }
@@ -1848,7 +1848,7 @@ class GeneralConfig extends BaseObject
      * @return mixed
      * @see logoutPath
      */
-    public function getLogoutPath(string $siteHandle = null)
+    public function getLogoutPath(?string $siteHandle = null)
     {
         return ConfigHelper::localizedValue($this->logoutPath, $siteHandle);
     }
@@ -1871,7 +1871,7 @@ class GeneralConfig extends BaseObject
      * @return string
      * @see postLoginRedirect
      */
-    public function getPostLoginRedirect(string $siteHandle = null): string
+    public function getPostLoginRedirect(?string $siteHandle = null): string
     {
         return ConfigHelper::localizedValue($this->postLoginRedirect, $siteHandle);
     }
@@ -1883,7 +1883,7 @@ class GeneralConfig extends BaseObject
      * @return string
      * @see postLogoutRedirect
      */
-    public function getPostLogoutRedirect(string $siteHandle = null): string
+    public function getPostLogoutRedirect(?string $siteHandle = null): string
     {
         return ConfigHelper::localizedValue($this->postLogoutRedirect, $siteHandle);
     }
@@ -1895,7 +1895,7 @@ class GeneralConfig extends BaseObject
      * @return string
      * @see setPasswordPath
      */
-    public function getSetPasswordPath(string $siteHandle = null): string
+    public function getSetPasswordPath(?string $siteHandle = null): string
     {
         return ConfigHelper::localizedValue($this->setPasswordPath, $siteHandle);
     }
@@ -1908,7 +1908,7 @@ class GeneralConfig extends BaseObject
      * @see setPasswordRequestPath
      * @since 3.5.14
      */
-    public function getSetPasswordRequestPath(string $siteHandle = null): ?string
+    public function getSetPasswordRequestPath(?string $siteHandle = null): ?string
     {
         return ConfigHelper::localizedValue($this->setPasswordRequestPath, $siteHandle);
     }
@@ -1920,7 +1920,7 @@ class GeneralConfig extends BaseObject
      * @return string
      * @see setPasswordSuccessPath
      */
-    public function getSetPasswordSuccessPath(string $siteHandle = null): string
+    public function getSetPasswordSuccessPath(?string $siteHandle = null): string
     {
         return ConfigHelper::localizedValue($this->setPasswordSuccessPath, $siteHandle);
     }

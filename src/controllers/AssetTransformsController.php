@@ -59,7 +59,7 @@ class AssetTransformsController extends Controller
      * @return Response
      * @throws NotFoundHttpException if the requested transform cannot be found
      */
-    public function actionEditTransform(string $transformHandle = null, AssetTransform $transform = null): Response
+    public function actionEditTransform(string $transformHandle = null, ?AssetTransform $transform = null): Response
     {
         if ($transform === null) {
             if ($transformHandle !== null) {

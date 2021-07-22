@@ -336,7 +336,7 @@ class Connection extends \yii\db\Connection
      * @param bool|null $refresh
      * @return bool
      */
-    public function tableExists(string $table, bool $refresh = null): bool
+    public function tableExists(string $table, ?bool $refresh = null): bool
     {
         // Default to refreshing the tables if Craft isn't installed yet
         if ($refresh || ($refresh === null && !Craft::$app->getIsInstalled())) {
@@ -357,7 +357,7 @@ class Connection extends \yii\db\Connection
      * @return bool
      * @throws NotSupportedException if there is no support for the current driver type
      */
-    public function columnExists(string $table, string $column, bool $refresh = null): bool
+    public function columnExists(string $table, string $column, ?bool $refresh = null): bool
     {
         // Default to refreshing the tables if Craft isn't installed yet
         if ($refresh || ($refresh === null && !Craft::$app->getIsInstalled())) {

@@ -186,7 +186,7 @@ class Entry extends Element
     /**
      * @inheritdoc
      */
-    protected static function defineSources(string $context = null): array
+    protected static function defineSources(?string $context = null): array
     {
         if ($context === 'index') {
             $sections = Craft::$app->getSections()->getEditableSections();
@@ -306,7 +306,7 @@ class Entry extends Element
     /**
      * @inheritdoc
      */
-    protected static function defineActions(string $source = null): array
+    protected static function defineActions(?string $source = null): array
     {
         // Get the selected site
         $controller = Craft::$app->controller;
@@ -1174,7 +1174,7 @@ class Entry extends Element
      *
      * @param User|null $author
      */
-    public function setAuthor(User $author = null): void
+    public function setAuthor(?User $author = null): void
     {
         $this->_author = $author;
     }

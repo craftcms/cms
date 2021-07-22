@@ -1427,7 +1427,7 @@ class Sections extends Component
      * @throws Exception if reasons
      * @see saveSection()
      */
-    private function _ensureSingleEntry(Section $section, array $siteSettings = null): Entry
+    private function _ensureSingleEntry(Section $section, ?array $siteSettings = null): Entry
     {
         // Get the section's supported sites
         // ---------------------------------------------------------------------

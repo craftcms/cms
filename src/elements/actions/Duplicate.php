@@ -77,7 +77,7 @@ class Duplicate extends ElementAction
      * @param int $failCount
      * @param ElementInterface|null $newParent
      */
-    private function _duplicateElements(array $elements, int &$successCount, int &$failCount, array &$duplicatedElementIds = [], ElementInterface $newParent = null): void
+    private function _duplicateElements(array $elements, int &$successCount, int &$failCount, array &$duplicatedElementIds = [], ?ElementInterface $newParent = null): void
     {
         $elementsService = Craft::$app->getElements();
         $structuresService = Craft::$app->getStructures();

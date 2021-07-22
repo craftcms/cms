@@ -263,7 +263,7 @@ trait ApplicationTrait
      * @param bool|null $useUserLanguage Whether the user's preferred language should be used.
      * If null, the user’s preferred language will be used if this is a control panel request or a console request.
      */
-    public function updateTargetLanguage(bool $useUserLanguage = null): void
+    public function updateTargetLanguage(?bool $useUserLanguage = null): void
     {
         // Defend against an infinite updateTargetLanguage() loop
         if ($this->_gettingLanguage === true) {
@@ -723,7 +723,7 @@ trait ApplicationTrait
      * @param string[]|null $attributeNames The attributes to save
      * @return bool
      */
-    public function saveInfo(Info $info, array $attributeNames = null): bool
+    public function saveInfo(Info $info, ?array $attributeNames = null): bool
     {
 
         if ($attributeNames === null) {

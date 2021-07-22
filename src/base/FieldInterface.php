@@ -103,7 +103,7 @@ interface FieldInterface extends SavableComponentInterface
      * @param ElementInterface|null $element The element being edited
      * @return bool
      */
-    public function getIsTranslatable(ElementInterface $element = null): bool;
+    public function getIsTranslatable(?ElementInterface $element = null): bool;
 
     /**
      * Returns the description of this field’s translation support.
@@ -112,7 +112,7 @@ interface FieldInterface extends SavableComponentInterface
      * @return string|null
      * @since 3.4.0
      */
-    public function getTranslationDescription(ElementInterface $element = null): ?string;
+    public function getTranslationDescription(?ElementInterface $element = null): ?string;
 
     /**
      * Returns the field’s translation key, based on a given element.
@@ -244,7 +244,7 @@ interface FieldInterface extends SavableComponentInterface
      * @param ElementInterface|null $element The element the field is associated with, if there is one
      * @return string The input HTML.
      */
-    public function getInputHtml($value, ElementInterface $element = null): string;
+    public function getInputHtml($value, ?ElementInterface $element = null): string;
 
     /**
      * Returns a static (non-editable) version of the field’s input HTML.
@@ -333,7 +333,7 @@ interface FieldInterface extends SavableComponentInterface
      * @param ElementInterface|null $element The element the field is associated with, if there is one
      * @return mixed The prepared field value
      */
-    public function normalizeValue($value, ElementInterface $element = null);
+    public function normalizeValue($value, ?ElementInterface $element = null);
 
     /**
      * Prepares the field’s value to be stored somewhere, like the content table.
@@ -345,7 +345,7 @@ interface FieldInterface extends SavableComponentInterface
      * @param ElementInterface|null $element The element the field is associated with, if there is one
      * @return mixed The serialized field value
      */
-    public function serializeValue($value, ElementInterface $element = null);
+    public function serializeValue($value, ?ElementInterface $element = null);
 
     /**
      * Copies the field’s value from one element to another.
@@ -387,7 +387,7 @@ interface FieldInterface extends SavableComponentInterface
      *
      * @param bool|null $isFresh Whether the field is fresh.
      */
-    public function setIsFresh(bool $isFresh = null): void;
+    public function setIsFresh(?bool $isFresh = null): void;
 
     /**
      * Returns the field’s group.

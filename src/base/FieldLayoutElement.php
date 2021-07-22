@@ -62,7 +62,7 @@ abstract class FieldLayoutElement extends BaseObject implements FieldLayoutEleme
      * @param bool $static Whether the form should be static (non-interactive)
      * @return array
      */
-    protected function containerAttributes(ElementInterface $element = null, bool $static = false): array
+    protected function containerAttributes(?ElementInterface $element = null, bool $static = false): array
     {
         $attributes = [];
         if ($this->hasCustomWidth()) {

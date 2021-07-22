@@ -68,7 +68,7 @@ class User extends Component
      * means the current user will be a guest without any associated identity.
      * @throws InvalidValueException If `$identity` object does not implement [[IdentityInterface]].
      */
-    public function setIdentity(IdentityInterface $identity = null): void
+    public function setIdentity(?IdentityInterface $identity = null): void
     {
         if ($identity instanceof IdentityInterface) {
             $this->_identity = $identity;

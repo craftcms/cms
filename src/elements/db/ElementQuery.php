@@ -642,7 +642,7 @@ class ElementQuery extends Query implements ElementQueryInterface
      * @uses $draftId
      * @uses $drafts
      */
-    public function draftId(int $value = null): self
+    public function draftId(?int $value = null): self
     {
         $this->draftId = $value;
         if ($value !== null && $this->drafts === false) {
@@ -730,7 +730,7 @@ class ElementQuery extends Query implements ElementQueryInterface
      * @uses $revisionId
      * @uses $revisions
      */
-    public function revisionId(int $value = null): self
+    public function revisionId(?int $value = null): self
     {
         $this->revisionId = $value;
         $this->revisions = $value !== null;
@@ -975,7 +975,7 @@ class ElementQuery extends Query implements ElementQueryInterface
      * @uses $preferSites
      * @since 3.2.0
      */
-    public function preferSites(array $value = null): self
+    public function preferSites(?array $value = null): self
     {
         $this->preferSites = $value;
         return $this;
@@ -1111,7 +1111,7 @@ class ElementQuery extends Query implements ElementQueryInterface
      * @inheritdoc
      * @uses $structureId
      */
-    public function structureId(int $value = null): self
+    public function structureId(?int $value = null): self
     {
         $this->structureId = $value;
         return $this;
@@ -1161,7 +1161,7 @@ class ElementQuery extends Query implements ElementQueryInterface
      * @inheritdoc
      * @uses $ancestorDist
      */
-    public function ancestorDist(int $value = null): self
+    public function ancestorDist(?int $value = null): self
     {
         $this->ancestorDist = $value;
         return $this;
@@ -1181,7 +1181,7 @@ class ElementQuery extends Query implements ElementQueryInterface
      * @inheritdoc
      * @uses $descendantDist
      */
-    public function descendantDist(int $value = null): self
+    public function descendantDist(?int $value = null): self
     {
         $this->descendantDist = $value;
         return $this;
@@ -1512,7 +1512,7 @@ class ElementQuery extends Query implements ElementQueryInterface
      * @return ElementInterface|array|null The element. Null is returned if the query
      * results in nothing.
      */
-    public function nth(int $n, Connection $db = null)
+    public function nth(int $n, ?Connection $db = null)
     {
         // Cached?
         if (($cachedResult = $this->getCachedResult()) !== null) {
@@ -1525,7 +1525,7 @@ class ElementQuery extends Query implements ElementQueryInterface
     /**
      * @inheritdoc
      */
-    public function ids(Connection $db = null): array
+    public function ids(?Connection $db = null): array
     {
         // TODO: Remove this in Craft 4
         // Make sure $db is not a list of attributes

@@ -683,7 +683,7 @@ class UsersController extends Controller
      * @throws NotFoundHttpException if the requested user cannot be found
      * @throws BadRequestHttpException if there’s a mismatch between|null $userId and|null $user
      */
-    public function actionEditUser($userId = null, User $user = null, array $errors = null): Response
+    public function actionEditUser($userId = null, User $user = null, ?array $errors = null): Response
     {
         if (!empty($errors)) {
             $this->setFailFlash(reset($errors));
@@ -1770,7 +1770,7 @@ class UsersController extends Controller
      * @return Response|null
      * @throws ServiceUnavailableHttpException
      */
-    private function _handleLoginFailure(string $authError = null, User $user = null): ?Response
+    private function _handleLoginFailure(string $authError = null, ?User $user = null): ?Response
     {
         // Delay randomly between 0 and 1.5 seconds.
         usleep(random_int(0, 1500000));
@@ -2131,7 +2131,7 @@ class UsersController extends Controller
      * @return Response
      * @throws HttpException if the verification code is invalid
      */
-    private function _processInvalidToken(User $user = null): Response
+    private function _processInvalidToken(?User $user = null): Response
     {
         $this->trigger(self::EVENT_INVALID_USER_TOKEN, new InvalidUserTokenEvent([
             'user' => $user,
@@ -2241,7 +2241,7 @@ class UsersController extends Controller
      * @param string|null $loginName
      * @return Response|null
      */
-    private function _handleSendPasswordResetError(array $errors, string $loginName = null): ?Response
+    private function _handleSendPasswordResetError(array $errors, ?string $loginName = null): ?Response
     {
         if ($this->request->getAcceptsJson()) {
             /** @noinspection CallableParameterUseCaseInTypeContextInspection */

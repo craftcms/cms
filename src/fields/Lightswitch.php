@@ -130,7 +130,7 @@ class Lightswitch extends Field implements PreviewableFieldInterface, SortableFi
     /**
      * @inheritdoc
      */
-    protected function inputHtml($value, ElementInterface $element = null): string
+    protected function inputHtml($value, ?ElementInterface $element = null): string
     {
         $id = Html::id($this->handle);
         return Craft::$app->getView()->renderTemplate('_includes/forms/lightswitch', [
@@ -159,7 +159,7 @@ class Lightswitch extends Field implements PreviewableFieldInterface, SortableFi
     /**
      * @inheritdoc
      */
-    public function normalizeValue($value, ElementInterface $element = null)
+    public function normalizeValue($value, ?ElementInterface $element = null)
     {
         // If this is a new entry, look for a default option
         if ($value === null) {

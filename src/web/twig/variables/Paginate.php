@@ -186,7 +186,7 @@ class Paginate extends BaseObject
      * @param int|null $dist
      * @return array
      */
-    public function getPrevUrls(int $dist = null): array
+    public function getPrevUrls(?int $dist = null): array
     {
         if ($dist !== null) {
             $start = $this->currentPage - $dist;
@@ -203,7 +203,7 @@ class Paginate extends BaseObject
      * @param int|null $dist
      * @return array
      */
-    public function getNextUrls(int $dist = null): array
+    public function getNextUrls(?int $dist = null): array
     {
         if ($dist !== null) {
             $end = $this->currentPage + $dist;

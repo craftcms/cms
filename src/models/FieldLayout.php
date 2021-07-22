@@ -495,7 +495,7 @@ class FieldLayout extends Model
      *
      * @param FieldInterface[]|null $fields
      */
-    public function setFields(array $fields = null): void
+    public function setFields(?array $fields = null): void
     {
         $this->_customFields = $fields;
     }
@@ -514,7 +514,7 @@ class FieldLayout extends Model
      * @return FieldLayoutForm
      * @since 3.5.0
      */
-    public function createForm(ElementInterface $element = null, bool $static = false, array $config = []): FieldLayoutForm
+    public function createForm(?ElementInterface $element = null, bool $static = false, array $config = []): FieldLayoutForm
     {
         $view = Craft::$app->getView();
         // Calling this with an existing namespace isn’t fully supported,

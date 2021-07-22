@@ -468,7 +468,7 @@ abstract class BaseUpdaterController extends Controller
      * @param string|null $restoreAction
      * @return Response|null
      */
-    protected function runMigrations(array $handles, string $restoreAction = null): ?Response
+    protected function runMigrations(array $handles, ?string $restoreAction = null): ?Response
     {
         try {
             Craft::$app->getUpdates()->runMigrations($handles);
@@ -542,7 +542,7 @@ abstract class BaseUpdaterController extends Controller
      * @param string|null $edition
      * @return array Array with installation results
      */
-    protected function installPlugin(string $handle, string $edition = null): array
+    protected function installPlugin(string $handle, ?string $edition = null): array
     {
         // Prevent the plugin from sending any headers, etc.
         $response = $this->response;

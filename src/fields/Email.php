@@ -70,7 +70,7 @@ class Email extends Field implements PreviewableFieldInterface
     /**
      * @inheritdoc
      */
-    protected function inputHtml($value, ElementInterface $element = null): string
+    protected function inputHtml($value, ?ElementInterface $element = null): string
     {
         $id = Html::id($this->handle);
         return Craft::$app->getView()->renderTemplate('_includes/forms/text', [

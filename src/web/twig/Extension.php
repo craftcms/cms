@@ -259,7 +259,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
      * [[\yii\base\Application::language|application language]] will be used.
      * @return string the translated message.
      */
-    public function translateFilter($message, string $category = null, array $params = null, string $language = null): string
+    public function translateFilter($message, string $category = null, array $params = null, ?string $language = null): string
     {
         // The front end site doesn't need to specify the category
         /** @noinspection CallableParameterUseCaseInTypeContextInspection */
@@ -515,7 +515,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
      * @param int $depth The maximum depth
      * @return string|false The JSON encoded value.
      */
-    public function jsonEncodeFilter($value, int $options = null, int $depth = 512)
+    public function jsonEncodeFilter($value, ?int $options = null, int $depth = 512)
     {
         if ($options === null) {
             if (
@@ -613,7 +613,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
      * @param int|null $siteId
      * @return string
      */
-    public function parseRefsFilter($str, int $siteId = null): string
+    public function parseRefsFilter($str, ?int $siteId = null): string
     {
         return Craft::$app->getElements()->parseRefs((string)$str, $siteId);
     }
@@ -629,7 +629,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
      * @return string The modified HTML
      * @since 3.3.0
      */
-    public function prependFilter(string $tag, string $html, string $ifExists = null): string
+    public function prependFilter(string $tag, string $html, ?string $ifExists = null): string
     {
         try {
             return Html::prependToTag($tag, $html, $ifExists);
@@ -760,7 +760,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
      * @param string|null $locale The target locale the date should be formatted for. By default the current system locale will be used.
      * @return string
      */
-    public function dateFilter(TwigEnvironment $env, $date, string $format = null, $timezone = null, string $locale = null): string
+    public function dateFilter(TwigEnvironment $env, $date, string $format = null, $timezone = null, ?string $locale = null): string
     {
         if ($date instanceof \DateInterval) {
             return \twig_date_format_filter($env, $date, $format, $timezone);
@@ -795,7 +795,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
      * @return string The modified HTML
      * @since 3.3.0
      */
-    public function appendFilter(string $tag, string $html, string $ifExists = null): string
+    public function appendFilter(string $tag, string $html, ?string $ifExists = null): string
     {
         try {
             return Html::appendToTag($tag, $html, $ifExists);
@@ -859,7 +859,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
      * @param string|null $locale The target locale the date should be formatted for. By default the current systme locale will be used.
      * @return string
      */
-    public function timeFilter(TwigEnvironment $env, $date, string $format = null, $timezone = null, string $locale = null): string
+    public function timeFilter(TwigEnvironment $env, $date, string $format = null, $timezone = null, ?string $locale = null): string
     {
         // Is this a custom PHP date format?
         if ($format !== null && !in_array($format, [Locale::LENGTH_SHORT, Locale::LENGTH_MEDIUM, Locale::LENGTH_LONG, Locale::LENGTH_FULL], true)) {
@@ -889,7 +889,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
      * @param string|null $locale The target locale the date should be formatted for. By default the current systme locale will be used.
      * @return string
      */
-    public function datetimeFilter(TwigEnvironment $env, $date, string $format = null, $timezone = null, string $locale = null): string
+    public function datetimeFilter(TwigEnvironment $env, $date, string $format = null, $timezone = null, ?string $locale = null): string
     {
         // Is this a custom PHP date format?
         if ($format !== null && !in_array($format, [Locale::LENGTH_SHORT, Locale::LENGTH_MEDIUM, Locale::LENGTH_LONG, Locale::LENGTH_FULL], true)) {
@@ -928,7 +928,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
      * @param callable|null $arrow
      * @return array
      */
-    public function filterFilter(TwigEnvironment $env, $arr, callable $arrow = null): array
+    public function filterFilter(TwigEnvironment $env, $arr, ?callable $arrow = null): array
     {
         if ($arrow === null) {
             return array_filter($arr);
@@ -1057,7 +1057,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
      * @param bool $inlineOnly Whether to only parse inline elements, omitting any `<p>` tags.
      * @return string
      */
-    public function markdownFilter($markdown, string $flavor = null, bool $inlineOnly = false): string
+    public function markdownFilter($markdown, ?string $flavor = null, bool $inlineOnly = false): string
     {
         if ($inlineOnly) {
             return Markdown::processParagraph((string)$markdown, $flavor);
@@ -1182,7 +1182,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
      * @throws AssetException if a stream could not be created for the asset
      * @since 3.5.13
      */
-    public function dataUrlFunction($file, string $mimeType = null): string
+    public function dataUrlFunction($file, ?string $mimeType = null): string
     {
         if ($file instanceof Asset) {
             return $file->getDataUrl();
@@ -1233,7 +1233,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
      * @return array The query result
      * @since 3.3.12
      */
-    public function gqlFunction(string $query, array $variables = null, string $operationName = null): array
+    public function gqlFunction(string $query, array $variables = null, ?string $operationName = null): array
     {
         $schema = Gql::createFullAccessSchema();
         return Craft::$app->getGql()->executeQuery($schema, $query, $variables, $operationName);
@@ -1263,7 +1263,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
      * @throws \yii\db\Exception
      * @since 3.0.31
      */
-    public function seqFunction(string $name, int $length = null, bool $next = true)
+    public function seqFunction(string $name, ?int $length = null, bool $next = true)
     {
         if ($next) {
             return Sequence::next($name, $length);
@@ -1314,7 +1314,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
      * (This argument is deprecated. The `|attr` filter should be used instead.)
      * @return string
      */
-    public function svgFunction($svg, bool $sanitize = null, bool $namespace = null, string $class = null): string
+    public function svgFunction($svg, bool $sanitize = null, bool $namespace = null, ?string $class = null): string
     {
         if ($svg instanceof Asset) {
             try {

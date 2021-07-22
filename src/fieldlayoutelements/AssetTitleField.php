@@ -24,7 +24,7 @@ class AssetTitleField extends TitleField
     /**
      * @inheritdoc
      */
-    protected function translatable(ElementInterface $element = null, bool $static = false): bool
+    protected function translatable(?ElementInterface $element = null, bool $static = false): bool
     {
         if (!$element instanceof Asset) {
             throw new InvalidArgumentException('AssetTitleField can only be used in asset field layouts.');
@@ -36,7 +36,7 @@ class AssetTitleField extends TitleField
     /**
      * @inheritdoc
      */
-    protected function translationDescription(ElementInterface $element = null, bool $static = false): ?string
+    protected function translationDescription(?ElementInterface $element = null, bool $static = false): ?string
     {
         if (!$element instanceof Asset) {
             throw new InvalidArgumentException('AssetTitleField can only be used in asset field layouts.');

@@ -140,7 +140,7 @@ class UpdateController extends Controller
      * version using the syntax `<handle>:<version>`.
      * @return int
      */
-    public function actionUpdate(string $handle = null): int
+    public function actionUpdate(?string $handle = null): int
     {
         $handles = array_filter(func_get_args());
 
@@ -334,7 +334,7 @@ class UpdateController extends Controller
      * @param string $oldPackageName
      * @param Update $update
      */
-    private function _updateRequirements(array &$requirements, array &$info, string $handle, string $from, string $to = null, string $oldPackageName, Update $update): void
+    private function _updateRequirements(array &$requirements, array &$info, string $handle, string $from, ?string $to = null, string $oldPackageName, Update $update): void
     {
         if ($update->status === Update::STATUS_EXPIRED) {
             $this->stdout("Skipping {$handle} because its license has expired." . PHP_EOL, Console::FG_GREY);
@@ -529,7 +529,7 @@ class UpdateController extends Controller
      * @param string $status
      * @param string|null $phpConstraint
      */
-    private function _outputUpdate(string $handle, string $from, string $to, bool $critical, string $status, string $phpConstraint = null): void
+    private function _outputUpdate(string $handle, string $from, string $to, bool $critical, string $status, ?string $phpConstraint = null): void
     {
         $expired = $status === Update::STATUS_EXPIRED;
         $grey = $expired ? Console::FG_GREY : null;

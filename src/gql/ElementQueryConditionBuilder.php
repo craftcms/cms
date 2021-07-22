@@ -142,7 +142,7 @@ class ElementQueryConditionBuilder extends Component
      * @param FieldInterface|null $startingParentField the starting parent field for the extraction, if any
      * @return array
      */
-    public function extractQueryConditions(FieldInterface $startingParentField = null): array
+    public function extractQueryConditions(?FieldInterface $startingParentField = null): array
     {
         $startingNode = $this->_resolveInfo->fieldNodes[0];
 
@@ -387,7 +387,7 @@ class ElementQueryConditionBuilder extends Component
      * @param string $context the context in which to search fields
      * @return array
      */
-    private function _traversAndBuildPlans(Node $parentNode, EagerLoadPlan $parentPlan, FieldInterface $parentField = null, Node $wrappingFragment = null, string $context = 'global'): array
+    private function _traversAndBuildPlans(Node $parentNode, EagerLoadPlan $parentPlan, FieldInterface $parentField = null, ?Node $wrappingFragment = null, string $context = 'global'): array
     {
         $subNodes = $parentNode->selectionSet->selections ?? [];
         $plans = [];

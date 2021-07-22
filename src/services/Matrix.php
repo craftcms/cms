@@ -663,7 +663,7 @@ class Matrix extends Component
      * @param int|null $siteId The site ID to return. Defaults to the current site.
      * @return MatrixBlock|null The Matrix block, or `null` if it didn’t exist.
      */
-    public function getBlockById(int $blockId, int $siteId = null): ?MatrixBlock
+    public function getBlockById(int $blockId, ?int $siteId = null): ?MatrixBlock
     {
         /** @noinspection PhpIncompatibleReturnTypeInspection */
         return Craft::$app->getElements()->getElementById($blockId, MatrixBlock::class, $siteId);

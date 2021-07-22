@@ -89,7 +89,7 @@ class SystemSettingsController extends Controller
      * @return Response
      * @throws Exception if a plugin returns an invalid mail transport type
      */
-    public function actionEditEmailSettings(MailSettings $settings = null, TransportAdapterInterface $adapter = null): Response
+    public function actionEditEmailSettings(MailSettings $settings = null, ?TransportAdapterInterface $adapter = null): Response
     {
         if ($settings === null) {
             $settings = App::mailSettings();
@@ -232,7 +232,7 @@ class SystemSettingsController extends Controller
      * @return Response
      * @throws NotFoundHttpException if the requested global set cannot be found
      */
-    public function actionEditGlobalSet(int $globalSetId = null, GlobalSet $globalSet = null): Response
+    public function actionEditGlobalSet(int $globalSetId = null, ?GlobalSet $globalSet = null): Response
     {
         if ($globalSet === null) {
             if ($globalSetId !== null) {

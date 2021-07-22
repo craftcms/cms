@@ -112,7 +112,7 @@ class UploadedFile extends \yii\web\UploadedFile
      * @throws InvalidConfigException when the `fileinfo` PHP extension is not installed and `$checkExtension` is `false`.
      * @since 3.1.7
      */
-    public function getMimeType(string $magicFile = null, bool $checkExtension = true): ?string
+    public function getMimeType(?string $magicFile = null, bool $checkExtension = true): ?string
     {
         $mimeType = null;
 

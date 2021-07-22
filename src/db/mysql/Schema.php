@@ -148,7 +148,7 @@ class Schema extends \yii\db\mysql\Schema
      * @return string The command to execute
      * @throws ErrorException
      */
-    public function getDefaultBackupCommand(array $ignoreTables = null): string
+    public function getDefaultBackupCommand(?array $ignoreTables = null): string
     {
         $defaultArgs =
             ' --defaults-extra-file="' . $this->_createDumpConfigFile() . '"' .

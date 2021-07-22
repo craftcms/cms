@@ -82,7 +82,7 @@ class UserGroups extends Component
      * @param User|null $user The recipient of the user groups. If set, their current groups will be included as well.
      * @return UserGroup[]
      */
-    public function getAssignableGroups(User $user = null): array
+    public function getAssignableGroups(?User $user = null): array
     {
         $currentUser = Craft::$app->getUser()->getIdentity();
         if (!$currentUser && !$user) {

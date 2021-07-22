@@ -58,7 +58,7 @@ abstract class MutationResolver extends Component
      * @param string $argument
      * @param callable|null $normalizer
      */
-    public function setValueNormalizer(string $argument, callable $normalizer = null): void
+    public function setValueNormalizer(string $argument, ?callable $normalizer = null): void
     {
         if ($normalizer === null) {
             unset($this->_valueNormalizers[$argument]);

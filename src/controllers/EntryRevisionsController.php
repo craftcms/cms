@@ -49,7 +49,7 @@ class EntryRevisionsController extends BaseEntriesController
      * @throws BadRequestHttpException
      * @throws ForbiddenHttpException
      */
-    public function actionCreateDraft(string $section, string $site = null): Response
+    public function actionCreateDraft(string $section, ?string $site = null): Response
     {
         $sectionHandle = $section;
         $section = Craft::$app->getSections()->getSectionByHandle($sectionHandle);

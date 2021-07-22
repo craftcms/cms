@@ -314,7 +314,7 @@ abstract class Field extends SavableComponent implements FieldInterface
     /**
      * @inheritdoc
      */
-    public function getIsTranslatable(ElementInterface $element = null): bool
+    public function getIsTranslatable(?ElementInterface $element = null): bool
     {
         if ($this->translationMethod === self::TRANSLATION_METHOD_CUSTOM) {
             return $element === null || $this->getTranslationKey($element) !== '';
@@ -325,7 +325,7 @@ abstract class Field extends SavableComponent implements FieldInterface
     /**
      * @inheritdoc
      */
-    public function getTranslationDescription(ElementInterface $element = null): ?string
+    public function getTranslationDescription(?ElementInterface $element = null): ?string
     {
         if (!$this->getIsTranslatable($element)) {
             return null;
@@ -375,7 +375,7 @@ abstract class Field extends SavableComponent implements FieldInterface
     /**
      * @inheritdoc
      */
-    public function normalizeValue($value, ElementInterface $element = null)
+    public function normalizeValue($value, ?ElementInterface $element = null)
     {
         return $value;
     }
@@ -383,7 +383,7 @@ abstract class Field extends SavableComponent implements FieldInterface
     /**
      * @inheritdoc
      */
-    public function getInputHtml($value, ElementInterface $element = null): string
+    public function getInputHtml($value, ?ElementInterface $element = null): string
     {
         $html = $this->inputHtml($value, $element);
 
@@ -408,7 +408,7 @@ abstract class Field extends SavableComponent implements FieldInterface
      * @see getInputHtml()
      * @since 3.5.0
      */
-    protected function inputHtml($value, ElementInterface $element = null): string
+    protected function inputHtml($value, ?ElementInterface $element = null): string
     {
         return Html::textarea($this->handle, $value);
     }
@@ -519,7 +519,7 @@ abstract class Field extends SavableComponent implements FieldInterface
     /**
      * @inheritdoc
      */
-    public function serializeValue($value, ElementInterface $element = null)
+    public function serializeValue($value, ?ElementInterface $element = null)
     {
         // If the object explicitly defines its savable value, use that
         if ($value instanceof Serializable) {
@@ -580,7 +580,7 @@ abstract class Field extends SavableComponent implements FieldInterface
     /**
      * @inheritdoc
      */
-    public function setIsFresh(bool $isFresh = null): void
+    public function setIsFresh(?bool $isFresh = null): void
     {
         $this->_isFresh = $isFresh;
     }
@@ -787,7 +787,7 @@ abstract class Field extends SavableComponent implements FieldInterface
      * @param ElementInterface|null $element
      * @return bool
      */
-    protected function isFresh(ElementInterface $element = null): bool
+    protected function isFresh(?ElementInterface $element = null): bool
     {
         if ($this->_isFresh !== null) {
             return $this->_isFresh;

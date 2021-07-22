@@ -218,7 +218,7 @@ class TemplateCaches extends Component
      * @return string
      * @throws Exception if this is a console request and `false` is passed to `$global`
      */
-    private function _cacheKey(string $key, bool $global, int $siteId = null): string
+    private function _cacheKey(string $key, bool $global, ?int $siteId = null): string
     {
         $cacheKey = "template::$key::" . ($siteId ?? Craft::$app->getSites()->getCurrentSite()->id);
 
