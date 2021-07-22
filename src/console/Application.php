@@ -99,6 +99,7 @@ class Application extends \yii\console\Application
         if ($value !== 'UTC' && $this->getI18n()->getIsIntlLoaded()) {
             // Make sure that ICU supports this timezone
             try {
+                /** @noinspection PhpExpressionResultUnusedInspection */
                 new \IntlDateFormatter($this->language, \IntlDateFormatter::NONE, \IntlDateFormatter::NONE);
             } catch (\IntlException $e) {
                 Craft::warning("Time zone \"{$value}\" does not appear to be supported by ICU: " . intl_get_error_message());
