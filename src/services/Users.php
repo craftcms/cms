@@ -316,7 +316,7 @@ class Users extends Component
      * @param mixed $default The default value, if the preference hasn’t been set
      * @return mixed The user’s preference
      */
-    public function getUserPreference(?int $userId = null, string $key, $default = null)
+    public function getUserPreference(?int $userId, string $key, $default = null)
     {
         $preferences = $this->getUserPreferences($userId);
         return $preferences[$key] ?? $default;
