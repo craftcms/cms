@@ -584,6 +584,7 @@ class Globals extends Component
     {
         $query = $withTrashed ? GlobalSetRecord::findWithTrashed() : GlobalSetRecord::find();
         $query->andWhere(['uid' => $uid]);
+        /** @noinspection PhpIncompatibleReturnTypeInspection */
         return $query->one() ?? new GlobalSetRecord();
     }
 }

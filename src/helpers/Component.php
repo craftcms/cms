@@ -108,6 +108,7 @@ class Component
 
         // Instantiate and return
         $config['class'] = $class;
+        /** @noinspection PhpIncompatibleReturnTypeInspection */
         return Craft::createObject($config);
     }
 

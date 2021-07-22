@@ -51,6 +51,7 @@ class Entry extends ElementMutationResolver
         $entry = $this->saveElement($entry);
         $this->performStructureOperations($entry, $arguments);
 
+        /** @noinspection PhpIncompatibleReturnTypeInspection */
         return Craft::$app->getElements()->createElementQuery(EntryElement::class)
             ->siteId($entry->siteId)
             ->status(null)

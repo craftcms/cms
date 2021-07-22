@@ -1229,6 +1229,7 @@ class Fields extends Component
         }
 
         $config['class'] = $type;
+        /** @noinspection PhpIncompatibleReturnTypeInspection */
         return Craft::createObject($config);
     }
 
@@ -1943,6 +1944,7 @@ class Fields extends Component
             $query->where(['uid' => $criteria]);
         }
 
+        /** @noinspection PhpIncompatibleReturnTypeInspection */
         return $query->one() ?? new FieldGroupRecord();
     }
 

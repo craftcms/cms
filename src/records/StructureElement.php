@@ -59,6 +59,7 @@ class StructureElement extends ActiveRecord
      */
     public static function find(): StructuredElementQuery
     {
+        /** @noinspection PhpIncompatibleReturnTypeInspection */
         return Craft::createObject(StructuredElementQuery::class, [static::class]);
     }
 

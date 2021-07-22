@@ -1224,6 +1224,7 @@ class Sites extends Component
             $query->andWhere(['uid' => $criteria]);
         }
 
+        /** @noinspection PhpIncompatibleReturnTypeInspection */
         return $query->one() ?? new SiteGroupRecord();
     }
 
@@ -1259,6 +1260,7 @@ class Sites extends Component
             $query->andWhere(['uid' => $criteria]);
         }
 
+        /** @noinspection PhpIncompatibleReturnTypeInspection */
         return $query->one() ?? new SiteRecord();
     }
 

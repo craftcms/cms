@@ -137,6 +137,7 @@ class Application extends \yii\console\Application
      */
     public function getUser(): User
     {
+        /** @noinspection PhpIncompatibleReturnTypeInspection */
         return $this->get('user');
     }
 

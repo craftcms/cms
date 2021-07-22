@@ -180,6 +180,7 @@ class Raster extends Image
             $this->_image->getImagick()->transformImageColorspace(\Imagick::COLORSPACE_SRGB);
             $this->_image->save();
 
+            /** @noinspection PhpIncompatibleReturnTypeInspection */
             return Craft::$app->getImages()->loadImage($path);
         }
 

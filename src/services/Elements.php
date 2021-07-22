@@ -1861,6 +1861,7 @@ class Elements extends Component
      */
     public function createAction($config): ElementActionInterface
     {
+        /** @noinspection PhpIncompatibleReturnTypeInspection */
         return ComponentHelper::createComponent($config, ElementActionInterface::class);
     }
 
@@ -1872,6 +1873,7 @@ class Elements extends Component
      */
     public function createExporter($config): ElementExporterInterface
     {
+        /** @noinspection PhpIncompatibleReturnTypeInspection */
         return ComponentHelper::createComponent($config, ElementExporterInterface::class);
     }
 

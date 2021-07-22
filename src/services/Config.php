@@ -138,6 +138,7 @@ class Config extends Component
      */
     public function getDb(): DbConfig
     {
+        /** @noinspection PhpIncompatibleReturnTypeInspection */
         return $this->getConfigSettings(self::CATEGORY_DB);
     }
 
@@ -159,6 +160,7 @@ class Config extends Component
      */
     public function getGeneral(): GeneralConfig
     {
+        /** @noinspection PhpIncompatibleReturnTypeInspection */
         return $this->getConfigSettings(self::CATEGORY_GENERAL);
     }
 
