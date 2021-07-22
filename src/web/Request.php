@@ -1206,7 +1206,7 @@ class Request extends \yii\web\Request
             $security = Craft::$app->getSecurity();
             foreach ($_COOKIE as $name => $value) {
                 // Ignore if this is a hashed cookie
-                if (is_string($value) && $security->validateData($value, $this->cookieValidationKey !== false)) {
+                if (is_string($value) && $security->validateData($value, $this->cookieValidationKey) !== false) {
                     continue;
                 }
                 $cookies[$name] = Craft::createObject([
