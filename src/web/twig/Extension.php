@@ -259,7 +259,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
      * [[\yii\base\Application::language|application language]] will be used.
      * @return string the translated message.
      */
-    public function translateFilter($message, string $category = null, array $params = null, ?string $language = null): string
+    public function translateFilter($message, ?string $category = null, ?array $params = null, ?string $language = null): string
     {
         // The front end site doesn't need to specify the category
         /** @noinspection CallableParameterUseCaseInTypeContextInspection */
@@ -760,7 +760,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
      * @param string|null $locale The target locale the date should be formatted for. By default the current system locale will be used.
      * @return string
      */
-    public function dateFilter(TwigEnvironment $env, $date, string $format = null, $timezone = null, ?string $locale = null): string
+    public function dateFilter(TwigEnvironment $env, $date, ?string $format = null, $timezone = null, ?string $locale = null): string
     {
         if ($date instanceof \DateInterval) {
             return \twig_date_format_filter($env, $date, $format, $timezone);
@@ -859,7 +859,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
      * @param string|null $locale The target locale the date should be formatted for. By default the current systme locale will be used.
      * @return string
      */
-    public function timeFilter(TwigEnvironment $env, $date, string $format = null, $timezone = null, ?string $locale = null): string
+    public function timeFilter(TwigEnvironment $env, $date, ?string $format = null, $timezone = null, ?string $locale = null): string
     {
         // Is this a custom PHP date format?
         if ($format !== null && !in_array($format, [Locale::LENGTH_SHORT, Locale::LENGTH_MEDIUM, Locale::LENGTH_LONG, Locale::LENGTH_FULL], true)) {
@@ -889,7 +889,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
      * @param string|null $locale The target locale the date should be formatted for. By default the current systme locale will be used.
      * @return string
      */
-    public function datetimeFilter(TwigEnvironment $env, $date, string $format = null, $timezone = null, ?string $locale = null): string
+    public function datetimeFilter(TwigEnvironment $env, $date, ?string $format = null, $timezone = null, ?string $locale = null): string
     {
         // Is this a custom PHP date format?
         if ($format !== null && !in_array($format, [Locale::LENGTH_SHORT, Locale::LENGTH_MEDIUM, Locale::LENGTH_LONG, Locale::LENGTH_FULL], true)) {
@@ -1233,7 +1233,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
      * @return array The query result
      * @since 3.3.12
      */
-    public function gqlFunction(string $query, array $variables = null, ?string $operationName = null): array
+    public function gqlFunction(string $query, ?array $variables = null, ?string $operationName = null): array
     {
         $schema = Gql::createFullAccessSchema();
         return Craft::$app->getGql()->executeQuery($schema, $query, $variables, $operationName);
@@ -1314,7 +1314,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
      * (This argument is deprecated. The `|attr` filter should be used instead.)
      * @return string
      */
-    public function svgFunction($svg, bool $sanitize = null, bool $namespace = null, ?string $class = null): string
+    public function svgFunction($svg, ?bool $sanitize = null, ?bool $namespace = null, ?string $class = null): string
     {
         if ($svg instanceof Asset) {
             try {

@@ -36,7 +36,7 @@ class MigrateException extends Exception
      * @param int $code The error code
      * @param \Throwable|null $previous The previous exception
      */
-    public function __construct(string $ownerName, string $ownerHandle, string $message = null, int $code = 0, \Throwable $previous = null)
+    public function __construct(string $ownerName, string $ownerHandle, ?string $message = null, int $code = 0, \Throwable $previous = null)
     {
         $this->ownerName = $ownerName;
         $this->ownerHandle = $ownerHandle;

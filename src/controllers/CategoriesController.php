@@ -242,7 +242,7 @@ class CategoriesController extends Controller
      * @return Response
      * @throws NotFoundHttpException if the requested site handle is invalid
      */
-    public function actionEditCategory(string $groupHandle, int $categoryId = null, string $siteHandle = null, ?Category $category = null): Response
+    public function actionEditCategory(string $groupHandle, ?int $categoryId = null, ?string $siteHandle = null, ?Category $category = null): Response
     {
         $variables = [
             'groupHandle' => $groupHandle,

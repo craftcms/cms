@@ -485,7 +485,7 @@ class Gql extends Component
     public function executeQuery(
         GqlSchema $schema,
         string $query,
-        array $variables = null,
+        ?array $variables = null,
         ?string $operationName = null,
         bool $debugMode = false
     ): array
@@ -1245,7 +1245,7 @@ class Gql extends Component
         string $query,
         $rootValue,
         $context,
-        array $variables = null,
+        ?array $variables = null,
         ?string $operationName = null
     ): ?string
     {

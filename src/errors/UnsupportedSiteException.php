@@ -30,7 +30,7 @@ class UnsupportedSiteException extends ElementException
      * @param string|null $message The error message
      * @param int $code The error code
      */
-    public function __construct(ElementInterface $element, int $siteId, string $message = null, int $code = 0)
+    public function __construct(ElementInterface $element, int $siteId, ?string $message = null, int $code = 0)
     {
         $this->siteId = $siteId;
 

@@ -1230,7 +1230,7 @@ class Plugins extends Component
      * @param string|null $licensedEdition The plugin's licensed edition, if the key is valid
      * @throws InvalidPluginException if the plugin isn't installed
      */
-    public function setPluginLicenseKeyStatus(string $handle, string $licenseKeyStatus = null, ?string $licensedEdition = null): void
+    public function setPluginLicenseKeyStatus(string $handle, ?string $licenseKeyStatus = null, ?string $licensedEdition = null): void
     {
         $pluginInfo = $this->getPluginInfo($handle);
 

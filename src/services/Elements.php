@@ -1584,7 +1584,7 @@ class Elements extends Component
      * @return bool Whether the element was deleted successfully
      * @throws \Throwable
      */
-    public function deleteElementById(int $elementId, string $elementType = null, ?int $siteId = null, bool $hardDelete = false): bool
+    public function deleteElementById(int $elementId, ?string $elementType = null, ?int $siteId = null, bool $hardDelete = false): bool
     {
         /** @var ElementInterface|string|null $elementType */
         if ($elementType === null) {

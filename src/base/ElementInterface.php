@@ -368,7 +368,7 @@ interface ElementInterface extends ComponentInterface
      * @param bool $showCheckboxes
      * @return string The element index HTML
      */
-    public static function indexHtml(ElementQueryInterface $elementQuery, array $disabledElementIds = null, array $viewState, string $sourceKey = null, ?string $context = null, bool $includeContainer, bool $showCheckboxes): string;
+    public static function indexHtml(ElementQueryInterface $elementQuery, ?array $disabledElementIds = null, array $viewState, ?string $sourceKey = null, ?string $context = null, bool $includeContainer, bool $showCheckboxes): string;
 
     /**
      * Returns the sort options for the element type.

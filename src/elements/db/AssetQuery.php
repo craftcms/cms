@@ -26,7 +26,7 @@ use yii\db\Connection;
  * @property string|string[]|VolumeInterface $volume The handle(s) of the volume(s) that resulting assets must belong to.
  * @method Asset[]|array all($db = null)
  * @method Asset|array|null one($db = null)
- * @method Asset|array|null nth(int $n, Connection $db = null)
+ * @method Asset|array|null nth(int $n, ?Connection $db = null)
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  * @doc-path assets.md

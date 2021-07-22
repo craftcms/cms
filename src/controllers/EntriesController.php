@@ -52,7 +52,7 @@ class EntriesController extends BaseEntriesController
      * @throws NotFoundHttpException if the requested site handle is invalid
      * @throws ForbiddenHttpException
      */
-    public function actionEditEntry(string $section, int $entryId = null, int $draftId = null, int $revisionId = null, string $site = null, ?Entry $entry = null): Response
+    public function actionEditEntry(string $section, ?int $entryId = null, ?int $draftId = null, ?int $revisionId = null, ?string $site = null, ?Entry $entry = null): Response
     {
         $variables = [
             'sectionHandle' => $section,
@@ -715,7 +715,7 @@ class EntriesController extends BaseEntriesController
      * @param int|null $revisionId
      * @return Entry|null
      */
-    private function _loadEntry(Site $site, Section $section, int $entryId, int $draftId = null, ?int $revisionId = null): ?Entry
+    private function _loadEntry(Site $site, Section $section, int $entryId, ?int $draftId = null, ?int $revisionId = null): ?Entry
     {
         if ($draftId) {
             $entry = Entry::find()

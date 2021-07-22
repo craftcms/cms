@@ -27,7 +27,7 @@ class DeprecationException extends Exception
      * @param int $code
      * @param Throwable|null $previous
      */
-    public function __construct(string $message = '', string $file = null, int $line = null, int $code = 0, Throwable $previous = null)
+    public function __construct(string $message = '', ?string $file = null, ?int $line = null, int $code = 0, ?Throwable $previous = null)
     {
         if ($file !== null) {
             $this->file = $file;

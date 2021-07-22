@@ -387,7 +387,7 @@ class ElementQueryConditionBuilder extends Component
      * @param string $context the context in which to search fields
      * @return array
      */
-    private function _traversAndBuildPlans(Node $parentNode, EagerLoadPlan $parentPlan, FieldInterface $parentField = null, ?Node $wrappingFragment = null, string $context = 'global'): array
+    private function _traversAndBuildPlans(Node $parentNode, EagerLoadPlan $parentPlan, ?FieldInterface $parentField = null, ?Node $wrappingFragment = null, string $context = 'global'): array
     {
         $subNodes = $parentNode->selectionSet->selections ?? [];
         $plans = [];

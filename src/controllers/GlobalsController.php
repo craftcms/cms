@@ -139,7 +139,7 @@ class GlobalsController extends Controller
      * @throws ForbiddenHttpException if the user is not permitted to edit the global set
      * @throws NotFoundHttpException if the requested site handle is invalid
      */
-    public function actionEditContent(string $globalSetHandle, string $siteHandle = null, ?GlobalSet $globalSet = null): Response
+    public function actionEditContent(string $globalSetHandle, ?string $siteHandle = null, ?GlobalSet $globalSet = null): Response
     {
         if (Craft::$app->getIsMultiSite()) {
             // Get the sites the user is allowed to edit

@@ -67,7 +67,7 @@ class AssetsController extends Controller
      * @throws \craft\errors\SiteNotFoundException
      * @since 3.4.0
      */
-    public function actionEditAsset(int $assetId, Asset $asset = null, ?string $site = null): Response
+    public function actionEditAsset(int $assetId, ?Asset $asset = null, ?string $site = null): Response
     {
         $sitesService = Craft::$app->getSites();
         $editableSiteIds = $sitesService->getEditableSiteIds();

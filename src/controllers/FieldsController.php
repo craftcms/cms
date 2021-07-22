@@ -116,7 +116,7 @@ class FieldsController extends Controller
      * @throws NotFoundHttpException if the requested field/field group cannot be found
      * @throws ServerErrorHttpException if no field groups exist
      */
-    public function actionEditField(int $fieldId = null, FieldInterface $field = null, ?int $groupId = null): Response
+    public function actionEditField(int $fieldId = null, ?FieldInterface $field = null, ?int $groupId = null): Response
     {
         $this->requireAdmin();
 

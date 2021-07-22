@@ -24,7 +24,7 @@ use yii\db\Connection;
  * @property string|string[]|CategoryGroup $group The handle(s) of the category group(s) that resulting categories must belong to.
  * @method Category[]|array all($db = null)
  * @method Category|array|null one($db = null)
- * @method Category|array|null nth(int $n, Connection $db = null)
+ * @method Category|array|null nth(int $n, ?Connection $db = null)
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  * @doc-path categories.md

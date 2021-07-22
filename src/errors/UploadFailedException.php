@@ -29,7 +29,7 @@ class UploadFailedException extends FileException
      * @param string|null $message
      * @param \Throwable|null $previous
      */
-    public function __construct(int $errorCode = 0, string $message = null, \Throwable $previous = null)
+    public function __construct(int $errorCode = 0, ?string $message = null, \Throwable $previous = null)
     {
         $this->errorCode = $errorCode;
 

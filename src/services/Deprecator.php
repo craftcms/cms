@@ -80,7 +80,7 @@ class Deprecator extends Component
      * @param int|null $line
      * @throws DeprecationException
      */
-    public function log(string $key, string $message, string $file = null, ?int $line = null): void
+    public function log(string $key, string $message, ?string $file = null, ?int $line = null): void
     {
         if ($this->logTarget === false) {
             return;

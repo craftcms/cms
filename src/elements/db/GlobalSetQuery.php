@@ -18,7 +18,7 @@ use yii\db\Connection;
  *
  * @method GlobalSet[]|array all($db = null)
  * @method GlobalSet|array|null one($db = null)
- * @method GlobalSet|array|null nth(int $n, Connection $db = null)
+ * @method GlobalSet|array|null nth(int $n, ?Connection $db = null)
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  * @doc-path globals.md

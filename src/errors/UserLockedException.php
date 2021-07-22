@@ -32,7 +32,7 @@ class UserLockedException extends Exception
      * @param int $code
      * @param Throwable|null $previous
      */
-    public function __construct(User $user, string $message = '', int $code = 0, Throwable $previous = null)
+    public function __construct(User $user, string $message = '', int $code = 0, ?Throwable $previous = null)
     {
         $this->user = $user;
         parent::__construct($message, $code, $previous);

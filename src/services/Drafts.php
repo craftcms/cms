@@ -112,7 +112,7 @@ class Drafts extends Component
     public function createDraft(
         ElementInterface $source,
         int $creatorId,
-        string $name = null,
+        ?string $name = null,
         ?string $notes = null,
         array $newAttributes = [],
         bool $provisional = false
