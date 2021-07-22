@@ -9,6 +9,7 @@
 - Fixed a SQL error that could occur when updating Craft 3.7. ([#9624](https://github.com/craftcms/cms/issues/9624))
 - Fixed a bug where `craft\web\Request::getRawCookies()` was returning hashed cookie values.
 - Fixed a PHP error that could occur when saving a site, if there were any event handlers on `craft\services\Sites::EVENT_BEFORE_SAVE_SITE`.
+- Fixed an error that could occur when deleting a route from the control panel if there were any event handlers on `craft\services\Routes::EVENT_AFTER_DELETE_ROUTE`.
 
 ## 3.7.4 - 2021-07-19
 
