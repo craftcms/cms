@@ -6,6 +6,7 @@
 - Fixed a bug where opening the image editor would cause the page to scroll to the top. ([#9612](https://github.com/craftcms/cms/issues/9612))
 - Fixed a bug where provisional drafts weren’t displaying a notice when upstream changes had been merged into them. ([#9615](https://github.com/craftcms/cms/issues/9615))
 - Fixed a bug where entry titles were set to `null` before getting regenerated via their Title Format for new drafts.
+- Fixed a SQL error that could occur when updating Craft 3.7. ([#9624](https://github.com/craftcms/cms/issues/9624))
 
 ## 3.7.4 - 2021-07-19
 
