@@ -8,8 +8,8 @@
 namespace craft\base;
 
 use craft\elements\db\ElementQueryInterface;
+use craft\models\FieldGroup;
 use craft\models\GqlSchema;
-use craft\records\FieldGroup;
 use GraphQL\Type\Definition\Type;
 use yii\validators\Validator;
 
