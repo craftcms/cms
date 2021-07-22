@@ -82,7 +82,7 @@ class VolumeFolder extends Model
      */
     public function getVolume(): VolumeInterface
     {
-        if ($this->volumeId === null) {
+        if (!isset($this->volumeId)) {
             return new Temp();
         }
 
@@ -110,7 +110,7 @@ class VolumeFolder extends Model
      */
     public function getChildren(): array
     {
-        if ($this->_children !== null) {
+        if (isset($this->_children)) {
             return $this->_children;
         }
 
@@ -136,7 +136,7 @@ class VolumeFolder extends Model
      */
     public function addChild(VolumeFolder $folder): void
     {
-        if ($this->_children === null) {
+        if (!isset($this->_children)) {
             $this->_children = [];
         }
 

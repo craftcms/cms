@@ -90,7 +90,7 @@ class I18N extends \yii\i18n\I18N
      */
     public function getAllLocaleIds(): array
     {
-        if ($this->_allLocaleIds === null) {
+        if (!isset($this->_allLocaleIds)) {
             if ($this->getIsIntlLoaded()) {
                 $this->_allLocaleIds = ResourceBundle::getLocales(null);
             } else {
@@ -155,7 +155,7 @@ class I18N extends \yii\i18n\I18N
      */
     public function getAppLocales(): array
     {
-        if ($this->_appLocales !== null) {
+        if (isset($this->_appLocales)) {
             return $this->_appLocales;
         }
 
@@ -187,7 +187,7 @@ class I18N extends \yii\i18n\I18N
      */
     private function _defineAppLocales(): void
     {
-        if ($this->_appLocaleIds !== null) {
+        if (isset($this->_appLocaleIds)) {
             return;
         }
 
@@ -375,7 +375,7 @@ class I18N extends \yii\i18n\I18N
      */
     private function _shouldAddTranslationDebugOutput(): bool
     {
-        if ($this->_translationDebugOutput === null) {
+        if (!isset($this->_translationDebugOutput)) {
             $this->_translationDebugOutput = (bool)Craft::$app->getConfig()->getGeneral()->translationDebugOutput;
         }
 

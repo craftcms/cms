@@ -54,7 +54,7 @@ class Path extends Component
      */
     public function getConfigPath(): string
     {
-        if ($this->_configPath !== null) {
+        if (isset($this->_configPath)) {
             return $this->_configPath;
         }
 
@@ -106,7 +106,7 @@ class Path extends Component
      */
     public function getStoragePath(bool $create = true): string
     {
-        if ($this->_storagePath === null) {
+        if (!isset($this->_storagePath)) {
             $path = Craft::getAlias('@storage');
 
             if ($path === false) {
@@ -132,7 +132,7 @@ class Path extends Component
      */
     public function getTestsPath(): string
     {
-        if ($this->_testsPath !== null) {
+        if (isset($this->_testsPath)) {
             return $this->_testsPath;
         }
 
@@ -231,7 +231,7 @@ class Path extends Component
      */
     public function getVendorPath(): string
     {
-        if ($this->_vendorPath !== null) {
+        if (isset($this->_vendorPath)) {
             return $this->_vendorPath;
         }
 
@@ -453,7 +453,7 @@ class Path extends Component
      */
     public function getSiteTranslationsPath(): string
     {
-        if ($this->_siteTranslationsPath !== null) {
+        if (isset($this->_siteTranslationsPath)) {
             return $this->_siteTranslationsPath;
         }
 

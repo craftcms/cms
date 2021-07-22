@@ -251,7 +251,7 @@ class Site extends Model
      */
     public function getGroup(): SiteGroup
     {
-        if ($this->groupId === null) {
+        if (!isset($this->groupId)) {
             throw new InvalidConfigException('Site is missing its group ID');
         }
 

@@ -99,7 +99,7 @@ class Tags extends Component
      */
     private function _tagGroups(): MemoizableArray
     {
-        if ($this->_tagGroups === null) {
+        if (!isset($this->_tagGroups)) {
             $groups = [];
             $records = TagGroupRecord::find()
                 ->orderBy(['name' => SORT_ASC])

@@ -171,7 +171,7 @@ class Deprecator extends Component
      */
     public function getLogs(?int $limit = null): array
     {
-        if ($this->_allLogs !== null) {
+        if (isset($this->_allLogs)) {
             return $this->_allLogs;
         }
 

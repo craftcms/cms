@@ -45,7 +45,7 @@ trait LogTargetTrait
      */
     public function getMessagePrefix(array $message): string
     {
-        if ($this->prefix !== null) {
+        if (isset($this->prefix)) {
             return call_user_func($this->prefix, $message);
         }
 

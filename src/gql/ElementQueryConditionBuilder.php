@@ -290,7 +290,7 @@ class ElementQueryConditionBuilder extends Component
      */
     private function _getKnownSpecialEagerLoadNodes(): array
     {
-        if ($this->_additionalEagerLoadableNodes === null) {
+        if (!isset($this->_additionalEagerLoadableNodes)) {
             $list = [
                 'photo' => [UserField::class, 'canBeAliased' => false],
                 'author' => [EntryField::class, 'canBeAliased' => false],

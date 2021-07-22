@@ -167,7 +167,7 @@ class CategoryGroup extends Model
      */
     public function getSiteSettings(): array
     {
-        if ($this->_siteSettings !== null) {
+        if (isset($this->_siteSettings)) {
             return $this->_siteSettings;
         }
 

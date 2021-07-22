@@ -111,7 +111,7 @@ class StreamLogTarget extends BaseTarget
      */
     public function getFp()
     {
-        if ($this->fp === null) {
+        if (!isset($this->fp)) {
             $this->fp = @fopen($this->url, 'w');
             if ($this->fp === false) {
                 throw new InvalidConfigException("Unable to open '{$this->url}' for writing.");
@@ -126,7 +126,7 @@ class StreamLogTarget extends BaseTarget
      */
     public function closeFp(): void
     {
-        if ($this->openedFp && $this->fp !== null) {
+        if ($this->openedFp && isset($this->fp)) {
             @fclose($this->fp);
             $this->fp = null;
             $this->openedFp = false;
@@ -166,7 +166,7 @@ class StreamLogTarget extends BaseTarget
     public function formatMessage($message): string
     {
         $text = $this->prefixString . trim(parent::formatMessage($message));
-        return $this->replaceNewline === null ?
+        return !isset($this->replaceNewline) ?
             $text :
             str_replace("\n", $this->replaceNewline, $text);
     }

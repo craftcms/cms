@@ -51,7 +51,7 @@ class Image
      */
     public function getSize(): array
     {
-        if ($this->size !== null) {
+        if (isset($this->size)) {
             return $this->size;
         }
 

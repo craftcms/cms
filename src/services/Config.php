@@ -205,7 +205,7 @@ class Config extends Component
         }
 
         // If no environment was specified, just look in the '*' array
-        if ($this->env === null) {
+        if (!isset($this->env)) {
             return $config['*'];
         }
 

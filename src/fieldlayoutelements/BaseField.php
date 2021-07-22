@@ -294,7 +294,7 @@ abstract class BaseField extends FieldLayoutElement
      */
     public function label(): ?string
     {
-        if ($this->label !== null && $this->label !== '' && $this->label !== '__blank__') {
+        if (isset($this->label) && $this->label !== '' && $this->label !== '__blank__') {
             return Craft::t('site', $this->label);
         }
         return $this->defaultLabel();

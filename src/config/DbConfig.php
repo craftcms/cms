@@ -185,7 +185,7 @@ class DbConfig extends BaseObject
         }
 
         // If we don't have a DSN yet, create one from the deprecated settings
-        if ($this->dsn === null) {
+        if (!isset($this->dsn)) {
             $this->_updateDsn();
         }
     }
@@ -212,7 +212,7 @@ class DbConfig extends BaseObject
         }
 
         $this->server = strtolower($this->server ?? '');
-        if ($this->port === null || $this->port === '') {
+        if (!isset($this->port) || $this->port === '') {
             switch ($this->driver) {
                 case Connection::DRIVER_MYSQL:
                     $this->port = 3306;

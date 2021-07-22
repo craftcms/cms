@@ -40,7 +40,7 @@ abstract class BaseRevisionBehavior extends Behavior
      */
     public function getCreator(): ?User
     {
-        if ($this->_creator === null) {
+        if (!isset($this->_creator)) {
             if (!$this->creatorId) {
                 return null;
             }

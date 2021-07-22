@@ -29,7 +29,7 @@ class View extends ElementAction
      */
     public function init(): void
     {
-        if ($this->label === null) {
+        if (!isset($this->label)) {
             $this->label = Craft::t('app', 'View');
         }
     }

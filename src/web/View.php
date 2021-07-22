@@ -332,10 +332,10 @@ class View extends \yii\web\View
         $this->_twigExtensions[$class] = $extension;
 
         // Add it to any existing Twig environments
-        if ($this->_cpTwig !== null) {
+        if (isset($this->_cpTwig)) {
             $this->_cpTwig->addExtension($extension);
         }
-        if ($this->_siteTwig !== null) {
+        if (isset($this->_siteTwig)) {
             $this->_siteTwig->addExtension($extension);
         }
     }
@@ -347,7 +347,7 @@ class View extends \yii\web\View
      */
     public function getIsRenderingTemplate(): bool
     {
-        return $this->_renderingTemplate !== null;
+        return isset($this->_renderingTemplate);
     }
 
     /**
@@ -1938,7 +1938,7 @@ JS;
      */
     private function _getTwigOptions(): array
     {
-        if ($this->_twigOptions !== null) {
+        if (isset($this->_twigOptions)) {
             return $this->_twigOptions;
         }
 

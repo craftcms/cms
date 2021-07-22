@@ -193,7 +193,7 @@ class Sections extends Component
      */
     private function _sections(): MemoizableArray
     {
-        if ($this->_sections === null) {
+        if (!isset($this->_sections)) {
             $sections = [];
             foreach ($this->_createSectionQuery()->all() as $result) {
                 if (!empty($result['previewTargets'])) {
@@ -1020,7 +1020,7 @@ class Sections extends Component
             return null;
         }
 
-        if ($this->_entryTypesById !== null && array_key_exists($entryTypeId, $this->_entryTypesById)) {
+        if (isset($this->_entryTypesById) && array_key_exists($entryTypeId, $this->_entryTypesById)) {
             return $this->_entryTypesById[$entryTypeId];
         }
 

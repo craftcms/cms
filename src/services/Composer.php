@@ -530,7 +530,7 @@ class Composer extends Component
         if ($code === E_USER_DEPRECATED) {
             return true;
         }
-        if ($this->_errorHandler !== null) {
+        if (isset($this->_errorHandler)) {
             return ($this->_errorHandler)($code, $message, $file, $line);
         }
         return false;

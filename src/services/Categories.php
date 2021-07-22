@@ -115,7 +115,7 @@ class Categories extends Component
      */
     private function _groups(): MemoizableArray
     {
-        if ($this->_groups === null) {
+        if (!isset($this->_groups)) {
             $groups = [];
 
             /** @var CategoryGroupRecord[] $groupRecords */

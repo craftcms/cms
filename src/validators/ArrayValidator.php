@@ -79,19 +79,19 @@ class ArrayValidator extends Validator
             $this->count = null;
         }
 
-        if ($this->message === null) {
+        if (!isset($this->message)) {
             $this->message = Craft::t('app', '{attribute} must be an array.');
         }
 
-        if ($this->min !== null && $this->tooFew === null) {
+        if (isset($this->min) && !isset($this->tooFew)) {
             $this->tooFew = Craft::t('app', '{attribute} should contain at least {min, number} {min, plural, one{item} other{items}}.');
         }
 
-        if ($this->max !== null && $this->tooMany === null) {
+        if (isset($this->max) && !isset($this->tooMany)) {
             $this->tooMany = Craft::t('app', '{attribute} should contain at most {max, number} {max, plural, one{item} other{items}}.');
         }
 
-        if ($this->count !== null && $this->notEqual === null) {
+        if (isset($this->count) && !isset($this->notEqual)) {
             $this->notEqual = Craft::t('app', '{attribute} should contain {count, number} {count, plural, one{item} other{items}}.');
         }
     }
@@ -107,13 +107,13 @@ class ArrayValidator extends Validator
 
         $count = count($value);
 
-        if ($this->min !== null && $count < $this->min) {
+        if (isset($this->min) && $count < $this->min) {
             return [$this->tooFew, ['min' => $this->min]];
         }
-        if ($this->max !== null && $count > $this->max) {
+        if (isset($this->max) && $count > $this->max) {
             return [$this->tooMany, ['max' => $this->max]];
         }
-        if ($this->count !== null && $count !== $this->count) {
+        if (isset($this->count) && $count !== $this->count) {
             return [$this->notEqual, ['count' => $this->count]];
         }
 

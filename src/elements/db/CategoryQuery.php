@@ -75,7 +75,7 @@ class CategoryQuery extends ElementQuery
      */
     public function init(): void
     {
-        if ($this->withStructure === null) {
+        if (!isset($this->withStructure)) {
             $this->withStructure = true;
         }
 
@@ -233,7 +233,7 @@ class CategoryQuery extends ElementQuery
             $this->subQuery->andWhere(['categories.groupId' => $this->groupId]);
 
             // Should we set the structureId param?
-            if ($this->structureId === null && count($this->groupId) === 1) {
+            if (!isset($this->structureId) && count($this->groupId) === 1) {
                 $structureId = (new Query())
                     ->select(['structureId'])
                     ->from([Table::CATEGORYGROUPS])

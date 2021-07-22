@@ -443,7 +443,7 @@ class MatrixBlockQuery extends ElementQuery
             $this->subQuery->andWhere(['matrixblocks.ownerId' => $this->ownerId]);
         }
 
-        if ($this->typeId !== null) {
+        if (isset($this->typeId)) {
             // If typeId is an empty array, it's because type() was called but no valid type handles were passed in
             if (empty($this->typeId)) {
                 return false;
@@ -479,7 +479,7 @@ class MatrixBlockQuery extends ElementQuery
      */
     private function _normalizeFieldId(): void
     {
-        if ($this->fieldId === null && $this->id) {
+        if (!isset($this->fieldId) && $this->id) {
             $this->fieldId = (new Query())
                 ->select(['fieldId'])
                 ->distinct()

@@ -97,7 +97,7 @@ class Routes extends Component
      */
     public function getProjectConfigRoutes(): array
     {
-        if ($this->_projectConfigRoutes !== null) {
+        if (isset($this->_projectConfigRoutes)) {
             return $this->_projectConfigRoutes;
         }
 

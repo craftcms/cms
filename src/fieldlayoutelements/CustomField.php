@@ -164,7 +164,7 @@ class CustomField extends BaseField
     protected function showLabel(): bool
     {
         // Does the field have a custom label?
-        if ($this->label !== null && $this->label !== '') {
+        if (isset($this->label) && $this->label !== '') {
             return parent::showLabel();
         }
 

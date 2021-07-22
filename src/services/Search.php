@@ -97,7 +97,7 @@ class Search extends Component
 
         $this->_isMysql = Craft::$app->getDb()->getIsMysql();
 
-        if ($this->_isMysql && $this->minFullTextWordLength === null) {
+        if ($this->_isMysql && !isset($this->minFullTextWordLength)) {
             $this->minFullTextWordLength = 4;
         }
     }
@@ -901,7 +901,7 @@ SQL;
             return false;
         }
 
-        if ($this->_mysqlStopWords === null) {
+        if (!isset($this->_mysqlStopWords)) {
             $this->_mysqlStopWords = [];
             // todo: make this list smaller when we start requiring MySQL 5.6+ and can start forcing the searchindex table to use InnoDB
             $stopWords = [

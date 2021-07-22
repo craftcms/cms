@@ -200,7 +200,7 @@ class TemplateCaches extends Component
      */
     private function _isTemplateCachingEnabled(): bool
     {
-        if ($this->_enabled === null) {
+        if (!isset($this->_enabled)) {
             $this->_enabled = (
                 Craft::$app->getConfig()->getGeneral()->enableTemplateCaching &&
                 !Craft::$app->getRequest()->getIsConsoleRequest()
@@ -237,7 +237,7 @@ class TemplateCaches extends Component
      */
     private function _path(): string
     {
-        if ($this->_path !== null) {
+        if (isset($this->_path)) {
             return $this->_path;
         }
 

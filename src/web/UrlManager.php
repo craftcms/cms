@@ -219,7 +219,7 @@ class UrlManager extends \yii\web\UrlManager
                 "Stack trace:\n" . App::backtrace(), __METHOD__);
         }
 
-        if ($this->_matchedElement !== null) {
+        if (isset($this->_matchedElement)) {
             return $this->_matchedElement;
         }
 
@@ -377,7 +377,7 @@ class UrlManager extends \yii\web\UrlManager
      */
     private function _getMatchedElementRoute(Request $request)
     {
-        if ($this->_matchedElementRoute !== null) {
+        if (isset($this->_matchedElementRoute)) {
             return $this->_matchedElementRoute;
         }
 

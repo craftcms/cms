@@ -231,7 +231,7 @@ class Volumes extends Component
      */
     private function _volumes(): MemoizableArray
     {
-        if ($this->_volumes === null) {
+        if (!isset($this->_volumes)) {
             $volumes = [];
             foreach ($this->_createVolumeQuery()->all() as $result) {
                 $volumes[] = $this->createVolume($result);

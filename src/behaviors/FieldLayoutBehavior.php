@@ -54,11 +54,11 @@ class FieldLayoutBehavior extends Behavior
     {
         parent::init();
 
-        if ($this->elementType === null) {
+        if (!isset($this->elementType)) {
             throw new InvalidConfigException('The element type has not been set.');
         }
 
-        if ($this->_fieldLayoutId === null && $this->idAttribute === null) {
+        if (!isset($this->_fieldLayoutId) && !isset($this->idAttribute)) {
             $this->idAttribute = 'fieldLayoutId';
         }
     }
@@ -75,7 +75,7 @@ class FieldLayoutBehavior extends Behavior
             return $this->_fieldLayoutId;
         }
 
-        if ($this->idAttribute !== null) {
+        if (isset($this->idAttribute)) {
             $id = $this->owner->{$this->idAttribute};
         } else if (is_callable($this->_fieldLayoutId)) {
             $id = call_user_func($this->_fieldLayoutId);
@@ -108,7 +108,7 @@ class FieldLayoutBehavior extends Behavior
      */
     public function getFieldLayout(): FieldLayout
     {
-        if ($this->_fieldLayout !== null) {
+        if (isset($this->_fieldLayout)) {
             return $this->_fieldLayout;
         }
 
@@ -144,7 +144,7 @@ class FieldLayoutBehavior extends Behavior
      */
     public function getFields(): array
     {
-        if ($this->_fields !== null) {
+        if (isset($this->_fields)) {
             return $this->_fields;
         }
 

@@ -58,7 +58,7 @@ class UpdateRelease extends Model
 
         // Don't include time zone in the date
         $fields['date'] = function(): ?string {
-            if ($this->date !== null) {
+            if (isset($this->date)) {
                 return DateTimeHelper::toDateTime($this->date)->setTimezone(new DateTimeZone('UTC'))->format('Y-m-d\TH:i:s');
             }
             return null;

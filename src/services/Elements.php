@@ -334,7 +334,7 @@ class Elements extends Component
      */
     public function getIsCollectingCacheTags(): bool
     {
-        return $this->_cacheTags !== null;
+        return isset($this->_cacheTags);
     }
 
     /**
@@ -345,7 +345,7 @@ class Elements extends Component
     public function startCollectingCacheTags(): void
     {
         // Save any currently-collected tags into a new buffer, and reset the array
-        if ($this->_cacheTags !== null) {
+        if (isset($this->_cacheTags)) {
             $this->_cacheTagBuffers[] = $this->_cacheTags;
         }
         $this->_cacheTags = [];
@@ -360,7 +360,7 @@ class Elements extends Component
     public function collectCacheTags(array $tags): void
     {
         // Ignore if we're not currently collecting tags
-        if ($this->_cacheTags === null) {
+        if (!isset($this->_cacheTags)) {
             return;
         }
 
@@ -378,7 +378,7 @@ class Elements extends Component
      */
     public function stopCollectingCacheTags(): TagDependency
     {
-        if ($this->_cacheTags === null) {
+        if (!isset($this->_cacheTags)) {
             throw new InvalidCallException('Element cache invalidation tags are not currently being collected.');
         }
 
@@ -2048,7 +2048,7 @@ class Elements extends Component
      */
     public function getPlaceholderElements(): array
     {
-        if ($this->_placeholderElements === null) {
+        if (!isset($this->_placeholderElements)) {
             return [];
         }
 

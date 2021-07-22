@@ -57,7 +57,7 @@ class Updates extends Component
      */
     public function getIsUpdateInfoCached(): bool
     {
-        return ($this->_updates !== null || Craft::$app->getCache()->exists($this->cacheKey));
+        return (isset($this->_updates) || Craft::$app->getCache()->exists($this->cacheKey));
     }
 
     /**
@@ -93,7 +93,7 @@ class Updates extends Component
     public function getUpdates(bool $refresh = false): UpdatesModel
     {
         if (!$refresh) {
-            if ($this->_updates !== null) {
+            if (isset($this->_updates)) {
                 return $this->_updates;
             }
 
@@ -347,7 +347,7 @@ class Updates extends Component
      */
     public function getIsCraftDbMigrationNeeded(): bool
     {
-        if ($this->_isCraftDbMigrationNeeded === null) {
+        if (!isset($this->_isCraftDbMigrationNeeded)) {
             $storedSchemaVersion = Craft::$app->getInfo()->schemaVersion;
             $this->_isCraftDbMigrationNeeded = version_compare(Craft::$app->schemaVersion, $storedSchemaVersion, '>');
         }

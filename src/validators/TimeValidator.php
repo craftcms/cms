@@ -53,15 +53,15 @@ class TimeValidator extends Validator
     {
         parent::init();
 
-        if ($this->message === null) {
+        if (!isset($this->message)) {
             $this->message = Craft::t('app', '{attribute} must be a time.');
         }
 
-        if ($this->min !== null && $this->tooEarly === null) {
+        if (isset($this->min) && !isset($this->tooEarly)) {
             $this->tooEarly = Craft::t('app', '{attribute} must be no earlier than {min}.');
         }
 
-        if ($this->max !== null && $this->tooLate === null) {
+        if (isset($this->max) && !isset($this->tooLate)) {
             $this->tooLate = Craft::t('app', '{attribute} must be no later than {max}.');
         }
     }
@@ -82,7 +82,7 @@ class TimeValidator extends Validator
             return;
         }
 
-        if ($this->min !== null) {
+        if (isset($this->min)) {
             $min = DateTimeHelper::toDateTime(['time' => $this->min], true);
             if (!$min) {
                 throw new InvalidConfigException("Invalid minimum time: $this->min");
@@ -94,7 +94,7 @@ class TimeValidator extends Validator
             }
         }
 
-        if ($this->max !== null) {
+        if (isset($this->max)) {
             $max = DateTimeHelper::toDateTime(['time' => $this->max], true);
             if (!$max) {
                 throw new InvalidConfigException("Invalid maximum time: $this->max");

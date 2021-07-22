@@ -364,7 +364,7 @@ class CommandTest
      */
     protected function getNextItem(): ?CommandTestItem
     {
-        if ($this->currentIndex === null) {
+        if (!isset($this->currentIndex)) {
             $this->currentIndex = 0;
         }
 

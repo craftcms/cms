@@ -36,7 +36,7 @@ class TemplateValidator extends Validator
     {
         parent::init();
 
-        if ($this->message === null) {
+        if (!isset($this->message)) {
             $this->message = str_replace('{template}', '{value}', Craft::t('app', 'Unable to find the template “{template}”.'));
         }
     }

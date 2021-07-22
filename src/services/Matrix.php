@@ -126,7 +126,7 @@ class Matrix extends Component
      */
     public function getBlockTypeById(int $blockTypeId): ?MatrixBlockType
     {
-        if ($this->_blockTypesById !== null && array_key_exists($blockTypeId, $this->_blockTypesById)) {
+        if (isset($this->_blockTypesById) && array_key_exists($blockTypeId, $this->_blockTypesById)) {
             return $this->_blockTypesById[$blockTypeId];
         }
 

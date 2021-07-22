@@ -126,7 +126,7 @@ class PlainText extends Field implements PreviewableFieldInterface, SortableFiel
             $this->placeholder = null;
         }
 
-        if ($this->placeholder !== null) {
+        if (isset($this->placeholder)) {
             $this->placeholder = LitEmoji::shortcodeToUnicode($this->placeholder);
         }
     }

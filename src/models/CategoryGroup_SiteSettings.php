@@ -64,7 +64,7 @@ class CategoryGroup_SiteSettings extends Model
      */
     public function getGroup(): CategoryGroup
     {
-        if ($this->_group !== null) {
+        if (isset($this->_group)) {
             return $this->_group;
         }
 

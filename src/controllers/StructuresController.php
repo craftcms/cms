@@ -76,7 +76,7 @@ class StructuresController extends Controller
             ->structureId($structureId)
             ->one();
 
-        if ($this->_element === null) {
+        if (!isset($this->_element)) {
             throw new NotFoundHttpException('Element not found');
         }
 

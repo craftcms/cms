@@ -1333,7 +1333,7 @@ class Plugins extends Component
      */
     private function _loadDisabledPluginInfo(): void
     {
-        if ($this->_disabledPluginInfo === null) {
+        if (!isset($this->_disabledPluginInfo)) {
             $pluginInfo = $this->_createPluginQuery()
                 ->indexBy('handle')
                 ->all();

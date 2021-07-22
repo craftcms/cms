@@ -130,7 +130,7 @@ class AssetTransformIndex extends Model
      */
     public function getTransform(): AssetTransform
     {
-        if ($this->_transform !== null) {
+        if (isset($this->_transform)) {
             return $this->_transform;
         }
 

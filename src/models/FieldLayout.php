@@ -246,7 +246,7 @@ class FieldLayout extends Model
      */
     public function getTabs(): array
     {
-        if ($this->_tabs !== null) {
+        if (isset($this->_tabs)) {
             return $this->_tabs;
         }
 
@@ -320,7 +320,7 @@ class FieldLayout extends Model
      */
     public function getAvailableCustomFields(): array
     {
-        if ($this->_availableCustomFields === null) {
+        if (!isset($this->_availableCustomFields)) {
             $this->_availableCustomFields = [];
 
             foreach (Craft::$app->getFields()->getAllGroups() as $group) {
@@ -342,7 +342,7 @@ class FieldLayout extends Model
      */
     public function getAvailableStandardFields(): array
     {
-        if ($this->_availableStandardFields === null) {
+        if (!isset($this->_availableStandardFields)) {
             $event = new DefineFieldLayoutFieldsEvent();
             $this->trigger(self::EVENT_DEFINE_STANDARD_FIELDS, $event);
             $this->_availableStandardFields = $event->fields;
@@ -462,7 +462,7 @@ class FieldLayout extends Model
      */
     public function getFields(): array
     {
-        if ($this->_customFields !== null) {
+        if (isset($this->_customFields)) {
             return $this->_customFields;
         }
 

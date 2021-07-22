@@ -51,7 +51,7 @@ class UniqueValidator extends YiiUniqueValidator
             // Exclude this model's row using the filter
             /** @var ActiveRecord|string $targetClass */
             $pks = $targetClass::primaryKey();
-            if ($this->pk !== null) {
+            if (isset($this->pk)) {
                 $pkMap = is_string($this->pk) ? StringHelper::split($this->pk) : $this->pk;
             } else {
                 $pkMap = $pks;
@@ -112,7 +112,7 @@ class UniqueValidator extends YiiUniqueValidator
     public function addError($model, $attribute, $message, $params = []): void
     {
         // Use the original model if there is one
-        if ($this->originalModel !== null) {
+        if (isset($this->originalModel)) {
             $model = $this->originalModel;
         }
 

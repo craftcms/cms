@@ -290,7 +290,7 @@ class MatrixBlock extends Element implements BlockElementInterface
      */
     public function getType(): MatrixBlockType
     {
-        if ($this->typeId === null) {
+        if (!isset($this->typeId)) {
             throw new InvalidConfigException('Matrix block is missing its type ID');
         }
 
@@ -306,8 +306,8 @@ class MatrixBlock extends Element implements BlockElementInterface
     /** @inheritdoc */
     public function getOwner(): ElementInterface
     {
-        if ($this->_owner === null) {
-            if ($this->ownerId === null) {
+        if (!isset($this->_owner)) {
+            if (!isset($this->ownerId)) {
                 throw new InvalidConfigException('Matrix block is missing its owner ID');
             }
 

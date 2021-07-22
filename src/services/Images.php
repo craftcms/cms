@@ -131,7 +131,7 @@ class Images extends Component
      */
     public function getImageMagickApiVersion(): string
     {
-        if ($this->_imagickVersion !== null) {
+        if (isset($this->_imagickVersion)) {
             return $this->_imagickVersion;
         }
 

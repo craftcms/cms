@@ -97,7 +97,7 @@ class Table extends Field
     {
         parent::init();
 
-        if ($this->addRowLabel === null) {
+        if (!isset($this->addRowLabel)) {
             $this->addRowLabel = Craft::t('app', 'Add a row');
         }
 
@@ -132,7 +132,7 @@ class Table extends Field
         }
 
         // Convert default date cell values to ISO8601 strings
-        if (!empty($this->columns) && $this->defaults !== null) {
+        if (!empty($this->columns) && isset($this->defaults)) {
             foreach ($this->columns as $colId => $col) {
                 if (in_array($col['type'], ['date', 'time'], true)) {
                     foreach ($this->defaults as &$row) {

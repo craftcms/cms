@@ -204,7 +204,7 @@ class Request extends \yii\web\Request
     {
         parent::init();
 
-        if ($this->generalConfig === null) {
+        if (!isset($this->generalConfig)) {
             $this->generalConfig = Craft::$app->getConfig()->getGeneral();
         }
         $this->generalConfig = Instance::ensure($this->generalConfig, GeneralConfig::class);
@@ -250,7 +250,7 @@ class Request extends \yii\web\Request
         }
 
         // Is the jury still out on whether this is a CP request?
-        if ($this->_isCpRequest === null) {
+        if (!isset($this->_isCpRequest)) {
             $this->_isCpRequest = false;
             // Is it a possibility?
             if ($this->generalConfig->cpTrigger || $this->generalConfig->baseCpUrl) {
@@ -342,7 +342,7 @@ class Request extends \yii\web\Request
      */
     public function getFullPath(): string
     {
-        if ($this->_fullPath !== null) {
+        if (isset($this->_fullPath)) {
             return $this->_fullPath;
         }
 
@@ -393,7 +393,7 @@ class Request extends \yii\web\Request
      */
     public function getFullUri(): string
     {
-        if ($this->_fullUri !== null) {
+        if (isset($this->_fullUri)) {
             return $this->_fullUri;
         }
 
@@ -436,7 +436,7 @@ class Request extends \yii\web\Request
      */
     public function getSegments(): array
     {
-        if ($this->_segments !== null) {
+        if (isset($this->_segments)) {
             return $this->_segments;
         }
 
@@ -550,7 +550,7 @@ class Request extends \yii\web\Request
      */
     private function _findToken(): void
     {
-        if ($this->_hadToken !== null) {
+        if (isset($this->_hadToken)) {
             return;
         }
 
@@ -562,7 +562,7 @@ class Request extends \yii\web\Request
             throw new BadRequestHttpException('Invalid token');
         }
 
-        $this->_hadToken = $this->_token !== null;
+        $this->_hadToken = isset($this->_token);
     }
 
     /**
@@ -1094,7 +1094,7 @@ class Request extends \yii\web\Request
      */
     public function getUserIP(int $filterOptions = 0): ?string
     {
-        if ($this->_ipAddress === null) {
+        if (!isset($this->_ipAddress)) {
             foreach ($this->ipHeaders as $ipHeader) {
                 if ($this->headers->has($ipHeader)) {
                     foreach (explode(',', $this->headers->get($ipHeader)) as $ip) {
@@ -1169,7 +1169,7 @@ class Request extends \yii\web\Request
      */
     public function getRawCookies(): CookieCollection
     {
-        if ($this->_rawCookies === null) {
+        if (!isset($this->_rawCookies)) {
             $this->_rawCookies = new CookieCollection($this->loadRawCookies(), [
                 'readOnly' => true,
             ]);
@@ -1222,7 +1222,7 @@ class Request extends \yii\web\Request
      */
     public function getCsrfToken($regenerate = false): string
     {
-        if ($this->_craftCsrfToken === null || $regenerate) {
+        if (!isset($this->_craftCsrfToken) || $regenerate) {
             $token = $this->loadCsrfToken();
 
             if ($regenerate || $token === null || ($this->_craftCsrfToken = $token) === null || !$this->csrfTokenValidForCurrentUser($token)) {

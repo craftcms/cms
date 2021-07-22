@@ -43,11 +43,11 @@ class SlugValidator extends Validator
     {
         parent::init();
 
-        if ($this->sourceAttribute !== null) {
+        if (isset($this->sourceAttribute)) {
             $this->skipOnEmpty = false;
         }
 
-        if ($this->limitAutoSlugsToAscii === null) {
+        if (!isset($this->limitAutoSlugsToAscii)) {
             $this->limitAutoSlugsToAscii = Craft::$app->getConfig()->getGeneral()->limitAutoSlugsToAscii;
         }
     }
@@ -66,7 +66,7 @@ class SlugValidator extends Validator
             return;
         }
 
-        if (($slug === '' || $isTemp) && $this->sourceAttribute !== null) {
+        if (($slug === '' || $isTemp) && isset($this->sourceAttribute)) {
             // Create a new slug for them, based on the element's title.
             $slug = ElementHelper::generateSlug($model->{$this->sourceAttribute}, $this->limitAutoSlugsToAscii, $this->language);
         } else {

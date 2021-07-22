@@ -52,7 +52,7 @@ class MailerController extends Controller
      */
     public function actionTest(): int
     {
-        if ($this->to !== null) {
+        if (isset($this->to)) {
             $to = $this->to;
         } else {
             $testToEmailAddress = Craft::$app->getConfig()->getGeneral()->getTestToEmailAddress();

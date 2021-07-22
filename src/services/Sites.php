@@ -198,7 +198,7 @@ class Sites extends Component
      */
     private function _groups(): MemoizableArray
     {
-        if ($this->_groups === null) {
+        if (!isset($this->_groups)) {
             $groups = [];
             foreach ($this->_createGroupQuery()->all() as $result) {
                 $groups[] = new SiteGroup($result);
@@ -446,7 +446,7 @@ class Sites extends Component
      */
     public function getHasCurrentSite(): bool
     {
-        return $this->_currentSite !== null;
+        return isset($this->_currentSite);
     }
 
     /**
@@ -457,7 +457,7 @@ class Sites extends Component
      */
     public function getCurrentSite(): Site
     {
-        if ($this->_currentSite !== null) {
+        if (isset($this->_currentSite)) {
             return $this->_currentSite;
         }
 
@@ -514,7 +514,7 @@ class Sites extends Component
      */
     public function getPrimarySite(): Site
     {
-        if ($this->_primarySite === null) {
+        if (!isset($this->_primarySite)) {
             throw new SiteNotFoundException('No primary site exists');
         }
 
@@ -532,7 +532,7 @@ class Sites extends Component
             return $this->getAllSiteIds();
         }
 
-        if ($this->_editableSiteIds !== null) {
+        if (isset($this->_editableSiteIds)) {
             return $this->_editableSiteIds;
         }
 
@@ -766,7 +766,7 @@ class Sites extends Component
         $site = $this->getSiteById($siteRecord->id);
 
         // Is this the current site?
-        if ($this->_currentSite !== null && $this->_currentSite->id == $site->id) {
+        if (isset($this->_currentSite) && $this->_currentSite->id == $site->id) {
             $this->_currentSite = $site;
         }
 
@@ -776,7 +776,7 @@ class Sites extends Component
         }
 
         // If the primary site is changing and the current site was the old primary, let's mark the new primary site as the current site.
-        if ($this->_currentSite !== null && $this->_currentSite->id === $oldPrimarySiteId && $this->_currentSite->id !== $site->id && $data['primary']) {
+        if (isset($this->_currentSite) && $this->_currentSite->id === $oldPrimarySiteId && $this->_currentSite->id !== $site->id && $data['primary']) {
             $this->_currentSite = $site;
         }
 
@@ -1089,7 +1089,7 @@ class Sites extends Component
         Craft::$app->getElements()->invalidateAllCaches();
 
         // Was this the current site?
-        if ($this->_currentSite !== null && $this->_currentSite->id == $site->id) {
+        if (isset($this->_currentSite) && $this->_currentSite->id == $site->id) {
             $this->setCurrentSite($this->_primarySite);
         }
 
@@ -1138,7 +1138,7 @@ class Sites extends Component
      */
     private function _loadAllSites(): void
     {
-        if ($this->_allSitesById !== null) {
+        if (isset($this->_allSitesById)) {
             return;
         }
 

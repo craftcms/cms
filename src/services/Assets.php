@@ -407,7 +407,7 @@ class Assets extends Component
      */
     public function getFolderById(int $folderId): ?VolumeFolder
     {
-        if ($this->_foldersById !== null && array_key_exists($folderId, $this->_foldersById)) {
+        if (isset($this->_foldersById) && array_key_exists($folderId, $this->_foldersById)) {
             return $this->_foldersById[$folderId];
         }
 
@@ -430,7 +430,7 @@ class Assets extends Component
      */
     public function getFolderByUid(string $folderUid): ?VolumeFolder
     {
-        if ($this->_foldersByUid !== null && array_key_exists($folderUid, $this->_foldersByUid)) {
+        if (isset($this->_foldersByUid) && array_key_exists($folderUid, $this->_foldersByUid)) {
             return $this->_foldersByUid[$folderUid];
         }
 

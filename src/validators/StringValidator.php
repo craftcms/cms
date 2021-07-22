@@ -36,7 +36,7 @@ class StringValidator extends \yii\validators\StringValidator
     {
         parent::init();
 
-        if ($this->containsMb4 === null) {
+        if (!isset($this->containsMb4)) {
             $this->containsMb4 = Craft::t('app', '{attribute} cannot contain emoji.');
         }
     }

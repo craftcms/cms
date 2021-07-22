@@ -260,11 +260,11 @@ class Locale extends BaseObject
         if (!Craft::$app->getI18n()->getIsIntlLoaded()) {
             $this->_data = Localization::localeData($this->id);
 
-            if ($this->_data === null && ($languageId = $this->getLanguageID()) !== $this->id) {
+            if (!isset($this->_data) && ($languageId = $this->getLanguageID()) !== $this->id) {
                 $this->_data = Localization::localeData($languageId);
             }
 
-            if ($this->_data === null) {
+            if (!isset($this->_data)) {
                 $this->_data = Localization::localeData('en-US');
             }
         }
@@ -411,7 +411,7 @@ class Locale extends BaseObject
      */
     public function getFormatter(): Formatter
     {
-        if ($this->_formatter === null) {
+        if (!isset($this->_formatter)) {
             $config = [
                 'class' => Formatter::class,
                 'locale' => $this->id,

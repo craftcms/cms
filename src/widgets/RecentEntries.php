@@ -60,7 +60,7 @@ class RecentEntries extends Widget
     {
         parent::init();
 
-        if ($this->siteId === null) {
+        if (!isset($this->siteId)) {
             $this->siteId = Craft::$app->getSites()->getCurrentSite()->id;
         }
     }

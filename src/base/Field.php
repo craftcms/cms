@@ -789,7 +789,7 @@ abstract class Field extends SavableComponent implements FieldInterface
      */
     protected function isFresh(?ElementInterface $element = null): bool
     {
-        if ($this->_isFresh !== null) {
+        if (isset($this->_isFresh)) {
             return $this->_isFresh;
         }
 

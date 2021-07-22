@@ -837,7 +837,7 @@ class ElementQuery extends Query implements ElementQueryInterface
     {
         // If orderBy is an empty, non-null value (leaving it up to the element query class to decide),
         // then treat this is an orderBy() call.
-        if ($this->orderBy !== null && empty($this->orderBy)) {
+        if (isset($this->orderBy) && empty($this->orderBy)) {
             $this->orderBy = null;
         }
 
@@ -1260,7 +1260,7 @@ class ElementQuery extends Query implements ElementQueryInterface
     public function prepare($builder): Query
     {
         // Is the query already doomed?
-        if ($this->id !== null && empty($this->id)) {
+        if (isset($this->id) && empty($this->id)) {
             throw new QueryAbortedException();
         }
         $class = $this->elementType;
@@ -1319,7 +1319,7 @@ class ElementQuery extends Query implements ElementQueryInterface
             $this->subQuery->andWhere(['elements_sites.siteId' => $this->siteId]);
         }
 
-        if ($class::hasContent() && $this->contentTable !== null) {
+        if ($class::hasContent() && isset($this->contentTable)) {
             $this->customFields = $this->customFields();
             $this->_joinContentTable($class);
         } else {
@@ -1367,7 +1367,7 @@ class ElementQuery extends Query implements ElementQueryInterface
             $this->subQuery->andWhere(Db::parseDateParam('elements.dateUpdated', $this->dateUpdated));
         }
 
-        if ($this->title !== null && $this->title !== '' && $class::hasTitles()) {
+        if (isset($this->title) && $this->title !== '' && $class::hasTitles()) {
             $this->subQuery->andWhere(Db::parseParam('content.title', $this->title, '=', true));
         }
 
@@ -1409,7 +1409,7 @@ class ElementQuery extends Query implements ElementQueryInterface
         }
 
         // Should we set a search score on the elements?
-        if ($this->_searchScores !== null) {
+        if (isset($this->_searchScores)) {
             foreach ($rows as &$row) {
                 if (isset($row['id'], $this->_searchScores[$row['id']])) {
                     $row['searchScore'] = $this->_searchScores[$row['id']];
@@ -1486,7 +1486,7 @@ class ElementQuery extends Query implements ElementQueryInterface
     {
         // Avoid indexing by an ambiguous column
         if (
-            $this->from === null &&
+            !isset($this->from) &&
             is_string($this->indexBy) &&
             in_array($this->indexBy, ['id', 'dateCreated', 'dateUpdated', 'uid'], true)
         ) {
@@ -1550,7 +1550,7 @@ class ElementQuery extends Query implements ElementQueryInterface
      */
     public function getCachedResult(): ?array
     {
-        if ($this->_result === null) {
+        if (!isset($this->_result)) {
             return null;
         }
 
@@ -1729,7 +1729,7 @@ class ElementQuery extends Query implements ElementQueryInterface
             $row['structureId'] = $this->structureId;
         }
 
-        if ($class::hasContent() && $this->contentTable !== null) {
+        if ($class::hasContent() && isset($this->contentTable)) {
             if ($class::hasTitles()) {
                 // Ensure the title is a string
                 $row['title'] = (string)($row['title'] ?? '');
@@ -2001,7 +2001,7 @@ class ElementQuery extends Query implements ElementQueryInterface
             return $condition;
         }
 
-        if ($this->_placeholderCondition === null || $this->siteId !== $this->_placeholderSiteIds) {
+        if (!isset($this->_placeholderCondition) || $this->siteId !== $this->_placeholderSiteIds) {
             $placeholderSourceIds = [];
             $placeholderElements = Craft::$app->getElements()->getPlaceholderElements();
             if (!empty($placeholderElements)) {
@@ -2246,7 +2246,7 @@ class ElementQuery extends Query implements ElementQueryInterface
                 ]);
         }
 
-        if ($this->hasDescendants !== null) {
+        if (isset($this->hasDescendants)) {
             if ($this->hasDescendants) {
                 $this->subQuery->andWhere('[[structureelements.rgt]] > [[structureelements.lft]] + 1');
             } else {
@@ -2389,7 +2389,7 @@ class ElementQuery extends Query implements ElementQueryInterface
 
             if ($this->draftOf === '*') {
                 $this->subQuery->andWhere(['not', ['elements.canonicalId' => null]]);
-            } else if ($this->draftOf !== null) {
+            } else if (isset($this->draftOf)) {
                 $this->subQuery->andWhere(['elements.canonicalId' => $this->draftOf ?: null]);
             }
 
@@ -2397,7 +2397,7 @@ class ElementQuery extends Query implements ElementQueryInterface
                 $this->subQuery->andWhere(['drafts.creatorId' => $this->draftCreator]);
             }
 
-            if ($this->provisionalDrafts !== null) {
+            if (isset($this->provisionalDrafts)) {
                 $this->subQuery->andWhere([
                     'or',
                     ['elements.draftId' => null],
@@ -2551,7 +2551,7 @@ class ElementQuery extends Query implements ElementQueryInterface
     private function _applyOrderByParams(Connection $db): void
     {
         if (
-            $this->orderBy === null ||
+            !isset($this->orderBy) ||
             $this->orderBy === ['score' => SORT_ASC] ||
             $this->orderBy === ['score' => SORT_DESC] ||
             !empty($this->query->orderBy)
@@ -2687,7 +2687,7 @@ class ElementQuery extends Query implements ElementQueryInterface
      */
     private function _applyJoinParams(): void
     {
-        if ($this->join !== null) {
+        if (isset($this->join)) {
             foreach ($this->join as $join) {
                 $this->query->join[] = $join;
                 $this->subQuery->join[] = $join;
@@ -2797,7 +2797,7 @@ class ElementQuery extends Query implements ElementQueryInterface
         $elements = [];
 
         if ($this->asArray === true) {
-            if ($this->indexBy === null) {
+            if (!isset($this->indexBy)) {
                 return $rows;
             }
 
@@ -2815,7 +2815,7 @@ class ElementQuery extends Query implements ElementQueryInterface
                 $element = $this->createElement($row);
 
                 // Add it to the elements array
-                if ($this->indexBy === null) {
+                if (!isset($this->indexBy)) {
                     $elements[] = $element;
                 } else {
                     if (is_string($this->indexBy)) {

@@ -76,7 +76,7 @@ class Local extends Volume implements LocalVolumeInterface
     {
         parent::init();
 
-        if ($this->path !== null) {
+        if (isset($this->path)) {
             $this->path = str_replace('\\', '/', $this->path);
         }
 

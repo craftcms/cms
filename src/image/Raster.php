@@ -560,7 +560,7 @@ class Raster extends Image
      */
     public function setFontProperties(string $fontFile, int $size, string $color): void
     {
-        if ($this->_palette === null) {
+        if (!isset($this->_palette)) {
             $this->_palette = new RGB();
         }
 
@@ -577,7 +577,7 @@ class Raster extends Image
      */
     public function getTextBox(string $text, int $angle = 0): BoxInterface
     {
-        if ($this->_font === null) {
+        if (!isset($this->_font)) {
             throw new ImageException(Craft::t('app', 'No font properties have been set. Call Raster::setFontProperties() first.'));
         }
 
@@ -595,7 +595,7 @@ class Raster extends Image
      */
     public function writeText(string $text, int $x, int $y, int $angle = 0): void
     {
-        if ($this->_font === null) {
+        if (!isset($this->_font)) {
             throw new ImageException(Craft::t('app', 'No font properties have been set. Call ImageHelper::setFontProperties() first.'));
         }
 

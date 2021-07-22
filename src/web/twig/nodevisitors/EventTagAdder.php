@@ -90,7 +90,7 @@ class EventTagAdder extends BaseEventTagVisitor
         // Are we looking for `<body>`?
         if (static::$foundBeginBody === false) {
             // Does it start here?
-            if ($this->_bodyTag === null) {
+            if (!isset($this->_bodyTag)) {
                 if (preg_match('/<body\b/i', $data, $matches, PREG_OFFSET_CAPTURE)) {
                     $offsetOffset = $matches[0][1];
                     $this->_bodyTag = substr($data, $matches[0][1]);
@@ -102,7 +102,7 @@ class EventTagAdder extends BaseEventTagVisitor
                 $this->_bodyTag .= $data;
             }
 
-            if ($this->_bodyTag !== null) {
+            if (isset($this->_bodyTag)) {
                 do {
                     try {
                         $attribute = Html::parseTagAttribute($this->_bodyTag, $this->_bodyAttrOffset, $start, $end);

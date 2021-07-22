@@ -1759,7 +1759,7 @@ class GeneralConfig extends BaseObject
         $this->maxUploadFileSize = ConfigHelper::sizeInBytes($this->maxUploadFileSize);
 
         // Normalize the default CP language
-        if ($this->defaultCpLanguage !== null) {
+        if (isset($this->defaultCpLanguage)) {
             try {
                 $this->defaultCpLanguage = Localization::normalizeLanguage($this->defaultCpLanguage);
             } catch (InvalidArgumentException $e) {

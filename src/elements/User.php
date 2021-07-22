@@ -771,7 +771,7 @@ class User extends Element implements IdentityInterface
             $rules[] = [['unverifiedEmail'], 'validateUnverifiedEmail'];
         }
 
-        if ($this->id !== null && $this->passwordResetRequired) {
+        if (isset($this->id) && $this->passwordResetRequired) {
             // Get the current password hash
             $currentPassword = (new Query())
                 ->select(['password'])
@@ -927,7 +927,7 @@ class User extends Element implements IdentityInterface
         ]);
         $this->trigger(self::EVENT_BEFORE_AUTHENTICATE, $event);
 
-        if ($this->authError === null && $event->performAuthentication) {
+        if (!isset($this->authError) && $event->performAuthentication) {
             // Validate the password
             try {
                 $passwordValid = Craft::$app->getSecurity()->validatePassword($password, $this->password);
@@ -949,7 +949,7 @@ class User extends Element implements IdentityInterface
             }
         }
 
-        return $this->authError === null;
+        return !isset($this->authError);
     }
 
     /**
@@ -969,11 +969,11 @@ class User extends Element implements IdentityInterface
      */
     public function getGroups(): array
     {
-        if ($this->_groups !== null) {
+        if (isset($this->_groups)) {
             return $this->_groups;
         }
 
-        if (Craft::$app->getEdition() !== Craft::Pro || $this->id === null) {
+        if (Craft::$app->getEdition() !== Craft::Pro || !isset($this->id)) {
             return [];
         }
 
@@ -1047,7 +1047,7 @@ class User extends Element implements IdentityInterface
      */
     public function getName(): string
     {
-        if ($this->_name === null) {
+        if (!isset($this->_name)) {
             $this->_name = $this->_defineName();
         }
 
@@ -1091,7 +1091,7 @@ class User extends Element implements IdentityInterface
      */
     public function getFriendlyName(): ?string
     {
-        if ($this->_friendlyName === null) {
+        if (!isset($this->_friendlyName)) {
             $this->_friendlyName = $this->_defineFriendlyName() ?? false;
         }
 
@@ -1206,7 +1206,7 @@ class User extends Element implements IdentityInterface
                 return true;
             }
 
-            if ($this->id !== null) {
+            if (isset($this->id)) {
                 return Craft::$app->getUserPermissions()->doesUserHavePermission($this->id, $permission);
             }
 
@@ -1224,7 +1224,7 @@ class User extends Element implements IdentityInterface
      */
     public function hasShunned(string $message): bool
     {
-        if ($this->id !== null) {
+        if (isset($this->id)) {
             return Craft::$app->getUsers()->hasUserShunnedMessage($this->id, $message);
         }
 
@@ -1295,7 +1295,7 @@ class User extends Element implements IdentityInterface
      */
     public function getPreferences(): array
     {
-        if ($this->_preferences === null) {
+        if (!isset($this->_preferences)) {
             $this->_preferences = Craft::$app->getUsers()->getUserPreferences($this->id);
         }
 
@@ -1387,7 +1387,7 @@ class User extends Element implements IdentityInterface
      */
     public function getPhoto(): ?Asset
     {
-        if ($this->_photo === null) {
+        if (!isset($this->_photo)) {
             if (!$this->photoId) {
                 return null;
             }
@@ -1547,7 +1547,7 @@ class User extends Element implements IdentityInterface
         $record->passwordResetRequired = $this->passwordResetRequired;
         $record->unverifiedEmail = $this->unverifiedEmail;
 
-        if ($changePassword = ($this->newPassword !== null)) {
+        if ($changePassword = (isset($this->newPassword))) {
             $hash = Craft::$app->getSecurity()->hashPassword($this->newPassword);
 
             $record->password = $this->password = $hash;

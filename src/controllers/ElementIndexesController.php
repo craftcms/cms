@@ -94,7 +94,7 @@ class ElementIndexesController extends BaseElementsController
         $this->viewState = $this->viewState();
         $this->elementQuery = $this->elementQuery();
 
-        if ($this->includeActions() && $this->sourceKey !== null) {
+        if ($this->includeActions() && isset($this->sourceKey)) {
             $this->actions = $this->availableActions();
             $this->exporters = $this->availableExporters();
         }
@@ -373,7 +373,7 @@ class ElementIndexesController extends BaseElementsController
      */
     protected function source(): ?array
     {
-        if ($this->sourceKey === null) {
+        if (!isset($this->sourceKey)) {
             return null;
         }
 

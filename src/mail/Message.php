@@ -81,7 +81,7 @@ class Message extends \yii\swiftmailer\Message
     public function setTo($to): self
     {
         if ($to instanceof User) {
-            if ($this->language === null) {
+            if (!isset($this->language)) {
                 $this->language = $to->getPreferredLanguage();
             }
 

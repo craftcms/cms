@@ -148,7 +148,7 @@ class AssetTransforms extends Component
      */
     private function _transforms(): MemoizableArray
     {
-        if ($this->_transforms === null) {
+        if (!isset($this->_transforms)) {
             $transforms = [];
             foreach ($this->_createTransformQuery()->all() as $result) {
                 $transforms[] = new AssetTransform($result);

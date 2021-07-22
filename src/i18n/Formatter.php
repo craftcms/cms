@@ -245,7 +245,7 @@ class Formatter extends \yii\i18n\Formatter
         $value = $this->normalizeNumericValue($value);
 
         if ($currency === null) {
-            if ($this->currencyCode === null) {
+            if (!isset($this->currencyCode)) {
                 throw new InvalidConfigException('The default currency code for the formatter is not defined.');
             }
 
@@ -378,33 +378,33 @@ class Formatter extends \yii\i18n\Formatter
             }
         }
 
-        if ($this->standAloneMonthNames !== null || $this->monthNames !== null) {
+        if (isset($this->standAloneMonthNames) || isset($this->monthNames)) {
             $month = $timestamp->format('n') - 1;
 
-            if ($this->standAloneMonthNames !== null) {
+            if (isset($this->standAloneMonthNames)) {
                 $tr['LLLLL'] = '\'' . $this->standAloneMonthNames['abbreviated'][$month] . '\'';
                 $tr['LLLL'] = '\'' . $this->standAloneMonthNames['full'][$month] . '\'';
                 $tr['LLL'] = '\'' . $this->standAloneMonthNames['medium'][$month] . '\'';
             }
 
-            if ($this->monthNames !== null) {
+            if (isset($this->monthNames)) {
                 $tr['MMMMM'] = '\'' . $this->monthNames['abbreviated'][$month] . '\'';
                 $tr['MMMM'] = '\'' . $this->monthNames['full'][$month] . '\'';
                 $tr['MMM'] = '\'' . $this->monthNames['medium'][$month] . '\'';
             }
         }
 
-        if ($this->standAloneWeekDayNames !== null || $this->weekDayNames !== null) {
+        if (isset($this->standAloneWeekDayNames) || isset($this->weekDayNames)) {
             $day = $timestamp->format('w');
 
-            if ($this->standAloneWeekDayNames !== null) {
+            if (isset($this->standAloneWeekDayNames)) {
                 $tr['cccccc'] = '\'' . $this->standAloneWeekDayNames['short'][$day] . '\'';
                 $tr['ccccc'] = '\'' . $this->standAloneWeekDayNames['abbreviated'][$day] . '\'';
                 $tr['cccc'] = '\'' . $this->standAloneWeekDayNames['full'][$day] . '\'';
                 $tr['ccc'] = '\'' . $this->standAloneWeekDayNames['medium'][$day] . '\'';
             }
 
-            if ($this->weekDayNames !== null) {
+            if (isset($this->weekDayNames)) {
                 $tr['EEEEEE'] = '\'' . $this->weekDayNames['short'][$day] . '\'';
                 $tr['EEEEE'] = '\'' . $this->weekDayNames['abbreviated'][$day] . '\'';
                 $tr['EEEE'] = '\'' . $this->weekDayNames['full'][$day] . '\'';

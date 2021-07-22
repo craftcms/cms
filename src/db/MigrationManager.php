@@ -76,7 +76,7 @@ class MigrationManager extends Component
     {
         parent::init();
 
-        if ($this->migrationPath === null) {
+        if (!isset($this->migrationPath)) {
             throw new InvalidConfigException('The migration path has not been set.');
         }
 

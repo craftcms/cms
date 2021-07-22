@@ -36,7 +36,7 @@ class LanguageValidator extends Validator
      */
     public function init(): void
     {
-        if ($this->notAllowed === null) {
+        if (!isset($this->notAllowed)) {
             if ($this->onlySiteLanguages) {
                 $this->notAllowed = Craft::t('app', '{value} is not a valid site language.');
             } else {

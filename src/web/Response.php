@@ -129,7 +129,7 @@ class Response extends \yii\web\Response
      */
     public function getRawCookies(): CookieCollection
     {
-        if ($this->_rawCookies === null) {
+        if (!isset($this->_rawCookies)) {
             $this->_rawCookies = new CookieCollection();
         }
         return $this->_rawCookies;
@@ -143,7 +143,7 @@ class Response extends \yii\web\Response
     {
         parent::sendCookies();
 
-        if ($this->_rawCookies === null) {
+        if (!isset($this->_rawCookies)) {
             return;
         }
         foreach ($this->getRawCookies() as $cookie) {
@@ -233,7 +233,7 @@ class Response extends \yii\web\Response
         }
 
         // Tell the browser to close the connection
-        $length = $this->content !== null ? strlen($this->content) : 0;
+        $length = isset($this->content) ? strlen($this->content) : 0;
         $this->getHeaders()
             ->set('Connection', 'close')
             ->set('Content-Length', $length);

@@ -110,7 +110,7 @@ class Paginator extends BaseObject
     {
         parent::init();
 
-        if ($this->db !== null) {
+        if (isset($this->db)) {
             // Make sure that $db is a Connection instance
             $this->db = Instance::ensure($this->db, YiiConnection::class);
         }
@@ -123,7 +123,7 @@ class Paginator extends BaseObject
      */
     public function getTotalResults()
     {
-        if ($this->totalResults !== null) {
+        if (isset($this->totalResults)) {
             return $this->totalResults;
         }
 
@@ -147,7 +147,7 @@ class Paginator extends BaseObject
      */
     public function getTotalPages(): int
     {
-        if ($this->totalPages !== null) {
+        if (isset($this->totalPages)) {
             return $this->totalPages;
         }
         $totalResults = $this->getTotalResults();
@@ -187,7 +187,7 @@ class Paginator extends BaseObject
      */
     public function getPageResults(): array
     {
-        if ($this->_pageResults !== null) {
+        if (isset($this->_pageResults)) {
             return $this->_pageResults;
         }
 

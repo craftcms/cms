@@ -53,7 +53,7 @@ class ColorValidator extends RegularExpressionValidator
      */
     public function init(): void
     {
-        if ($this->message === null) {
+        if (!isset($this->message)) {
             $this->message = Craft::t('app', '{attribute} isn’t a valid hex color value.');
         }
         parent::init();

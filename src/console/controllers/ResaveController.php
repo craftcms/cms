@@ -165,7 +165,7 @@ class ResaveController extends Controller
     public function actionAssets(): int
     {
         $criteria = [];
-        if ($this->volume !== null) {
+        if (isset($this->volume)) {
             $criteria['volume'] = explode(',', $this->volume);
         }
         return $this->resaveElements(Asset::class, $criteria);
@@ -179,7 +179,7 @@ class ResaveController extends Controller
     public function actionCategories(): int
     {
         $criteria = [];
-        if ($this->group !== null) {
+        if (isset($this->group)) {
             $criteria['group'] = explode(',', $this->group);
         }
         return $this->resaveElements(Category::class, $criteria);
@@ -193,10 +193,10 @@ class ResaveController extends Controller
     public function actionEntries(): int
     {
         $criteria = [];
-        if ($this->section !== null) {
+        if (isset($this->section)) {
             $criteria['section'] = explode(',', $this->section);
         }
-        if ($this->type !== null) {
+        if (isset($this->type)) {
             $criteria['type'] = explode(',', $this->type);
         }
         return $this->resaveElements(Entry::class, $criteria);
@@ -213,10 +213,10 @@ class ResaveController extends Controller
     public function actionMatrixBlocks(): int
     {
         $criteria = [];
-        if ($this->field !== null) {
+        if (isset($this->field)) {
             $criteria['field'] = explode(',', $this->field);
         }
-        if ($this->type !== null) {
+        if (isset($this->type)) {
             $criteria['type'] = explode(',', $this->type);
         }
         return $this->resaveElements(MatrixBlock::class, $criteria);
@@ -230,7 +230,7 @@ class ResaveController extends Controller
     public function actionTags(): int
     {
         $criteria = [];
-        if ($this->group !== null) {
+        if (isset($this->group)) {
             $criteria['group'] = explode(',', $this->group);
         }
         return $this->resaveElements(Tag::class, $criteria);
@@ -244,7 +244,7 @@ class ResaveController extends Controller
     public function actionUsers(): int
     {
         $criteria = [];
-        if ($this->group !== null) {
+        if (isset($this->group)) {
             $criteria['group'] = explode(',', $this->group);
         }
         return $this->resaveElements(User::class, $criteria);
@@ -326,11 +326,11 @@ class ResaveController extends Controller
             $criteria['status'] = explode(',', $this->status);
         }
 
-        if ($this->offset !== null) {
+        if (isset($this->offset)) {
             $criteria['offset'] = $this->offset;
         }
 
-        if ($this->limit !== null) {
+        if (isset($this->limit)) {
             $criteria['limit'] = $this->limit;
         }
 

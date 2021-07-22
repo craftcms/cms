@@ -43,7 +43,7 @@ class SystemMessages extends Component
      */
     public function getAllDefaultMessages(): array
     {
-        if ($this->_defaultMessages !== null) {
+        if (isset($this->_defaultMessages)) {
             return $this->_defaultMessages;
         }
 

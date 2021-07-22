@@ -197,7 +197,7 @@ class EntryType extends Model
      */
     public function getSection(): Section
     {
-        if ($this->sectionId === null) {
+        if (!isset($this->sectionId)) {
             throw new InvalidConfigException('Entry type is missing its section ID');
         }
 

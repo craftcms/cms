@@ -230,7 +230,7 @@ class User extends \yii\web\User
     {
         // Are they logged in?
         if (!$this->getIsGuest()) {
-            if ($this->authTimeout === null) {
+            if (!isset($this->authTimeout)) {
                 // The session duration must have been empty (expire when the HTTP session ends)
                 return -1;
             }
@@ -480,7 +480,7 @@ class User extends \yii\web\User
         $extendSession = !Craft::$app->getRequest()->getParam('dontExtendSession');
 
         // Prevent the user session from getting extended?
-        if ($this->authTimeout !== null && !$extendSession) {
+        if (isset($this->authTimeout) && !$extendSession) {
             $this->absoluteAuthTimeout = $this->authTimeout;
             $this->authTimeout = null;
             $absoluteAuthTimeoutParam = $this->absoluteAuthTimeoutParam;

@@ -112,7 +112,7 @@ class GraphqlController extends Controller
         $token = null;
 
         // First try to get the token from the passed in token
-        if ($this->token !== null) {
+        if (isset($this->token)) {
             try {
                 $token = $gqlService->getTokenByAccessToken($this->token);
             } catch (InvalidArgumentException $e) {

@@ -86,7 +86,7 @@ class Section_SiteSettings extends Model
      */
     public function getSection(): Section
     {
-        if ($this->_section !== null) {
+        if (isset($this->_section)) {
             return $this->_section;
         }
 

@@ -180,7 +180,7 @@ class Tags extends BaseRelationField
      */
     private function _getTagGroupId()
     {
-        if ($this->_tagGroupId !== null) {
+        if (isset($this->_tagGroupId)) {
             return $this->_tagGroupId;
         }
 

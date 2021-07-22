@@ -99,7 +99,7 @@ class Connection extends \yii\db\Connection
      */
     public function getSupportsMb4(): bool
     {
-        if ($this->_supportsMb4 !== null) {
+        if (isset($this->_supportsMb4)) {
             return $this->_supportsMb4;
         }
         return $this->_supportsMb4 = $this->getIsPgsql();

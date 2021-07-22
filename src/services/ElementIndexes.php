@@ -51,7 +51,7 @@ class ElementIndexes extends Component
      */
     public function getSettings(string $elementType): ?array
     {
-        if ($this->_indexSettings === null || !array_key_exists($elementType, $this->_indexSettings)) {
+        if (!isset($this->_indexSettings) || !array_key_exists($elementType, $this->_indexSettings)) {
             $result = (new Query())
                 ->select(['settings'])
                 ->from([Table::ELEMENTINDEXSETTINGS])

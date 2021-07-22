@@ -255,7 +255,7 @@ class Tag extends Element
      */
     public function getGroup(): TagGroup
     {
-        if ($this->groupId === null) {
+        if (!isset($this->groupId)) {
             throw new InvalidConfigException('Tag is missing its group ID');
         }
 

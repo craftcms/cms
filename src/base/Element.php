@@ -1592,7 +1592,7 @@ abstract class Element extends Component implements ElementInterface
      */
     public function __toString(): string
     {
-        if ($this->title !== null && $this->title !== '') {
+        if (isset($this->title) && $this->title !== '') {
             return (string)$this->title;
         }
         return (string)$this->id ?: static::class;
@@ -1718,7 +1718,7 @@ abstract class Element extends Component implements ElementInterface
 
         parent::init();
 
-        if ($this->siteId === null && Craft::$app->getIsInstalled()) {
+        if (!isset($this->siteId) && Craft::$app->getIsInstalled()) {
             $this->siteId = Craft::$app->getSites()->getPrimarySite()->id;
         }
 
@@ -2106,7 +2106,7 @@ abstract class Element extends Component implements ElementInterface
      */
     public function getIsCanonical(): bool
     {
-        return $this->_canonicalId === null;
+        return !isset($this->_canonicalId);
     }
 
     /**
@@ -2126,7 +2126,7 @@ abstract class Element extends Component implements ElementInterface
             return $this;
         }
 
-        if ($this->_canonical === null) {
+        if (!isset($this->_canonical)) {
             $this->_canonical = static::find()
                     ->id($this->_canonicalId)
                     ->siteId($anySite ? '*' : $this->siteId)
@@ -2349,7 +2349,7 @@ abstract class Element extends Component implements ElementInterface
      */
     public function getUrl(): ?string
     {
-        if ($this->uri === null) {
+        if (!isset($this->uri)) {
             return null;
         }
 
@@ -2646,7 +2646,7 @@ abstract class Element extends Component implements ElementInterface
      */
     public function getNext($criteria = false): ?ElementInterface
     {
-        if ($criteria !== false || $this->_nextElement === null) {
+        if ($criteria !== false || !isset($this->_nextElement)) {
             return $this->_getRelativeElement($criteria, 1);
         }
 
@@ -2662,7 +2662,7 @@ abstract class Element extends Component implements ElementInterface
      */
     public function getPrev($criteria = false): ?ElementInterface
     {
-        if ($criteria !== false || $this->_prevElement === null) {
+        if ($criteria !== false || !isset($this->_prevElement)) {
             return $this->_getRelativeElement($criteria, -1);
         }
 
@@ -2694,7 +2694,7 @@ abstract class Element extends Component implements ElementInterface
      */
     public function getParent(): ?ElementInterface
     {
-        if ($this->_parent === null) {
+        if (!isset($this->_parent)) {
             $ancestors = $this->getAncestors(1);
 
             // Eager-loaded?
@@ -2810,7 +2810,7 @@ abstract class Element extends Component implements ElementInterface
      */
     public function getPrevSibling(): ?ElementInterface
     {
-        if ($this->_prevSibling === null) {
+        if (!isset($this->_prevSibling)) {
             /** @var ElementQuery $query */
             $query = $this->_prevSibling = static::find();
             $query->structureId = $this->structureId;
@@ -2819,7 +2819,7 @@ abstract class Element extends Component implements ElementInterface
             $query->status(null);
             $this->_prevSibling = $query->one();
 
-            if ($this->_prevSibling === null) {
+            if (!isset($this->_prevSibling)) {
                 $this->_prevSibling = false;
             }
         }
@@ -2832,7 +2832,7 @@ abstract class Element extends Component implements ElementInterface
      */
     public function getNextSibling(): ?ElementInterface
     {
-        if ($this->_nextSibling === null) {
+        if (!isset($this->_nextSibling)) {
             /** @var ElementQuery $query */
             $query = $this->_nextSibling = static::find();
             $query->structureId = $this->structureId;
@@ -2841,7 +2841,7 @@ abstract class Element extends Component implements ElementInterface
             $query->status(null);
             $this->_nextSibling = $query->one();
 
-            if ($this->_nextSibling === null) {
+            if (!isset($this->_nextSibling)) {
                 $this->_nextSibling = false;
             }
         }
@@ -2912,7 +2912,7 @@ abstract class Element extends Component implements ElementInterface
      */
     public function isSiblingOf(ElementInterface $element): bool
     {
-        if ($this->root == $element->root && $this->level !== null && $this->level == $element->level) {
+        if ($this->root == $element->root && isset($this->level) && $this->level == $element->level) {
             if ($this->level == 1 || $this->isPrevSiblingOf($element) || $this->isNextSiblingOf($element)) {
                 return true;
             }
@@ -3014,7 +3014,7 @@ abstract class Element extends Component implements ElementInterface
             return [];
         }
 
-        if ($this->_outdatedAttributes === null) {
+        if (!isset($this->_outdatedAttributes)) {
             $query = (new Query())
                 ->select(['attribute'])
                 ->from([Table::CHANGEDATTRIBUTES])
@@ -3044,7 +3044,7 @@ abstract class Element extends Component implements ElementInterface
             return [];
         }
 
-        if ($this->_modifiedAttributes === null) {
+        if (!isset($this->_modifiedAttributes)) {
             $this->_modifiedAttributes = array_flip((new Query())
                 ->select(['attribute'])
                 ->from([Table::CHANGEDATTRIBUTES])
@@ -3225,7 +3225,7 @@ abstract class Element extends Component implements ElementInterface
             return [];
         }
 
-        if ($this->_outdatedFields === null) {
+        if (!isset($this->_outdatedFields)) {
             $query = (new Query())
                 ->select(['f.handle'])
                 ->from(['f' => Table::FIELDS])
@@ -3256,7 +3256,7 @@ abstract class Element extends Component implements ElementInterface
             return [];
         }
 
-        if ($this->_modifiedFields === null) {
+        if (!isset($this->_modifiedFields)) {
             $this->_modifiedFields = array_flip((new Query())
                 ->select(['f.handle'])
                 ->from(['f' => Table::FIELDS])
@@ -3472,7 +3472,7 @@ abstract class Element extends Component implements ElementInterface
      */
     public function getHasFreshContent(): bool
     {
-        return ($this->contentId === null && !$this->hasErrors());
+        return (!isset($this->contentId) && !$this->hasErrors());
     }
 
     /**
@@ -3500,7 +3500,7 @@ abstract class Element extends Component implements ElementInterface
             return null;
         }
 
-        if ($this->_currentRevision === null) {
+        if (!isset($this->_currentRevision)) {
             $canonical = $this->getCanonical(true);
             $this->_currentRevision = static::find()
                 ->revisionOf($canonical->id)
@@ -3777,7 +3777,7 @@ abstract class Element extends Component implements ElementInterface
             'name' => 'slug',
             'autocorrect' => false,
             'autocapitalize' => false,
-            'value' => $this->slug !== null && !ElementHelper::isTempSlug($this->slug) ? $this->slug : '',
+            'value' => isset($this->slug) && !ElementHelper::isTempSlug($this->slug) ? $this->slug : '',
             'errors' => array_merge($this->getErrors('slug'), $this->getErrors('uri')),
         ]);
     }
@@ -4092,7 +4092,7 @@ abstract class Element extends Component implements ElementInterface
      */
     protected function fieldByHandle(string $handle): ?FieldInterface
     {
-        if ($this->_fieldsByHandle !== null && array_key_exists($handle, $this->_fieldsByHandle)) {
+        if (isset($this->_fieldsByHandle) && array_key_exists($handle, $this->_fieldsByHandle)) {
             return $this->_fieldsByHandle[$handle];
         }
 
@@ -4128,7 +4128,7 @@ abstract class Element extends Component implements ElementInterface
      */
     public function getSite(): Site
     {
-        if ($this->siteId !== null) {
+        if (isset($this->siteId)) {
             $site = Craft::$app->getSites()->getSiteById($this->siteId);
         }
 
@@ -4157,7 +4157,7 @@ abstract class Element extends Component implements ElementInterface
      */
     private function _getRelativeElement($criteria, int $dir): ?ElementInterface
     {
-        if ($this->id === null) {
+        if (!isset($this->id)) {
             return null;
         }
 

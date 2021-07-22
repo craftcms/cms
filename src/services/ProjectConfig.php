@@ -1622,7 +1622,7 @@ class ProjectConfig extends Component
     private function _getLoadedConfig(): array
     {
         // _loadedConfig will be set if we've made any changes in this request
-        if ($this->_loadedConfig !== null) {
+        if (isset($this->_loadedConfig)) {
             return $this->_loadedConfig;
         }
 
@@ -1637,7 +1637,7 @@ class ProjectConfig extends Component
      */
     private function _getStoredConfig(): array
     {
-        if ($this->_storedConfig === null) {
+        if (!isset($this->_storedConfig)) {
             $this->_storedConfig = $this->_loadInternalConfigData();
         }
 

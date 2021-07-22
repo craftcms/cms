@@ -75,15 +75,15 @@ class AssetLocationValidator extends Validator
     {
         parent::init();
 
-        if ($this->allowedExtensions === null) {
+        if (!isset($this->allowedExtensions)) {
             $this->allowedExtensions = Craft::$app->getConfig()->getGeneral()->allowedFileExtensions;
         }
 
-        if ($this->disallowedExtension === null) {
+        if (!isset($this->disallowedExtension)) {
             $this->disallowedExtension = Craft::t('app', '“{extension}” is not an allowed file extension.');
         }
 
-        if ($this->filenameConflict === null) {
+        if (!isset($this->filenameConflict)) {
             $this->filenameConflict = Craft::t('app', 'A file with the name “{filename}” already exists.');
         }
     }
@@ -152,7 +152,7 @@ class AssetLocationValidator extends Validator
     {
         $this->addError($model, $attribute, $message, $params);
 
-        if ($this->errorCodeAttribute !== null) {
+        if (isset($this->errorCodeAttribute)) {
             $model->{$this->errorCodeAttribute} = $errorCode;
         }
     }

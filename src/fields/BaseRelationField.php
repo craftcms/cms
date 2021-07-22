@@ -709,7 +709,7 @@ JS;
     public function afterSave(bool $isNew): void
     {
         // If the propagation method just changed, resave all the Matrix blocks
-        if ($this->oldSettings !== null) {
+        if (isset($this->oldSettings)) {
             $oldLocalizeRelations = (bool)($this->oldSettings['localizeRelations'] ?? false);
             if ($this->localizeRelations !== $oldLocalizeRelations) {
                 Queue::push(new LocalizeRelations([

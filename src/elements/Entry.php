@@ -981,7 +981,7 @@ class Entry extends Element
      */
     protected function uiLabel(): ?string
     {
-        if ($this->title === null || trim($this->title) === '') {
+        if (!isset($this->title) || trim($this->title) === '') {
             return Craft::t('app', 'Untitled entry');
         }
 
@@ -1067,7 +1067,7 @@ class Entry extends Element
      */
     public function getSection(): Section
     {
-        if ($this->sectionId === null) {
+        if (!isset($this->sectionId)) {
             throw new InvalidConfigException('Entry is missing its section ID');
         }
 
@@ -1122,13 +1122,13 @@ class Entry extends Element
      */
     public function getType(): EntryType
     {
-        if ($this->typeId === null) {
+        if (!isset($this->typeId)) {
             throw new InvalidConfigException('Entry is missing its type ID');
         }
 
         $sectionEntryTypes = ArrayHelper::index($this->getSection()->getEntryTypes(), 'id');
 
-        if ($this->typeId === null || !isset($sectionEntryTypes[$this->typeId])) {
+        if (!isset($this->typeId) || !isset($sectionEntryTypes[$this->typeId])) {
             Craft::warning("Entry {$this->id} has an invalid entry type ID: {$this->typeId}");
             if (empty($sectionEntryTypes)) {
                 throw new InvalidConfigException("Section {$this->sectionId} has no entry types");
@@ -1155,8 +1155,8 @@ class Entry extends Element
      */
     public function getAuthor(): ?User
     {
-        if ($this->_author === null) {
-            if ($this->authorId === null) {
+        if (!isset($this->_author)) {
+            if (!isset($this->authorId)) {
                 return null;
             }
 
@@ -1773,7 +1773,7 @@ EOD;
      */
     private function _hasNewParent(): bool
     {
-        if ($this->_hasNewParent !== null) {
+        if (isset($this->_hasNewParent)) {
             return $this->_hasNewParent;
         }
 
@@ -1794,12 +1794,12 @@ EOD;
         }
 
         // Is it a brand new entry?
-        if ($this->id === null) {
+        if (!isset($this->id)) {
             return true;
         }
 
         // Was a new parent ID actually submitted?
-        if ($this->newParentId === null) {
+        if (!isset($this->newParentId)) {
             return false;
         }
 

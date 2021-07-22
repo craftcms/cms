@@ -58,7 +58,7 @@ abstract class BaseContentFixture extends DbFixture
     {
         parent::init();
 
-        if ($this->elementType === null || !is_subclass_of($this->elementType, ElementInterface::class)) {
+        if (!isset($this->elementType) || !is_subclass_of($this->elementType, ElementInterface::class)) {
             throw new InvalidConfigException('$elementType must set to a valid element class name');
         }
     }

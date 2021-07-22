@@ -225,7 +225,7 @@ class Fields extends Component
      */
     private function _groups(): MemoizableArray
     {
-        if ($this->_groups === null) {
+        if (!isset($this->_groups)) {
             $groups = [];
             foreach ($this->_createGroupQuery()->all() as $result) {
                 $groups[] = new FieldGroup($result);
@@ -598,7 +598,7 @@ class Fields extends Component
      */
     private function _fields($context = null): MemoizableArray
     {
-        if ($this->_fields === null) {
+        if (!isset($this->_fields)) {
             $fields = [];
             foreach ($this->_createFieldQuery()->all() as $result) {
                 $fields[] = $this->createField($result);
@@ -1059,7 +1059,7 @@ class Fields extends Component
      */
     public function getLayoutById(int $layoutId): ?FieldLayout
     {
-        if ($this->_layoutsById !== null && array_key_exists($layoutId, $this->_layoutsById)) {
+        if (isset($this->_layoutsById) && array_key_exists($layoutId, $this->_layoutsById)) {
             return $this->_layoutsById[$layoutId];
         }
 
@@ -1078,7 +1078,7 @@ class Fields extends Component
      */
     public function getLayoutByType(string $type): FieldLayout
     {
-        if ($this->_layoutsByType !== null && array_key_exists($type, $this->_layoutsByType)) {
+        if (isset($this->_layoutsByType) && array_key_exists($type, $this->_layoutsByType)) {
             return $this->_layoutsByType[$type];
         }
 

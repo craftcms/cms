@@ -147,7 +147,7 @@ class Number extends Field implements PreviewableFieldInterface, SortableFieldIn
         }
 
         // Normalize $size
-        if ($this->size !== null && !$this->size) {
+        if (isset($this->size) && !$this->size) {
             $this->size = null;
         }
 
@@ -215,7 +215,7 @@ class Number extends Field implements PreviewableFieldInterface, SortableFieldIn
     public function normalizeValue($value, ?ElementInterface $element = null)
     {
         if ($value === null) {
-            if ($this->defaultValue !== null && $this->isFresh($element)) {
+            if (isset($this->defaultValue) && $this->isFresh($element)) {
                 return $this->defaultValue;
             }
             return null;

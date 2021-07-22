@@ -103,7 +103,7 @@ class Plugin extends Module implements PluginInterface
         static::setInstance($this);
 
         // Set the default controller namespace
-        if ($this->controllerNamespace === null && ($pos = strrpos(static::class, '\\')) !== false) {
+        if (!isset($this->controllerNamespace) && ($pos = strrpos(static::class, '\\')) !== false) {
             $namespace = substr(static::class, 0, $pos);
             if (Craft::$app->getRequest()->getIsConsoleRequest()) {
                 $this->controllerNamespace = $namespace . '\\console\\controllers';
@@ -166,7 +166,7 @@ class Plugin extends Module implements PluginInterface
      */
     public function getSettings(): ?Model
     {
-        if ($this->_settingsModel === null) {
+        if (!isset($this->_settingsModel)) {
             $this->_settingsModel = $this->createSettingsModel() ?: false;
         }
 

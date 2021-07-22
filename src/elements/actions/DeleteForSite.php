@@ -89,7 +89,7 @@ JS;
      */
     public function getConfirmationMessage(): ?string
     {
-        if ($this->confirmationMessage !== null) {
+        if (isset($this->confirmationMessage)) {
             return $this->confirmationMessage;
         }
 
@@ -148,7 +148,7 @@ JS;
             $elementsService->deleteElement($element);
         }
 
-        if ($this->successMessage !== null) {
+        if (isset($this->successMessage)) {
             $this->setMessage($this->successMessage);
         } else {
             /** @var ElementInterface|string $elementType */

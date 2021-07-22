@@ -127,7 +127,7 @@ class Section extends Model
      */
     public function init(): void
     {
-        if ($this->previewTargets === null) {
+        if (!isset($this->previewTargets)) {
             $this->previewTargets = [
                 [
                     'label' => Craft::t('app', 'Primary {type} page', [
@@ -252,7 +252,7 @@ class Section extends Model
      */
     public function getSiteSettings(): array
     {
-        if ($this->_siteSettings !== null) {
+        if (isset($this->_siteSettings)) {
             return $this->_siteSettings;
         }
 
@@ -313,7 +313,7 @@ class Section extends Model
      */
     public function getEntryTypes(): array
     {
-        if ($this->_entryTypes !== null) {
+        if (isset($this->_entryTypes)) {
             return $this->_entryTypes;
         }
 

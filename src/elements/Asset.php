@@ -705,7 +705,7 @@ class Asset extends Element
     public function __toString(): string
     {
         try {
-            if ($this->_transform !== null && ($url = (string)$this->getUrl())) {
+            if (isset($this->_transform) && ($url = (string)$this->getUrl())) {
                 return $url;
             }
             return parent::__toString();
@@ -1099,7 +1099,7 @@ class Asset extends Element
      */
     public function getFolder(): VolumeFolder
     {
-        if ($this->folderId === null) {
+        if (!isset($this->folderId)) {
             throw new InvalidConfigException('Asset is missing its folder ID');
         }
 
@@ -1118,11 +1118,11 @@ class Asset extends Element
      */
     public function getVolume(): VolumeInterface
     {
-        if ($this->_volume !== null) {
+        if (isset($this->_volume)) {
             return $this->_volume;
         }
 
-        if ($this->_volumeId === null) {
+        if (!isset($this->_volumeId)) {
             return new Temp();
         }
 
@@ -1141,11 +1141,11 @@ class Asset extends Element
      */
     public function getUploader(): ?User
     {
-        if ($this->_uploader !== null) {
+        if (isset($this->_uploader)) {
             return $this->_uploader;
         }
 
-        if ($this->uploaderId === null) {
+        if (!isset($this->uploaderId)) {
             return null;
         }
 
@@ -1225,7 +1225,7 @@ class Asset extends Element
             $transform = $assetTransformsService->normalizeTransform($transform);
         }
 
-        if ($transform === null && $this->_transform !== null) {
+        if ($transform === null && isset($this->_transform)) {
             $transform = $this->_transform;
         }
 
@@ -1387,7 +1387,7 @@ class Asset extends Element
      */
     public function getFormattedSize(?int $decimals = null, bool $short = true): ?string
     {
-        if ($this->size === null) {
+        if (!isset($this->size)) {
             return null;
         }
         if ($short) {
@@ -1552,7 +1552,7 @@ class Asset extends Element
      */
     public function getHasFocalPoint(): bool
     {
-        return $this->_focalPoint !== null;
+        return isset($this->_focalPoint);
     }
 
     /**
@@ -1628,7 +1628,7 @@ class Asset extends Element
                 return AssetsHelper::getFileKindLabel($this->kind);
 
             case 'size':
-                if ($this->size === null) {
+                if (!isset($this->size)) {
                     return '';
                 }
                 return Html::tag('span', $this->getFormattedSize(0), [
@@ -1844,7 +1844,7 @@ class Asset extends Element
         if ($this->newFilename === '') {
             $this->newFilename = null;
         }
-        if ($this->newFolderId !== null || $this->newFilename !== null) {
+        if (isset($this->newFolderId) || isset($this->newFilename)) {
             $folderId = $this->newFolderId ?: $this->folderId;
             $filename = $this->newFilename ?? $this->filename;
             $this->newLocation = "{folder:$folderId}$filename";
@@ -1852,7 +1852,7 @@ class Asset extends Element
         }
 
         // Get the (new?) folder ID
-        if ($this->newLocation !== null) {
+        if (isset($this->newLocation)) {
             [$folderId] = AssetsHelper::parseFileLocation($this->newLocation);
         } else {
             $folderId = $this->folderId;
@@ -1860,7 +1860,7 @@ class Asset extends Element
 
         // Fire a 'beforeHandleFile' event if we're going to be doing any file operations in afterSave()
         if (
-            ($this->newLocation !== null || $this->tempFilePath !== null) &&
+            (isset($this->newLocation) || isset($this->tempFilePath)) &&
             $this->hasEventHandlers(self::EVENT_BEFORE_HANDLE_FILE)
         ) {
             $this->trigger(self::EVENT_BEFORE_HANDLE_FILE, new AssetEvent([
@@ -1870,7 +1870,7 @@ class Asset extends Element
         }
 
         // Set the kind based on filename, if not set already
-        if ($this->kind === null && $this->filename !== null) {
+        if (!isset($this->kind) && isset($this->filename)) {
             $this->kind = AssetsHelper::getFileKindByExtension($this->filename);
         }
 
@@ -1908,7 +1908,7 @@ class Asset extends Element
             }
 
             // Relocate the file?
-            if ($this->newLocation !== null || $this->tempFilePath !== null) {
+            if (isset($this->newLocation) || isset($this->tempFilePath)) {
                 $this->_relocateFile();
             }
 
@@ -2117,7 +2117,7 @@ class Asset extends Element
         $assetsService = Craft::$app->getAssets();
 
         // Get the (new?) folder ID & filename
-        if ($this->newLocation !== null) {
+        if (isset($this->newLocation)) {
             [$folderId, $filename] = AssetsHelper::parseFileLocation($this->newLocation);
         } else {
             $folderId = $this->folderId;
@@ -2138,11 +2138,11 @@ class Asset extends Element
         $newPath = ($newFolder->path ? rtrim($newFolder->path, '/') . '/' : '') . $filename;
 
         // Is this just a simple move/rename within the same volume?
-        if ($this->tempFilePath === null && $oldFolder !== null && $oldFolder->volumeId == $newFolder->volumeId) {
+        if (!isset($this->tempFilePath) && $oldFolder !== null && $oldFolder->volumeId == $newFolder->volumeId) {
             $oldVolume->renameFile($oldPath, $newPath);
         } else {
             // Get the temp path
-            if ($this->tempFilePath !== null) {
+            if (isset($this->tempFilePath)) {
                 $tempPath = $this->tempFilePath;
             } else {
                 $tempFilename = uniqid(pathinfo($filename, PATHINFO_FILENAME), true) . '.' . pathinfo($filename, PATHINFO_EXTENSION);

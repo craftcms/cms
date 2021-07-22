@@ -116,7 +116,7 @@ class FieldLayoutTab extends Model
     {
         parent::init();
 
-        if ($this->elements === null) {
+        if (!isset($this->elements)) {
             $this->elements = [];
             foreach ($this->getFields() as $field) {
                 $this->elements[] = Craft::createObject([
@@ -199,7 +199,7 @@ class FieldLayoutTab extends Model
      */
     public function getLayout(): ?FieldLayout
     {
-        if ($this->_layout !== null) {
+        if (isset($this->_layout)) {
             return $this->_layout;
         }
 
@@ -231,7 +231,7 @@ class FieldLayoutTab extends Model
      */
     public function getFields(): array
     {
-        if ($this->_fields !== null) {
+        if (isset($this->_fields)) {
             return $this->_fields;
         }
 
@@ -269,7 +269,7 @@ class FieldLayoutTab extends Model
         }
 
         // Clear the field layout's field cache
-        if ($this->_layout !== null) {
+        if (isset($this->_layout)) {
             $this->_layout->setFields(null);
         }
     }

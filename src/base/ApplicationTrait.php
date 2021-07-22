@@ -334,7 +334,7 @@ trait ApplicationTrait
             $this->_info = null;
         }
 
-        if ($this->_isInstalled !== null) {
+        if (isset($this->_isInstalled)) {
             return $this->_isInstalled;
         }
 
@@ -402,7 +402,7 @@ trait ApplicationTrait
     public function getIsMultiSite(bool $refresh = false, bool $withTrashed = false): bool
     {
         if ($withTrashed) {
-            if (!$refresh && $this->_isMultiSiteWithTrashed !== null) {
+            if (!$refresh && isset($this->_isMultiSiteWithTrashed)) {
                 return $this->_isMultiSiteWithTrashed;
             }
             // This is a ridiculous microoptimization for the `sites` table, but all we need to know is whether there is
@@ -418,7 +418,7 @@ trait ApplicationTrait
                     ->count() != 1;
         }
 
-        if (!$refresh && $this->_isMultiSite !== null) {
+        if (!$refresh && isset($this->_isMultiSite)) {
             return $this->_isMultiSite;
         }
         return $this->_isMultiSite = (count($this->getSites()->getAllSites()) > 1);
@@ -431,7 +431,7 @@ trait ApplicationTrait
      */
     public function getEdition(): int
     {
-        if ($this->_edition === null) {
+        if (!isset($this->_edition)) {
             $handle = $this->getProjectConfig()->get('system.edition') ?? 'solo';
             $this->_edition = App::editionIdByHandle($handle);
         }
@@ -649,7 +649,7 @@ trait ApplicationTrait
      */
     public function getInfo(bool $throwException = false): Info
     {
-        if ($this->_info !== null) {
+        if (isset($this->_info)) {
             return $this->_info;
         }
 

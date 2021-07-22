@@ -325,7 +325,7 @@ class Controller extends YiiController
     private function _isCustomOption(string $name): bool
     {
         return (
-            $this->_actionId !== null &&
+            isset($this->_actionId) &&
             isset($this->_actions[$this->_actionId]['options']) &&
             array_key_exists($name, $this->_actions[$this->_actionId]['options'])
         );

@@ -194,12 +194,12 @@ JS;
      */
     private function _getSection(): ?Section
     {
-        if ($this->_section === null) {
+        if (!isset($this->_section)) {
             if ($this->section) {
                 $this->_section = Craft::$app->getSections()->getSectionById($this->section);
             }
 
-            if ($this->_section === null) {
+            if (!isset($this->_section)) {
                 $this->_section = false;
             }
         }

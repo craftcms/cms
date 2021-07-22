@@ -494,7 +494,7 @@ class Category extends Element
      */
     public function getGroup(): CategoryGroup
     {
-        if ($this->groupId === null) {
+        if (!isset($this->groupId)) {
             throw new InvalidConfigException('Category is missing its group ID');
         }
 
@@ -719,7 +719,7 @@ class Category extends Element
      */
     private function _hasNewParent(): bool
     {
-        if ($this->_hasNewParent !== null) {
+        if (isset($this->_hasNewParent)) {
             return $this->_hasNewParent;
         }
 
@@ -734,12 +734,12 @@ class Category extends Element
     private function _checkForNewParent(): bool
     {
         // Is it a brand new category?
-        if ($this->id === null) {
+        if (!isset($this->id)) {
             return true;
         }
 
         // Was a new parent ID actually submitted?
-        if ($this->newParentId === null) {
+        if (!isset($this->newParentId)) {
             return false;
         }
 

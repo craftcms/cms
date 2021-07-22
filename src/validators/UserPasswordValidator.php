@@ -69,7 +69,7 @@ class UserPasswordValidator extends StringValidator
     {
         parent::init();
 
-        if ($this->forceDifferent && $this->sameAsCurrent === null) {
+        if ($this->forceDifferent && !isset($this->sameAsCurrent)) {
             $this->sameAsCurrent = Craft::t('app', '{attribute} must be set to a new password.');
         }
     }
@@ -99,7 +99,7 @@ class UserPasswordValidator extends StringValidator
      */
     public function isEmpty($value): bool
     {
-        if ($this->isEmpty !== null) {
+        if (isset($this->isEmpty)) {
             return call_user_func($this->isEmpty, $value);
         }
 

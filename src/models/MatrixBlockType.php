@@ -118,7 +118,7 @@ class MatrixBlockType extends Model implements GqlInlineFragmentInterface
      */
     public function getField(): Matrix
     {
-        if ($this->fieldId === null) {
+        if (!isset($this->fieldId)) {
             throw new InvalidConfigException('Block type missing its field ID');
         }
 

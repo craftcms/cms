@@ -206,7 +206,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
      */
     public function getBlockTypes(): array
     {
-        if ($this->_blockTypes !== null) {
+        if (isset($this->_blockTypes)) {
             return $this->_blockTypes;
         }
 
@@ -224,7 +224,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
      */
     public function getBlockTypeFields(): array
     {
-        if ($this->_blockTypeFields !== null) {
+        if (isset($this->_blockTypeFields)) {
             return $this->_blockTypeFields;
         }
 
@@ -989,7 +989,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
         Craft::$app->getMatrix()->saveSettings($this, false);
 
         // If the propagation method just changed, resave all the Matrix blocks
-        if ($this->oldSettings !== null) {
+        if (isset($this->oldSettings)) {
             $oldPropagationMethod = $this->oldSettings['propagationMethod'] ?? self::PROPAGATION_METHOD_ALL;
             $oldPropagationKeyFormat = $this->oldSettings['propagationKeyFormat'] ?? null;
             if ($this->propagationMethod !== $oldPropagationMethod || $this->propagationKeyFormat !== $oldPropagationKeyFormat) {

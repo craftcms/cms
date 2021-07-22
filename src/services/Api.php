@@ -39,7 +39,7 @@ class Api extends Component
     {
         parent::init();
 
-        if ($this->client === null) {
+        if (!isset($this->client)) {
             $this->client = Craft::createGuzzleClient([
                 'base_uri' => Craft::$app->baseApiUrl,
             ]);
