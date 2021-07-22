@@ -502,82 +502,82 @@ class ElementQuery extends Query implements ElementQueryInterface
     /**
      * Required by the ArrayAccess interface.
      *
-     * @param int|string $name The offset to check
+     * @param int|string $offset The offset to check
      * @return bool
      */
-    public function offsetExists($name): bool
+    public function offsetExists($offset): bool
     {
-        if (is_numeric($name)) {
+        if (is_numeric($offset)) {
             // Cached?
             if (($cachedResult = $this->getCachedResult()) !== null) {
-                return $name < count($cachedResult);
+                return $offset < count($cachedResult);
             }
 
-            $offset = $this->offset;
+            $oldOffset = $this->offset;
             $limit = $this->limit;
 
-            $this->offset = $name;
+            $this->offset = $offset;
             $this->limit = 1;
 
             $exists = $this->exists();
 
-            $this->offset = $offset;
+            $this->offset = $oldOffset;
             $this->limit = $limit;
 
             return $exists;
         }
 
         /** @noinspection ImplicitMagicMethodCallInspection */
-        return $this->__isset($name);
+        return $this->__isset($offset);
     }
 
     /**
      * Required by the ArrayAccess interface.
      *
-     * @param int|string $name The offset to get
+     * @param int|string $offset The offset to get
      * @return mixed The element at the given offset
      */
-    public function offsetGet($name)
+    public function offsetGet($offset)
     {
-        if (is_numeric($name) && ($element = $this->nth($name)) !== null) {
+        if (is_numeric($offset) && ($element = $this->nth($offset)) !== null) {
             return $element;
         }
 
         /** @noinspection ImplicitMagicMethodCallInspection */
-        return $this->__get($name);
+        return $this->__get($offset);
     }
 
     /**
      * Required by the ArrayAccess interface.
      *
-     * @param string $name The offset to set
+     * @param string $offset The offset to set
      * @param mixed $value The value
      * @throws NotSupportedException if $name is numeric
      */
-    public function offsetSet($name, $value): void
+    public function offsetSet($offset, $value): void
     {
-        if (is_numeric($name)) {
+        if (is_numeric($offset)) {
             throw new NotSupportedException('ElementQuery does not support setting an element using array syntax.');
         }
 
         /** @noinspection ImplicitMagicMethodCallInspection */
-        $this->__set($name, $value);
+        $this->__set($offset, $value);
     }
 
     /**
      * Required by the ArrayAccess interface.
      *
-     * @param string $name The offset to unset
+     * @param string $offset The offset to unset
      * @throws NotSupportedException if $name is numeric
      */
-    public function offsetUnset($name): void
+    public function offsetUnset($offset): void
     {
-        if (is_numeric($name)) {
+        if (is_numeric($offset)) {
             throw new NotSupportedException('ElementQuery does not support unsetting an element using array syntax.');
         }
 
         /** @noinspection ImplicitMagicMethodCallInspection */
-        $this->__unset($name);
+        $this->__unset($offset);
     }
 
     /**

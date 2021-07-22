@@ -135,25 +135,25 @@ class Asset extends ElementMutationResolver
     /**
      * @inheritDoc
      */
-    protected function populateElementWithData(ElementInterface $asset, array $arguments, ?ResolveInfo $resolveInfo = null): ElementInterface
+    protected function populateElementWithData(ElementInterface $element, array $arguments, ?ResolveInfo $resolveInfo = null): ElementInterface
     {
         if (!empty($arguments['_file'])) {
             $fileInformation = $arguments['_file'];
             unset($arguments['_file']);
         }
 
-        /** @var AssetElement $asset */
-        $asset = parent::populateElementWithData($asset, $arguments, $resolveInfo);
+        /** @var AssetElement $element */
+        $element = parent::populateElementWithData($element, $arguments, $resolveInfo);
 
-        if (!empty($fileInformation) && $this->handleUpload($asset, $fileInformation)) {
-            if ($asset->id) {
-                $asset->setScenario(AssetElement::SCENARIO_REPLACE);
+        if (!empty($fileInformation) && $this->handleUpload($element, $fileInformation)) {
+            if ($element->id) {
+                $element->setScenario(AssetElement::SCENARIO_REPLACE);
             } else {
-                $asset->setScenario(AssetElement::SCENARIO_CREATE);
+                $element->setScenario(AssetElement::SCENARIO_CREATE);
             }
         }
 
-        return $asset;
+        return $element;
     }
 
     /**

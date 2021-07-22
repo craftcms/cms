@@ -1376,14 +1376,14 @@ class StringHelper extends \yii\helpers\StringHelper
      * Returns true if the string begins with $substring, false otherwise. By default, the comparison is case-sensitive,
      * but can be made insensitive by setting $caseSensitive to false.
      *
-     * @param string $str The string to check the start of.
-     * @param string $substring The substring to look for.
+     * @param string $string The string to check the start of.
+     * @param string $with The substring to look for.
      * @param bool $caseSensitive Whether or not to enforce case-sensitivity.
      * @return bool Whether or not $str starts with $substring.
      */
-    public static function startsWith($str, $substring, $caseSensitive = true): bool
+    public static function startsWith($string, $with, $caseSensitive = true): bool
     {
-        return BaseStringy::create($str)->startsWith($substring, $caseSensitive);
+        return BaseStringy::create($string)->startsWith($with, $caseSensitive);
     }
 
     /**

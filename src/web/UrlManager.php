@@ -262,13 +262,13 @@ class UrlManager extends \yii\web\UrlManager
     /**
      * @inheritdoc
      */
-    protected function buildRules($rules): array
+    protected function buildRules($ruleDeclarations): array
     {
         // Add support for patterns in keys even if the value is an array
         $i = 0;
         $verbs = 'GET|HEAD|POST|PUT|PATCH|DELETE|OPTIONS';
 
-        foreach ($rules as $key => $rule) {
+        foreach ($ruleDeclarations as $key => $rule) {
             if (is_string($key) && is_array($rule)) {
                 // Code adapted from \yii\web\UrlManager::init()
                 if (
@@ -285,13 +285,13 @@ class UrlManager extends \yii\web\UrlManager
                 }
 
                 $rule['pattern'] = $key;
-                array_splice($rules, $i, 1, [$rule]);
+                array_splice($ruleDeclarations, $i, 1, [$rule]);
             }
 
             $i++;
         }
 
-        return parent::buildRules($rules);
+        return parent::buildRules($ruleDeclarations);
     }
 
     /**

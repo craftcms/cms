@@ -20,14 +20,14 @@ class FileCache extends YiiFileCache
     /**
      * @inheritdoc
      */
-    protected function getCacheFile($key): string
+    protected function getCacheFile($normalizedKey): string
     {
         if ($this->keyPrefix === '') {
-            return parent::getCacheFile($key);
+            return parent::getCacheFile($normalizedKey);
         }
 
         // Copied from the parent method, except the key prefix is removed from the directory names
-        $originalKey = StringHelper::removeLeft($key, $this->keyPrefix);
+        $originalKey = StringHelper::removeLeft($normalizedKey, $this->keyPrefix);
 
         if ($this->directoryLevel > 0) {
             $base = $this->cachePath;
@@ -38,9 +38,9 @@ class FileCache extends YiiFileCache
                 }
             }
 
-            return $base . DIRECTORY_SEPARATOR . $key . $this->cacheFileSuffix;
+            return $base . DIRECTORY_SEPARATOR . $normalizedKey . $this->cacheFileSuffix;
         }
 
-        return $this->cachePath . DIRECTORY_SEPARATOR . $key . $this->cacheFileSuffix;
+        return $this->cachePath . DIRECTORY_SEPARATOR . $normalizedKey . $this->cacheFileSuffix;
     }
 }

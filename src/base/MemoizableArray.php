@@ -136,18 +136,18 @@ class MemoizableArray extends \ArrayObject
     /**
      * @inheritdoc
      */
-    public function asort(int $sort_flags = SORT_REGULAR): void
+    public function asort(int $flags = SORT_REGULAR): void
     {
-        parent::asort($sort_flags);
+        parent::asort($flags);
         $this->_memoized = [];
     }
 
     /**
      * @inheritdoc
      */
-    public function exchangeArray($input): array
+    public function exchangeArray($array): array
     {
-        $return = parent::exchangeArray($input);
+        $return = parent::exchangeArray($array);
         $this->_memoized = [];
         return $return;
     }
@@ -155,9 +155,9 @@ class MemoizableArray extends \ArrayObject
     /**
      * @inheritdoc
      */
-    public function ksort(int $sort_flags = SORT_REGULAR): void
+    public function ksort(int $flags = SORT_REGULAR): void
     {
-        parent::ksort($sort_flags);
+        parent::ksort($flags);
         $this->_memoized = [];
     }
 
@@ -182,36 +182,36 @@ class MemoizableArray extends \ArrayObject
     /**
      * @inheritdoc
      */
-    public function offsetSet($index, $newval): void
+    public function offsetSet($key, $value): void
     {
-        parent::offsetSet($index, $newval);
+        parent::offsetSet($key, $value);
         $this->_memoized = [];
     }
 
     /**
      * @inheritdoc
      */
-    public function offsetUnset($index): void
+    public function offsetUnset($key): void
     {
-        parent::offsetUnset($index);
+        parent::offsetUnset($key);
         $this->_memoized = [];
     }
 
     /**
      * @inheritdoc
      */
-    public function uasort($cmp_function): void
+    public function uasort($callback): void
     {
-        parent::uasort($cmp_function);
+        parent::uasort($callback);
         $this->_memoized = [];
     }
 
     /**
      * @inheritdoc
      */
-    public function uksort($cmp_function): void
+    public function uksort($callback): void
     {
-        parent::uksort($cmp_function);
+        parent::uksort($callback);
         $this->_memoized = [];
     }
 }
