@@ -23,6 +23,7 @@
 - Fixed a bug where Craft would send a `X-Robots-Tag: none` header on front-end Login pages. ([#9621](https://github.com/craftcms/cms/issues/9621))
 - Fixed a bug where the “Singles” entry source showed the Author column by default. ([#9627](https://github.com/craftcms/cms/issues/9627))
 - Fixed a bug where the control panel header could remain “stuck” after closing Live Preview in Firefox. ([#9630](https://github.com/craftcms/cms/issues/9630))
+- Fixed a JavaScript error that could occur on Edit Entry pages. ([#9631](https://github.com/craftcms/cms/pull/9631))
 
 ## 3.7.4 - 2021-07-19
 
