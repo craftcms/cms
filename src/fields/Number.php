@@ -18,6 +18,7 @@ use craft\helpers\Html;
 use craft\helpers\Localization;
 use craft\i18n\Locale;
 use yii\base\InvalidArgumentException;
+use craft\helpers\Number as NumberHelper;
 
 /**
  * Number represents a Number field.
@@ -122,6 +123,11 @@ class Number extends Field implements PreviewableFieldInterface, SortableFieldIn
         }
         if (($config['min'] ?? null) === '') {
             $config['min'] = null; // default is 0
+        }
+        foreach (['min', 'max', 'defaultValue'] as $name) {
+            if (isset($config[$name])) {
+                $config[$name] = NumberHelper::toIntOrFloat($config[$name]);
+            }
         }
 
         parent::__construct($config);

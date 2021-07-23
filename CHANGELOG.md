@@ -18,6 +18,8 @@
 - Added `craft\errors\MissingVolumeFolderException`.
 - Added `craft\helpers\Assets::downloadFile()`.
 - Added `craft\helpers\Db::parseNumericParam()`.
+- Added `craft\helpers\Number::isInt()`.
+- Added `craft\helpers\Number::toIntOrFloat()`.
 - Added `craft\models\AssetIndexingSession`.
 - Added `craft\models\VolumeListing`.
 - Added `craft\records\AssetIndexingSession`.
