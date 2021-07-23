@@ -41,7 +41,7 @@
 {% set deleteDraftAction = deleteDraftAction ?? null %}
 
 {% set isDraft = element.getIsDraft() %}
-{% set isProvisionalDraft = element.getIsProvisionalDraft() %}
+{% set isProvisionalDraft = element.isProvisionalDraft %}
 {% set isUnpublishedDraft = element.getIsUnpublishedDraft() %}
 {% set isRevision = element.getIsRevision() %}
 {% set isCurrent = not isDraft and not isRevision %}
