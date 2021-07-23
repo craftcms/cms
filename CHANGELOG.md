@@ -15,7 +15,7 @@
 - Fixed a bug where opening the image editor would cause the page to scroll to the top. ([#9612](https://github.com/craftcms/cms/issues/9612))
 - Fixed a bug where provisional drafts weren’t displaying a notice when upstream changes had been merged into them. ([#9615](https://github.com/craftcms/cms/issues/9615))
 - Fixed a bug where entry titles were set to `null` before getting regenerated via their Title Format for new drafts.
-- Fixed a SQL error that could occur when updating Craft 3.7. ([#9624](https://github.com/craftcms/cms/issues/9624))
+- Fixed SQL errors that could occur when updating Craft 3.7. ([#9624](https://github.com/craftcms/cms/issues/9624), [#9625](https://github.com/craftcms/cms/issues/9625))
 - Fixed a bug where `craft\web\Request::getRawCookies()` was returning hashed cookie values.
 - Fixed a PHP error that could occur when saving a site, if there were any event handlers on `craft\services\Sites::EVENT_BEFORE_SAVE_SITE`.
 - Fixed an error that could occur when deleting a route from the control panel if there were any event handlers on `craft\services\Routes::EVENT_AFTER_DELETE_ROUTE`.

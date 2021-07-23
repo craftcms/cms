@@ -2597,6 +2597,9 @@ class ElementQuery extends Query implements ElementQueryInterface
             return;
         }
 
+        // todo: remove this check after the next breakpoint
+        $useCanonicalId = Craft::$app->getDb()->columnExists(Table::ELEMENTS, 'canonicalId');
+
         if ($this->drafts !== false) {
             if ($this->drafts === true) {
                 $this->subQuery->innerJoin(['drafts' => Table::DRAFTS], '[[drafts.id]] = [[elements.draftId]]');
@@ -2618,10 +2621,19 @@ class ElementQuery extends Query implements ElementQueryInterface
                 $this->subQuery->andWhere(['elements.draftId' => $this->draftId]);
             }
 
-            if ($this->draftOf === '*') {
-                $this->subQuery->andWhere(['not', ['elements.canonicalId' => null]]);
-            } else if ($this->draftOf !== null) {
-                $this->subQuery->andWhere(['elements.canonicalId' => $this->draftOf ?: null]);
+            // todo: remove the schema version check after the next breakpoint
+            if ($useCanonicalId) {
+                if ($this->draftOf === '*') {
+                    $this->subQuery->andWhere(['not', ['elements.canonicalId' => null]]);
+                } else if ($this->draftOf !== null) {
+                    $this->subQuery->andWhere(['elements.canonicalId' => $this->draftOf ?: null]);
+                }
+            } else {
+                if ($this->draftOf === '*') {
+                    $this->subQuery->andWhere(['not', ['drafts.sourceId' => null]]);
+                } else if ($this->draftOf !== null) {
+                    $this->subQuery->andWhere(['drafts.sourceId' => $this->draftOf ?: null]);
+                }
             }
 
             if ($this->draftCreator) {
@@ -2638,12 +2650,22 @@ class ElementQuery extends Query implements ElementQueryInterface
 
 
             if ($this->savedDraftsOnly) {
-                $this->subQuery->andWhere([
-                    'or',
-                    ['elements.draftId' => null],
-                    ['not', ['elements.canonicalId' => null]],
-                    ['drafts.saved' => true],
-                ]);
+                // todo: remove the schema version check after the next breakpoint
+                if ($useCanonicalId) {
+                    $this->subQuery->andWhere([
+                        'or',
+                        ['elements.draftId' => null],
+                        ['not', ['elements.canonicalId' => null]],
+                        ['drafts.saved' => true],
+                    ]);
+                } else {
+                    $this->subQuery->andWhere([
+                        'or',
+                        ['elements.draftId' => null],
+                        ['not', ['drafts.sourceId' => null]],
+                        ['drafts.saved' => true],
+                    ]);
+                }
             }
         } else {
             $this->subQuery->andWhere($this->_placeholderCondition(['elements.draftId' => null]));
@@ -2665,7 +2687,12 @@ class ElementQuery extends Query implements ElementQueryInterface
             }
 
             if ($this->revisionOf) {
-                $this->subQuery->andWhere(['elements.canonicalId' => $this->revisionOf]);
+                // todo: remove the schema version check after the next breakpoint
+                if ($useCanonicalId) {
+                    $this->subQuery->andWhere(['elements.canonicalId' => $this->revisionOf]);
+                } else {
+                    $this->subQuery->andWhere(['revisions.sourceId' => $this->revisionOf]);
+                }
             }
 
             if ($this->revisionCreator) {
