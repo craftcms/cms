@@ -1,5 +1,8 @@
 # Release Notes for Craft CMS 3.x
 
+## Added
+- Added `craft\helpers\FieldHelper`.
+
 ## Fixed
 - Fixed a bug where Live Preview stopped working when the device type was changed, for preview targets that had auto-refresh disabled. ([#9610](https://github.com/craftcms/cms/issues/9610))
 - Fixed a 403 error that occurred when attempting to discard changes on an entry. ([#9602](https://github.com/craftcms/cms/issues/9602))
@@ -10,6 +13,7 @@
 - Fixed a bug where `craft\web\Request::getRawCookies()` was returning hashed cookie values.
 - Fixed a PHP error that could occur when saving a site, if there were any event handlers on `craft\services\Sites::EVENT_BEFORE_SAVE_SITE`.
 - Fixed an error that could occur when deleting a route from the control panel if there were any event handlers on `craft\services\Routes::EVENT_AFTER_DELETE_ROUTE`.
+- Fixed a bug where existing fields’ maximum handle lengths were nine characters less than they needed to be.
 
 ## 3.7.4 - 2021-07-19
 
