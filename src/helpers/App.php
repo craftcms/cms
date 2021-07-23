@@ -291,7 +291,7 @@ class App
      */
     public static function checkForValidIconv(): bool
     {
-        if (self::$_iconv !== null) {
+        if (isset(self::$_iconv)) {
             return self::$_iconv;
         }
 

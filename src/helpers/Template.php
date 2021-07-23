@@ -204,7 +204,7 @@ class Template
      */
     private static function _shouldProfile(): bool
     {
-        if (self::$_shouldProfile !== null) {
+        if (isset(self::$_shouldProfile)) {
             return self::$_shouldProfile;
         }
 

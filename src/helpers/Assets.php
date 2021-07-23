@@ -303,7 +303,7 @@ class Assets
      */
     public static function getAllowedFileKinds(): array
     {
-        if (self::$_allowedFileKinds !== null) {
+        if (isset(self::$_allowedFileKinds)) {
             return self::$_allowedFileKinds;
         }
 
@@ -378,7 +378,7 @@ class Assets
      */
     private static function _buildFileKinds(): void
     {
-        if (self::$_fileKinds === null) {
+        if (!isset(self::$_fileKinds)) {
             self::$_fileKinds = [
                 Asset::KIND_ACCESS => [
                     'label' => Craft::t('app', 'Access'),

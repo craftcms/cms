@@ -296,7 +296,7 @@ EOD;
      */
     private static function _fields(): array
     {
-        if (self::$_fields !== null) {
+        if (isset(self::$_fields)) {
             return self::$_fields;
         }
 

@@ -550,7 +550,7 @@ class FileHelper extends \yii\helpers\FileHelper
      */
     public static function useFileLocks(): bool
     {
-        if (self::$_useFileLocks !== null) {
+        if (isset(self::$_useFileLocks)) {
             return self::$_useFileLocks;
         }
 

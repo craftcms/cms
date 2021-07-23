@@ -99,7 +99,7 @@ class Install
      */
     private static function _primarySiteConfig(): ?array
     {
-        if (self::$_primarySiteConfig === null) {
+        if (!isset(self::$_primarySiteConfig)) {
             $sites = Craft::$app->getProjectConfig()->get('sites', true) ?? [];
             self::$_primarySiteConfig = ArrayHelper::firstWhere($sites, 'primary') ?? false;
         }

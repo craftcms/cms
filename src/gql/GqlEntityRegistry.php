@@ -53,7 +53,7 @@ class GqlEntityRegistry
      */
     public static function getPrefix(): ?string
     {
-        if (self::$_prefix === null) {
+        if (!isset(self::$_prefix)) {
             self::$_prefix = Craft::$app->getConfig()->getGeneral()->gqlTypePrefix;
         }
 

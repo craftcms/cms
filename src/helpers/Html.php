@@ -525,7 +525,7 @@ class Html extends \yii\helpers\Html
 
     private static function _sortedDataAttributes(): array
     {
-        if (self::$_sortedDataAttributes === null) {
+        if (!isset(self::$_sortedDataAttributes)) {
             self::$_sortedDataAttributes = array_merge(static::$dataAttributes);
             usort(self::$_sortedDataAttributes, function(string $a, string $b): int {
                 return strlen($b) - strlen($a);

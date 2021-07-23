@@ -49,7 +49,7 @@ class UrlRule extends \yii\web\UrlRule
 
         if (isset($config['pattern'])) {
             // Swap out any regex tokens in the pattern
-            if (self::$_regexTokens === null) {
+            if (!isset(self::$_regexTokens)) {
                 $slugChars = ['.', '_', '-'];
                 $slugWordSeparator = Craft::$app->getConfig()->getGeneral()->slugWordSeparator;
 
