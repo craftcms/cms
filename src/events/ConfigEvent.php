@@ -23,14 +23,14 @@ class ConfigEvent extends Event
     public string $path;
 
     /**
-     * @var array The old config item value
+     * @var mixed The old config item value
      */
-    public array $oldValue = [];
+    public $oldValue;
 
     /**
-     * @var array The new config item value
+     * @var mixed The new config item value
      */
-    public array $newValue = [];
+    public $newValue;
 
     /**
      * @var string[]|null Any parts of the path that were matched by `{uid}` tokens.
