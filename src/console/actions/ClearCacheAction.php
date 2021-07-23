@@ -32,9 +32,9 @@ class ClearCacheAction extends Action
     public string $label;
 
     /**
-     * @var array
+     * @var array|null
      */
-    public array $params;
+    public ?array $params;
 
     /**
      * Clears the caches.

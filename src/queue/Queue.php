@@ -83,9 +83,9 @@ class Queue extends \yii\queue\cli\Queue implements QueueInterface
     private ?string $_executingJobId = null;
 
     /**
-     * @var int The timestamp the last job was reserved
+     * @var int|null The timestamp the last job was reserved
      */
-    private int $_reserveTime;
+    private ?int $_reserveTime = null;
 
     /**
      * @var bool Whether we're already listening for the web response

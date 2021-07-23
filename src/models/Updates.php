@@ -27,24 +27,29 @@ class Updates extends Model
     /**
      * @var Update[] Plugin update info
      */
-    public array $plugins = [];
+    public array $plugins;
 
     /**
      * @inheritdoc
      */
-    public function init(): void
+    public function __construct($config = [])
     {
-        parent::init();
-
-        if (!$this->cms instanceof Update) {
-            $this->cms = new Update($this->cms ?? []);
+        // Config normalization
+        if (!($config['cms'] ?? null) instanceof Update) {
+            $config['cms'] = new Update($config['cms'] ?? []);
         }
 
-        foreach ($this->plugins as $handle => $plugin) {
-            if (!$plugin instanceof Update) {
-                $this->plugins[$handle] = new Update($plugin);
+        if (!isset($config['plugins'])) {
+            $config['plugins'] = [];
+        } else {
+            foreach ($config['plugins'] as $handle => $plugin) {
+                if (!$plugin instanceof Update) {
+                    $config['plugins'][$handle] = new Update($plugin);
+                }
             }
         }
+
+        parent::__construct($config);
     }
 
     /**

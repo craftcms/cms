@@ -191,9 +191,9 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
     protected string $inputTemplate = '_includes/forms/elementSelect';
 
     /**
-     * @var string The JS class that should be initialized for the input
+     * @var string|null The JS class that should be initialized for the input
      */
-    protected string $inputJsClass;
+    protected ?string $inputJsClass = null;
 
     /**
      * @var bool Whether the elements have a custom sort order

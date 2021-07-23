@@ -76,6 +76,11 @@
 - Fields’ `getEagerLoadingGqlConditions()` methods must now have an `?array` return type declaration, and `null` should be returned rather than `false` if the field is not eager-loadable.
 - Fields’ `modifyElementIndexQuery()` methods must now have a `void` return type declaration.
 - Fields’ `modifyElementsQuery()` methods must now have a `void` return type declaration, and should throw a `QueryAbortedException` when the query should yield no results, rather than returning `false`.
+- Relational fields’ `$allowLargeThumbsView` properties must now have a `bool` type declaration.
+- Relational fields’ `$inputJsClass` properties must now have a `?string` type declaration.
+- Relational fields’ `$inputTemplate` properties must now have a `string` type declaration.
+- Relational fields’ `$settingsTemplate` properties must now have a `string` type declaration.
+- Relational fields’ `$sortable` properties must now have a `bool` type declaration.
 - Field layout elements’ `inputHtml()` methods must now have a `?string` return type declaration.
 - Field layout elements’ `selectorIcon()` methods must now have a `?string` return type declaration.
 - Field layout elements’ `settingsHtml()` methods must now have a `?string` return type declaration.

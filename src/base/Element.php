@@ -1485,7 +1485,7 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @var string|null
      */
-    private ?string $_fieldParamNamePrefix;
+    private ?string $_fieldParamNamePrefix = null;
 
     /**
      * @var array|null Record of the fields whose values have already been normalized

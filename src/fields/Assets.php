@@ -170,7 +170,7 @@ class Assets extends BaseRelationField
     /**
      * @inheritdoc
      */
-    protected string $inputJsClass = 'Craft.AssetSelectInput';
+    protected ?string $inputJsClass = 'Craft.AssetSelectInput';
 
     /**
      * @var array|null References for files uploaded as data strings for this field.

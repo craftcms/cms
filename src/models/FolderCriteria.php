@@ -23,14 +23,14 @@ class FolderCriteria extends Model
     public ?int $id = null;
 
     /**
-     * @var int|string|bool Parent ID
+     * @var int|string|null Parent ID
      */
-    public $parentId = false;
+    public $parentId;
 
     /**
-     * @var int|null Source ID
+     * @var int|string|null Source ID
      */
-    public ?int $volumeId = null;
+    public $volumeId;
 
     /**
      * @var string|string[]|null The folder name(s).
