@@ -49,9 +49,9 @@ class CraftIdToken extends Model
     public ?DateTime $dateUpdated = null;
 
     /**
-     * @var string
+     * @var string|null
      */
-    public string $uid;
+    public ?string $uid = null;
 
     /**
      * Has token expired.

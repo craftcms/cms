@@ -7,6 +7,7 @@
 
 namespace craft\errors;
 
+use Throwable;
 use yii\base\Exception;
 use yii\db\Migration;
 
@@ -35,9 +36,9 @@ class MigrationException extends Exception
      * @param string|null $output The migration output
      * @param string|null $message The error message
      * @param int $code The error code
-     * @param \Throwable|null $previous The previous exception
+     * @param Throwable|null $previous The previous exception
      */
-    public function __construct(Migration $migration, ?string $output = null, ?string $message = null, int $code = 0, ?\Throwable $previous = null)
+    public function __construct(Migration $migration, ?string $output = null, ?string $message = null, int $code = 0, ?Throwable $previous = null)
     {
         $this->migration = $migration;
         $this->output = $output;

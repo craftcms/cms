@@ -12,6 +12,7 @@ use craft\console\Controller;
 use craft\errors\GqlException;
 use craft\helpers\Console;
 use craft\helpers\Gql;
+use craft\models\GqlSchema;
 use GraphQL\Utils\SchemaPrinter;
 use yii\base\InvalidArgumentException;
 use yii\console\ExitCode;
@@ -98,11 +99,11 @@ class GraphqlController extends Controller
     }
 
     /**
-     * @return \craft\models\GqlSchema|null
+     * @return GqlSchema|null
      * @throws BadRequestHttpException
      * @throws \yii\base\Exception
      */
-    protected function getGqlSchema(): ?\craft\models\GqlSchema
+    protected function getGqlSchema(): ?GqlSchema
     {
         if ($this->fullSchema) {
             return Gql::createFullAccessSchema();

@@ -46,6 +46,7 @@ use craft\models\Site;
 use craft\records\Entry as EntryRecord;
 use craft\services\Structures;
 use craft\validators\DateTimeValidator;
+use DateTime;
 use yii\base\Exception;
 use yii\base\InvalidConfigException;
 use yii\db\Expression;
@@ -712,7 +713,7 @@ class Entry extends Element
     public ?int $authorId = null;
 
     /**
-     * @var \DateTime|null Post date
+     * @var DateTime|null Post date
      * ---
      * ```php
      * echo Craft::$app->formatter->asDate($entry->postDate, 'short');
@@ -721,10 +722,10 @@ class Entry extends Element
      * {{ entry.postDate|date('short') }}
      * ```
      */
-    public ?\DateTime $postDate;
+    public ?DateTime $postDate = null;
 
     /**
-     * @var \DateTime|null Expiry date
+     * @var DateTime|null Expiry date
      * ---
      * ```php
      * if ($entry->expiryDate) {
@@ -737,7 +738,7 @@ class Entry extends Element
      * {% endif %}
      * ```
      */
-    public ?\DateTime $expiryDate;
+    public ?DateTime $expiryDate = null;
 
     /**
      * @var int|false|null New parent ID
@@ -1592,7 +1593,7 @@ EOD;
 
         if ($this->enabled && !$this->postDate) {
             // Default the post date to the current date/time
-            $this->postDate = new \DateTime();
+            $this->postDate = new DateTime();
             // ...without the seconds
             $this->postDate->setTimestamp($this->postDate->getTimestamp() - ($this->postDate->getTimestamp() % 60));
         }

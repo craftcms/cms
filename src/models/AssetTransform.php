@@ -13,6 +13,7 @@ use craft\records\AssetTransform as AssetTransformRecord;
 use craft\validators\DateTimeValidator;
 use craft\validators\HandleValidator;
 use craft\validators\UniqueValidator;
+use DateTime;
 
 /**
  * The AssetTransform model class.
@@ -54,9 +55,9 @@ class AssetTransform extends Model
     public ?string $format = null;
 
     /**
-     * @var \DateTime|null Dimension change time
+     * @var DateTime|null Dimension change time
      */
-    public ?\DateTime $dimensionChangeTime;
+    public ?DateTime $dimensionChangeTime = null;
 
     /**
      * @var string Mode

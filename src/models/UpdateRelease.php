@@ -9,6 +9,7 @@ namespace craft\models;
 
 use craft\base\Model;
 use craft\helpers\DateTimeHelper;
+use DateTime;
 use DateTimeZone;
 
 /**
@@ -25,9 +26,9 @@ class UpdateRelease extends Model
     public string $version;
 
     /**
-     * @var \DateTime|null Date
+     * @var DateTime|null Date
      */
-    public ?\DateTime $date;
+    public ?DateTime $date = null;
 
     /**
      * @var bool Critical

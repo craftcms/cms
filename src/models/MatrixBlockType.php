@@ -62,9 +62,9 @@ class MatrixBlockType extends Model implements GqlInlineFragmentInterface
     public bool $hasFieldErrors = false;
 
     /**
-     * @var string|mixed
+     * @var string|null
      */
-    public $uid;
+    public ?string $uid = null;
 
     /**
      * @inheritdoc

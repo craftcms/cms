@@ -39,12 +39,12 @@ class ExecuteGqlQueryEvent extends Event
     public ?string $operationName;
 
     /**
-     * @var mixed|null The context that is shared between all resolvers.
+     * @var mixed The context that is shared between all resolvers.
      */
     public $context;
 
     /**
-     * @var mixed|null The root value to use when resolving the top-level object fields.
+     * @var mixed The root value to use when resolving the top-level object fields.
      */
     public $rootValue;
 

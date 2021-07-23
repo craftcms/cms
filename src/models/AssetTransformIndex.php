@@ -10,6 +10,7 @@ namespace craft\models;
 use Craft;
 use craft\base\Model;
 use craft\validators\DateTimeValidator;
+use DateTime;
 use yii\base\InvalidConfigException;
 
 /**
@@ -67,19 +68,19 @@ class AssetTransformIndex extends Model
     public bool $error = false;
 
     /**
-     * @var \DateTime|null Date indexed
+     * @var DateTime|null Date indexed
      */
-    public ?\DateTime $dateIndexed;
+    public ?DateTime $dateIndexed = null;
 
     /**
-     * @var \DateTime|null Date updated
+     * @var DateTime|null Date updated
      */
-    public ?\DateTime $dateUpdated;
+    public ?DateTime $dateUpdated = null;
 
     /**
-     * @var \DateTime|null Date created
+     * @var DateTime|null Date created
      */
-    public ?\DateTime $dateCreated;
+    public ?DateTime $dateCreated = null;
 
     /**
      * @var string|null Detected format

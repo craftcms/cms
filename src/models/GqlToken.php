@@ -12,6 +12,7 @@ use craft\base\Model;
 use craft\helpers\DateTimeHelper;
 use craft\records\GqlToken as GqlSchemaRecord;
 use craft\validators\UniqueValidator;
+use DateTime;
 
 /**
  * GraphQL token class
@@ -54,24 +55,24 @@ class GqlToken extends Model
     public bool $enabled = true;
 
     /**
-     * @var \DateTime|null Date expires
+     * @var DateTime|null Date expires
      */
-    public ?\DateTime $expiryDate;
+    public ?DateTime $expiryDate = null;
 
     /**
-     * @var \DateTime|null Date last used
+     * @var DateTime|null Date last used
      */
-    public ?\DateTime $lastUsed;
+    public ?DateTime $lastUsed = null;
 
     /**
-     * @var \DateTime|null Date created
+     * @var DateTime|null Date created
      */
-    public ?\DateTime $dateCreated;
+    public ?DateTime $dateCreated = null;
 
     /**
-     * @var string $uid
+     * @var string|null $uid
      */
-    public string $uid;
+    public ?string $uid = null;
 
     /**
      * @var array|null The allowed scope for the token.

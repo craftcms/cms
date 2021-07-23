@@ -7,6 +7,7 @@
 
 namespace craft\events;
 
+use craft\models\Section;
 use yii\base\Event;
 
 /**
@@ -18,9 +19,9 @@ use yii\base\Event;
 class SectionEvent extends Event
 {
     /**
-     * @var \craft\models\Section|null The section model associated with the event.
+     * @var Section The section model associated with the event.
      */
-    public ?\craft\models\Section $section;
+    public Section $section;
 
     /**
      * @var bool Whether the section is brand new

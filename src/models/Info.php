@@ -8,6 +8,7 @@
 namespace craft\models;
 
 use craft\base\Model;
+use DateTime;
 
 /**
  * Class Info model.
@@ -54,14 +55,14 @@ class Info extends Model
     public string $fieldVersion = '000000000000';
 
     /**
-     * @var \DateTime|null Date updated
+     * @var DateTime|null Date updated
      */
-    public ?\DateTime $dateUpdated;
+    public ?DateTime $dateUpdated = null;
 
     /**
-     * @var \DateTime|null Date created
+     * @var DateTime|null Date created
      */
-    public ?\DateTime $dateCreated;
+    public ?DateTime $dateCreated = null;
 
     /**
      * @inheritdoc

@@ -84,9 +84,9 @@ class EntryType extends Model
     public ?string $titleFormat = null;
 
     /**
-     * @var string UID
+     * @var string|null UID
      */
-    public string $uid;
+    public ?string $uid = null;
 
     /**
      * @inheritdoc

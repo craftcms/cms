@@ -8,6 +8,7 @@
 namespace craft\events;
 
 use craft\base\ElementInterface;
+use Throwable;
 
 /**
  * Batch element action event class.
@@ -28,7 +29,7 @@ class BatchElementActionEvent extends ElementQueryEvent
     public int $position;
 
     /**
-     * @var \Throwable|null The exception that was thrown if any
+     * @var Throwable|null The exception that was thrown if any
      */
-    public ?\Throwable $exception;
+    public ?Throwable $exception = null;
 }
