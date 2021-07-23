@@ -741,12 +741,7 @@ class EntriesController extends BaseEntriesController
                 ->status(null)
                 ->one();
 
-            if ($entry) {
-                /** @var Entry|DraftBehavior $entry */
-                if ($entry->getIsOutdated()) {
-                    Craft::$app->getElements()->mergeCanonicalChanges($entry);
-                }
-            } else {
+            if (!$entry) {
                 // Otherwise load the real Current revision
                 $entry = Entry::find()
                     ->id($entryId)

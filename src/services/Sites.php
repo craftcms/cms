@@ -663,7 +663,7 @@ class Sites extends Component
             $this->trigger(self::EVENT_BEFORE_SAVE_SITE, new SiteEvent([
                 'site' => $site,
                 'isNew' => $isNewSite,
-                'oldPrimarySiteId' => $primarySite->id,
+                'oldPrimarySiteId' => $primarySite->id ?? null,
             ]));
         }
 

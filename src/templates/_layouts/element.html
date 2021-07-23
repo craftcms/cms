@@ -41,7 +41,7 @@
 {% set deleteDraftAction = deleteDraftAction ?? null %}
 
 {% set isDraft = element.getIsDraft() %}
-{% set isProvisionalDraft = element.getIsProvisionalDraft() %}
+{% set isProvisionalDraft = element.isProvisionalDraft %}
 {% set isUnpublishedDraft = element.getIsUnpublishedDraft() %}
 {% set isRevision = element.getIsRevision() %}
 {% set isCurrent = not isDraft and not isRevision %}
@@ -181,7 +181,7 @@
     {% endif %}
     {% if (
         (isUnpublishedDraft and canDeleteDraft and deleteDraftAction) or
-        (not isUnpublishedDraft and canDeleteSource and deleteSourceAction)
+        (not isUnpublishedDraft and not isProvisionalDraft and canDeleteSource and deleteSourceAction)
     ) %}
         {% set formActions = formActions|push({
             destructive: true,

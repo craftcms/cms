@@ -47,6 +47,7 @@ use craft\helpers\ArrayHelper;
 use craft\helpers\Component as ComponentHelper;
 use craft\helpers\Db;
 use craft\helpers\ElementHelper;
+use craft\helpers\FieldHelper;
 use craft\helpers\Json;
 use craft\helpers\ProjectConfig as ProjectConfigHelper;
 use craft\helpers\StringHelper;
@@ -852,13 +853,7 @@ class Fields extends Component
         }
 
         // If this is a new field or it has multiple columns, make sure it has a column suffix
-        if (
-            $field::hasContentColumn() &&
-            !$field->columnSuffix &&
-            ($isNew || is_array($field->getContentColumnType()))
-        ) {
-            $field->columnSuffix = StringHelper::randomString(8);
-        }
+        FieldHelper::ensureColumnSuffix($field);
 
         // Store with all the populated data for future reference.
         $this->_savingFields[$field->uid] = $field;

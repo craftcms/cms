@@ -588,7 +588,7 @@ class EntryRevisionsController extends BaseEntriesController
             $draft->enabled = (bool)$this->request->getBodyParam('enabled', $draft->enabled);
         }
         $draft->setEnabledForSite($enabledForSite ?? $draft->getEnabledForSite());
-        $draft->title = $this->request->getBodyParam('title');
+        $draft->title = $this->request->getBodyParam('title') ?? $draft->title;
 
         if (!$draft->typeId) {
             // Default to the section's first entry type
