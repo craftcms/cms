@@ -47,7 +47,7 @@ class VolumesFixture extends ActiveFixture
      * @inheritdoc
      * @throws Exception
      */
-    public function load()
+    public function load(): void
     {
         parent::load();
 
