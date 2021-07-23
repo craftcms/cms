@@ -8,6 +8,7 @@
 namespace craft\gql\resolvers\mutations;
 
 use Craft;
+use craft\behaviors\DraftBehavior;
 use craft\db\Table;
 use craft\elements\db\EntryQuery;
 use craft\elements\Entry as EntryElement;
@@ -110,7 +111,7 @@ class Entry extends ElementMutationResolver
         $entryTypeUid = Db::uidById(Table::ENTRYTYPES, $entry->typeId);
         $this->requireSchemaAction('entrytypes.' . $entryTypeUid, 'save');
 
-        /** @var Entry $draft */
+        /** @var Entry|DraftBehavior $draft */
         $draft = Craft::$app->getDrafts()->createDraft($entry, $entry->authorId);
 
         return $draft->draftId;

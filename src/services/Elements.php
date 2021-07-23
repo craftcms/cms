@@ -1648,6 +1648,7 @@ class Elements extends Component
             while (($record = StructureElementRecord::findOne(['elementId' => $element->id])) !== null) {
                 // If this element still has any children, move them up before the one getting deleted.
                 while (($child = $record->children(1)->one()) !== null) {
+                    /** @var StructureElementRecord $child */
                     $child->insertBefore($record);
                     // Re-fetch the record since its lft and rgt attributes just changed
                     $record = StructureElementRecord::findOne($record->id);

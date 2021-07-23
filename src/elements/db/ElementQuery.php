@@ -1264,6 +1264,7 @@ class ElementQuery extends Query implements ElementQueryInterface
         if (isset($this->id) && empty($this->id)) {
             throw new QueryAbortedException();
         }
+        /** @var string|ElementInterface $class */
         $class = $this->elementType;
 
         // Make sure the siteId param is set
@@ -1723,6 +1724,7 @@ class ElementQuery extends Query implements ElementQueryInterface
             return $element;
         }
 
+        /** @var string|ElementInterface $class */
         $class = $this->elementType;
 
         // Instantiate the element
@@ -2469,6 +2471,7 @@ class ElementQuery extends Query implements ElementQueryInterface
      */
     private function _normalizeStructureParamValue(string $property, string $class): ElementInterface
     {
+        /** @var string|ElementInterface $class */
         if ($this->$property !== false && !$this->$property instanceof ElementInterface) {
             $this->$property = $class::find()
                 ->id($this->$property)

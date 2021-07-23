@@ -9,7 +9,6 @@ namespace craft\services;
 
 use Craft;
 use craft\base\GqlInlineFragmentFieldInterface;
-use craft\behaviors\FieldLayoutBehavior;
 use craft\db\Query as DbQuery;
 use craft\db\Table;
 use craft\errors\GqlException;

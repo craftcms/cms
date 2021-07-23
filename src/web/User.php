@@ -508,6 +508,7 @@ class User extends \yii\web\User
      */
     protected function beforeLogout($identity): bool
     {
+        /** @var static $identity */
         if (!parent::beforeLogout($identity)) {
             return false;
         }
