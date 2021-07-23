@@ -78,12 +78,12 @@ class UrlManager extends \yii\web\UrlManager
     private array $_routeParams = [];
 
     /**
-     * @var ElementInterface|null
+     * @var ElementInterface|false|null
      */
-    private ?ElementInterface $_matchedElement = null;
+    private $_matchedElement = null;
 
     /**
-     * @var mixed|null
+     * @var mixed
      */
     private $_matchedElementRoute;
 

@@ -43,7 +43,7 @@ trait LogTargetTrait
      * @throws \Throwable
      * @see Target::getMessagePrefix()
      */
-    public function getMessagePrefix(array $message): string
+    public function getMessagePrefix($message): string
     {
         if (isset($this->prefix)) {
             return call_user_func($this->prefix, $message);
