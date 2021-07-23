@@ -64,7 +64,7 @@ class VolumesFixture extends ActiveFixture
      * @inheritdoc
      * @throws ErrorException
      */
-    public function unload()
+    public function unload(): void
     {
         // Remove the dirs
         foreach ($this->getData() as $data) {
