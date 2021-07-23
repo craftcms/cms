@@ -1,0 +1,9 @@
+* @craftcms/dev
+.codecov.yml @bradbell
+.travis.yml @bradbell
+CHANGELOG.md @brandonkelly
+codeception.yml @bradbell
+crowdin.yml @bradbell
+/src/gql/ @andris-sevcenko
+/src/web/assets/admintable/ @nfourtythree
+/src/web/assets/pluginstore/ @benjamindavid
