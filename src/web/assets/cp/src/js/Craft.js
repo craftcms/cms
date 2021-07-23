@@ -900,6 +900,10 @@ $.extend(Craft,
          * @return {string}
          */
         findDeltaData: function(oldData, newData, deltaNames, callback, initialDeltaValues) {
+            // Make sure oldData and newData are always strings. This is important because further below String.split is called.
+            oldData = typeof oldData == 'string' ? oldData : '';
+            newData = typeof newData == 'string' ? newData : '';
+
             // Sort the delta namespaces from least -> most specific
             deltaNames.sort(function(a, b) {
                 if (a.length === b.length) {
