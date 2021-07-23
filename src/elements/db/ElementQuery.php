@@ -2598,7 +2598,8 @@ class ElementQuery extends Query implements ElementQueryInterface
         }
 
         // todo: remove this check after the next breakpoint
-        $useCanonicalId = Craft::$app->getDb()->columnExists(Table::ELEMENTS, 'canonicalId');
+        $db = Craft::$app->getDb();
+        $useCanonicalId = $db->columnExists(Table::ELEMENTS, 'canonicalId');
 
         if ($this->drafts !== false) {
             if ($this->drafts === true) {
@@ -2612,12 +2613,15 @@ class ElementQuery extends Query implements ElementQueryInterface
             $this->query->addSelect([
                 'elements.draftId',
                 'drafts.creatorId as draftCreatorId',
-                'drafts.provisional as isProvisionalDraft',
                 'drafts.name as draftName',
                 'drafts.notes as draftNotes',
             ]);
 
             // todo: remove this check after the next breakpoint
+            $useProvisionalDrafts = $db->columnExists(Table::DRAFTS, 'provisional');
+            if ($useProvisionalDrafts) {
+                $this->query->addSelect(['drafts.provisional as isProvisionalDraft']);
+            }
 
             if ($this->draftId) {
                 $this->subQuery->andWhere(['elements.draftId' => $this->draftId]);
@@ -2642,7 +2646,7 @@ class ElementQuery extends Query implements ElementQueryInterface
                 $this->subQuery->andWhere(['drafts.creatorId' => $this->draftCreator]);
             }
 
-            if ($this->provisionalDrafts !== null) {
+            if ($useProvisionalDrafts && $this->provisionalDrafts !== null) {
                 $this->subQuery->andWhere([
                     'or',
                     ['elements.draftId' => null],
