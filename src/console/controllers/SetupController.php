@@ -318,14 +318,21 @@ EOD;
 
         test:
 
+        /** @noinspection PhpFieldAssignmentTypeMismatchInspection */
         $dbConfig->driver = $this->driver;
+        /** @noinspection PhpFieldAssignmentTypeMismatchInspection */
         $dbConfig->server = $this->server;
         $dbConfig->port = $this->port;
+        /** @noinspection PhpFieldAssignmentTypeMismatchInspection */
         $dbConfig->database = $this->database;
         $dbConfig->dsn = "{$this->driver}:host={$this->server};port={$this->port};dbname={$this->database};";
+        /** @noinspection PhpFieldAssignmentTypeMismatchInspection */
         $dbConfig->user = $this->user;
+        /** @noinspection PhpFieldAssignmentTypeMismatchInspection */
         $dbConfig->password = $this->password;
+        /** @noinspection PhpFieldAssignmentTypeMismatchInspection */
         $dbConfig->schema = $this->schema;
+        /** @noinspection PhpFieldAssignmentTypeMismatchInspection */
         $dbConfig->tablePrefix = $this->tablePrefix;
 
         $db = Craft::$app->getDb();

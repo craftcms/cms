@@ -9,6 +9,7 @@ namespace craft\mail;
 
 use craft\elements\User;
 use craft\helpers\MailerHelper;
+use Swift_TransportException;
 
 /**
  * Represents an email message.

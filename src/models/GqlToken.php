@@ -74,9 +74,9 @@ class GqlToken extends Model
     public string $uid;
 
     /**
-     * @var array The allowed scope for the token.
+     * @var array|null The allowed scope for the token.
      */
-    private array $_scope = [];
+    private ?array $_scope = null;
 
     /**
      * @var GqlSchema The schema for this token.
@@ -204,7 +204,7 @@ class GqlToken extends Model
      */
     public function getScope()
     {
-        if (empty($this->_scope)) {
+        if (!isset($this->_scope)) {
             $schema = $this->getSchema();
             $this->_scope = $schema->scope ?? null;
         }

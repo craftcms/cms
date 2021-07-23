@@ -453,6 +453,7 @@ class Locale extends BaseObject
                 $config['currencyCode'] = $this->getNumberSymbol(self::SYMBOL_INTL_CURRENCY);
             }
 
+            /** @noinspection PhpFieldAssignmentTypeMismatchInspection */
             $this->_formatter = Craft::createObject($config);
         }
 

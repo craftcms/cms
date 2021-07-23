@@ -26,7 +26,7 @@ class LivePreviewController extends Controller
     /**
      * @inheritdoc
      */
-    protected array $allowAnonymous = ['preview'];
+    protected $allowAnonymous = ['preview'];
 
     /**
      * @inheritdoc

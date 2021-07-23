@@ -18,14 +18,14 @@ use yii\base\BaseObject;
 class EagerLoadPlan extends BaseObject
 {
     /**
-     * @var string The eager-loading handle
+     * @var string|null The eager-loading handle
      */
-    public string $handle;
+    public ?string $handle;
 
     /**
-     * @var string The eager-loading alias
+     * @var string|null The eager-loading alias
      */
-    public string $alias;
+    public ?string $alias;
 
     /**
      * @var array The criteria that should be applied when eager-loading these elements

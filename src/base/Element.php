@@ -1518,7 +1518,7 @@ abstract class Element extends Component implements ElementInterface
      * @see getDirtyFields()
      * @see isFieldDirty()
      */
-    private array $_dirtyFields;
+    private array $_dirtyFields = [];
 
     /**
      * @var static|false
@@ -3287,10 +3287,8 @@ abstract class Element extends Component implements ElementInterface
         if ($this->_allDirty()) {
             return ArrayHelper::getColumn($this->fieldLayoutFields(), 'handle');
         }
-        if ($this->_dirtyFields) {
-            return array_keys($this->_dirtyFields);
-        }
-        return [];
+
+        return array_keys($this->_dirtyFields);
     }
 
     /**
@@ -3318,7 +3316,8 @@ abstract class Element extends Component implements ElementInterface
     {
         $this->_allDirty = false;
         $this->_dirtyAttributes = [];
-        $this->_dirtyFields = null;
+        $this->_dirtyFields = [];
+
         if (static::hasTitles()) {
             $this->_savedTitle = $this->title;
         }

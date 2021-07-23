@@ -298,9 +298,9 @@ class ProjectConfig extends Component
     private bool $_timestampUpdated = false;
 
     /**
-     * @var array The current changeset being applied, if applying changes by array.
+     * @var array|null The current changeset being applied, if applying changes by array.
      */
-    private array $_changesBeingApplied;
+    private ?array $_changesBeingApplied = null;
 
     /**
      * @var array Deferred config sync events
@@ -317,15 +317,15 @@ class ProjectConfig extends Component
     private array $_appliedChanges = [];
 
     /**
-     * @var array Current config as stored in database.
+     * @var array|null Current config as stored in database.
      */
-    private array $_storedConfig;
+    private ?array $_storedConfig = null;
 
     /**
-     * @var array The currently-loaded config, possibly with pending changes
+     * @var array|null The currently-loaded config, possibly with pending changes
      * that will be stored in the database & project.yaml at the end of the request
      */
-    private array $_loadedConfig;
+    private ?array $_loadedConfig = null;
 
     /**
      * @var array[] Config change handlers

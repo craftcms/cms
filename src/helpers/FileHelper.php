@@ -556,6 +556,7 @@ class FileHelper extends \yii\helpers\FileHelper
 
         $generalConfig = Craft::$app->getConfig()->getGeneral();
         if (is_bool($generalConfig->useFileLocks)) {
+            /** @noinspection PhpFieldAssignmentTypeMismatchInspection */
             return self::$_useFileLocks = $generalConfig->useFileLocks;
         }
 

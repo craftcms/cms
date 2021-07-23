@@ -37,7 +37,7 @@ class GraphqlController extends Controller
     /**
      * @inheritdoc
      */
-    public array $allowAnonymous = ['api'];
+    protected $allowAnonymous = ['api'];
 
     /**
      * @inheritdoc

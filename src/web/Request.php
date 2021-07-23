@@ -115,9 +115,9 @@ class Request extends \yii\web\Request
     private int $_pageNum = 1;
 
     /**
-     * @var bool
+     * @var bool|null
      */
-    private bool $_isCpRequest;
+    private ?bool $_isCpRequest = null;
 
     /**
      * @var bool

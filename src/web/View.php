@@ -211,10 +211,10 @@ class View extends \yii\web\View
     private array $_cssBuffers = [];
 
     /**
-     * @var array the registered generic `<script>` code blocks
+     * @var array|null the registered generic `<script>` code blocks
      * @see registerScript()
      */
-    private array $_scripts;
+    private ?array $_scripts = null;
 
     /**
      * @var array the registered generic HTML code blocks

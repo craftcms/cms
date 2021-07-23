@@ -352,15 +352,15 @@ class Gql extends Component
     }
 
     /**
-     * @var Schema Currently loaded schema definition
+     * @var Schema|null Currently loaded schema definition
      */
-    private Schema $_schemaDef;
+    private ?Schema $_schemaDef = null;
 
     /**
-     * @var GqlSchema The active GraphQL schema
+     * @var GqlSchema|null The active GraphQL schema
      * @see setActiveSchema()
      */
-    private GqlSchema $_schema;
+    private ?GqlSchema $_schema = null;
 
     /**
      * @var array Cache of content fields by element class

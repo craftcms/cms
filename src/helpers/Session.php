@@ -110,9 +110,9 @@ class Session
     }
 
     /**
-     * @var YiiSession
+     * @var YiiSession|null
      */
-    private static YiiSession $_session;
+    private static ?YiiSession $_session = null;
 
     /**
      * @var bool

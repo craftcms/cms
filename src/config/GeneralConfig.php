@@ -1627,7 +1627,7 @@ class GeneralConfig extends BaseObject
      *
      * Some file systems, such as NFS, do not support exclusive file locking.
      *
-     * If not set to `true` or `false`, Craft will try to detect if the underlying file system supports exclusive file locking and cache the results.
+     * If `null`, Craft will try to detect if the underlying file system supports exclusive file locking and cache the results.
      *
      * @see https://php.net/manual/en/function.file-put-contents.php
      * @group System

@@ -82,12 +82,12 @@ class MigrateController extends BaseMigrateController
     const EVENT_REGISTER_MIGRATOR = 'registerMigrator';
 
     /**
-     * @var string The migration track to work with (e.g. `craft`, `content`, `plugin:commerce`, etc.)
+     * @var string|null The migration track to work with (e.g. `craft`, `content`, `plugin:commerce`, etc.)
      *
      * If --plugin is passed, this will automatically be set to the plugin’s track. Otherwise defaults to 'content'.
      * @since 3.5.0
      */
-    public string $track = MigrationManager::TRACK_CONTENT;
+    public ?string $track = MigrationManager::TRACK_CONTENT;
 
     /**
      * @var string|null DEPRECATED. Use `--track` instead.

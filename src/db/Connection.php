@@ -66,11 +66,11 @@ class Connection extends \yii\db\Connection
     const EVENT_AFTER_RESTORE_BACKUP = 'afterRestoreBackup';
 
     /**
-     * @var bool whether the database supports 4+ byte characters
+     * @var bool|null whether the database supports 4+ byte characters
      * @see getSupportsMb4()
      * @see setSupportsMb4()
      */
-    private bool $_supportsMb4;
+    private ?bool $_supportsMb4 = null;
 
     /**
      * Returns whether this is a MySQL connection.

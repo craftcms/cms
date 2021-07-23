@@ -138,16 +138,16 @@ class Sites extends Component
     private ?array $_editableSiteIds = null;
 
     /**
-     * @var Site[]
+     * @var Site[]|null
      * @see getSiteById()
      */
-    private array $_allSitesById;
+    private ?array $_allSitesById = null;
 
     /**
-     * @var Site[]
+     * @var Site[]|null
      * @see getSiteById()
      */
-    private array $_enabledSitesById;
+    private ?array $_enabledSitesById = null;
 
     /**
      * @var Site|null the current site

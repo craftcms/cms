@@ -196,11 +196,11 @@ class FieldLayout extends Model
     private array $_fields;
 
     /**
-     * @var FieldInterface[]
+     * @var FieldInterface[]|null
      * @see getFields()
      * @see setFields()
      */
-    private array $_customFields;
+    private ?array $_customFields = null;
 
     /**
      * @inheritdoc

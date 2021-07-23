@@ -49,9 +49,9 @@ class Content extends Component
     public string $contentTable = Table::CONTENT;
 
     /**
-     * @var string
+     * @var string|null
      */
-    public string $fieldColumnPrefix = 'field_';
+    public ?string $fieldColumnPrefix = 'field_';
 
     /**
      * @var string

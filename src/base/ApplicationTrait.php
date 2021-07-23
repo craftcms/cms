@@ -208,9 +208,9 @@ trait ApplicationTrait
     public ?array $apiParams = null;
 
     /**
-     * @var
+     * @var bool|null
      */
-    private bool $_isInstalled;
+    private ?bool $_isInstalled = null;
 
     /**
      * @var bool Whether the application is fully initialized yet

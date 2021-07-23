@@ -23,9 +23,9 @@ use DateTime;
 class DraftBehavior extends BaseRevisionBehavior
 {
     /**
-     * @var string The draft name
+     * @var string|null The draft name
      */
-    public string $draftName;
+    public ?string $draftName = null;
 
     /**
      * @var string|null The draft notes

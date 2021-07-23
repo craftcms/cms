@@ -430,7 +430,6 @@ class ElementQueryConditionBuilder extends Component
 
                     $transformEagerLoadArguments = [];
 
-
                     // If it's a place where we can have transforms defined, grab the possible values from directive as well
                     if ($isAssetField) {
                         $transformEagerLoadArguments = $this->_extractTransformDirectiveArguments($subNode);

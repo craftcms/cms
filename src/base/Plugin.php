@@ -73,6 +73,7 @@ class Plugin extends Module implements PluginInterface
         // init() method needs to call Craft::t() or Plugin::getInstance().
 
         $this->t9nCategory = ArrayHelper::remove($config, 't9nCategory', $this->t9nCategory ?? $id);
+        /** @noinspection PhpFieldAssignmentTypeMismatchInspection */
         $this->sourceLanguage = ArrayHelper::remove($config, 'sourceLanguage', $this->sourceLanguage);
 
         if (($basePath = ArrayHelper::remove($config, 'basePath')) !== null) {

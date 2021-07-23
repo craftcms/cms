@@ -34,10 +34,10 @@ trait ElementTrait
     public ?int $draftId = null;
 
     /**
-     * @var int The ID of the revision’s row in the `revisions` table
+     * @var int|null The ID of the revision’s row in the `revisions` table
      * @since 3.2.0
      */
-    public int $revisionId;
+    public ?int $revisionId = null;
 
     /**
      * @var bool Whether this is a provisional draft.

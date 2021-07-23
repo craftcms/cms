@@ -12,6 +12,7 @@ use craft\elements\User;
 use craft\helpers\App;
 use craft\helpers\Template;
 use craft\web\View;
+use Swift_TransportException;
 use yii\base\InvalidConfigException;
 use yii\helpers\Markdown;
 use yii\mail\MailEvent;
@@ -173,7 +174,7 @@ class Mailer extends \yii\swiftmailer\Mailer
 
         try {
             return parent::send($message);
-        } catch (\Throwable $e) {
+        } catch (Swift_TransportException $e) {
             $eMessage = $e->getMessage();
 
             // Remove the stack trace to get rid of any sensitive info. Note that Swiftmailer includes a debug

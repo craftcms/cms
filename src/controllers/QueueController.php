@@ -33,7 +33,7 @@ class QueueController extends Controller
     /**
      * @inheritdoc
      */
-    protected array $allowAnonymous = ['run'];
+    protected $allowAnonymous = ['run'];
 
     /**
      * @inheritdoc

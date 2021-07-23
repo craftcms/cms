@@ -42,9 +42,9 @@ class GqlSchema extends Model
     public $isPublic = false;
 
     /**
-     * @var string $uid
+     * @var string|null $uid
      */
-    public string $uid;
+    public ?string $uid = null;
 
     /**
      * @var array Instance cache for the extracted scope pairs
