@@ -31,6 +31,7 @@ use GraphQL\Language\AST\FragmentSpreadNode;
 use GraphQL\Language\AST\InlineFragmentNode;
 use GraphQL\Language\AST\ListValueNode;
 use GraphQL\Language\AST\Node;
+use GraphQL\Language\AST\NodeList;
 use GraphQL\Language\AST\ObjectFieldNode;
 use GraphQL\Language\AST\ObjectValueNode;
 use GraphQL\Language\AST\VariableNode;
@@ -167,10 +168,10 @@ class ElementQueryConditionBuilder extends Component
     /**
      * Extract arguments from an array of argument nodes, substituting variables wit the real values.
      *
-     * @param ArgumentNode[] $argumentNodes
+     * @param NodeList|ArgumentNode[] $argumentNodes
      * @return array
      */
-    private function _extractArguments(array $argumentNodes): array
+    private function _extractArguments($argumentNodes): array
     {
         $arguments = [];
 

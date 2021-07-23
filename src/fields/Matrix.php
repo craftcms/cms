@@ -111,10 +111,10 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
     public ?int $maxBlocks = null;
 
     /**
-     * @var string Content table name
+     * @var string|null Content table name
      * @since 3.0.23
      */
-    public string $contentTable;
+    public ?string $contentTable = null;
 
     /**
      * @var string Propagation method
@@ -152,7 +152,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
     public function __construct($config = [])
     {
         // Config normalization
-        foreach (['minBlocks', 'maxBlocks', 'propagationKeyFormat'] as $name) {
+        foreach (['minBlocks', 'maxBlocks', 'propagationKeyFormat', 'contentTable'] as $name) {
             if (($config[$name] ?? null) === '') {
                 unset($config[$name]);
             }

@@ -48,9 +48,9 @@ class TagGroup extends Model
     public ?int $fieldLayoutId = null;
 
     /**
-     * @var int|null Field layout ID
+     * @var string|null Field layout ID
      */
-    public ?int $uid = null;
+    public ?string $uid = null;
 
     /**
      * @inheritdoc
