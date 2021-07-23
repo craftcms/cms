@@ -401,10 +401,12 @@ abstract class BaseField extends FieldLayoutElement
      */
     protected function orientation(ElementInterface $element = null, bool $static = false): string
     {
+        // If the field isn’t marked as translatable, just go with the user’s language
         if (!$element || !$this->translatable($element, $static)) {
             return Craft::$app->getLocale()->getOrientation();
         }
 
+        // Otherwise go with the site’s language
         $site = $element->getSite();
         $locale = Craft::$app->getI18n()->getLocaleById($site->language);
         return $locale->getOrientation();
