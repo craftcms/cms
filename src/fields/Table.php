@@ -70,9 +70,9 @@ class Table extends Field
     public ?int $minRows = null;
 
     /**
-     * @var array|null The columns that should be shown in the table
+     * @var array The columns that should be shown in the table
      */
-    public ?array $columns = [
+    public array $columns = [
         'col1' => [
             'heading' => '',
             'handle' => '',
@@ -83,7 +83,7 @@ class Table extends Field
     /**
      * @var array The default row values that new elements should have
      */
-    public array $defaults;
+    public array $defaults = [];
 
     /**
      * @var string The type of database column the field should have in the content table
@@ -106,27 +106,29 @@ class Table extends Field
             $config['addRowLabel'] = Craft::t('app', 'Add a row');
         }
 
-        if (!isset($config['columns']) || !is_array($config['columns'])) {
-            $config['columns'] = [];
-        } else {
-            foreach ($config['columns'] as $colId => &$column) {
-                // If the column doesn't specify a type, then it probably wasn't meant to be submitted
-                if (!isset($column['type'])) {
-                    unset($config['columns'][$colId]);
-                    continue;
-                }
-
-                if ($column['type'] === 'select') {
-                    if (!isset($column['options'])) {
-                        $column['options'] = [];
-                    } else if (is_string($column['options'])) {
-                        $column['options'] = Json::decode($column['options']);
+        if (array_key_exists('columns', $config)) {
+            if (!is_array($config['columns'])) {
+                unset($config['columns']);
+            } else {
+                foreach ($config['columns'] as $colId => &$column) {
+                    // If the column doesn't specify a type, then it probably wasn't meant to be submitted
+                    if (!isset($column['type'])) {
+                        unset($config['columns'][$colId]);
+                        continue;
                     }
-                } else {
-                    unset($column['options']);
+
+                    if ($column['type'] === 'select') {
+                        if (!isset($column['options'])) {
+                            $column['options'] = [];
+                        } else if (is_string($column['options'])) {
+                            $column['options'] = Json::decode($column['options']);
+                        }
+                    } else {
+                        unset($column['options']);
+                    }
                 }
+                unset($column);
             }
-            unset($column);
         }
 
         if (isset($config['defaults'])) {
