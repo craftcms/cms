@@ -85,7 +85,7 @@ class DbConfig extends BaseObject
     public ?string $collation = null;
 
     /**
-     * @var string The Data Source Name (“DSN”) that tells Craft how to connect to the database.
+     * @var string|null The Data Source Name (“DSN”) that tells Craft how to connect to the database.
      *
      * DSNs should begin with a driver prefix (`mysql:` or `pgsql:`), followed by driver-specific parameters.
      * For example, `mysql:host=127.0.0.1;port=3306;dbname=acme_corp`.
@@ -93,7 +93,7 @@ class DbConfig extends BaseObject
      * - MySQL parameters: <https://php.net/manual/en/ref.pdo-mysql.connection.php>
      * - PostgreSQL parameters: <https://php.net/manual/en/ref.pdo-pgsql.connection.php>
      */
-    public string $dsn;
+    public ?string $dsn = null;
 
     /**
      * @var string The database password to connect with.
@@ -101,10 +101,10 @@ class DbConfig extends BaseObject
     public string $password = '';
 
     /**
-     * @var string The schema that Postgres is configured to use by default (PostgreSQL only).
+     * @var string|null The schema that Postgres is configured to use by default (PostgreSQL only).
      * @see https://www.postgresql.org/docs/8.2/static/ddl-schemas.html
      */
-    public string $schema = 'public';
+    public ?string $schema = 'public';
 
     /**
      * @var string If you’re sharing Craft installs in a single database (MySQL) or a single database and using a shared schema (PostgreSQL),
