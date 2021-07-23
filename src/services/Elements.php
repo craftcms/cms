@@ -2526,13 +2526,18 @@ class Elements extends Component
 
                 // Set the attributes
                 $elementRecord->uid = $element->uid;
-                $elementRecord->canonicalId = $element->getIsDerivative() ? $element->getCanonicalId() : null;
                 $elementRecord->draftId = (int)$element->draftId ?: null;
                 $elementRecord->revisionId = (int)$element->revisionId ?: null;
                 $elementRecord->fieldLayoutId = $element->fieldLayoutId = (int)($element->fieldLayoutId ?? $element->getFieldLayout()->id ?? 0) ?: null;
                 $elementRecord->enabled = (bool)$element->enabled;
                 $elementRecord->archived = (bool)$element->archived;
-                $elementRecord->dateLastMerged = Db::prepareDateForDb($element->dateLastMerged);
+
+                // todo: remove this check after the next breakpoint
+                $schemaVersion = Craft::$app->getInstalledSchemaVersion();
+                if (version_compare($schemaVersion, '3.7.0', '>=')) {
+                    $elementRecord->canonicalId = $element->getIsDerivative() ? $element->getCanonicalId() : null;
+                    $elementRecord->dateLastMerged = Db::prepareDateForDb($element->dateLastMerged);
+                }
 
                 if ($isNewElement) {
                     if (isset($element->dateCreated)) {
