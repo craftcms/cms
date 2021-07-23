@@ -287,7 +287,7 @@ class Formatter extends \yii\i18n\Formatter
      * Formats a value as a date, using a PHP date format.
      *
      * @param int|string|DateTime $value
-     * @param string|null $format
+     * @param string $format
      * @param string $type 'date', 'time', or 'datetime'.
      */
     private function _formatDateTimeValueWithPhpFormat($value, string $format, string $type): string

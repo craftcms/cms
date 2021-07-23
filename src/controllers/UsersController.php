@@ -1770,7 +1770,7 @@ class UsersController extends Controller
      * @return Response|null
      * @throws ServiceUnavailableHttpException
      */
-    private function _handleLoginFailure(string $authError = null, ?User $user = null): ?Response
+    private function _handleLoginFailure(?string $authError, ?User $user = null): ?Response
     {
         // Delay randomly between 0 and 1.5 seconds.
         usleep(random_int(0, 1500000));

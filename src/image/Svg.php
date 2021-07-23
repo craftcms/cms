@@ -144,7 +144,7 @@ class Svg extends Image
     /**
      * @inheritdoc
      */
-    public function scaleToFit(int $targetWidth = null, ?int $targetHeight = null, bool $scaleIfSmaller = true): self
+    public function scaleToFit(?int $targetWidth, ?int $targetHeight, bool $scaleIfSmaller = true): self
     {
         $this->normalizeDimensions($targetWidth, $targetHeight);
 
@@ -160,7 +160,7 @@ class Svg extends Image
     /**
      * @inheritdoc
      */
-    public function scaleAndCrop(int $targetWidth = null, ?int $targetHeight = null, bool $scaleIfSmaller = true, $cropPosition = 'center-center'): self
+    public function scaleAndCrop(?int $targetWidth, ?int $targetHeight, bool $scaleIfSmaller = true, $cropPosition = 'center-center'): self
     {
         // TODO If we encounter a focal point, rasterize and crop with focal.
         if (is_array($cropPosition)) {
@@ -202,7 +202,7 @@ class Svg extends Image
     /**
      * @inheritdoc
      */
-    public function resize(int $targetWidth = null, ?int $targetHeight = null): self
+    public function resize(?int $targetWidth, ?int $targetHeight): self
     {
         $this->normalizeDimensions($targetWidth, $targetHeight);
 

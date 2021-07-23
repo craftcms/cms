@@ -64,7 +64,7 @@ class SectionsController extends Controller
      * @throws NotFoundHttpException if the requested section cannot be found
      * @throws BadRequestHttpException if attempting to do something not allowed by the current Craft edition
      */
-    public function actionEditSection(int $sectionId = null, ?Section $section = null): Response
+    public function actionEditSection(?int $sectionId = null, ?Section $section = null): Response
     {
         $variables = [
             'sectionId' => $sectionId,

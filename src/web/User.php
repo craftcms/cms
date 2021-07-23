@@ -572,7 +572,7 @@ class User extends \yii\web\User
      * @param string|null $authError
      * @param UserElement|null $user
      */
-    private function _handleLoginFailure(string $authError = null, ?UserElement $user = null): void
+    private function _handleLoginFailure(?string $authError, ?UserElement $user = null): void
     {
         $message = UserHelper::getLoginFailureMessage($authError, $user);
 

@@ -72,7 +72,7 @@ class CategoriesController extends Controller
      * @return Response
      * @throws NotFoundHttpException if the requested category group cannot be found
      */
-    public function actionEditCategoryGroup(int $groupId = null, ?CategoryGroup $categoryGroup = null): Response
+    public function actionEditCategoryGroup(?int $groupId = null, ?CategoryGroup $categoryGroup = null): Response
     {
         $this->requireAdmin();
 

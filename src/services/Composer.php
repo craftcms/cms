@@ -116,7 +116,7 @@ class Composer extends Component
      * @param IOInterface|null $io The IO object that Composer should be instantiated with
      * @throws \Throwable if something goes wrong
      */
-    public function install(array $requirements = null, ?IOInterface $io = null): void
+    public function install(?array $requirements, ?IOInterface $io = null): void
     {
         App::maxPowerCaptain();
 

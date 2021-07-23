@@ -195,7 +195,7 @@ class SitesController extends Controller
      * @throws NotFoundHttpException if the requested site cannot be found
      * @throws ServerErrorHttpException if no site groups exist
      */
-    public function actionEditSite(int $siteId = null, ?Site $site = null, ?int $groupId = null): Response
+    public function actionEditSite(?int $siteId = null, ?Site $site = null, ?int $groupId = null): Response
     {
         $sitesService = Craft::$app->getSites();
 
