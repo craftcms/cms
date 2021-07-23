@@ -19,6 +19,7 @@ use craft\helpers\Db;
 use craft\helpers\StringHelper;
 use yii\base\InvalidArgumentException;
 use yii\db\Connection;
+use yii\db\Schema;
 
 /**
  * AssetQuery represents a SELECT SQL statement for assets in a way that is independent of DBMS.

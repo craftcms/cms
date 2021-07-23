@@ -17,6 +17,7 @@ use craft\events\RegisterAssetFileKindsEvent;
 use craft\events\SetAssetFilenameEvent;
 use craft\models\AssetTransformIndex;
 use craft\models\VolumeFolder;
+use DateTime;
 use yii\base\Event;
 use yii\base\Exception;
 use yii\base\InvalidArgumentException;
