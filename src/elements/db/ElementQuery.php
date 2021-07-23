@@ -2617,11 +2617,13 @@ class ElementQuery extends Query implements ElementQueryInterface
                 'drafts.notes as draftNotes',
             ]);
 
+            // todo: remove this check after the next breakpoint
+
             if ($this->draftId) {
                 $this->subQuery->andWhere(['elements.draftId' => $this->draftId]);
             }
 
-            // todo: remove the schema version check after the next breakpoint
+            // todo: remove this check after the next breakpoint
             if ($useCanonicalId) {
                 if ($this->draftOf === '*') {
                     $this->subQuery->andWhere(['not', ['elements.canonicalId' => null]]);
@@ -2650,7 +2652,7 @@ class ElementQuery extends Query implements ElementQueryInterface
 
 
             if ($this->savedDraftsOnly) {
-                // todo: remove the schema version check after the next breakpoint
+                // todo: remove this check after the next breakpoint
                 if ($useCanonicalId) {
                     $this->subQuery->andWhere([
                         'or',
@@ -2687,7 +2689,7 @@ class ElementQuery extends Query implements ElementQueryInterface
             }
 
             if ($this->revisionOf) {
-                // todo: remove the schema version check after the next breakpoint
+                // todo: remove this check after the next breakpoint
                 if ($useCanonicalId) {
                     $this->subQuery->andWhere(['elements.canonicalId' => $this->revisionOf]);
                 } else {
