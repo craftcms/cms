@@ -37,7 +37,7 @@
 {% set editableSiteIds = editableSiteIds ?? supportedSiteIds|intersect(craft.app.sites.getEditableSiteIds()) %}
 {% set isMultiSiteElement = supportedSiteIds|length > 1 %}
 {% set canEditMultipleSites = editableSiteIds|length > 1 %}
-{% set isProvisionalDraft = element.getIsProvisionalDraft() %}
+{% set isProvisionalDraft = element.isProvisionalDraft %}
 {% if isProvisionalDraft %}
     {% set element = element.getCanonical(true) %}
 {% endif %}
