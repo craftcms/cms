@@ -22,27 +22,27 @@ use yii\base\Exception;
 class Path extends Component
 {
     /**
-     * @var
+     * @var string
      */
     private string $_configPath;
 
     /**
-     * @var
+     * @var string
      */
     private string $_storagePath;
 
     /**
-     * @var
+     * @var string
      */
     private string $_testsPath;
 
     /**
-     * @var
+     * @var string
      */
     private string $_siteTranslationsPath;
 
     /**
-     * @var
+     * @var string
      */
     private string $_vendorPath;
 

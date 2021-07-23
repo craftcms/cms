@@ -3392,7 +3392,6 @@ abstract class Element extends Component implements ElementInterface
             return null;
         }
 
-        /** @var ElementInterface[] $elements */
         $elements = $this->_eagerLoadedElements[$handle];
         ElementHelper::setNextPrevOnElements($elements);
         return $elements;

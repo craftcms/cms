@@ -124,10 +124,10 @@ class Entry extends ElementMutationResolver
      * @param array $arguments
      * @param $context
      * @param ResolveInfo $resolveInfo
-     * @return mixed
+     * @return int
      * @throws \Throwable if reasons.
      */
-    public function publishDraft($source, array $arguments, $context, ResolveInfo $resolveInfo)
+    public function publishDraft($source, array $arguments, $context, ResolveInfo $resolveInfo): int
     {
         $draft = Craft::$app->getElements()->createElementQuery(EntryElement::class)->status(null)->draftId($arguments['id'])->one();
 

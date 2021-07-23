@@ -76,7 +76,7 @@ class CategoryGroup extends Model
     public ?string $uid = null;
 
     /**
-     * @var
+     * @var CategoryGroup_SiteSettings[]
      */
     private array $_siteSettings;
 

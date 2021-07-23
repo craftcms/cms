@@ -41,14 +41,14 @@ class UserPermissions extends Component
     const EVENT_REGISTER_PERMISSIONS = 'registerPermissions';
 
     /**
-     * @var
+     * @var string[][]
      */
-    private array $_permissionsByGroupId;
+    private array $_permissionsByGroupId = [];
 
     /**
-     * @var
+     * @var string[][]
      */
-    private array $_permissionsByUserId;
+    private array $_permissionsByUserId = [];
 
     /**
      * Returns all of the known permissions, divided into groups.
@@ -296,6 +296,7 @@ class UserPermissions extends Component
     public function getPermissionsByGroupId(int $groupId): array
     {
         if (!isset($this->_permissionsByGroupId[$groupId])) {
+            /** @var string[] $groupPermissions */
             $groupPermissions = $this->_createUserPermissionsQuery()
                 ->innerJoin(['p_g' => Table::USERPERMISSIONS_USERGROUPS], '[[p_g.permissionId]] = [[p.id]]')
                 ->where(['p_g.groupId' => $groupId])
@@ -311,7 +312,7 @@ class UserPermissions extends Component
      * Returns all of the group permissions a given user has.
      *
      * @param int $userId
-     * @return array
+     * @return string[]
      */
     public function getGroupPermissionsByUserId(int $userId): array
     {
@@ -374,6 +375,7 @@ class UserPermissions extends Component
         if (!isset($this->_permissionsByUserId[$userId])) {
             $groupPermissions = $this->getGroupPermissionsByUserId($userId);
 
+            /** @var string[] $userPermissions */
             $userPermissions = $this->_createUserPermissionsQuery()
                 ->innerJoin(['p_u' => Table::USERPERMISSIONS_USERS], '[[p_u.permissionId]] = [[p.id]]')
                 ->where(['p_u.userId' => $userId])

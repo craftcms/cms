@@ -195,9 +195,9 @@ class Fields extends Component
     private array $_layoutsById = [];
 
     /**
-     * @var
+     * @var FieldLayout[]
      */
-    private array $_layoutsByType;
+    private array $_layoutsByType = [];
 
     /**
      * @var array
@@ -1074,7 +1074,7 @@ class Fields extends Component
      */
     public function getLayoutByType(string $type): FieldLayout
     {
-        if (isset($this->_layoutsByType) && array_key_exists($type, $this->_layoutsByType)) {
+        if (array_key_exists($type, $this->_layoutsByType)) {
             return $this->_layoutsByType[$type];
         }
 

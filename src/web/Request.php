@@ -105,7 +105,7 @@ class Request extends \yii\web\Request
     private string $_fullUri;
 
     /**
-     * @var
+     * @var string[]
      */
     private array $_segments;
 

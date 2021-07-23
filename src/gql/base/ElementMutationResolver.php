@@ -91,7 +91,7 @@ abstract class ElementMutationResolver extends MutationResolver
      *
      * @param ElementInterface $element
      * @param array $arguments
-     * @param ResolveInfo $resolveInfo
+     * @param ResolveInfo|null $resolveInfo
      * @return EntryElement
      * @throws GqlException if data not found.
      */

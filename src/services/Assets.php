@@ -494,7 +494,6 @@ class Assets extends Component
      */
     public function getAllDescendantFolders(VolumeFolder $parentFolder, string $orderBy = 'path'): array
     {
-        /** @var $query Query */
         $query = $this->_createFolderQuery()
             ->where([
                 'and',
@@ -996,7 +995,7 @@ class Assets extends Component
 
         if ($user) {
             $folderName = 'user_' . $user->id;
-        } else if (Craft::$app->getRequest()->getIsConsoleRequest()){
+        } else if (Craft::$app->getRequest()->getIsConsoleRequest()) {
             // For console requests, just make up a folder name.
             $folderName = 'temp_' . sha1(time());
         } else {

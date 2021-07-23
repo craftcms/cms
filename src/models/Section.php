@@ -103,7 +103,7 @@ class Section extends Model
     public string $defaultPlacement = self::DEFAULT_PLACEMENT_END;
 
     /**
-     * @var array Preview targets
+     * @var array|null Preview targets
      */
     public ?array $previewTargets = null;
 

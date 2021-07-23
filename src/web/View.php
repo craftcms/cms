@@ -233,7 +233,7 @@ class View extends \yii\web\View
     private ?string $_renderingTemplate = null;
 
     /**
-     * @var
+     * @var bool
      */
     private bool $_isRenderingPageTemplate = false;
 

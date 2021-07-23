@@ -26,7 +26,7 @@ class GqlEntityRegistry
     /**
      * @var string
      */
-    private static ?string $_prefix = null;
+    private static string $_prefix;
 
     /**
      * Prefix GQL type name with the configured prefix.

@@ -30,7 +30,7 @@ class GraphqlController extends Controller
     const GQL_SCHEMA_EXTENSION = ".graphql";
 
     /**
-     * @var string The token to look up to determine the appropriate GraphQL schema
+     * @var string|null The token to look up to determine the appropriate GraphQL schema
      */
     public ?string $token = null;
 

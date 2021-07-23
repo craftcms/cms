@@ -22,12 +22,12 @@ Craft::$app->requireEdition(Craft::Pro);
 class Rebrand
 {
     /**
-     * @var
+     * @var string[]|false[]
      */
     private array $_paths = [];
 
     /**
-     * @var
+     * @var Image[]|false[]
      */
     private array $_imageVariables = [];
 

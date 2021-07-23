@@ -190,8 +190,10 @@ class ErrorHandler extends \yii\web\ErrorHandler
     /**
      * Attempts to swap out debug trace info with template info.
      *
+     * @param string $traceFile
+     * @param int|null $traceLine
      * @return array
-     * @throws \Throwable
+     * @throws Exception
      */
     private function _resolveTemplateTrace(string $traceFile, ?int $traceLine = null): array
     {

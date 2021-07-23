@@ -1339,7 +1339,7 @@ class GeneralConfig extends BaseObject
     public bool $sanitizeCpImageUploads = true;
 
     /**
-     * @var string The [SameSite](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Set-Cookie/SameSite) value that should be set on Craft cookies, if any.
+     * @var string|null The [SameSite](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Set-Cookie/SameSite) value that should be set on Craft cookies, if any.
      *
      * This can be set to `'None'`, `'Lax'`, `'Strict'`, or `null`.
      *
