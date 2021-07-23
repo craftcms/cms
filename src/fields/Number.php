@@ -62,7 +62,7 @@ class Number extends Field implements PreviewableFieldInterface, SortableFieldIn
     public $defaultValue;
 
     /**
-     * @var int|float The minimum allowed number
+     * @var int|float|null The minimum allowed number
      */
     public $min = 0;
 
@@ -115,16 +115,13 @@ class Number extends Field implements PreviewableFieldInterface, SortableFieldIn
                 $config[$name] = Localization::normalizeNumber($config[$name]['value'], $config[$name]['locale']);
             }
         }
-        foreach (['defaultValue', 'max', 'min', 'prefix', 'suffix'] as $name) {
-            if (isset($config[$name]) && $config[$name] === '') {
-                $config[$name] = null;
+        foreach (['defaultValue', 'max', 'decimals', 'size', 'prefix', 'suffix', 'previewCurrency'] as $name) {
+            if (($config[$name] ?? null) === '') {
+                unset($config[$name]);
             }
         }
-        if (isset($config['decimals']) && !$config['decimals']) {
-            $config['decimals'] = 0;
-        }
-        if (isset($config['size']) && !$config['size']) {
-            $config['size'] = null;
+        if (($config['min'] ?? null) === '') {
+            $config['min'] = null; // default is 0
         }
 
         parent::__construct($config);

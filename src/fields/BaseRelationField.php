@@ -155,9 +155,9 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
     public bool $validateRelatedElements = false;
 
     /**
-     * @var int Whether each site should get its own unique set of relations
+     * @var bool Whether each site should get its own unique set of relations
      */
-    public $localizeRelations = false;
+    public bool $localizeRelations = false;
 
     /**
      * @var bool Whether to allow multiple source selection in the settings
@@ -191,7 +191,7 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
     protected string $inputTemplate = '_includes/forms/elementSelect';
 
     /**
-     * @var string|null The JS class that should be initialized for the input
+     * @var string The JS class that should be initialized for the input
      */
     protected string $inputJsClass;
 
@@ -205,6 +205,25 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
      */
     public function __construct(array $config = [])
     {
+        // Config normalization
+        $nullables = [
+            'source',
+            'targetSiteId',
+            'viewMode',
+            'limit',
+            'selectionLabel',
+        ];
+        foreach ($nullables as $name) {
+            if (($config[$name] ?? null) === '') {
+                unset($config[$name]);
+            }
+        }
+
+        if (array_key_exists('sources', $config) && empty($config['sources'])) {
+            // Not possible to have no sources selected, so go with the default
+            unset($config['sources']);
+        }
+
         // If useTargetSite is in here, but empty, then disregard targetSiteId
         if (array_key_exists('useTargetSite', $config)) {
             if (empty($config['useTargetSite'])) {
@@ -219,24 +238,6 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
         }
 
         parent::__construct($config);
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function init(): void
-    {
-        parent::init();
-
-        // Not possible to have no sources selected
-        if (!$this->sources) {
-            $this->sources = '*';
-        }
-
-        $this->validateRelatedElements = (bool)$this->validateRelatedElements;
-        $this->allowSelfRelations = (bool)$this->allowSelfRelations;
-        $this->showSiteMenu = (bool)$this->showSiteMenu;
-        $this->localizeRelations = (bool)$this->localizeRelations;
     }
 
     /**

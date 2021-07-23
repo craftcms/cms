@@ -40,12 +40,12 @@ class MultiSelect extends BaseOptionsField
     /**
      * @inheritdoc
      */
-    public bool $multi = true;
+    protected bool $multi = true;
 
     /**
      * @inheritdoc
      */
-    public bool $optgroups = true;
+    protected bool $optgroups = true;
 
     /**
      * @inheritdoc

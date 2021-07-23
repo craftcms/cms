@@ -49,18 +49,21 @@ class Feed extends Widget
     /**
      * @var int The maximum number of feed items to display
      */
-    public int $limit;
+    public int $limit = 5;
 
     /**
      * @inheritdoc
      */
-    public function init(): void
+    public function __construct($config = [])
     {
-        parent::init();
-
-        if (!$this->limit) {
-            $this->limit = 5;
+        // Config normalization
+        foreach (['url', 'title', 'limit'] as $name) {
+            if (($config[$name] ?? null) === '') {
+                unset($config[$name]);
+            }
         }
+
+        parent::__construct($config);
     }
 
     /**

@@ -92,12 +92,25 @@ class Categories extends BaseRelationField
     /**
      * @inheritdoc
      */
-    protected ?string $inputJsClass = 'Craft.CategorySelectInput';
+    protected string $inputJsClass = 'Craft.CategorySelectInput';
 
     /**
      * @inheritdoc
      */
     protected bool $sortable = false;
+
+    /**
+     * @inheritdoc
+     */
+    public function __construct(array $config = [])
+    {
+        // Config normalization
+        if (($config['branchLimit'] ?? null) === '') {
+            unset($config['branchLimit']);
+        }
+
+        parent::__construct($config);
+    }
 
     /**
      * @inheritdoc

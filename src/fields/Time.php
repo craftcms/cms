@@ -62,20 +62,19 @@ class Time extends Field implements PreviewableFieldInterface, SortableFieldInte
     /**
      * @inheritdoc
      */
-    public function init(): void
+    public function __construct($config = [])
     {
-        parent::init();
-
-        if (is_array($this->min)) {
-            $min = DateTimeHelper::toDateTime($this->min, true);
-            $this->min = $min ? $min->format('H:i') : null;
+        // Config normalization
+        foreach (['min', 'max'] as $name) {
+            if (isset($config[$name]) && is_array($config[$name])) {
+                if ($date = DateTimeHelper::toDateTime($config[$name], true)) {
+                    $config[$name] = $date->format('H:i');
+                } else {
+                    unset($config[$name]);
+                }
+            }
         }
-        if (is_array($this->max)) {
-            $max = DateTimeHelper::toDateTime($this->max, true);
-            $this->max = $max ? $max->format('H:i') : null;
-        }
-
-        $this->minuteIncrement = (int)$this->minuteIncrement;
+        parent::__construct($config);
     }
 
     /**

@@ -125,7 +125,7 @@ class Assets extends BaseRelationField
      * @var bool|null Whether the available assets should be restricted to
      * [[allowedKinds]]
      */
-    public ?bool $restrictFiles = null;
+    public bool $restrictFiles = false;
 
     /**
      * @var array|null The file kinds that the field should be restricted to
@@ -187,6 +187,20 @@ class Assets extends BaseRelationField
      */
     public function __construct(array $config = [])
     {
+        // Config normalization
+        $nullables = [
+            'defaultUploadLocationSource',
+            'defaultUploadLocationSubpath',
+            'singleUploadLocationSource',
+            'singleUploadLocationSubpath',
+            'allowedKinds'
+        ];
+        foreach ($nullables as $name) {
+            if (($config[$name] ?? null) === '') {
+                unset($config[$name]);
+            }
+        }
+
         // Default showUnpermittedVolumes to true for existing Assets fields
         if (isset($config['id']) && !isset($config['showUnpermittedVolumes'])) {
             $config['showUnpermittedVolumes'] = true;
@@ -201,11 +215,6 @@ class Assets extends BaseRelationField
     public function init(): void
     {
         parent::init();
-
-        $this->useSingleFolder = (bool)$this->useSingleFolder;
-        $this->allowUploads = (bool)$this->allowUploads;
-        $this->showUnpermittedVolumes = (bool)$this->showUnpermittedVolumes;
-        $this->showUnpermittedFiles = (bool)$this->showUnpermittedFiles;
 
         $this->defaultUploadLocationSource = $this->_folderSourceToVolumeSource($this->defaultUploadLocationSource);
         $this->singleUploadLocationSource = $this->_folderSourceToVolumeSource($this->singleUploadLocationSource);
@@ -774,14 +783,14 @@ class Assets extends BaseRelationField
      * Resolve a source path to it's folder ID by the source path and the matched source beginning.
      *
      * @param string $uploadSource
-     * @param string $subpath
+     * @param string|null $subpath
      * @param ElementInterface|null $element
      * @param bool $createDynamicFolders whether missing folders should be created in the process
      * @return int
      * @throws InvalidSubpathException if the subpath cannot be parsed in full
      * @throws InvalidVolumeException if the volume root folder doesn’t exist
      */
-    private function _resolveVolumePathToFolderId(string $uploadSource, string $subpath, ?ElementInterface $element = null, bool $createDynamicFolders = true): int
+    private function _resolveVolumePathToFolderId(string $uploadSource, ?string $subpath, ?ElementInterface $element, bool $createDynamicFolders): int
     {
         $assetsService = Craft::$app->getAssets();
 

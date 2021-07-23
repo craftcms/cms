@@ -34,19 +34,17 @@ class Temp extends Local
     /**
      * @inheritdoc
      */
-    public function init(): void
+    public function __construct($config = [])
     {
-        parent::init();
-
-        if (isset($this->path)) {
-            $this->path = rtrim($this->path, '/');
-        } else {
-            $this->path = Craft::$app->getPath()->getTempAssetUploadsPath();
+        // Config normalization
+        if (!isset($config['path'])) {
+            $config['path'] = Craft::$app->getPath()->getTempAssetUploadsPath();
+        }
+        if (!isset($config['name'])) {
+            $config['name'] = Craft::t('app', 'Temporary source');
         }
 
-        if (!isset($this->name)) {
-            $this->name = Craft::t('app', 'Temporary source');
-        }
+        parent::__construct($config);
     }
 
     /**

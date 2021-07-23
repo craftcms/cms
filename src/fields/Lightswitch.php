@@ -68,27 +68,17 @@ class Lightswitch extends Field implements PreviewableFieldInterface, SortableFi
      */
     public function __construct($config = [])
     {
+        // Config normalization
         if (($onLabel = ArrayHelper::remove($config, 'label')) !== null) {
             $config['onLabel'] = $onLabel;
         }
+        foreach (['onLabel', 'offLabel'] as $name) {
+            if (($config[$name] ?? null) === '') {
+                unset($config[$name]);
+            }
+        }
 
         parent::__construct($config);
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function init(): void
-    {
-        parent::init();
-
-        $this->default = (bool)$this->default;
-        if ($this->onLabel === '') {
-            $this->onLabel = null;
-        }
-        if ($this->offLabel === '') {
-            $this->offLabel = null;
-        }
     }
 
     /**

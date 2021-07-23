@@ -56,13 +56,14 @@ class RecentEntries extends Widget
     /**
      * @inheritdoc
      */
-    public function init(): void
+    public function __construct($config = [])
     {
-        parent::init();
-
-        if (!isset($this->siteId)) {
-            $this->siteId = Craft::$app->getSites()->getCurrentSite()->id;
+        // Config normalization
+        if (empty($config['siteId'])) {
+            $config['siteId'] = Craft::$app->getSites()->getCurrentSite()->id;
         }
+
+        parent::__construct($config);
     }
 
     /**

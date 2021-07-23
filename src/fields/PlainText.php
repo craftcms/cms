@@ -88,6 +88,7 @@ class PlainText extends Field implements PreviewableFieldInterface, SortableFiel
      */
     public function __construct(array $config = [])
     {
+        // Config normalization
         if (isset($config['limitUnit'], $config['fieldLimit'])) {
             if ($config['limitUnit'] === 'chars') {
                 $config['charLimit'] = (int)$config['fieldLimit'] ?: null;
@@ -97,15 +98,13 @@ class PlainText extends Field implements PreviewableFieldInterface, SortableFiel
             unset($config['limitUnit'], $config['fieldLimit']);
         }
 
-        if (isset($config['charLimit']) && empty($config['charLimit'])) {
-            unset($config['charLimit']);
+        foreach (['charLimit', 'byteLimit', 'placeholder', 'columnType'] as $name) {
+            if (($config[$name] ?? null) === '') {
+                unset($config[$name]);
+            }
         }
 
-        if (isset($config['byteLimit']) && empty($config['byteLimit'])) {
-            unset($config['byteLimit']);
-        }
-
-        if (isset($config['columnType']) && $config['columnType'] === 'auto') {
+        if (($config['columnType'] ?? null) === 'auto') {
             unset($config['columnType']);
         }
 
@@ -121,10 +120,6 @@ class PlainText extends Field implements PreviewableFieldInterface, SortableFiel
     public function init(): void
     {
         parent::init();
-
-        if ($this->placeholder === '') {
-            $this->placeholder = null;
-        }
 
         if (isset($this->placeholder)) {
             $this->placeholder = LitEmoji::shortcodeToUnicode($this->placeholder);

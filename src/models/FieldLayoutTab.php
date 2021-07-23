@@ -112,6 +112,19 @@ class FieldLayoutTab extends Model
     /**
      * @inheritdoc
      */
+    public function __construct($config = [])
+    {
+        // Config normalization
+        if (isset($config['elements']) && is_string($config['elements'])) {
+            $config['elements'] = Json::decode($config['elements']);
+        }
+
+        parent::__construct($config);
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function init(): void
     {
         parent::init();
@@ -127,9 +140,6 @@ class FieldLayoutTab extends Model
                 ]);
             }
         } else {
-            if (is_string($this->elements)) {
-                $this->elements = Json::decode($this->elements);
-            }
             $fieldsService = Craft::$app->getFields();
             foreach ($this->elements as $i => $element) {
                 if (is_array($element)) {

@@ -33,9 +33,9 @@ use yii\db\Schema;
 abstract class BaseOptionsField extends Field implements PreviewableFieldInterface
 {
     /**
-     * @var array|null The available options
+     * @var array The available options
      */
-    public ?array $options = null;
+    public array $options;
 
     /**
      * @var bool Whether the field should support multiple selections
@@ -50,15 +50,15 @@ abstract class BaseOptionsField extends Field implements PreviewableFieldInterfa
     /**
      * @inheritdoc
      */
-    public function init(): void
+    public function __construct($config = [])
     {
-        parent::init();
+        // Not possible to override multi or optgroups
+        unset($config['multi'], $config['optgroups']);
 
         // Normalize the options
         $options = [];
-
-        if (is_array($this->options)) {
-            foreach ($this->options as $key => $option) {
+        if (isset($config['options']) && is_array($config['options'])) {
+            foreach ($config['options'] as $key => $option) {
                 // Old school?
                 if (!is_array($option)) {
                     $options[] = [
@@ -77,8 +77,9 @@ abstract class BaseOptionsField extends Field implements PreviewableFieldInterfa
                 }
             }
         }
+        $config['options'] = $options;
 
-        $this->options = $options;
+        parent::__construct($config);
     }
 
     /**

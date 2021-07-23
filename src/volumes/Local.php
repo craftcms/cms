@@ -72,13 +72,25 @@ class Local extends Volume implements LocalVolumeInterface
     /**
      * @inheritdoc
      */
+    public function __construct($config = [])
+    {
+        // Config normalization
+        if (isset($config['path'])) {
+            $config['path'] = trim(str_replace('\\', '/', $config['path']), '/');
+            if ($config['path'] === '') {
+                unset($config['path']);
+            }
+        }
+
+        parent::__construct($config);
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function init(): void
     {
         parent::init();
-
-        if (isset($this->path)) {
-            $this->path = str_replace('\\', '/', $this->path);
-        }
 
         $generalConfig = Craft::$app->getConfig()->getGeneral();
 

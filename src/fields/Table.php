@@ -96,6 +96,12 @@ class Table extends Field
     public function __construct($config = [])
     {
         // Config normalization
+        foreach (['minRows', 'maxRows', 'addRowLabel'] as $name) {
+            if (($config[$name] ?? null) === '') {
+                unset($config[$name]);
+            }
+        }
+
         if (!isset($config['addRowLabel'])) {
             $config['addRowLabel'] = Craft::t('app', 'Add a row');
         }

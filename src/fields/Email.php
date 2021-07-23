@@ -47,6 +47,17 @@ class Email extends Field implements PreviewableFieldInterface
     /**
      * @inheritdoc
      */
+    public function __construct($config = [])
+    {
+        if (($config['placeholder'] ?? null) === '') {
+            unset($config['placeholder']);
+        }
+        parent::__construct($config);
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function getContentColumnType(): string
     {
         return Schema::TYPE_STRING;

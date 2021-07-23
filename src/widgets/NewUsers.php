@@ -55,6 +55,20 @@ class NewUsers extends Widget
      */
     public ?string $dateRange = null;
 
+    /**
+     * @inheritdoc
+     */
+    public function __construct($config = [])
+    {
+        // Config normalization
+        foreach (['userGroupId', 'dateRange'] as $name) {
+            if (($config[$name] ?? null) === '') {
+                unset($config[$name]);
+            }
+        }
+
+        parent::__construct($config);
+    }
 
     /**
      * @inheritdoc
