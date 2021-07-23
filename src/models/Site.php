@@ -95,23 +95,6 @@ class Site extends Model
     private ?string $_name = null;
 
     /**
-     * @inheritdoc
-     * @since 3.5.0
-     */
-    public function init(): void
-    {
-        // Typecast DB values
-        $this->id = (int)$this->id ?: null;
-        $this->groupId = (int)$this->groupId ?: null;
-        $this->primary = (bool)$this->primary;
-        $this->enabled = (bool)$this->enabled;
-        $this->hasUrls = (bool)$this->hasUrls;
-        $this->sortOrder = (int)$this->sortOrder;
-
-        parent::init();
-    }
-
-    /**
      * Returns the site’s name.
      *
      * @param bool $parse Whether to parse the name for an environment variable

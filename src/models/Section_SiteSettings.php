@@ -43,9 +43,9 @@ class Section_SiteSettings extends Model
     public bool $enabledByDefault = true;
 
     /**
-     * @var bool|null Has URLs?
+     * @var bool Has URLs?
      */
-    public ?bool $hasUrls = null;
+    public bool $hasUrls = false;
 
     /**
      * @var string|null URI format
@@ -61,22 +61,6 @@ class Section_SiteSettings extends Model
      * @var Section|null
      */
     private ?Section $_section = null;
-
-    /**
-     * @inheritdoc
-     * @since 3.5.0
-     */
-    public function init(): void
-    {
-        // Typecast DB values
-        $this->id = (int)$this->id ?: null;
-        $this->sectionId = (int)$this->sectionId ?: null;
-        $this->siteId = (int)$this->siteId ?: null;
-        $this->enabledByDefault = (bool)$this->enabledByDefault;
-        $this->hasUrls = (bool)$this->hasUrls;
-
-        parent::init();
-    }
 
     /**
      * Returns the section.

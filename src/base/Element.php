@@ -1698,24 +1698,6 @@ abstract class Element extends Component implements ElementInterface
      */
     public function init(): void
     {
-        // Typecast DB values
-        $this->id = (int)$this->id ?: null;
-        $this->draftId = (int)$this->draftId ?: null;
-        $this->revisionId = (int)$this->revisionId ?: null;
-        $this->siteSettingsId = (int)$this->siteSettingsId ?: null;
-        $this->fieldLayoutId = (int)$this->fieldLayoutId ?: null;
-        $this->structureId = (int)$this->structureId ?: null;
-        $this->contentId = (int)$this->contentId ?: null;
-        $this->enabled = (bool)$this->enabled;
-        $this->archived = (bool)$this->archived;
-        $this->siteId = (int)$this->siteId ?: null;
-        $this->root = (int)$this->root ?: null;
-        $this->lft = (int)$this->lft ?: null;
-        $this->rgt = (int)$this->rgt ?: null;
-        $this->level = (int)$this->level ?: null;
-        $this->searchScore = (int)$this->searchScore ?: null;
-        $this->trashed = (bool)$this->trashed;
-
         parent::init();
 
         if (!isset($this->siteId) && Craft::$app->getIsInstalled()) {
