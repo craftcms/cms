@@ -253,7 +253,7 @@ class Query extends \yii\db\Query
     /**
      * @inheritdoc
      */
-    protected function queryScalar($selectExpression, $db): bool
+    protected function queryScalar($selectExpression, $db)
     {
         try {
             return parent::queryScalar($selectExpression, $db);
