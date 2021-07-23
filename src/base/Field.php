@@ -18,6 +18,7 @@ use craft\gql\types\QueryArgument;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
 use craft\helpers\ElementHelper;
+use craft\helpers\FieldHelper;
 use craft\helpers\Html;
 use craft\helpers\StringHelper;
 use craft\models\FieldGroup;
@@ -211,7 +212,16 @@ abstract class Field extends SavableComponent implements FieldInterface
         $rules = parent::defineRules();
 
         // Make sure the column name is under the database’s maximum allowed column length, including the column prefix/suffix lengths
-        $maxHandleLength = Craft::$app->getDb()->getSchema()->maxObjectNameLength - strlen(Craft::$app->getContent()->fieldColumnPrefix) - 9;
+        $maxHandleLength = Craft::$app->getDb()->getSchema()->maxObjectNameLength;
+
+        if (static::hasContentColumn()) {
+            $maxHandleLength -= strlen(Craft::$app->getContent()->fieldColumnPrefix);
+
+            FieldHelper::ensureColumnSuffix($this);
+            if ($this->columnSuffix) {
+                $maxHandleLength -= strlen($this->columnSuffix) + 1;
+            }
+        }
 
         $rules[] = [['name'], 'string', 'max' => 255];
         $rules[] = [['handle'], 'string', 'max' => $maxHandleLength];

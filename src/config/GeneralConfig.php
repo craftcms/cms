@@ -105,8 +105,8 @@ class GeneralConfig extends BaseObject
     /**
      * @var bool Whether admins should be allowed to make administrative changes to the system.
      *
-     * When this is disabled, the Settings and Plugin Store sections will be hidden, the Craft edition and Craft/plugin versions will be locked,
-     * and the project config will become read-only.
+     * When this is disabled, the Settings section will be hidden, the Craft edition and Craft/plugin versions will be locked,
+     * and the project config and Plugin Store will become read-only—though Craft and plugin licenses may still be purchased.
      *
      * It’s best to disable this in production environments with a deployment workflow that runs `composer install` and
      * [propagates project config updates](../project-config.md#propagating-changes) on deploy.

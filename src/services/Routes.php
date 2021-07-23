@@ -228,7 +228,7 @@ class Routes extends Component
                 ]));
             }
 
-            $route = Craft::$app->getProjectConfig()->remove(self::CONFIG_ROUTES_KEY . '.' . $routeUid, "Delete route");
+            Craft::$app->getProjectConfig()->remove(self::CONFIG_ROUTES_KEY . '.' . $routeUid, "Delete route");
 
             // Fire an 'afterDeleteRoute' event
             if ($this->hasEventHandlers(self::EVENT_AFTER_DELETE_ROUTE)) {
