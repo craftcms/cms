@@ -14,6 +14,7 @@
 - Fixed a PHP error that could occur when saving a site, if there were any event handlers on `craft\services\Sites::EVENT_BEFORE_SAVE_SITE`.
 - Fixed an error that could occur when deleting a route from the control panel if there were any event handlers on `craft\services\Routes::EVENT_AFTER_DELETE_ROUTE`.
 - Fixed a bug where existing fields’ maximum handle lengths were nine characters less than they needed to be.
+- Fixed a bug where Craft would send a `X-Robots-Tag: none` header on front-end Login pages. ([#9621](https://github.com/craftcms/cms/issues/9621))
 
 ## 3.7.4 - 2021-07-19
 
