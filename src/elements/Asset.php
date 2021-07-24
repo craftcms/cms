@@ -819,7 +819,7 @@ class Asset extends Element
         $rules[] = [['filename', 'kind'], 'required'];
         $rules[] = [['kind'], 'string', 'max' => 50];
         $rules[] = [['newLocation'], 'required', 'on' => [self::SCENARIO_CREATE, self::SCENARIO_MOVE, self::SCENARIO_FILEOPS]];
-        $rules[] = [['tempFilePath'], 'required', 'on' => [self::SCENARIO_CREATE, self::SCENARIO_MOVE, self::SCENARIO_REPLACE]];
+        $rules[] = [['tempFilePath'], 'required', 'on' => [self::SCENARIO_CREATE, self::SCENARIO_REPLACE]];
 
         // Validate the extension unless all we're doing is moving the file
         $rules[] = [
