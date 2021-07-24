@@ -199,6 +199,7 @@
                 label: Craft.t('app', 'Handle'),
                 instructions: Craft.t('app', 'How you’ll refer to this block type in the templates.'),
                 class: 'code',
+                maxlength: 47,
             }).appendTo(this.$body);
             let $handleInputContainer = $handleField.find('.input');
             this.$handleInput = $handleInputContainer.find('.text');

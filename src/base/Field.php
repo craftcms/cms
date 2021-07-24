@@ -322,6 +322,25 @@ abstract class Field extends SavableComponent implements FieldInterface
     /**
      * @inheritdoc
      */
+    public function getOrientation(?ElementInterface $element): string
+    {
+        if (!Craft::$app->getIsMultiSite()) {
+            // Only one site so use its language
+            $locale = Craft::$app->getSites()->getPrimarySite()->getLocale();
+        } else if (!$element || !$this->getIsTranslatable($element)) {
+            // Not translatable, so use the user’s language
+            $locale = Craft::$app->getLocale();
+        } else {
+            // Use the site’s language
+            $locale = $element->getSite()->getLocale();
+        }
+
+        return $locale->getOrientation();
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function getIsTranslatable(ElementInterface $element = null): bool
     {
         if ($this->translationMethod === self::TRANSLATION_METHOD_CUSTOM) {

@@ -585,9 +585,9 @@ class Entry extends Element
         if ($source !== 'singles') {
             $attributes[] = 'postDate';
             $attributes[] = 'expiryDate';
+            $attributes[] = 'author';
         }
 
-        $attributes[] = 'author';
         $attributes[] = 'link';
 
         return $attributes;

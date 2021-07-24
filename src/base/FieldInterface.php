@@ -94,6 +94,15 @@ interface FieldInterface extends SavableComponentInterface
     public function getContentColumnType();
 
     /**
+     * Returns the orientation the field should use (`ltr` or `rtl`).
+     *
+     * @param ElementInterface|null $element The element being edited
+     * @return string
+     * @since 3.7.5
+     */
+    public function getOrientation(?ElementInterface $element): string;
+
+    /**
      * Returns whether the field should be shown as translatable in the UI.
      *
      * Note this method has no effect on whether the field’s value will get copied over to other
