@@ -142,7 +142,7 @@ class ResolveAssetMutationsTest extends TestCase
     public function testDeleteAssetNotFound()
     {
         $this->tester->mockCraftMethods('elements', [
-            'getElementById' => Expected::once(false),
+            'getElementById' => Expected::once(),
             'deleteElementById' => Expected::never()
         ]);
         $resolver = $this->make(AssetResolver::class, [

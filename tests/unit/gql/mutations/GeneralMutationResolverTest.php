@@ -21,6 +21,7 @@ use craft\gql\resolvers\mutations\Entry as EntryMutationResolver;
 use craft\helpers\StringHelper;
 use craft\models\GqlSchema;
 use craft\services\Elements;
+use craft\test\mockclasses\elements\MockElementQuery;
 use craft\test\TestCase;
 use GraphQL\Error\Error;
 use GraphQL\Error\UserError;
@@ -325,6 +326,10 @@ class GeneralMutationResolverTest extends TestCase
                 ]
             ]
         ];
+
+        $this->tester->mockCraftMethods('elements', [
+            'createElementQuery' => (new MockElementQuery())->setReturnValues([new Entry()]),
+        ]);
 
         // Finally, do that ONE thing
         $mutationResolver->saveEntry(null, $arguments, null, $resolveInfo);
