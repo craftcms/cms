@@ -25,6 +25,7 @@
 - Fixed a bug where the control panel header could remain “stuck” after closing Live Preview in Firefox. ([#9630](https://github.com/craftcms/cms/issues/9630))
 - Fixed a JavaScript error that could occur on Edit Entry pages. ([#9631](https://github.com/craftcms/cms/pull/9631))
 - Fixed a bug where assets weren’t always getting moved out of the Temporary Uploads volume when saving an entry. ([#9619](https://github.com/craftcms/cms/issues/9619))
+- Fixed a bug where it wasn’t possible to upload an asset via a data URL if its MIME type contained a dash. ([#9632](https://github.com/craftcms/cms/issues/9632))
 
 ## 3.7.4 - 2021-07-19
 
