@@ -295,6 +295,8 @@ class MigrateController extends BaseMigrateController
             FileHelper::writeToFile($file, $content);
             $this->stdout('New migration created successfully.' . PHP_EOL, Console::FG_GREEN);
         }
+
+        return ExitCode::OK;
     }
 
     /**
