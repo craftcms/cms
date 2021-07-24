@@ -9,6 +9,7 @@
 
 ### Changed
 - Field orientations are now based on the primary site’s language for single-site installs. ([#9616](https://github.com/craftcms/cms/issues/9616))
+- Matrix block type handles are now limited to 47 characters. ([#9636](https://github.com/craftcms/cms/issues/9636))
 
 ### Fixed
 - Fixed a bug where Live Preview stopped working when the device type was changed, for preview targets that had auto-refresh disabled. ([#9610](https://github.com/craftcms/cms/issues/9610))
