@@ -731,8 +731,7 @@ class Assets extends BaseRelationField
         // Grab data strings
         if (isset($this->_uploadedDataFiles['data']) && is_array($this->_uploadedDataFiles['data'])) {
             foreach ($this->_uploadedDataFiles['data'] as $index => $dataString) {
-                if (preg_match('/^data:(?<type>[a-z0-9]+\/[a-z0-9\+]+);base64,(?<data>.+)/i',
-                    $dataString, $matches)) {
+                if (preg_match('/^data:(?<type>[a-z0-9]+\/[a-z0-9\+\-]+);base64,(?<data>.+)/i', $dataString, $matches)) {
                     $type = $matches['type'];
                     $data = base64_decode($matches['data']);
 

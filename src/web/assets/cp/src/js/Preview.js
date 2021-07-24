@@ -427,6 +427,7 @@ Craft.Preview = Garnish.Base.extend({
         }
 
         Garnish.$win.trigger('resize');
+        Garnish.$doc.trigger('scroll');
     },
 
     getIframeWidth: function() {

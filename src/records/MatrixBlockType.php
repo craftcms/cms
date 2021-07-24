@@ -54,6 +54,7 @@ class MatrixBlockType extends ActiveRecord
                     'title',
                 ],
             ],
+            [['handle'], 'string', 'max' => 47]
         ];
     }
 

@@ -247,6 +247,14 @@ class CustomField extends BaseField
     /**
      * @inheritdoc
      */
+    protected function orientation(?ElementInterface $element = null, bool $static = false): string
+    {
+        return $this->_field->getOrientation($element);
+    }
+
+    /**
+     * @inheritdoc
+     */
     protected function translatable(?ElementInterface $element = null, bool $static = false): bool
     {
         return $this->_field->getIsTranslatable($element);
