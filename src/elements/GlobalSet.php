@@ -152,10 +152,10 @@ class GlobalSet extends Element
     public ?string $handle = null;
 
     /**
-     * @var int Sort order
+     * @var int|null Sort order
      * @since 3.7.0
      */
-    public int $sortOrder;
+    public ?int $sortOrder = null;
 
     /**
      * Use the global set's name as its string representation.
