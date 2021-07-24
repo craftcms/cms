@@ -10,6 +10,7 @@ namespace craft\models;
 use Craft;
 use craft\base\Model;
 use craft\validators\DateTimeValidator;
+use DateTime;
 use yii\base\InvalidConfigException;
 
 /**
@@ -24,72 +25,72 @@ class AssetTransformIndex extends Model
     /**
      * @var int|null ID
      */
-    public $id;
+    public ?int $id = null;
 
     /**
      * @var int|null File ID
      */
-    public $assetId;
+    public ?int $assetId = null;
 
     /**
      * @var int|null Volume ID
      */
-    public $volumeId;
+    public ?int $volumeId = null;
 
     /**
      * @var string|null Filename
      */
-    public $filename;
+    public ?string $filename = null;
 
     /**
      * @var string|null Format
      */
-    public $format;
+    public ?string $format = null;
 
     /**
      * @var string|null Location
      */
-    public $location;
+    public ?string $location = null;
 
     /**
      * @var bool File exists
      */
-    public $fileExists = false;
+    public bool $fileExists = false;
 
     /**
      * @var bool In progress
      */
-    public $inProgress = false;
+    public bool $inProgress = false;
 
     /**
      * @var bool Transform generation failed
      */
-    public $error = false;
+    public bool $error = false;
 
     /**
-     * @var \DateTime|null Date indexed
+     * @var DateTime|null Date indexed
      */
-    public $dateIndexed;
+    public ?DateTime $dateIndexed = null;
 
     /**
-     * @var \DateTime|null Date updated
+     * @var DateTime|null Date updated
      */
-    public $dateUpdated;
+    public ?DateTime $dateUpdated = null;
 
     /**
-     * @var \DateTime|null Date created
+     * @var DateTime|null Date created
      */
-    public $dateCreated;
+    public ?DateTime $dateCreated = null;
 
     /**
      * @var string|null Detected format
      */
-    public $detectedFormat;
+    public ?string $detectedFormat = null;
 
     /**
      * @var AssetTransform|null The transform associated with this index
      */
-    private $_transform;
+    private ?AssetTransform $_transform = null;
 
     /**
      * @inheritdoc
@@ -130,7 +131,7 @@ class AssetTransformIndex extends Model
      */
     public function getTransform(): AssetTransform
     {
-        if ($this->_transform !== null) {
+        if (isset($this->_transform)) {
             return $this->_transform;
         }
 
@@ -146,7 +147,7 @@ class AssetTransformIndex extends Model
      *
      * @param AssetTransform $transform
      */
-    public function setTransform(AssetTransform $transform)
+    public function setTransform(AssetTransform $transform): void
     {
         $this->_transform = $transform;
     }

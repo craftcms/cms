@@ -30,16 +30,16 @@ class Api extends Component
     /**
      * @var Client
      */
-    public $client;
+    public Client $client;
 
     /**
      * @inheritdoc
      */
-    public function init()
+    public function init(): void
     {
         parent::init();
 
-        if ($this->client === null) {
+        if (!isset($this->client)) {
             $this->client = Craft::createGuzzleClient([
                 'base_uri' => Craft::$app->baseApiUrl,
             ]);

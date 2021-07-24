@@ -19,6 +19,8 @@ interface QueueInterface
 {
     /**
      * Runs all the queued-up jobs.
+     *
+     * @return mixed
      */
     public function run();
 
@@ -27,28 +29,28 @@ interface QueueInterface
      *
      * @param string $id
      */
-    public function retry(string $id);
+    public function retry(string $id): void;
 
     /**
      * Retries all failed jobs.
      *
      * @since 3.4.0
      */
-    public function retryAll();
+    public function retryAll(): void;
 
     /**
      * Releases all jobs.
      *
      * @since 3.4.0
      */
-    public function releaseAll();
+    public function releaseAll(): void;
 
     /**
      * Releases a job from the queue.
      *
      * @param string $id
      */
-    public function release(string $id);
+    public function release(string $id): void;
 
     /**
      * Sets the progress for the currently reserved job.
@@ -56,7 +58,7 @@ interface QueueInterface
      * @param int $progress The job progress (1-100)
      * @param string|null $label The progress label
      */
-    public function setProgress(int $progress, string $label = null);
+    public function setProgress(int $progress, ?string $label = null): void;
 
     /**
      * Returns whether there are any waiting jobs.
@@ -95,7 +97,7 @@ interface QueueInterface
      * @param int|null $limit
      * @return array
      */
-    public function getJobInfo(int $limit = null): array;
+    public function getJobInfo(?int $limit = null): array;
 
     /**
      * Returns detailed info about a single job.

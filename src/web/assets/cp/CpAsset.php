@@ -87,7 +87,7 @@ class CpAsset extends AssetBundle
     /**
      * @inheritdoc
      */
-    public function registerAssetFiles($view)
+    public function registerAssetFiles($view): void
     {
         parent::registerAssetFiles($view);
 
@@ -103,7 +103,10 @@ JS;
         $view->registerJs($js, View::POS_HEAD);
     }
 
-    private function _registerTranslations(View $view)
+    /**
+     * @param View $view
+     */
+    private function _registerTranslations(View $view): void
     {
         $view->registerTranslations('app', [
             '(blank)',
@@ -397,7 +400,7 @@ JS;
         return Craft::$app->getAnnouncements()->get();
     }
 
-    private function _datepickerOptions(Locale $formattingLocale, Locale $locale, User $currentUser = null, GeneralConfig $generalConfig): array
+    private function _datepickerOptions(Locale $formattingLocale, Locale $locale, ?User $currentUser, GeneralConfig $generalConfig): array
     {
         return [
             'constrainInput' => false,

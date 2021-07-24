@@ -18,10 +18,10 @@ use craft\gql\base\RelationArgumentHandler;
  */
 class RelatedCategories extends RelationArgumentHandler
 {
-    protected $argumentName = 'relatedToCategories';
+    protected string $argumentName = 'relatedToCategories';
 
     /**
-     * @inheritDoc
+     * @inheritdoc
      */
     protected function handleArgument($argumentValue)
     {

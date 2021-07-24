@@ -31,85 +31,68 @@ class Site extends Model
     /**
      * @var int|null ID
      */
-    public $id;
+    public ?int $id = null;
 
     /**
      * @var int|null Group ID
      */
-    public $groupId;
+    public ?int $groupId = null;
 
     /**
      * @var string|null Handle
      */
-    public $handle;
+    public ?string $handle = null;
 
     /**
      * @var string|null Name
      */
-    public $language;
+    public ?string $language = null;
 
     /**
      * @var bool Primary site?
      */
-    public $primary = false;
+    public bool $primary = false;
 
     /**
      * @var bool Enabled?
      * @since 3.5.0
      */
-    public $enabled = true;
+    public bool $enabled = true;
 
     /**
      * @var bool Has URLs
      */
-    public $hasUrls = true;
+    public bool $hasUrls = true;
 
     /**
      * @var int Sort order
      */
-    public $sortOrder = 1;
+    public int $sortOrder = 1;
 
     /**
      * @var string|null Site UID
      */
-    public $uid;
+    public ?string $uid = null;
 
     /**
      * @var \DateTime Date created
      */
-    public $dateCreated;
+    public \DateTime $dateCreated;
 
     /**
      * @var \DateTime Date updated
      */
-    public $dateUpdated;
+    public \DateTime $dateUpdated;
 
     /**
      * @var string|null Base URL
      */
-    private $_baseUrl = '@web/';
+    private ?string $_baseUrl = '@web/';
 
     /**
      * @var string|null Name
      */
-    private $_name;
-
-    /**
-     * @inheritdoc
-     * @since 3.5.0
-     */
-    public function init()
-    {
-        // Typecast DB values
-        $this->id = (int)$this->id ?: null;
-        $this->groupId = (int)$this->groupId ?: null;
-        $this->primary = (bool)$this->primary;
-        $this->enabled = (bool)$this->enabled;
-        $this->hasUrls = (bool)$this->hasUrls;
-        $this->sortOrder = (int)$this->sortOrder;
-
-        parent::init();
-    }
+    private ?string $_name = null;
 
     /**
      * Returns the site’s name.
@@ -141,7 +124,7 @@ class Site extends Model
      * @return string|null
      * @since 3.1.0
      */
-    public function getBaseUrl(bool $parse = true)
+    public function getBaseUrl(bool $parse = true): ?string
     {
         if ($this->_baseUrl) {
             return $parse ? rtrim(Craft::parseEnv($this->_baseUrl), '/') . '/' : $this->_baseUrl;
@@ -164,7 +147,7 @@ class Site extends Model
     /**
      * @inheritdoc
      */
-    public function behaviors()
+    public function behaviors(): array
     {
         $behaviors = parent::behaviors();
         $behaviors['parser'] = [
@@ -184,7 +167,7 @@ class Site extends Model
     /**
      * @inheritdoc
      */
-    public function attributeLabels()
+    public function attributeLabels(): array
     {
         return [
             'baseUrl' => Craft::t('app', 'Base URL'),
@@ -225,7 +208,7 @@ class Site extends Model
     /**
      * @inheritdoc
      */
-    public function attributes()
+    public function attributes(): array
     {
         $attributes = parent::attributes();
         $attributes[] = 'name';
@@ -251,7 +234,7 @@ class Site extends Model
      */
     public function getGroup(): SiteGroup
     {
-        if ($this->groupId === null) {
+        if (!isset($this->groupId)) {
             throw new InvalidConfigException('Site is missing its group ID');
         }
 

@@ -47,38 +47,33 @@ class Search extends Component
      * @var bool Whether fulltext searches should be used ever. (MySQL only.)
      * @since 3.4.10
      */
-    public $useFullText = true;
+    public bool $useFullText = true;
 
     /**
      * @var int|null The minimum word length that keywords must be in order to use a full-text search (MySQL only).
      */
-    public $minFullTextWordLength;
+    public ?int $minFullTextWordLength = null;
 
     /**
-     * @var
+     * @var SearchQueryTerm[]
      */
-    private $_tokens;
+    private array $_terms;
 
     /**
-     * @var
+     * @var SearchQueryTerm[][]
      */
-    private $_terms;
-
-    /**
-     * @var
-     */
-    private $_groups;
+    private array $_groups;
 
     /**
      * @var bool
      */
-    private $_isMysql;
+    private bool $_isMysql;
 
     /**
      * @var array|null
      * @see _isSupportedFullTextWord()
      */
-    private $_mysqlStopWords;
+    private ?array $_mysqlStopWords = null;
 
     /**
      * @var int Because the `keywords` column in the search index table is a
@@ -86,18 +81,18 @@ class Search extends Component
      * for index" error with a lot of data. This value is a hard limit to
      * truncate search index data for a single row in Postgres.
      */
-    public $maxPostgresKeywordLength = 2450;
+    public int $maxPostgresKeywordLength = 2450;
 
     /**
      * @inheritdoc
      */
-    public function init()
+    public function init(): void
     {
         parent::init();
 
         $this->_isMysql = Craft::$app->getDb()->getIsMysql();
 
-        if ($this->_isMysql && $this->minFullTextWordLength === null) {
+        if ($this->_isMysql && !isset($this->minFullTextWordLength)) {
             $this->minFullTextWordLength = 4;
         }
     }
@@ -111,7 +106,7 @@ class Search extends Component
      * @return bool Whether the indexing was a success.
      * @throws SiteNotFoundException
      */
-    public function indexElementAttributes(ElementInterface $element, array $fieldHandles = null): bool
+    public function indexElementAttributes(ElementInterface $element, ?array $fieldHandles = null): bool
     {
         // Acquire a lock for this element/site ID
         $mutex = Craft::$app->getMutex();
@@ -210,12 +205,11 @@ class Search extends Component
         }
 
         // Get tokens for query
-        $this->_tokens = $query->getTokens();
         $this->_terms = [];
         $this->_groups = [];
 
         // Set Terms and Groups based on tokens
-        foreach ($this->_tokens as $obj) {
+        foreach ($query->getTokens() as $obj) {
             if ($obj instanceof SearchQueryTermGroup) {
                 $this->_groups[] = $obj->terms;
             } else {
@@ -321,7 +315,7 @@ class Search extends Component
      *
      * @since 3.2.10
      */
-    public function deleteOrphanedIndexes()
+    public function deleteOrphanedIndexes(): void
     {
         $db = Craft::$app->getDb();
         $searchIndexTable = Table::SEARCHINDEX;
@@ -355,7 +349,7 @@ SQL;
      * @param string $dirtyKeywords
      * @throws SiteNotFoundException
      */
-    private function _indexElementKeywords(int $elementId, string $attribute, string $fieldId, int $siteId, string $dirtyKeywords)
+    private function _indexElementKeywords(int $elementId, string $attribute, string $fieldId, int $siteId, string $dirtyKeywords): void
     {
         $attribute = strtolower($attribute);
 
@@ -373,7 +367,7 @@ SQL;
             'siteId' => $site->id,
         ];
 
-        if ($cleanKeywords !== null && $cleanKeywords !== false && $cleanKeywords !== '') {
+        if ($cleanKeywords !== '') {
             // Add padding around keywords
             $cleanKeywords = ' ' . $cleanKeywords . ' ';
         }
@@ -901,7 +895,7 @@ SQL;
             return false;
         }
 
-        if ($this->_mysqlStopWords === null) {
+        if (!isset($this->_mysqlStopWords)) {
             $this->_mysqlStopWords = [];
             // todo: make this list smaller when we start requiring MySQL 5.6+ and can start forcing the searchindex table to use InnoDB
             $stopWords = [

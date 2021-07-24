@@ -80,7 +80,7 @@ class ExtractEagerLoadingParameterTest extends Unit
                     $this->make(Assets::class, [
                         'handle' => 'neverAllowed',
                         'context' => 'global',
-                        'getEagerLoadingGqlConditions' => false
+                        'getEagerLoadingGqlConditions' => null,
                     ]),
                 ]
             ]

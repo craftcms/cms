@@ -175,34 +175,34 @@ class Fields extends Component
     /**
      * @var string
      */
-    public $oldFieldColumnPrefix = 'field_';
+    public string $oldFieldColumnPrefix = 'field_';
 
     /**
      * @var MemoizableArray|null
      * @see _groups()
      */
-    private $_groups;
+    private ?MemoizableArray $_groups = null;
 
     /**
      * @var MemoizableArray|null
      * @see _fields()
      */
-    private $_fields;
+    private ?MemoizableArray $_fields = null;
 
     /**
-     * @var
+     * @var FieldLayout[]|null[]
      */
-    private $_layoutsById;
+    private array $_layoutsById = [];
 
     /**
-     * @var
+     * @var FieldLayout[]
      */
-    private $_layoutsByType;
+    private array $_layoutsByType = [];
 
     /**
      * @var array
      */
-    private $_savingFields = [];
+    private array $_savingFields = [];
 
     /**
      * Serializer
@@ -226,7 +226,7 @@ class Fields extends Component
      */
     private function _groups(): MemoizableArray
     {
-        if ($this->_groups === null) {
+        if (!isset($this->_groups)) {
             $groups = [];
             foreach ($this->_createGroupQuery()->all() as $result) {
                 $groups[] = new FieldGroup($result);
@@ -253,7 +253,7 @@ class Fields extends Component
      * @param int $groupId The field group’s ID
      * @return FieldGroup|null The field group, or null if it doesn’t exist
      */
-    public function getGroupById(int $groupId)
+    public function getGroupById(int $groupId): ?FieldGroup
     {
         return $this->_groups()->firstWhere('id', $groupId);
     }
@@ -265,7 +265,7 @@ class Fields extends Component
      * @return FieldGroup|null The field group, or null if it doesn’t exist
      * @since 3.3.0
      */
-    public function getGroupByUid(string $groupUid)
+    public function getGroupByUid(string $groupUid): ?FieldGroup
     {
         return $this->_groups()->firstWhere('uid', $groupUid, true);
     }
@@ -314,7 +314,7 @@ class Fields extends Component
      *
      * @param ConfigEvent $event
      */
-    public function handleChangedGroup(ConfigEvent $event)
+    public function handleChangedGroup(ConfigEvent $event): void
     {
         $data = $event->newValue;
         $uid = $event->tokenMatches[0];
@@ -352,7 +352,7 @@ class Fields extends Component
      *
      * @param ConfigEvent $event
      */
-    public function handleDeletedGroup(ConfigEvent $event)
+    public function handleDeletedGroup(ConfigEvent $event): void
     {
         $uid = $event->tokenMatches[0];
         $groupRecord = $this->_getGroupRecord($uid);
@@ -525,6 +525,7 @@ class Fields extends Component
         $types = [];
 
         foreach ($this->getAllFieldTypes() as $class) {
+            /** @var string|FieldInterface $class */
             if ($class === get_class($field)) {
                 if ($includeCurrent) {
                     $types[] = $class;
@@ -599,7 +600,7 @@ class Fields extends Component
      */
     private function _fields($context = null): MemoizableArray
     {
-        if ($this->_fields === null) {
+        if (!isset($this->_fields)) {
             $fields = [];
             foreach ($this->_createFieldQuery()->all() as $result) {
                 $fields[] = $this->createField($result);
@@ -652,7 +653,7 @@ class Fields extends Component
      * @param int $fieldId The field’s ID
      * @return FieldInterface|null The field, or null if it doesn’t exist
      */
-    public function getFieldById(int $fieldId)
+    public function getFieldById(int $fieldId): ?FieldInterface
     {
         return $this->_fields(false)->firstWhere('id', $fieldId);
     }
@@ -663,7 +664,7 @@ class Fields extends Component
      * @param string $fieldUid The field’s UID
      * @return FieldInterface|null The field, or null if it doesn’t exist
      */
-    public function getFieldByUid(string $fieldUid)
+    public function getFieldByUid(string $fieldUid): ?FieldInterface
     {
         return $this->_fields(false)->firstWhere('uid', $fieldUid, true);
     }
@@ -686,7 +687,7 @@ class Fields extends Component
      * Set to `false` to get all fields regardless of context.
      * @return FieldInterface|null The field, or null if it doesn’t exist
      */
-    public function getFieldByHandle(string $handle, $context = null)
+    public function getFieldByHandle(string $handle, $context = null): ?FieldInterface
     {
         return $this->_fields($context)->firstWhere('handle', $handle, true);
     }
@@ -698,7 +699,7 @@ class Fields extends Component
      * @param string|null $context The field context (defauts to [[\craft\services\Content::$fieldContext]])
      * @return bool Whether a field with that handle exists
      */
-    public function doesFieldWithHandleExist(string $handle, string $context = null): bool
+    public function doesFieldWithHandleExist(string $handle, ?string $context = null): bool
     {
         return ArrayHelper::contains($this->getAllFields($context), 'handle', $handle, true);
     }
@@ -834,7 +835,7 @@ class Fields extends Component
      * @param FieldInterface $field
      * @since 3.1.2
      */
-    public function prepFieldForSave(FieldInterface $field)
+    public function prepFieldForSave(FieldInterface $field): void
     {
         // Clear the translation key format if not using a custom translation method
         if ($field->translationMethod !== Field::TRANSLATION_METHOD_CUSTOM) {
@@ -865,7 +866,7 @@ class Fields extends Component
      * @param ConfigEvent $event
      * @throws \Throwable
      */
-    public function handleChangedField(ConfigEvent $event)
+    public function handleChangedField(ConfigEvent $event): void
     {
         $data = $event->newValue;
         $fieldUid = $event->tokenMatches[0];
@@ -928,7 +929,7 @@ class Fields extends Component
      *
      * @param ConfigEvent $event
      */
-    public function handleDeletedField(ConfigEvent $event)
+    public function handleDeletedField(ConfigEvent $event): void
     {
         $fieldUid = $event->tokenMatches[0];
         $this->applyFieldDelete($fieldUid);
@@ -937,11 +938,11 @@ class Fields extends Component
     /**
      * Applies a field delete to the database.
      *
-     * @param $fieldUid
+     * @param string $fieldUid
      * @throws \Throwable if database error
      * @since 3.1.0
      */
-    public function applyFieldDelete($fieldUid)
+    public function applyFieldDelete(string $fieldUid): void
     {
         $fieldRecord = $this->_getFieldRecord($fieldUid);
 
@@ -1002,7 +1003,6 @@ class Fields extends Component
      * @param string $handle
      * @param string|null $columnSuffix
      * @param array $newColumns
-     * @return void
      */
     private function _dropOldFieldColumns(string $handle, ?string $columnSuffix, array $newColumns = []): void
     {
@@ -1038,7 +1038,7 @@ class Fields extends Component
      *
      * @since 3.0.20
      */
-    public function refreshFields()
+    public function refreshFields(): void
     {
         $this->_fields = null;
         $this->updateFieldVersion();
@@ -1053,9 +1053,9 @@ class Fields extends Component
      * @param int $layoutId The field layout’s ID
      * @return FieldLayout|null The field layout, or null if it doesn’t exist
      */
-    public function getLayoutById(int $layoutId)
+    public function getLayoutById(int $layoutId): ?FieldLayout
     {
-        if ($this->_layoutsById !== null && array_key_exists($layoutId, $this->_layoutsById)) {
+        if (array_key_exists($layoutId, $this->_layoutsById)) {
             return $this->_layoutsById[$layoutId];
         }
 
@@ -1074,7 +1074,7 @@ class Fields extends Component
      */
     public function getLayoutByType(string $type): FieldLayout
     {
-        if ($this->_layoutsByType !== null && array_key_exists($type, $this->_layoutsByType)) {
+        if (array_key_exists($type, $this->_layoutsByType)) {
             return $this->_layoutsByType[$type];
         }
 
@@ -1225,6 +1225,7 @@ class Fields extends Component
         }
 
         $config['class'] = $type;
+        /** @noinspection PhpIncompatibleReturnTypeInspection */
         return Craft::createObject($config);
     }
 
@@ -1235,7 +1236,7 @@ class Fields extends Component
      * @return FieldLayout The field layout
      * @throws BadRequestHttpException
      */
-    public function assembleLayoutFromPost(string $namespace = null): FieldLayout
+    public function assembleLayoutFromPost(?string $namespace = null): FieldLayout
     {
         $paramPrefix = ($namespace ? rtrim($namespace, '.') . '.' : '');
         $request = Craft::$app->getRequest();
@@ -1614,8 +1615,9 @@ class Fields extends Component
     /**
      * Sets a new field version, so the CustomFieldBehavior class
      * will get regenerated on the next request.
+     *
      */
-    public function updateFieldVersion()
+    public function updateFieldVersion(): void
     {
         // Make sure that CustomFieldBehavior has already been loaded,
         // so the field version change won't be detected until the next request
@@ -1634,7 +1636,7 @@ class Fields extends Component
      * @param string $context
      * @since 3.1.0
      */
-    public function applyFieldSave(string $fieldUid, array $data, string $context)
+    public function applyFieldSave(string $fieldUid, array $data, string $context): void
     {
         $groupUid = $data['fieldGroup'];
 
@@ -1765,7 +1767,6 @@ class Fields extends Component
      * @param string|null $oldName
      * @param string $newName
      * @param string $type
-     * @return void
      */
     private function _updateColumn(Connection $db, Transaction &$transaction, string $table, ?string $oldName, string $newName, string $type): void
     {
@@ -1825,7 +1826,7 @@ class Fields extends Component
      * @param string $table
      * @param string $column
      */
-    private function _preserveColumn(Connection $db, string $table, string $column)
+    private function _preserveColumn(Connection $db, string $table, string $column): void
     {
         $n = 0;
         do {
@@ -1939,6 +1940,7 @@ class Fields extends Component
             $query->where(['uid' => $criteria]);
         }
 
+        /** @noinspection PhpIncompatibleReturnTypeInspection */
         return $query->one() ?? new FieldGroupRecord();
     }
 

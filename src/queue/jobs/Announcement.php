@@ -36,15 +36,15 @@ class Announcement extends BaseJob
     /**
      * @var string|null The plugin handle
      */
-    public $pluginHandle;
+    public ?string $pluginHandle = null;
 
     /**
      * @inheritdoc
      * @throws Exception
      */
-    public function execute($queue)
+    public function execute($queue): void
     {
-        if ($this->pluginHandle !== null) {
+        if (isset($this->pluginHandle)) {
             $pluginInfo = Craft::$app->getPlugins()->getStoredPluginInfo($this->pluginHandle);
             if ($pluginInfo === null) {
                 Craft::warning("Couldn’t push announcement because the plugin handle was invalid: $this->pluginHandle", __METHOD__);
@@ -106,7 +106,7 @@ class Announcement extends BaseJob
     /**
      * @inheritdoc
      */
-    protected function defaultDescription(): string
+    protected function defaultDescription(): ?string
     {
         return Craft::t('app', 'Pushing announcement to control panel users');
     }

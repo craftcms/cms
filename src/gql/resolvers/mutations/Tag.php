@@ -25,7 +25,7 @@ use GraphQL\Type\Definition\ResolveInfo;
 class Tag extends ElementMutationResolver
 {
     /** @inheritdoc */
-    protected $immutableAttributes = ['id', 'uid', 'groupId'];
+    protected array $immutableAttributes = ['id', 'uid', 'groupId'];
 
     /**
      * Save a tag using the passed arguments.
@@ -34,10 +34,10 @@ class Tag extends ElementMutationResolver
      * @param array $arguments
      * @param $context
      * @param ResolveInfo $resolveInfo
-     * @return mixed
+     * @return TagElement
      * @throws \Throwable if reasons.
      */
-    public function saveTag($source, array $arguments, $context, ResolveInfo $resolveInfo)
+    public function saveTag($source, array $arguments, $context, ResolveInfo $resolveInfo): TagElement
     {
         /** @var TagGroup $tagGroup */
         $tagGroup = $this->getResolutionData('tagGroup');
@@ -67,6 +67,7 @@ class Tag extends ElementMutationResolver
         $tag = $this->populateElementWithData($tag, $arguments, $resolveInfo);
         $tag = $this->saveElement($tag);
 
+        /** @noinspection PhpIncompatibleReturnTypeInspection */
         return $elementService->getElementById($tag->id, TagElement::class);
     }
 
@@ -77,10 +78,9 @@ class Tag extends ElementMutationResolver
      * @param array $arguments
      * @param $context
      * @param ResolveInfo $resolveInfo
-     * @return mixed
      * @throws \Throwable if reasons.
      */
-    public function deleteTag($source, array $arguments, $context, ResolveInfo $resolveInfo)
+    public function deleteTag($source, array $arguments, $context, ResolveInfo $resolveInfo): void
     {
         $tagId = $arguments['id'];
 
@@ -88,14 +88,12 @@ class Tag extends ElementMutationResolver
         $tag = $elementService->getElementById($tagId, TagElement::class);
 
         if (!$tag) {
-            return true;
+            return;
         }
 
         $tagGroupUid = Db::uidById(Table::TAGGROUPS, $tag->groupId);
         $this->requireSchemaAction('taggroups.' . $tagGroupUid, 'delete');
 
         $elementService->deleteElementById($tagId);
-
-        return true;
     }
 }

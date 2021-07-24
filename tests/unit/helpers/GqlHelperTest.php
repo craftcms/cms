@@ -331,7 +331,7 @@ class GqlHelperTest extends Unit
     public function _setSchemaWithPermissions($scopeSet)
     {
         $gqlService = Craft::$app->getGql();
-        $schema = new GqlSchema(['id' => uniqid(), 'name' => 'Something', 'scope' => $scopeSet]);
+        $schema = new GqlSchema(['id' => random_int(1, 1000), 'name' => 'Something', 'scope' => $scopeSet]);
         $gqlService->setActiveSchema($schema);
     }
 }

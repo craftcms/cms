@@ -26,7 +26,7 @@ class SwitchTokenParser extends AbstractTokenParser
     /**
      * @inheritdoc
      */
-    public function getTag()
+    public function getTag(): string
     {
         return 'switch';
     }
@@ -34,10 +34,9 @@ class SwitchTokenParser extends AbstractTokenParser
     /**
      * @inheritdoc
      */
-    public function parse(Token $token)
+    public function parse(Token $token): SwitchNode
     {
         $lineno = $token->getLine();
-        /** @var Parser $parser */
         $parser = $this->parser;
         $stream = $parser->getStream();
 

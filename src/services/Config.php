@@ -48,27 +48,27 @@ class Config extends Component
      * {% endif %}
      * ```
      */
-    public $env;
+    public ?string $env = null;
 
     /**
      * @var string The path to the config directory
      */
-    public $configDir = '';
+    public string $configDir = '';
 
     /**
      * @var string The path to the directory containing the default application config settings
      */
-    public $appDefaultsDir = '';
+    public string $appDefaultsDir = '';
 
     /**
      * @var array
      */
-    private $_configSettings = [];
+    private array $_configSettings = [];
 
     /**
      * @var bool|null
      */
-    private $_dotEnvPath;
+    private ?bool $_dotEnvPath = null;
 
     /**
      * Returns all of the config settings for a given category.
@@ -138,6 +138,7 @@ class Config extends Component
      */
     public function getDb(): DbConfig
     {
+        /** @noinspection PhpIncompatibleReturnTypeInspection */
         return $this->getConfigSettings(self::CATEGORY_DB);
     }
 
@@ -159,6 +160,7 @@ class Config extends Component
      */
     public function getGeneral(): GeneralConfig
     {
+        /** @noinspection PhpIncompatibleReturnTypeInspection */
         return $this->getConfigSettings(self::CATEGORY_GENERAL);
     }
 
@@ -184,7 +186,7 @@ class Config extends Component
      * $settings = Craft::$app->config->getConfigFromFile('foo');
      * ```
      *
-     * @param $filename
+     * @param string $filename
      * @return array
      */
     public function getConfigFromFile(string $filename): array
@@ -205,7 +207,7 @@ class Config extends Component
         }
 
         // If no environment was specified, just look in the '*' array
-        if ($this->env === null) {
+        if (!isset($this->env)) {
             return $config['*'];
         }
 
@@ -236,7 +238,7 @@ class Config extends Component
      * @param string $value The environment variable value
      * @throws Exception if the .env file doesn't exist
      */
-    public function setDotEnvVar($name, $value)
+    public function setDotEnvVar(string $name, string $value): void
     {
         $path = $this->getDotEnvPath();
 

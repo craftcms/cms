@@ -64,7 +64,7 @@ class Drafts extends Component
     /**
      * @inheritdoc
      */
-    public function init()
+    public function init(): void
     {
         parent::init();
         $this->db = Instance::ensure($this->db, Connection::class);
@@ -77,7 +77,7 @@ class Drafts extends Component
      * @param string|null $permission
      * @return ElementInterface[]
      */
-    public function getEditableDrafts(ElementInterface $element, string $permission = null): array
+    public function getEditableDrafts(ElementInterface $element, ?string $permission = null): array
     {
         $user = Craft::$app->getUser()->getIdentity();
         if (!$user) {
@@ -112,8 +112,8 @@ class Drafts extends Component
     public function createDraft(
         ElementInterface $source,
         int $creatorId,
-        string $name = null,
-        string $notes = null,
+        ?string $name = null,
+        ?string $notes = null,
         array $newAttributes = [],
         bool $provisional = false
     ): ElementInterface
@@ -358,7 +358,6 @@ class Drafts extends Component
     /**
      * Deletes any sourceless drafts that were never formally saved.
      *
-     * @return void
      */
     public function purgeUnsavedDrafts(): void
     {
@@ -423,7 +422,7 @@ class Drafts extends Component
     public function insertDraftRow(
         ?string $name,
         ?string $notes = null,
-        int $creatorId = null,
+        ?int $creatorId = null,
         ?int $sourceId = null,
         bool $trackChanges = false,
         bool $provisional = false

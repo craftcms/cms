@@ -24,7 +24,7 @@ class RoutesController extends Controller
     /**
      * @inheritdoc
      */
-    public function beforeAction($action)
+    public function beforeAction($action): bool
     {
         // All route actions require an admin
         $this->requireAdmin();

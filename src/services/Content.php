@@ -46,22 +46,22 @@ class Content extends Component
     /**
      * @var string
      */
-    public $contentTable = Table::CONTENT;
+    public string $contentTable = Table::CONTENT;
+
+    /**
+     * @var string|null
+     */
+    public ?string $fieldColumnPrefix = 'field_';
 
     /**
      * @var string
      */
-    public $fieldColumnPrefix = 'field_';
-
-    /**
-     * @var string
-     */
-    public $fieldContext = 'global';
+    public string $fieldContext = 'global';
 
     /**
      * @inheritdoc
      */
-    public function init()
+    public function init(): void
     {
         parent::init();
         $this->db = Instance::ensure($this->db, Connection::class);

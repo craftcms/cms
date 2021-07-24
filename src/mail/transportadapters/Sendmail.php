@@ -27,13 +27,26 @@ class Sendmail extends BaseTransportAdapter
      * @var string|null The command to pass to the transport
      * @since 3.4.0
      */
-    public $command;
+    public ?string $command = null;
+
+    /**
+     * @inheritdoc
+     */
+    public function __construct($config = [])
+    {
+        // Config normalization
+        if (($config['command'] ?? null) === '') {
+            unset($config['command']);
+        }
+
+        parent::__construct($config);
+    }
 
     /**
      * @inheritdoc
      * @since 3.4.0
      */
-    public function behaviors()
+    public function behaviors(): array
     {
         $behaviors = parent::behaviors();
         $behaviors['parser'] = [
@@ -49,7 +62,7 @@ class Sendmail extends BaseTransportAdapter
      * @inheritdoc
      * @since 3.4.0
      */
-    public function attributeLabels()
+    public function attributeLabels(): array
     {
         return [
             'command' => Craft::t('app', 'Sendmail Command'),
@@ -79,7 +92,7 @@ class Sendmail extends BaseTransportAdapter
      * @inheritdoc
      * @since 3.4.0
      */
-    public function getSettingsHtml()
+    public function getSettingsHtml(): ?string
     {
         return Craft::$app->getView()->renderTemplate('_components/mailertransportadapters/Sendmail/settings', [
             'adapter' => $this,

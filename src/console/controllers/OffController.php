@@ -23,12 +23,12 @@ class OffController extends Controller
     /**
      * @var int|null Number of seconds that the `Retry-After` HTTP header should be set to for 503 responses
      */
-    public $retry;
+    public ?int $retry = null;
 
     /**
      * @inheritdoc
      */
-    public function options($actionID)
+    public function options($actionID): array
     {
         $options = parent::options($actionID);
         $options[] = 'retry';
@@ -61,7 +61,7 @@ class OffController extends Controller
             $this->stdout('The system is now offline.' . PHP_EOL, Console::FG_GREEN);
         }
 
-        if ($this->retry !== null) {
+        if (isset($this->retry)) {
             $retry = (int)$this->retry ?: null;
             $projectConfig->set('system.retryDuration', $retry, null, false);
             $this->stdout(($this->retry ? "The retry duration is now set to $this->retry." : 'The retry duration has been removed.') . PHP_EOL, Console::FG_GREEN);

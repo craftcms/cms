@@ -27,12 +27,12 @@ class PruneRevisionsController extends Controller
     /**
      * @var int The maximum number of revisions an element can have.
      */
-    public $maxRevisions;
+    public int $maxRevisions;
 
     /**
      * @inheritdoc
      */
-    public function options($actionID)
+    public function options($actionID): array
     {
         $options = parent::options($actionID);
         $options[] = 'maxRevisions';
@@ -46,7 +46,7 @@ class PruneRevisionsController extends Controller
      */
     public function actionIndex(): int
     {
-        if ($this->maxRevisions === null) {
+        if (!isset($this->maxRevisions)) {
             $this->maxRevisions = $this->prompt('What is the max number of revisions an element can have?', [
                 'default' => Craft::$app->getConfig()->getGeneral()->maxRevisions,
                 'validator' => function($input) {

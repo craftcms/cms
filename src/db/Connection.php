@@ -70,7 +70,7 @@ class Connection extends \yii\db\Connection
      * @see getSupportsMb4()
      * @see setSupportsMb4()
      */
-    private $_supportsMb4;
+    private ?bool $_supportsMb4 = null;
 
     /**
      * Returns whether this is a MySQL connection.
@@ -99,7 +99,7 @@ class Connection extends \yii\db\Connection
      */
     public function getSupportsMb4(): bool
     {
-        if ($this->_supportsMb4 !== null) {
+        if (isset($this->_supportsMb4)) {
             return $this->_supportsMb4;
         }
         return $this->_supportsMb4 = $this->getIsPgsql();
@@ -110,7 +110,7 @@ class Connection extends \yii\db\Connection
      *
      * @param bool $supportsMb4
      */
-    public function setSupportsMb4(bool $supportsMb4)
+    public function setSupportsMb4(bool $supportsMb4): void
     {
         $this->_supportsMb4 = $supportsMb4;
     }
@@ -120,7 +120,7 @@ class Connection extends \yii\db\Connection
      * @throws DbConnectException if there are any issues
      * @throws \Throwable
      */
-    public function open()
+    public function open(): void
     {
         try {
             parent::open();
@@ -155,7 +155,7 @@ class Connection extends \yii\db\Connection
      * @inheritdoc
      * @since 3.4.11
      */
-    public function close()
+    public function close(): void
     {
         parent::close();
         $this->_supportsMb4 = null;
@@ -223,7 +223,7 @@ class Connection extends \yii\db\Connection
      * @throws Exception if the backupCommand config setting is false
      * @throws ShellCommandException in case of failure
      */
-    public function backupTo(string $filePath)
+    public function backupTo(string $filePath): void
     {
         // Fire a 'beforeCreateBackup' event
         $event = new BackupEvent([
@@ -286,7 +286,7 @@ class Connection extends \yii\db\Connection
      * @throws Exception if the restoreCommand config setting is false
      * @throws ShellCommandException in case of failure
      */
-    public function restore(string $filePath)
+    public function restore(string $filePath): void
     {
         // Fire a 'beforeRestoreBackup' event
         if ($this->hasEventHandlers(self::EVENT_BEFORE_RESTORE_BACKUP)) {
@@ -336,7 +336,7 @@ class Connection extends \yii\db\Connection
      * @param bool|null $refresh
      * @return bool
      */
-    public function tableExists(string $table, bool $refresh = null): bool
+    public function tableExists(string $table, ?bool $refresh = null): bool
     {
         // Default to refreshing the tables if Craft isn't installed yet
         if ($refresh || ($refresh === null && !Craft::$app->getIsInstalled())) {
@@ -357,7 +357,7 @@ class Connection extends \yii\db\Connection
      * @return bool
      * @throws NotSupportedException if there is no support for the current driver type
      */
-    public function columnExists(string $table, string $column, bool $refresh = null): bool
+    public function columnExists(string $table, string $column, ?bool $refresh = null): bool
     {
         // Default to refreshing the tables if Craft isn't installed yet
         if ($refresh || ($refresh === null && !Craft::$app->getIsInstalled())) {
@@ -439,7 +439,7 @@ class Connection extends \yii\db\Connection
      * @param string $file The path to the backup file
      * @return string
      */
-    private function _parseCommandTokens(string $command, $file): string
+    private function _parseCommandTokens(string $command, string $file): string
     {
         $parsed = Db::parseDsn($this->dsn);
         $username = $this->getIsPgsql() && !empty($parsed['user']) ? $parsed['user'] : $this->username;
@@ -461,7 +461,7 @@ class Connection extends \yii\db\Connection
      * @param ShellCommand $command
      * @throws ShellCommandException
      */
-    private function _executeDatabaseShellCommand(ShellCommand $command)
+    private function _executeDatabaseShellCommand(ShellCommand $command): void
     {
         $success = $command->execute();
 

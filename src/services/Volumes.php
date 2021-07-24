@@ -105,12 +105,12 @@ class Volumes extends Component
      * @var MemoizableArray|null
      * @see _volumes()
      */
-    private $_volumes;
+    private ?MemoizableArray $_volumes = null;
 
     /**
      * @var array|null Volume setting overrides
      */
-    private $_overrides;
+    private ?array $_overrides = null;
 
     /**
      * Serializer
@@ -231,7 +231,7 @@ class Volumes extends Component
      */
     private function _volumes(): MemoizableArray
     {
-        if ($this->_volumes === null) {
+        if (!isset($this->_volumes)) {
             $volumes = [];
             foreach ($this->_createVolumeQuery()->all() as $result) {
                 $volumes[] = $this->createVolume($result);

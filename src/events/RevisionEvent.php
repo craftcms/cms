@@ -23,22 +23,22 @@ class RevisionEvent extends Event
      * @var ElementInterface The canonical element
      * @todo rename to canonical in v4
      */
-    public $source;
+    public ElementInterface $source;
 
     /**
      * @var int|null The creator ID
      */
-    public $creatorId;
+    public ?int $creatorId;
 
     /**
      * @var int The revision number
      */
-    public $revisionNum;
+    public int $revisionNum;
 
     /**
      * @var string|null The revision notes
      */
-    public $revisionNotes;
+    public ?string $revisionNotes;
 
     /**
      * @var ElementInterface|RevisionBehavior|null The revision associated with the event (if it exists yet)

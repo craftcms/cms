@@ -52,7 +52,7 @@ class GlobalSetType implements GeneratorInterface, SingleGeneratorInterface
     }
 
     /**
-     * @inheritdoc
+     * Returns the generator name.
      */
     public static function getName($context = null): string
     {

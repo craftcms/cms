@@ -21,43 +21,43 @@ class AssetIndexData extends Model
     /**
      * @var int|null ID
      */
-    public ?int $id;
+    public ?int $id = null;
 
     /**
      * @var int|null Volume ID
      */
-    public ?int $volumeId;
+    public ?int $volumeId = null;
 
     /**
      * @var string|null Session ID
      */
-    public ?string $sessionId;
+    public ?string $sessionId = null;
 
     /**
      * @var string|null URI
      */
-    public ?string $uri;
+    public ?string $uri = null;
 
     /**
      * @var int|null Size
      */
-    public ?int $size;
+    public ?int $size = null;
 
     /**
      * @var int|null Record ID
      */
-    public ?int $recordId;
+    public ?int $recordId = null;
 
     /**
      * @var bool|null Whether the path was skipped
      * @since 4.0.0
      */
-    public ?bool $isSkipped;
+    public ?bool $isSkipped = null;
 
     /**
      * @var DateTime|null The index timestamp
      */
-    public ?DateTime $timestamp;
+    public ?DateTime $timestamp = null;
 
     /**
      * @var bool is Dir

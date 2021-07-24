@@ -42,7 +42,18 @@ class Email extends Field implements PreviewableFieldInterface
     /**
      * @var string|null The input’s placeholder text
      */
-    public $placeholder;
+    public ?string $placeholder = null;
+
+    /**
+     * @inheritdoc
+     */
+    public function __construct($config = [])
+    {
+        if (($config['placeholder'] ?? null) === '') {
+            unset($config['placeholder']);
+        }
+        parent::__construct($config);
+    }
 
     /**
      * @inheritdoc
@@ -55,7 +66,7 @@ class Email extends Field implements PreviewableFieldInterface
     /**
      * @inheritdoc
      */
-    public function getSettingsHtml()
+    public function getSettingsHtml(): ?string
     {
         return Cp::textFieldHtml([
             'label' => Craft::t('app', 'Placeholder Text'),
@@ -70,7 +81,7 @@ class Email extends Field implements PreviewableFieldInterface
     /**
      * @inheritdoc
      */
-    protected function inputHtml($value, ElementInterface $element = null): string
+    protected function inputHtml($value, ?ElementInterface $element = null): string
     {
         $id = Html::id($this->handle);
         return Craft::$app->getView()->renderTemplate('_includes/forms/text', [

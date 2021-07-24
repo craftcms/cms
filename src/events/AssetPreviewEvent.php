@@ -23,12 +23,12 @@ class AssetPreviewEvent extends Event
     /**
      * @var Asset The asset Element associated with the event.
      */
-    public $asset;
+    public Asset $asset;
 
     /**
      * An AssetPreview handler
      *
      * @var AssetPreviewHandlerInterface $previewHandler
      */
-    public $previewHandler;
+    public AssetPreviewHandlerInterface $previewHandler;
 }

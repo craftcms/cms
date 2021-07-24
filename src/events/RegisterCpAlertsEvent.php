@@ -20,5 +20,5 @@ class RegisterCpAlertsEvent extends Event
     /**
      * @var array The registered control panel alerts
      */
-    public $alerts = [];
+    public array $alerts = [];
 }

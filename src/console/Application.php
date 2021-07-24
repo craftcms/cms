@@ -38,9 +38,9 @@ class Application extends \yii\console\Application
     use ApplicationTrait;
 
     /**
-     * Initializes the console app by creating the command runner.
+     * @inheritdoc
      */
-    public function init()
+    public function init(): void
     {
         $this->state = self::STATE_INIT;
         $this->_preInit();
@@ -51,7 +51,7 @@ class Application extends \yii\console\Application
     /**
      * @inheritdoc
      */
-    public function bootstrap()
+    public function bootstrap(): void
     {
         // Ensure that the request component has been instantiated
         if (!$this->has('request', true)) {
@@ -92,13 +92,14 @@ class Application extends \yii\console\Application
     /**
      * @inheritdoc
      */
-    public function setTimeZone($value)
+    public function setTimeZone($value): void
     {
         parent::setTimeZone($value);
 
         if ($value !== 'UTC' && $this->getI18n()->getIsIntlLoaded()) {
             // Make sure that ICU supports this timezone
             try {
+                /** @noinspection PhpExpressionResultUnusedInspection */
                 new \IntlDateFormatter($this->language, \IntlDateFormatter::NONE, \IntlDateFormatter::NONE);
             } catch (\IntlException $e) {
                 Craft::warning("Time zone \"{$value}\" does not appear to be supported by ICU: " . intl_get_error_message());
@@ -134,8 +135,9 @@ class Application extends \yii\console\Application
      *
      * @return User
      */
-    public function getUser()
+    public function getUser(): User
     {
+        /** @noinspection PhpIncompatibleReturnTypeInspection */
         return $this->get('user');
     }
 
@@ -150,7 +152,7 @@ class Application extends \yii\console\Application
      * @see has()
      * @see set()
      */
-    public function get($id, $throwException = true)
+    public function get($id, $throwException = true): ?object
     {
         // Is this the first time the queue component is requested?
         $isFirstQueue = $id === 'queue' && !$this->has($id, true);

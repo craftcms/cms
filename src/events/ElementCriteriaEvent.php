@@ -20,5 +20,5 @@ class ElementCriteriaEvent extends Event
     /**
      * @var array The criteria that should be used to query for elements.
      */
-    public $criteria = [];
+    public array $criteria = [];
 }

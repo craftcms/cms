@@ -45,14 +45,14 @@ class Gc extends Component
      *
      * This number should be between 0 and 1000000. A value 0 means no GC will be performed at all unless forced.
      */
-    public $probability = 10;
+    public int $probability = 10;
 
     /**
      * @var bool whether [[hardDelete()]] should delete *all* soft-deleted rows,
      * rather than just the ones that were deleted long enough ago to be ready
      * for hard-deletion per the <config3:softDeleteDuration> config setting.
      */
-    public $deleteAllTrashed = false;
+    public bool $deleteAllTrashed = false;
 
     /**
      * Possibly runs garbage collection.
@@ -60,7 +60,7 @@ class Gc extends Component
      * @param bool $force Whether garbage collection should be forced. If left as `false`, then
      * garbage collection will only run if a random condition passes, factoring in [[probability]].
      */
-    public function run(bool $force = false)
+    public function run(bool $force = false): void
     {
         if (!$force && mt_rand(0, 1000000) >= $this->probability) {
             return;
@@ -115,7 +115,7 @@ class Gc extends Component
     /**
      * Hard delete eligible volumes, deleting the folders one by one to avoid nested dependency errors.
      */
-    public function hardDeleteVolumes()
+    public function hardDeleteVolumes(): void
     {
         $generalConfig = Craft::$app->getConfig()->getGeneral();
         if (!$generalConfig->softDeleteDuration && !$this->deleteAllTrashed) {
@@ -146,7 +146,7 @@ class Gc extends Component
      *
      * @param string|string[] $tables The table(s) to delete rows from. They must have a `dateDeleted` column.
      */
-    public function hardDelete($tables)
+    public function hardDelete($tables): void
     {
         $generalConfig = Craft::$app->getConfig()->getGeneral();
         if (!$generalConfig->softDeleteDuration && !$this->deleteAllTrashed) {
@@ -170,7 +170,6 @@ class Gc extends Component
      * @param string $elementType The element type
      * @param string $table The extension table name
      * @param string $fk The column name that contains the foreign key to `elements.id`
-     * @return void
      * @since 3.6.6
      */
     public function deletePartialElements(string $elementType, string $table, string $fk): void
@@ -204,7 +203,7 @@ SQL;
     /**
      * Deletes any session rows that have gone stale.
      */
-    private function _deleteStaleSessions()
+    private function _deleteStaleSessions(): void
     {
         $generalConfig = Craft::$app->getConfig()->getGeneral();
 
@@ -222,7 +221,6 @@ SQL;
     /**
      * Deletes any feature announcement rows that have gone stale.
      *
-     * @return void
      */
     private function _deleteStaleAnnouncements(): void
     {
@@ -233,7 +231,6 @@ SQL;
     /**
      * Deletes any orphaned rows in the `drafts` and `revisions` tables.
      *
-     * @return void
      */
     private function _deleteOrphanedDraftsAndRevisions(): void
     {

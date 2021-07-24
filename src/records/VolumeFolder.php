@@ -29,7 +29,7 @@ class VolumeFolder extends ActiveRecord
     /**
      * @inheritdoc
      */
-    public function rules()
+    public function rules(): array
     {
         return [
             [['name'], 'unique', 'targetAttribute' => ['name', 'parentId', 'volumeId']],

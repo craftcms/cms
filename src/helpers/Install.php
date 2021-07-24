@@ -28,7 +28,7 @@ class Install
      *
      * @return string|null
      */
-    public static function defaultSiteName()
+    public static function defaultSiteName(): ?string
     {
         // Is there a project.yaml that defines a primary site?
         $primarySite = self::_primarySiteConfig();
@@ -54,7 +54,7 @@ class Install
      *
      * @return string|null
      */
-    public static function defaultSiteUrl()
+    public static function defaultSiteUrl(): ?string
     {
         // Is there a project.yaml that defines a primary site with a base URL?
         $primarySite = self::_primarySiteConfig();
@@ -97,9 +97,9 @@ class Install
      *
      * @return array|null
      */
-    private static function _primarySiteConfig()
+    private static function _primarySiteConfig(): ?array
     {
-        if (self::$_primarySiteConfig === null) {
+        if (!isset(self::$_primarySiteConfig)) {
             $sites = Craft::$app->getProjectConfig()->get('sites', true) ?? [];
             self::$_primarySiteConfig = ArrayHelper::firstWhere($sites, 'primary') ?? false;
         }

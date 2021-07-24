@@ -22,37 +22,37 @@ class CraftSupport extends Model
     /**
      * @var string|null From email
      */
-    public $fromEmail;
+    public ?string $fromEmail = null;
 
     /**
      * @var string|null Message
      */
-    public $message;
+    public ?string $message = null;
 
     /**
      * @var bool Attach logs
      */
-    public $attachLogs = false;
+    public bool $attachLogs = false;
 
     /**
      * @var bool Attach db backup
      */
-    public $attachDbBackup = false;
+    public bool $attachDbBackup = false;
 
     /**
      * @var bool Attach templates
      */
-    public $attachTemplates = false;
+    public bool $attachTemplates = false;
 
     /**
      * @var UploadedFile|null Attachment
      */
-    public $attachment;
+    public ?UploadedFile $attachment = null;
 
     /**
      * @inheritdoc
      */
-    public function attributeLabels()
+    public function attributeLabels(): array
     {
         return [
             'attachment' => Craft::t('app', 'Attachment'),

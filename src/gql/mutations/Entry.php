@@ -109,6 +109,7 @@ class Entry extends Mutation
      * Create the per-entry-type save mutations.
      *
      * @param EntryTypeModel $entryType
+     * @param bool $createSaveDraftMutation
      * @return array
      * @throws InvalidConfigException
      */
@@ -123,6 +124,7 @@ class Entry extends Mutation
 
         $section = $entryType->getSection();
 
+        /** @var EntryMutationResolver $resolver */
         $resolver = Craft::createObject(EntryMutationResolver::class);
         $resolver->setResolutionData('entryType', $entryType);
         $resolver->setResolutionData('section', $section);

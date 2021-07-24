@@ -22,35 +22,35 @@ class I18N extends \yii\i18n\I18N
     /**
      * @var bool Whether the [PHP intl extension](https://php.net/manual/en/book.intl.php) is loaded.
      */
-    private $_intlLoaded = false;
+    private bool $_intlLoaded = false;
 
     /**
      * @var array|null All of the known locales
      * @see getAllLocales()
      */
-    private $_allLocaleIds;
+    private ?array $_allLocaleIds = null;
 
     /**
      * @var string[]
      * @see getAppLocaleIds()
      */
-    private $_appLocaleIds;
+    private array $_appLocaleIds;
 
     /**
      * @var Locale[]
      * @see getAppLocales()
      */
-    private $_appLocales;
+    private array $_appLocales;
 
     /**
      * @var bool|null Whether [[translate()]] should wrap translations with `@` characters
      */
-    private $_translationDebugOutput;
+    private ?bool $_translationDebugOutput = null;
 
     /**
      * @inheritdoc
      */
-    public function init()
+    public function init(): void
     {
         parent::init();
 
@@ -88,9 +88,9 @@ class I18N extends \yii\i18n\I18N
      * @return array An array of locale IDs.
      * @link https://php.net/manual/en/resourcebundle.locales.php
      */
-    public function getAllLocaleIds()
+    public function getAllLocaleIds(): array
     {
-        if ($this->_allLocaleIds === null) {
+        if (!isset($this->_allLocaleIds)) {
             if ($this->getIsIntlLoaded()) {
                 $this->_allLocaleIds = ResourceBundle::getLocales(null);
             } else {
@@ -155,7 +155,7 @@ class I18N extends \yii\i18n\I18N
      */
     public function getAppLocales(): array
     {
-        if ($this->_appLocales !== null) {
+        if (isset($this->_appLocales)) {
             return $this->_appLocales;
         }
 
@@ -184,11 +184,10 @@ class I18N extends \yii\i18n\I18N
     /**
      * Defines the list of supported app locale IDs.
      *
-     * @return void
      */
     private function _defineAppLocales(): void
     {
-        if ($this->_appLocaleIds !== null) {
+        if (isset($this->_appLocaleIds)) {
             return;
         }
 
@@ -338,7 +337,7 @@ class I18N extends \yii\i18n\I18N
     /**
      * @inheritdoc
      */
-    public function translate($category, $message, $params, $language)
+    public function translate($category, $message, $params, $language): string
     {
         $translation = parent::translate($category, $message, $params, $language);
 
@@ -371,10 +370,12 @@ class I18N extends \yii\i18n\I18N
     /**
      * Returns whether [[translate()]] should wrap translations with `@` characters,
      * per the `translationDebugOutput` config setting.
+     *
+     * @return bool
      */
-    private function _shouldAddTranslationDebugOutput()
+    private function _shouldAddTranslationDebugOutput(): bool
     {
-        if ($this->_translationDebugOutput === null) {
+        if (!isset($this->_translationDebugOutput)) {
             $this->_translationDebugOutput = (bool)Craft::$app->getConfig()->getGeneral()->translationDebugOutput;
         }
 

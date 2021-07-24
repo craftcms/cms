@@ -101,7 +101,7 @@ class SearchTest extends Unit
         $user->email = 'testIndexElementAttributes1@test.com';
         $user->firstName = 'john smith';
         $user->lastName = 'WIL K ER SON!';
-        $user->id = '666';
+        $user->id = 1;
 
         // Index them.
         $this->search->indexElementAttributes($user);

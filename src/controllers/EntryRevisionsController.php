@@ -49,7 +49,7 @@ class EntryRevisionsController extends BaseEntriesController
      * @throws BadRequestHttpException
      * @throws ForbiddenHttpException
      */
-    public function actionCreateDraft(string $section, string $site = null): Response
+    public function actionCreateDraft(string $section, ?string $site = null): Response
     {
         $sectionHandle = $section;
         $section = Craft::$app->getSections()->getSectionByHandle($sectionHandle);
@@ -199,7 +199,7 @@ class EntryRevisionsController extends BaseEntriesController
      * @throws NotFoundHttpException if the requested entry draft cannot be found
      * @throws ForbiddenHttpException
      */
-    public function actionSaveDraft()
+    public function actionSaveDraft(): ?Response
     {
         $this->requirePostRequest();
 
@@ -387,7 +387,7 @@ class EntryRevisionsController extends BaseEntriesController
      * @throws ServerErrorHttpException if the entry draft is missing its entry
      * @throws ForbiddenHttpException if the user doesn't have the necessary permissions
      */
-    public function actionPublishDraft()
+    public function actionPublishDraft(): ?Response
     {
         $this->requirePostRequest();
 
@@ -515,7 +515,7 @@ class EntryRevisionsController extends BaseEntriesController
      * @throws ServerErrorHttpException if the entry version is missing its entry
      * @throws ForbiddenHttpException
      */
-    public function actionRevertEntryToVersion()
+    public function actionRevertEntryToVersion(): ?Response
     {
         $this->requirePostRequest();
 
@@ -563,7 +563,7 @@ class EntryRevisionsController extends BaseEntriesController
      *
      * @param Entry $draft
      */
-    private function _setDraftAttributesFromPost(Entry $draft)
+    private function _setDraftAttributesFromPost(Entry $draft): void
     {
         /** @var Entry|DraftBehavior $draft */
         $draft->typeId = $this->request->getBodyParam('typeId');

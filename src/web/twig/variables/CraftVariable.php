@@ -81,7 +81,7 @@ class CraftVariable extends ServiceLocator
     /**
      * @inheritdoc
      */
-    public function init()
+    public function init(): void
     {
         parent::init();
 
@@ -109,7 +109,7 @@ class CraftVariable extends ServiceLocator
     /**
      * @inheritdoc
      */
-    public function behaviors()
+    public function behaviors(): array
     {
         // Fire a 'defineBehaviors' event
         $event = new DefineBehaviorsEvent();
@@ -123,7 +123,7 @@ class CraftVariable extends ServiceLocator
     /**
      * @inheritdoc
      */
-    public function canGetProperty($name, $checkVars = true, $checkBehaviors = true)
+    public function canGetProperty($name, $checkVars = true, $checkBehaviors = true): bool
     {
         // Check the services
         if ($this->has($name)) {

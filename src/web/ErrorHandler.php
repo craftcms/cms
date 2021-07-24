@@ -36,7 +36,7 @@ class ErrorHandler extends \yii\web\ErrorHandler
     /**
      * @inheritdoc
      */
-    public function handleException($exception)
+    public function handleException($exception): void
     {
         // Fire a 'beforeHandleException' event
         if ($this->hasEventHandlers(self::EVENT_BEFORE_HANDLE_EXCEPTION)) {
@@ -66,7 +66,7 @@ class ErrorHandler extends \yii\web\ErrorHandler
     /**
      * @inheritdoc
      */
-    public function handleError($code, $message, $file, $line)
+    public function handleError($code, $message, $file, $line): ?bool
     {
         // Because: https://bugs.php.net/bug.php?id=74980
         if (strpos($message, 'Narrowing occurred during type inference. Please file a bug report') !== false) {
@@ -79,7 +79,7 @@ class ErrorHandler extends \yii\web\ErrorHandler
     /**
      * @inheritdoc
      */
-    public function getExceptionName($exception)
+    public function getExceptionName($exception): ?string
     {
         // Yii isn't translating its own exceptions' names, so meh
         if ($exception instanceof TwigError) {
@@ -102,7 +102,7 @@ class ErrorHandler extends \yii\web\ErrorHandler
     /**
      * @inheritdoc
      */
-    public function isCoreFile($file)
+    public function isCoreFile($file): bool
     {
         if (parent::isCoreFile($file)) {
             return true;
@@ -118,7 +118,7 @@ class ErrorHandler extends \yii\web\ErrorHandler
     /**
      * @inheritdoc
      */
-    protected function renderException($exception)
+    protected function renderException($exception): void
     {
         // Set the response format back to HTML if it's still set to raw
         if (Craft::$app->has('response')) {
@@ -150,7 +150,7 @@ class ErrorHandler extends \yii\web\ErrorHandler
     /**
      * @inheritdoc
      */
-    protected function getTypeUrl($class, $method)
+    protected function getTypeUrl($class, $method): ?string
     {
         $url = parent::getTypeUrl($class, $method);
 
@@ -174,7 +174,7 @@ class ErrorHandler extends \yii\web\ErrorHandler
     /**
      * @inheritdoc
      */
-    public function renderCallStackItem($file, $line, $class, $method, $args, $index)
+    public function renderCallStackItem($file, $line, $class, $method, $args, $index): string
     {
         if (strpos($file, 'compiled_templates') !== false) {
             try {
@@ -190,9 +190,12 @@ class ErrorHandler extends \yii\web\ErrorHandler
     /**
      * Attempts to swap out debug trace info with template info.
      *
-     * @throws \Throwable
+     * @param string $traceFile
+     * @param int|null $traceLine
+     * @return array
+     * @throws Exception
      */
-    private function _resolveTemplateTrace(string $traceFile, int $traceLine = null)
+    private function _resolveTemplateTrace(string $traceFile, ?int $traceLine = null): array
     {
         $contents = file_get_contents($traceFile);
         if (!preg_match('/^class (\w+)/m', $contents, $match)) {
@@ -241,7 +244,7 @@ class ErrorHandler extends \yii\web\ErrorHandler
      * @inheritdoc
      * @since 3.4.10
      */
-    protected function shouldRenderSimpleHtml()
+    protected function shouldRenderSimpleHtml(): bool
     {
         return YII_ENV_TEST || (Craft::$app->has('request', true) && Craft::$app->request->getIsAjax());
     }

@@ -17,6 +17,7 @@ use craft\events\RegisterAssetFileKindsEvent;
 use craft\events\SetAssetFilenameEvent;
 use craft\models\AssetTransformIndex;
 use craft\models\VolumeFolder;
+use DateTime;
 use yii\base\Event;
 use yii\base\Exception;
 use yii\base\InvalidArgumentException;
@@ -45,13 +46,13 @@ class Assets
      * @var array Supported file kinds
      * @see getFileKinds()
      */
-    private static $_fileKinds;
+    private static array $_fileKinds;
 
     /**
      * @var array Allowed file kinds
      * @see getAllowedFileKinds()
      */
-    private static $_allowedFileKinds;
+    private static array $_allowedFileKinds;
 
     /**
      * Get a temporary file path.
@@ -127,12 +128,14 @@ class Assets
      * @param bool $preventPluginModifications if set to true, will prevent plugins from modify
      * @return string
      */
-    public static function prepareAssetName(string $name, bool $isFilename = true, bool $preventPluginModifications = false)
+    public static function prepareAssetName(string $name, bool $isFilename = true, bool $preventPluginModifications = false): string
     {
         if ($isFilename) {
+            /** @var string $baseName */
             $baseName = pathinfo($name, PATHINFO_FILENAME);
+            /** @var string $extension */
             $extension = pathinfo($name, PATHINFO_EXTENSION);
-            if ($extension) {
+            if ($extension !== '') {
                 $extension = '.' . $extension;
             }
         } else {
@@ -272,9 +275,9 @@ class Assets
     /**
      * Sorts a folder tree by Volume sort order.
      *
-     * @param VolumeFolder[] &$tree array passed by reference of the sortable folders.
+     * @param VolumeFolder[] $tree array passed by reference of the sortable folders.
      */
-    public static function sortFolderTree(array &$tree)
+    public static function sortFolderTree(array &$tree): void
     {
         ArrayHelper::multisort($tree, function($folder) {
             return $folder->getVolume()->sortOrder;
@@ -300,7 +303,7 @@ class Assets
      */
     public static function getAllowedFileKinds(): array
     {
-        if (self::$_allowedFileKinds !== null) {
+        if (isset(self::$_allowedFileKinds)) {
             return self::$_allowedFileKinds;
         }
 
@@ -373,9 +376,9 @@ class Assets
     /**
      * Builds the internal file kinds array, if it hasn't been built already.
      */
-    private static function _buildFileKinds()
+    private static function _buildFileKinds(): void
     {
-        if (self::$_fileKinds === null) {
+        if (!isset(self::$_fileKinds)) {
             self::$_fileKinds = [
                 Asset::KIND_ACCESS => [
                     'label' => Craft::t('app', 'Access'),
@@ -629,8 +632,8 @@ class Assets
     /**
      * Return an image path to use in Image Editor for an Asset by id and size.
      *
-     * @param integer $assetId
-     * @param integer $size
+     * @param int $assetId
+     * @param int $size
      * @return false|string
      * @throws Exception in case of failure
      */
@@ -764,7 +767,7 @@ class Assets
      * @throws InvalidArgumentException if the size can’t be parsed
      * @since 3.5.0
      */
-    public static function parseSrcsetSize($size)
+    public static function parseSrcsetSize($size): array
     {
         if (is_numeric($size)) {
             $size = $size . 'w';

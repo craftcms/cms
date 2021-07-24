@@ -53,19 +53,19 @@ class Queue extends \yii\queue\cli\Queue implements QueueInterface
     /**
      * @var int The time (in seconds) to wait for mutex locks to be released when attempting to reserve new jobs.
      */
-    public $mutexTimeout = 3;
+    public int $mutexTimeout = 3;
 
     /**
      * @var string The table name the queue is stored in.
      * @since 3.4.0
      */
-    public $tableName = Table::QUEUE;
+    public string $tableName = Table::QUEUE;
 
     /**
      * @var string The `channel` column value to the queue should use.
      * @since 3.4.0
      */
-    public $channel = 'queue';
+    public string $channel = 'queue';
 
     /**
      * @inheritdoc
@@ -75,33 +75,33 @@ class Queue extends \yii\queue\cli\Queue implements QueueInterface
     /**
      * @var string|null The description of the job being pushed into the queue
      */
-    private $_jobDescription;
+    private ?string $_jobDescription = null;
 
     /**
      * @var string|null The currently-executing job ID
      */
-    private $_executingJobId;
+    private ?string $_executingJobId = null;
 
     /**
-     * @var int The timestamp the last job was reserved
+     * @var int|null The timestamp the last job was reserved
      */
-    private $_reserveTime;
+    private ?int $_reserveTime = null;
 
     /**
      * @var bool Whether we're already listening for the web response
      */
-    private $_listeningForResponse = false;
+    private bool $_listeningForResponse = false;
 
     /**
      * @var bool Whether a mutex lock has been acquired
      * @see _lock()
      */
-    private $_locked = false;
+    private bool $_locked = false;
 
     /**
      * @inheritdoc
      */
-    public function init()
+    public function init(): void
     {
         parent::init();
 
@@ -143,7 +143,7 @@ class Queue extends \yii\queue\cli\Queue implements QueueInterface
     /**
      * Listens to the queue and runs new jobs.
      *
-     * @param integer $timeout The number of seconds to wait between cycles
+     * @param int $timeout The number of seconds to wait between cycles
      * @retrun int|null the exit code
      * @deprecated in 3.6.11. Use [[run()]] instead.
      */
@@ -162,9 +162,9 @@ class Queue extends \yii\queue\cli\Queue implements QueueInterface
     }
 
     /**
-     *
+     * @inheritdoc
      */
-    public function status($id)
+    public function status($id): int
     {
         $payload = $this->db->usePrimary(function() use ($id) {
             return $this->_createJobQuery()
@@ -180,7 +180,7 @@ class Queue extends \yii\queue\cli\Queue implements QueueInterface
     /**
      * @inheritdoc
      */
-    public function push($job)
+    public function push($job): ?string
     {
         // Capture the description so pushMessage() can access it
         if ($job instanceof JobInterface) {
@@ -208,7 +208,7 @@ class Queue extends \yii\queue\cli\Queue implements QueueInterface
     /**
      * @inheritdoc
      */
-    public function retry(string $id)
+    public function retry(string $id): void
     {
         $this->_lock(function() use ($id) {
             Db::update($this->tableName, [
@@ -229,7 +229,7 @@ class Queue extends \yii\queue\cli\Queue implements QueueInterface
     /**
      * @inheritdoc
      */
-    public function retryAll()
+    public function retryAll(): void
     {
         $this->_lock(function() {
             // Move expired messages into waiting list
@@ -254,7 +254,7 @@ class Queue extends \yii\queue\cli\Queue implements QueueInterface
     /**
      * @inheritdoc
      */
-    public function release(string $id)
+    public function release(string $id): void
     {
         $this->_lock(function() use ($id) {
             Db::delete($this->tableName, [
@@ -266,7 +266,7 @@ class Queue extends \yii\queue\cli\Queue implements QueueInterface
     /**
      * @inheritdoc
      */
-    public function releaseAll()
+    public function releaseAll(): void
     {
         $this->_lock(function() {
             Db::delete($this->tableName, [
@@ -278,7 +278,7 @@ class Queue extends \yii\queue\cli\Queue implements QueueInterface
     /**
      * @inheritdoc
      */
-    public function setProgress(int $progress, string $label = null)
+    public function setProgress(int $progress, ?string $label = null): void
     {
         $this->_lock(function() use ($progress, $label) {
             $data = [
@@ -431,7 +431,7 @@ class Queue extends \yii\queue\cli\Queue implements QueueInterface
     /**
      * @inheritdoc
      */
-    public function getJobInfo(int $limit = null): array
+    public function getJobInfo(?int $limit = null): array
     {
         // Move expired messages into waiting list
         $this->_moveExpired();
@@ -475,7 +475,7 @@ class Queue extends \yii\queue\cli\Queue implements QueueInterface
     /**
      * @inheritdoc
      */
-    public function handleError(ExecEvent $event)
+    public function handleError(ExecEvent $event): bool
     {
         $this->_executingJobId = null;
 
@@ -503,7 +503,7 @@ class Queue extends \yii\queue\cli\Queue implements QueueInterface
     /**
      * Figure out how to initiate a new worker.
      */
-    public function handleResponse()
+    public function handleResponse(): void
     {
         // Prevent this from getting called twice
         $response = Craft::$app->getResponse();
@@ -561,7 +561,7 @@ EOD;
     /**
      * @inheritdoc
      */
-    protected function pushMessage($message, $ttr, $delay, $priority)
+    protected function pushMessage($message, $ttr, $delay, $priority): string
     {
         Db::insert($this->tableName, [
             'channel' => $this->channel,
@@ -580,7 +580,7 @@ EOD;
      * @return array|null The payload, or null if there aren't any jobs to reserve
      * @throws Exception in case it hasn't waited the lock
      */
-    protected function reserve()
+    protected function reserve(): ?array
     {
         $payload = null;
 
@@ -623,10 +623,10 @@ EOD;
     /**
      * Checks if $job is a resource and if so, convert it to a serialized format.
      *
-     * @param string|resource $job
+     * @param string $job
      * @return string
      */
-    private function _jobData($job)
+    private function _jobData(string $job): string
     {
         if (is_resource($job)) {
             $job = stream_get_contents($job);
@@ -645,7 +645,7 @@ EOD;
     /**
      * Moves expired messages into waiting list.
      */
-    private function _moveExpired()
+    private function _moveExpired(): void
     {
         if ($this->_reserveTime !== time()) {
             $this->_lock(function() {
@@ -765,7 +765,6 @@ EOD;
      * Acquires a lock and then executes the provided callback
      *
      * @param callable $callback
-     * @return void
      * @throws Exception
      */
     private function _lock(callable $callback): void

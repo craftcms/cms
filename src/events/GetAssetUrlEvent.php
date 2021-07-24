@@ -27,10 +27,10 @@ class GetAssetUrlEvent extends Event
     /**
      * @var Asset The Asset that is being transformed.
      */
-    public $asset;
+    public Asset $asset;
 
     /**
      * @var string|null Url to requested Asset that should be used instead.
      */
-    public $url;
+    public ?string $url = null;
 }

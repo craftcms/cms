@@ -22,14 +22,14 @@ class PreviewAsset extends ElementAction
     /**
      * @var string|null The trigger label
      */
-    public $label;
+    public ?string $label = null;
 
     /**
      * @inheritdoc
      */
-    public function init()
+    public function init(): void
     {
-        if ($this->label === null) {
+        if (!isset($this->label)) {
             $this->label = Craft::t('app', 'Preview file');
         }
     }
@@ -45,7 +45,7 @@ class PreviewAsset extends ElementAction
     /**
      * @inheritdoc
      */
-    public function getTriggerHtml()
+    public function getTriggerHtml(): ?string
     {
         $type = Json::encode(static::class);
 

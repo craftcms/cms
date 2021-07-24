@@ -37,27 +37,27 @@ class ElementIndexesController extends BaseElementsController
     /**
      * @var string|null
      */
-    protected $elementType;
+    protected ?string $elementType = null;
 
     /**
      * @var string|null
      */
-    protected $context;
+    protected ?string $context = null;
 
     /**
      * @var string|null
      */
-    protected $sourceKey;
+    protected ?string $sourceKey = null;
 
     /**
      * @var array|null
      */
-    protected $source;
+    protected ?array $source = null;
 
     /**
      * @var array|null
      */
-    protected $viewState;
+    protected ?array $viewState = null;
 
     /**
      * @var ElementQueryInterface|ElementQuery|null
@@ -67,17 +67,17 @@ class ElementIndexesController extends BaseElementsController
     /**
      * @var ElementActionInterface[]|null
      */
-    protected $actions;
+    protected ?array $actions = null;
 
     /**
      * @var ElementExporterInterface[]|null
      */
-    protected $exporters;
+    protected ?array $exporters = null;
 
     /**
      * @inheritdoc
      */
-    public function beforeAction($action)
+    public function beforeAction($action): bool
     {
         if (!parent::beforeAction($action)) {
             return false;
@@ -94,7 +94,7 @@ class ElementIndexesController extends BaseElementsController
         $this->viewState = $this->viewState();
         $this->elementQuery = $this->elementQuery();
 
-        if ($this->includeActions() && $this->sourceKey !== null) {
+        if ($this->includeActions() && isset($this->sourceKey)) {
             $this->actions = $this->availableActions();
             $this->exporters = $this->availableExporters();
         }
@@ -371,9 +371,9 @@ class ElementIndexesController extends BaseElementsController
      * @return array|null
      * @throws ForbiddenHttpException if the user is not permitted to access the requested source
      */
-    protected function source()
+    protected function source(): ?array
     {
-        if ($this->sourceKey === null) {
+        if (!isset($this->sourceKey)) {
             return null;
         }
 
@@ -533,7 +533,7 @@ class ElementIndexesController extends BaseElementsController
      *
      * @return ElementActionInterface[]|null
      */
-    protected function availableActions()
+    protected function availableActions(): ?array
     {
         if ($this->request->isMobileBrowser()) {
             return null;
@@ -592,7 +592,7 @@ class ElementIndexesController extends BaseElementsController
      * @return ElementExporterInterface[]|null
      * @since 3.4.0
      */
-    protected function availableExporters()
+    protected function availableExporters(): ?array
     {
         if ($this->request->isMobileBrowser()) {
             return null;
@@ -627,7 +627,7 @@ class ElementIndexesController extends BaseElementsController
      *
      * @return array|null
      */
-    protected function actionData()
+    protected function actionData(): ?array
     {
         if (empty($this->actions)) {
             return null;
@@ -657,7 +657,7 @@ class ElementIndexesController extends BaseElementsController
      * @return array|null
      * @since 3.4.0
      */
-    protected function exporterData()
+    protected function exporterData(): ?array
     {
         if (empty($this->exporters)) {
             return null;

@@ -29,7 +29,7 @@ abstract class TagFixture extends BaseElementFixture
     /**
      * @inheritdoc
      */
-    public function init()
+    public function init(): void
     {
         parent::init();
 

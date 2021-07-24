@@ -23,15 +23,16 @@ class InvalidateTagAction extends Action
     /**
      * @var string
      */
-    public $tag;
+    public string $tag;
 
     /**
      * @var string
      */
-    public $label;
+    public string $label;
 
     /**
-     * @inheritdoc
+     * Invalidates caches with the configured tag.
+     *
      * @return int
      */
     public function run(): int

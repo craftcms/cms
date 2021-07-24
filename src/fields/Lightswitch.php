@@ -49,46 +49,36 @@ class Lightswitch extends Field implements PreviewableFieldInterface, SortableFi
     /**
      * @var bool Whether the lightswitch should be enabled by default
      */
-    public $default = false;
+    public bool $default = false;
 
     /**
      * @var string|null The label text to display beside the lightswitch’s enabled state
      * @since 3.5.4
      */
-    public $onLabel;
+    public ?string $onLabel = null;
 
     /**
      * @var string|null The label text to display beside the lightswitch’s disabled state
      * @since 3.5.4
      */
-    public $offLabel;
+    public ?string $offLabel = null;
 
     /**
      * @inheritdoc
      */
     public function __construct($config = [])
     {
+        // Config normalization
         if (($onLabel = ArrayHelper::remove($config, 'label')) !== null) {
             $config['onLabel'] = $onLabel;
         }
+        foreach (['onLabel', 'offLabel'] as $name) {
+            if (($config[$name] ?? null) === '') {
+                unset($config[$name]);
+            }
+        }
 
         parent::__construct($config);
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function init()
-    {
-        parent::init();
-
-        $this->default = (bool)$this->default;
-        if ($this->onLabel === '') {
-            $this->onLabel = null;
-        }
-        if ($this->offLabel === '') {
-            $this->offLabel = null;
-        }
     }
 
     /**
@@ -102,7 +92,7 @@ class Lightswitch extends Field implements PreviewableFieldInterface, SortableFi
     /**
      * @inheritdoc
      */
-    public function getSettingsHtml()
+    public function getSettingsHtml(): ?string
     {
         return
             Cp::lightswitchFieldHtml([
@@ -130,7 +120,7 @@ class Lightswitch extends Field implements PreviewableFieldInterface, SortableFi
     /**
      * @inheritdoc
      */
-    protected function inputHtml($value, ElementInterface $element = null): string
+    protected function inputHtml($value, ?ElementInterface $element = null): string
     {
         $id = Html::id($this->handle);
         return Craft::$app->getView()->renderTemplate('_includes/forms/lightswitch', [
@@ -159,7 +149,7 @@ class Lightswitch extends Field implements PreviewableFieldInterface, SortableFi
     /**
      * @inheritdoc
      */
-    public function normalizeValue($value, ElementInterface $element = null)
+    public function normalizeValue($value, ?ElementInterface $element = null)
     {
         // If this is a new entry, look for a default option
         if ($value === null) {
@@ -172,16 +162,15 @@ class Lightswitch extends Field implements PreviewableFieldInterface, SortableFi
     /**
      * @inheritdoc
      */
-    public function modifyElementsQuery(ElementQueryInterface $query, $value)
+    public function modifyElementsQuery(ElementQueryInterface $query, $value): void
     {
         /** @var ElementQuery $query */
         if ($value === null) {
-            return null;
+            return;
         }
 
         $column = ElementHelper::fieldColumnFromField($this);
         $query->subQuery->andWhere(Db::parseBooleanParam("content.$column", $value, (bool)$this->default));
-        return null;
     }
 
     /**

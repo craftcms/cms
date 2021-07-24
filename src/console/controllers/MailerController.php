@@ -29,13 +29,13 @@ class MailerController extends Controller
      * @var string The email address to send the test email to.
      * @since 3.5.0
      */
-    public $to;
+    public string $to;
 
     /**
      * @inheritdoc
      * @since 3.5.0
      */
-    public function options($actionID)
+    public function options($actionID): array
     {
         $options = parent::options($actionID);
         if ($actionID === 'test') {
@@ -52,7 +52,7 @@ class MailerController extends Controller
      */
     public function actionTest(): int
     {
-        if ($this->to !== null) {
+        if (isset($this->to)) {
             $to = $this->to;
         } else {
             $testToEmailAddress = Craft::$app->getConfig()->getGeneral()->getTestToEmailAddress();

@@ -24,12 +24,12 @@ class LocalizeRelations extends BaseJob
     /**
      * @var int|null The field ID whose data should be localized
      */
-    public $fieldId;
+    public ?int $fieldId = null;
 
     /**
      * @inheritdoc
      */
-    public function execute($queue)
+    public function execute($queue): void
     {
         $relations = (new Query())
             ->select(['id', 'sourceId', 'sourceSiteId', 'targetId', 'sortOrder'])
@@ -70,7 +70,7 @@ class LocalizeRelations extends BaseJob
     /**
      * @inheritdoc
      */
-    protected function defaultDescription(): string
+    protected function defaultDescription(): ?string
     {
         return Craft::t('app', 'Localizing relations');
     }

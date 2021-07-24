@@ -19,7 +19,7 @@ use yii\base\Event;
 class PluginEvent extends Event
 {
     /**
-     * @var PluginInterface|null The plugin associated with this event
+     * @var PluginInterface The plugin associated with this event
      */
-    public $plugin;
+    public PluginInterface $plugin;
 }

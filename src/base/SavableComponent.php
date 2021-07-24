@@ -76,7 +76,7 @@ abstract class SavableComponent extends ConfigurableComponent implements Savable
     /**
      * @inheritdoc
      */
-    public function afterSave(bool $isNew)
+    public function afterSave(bool $isNew): void
     {
         // Trigger an 'afterSave' event
         if ($this->hasEventHandlers(self::EVENT_AFTER_SAVE)) {
@@ -101,7 +101,7 @@ abstract class SavableComponent extends ConfigurableComponent implements Savable
     /**
      * @inheritdoc
      */
-    public function beforeApplyDelete()
+    public function beforeApplyDelete(): void
     {
         // Trigger an 'beforeApplyDelete' event
         if ($this->hasEventHandlers(self::EVENT_BEFORE_APPLY_DELETE)) {
@@ -112,7 +112,7 @@ abstract class SavableComponent extends ConfigurableComponent implements Savable
     /**
      * @inheritdoc
      */
-    public function afterDelete()
+    public function afterDelete(): void
     {
         // Trigger an 'afterDelete' event
         if ($this->hasEventHandlers(self::EVENT_AFTER_DELETE)) {

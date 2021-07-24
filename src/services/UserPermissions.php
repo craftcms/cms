@@ -41,14 +41,14 @@ class UserPermissions extends Component
     const EVENT_REGISTER_PERMISSIONS = 'registerPermissions';
 
     /**
-     * @var
+     * @var string[][]
      */
-    private $_permissionsByGroupId;
+    private array $_permissionsByGroupId = [];
 
     /**
-     * @var
+     * @var string[][]
      */
-    private $_permissionsByUserId;
+    private array $_permissionsByUserId = [];
 
     /**
      * Returns all of the known permissions, divided into groups.
@@ -264,7 +264,7 @@ class UserPermissions extends Component
      * @param User|null $user The recipient of the permissions. If set, their current permissions will be included as well.
      * @return array
      */
-    public function getAssignablePermissions(User $user = null): array
+    public function getAssignablePermissions(?User $user = null): array
     {
         // If either user is an admin, all permissions are fair game
         if (Craft::$app->getUser()->getIsAdmin() || ($user !== null && $user->admin)) {
@@ -296,6 +296,7 @@ class UserPermissions extends Component
     public function getPermissionsByGroupId(int $groupId): array
     {
         if (!isset($this->_permissionsByGroupId[$groupId])) {
+            /** @var string[] $groupPermissions */
             $groupPermissions = $this->_createUserPermissionsQuery()
                 ->innerJoin(['p_g' => Table::USERPERMISSIONS_USERGROUPS], '[[p_g.permissionId]] = [[p.id]]')
                 ->where(['p_g.groupId' => $groupId])
@@ -311,7 +312,7 @@ class UserPermissions extends Component
      * Returns all of the group permissions a given user has.
      *
      * @param int $userId
-     * @return array
+     * @return string[]
      */
     public function getGroupPermissionsByUserId(int $userId): array
     {
@@ -374,6 +375,7 @@ class UserPermissions extends Component
         if (!isset($this->_permissionsByUserId[$userId])) {
             $groupPermissions = $this->getGroupPermissionsByUserId($userId);
 
+            /** @var string[] $userPermissions */
             $userPermissions = $this->_createUserPermissionsQuery()
                 ->innerJoin(['p_u' => Table::USERPERMISSIONS_USERS], '[[p_u.permissionId]] = [[p.id]]')
                 ->where(['p_u.userId' => $userId])
@@ -448,7 +450,7 @@ class UserPermissions extends Component
      *
      * @param ConfigEvent $event
      */
-    public function handleChangedGroupPermissions(ConfigEvent $event)
+    public function handleChangedGroupPermissions(ConfigEvent $event): void
     {
         // Ensure all user groups are ready to roll
         ProjectConfigHelper::ensureAllUserGroupsProcessed();
@@ -691,7 +693,7 @@ class UserPermissions extends Component
      * @param User|null $user The recipient of the permissions. If set, their current permissions will be included as well.
      * @return array The filtered permissions
      */
-    private function _filterUnassignablePermissions(array $permissions, User $user = null): array
+    private function _filterUnassignablePermissions(array $permissions, ?User $user = null): array
     {
         $currentUser = Craft::$app->getUser()->getIdentity();
         if (!$currentUser && !$user) {
@@ -740,7 +742,7 @@ class UserPermissions extends Component
      * @param array $permissionsGroup
      * @param array $postedPermissions
      * @param array $groupPermissions
-     * @param array &$filteredPermissions
+     * @param array $filteredPermissions
      * @return bool Whether any permissions were added to $filteredPermissions
      */
     private function _findSelectedPermissions(array $permissionsGroup, array $postedPermissions, array $groupPermissions, array &$filteredPermissions): bool

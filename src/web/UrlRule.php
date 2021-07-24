@@ -21,12 +21,12 @@ class UrlRule extends \yii\web\UrlRule
     /**
      * @var array Pattern tokens that will be swapped out at runtime.
      */
-    private static $_regexTokens;
+    private static array $_regexTokens;
 
     /**
      * @var array Parameters that should be passed to the controller.
      */
-    public $params = [];
+    public array $params = [];
 
     /**
      * Constructor.
@@ -49,7 +49,7 @@ class UrlRule extends \yii\web\UrlRule
 
         if (isset($config['pattern'])) {
             // Swap out any regex tokens in the pattern
-            if (self::$_regexTokens === null) {
+            if (!isset(self::$_regexTokens)) {
                 $slugChars = ['.', '_', '-'];
                 $slugWordSeparator = Craft::$app->getConfig()->getGeneral()->slugWordSeparator;
 

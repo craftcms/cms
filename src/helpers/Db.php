@@ -36,12 +36,12 @@ class Db
     /**
      * @var array
      */
-    private static $_operators = ['not ', '!=', '<=', '>=', '<', '>', '='];
+    private static array $_operators = ['not ', '!=', '<=', '>=', '<', '>', '='];
 
     /**
      * @var string[] Numeric column types
      */
-    private static $_numericColumnTypes = [
+    private static array $_numericColumnTypes = [
         Schema::TYPE_SMALLINT,
         Schema::TYPE_INTEGER,
         Schema::TYPE_BIGINT,
@@ -53,7 +53,7 @@ class Db
     /**
      * @var string[] Textual column types
      */
-    private static $_textualColumnTypes = [
+    private static array $_textualColumnTypes = [
         Schema::TYPE_CHAR,
         Schema::TYPE_STRING,
         Schema::TYPE_TEXT,
@@ -68,7 +68,7 @@ class Db
     /**
      * @var array Types of integer columns and how many bytes they can store
      */
-    private static $_integerSizeRanges = [
+    private static array $_integerSizeRanges = [
         Schema::TYPE_SMALLINT => [-32768, 32767],
         Schema::TYPE_INTEGER => [-2147483648, 2147483647],
         Schema::TYPE_BIGINT => [-9223372036854775808, 9223372036854775807],
@@ -77,7 +77,7 @@ class Db
     /**
      * @var array Types of MySQL textual columns and how many bytes they can store
      */
-    private static $_mysqlTextSizes = [
+    private static array $_mysqlTextSizes = [
         MysqlSchema::TYPE_TINYTEXT => 255,
         Schema::TYPE_TEXT => 65535,
         MysqlSchema::TYPE_MEDIUMTEXT => 16777215,
@@ -138,7 +138,7 @@ class Db
      * @param mixed $date The date to be prepared
      * @return string|null The prepped date, or `null` if it could not be prepared
      */
-    public static function prepareDateForDb($date)
+    public static function prepareDateForDb($date): ?string
     {
         $date = DateTimeHelper::toDateTime($date);
 
@@ -939,7 +939,7 @@ class Db
      * @return int|null
      * @since 3.1.0
      */
-    public static function idByUid(string $table, string $uid, ?Connection $db = null)
+    public static function idByUid(string $table, string $uid, ?Connection $db = null): ?int
     {
         if ($db === null) {
             $db = self::db();
@@ -985,7 +985,7 @@ class Db
      * @return string|null
      * @since 3.1.0
      */
-    public static function uidById(string $table, int $id, ?Connection $db = null)
+    public static function uidById(string $table, int $id, ?Connection $db = null): ?string
     {
         if ($db === null) {
             $db = self::db();
@@ -1158,14 +1158,14 @@ class Db
     /**
      * @var Connection|null;
      */
-    private static $_db;
+    private static ?Connection $_db;
 
     /**
      * Resets the memoized database connection.
      *
      * @since 3.5.12.1
      */
-    public static function reset()
+    public static function reset(): void
     {
         if (self::$_db) {
             self::$_db->close();
@@ -1214,9 +1214,9 @@ class Db
     /**
      * Normalizes “empty” values.
      *
-     * @param mixed &$value The param value.
+     * @param mixed $value The param value.
      */
-    private static function _normalizeEmptyValue(&$value)
+    private static function _normalizeEmptyValue(&$value): void
     {
         if ($value === null) {
             $value = ':empty:';
@@ -1239,7 +1239,7 @@ class Db
     /**
      * Extracts the operator from a DB param and returns it.
      *
-     * @param mixed &$value Te param value.
+     * @param mixed $value Te param value.
      * @param string $default The default operator to use
      * @param bool $negate Whether to reverse whatever the selected operator is
      * @return string The operator ('!=', '<=', '>=', '<', '>', or '=')

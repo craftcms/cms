@@ -30,7 +30,7 @@ trait LogTargetTrait
      * @since 3.0.25
      * @see Target::$prefix
      */
-    public $includeUserIp = false;
+    public bool $includeUserIp = false;
 
     /**
      * Returns a string to be prefixed to the given message.
@@ -43,9 +43,9 @@ trait LogTargetTrait
      * @throws \Throwable
      * @see Target::getMessagePrefix()
      */
-    public function getMessagePrefix($message)
+    public function getMessagePrefix($message): string
     {
-        if ($this->prefix !== null) {
+        if (isset($this->prefix)) {
             return call_user_func($this->prefix, $message);
         }
 
@@ -60,8 +60,7 @@ trait LogTargetTrait
             $ip = '-';
         }
 
-        /** @var $user User */
-        $user = Craft::$app->has('user', true) ? Craft::$app->get('user') : null;
+        $user = Craft::$app->has('user', true) ? Craft::$app->getUser() : null;
         if ($user && ($identity = $user->getIdentity(false))) {
             $userID = $identity->getId();
         } else {

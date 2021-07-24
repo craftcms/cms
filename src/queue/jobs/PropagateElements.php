@@ -31,7 +31,7 @@ class PropagateElements extends BaseJob
     /**
      * @var array|null The element criteria that determines which elements should be propagated
      */
-    public $criteria;
+    public ?array $criteria = null;
 
     /**
      * @var int|int[]|null The site ID(s) that the elements should be propagated to
@@ -43,7 +43,7 @@ class PropagateElements extends BaseJob
     /**
      * @inheritdoc
      */
-    public function execute($queue)
+    public function execute($queue): void
     {
         /** @var ElementQuery $query */
         $query = $this->_query();
@@ -67,7 +67,7 @@ class PropagateElements extends BaseJob
     /**
      * @inheritdoc
      */
-    protected function defaultDescription(): string
+    protected function defaultDescription(): ?string
     {
         /** @var ElementQuery $query */
         $query = $this->_query();

@@ -34,7 +34,7 @@ class SitesController extends Controller
     /**
      * @inheritdoc
      */
-    public function beforeAction($action)
+    public function beforeAction($action): bool
     {
         // All actions require an admin account
         $this->requireAdmin();
@@ -49,7 +49,7 @@ class SitesController extends Controller
      * @return Response
      * @throws NotFoundHttpException if $groupId is invalid
      */
-    public function actionSettingsIndex(int $groupId = null): Response
+    public function actionSettingsIndex(?int $groupId = null): Response
     {
         $sitesService = Craft::$app->getSites();
         $allGroups = $sitesService->getAllGroups();
@@ -195,7 +195,7 @@ class SitesController extends Controller
      * @throws NotFoundHttpException if the requested site cannot be found
      * @throws ServerErrorHttpException if no site groups exist
      */
-    public function actionEditSite(int $siteId = null, Site $site = null, int $groupId = null): Response
+    public function actionEditSite(?int $siteId = null, ?Site $site = null, ?int $groupId = null): Response
     {
         $sitesService = Craft::$app->getSites();
 
@@ -293,7 +293,7 @@ class SitesController extends Controller
      * @return Response|null
      * @throws BadRequestHttpException
      */
-    public function actionSaveSite()
+    public function actionSaveSite(): ?Response
     {
         $this->requirePostRequest();
 

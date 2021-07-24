@@ -41,44 +41,45 @@ class Install extends Migration
     /**
      * @var string|null The admin user’s username
      */
-    public $username;
+    public ?string $username = null;
 
     /**
      * @var string|null The admin user’s password
      */
-    public $password;
+    public ?string $password = null;
 
     /**
      * @var string|null The admin user’s email
      */
-    public $email;
+    public ?string $email = null;
 
     /**
      * @var Site|null The default site
      */
-    public $site;
+    public ?Site $site = null;
 
     /**
      * @var bool Whether to apply the existing project config YAML files, if they exist
      * @since 3.5.9
      */
-    public $applyProjectConfigYaml = true;
+    public bool $applyProjectConfigYaml = true;
 
     /**
      * @inheritdoc
      */
-    public function safeUp()
+    public function safeUp(): bool
     {
         $this->createTables();
         $this->createIndexes();
         $this->addForeignKeys();
         $this->insertDefaultData();
+        return true;
     }
 
     /**
      * @inheritdoc
      */
-    public function safeDown()
+    public function safeDown(): bool
     {
         return false;
     }
@@ -86,7 +87,7 @@ class Install extends Migration
     /**
      * Creates the tables.
      */
-    public function createTables()
+    public function createTables(): void
     {
         $this->createTable(Table::ANNOUNCEMENTS, [
             'id' => $this->primaryKey(),
@@ -776,7 +777,7 @@ class Install extends Migration
     /**
      * Creates the indexes.
      */
-    public function createIndexes()
+    public function createIndexes(): void
     {
         $this->createIndex(null, Table::ANNOUNCEMENTS, ['userId', 'unread', 'dateRead', 'dateCreated'], false);
         $this->createIndex(null, Table::ANNOUNCEMENTS, ['dateRead'], false);
@@ -961,7 +962,7 @@ class Install extends Migration
     /**
      * Adds the foreign keys.
      */
-    public function addForeignKeys()
+    public function addForeignKeys(): void
     {
         $this->addForeignKey(null, Table::ANNOUNCEMENTS, ['userId'], Table::USERS, ['id'], 'CASCADE', null);
         $this->addForeignKey(null, Table::ANNOUNCEMENTS, ['pluginId'], Table::PLUGINS, ['id'], 'CASCADE', null);
@@ -1052,7 +1053,7 @@ class Install extends Migration
     /**
      * Populates the DB with the default data.
      */
-    public function insertDefaultData()
+    public function insertDefaultData(): void
     {
         // Populate the info table
         echo '    > populating the info table ... ';
@@ -1158,7 +1159,7 @@ class Install extends Migration
      *
      * @throws \Throwable if reasons
      */
-    private function _installPlugins()
+    private function _installPlugins(): void
     {
         $projectConfig = Craft::$app->getProjectConfig();
         $pluginsService = Craft::$app->getPlugins();

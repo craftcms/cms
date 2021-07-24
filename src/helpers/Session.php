@@ -39,7 +39,6 @@ class Session
      *
      * @param string $key the session variable name
      * @param mixed $value the session variable value
-     * @return void
      */
     public static function set(string $key, $value): void
     {
@@ -63,7 +62,6 @@ class Session
     /**
      * Removes all session variables.
      *
-     * @return void
      */
     public static function removeAll(): void
     {
@@ -112,21 +110,21 @@ class Session
     }
 
     /**
-     * @var YiiSession
+     * @var YiiSession|null
      */
-    private static $_session;
+    private static ?YiiSession $_session = null;
 
     /**
      * @var bool
      */
-    private static $_exists = false;
+    private static bool $_exists = false;
 
     /**
      * Resets the memoized database connection.
      *
      * @since 3.5.12.1
      */
-    public static function reset()
+    public static function reset(): void
     {
         self::$_session = null;
         self::$_exists = false;

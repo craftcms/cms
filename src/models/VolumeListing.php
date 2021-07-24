@@ -45,12 +45,12 @@ class VolumeListing extends Model
     /**
      * @var int|null The filesize.
      */
-    private ?int $fileSize;
+    private ?int $fileSize = null;
 
     /**
      * @var int|null Timestamp of date modified.
      */
-    private ?int $dateModified;
+    private ?int $dateModified = null;
 
     private VolumeInterface $volume;
 

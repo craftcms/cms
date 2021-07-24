@@ -56,7 +56,7 @@ class DateTimeHelper
     /**
      * @var array Translation pairs for [[translateDate()]]
      */
-    private static $_translationPairs;
+    private static array $_translationPairs;
 
     /**
      * Converts a value into a DateTime object.
@@ -75,7 +75,7 @@ class DateTimeHelper
      *      - `timezone` – A [valid PHP timezone](https://php.net/manual/en/timezones.php). If set, this will override
      *        the assumed timezone per `$assumeSystemTimeZone`.
      *
-     * @param string|int|array|null $value The value that should be converted to a DateTime object.
+     * @param string|int|array|DateTime|null $value The value that should be converted to a DateTime object.
      * @param bool $assumeSystemTimeZone Whether it should be assumed that the value was set in the system timezone if
      * the timezone was not specified. If this is `false`, UTC will be assumed.
      * @param bool $setToSystemTimeZone Whether to set the resulting DateTime object to the system timezone.

@@ -12,6 +12,7 @@ use craft\events\DefineConsoleActionsEvent;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Console;
 use craft\helpers\StringHelper;
+use ReflectionMethod;
 use Seld\CliPrompt\CliPrompt;
 use yii\base\Action;
 use yii\base\InvalidConfigException;
@@ -67,19 +68,19 @@ class Controller extends YiiController
      * @var array Custom actions that should be available.
      * @see defineActions()
      */
-    private $_actions;
+    private array $_actions;
 
     /**
      * @var \ReflectionFunction[] Memoized reflection objects
      * @see getActionMethodReflection()
      */
-    private $_reflections = [];
+    private array $_reflections = [];
 
     /**
      * @var string|null The active action ID.
      * @see runAction()
      */
-    private $_actionId;
+    private ?string $_actionId = null;
 
     /**
      * @inheritdoc
@@ -122,7 +123,7 @@ class Controller extends YiiController
      * @inheritdoc
      * @throws InvalidConfigException
      */
-    public function init()
+    public function init(): void
     {
         parent::init();
         $this->checkTty();
@@ -164,7 +165,7 @@ class Controller extends YiiController
     /**
      * @inheritdoc
      */
-    public function beforeAction($action)
+    public function beforeAction($action): bool
     {
         // Make sure this isn't a root user
         if (!$this->checkRootUser()) {
@@ -177,7 +178,7 @@ class Controller extends YiiController
     /**
      * @inheritdoc
      */
-    public function actions()
+    public function actions(): array
     {
         return ArrayHelper::getColumn($this->_actions, 'action');
     }
@@ -185,7 +186,7 @@ class Controller extends YiiController
     /**
      * @inheritdoc
      */
-    public function options($actionID)
+    public function options($actionID): array
     {
         $options = parent::options($actionID);
 
@@ -199,7 +200,7 @@ class Controller extends YiiController
     /**
      * @inheritdoc
      */
-    public function runAction($id, $params = [])
+    public function runAction($id, $params = []): int
     {
         $this->_actionId = $id;
         $result = parent::runAction($id, $params);
@@ -210,7 +211,7 @@ class Controller extends YiiController
     /**
      * @inheritdoc
      */
-    public function getActionHelpSummary($action)
+    public function getActionHelpSummary($action): string
     {
         if (isset($this->_actions[$action->id])) {
             $help = $this->_actions[$action->id]['helpSummary'] ?? $this->_actions[$action->id]['help'] ?? '';
@@ -223,7 +224,7 @@ class Controller extends YiiController
     /**
      * @inheritdoc
      */
-    public function getActionHelp($action)
+    public function getActionHelp($action): string
     {
         if (isset($this->_actions[$action->id])) {
             return $this->_actions[$action->id]['help'] ?? $this->_actions[$action->id]['helpSummary'] ?? '';
@@ -235,7 +236,7 @@ class Controller extends YiiController
     /**
      * @inheritdoc
      */
-    public function getActionArgsHelp($action)
+    public function getActionArgsHelp($action): array
     {
         $args = parent::getActionArgsHelp($action);
 
@@ -253,7 +254,7 @@ class Controller extends YiiController
     /**
      * @inheritdoc
      */
-    public function getActionOptionsHelp($action)
+    public function getActionOptionsHelp($action): array
     {
         $options = parent::getActionOptionsHelp($action);
 
@@ -299,7 +300,7 @@ class Controller extends YiiController
      * @param Action $action
      * @return \ReflectionMethod
      */
-    protected function getActionMethodReflection($action)
+    protected function getActionMethodReflection($action): ReflectionMethod
     {
         if ($action instanceof CallableAction) {
             if (!isset($this->_reflections[$action->id])) {
@@ -324,7 +325,7 @@ class Controller extends YiiController
     private function _isCustomOption(string $name): bool
     {
         return (
-            $this->_actionId !== null &&
+            isset($this->_actionId) &&
             isset($this->_actions[$this->_actionId]['options']) &&
             array_key_exists($name, $this->_actions[$this->_actionId]['options'])
         );

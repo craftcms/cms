@@ -25,44 +25,44 @@ class RegisterResourceTokenParser extends AbstractTokenParser
     /**
      * @var string The tag name
      */
-    public $tag;
+    public string $tag;
 
     /**
      * @var string The View method the tag represents
      */
-    public $method;
+    public string $method;
 
     /**
      * @var bool Whether the tag supports a tag pair mode for capturing the JS/CSS
      */
-    public $allowTagPair = false;
+    public bool $allowTagPair = false;
 
     /**
      * @var bool Whether the tag can specify the position of the resource
      */
-    public $allowPosition = false;
+    public bool $allowPosition = false;
 
     /**
      * @var bool Whether the tag can specify a runtime-based position (load/ready)
      */
-    public $allowRuntimePosition = false;
+    public bool $allowRuntimePosition = false;
 
     /**
      * @var bool Whether the tag can specify additional options
      */
-    public $allowOptions = false;
+    public bool $allowOptions = false;
 
     /**
      * @var int|null The default `$position` value that should be possed to the [[method]], if it has a `$position` argument.
      * @since 3.6.11
      */
-    public $defaultPosition;
+    public ?int $defaultPosition = null;
 
     /**
      * @var string|null The new template code that should be used if this tag is deprecated
      * @todo Remove this in Craft 4
      */
-    public $newCode;
+    public ?string $newCode = null;
 
     /**
      * @param string $tag the tag name
@@ -82,10 +82,9 @@ class RegisterResourceTokenParser extends AbstractTokenParser
     /**
      * @inheritdoc
      */
-    public function parse(Token $token)
+    public function parse(Token $token): RegisterResourceNode
     {
         $lineno = $token->getLine();
-        /** @var Parser $parser */
         $parser = $this->parser;
         $stream = $parser->getStream();
         $expressionParser = $parser->getExpressionParser();
@@ -163,7 +162,7 @@ class RegisterResourceTokenParser extends AbstractTokenParser
     /**
      * @inheritdoc
      */
-    public function getTag()
+    public function getTag(): string
     {
         return $this->tag;
     }

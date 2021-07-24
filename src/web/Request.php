@@ -72,7 +72,7 @@ class Request extends \yii\web\Request
      * @var int The highest page number that Craft should accept.
      * @since 3.1.14
      */
-    public $maxPageNum = 100000;
+    public int $maxPageNum = 100000;
 
     /**
      * @var GeneralConfig|array|string
@@ -90,121 +90,121 @@ class Request extends \yii\web\Request
      * @var string
      * @see getFullPath()
      */
-    private $_fullPath;
+    private string $_fullPath;
 
     /**
      * @var string
      * @see getPathInfo()
      */
-    private $_path;
+    private string $_path;
 
     /**
      * @var string
      * @see getFullUri()
      */
-    private $_fullUri;
+    private string $_fullUri;
 
     /**
-     * @var
+     * @var string[]
      */
-    private $_segments;
+    private array $_segments;
 
     /**
      * @var int
      */
-    private $_pageNum = 1;
+    private int $_pageNum = 1;
+
+    /**
+     * @var bool|null
+     */
+    private ?bool $_isCpRequest = null;
 
     /**
      * @var bool
      */
-    private $_isCpRequest;
+    private bool $_isActionRequest = false;
 
     /**
      * @var bool
      */
-    private $_isActionRequest = false;
+    private bool $_isSingleActionRequest = false;
 
     /**
      * @var bool
      */
-    private $_isSingleActionRequest = false;
+    private bool $_isLoginRequest = false;
 
     /**
      * @var bool
      */
-    private $_isLoginRequest = false;
-
-    /**
-     * @var bool
-     */
-    private $_checkedRequestType = false;
+    private bool $_checkedRequestType = false;
 
     /**
      * @var string[]|null
      */
-    private $_actionSegments;
+    private ?array $_actionSegments = null;
 
     /**
      * @var bool
      */
-    private $_isLivePreview = false;
+    private bool $_isLivePreview = false;
 
     /**
      * @var bool|null
      */
-    private $_isMobileBrowser;
+    private ?bool $_isMobileBrowser = null;
 
     /**
      * @var bool|null
      */
-    private $_isMobileOrTabletBrowser;
+    private ?bool $_isMobileOrTabletBrowser = null;
 
     /**
      * @var string|null
      */
-    private $_ipAddress;
+    private ?string $_ipAddress = null;
 
     /**
      * @var CookieCollection Collection of raw cookies
      * @see getRawCookies()
      */
-    private $_rawCookies;
+    private CookieCollection $_rawCookies;
 
     /**
      * @var string|null
      */
-    private $_craftCsrfToken;
+    private ?string $_craftCsrfToken = null;
 
     /**
      * @var bool
      */
-    private $_encodedQueryParams = false;
+    private bool $_encodedQueryParams = false;
 
     /**
      * @var bool
      */
-    private $_encodedBodyParams = false;
+    private bool $_encodedBodyParams = false;
 
     /**
      * @var bool|null Whether the request initially had a token
      * @see getHadToken()
      */
-    private $_hadToken;
+    private ?bool $_hadToken = null;
 
     /**
      * @var string|null
      * @see getToken()
      */
-    public $_token;
+    public ?string $_token = null;
 
     /**
      * @inheritdoc
      */
-    public function init()
+    public function init(): void
     {
         parent::init();
 
-        if ($this->generalConfig === null) {
+        if (!isset($this->generalConfig)) {
             $this->generalConfig = Craft::$app->getConfig()->getGeneral();
         }
         $this->generalConfig = Instance::ensure($this->generalConfig, GeneralConfig::class);
@@ -250,7 +250,7 @@ class Request extends \yii\web\Request
         }
 
         // Is the jury still out on whether this is a CP request?
-        if ($this->_isCpRequest === null) {
+        if (!isset($this->_isCpRequest)) {
             $this->_isCpRequest = false;
             // Is it a possibility?
             if ($this->generalConfig->cpTrigger || $this->generalConfig->baseCpUrl) {
@@ -342,7 +342,7 @@ class Request extends \yii\web\Request
      */
     public function getFullPath(): string
     {
-        if ($this->_fullPath !== null) {
+        if (isset($this->_fullPath)) {
             return $this->_fullPath;
         }
 
@@ -393,7 +393,7 @@ class Request extends \yii\web\Request
      */
     public function getFullUri(): string
     {
-        if ($this->_fullUri !== null) {
+        if (isset($this->_fullUri)) {
             return $this->_fullUri;
         }
 
@@ -409,7 +409,7 @@ class Request extends \yii\web\Request
      * Don’t include the results of this method in places that will be cached, to avoid a cache poisoning attack.
      * :::
      */
-    public function getAbsoluteUrl()
+    public function getAbsoluteUrl(): string
     {
         return parent::getAbsoluteUrl();
     }
@@ -436,7 +436,7 @@ class Request extends \yii\web\Request
      */
     public function getSegments(): array
     {
-        if ($this->_segments !== null) {
+        if (isset($this->_segments)) {
             return $this->_segments;
         }
 
@@ -458,7 +458,7 @@ class Request extends \yii\web\Request
      * @param int $num Which segment to return (1-indexed).
      * @return string|null The matching segment, or `null` if there wasn’t one.
      */
-    public function getSegment(int $num)
+    public function getSegment(int $num): ?string
     {
         $segments = $this->getSegments();
 
@@ -550,7 +550,7 @@ class Request extends \yii\web\Request
      */
     private function _findToken(): void
     {
-        if ($this->_hadToken !== null) {
+        if (isset($this->_hadToken)) {
             return;
         }
 
@@ -562,7 +562,7 @@ class Request extends \yii\web\Request
             throw new BadRequestHttpException('Invalid token');
         }
 
-        $this->_hadToken = $this->_token !== null;
+        $this->_hadToken = isset($this->_token);
     }
 
     /**
@@ -598,7 +598,7 @@ class Request extends \yii\web\Request
      * @param bool|null $isCpRequest
      * @since 3.5.0
      */
-    public function setIsCpRequest(bool $isCpRequest = null)
+    public function setIsCpRequest(?bool $isCpRequest = null): void
     {
         $this->_isCpRequest = $isCpRequest;
     }
@@ -649,7 +649,7 @@ class Request extends \yii\web\Request
      *
      * @return array|null The action path segments, or `null` if this isn’t an action request.
      */
-    public function getActionSegments()
+    public function getActionSegments(): ?array
     {
         $this->checkIfActionRequest();
         return $this->_actionSegments;
@@ -707,7 +707,7 @@ class Request extends \yii\web\Request
      *
      * @param bool $isLivePreview
      */
-    public function setIsLivePreview(bool $isLivePreview)
+    public function setIsLivePreview(bool $isLivePreview): void
     {
         $this->_isLivePreview = $isLivePreview;
     }
@@ -718,7 +718,7 @@ class Request extends \yii\web\Request
      * @return string|null
      * @since 3.5.0
      */
-    public function getMimeType()
+    public function getMimeType(): ?string
     {
         if (($contentType = parent::getContentType()) === null) {
             return null;
@@ -803,7 +803,7 @@ class Request extends \yii\web\Request
     /**
      * @inheritdoc
      */
-    public function getBodyParams()
+    public function getBodyParams(): array
     {
         if ($this->_encodedBodyParams === false) {
             $this->setBodyParams($this->_utf8AllTheThings(parent::getBodyParams()));
@@ -903,11 +903,11 @@ class Request extends \yii\web\Request
      * ```
      *
      * @param string $name The parameter name.
-     * @return mixed|null The parameter value
+     * @return string The parameter value
      * @throws BadRequestHttpException if the param value doesn’t pass validation
      * @see getBodyParam()
      */
-    public function getValidatedBodyParam(string $name)
+    public function getValidatedBodyParam(string $name): ?string
     {
         $value = $this->getBodyParam($name);
 
@@ -927,7 +927,7 @@ class Request extends \yii\web\Request
     /**
      * @inheritdoc
      */
-    public function getQueryParams()
+    public function getQueryParams(): array
     {
         if ($this->_encodedQueryParams === false) {
             $this->setQueryParams($this->_utf8AllTheThings(parent::getQueryParams()));
@@ -960,7 +960,7 @@ class Request extends \yii\web\Request
      * ```
      *
      * @param string $name The GET parameter name.
-     * @param mixed|null $defaultValue The default parameter value if the GET parameter does not exist.
+     * @param mixed $defaultValue The default parameter value if the GET parameter does not exist.
      * @return mixed The GET parameter value.
      * @see getBodyParam()
      */
@@ -1092,9 +1092,9 @@ class Request extends \yii\web\Request
      * when validating the IP address. Options include `FILTER_FLAG_IPV4`,
      * `FILTER_FLAG_IPV6`, `FILTER_FLAG_NO_PRIV_RANGE`, and `FILTER_FLAG_NO_RES_RANGE`.
      */
-    public function getUserIP(int $filterOptions = 0)
+    public function getUserIP(int $filterOptions = 0): ?string
     {
-        if ($this->_ipAddress === null) {
+        if (!isset($this->_ipAddress)) {
             foreach ($this->ipHeaders as $ipHeader) {
                 if ($this->headers->has($ipHeader)) {
                     foreach (explode(',', $this->headers->get($ipHeader)) as $ip) {
@@ -1118,7 +1118,7 @@ class Request extends \yii\web\Request
      * when validating the IP address. Options include `FILTER_FLAG_IPV4`,
      * `FILTER_FLAG_IPV6`, `FILTER_FLAG_NO_PRIV_RANGE`, and `FILTER_FLAG_NO_RES_RANGE`.
      */
-    public function getRemoteIP(int $filterOptions = 0)
+    public function getRemoteIP(int $filterOptions = 0): ?string
     {
         $ip = parent::getRemoteIP();
         return $ip ? $this->_validateIp($ip, $filterOptions) : null;
@@ -1167,9 +1167,9 @@ class Request extends \yii\web\Request
      * @return CookieCollection the cookie collection.
      * @since 3.5.0
      */
-    public function getRawCookies()
+    public function getRawCookies(): CookieCollection
     {
-        if ($this->_rawCookies === null) {
+        if (!isset($this->_rawCookies)) {
             $this->_rawCookies = new CookieCollection($this->loadRawCookies(), [
                 'readOnly' => true,
             ]);
@@ -1185,7 +1185,7 @@ class Request extends \yii\web\Request
      * @return Cookie[]
      * @since 3.5.0
      */
-    protected function loadRawCookies()
+    protected function loadRawCookies(): array
     {
         $cookies = [];
 
@@ -1222,7 +1222,7 @@ class Request extends \yii\web\Request
      */
     public function getCsrfToken($regenerate = false): string
     {
-        if ($this->_craftCsrfToken === null || $regenerate) {
+        if (!isset($this->_craftCsrfToken) || $regenerate) {
             $token = $this->loadCsrfToken();
 
             if ($regenerate || $token === null || ($this->_craftCsrfToken = $token) === null || !$this->csrfTokenValidForCurrentUser($token)) {
@@ -1238,7 +1238,7 @@ class Request extends \yii\web\Request
     /**
      * Regenerates a CSRF token.
      */
-    public function regenCsrfToken()
+    public function regenCsrfToken(): void
     {
         $this->_craftCsrfToken = $this->getCsrfToken(true);
     }
@@ -1281,7 +1281,7 @@ class Request extends \yii\web\Request
      * @return string|null
      * @since 3.3.8
      */
-    public function getNormalizedContentType()
+    public function getNormalizedContentType(): ?string
     {
         $rawContentType = $this->getContentType();
         if (($pos = strpos($rawContentType, ';')) !== false) {
@@ -1295,7 +1295,7 @@ class Request extends \yii\web\Request
      * @inheritdoc
      * @internal Based on \yii\web\Request::resolve(), but we don't modify $_GET/$this->_queryParams in the process.
      */
-    public function resolve()
+    public function resolve(): array
     {
         if (($result = Craft::$app->getUrlManager()->parseRequest($this)) === false) {
             throw new NotFoundHttpException(Craft::t('yii', 'Page not found.'));
@@ -1425,7 +1425,7 @@ class Request extends \yii\web\Request
      * @throws BadRequestHttpException if a site token was sent, but the site doesn’t exist
      * @throws SiteNotFoundException if no sites exist
      */
-    private function _requestedSite(int &$siteScore = null): Site
+    private function _requestedSite(?int &$siteScore = null): Site
     {
         // Was a site token provided?
         $siteId = $this->getQueryParam($this->generalConfig->siteToken)
@@ -1566,7 +1566,6 @@ class Request extends \yii\web\Request
      * @param bool $force Whether to recheck even if we already know
      * @param bool $checkToken Whether to check if there’s a token on the request and use that.
      * @param bool $checkSpecialPaths Whether to check for special URIs that should route to controller actions
-     * @return void
      * @since 3.7.0
      */
     public function checkIfActionRequest(bool $force = false, bool $checkToken = true, bool $checkSpecialPaths = true): void
@@ -1710,7 +1709,7 @@ class Request extends \yii\web\Request
      * @param array $params
      * @return mixed
      */
-    private function _getParam(string $name = null, $defaultValue, array $params)
+    private function _getParam(?string $name, $defaultValue, array $params)
     {
         // Do they just want the whole array?
         if ($name === null) {
@@ -1746,7 +1745,7 @@ class Request extends \yii\web\Request
      * @param int $filterOptions
      * @return string|null
      */
-    private function _validateIp(string $ip, int $filterOptions)
+    private function _validateIp(string $ip, int $filterOptions): ?string
     {
         $ip = trim($ip);
         return filter_var($ip, FILTER_VALIDATE_IP, $filterOptions) !== false ? $ip : null;

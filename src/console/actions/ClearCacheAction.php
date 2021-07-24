@@ -29,15 +29,16 @@ class ClearCacheAction extends Action
     /**
      * @var string
      */
-    public $label;
+    public string $label;
 
     /**
-     * @var array
+     * @var array|null
      */
-    public $params;
+    public ?array $params;
 
     /**
-     * @inheritdoc
+     * Clears the caches.
+     *
      * @return int
      */
     public function run(): int

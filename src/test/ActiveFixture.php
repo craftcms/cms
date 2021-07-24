@@ -29,7 +29,7 @@ class ActiveFixture extends BaseActiveFixture
     /**
      * @inheritdoc
      */
-    public function load()
+    public function load(): void
     {
         $tableSchema = $this->getTableSchema();
         $this->data = [];
@@ -69,7 +69,7 @@ class ActiveFixture extends BaseActiveFixture
     /**
      * @inheritdoc
      */
-    public function unload()
+    public function unload(): void
     {
         $modelClass = $this->modelClass;
         foreach ($this->ids as $id) {

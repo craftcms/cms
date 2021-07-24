@@ -49,6 +49,7 @@ class FileTargetTest extends TestCase
         $this->fileTarget->prefix = function($mess) use (&$wasCalled) {
             $wasCalled = true;
             self::assertSame('message', $mess);
+            return '';
         };
 
         $this->fileTarget->getMessagePrefix('message');
@@ -78,7 +79,7 @@ class FileTargetTest extends TestCase
 
         $this->fileTarget->includeUserIp = true;
 
-        self::assertSame('[192.168.10.10][666][999]', $this->fileTarget->getMessagePrefix('message'));
+        self::assertSame('[192.168.10.10][1][999]', $this->fileTarget->getMessagePrefix('message'));
 
         Craft::$app = $craftApp;
     }
@@ -98,7 +99,7 @@ class FileTargetTest extends TestCase
      */
     private function _mockCraftForFullMessagePrefix()
     {
-        $identityStub = Stub::make(User::class, ['getId' => '666']);
+        $identityStub = Stub::make(User::class, ['getId' => 1]);
 
         $stubArray = Craft::$app->getComponents();
 

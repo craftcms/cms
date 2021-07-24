@@ -40,11 +40,13 @@ use craft\helpers\Html;
 use craft\helpers\Json;
 use craft\helpers\UrlHelper;
 use craft\models\EntryType;
+use craft\models\FieldLayout;
 use craft\models\Section;
 use craft\models\Site;
 use craft\records\Entry as EntryRecord;
 use craft\services\Structures;
 use craft\validators\DateTimeValidator;
+use DateTime;
 use yii\base\Exception;
 use yii\base\InvalidConfigException;
 use yii\db\Expression;
@@ -107,7 +109,7 @@ class Entry extends Element
     /**
      * @inheritdoc
      */
-    public static function refHandle()
+    public static function refHandle(): ?string
     {
         return 'entry';
     }
@@ -185,7 +187,7 @@ class Entry extends Element
     /**
      * @inheritdoc
      */
-    protected static function defineSources(string $context = null): array
+    protected static function defineSources(?string $context = null): array
     {
         if ($context === 'index') {
             $sections = Craft::$app->getSections()->getEditableSections();
@@ -305,7 +307,7 @@ class Entry extends Element
     /**
      * @inheritdoc
      */
-    protected static function defineActions(string $source = null): array
+    protected static function defineActions(?string $source = null): array
     {
         // Get the selected site
         $controller = Craft::$app->controller;
@@ -654,7 +656,7 @@ class Entry extends Element
     /**
      * @inheritdoc
      */
-    protected static function prepElementQueryForTableAttribute(ElementQueryInterface $elementQuery, string $attribute)
+    protected static function prepElementQueryForTableAttribute(ElementQueryInterface $elementQuery, string $attribute): void
     {
         switch ($attribute) {
             case 'author':
@@ -684,7 +686,7 @@ class Entry extends Element
      * {{ entry.sectionId }}
      * ```
      */
-    public $sectionId;
+    public ?int $sectionId = null;
 
     /**
      * @var int|null Type ID
@@ -696,7 +698,7 @@ class Entry extends Element
      * {{ entry.typeId }}
      * ```
      */
-    public $typeId;
+    public ?int $typeId = null;
 
     /**
      * @var int|null Author ID
@@ -708,10 +710,10 @@ class Entry extends Element
      * {{ entry.authorId }}
      * ```
      */
-    public $authorId;
+    public ?int $authorId = null;
 
     /**
-     * @var \DateTime|null Post date
+     * @var DateTime|null Post date
      * ---
      * ```php
      * echo Craft::$app->formatter->asDate($entry->postDate, 'short');
@@ -720,10 +722,10 @@ class Entry extends Element
      * {{ entry.postDate|date('short') }}
      * ```
      */
-    public $postDate;
+    public ?DateTime $postDate = null;
 
     /**
-     * @var \DateTime|null Expiry date
+     * @var DateTime|null Expiry date
      * ---
      * ```php
      * if ($entry->expiryDate) {
@@ -736,7 +738,7 @@ class Entry extends Element
      * {% endif %}
      * ```
      */
-    public $expiryDate;
+    public ?DateTime $expiryDate = null;
 
     /**
      * @var int|false|null New parent ID
@@ -749,7 +751,7 @@ class Entry extends Element
      * @see beforeDelete()
      * @internal
      */
-    public $deletedWithEntryType = false;
+    public bool $deletedWithEntryType = false;
 
     /**
      * @var User|null|false
@@ -759,13 +761,13 @@ class Entry extends Element
     /**
      * @var int|null
      */
-    private $_oldTypeId;
+    private ?int $_oldTypeId = null;
 
     /**
      * @var bool|null
      * @see _hasNewParent()
      */
-    private $_hasNewParent;
+    private ?bool $_hasNewParent = null;
 
     /**
      * @inheritdoc
@@ -780,7 +782,7 @@ class Entry extends Element
      * @inheritdoc
      * @since 3.5.0
      */
-    public function init()
+    public function init(): void
     {
         parent::init();
         $this->_oldTypeId = $this->typeId;
@@ -789,7 +791,7 @@ class Entry extends Element
     /**
      * @inheritdoc
      */
-    public function extraFields()
+    public function extraFields(): array
     {
         $names = parent::extraFields();
         $names[] = 'author';
@@ -936,7 +938,7 @@ class Entry extends Element
      * @inheritdoc
      * @throws InvalidConfigException if [[siteId]] is not set to a site ID that the entry's section is enabled for
      */
-    public function getUriFormat()
+    public function getUriFormat(): ?string
     {
         $sectionSiteSettings = $this->getSection()->getSiteSettings();
 
@@ -980,7 +982,7 @@ class Entry extends Element
      */
     protected function uiLabel(): ?string
     {
-        if ($this->title === null || trim($this->title) === '') {
+        if (!isset($this->title) || trim($this->title) === '') {
             return Craft::t('app', 'Untitled entry');
         }
 
@@ -1003,7 +1005,7 @@ class Entry extends Element
      *
      * @return string|null
      */
-    public function getRef()
+    public function getRef(): ?string
     {
         return $this->getSection()->handle . '/' . $this->slug;
     }
@@ -1019,7 +1021,7 @@ class Entry extends Element
     /**
      * @inheritdoc
      */
-    public function getTitleTranslationDescription()
+    public function getTitleTranslationDescription(): ?string
     {
         return ElementHelper::translationDescription($this->getType()->titleTranslationMethod);
     }
@@ -1036,7 +1038,7 @@ class Entry extends Element
     /**
      * @inheritdoc
      */
-    public function getFieldLayout()
+    public function getFieldLayout(): ?FieldLayout
     {
         if (($fieldLayout = parent::getFieldLayout()) !== null) {
             return $fieldLayout;
@@ -1066,7 +1068,7 @@ class Entry extends Element
      */
     public function getSection(): Section
     {
-        if ($this->sectionId === null) {
+        if (!isset($this->sectionId)) {
             throw new InvalidConfigException('Entry is missing its section ID');
         }
 
@@ -1121,13 +1123,13 @@ class Entry extends Element
      */
     public function getType(): EntryType
     {
-        if ($this->typeId === null) {
+        if (!isset($this->typeId)) {
             throw new InvalidConfigException('Entry is missing its type ID');
         }
 
         $sectionEntryTypes = ArrayHelper::index($this->getSection()->getEntryTypes(), 'id');
 
-        if ($this->typeId === null || !isset($sectionEntryTypes[$this->typeId])) {
+        if (!isset($this->typeId) || !isset($sectionEntryTypes[$this->typeId])) {
             Craft::warning("Entry {$this->id} has an invalid entry type ID: {$this->typeId}");
             if (empty($sectionEntryTypes)) {
                 throw new InvalidConfigException("Section {$this->sectionId} has no entry types");
@@ -1152,10 +1154,10 @@ class Entry extends Element
      * @return User|null
      * @throws InvalidConfigException if [[authorId]] is set but invalid
      */
-    public function getAuthor()
+    public function getAuthor(): ?User
     {
-        if ($this->_author === null) {
-            if ($this->authorId === null) {
+        if (!isset($this->_author)) {
+            if (!isset($this->authorId)) {
                 return null;
             }
 
@@ -1173,7 +1175,7 @@ class Entry extends Element
      *
      * @param User|null $author
      */
-    public function setAuthor(User $author = null)
+    public function setAuthor(?User $author = null): void
     {
         $this->_author = $author;
     }
@@ -1181,7 +1183,7 @@ class Entry extends Element
     /**
      * @inheritdoc
      */
-    public function getStatus()
+    public function getStatus(): ?string
     {
         $status = parent::getStatus();
 
@@ -1316,7 +1318,7 @@ class Entry extends Element
     /**
      * @inheritdoc
      */
-    public function setEagerLoadedElements(string $handle, array $elements)
+    public function setEagerLoadedElements(string $handle, array $elements): void
     {
         if ($handle === 'author') {
             $this->_author = $elements[0] ?? false;
@@ -1489,7 +1491,7 @@ EOD;
      *
      * @since 3.0.3
      */
-    public function updateTitle()
+    public function updateTitle(): void
     {
         $entryType = $this->getType();
         if (!$entryType->hasTitleField) {
@@ -1512,7 +1514,7 @@ EOD;
     /**
      * @inheritdoc
      */
-    public function beforeValidate()
+    public function beforeValidate(): bool
     {
         if (!$this->authorId && $this->getSection()->type !== Section::TYPE_SINGLE) {
             $this->authorId = Craft::$app->getUser()->getId();
@@ -1591,7 +1593,7 @@ EOD;
 
         if ($this->enabled && !$this->postDate) {
             // Default the post date to the current date/time
-            $this->postDate = new \DateTime();
+            $this->postDate = new DateTime();
             // ...without the seconds
             $this->postDate->setTimestamp($this->postDate->getTimestamp() - ($this->postDate->getTimestamp() % 60));
         }
@@ -1603,7 +1605,7 @@ EOD;
      * @inheritdoc
      * @throws Exception if reasons
      */
-    public function afterSave(bool $isNew)
+    public function afterSave(bool $isNew): void
     {
         if (!$this->propagating) {
             $section = $this->getSection();
@@ -1665,7 +1667,7 @@ EOD;
     /**
      * @inheritdoc
      */
-    public function afterPropagate(bool $isNew)
+    public function afterPropagate(bool $isNew): void
     {
         parent::afterPropagate($isNew);
 
@@ -1710,7 +1712,7 @@ EOD;
     /**
      * @inheritdoc
      */
-    public function afterRestore()
+    public function afterRestore(): void
     {
         $section = $this->getSection();
         if ($section->type === Section::TYPE_STRUCTURE) {
@@ -1734,7 +1736,7 @@ EOD;
     /**
      * @inheritdoc
      */
-    public function afterMoveInStructure(int $structureId)
+    public function afterMoveInStructure(int $structureId): void
     {
         // Was the entry moved within its section's structure?
         $section = $this->getSection();
@@ -1772,7 +1774,7 @@ EOD;
      */
     private function _hasNewParent(): bool
     {
-        if ($this->_hasNewParent !== null) {
+        if (isset($this->_hasNewParent)) {
             return $this->_hasNewParent;
         }
 
@@ -1793,12 +1795,12 @@ EOD;
         }
 
         // Is it a brand new entry?
-        if ($this->id === null) {
+        if (!isset($this->id)) {
             return true;
         }
 
         // Was a new parent ID actually submitted?
-        if ($this->newParentId === null) {
+        if (!isset($this->newParentId)) {
             return false;
         }
 

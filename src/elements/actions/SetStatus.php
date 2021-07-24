@@ -30,7 +30,7 @@ class SetStatus extends ElementAction
     /**
      * @var string|null The status elements should be set to
      */
-    public $status;
+    public ?string $status = null;
 
     /**
      * @inheritdoc
@@ -54,7 +54,7 @@ class SetStatus extends ElementAction
     /**
      * @inheritdoc
      */
-    public function getTriggerHtml()
+    public function getTriggerHtml(): ?string
     {
         return Craft::$app->getView()->renderTemplate('_components/elementactions/SetStatus/trigger');
     }

@@ -29,12 +29,12 @@ class InstallController extends BaseUpdaterController
     /**
      * @var string|null
      */
-    private $_pluginRedirect;
+    private ?string $_pluginRedirect = null;
 
     /**
      * @inheritdoc
      */
-    public function beforeAction($action)
+    public function beforeAction($action): bool
     {
         if (!parent::beforeAction($action)) {
             return false;

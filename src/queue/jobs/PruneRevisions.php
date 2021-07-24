@@ -27,23 +27,23 @@ class PruneRevisions extends BaseJob
     /**
      * @var int The ID of the source element.
      */
-    public $sourceId;
+    public int $sourceId;
 
     /**
      * @var int The site ID of the source element
      */
-    public $siteId;
+    public int $siteId;
 
     /**
      * @var int|null The maximum number of revisions an element can have
      * @since 3.5.13
      */
-    public $maxRevisions;
+    public ?int $maxRevisions = null;
 
     /**
      * @inheritdoc
      */
-    public function execute($queue)
+    public function execute($queue): void
     {
         if (!$this->maxRevisions) {
             // Make sure maxRevisions is still set
@@ -79,7 +79,7 @@ class PruneRevisions extends BaseJob
     /**
      * @inheritdoc
      */
-    protected function defaultDescription(): string
+    protected function defaultDescription(): ?string
     {
         return Craft::t('app', 'Pruning extra revisions');
     }

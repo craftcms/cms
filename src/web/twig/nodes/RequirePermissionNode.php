@@ -21,7 +21,7 @@ class RequirePermissionNode extends Node
     /**
      * @inheritdoc
      */
-    public function compile(Compiler $compiler)
+    public function compile(Compiler $compiler): void
     {
         $compiler
             ->addDebugInfo($this)

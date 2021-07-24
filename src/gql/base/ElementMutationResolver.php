@@ -79,23 +79,23 @@ abstract class ElementMutationResolver extends MutationResolver
      *
      * @var string[]
      */
-    protected $immutableAttributes = ['id', 'uid'];
+    protected array $immutableAttributes = ['id', 'uid'];
 
     /**
      * @var Type[] Argument type definitions by name.
      */
-    protected $argumentTypeDefsByName = [];
+    protected array $argumentTypeDefsByName = [];
 
     /**
      * Populate the element with submitted data.
      *
-     * @param Element $element
+     * @param ElementInterface $element
      * @param array $arguments
-     * @param ResolveInfo $resolveInfo
+     * @param ResolveInfo|null $resolveInfo
      * @return EntryElement
      * @throws GqlException if data not found.
      */
-    protected function populateElementWithData(Element $element, array $arguments, ResolveInfo $resolveInfo = null): Element
+    protected function populateElementWithData(ElementInterface $element, array $arguments, ?ResolveInfo $resolveInfo = null): ElementInterface
     {
         $normalized = false;
 
@@ -152,6 +152,7 @@ abstract class ElementMutationResolver extends MutationResolver
      * Save an element.
      *
      * @param ElementInterface $element
+     * @return ElementInterface
      * @throws UserError if validation errors.
      */
     protected function saveElement(ElementInterface $element): ElementInterface
@@ -183,7 +184,7 @@ abstract class ElementMutationResolver extends MutationResolver
      * @param array $mutationArguments
      * @return array
      */
-    protected function recursivelyNormalizeArgumentValues(ResolveInfo $resolveInfo, array $mutationArguments)
+    protected function recursivelyNormalizeArgumentValues(ResolveInfo $resolveInfo, array $mutationArguments): array
     {
         return $this->_traverseAndNormalizeArguments($resolveInfo->fieldDefinition->args ?? [], $mutationArguments);
     }

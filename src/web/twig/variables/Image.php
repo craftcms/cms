@@ -20,17 +20,17 @@ class Image
     /**
      * @var string|null
      */
-    protected $path;
+    protected ?string $path = null;
 
     /**
      * @var string|null
      */
-    protected $url;
+    protected ?string $url = null;
 
     /**
      * @var array|null
      */
-    protected $size;
+    protected ?array $size = null;
 
     /**
      * Constructor
@@ -51,7 +51,7 @@ class Image
      */
     public function getSize(): array
     {
-        if ($this->size !== null) {
+        if (isset($this->size)) {
             return $this->size;
         }
 

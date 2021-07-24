@@ -38,22 +38,22 @@ class IndexAssetsController extends Controller
     /**
      * @var bool Whether remote-stored images should be locally cached in the process.
      */
-    public $cacheRemoteImages = false;
+    public bool $cacheRemoteImages = false;
 
     /**
      * @var bool Whether to auto-create new asset records when missing.
      */
-    public $createMissingAssets = true;
+    public bool $createMissingAssets = true;
 
     /**
      * @var bool Whether to delete all the asset records that have their files missing.
      */
-    public $deleteMissingAssets = false;
+    public bool $deleteMissingAssets = false;
 
     /**
      * @inheritdoc
      */
-    public function options($actionID)
+    public function options($actionID): array
     {
         $options = parent::options($actionID);
         $options[] = 'cacheRemoteImages';
@@ -88,7 +88,7 @@ class IndexAssetsController extends Controller
      * @return int
      * @since 3.1.4
      */
-    public function actionOne($handle, $startAt = 0): int
+    public function actionOne(string $handle, int $startAt = 0): int
     {
         $path = '';
 
@@ -134,7 +134,7 @@ class IndexAssetsController extends Controller
      * @throws VolumeObjectNotFoundException
      * @throws Exception
      */
-    private function _indexAssets(array $volumes, string $path = '', $startAt = 0): int
+    private function _indexAssets(array $volumes, string $path = '', int $startAt = 0): int
     {
         $assetIndexer = Craft::$app->getAssetIndexer();
         $assetService = Craft::$app->getAssets();
@@ -296,7 +296,7 @@ class IndexAssetsController extends Controller
      * @param MissingAssetException[] $missingRecords
      * @return MissingAssetException|null
      */
-    private function _chooseMissingRecord(string $path, array $missingRecords)
+    private function _chooseMissingRecord(string $path, array $missingRecords): ?MissingAssetException
     {
         if (count($missingRecords) === 1) {
             // Only one asset with the same name. Probably safe to just go with that.

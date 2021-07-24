@@ -25,13 +25,13 @@ class DeleteUsers extends ElementAction implements DeleteActionInterface
     /**
      * @var int|null The user ID that the deleted user’s content should be transferred to
      */
-    public $transferContentTo;
+    public ?int $transferContentTo = null;
 
     /**
      * @var bool Whether to permanently delete the elements.
      * @since 3.6.5
      */
-    public $hard = false;
+    public bool $hard = false;
 
     /**
      * @inheritdoc
@@ -72,7 +72,7 @@ class DeleteUsers extends ElementAction implements DeleteActionInterface
     /**
      * @inheritdoc
      */
-    public function getTriggerHtml()
+    public function getTriggerHtml(): ?string
     {
         if ($this->hard) {
             return '<div class="btn formsubmit">' . $this->getTriggerLabel() . '</div>';
@@ -131,7 +131,7 @@ JS;
     /**
      * @inheritdoc
      */
-    public function getConfirmationMessage()
+    public function getConfirmationMessage(): ?string
     {
         if ($this->hard) {
             return Craft::t('app', 'Are you sure you want to permanently delete the selected {type}?', [

@@ -30,44 +30,44 @@ class PluginStore extends Component
     /**
      * @var string Craft ID endpoint
      */
-    public $craftIdEndpoint = 'https://id.craftcms.com';
+    public string $craftIdEndpoint = 'https://id.craftcms.com';
 
     /**
      * @var string OAuth endpoint
      */
-    public $craftOauthEndpoint = 'https://id.craftcms.com/oauth';
+    public string $craftOauthEndpoint = 'https://id.craftcms.com/oauth';
 
     /**
      * @var string API endpoint
      */
-    public $craftApiEndpoint = 'https://api.craftcms.com/v1';
+    public string $craftApiEndpoint = 'https://api.craftcms.com/v1';
 
     /**
      * @var string CraftIdOauthClientId
      */
-    public $craftIdOauthClientId = '6DvEra7eqRKLYic9fovyD2FWFjYxRwZn';
+    public string $craftIdOauthClientId = '6DvEra7eqRKLYic9fovyD2FWFjYxRwZn';
 
     /**
      * @var string Dev server manifest path
      */
-    public $devServerManifestPath = 'https://localhost:8082/';
+    public string $devServerManifestPath = 'https://localhost:8082/';
 
     /**
      * @var string Dev server public path
      */
-    public $devServerPublicPath = 'https://localhost:8082/';
+    public string $devServerPublicPath = 'https://localhost:8082/';
 
     /**
      * @var bool Enable dev server
      */
-    public $useDevServer = false;
+    public bool $useDevServer = false;
 
     /**
      * Saves the OAuth token.
      *
      * @param array $tokenArray
      */
-    public function saveToken(array $tokenArray)
+    public function saveToken(array $tokenArray): void
     {
         $oneDay = new DateTime();
         $oneDay->add(new DateInterval('P1D'));
@@ -120,7 +120,7 @@ class PluginStore extends Component
      *
      * @return CraftIdToken|null
      */
-    public function getToken()
+    public function getToken(): ?CraftIdToken
     {
         $userId = Craft::$app->getUser()->getIdentity()->id;
 
@@ -152,7 +152,7 @@ class PluginStore extends Component
     /**
      * Deletes an OAuth token.
      */
-    public function deleteToken()
+    public function deleteToken(): void
     {
         // Delete DB token
 
@@ -198,7 +198,7 @@ class PluginStore extends Component
      * @param $userId
      * @return CraftIdToken|null
      */
-    public function getTokenByUserId($userId)
+    public function getTokenByUserId($userId): ?CraftIdToken
     {
         $record = OauthTokenRecord::findOne(['userId' => $userId, 'provider' => 'craftid']);
 

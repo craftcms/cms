@@ -48,11 +48,11 @@ class ArgumentManager extends Component
      */
     const EVENT_DEFINE_GQL_ARGUMENT_HANDLERS = 'defineGqlArgumentHandlers';
 
-    private $_argumentHandlers = [];
+    private array $_argumentHandlers = [];
 
-    private $_handlersCreated = false;
+    private bool $_handlersCreated = false;
 
-    public function init()
+    public function init(): void
     {
         $handlers = [
             'relatedToEntries' => RelatedEntries::class,

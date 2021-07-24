@@ -27,12 +27,12 @@ class EventTagAdder extends BaseEventTagVisitor
     /**
      * @var string|null As much of the <body> tag as we’ve found so far
      */
-    private $_bodyTag;
+    private ?string $_bodyTag = null;
 
     /**
      * @var int|null The end position of the last <body> tag we successfully parsed in $_bodyTag
      */
-    private $_bodyAttrOffset;
+    private ?int $_bodyAttrOffset = null;
 
     /**
      * @inheritdoc
@@ -63,7 +63,7 @@ class EventTagAdder extends BaseEventTagVisitor
     /**
      * @inheritdoc
      */
-    public function getPriority()
+    public function getPriority(): int
     {
         // This needs to run after EventTagFinder
         return 1;
@@ -90,7 +90,7 @@ class EventTagAdder extends BaseEventTagVisitor
         // Are we looking for `<body>`?
         if (static::$foundBeginBody === false) {
             // Does it start here?
-            if ($this->_bodyTag === null) {
+            if (!isset($this->_bodyTag)) {
                 if (preg_match('/<body\b/i', $data, $matches, PREG_OFFSET_CAPTURE)) {
                     $offsetOffset = $matches[0][1];
                     $this->_bodyTag = substr($data, $matches[0][1]);
@@ -102,7 +102,7 @@ class EventTagAdder extends BaseEventTagVisitor
                 $this->_bodyTag .= $data;
             }
 
-            if ($this->_bodyTag !== null) {
+            if (isset($this->_bodyTag)) {
                 do {
                     try {
                         $attribute = Html::parseTagAttribute($this->_bodyTag, $this->_bodyAttrOffset, $start, $end);
@@ -138,7 +138,6 @@ class EventTagAdder extends BaseEventTagVisitor
      * Inserts a new event function node at a specific point in a given text node’s data.
      *
      * @param TextNode $node
-     * @param Environment $env
      * @param int $pos
      * @param string $functionName
      * @return Node

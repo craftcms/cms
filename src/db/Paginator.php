@@ -50,12 +50,12 @@ class Paginator extends BaseObject
      * @var YiiConnection|null The DB connection to be used with the query.
      * If null, the query will choose the connection to use.
      */
-    public $db;
+    public ?YiiConnection $db = null;
 
     /**
      * @var int The number of results to include for each page
      */
-    public $pageSize = 100;
+    public int $pageSize = 100;
 
     /**
      * @var QueryInterface|YiiQuery The query being paginated
@@ -65,22 +65,22 @@ class Paginator extends BaseObject
     /**
      * @var int The total query count
      */
-    protected $totalResults;
+    protected int $totalResults;
 
     /**
      * @var int The total number of pages
      */
-    protected $totalPages;
+    protected int $totalPages;
 
     /**
      * @var int The current page
      */
-    protected $currentPage = 1;
+    protected int $currentPage = 1;
 
     /**
      * @var array|null The current page’s results
      */
-    private $_pageResults;
+    private ?array $_pageResults = null;
 
     /**
      * Constructor
@@ -106,11 +106,11 @@ class Paginator extends BaseObject
      * @inheritdoc
      * @throws InvalidConfigException
      */
-    public function init()
+    public function init(): void
     {
         parent::init();
 
-        if ($this->db !== null) {
+        if (isset($this->db)) {
             // Make sure that $db is a Connection instance
             $this->db = Instance::ensure($this->db, YiiConnection::class);
         }
@@ -123,7 +123,7 @@ class Paginator extends BaseObject
      */
     public function getTotalResults()
     {
-        if ($this->totalResults !== null) {
+        if (isset($this->totalResults)) {
             return $this->totalResults;
         }
 
@@ -147,7 +147,7 @@ class Paginator extends BaseObject
      */
     public function getTotalPages(): int
     {
-        if ($this->totalPages !== null) {
+        if (isset($this->totalPages)) {
             return $this->totalPages;
         }
         $totalResults = $this->getTotalResults();
@@ -169,7 +169,7 @@ class Paginator extends BaseObject
      *
      * @param int $currentPage
      */
-    public function setCurrentPage(int $currentPage)
+    public function setCurrentPage(int $currentPage): void
     {
         $currentPage = max(1, $currentPage);
         $currentPage = min($this->getTotalPages(), $currentPage);
@@ -187,7 +187,7 @@ class Paginator extends BaseObject
      */
     public function getPageResults(): array
     {
-        if ($this->_pageResults !== null) {
+        if (isset($this->_pageResults)) {
             return $this->_pageResults;
         }
 
@@ -224,7 +224,7 @@ class Paginator extends BaseObject
      * @param array
      * @since 3.1.22
      */
-    public function setPageResults(array $pageResults)
+    public function setPageResults(array $pageResults): void
     {
         $this->_pageResults = $pageResults;
     }
