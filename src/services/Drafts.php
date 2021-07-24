@@ -352,6 +352,7 @@ class Drafts extends Component
                 $draft->draftId = null;
                 $draft->detachBehavior('draft');
                 $draft->setRevisionNotes($draftNotes);
+                $draft->firstSave = true;
 
                 // We still need to validate so the SlugValidator gets run
                 $draft->setScenario(Element::SCENARIO_ESSENTIALS);
@@ -365,9 +366,11 @@ class Drafts extends Component
                     // Put everything back
                     $draft->draftId = $draftId;
                     $draft->attachBehavior('draft', $behavior);
+                    $draft->firstSave = false;
                     throw $e;
                 }
 
+                $draft->firstSave = false;
                 $newSource = $draft;
             }
 

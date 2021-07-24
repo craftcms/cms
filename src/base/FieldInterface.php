@@ -8,8 +8,8 @@
 namespace craft\base;
 
 use craft\elements\db\ElementQueryInterface;
+use craft\models\FieldGroup;
 use craft\models\GqlSchema;
-use craft\records\FieldGroup;
 use GraphQL\Type\Definition\Type;
 use yii\validators\Validator;
 
@@ -92,6 +92,15 @@ interface FieldInterface extends SavableComponentInterface
      * @see \yii\db\QueryBuilder::getColumnType()
      */
     public function getContentColumnType();
+
+    /**
+     * Returns the orientation the field should use (`ltr` or `rtl`).
+     *
+     * @param ElementInterface|null $element The element being edited
+     * @return string
+     * @since 3.7.5
+     */
+    public function getOrientation(?ElementInterface $element): string;
 
     /**
      * Returns whether the field should be shown as translatable in the UI.

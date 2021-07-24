@@ -1748,6 +1748,7 @@ abstract class Element extends Component implements ElementInterface
 
         ArrayHelper::removeValue($names, 'searchScore');
         ArrayHelper::removeValue($names, 'awaitingFieldValues');
+        ArrayHelper::removeValue($names, 'firstSave');
         ArrayHelper::removeValue($names, 'propagating');
         ArrayHelper::removeValue($names, 'propagateAll');
         ArrayHelper::removeValue($names, 'newSiteIds');

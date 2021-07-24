@@ -585,9 +585,9 @@ class Entry extends Element
         if ($source !== 'singles') {
             $attributes[] = 'postDate';
             $attributes[] = 'expiryDate';
+            $attributes[] = 'author';
         }
 
-        $attributes[] = 'author';
         $attributes[] = 'link';
 
         return $attributes;
@@ -1260,7 +1260,7 @@ class Entry extends Element
         $userSession = Craft::$app->getUser();
         $userId = $userSession->getId();
 
-        if ($this->getIsDraft() && !$this->getIsUnpublishedDraft() && !$this->isProvisionalDraft) {
+        if ($this->getIsDraft() && !$this->getIsUnpublishedDraft()) {
             /** @var Entry|DraftBehavior $this */
             return $this->creatorId == $userId || $userSession->checkPermission("deletePeerEntryDrafts:$section->uid");
         }

@@ -2597,6 +2597,10 @@ class ElementQuery extends Query implements ElementQueryInterface
             return;
         }
 
+        // todo: remove this check after the next breakpoint
+        $db = Craft::$app->getDb();
+        $useCanonicalId = $db->columnExists(Table::ELEMENTS, 'canonicalId');
+
         if ($this->drafts !== false) {
             if ($this->drafts === true) {
                 $this->subQuery->innerJoin(['drafts' => Table::DRAFTS], '[[drafts.id]] = [[elements.draftId]]');
@@ -2609,26 +2613,40 @@ class ElementQuery extends Query implements ElementQueryInterface
             $this->query->addSelect([
                 'elements.draftId',
                 'drafts.creatorId as draftCreatorId',
-                'drafts.provisional as isProvisionalDraft',
                 'drafts.name as draftName',
                 'drafts.notes as draftNotes',
             ]);
+
+            // todo: remove this check after the next breakpoint
+            $useProvisionalDrafts = $db->columnExists(Table::DRAFTS, 'provisional');
+            if ($useProvisionalDrafts) {
+                $this->query->addSelect(['drafts.provisional as isProvisionalDraft']);
+            }
 
             if ($this->draftId) {
                 $this->subQuery->andWhere(['elements.draftId' => $this->draftId]);
             }
 
-            if ($this->draftOf === '*') {
-                $this->subQuery->andWhere(['not', ['elements.canonicalId' => null]]);
-            } else if ($this->draftOf !== null) {
-                $this->subQuery->andWhere(['elements.canonicalId' => $this->draftOf ?: null]);
+            // todo: remove this check after the next breakpoint
+            if ($useCanonicalId) {
+                if ($this->draftOf === '*') {
+                    $this->subQuery->andWhere(['not', ['elements.canonicalId' => null]]);
+                } else if ($this->draftOf !== null) {
+                    $this->subQuery->andWhere(['elements.canonicalId' => $this->draftOf ?: null]);
+                }
+            } else {
+                if ($this->draftOf === '*') {
+                    $this->subQuery->andWhere(['not', ['drafts.sourceId' => null]]);
+                } else if ($this->draftOf !== null) {
+                    $this->subQuery->andWhere(['drafts.sourceId' => $this->draftOf ?: null]);
+                }
             }
 
             if ($this->draftCreator) {
                 $this->subQuery->andWhere(['drafts.creatorId' => $this->draftCreator]);
             }
 
-            if ($this->provisionalDrafts !== null) {
+            if ($useProvisionalDrafts && $this->provisionalDrafts !== null) {
                 $this->subQuery->andWhere([
                     'or',
                     ['elements.draftId' => null],
@@ -2638,12 +2656,22 @@ class ElementQuery extends Query implements ElementQueryInterface
 
 
             if ($this->savedDraftsOnly) {
-                $this->subQuery->andWhere([
-                    'or',
-                    ['elements.draftId' => null],
-                    ['not', ['elements.canonicalId' => null]],
-                    ['drafts.saved' => true],
-                ]);
+                // todo: remove this check after the next breakpoint
+                if ($useCanonicalId) {
+                    $this->subQuery->andWhere([
+                        'or',
+                        ['elements.draftId' => null],
+                        ['not', ['elements.canonicalId' => null]],
+                        ['drafts.saved' => true],
+                    ]);
+                } else {
+                    $this->subQuery->andWhere([
+                        'or',
+                        ['elements.draftId' => null],
+                        ['not', ['drafts.sourceId' => null]],
+                        ['drafts.saved' => true],
+                    ]);
+                }
             }
         } else {
             $this->subQuery->andWhere($this->_placeholderCondition(['elements.draftId' => null]));
@@ -2665,7 +2693,12 @@ class ElementQuery extends Query implements ElementQueryInterface
             }
 
             if ($this->revisionOf) {
-                $this->subQuery->andWhere(['elements.canonicalId' => $this->revisionOf]);
+                // todo: remove this check after the next breakpoint
+                if ($useCanonicalId) {
+                    $this->subQuery->andWhere(['elements.canonicalId' => $this->revisionOf]);
+                } else {
+                    $this->subQuery->andWhere(['revisions.sourceId' => $this->revisionOf]);
+                }
             }
 
             if ($this->revisionCreator) {

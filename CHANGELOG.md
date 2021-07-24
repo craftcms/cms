@@ -1,5 +1,34 @@
 # Release Notes for Craft CMS 3.x
 
+## 3.7.5 - 2021-07-23
+
+### Added
+- Added `craft\base\ElementTrait::$firstSave`. ([#9638](https://github.com/craftcms/cms/discussions/9638))
+- Added `craft\base\FieldInterface::getOrientation()`.
+- Added `craft\helpers\FieldHelper`.
+
+### Changed
+- Field orientations are now based on the primary site’s language for single-site installs. ([#9616](https://github.com/craftcms/cms/issues/9616))
+- Matrix block type handles are now limited to 47 characters. ([#9636](https://github.com/craftcms/cms/issues/9636))
+
+### Fixed
+- Fixed a bug where Live Preview stopped working when the device type was changed, for preview targets that had auto-refresh disabled. ([#9610](https://github.com/craftcms/cms/issues/9610))
+- Fixed a 403 error that occurred when attempting to discard changes on an entry. ([#9602](https://github.com/craftcms/cms/issues/9602))
+- Fixed a bug where opening the image editor would cause the page to scroll to the top. ([#9612](https://github.com/craftcms/cms/issues/9612))
+- Fixed a bug where provisional drafts weren’t displaying a notice when upstream changes had been merged into them. ([#9615](https://github.com/craftcms/cms/issues/9615))
+- Fixed a bug where entry titles were set to `null` before getting regenerated via their Title Format for new drafts.
+- Fixed SQL errors that could occur when updating Craft 3.7. ([#9624](https://github.com/craftcms/cms/issues/9624), [#9625](https://github.com/craftcms/cms/issues/9625))
+- Fixed a bug where `craft\web\Request::getRawCookies()` was returning hashed cookie values.
+- Fixed a PHP error that could occur when saving a site, if there were any event handlers on `craft\services\Sites::EVENT_BEFORE_SAVE_SITE`.
+- Fixed an error that could occur when deleting a route from the control panel if there were any event handlers on `craft\services\Routes::EVENT_AFTER_DELETE_ROUTE`.
+- Fixed a bug where existing fields’ maximum handle lengths were nine characters less than they needed to be.
+- Fixed a bug where Craft would send a `X-Robots-Tag: none` header on front-end Login pages. ([#9621](https://github.com/craftcms/cms/issues/9621))
+- Fixed a bug where the “Singles” entry source showed the Author column by default. ([#9627](https://github.com/craftcms/cms/issues/9627))
+- Fixed a bug where the control panel header could remain “stuck” after closing Live Preview in Firefox. ([#9630](https://github.com/craftcms/cms/issues/9630))
+- Fixed a JavaScript error that could occur on Edit Entry pages. ([#9631](https://github.com/craftcms/cms/pull/9631))
+- Fixed a bug where assets weren’t always getting moved out of the Temporary Uploads volume when saving an entry. ([#9619](https://github.com/craftcms/cms/issues/9619))
+- Fixed a bug where it wasn’t possible to upload an asset via a data URL if its MIME type contained a dash. ([#9632](https://github.com/craftcms/cms/issues/9632))
+
 ## 3.7.4 - 2021-07-19
 
 ### Added

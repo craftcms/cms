@@ -583,10 +583,15 @@ class Sections extends Component
             $sectionRecord->type = $data['type'];
             $sectionRecord->enableVersioning = (bool)$data['enableVersioning'];
             $sectionRecord->propagationMethod = $data['propagationMethod'] ?? Section::PROPAGATION_METHOD_ALL;
-            $sectionRecord->defaultPlacement = $data['defaultPlacement'] ?? Section::DEFAULT_PLACEMENT_END;
             $sectionRecord->previewTargets = isset($data['previewTargets']) && is_array($data['previewTargets'])
                 ? ProjectConfigHelper::unpackAssociativeArray($data['previewTargets'])
                 : null;
+
+            // todo: remove after the next breakpoint
+            $schemaVersion = Craft::$app->getInstalledSchemaVersion();
+            if (version_compare($schemaVersion, '3.7.5', '>=')) {
+                $sectionRecord->defaultPlacement = $data['defaultPlacement'] ?? Section::DEFAULT_PLACEMENT_END;
+            }
 
             $isNewSection = $sectionRecord->getIsNewRecord();
             $propagationMethodChanged = $sectionRecord->propagationMethod != $sectionRecord->getOldAttribute('propagationMethod');
