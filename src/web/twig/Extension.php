@@ -253,13 +253,13 @@ class Extension extends AbstractExtension implements GlobalsInterface
      * Translates the given message.
      *
      * @param mixed $message The message to be translated.
-     * @param string|null $category the message category.
-     * @param array|null $params The parameters that will be used to replace the corresponding placeholders in the message.
+     * @param string|array|null $category the message category.
+     * @param array|string|null $params The parameters that will be used to replace the corresponding placeholders in the message.
      * @param string|null $language The language code (e.g. `en-US`, `en`). If this is null, the current
      * [[\yii\base\Application::language|application language]] will be used.
      * @return string the translated message.
      */
-    public function translateFilter($message, ?string $category = null, ?array $params = null, ?string $language = null): string
+    public function translateFilter($message, $category = null, $params = null, ?string $language = null): string
     {
         // The front end site doesn't need to specify the category
         /** @noinspection CallableParameterUseCaseInTypeContextInspection */

@@ -49,7 +49,7 @@ class SearchQueryTerm extends BaseObject
     public string $term;
 
     /**
-     * @var bool|null
+     * @var bool
      */
-    public ?bool $phrase = null;
+    public bool $phrase = false;
 }

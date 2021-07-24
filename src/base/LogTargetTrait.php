@@ -60,8 +60,7 @@ trait LogTargetTrait
             $ip = '-';
         }
 
-        /** @var $user User */
-        $user = Craft::$app->has('user', true) ? Craft::$app->get('user') : null;
+        $user = Craft::$app->has('user', true) ? Craft::$app->getUser() : null;
         if ($user && ($identity = $user->getIdentity(false))) {
             $userID = $identity->getId();
         } else {

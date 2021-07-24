@@ -27,7 +27,7 @@ class Tip extends BaseUiElement
     /**
      * @var string The tip text
      */
-    public string $tip;
+    public string $tip = '';
 
     /**
      * @var string The tip style (`tip` or `warning`)

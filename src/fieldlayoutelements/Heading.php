@@ -23,7 +23,7 @@ class Heading extends BaseUiElement
     /**
      * @var string The heading text
      */
-    public string $heading;
+    public string $heading = '';
 
     /**
      * @inheritdoc
