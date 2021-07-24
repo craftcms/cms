@@ -3,6 +3,7 @@
 ## Unreleased
 
 ### Added
+- Added `craft\base\ElementTrait::$firstSave`. ([#9638](https://github.com/craftcms/cms/discussions/9638))
 - Added `craft\base\FieldInterface::getOrientation()`.
 - Added `craft\helpers\FieldHelper`.
 

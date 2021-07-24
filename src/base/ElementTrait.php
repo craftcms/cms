@@ -188,6 +188,12 @@ trait ElementTrait
     public $duplicateOf;
 
     /**
+     * @var bool Whether the element is being saved for the first time in a normal state (not as a draft or revision).
+     * @since 3.7.5
+     */
+    public $firstSave = false;
+
+    /**
      * @var bool Whether recent changes to the canonical element are being merged into this element.
      * @since 3.7.0
      */
