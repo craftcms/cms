@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 3.x
 
-## Unreleased
+## 3.7.5 - 2021-07-23
 
 ### Added
 - Added `craft\base\ElementTrait::$firstSave`. ([#9638](https://github.com/craftcms/cms/discussions/9638))
