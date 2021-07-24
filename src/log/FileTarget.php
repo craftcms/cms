@@ -1,4 +1,5 @@
-<?php
+<?php /** @noinspection PhpHierarchyChecksInspection */
+
 /**
  * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
