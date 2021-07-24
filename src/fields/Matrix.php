@@ -111,10 +111,10 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
     public ?int $maxBlocks = null;
 
     /**
-     * @var string|null Content table name
+     * @var string Content table name
      * @since 3.0.23
      */
-    public ?string $contentTable = null;
+    public string $contentTable;
 
     /**
      * @var string Propagation method

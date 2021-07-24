@@ -523,7 +523,7 @@ class Matrix extends Component
      */
     public function saveSettings(MatrixField $matrixField, bool $validate = true): bool
     {
-        if (!$matrixField->contentTable) {
+        if (!isset($matrixField->contentTable)) {
             throw new Exception('Unable to save a Matrix field’s settings without knowing its content table.');
         }
 
@@ -652,7 +652,7 @@ class Matrix extends Component
         do {
             $i++;
             $name = '{{%' . $baseName . ($i !== 0 ? '_' . $i : '') . '}}';
-        } while ($name !== $field->contentTable && $db->tableExists($name));
+        } while ($name !== ($field->contentTable ?? null) && $db->tableExists($name));
         return $name;
     }
 
