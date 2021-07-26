@@ -95,7 +95,7 @@ class DbController extends Controller
                             $this->stdout('Aborting' . PHP_EOL);
                             return ExitCode::OK;
                         }
-                        $this->stderr("$checkPath already exists. Retry with the --overwire flag to overwrite it." . PHP_EOL, Console::FG_RED);
+                        $this->stderr("$checkPath already exists. Retry with the --overwrite flag to overwrite it." . PHP_EOL, Console::FG_RED);
                         return ExitCode::UNSPECIFIED_ERROR;
                     }
                 }
