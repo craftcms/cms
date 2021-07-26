@@ -221,6 +221,11 @@ abstract class ElementArguments extends Arguments
                 'type' => Type::int(),
                 'description' => 'The drafts’ creator ID',
             ],
+            'provisionalDrafts' => [
+                'name' => 'provisionalDrafts',
+                'type' => Type::boolean(),
+                'description' => 'Whether provisional drafts should be returned.'
+            ],
         ];
     }
 
