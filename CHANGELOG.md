@@ -5,6 +5,9 @@
 ### Added
 - Added the `provisionalDrafts` argument to the GraphQL entry queries.
 
+### Fixed
+- Fixed a bug where Global Sets would also display fields over GraphQL API that had elected to remain hidden.
+
 ## 3.7.5 - 2021-07-23
 
 ### Added
