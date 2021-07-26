@@ -24,12 +24,12 @@ class PluginController extends Controller
      * @var bool Whether the plugin uninstallation should be forced.
      * @since 3.6.14
      */
-    public $force = false;
+    public bool $force = false;
 
     /**
      * @inheritdoc
      */
-    public function options($actionID)
+    public function options($actionID): array
     {
         $options = parent::options($actionID);
 
@@ -45,7 +45,7 @@ class PluginController extends Controller
     /**
      * @inheritdoc
      */
-    public function beforeAction($action)
+    public function beforeAction($action): bool
     {
         Console::ensureProjectConfigFileExists();
         return parent::beforeAction($action);

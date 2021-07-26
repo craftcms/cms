@@ -18,10 +18,10 @@ use craft\gql\ArgumentManager;
 abstract class ArgumentHandler implements ArgumentHandlerInterface
 {
     /** @var ArgumentManager */
-    protected $argumentManager;
+    protected ArgumentManager $argumentManager;
 
     /** @var string */
-    protected $argumentName;
+    protected string $argumentName;
 
     /**
      * @inheritdoc

@@ -21,5 +21,5 @@ class DefineFieldLayoutElementsEvent extends Event
     /**
      * @var FieldLayoutElementInterface[]|string[]|array[] The elements that should be available to the field layout designer.
      */
-    public $elements = [];
+    public array $elements = [];
 }

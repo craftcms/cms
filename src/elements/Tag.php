@@ -13,6 +13,7 @@ use craft\db\Table;
 use craft\elements\db\ElementQueryInterface;
 use craft\elements\db\TagQuery;
 use craft\helpers\Db;
+use craft\models\FieldLayout;
 use craft\models\TagGroup;
 use craft\records\Tag as TagRecord;
 use yii\base\Exception;
@@ -63,7 +64,7 @@ class Tag extends Element
     /**
      * @inheritdoc
      */
-    public static function refHandle()
+    public static function refHandle(): ?string
     {
         return 'tag';
     }
@@ -112,7 +113,7 @@ class Tag extends Element
     /**
      * @inheritdoc
      */
-    protected static function defineSources(string $context = null): array
+    protected static function defineSources(?string $context = null): array
     {
         $sources = [];
 
@@ -160,18 +161,18 @@ class Tag extends Element
     /**
      * @var int|null Group ID
      */
-    public $groupId;
+    public ?int $groupId = null;
 
     /**
      * @var bool Whether the tag was deleted along with its group
      * @see beforeDelete()
      */
-    public $deletedWithGroup = false;
+    public bool $deletedWithGroup = false;
 
     /**
      * @inheritdoc
      */
-    public function extraFields()
+    public function extraFields(): array
     {
         $names = parent::extraFields();
         $names[] = 'group';
@@ -203,7 +204,7 @@ class Tag extends Element
      * @param InlineValidator $validator
      * @since 3.4.12
      */
-    public function validateTitle(string $attribute, array $params = null, InlineValidator $validator)
+    public function validateTitle(string $attribute, ?array $params, InlineValidator $validator): void
     {
         $query = static::find()
             ->groupId($this->groupId)
@@ -241,7 +242,7 @@ class Tag extends Element
     /**
      * @inheritdoc
      */
-    public function getFieldLayout()
+    public function getFieldLayout(): ?FieldLayout
     {
         return parent::getFieldLayout() ?? $this->getGroup()->getFieldLayout();
     }
@@ -254,7 +255,7 @@ class Tag extends Element
      */
     public function getGroup(): TagGroup
     {
-        if ($this->groupId === null) {
+        if (!isset($this->groupId)) {
             throw new InvalidConfigException('Tag is missing its group ID');
         }
 
@@ -281,7 +282,7 @@ class Tag extends Element
      * @inheritdoc
      * @throws Exception if reasons
      */
-    public function afterSave(bool $isNew)
+    public function afterSave(bool $isNew): void
     {
         if (!$this->propagating) {
             // Get the tag record

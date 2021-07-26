@@ -129,38 +129,38 @@ class Sites extends Component
      * @var MemoizableArray|null
      * @see _groups()
      */
-    private $_groups;
+    private ?MemoizableArray $_groups = null;
 
     /**
      * @var int[]|null
      * @see getEditableSiteIds()
      */
-    private $_editableSiteIds;
+    private ?array $_editableSiteIds = null;
 
     /**
-     * @var Site[]
+     * @var Site[]|null
      * @see getSiteById()
      */
-    private $_allSitesById;
+    private ?array $_allSitesById = null;
 
     /**
-     * @var Site[]
+     * @var Site[]|null
      * @see getSiteById()
      */
-    private $_enabledSitesById;
+    private ?array $_enabledSitesById = null;
 
     /**
      * @var Site|null the current site
      * @see getCurrentSite()
      * @see setCurrentSite()
      */
-    private $_currentSite;
+    private ?Site $_currentSite = null;
 
     /**
      * @var Site|null
      * @see getPrimarySite()
      */
-    private $_primarySite;
+    private ?Site $_primarySite = null;
 
     /**
      * Serializer
@@ -177,7 +177,7 @@ class Sites extends Component
     /**
      * @inheritdoc
      */
-    public function init()
+    public function init(): void
     {
         // No technical reason to put this here, but it's sortof related
         if (defined('CRAFT_LOCALE')) {
@@ -198,7 +198,7 @@ class Sites extends Component
      */
     private function _groups(): MemoizableArray
     {
-        if ($this->_groups === null) {
+        if (!isset($this->_groups)) {
             $groups = [];
             foreach ($this->_createGroupQuery()->all() as $result) {
                 $groups[] = new SiteGroup($result);
@@ -225,7 +225,7 @@ class Sites extends Component
      * @param int $groupId The site group’s ID
      * @return SiteGroup|null The site group, or null if it doesn’t exist
      */
-    public function getGroupById(int $groupId)
+    public function getGroupById(int $groupId): ?SiteGroup
     {
         return $this->_groups()->firstWhere('id', $groupId);
     }
@@ -237,7 +237,7 @@ class Sites extends Component
      * @return SiteGroup|null The site group, or null if it doesn’t exist
      * @since 3.5.8
      */
-    public function getGroupByUid(string $uid)
+    public function getGroupByUid(string $uid): ?SiteGroup
     {
         return $this->_groups()->firstWhere('uid', $uid, true);
     }
@@ -289,7 +289,7 @@ class Sites extends Component
      *
      * @param ConfigEvent $event
      */
-    public function handleChangedGroup(ConfigEvent $event)
+    public function handleChangedGroup(ConfigEvent $event): void
     {
         $data = $event->newValue;
         $uid = $event->tokenMatches[0];
@@ -327,7 +327,7 @@ class Sites extends Component
      *
      * @param ConfigEvent $event
      */
-    public function handleDeletedGroup(ConfigEvent $event)
+    public function handleDeletedGroup(ConfigEvent $event): void
     {
         $uid = $event->tokenMatches[0];
         $groupRecord = $this->_getGroupRecord($uid);
@@ -417,7 +417,7 @@ class Sites extends Component
      * @param bool|null $withDisabled
      * @return int[] All the sites’ IDs
      */
-    public function getAllSiteIds(bool $withDisabled = null): array
+    public function getAllSiteIds(?bool $withDisabled = null): array
     {
         return ArrayHelper::getColumn($this->_allSites($withDisabled), 'id', false);
     }
@@ -430,7 +430,7 @@ class Sites extends Component
      * @return Site the site
      * @throws SiteNotFoundException if no sites exist
      */
-    public function getSiteByUid(string $uid, bool $withDisabled = null): Site
+    public function getSiteByUid(string $uid, ?bool $withDisabled = null): Site
     {
         $site = ArrayHelper::firstWhere($this->_allSites($withDisabled), 'uid', $uid, true);
         if ($site === null) {
@@ -446,7 +446,7 @@ class Sites extends Component
      */
     public function getHasCurrentSite(): bool
     {
-        return $this->_currentSite !== null;
+        return isset($this->_currentSite);
     }
 
     /**
@@ -457,7 +457,7 @@ class Sites extends Component
      */
     public function getCurrentSite(): Site
     {
-        if ($this->_currentSite !== null) {
+        if (isset($this->_currentSite)) {
             return $this->_currentSite;
         }
 
@@ -471,7 +471,7 @@ class Sites extends Component
      * @param Site|string|int|null $site the current site, or its handle/ID, or null
      * @throws InvalidArgumentException if $site is invalid
      */
-    public function setCurrentSite($site)
+    public function setCurrentSite($site): void
     {
         // In case this was called from the constructor...
         $this->_loadAllSites();
@@ -514,7 +514,7 @@ class Sites extends Component
      */
     public function getPrimarySite(): Site
     {
-        if ($this->_primarySite === null) {
+        if (!isset($this->_primarySite)) {
             throw new SiteNotFoundException('No primary site exists');
         }
 
@@ -532,7 +532,7 @@ class Sites extends Component
             return $this->getAllSiteIds();
         }
 
-        if ($this->_editableSiteIds !== null) {
+        if (isset($this->_editableSiteIds)) {
             return $this->_editableSiteIds;
         }
 
@@ -554,7 +554,7 @@ class Sites extends Component
      * @param bool|null $withDisabled
      * @return Site[] All the sites
      */
-    public function getAllSites(bool $withDisabled = null): array
+    public function getAllSites(?bool $withDisabled = null): array
     {
         return array_values($this->_allSites($withDisabled));
     }
@@ -585,7 +585,7 @@ class Sites extends Component
      * @param bool|null $withDisabled
      * @return Site[]
      */
-    public function getSitesByGroupId(int $groupId, bool $withDisabled = null): array
+    public function getSitesByGroupId(int $groupId, ?bool $withDisabled = null): array
     {
         $sites = ArrayHelper::where($this->_allSites($withDisabled), 'groupId', $groupId, false, false);
 
@@ -622,7 +622,7 @@ class Sites extends Component
      * @param bool|null $withDisabled
      * @return Site|null
      */
-    public function getSiteById(int $siteId, bool $withDisabled = null)
+    public function getSiteById(int $siteId, ?bool $withDisabled = null): ?Site
     {
         return $this->_allSites($withDisabled)[$siteId] ?? null;
     }
@@ -634,7 +634,7 @@ class Sites extends Component
      * @param bool|null $withDisabled
      * @return Site|null
      */
-    public function getSiteByHandle(string $siteHandle, bool $withDisabled = null)
+    public function getSiteByHandle(string $siteHandle, ?bool $withDisabled = null): ?Site
     {
         return ArrayHelper::firstWhere($this->_allSites($withDisabled), 'handle', $siteHandle, true);
     }
@@ -663,7 +663,7 @@ class Sites extends Component
             $this->trigger(self::EVENT_BEFORE_SAVE_SITE, new SiteEvent([
                 'site' => $site,
                 'isNew' => $isNewSite,
-                'oldPrimarySiteId' => $primarySite->id,
+                'oldPrimarySiteId' => $primarySite->id ?? null,
             ]));
         }
 
@@ -712,7 +712,7 @@ class Sites extends Component
      * @param ConfigEvent $event
      * @throws \Throwable
      */
-    public function handleChangedSite(ConfigEvent $event)
+    public function handleChangedSite(ConfigEvent $event): void
     {
         $siteUid = $event->tokenMatches[0];
         $data = $event->newValue;
@@ -766,7 +766,7 @@ class Sites extends Component
         $site = $this->getSiteById($siteRecord->id);
 
         // Is this the current site?
-        if ($this->_currentSite !== null && $this->_currentSite->id == $site->id) {
+        if (isset($this->_currentSite) && $this->_currentSite->id == $site->id) {
             $this->_currentSite = $site;
         }
 
@@ -776,7 +776,7 @@ class Sites extends Component
         }
 
         // If the primary site is changing and the current site was the old primary, let's mark the new primary site as the current site.
-        if ($this->_currentSite !== null && $this->_currentSite->id === $oldPrimarySiteId && $this->_currentSite->id !== $site->id && $data['primary']) {
+        if (isset($this->_currentSite) && $this->_currentSite->id === $oldPrimarySiteId && $this->_currentSite->id !== $site->id && $data['primary']) {
             $this->_currentSite = $site;
         }
 
@@ -870,7 +870,7 @@ class Sites extends Component
      * @return bool Whether the site was deleted successfully
      * @throws \Throwable if reasons
      */
-    public function deleteSiteById(int $siteId, int $transferContentTo = null): bool
+    public function deleteSiteById(int $siteId, ?int $transferContentTo = null): bool
     {
         $site = $this->getSiteById($siteId);
 
@@ -890,7 +890,7 @@ class Sites extends Component
      * @throws Exception if $site is the primary site
      * @throws \Throwable if reasons
      */
-    public function deleteSite(Site $site, int $transferContentTo = null): bool
+    public function deleteSite(Site $site, ?int $transferContentTo = null): bool
     {
         // Make sure this isn't the primary site
         if ($site->id === $this->_primarySite->id) {
@@ -1050,7 +1050,7 @@ class Sites extends Component
      * @throws \Throwable
      * @throws \yii\base\NotSupportedException
      */
-    public function handleDeletedSite(ConfigEvent $event)
+    public function handleDeletedSite(ConfigEvent $event): void
     {
         $siteUid = $event->tokenMatches[0];
         $siteRecord = $this->_getSiteRecord($siteUid);
@@ -1089,7 +1089,7 @@ class Sites extends Component
         Craft::$app->getElements()->invalidateAllCaches();
 
         // Was this the current site?
-        if ($this->_currentSite !== null && $this->_currentSite->id == $site->id) {
+        if (isset($this->_currentSite) && $this->_currentSite->id == $site->id) {
             $this->setCurrentSite($this->_primarySite);
         }
 
@@ -1125,7 +1125,7 @@ class Sites extends Component
      * @throws DbException
      * @since 3.5.13
      */
-    public function refreshSites()
+    public function refreshSites(): void
     {
         $this->_allSitesById = null;
         $this->_enabledSitesById = null;
@@ -1136,9 +1136,9 @@ class Sites extends Component
     /**
      * Loads all the sites.
      */
-    private function _loadAllSites()
+    private function _loadAllSites(): void
     {
-        if ($this->_allSitesById !== null) {
+        if (isset($this->_allSitesById)) {
             return;
         }
 
@@ -1224,6 +1224,7 @@ class Sites extends Component
             $query->andWhere(['uid' => $criteria]);
         }
 
+        /** @noinspection PhpIncompatibleReturnTypeInspection */
         return $query->one() ?? new SiteGroupRecord();
     }
 
@@ -1233,7 +1234,7 @@ class Sites extends Component
      * @param bool|null $withDisabled
      * @return Site[]
      */
-    private function _allSites(bool $withDisabled = null)
+    private function _allSites(?bool $withDisabled = null): array
     {
         if ($withDisabled === null) {
             $request = Craft::$app->getRequest();
@@ -1259,6 +1260,7 @@ class Sites extends Component
             $query->andWhere(['uid' => $criteria]);
         }
 
+        /** @noinspection PhpIncompatibleReturnTypeInspection */
         return $query->one() ?? new SiteRecord();
     }
 
@@ -1269,7 +1271,7 @@ class Sites extends Component
      * @param int $newPrimarySiteId
      * @throws \Throwable
      */
-    private function _processNewPrimarySite(int $oldPrimarySiteId, int $newPrimarySiteId)
+    private function _processNewPrimarySite(int $oldPrimarySiteId, int $newPrimarySiteId): void
     {
         App::maxPowerCaptain();
 

@@ -32,17 +32,17 @@ class Svg extends Image
     /**
      * @var string|null
      */
-    private $_svgContent;
+    private ?string $_svgContent = null;
 
     /**
      * @var int|null
      */
-    private $_height;
+    private ?int $_height = null;
 
     /**
      * @var int|null
      */
-    private $_width;
+    private ?int $_width = null;
 
     /**
      * @inheritdoc
@@ -71,7 +71,7 @@ class Svg extends Image
     /**
      * @inheritdoc
      */
-    public function loadImage(string $path)
+    public function loadImage(string $path): self
     {
         if (!is_file($path)) {
             Craft::error('Tried to load an image at ' . $path . ', but the file does not exist.', __METHOD__);
@@ -104,7 +104,7 @@ class Svg extends Image
     /**
      * @inheritdoc
      */
-    public function crop(int $x1, int $x2, int $y1, int $y2)
+    public function crop(int $x1, int $x2, int $y1, int $y2): self
     {
         $width = $x2 - $x1;
         $height = $y2 - $y1;
@@ -144,7 +144,7 @@ class Svg extends Image
     /**
      * @inheritdoc
      */
-    public function scaleToFit(int $targetWidth = null, int $targetHeight = null, bool $scaleIfSmaller = true)
+    public function scaleToFit(?int $targetWidth, ?int $targetHeight, bool $scaleIfSmaller = true): self
     {
         $this->normalizeDimensions($targetWidth, $targetHeight);
 
@@ -160,7 +160,7 @@ class Svg extends Image
     /**
      * @inheritdoc
      */
-    public function scaleAndCrop(int $targetWidth = null, int $targetHeight = null, bool $scaleIfSmaller = true, $cropPosition = 'center-center')
+    public function scaleAndCrop(?int $targetWidth, ?int $targetHeight, bool $scaleIfSmaller = true, $cropPosition = 'center-center'): self
     {
         // TODO If we encounter a focal point, rasterize and crop with focal.
         if (is_array($cropPosition)) {
@@ -202,7 +202,7 @@ class Svg extends Image
     /**
      * @inheritdoc
      */
-    public function resize(int $targetWidth = null, int $targetHeight = null)
+    public function resize(?int $targetWidth, ?int $targetHeight): self
     {
         $this->normalizeDimensions($targetWidth, $targetHeight);
 

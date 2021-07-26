@@ -30,7 +30,7 @@ use craft\helpers\Json;
  */
 class MemoizableArray extends \ArrayObject
 {
-    private $_memoized = [];
+    private array $_memoized = [];
 
     /**
      * Returns all items.
@@ -127,7 +127,7 @@ class MemoizableArray extends \ArrayObject
     /**
      * @inheritdoc
      */
-    public function append($value)
+    public function append($value): void
     {
         parent::append($value);
         $this->_memoized = [];
@@ -136,34 +136,35 @@ class MemoizableArray extends \ArrayObject
     /**
      * @inheritdoc
      */
-    public function asort(int $sort_flags = SORT_REGULAR)
+    public function asort($flags = SORT_REGULAR): void
     {
-        parent::asort($sort_flags);
+        parent::asort($flags);
         $this->_memoized = [];
     }
 
     /**
      * @inheritdoc
      */
-    public function exchangeArray($input)
+    public function exchangeArray($array): array
     {
-        parent::exchangeArray($input);
+        $return = parent::exchangeArray($array);
+        $this->_memoized = [];
+        return $return;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function ksort($flags = SORT_REGULAR): void
+    {
+        parent::ksort($flags);
         $this->_memoized = [];
     }
 
     /**
      * @inheritdoc
      */
-    public function ksort(int $sort_flags = SORT_REGULAR)
-    {
-        parent::ksort($sort_flags);
-        $this->_memoized = [];
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function natcasesort()
+    public function natcasesort(): void
     {
         parent::natcasesort();
         $this->_memoized = [];
@@ -172,7 +173,7 @@ class MemoizableArray extends \ArrayObject
     /**
      * @inheritdoc
      */
-    public function natsort()
+    public function natsort(): void
     {
         parent::natsort();
         $this->_memoized = [];
@@ -181,36 +182,36 @@ class MemoizableArray extends \ArrayObject
     /**
      * @inheritdoc
      */
-    public function offsetSet($index, $newval)
+    public function offsetSet($key, $value): void
     {
-        parent::offsetSet($index, $newval);
+        parent::offsetSet($key, $value);
         $this->_memoized = [];
     }
 
     /**
      * @inheritdoc
      */
-    public function offsetUnset($index)
+    public function offsetUnset($key): void
     {
-        parent::offsetUnset($index);
+        parent::offsetUnset($key);
         $this->_memoized = [];
     }
 
     /**
      * @inheritdoc
      */
-    public function uasort($cmp_function)
+    public function uasort($callback): void
     {
-        parent::uasort($cmp_function);
+        parent::uasort($callback);
         $this->_memoized = [];
     }
 
     /**
      * @inheritdoc
      */
-    public function uksort($cmp_function)
+    public function uksort($callback): void
     {
-        parent::uksort($cmp_function);
+        parent::uksort($callback);
         $this->_memoized = [];
     }
 }

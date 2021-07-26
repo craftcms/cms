@@ -37,7 +37,7 @@ class EntryTitleField extends TitleField
     /**
      * @inheritdoc
      */
-    protected function translatable(ElementInterface $element = null, bool $static = false): bool
+    protected function translatable(?ElementInterface $element = null, bool $static = false): bool
     {
         if (!$element instanceof Entry) {
             throw new InvalidArgumentException('EntryTitleField can only be used in entry field layouts.');
@@ -49,7 +49,7 @@ class EntryTitleField extends TitleField
     /**
      * @inheritdoc
      */
-    protected function translationDescription(ElementInterface $element = null, bool $static = false)
+    protected function translationDescription(?ElementInterface $element = null, bool $static = false): ?string
     {
         if (!$element instanceof Entry) {
             throw new InvalidArgumentException('EntryTitleField can only be used in entry field layouts.');
@@ -61,7 +61,7 @@ class EntryTitleField extends TitleField
     /**
      * @inheritdoc
      */
-    public function inputHtml(ElementInterface $element = null, bool $static = false)
+    public function inputHtml(?ElementInterface $element = null, bool $static = false): ?string
     {
         if (!$element instanceof Entry) {
             throw new InvalidArgumentException('EntryTitleField can only be used in entry field layouts.');

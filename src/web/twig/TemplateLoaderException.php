@@ -20,7 +20,7 @@ class TemplateLoaderException extends LoaderError
     /**
      * @var string|null
      */
-    public $template;
+    public ?string $template = null;
 
     /**
      * @param string $template The requested template

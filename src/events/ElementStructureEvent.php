@@ -16,7 +16,7 @@ namespace craft\events;
 class ElementStructureEvent extends ModelEvent
 {
     /**
-     * @var int|null The structure ID
+     * @var int The structure ID
      */
-    public $structureId;
+    public int $structureId;
 }

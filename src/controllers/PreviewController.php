@@ -25,14 +25,14 @@ class PreviewController extends Controller
     /**
      * @inheritdoc
      */
-    public $allowAnonymous = [
+    protected $allowAnonymous = [
         'preview' => self::ALLOW_ANONYMOUS_LIVE | self::ALLOW_ANONYMOUS_OFFLINE,
     ];
 
     /**
      * @inheritdoc
      */
-    public function beforeAction($action)
+    public function beforeAction($action): bool
     {
         // Don't require CSRF validation for POSTed preview requests
         if ($action->id === 'preview') {

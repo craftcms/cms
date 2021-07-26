@@ -22,12 +22,12 @@ class NewSiblingAfter extends ElementAction
     /**
      * @var string|null The trigger label
      */
-    public $label;
+    public ?string $label = null;
 
     /**
      * @var string|null The URL that the user should be taken to after clicking on this element action
      */
-    public $newSiblingUrl;
+    public ?string $newSiblingUrl = null;
 
     /**
      * @inheritdoc
@@ -40,7 +40,7 @@ class NewSiblingAfter extends ElementAction
     /**
      * @inheritdoc
      */
-    public function getTriggerHtml()
+    public function getTriggerHtml(): ?string
     {
         $type = Json::encode(static::class);
         $newSiblingUrl = Json::encode($this->newSiblingUrl);

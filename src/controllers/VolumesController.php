@@ -35,7 +35,7 @@ class VolumesController extends Controller
     /**
      * @inheritdoc
      */
-    public function beforeAction($action)
+    public function beforeAction($action): bool
     {
         // All asset volume actions require an admin
         $this->requireAdmin();
@@ -65,7 +65,7 @@ class VolumesController extends Controller
      * @throws ForbiddenHttpException if the user is not an admin
      * @throws NotFoundHttpException if the requested volume cannot be found
      */
-    public function actionEditVolume(int $volumeId = null, VolumeInterface $volume = null): Response
+    public function actionEditVolume(?int $volumeId = null, ?VolumeInterface $volume = null): Response
     {
         $this->requireAdmin();
 
@@ -159,7 +159,7 @@ class VolumesController extends Controller
      * @return Response|null
      * @throws BadRequestHttpException
      */
-    public function actionSaveVolume()
+    public function actionSaveVolume(): ?Response
     {
         $this->requirePostRequest();
 

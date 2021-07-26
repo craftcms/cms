@@ -47,7 +47,7 @@ class FieldLayoutTab extends Model
      * @param array $config
      * @since 3.5.0
      */
-    public static function updateConfig(array &$config)
+    public static function updateConfig(array &$config): void
     {
         if (!array_key_exists('fields', $config)) {
             return;
@@ -71,52 +71,65 @@ class FieldLayoutTab extends Model
     /**
      * @var int|null ID
      */
-    public $id;
+    public ?int $id = null;
 
     /**
      * @var int|null Layout ID
      */
-    public $layoutId;
+    public ?int $layoutId = null;
 
     /**
      * @var string|null Name
      */
-    public $name;
+    public ?string $name = null;
 
     /**
      * @var FieldLayoutElementInterface[]|null The tab’s layout elements
      * @since 3.5.0
      */
-    public $elements;
+    public ?array $elements = null;
 
     /**
      * @var int|null Sort order
      */
-    public $sortOrder;
+    public ?int $sortOrder = null;
 
     /**
      * @var string|null UID
      */
-    public $uid;
+    public ?string $uid = null;
 
     /**
      * @var FieldLayout|null
      */
-    private $_layout;
+    private ?FieldLayout $_layout = null;
 
     /**
      * @var FieldInterface[]|null
      */
-    private $_fields;
+    private ?array $_fields = null;
 
     /**
      * @inheritdoc
      */
-    public function init()
+    public function __construct($config = [])
+    {
+        // Config normalization
+        if (isset($config['elements']) && is_string($config['elements'])) {
+            $config['elements'] = Json::decode($config['elements']);
+        }
+
+        parent::__construct($config);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function init(): void
     {
         parent::init();
 
-        if ($this->elements === null) {
+        if (!isset($this->elements)) {
             $this->elements = [];
             foreach ($this->getFields() as $field) {
                 $this->elements[] = Craft::createObject([
@@ -127,9 +140,6 @@ class FieldLayoutTab extends Model
                 ]);
             }
         } else {
-            if (is_string($this->elements)) {
-                $this->elements = Json::decode($this->elements);
-            }
             $fieldsService = Craft::$app->getFields();
             foreach ($this->elements as $i => $element) {
                 if (is_array($element)) {
@@ -163,7 +173,7 @@ class FieldLayoutTab extends Model
      * @return array|null
      * @since 3.5.0
      */
-    public function getConfig()
+    public function getConfig(): ?array
     {
         if (empty($this->elements)) {
             return null;
@@ -197,9 +207,9 @@ class FieldLayoutTab extends Model
      * @return FieldLayout|null The tab’s layout.
      * @throws InvalidConfigException if [[groupId]] is set but invalid
      */
-    public function getLayout()
+    public function getLayout(): ?FieldLayout
     {
-        if ($this->_layout !== null) {
+        if (isset($this->_layout)) {
             return $this->_layout;
         }
 
@@ -219,7 +229,7 @@ class FieldLayoutTab extends Model
      *
      * @param FieldLayout $layout The tab’s layout.
      */
-    public function setLayout(FieldLayout $layout)
+    public function setLayout(FieldLayout $layout): void
     {
         $this->_layout = $layout;
     }
@@ -231,7 +241,7 @@ class FieldLayoutTab extends Model
      */
     public function getFields(): array
     {
-        if ($this->_fields !== null) {
+        if (isset($this->_fields)) {
             return $this->_fields;
         }
 
@@ -253,7 +263,7 @@ class FieldLayoutTab extends Model
      *
      * @param FieldInterface[] $fields
      */
-    public function setFields(array $fields)
+    public function setFields(array $fields): void
     {
         ArrayHelper::multisort($fields, 'sortOrder');
         $this->_fields = $fields;
@@ -269,7 +279,7 @@ class FieldLayoutTab extends Model
         }
 
         // Clear the field layout's field cache
-        if ($this->_layout !== null) {
+        if (isset($this->_layout)) {
             $this->_layout->setFields(null);
         }
     }

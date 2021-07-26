@@ -98,6 +98,7 @@ class ResolveAssetMutationsTest extends TestCase
                 $assetToSave->id = $assetToSave->id ?? $assetId;
                 return $assetToSave;
             },
+            'recursivelyNormalizeArgumentValues' => function ($resolveInfo, $values) { return $values; }
         ]);
 
         if ($exception) {
@@ -141,7 +142,7 @@ class ResolveAssetMutationsTest extends TestCase
     public function testDeleteAssetNotFound()
     {
         $this->tester->mockCraftMethods('elements', [
-            'getElementById' => Expected::once(false),
+            'getElementById' => Expected::once(),
             'deleteElementById' => Expected::never()
         ]);
         $resolver = $this->make(AssetResolver::class, [

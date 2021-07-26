@@ -20,10 +20,5 @@ class MutationPopulateElementEvent extends ElementEvent
     /**
      * @var array The arguments used to populate element with data
      */
-    public $arguments;
-
-    /**
-     * @var ElementInterface The element being populated with data
-     */
-    public $element;
+    public array $arguments;
 }

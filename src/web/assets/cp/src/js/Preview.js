@@ -427,6 +427,7 @@ Craft.Preview = Garnish.Base.extend({
         }
 
         Garnish.$win.trigger('resize');
+        Garnish.$doc.trigger('scroll');
     },
 
     getIframeWidth: function() {
@@ -599,7 +600,7 @@ Craft.Preview = Garnish.Base.extend({
             this.resetDevicePreview();
         } else {
             this.$iframeContainer.addClass('lp-iframe-container--updating');
-            this.updateIframe();
+            this.updateIframe(true, true);
             this.updateDevicePreview();
         }
     },
@@ -753,7 +754,7 @@ Craft.Preview = Garnish.Base.extend({
             this.$devicePreviewContainer.detach();
             this.$devicePreviewContainer = null;
             this.$iframe = null;
-            this.updateIframe();
+            this.updateIframe(true, true);
         }
 
         this.isDeviceUpdating = false;

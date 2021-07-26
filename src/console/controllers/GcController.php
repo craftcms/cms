@@ -30,12 +30,12 @@ class GcController extends Controller
      * the ones that were deleted long enough ago to be ready for hard-deletion
      * per the `softDeleteDuration` config setting.
      */
-    public $deleteAllTrashed = false;
+    public bool $deleteAllTrashed = false;
 
     /**
      * @inheritdoc
      */
-    public function options($actionID)
+    public function options($actionID): array
     {
         $options = parent::options($actionID);
         $options[] = 'deleteAllTrashed';

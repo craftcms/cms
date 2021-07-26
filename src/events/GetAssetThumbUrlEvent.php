@@ -22,25 +22,25 @@ class GetAssetThumbUrlEvent extends Event
     /**
      * @var Asset The Asset which the thumbnail should be for.
      */
-    public $asset;
+    public Asset $asset;
 
     /**
      * @var int Requested thumbnail width
      */
-    public $width;
+    public int $width;
 
     /**
      * @var int Requested thumbnail height
      */
-    public $height;
+    public int $height;
 
     /**
      * @var bool Whether the thumbnail should be generated if it doesn't exist yet.
      */
-    public $generate;
+    public bool $generate;
 
     /**
      * @var string|null Url to requested Asset that should be used instead.
      */
-    public $url;
+    public ?string $url = null;
 }

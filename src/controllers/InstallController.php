@@ -12,6 +12,7 @@ use craft\config\DbConfig;
 use craft\db\Connection;
 use craft\elements\User;
 use craft\errors\DbConnectException;
+use craft\errors\MigrationException;
 use craft\helpers\App;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Install as InstallHelper;
@@ -21,8 +22,8 @@ use craft\models\Site;
 use craft\web\assets\installer\InstallerAsset;
 use craft\web\Controller;
 use yii\base\Exception;
-use yii\base\Response;
 use yii\web\BadRequestHttpException;
+use yii\web\Response;
 
 /** @noinspection ClassOverridesFieldOfSuperClassInspection */
 
@@ -44,7 +45,7 @@ class InstallController extends Controller
     /**
      * @inheritdoc
      */
-    public function beforeAction($action)
+    public function beforeAction($action): bool
     {
         // Return a 404 if Craft is already installed
         if (!YII_DEBUG && Craft::$app->getIsInstalled()) {
@@ -57,11 +58,11 @@ class InstallController extends Controller
     /**
      * Index action.
      *
-     * @return Response|string The requirements check response if the server doesn’t meet Craft’s requirements, or the rendering result
+     * @return Response The requirements check response if the server doesn’t meet Craft’s requirements, or the rendering result
      * @throws \Throwable if it's an Ajax request and the server doesn’t meet Craft’s requirements
      * @throws DbConnectException if a .env file can't be found and the current DB credentials are invalid
      */
-    public function actionIndex()
+    public function actionIndex(): Response
     {
         if (($response = Craft::$app->runAction('templates/requirements-check')) !== null) {
             return $response;
@@ -116,7 +117,7 @@ class InstallController extends Controller
      *
      * @return Response
      */
-    public function actionValidateDb()
+    public function actionValidateDb(): Response
     {
         $this->requirePostRequest();
         $this->requireAcceptsJson();
@@ -298,18 +299,21 @@ class InstallController extends Controller
             'site' => $site,
         ]);
 
-        if ($migrator->migrateUp($migration) !== false) {
-            $success = true;
-
-            // Mark all existing migrations as applied
-            foreach ($migrator->getNewMigrations() as $name) {
-                $migrator->addMigrationHistory($name);
-            }
-        } else {
-            $success = false;
+        try {
+            $migrator->migrateUp($migration);
+        } catch (MigrationException $e) {
+            return $this->asJson([
+                'success' => false,
+                'error' => $e->getMessage(),
+            ]);
         }
 
-        return $this->asJson(['success' => $success]);
+        // Mark all existing migrations as applied
+        foreach ($migrator->getNewMigrations() as $name) {
+            $migrator->addMigrationHistory($name);
+        }
+
+        return $this->asJson(['success' => true]);
     }
 
     /**
@@ -387,7 +391,7 @@ class InstallController extends Controller
      * @param DbConfig $dbConfig The DbConfig object
      * @param string $prefix The post param prefix to use
      */
-    private function _populateDbConfig(DbConfig $dbConfig, string $prefix = '')
+    private function _populateDbConfig(DbConfig $dbConfig, string $prefix = ''): void
     {
         $driver = $this->request->getRequiredBodyParam("{$prefix}driver");
         $server = $this->request->getBodyParam("{$prefix}server") ?: '127.0.0.1';

@@ -24,7 +24,7 @@ class DbCache extends YiiDbCache
     /**
      * @inheritdoc
      */
-    protected function setValue($key, $value, $duration)
+    protected function setValue($key, $value, $duration): bool
     {
         // Copied from yii\caching\DbCache::setValue() except for the added includeAuditColumns=false argument
         try {
@@ -46,7 +46,7 @@ class DbCache extends YiiDbCache
     /**
      * @inheritdoc
      */
-    protected function addValue($key, $value, $duration)
+    protected function addValue($key, $value, $duration): bool
     {
         $this->gc();
 

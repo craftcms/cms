@@ -46,10 +46,10 @@ abstract class Image extends BaseObject
      * Loads an image from a file system path.
      *
      * @param string $path
-     * @return static|Svg Self reference
+     * @return static Self reference
      * @throws ImageException if the file cannot be loaded
      */
-    abstract public function loadImage(string $path);
+    abstract public function loadImage(string $path): self;
 
     /**
      * Crops the image to the specified coordinates.
@@ -60,7 +60,7 @@ abstract class Image extends BaseObject
      * @param int $y2
      * @return static Self reference
      */
-    abstract public function crop(int $x1, int $x2, int $y1, int $y2);
+    abstract public function crop(int $x1, int $x2, int $y1, int $y2): self;
 
     /**
      * Scale the image to fit within the specified size.
@@ -70,7 +70,7 @@ abstract class Image extends BaseObject
      * @param bool $scaleIfSmaller
      * @return static Self reference
      */
-    abstract public function scaleToFit(int $targetWidth = null, int $targetHeight = null, bool $scaleIfSmaller = true);
+    abstract public function scaleToFit(?int $targetWidth, ?int $targetHeight, bool $scaleIfSmaller = true): self;
 
     /**
      * Scale and crop image to exactly fit the specified size.
@@ -81,7 +81,7 @@ abstract class Image extends BaseObject
      * @param mixed $cropPosition
      * @return static Self reference
      */
-    abstract public function scaleAndCrop(int $targetWidth = null, int $targetHeight = null, bool $scaleIfSmaller = true, $cropPosition = 'center-center');
+    abstract public function scaleAndCrop(?int $targetWidth, ?int $targetHeight, bool $scaleIfSmaller = true, $cropPosition = 'center-center'): self;
 
     /**
      * Resizes the image.
@@ -90,7 +90,7 @@ abstract class Image extends BaseObject
      * @param int|null $targetHeight The target height. Defaults to $targetWidth if omitted, creating a square.
      * @return static Self reference
      */
-    abstract public function resize(int $targetWidth = null, int $targetHeight = null);
+    abstract public function resize(?int $targetWidth, ?int $targetHeight): self;
 
     /**
      * Saves the image to the target path.
@@ -115,7 +115,7 @@ abstract class Image extends BaseObject
      * @param int|string|null $width
      * @param int|string|null $height
      */
-    protected function normalizeDimensions(&$width, &$height)
+    protected function normalizeDimensions(&$width, &$height): void
     {
         // See if $width is in "XxY" format
         if (preg_match('/^([\d]+|AUTO)x([\d]+|AUTO)/', $width, $matches)) {

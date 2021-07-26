@@ -58,12 +58,12 @@ class ArrayHelper extends \yii\helpers\ArrayHelper
      * ArrayHelper::prepend($array, ...$values);
      * ```
      *
-     * @param array &$array the array to be prepended to
+     * @param array $array the array to be prepended to
      * @param mixed ...$values the values to prepend.
      * @since 3.4.0
      * @deprecated in 4.0.0. `array_unshift()` should be used instead.
      */
-    public static function prepend(array &$array, ...$values)
+    public static function prepend(array &$array, ...$values): void
     {
         array_unshift($array, ...$values);
     }
@@ -76,12 +76,12 @@ class ArrayHelper extends \yii\helpers\ArrayHelper
      * ArrayHelper::append($array, ...$values);
      * ```
      *
-     * @param array &$array the array to be appended to
+     * @param array $array the array to be appended to
      * @param mixed ...$values the values to append.
      * @since 3.4.0
      * @deprecated in 4.0.0. `array_push()` should be used instead.
      */
-    public static function append(array &$array, ...$values)
+    public static function append(array &$array, ...$values): void
     {
         array_push($array, ...$values);
     }
@@ -89,11 +89,11 @@ class ArrayHelper extends \yii\helpers\ArrayHelper
     /**
      * Prepends or appends a value to an array.
      *
-     * @param array &$array the array to be prepended/appended to
+     * @param array $array the array to be prepended/appended to
      * @param mixed $value the value to prepend/append to the array
      * @param bool $prepend `true` will prepend the value; `false` will append it
      */
-    public static function prependOrAppend(array &$array, $value, bool $prepend)
+    public static function prependOrAppend(array &$array, $value, bool $prepend): void
     {
         if ($prepend) {
             array_unshift($array, $value);
@@ -116,7 +116,7 @@ class ArrayHelper extends \yii\helpers\ArrayHelper
      * will be re-indexed with integers.
      * @return array the filtered array
      */
-    public static function where($array, $key, $value = true, bool $strict = false, $keepKeys = true): array
+    public static function where($array, $key, $value = true, bool $strict = false, bool $keepKeys = true): array
     {
         $result = [];
 
@@ -150,7 +150,7 @@ class ArrayHelper extends \yii\helpers\ArrayHelper
      * @return array the filtered array
      * @since 3.5.8
      */
-    public static function whereIn($array, $key, array $values, bool $strict = false, $keepKeys = true): array
+    public static function whereIn($array, $key, array $values, bool $strict = false, bool $keepKeys = true): array
     {
         $result = [];
 
@@ -321,7 +321,7 @@ class ArrayHelper extends \yii\helpers\ArrayHelper
      * @param string $newKey new key name of the array element
      * @param mixed $default the default value to be set if the specified old key does not exist
      */
-    public static function rename(array &$array, string $oldKey, string $newKey, $default = null)
+    public static function rename(array &$array, string $oldKey, string $newKey, $default = null): void
     {
         if (!array_key_exists($newKey, $array) || array_key_exists($oldKey, $array)) {
             $array[$newKey] = static::remove($array, $oldKey, $default);
@@ -361,7 +361,7 @@ class ArrayHelper extends \yii\helpers\ArrayHelper
      * @param array $array
      * @since 3.1.17.1
      */
-    public static function ensureNonAssociative(array &$array)
+    public static function ensureNonAssociative(array &$array): void
     {
         if (static::isAssociative($array, false)) {
             $array = array_values($array);

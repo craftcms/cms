@@ -31,11 +31,11 @@ interface EagerLoadingFieldInterface
     public function getEagerLoadingMap(array $sourceElements);
 
     /**
-     * Returns an array that lists the scopes this custom field allows when eager-loading or false if eager-loading
+     * Returns an array that lists the scopes this custom field allows when eager-loading or null if eager-loading
      * should not be allowed in the GraphQL context.
      *
-     * @return array|false
+     * @return array|null
      * @since 3.3.0
      */
-    public function getEagerLoadingGqlConditions();
+    public function getEagerLoadingGqlConditions(): ?array;
 }

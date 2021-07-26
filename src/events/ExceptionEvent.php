@@ -20,5 +20,5 @@ class ExceptionEvent extends Event
     /**
      * @var \Exception The uncaught exception that was thrown
      */
-    public $exception;
+    public \Exception $exception;
 }

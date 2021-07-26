@@ -27,7 +27,7 @@ class Plugin extends ActiveRecord
     /**
      * @inheritdoc
      */
-    public function rules()
+    public function rules(): array
     {
         return [
             [['installDate'], DateTimeValidator::class],

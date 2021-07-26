@@ -32,12 +32,12 @@ class RepairController extends Controller
     /**
      * @var bool Whether to only do a dry run of the repair process
      */
-    public $dryRun = false;
+    public bool $dryRun = false;
 
     /**
      * @inheritdoc
      */
-    public function options($actionID)
+    public function options($actionID): array
     {
         $options = parent::options($actionID);
         $options[] = 'dryRun';

@@ -25,7 +25,7 @@ class Schema extends \yii\db\pgsql\Schema
     /**
      * @var int The maximum length that objects' names can be.
      */
-    public $maxObjectNameLength = 63;
+    public int $maxObjectNameLength = 63;
 
     /**
      * Creates a query builder for the database.
@@ -58,8 +58,7 @@ class Schema extends \yii\db\pgsql\Schema
      * @param string $name The savepoint name.
      * @throws Exception
      */
-
-    public function releaseSavepoint($name)
+    public function releaseSavepoint($name): void
     {
         try {
             parent::releaseSavepoint($name);
@@ -79,7 +78,7 @@ class Schema extends \yii\db\pgsql\Schema
      * @param string $name The savepoint name.
      * @throws Exception
      */
-    public function rollBackSavepoint($name)
+    public function rollBackSavepoint($name): void
     {
         try {
             parent::rollBackSavepoint($name);
@@ -96,7 +95,7 @@ class Schema extends \yii\db\pgsql\Schema
     /**
      * @inheritdoc
      */
-    public function getLastInsertID($sequenceName = '')
+    public function getLastInsertID($sequenceName = ''): string
     {
         if ($sequenceName !== '') {
             if (strpos($sequenceName, '.') === false) {
@@ -112,9 +111,9 @@ class Schema extends \yii\db\pgsql\Schema
      * Returns the default backup command to execute.
      *
      * @param string[]|null The table names whose data should be excluded from the backup
-     * @return string|false The command to execute
+     * @return string The command to execute
      */
-    public function getDefaultBackupCommand(array $ignoreTables = null)
+    public function getDefaultBackupCommand(?array $ignoreTables = null): string
     {
         if ($ignoreTables === null) {
             $ignoreTables = $this->db->getIgnoredBackupTables();
@@ -204,7 +203,7 @@ class Schema extends \yii\db\pgsql\Schema
      * @param string $name table name
      * @return TableSchema|null driver dependent table metadata. Null if the table does not exist.
      */
-    public function loadTableSchema($name)
+    public function loadTableSchema($name): ?TableSchema
     {
         $table = new TableSchema();
         $this->resolveTableNames($table, $name);
@@ -222,7 +221,7 @@ class Schema extends \yii\db\pgsql\Schema
      *
      * @param TableSchema $table the table metadata
      */
-    protected function findConstraints($table)
+    protected function findConstraints($table): void
     {
         parent::findConstraints($table);
 

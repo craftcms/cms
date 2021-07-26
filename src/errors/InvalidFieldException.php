@@ -20,7 +20,7 @@ class InvalidFieldException extends Exception
     /**
      * @var string The invalid field handle.
      */
-    public $handle;
+    public string $handle;
 
     /**
      * Constructor.
@@ -30,7 +30,7 @@ class InvalidFieldException extends Exception
      * @param int $code The error code
      * @param \Throwable|null $previous The previous exception
      */
-    public function __construct(string $handle, string $message = null, int $code = 0, \Throwable $previous = null)
+    public function __construct(string $handle, ?string $message = null, int $code = 0, \Throwable $previous = null)
     {
         if ($message === null) {
             $message = "Invalid field handle: $handle";

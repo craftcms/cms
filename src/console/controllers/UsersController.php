@@ -26,59 +26,59 @@ class UsersController extends Controller
      * @var string|null The user’s email
      * @since 3.7.0
      */
-    public $email;
+    public ?string $email = null;
 
     /**
      * @var string|null The user’s username
      * @since 3.7.0
      */
-    public $username;
+    public ?string $username = null;
 
     /**
      * @var string|null The user’s new password
      */
-    public $password;
+    public ?string $password = null;
 
     /**
      * @var bool|null Whether the user should be an admin
      * @since 3.7.0
      */
-    public $admin;
+    public ?bool $admin = null;
 
     /**
      * @var string[] The group handles to assign the created user to
      * @since 3.7.0
      */
-    public $groups = [];
+    public array $groups = [];
 
     /**
      * @var int[] The group IDs to assign the user to the created user to
      * @since 3.7.0
      */
-    public $groupIds = [];
+    public array $groupIds = [];
 
     /**
      * @var string|null The email or username of the user to inherit content when deleting a user
      * @since 3.7.0
      */
-    public $inheritor;
+    public ?string $inheritor = null;
 
     /**
      * @var bool Whether to delete the user’s content if no inheritor is specified
      * @since 3.7.0
      */
-    public $deleteContent = false;
+    public bool $deleteContent = false;
 
     /**
      * @var bool Whether the user should be hard-deleted immediately, instead of soft-deleted
      * @since 3.7.0
      */
-    public $hard = false;
+    public bool $hard = false;
 
     /**
      * @inheritdoc
      */
-    public function options($actionID)
+    public function options($actionID): array
     {
         $options = parent::options($actionID);
 

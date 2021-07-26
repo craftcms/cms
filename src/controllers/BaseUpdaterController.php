@@ -45,14 +45,14 @@ abstract class BaseUpdaterController extends Controller
     /**
      * @var array The data associated with the current update
      */
-    protected $data = [];
+    protected array $data = [];
 
     /**
      * @inheritdoc
      * @throws NotFoundHttpException if it's not a control panel request
      * @throws BadRequestHttpException if there's invalid data in the request
      */
-    public function beforeAction($action)
+    public function beforeAction($action): bool
     {
         // This controller is only available to the CP
         if (!$this->request->getIsCpRequest()) {
@@ -70,6 +70,7 @@ abstract class BaseUpdaterController extends Controller
                 throw new BadRequestHttpException();
             }
 
+            /** @noinspection PhpFieldAssignmentTypeMismatchInspection */
             $this->data = Json::decode($data);
         }
 
@@ -135,7 +136,7 @@ abstract class BaseUpdaterController extends Controller
                 return $this->send([
                     'error' => $error,
                     'options' => [
-                        ['label' => Craft::t('app', 'Learn how'), 'url' => 'https://craftcms.com/guides/php-ini'],
+                        ['label' => Craft::t('app', 'Learn how'), 'url' => 'https://craftcms.com/knowledge-base/php-ini'],
                         $this->actionOption(Craft::t('app', 'Check again'), self::ACTION_PRECHECK),
                         $this->actionOption(Craft::t('app', 'Continue anyway'), $postState['nextAction'], $postState),
                     ],
@@ -287,7 +288,7 @@ abstract class BaseUpdaterController extends Controller
      *
      * @return bool Whether composer.json can be found
      */
-    protected function ensureComposerJson()
+    protected function ensureComposerJson(): bool
     {
         try {
             Craft::$app->getComposer()->getJsonPath();
@@ -370,7 +371,7 @@ abstract class BaseUpdaterController extends Controller
         $state['options'] = [
             [
                 'label' => Craft::t('app', 'Troubleshoot'),
-                'url' => 'https://craftcms.com/guides/failed-updates',
+                'url' => 'https://craftcms.com/knowledge-base/failed-updates',
             ],
             [
                 'label' => Craft::t('app', 'Send for help'),
@@ -468,7 +469,7 @@ abstract class BaseUpdaterController extends Controller
      * @param string|null $restoreAction
      * @return Response|null
      */
-    protected function runMigrations(array $handles, string $restoreAction = null)
+    protected function runMigrations(array $handles, ?string $restoreAction = null): ?Response
     {
         try {
             Craft::$app->getUpdates()->runMigrations($handles);
@@ -507,7 +508,7 @@ abstract class BaseUpdaterController extends Controller
 
             $options[] = [
                 'label' => Craft::t('app', 'Troubleshoot'),
-                'url' => 'https://craftcms.com/guides/failed-updates',
+                'url' => 'https://craftcms.com/knowledge-base/failed-updates',
             ];
 
             if ($ownerHandle !== 'craft' && ($plugin = Craft::$app->getPlugins()->getPlugin($ownerHandle)) !== null) {
@@ -542,7 +543,7 @@ abstract class BaseUpdaterController extends Controller
      * @param string|null $edition
      * @return array Array with installation results
      */
-    protected function installPlugin(string $handle, string $edition = null): array
+    protected function installPlugin(string $handle, ?string $edition = null): array
     {
         // Prevent the plugin from sending any headers, etc.
         $response = $this->response;

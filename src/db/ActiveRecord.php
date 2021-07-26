@@ -38,8 +38,9 @@ abstract class ActiveRecord extends \yii\db\ActiveRecord
      * @inheritdoc
      * @return ActiveQuery the newly created [[ActiveQuery]] instance.
      */
-    public static function find()
+    public static function find(): ActiveQuery
     {
+        /** @noinspection PhpIncompatibleReturnTypeInspection */
         return Craft::createObject(ActiveQuery::class, [static::class]);
     }
 
@@ -59,7 +60,7 @@ abstract class ActiveRecord extends \yii\db\ActiveRecord
      * @inheritdoc
      * @since 3.4.0
      */
-    public function behaviors()
+    public function behaviors(): array
     {
         // Fire a 'defineBehaviors' event
         $event = new DefineBehaviorsEvent();
@@ -71,7 +72,7 @@ abstract class ActiveRecord extends \yii\db\ActiveRecord
      * @inheritdoc
      * @since 3.4.0
      */
-    public function setAttribute($name, $value)
+    public function setAttribute($name, $value): void
     {
         $value = $this->_prepareValue($name, $value);
         parent::setAttribute($name, $value);
@@ -80,7 +81,7 @@ abstract class ActiveRecord extends \yii\db\ActiveRecord
     /**
      * @inheritdoc
      */
-    public function beforeSave($insert)
+    public function beforeSave($insert): bool
     {
         $this->prepareForDb();
         return parent::beforeSave($insert);
@@ -91,7 +92,7 @@ abstract class ActiveRecord extends \yii\db\ActiveRecord
      *
      * @since 3.1.0
      */
-    protected function prepareForDb()
+    protected function prepareForDb(): void
     {
         $now = Db::prepareDateForDb(new \DateTime());
 

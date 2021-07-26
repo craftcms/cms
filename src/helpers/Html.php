@@ -26,7 +26,7 @@ class Html extends \yii\helpers\Html
      * @var string[]
      * @see _sortedDataAttributes()
      */
-    private static $_sortedDataAttributes;
+    private static array $_sortedDataAttributes;
 
     /**
      * Will take an HTML string and an associative array of key=>value pairs, HTML encode the values and swap them back
@@ -143,7 +143,7 @@ class Html extends \yii\helpers\Html
      * @inheritdoc
      * @since 3.3.0
      */
-    public static function a($text, $url = null, $options = [])
+    public static function a($text, $url = null, $options = []): string
     {
         if ($url !== null) {
             // Use UrlHelper::url() instead of Url::to()
@@ -525,7 +525,7 @@ class Html extends \yii\helpers\Html
 
     private static function _sortedDataAttributes(): array
     {
-        if (self::$_sortedDataAttributes === null) {
+        if (!isset(self::$_sortedDataAttributes)) {
             self::$_sortedDataAttributes = array_merge(static::$dataAttributes);
             usort(self::$_sortedDataAttributes, function(string $a, string $b): int {
                 return strlen($b) - strlen($a);
@@ -551,7 +551,7 @@ class Html extends \yii\helpers\Html
      * Namespaces an input name.
      *
      * @param string $inputName The input name
-     * @param string|null $namespace The namespace
+     * @param string $namespace The namespace
      * @return string The namespaced input name
      * @since 3.5.0
      */
@@ -564,7 +564,7 @@ class Html extends \yii\helpers\Html
      * Namespaces an ID.
      *
      * @param string $id The ID
-     * @param string|null $namespace The namespace
+     * @param string $namespace The namespace
      * @return string The namespaced ID
      * @since 3.5.0
      */
@@ -612,7 +612,7 @@ class Html extends \yii\helpers\Html
      * ```
      *
      * @param string $html The HTML code
-     * @param string|null $namespace The namespace
+     * @param string $namespace The namespace
      * @return string The HTML with namespaced input names
      * @since 3.5.0
      * @see namespaceHtml()
@@ -629,7 +629,7 @@ class Html extends \yii\helpers\Html
      * @param string $html
      * @param string $namespace
      */
-    private static function _namespaceInputs(string &$html, string $namespace)
+    private static function _namespaceInputs(string &$html, string $namespace): void
     {
         $html = preg_replace('/(?<![\w\-])(name=(\'|"))([^\'"\[\]]+)([^\'"]*)\2/i', '$1' . $namespace . '[$3]$4$2', $html);
     }
@@ -674,7 +674,7 @@ class Html extends \yii\helpers\Html
      * @param string $namespace
      * @param bool $withClasses
      */
-    private static function _namespaceAttributes(string &$html, string $namespace, bool $withClasses)
+    private static function _namespaceAttributes(string &$html, string $namespace, bool $withClasses): void
     {
         // normalize the namespace
         $namespace = static::id($namespace);

@@ -23,30 +23,30 @@ use DateTime;
 class DraftBehavior extends BaseRevisionBehavior
 {
     /**
-     * @var string The draft name
+     * @var string|null The draft name
      */
-    public $draftName;
+    public ?string $draftName = null;
 
     /**
      * @var string|null The draft notes
      */
-    public $draftNotes;
+    public ?string $draftNotes = null;
 
     /**
      * @var bool Whether to track changes in this draft
      */
-    public $trackChanges = true;
+    public bool $trackChanges = true;
 
     /**
      * @var bool Whether the draft should be marked as saved (if unpublished).
      * @since 3.6.6
      */
-    public $markAsSaved = true;
+    public bool $markAsSaved = true;
 
     /**
      * @inheritdoc
      */
-    public function events()
+    public function events(): array
     {
         return [
             Element::EVENT_AFTER_PROPAGATE => [$this, 'handleSave'],
@@ -57,7 +57,7 @@ class DraftBehavior extends BaseRevisionBehavior
     /**
      * Updates the row in the `drafts` table after the draft element is saved.
      */
-    public function handleSave()
+    public function handleSave(): void
     {
         Db::update(Table::DRAFTS, [
             'provisional' => $this->owner->isProvisionalDraft,
@@ -73,7 +73,7 @@ class DraftBehavior extends BaseRevisionBehavior
     /**
      * Deletes the row in the `drafts` table after the draft element is deleted.
      */
-    public function handleDelete()
+    public function handleDelete(): void
     {
         if ($this->owner->hardDelete) {
             Db::delete(Table::DRAFTS, [

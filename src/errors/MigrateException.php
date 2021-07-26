@@ -20,12 +20,12 @@ class MigrateException extends Exception
     /**
      * @var string The name of the thing being updated
      */
-    public $ownerName;
+    public string $ownerName;
 
     /**
      * @var string The handle of the thing being updated
      */
-    public $ownerHandle;
+    public string $ownerHandle;
 
     /**
      * Constructor.
@@ -36,7 +36,7 @@ class MigrateException extends Exception
      * @param int $code The error code
      * @param \Throwable|null $previous The previous exception
      */
-    public function __construct(string $ownerName, string $ownerHandle, string $message = null, int $code = 0, \Throwable $previous = null)
+    public function __construct(string $ownerName, string $ownerHandle, ?string $message = null, int $code = 0, \Throwable $previous = null)
     {
         $this->ownerName = $ownerName;
         $this->ownerHandle = $ownerHandle;

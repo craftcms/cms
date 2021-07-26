@@ -18,38 +18,38 @@ use yii\base\Event;
 class ExecuteGqlQueryEvent extends Event
 {
     /**
-     * @var int The id of the schema used for this request.
+     * @var int|null The id of the schema used for this request.
      * @since 3.4.0
      */
-    public $schemaId;
+    public ?int $schemaId;
 
     /**
      * @var string The GraphQL query being executed
      */
-    public $query;
+    public string $query;
 
     /**
      * @var array|null The variables used for this query.
      */
-    public $variables;
+    public ?array $variables;
 
     /**
      * @var string|null The name of the operation to use if requestString contains multiple possible operations.
      */
-    public $operationName;
+    public ?string $operationName;
 
     /**
-     * @var mixed|null The context that is shared between all resolvers.
+     * @var mixed The context that is shared between all resolvers.
      */
     public $context;
 
     /**
-     * @var mixed|null The root value to use when resolving the top-level object fields.
+     * @var mixed The root value to use when resolving the top-level object fields.
      */
     public $rootValue;
 
     /**
      * @var array|null The query result to be returned.
      */
-    public $result;
+    public ?array $result = null;
 }

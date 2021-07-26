@@ -24,7 +24,7 @@ class VolumeFolder extends Model
     /**
      * @var int|null ID
      */
-    public $id;
+    public ?int $id = null;
 
     /**
      * @var int|string|null Parent ID
@@ -34,27 +34,27 @@ class VolumeFolder extends Model
     /**
      * @var int|null Volume ID
      */
-    public $volumeId;
+    public ?int $volumeId = null;
 
     /**
      * @var string|null Name
      */
-    public $name;
+    public ?string $name = null;
 
     /**
      * @var string|null Path
      */
-    public $path;
+    public ?string $path = null;
 
     /**
      * @var string|null UID
      */
-    public $uid;
+    public ?string $uid = null;
 
     /**
      * @var VolumeFolder[]|null
      */
-    private $_children;
+    private ?array $_children = null;
 
     /**
      * @inheritdoc
@@ -82,7 +82,7 @@ class VolumeFolder extends Model
      */
     public function getVolume(): VolumeInterface
     {
-        if ($this->volumeId === null) {
+        if (!isset($this->volumeId)) {
             return new Temp();
         }
 
@@ -98,7 +98,7 @@ class VolumeFolder extends Model
      *
      * @param VolumeFolder[] $children
      */
-    public function setChildren(array $children)
+    public function setChildren(array $children): void
     {
         $this->_children = $children;
     }
@@ -110,7 +110,7 @@ class VolumeFolder extends Model
      */
     public function getChildren(): array
     {
-        if ($this->_children !== null) {
+        if (isset($this->_children)) {
             return $this->_children;
         }
 
@@ -120,7 +120,7 @@ class VolumeFolder extends Model
     /**
      * @return VolumeFolder|null
      */
-    public function getParent()
+    public function getParent(): ?VolumeFolder
     {
         if (!$this->parentId) {
             return null;
@@ -134,9 +134,9 @@ class VolumeFolder extends Model
      *
      * @param VolumeFolder $folder
      */
-    public function addChild(VolumeFolder $folder)
+    public function addChild(VolumeFolder $folder): void
     {
-        if ($this->_children === null) {
+        if (!isset($this->_children)) {
             $this->_children = [];
         }
 

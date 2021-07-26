@@ -37,12 +37,12 @@ class ApplyNewPropagationMethod extends BaseJob
      * @var array|null The element criteria that determines which elements the
      * new propagation method should be applied to
      */
-    public $criteria;
+    public ?array $criteria = null;
 
     /**
      * @inheritdoc
      */
-    public function execute($queue)
+    public function execute($queue): void
     {
         /** @var string|ElementInterface $elementType */
         $elementType = $this->elementType;
@@ -125,7 +125,7 @@ class ApplyNewPropagationMethod extends BaseJob
     /**
      * @inheritdoc
      */
-    protected function defaultDescription(): string
+    protected function defaultDescription(): ?string
     {
         return Craft::t('app', 'Applying new propagation method to elements');
     }

@@ -20,7 +20,7 @@ abstract class Resolver
     /**
      * @var array Cache fields by context.
      */
-    protected static $eagerLoadableFieldsByContext;
+    protected static array $eagerLoadableFieldsByContext;
 
     /**
      * Resolve a field to its value.
@@ -29,6 +29,7 @@ abstract class Resolver
      * @param array $arguments arguments for resolving this field.
      * @param mixed $context The context shared between all resolvers
      * @param ResolveInfo $resolveInfo The resolve information
+     * @return mixed
      */
     abstract public static function resolve($source, array $arguments, $context, ResolveInfo $resolveInfo);
 }

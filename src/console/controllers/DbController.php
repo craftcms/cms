@@ -25,17 +25,17 @@ class DbController extends Controller
     /**
      * @var bool Whether the backup should be saved as a zip file.
      */
-    public $zip = false;
+    public bool $zip = false;
 
     /**
      * @var bool Whether to overwrite an existing backup file, if a specific file path is given.
      */
-    public $overwrite = false;
+    public bool $overwrite = false;
 
     /**
      * @inheritdoc
      */
-    public function options($actionID)
+    public function options($actionID): array
     {
         $options = parent::options($actionID);
 
@@ -60,7 +60,7 @@ class DbController extends Controller
      *
      * @return int
      */
-    public function actionBackup(string $path = null): int
+    public function actionBackup(?string $path = null): int
     {
         $this->stdout('Backing up the database ... ');
         $db = Craft::$app->getDb();
@@ -128,7 +128,7 @@ class DbController extends Controller
      * @param string|null The path to the database backup file.
      * @return int
      */
-    public function actionRestore(string $path = null): int
+    public function actionRestore(?string $path = null): int
     {
         if (!is_file($path)) {
             $this->stderr("Backup file doesn't exist: $path" . PHP_EOL);

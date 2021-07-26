@@ -26,7 +26,7 @@ class Update
      * @param bool $withLink Whether the error message should include a “Learn more” link
      * @return bool Whether the environment passes the PHP constraint
      */
-    public static function checkPhpConstraint(string $constraint, string &$error = null, bool $withLink = false): bool
+    public static function checkPhpConstraint(string $constraint, ?string &$error = null, bool $withLink = false): bool
     {
         $installedVersion = App::phpVersion();
         if (!Semver::satisfies($installedVersion, $constraint)) {

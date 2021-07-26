@@ -247,6 +247,10 @@ Craft.DraftEditor = Garnish.Base.extend({
         Craft.cp.$primaryForm.data('initialSerializedValue',
             Craft.cp.$primaryForm.data('initialSerializedValue').replace(originalSerializedStatus, serializedStatuses));
 
+        if (this.lastSerializedValue) {
+            this.lastSerializedValue = this.lastSerializedValue.replace(originalSerializedStatus, serializedStatuses);
+        }
+
         // Are there additional sites that can be added?
         if (this.settings.addlSiteIds && this.settings.addlSiteIds.length) {
             this._createAddlSiteField();
@@ -657,14 +661,11 @@ Craft.DraftEditor = Garnish.Base.extend({
 
             // Prep the data to be saved, keeping track of the first input name for each delta group
             let modifiedFieldNames = [];
-            if (!this.settings.isUnpublishedDraft) {
-                Craft.findDeltaData(Craft.cp.$primaryForm.data('initialSerializedValue') || '', data, Craft.deltaNames, (deltaName, params)  => {
-                    if (params.length) {
-                        modifiedFieldNames.push(decodeURIComponent(params[0].split('=')[0]));
-                    }
-                });
-            }
-            let preparedData = this.prepareData(data);
+            let preparedData = this.prepareData(data, !this.settings.isUnpublishedDraft ? (deltaName, params)  => {
+                if (params.length) {
+                    modifiedFieldNames.push(decodeURIComponent(params[0].split('=')[0]));
+                }
+            } : undefined);
 
             // Are we saving a provisional draft?
             if (this.settings.isProvisionalDraft || !this.settings.draftId) {
@@ -788,8 +789,6 @@ Craft.DraftEditor = Garnish.Base.extend({
                     this.updatePreviewTargets(response.data.previewTargets);
                 }
 
-                this.afterUpdate(data);
-
                 if (createdProvisionalDraft) {
                     this.trigger('createProvisionalDraft');
                 }
@@ -808,7 +807,7 @@ Craft.DraftEditor = Garnish.Base.extend({
                 const selectors = response.data.modifiedAttributes.map(attr => `[name="${attr}"],[name^="${attr}["]`)
                     .concat(modifiedFieldNames.map(name => `[name="${name}"]`));
 
-                const $fields = $(selectors.join(',')).closest('.field:not(:has(> .status-badge))');
+                const $fields = $(selectors.join(',')).closest('.field').filter(':not(:has(> .status-badge))');
                 for (let i = 0; i < $fields.length; i++) {
                     $fields.eq(i).prepend(
                         $('<div/>', {
@@ -819,6 +818,7 @@ Craft.DraftEditor = Garnish.Base.extend({
                     );
                 }
 
+                this.afterUpdate(data);
                 resolve();
             }).catch(() => {
                 this._afterSaveRequest();
@@ -853,9 +853,13 @@ Craft.DraftEditor = Garnish.Base.extend({
 
     /**
      * @param {string} data
+     * @param {function} [deltaCallback] Callback function that should be passed to `Craft.findDeltaData()`
      * @returns {string}
      */
-    prepareData: function(data) {
+    prepareData: function(data, deltaCallback) {
+        // Filter out anything that hasn't changed since the last time the form was submitted
+        data = Craft.findDeltaData(Craft.cp.$primaryForm.data('initialSerializedValue'), data, Craft.deltaNames, deltaCallback);
+
         // Swap out element IDs with their duplicated ones
         data = this.swapDuplicatedElementIds(data);
 
@@ -871,9 +875,7 @@ Craft.DraftEditor = Garnish.Base.extend({
             data += `&draftName=${this.settings.draftName}`;
         }
 
-        // Filter out anything that hasn't changed
-        const initialData = this.swapDuplicatedElementIds(Craft.cp.$primaryForm.data('initialSerializedValue') || '');
-        return Craft.findDeltaData(initialData, data, this.getDeltaNames());
+        return data;
     },
 
     /**
@@ -906,18 +908,6 @@ Craft.DraftEditor = Garnish.Base.extend({
         return data;
     },
 
-    getDeltaNames: function() {
-        const deltaNames = Craft.deltaNames.slice(0);
-        for (let i = 0; i < deltaNames.length; i++) {
-            for (const oldId in this.duplicatedElements) {
-                if (this.duplicatedElements.hasOwnProperty(oldId)) {
-                    deltaNames[i] = deltaNames[i].replace('][' + oldId + ']', '][' + this.duplicatedElements[oldId] + ']');
-                }
-            }
-        }
-        return deltaNames;
-    },
-
     updatePreviewTargets: function(previewTargets) {
         previewTargets.forEach(newTarget => {
             const currentTarget = this.settings.previewTargets.find(t => t.label === newTarget.label);
@@ -929,7 +919,6 @@ Craft.DraftEditor = Garnish.Base.extend({
 
     afterUpdate: function(data) {
         Craft.cp.$primaryForm.data('initialSerializedValue', data);
-        Craft.initialDeltaValues = {};
         const $statusIcons = this.statusIcons()
             .velocity('stop')
             .css('opacity', '')

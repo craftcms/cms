@@ -35,7 +35,7 @@ class FieldsController extends Controller
     /**
      * @inheritdoc
      */
-    public function beforeAction($action)
+    public function beforeAction($action): bool
     {
         // All field actions require an admin
         $this->requireAdmin();
@@ -116,7 +116,7 @@ class FieldsController extends Controller
      * @throws NotFoundHttpException if the requested field/field group cannot be found
      * @throws ServerErrorHttpException if no field groups exist
      */
-    public function actionEditField(int $fieldId = null, FieldInterface $field = null, int $groupId = null): Response
+    public function actionEditField(?int $fieldId = null, ?FieldInterface $field = null, ?int $groupId = null): Response
     {
         $this->requireAdmin();
 
@@ -292,7 +292,7 @@ JS;
      * @return Response|null
      * @throws BadRequestHttpException
      */
-    public function actionSaveField()
+    public function actionSaveField(): ?Response
     {
         $this->requirePostRequest();
 

@@ -30,7 +30,7 @@ class ReplaceFile extends ElementAction
     /**
      * @inheritdoc
      */
-    public function getTriggerHtml()
+    public function getTriggerHtml(): ?string
     {
         $type = Json::encode(static::class);
 

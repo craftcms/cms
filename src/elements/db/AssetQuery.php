@@ -19,6 +19,7 @@ use craft\helpers\Db;
 use craft\helpers\StringHelper;
 use yii\base\InvalidArgumentException;
 use yii\db\Connection;
+use yii\db\Schema;
 
 /**
  * AssetQuery represents a SELECT SQL statement for assets in a way that is independent of DBMS.
@@ -26,7 +27,7 @@ use yii\db\Connection;
  * @property string|string[]|VolumeInterface $volume The handle(s) of the volume(s) that resulting assets must belong to.
  * @method Asset[]|array all($db = null)
  * @method Asset|array|null one($db = null)
- * @method Asset|array|null nth(int $n, Connection $db = null)
+ * @method Asset|array|null nth(int $n, ?Connection $db = null)
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  * @doc-path assets.md
@@ -74,7 +75,7 @@ class AssetQuery extends ElementQuery
      * @used-by uploader()
      * @since 3.4.0
      */
-    public $uploaderId;
+    public ?int $uploaderId = null;
 
     /**
      * @var string|string[]|null The filename(s) that the resulting assets must have.
@@ -182,7 +183,7 @@ class AssetQuery extends ElementQuery
      * @var bool Whether the query should search the subfolders of [[folderId]].
      * @used-by includeSubfolders()
      */
-    public $includeSubfolders = false;
+    public bool $includeSubfolders = false;
 
     /**
      * @var string|array|null The asset transform indexes that should be eager-loaded, if they exist
@@ -247,10 +248,10 @@ class AssetQuery extends ElementQuery
      * ```
      *
      * @param string|string[]|VolumeInterface|null $value The property value
-     * @return static self reference
+     * @return self self reference
      * @uses $volumeId
      */
-    public function volume($value)
+    public function volume($value): self
     {
         if ($value instanceof VolumeInterface) {
             $this->volumeId = [$value->id];
@@ -298,10 +299,10 @@ class AssetQuery extends ElementQuery
      * ```
      *
      * @param int|int[]|string|null $value The property value
-     * @return static self reference
+     * @return self self reference
      * @uses $volumeId
      */
-    public function volumeId($value)
+    public function volumeId($value): self
     {
         $this->volumeId = $value;
         return $this;
@@ -342,10 +343,10 @@ class AssetQuery extends ElementQuery
      * :::
      *
      * @param int|int[]|null $value The property value
-     * @return static self reference
+     * @return self self reference
      * @uses $folderId
      */
-    public function folderId($value)
+    public function folderId($value): self
     {
         $this->folderId = $value;
         return $this;
@@ -378,11 +379,11 @@ class AssetQuery extends ElementQuery
      * ```
      *
      * @param int|User|null $value The property value
-     * @return static self reference
+     * @return self self reference
      * @uses $uploaderId
      * @since 3.4.0
      */
-    public function uploader($value)
+    public function uploader($value): self
     {
         if ($value instanceof User) {
             $this->uploaderId = $value->id;
@@ -426,10 +427,10 @@ class AssetQuery extends ElementQuery
      * ```
      *
      * @param string|string[]|null $value The property value
-     * @return static self reference
+     * @return self self reference
      * @uses $filename
      */
-    public function filename($value)
+    public function filename($value): self
     {
         $this->filename = $value;
         return $this;
@@ -485,10 +486,10 @@ class AssetQuery extends ElementQuery
      * ```
      *
      * @param string|string[]|null $value The property value
-     * @return static self reference
+     * @return self self reference
      * @uses $kind
      */
-    public function kind($value)
+    public function kind($value): self
     {
         $this->kind = $value;
         return $this;
@@ -524,10 +525,10 @@ class AssetQuery extends ElementQuery
      * ```
      *
      * @param mixed $value The property value
-     * @return static self reference
+     * @return self self reference
      * @uses $width
      */
-    public function width($value)
+    public function width($value): self
     {
         $this->width = $value;
         return $this;
@@ -563,10 +564,10 @@ class AssetQuery extends ElementQuery
      * ```
      *
      * @param mixed $value The property value
-     * @return static self reference
+     * @return self self reference
      * @uses $height
      */
-    public function height($value)
+    public function height($value): self
     {
         $this->height = $value;
         return $this;
@@ -600,10 +601,10 @@ class AssetQuery extends ElementQuery
      * ```
      *
      * @param mixed $value The property value
-     * @return static self reference
+     * @return self self reference
      * @uses $size
      */
-    public function size($value)
+    public function size($value): self
     {
         $this->size = $value;
         return $this;
@@ -641,10 +642,10 @@ class AssetQuery extends ElementQuery
      * ```
      *
      * @param mixed $value The property value
-     * @return static self reference
+     * @return self self reference
      * @uses $dateModified
      */
-    public function dateModified($value)
+    public function dateModified($value): self
     {
         $this->dateModified = $value;
         return $this;
@@ -678,10 +679,10 @@ class AssetQuery extends ElementQuery
      * :::
      *
      * @param bool $value The property value (defaults to true)
-     * @return static self reference
+     * @return self self reference
      * @uses $includeSubfolders
      */
-    public function includeSubfolders(bool $value = true)
+    public function includeSubfolders(bool $value = true): self
     {
         $this->includeSubfolders = $value;
         return $this;
@@ -734,7 +735,7 @@ class AssetQuery extends ElementQuery
      * @return self The query object itself
      * @uses $withTransforms
      */
-    public function withTransforms(array $value = null)
+    public function withTransforms(?array $value = null): self
     {
         $this->withTransforms = $value;
         return $this;
@@ -852,7 +853,7 @@ class AssetQuery extends ElementQuery
     /**
      * Normalizes the volumeId param to an array of IDs or null
      */
-    private function _normalizeVolumeId()
+    private function _normalizeVolumeId(): void
     {
         if ($this->volumeId === ':empty:') {
             return;

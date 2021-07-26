@@ -84,6 +84,10 @@ body, input, select, textarea {
   box-sizing: border-box;
 }
 
+img {
+  max-width: 100%;
+}
+
 .text,
 table.editable textarea {
   body.rtl .ltr & {
@@ -2102,6 +2106,11 @@ table {
             }
           }
 
+          &:focus {
+            position: relative;
+            z-index: 1;
+          }
+
           &.sel {
             th,
             td {
@@ -2818,6 +2827,7 @@ table.editable {
         padding: 4px 10px;
 
         &.focus {
+          position: relative;
           box-shadow: inset 0 0 0 1px $hairlineColor;
         }
 
@@ -4654,14 +4664,11 @@ fieldset {
   & > .status-badge {
     position: absolute;
     top: 0;
-    @include left(-26px);
+    @include left(-25px);
     width: 2px;
     height: 100%;
     content: '';
     cursor: help;
-    border: solid transparent;
-    border-width: 0 2px;
-    background-clip: content-box;
 
     &.modified {
       background-color: $blue600;
@@ -5970,8 +5977,14 @@ $titlebarBorderRadius: $largeBorderRadius - 1;
     }
   }
 
-  & > .fields > .flex-fields > .field > .status-badge {
-    @include left(-17px);
+  & > .fields > .flex-fields > .field {
+    &:before {
+      display: none;
+    }
+
+    & > .status-badge {
+      @include left(-15px);
+    }
   }
 
   & > .buttons {

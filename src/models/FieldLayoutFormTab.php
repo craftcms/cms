@@ -20,20 +20,20 @@ class FieldLayoutFormTab extends Model
     /**
      * @var string The tab’s name.
      */
-    public $name;
+    public string $name;
 
     /**
      * @var string The tab’s HTML ID.
      */
-    public $id;
+    public string $id;
 
     /**
      * @var bool Whether the tab has any validation errors.
      */
-    public $hasErrors = false;
+    public bool $hasErrors = false;
 
     /**
      * @var string The tab’s HTML content.
      */
-    public $content;
+    public string $content;
 }

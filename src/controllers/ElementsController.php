@@ -37,7 +37,7 @@ class ElementsController extends BaseElementsController
     /**
      * @inheritdoc
      */
-    public function beforeAction($action)
+    public function beforeAction($action): bool
     {
         if (!parent::beforeAction($action)) {
             return false;
@@ -372,7 +372,7 @@ class ElementsController extends BaseElementsController
      * @return ElementInterface
      * @throws BadRequestHttpException
      */
-    private function _getEditorElementInternal(int $elementId = null, string $elementType, int $siteId, array $attributes): ElementInterface
+    private function _getEditorElementInternal(?int $elementId, string $elementType, int $siteId, array $attributes): ElementInterface
     {
         if ($elementId !== null) {
             $element = Craft::$app->getElements()->getElementById($elementId, $elementType, $siteId);

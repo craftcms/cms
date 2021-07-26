@@ -21,10 +21,10 @@ class RegisterElementFieldLayoutsEvent extends Event
     /**
      * @var string The selected source’s key
      */
-    public $source;
+    public string $source;
 
     /**
      * @var FieldLayout[] List of all of the field layouts associated with elements from the given source
      */
-    public $fieldLayouts = [];
+    public array $fieldLayouts = [];
 }

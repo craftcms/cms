@@ -8,9 +8,9 @@
 namespace craft\records;
 
 use Craft;
+use craft\db\ActiveQuery;
 use craft\db\ActiveRecord;
 use craft\db\Table;
-use yii\db\ActiveQuery;
 use yii\db\ActiveQueryInterface;
 
 /**
@@ -61,7 +61,7 @@ class User extends ActiveRecord
     /**
      * @return ActiveQuery
      */
-    public static function find()
+    public static function find(): ActiveQuery
     {
         return parent::find()
             ->innerJoinWith(['element element'])

@@ -119,7 +119,7 @@ class Assets extends Component
      * @param int|null $siteId
      * @return Asset|null
      */
-    public function getAssetById(int $assetId, int $siteId = null): ?Asset
+    public function getAssetById(int $assetId, ?int $siteId = null): ?Asset
     {
         /* @noinspection PhpIncompatibleReturnTypeInspection */
         return Craft::$app->getElements()->getElementById($assetId, Asset::class, $siteId);
@@ -193,10 +193,15 @@ class Assets extends Component
      */
     public function moveAsset(Asset $asset, VolumeFolder $folder, string $filename = ''): bool
     {
-        // Set the new combined target location, and save it
-        $asset->newFilename = $filename;
         $asset->newFolderId = $folder->id;
-        $asset->setScenario(Asset::SCENARIO_FILEOPS);
+
+        // If the filename hasn’t changed, then we can use the `move` scenario
+        if ($filename === '' || $filename === $asset->filename) {
+            $asset->setScenario(Asset::SCENARIO_MOVE);
+        } else {
+            $asset->newFilename = $filename;
+            $asset->setScenario(Asset::SCENARIO_FILEOPS);
+        }
 
         return Craft::$app->getElements()->saveElement($asset);
     }
@@ -402,7 +407,7 @@ class Assets extends Component
      */
     public function getFolderById(int $folderId): ?VolumeFolder
     {
-        if ($this->_foldersById !== null && array_key_exists($folderId, $this->_foldersById)) {
+        if (isset($this->_foldersById) && array_key_exists($folderId, $this->_foldersById)) {
             return $this->_foldersById[$folderId];
         }
 
@@ -425,7 +430,7 @@ class Assets extends Component
      */
     public function getFolderByUid(string $folderUid): ?VolumeFolder
     {
-        if ($this->_foldersByUid !== null && array_key_exists($folderUid, $this->_foldersByUid)) {
+        if (isset($this->_foldersByUid) && array_key_exists($folderUid, $this->_foldersByUid)) {
             return $this->_foldersByUid[$folderUid];
         }
 
@@ -489,7 +494,6 @@ class Assets extends Component
      */
     public function getAllDescendantFolders(VolumeFolder $parentFolder, string $orderBy = 'path'): array
     {
-        /** @var $query Query */
         $query = $this->_createFolderQuery()
             ->where([
                 'and',
@@ -584,7 +588,7 @@ class Assets extends Component
      * @throws VolumeException
      * @throws AssetTransformException
      */
-    public function getAssetUrl(Asset $asset, $transform = null, bool $generateNow = null): ?string
+    public function getAssetUrl(Asset $asset, $transform = null, ?bool $generateNow = null): ?string
     {
         // Maybe a plugin wants to do something here
         $event = new GetAssetUrlEvent([
@@ -653,7 +657,7 @@ class Assets extends Component
      * @param bool $generate whether to generate a thumb in none exists yet
      * @return string
      */
-    public function getThumbUrl(Asset $asset, int $width, int $height = null, bool $generate = false): string
+    public function getThumbUrl(Asset $asset, int $width, ?int $height = null, bool $generate = false): string
     {
         if ($height === null) {
             $height = $width;
@@ -699,7 +703,7 @@ class Assets extends Component
      * @throws VolumeObjectNotFoundException
      * @see getThumbUrl()
      */
-    public function getThumbPath(Asset $asset, int $width, int $height = null, bool $generate = true, bool $fallbackToIcon = true)
+    public function getThumbPath(Asset $asset, int $width, ?int $height = null, bool $generate = true, bool $fallbackToIcon = true)
     {
         // Maybe a plugin wants to do something here
         $event = new AssetThumbEvent([
@@ -982,7 +986,7 @@ class Assets extends Component
      * @return VolumeFolder
      * @throws VolumeException If no correct volume provided.
      */
-    public function getUserTemporaryUploadFolder(User $user = null): VolumeFolder
+    public function getUserTemporaryUploadFolder(?User $user = null): VolumeFolder
     {
         if ($user === null) {
             // Default to the logged-in user, if there is one
@@ -991,6 +995,9 @@ class Assets extends Component
 
         if ($user) {
             $folderName = 'user_' . $user->id;
+        } else if (Craft::$app->getRequest()->getIsConsoleRequest()) {
+            // For console requests, just make up a folder name.
+            $folderName = 'temp_' . sha1(time());
         } else {
             // A little obfuscation never hurt anyone
             $folderName = 'user_' . sha1(Craft::$app->getSession()->id);
@@ -1050,7 +1057,7 @@ class Assets extends Component
      * @return AssetPreviewHandlerInterface|null
      * @since 3.4.0
      */
-    public function getAssetPreviewHandler(Asset $asset)
+    public function getAssetPreviewHandler(Asset $asset): ?AssetPreviewHandlerInterface
     {
         // Give plugins a chance to register their own preview handlers
         if ($this->hasEventHandlers(self::EVENT_REGISTER_PREVIEW_HANDLER)) {

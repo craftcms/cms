@@ -26,7 +26,7 @@ class Security extends \yii\base\Security
      * @var string[] Keywords used to reference sensitive data
      * @see redactIfSensitive()
      */
-    public $sensitiveKeywords = [];
+    public array $sensitiveKeywords = [];
 
     /**
      * @var mixed
@@ -34,11 +34,11 @@ class Security extends \yii\base\Security
     private $_blowFishHashCost;
 
     /**
+     * @inheritdoc
      */
-    public function init()
+    public function init(): void
     {
         parent::init();
-
         $this->_blowFishHashCost = Craft::$app->getConfig()->getGeneral()->blowfishHashCost;
     }
 
@@ -104,7 +104,7 @@ class Security extends \yii\base\Security
      * It indicates whether the hash value in the data is in binary format. If false, it means the hash value consists
      * of lowercase hex digits only.
      * hex digits will be generated.
-     * @return string the real data with the hash stripped off. False if the data is tampered.
+     * @return string|false the real data with the hash stripped off. False if the data is tampered.
      * @throws Exception if the validation key could not be written
      * @throws InvalidConfigException when HMAC generation fails.
      * @see hashData()
@@ -129,7 +129,7 @@ class Security extends \yii\base\Security
      * @see decryptByKey()
      * @see encryptByPassword()
      */
-    public function encryptByKey($data, $inputKey = null, $info = null)
+    public function encryptByKey($data, $inputKey = null, $info = null): string
     {
         if ($inputKey === null) {
             $inputKey = Craft::$app->getConfig()->getGeneral()->securityKey;
@@ -143,7 +143,7 @@ class Security extends \yii\base\Security
      * @param string $data the encrypted data to decrypt
      * @param string|null $inputKey the input to use for encryption and authentication
      * @param string $info optional context and application specific information, see [[hkdf()]]
-     * @return bool|string the decrypted data or false on authentication failure
+     * @return string|false the decrypted data or false on authentication failure
      * @throws InvalidConfigException on OpenSSL not loaded
      * @throws Exception on OpenSSL error
      * @see encryptByKey()

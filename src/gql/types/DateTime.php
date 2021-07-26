@@ -85,7 +85,7 @@ class DateTime extends ScalarType
     /**
      * @inheritdoc
      */
-    public function parseLiteral($valueNode, array $variables = null)
+    public function parseLiteral($valueNode, ?array $variables = null)
     {
         if ($valueNode instanceof StringValueNode) {
             return new \DateTime($valueNode->value);

@@ -36,12 +36,12 @@ class Craft extends Yii
     /**
      * @var array The default cookie configuration.
      */
-    private static $_baseCookieConfig;
+    private static array $_baseCookieConfig;
 
     /**
      * @var array Field info for autoload()
      */
-    private static $_fields;
+    private static array $_fields;
 
     /**
      * Checks if a string references an environment variable (`$VARIABLE_NAME`)
@@ -58,11 +58,11 @@ class Craft extends Yii
      * ```
      *
      * @param string|null $str
-     * @return string|bool|null The parsed value, or the original value if it didn’t
-     * reference an environment variable and/or alias.
+     * @return string|null|false The parsed value, or the original value if it didn’t
+     * reference an environment variable or alias.
      * @since 3.1.0
      */
-    public static function parseEnv(string $str = null)
+    public static function parseEnv(?string $str = null)
     {
         if ($str === null) {
             return null;
@@ -91,7 +91,7 @@ class Craft extends Yii
      * @param int $depth The maximum depth that the dumper should go into the variable. Defaults to 10.
      * @param bool $highlight Whether the result should be syntax-highlighted. Defaults to true.
      */
-    public static function dump($var, int $depth = 10, bool $highlight = true)
+    public static function dump($var, int $depth = 10, bool $highlight = true): void
     {
         VarDumper::dump($var, $depth, $highlight);
     }
@@ -104,7 +104,7 @@ class Craft extends Yii
      * @param bool $highlight Whether the result should be syntax-highlighted. Defaults to true.
      * @throws ExitException if the application is in testing mode
      */
-    public static function dd($var, int $depth = 10, bool $highlight = true)
+    public static function dd($var, int $depth = 10, bool $highlight = true): void
     {
         // Turn off output buffering and discard OB contents
         while (ob_get_length() !== false) {
@@ -126,9 +126,9 @@ class Craft extends Yii
      * @param Request|null $request The request object
      * @return array The cookie config array.
      */
-    public static function cookieConfig(array $config = [], Request $request = null): array
+    public static function cookieConfig(array $config = [], ?Request $request = null): array
     {
-        if (self::$_baseCookieConfig === null) {
+        if (!isset(self::$_baseCookieConfig)) {
             $generalConfig = static::$app->getConfig()->getGeneral();
 
             if ($generalConfig->useSecureCookies === 'auto') {
@@ -155,7 +155,7 @@ class Craft extends Yii
      *
      * @param string $className
      */
-    public static function autoload($className)
+    public static function autoload($className): void
     {
         if ($className === CustomFieldBehavior::class) {
             self::_autoloadCustomFieldBehavior();
@@ -165,7 +165,7 @@ class Craft extends Yii
     /**
      * Autoloads (and possibly generates) `CustomFieldBehavior.php`
      */
-    private static function _autoloadCustomFieldBehavior()
+    private static function _autoloadCustomFieldBehavior(): void
     {
         $storedFieldVersion = static::$app->getInfo()->fieldVersion;
         $compiledClassesPath = static::$app->getPath()->getCompiledClassesPath();
@@ -220,7 +220,7 @@ class Craft extends Yii
      * @param bool $load
      * @throws \yii\base\ErrorException
      */
-    private static function _generateCustomFieldBehavior(array $fieldHandles, string $filePath, bool $write, bool $load)
+    private static function _generateCustomFieldBehavior(array $fieldHandles, string $filePath, bool $write, bool $load): void
     {
         $methods = [];
         $handles = [];
@@ -296,7 +296,7 @@ EOD;
      */
     private static function _fields(): array
     {
-        if (self::$_fields !== null) {
+        if (isset(self::$_fields)) {
             return self::$_fields;
         }
 

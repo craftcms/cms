@@ -33,12 +33,12 @@ class DeleteForSite extends ElementAction
     /**
      * @var string|null The confirmation message that should be shown before the elements get deleted
      */
-    public $confirmationMessage;
+    public ?string $confirmationMessage = null;
 
     /**
      * @var string|null The message that should be shown after the elements get deleted
      */
-    public $successMessage;
+    public ?string $successMessage = null;
 
     /**
      * @inheritdoc
@@ -87,9 +87,9 @@ JS;
     /**
      * @inheritdoc
      */
-    public function getConfirmationMessage()
+    public function getConfirmationMessage(): ?string
     {
-        if ($this->confirmationMessage !== null) {
+        if (isset($this->confirmationMessage)) {
             return $this->confirmationMessage;
         }
 
@@ -148,7 +148,7 @@ JS;
             $elementsService->deleteElement($element);
         }
 
-        if ($this->successMessage !== null) {
+        if (isset($this->successMessage)) {
             $this->setMessage($this->successMessage);
         } else {
             /** @var ElementInterface|string $elementType */

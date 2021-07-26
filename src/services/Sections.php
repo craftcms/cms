@@ -120,18 +120,18 @@ class Sections extends Component
      *
      * @since 3.1.21
      */
-    public $autoResaveEntries = true;
+    public bool $autoResaveEntries = true;
 
     /**
      * @var MemoizableArray|null
      * @see _sections()
      */
-    private $_sections;
+    private ?MemoizableArray $_sections = null;
 
     /**
-     * @var
+     * @var EntryType[]
      */
-    private $_entryTypesById;
+    private array $_entryTypesById = [];
 
     /**
      * Serializer
@@ -193,7 +193,7 @@ class Sections extends Component
      */
     private function _sections(): MemoizableArray
     {
-        if ($this->_sections === null) {
+        if (!isset($this->_sections)) {
             $sections = [];
             foreach ($this->_createSectionQuery()->all() as $result) {
                 if (!empty($result['previewTargets'])) {
@@ -329,7 +329,7 @@ class Sections extends Component
      * @param int $sectionId
      * @return Section|null
      */
-    public function getSectionById(int $sectionId)
+    public function getSectionById(int $sectionId): ?Section
     {
         return $this->_sections()->firstWhere('id', $sectionId);
     }
@@ -350,7 +350,7 @@ class Sections extends Component
      * @return Section|null
      * @since 3.1.0
      */
-    public function getSectionByUid(string $uid)
+    public function getSectionByUid(string $uid): ?Section
     {
         return $this->_sections()->firstWhere('uid', $uid, true);
     }
@@ -370,7 +370,7 @@ class Sections extends Component
      * @param string $sectionHandle
      * @return Section|null
      */
-    public function getSectionByHandle(string $sectionHandle)
+    public function getSectionByHandle(string $sectionHandle): ?Section
     {
         return $this->_sections()->firstWhere('handle', $sectionHandle, true);
     }
@@ -561,7 +561,7 @@ class Sections extends Component
      *
      * @param ConfigEvent $event
      */
-    public function handleChangedSection(ConfigEvent $event)
+    public function handleChangedSection(ConfigEvent $event): void
     {
         ProjectConfigHelper::ensureAllSitesProcessed();
         ProjectConfigHelper::ensureAllFieldsProcessed();
@@ -825,7 +825,7 @@ class Sections extends Component
      *
      * @param ConfigEvent $event
      */
-    public function handleDeletedSection(ConfigEvent $event)
+    public function handleDeletedSection(ConfigEvent $event): void
     {
         $uid = $event->tokenMatches[0];
         $sectionRecord = $this->_getSectionRecord($uid);
@@ -893,7 +893,7 @@ class Sections extends Component
      *
      * @param DeleteSiteEvent $event
      */
-    public function pruneDeletedSite(DeleteSiteEvent $event)
+    public function pruneDeletedSite(DeleteSiteEvent $event): void
     {
         $siteUid = $event->site->uid;
 
@@ -914,7 +914,7 @@ class Sections extends Component
      * @param FieldEvent $event
      * @since 3.1.20
      */
-    public function pruneDeletedField(FieldEvent $event)
+    public function pruneDeletedField(FieldEvent $event): void
     {
         $field = $event->field;
         $fieldUid = $field->uid;
@@ -1014,13 +1014,13 @@ class Sections extends Component
      * @param int $entryTypeId
      * @return EntryType|null
      */
-    public function getEntryTypeById(int $entryTypeId)
+    public function getEntryTypeById(int $entryTypeId): ?EntryType
     {
         if (!$entryTypeId) {
             return null;
         }
 
-        if ($this->_entryTypesById !== null && array_key_exists($entryTypeId, $this->_entryTypesById)) {
+        if (array_key_exists($entryTypeId, $this->_entryTypesById)) {
             return $this->_entryTypesById[$entryTypeId];
         }
 
@@ -1111,7 +1111,7 @@ class Sections extends Component
      *
      * @param ConfigEvent $event
      */
-    public function handleChangedEntryType(ConfigEvent $event)
+    public function handleChangedEntryType(ConfigEvent $event): void
     {
         $entryTypeUid = $event->tokenMatches[0];
         $data = $event->newValue;
@@ -1318,7 +1318,7 @@ class Sections extends Component
      *
      * @param ConfigEvent $event
      */
-    public function handleDeletedEntryType(ConfigEvent $event)
+    public function handleDeletedEntryType(ConfigEvent $event): void
     {
         $uid = $event->tokenMatches[0];
         $entryTypeRecord = $this->_getEntryTypeRecord($uid);
@@ -1427,7 +1427,7 @@ class Sections extends Component
      * @throws Exception if reasons
      * @see saveSection()
      */
-    private function _ensureSingleEntry(Section $section, array $siteSettings = null): Entry
+    private function _ensureSingleEntry(Section $section, ?array $siteSettings = null): Entry
     {
         // Get the section's supported sites
         // ---------------------------------------------------------------------
@@ -1521,7 +1521,7 @@ class Sections extends Component
      * @throws Exception if reasons
      * @see saveSection()
      */
-    private function _populateNewStructure(SectionRecord $sectionRecord)
+    private function _populateNewStructure(SectionRecord $sectionRecord): void
     {
         // Add all of the entries to the structure
         $query = Entry::find()
@@ -1543,7 +1543,7 @@ class Sections extends Component
     /**
      * @return Query
      */
-    private function _createEntryTypeQuery()
+    private function _createEntryTypeQuery(): Query
     {
         return (new Query())
             ->select([
@@ -1574,6 +1574,7 @@ class Sections extends Component
     {
         $query = $withTrashed ? SectionRecord::findWithTrashed() : SectionRecord::find();
         $query->andWhere(['uid' => $uid]);
+        /** @noinspection PhpIncompatibleReturnTypeInspection */
         return $query->one() ?? new SectionRecord();
     }
 
@@ -1588,6 +1589,7 @@ class Sections extends Component
     {
         $query = $withTrashed ? EntryTypeRecord::findWithTrashed() : EntryTypeRecord::find();
         $query->andWhere(['uid' => $uid]);
+        /** @noinspection PhpIncompatibleReturnTypeInspection */
         return $query->one() ?? new EntryTypeRecord();
     }
 }

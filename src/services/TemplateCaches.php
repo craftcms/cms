@@ -28,13 +28,13 @@ class TemplateCaches extends Component
      * @var bool Whether template caching should be enabled for this request
      * @see _isTemplateCachingEnabled()
      */
-    private $_enabled;
+    private bool $_enabled;
 
     /**
      * @var string|null The current request's path
      * @see _path()
      */
-    private $_path;
+    private ?string $_path = null;
 
     /**
      * Returns a cached template by its key.
@@ -45,7 +45,7 @@ class TemplateCaches extends Component
      * @return string|null
      * @throws Exception if this is a console request and `false` is passed to `$global`
      */
-    public function getTemplateCache(string $key, bool $global, bool $registerScripts = false)
+    public function getTemplateCache(string $key, bool $global, bool $registerScripts = false): ?string
     {
         // Make sure template caching is enabled
         if ($this->_isTemplateCachingEnabled() === false) {
@@ -80,7 +80,7 @@ class TemplateCaches extends Component
      * included in the cache. If this is `true`, be sure to pass `$withScripts = true` to [[endTemplateCache()]]
      * as well.
      */
-    public function startTemplateCache(bool $withScripts = false)
+    public function startTemplateCache(bool $withScripts = false): void
     {
         // Make sure template caching is enabled
         if ($this->_isTemplateCachingEnabled() === false) {
@@ -102,8 +102,8 @@ class TemplateCaches extends Component
      *
      * @param string $key The template cache key.
      * @param bool $global Whether the cache should be stored globally.
-     * @param string|null $duration How long the cache should be stored for. Should be a [relative time format](http://php.net/manual/en/datetime.formats.relative.php).
-     * @param mixed|null $expiration When the cache should expire.
+     * @param string|null $duration How long the cache should be stored for. Should be a [relative time format](https://php.net/manual/en/datetime.formats.relative.php).
+     * @param mixed $expiration When the cache should expire.
      * @param string $body The contents of the cache.
      * @param bool $withScripts Whether JS and CSS code registered with [[\craft\web\View::registerJs()]],
      * [[\craft\web\View::registerScript()]], and [[\craft\web\View::registerCss()]] should be captured and
@@ -111,7 +111,7 @@ class TemplateCaches extends Component
      * @throws Exception if this is a console request and `false` is passed to `$global`
      * @throws \Throwable
      */
-    public function endTemplateCache(string $key, bool $global, ?string $duration, $expiration, string $body, bool $withScripts = false)
+    public function endTemplateCache(string $key, bool $global, ?string $duration, $expiration, string $body, bool $withScripts = false): void
     {
         // Make sure template caching is enabled
         if ($this->_isTemplateCachingEnabled() === false) {
@@ -200,7 +200,7 @@ class TemplateCaches extends Component
      */
     private function _isTemplateCachingEnabled(): bool
     {
-        if ($this->_enabled === null) {
+        if (!isset($this->_enabled)) {
             $this->_enabled = (
                 Craft::$app->getConfig()->getGeneral()->enableTemplateCaching &&
                 !Craft::$app->getRequest()->getIsConsoleRequest()
@@ -215,9 +215,10 @@ class TemplateCaches extends Component
      * @param string $key
      * @param bool $global
      * @param int|null $siteId
+     * @return string
      * @throws Exception if this is a console request and `false` is passed to `$global`
      */
-    private function _cacheKey(string $key, bool $global, int $siteId = null): string
+    private function _cacheKey(string $key, bool $global, ?int $siteId = null): string
     {
         $cacheKey = "template::$key::" . ($siteId ?? Craft::$app->getSites()->getCurrentSite()->id);
 
@@ -236,7 +237,7 @@ class TemplateCaches extends Component
      */
     private function _path(): string
     {
-        if ($this->_path !== null) {
+        if (isset($this->_path)) {
             return $this->_path;
         }
 

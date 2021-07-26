@@ -8,6 +8,7 @@
 namespace craft\base;
 
 use Craft;
+use craft\db\QueryAbortedException;
 use craft\elements\db\ElementQuery;
 use craft\elements\db\ElementQueryInterface;
 use craft\events\DefineFieldHtmlEvent;
@@ -17,8 +18,10 @@ use craft\gql\types\QueryArgument;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
 use craft\helpers\ElementHelper;
+use craft\helpers\FieldHelper;
 use craft\helpers\Html;
 use craft\helpers\StringHelper;
+use craft\models\FieldGroup;
 use craft\models\GqlSchema;
 use craft\records\Field as FieldRecord;
 use craft\validators\HandleValidator;
@@ -167,14 +170,14 @@ abstract class Field extends SavableComponent implements FieldInterface
      * @see isFresh()
      * @see setIsFresh()
      */
-    private $_isFresh;
+    private ?bool $_isFresh = null;
 
     /**
      * Use the translated field name as the string representation.
      *
      * @return string
      */
-    public function __toString()
+    public function __toString(): string
     {
         try {
             return (string)Craft::t('site', $this->name) ?: static::class;
@@ -186,7 +189,7 @@ abstract class Field extends SavableComponent implements FieldInterface
     /**
      * @inheritdoc
      */
-    public function init()
+    public function init(): void
     {
         parent::init();
 
@@ -209,7 +212,16 @@ abstract class Field extends SavableComponent implements FieldInterface
         $rules = parent::defineRules();
 
         // Make sure the column name is under the database’s maximum allowed column length, including the column prefix/suffix lengths
-        $maxHandleLength = Craft::$app->getDb()->getSchema()->maxObjectNameLength - strlen(Craft::$app->getContent()->fieldColumnPrefix) - 9;
+        $maxHandleLength = Craft::$app->getDb()->getSchema()->maxObjectNameLength;
+
+        if (static::hasContentColumn()) {
+            $maxHandleLength -= strlen(Craft::$app->getContent()->fieldColumnPrefix);
+
+            FieldHelper::ensureColumnSuffix($this);
+            if ($this->columnSuffix) {
+                $maxHandleLength -= strlen($this->columnSuffix) + 1;
+            }
+        }
 
         $rules[] = [['name'], 'string', 'max' => 255];
         $rules[] = [['handle'], 'string', 'max' => $maxHandleLength];
@@ -312,7 +324,26 @@ abstract class Field extends SavableComponent implements FieldInterface
     /**
      * @inheritdoc
      */
-    public function getIsTranslatable(ElementInterface $element = null): bool
+    public function getOrientation(?ElementInterface $element): string
+    {
+        if (!Craft::$app->getIsMultiSite()) {
+            // Only one site so use its language
+            $locale = Craft::$app->getSites()->getPrimarySite()->getLocale();
+        } else if (!$element || !$this->getIsTranslatable($element)) {
+            // Not translatable, so use the user’s language
+            $locale = Craft::$app->getLocale();
+        } else {
+            // Use the site’s language
+            $locale = $element->getSite()->getLocale();
+        }
+
+        return $locale->getOrientation();
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getIsTranslatable(?ElementInterface $element = null): bool
     {
         if ($this->translationMethod === self::TRANSLATION_METHOD_CUSTOM) {
             return $element === null || $this->getTranslationKey($element) !== '';
@@ -323,7 +354,7 @@ abstract class Field extends SavableComponent implements FieldInterface
     /**
      * @inheritdoc
      */
-    public function getTranslationDescription(ElementInterface $element = null)
+    public function getTranslationDescription(?ElementInterface $element = null): ?string
     {
         if (!$this->getIsTranslatable($element)) {
             return null;
@@ -373,7 +404,7 @@ abstract class Field extends SavableComponent implements FieldInterface
     /**
      * @inheritdoc
      */
-    public function normalizeValue($value, ElementInterface $element = null)
+    public function normalizeValue($value, ?ElementInterface $element = null)
     {
         return $value;
     }
@@ -381,7 +412,7 @@ abstract class Field extends SavableComponent implements FieldInterface
     /**
      * @inheritdoc
      */
-    public function getInputHtml($value, ElementInterface $element = null): string
+    public function getInputHtml($value, ?ElementInterface $element = null): string
     {
         $html = $this->inputHtml($value, $element);
 
@@ -406,7 +437,7 @@ abstract class Field extends SavableComponent implements FieldInterface
      * @see getInputHtml()
      * @since 3.5.0
      */
-    protected function inputHtml($value, ElementInterface $element = null): string
+    protected function inputHtml($value, ?ElementInterface $element = null): string
     {
         return Html::textarea($this->handle, $value);
     }
@@ -517,7 +548,7 @@ abstract class Field extends SavableComponent implements FieldInterface
     /**
      * @inheritdoc
      */
-    public function serializeValue($value, ElementInterface $element = null)
+    public function serializeValue($value, ?ElementInterface $element = null)
     {
         // If the object explicitly defines its savable value, use that
         if ($value instanceof Serializable) {
@@ -542,14 +573,14 @@ abstract class Field extends SavableComponent implements FieldInterface
      */
     public function copyValue(ElementInterface $from, ElementInterface $to): void
     {
-        $value = $this->serializeValue($from->getFieldValue($this->handle));
+        $value = $this->serializeValue($from->getFieldValue($this->handle), $from);
         $to->setFieldValue($this->handle, $value);
     }
 
     /**
      * @inheritdoc
      */
-    public function modifyElementsQuery(ElementQueryInterface $query, $value)
+    public function modifyElementsQuery(ElementQueryInterface $query, $value): void
     {
         /** @var ElementQuery $query */
         if ($value !== null) {
@@ -558,19 +589,17 @@ abstract class Field extends SavableComponent implements FieldInterface
             // If the field type doesn't have a content column, it *must* override this method
             // if it wants to support a custom query criteria attribute
             if ($column === null) {
-                return false;
+                throw new QueryAbortedException();
             }
 
             $query->subQuery->andWhere(Db::parseParam("content.$column", $value, '=', false, $this->getContentColumnType()));
         }
-
-        return null;
     }
 
     /**
      * @inheritdoc
      */
-    public function modifyElementIndexQuery(ElementQueryInterface $query)
+    public function modifyElementIndexQuery(ElementQueryInterface $query): void
     {
         if ($this instanceof EagerLoadingFieldInterface) {
             $query->andWith($this->handle);
@@ -580,7 +609,7 @@ abstract class Field extends SavableComponent implements FieldInterface
     /**
      * @inheritdoc
      */
-    public function setIsFresh(bool $isFresh = null)
+    public function setIsFresh(?bool $isFresh = null): void
     {
         $this->_isFresh = $isFresh;
     }
@@ -588,7 +617,7 @@ abstract class Field extends SavableComponent implements FieldInterface
     /**
      * @inheritdoc
      */
-    public function getGroup()
+    public function getGroup(): ?FieldGroup
     {
         return Craft::$app->getFields()->getGroupById($this->groupId);
     }
@@ -668,7 +697,7 @@ abstract class Field extends SavableComponent implements FieldInterface
     /**
      * @inheritdoc
      */
-    public function afterElementSave(ElementInterface $element, bool $isNew)
+    public function afterElementSave(ElementInterface $element, bool $isNew): void
     {
         // Trigger an 'afterElementSave' event
         if ($this->hasEventHandlers(self::EVENT_AFTER_ELEMENT_SAVE)) {
@@ -682,7 +711,7 @@ abstract class Field extends SavableComponent implements FieldInterface
     /**
      * @inheritdoc
      */
-    public function afterElementPropagate(ElementInterface $element, bool $isNew)
+    public function afterElementPropagate(ElementInterface $element, bool $isNew): void
     {
         // Trigger an 'afterElementPropagate' event
         if ($this->hasEventHandlers(self::EVENT_AFTER_ELEMENT_PROPAGATE)) {
@@ -710,7 +739,7 @@ abstract class Field extends SavableComponent implements FieldInterface
     /**
      * @inheritdoc
      */
-    public function afterElementDelete(ElementInterface $element)
+    public function afterElementDelete(ElementInterface $element): void
     {
         // Trigger an 'afterElementDelete' event
         if ($this->hasEventHandlers(self::EVENT_AFTER_ELEMENT_DELETE)) {
@@ -737,7 +766,7 @@ abstract class Field extends SavableComponent implements FieldInterface
     /**
      * @inheritdoc
      */
-    public function afterElementRestore(ElementInterface $element)
+    public function afterElementRestore(ElementInterface $element): void
     {
         // Trigger an 'afterElementRestore' event
         if ($this->hasEventHandlers(self::EVENT_AFTER_ELEMENT_RESTORE)) {
@@ -754,7 +783,7 @@ abstract class Field extends SavableComponent implements FieldInterface
      * @return array|false
      * @since 3.3.0
      */
-    public function getEagerLoadingGqlConditions()
+    public function getEagerLoadingGqlConditions(): ?array
     {
         // No restrictions
         return [];
@@ -766,7 +795,7 @@ abstract class Field extends SavableComponent implements FieldInterface
      * @param ElementInterface $element The element this field is associated with
      * @return string|null The field’s param name on the request
      */
-    protected function requestParamName(ElementInterface $element)
+    protected function requestParamName(ElementInterface $element): ?string
     {
         if (!$element) {
             return null;
@@ -787,9 +816,9 @@ abstract class Field extends SavableComponent implements FieldInterface
      * @param ElementInterface|null $element
      * @return bool
      */
-    protected function isFresh(ElementInterface $element = null): bool
+    protected function isFresh(?ElementInterface $element = null): bool
     {
-        if ($this->_isFresh !== null) {
+        if (isset($this->_isFresh)) {
             return $this->_isFresh;
         }
 

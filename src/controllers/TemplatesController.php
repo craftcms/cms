@@ -37,7 +37,7 @@ class TemplatesController extends Controller
     /**
      * @inheritdoc
      */
-    public $allowAnonymous = [
+    protected $allowAnonymous = [
         'offline' => self::ALLOW_ANONYMOUS_LIVE | self::ALLOW_ANONYMOUS_OFFLINE,
         'manual-update-notification' => self::ALLOW_ANONYMOUS_LIVE | self::ALLOW_ANONYMOUS_OFFLINE,
         'requirements-check' => self::ALLOW_ANONYMOUS_LIVE | self::ALLOW_ANONYMOUS_OFFLINE,
@@ -52,7 +52,7 @@ class TemplatesController extends Controller
     /**
      * @inheritdoc
      */
-    public function beforeAction($action)
+    public function beforeAction($action): bool
     {
         $actionSegments = $this->request->getActionSegments();
         if (isset($actionSegments[0]) && strtolower($actionSegments[0]) === 'templates') {
@@ -130,7 +130,7 @@ class TemplatesController extends Controller
      * @return Response|null
      * @throws ServerErrorHttpException if it's an Ajax request and the server doesn’t meet Craft’s requirements
      */
-    public function actionRequirementsCheck()
+    public function actionRequirementsCheck(): ?Response
     {
         // Run the requirements checker
         $reqCheck = new \RequirementsChecker();
@@ -222,7 +222,7 @@ class TemplatesController extends Controller
             'statusCode' => $statusCode,
         ], get_object_vars($exception));
 
-        // If this is a PHP error and html_errors (http://php.net/manual/en/errorfunc.configuration.php#ini.html-errors)
+        // If this is a PHP error and html_errors (https://php.net/manual/en/errorfunc.configuration.php#ini.html-errors)
         // is enabled, then allow the HTML not get encoded
         if ($exception instanceof ErrorException && App::phpConfigValueAsBool('html_errors')) {
             $variables['message'] = Template::raw($variables['message']);

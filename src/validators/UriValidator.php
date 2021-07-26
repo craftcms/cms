@@ -21,12 +21,12 @@ class UriValidator extends Validator
     /**
      * @var string
      */
-    public $pattern = '/^\S+$/u';
+    public string $pattern = '/^\S+$/u';
 
     /**
      * @inheritdoc
      */
-    protected function validateValue($value)
+    protected function validateValue($value): ?array
     {
         if (!preg_match($this->pattern, $value)) {
             return [Craft::t('app', '{attribute} is not a valid URI'), []];

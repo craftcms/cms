@@ -23,7 +23,7 @@ class HookTokenParser extends AbstractTokenParser
     /**
      * @inheritdoc
      */
-    public function getTag()
+    public function getTag(): string
     {
         return 'hook';
     }
@@ -31,10 +31,9 @@ class HookTokenParser extends AbstractTokenParser
     /**
      * @inheritdoc
      */
-    public function parse(Token $token)
+    public function parse(Token $token): HookNode
     {
         $lineno = $token->getLine();
-        /** @var Parser $parser */
         $parser = $this->parser;
         $stream = $parser->getStream();
 

@@ -19,7 +19,7 @@ class AdminTableAsset extends AssetBundle
     /**
      * @var bool
      */
-    private $useDevServer = false;
+    private bool $useDevServer = false;
 
     /**
      * @var bool
@@ -29,7 +29,7 @@ class AdminTableAsset extends AssetBundle
     /**
      * @inheritdoc
      */
-    public function init()
+    public function init(): void
     {
         $this->sourcePath = __DIR__ . '/dist/';
 

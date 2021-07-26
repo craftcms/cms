@@ -16,6 +16,7 @@ use craft\events\MoveElementEvent;
 use craft\models\Structure;
 use craft\records\Structure as StructureRecord;
 use craft\records\StructureElement;
+use yii\base\BaseObject;
 use yii\base\Component;
 use yii\base\Exception;
 
@@ -55,12 +56,12 @@ class Structures extends Component
      * @var int The timeout to pass to [[\yii\mutex\Mutex::acquire()]] when acquiring a lock on the structure.
      * @since 3.0.19
      */
-    public $mutexTimeout = 0;
+    public int $mutexTimeout = 0;
 
     /**
-     * @var
+     * @var StructureElement[]
      */
-    private $_rootElementRecordsByStructureId;
+    private array $_rootElementRecordsByStructureId = [];
 
     // Structure CRUD
     // -------------------------------------------------------------------------
@@ -72,7 +73,7 @@ class Structures extends Component
      * @param bool $withTrashed
      * @return Structure|null
      */
-    public function getStructureById(int $structureId, bool $withTrashed = false)
+    public function getStructureById(int $structureId, bool $withTrashed = false): ?Structure
     {
         $query = (new Query())
             ->select([
@@ -98,7 +99,7 @@ class Structures extends Component
      * @param bool $withTrashed
      * @return Structure|null
      */
-    public function getStructureByUid(string $structureUid, bool $withTrashed = false)
+    public function getStructureByUid(string $structureUid, bool $withTrashed = false): ?Structure
     {
         $query = (new Query())
             ->select([
@@ -121,7 +122,6 @@ class Structures extends Component
      * Patches an array of entries, filling in any gaps in the tree.
      *
      * @param ElementInterface[] $elements
-     * @return void
      * @since 3.6.0
      */
     public function fillGapsInElements(array &$elements): void
@@ -164,7 +164,6 @@ class Structures extends Component
      *
      * @param ElementInterface[] $elements
      * @param int $branchLimit
-     * @return void
      * @since 3.6.0
      */
     public function applyBranchLimitToElements(array &$elements, int $branchLimit): void
@@ -405,7 +404,7 @@ class Structures extends Component
      * @param ElementInterface|int $element
      * @return StructureElement|null
      */
-    private function _getElementRecord(int $structureId, $element)
+    private function _getElementRecord(int $structureId, $element): ?StructureElement
     {
         $elementId = is_numeric($element) ? $element : $element->id;
 
@@ -457,7 +456,7 @@ class Structures extends Component
      * @return bool Whether it was done
      * @throws \Throwable if reasons
      */
-    private function _doIt($structureId, ElementInterface $element, StructureElement $targetElementRecord, $action, $mode): bool
+    private function _doIt(int $structureId, ElementInterface $element, StructureElement $targetElementRecord, string $action, string $mode): bool
     {
         // Get a lock or bust
         $lockName = 'structure:' . $structureId;

@@ -8,6 +8,8 @@
 namespace craft\services;
 
 use Craft;
+use craft\config\GeneralConfig;
+use craft\db\Query;
 use craft\db\Table;
 use craft\elements\Asset;
 use craft\elements\Category;
@@ -18,6 +20,8 @@ use craft\elements\Tag;
 use craft\elements\User;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
+use craft\records\Volume;
+use craft\records\VolumeFolder;
 use DateTime;
 use yii\base\Component;
 
@@ -41,14 +45,14 @@ class Gc extends Component
      *
      * This number should be between 0 and 1000000. A value 0 means no GC will be performed at all unless forced.
      */
-    public $probability = 10;
+    public int $probability = 10;
 
     /**
      * @var bool whether [[hardDelete()]] should delete *all* soft-deleted rows,
      * rather than just the ones that were deleted long enough ago to be ready
      * for hard-deletion per the <config3:softDeleteDuration> config setting.
      */
-    public $deleteAllTrashed = false;
+    public bool $deleteAllTrashed = false;
 
     /**
      * Possibly runs garbage collection.
@@ -56,7 +60,7 @@ class Gc extends Component
      * @param bool $force Whether garbage collection should be forced. If left as `false`, then
      * garbage collection will only run if a random condition passes, factoring in [[probability]].
      */
-    public function run(bool $force = false)
+    public function run(bool $force = false): void
     {
         if (!$force && mt_rand(0, 1000000) >= $this->probability) {
             return;
@@ -74,7 +78,6 @@ class Gc extends Component
             Table::FIELDGROUPS,
             Table::SECTIONS,
             Table::TAGGROUPS,
-            Table::VOLUMES,
         ]);
 
         $this->deletePartialElements(Asset::class, Table::ASSETS, 'id');
@@ -105,6 +108,37 @@ class Gc extends Component
             Table::FIELDLAYOUTS,
             Table::SITES,
         ]);
+
+        $this->hardDeleteVolumes();
+    }
+
+    /**
+     * Hard delete eligible volumes, deleting the folders one by one to avoid nested dependency errors.
+     */
+    public function hardDeleteVolumes(): void
+    {
+        $generalConfig = Craft::$app->getConfig()->getGeneral();
+        if (!$generalConfig->softDeleteDuration && !$this->deleteAllTrashed) {
+            return;
+        }
+
+        $condition = $this->getHardDeleteConditions($generalConfig);
+
+        $volumes = (new Query())->select(['id'])->from([Table::VOLUMES])->where($condition)->all();
+        $volumeIds = [];
+
+        foreach ($volumes as $volume) {
+            $volumeIds[] = $volume['id'];
+        }
+
+        $folders = (new Query())->select(['id', 'path'])->from([Table::VOLUMEFOLDERS])->where(['volumeId' => $volumeIds])->all();
+        usort($folders, function ($a, $b) { return substr_count($a['path'], '/') < substr_count($b['path'], '/');});
+
+        foreach ($folders as $folder) {
+            VolumeFolder::deleteAll(['id' => $folder['id']]);
+        }
+
+        Volume::deleteAll(['id' => $volumeIds]);
     }
 
     /**
@@ -112,25 +146,14 @@ class Gc extends Component
      *
      * @param string|string[] $tables The table(s) to delete rows from. They must have a `dateDeleted` column.
      */
-    public function hardDelete($tables)
+    public function hardDelete($tables): void
     {
         $generalConfig = Craft::$app->getConfig()->getGeneral();
         if (!$generalConfig->softDeleteDuration && !$this->deleteAllTrashed) {
             return;
         }
 
-        $condition = ['not', ['dateDeleted' => null]];
-
-        if (!$this->deleteAllTrashed) {
-            $expire = DateTimeHelper::currentUTCDateTime();
-            $interval = DateTimeHelper::secondsToInterval($generalConfig->softDeleteDuration);
-            $pastTime = $expire->sub($interval);
-            $condition = [
-                'and',
-                $condition,
-                ['<', 'dateDeleted', Db::prepareDateForDb($pastTime)],
-            ];
-        }
+        $condition = $this->getHardDeleteConditions($generalConfig);
 
         if (!is_array($tables)) {
             $tables = [$tables];
@@ -147,7 +170,6 @@ class Gc extends Component
      * @param string $elementType The element type
      * @param string $table The extension table name
      * @param string $fk The column name that contains the foreign key to `elements.id`
-     * @return void
      * @since 3.6.6
      */
     public function deletePartialElements(string $elementType, string $table, string $fk): void
@@ -181,7 +203,7 @@ SQL;
     /**
      * Deletes any session rows that have gone stale.
      */
-    private function _deleteStaleSessions()
+    private function _deleteStaleSessions(): void
     {
         $generalConfig = Craft::$app->getConfig()->getGeneral();
 
@@ -199,7 +221,6 @@ SQL;
     /**
      * Deletes any feature announcement rows that have gone stale.
      *
-     * @return void
      */
     private function _deleteStaleAnnouncements(): void
     {
@@ -210,7 +231,6 @@ SQL;
     /**
      * Deletes any orphaned rows in the `drafts` and `revisions` tables.
      *
-     * @return void
      */
     private function _deleteOrphanedDraftsAndRevisions(): void
     {
@@ -237,5 +257,26 @@ SQL;
 
             $db->createCommand($sql)->execute();
         }
+    }
+
+    /**
+     * @param GeneralConfig $generalConfig
+     * @return array
+     */
+    protected function getHardDeleteConditions(GeneralConfig $generalConfig): array
+    {
+        $condition = ['not', ['dateDeleted' => null]];
+
+        if (!$this->deleteAllTrashed) {
+            $expire = DateTimeHelper::currentUTCDateTime();
+            $interval = DateTimeHelper::secondsToInterval($generalConfig->softDeleteDuration);
+            $pastTime = $expire->sub($interval);
+            $condition = [
+                'and',
+                $condition,
+                ['<', 'dateDeleted', Db::prepareDateForDb($pastTime)],
+            ];
+        }
+        return $condition;
     }
 }

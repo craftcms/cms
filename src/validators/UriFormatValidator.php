@@ -22,18 +22,18 @@ class UriFormatValidator extends Validator
     /**
      * @var bool Whether we should ensure that "{slug}" is used within the URI format.
      */
-    public $requireSlug = false;
+    public bool $requireSlug = false;
 
     /**
      * @var bool Whether to ensure that the URI format doesn’t begin with the actionTrigger or cpTrigger.
      * @since 3.2.10
      */
-    public $disallowTriggers = true;
+    public bool $disallowTriggers = true;
 
     /**
      * @inheritdoc
      */
-    public function validateAttribute($model, $attribute)
+    public function validateAttribute($model, $attribute): void
     {
         $uriFormat = $model->$attribute;
 

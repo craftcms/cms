@@ -35,12 +35,12 @@ class FileHelper extends \yii\helpers\FileHelper
      * @var bool Whether file locks can be used when writing to files.
      * @see useFileLocks()
      */
-    private static $_useFileLocks;
+    private static bool $_useFileLocks;
 
     /**
      * @inheritdoc
      */
-    public static function normalizePath($path, $ds = DIRECTORY_SEPARATOR)
+    public static function normalizePath($path, $ds = DIRECTORY_SEPARATOR): string
     {
         // Is this a UNC network share path?
         $isUnc = (strpos($path, '//') === 0 || strpos($path, '\\\\') === 0);
@@ -59,7 +59,7 @@ class FileHelper extends \yii\helpers\FileHelper
     /**
      * @inheritdoc
      */
-    public static function copyDirectory($src, $dst, $options = [])
+    public static function copyDirectory($src, $dst, $options = []): void
     {
         if (!isset($options['fileMode'])) {
             $options['fileMode'] = Craft::$app->getConfig()->getGeneral()->defaultFileMode;
@@ -75,7 +75,7 @@ class FileHelper extends \yii\helpers\FileHelper
     /**
      * @inheritdoc
      */
-    public static function createDirectory($path, $mode = null, $recursive = true)
+    public static function createDirectory($path, $mode = null, $recursive = true): bool
     {
         if ($mode === null) {
             $mode = Craft::$app->getConfig()->getGeneral()->defaultDirMode;
@@ -87,7 +87,7 @@ class FileHelper extends \yii\helpers\FileHelper
     /**
      * @inheritdoc
      */
-    public static function removeDirectory($dir, $options = [])
+    public static function removeDirectory($dir, $options = []): void
     {
         try {
             parent::removeDirectory($dir, $options);
@@ -253,7 +253,7 @@ class FileHelper extends \yii\helpers\FileHelper
     /**
      * @inheritdoc
      */
-    public static function getMimeType($file, $magicFile = null, $checkExtension = true)
+    public static function getMimeType($file, $magicFile = null, $checkExtension = true): ?string
     {
         $mimeType = parent::getMimeType($file, $magicFile, $checkExtension);
 
@@ -292,8 +292,8 @@ class FileHelper extends \yii\helpers\FileHelper
      * Returns whether the given file path is an SVG image.
      *
      * @param string $file the file name.
-     * @param string $magicFile name of the optional magic database file (or alias), usually something like `/path/to/magic.mime`.
-     * This will be passed as the second parameter to [finfo_open()](http://php.net/manual/en/function.finfo-open.php)
+     * @param string|null $magicFile name of the optional magic database file (or alias), usually something like `/path/to/magic.mime`.
+     * This will be passed as the second parameter to [finfo_open()](https://php.net/manual/en/function.finfo-open.php)
      * when the `fileinfo` extension is installed. If the MIME type is being determined based via [[getMimeTypeByExtension()]]
      * and this is null, it will use the file specified by [[mimeMagicFile]].
      * @param bool $checkExtension whether to use the file extension to determine the MIME type in case
@@ -309,8 +309,8 @@ class FileHelper extends \yii\helpers\FileHelper
      * Returns whether the given file path is an GIF image.
      *
      * @param string $file the file name.
-     * @param string $magicFile name of the optional magic database file (or alias), usually something like `/path/to/magic.mime`.
-     * This will be passed as the second parameter to [finfo_open()](http://php.net/manual/en/function.finfo-open.php)
+     * @param string|null $magicFile name of the optional magic database file (or alias), usually something like `/path/to/magic.mime`.
+     * This will be passed as the second parameter to [finfo_open()](https://php.net/manual/en/function.finfo-open.php)
      * when the `fileinfo` extension is installed. If the MIME type is being determined based via [[getMimeTypeByExtension()]]
      * and this is null, it will use the file specified by [[mimeMagicFile]].
      * @param bool $checkExtension whether to use the file extension to determine the MIME type in case
@@ -340,7 +340,7 @@ class FileHelper extends \yii\helpers\FileHelper
      * @throws Exception if the parent directory can't be created
      * @throws ErrorException in case of failure
      */
-    public static function writeToFile(string $file, string $contents, array $options = [])
+    public static function writeToFile(string $file, string $contents, array $options = []): void
     {
         $file = static::normalizePath($file);
         $dir = dirname($file);
@@ -399,7 +399,7 @@ class FileHelper extends \yii\helpers\FileHelper
      * @throws ErrorException in case of failure
      * @since 3.4.0
      */
-    public static function writeGitignoreFile(string $path, array $options = [])
+    public static function writeGitignoreFile(string $path, array $options = []): void
     {
         $gitignorePath = $path . DIRECTORY_SEPARATOR . '.gitignore';
 
@@ -420,7 +420,7 @@ class FileHelper extends \yii\helpers\FileHelper
      * @inheritdoc
      * @since 3.4.16
      */
-    public static function unlink($path)
+    public static function unlink($path): bool
     {
         // BaseFileHelper::unlink() doesn't seem to catch all possible exceptions
         try {
@@ -444,7 +444,7 @@ class FileHelper extends \yii\helpers\FileHelper
      * @throws InvalidArgumentException if the dir is invalid
      * @throws ErrorException in case of failure
      */
-    public static function clearDirectory(string $dir, array $options = [])
+    public static function clearDirectory(string $dir, array $options = []): void
     {
         if (!is_dir($dir)) {
             throw new InvalidArgumentException("The dir argument must be a directory: $dir");
@@ -484,7 +484,7 @@ class FileHelper extends \yii\helpers\FileHelper
      * @param string $path the directory to be checked
      * @return int Unix timestamp representing the last modification time
      */
-    public static function lastModifiedTime($path)
+    public static function lastModifiedTime(string $path): int
     {
         if (is_file($path)) {
             return filemtime($path);
@@ -550,12 +550,13 @@ class FileHelper extends \yii\helpers\FileHelper
      */
     public static function useFileLocks(): bool
     {
-        if (self::$_useFileLocks !== null) {
+        if (isset(self::$_useFileLocks)) {
             return self::$_useFileLocks;
         }
 
         $generalConfig = Craft::$app->getConfig()->getGeneral();
         if (is_bool($generalConfig->useFileLocks)) {
+            /** @noinspection PhpFieldAssignmentTypeMismatchInspection */
             return self::$_useFileLocks = $generalConfig->useFileLocks;
         }
 
@@ -596,7 +597,7 @@ class FileHelper extends \yii\helpers\FileHelper
      * @param int $max The most files that can coexist before we should start deleting them
      * @since 3.0.38
      */
-    public static function cycle(string $basePath, int $max = 50)
+    public static function cycle(string $basePath, int $max = 50): void
     {
         // Go through all of them and move them forward.
         for ($i = $max; $i > 0; $i--) {
@@ -617,7 +618,7 @@ class FileHelper extends \yii\helpers\FileHelper
      * @param string $file the file path
      * @since 3.4.0
      */
-    public static function invalidate(string $file)
+    public static function invalidate(string $file): void
     {
         clearstatcache(true, $file);
         if (function_exists('opcache_invalidate') && filter_var(ini_get('opcache.enable'), FILTER_VALIDATE_BOOLEAN)) {
@@ -672,9 +673,9 @@ class FileHelper extends \yii\helpers\FileHelper
      * @param string $dir the directory path
      * @param string|null $prefix the path prefix to use when adding the contents of the directory
      * @param array $options options for file searching. See [[findFiles()]] for available options.
-     * @param 3.5.0
+     * @since 3.5.0
      */
-    public static function addFilesToZip(ZipArchive $zip, string $dir, ?string $prefix = null, $options = [])
+    public static function addFilesToZip(ZipArchive $zip, string $dir, ?string $prefix = null, array $options = []): void
     {
         if (!is_dir($dir)) {
             return;

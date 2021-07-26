@@ -35,7 +35,7 @@ class EditController extends Controller
      * @throws ForbiddenHttpException if the user isn’t allowed to edit any sites or the requested element
      * @throws ServerErrorHttpException if the requested element doesn’t have an edit page
      */
-    public function actionById(int $id, string $site = null): Response
+    public function actionById(int $id, ?string $site = null): Response
     {
         $this->requireCpRequest();
         $element = Craft::$app->getElements()->getElementById($id, null, $this->_siteId($site));
@@ -56,7 +56,7 @@ class EditController extends Controller
      * @throws ForbiddenHttpException if the user isn’t allowed to edit any sites or the requested element
      * @throws ServerErrorHttpException if the requested element doesn’t have an edit page
      */
-    public function actionByUid(string $uid, string $site = null): Response
+    public function actionByUid(string $uid, ?string $site = null): Response
     {
         $this->requireCpRequest();
         $element = Craft::$app->getElements()->getElementByUid($uid, null, $this->_siteId($site));
@@ -97,7 +97,7 @@ class EditController extends Controller
      * @throws BadRequestHttpException
      * @throws ForbiddenHttpException
      */
-    private function _siteId(string $site = null)
+    private function _siteId(?string $site = null)
     {
         if ($site) {
             $siteHandle = $site;

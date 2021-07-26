@@ -39,7 +39,7 @@ class HtmlPurifier extends \yii\helpers\HtmlPurifier
     /**
      * @inheritdoc
      */
-    public static function configure($config)
+    public static function configure($config): void
     {
         // Don't set alt attributes to filenames by default
         $config->set('Attr.DefaultImageAlt', '');

@@ -52,7 +52,7 @@ class EntriesController extends BaseEntriesController
      * @throws NotFoundHttpException if the requested site handle is invalid
      * @throws ForbiddenHttpException
      */
-    public function actionEditEntry(string $section, int $entryId = null, int $draftId = null, int $revisionId = null, string $site = null, Entry $entry = null): Response
+    public function actionEditEntry(string $section, ?int $entryId = null, ?int $draftId = null, ?int $revisionId = null, ?string $site = null, ?Entry $entry = null): Response
     {
         $variables = [
             'sectionHandle' => $section,
@@ -274,6 +274,9 @@ class EntriesController extends BaseEntriesController
         return $this->asJson([
             'tabsHtml' => count($tabs) > 1 ? $view->renderTemplate('_includes/tabs', [
                 'tabs' => $tabs,
+                'containerAttributes' => [
+                    'id' => 'tabs',
+                ]
             ]) : null,
             'fieldsHtml' => $form->render(),
             'headHtml' => $view->getHeadHtml(),
@@ -289,7 +292,7 @@ class EntriesController extends BaseEntriesController
      * @throws ServerErrorHttpException if reasons
      * @throws ForbiddenHttpException
      */
-    public function actionSaveEntry(bool $duplicate = false)
+    public function actionSaveEntry(bool $duplicate = false): ?Response
     {
         $this->requirePostRequest();
 
@@ -393,6 +396,19 @@ class EntriesController extends BaseEntriesController
             return null;
         }
 
+        // See if the user happens to have a provisional entry. If so delete it.
+        $provisional = Entry::find()
+            ->provisionalDrafts()
+            ->draftOf($entry->id)
+            ->draftCreator(Craft::$app->getUser()->getIdentity())
+            ->siteId($entry->siteId)
+            ->anyStatus()
+            ->one();
+
+        if ($provisional) {
+            Craft::$app->getElements()->deleteElement($provisional, true);
+        }
+
         if ($this->request->getAcceptsJson()) {
             $return = [];
 
@@ -427,7 +443,7 @@ class EntriesController extends BaseEntriesController
      * @throws ServerErrorHttpException if reasons
      * @since 3.2.3
      */
-    public function actionDuplicateEntry()
+    public function actionDuplicateEntry(): ?Response
     {
         return $this->runAction('save-entry', ['duplicate' => true]);
     }
@@ -440,7 +456,7 @@ class EntriesController extends BaseEntriesController
      * @throws BadRequestHttpException
      * @since 3.6.0
      */
-    public function actionDeleteForSite()
+    public function actionDeleteForSite(): ?Response
     {
         $this->requirePostRequest();
 
@@ -523,7 +539,7 @@ class EntriesController extends BaseEntriesController
      * @return Response|null
      * @throws BadRequestHttpException if the requested entry cannot be found
      */
-    public function actionDeleteEntry()
+    public function actionDeleteEntry(): ?Response
     {
         $this->requirePostRequest();
 
@@ -563,12 +579,12 @@ class EntriesController extends BaseEntriesController
     /**
      * Preps entry edit variables.
      *
-     * @param array &$variables
+     * @param array $variables
      * @return Response|null
      * @throws NotFoundHttpException if the requested section or entry cannot be found
      * @throws ForbiddenHttpException if the user is not permitted to edit content in the requested site
      */
-    private function _prepEditEntryVariables(array &$variables)
+    private function _prepEditEntryVariables(array &$variables): ?Response
     {
         // Get the section
         // ---------------------------------------------------------------------
@@ -699,7 +715,7 @@ class EntriesController extends BaseEntriesController
      * @param int|null $revisionId
      * @return Entry|null
      */
-    private function _loadEntry(Site $site, Section $section, int $entryId, int $draftId = null, int $revisionId = null)
+    private function _loadEntry(Site $site, Section $section, int $entryId, ?int $draftId = null, ?int $revisionId = null): ?Entry
     {
         if ($draftId) {
             $entry = Entry::find()
@@ -725,12 +741,7 @@ class EntriesController extends BaseEntriesController
                 ->status(null)
                 ->one();
 
-            if ($entry) {
-                /** @var Entry|DraftBehavior $entry */
-                if ($entry->getIsOutdated()) {
-                    Craft::$app->getElements()->mergeCanonicalChanges($entry);
-                }
-            } else {
+            if (!$entry) {
                 // Otherwise load the real Current revision
                 $entry = Entry::find()
                     ->id($entryId)
@@ -813,7 +824,7 @@ class EntriesController extends BaseEntriesController
      *
      * @param Entry $entry
      */
-    private function _populateEntryModel(Entry $entry)
+    private function _populateEntryModel(Entry $entry): void
     {
         // Set the entry attributes, defaulting to the existing values for whatever is missing from the post data
         $entry->typeId = $this->request->getBodyParam('typeId', $entry->typeId);

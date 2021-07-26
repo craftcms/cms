@@ -27,7 +27,7 @@ class SystemMessagesController extends Controller
     /**
      * @inheritdoc
      */
-    public function beforeAction($action)
+    public function beforeAction($action): bool
     {
         // Make sure they have access to the System Messages utility
         $this->requirePermission('utility:system-messages');

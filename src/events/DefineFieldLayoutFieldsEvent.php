@@ -21,5 +21,5 @@ class DefineFieldLayoutFieldsEvent extends Event
     /**
      * @var BaseField[]|string[]|array[] The fields that should be available to the field layout designer.
      */
-    public $fields = [];
+    public array $fields = [];
 }

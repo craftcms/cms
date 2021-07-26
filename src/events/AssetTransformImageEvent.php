@@ -20,5 +20,5 @@ class AssetTransformImageEvent extends AssetEvent
     /**
      * @var AssetTransformIndex Asset transform index that is being generated.
      */
-    public $transformIndex;
+    public AssetTransformIndex $transformIndex;
 }

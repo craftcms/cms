@@ -24,7 +24,7 @@ class RegisterResourceNode extends Node implements NodeCaptureInterface
     /**
      * @inheritdoc
      */
-    public function compile(Compiler $compiler)
+    public function compile(Compiler $compiler): void
     {
         $method = $this->getAttribute('method');
         $position = $this->getAttribute('position');

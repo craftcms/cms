@@ -55,7 +55,7 @@ abstract class BaseEntriesController extends Controller
      * @throws ForbiddenHttpException
      * @since 3.5.0
      */
-    protected function enforceSitePermission(Site $site)
+    protected function enforceSitePermission(Site $site): void
     {
         if (Craft::$app->getIsMultiSite()) {
             $this->requirePermission('editSite:' . $site->uid);
@@ -69,7 +69,7 @@ abstract class BaseEntriesController extends Controller
      * @param bool $duplicate
      * @throws ForbiddenHttpException
      */
-    protected function enforceEditEntryPermissions(Entry $entry, bool $duplicate = false)
+    protected function enforceEditEntryPermissions(Entry $entry, bool $duplicate = false): void
     {
         $permissionSuffix = ':' . $entry->getSection()->uid;
 
@@ -110,7 +110,7 @@ abstract class BaseEntriesController extends Controller
      * @throws ForbiddenHttpException
      * @since 3.6.0
      */
-    protected function enforceDeleteEntryPermissions(Entry $entry)
+    protected function enforceDeleteEntryPermissions(Entry $entry): void
     {
         if (!$entry->getIsDeletable()) {
             throw new ForbiddenHttpException('User is not permitted to perform this action');

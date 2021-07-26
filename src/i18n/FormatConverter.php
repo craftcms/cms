@@ -17,7 +17,7 @@ class FormatConverter extends \yii\helpers\FormatConverter
     /**
      * @inheritdoc
      */
-    public static function convertDatePhpToIcu($pattern)
+    public static function convertDatePhpToIcu($pattern): string
     {
         // Special cases for standalone values
         switch ($pattern) {

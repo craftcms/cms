@@ -29,43 +29,43 @@ class DateTimeValidator extends Validator
      * @see $tooEarly for the customized message used when the date is too early
      * @since 3.5.12
      */
-    public $min;
+    public ?string $min = null;
 
     /**
      * @var string|null The maximum date allowed
      * @see $tooLate for the customized message used when the date is too late
      * @since 3.5.12
      */
-    public $max;
+    public ?string $max = null;
 
     /**
      * @var string user-defined error message used when the value is earlier than [[min]]
      * @since 3.5.12
      */
-    public $tooEarly;
+    public string $tooEarly;
 
     /**
      * @var string user-defined error message used when the value is later than [[max]]
      * @since 3.5.12
      */
-    public $tooLate;
+    public string $tooLate;
 
     /**
      * @inheritdoc
      */
-    public function init()
+    public function init(): void
     {
         parent::init();
 
-        if ($this->message === null) {
+        if (!isset($this->message)) {
             $this->message = Craft::t('app', '{attribute} must be a date.');
         }
 
-        if ($this->min !== null && $this->tooEarly === null) {
+        if (isset($this->min) && !isset($this->tooEarly)) {
             $this->tooEarly = Craft::t('app', '{attribute} must be no earlier than {min}.');
         }
 
-        if ($this->max !== null && $this->tooLate === null) {
+        if (isset($this->max) && !isset($this->tooLate)) {
             $this->tooLate = Craft::t('app', '{attribute} must be no later than {max}.');
         }
     }
@@ -74,7 +74,7 @@ class DateTimeValidator extends Validator
      * @inheritdoc
      * @throws InvalidConfigException
      */
-    public function validateAttribute($model, $attribute)
+    public function validateAttribute($model, $attribute): void
     {
         $value = $model->$attribute;
         if ($normalized = (!$value instanceof \DateTime)) {
@@ -86,7 +86,7 @@ class DateTimeValidator extends Validator
             return;
         }
 
-        if ($this->min !== null) {
+        if (isset($this->min)) {
             $min = DateTimeHelper::toDateTime($this->min);
             if (!$min) {
                 throw new InvalidConfigException("Invalid minimum date: $this->min");
@@ -98,7 +98,7 @@ class DateTimeValidator extends Validator
             }
         }
 
-        if ($this->max !== null) {
+        if (isset($this->max)) {
             $max = DateTimeHelper::toDateTime($this->max);
             if (!$max) {
                 throw new InvalidConfigException("Invalid maximum date: $this->max");
@@ -116,9 +116,12 @@ class DateTimeValidator extends Validator
         }
     }
 
-    public function isEmpty($value)
+    /**
+     * @inheritdoc
+     */
+    public function isEmpty($value): bool
     {
-        if ($this->isEmpty !== null) {
+        if (isset($this->isEmpty)) {
             return parent::isEmpty($value);
         }
 

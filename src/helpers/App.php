@@ -55,7 +55,7 @@ class App
     /**
      * @var bool
      */
-    private static $_iconv;
+    private static bool $_iconv;
 
     /**
      * Returns an environment variable, checking for it in `$_SERVER` and calling `getenv()` as a fallback.
@@ -291,7 +291,7 @@ class App
      */
     public static function checkForValidIconv(): bool
     {
-        if (self::$_iconv !== null) {
+        if (isset(self::$_iconv)) {
             return self::$_iconv;
         }
 
@@ -317,8 +317,9 @@ class App
      * Sets PHP’s memory limit to the maximum specified by the
      * <config3:phpMaxMemoryLimit> config setting, and gives the script an
      * unlimited amount of time to execute.
+     *
      */
-    public static function maxPowerCaptain()
+    public static function maxPowerCaptain(): void
     {
         // Don't mess with the memory_limit, even at the config's request, if it's already set to -1 or >= 1.5GB
         $memoryLimit = static::phpConfigValueInBytes('memory_limit');
@@ -334,7 +335,7 @@ class App
     /**
      * @return string|null
      */
-    public static function licenseKey()
+    public static function licenseKey(): ?string
     {
         if (defined('CRAFT_LICENSE_KEY')) {
             $licenseKey = CRAFT_LICENSE_KEY;
@@ -580,7 +581,7 @@ class App
      * @since 3.0.18
      * @deprecated in 3.6.0. Override `components.log.targets` instead
      */
-    public static function logConfig()
+    public static function logConfig(): ?array
     {
         // Using Yii's Dispatcher class here is intentional
         return [
@@ -622,13 +623,13 @@ class App
 
             // Only log errors and warnings, unless Craft is running in Dev Mode or it's being installed/updated
             // (Explicitly check GeneralConfig::$devMode here, because YII_DEBUG is always `1` for console requests.)
-            $devModeLogging = (
+            $onlyLogErrors = (
                 !Craft::$app->getConfig()->getGeneral()->devMode &&
                 Craft::$app->getIsInstalled() &&
                 !Craft::$app->getUpdates()->getIsCraftDbMigrationNeeded()
             );
 
-            if ($devModeLogging) {
+            if ($onlyLogErrors) {
                 $fileTargetConfig['levels'] = Logger::LEVEL_ERROR | Logger::LEVEL_WARNING;
             }
 
@@ -644,7 +645,7 @@ class App
 
                 $targets[Dispatcher::TARGET_STDERR] = $streamErrLogTarget;
 
-                if ($devModeLogging) {
+                if (!$onlyLogErrors) {
                     $streamOutLogTarget = [
                         'class' => StreamLogTarget::class,
                         'url' => 'php://stdout',

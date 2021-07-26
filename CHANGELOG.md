@@ -18,6 +18,8 @@
 - Added `craft\errors\MissingVolumeFolderException`.
 - Added `craft\helpers\Assets::downloadFile()`.
 - Added `craft\helpers\Db::parseNumericParam()`.
+- Added `craft\helpers\Number::isInt()`.
+- Added `craft\helpers\Number::toIntOrFloat()`.
 - Added `craft\models\AssetIndexingSession`.
 - Added `craft\models\VolumeListing`.
 - Added `craft\records\AssetIndexingSession`.
@@ -43,8 +45,69 @@
 - Local Volume no longer uses the FlySystem library.
 - Asset Indexing sessions ar IDs are integers now, instead of being a string.
 - Admin tables now pass the id of the deleted item to the `deleteCallback` function.
+- All components’ `afterDelete()` methods must now have a `void` return type declaration.
+- All components’ `afterSave()` methods must now have a `void` return type declaration.
+- All components’ `attributes()` methods must now have an `array` return type declaration.
+- All components’ `beforeApplyDelete()` methods must now have a `void` return type declaration.
+- All components’ `behaviors()` methods must now have a `void` return type declaration.
+- All components’ `extraFields()` methods must now have an `array` return type declaration.
+- All components’ `fields()` methods must now have an `array` return type declaration.
+- All components’ `getSettingsHtml()` methods must now have a `?string` return type declaration.
+- All components’ `init()` methods must now have a `void` return type declaration.
+- All components’ `rules()` methods must now have an `array` return type declaration.
+- Controllers’ `beforeAction()` methods must now have a `bool` return type declaration.
+- Element actions’ `getConfirmationMessage()` methods must now have a `?string` return type declaration.
+- Element actions’ `getMessage()` methods must now have a `?string` return type declaration.
+- Element actions’ `getTriggerHtml()` methods must now have a `?string` return type declaration.
+- Element types’ `__toString()` methods must now have a `string` return type declaration.
+- Element types’ `afterDelete()` methods must now have a `void` return type declaration.
+- Element types’ `afterMoveInStructure()` methods must now have a `void` return type declaration.
+- Element types’ `afterPropagate()` methods must now have a `void` return type declaration.
+- Element types’ `afterRestore()` methods must now have a `void` return type declaration.
+- Element types’ `afterSave()` methods must now have a `void` return type declaration.
+- Element types’ `attributeLabels()` methods must now have an `array` return type declaration.
+- Element types’ `getCpEditUrl()` methods must now have a `?string` return type declaration.
+- Element types’ `getFieldLayout()` methods must now have a `?FieldLayout` return type declaration.
+- Element types’ `getRef()` methods must now have a `?string` return type declaration.
+- Element types’ `getStatus()` methods must now have a `?string` return type declaration.
+- Element types’ `getThumbUrl()` methods must now have a `?string` return type declaration.
+- Element types’ `getTitleTranslationDescription()` methods must now have a `?string` return type declaration.
+- Element types’ `getUriFormat()` methods must now have a `?string` return type declaration.
+- Element types’ `prepElementQueryForTableAttribute()` methods must now have a `void` return type declaration.
+- Element types’ `refHandle()` methods must now have a `?string` return type declaration.
+- Element queries’ `status()` methods must now have a `self` return type declaration.
+- Fields’ `afterElementDelete()` methods must now have a `void` return type declaration.
+- Fields’ `afterElementPropagate()` methods must now have a `void` return type declaration.
+- Fields’ `afterElementRestore()` methods must now have a `void` return type declaration.
+- Fields’ `afterElementSave()` methods must now have a `void` return type declaration.
+- Fields’ `getEagerLoadingGqlConditions()` methods must now have an `?array` return type declaration, and `null` should be returned rather than `false` if the field is not eager-loadable.
+- Fields’ `modifyElementIndexQuery()` methods must now have a `void` return type declaration.
+- Fields’ `modifyElementsQuery()` methods must now have a `void` return type declaration, and should throw a `QueryAbortedException` when the query should yield no results, rather than returning `false`.
+- Relational fields’ `$allowLargeThumbsView` properties must now have a `bool` type declaration.
+- Relational fields’ `$inputJsClass` properties must now have a `?string` type declaration.
+- Relational fields’ `$inputTemplate` properties must now have a `string` type declaration.
+- Relational fields’ `$settingsTemplate` properties must now have a `string` type declaration.
+- Relational fields’ `$sortable` properties must now have a `bool` type declaration.
+- Field layout elements’ `inputHtml()` methods must now have a `?string` return type declaration.
+- Field layout elements’ `selectorIcon()` methods must now have a `?string` return type declaration.
+- Field layout elements’ `settingsHtml()` methods must now have a `?string` return type declaration.
+- GraphQL objects’ `resolve()` methods’ `$arguments` arguments must now have an `array` type declaration.
+- GraphQL queries’ `getQueries()` methods’ `$checkToken` arguments must now have a `bool` type declaration.
+- Plugins’ `afterSaveSettings()` methods must now have a `void` return type declaration.
+- Plugins’ `createSettingsModel()` methods must now have a `?Model` return type declaration.
+- Plugins’ `getCpNavItem()` methods must now have an `?array` return type declaration.
+- Plugins’ `settingsHtml()` methods must now have a `?string` return type declaration.
+- Queue jobs’ `defaultDescription()` methods must now have a `?string` return type declaration.
+- Utilities’ `iconPath()` methods must now have a `?string` return type declaration.
+- Volumes’ `getRootUrl()` methods must now have a `?string` return type declaration, and `null` should be returned rather than `false` if the volume doesn’t have a root URL.
+- Widgets’ `getBodyHtml()` methods must now have a `?string` return type declaration, and `null` should be returned rather that `false` if the widget should not be visible.
+- Widgets’ `getSubtitle()` methods must now have a `?string` return type declaration.
+- Widgets’ `getTitle()` methods can now have a `?string` return type declaration.
+- Widgets’ `icon()` methods must now have a `?string` return type declaration.
+- Widgets’ `maxColspan()` methods must now have an `?int` return type declaration.
 - `craft\base\Model::datetimeAttributes()` is now called from the constructor, instead of the `init()` method.
 - `craft\base\Model::setAttributes()` now normalizes date attributes into `DateTime` objects.
+- `craft\events\DraftEvent::$source` has been renamed to `$canonical`.
 - `craft\helpers\Db::parseParam()` now validates that numeric values are passed if the `$columnType` is set to a numeric column type. ([#9142](https://github.com/craftcms/cms/issues/9142))
 - `craft\helpers\Db::prepareDateForDb()` no longer has a `$stripSeconds` argument.
 - `craft\helpers\Db::prepareValueForDb()` now has a `$columnType` argument.

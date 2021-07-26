@@ -26,9 +26,9 @@ class SearchEvent extends BaseEvent
     public $elementIds = true;
 
     /**
-     * @var SearchQuery|null The search query
+     * @var SearchQuery The search query
      */
-    public $query;
+    public SearchQuery $query;
 
     /**
      * @var int|int[]|null The site ID(s) to filter by
@@ -39,5 +39,5 @@ class SearchEvent extends BaseEvent
      * @var array|null The raw search result data
      * @since 3.6.0
      */
-    public $results;
+    public ?array $results = null;
 }

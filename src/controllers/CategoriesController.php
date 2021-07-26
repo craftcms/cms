@@ -72,7 +72,7 @@ class CategoriesController extends Controller
      * @return Response
      * @throws NotFoundHttpException if the requested category group cannot be found
      */
-    public function actionEditCategoryGroup(int $groupId = null, CategoryGroup $categoryGroup = null): Response
+    public function actionEditCategoryGroup(?int $groupId = null, ?CategoryGroup $categoryGroup = null): Response
     {
         $this->requireAdmin();
 
@@ -123,7 +123,7 @@ class CategoriesController extends Controller
      * @return Response|null
      * @throws BadRequestHttpException
      */
-    public function actionSaveGroup()
+    public function actionSaveGroup(): ?Response
     {
         $this->requirePostRequest();
         $this->requireAdmin();
@@ -214,7 +214,7 @@ class CategoriesController extends Controller
      * @return Response
      * @throws ForbiddenHttpException if the user is not permitted to edit categories
      */
-    public function actionCategoryIndex(string $groupHandle = null): Response
+    public function actionCategoryIndex(?string $groupHandle = null): Response
     {
         $groups = Craft::$app->getCategories()->getEditableGroups();
 
@@ -242,7 +242,7 @@ class CategoriesController extends Controller
      * @return Response
      * @throws NotFoundHttpException if the requested site handle is invalid
      */
-    public function actionEditCategory(string $groupHandle, int $categoryId = null, string $siteHandle = null, Category $category = null): Response
+    public function actionEditCategory(string $groupHandle, ?int $categoryId = null, ?string $siteHandle = null, ?Category $category = null): Response
     {
         $variables = [
             'groupHandle' => $groupHandle,
@@ -335,13 +335,6 @@ class CategoriesController extends Controller
 
         // Body class
         $variables['bodyClass'] = 'edit-category site--' . $site->handle;
-
-        // Page title
-        if ($category->id === null) {
-            $variables['title'] = Craft::t('app', 'Create a new category');
-        } else {
-            $variables['docTitle'] = $variables['title'] = trim($category->title) ?: Craft::t('app', 'Edit Category');
-        }
 
         // Breadcrumbs
         $variables['crumbs'] = [
@@ -440,7 +433,7 @@ class CategoriesController extends Controller
      * @return Response|null
      * @throws ServerErrorHttpException
      */
-    public function actionSaveCategory()
+    public function actionSaveCategory(): ?Response
     {
         $this->requirePostRequest();
 
@@ -528,7 +521,7 @@ class CategoriesController extends Controller
      * @return Response|null
      * @throws NotFoundHttpException if the requested category cannot be found
      */
-    public function actionDeleteCategory()
+    public function actionDeleteCategory(): ?Response
     {
         $this->requirePostRequest();
 
@@ -576,7 +569,7 @@ class CategoriesController extends Controller
      * @throws NotFoundHttpException if the requested category cannot be found
      * @throws ServerErrorHttpException if the category group is not configured properly
      */
-    public function actionShareCategory(int $categoryId, int $siteId = null): Response
+    public function actionShareCategory(int $categoryId, ?int $siteId = null): Response
     {
         $category = Craft::$app->getCategories()->getCategoryById($categoryId, $siteId);
 
@@ -618,7 +611,7 @@ class CategoriesController extends Controller
      * @return Response
      * @throws NotFoundHttpException if the requested category cannot be found
      */
-    public function actionViewSharedCategory(int $categoryId, int $siteId = null): Response
+    public function actionViewSharedCategory(int $categoryId, ?int $siteId = null): Response
     {
         $this->requireToken();
 
@@ -634,11 +627,11 @@ class CategoriesController extends Controller
     /**
      * Preps category category variables.
      *
-     * @param array &$variables
+     * @param array $variables
      * @throws NotFoundHttpException if the requested category group or category cannot be found
      * @throws ForbiddenHttpException if the user is not permitted to edit content in the requested site
      */
-    private function _prepEditCategoryVariables(array &$variables)
+    private function _prepEditCategoryVariables(array &$variables): void
     {
         // Get the category group
         // ---------------------------------------------------------------------
@@ -746,7 +739,7 @@ class CategoriesController extends Controller
      *
      * @param Category $category
      */
-    private function _enforceEditCategoryPermissions(Category $category)
+    private function _enforceEditCategoryPermissions(Category $category): void
     {
         if (Craft::$app->getIsMultiSite()) {
             // Make sure they have access to this site
@@ -762,7 +755,7 @@ class CategoriesController extends Controller
      *
      * @param Category $category
      */
-    private function _populateCategoryModel(Category $category)
+    private function _populateCategoryModel(Category $category): void
     {
         // Set the category attributes, defaulting to the existing values for whatever is missing from the post data
         $category->slug = $this->request->getBodyParam('slug', $category->slug);

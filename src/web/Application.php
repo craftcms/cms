@@ -84,7 +84,7 @@ class Application extends \yii\web\Application
     /**
      * Initializes the application.
      */
-    public function init()
+    public function init(): void
     {
         $this->state = self::STATE_INIT;
         $this->_preInit();
@@ -98,7 +98,7 @@ class Application extends \yii\web\Application
     /**
      * @inheritdoc
      */
-    public function bootstrap()
+    public function bootstrap(): void
     {
         // Ensure that the request component has been instantiated
         if (!$this->has('request', true)) {
@@ -113,13 +113,14 @@ class Application extends \yii\web\Application
     /**
      * @inheritdoc
      */
-    public function setTimeZone($value)
+    public function setTimeZone($value): void
     {
         parent::setTimeZone($value);
 
         if ($value !== 'UTC' && $this->getI18n()->getIsIntlLoaded()) {
             // Make sure that ICU supports this timezone
             try {
+                /** @noinspection PhpExpressionResultUnusedInspection */
                 new \IntlDateFormatter($this->language, \IntlDateFormatter::NONE, \IntlDateFormatter::NONE);
             } catch (\IntlException $e) {
                 Craft::warning("Time zone \"{$value}\" does not appear to be supported by ICU: " . intl_get_error_message());
@@ -156,7 +157,12 @@ class Application extends \yii\web\Application
             }
 
             // Tell bots not to index/follow CP and tokenized pages
-            if ($generalConfig->disallowRobots || $request->getIsCpRequest() || $request->getToken() !== null || $request->getIsActionRequest()) {
+            if (
+                $generalConfig->disallowRobots ||
+                $request->getIsCpRequest() ||
+                $request->getToken() !== null ||
+                ($request->getIsActionRequest() && !($request->getIsLoginRequest() && $request->getIsGet()))
+            ) {
                 $headers->set('X-Robots-Tag', 'none');
             }
 
@@ -282,7 +288,7 @@ class Application extends \yii\web\Application
     /**
      * @inheritdoc
      */
-    public function setVendorPath($path)
+    public function setVendorPath($path): void
     {
         parent::setVendorPath($path);
 
@@ -308,7 +314,7 @@ class Application extends \yii\web\Application
     /**
      * @inheritdoc
      */
-    public function get($id, $throwException = true)
+    public function get($id, $throwException = true): ?object
     {
         // Is this the first time the queue component is requested?
         $isFirstQueue = $id === 'queue' && !$this->has($id, true);
@@ -329,15 +335,16 @@ class Application extends \yii\web\Application
      * @throws InvalidConfigException
      * @throws \yii\base\Exception
      */
-    protected function ensureResourcePathExists()
+    protected function ensureResourcePathExists(): void
     {
         $generalConfig = $this->getConfig()->getGeneral();
 
-        if ($generalConfig->resourceBasePath === false) {
+        $resourceBasePath = Craft::getAlias($generalConfig->resourceBasePath);
+
+        if ($resourceBasePath === false) {
             return;
         }
 
-        $resourceBasePath = Craft::getAlias($generalConfig->resourceBasePath);
         @FileHelper::createDirectory($resourceBasePath);
 
         if (!is_dir($resourceBasePath) || !FileHelper::isWritable($resourceBasePath)) {
@@ -351,7 +358,7 @@ class Application extends \yii\web\Application
      * @throws UnauthorizedHttpException
      * @since 3.5.0
      */
-    protected function authenticate()
+    protected function authenticate(): void
     {
         if (!Craft::$app->getConfig()->getGeneral()->enableBasicHttpAuth) {
             return;
@@ -380,7 +387,7 @@ class Application extends \yii\web\Application
     /**
      * Bootstraps the Debug Toolbar if necessary.
      */
-    protected function debugBootstrap()
+    protected function debugBootstrap(): void
     {
         $request = $this->getRequest();
 
@@ -434,13 +441,12 @@ class Application extends \yii\web\Application
     /**
      * Unregisters the Debug module's end body event.
      */
-    private function _unregisterDebugModule()
+    private function _unregisterDebugModule(): void
     {
         $debug = $this->getModule('debug', false);
 
         if ($debug !== null) {
-            $this->getView()->off(View::EVENT_END_BODY,
-                [$debug, 'renderToolbar']);
+            $this->getView()->off(View::EVENT_END_BODY, [$debug, 'renderToolbar']);
         }
     }
 
@@ -451,7 +457,7 @@ class Application extends \yii\web\Application
      * @throws BadRequestHttpException
      * @throws NotFoundHttpException
      */
-    private function _processResourceRequest(Request $request)
+    private function _processResourceRequest(Request $request): void
     {
         // Does this look like a resource request?
         $resourceBaseUri = parse_url(Craft::getAlias($this->getConfig()->getGeneral()->resourceBaseUrl), PHP_URL_PATH);
@@ -478,15 +484,24 @@ class Application extends \yii\web\Application
             return;
         }
 
-        // Publish the directory
         $filePath = substr($resourceUri, strlen($hash) + 1);
         if (!Path::ensurePathIsContained($filePath)) {
             throw new BadRequestHttpException('Invalid resource path: ' . $filePath);
         }
-        $publishedPath = $this->getAssetManager()->publish(Craft::getAlias($sourcePath))[0] . DIRECTORY_SEPARATOR . $filePath;
-        if (!file_exists($publishedPath)) {
-            throw new NotFoundHttpException($filePath . ' does not exist.');
+
+        // Publish the directory
+        [$publishedDir] = $this->getAssetManager()->publish(Craft::getAlias($sourcePath));
+
+        // Make sure the hashes match
+        if (basename($publishedDir) !== $hash) {
+            throw new NotFoundHttpException("$filePath does not exist.");
         }
+
+        $publishedPath = $publishedDir . DIRECTORY_SEPARATOR . $filePath;
+        if (!file_exists($publishedPath)) {
+            throw new NotFoundHttpException("$filePath does not exist.");
+        }
+
         $this->getResponse()
             ->setCacheHeaders()
             ->sendFile($publishedPath, null, ['inline' => true]);
@@ -502,7 +517,7 @@ class Application extends \yii\web\Application
      * @throws ServiceUnavailableHttpException
      * @throws \yii\base\ExitException
      */
-    private function _processInstallRequest(Request $request)
+    private function _processInstallRequest(Request $request): ?Response
     {
         $isCpRequest = $request->getIsCpRequest();
         $isInstalled = $this->getIsInstalled();
@@ -559,7 +574,7 @@ class Application extends \yii\web\Application
      * @return Response|null
      * @throws \Throwable if reasons
      */
-    private function _processActionRequest(Request $request)
+    private function _processActionRequest(Request $request): ?Response
     {
         if ($request->getIsActionRequest()) {
             $route = implode('/', $request->getActionSegments());
@@ -588,7 +603,7 @@ class Application extends \yii\web\Application
      * @param Request $request
      * @return Response|null
      */
-    private function _processRequirementsCheck(Request $request)
+    private function _processRequirementsCheck(Request $request): ?Response
     {
         // Only run for CP requests and if we're not in the middle of an update.
         if (
@@ -616,9 +631,8 @@ class Application extends \yii\web\Application
      * @return Response|null
      * @throws HttpException
      * @throws ServiceUnavailableHttpException
-     * @throws \yii\base\ExitException
      */
-    private function _processUpdateLogic(Request $request)
+    private function _processUpdateLogic(Request $request): ?Response
     {
         $this->_unregisterDebugModule();
 

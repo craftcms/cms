@@ -25,5 +25,5 @@ class DefineFieldHtmlEvent extends DefineHtmlEvent
     /**
      * @var ElementInterface|null The element the field is associated with, if there is one
      */
-    public $element;
+    public ?ElementInterface $element;
 }

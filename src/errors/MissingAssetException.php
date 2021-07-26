@@ -24,22 +24,22 @@ class MissingAssetException extends Exception
     /**
      * @var AssetIndexData
      */
-    public $indexEntry;
+    public AssetIndexData $indexEntry;
 
     /**
      * @var VolumeInterface
      */
-    public $volume;
+    public VolumeInterface $volume;
 
     /**
      * @var VolumeFolder
      */
-    public $folder;
+    public VolumeFolder $folder;
 
     /**
      * @var string
      */
-    public $filename;
+    public string $filename;
 
     /**
      * Constructor
@@ -52,7 +52,7 @@ class MissingAssetException extends Exception
      * @param int $code
      * @param Throwable|null $previous
      */
-    public function __construct(AssetIndexData $indexEntry, VolumeInterface $volume, VolumeFolder $folder, string $filename, $message = '', $code = 0, Throwable $previous = null)
+    public function __construct(AssetIndexData $indexEntry, VolumeInterface $volume, VolumeFolder $folder, string $filename, string $message = '', int $code = 0, ?Throwable $previous = null)
     {
         $this->indexEntry = $indexEntry;
         $this->volume = $volume;

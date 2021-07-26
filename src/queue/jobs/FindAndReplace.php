@@ -26,23 +26,23 @@ class FindAndReplace extends BaseJob
     /**
      * @var string|null The search text
      */
-    public $find;
+    public ?string $find = null;
 
     /**
      * @var string|null The replacement text
      */
-    public $replace;
+    public ?string $replace = null;
 
     /**
-     * @var
+     * @var array
      */
-    private $_textColumns;
+    private array $_textColumns;
 
     /**
      * @inheritdoc
      * @throws Exception
      */
-    public function execute($queue)
+    public function execute($queue): void
     {
         // Find all the textual field columns
         $this->_textColumns = [
@@ -69,7 +69,7 @@ class FindAndReplace extends BaseJob
     /**
      * @inheritdoc
      */
-    protected function defaultDescription(): string
+    protected function defaultDescription(): ?string
     {
         return Craft::t('app', 'Replacing “{find}” with “{replace}”', [
             'find' => $this->find,
@@ -84,7 +84,7 @@ class FindAndReplace extends BaseJob
      * @param string $table
      * @param string $fieldColumnPrefix
      */
-    private function _checkField(FieldInterface $field, string $table, string $fieldColumnPrefix)
+    private function _checkField(FieldInterface $field, string $table, string $fieldColumnPrefix): void
     {
         if (!$field::hasContentColumn()) {
             return;
@@ -120,7 +120,7 @@ class FindAndReplace extends BaseJob
      * @param Matrix $matrixField
      * @throws Exception if the content table can't be determined
      */
-    private function _checkMatrixField(Matrix $matrixField)
+    private function _checkMatrixField(Matrix $matrixField): void
     {
         $blockTypes = Craft::$app->getMatrix()->getBlockTypesByFieldId($matrixField->id);
 

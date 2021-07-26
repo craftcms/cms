@@ -22,17 +22,17 @@ class MissingVolumeFolderException extends VolumeException
     /**
      * @var AssetIndexData
      */
-    public $indexEntry;
+    public AssetIndexData $indexEntry;
 
     /**
      * @var VolumeInterface
      */
-    public $volume;
+    public VolumeInterface $volume;
 
     /**
      * @var string
      */
-    public $folderName;
+    public string $folderName;
 
     /**
      * Constructor
@@ -44,7 +44,7 @@ class MissingVolumeFolderException extends VolumeException
      * @param int $code
      * @param Throwable|null $previous
      */
-    public function __construct(AssetIndexData $indexEntry, VolumeInterface $volume, string $folderName, $message = '', $code = 0, Throwable $previous = null)
+    public function __construct(AssetIndexData $indexEntry, VolumeInterface $volume, string $folderName, string $message = '', int $code = 0, ?Throwable $previous = null)
     {
         $this->indexEntry = $indexEntry;
         $this->volume = $volume;

@@ -43,14 +43,14 @@ class Template
      * @var bool Whether to enable profiling for this request
      * @see _shouldProfile()
      */
-    private static $_shouldProfile;
+    private static bool $_shouldProfile;
 
     /**
      * @var array Counters for template elements being profiled
      * @see beginProfile()
      * @see endProfile()
      */
-    private static $_profileCounters;
+    private static array $_profileCounters;
 
     /**
      * Returns the attribute value for a given array/object.
@@ -165,7 +165,7 @@ class Template
      * @param string $name The name of the template element
      * @since 3.3.0
      */
-    public static function beginProfile(string $type, string $name)
+    public static function beginProfile(string $type, string $name): void
     {
         if (!self::_shouldProfile()) {
             return;
@@ -187,7 +187,7 @@ class Template
      * @param string $name The name of the template element
      * @since 3.3.0
      */
-    public static function endProfile(string $type, string $name)
+    public static function endProfile(string $type, string $name): void
     {
         if (!self::_shouldProfile()) {
             return;
@@ -204,7 +204,7 @@ class Template
      */
     private static function _shouldProfile(): bool
     {
-        if (self::$_shouldProfile !== null) {
+        if (isset(self::$_shouldProfile)) {
             return self::$_shouldProfile;
         }
 
@@ -348,7 +348,7 @@ class Template
      * @throws InvalidConfigException
      * @since 3.5.6
      */
-    public static function css(string $css, array $options = [], ?string $key = null)
+    public static function css(string $css, array $options = [], ?string $key = null): void
     {
         // Is this a CSS file?
         if (preg_match('/^[^\r\n]+\.css$/i', $css)) {
@@ -369,7 +369,7 @@ class Template
      * @throws InvalidConfigException
      * @since 3.5.6
      */
-    public static function js(string $js, array $options = [], ?string $key = null)
+    public static function js(string $js, array $options = [], ?string $key = null): void
     {
         // Is this a JS file?
         if (preg_match('/^[^\r\n]+\.js$/i', $js)) {

@@ -22,6 +22,7 @@ use yii\base\InvalidConfigException;
 use yii\console\controllers\BaseMigrateController;
 use yii\console\Exception;
 use yii\console\ExitCode;
+use yii\db\MigrationInterface;
 use yii\helpers\Console;
 
 /**
@@ -81,18 +82,18 @@ class MigrateController extends BaseMigrateController
     const EVENT_REGISTER_MIGRATOR = 'registerMigrator';
 
     /**
-     * @var string The migration track to work with (e.g. `craft`, `content`, `plugin:commerce`, etc.)
+     * @var string|null The migration track to work with (e.g. `craft`, `content`, `plugin:commerce`, etc.)
      *
      * If --plugin is passed, this will automatically be set to the plugin’s track. Otherwise defaults to 'content'.
      * @since 3.5.0
      */
-    public $track = MigrationManager::TRACK_CONTENT;
+    public ?string $track = MigrationManager::TRACK_CONTENT;
 
     /**
      * @var string|null DEPRECATED. Use `--track` instead.
      * @deprecated in 3.5.0. Use [[track]] instead.
      */
-    public $type;
+    public ?string $type = null;
 
     /**
      * @var string|PluginInterface|null The handle of the plugin to use during migration operations, or the plugin itself
@@ -102,23 +103,23 @@ class MigrateController extends BaseMigrateController
     /**
      * @var bool Exclude pending content migrations.
      */
-    public $noContent = false;
+    public bool $noContent = false;
 
     /**
      * @var bool Skip backing up the database.
      * @since 3.4.3
      */
-    public $noBackup = false;
+    public bool $noBackup = false;
 
     /**
      * @var MigrationManager[] Migration managers that will be used in this request
      */
-    private $_migrators;
+    private array $_migrators;
 
     /**
      * @inheritdoc
      */
-    public function init()
+    public function init(): void
     {
         parent::init();
         $this->checkTty();
@@ -138,7 +139,7 @@ class MigrateController extends BaseMigrateController
      * @param string $actionID the action id of the current request
      * @return string[] the names of the options valid for the action
      */
-    public function options($actionID)
+    public function options($actionID): array
     {
         $options = parent::options($actionID);
 
@@ -162,7 +163,7 @@ class MigrateController extends BaseMigrateController
     /**
      * @inheritdoc
      */
-    public function optionAliases()
+    public function optionAliases(): array
     {
         $aliases = parent::optionAliases();
         $aliases['t'] = 'type';
@@ -174,7 +175,7 @@ class MigrateController extends BaseMigrateController
     /**
      * @inheritdoc
      */
-    public function beforeAction($action)
+    public function beforeAction($action): bool
     {
         // Make sure this isn't a root user
         if (!$this->checkRootUser()) {
@@ -261,9 +262,10 @@ class MigrateController extends BaseMigrateController
      *
      * @param string $name the name of the new migration. This should only contain
      * letters, digits, and underscores.
+     * @return int
      * @throws Exception if the name argument is invalid.
      */
-    public function actionCreate($name)
+    public function actionCreate($name): int
     {
         if (!preg_match('/^\w+$/', $name)) {
             throw new Exception('The migration name should contain letters, digits and/or underscore characters only.');
@@ -293,6 +295,8 @@ class MigrateController extends BaseMigrateController
             FileHelper::writeToFile($file, $content);
             $this->stdout('New migration created successfully.' . PHP_EOL, Console::FG_GREEN);
         }
+
+        return ExitCode::OK;
     }
 
     /**
@@ -414,7 +418,7 @@ class MigrateController extends BaseMigrateController
      *
      * @return int the status of the action execution. 0 means normal, other values mean abnormal.
      */
-    public function actionUp($limit = 0)
+    public function actionUp($limit = 0): int
     {
         $res = parent::actionUp($limit) ?? ExitCode::OK;
 
@@ -451,7 +455,7 @@ class MigrateController extends BaseMigrateController
     /**
      * Clears all compiled templates.
      */
-    private function _clearCompiledTemplates()
+    private function _clearCompiledTemplates(): void
     {
         try {
             FileHelper::clearDirectory(Craft::$app->getPath()->getCompiledTemplatesPath(false));
@@ -508,7 +512,7 @@ class MigrateController extends BaseMigrateController
     /**
      * @inheritdoc
      */
-    protected function createMigration($class)
+    protected function createMigration($class): MigrationInterface
     {
         return $this->getMigrator()->createMigration($class);
     }
@@ -516,7 +520,7 @@ class MigrateController extends BaseMigrateController
     /**
      * @inheritdoc
      */
-    protected function getNewMigrations()
+    protected function getNewMigrations(): array
     {
         return $this->getMigrator()->getNewMigrations();
     }
@@ -524,7 +528,7 @@ class MigrateController extends BaseMigrateController
     /**
      * @inheritdoc
      */
-    protected function getMigrationHistory($limit)
+    protected function getMigrationHistory($limit): array
     {
         $history = $this->getMigrator()->getMigrationHistory((int)$limit);
 
@@ -537,7 +541,7 @@ class MigrateController extends BaseMigrateController
     /**
      * @inheritdoc
      */
-    protected function addMigrationHistory($version)
+    protected function addMigrationHistory($version): void
     {
         $this->getMigrator()->addMigrationHistory($version);
     }
@@ -545,7 +549,7 @@ class MigrateController extends BaseMigrateController
     /**
      * @inheritdoc
      */
-    protected function removeMigrationHistory($version)
+    protected function removeMigrationHistory($version): void
     {
         $this->getMigrator()->removeMigrationHistory($version);
     }
@@ -553,7 +557,7 @@ class MigrateController extends BaseMigrateController
     /**
      * @inheritdoc
      */
-    protected function truncateDatabase()
+    protected function truncateDatabase(): void
     {
         $this->getMigrator()->truncateHistory();
     }

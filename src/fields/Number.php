@@ -18,6 +18,7 @@ use craft\helpers\Html;
 use craft\helpers\Localization;
 use craft\i18n\Locale;
 use yii\base\InvalidArgumentException;
+use craft\helpers\Number as NumberHelper;
 
 /**
  * Number represents a Number field.
@@ -62,7 +63,7 @@ class Number extends Field implements PreviewableFieldInterface, SortableFieldIn
     public $defaultValue;
 
     /**
-     * @var int|float The minimum allowed number
+     * @var int|float|null The minimum allowed number
      */
     public $min = 0;
 
@@ -74,34 +75,34 @@ class Number extends Field implements PreviewableFieldInterface, SortableFieldIn
     /**
      * @var int The number of digits allowed after the decimal point
      */
-    public $decimals = 0;
+    public int $decimals = 0;
 
     /**
      * @var int|null The size of the field
      */
-    public $size;
+    public ?int $size = null;
 
     /**
      * @var string|null Text that should be displayed before the input
      */
-    public $prefix;
+    public ?string $prefix = null;
 
     /**
      * @var string|null Text that should be displayed after the input
      */
-    public $suffix;
+    public ?string $suffix = null;
 
     /**
      * @var string How the number should be formatted in element index views.
      * @since 3.5.11
      */
-    public $previewFormat = self::FORMAT_DECIMAL;
+    public string $previewFormat = self::FORMAT_DECIMAL;
 
     /**
      * @var string|null The currency that should be used if [[$previewFormat]] is set to `currency`.
      * @since 3.5.11
      */
-    public $previewCurrency;
+    public ?string $previewCurrency = null;
 
     /**
      * @inheritdoc
@@ -109,55 +110,27 @@ class Number extends Field implements PreviewableFieldInterface, SortableFieldIn
      */
     public function __construct($config = [])
     {
-        // Normalize number settings
+        // Config normalization
         foreach (['defaultValue', 'min', 'max'] as $name) {
             if (isset($config[$name]) && is_array($config[$name])) {
                 $config[$name] = Localization::normalizeNumber($config[$name]['value'], $config[$name]['locale']);
             }
         }
+        foreach (['defaultValue', 'max', 'decimals', 'size', 'prefix', 'suffix', 'previewCurrency'] as $name) {
+            if (($config[$name] ?? null) === '') {
+                unset($config[$name]);
+            }
+        }
+        if (($config['min'] ?? null) === '') {
+            $config['min'] = null; // default is 0
+        }
+        foreach (['min', 'max', 'defaultValue'] as $name) {
+            if (isset($config[$name])) {
+                $config[$name] = NumberHelper::toIntOrFloat($config[$name]);
+            }
+        }
 
         parent::__construct($config);
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function init()
-    {
-        parent::init();
-
-        // Normalize $defaultValue
-        if ($this->defaultValue === '') {
-            $this->defaultValue = null;
-        }
-
-        // Normalize $max
-        if ($this->max === '') {
-            $this->max = null;
-        }
-
-        // Normalize $min
-        if ($this->min === '') {
-            $this->min = null;
-        }
-
-        // Normalize $decimals
-        if (!$this->decimals) {
-            $this->decimals = 0;
-        }
-
-        // Normalize $size
-        if ($this->size !== null && !$this->size) {
-            $this->size = null;
-        }
-
-        if ($this->prefix === '') {
-            $this->prefix = null;
-        }
-
-        if ($this->suffix === '') {
-            $this->suffix = null;
-        }
     }
 
     /**
@@ -193,7 +166,7 @@ class Number extends Field implements PreviewableFieldInterface, SortableFieldIn
     /**
      * @inheritdoc
      */
-    public function getSettingsHtml()
+    public function getSettingsHtml(): ?string
     {
         return Craft::$app->getView()->renderTemplate('_components/fieldtypes/Number/settings',
             [
@@ -212,10 +185,10 @@ class Number extends Field implements PreviewableFieldInterface, SortableFieldIn
     /**
      * @inheritdoc
      */
-    public function normalizeValue($value, ElementInterface $element = null)
+    public function normalizeValue($value, ?ElementInterface $element = null)
     {
         if ($value === null) {
-            if ($this->defaultValue !== null && $this->isFresh($element)) {
+            if (isset($this->defaultValue) && $this->isFresh($element)) {
                 return $this->defaultValue;
             }
             return null;
@@ -245,7 +218,7 @@ class Number extends Field implements PreviewableFieldInterface, SortableFieldIn
     /**
      * @inheritdoc
      */
-    protected function inputHtml($value, ElementInterface $element = null): string
+    protected function inputHtml($value, ?ElementInterface $element = null): string
     {
         if ($value !== null) {
             if ($this->previewFormat !== self::FORMAT_NONE) {
@@ -264,8 +237,39 @@ class Number extends Field implements PreviewableFieldInterface, SortableFieldIn
             }
         }
 
+        $id = Html::id($this->handle);
+        $view = Craft::$app->getView();
+        $namespacedId = $view->namespaceInputId($id);
+
+        $js = <<<JS
+(function() {
+    console.log('#$id');
+    \$('#$namespacedId').on('keydown', ev => {
+        if (
+            !ev.metaKey &&
+            ![
+                9, // tab,
+                13, // return / enter
+                27, // esc
+                8, 46, // backspace, delete
+                37, 38, 39, 40, // arrows
+                173, 189, 109, // minus, subtract
+                190, 110, // period, decimal
+                188, // comma
+                48, 49, 50, 51, 52, 53, 54, 55, 56, 57, // 0-9
+                96, 97, 98, 99, 100, 101, 102, 103, 104, 105, // numpad 0-9
+            ].includes(ev.which)
+        ) {
+            ev.preventDefault();
+        }
+    });
+})();
+JS;
+
+        $view->registerJs($js);
+
         return Craft::$app->getView()->renderTemplate('_components/fieldtypes/Number/input', [
-            'id' => Html::id($this->handle),
+            'id' => $id,
             'field' => $this,
             'value' => $value,
         ]);

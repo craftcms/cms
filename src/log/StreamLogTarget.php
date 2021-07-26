@@ -23,23 +23,23 @@ class StreamLogTarget extends BaseTarget
     use LogTargetTrait;
 
     /**
-     * @var string the URL to use. See http://php.net/manual/en/wrappers.php
+     * @var string the URL to use. See https://php.net/manual/en/wrappers.php
      * for details. This gets ignored if [[fp]] is configured.
      */
-    public $url;
+    public string $url;
 
     /**
      * @var string|null a string that should replace all newline characters
      * in a log message. Default is `null` for no replacement.
      */
-    public $replaceNewline;
+    public ?string $replaceNewline = null;
 
     /**
      * @var bool whether to disable the timestamp. The default is `false` which
      * will prepend every message with a timestamp created with
      * [yii\log\Target::getTime()].
      */
-    public $disableTimestamp = false;
+    public bool $disableTimestamp = false;
 
     /**
      * @var bool whether to use flock() to lock/unlock the stream before/after
@@ -47,13 +47,13 @@ class StreamLogTarget extends BaseTarget
      * processes simultaneously. Note though, that not all stream types support
      * locking. The default is `false`.
      */
-    public $enableLocking = false;
+    public bool $enableLocking = false;
 
     /**
      * @var string a string to prepend to all messages. The string will be
      * added to the very beginning (even before the timestamp).
      */
-    public $prefixString = '';
+    public string $prefixString = '';
 
     /**
      * @var
@@ -63,7 +63,7 @@ class StreamLogTarget extends BaseTarget
     /**
      * @var bool
      */
-    protected $openedFp = false;
+    protected bool $openedFp = false;
 
     /**
      *
@@ -78,7 +78,7 @@ class StreamLogTarget extends BaseTarget
     /**
      * @inheritdoc
      */
-    public function init()
+    public function init(): void
     {
         if (empty($this->fp) && empty($this->url)) {
             throw new InvalidConfigException("Either 'url' or 'fp' must be set.");
@@ -89,10 +89,9 @@ class StreamLogTarget extends BaseTarget
      * @param resource $value An open and writeable resource. This can also be
      * one of PHP's pre-defined resources like `STDIN` or `STDERR`, which are
      * available in CLI context.
-     *
      * @throws InvalidConfigException
      */
-    public function setFp($value)
+    public function setFp($value): void
     {
         if (!is_resource($value)) {
             throw new InvalidConfigException("Invalid resource.");
@@ -112,7 +111,7 @@ class StreamLogTarget extends BaseTarget
      */
     public function getFp()
     {
-        if ($this->fp === null) {
+        if (!isset($this->fp)) {
             $this->fp = @fopen($this->url, 'w');
             if ($this->fp === false) {
                 throw new InvalidConfigException("Unable to open '{$this->url}' for writing.");
@@ -125,9 +124,9 @@ class StreamLogTarget extends BaseTarget
     /**
      * Close the file handle if it was opened by this class
      */
-    public function closeFp()
+    public function closeFp(): void
     {
-        if ($this->openedFp && $this->fp !== null) {
+        if ($this->openedFp && isset($this->fp)) {
             @fclose($this->fp);
             $this->fp = null;
             $this->openedFp = false;
@@ -140,7 +139,7 @@ class StreamLogTarget extends BaseTarget
      * @throws InvalidConfigException If unable to open the stream for writing
      * @throws LogRuntimeException If unable to write to the log
      */
-    public function export()
+    public function export(): void
     {
         $text = implode("\n", array_map([$this, 'formatMessage'], $this->messages)) . "\n";
 
@@ -164,10 +163,10 @@ class StreamLogTarget extends BaseTarget
     /**
      * @inheritdoc
      */
-    public function formatMessage($message)
+    public function formatMessage($message): string
     {
         $text = $this->prefixString . trim(parent::formatMessage($message));
-        return $this->replaceNewline === null ?
+        return !isset($this->replaceNewline) ?
             $text :
             str_replace("\n", $this->replaceNewline, $text);
     }

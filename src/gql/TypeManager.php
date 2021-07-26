@@ -52,12 +52,12 @@ class TypeManager extends Component
     /**
      * @var self
      */
-    private static $_instance;
+    private static TypeManager $_instance;
 
     /**
      * @var array A list of definitions already prepared by type name.
      */
-    private static $_definitions = [];
+    private static array $_definitions = [];
 
     /**
      * Prepare field definitions for a GraphQL type by giving plugins a chance to modify them.
@@ -80,7 +80,7 @@ class TypeManager extends Component
     /**
      * Flush all prepared field definitions.
      */
-    public static function flush()
+    public static function flush(): void
     {
         // TODO looking at you, static method flush.
         self::$_definitions = [];
@@ -93,7 +93,7 @@ class TypeManager extends Component
      * @param string $typeName
      * @return array
      */
-    private function _triggerEvent(array $fields, string $typeName)
+    private function _triggerEvent(array $fields, string $typeName): array
     {
         if ($this->hasEventHandlers(self::EVENT_DEFINE_GQL_TYPE_FIELDS)) {
             $event = new DefineGqlTypeFieldsEvent([

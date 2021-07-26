@@ -128,7 +128,7 @@ class UsersController extends Controller
     /**
      * @inheritdoc
      */
-    public function beforeAction($action)
+    public function beforeAction($action): bool
     {
         // Don't enable CSRF validation for login requests if the user is already logged-in.
         // (Guards against double-clicking a Login button.)
@@ -145,7 +145,7 @@ class UsersController extends Controller
      * @return Response|null
      * @throws BadRequestHttpException
      */
-    public function actionLogin()
+    public function actionLogin(): ?Response
     {
         $userSession = Craft::$app->getUser();
         if (!$userSession->getIsGuest()) {
@@ -199,7 +199,7 @@ class UsersController extends Controller
      * @throws BadRequestHttpException
      * @throws ForbiddenHttpException
      */
-    public function actionImpersonate()
+    public function actionImpersonate(): ?Response
     {
         $this->requirePostRequest();
 
@@ -279,7 +279,7 @@ class UsersController extends Controller
      * @throws ForbiddenHttpException
      * @since 3.6.0
      */
-    public function actionImpersonateWithToken(int $userId, int $prevUserId)
+    public function actionImpersonateWithToken(int $userId, int $prevUserId): ?Response
     {
         $this->requireToken();
 
@@ -362,9 +362,9 @@ class UsersController extends Controller
     /**
      * Starts an elevated user session.
      *
-     * return Response
+     * @return Response
      */
-    public function actionStartElevatedSession()
+    public function actionStartElevatedSession(): Response
     {
         $password = $this->request->getBodyParam('currentPassword') ?? $this->request->getBodyParam('password');
 
@@ -422,7 +422,7 @@ class UsersController extends Controller
      * @return Response|null
      * @throws NotFoundHttpException if the requested user cannot be found
      */
-    public function actionSendPasswordResetEmail()
+    public function actionSendPasswordResetEmail(): ?Response
     {
         $this->requirePostRequest();
         $errors = [];
@@ -490,7 +490,7 @@ class UsersController extends Controller
      * @return Response
      * @throws BadRequestHttpException if the existing password submitted with the request is invalid
      */
-    public function actionGetPasswordResetUrl()
+    public function actionGetPasswordResetUrl(): Response
     {
         $this->requirePermission('administrateUsers');
 
@@ -685,7 +685,7 @@ class UsersController extends Controller
      * @throws NotFoundHttpException if the requested user cannot be found
      * @throws BadRequestHttpException if there’s a mismatch between|null $userId and|null $user
      */
-    public function actionEditUser($userId = null, User $user = null, array $errors = null): Response
+    public function actionEditUser($userId = null, ?User $user = null, ?array $errors = null): Response
     {
         if (!empty($errors)) {
             $this->setFailFlash(reset($errors));
@@ -1047,7 +1047,7 @@ class UsersController extends Controller
      * @throws BadRequestHttpException if attempting to create a client account, and one already exists
      * @throws ForbiddenHttpException if attempting public registration but public registration is not allowed
      */
-    public function actionSaveUser()
+    public function actionSaveUser(): ?Response
     {
         $this->requirePostRequest();
 
@@ -1406,7 +1406,7 @@ class UsersController extends Controller
      * @return Response|null
      * @throws BadRequestHttpException if the uploaded file is not an image
      */
-    public function actionUploadUserPhoto()
+    public function actionUploadUserPhoto(): ?Response
     {
         $this->requireAcceptsJson();
 
@@ -1566,7 +1566,7 @@ class UsersController extends Controller
      * @return Response|null
      * @throws ForbiddenHttpException if a non-admin is attempting to suspend an admin
      */
-    public function actionSuspendUser()
+    public function actionSuspendUser(): ?Response
     {
         $this->requirePostRequest();
         $this->requirePermission('moderateUsers');
@@ -1643,7 +1643,7 @@ class UsersController extends Controller
      *
      * @return Response|null
      */
-    public function actionDeleteUser()
+    public function actionDeleteUser(): ?Response
     {
         $this->requirePostRequest();
 
@@ -1698,7 +1698,7 @@ class UsersController extends Controller
      * @return Response|null
      * @throws ForbiddenHttpException if a non-admin is attempting to unsuspend an admin
      */
-    public function actionUnsuspendUser()
+    public function actionUnsuspendUser(): ?Response
     {
         $this->requirePostRequest();
         $this->requirePermission('moderateUsers');
@@ -1731,7 +1731,7 @@ class UsersController extends Controller
      *
      * @return Response|null
      */
-    public function actionSaveFieldLayout()
+    public function actionSaveFieldLayout(): ?Response
     {
         $this->requirePostRequest();
         $this->requireAdmin();
@@ -1782,7 +1782,7 @@ class UsersController extends Controller
      * @return Response|null
      * @throws ServiceUnavailableHttpException
      */
-    private function _handleLoginFailure(string $authError = null, User $user = null)
+    private function _handleLoginFailure(?string $authError, ?User $user = null): ?Response
     {
         // Delay randomly between 0 and 1.5 seconds.
         usleep(random_int(0, 1500000));
@@ -1878,7 +1878,7 @@ class UsersController extends Controller
      *
      * @throws NotFoundHttpException
      */
-    private function _noUserExists()
+    private function _noUserExists(): void
     {
         throw new NotFoundHttpException('User not found');
     }
@@ -1922,10 +1922,9 @@ class UsersController extends Controller
 
     /**
      * @param User $user
-     * @return void
      * @throws \Throwable if reasons
      */
-    private function _processUserPhoto(User $user)
+    private function _processUserPhoto(User $user): void
     {
         // Delete their photo?
         $users = Craft::$app->getUsers();
@@ -1993,7 +1992,7 @@ class UsersController extends Controller
      * @param User $currentUser
      * @throws ForbiddenHttpException if the user account doesn't have permission to assign the attempted permissions
      */
-    private function _saveUserPermissions(User $user, User $currentUser)
+    private function _saveUserPermissions(User $user, User $currentUser): void
     {
         if (!$currentUser->can('assignUserPermissions')) {
             return;
@@ -2043,7 +2042,7 @@ class UsersController extends Controller
      * @param User $currentUser
      * @throws ForbiddenHttpException if the user account doesn't have permission to assign the attempted groups
      */
-    private function _saveUserGroups(User $user, User $currentUser)
+    private function _saveUserGroups(User $user, User $currentUser): void
     {
         if (!$currentUser->can('assignUserGroups')) {
             return;
@@ -2140,11 +2139,11 @@ class UsersController extends Controller
     }
 
     /**
-     * @param User|null
+     * @param User|null $user
      * @return Response
      * @throws HttpException if the verification code is invalid
      */
-    private function _processInvalidToken(User $user = null): Response
+    private function _processInvalidToken(?User $user = null): Response
     {
         $this->trigger(self::EVENT_INVALID_USER_TOKEN, new InvalidUserTokenEvent([
             'user' => $user,
@@ -2179,7 +2178,7 @@ class UsersController extends Controller
      * @param User $user The user that was just activated
      * @return Response|null
      */
-    private function _onAfterActivateUser(User $user)
+    private function _onAfterActivateUser(User $user): ?Response
     {
         $this->_maybeLoginUserAfterAccountActivation($user);
 
@@ -2211,7 +2210,7 @@ class UsersController extends Controller
      * @param User $user The user to redirect
      * @return Response|null
      */
-    private function _redirectUserToCp(User $user)
+    private function _redirectUserToCp(User $user): ?Response
     {
         // Can they access the CP?
         if ($user->can('accessCp')) {
@@ -2254,7 +2253,7 @@ class UsersController extends Controller
      * @param string|null $loginName
      * @return Response|null
      */
-    private function _handleSendPasswordResetError(array $errors, string $loginName = null)
+    private function _handleSendPasswordResetError(array $errors, ?string $loginName = null): ?Response
     {
         if ($this->request->getAcceptsJson()) {
             /** @noinspection CallableParameterUseCaseInTypeContextInspection */

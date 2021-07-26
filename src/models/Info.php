@@ -8,6 +8,7 @@
 namespace craft\models;
 
 use craft\base\Model;
+use DateTime;
 
 /**
  * Class Info model.
@@ -20,48 +21,48 @@ class Info extends Model
     /**
      * @var int|null ID
      */
-    public $id;
+    public ?int $id = null;
 
     /**
      * @var string|null Version
      */
-    public $version;
+    public ?string $version = null;
 
     /**
      * @var string Schema version
      */
-    public $schemaVersion = '0';
+    public string $schemaVersion = '0';
 
     /**
      * @var bool Maintenance
      */
-    public $maintenance = false;
+    public bool $maintenance = false;
 
     /**
      * @var string|null Uid
      */
-    public $uid;
+    public ?string $uid = null;
 
     /**
      * @var string Field version
      * @since 3.5.6
      */
-    public $configVersion = '000000000000';
+    public string $configVersion = '000000000000';
 
     /**
      * @var string Field version
      */
-    public $fieldVersion = '000000000000';
+    public string $fieldVersion = '000000000000';
 
     /**
-     * @var \DateTime|null Date updated
+     * @var DateTime|null Date updated
      */
-    public $dateUpdated;
+    public ?DateTime $dateUpdated = null;
 
     /**
-     * @var \DateTime|null Date created
+     * @var DateTime|null Date created
      */
-    public $dateCreated;
+    public ?DateTime $dateCreated = null;
 
     /**
      * @inheritdoc

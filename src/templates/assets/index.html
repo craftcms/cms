@@ -5,8 +5,8 @@
 {% do view.registerAssetBundle("craft\\web\\assets\\fileupload\\FileUploadAsset") %}
 {% do view.registerAssetBundle("craft\\web\\assets\\prismjs\\PrismJsAsset") %}
 
-{% if volumeHandle is defined %}
+{% if defaultSource is defined %}
     {% js %}
-        window.defaultVolumeHandle = "{{ volumeHandle|e('js') }}";
+        window.defaultSource = "{{ defaultSource|e('js') }}";
     {% endjs %}
 {% endif %}

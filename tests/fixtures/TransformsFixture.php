@@ -34,7 +34,7 @@ class TransformsFixture extends ActiveFixture
     /**
      * @inheritdoc
      */
-    public function load()
+    public function load(): void
     {
         parent::load();
 
