@@ -216,8 +216,13 @@ class ElementHelper
             if (strpos($uriFormat, '{id') !== false) {
                 $variables['id'] = $element->tempId;
             }
-            if (!$element->getCanonicalId() && strpos($uriFormat, '{sourceId') !== false) {
-                $variables['sourceId'] = $element->tempId;
+            if (!$element->getCanonicalId()) {
+                if (strpos($uriFormat, '{canonicalId') !== false) {
+                    $variables['canonicalId'] = $element->tempId;
+                }
+                if (strpos($uriFormat, '{sourceId') !== false) {
+                    $variables['sourceId'] = $element->tempId;
+                }
             }
         }
 

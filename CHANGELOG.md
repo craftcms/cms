@@ -1,5 +1,11 @@
 # Release Notes for Craft CMS 3.x
 
+## Unreleased
+
+### Fixed
+
+- Fixed an error that could occur when creating a new entry, if the section’s Entry URI Format contained `{canonicalId}`. ([#6080](https://github.com/craftcms/cms/issues/6080))
+
 ## 3.7.6 - 2021-07-27
 
 ### Added
