@@ -7,6 +7,7 @@
 
 ### Fixed
 - Fixed a bug where global set queries could contain fields that were supposed to be hidden.
+- Fixed a bug where `craft\helpers\DateTimeHelper::toDateTime()` was interpreting year-only values as timestamps. ([#9642](https://github.com/craftcms/cms/issues/9642))
 
 ## 3.7.5 - 2021-07-23
 

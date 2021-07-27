@@ -512,6 +512,9 @@ class DateTimeHelperTest extends Unit
             'null-type' => [false, null],
             'empty-string' => [false, ''],
             'empty-array' => [false, []],
+            'year' => [function() {
+                return new DateTime('2021-01-01 00:00:00', new DateTimeZone('UTC'));
+            }, '2021'],
         ];
     }
 

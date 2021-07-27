@@ -683,10 +683,6 @@ class DateTimeHelper
             return new DateTime();
         }
 
-        if (static::isValidTimeStamp($value)) {
-            return new DateTime("@$value");
-        }
-
         if (preg_match('/^
                 (?P<year>\d{4})                                  # YYYY (four digit year)
                 (?:
@@ -734,6 +730,11 @@ class DateTimeHelper
             }
 
             return DateTime::createFromFormat("!$format", $date) ?: null;
+        }
+
+        // This must go after the preg_match(), b/c isValidTimeStamp() will return true for years ("2021")
+        if (static::isValidTimeStamp($value)) {
+            return new DateTime("@$value");
         }
 
         return null;
