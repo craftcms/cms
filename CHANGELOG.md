@@ -1,5 +1,16 @@
 # Release Notes for Craft CMS 3.x
 
+## 3.7.6 - 2021-07-27
+
+### Added
+- Added the `provisionalDrafts` argument for entry GraphQL queries.
+
+### Fixed
+- Fixed a bug where global set queries could contain fields that were supposed to be hidden.
+- Fixed a bug where `craft\helpers\DateTimeHelper::toDateTime()` was interpreting year-only values as timestamps. ([#9642](https://github.com/craftcms/cms/issues/9642))
+- Fixed a bug where blank Email field values were getting stored as empty strings rather than `NULL`. ([#9641](https://github.com/craftcms/cms/issues/9641))
+- Fixed a bug where it wasn’t possible to clear out some entry field values, if their values were blank to begin with. ([#9643](https://github.com/craftcms/cms/issues/9643))
+
 ## 3.7.5 - 2021-07-23
 
 ### Added
