@@ -2299,7 +2299,6 @@ abstract class Element extends Component implements ElementInterface
             $event = new SetElementRouteEvent();
             $this->trigger(self::EVENT_SET_ROUTE, $event);
 
-            // todo: stop checking if $event->route !== null in v4
             if ($event->handled || $event->route !== null) {
                 return $event->route ?: null;
             }
