@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 3.x
 
-## Unreleased
+## 3.7.6 - 2021-07-27
 
 ### Added
 - Added the `provisionalDrafts` argument for entry GraphQL queries.
