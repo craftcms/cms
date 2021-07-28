@@ -6,6 +6,7 @@
 
 - Fixed an error that could occur when creating a new entry, if the section’s Entry URI Format contained `{canonicalId}`. ([#6080](https://github.com/craftcms/cms/issues/6080))
 - Fixed a bug where `craft\helpers\Db::isTextualColumnType()` was always returning `false`.
+- Fixed a bug where `:empty:` element query conditions weren’t working correctly for empty string values on Postgres. ([#9641](https://github.com/craftcms/cms/issues/9641))
 
 ## 3.7.6 - 2021-07-27
 
