@@ -230,7 +230,7 @@ class Application extends \yii\web\Application
             }
 
             // Check if a plugin needs to update the database.
-            if ($this->getUpdates()->getIsPluginDbUpdateNeeded()) {
+            if ($this->getUpdates()->getIsPluginUpdatePending()) {
                 return $this->_processUpdateLogic($request) ?: $this->getResponse();
             }
 
