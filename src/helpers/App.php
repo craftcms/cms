@@ -626,7 +626,7 @@ class App
             $onlyLogErrors = (
                 !Craft::$app->getConfig()->getGeneral()->devMode &&
                 Craft::$app->getIsInstalled() &&
-                !Craft::$app->getUpdates()->getIsCraftDbMigrationNeeded()
+                !Craft::$app->getUpdates()->getIsCraftUpdatePending()
             );
 
             if ($onlyLogErrors) {

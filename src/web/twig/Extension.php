@@ -1429,7 +1429,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
 
         $globals['craft'] = new CraftVariable();
 
-        if ($isInstalled && !$request->getIsConsoleRequest() && !Craft::$app->getUpdates()->getIsCraftDbMigrationNeeded()) {
+        if ($isInstalled && !$request->getIsConsoleRequest() && !Craft::$app->getUpdates()->getIsCraftUpdatePending()) {
             $globals['currentUser'] = Craft::$app->getUser()->getIdentity();
         } else {
             $globals['currentUser'] = null;
@@ -1445,7 +1445,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
         }
 
         // Only set these things when Craft is installed and not being updated
-        if ($isInstalled && !Craft::$app->getUpdates()->getIsCraftDbMigrationNeeded()) {
+        if ($isInstalled && !Craft::$app->getUpdates()->getIsCraftUpdatePending()) {
             $globals['systemName'] = Craft::$app->getSystemName();
             /** @noinspection PhpUnhandledExceptionInspection */
             $site = Craft::$app->getSites()->getCurrentSite();
