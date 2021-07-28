@@ -169,7 +169,7 @@ class Updates extends Component
 
         $pluginsService = Craft::$app->getPlugins();
         foreach ($pluginsService->getAllPlugins() as $plugin) {
-            if ($pluginsService->doesPluginRequireDatabaseUpdate($plugin)) {
+            if ($pluginsService->isPluginUpdatePending($plugin)) {
                 return true;
             }
         }
@@ -203,7 +203,7 @@ class Updates extends Component
 
         $pluginsService = Craft::$app->getPlugins();
         foreach ($pluginsService->getAllPlugins() as $plugin) {
-            if ($pluginsService->doesPluginRequireDatabaseUpdate($plugin)) {
+            if ($pluginsService->isPluginUpdatePending($plugin)) {
                 $handles[] = $plugin->id;
             }
         }
@@ -298,7 +298,7 @@ class Updates extends Component
         $plugins = Craft::$app->getPlugins()->getAllPlugins();
 
         foreach ($plugins as $plugin) {
-            if (Craft::$app->getPlugins()->doesPluginRequireDatabaseUpdate($plugin)) {
+            if (Craft::$app->getPlugins()->isPluginUpdatePending($plugin)) {
                 return true;
             }
         }
