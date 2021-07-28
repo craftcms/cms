@@ -136,7 +136,7 @@ class Revisions extends Component
         $this->trigger(self::EVENT_BEFORE_CREATE_REVISION, $event);
         $notes = $event->revisionNotes;
         $creatorId = $event->creatorId;
-        $canonical = $event->source;
+        $canonical = $event->canonical;
 
         $elementsService = Craft::$app->getElements();
 
@@ -176,7 +176,7 @@ class Revisions extends Component
         // Fire an 'afterCreateRevision' event
         if ($this->hasEventHandlers(self::EVENT_AFTER_CREATE_REVISION)) {
             $this->trigger(self::EVENT_AFTER_CREATE_REVISION, new RevisionEvent([
-                'source' => $canonical,
+                'canonical' => $canonical,
                 'creatorId' => $creatorId,
                 'revisionNum' => $num,
                 'revisionNotes' => $notes,
@@ -215,7 +215,7 @@ class Revisions extends Component
         // Fire a 'beforeRevertToRevision' event
         if ($this->hasEventHandlers(self::EVENT_BEFORE_REVERT_TO_REVISION)) {
             $this->trigger(self::EVENT_BEFORE_REVERT_TO_REVISION, new RevisionEvent([
-                'source' => $canonical,
+                'canonical' => $canonical,
                 'creatorId' => $creatorId,
                 'revisionNum' => $revision->revisionNum,
                 'revisionNotes' => $revision->revisionNotes,
@@ -232,7 +232,7 @@ class Revisions extends Component
         // Fire an 'afterRevertToRevision' event
         if ($this->hasEventHandlers(self::EVENT_AFTER_REVERT_TO_REVISION)) {
             $this->trigger(self::EVENT_AFTER_REVERT_TO_REVISION, new RevisionEvent([
-                'source' => $newSource,
+                'canonical' => $newSource,
                 'creatorId' => $creatorId,
                 'revisionNum' => $revision->revisionNum,
                 'revisionNotes' => $revision->revisionNotes,
