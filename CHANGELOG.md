@@ -61,6 +61,7 @@
 - Element types’ `afterRestore()` methods must now have a `void` return type declaration.
 - Element types’ `afterSave()` methods must now have a `void` return type declaration.
 - Element types’ `attributeLabels()` methods must now have an `array` return type declaration.
+- Element types’ `defineActions()` methods’ `$source` arguments should no longer accept `null`.
 - Element types’ `getCpEditUrl()` methods must now have a `?string` return type declaration.
 - Element types’ `getFieldLayout()` methods must now have a `?FieldLayout` return type declaration.
 - Element types’ `getRef()` methods must now have a `?string` return type declaration.

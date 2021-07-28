@@ -307,7 +307,7 @@ class Entry extends Element
     /**
      * @inheritdoc
      */
-    protected static function defineActions(?string $source = null): array
+    protected static function defineActions(string $source): array
     {
         // Get the selected site
         $controller = Craft::$app->controller;

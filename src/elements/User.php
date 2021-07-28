@@ -246,7 +246,7 @@ class User extends Element implements IdentityInterface
     /**
      * @inheritdoc
      */
-    protected static function defineActions(?string $source = null): array
+    protected static function defineActions(string $source): array
     {
         $actions = [];
         $elementsService = Craft::$app->getElements();

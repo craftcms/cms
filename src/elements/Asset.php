@@ -327,7 +327,7 @@ class Asset extends Element
     /**
      * @inheritdoc
      */
-    protected static function defineActions(?string $source = null): array
+    protected static function defineActions(string $source): array
     {
         $actions = [];
 
