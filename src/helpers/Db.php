@@ -400,7 +400,7 @@ class Db
      */
     public static function isTextualColumnType(string $columnType): bool
     {
-        return in_array(self::parseColumnLength($columnType), self::$_textualColumnTypes, true);
+        return in_array(self::parseColumnType($columnType), self::$_textualColumnTypes, true);
     }
 
     /**

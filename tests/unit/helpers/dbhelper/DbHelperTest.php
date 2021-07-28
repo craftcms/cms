@@ -235,6 +235,17 @@ class DbHelperTest extends Unit
     }
 
     /**
+     * @dataProvider isTextualColumnTypeDataProvider
+     *
+     * @param bool $expected
+     * @param string $columnType
+     */
+    public function testIsTextualColumnType(bool $expected, string $columnType)
+    {
+        self::assertSame($expected, Db::isTextualColumnType($columnType));
+    }
+
+    /**
      * @dataProvider getTextualColumnStorageCapacityDataProvider
      *
      * @param int|null|false $expected
@@ -534,6 +545,30 @@ class DbHelperTest extends Unit
             [true, 'double'],
             [true, 'decimal(14,4)'],
             [false, 'string(255)'],
+        ];
+    }
+
+    /**
+     * @return array
+     */
+    public function isTextualColumnTypeDataProvider(): array
+    {
+        return [
+            [true, 'string(255)'],
+            [true, 'string'],
+            [true, 'char'],
+            [true, 'text'],
+            [true, 'tinytext'],
+            [true, 'mediumtext'],
+            [true, 'longtext'],
+            [true, "enum('foo', 'bar', 'baz')"],
+            [false, 'smallint'],
+            [false, 'integer'],
+            [false, 'integer(1)'],
+            [false, 'bigint(5)'],
+            [false, 'float'],
+            [false, 'double'],
+            [false, 'decimal(14,4)'],
         ];
     }
 
