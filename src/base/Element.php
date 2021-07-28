@@ -1190,7 +1190,7 @@ abstract class Element extends Component implements ElementInterface
             ])
             ->from(['re' => Table::ELEMENTS])
             ->innerJoin(['r' => Table::REVISIONS], '[[r.id]] = [[re.revisionId]]')
-            ->innerJoin(['se' => Table::ELEMENTS], '[[se.id]] = [[r.sourceId]]')
+            ->innerJoin(['se' => Table::ELEMENTS], '[[se.id]] = [[r.canonicalId]]')
             ->where('[[re.dateCreated]] = [[se.dateUpdated]]')
             ->andWhere(['se.id' => $sourceElementIds])
             ->all();
@@ -1215,12 +1215,12 @@ abstract class Element extends Component implements ElementInterface
 
         $map = (new Query())
             ->select([
-                'source' => 'd.sourceId',
+                'source' => 'd.canonicalId',
                 'target' => 'e.id',
             ])
             ->from(['d' => Table::DRAFTS])
             ->innerJoin(['e' => Table::ELEMENTS], '[[e.draftId]] = [[d.id]]')
-            ->where(['d.sourceId' => $sourceElementIds])
+            ->where(['d.canonicalId' => $sourceElementIds])
             ->all();
 
         return [
@@ -1243,12 +1243,12 @@ abstract class Element extends Component implements ElementInterface
 
         $map = (new Query())
             ->select([
-                'source' => 'r.sourceId',
+                'source' => 'r.canonicalId',
                 'target' => 'e.id',
             ])
             ->from(['r' => Table::REVISIONS])
             ->innerJoin(['e' => Table::ELEMENTS], '[[e.revisionId]] = [[r.id]]')
-            ->where(['r.sourceId' => $sourceElementIds])
+            ->where(['r.canonicalId' => $sourceElementIds])
             ->all();
 
         return [
