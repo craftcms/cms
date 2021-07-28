@@ -460,6 +460,8 @@ class Db
             return '';
         }
 
+        $parsedColumnType = $columnType ? static::parseColumnType($columnType) : null;
+
         $firstVal = strtolower(reset($value));
         $negate = false;
 
@@ -495,7 +497,7 @@ class Db
             self::_normalizeEmptyValue($val);
             $operator = self::_parseParamOperator($val, $defaultOperator, $negate);
 
-            if ($columnType === Schema::TYPE_BOOLEAN) {
+            if ($parsedColumnType === Schema::TYPE_BOOLEAN) {
                 // Convert val to a boolean
                 $val = ($val && $val !== ':empty:');
                 if ($operator === '!=') {
