@@ -8,12 +8,15 @@ parameters:
         - tests/_data/*
         - tests/_output/*
         - src/test/internal/*
+        - src/config/composer-classes.php
+        - src/config/mimeTypes.php
     scanDirectories:
         - tests/_craft/storage/runtime/compiled_classes/
     scanFiles:
         - vendor/yiisoft/yii2/Yii.php
         - vendor/twig/twig/src/Extension/CoreExtension.php
-        - vendor/codeception/codeception/shim.php
+        - vendor/codeception/codeception/autoload.php
     bootstrapFiles:
         - tests/_bootstrap.php
-    inferPrivatePropertyTypeFromConstructor: true
+    stubFiles:
+        - stubs/BaseYii.stub
