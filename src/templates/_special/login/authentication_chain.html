@@ -1,0 +1,30 @@
+{% block switchUser %}
+
+{% endblock %}
+
+<div id="login-form-top">
+    <div id="authentication-step" rel="{{ (authenticationChain and authenticationChain.nextAuthenticationStep) ? authenticationChain.nextAuthenticationStep.stepType : '' }}">
+        {% block authStepHtml %}
+
+        {% endblock %}
+    </div>
+
+    {% block startAuthentication %}
+
+    {% endblock %}
+</div>
+
+{% block alternativeSteps %}
+
+{% endblock %}
+
+{% block accountRecovery %}
+
+{% endblock %}
+
+<div class="buttons">
+    {% if not authenticationChain or not authenticationChain.isComplete %}
+        <button id="submit" class="btn submit" type="submit">{{ 'Submit'|t('app') }}</button>
+        <div id="spinner" class="spinner over-bg hidden"></div>
+    {% endif %}
+</div>

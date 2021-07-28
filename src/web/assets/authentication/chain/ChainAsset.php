@@ -5,18 +5,17 @@
  * @license https://craftcms.github.io/license/
  */
 
-namespace craft\web\assets\login;
+namespace craft\web\assets\authentication\chain;
 
 use craft\validators\UserPasswordValidator;
-use craft\web\assets\authentication\chain\ChainAsset;
 use craft\web\assets\cp\CpAsset;
 use craft\web\View;
 use yii\web\AssetBundle;
 
 /**
- * Asset bundle for the Login page
+ * Asset bundle for the Auth chain
  */
-class LoginAsset extends AssetBundle
+class ChainAsset extends AssetBundle
 {
     /**
      * @inheritdoc
@@ -28,20 +27,14 @@ class LoginAsset extends AssetBundle
      */
     public $depends = [
         CpAsset::class,
-        ChainAsset::class
-    ];
-
-    /**
-     * @inheritdoc
-     */
-    public $css = [
-        'login.css',
     ];
 
     /**
      * @inheritdoc
      */
     public $js = [
-        'LoginForm.min.js',
+        'AuthenticationChainHandler.min.js',
+        'AuthenticationStep.min.js',
+        'VerificationCode.min.js',
     ];
 }

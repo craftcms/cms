@@ -13,6 +13,7 @@ use craft\authentication\Chain;
 use craft\authentication\type\mfa\AuthenticatorCode;
 use craft\authentication\type\mfa\EmailCode;
 use craft\authentication\type\mfa\WebAuthn;
+use craft\elements\User;
 use craft\errors\AuthenticationStateException;
 use craft\helpers\Authentication as AuthHelper;
 use craft\models\authentication\Scenario;
@@ -35,7 +36,7 @@ class Authentication extends Component
      * @return Chain
      * @throws InvalidConfigException
      */
-    public function getAuthenticationChain(string $scenario, $forceNew = false): Chain
+    public function getAuthenticationChain(string $scenario, User $user): Chain
     {
         $chainConfig = $this->getScenarioConfiguration($scenario);
 
@@ -46,8 +47,8 @@ class Authentication extends Component
         /** @var string $defaultBranch */
         $defaultBranch = $chainConfig->getDefaultBranchName();
 
-        if ($forceNew || !($state = $this->getAuthenticationState($scenario))) {
-            $state = AuthHelper::createAuthState($scenario, $defaultBranch);
+        if (!($state = $this->getAuthenticationState($scenario))) {
+            $state = AuthHelper::createAuthState($scenario, $defaultBranch, $user);
         }
 
         /** @var Chain $chain */
@@ -56,7 +57,7 @@ class Authentication extends Component
         } catch (AuthenticationStateException $exception) {
             // Try with a fresh state
             Craft::$app->getErrorHandler()->logException($exception);
-            $state = AuthHelper::createAuthState($scenario, $defaultBranch);
+            $state = AuthHelper::createAuthState($scenario, $defaultBranch, $user);
             $chain = Craft::createObject(Chain::class, [$state, $chainConfig->branches]);
         }
 
@@ -80,25 +81,13 @@ class Authentication extends Component
     /**
      * Get the authentication chain for control panel login.
      *
-     * @param bool $forceNew whether a new state should be forced.
+     * @param User $user The user for which to start a new auth chain.
      * @return Chain
      * @throws InvalidConfigException
      */
-    public function getCpAuthenticationChain($forceNew = false): Chain
+    public function getCpAuthenticationChain(User $user): Chain
     {
-        return $this->getAuthenticationChain(self::CP_AUTHENTICATION_CHAIN, $forceNew);
-    }
-
-    /**
-     * Get the recovery chain for control panel login.
-     *
-     * @param bool $forceNew whether a new state should be forced.
-     * @return Chain
-     * @throws InvalidConfigException
-     */
-    public function getCpRecoveryChain($forceNew = false): Chain
-    {
-        return $this->getAuthenticationChain(self::CP_RECOVERY_CHAIN, $forceNew);
+        return $this->getAuthenticationChain(self::CP_AUTHENTICATION_CHAIN, $user);
     }
 
     /**
@@ -144,7 +133,7 @@ class Authentication extends Component
     /**
      * Invalidate all authentication states for the session.
      */
-    public function invalidateAllAuthenticationState(): void
+    public function invalidateAllAuthenticationStates(): void
     {
         Craft::$app->getSession()->remove(self::AUTHENTICATION_STATE_KEY);
     }

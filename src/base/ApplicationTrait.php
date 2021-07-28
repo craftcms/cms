@@ -22,12 +22,15 @@ use craft\errors\DbConnectException;
 use craft\errors\SiteNotFoundException;
 use craft\errors\WrongEditionException;
 use craft\events\DefineFieldLayoutFieldsEvent;
+use craft\events\DefineGqlTypeFieldsEvent;
 use craft\events\DeleteSiteEvent;
 use craft\events\EditionChangeEvent;
 use craft\events\FieldEvent;
 use craft\fieldlayoutelements\AssetTitleField;
 use craft\fieldlayoutelements\EntryTitleField;
 use craft\fieldlayoutelements\TitleField;
+use craft\gql\GqlEntityRegistry;
+use craft\gql\TypeManager;
 use craft\helpers\App;
 use craft\helpers\Db;
 use craft\helpers\Session;
@@ -43,6 +46,7 @@ use craft\services\Api;
 use craft\services\AssetIndexer;
 use craft\services\Assets;
 use craft\services\AssetTransforms;
+use craft\services\Authentication;
 use craft\services\Categories;
 use craft\services\Composer;
 use craft\services\Config;
@@ -85,6 +89,7 @@ use craft\web\Application as WebApplication;
 use craft\web\AssetManager;
 use craft\web\Request as WebRequest;
 use craft\web\View;
+use GraphQL\Type\Definition\Type;
 use yii\base\Application;
 use yii\base\ErrorHandler;
 use yii\base\Event;
@@ -108,6 +113,7 @@ use yii\web\ServerErrorHttpException;
  * @property-read AssetManager $assetManager The asset manager component
  * @property-read AssetTransforms $assetTransforms The asset transforms service
  * @property-read Assets $assets The assets service
+ * @property-read Authentication $authentication The assets service
  * @property-read Categories $categories The categories service
  * @property-read Composer $composer The Composer service
  * @property-read Config $config The config service
@@ -859,6 +865,17 @@ trait ApplicationTrait
     {
         /** @noinspection PhpIncompatibleReturnTypeInspection */
         return $this->get('assetIndexer');
+    }
+
+    /**
+     * Returns the authentication service.
+     *
+     * @return Authentication The authentication service
+     */
+    public function getAuthentication(): Authentication
+    {
+        /** @noinspection PhpIncompatibleReturnTypeInspection */
+        return $this->get('authentication');
     }
 
     /**

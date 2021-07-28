@@ -10,6 +10,7 @@ namespace craft\helpers;
 
 use Craft;
 use craft\authentication\base\TypeInterface;
+use craft\elements\User;
 use craft\models\authentication\State;
 use PragmaRX\Google2FAQRCode\Google2FA;
 use yii\base\InvalidConfigException;
@@ -50,14 +51,16 @@ class Authentication
      *
      * @param string $scenario
      * @param string $branch
+     * @param User $user
      * @return State
      * @throws InvalidConfigException
      */
-    public static function createAuthState(string $scenario, string $branch): State
+    public static function createAuthState(string $scenario, string $branch, User $user): State
     {
         return Craft::createObject(State::class, [[
             'authenticationScenario' => $scenario,
-            'authenticationBranch' => $branch
+            'authenticationBranch' => $branch,
+            'resolvedUserId' => $user->id
         ]]);
     }
 

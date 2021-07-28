@@ -2,19 +2,16 @@
 
 {% do view.registerAssetBundle("craft\\web\\assets\\authentication\\emailCode\\EmailCodeStepAsset") %}
 
-<div id="login-form-top">
+{% set label = 'Enter the code sent to you'|t('app') %}
 
-    {% set label = 'Enter the code sent to you'|t('app') %}
-
-    {{ forms.textField({
-        id: 'verificationCode',
-        name: 'verification-code',
-        placeholder: label,
-        inputAttributes: {
-            aria: {
-                label: label,
-                required: 'true',
-            },
+{{ forms.textField({
+    id: 'verificationCode',
+    name: 'verification-code',
+    placeholder: label,
+    inputAttributes: {
+        aria: {
+            label: label,
+            required: 'true',
         },
-    }) }}
-</div>
+    },
+}) }}

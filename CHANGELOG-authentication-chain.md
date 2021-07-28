@@ -6,11 +6,12 @@
 - Added `craft\authentication\base\Mfa`.
 - Added `craft\authentication\base\TypeInterface`.
 - Added `craft\authentication\base\Type`.
-- Added `craft\authentication\type\Credentials`.
+- Added `craft\authentication\type\Password`.
 - Added `craft\authentication\type\Email`.
 - Added `craft\authentication\type\IpAddress`.
 - Added `craft\authentication\type\mfa\AuthenticatorCode`.
 - Added `craft\authentication\type\mfa\EmailCode`.
+- Added `craft\authentication\type\mfa\WebAuthn`.
 - Added `craft\authentication\webauthn\CredentialRepository`.
 - Added `craft\controllers\AuthenticationController`.
 - Added `craft\errors\AuthenticationException`.
@@ -26,4 +27,10 @@
 - Added `craft\records\AuthWebAuthn`.
 - Added `craft\services\Authentication`.
 - Added `craft\validators\AuthStepConfigValidator`.
+- Added `craft\web\assets\authentication\authenticatorcode\AuthenticatorCodeStepAsset`.
+- Added `craft\web\assets\authentication\chain\ChainAsset`.
+- Added `craft\web\assets\authentication\email\EmailStepAsset`.
+- Added `craft\web\assets\authentication\emailcode\EmailCodeStepAsset`.
+- Added `craft\web\assets\authentication\password\PasswordStepAsset`.
+- Added `craft\web\assets\authentication\webauthn\WebAuthnStepAsset`.
 - Added `craft\web\Controller::requireSecureConnection()`.

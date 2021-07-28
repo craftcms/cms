@@ -3,15 +3,15 @@ class AuthenticationStep {
     constructor(stepType) {
         this.validateOnInput = false;
         this.stepType = stepType;
-        Craft.LoginForm.registerStepHandler(stepType, this.prepareData.bind(this));
-        this.$loginForm = Craft.LoginForm.$loginForm;
+        Craft.AuthenticationChainHandler.registerStepHandler(stepType, this.prepareData.bind(this));
+        this.$loginForm = Craft.AuthenticationChainHandler.loginHandler.$loginForm;
     }
     /**
      * @param ev
      */
     onInput(ev) {
         if (this.validateOnInput && this.validate() === true) {
-            Craft.LoginForm.clearErrors();
+            Craft.AuthenticationChainHandler.clearErrors();
         }
     }
     /**

@@ -14,6 +14,7 @@ use craft\authentication\Chain;
 use craft\authentication\type\mfa\AuthenticatorCode;
 use craft\authentication\type\mfa\WebAuthn;
 use craft\authentication\webauthn\CredentialRepository;
+use craft\elements\User;
 use craft\helpers\Authentication as AuthenticationHelper;
 use craft\helpers\Json;
 use craft\services\Authentication;
@@ -31,17 +32,59 @@ use yii\web\Response;
  */
 class AuthenticationController extends Controller
 {
-    protected $allowAnonymous = self::ALLOW_ANONYMOUS_LIVE;
+    protected $allowAnonymous = self::ALLOW_ANONYMOUS_LIVE | self::ALLOW_ANONYMOUS_OFFLINE;
 
     /** @var
      * string The session variable name to use to store whether user wants to be remembered.
      */
     private const REMEMBER_ME = 'authChain.rememberMe';
 
+    /** @var
+     * string The session variable name to use the entered user name.
+     */
+    private const AUTH_USER_NAME = 'authChain.userName';
+
     /**
+     * Start a new authentication chain.
+     * @return Response
+     * @throws BadRequestHttpException
+     */
+    public function actionStartAuthentication(): Response
+    {
+        $this->requireAcceptsJson();
+        $request = Craft::$app->getRequest();
+        $username = $request->getBodyParam('username');
+
+        if (empty($username)) {
+            return $this->asJson(['loginFormHtml' => Craft::$app->getView()->renderTemplate('_special/login/login_form')]);
+        }
+
+        $user = Craft::$app->getUsers()->getUserByUsernameOrEmail($username);
+
+        if (!$user) {
+            if (!Craft::$app->getConfig()->getGeneral()->preventUserEnumeration) {
+                return $this->asErrorJson(Craft::t('app', 'Invalid username or email.'));
+            }
+
+            $user = new User(['username' => $username, 'email' => $username]);
+        }
+
+        Craft::$app->getSession()->set(self::AUTH_USER_NAME, $username);
+        Craft::$app->getUser()->sendUsernameCookie($user);
+        Craft::$app->getAuthentication()->invalidateAllAuthenticationStates();
+
+        return $this->asJson([
+            'loginFormHtml' => Craft::$app->getView()->renderTemplate('_special/login/login_form', compact('user')),
+            'footHtml' => Craft::$app->getView()->getBodyHtml()
+        ]);
+    }
+    /**
+     * Perform an authentication step.
+     *
      * @return Response
      * @throws BadRequestHttpException
      * @throws InvalidConfigException
+     * @throws \Exception
      */
     public function actionPerformAuthentication(): Response
     {
@@ -49,7 +92,21 @@ class AuthenticationController extends Controller
         $scenario = Authentication::CP_AUTHENTICATION_CHAIN;
         $request = Craft::$app->getRequest();
         $stepType = $request->getBodyParam('stepType', '');
-        $chain = Craft::$app->getAuthentication()->getAuthenticationChain($scenario);
+        $username = Craft::$app->getSession()->get(self::AUTH_USER_NAME) ?? Craft::$app->getUser()->getRememberedUsername();
+        $user = null;
+
+        if ($username) {
+            $user = Craft::$app->getUsers()->getUserByUsernameOrEmail($username);
+            if (!$user && Craft::$app->getConfig()->getGeneral()->preventUserEnumeration) {
+                $user = new User(['username' => $username]);
+            }
+        }
+
+        if (!$user) {
+            throw new BadRequestHttpException('Unable to determine user');
+        }
+
+        $chain = Craft::$app->getAuthentication()->getAuthenticationChain($scenario, $user);
         $switch = !empty($request->getBodyParam('switch'));
 
         if ($switch) {
@@ -129,97 +186,17 @@ class AuthenticationController extends Controller
     }
 
     /**
-     * @return Response
-     * @throws BadRequestHttpException
-     * @throws InvalidConfigException
-     */
-    public function actionRecoverAccount(): Response
-    {
-        $this->requireAcceptsJson();
-
-        // Set up the recovery chain
-        $scenario = Authentication::CP_RECOVERY_CHAIN;
-        $request = Craft::$app->getRequest();
-        $stepType = $request->getRequiredBodyParam('stepType');
-        $authenticationService = Craft::$app->getAuthentication();
-        $recoveryChain = $authenticationService->getAuthenticationChain($scenario);
-        $switch = !empty($request->getBodyParam('switch'));
-
-        if ($switch) {
-            return $this->_switchStep($recoveryChain, $stepType);
-        }
-
-        if (!$recoveryChain) {
-            throw new BadRequestHttpException('Unable to recover account');
-        }
-
-        try {
-            $step = $recoveryChain->getNextAuthenticationStep($stepType);
-        } catch (InvalidConfigException $exception) {
-            throw new BadRequestHttpException('Unable to recover account', 0, $exception);
-        }
-
-        $session = Craft::$app->getSession();
-        $success = false;
-
-        if ($step !== null) {
-            $data = [];
-
-            if ($fields = $step->getFields()) {
-                foreach ($fields as $fieldName) {
-                    if ($value = $request->getBodyParam($fieldName)) {
-                        $data[$fieldName] = $value;
-                    }
-                }
-            }
-
-            $success = $recoveryChain->performAuthenticationStep($stepType, $data);
-        }
-
-        $output = [];
-
-        if ($recoveryChain->getIsComplete()) {
-            $user = $recoveryChain->getAuthenticatedUser();
-            $session->setNotice(Craft::t('app', 'Password reset email sent.'));
-
-            if ($user) {
-                $sendResult = Craft::$app->getUsers()->sendPasswordResetEmail($user);
-
-                if (!$sendResult) {
-                    $session->setError(Craft::t('app', 'There was a problem sending the password reset email.'));
-                }
-            }
-
-            // If successfully completed recovery, invalidate the chain state.
-            $authenticationService->invalidateAuthenticationState(Authentication::CP_RECOVERY_CHAIN);
-
-            $output['success'] = true;
-        } else if ($success) {
-            /** @var Type $step */
-            $step = $recoveryChain->getNextAuthenticationStep();
-            $output['stepComplete'] = true;
-            $output['stepType'] = $step->getStepType();
-            $output['html'] = $step->getInputFieldHtml();
-            $output['footHtml'] = Craft::$app->getView()->getBodyHtml();
-        }
-
-        $output['message'] = $session->getNotice();
-        $output['error'] = $session->getError();
-
-        return $this->asJson($output);
-    }
-
-    /**
-     * Detach a
+     * Detach web authn credentials
+     *
      * @return Response
      * @throws BadRequestHttpException
      * @throws \Throwable
-     * @throws \yii\web\ForbiddenHttpException
      */
     public function actionDetachWebAuthnCredentials(): Response
     {
         $this->requireAcceptsJson();
         $this->requireLogin();
+
         // TODO require elevated session once admintable allows support for it
         //$this->requireElevatedSession();
         $userSession = Craft::$app->getUser();
@@ -276,6 +253,8 @@ class AuthenticationController extends Controller
     }
 
     /**
+     * Update authenticator settings.
+     *
      * @return Response
      * @throws BadRequestHttpException
      * @throws \PragmaRX\Google2FA\Exceptions\Google2FAException

@@ -4,9 +4,8 @@
 {% set bodyClass = 'login' %}
 
 {% do view.registerAssetBundle("craft\\web\\assets\\login\\LoginAsset") %}
-
-{% set username = craft.app.config.general.rememberUsernameDuration ? craft.app.user.getRememberedUsername(): '' %}
 {% set showRememberMe = craft.app.config.general.rememberedUserSessionDuration %}
+
 {% set hasLogo = CraftEdition == CraftPro and craft.rebrand.isLogoUploaded %}
 
 {% set formAttributes = {
@@ -38,52 +37,7 @@
             </h1>
 
             <form {{ attr(formAttributes) }}>
-                {% set authenticationChain = craft.app.authentication.cpAuthenticationChain %}
-                <div class="authentication-chain" id="authentication" rel="{{ authenticationChain.nextAuthenticationStep ? authenticationChain.nextAuthenticationStep.stepType : '' }}" data-endpoint="authentication/perform-authentication">
-                    {% if not authenticationChain.isComplete %}
-                        {{ authenticationChain.nextAuthenticationStep.inputFieldHtml|raw }}
-                    {% else %}
-                        <div id="spinner-pending" class="spinner big over-bg"></div>
-                    {% endif %}
-                </div>
-
-                {% if authenticationChain.isNew %}
-                    {% set recoveryChain = craft.app.authentication.getCpRecoveryChain(true) %}
-                    <div class="authentication-chain hidden" id="recovery" data-endpoint="authentication/recover-account">
-                        {% if not recoveryChain.isComplete %}
-                            {{ recoveryChain.nextAuthenticationStep.inputFieldHtml|raw }}
-                        {% endif %}
-                    </div>
-                {% endif %}
-
-                {% set alternativeSteps = authenticationChain.alternativeSteps %}
-
-                <div id="alternatives" class="{{ (alternativeSteps|length == 0) ? 'hidden' : '' }}" >
-                    <label>Other options:</label>
-                    <ul>
-                        {% for type, name in authenticationChain.alternativeSteps %}
-                            <li rel="{{ type }}">{{ name }}</li>
-                        {% endfor %}
-                    </ul>
-                </div>
-
-                {% if authenticationChain.isNew %}
-                    <div id="login-form-bottom">
-                        {% if showRememberMe %}
-                            {{ forms.checkboxField({ id: 'rememberMe', label: 'Keep me logged in'|t('app') }) }}
-                        {% endif %}
-
-                        <button id="recover-account" rel="recovery" type="button">{{ 'Trouble logging in?'|t('app') }}</button>
-                        <button id="cancel-recover" rel="authentication"   class="hidden" type="button">{{ 'Back to login'|t('app') }}</button>
-                    </div>
-                {% endif %}
-
-                <div class="buttons">
-                    {% if not authenticationChain.isComplete %}
-                        <button id="submit" class="btn submit" type="submit">{{ 'Submit'|t('app') }}</button>
-                        <div id="spinner" class="spinner over-bg hidden"></div>
-                    {% endif %}
-                </div>
+                {% include "_special/login/login_form" %}
             </form>
 
             <div id="login-errors" role="alert">

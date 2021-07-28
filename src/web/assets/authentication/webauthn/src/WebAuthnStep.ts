@@ -5,7 +5,6 @@ class WebAuthnStep extends AuthenticationStep
     constructor()
     {
         super('craft\\authentication\\type\\mfa\\WebAuthn');
-        Craft.LoginForm.$submit.hide().click();
     }
 
     public validate(): true

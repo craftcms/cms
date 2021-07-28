@@ -14,8 +14,8 @@ abstract class AuthenticationStep
     protected constructor(stepType: string)
     {
         this.stepType = stepType;
-        Craft.LoginForm.registerStepHandler(stepType, this.prepareData.bind(this));
-        this.$loginForm = Craft.LoginForm.$loginForm;
+        Craft.AuthenticationChainHandler.registerStepHandler(stepType, this.prepareData.bind(this));
+        this.$loginForm = Craft.AuthenticationChainHandler.loginHandler.$loginForm;
     }
 
     /**
@@ -24,7 +24,7 @@ abstract class AuthenticationStep
     public onInput(ev: any)
     {
         if (this.validateOnInput && this.validate() === true) {
-            Craft.LoginForm.clearErrors();
+            Craft.AuthenticationChainHandler.clearErrors();
         }
     }
 

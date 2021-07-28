@@ -59,7 +59,7 @@ class Branch extends Component
     /**
      * @inheritdoc
      */
-    public function init()
+    public function init(): void
     {
         parent::init();
         $this->_prepareApplicableStepList();
@@ -133,7 +133,7 @@ class Branch extends Component
     /**
      * @inheritdoc
      */
-    public function rules()
+    public function rules(): array
     {
         $rules = parent::defineRules();
         $rules[] = [['name', 'state', 'steps', 'applicableSteps'], 'required'];

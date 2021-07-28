@@ -1,0 +1,16 @@
+{% import "_includes/forms" as forms %}
+
+{% do view.registerAssetBundle("craft\\web\\assets\\authentication\\password\\PasswordStepAsset") %}
+
+{{ forms.passwordField({
+    id: 'password',
+    name: 'password',
+    placeholder: 'Password'|t('app'),
+    autocomplete: 'current-password',
+    inputAttributes: {
+        aria: {
+            label: 'Password'|t('app'),
+            required: 'true',
+        },
+    },
+}) }}

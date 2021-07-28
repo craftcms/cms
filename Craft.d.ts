@@ -20,7 +20,7 @@ declare var Craft: {
     postActionRequest(action: string, data?: object, callback?: (response: object, textStatus: string) => void): void,
     initUiElements($container: JQuery): void,
     expandPostArray(arr: object): any,
-    LoginForm: LoginForm,
+    AuthenticationChainHandler: AuthenticationChainHandler,
     cpLoginChain: string,
     PasswordInput: any,
     appendFootHtml: (html?: string) => void
