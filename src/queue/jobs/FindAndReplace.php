@@ -90,6 +90,11 @@ class FindAndReplace extends BaseJob
             return;
         }
 
+        $columnName = $fieldColumnPrefix . $field->handle;
+        if ($field->columnSuffix !== null) {
+            $columnName .= '_' . $field->columnSuffix;
+        }
+
         $columnType = $field->getContentColumnType();
         if (is_array($columnType)) {
             $columnType = reset($columnType);
@@ -110,7 +115,7 @@ class FindAndReplace extends BaseJob
             'string',
             'char',
         ], true)) {
-            $this->_textColumns[] = [$table, $fieldColumnPrefix . $field->handle];
+            $this->_textColumns[] = [$table, $columnName];
         }
     }
 
