@@ -454,6 +454,15 @@ class Category extends Element
     /**
      * @inheritdoc
      */
+    protected function isDeletable(): bool
+    {
+        $group = $this->getGroup();
+        return Craft::$app->getUser()->checkPermission("editCategories:$group->uid");
+    }
+
+    /**
+     * @inheritdoc
+     */
     protected function cpEditUrl(): ?string
     {
         $group = $this->getGroup();

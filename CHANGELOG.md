@@ -54,6 +54,7 @@
 - Element actions’ `getConfirmationMessage()` methods must now have a `?string` return type declaration.
 - Element actions’ `getMessage()` methods must now have a `?string` return type declaration.
 - Element actions’ `getTriggerHtml()` methods must now have a `?string` return type declaration.
+- Element types must now override `craft\base\Element::isDeletable()` if its elements should be deletable from the index page.
 - Element types’ `__toString()` methods must now have a `string` return type declaration.
 - Element types’ `afterDelete()` methods must now have a `void` return type declaration.
 - Element types’ `afterMoveInStructure()` methods must now have a `void` return type declaration.

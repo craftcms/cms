@@ -2429,8 +2429,7 @@ abstract class Element extends Component implements ElementInterface
      */
     protected function isDeletable(): bool
     {
-        // todo: change to false in 4.0
-        return true;
+        return false;
     }
 
     /**
