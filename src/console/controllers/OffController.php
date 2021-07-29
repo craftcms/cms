@@ -13,7 +13,7 @@ use craft\helpers\Console;
 use yii\console\ExitCode;
 
 /**
- * Takes the system offline
+ * Takes the system offline.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.5.7
@@ -21,7 +21,23 @@ use yii\console\ExitCode;
 class OffController extends Controller
 {
     /**
-     * @var int|null Number of seconds that the `Retry-After` HTTP header should be set to for 503 responses
+     * @var int|null Number of seconds the `Retry-After` HTTP header should be set to for 503 responses.
+     *
+     * The [Retry Duration](config3:retryDuration) setting can be used to configure a *system-wide* `Retry-After` header.
+     *
+     * ::: warning
+     * The <config3:isSystemLive> setting takes precedence over the `system.live` project config value, so if `config/general.php` sets `isSystemLive` to `true` or `false` these `on`/`off` commands to error out.
+     * :::
+     *
+     * **Example**
+     *
+     * Running the following takes the system offline and returns 503 responses until it’s switched [on](#on) again:
+     *
+     * ```
+     * $ php craft off --retry=60
+     * The system is now offline.
+     * The retry duration is now set to 60.
+     * ```
      */
     public $retry;
 
@@ -36,7 +52,8 @@ class OffController extends Controller
     }
 
     /**
-     * Turns the system off.
+     * Disables `system.live` project config value—bypassing any <config3:allowAdminChanges> restrictions—
+     * meant for temporary use during the deployment process.
      *
      * @return int
      */

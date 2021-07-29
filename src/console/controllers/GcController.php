@@ -31,7 +31,7 @@ class GcController extends Controller
     /**
      * @var bool Whether all soft-deleted items should be deleted, rather than just
      * the ones that were deleted long enough ago to be ready for hard-deletion
-     * per the `softDeleteDuration` config setting.
+     * per the <config3:softDeleteDuration> config setting.
      */
     public $deleteAllTrashed = false;
 
