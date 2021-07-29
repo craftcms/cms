@@ -53,8 +53,8 @@ class FormatDateTime extends Directive
                 new FieldArgument([
                     'name' => 'timezone',
                     'type' => Type::string(),
-                    'description' => 'The full name of the timezone (e.g., America/New_York). Defaults to ' . self::defaultTimezone(),
-                    'defaultValue' => self::defaultTimezone(),
+                    'description' => 'The full name of the timezone (e.g., America/New_York). Defaults to ' . self::defaultTimeZone(),
+                    'defaultValue' => self::defaultTimeZone(),
                 ]),
                 new FieldArgument([
                     'name' => 'locale',
@@ -84,7 +84,7 @@ class FormatDateTime extends Directive
         if ($value instanceof \DateTime) {
             /** @var \DateTime $value */
             $format = $arguments['format'] ?? self::DEFAULT_FORMAT;
-            $timezone = $arguments['timezone'] ?? self::defaultTimezone();
+            $timezone = $arguments['timezone'] ?? self::defaultTimeZone();
 
             // Is this a custom PHP date format?
             if ($format !== null && !in_array($format, [Locale::LENGTH_SHORT, Locale::LENGTH_MEDIUM, Locale::LENGTH_LONG, Locale::LENGTH_FULL], true)) {
@@ -112,9 +112,9 @@ class FormatDateTime extends Directive
     /**
      * Returns the default time zone to be used.
      *
-     * @todo Rename to defaultTimeZone() in Craft 4
+     * @since 4.0.0
      */
-    public static function defaultTimezone(): string
+    public static function defaultTimeZone(): string
     {
         return Craft::$app->getConfig()->getGeneral()->setGraphqlDatesToSystemTimeZone ? Craft::$app->getTimezone() : self::DEFAULT_TIMEZONE;
     }

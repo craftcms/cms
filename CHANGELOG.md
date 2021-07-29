@@ -111,6 +111,7 @@
 - `craft\events\GetAssetThumbUrlEvent` has been renamed to `DefineAssetThumbUrlEvent`.
 - `craft\events\GetAssetUrlEvent` has been renamed to `DefineAssetUrlEvent`.
 - `craft\events\RevisionEvent::$source` has been renamed to `$canonical`.
+- `craft\gql\directives\FormatDateTime::defaultTimezone()` has been renamed to `defaultTimeZone()`.
 - `craft\helpers\Db::parseParam()` now validates that numeric values are passed if the `$columnType` is set to a numeric column type. ([#9142](https://github.com/craftcms/cms/issues/9142))
 - `craft\helpers\Db::prepareDateForDb()` no longer has a `$stripSeconds` argument.
 - `craft\helpers\Db::prepareValueForDb()` now has a `$columnType` argument.
