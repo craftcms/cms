@@ -66,6 +66,7 @@
 - Element types’ `defineActions()` methods’ `$source` arguments should no longer accept `null`.
 - Element types’ `getCpEditUrl()` methods must now have a `?string` return type declaration.
 - Element types’ `getFieldLayout()` methods must now have a `?FieldLayout` return type declaration.
+- Element types’ `getHtmlAttributes()` and `htmlAttributes()` methods must now return attribute arrays that are compatible with `craft\helpers\Html::renderTagAttributes()`.
 - Element types’ `getRef()` methods must now have a `?string` return type declaration.
 - Element types’ `getStatus()` methods must now have a `?string` return type declaration.
 - Element types’ `getThumbUrl()` methods must now have a `?string` return type declaration.
