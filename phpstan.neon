@@ -13,7 +13,6 @@ parameters:
     scanDirectories:
         - tests/_craft/storage/runtime/compiled_classes/
     scanFiles:
-        - vendor/yiisoft/yii2/Yii.php
         - vendor/twig/twig/src/Extension/CoreExtension.php
         - vendor/codeception/codeception/autoload.php
     bootstrapFiles:
