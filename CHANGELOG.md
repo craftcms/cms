@@ -327,6 +327,7 @@
 - Removed `craft\test\Fixture`. `craft\test\ActiveFixture` can be used instead.
 - Removed `craft\validators\StringValidator::$trim`. The `trim` validator can be used instead.
 - Removed `craft\web\AssetBundle::useCompressedJs()`.
+- Removed `craft\web\AssetManager::getPublishedPath()`.
 - Removed `craft\web\assets\graphiql\VendorAsset`. `craft\web\assets\graphiql\GraphiqlAsset` can be used instead.
 - Removed `craft\web\Request::getIsSingleActionRequest()`.
 - Removed `craft\web\twig\Template`.

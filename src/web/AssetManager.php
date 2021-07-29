@@ -22,24 +22,6 @@ use yii\db\Exception as DbException;
 class AssetManager extends \yii\web\AssetManager
 {
     /**
-     * Returns the published path of a file/directory path.
-     *
-     * @param string $path directory or file path being published
-     * @param bool $publish whether the directory or file should be published, if not already
-     * @return string|false the published file or directory path, or false if $publish is false and the file or directory does not exist
-     * @todo remove this in Craft 4 (nothing is using $publish anymore)
-     */
-    public function getPublishedPath($path, bool $publish = false)
-    {
-        if ($publish === true) {
-            [$publishedPath] = $this->publish($path);
-            return $publishedPath;
-        }
-
-        return parent::getPublishedPath($path);
-    }
-
-    /**
      * Returns the URL of a published file/directory path.
      *
      * @param string $path directory or file path being published
