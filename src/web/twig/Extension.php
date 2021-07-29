@@ -937,6 +937,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
         // todo: remove this version check when we drop support for Twig < 2.13.1
         if (version_compare(TwigEnvironment::VERSION, '2.13.1', '<')) {
             /** @noinspection PhpParamsInspection */
+            /** @phpstan-ignore-next-line */
             $filtered = twig_array_filter($arr, $arrow);
         } else {
             $filtered = twig_array_filter($env, $arr, $arrow);
