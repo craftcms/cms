@@ -1218,7 +1218,7 @@ class Gql extends Component
     {
         if (!array_key_exists($typeName, $this->_typeDefinitions)) {
             if ($this->_typeManager === null) {
-                $this->_typeManager = new TypeManager();
+                $this->_typeManager = Craft::createObject(TypeManager::class);
             }
 
             $this->_typeDefinitions[$typeName] = $this->_typeManager->registerFieldDefinitions($fields, $typeName);
