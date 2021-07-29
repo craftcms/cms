@@ -210,7 +210,7 @@ class Application extends \yii\web\Application
 
             // getIsCraftDbMigrationNeeded will return true if we're in the middle of a manual or auto-update for Craft itself.
             // If we're in maintenance mode and it's not a site request, show the manual update template.
-            if ($this->getUpdates()->getIsCraftDbMigrationNeeded()) {
+            if ($this->getUpdates()->getIsCraftUpdatePending()) {
                 return $this->_processUpdateLogic($request) ?: $this->getResponse();
             }
 
@@ -230,7 +230,7 @@ class Application extends \yii\web\Application
             }
 
             // Check if a plugin needs to update the database.
-            if ($this->getUpdates()->getIsPluginDbUpdateNeeded()) {
+            if ($this->getUpdates()->getIsPluginUpdatePending()) {
                 return $this->_processUpdateLogic($request) ?: $this->getResponse();
             }
 

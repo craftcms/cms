@@ -59,18 +59,18 @@ class PruneRevisionsController extends Controller
         $this->stdout('Finding elements with too many revisions ... ');
         $elements = (new Query())
             ->select([
-                'id' => 's.sourceId',
+                'id' => 's.canonicalId',
                 's.count',
                 'type' => (new Query())
                     ->select(['type'])
                     ->from([Table::ELEMENTS])
-                    ->where(new Expression('[[id]] = [[s.sourceId]]')),
+                    ->where(new Expression('[[id]] = [[s.canonicalId]]')),
             ])
             ->from([
                 's' => (new Query())
-                    ->select(['sourceId', 'count' => 'COUNT(*)'])
+                    ->select(['canonicalId', 'count' => 'COUNT(*)'])
                     ->from(['r' => Table::REVISIONS])
-                    ->groupBy(['sourceId'])
+                    ->groupBy(['canonicalId'])
                     ->having(['>', 'COUNT(*)', $this->maxRevisions]),
             ])
             ->all();

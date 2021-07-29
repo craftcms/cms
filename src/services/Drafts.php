@@ -192,7 +192,7 @@ class Drafts extends Component
         $draftNames = (new Query())
             ->select(['name'])
             ->from([Table::DRAFTS])
-            ->where(['sourceId' => $canonicalId])
+            ->where(['canonicalId' => $canonicalId])
             ->column();
         $draftNames = array_flip($draftNames);
 
@@ -375,7 +375,7 @@ class Drafts extends Component
             ->from(['e' => Table::ELEMENTS])
             ->innerJoin(['d' => Table::DRAFTS], '[[d.id]] = [[e.draftId]]')
             ->where(['d.saved' => false])
-            ->andWhere(['d.sourceId' => null])
+            ->andWhere(['d.canonicalId' => null])
             ->andWhere(['<', 'e.dateUpdated', Db::prepareDateForDb($pastTime)])
             ->all();
 
@@ -428,7 +428,7 @@ class Drafts extends Component
     ): int
     {
         Db::insert(Table::DRAFTS, [
-            'sourceId' => $canonicalId, // todo: remove this in v4
+            'canonicalId' => $canonicalId,
             'creatorId' => $creatorId,
             'provisional' => $provisional,
             'name' => $name,

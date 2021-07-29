@@ -21,7 +21,6 @@ class DraftEvent extends Event
 {
     /**
      * @var ElementInterface The canonical element
-     * @todo rename to canonical in v4
      */
     public ElementInterface $canonical;
 

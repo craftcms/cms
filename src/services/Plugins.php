@@ -248,7 +248,7 @@ class Plugins extends Component
                 }
 
                 // If we're not updating, check if the plugin's version number changed, but not its schema version.
-                if (!Craft::$app->getIsInMaintenanceMode() && $hasVersionChanged && !$this->doesPluginRequireDatabaseUpdate($plugin)) {
+                if (!Craft::$app->getIsInMaintenanceMode() && $hasVersionChanged && !$this->isPluginUpdatePending($plugin)) {
                     // Update our record of the plugin's version number
                     Db::update(Table::PLUGINS, [
                         'version' => $plugin->getVersion(),
@@ -768,9 +768,9 @@ class Plugins extends Component
      *
      * @param PluginInterface $plugin The plugin
      * @return bool Whether the plugin’s local schema version is greater than the record we have in the database
-     * @todo rename to isPluginUpdatePending() in v4
+     * @since 4.0.0
      */
-    public function doesPluginRequireDatabaseUpdate(PluginInterface $plugin): bool
+    public function isPluginUpdatePending(PluginInterface $plugin): bool
     {
         $this->loadPlugins();
 

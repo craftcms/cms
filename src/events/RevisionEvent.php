@@ -21,9 +21,8 @@ class RevisionEvent extends Event
 {
     /**
      * @var ElementInterface The canonical element
-     * @todo rename to canonical in v4
      */
-    public ElementInterface $source;
+    public ElementInterface $canonical;
 
     /**
      * @var int|null The creator ID

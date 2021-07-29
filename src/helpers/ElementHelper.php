@@ -198,7 +198,7 @@ class ElementHelper
     {
         $variables = [];
 
-        // If the URI format contains {id} / {sourceId} but the element doesn't have one yet, preserve the tag
+        // If the URI format contains {id}/{canonicalId}/{sourceId} but the element doesn't have one yet, preserve the tag
         if (!$element->id) {
             $element->tempId = 'id-' . StringHelper::randomString(10);
             if (strpos($uriFormat, '{id') !== false) {

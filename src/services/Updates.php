@@ -163,13 +163,13 @@ class Updates extends Component
      */
     public function getAreMigrationsPending(bool $includeContent = false): bool
     {
-        if ($this->getIsCraftDbMigrationNeeded()) {
+        if ($this->getIsCraftUpdatePending()) {
             return true;
         }
 
         $pluginsService = Craft::$app->getPlugins();
         foreach ($pluginsService->getAllPlugins() as $plugin) {
-            if ($pluginsService->doesPluginRequireDatabaseUpdate($plugin)) {
+            if ($pluginsService->isPluginUpdatePending($plugin)) {
                 return true;
             }
         }
@@ -197,13 +197,13 @@ class Updates extends Component
     {
         $handles = [];
 
-        if ($this->getIsCraftDbMigrationNeeded()) {
+        if ($this->getIsCraftUpdatePending()) {
             $handles[] = 'craft';
         }
 
         $pluginsService = Craft::$app->getPlugins();
         foreach ($pluginsService->getAllPlugins() as $plugin) {
-            if ($pluginsService->doesPluginRequireDatabaseUpdate($plugin)) {
+            if ($pluginsService->isPluginUpdatePending($plugin)) {
                 $handles[] = $plugin->id;
             }
         }
@@ -284,21 +284,21 @@ class Updates extends Component
      */
     public function getIsUpdatePending(): bool
     {
-        return $this->getIsCraftDbMigrationNeeded() || $this->getIsPluginDbUpdateNeeded();
+        return $this->getIsCraftUpdatePending() || $this->getIsPluginUpdatePending();
     }
 
     /**
      * Returns whether a plugin needs to run a database update.
      *
      * @return bool
-     * @todo rename to getIsPluginUpdatePending() in v4
+     * @since 4.0.0
      */
-    public function getIsPluginDbUpdateNeeded(): bool
+    public function getIsPluginUpdatePending(): bool
     {
         $plugins = Craft::$app->getPlugins()->getAllPlugins();
 
         foreach ($plugins as $plugin) {
-            if (Craft::$app->getPlugins()->doesPluginRequireDatabaseUpdate($plugin)) {
+            if (Craft::$app->getPlugins()->isPluginUpdatePending($plugin)) {
                 return true;
             }
         }
@@ -343,9 +343,9 @@ class Updates extends Component
      * Returns whether Craft needs to run any database migrations.
      *
      * @return bool
-     * @todo rename to getIsCraftUpdatePending() in v4
+     * @since 4.0.0
      */
-    public function getIsCraftDbMigrationNeeded(): bool
+    public function getIsCraftUpdatePending(): bool
     {
         if (!isset($this->_isCraftDbMigrationNeeded)) {
             $storedSchemaVersion = Craft::$app->getInfo()->schemaVersion;

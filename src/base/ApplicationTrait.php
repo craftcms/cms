@@ -291,7 +291,7 @@ trait ApplicationTrait
         if (
             $this instanceof ConsoleApplication ||
             !$this->getIsInstalled() ||
-            $this->getUpdates()->getIsCraftDbMigrationNeeded()
+            $this->getUpdates()->getIsCraftUpdatePending()
         ) {
             return $this->_getFallbackLanguage();
         }
@@ -1403,7 +1403,7 @@ trait ApplicationTrait
             $this->trigger(WebApplication::EVENT_INIT);
         }
 
-        if ($this->getIsInstalled() && !$this->getUpdates()->getIsCraftDbMigrationNeeded()) {
+        if ($this->getIsInstalled() && !$this->getUpdates()->getIsCraftUpdatePending()) {
             // Possibly run garbage collection
             $this->getGc()->run();
         }

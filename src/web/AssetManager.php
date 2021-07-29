@@ -87,9 +87,8 @@ class AssetManager extends \yii\web\AssetManager
         try {
             Db::upsert(Table::RESOURCEPATHS, [
                 'hash' => $hash,
-            ], [
                 'path' => $alias,
-            ], [], false);
+            ], true, [], false);
         } catch (DbException $e) {
             // Craft is either not installed or not updated to 3.0.3+ yet
         } catch (DbConnectException $e) {

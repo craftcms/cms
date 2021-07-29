@@ -205,7 +205,7 @@ class Category extends Element
     /**
      * @inheritdoc
      */
-    protected static function defineActions(?string $source = null): array
+    protected static function defineActions(string $source): array
     {
         // Get the selected site
         $controller = Craft::$app->controller;
@@ -449,6 +449,15 @@ class Category extends Element
     protected function isEditable(): bool
     {
         return Craft::$app->getUser()->checkPermission('editCategories:' . $this->getGroup()->uid);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    protected function isDeletable(): bool
+    {
+        $group = $this->getGroup();
+        return Craft::$app->getUser()->checkPermission("editCategories:$group->uid");
     }
 
     /**

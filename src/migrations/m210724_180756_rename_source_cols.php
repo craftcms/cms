@@ -1,0 +1,32 @@
+<?php
+
+namespace craft\migrations;
+
+use Craft;
+use craft\db\Migration;
+use craft\db\Table;
+use craft\helpers\MigrationHelper;
+
+/**
+ * m210724_180756_rename_source_cols migration.
+ */
+class m210724_180756_rename_source_cols extends Migration
+{
+    /**
+     * @inheritdoc
+     */
+    public function safeUp()
+    {
+        $this->renameColumn(Table::DRAFTS, 'sourceId', 'canonicalId');
+        $this->renameColumn(Table::REVISIONS, 'sourceId', 'canonicalId');
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function safeDown()
+    {
+        echo "m210724_180756_rename_source_cols cannot be reverted.\n";
+        return false;
+    }
+}

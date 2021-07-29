@@ -205,7 +205,7 @@ abstract class Element extends Component implements ElementInterface
      *     Element::EVENT_DEFINE_EAGER_LOADING_MAP,
      *     function(DefineEagerLoadingMapEvent $e) {
      *         if ($e->handle === 'bookClub') {
-     *             $bookEntryIds = ArrayHelper::getColumn($e->sourceElements, 'id');
+     *             $bookEntryIds = ArrayHelper::getColumn($e->elements, 'id');
      *             $e->elementType = \my\plugin\BookClub::class,
      *             $e->map = (new Query)
      *                 ->select(['source' => 'bookId', 'target' => 'clubId'])
@@ -662,9 +662,8 @@ abstract class Element extends Component implements ElementInterface
      * @param string|null $source The selected source’s key, if any.
      * @return array The available element actions.
      * @see actions()
-     * @todo this shouldn't allow null in Craft 4
      */
-    protected static function defineActions(?string $source = null): array
+    protected static function defineActions(string $source): array
     {
         return [];
     }
@@ -1190,7 +1189,7 @@ abstract class Element extends Component implements ElementInterface
             ])
             ->from(['re' => Table::ELEMENTS])
             ->innerJoin(['r' => Table::REVISIONS], '[[r.id]] = [[re.revisionId]]')
-            ->innerJoin(['se' => Table::ELEMENTS], '[[se.id]] = [[r.sourceId]]')
+            ->innerJoin(['se' => Table::ELEMENTS], '[[se.id]] = [[r.canonicalId]]')
             ->where('[[re.dateCreated]] = [[se.dateUpdated]]')
             ->andWhere(['se.id' => $sourceElementIds])
             ->all();
@@ -1215,12 +1214,12 @@ abstract class Element extends Component implements ElementInterface
 
         $map = (new Query())
             ->select([
-                'source' => 'd.sourceId',
+                'source' => 'd.canonicalId',
                 'target' => 'e.id',
             ])
             ->from(['d' => Table::DRAFTS])
             ->innerJoin(['e' => Table::ELEMENTS], '[[e.draftId]] = [[d.id]]')
-            ->where(['d.sourceId' => $sourceElementIds])
+            ->where(['d.canonicalId' => $sourceElementIds])
             ->all();
 
         return [
@@ -1243,12 +1242,12 @@ abstract class Element extends Component implements ElementInterface
 
         $map = (new Query())
             ->select([
-                'source' => 'r.sourceId',
+                'source' => 'r.canonicalId',
                 'target' => 'e.id',
             ])
             ->from(['r' => Table::REVISIONS])
             ->innerJoin(['e' => Table::ELEMENTS], '[[e.revisionId]] = [[r.id]]')
-            ->where(['r.sourceId' => $sourceElementIds])
+            ->where(['r.canonicalId' => $sourceElementIds])
             ->all();
 
         return [
@@ -2430,8 +2429,7 @@ abstract class Element extends Component implements ElementInterface
      */
     protected function isDeletable(): bool
     {
-        // todo: change to false in 4.0
-        return true;
+        return false;
     }
 
     /**
