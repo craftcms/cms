@@ -81,6 +81,17 @@ class Email extends Field implements PreviewableFieldInterface
     /**
      * @inheritdoc
      */
+    public function normalizeValue($value, ElementInterface $element = null)
+    {
+        if ($value === '') {
+            return null;
+        }
+        return $value;
+    }
+
+    /**
+     * @inheritdoc
+     */
     protected function inputHtml($value, ?ElementInterface $element = null): string
     {
         $id = Html::id($this->handle);
