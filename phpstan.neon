@@ -10,6 +10,7 @@ parameters:
         - src/test/internal/*
         - src/config/composer-classes.php
         - src/config/mimeTypes.php
+        - src/views/debug/*
     scanDirectories:
         - tests/_craft/storage/runtime/compiled_classes/
     scanFiles:
