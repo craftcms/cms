@@ -2875,14 +2875,14 @@ class Elements extends Component
     /**
      * Soft-deletes or restores the drafts and revisions of the given element.
      *
-     * @param int $sourceId The source element ID
+     * @param int $canonicalId The canonical element ID
      * @param bool $delete `true` if the drafts/revisions should be soft-deleted; `false` if they should be restored
      */
-    private function _cascadeDeleteDraftsAndRevisions(int $sourceId, bool $delete = true): void
+    private function _cascadeDeleteDraftsAndRevisions(int $canonicalId, bool $delete = true): void
     {
         $params = [
             'dateDeleted' => $delete ? Db::prepareDateForDb(new \DateTime()) : null,
-            'sourceId' => $sourceId,
+            'canonicalId' => $canonicalId,
         ];
 
         $db = Craft::$app->getDb();
@@ -2894,7 +2894,7 @@ class Elements extends Component
 UPDATE $elementsTable [[e]]
 INNER JOIN $table [[t]] ON [[t.id]] = [[e.$fk]]
 SET [[e.dateDeleted]] = :dateDeleted
-WHERE [[t.sourceId]] = :sourceId
+WHERE [[t.canonicalId]] = :canonicalId
 SQL;
             } else {
                 $sql = <<<SQL
@@ -2902,7 +2902,7 @@ UPDATE $elementsTable [[e]]
 SET [[dateDeleted]] = :dateDeleted
 FROM $table [[t]]
 WHERE [[t.id]] = [[e.$fk]]
-AND [[t.sourceId]] = :sourceId
+AND [[t.canonicalId]] = :canonicalId
 SQL;
             }
 
