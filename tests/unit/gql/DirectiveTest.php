@@ -156,7 +156,7 @@ class DirectiveTest extends Unit
             'fieldNodes' => $fieldNodes
         ]);
 
-        self::assertEquals($asset->filename, $type->resolveWithDirectives($asset, [], null, $resolveInfo));
+        self::assertEquals($asset->getFilename(), $type->resolveWithDirectives($asset, [], null, $resolveInfo));
     }
 
     public function directiveDataProvider()

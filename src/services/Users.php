@@ -434,7 +434,7 @@ class Users extends Component
             $photo = new Asset();
             $photo->setScenario(Asset::SCENARIO_CREATE);
             $photo->tempFilePath = $fileLocation;
-            $photo->filename = $filename;
+            $photo->setFilename($filename);
             $photo->newFolderId = $folderId;
             $photo->setVolumeId($volume->id);
 
