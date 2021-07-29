@@ -205,7 +205,7 @@ abstract class Element extends Component implements ElementInterface
      *     Element::EVENT_DEFINE_EAGER_LOADING_MAP,
      *     function(DefineEagerLoadingMapEvent $e) {
      *         if ($e->handle === 'bookClub') {
-     *             $bookEntryIds = ArrayHelper::getColumn($e->sourceElements, 'id');
+     *             $bookEntryIds = ArrayHelper::getColumn($e->elements, 'id');
      *             $e->elementType = \my\plugin\BookClub::class,
      *             $e->map = (new Query)
      *                 ->select(['source' => 'bookId', 'target' => 'clubId'])

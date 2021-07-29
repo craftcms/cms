@@ -635,7 +635,7 @@ class App
 
             $targets[Dispatcher::TARGET_FILE] = $fileTargetConfig;
 
-            if (defined('CRAFT_STREAM_LOG') && CRAFT_STREAM_LOG === true) {
+            if (!Craft::$app->getRequest()->isConsoleRequest && defined('CRAFT_STREAM_LOG') && CRAFT_STREAM_LOG === true) {
                 $streamErrLogTarget = [
                     'class' => StreamLogTarget::class,
                     'url' => 'php://stderr',

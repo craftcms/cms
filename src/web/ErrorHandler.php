@@ -53,7 +53,6 @@ class ErrorHandler extends \yii\web\ErrorHandler
         // If this is a 404 error, log to a special file
         if ($exception instanceof HttpException && $exception->statusCode === 404) {
             $logDispatcher = Craft::$app->getLog();
-            // todo: remove the check for [0] in v4
             $fileTarget = $logDispatcher->targets[Dispatcher::TARGET_FILE] ?? $logDispatcher->targets[0] ?? null;
             if ($fileTarget && $fileTarget instanceof FileTarget) {
                 $fileTarget->logFile = Craft::getAlias('@storage/logs/web-404s.log');
