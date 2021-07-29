@@ -12,12 +12,12 @@ use craft\models\AssetTransform;
 use yii\base\Event;
 
 /**
- * Get Asset url event class
+ * Define asset URL event class
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0.0
+ * @since 4.0.0
  */
-class GetAssetUrlEvent extends Event
+class DefineAssetUrlEvent extends Event
 {
     /**
      * @var AssetTransform|string|array|null Asset transform index that is being generated (if any)
@@ -25,7 +25,7 @@ class GetAssetUrlEvent extends Event
     public $transform;
 
     /**
-     * @var Asset The Asset that is being transformed.
+     * @var Asset The asset that is being transformed.
      */
     public Asset $asset;
 
