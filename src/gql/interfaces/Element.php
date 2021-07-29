@@ -159,15 +159,27 @@ class Element extends InterfaceType
                 'type' => Type::boolean(),
                 'description' => 'Returns whether this is a revision.',
             ],
+            'canonicalId' => [
+                'name' => 'canonicalId',
+                'type' => Type::int(),
+                'description' => 'Returns the element’s canonical ID. If it’s a draft/revision, the source element’s ID will be returned.',
+            ],
+            'canonicalUid' => [
+                'name' => 'canonicalId',
+                'type' => Type::int(),
+                'description' => 'Returns the element’s canonical ID. If it’s a draft/revision, the source element’s ID will be returned.',
+            ],
             'sourceId' => [
                 'name' => 'sourceId',
                 'type' => Type::int(),
                 'description' => 'Returns the element’s ID, or if it’s a draft/revision, its source element’s ID.',
+                'deprecationReason' => 'this field has been deprecated since Craft 3.7.0. Use `canonicalId` instead.',
             ],
             'sourceUid' => [
                 'name' => 'sourceUid',
                 'type' => Type::string(),
                 'description' => 'Returns the element’s UUID, or if it’s a draft/revision, its source element’s UUID.',
+                'deprecationReason' => 'this field has been deprecated since Craft 3.7.0. Use `canonicalUid` instead.',
             ],
             'draftId' => [
                 'name' => 'draftId',
