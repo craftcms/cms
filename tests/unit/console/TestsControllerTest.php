@@ -29,7 +29,7 @@ class TestsControllerTest extends BaseConsoleTest
     public function testTestController()
     {
         $this->consoleCommand('tests/test')
-            ->stdOut('22')
+            ->stdout('22')
             ->stderr('123321123')
             ->select('Select', '2', ['2', '22'])
             ->confirm('asd', true, true)
