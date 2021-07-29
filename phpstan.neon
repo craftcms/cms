@@ -20,3 +20,10 @@ parameters:
         - tests/_bootstrap.php
     stubFiles:
         - stubs/BaseYii.stub
+    earlyTerminatingMethodCalls:
+        Craft:
+            - dd
+        yii\base\Application:
+            - end
+        yii\base\ErrorHandler:
+            - convertExceptionToError
