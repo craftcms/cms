@@ -20,6 +20,7 @@
 - Added `craft\helpers\Db::parseNumericParam()`.
 - Added `craft\helpers\Number::isInt()`.
 - Added `craft\helpers\Number::toIntOrFloat()`.
+- Added `craft\gql\TypeManager::registerFieldDefinitions()`.
 - Added `craft\models\AssetIndexingSession`.
 - Added `craft\models\VolumeListing`.
 - Added `craft\records\AssetIndexingSession`.
@@ -36,6 +37,7 @@
 - Added `craft\services\AssetIndexer::startIndexingSession()`.
 - Added `craft\services\AssetIndexer::stopIndexingSession()`.
 - Added `craft\services\AssetTransforms::deleteTransformIndexDataByAssetIds()`.
+- Added `craft\services\Gql::prepareFieldDefinitions()`.
 
 ### Changed
 - Craft now requires PHP 7.4 or later.
@@ -136,6 +138,8 @@
 - Deprecated `craft\base\VolumeInterface::createFileByStream()`.
 - Deprecated `craft\base\VolumeInterface::saveFileLocally()`.
 - Deprecated `craft\base\VolumeInterface::updateFileByStream()`.
+- Deprecated `craft\gql\TypeManager::flush()`. Type Manager caches are now flushed when `craft\services\gql::flushCaches()` is called.
+- Deprecated `craft\gql\TypeManager::prepareFieldDefinitions()`. `craft\services\gql::prepareFieldDefinitions()` should be used instead.
 - Deprecated `craft\helpers\ArrayHelper::append()`. `array_unshift()` should be used instead.
 - Deprecated `craft\helpers\ArrayHelper::prepend()`. `array_push()` should be used instead.
 - Deprecated `craft\web\AssetBundle`. `yii\web\AssetBundle` should be used instead.
