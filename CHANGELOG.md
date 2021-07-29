@@ -40,6 +40,7 @@
 ### Changed
 - Craft now requires PHP 7.4 or later.
 - Relational fields now load elements in the current site rather than the primary site, if the source element isn’t localizable. ([#7048](https://github.com/craftcms/cms/issues/7048))
+- The `users/save-user` action no longer includes a `unverifiedEmail` key in failure responses.
 - All components’ `afterDelete()` methods must now have a `void` return type declaration.
 - All components’ `afterSave()` methods must now have a `void` return type declaration.
 - All components’ `attributes()` methods must now have an `array` return type declaration.

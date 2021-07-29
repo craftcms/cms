@@ -1241,9 +1241,9 @@ class UsersController extends Controller
             }
 
             // Copy any 'unverifiedEmail' errors to 'email'
-            // todo: clear out the 'unverifiedEmail' errors in Craft 4
             if (!$user->hasErrors('email')) {
                 $user->addErrors(['email' => $user->getErrors('unverifiedEmail')]);
+                $user->clearErrors('unverifiedEmail');
             }
 
             if ($this->request->getAcceptsJson()) {
