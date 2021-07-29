@@ -14,6 +14,7 @@
 - Fixed a bug where `:empty:` element query conditions weren’t working correctly for empty string values on Postgres. ([#9641](https://github.com/craftcms/cms/issues/9641))
 - Fixed an error that occurred if an entry’s `getSupportedSites()` method was called on a front-end, non-action request. ([#9649](https://github.com/craftcms/cms/issues/9649))
 - Fixed a SQL error that could occur when running the “Find and Replace” utility. ([#9651](https://github.com/craftcms/cms/pull/9651))
+- Fixed a bug where Date fields that were set to only show the time input weren’t saving new values properly. ([#9650](https://github.com/craftcms/cms/issues/9650))
 
 ## 3.7.6 - 2021-07-27
 
