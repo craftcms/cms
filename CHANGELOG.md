@@ -106,6 +106,7 @@
 - `craft\base\Model::datetimeAttributes()` is now called from the constructor, instead of the `init()` method.
 - `craft\base\Model::setAttributes()` now normalizes date attributes into `DateTime` objects.
 - `craft\db\Command::upsert()` no longer merges the `$updateColumns` array into `$insertColumns`. The full array of `INSERT` column values should be passed to `$insertColumns` now.
+- `craft\elements\db\ElementQuery::ids()` no longer accepts an array of criteria params.
 - `craft\events\DraftEvent::$source` has been renamed to `$canonical`.
 - `craft\events\GetAssetThumbUrlEvent` has been renamed to `DefineAssetThumbUrlEvent`.
 - `craft\events\GetAssetUrlEvent` has been renamed to `DefineAssetUrlEvent`.
