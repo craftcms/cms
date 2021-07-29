@@ -1347,6 +1347,8 @@ interface ElementInterface extends ComponentInterface
     /**
      * Returns any attributes that should be included in the element’s DOM representation in the control panel.
      *
+     * The attribute HTML will be rendered with [[\yii\helpers\BaseHtml::renderTagAttributes()]].
+     *
      * ::: tip
      * Element types that extend [[\craft\base\Element]] should override [[\craft\base\Element::htmlAttributes()]]
      * instead of this method.

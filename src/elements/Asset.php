@@ -1994,8 +1994,8 @@ class Asset extends Element
         $attributes = [];
 
         if ($this->kind === self::KIND_IMAGE) {
-            $attributes['data-image-width'] = $this->getWidth();
-            $attributes['data-image-height'] = $this->getHeight();
+            $attributes['data']['image-width'] = $this->getWidth();
+            $attributes['data']['image-height'] = $this->getHeight();
         }
 
         $volume = $this->getVolume();
@@ -2003,10 +2003,10 @@ class Asset extends Element
         $imageEditable = $context === 'index' && $this->getSupportsImageEditor();
 
         if ($volume instanceof Temp || $userSession->getId() == $this->uploaderId) {
-            $attributes['data-own-file'] = null;
+            $attributes['data']['own-file'] = true;
             $movable = $replaceable = true;
         } else {
-            $attributes['data-peer-file'] = null;
+            $attributes['data']['peer-file'] = true;
             $movable = (
                 $userSession->checkPermission("editPeerFilesInVolume:$volume->uid") &&
                 $userSession->checkPermission("deletePeerFilesInVolume:$volume->uid")
@@ -2019,15 +2019,15 @@ class Asset extends Element
         }
 
         if ($movable) {
-            $attributes['data-movable'] = null;
+            $attributes['data']['movable'] = true;
         }
 
         if ($replaceable) {
-            $attributes['data-replaceable'] = null;
+            $attributes['data']['replaceable'] = true;
         }
 
         if ($imageEditable) {
-            $attributes['data-editable-image'] = null;
+            $attributes['data']['editable-image'] = true;
         }
 
         return $attributes;

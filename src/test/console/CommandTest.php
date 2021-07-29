@@ -48,9 +48,8 @@ class CommandTest
 
     /**
      * @var bool
-     * @todo rename to ignoreStdout in 4.0
      */
-    protected $ignoreStdOut = false;
+    protected $ignoreStdout = false;
 
     /**
      * @var int
@@ -105,7 +104,7 @@ class CommandTest
     {
         $this->command = $command;
         $this->parameters = $parameters;
-        $this->ignoreStdOut = $ignoreStdOut;
+        $this->ignoreStdout = $ignoreStdOut;
         $this->test = $consoleTest;
         $this->setupController();
     }
@@ -137,9 +136,8 @@ class CommandTest
     /**
      * @param string|string[]|Traversable $desiredOutput
      * @return CommandTest
-     * @todo rename to stdout() in 4.0
      */
-    public function stdOut($desiredOutput): CommandTest
+    public function stdout($desiredOutput): CommandTest
     {
         return $this->addEventChainItem([
             'type' => self::STD_OUT,
@@ -241,7 +239,7 @@ class CommandTest
         $actionId = $controllerArray[1];
 
         $stubController = Stub::construct(get_class($controller), [$controller->id, Craft::$app], [
-            'stdOut' => $this->stdOutHandler(),
+            'stdOut' => $this->stdoutHandler(),
             'stderr' => $this->stderrHandler(),
             'prompt' => $this->promptHandler(),
             'confirm' => $this->confirmHandler(),
@@ -271,12 +269,11 @@ class CommandTest
 
     /**
      * @return Closure
-     * @todo rename to stdoutHandler in 4.0
      */
-    protected function stdOutHandler(): Closure
+    protected function stdoutHandler(): Closure
     {
         return function($out) {
-            if (!$this->ignoreStdOut) {
+            if (!$this->ignoreStdout) {
                 $nextItem = $this->runHandlerCheck($out, self::STD_OUT);
                 if (is_string($nextItem->desiredOutput)) {
                     $this->test::assertSame($nextItem->desiredOutput, $out);

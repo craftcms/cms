@@ -66,6 +66,7 @@
 - Element types’ `defineActions()` methods’ `$source` arguments should no longer accept `null`.
 - Element types’ `getCpEditUrl()` methods must now have a `?string` return type declaration.
 - Element types’ `getFieldLayout()` methods must now have a `?FieldLayout` return type declaration.
+- Element types’ `getHtmlAttributes()` and `htmlAttributes()` methods must now return attribute arrays that are compatible with `craft\helpers\Html::renderTagAttributes()`.
 - Element types’ `getRef()` methods must now have a `?string` return type declaration.
 - Element types’ `getStatus()` methods must now have a `?string` return type declaration.
 - Element types’ `getThumbUrl()` methods must now have a `?string` return type declaration.
@@ -106,13 +107,16 @@
 - `craft\base\Model::datetimeAttributes()` is now called from the constructor, instead of the `init()` method.
 - `craft\base\Model::setAttributes()` now normalizes date attributes into `DateTime` objects.
 - `craft\db\Command::upsert()` no longer merges the `$updateColumns` array into `$insertColumns`. The full array of `INSERT` column values should be passed to `$insertColumns` now.
+- `craft\elements\db\ElementQuery::ids()` no longer accepts an array of criteria params.
 - `craft\events\DraftEvent::$source` has been renamed to `$canonical`.
 - `craft\events\GetAssetThumbUrlEvent` has been renamed to `DefineAssetThumbUrlEvent`.
 - `craft\events\GetAssetUrlEvent` has been renamed to `DefineAssetUrlEvent`.
 - `craft\events\RevisionEvent::$source` has been renamed to `$canonical`.
+- `craft\gql\directives\FormatDateTime::defaultTimezone()` has been renamed to `defaultTimeZone()`.
 - `craft\helpers\Db::parseParam()` now validates that numeric values are passed if the `$columnType` is set to a numeric column type. ([#9142](https://github.com/craftcms/cms/issues/9142))
 - `craft\helpers\Db::prepareDateForDb()` no longer has a `$stripSeconds` argument.
 - `craft\helpers\Db::prepareValueForDb()` now has a `$columnType` argument.
+- `craft\helpers\MigrationHelper::dropAllIndexesOnTable()` no longer returns an array of the dropped indexes.
 - `craft\services\AssetIndexer::storeIndexList()` now expects the first argument to be a generator that returns `craft\models\VolumeListing` objects.
 - `craft\services\Assets::ensureFolderByFullPathAndVolume()` now returns a `craft\models\VolumeFolder` object rather than a folder ID.
 - `craft\services\Assets::EVENT_GET_ASSET_THUMB_URL` has been renamed to `EVENT_DEFINE_THUMB_URL`.
@@ -323,6 +327,7 @@
 - Removed `craft\test\Fixture`. `craft\test\ActiveFixture` can be used instead.
 - Removed `craft\validators\StringValidator::$trim`. The `trim` validator can be used instead.
 - Removed `craft\web\AssetBundle::useCompressedJs()`.
+- Removed `craft\web\AssetManager::getPublishedPath()`.
 - Removed `craft\web\assets\graphiql\VendorAsset`. `craft\web\assets\graphiql\GraphiqlAsset` can be used instead.
 - Removed `craft\web\Request::getIsSingleActionRequest()`.
 - Removed `craft\web\twig\Template`.

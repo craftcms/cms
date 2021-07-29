@@ -59,12 +59,6 @@ class RegisterResourceTokenParser extends AbstractTokenParser
     public ?int $defaultPosition = null;
 
     /**
-     * @var string|null The new template code that should be used if this tag is deprecated
-     * @todo Remove this in Craft 4
-     */
-    public ?string $newCode = null;
-
-    /**
      * @param string $tag the tag name
      * @param string $method the View method the tag represents
      * @param array $config name-value pairs that will be used to initialize the object properties
