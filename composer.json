@@ -89,6 +89,9 @@
       "crafttests\\fixtures\\": "tests/fixtures/"
     }
   },
+  "scripts": {
+    "phpstan": "phpstan --memory-limit=1G"
+  },
   "config": {
     "sort-packages": true,
     "platform": {
