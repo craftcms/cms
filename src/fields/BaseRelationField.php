@@ -764,11 +764,10 @@ JS;
                             'elementId' => $element->id,
                             'siteId' => $siteId,
                             'fieldId' => $this->id,
-                        ], [
                             'dateUpdated' => $timestamp,
                             'propagated' => $element->propagating,
                             'userId' => $userId,
-                        ], [], false);
+                        ], true, [], false);
                     }
                 }
             }

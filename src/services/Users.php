@@ -303,9 +303,8 @@ class Users extends Component
 
         Db::upsert(Table::USERPREFERENCES, [
             'userId' => $user->id,
-        ], [
             'preferences' => $preferences,
-        ], [], false);
+        ], true, [], false);
     }
 
     /**
@@ -851,7 +850,6 @@ class Users extends Component
         return (bool)Db::upsert(Table::SHUNNEDMESSAGES, [
             'userId' => $userId,
             'message' => $message,
-        ], [
             'expiryDate' => Db::prepareDateForDb($expiryDate),
         ]);
     }

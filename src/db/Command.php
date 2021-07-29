@@ -96,12 +96,6 @@ class Command extends \yii\db\Command
      */
     public function upsert($table, $insertColumns, $updateColumns = true, $params = [], bool $includeAuditColumns = true): Command
     {
-        if (is_bool($params)) {
-            $includeAuditColumns = $params;
-            $params = [];
-            Craft::$app->getDeprecator()->log('craft\\db\\Command::upsert($includeAuditColumns)', 'The `$includeAuditColumns` argument on `craft\\db\\Command::upsert()` has been moved to the 5th position');
-        }
-
         if ($includeAuditColumns && $updateColumns !== false) {
             if ($updateColumns === true) {
                 $updateColumns = array_merge($insertColumns);
@@ -110,12 +104,6 @@ class Command extends \yii\db\Command
             $updateColumns['dateCreated'] = $now;
             $updateColumns['dateUpdated'] = $now;
             $updateColumns['uid'] = StringHelper::UUID();
-        }
-
-        // todo: hack for BC with our old upsert() method. Remove in Craft 4
-        // Merge any updateColumn data into insertColumns
-        if (is_array($updateColumns)) {
-            $insertColumns = array_merge($updateColumns, $insertColumns);
         }
 
         parent::upsert($table, $insertColumns, $updateColumns, $params);

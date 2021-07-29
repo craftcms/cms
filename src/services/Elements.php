@@ -882,11 +882,10 @@ class Elements extends Component
                 'elementId' => $canonical->id,
                 'siteId' => $attribute['siteId'],
                 'attribute' => $attribute['attribute'],
-            ], [
                 'dateUpdated' => $timestamp,
                 'propagated' => $attribute['propagated'],
                 'userId' => $attribute['userId'],
-            ], [], false);
+            ], true, [], false);
         }
 
         $fields = (new Query())
@@ -900,11 +899,7 @@ class Elements extends Component
                 'elementId' => $canonical->id,
                 'siteId' => $field['siteId'],
                 'fieldId' => $field['fieldId'],
-            ], [
-                'dateUpdated' => $timestamp,
-                'propagated' => $field['propagated'],
-                'userId' => $field['userId'],
-            ], [], false);
+            ], true, [], false);
         }
 
         return $updatedCanonical;
@@ -2745,11 +2740,10 @@ class Elements extends Component
                     'elementId' => $element->id,
                     'siteId' => $element->siteId,
                     'attribute' => $attributeName,
-                ], [
                     'dateUpdated' => $timestamp,
                     'propagated' => $element->propagating,
                     'userId' => $userId,
-                ], [], false);
+                ], true, [], false);
             }
 
             if (($fieldLayout = $element->getFieldLayout()) !== null) {
@@ -2759,11 +2753,10 @@ class Elements extends Component
                             'elementId' => $element->id,
                             'siteId' => $element->siteId,
                             'fieldId' => $field->id,
-                        ], [
                             'dateUpdated' => $timestamp,
                             'propagated' => $element->propagating,
                             'userId' => $userId,
-                        ], [], false);
+                        ], true, [], false);
                     }
                 }
             }

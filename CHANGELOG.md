@@ -105,6 +105,7 @@
 - Widgets’ `maxColspan()` methods must now have an `?int` return type declaration.
 - `craft\base\Model::datetimeAttributes()` is now called from the constructor, instead of the `init()` method.
 - `craft\base\Model::setAttributes()` now normalizes date attributes into `DateTime` objects.
+- `craft\db\Command::upsert()` no longer merges the `$updateColumns` array into `$insertColumns`. The full array of `INSERT` column values should be passed to `$insertColumns` now.
 - `craft\events\DraftEvent::$source` has been renamed to `$canonical`.
 - `craft\events\RevisionEvent::$source` has been renamed to `$canonical`.
 - `craft\helpers\Db::parseParam()` now validates that numeric values are passed if the `$columnType` is set to a numeric column type. ([#9142](https://github.com/craftcms/cms/issues/9142))
