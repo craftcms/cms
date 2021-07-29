@@ -128,7 +128,7 @@ class Revisions extends Component
 
         // Fire a 'beforeCreateRevision' event
         $event = new RevisionEvent([
-            'source' => $canonical,
+            'canonical' => $canonical,
             'creatorId' => $creatorId,
             'revisionNum' => $num,
             'revisionNotes' => $notes,

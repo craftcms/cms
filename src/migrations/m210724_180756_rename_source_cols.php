@@ -15,10 +15,11 @@ class m210724_180756_rename_source_cols extends Migration
     /**
      * @inheritdoc
      */
-    public function safeUp()
+    public function safeUp(): bool
     {
         $this->renameColumn(Table::DRAFTS, 'sourceId', 'canonicalId');
         $this->renameColumn(Table::REVISIONS, 'sourceId', 'canonicalId');
+        return true;
     }
 
     /**
