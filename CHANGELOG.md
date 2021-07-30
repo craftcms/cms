@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 3.x
 
-## Unreleased
+## 3.7.7 - 2021-07-29
 
 ### Added
 - Added the `canonicalId` GraphQL field for entries.
