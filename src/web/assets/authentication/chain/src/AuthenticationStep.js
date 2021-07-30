@@ -5,6 +5,7 @@ class AuthenticationStep {
         this.stepType = stepType;
         Craft.AuthenticationChainHandler.registerStepHandler(stepType, this.prepareData.bind(this));
         this.$loginForm = Craft.AuthenticationChainHandler.loginHandler.$loginForm;
+        this.$submit = Craft.AuthenticationChainHandler.loginHandler.$submit;
     }
     /**
      * @param ev

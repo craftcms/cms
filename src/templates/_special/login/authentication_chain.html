@@ -17,10 +17,16 @@
 {% block alternativeSteps %}
 
 {% endblock %}
+<div id="login-form-bottom">
+    {% block rememberMe %}
 
-{% block accountRecovery %}
+    {% endblock %}
 
-{% endblock %}
+    {% block accountRecovery %}
+
+    {% endblock %}
+</div>
+
 
 <div class="buttons">
     {% if not authenticationChain or not authenticationChain.isComplete %}

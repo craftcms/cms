@@ -7,6 +7,7 @@ abstract class AuthenticationStep
     protected stepType: string;
 
     protected $loginForm: JQuery;
+    protected $submit: JQuery;
 
     protected abstract validate(): true | string;
     protected abstract returnFormData(): AuthenticationRequest;
@@ -16,6 +17,7 @@ abstract class AuthenticationStep
         this.stepType = stepType;
         Craft.AuthenticationChainHandler.registerStepHandler(stepType, this.prepareData.bind(this));
         this.$loginForm = Craft.AuthenticationChainHandler.loginHandler.$loginForm;
+        this.$submit = Craft.AuthenticationChainHandler.loginHandler.$submit;
     }
 
     /**

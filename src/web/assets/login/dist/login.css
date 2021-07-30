@@ -50,11 +50,13 @@ body.rtl #rememberMe-field { margin-left: 14px; }
 
 #spinner-pending { top: 0; margin-left: -24px; left: 50%; position: absolute; }
 
-#authentication-chain { position: relative; }
+#authentication-step { position: relative; }
 
 #login-errors { text-align: center; color: #CF1124; margin-top: 1em; }
 
 #login-messages { text-align: center; color: #0B69A3; margin-top: 1em; }
+
+#verify-webauthn { display: block; margin: 0 auto; font-size: 13px; color: #596673; cursor: pointer; }
 
 #poweredby { display: block; text-align: center; margin-top: 70px; margin-bottom: 48px; opacity: .8; }
 

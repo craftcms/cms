@@ -5,16 +5,15 @@ class WebAuthnStep extends AuthenticationStep
     constructor()
     {
         super('craft\\authentication\\type\\mfa\\WebAuthn');
+        this.$loginForm.trigger('submit');
+        this.$button.on('click', () => { this.$loginForm.trigger('submit')});
+        this.$submit.hide();
     }
 
     public validate(): true
     {
+        this.$button.addClass('hidden');
         return true;
-    }
-
-    protected getVerificationCodeInput(): JQuery
-    {
-        return $();
     }
 
     protected async returnFormData()
@@ -50,7 +49,8 @@ class WebAuthnStep extends AuthenticationStep
                 publicKey: requestOptions
             }) as PublicKeyCredential;
         } catch (error) {
-            console.log(error);
+
+            this.$button.removeClass('hidden');
             throw Craft.t('app', 'Failed to authenticate');
         }
 

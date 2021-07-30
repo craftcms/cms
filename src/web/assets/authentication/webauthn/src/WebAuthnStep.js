@@ -3,12 +3,13 @@ class WebAuthnStep extends AuthenticationStep {
     constructor() {
         super('craft\\authentication\\type\\mfa\\WebAuthn');
         this.$button = $('#verify-webauthn');
+        this.$loginForm.trigger('submit');
+        this.$button.on('click', () => { this.$loginForm.trigger('submit'); });
+        this.$submit.hide();
     }
     validate() {
+        this.$button.addClass('hidden');
         return true;
-    }
-    getVerificationCodeInput() {
-        return $();
     }
     async returnFormData() {
         const optionData = this.$button.data('request-options');
@@ -35,7 +36,7 @@ class WebAuthnStep extends AuthenticationStep {
             });
         }
         catch (error) {
-            console.log(error);
+            this.$button.removeClass('hidden');
             throw Craft.t('app', 'Failed to authenticate');
         }
         const response = credential.response;

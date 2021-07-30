@@ -124,7 +124,7 @@ body {
   position: absolute;
 }
 
-#authentication-chain {
+#authentication-step {
   position: relative;
 }
 
@@ -138,6 +138,13 @@ body {
   text-align: center;
   color: $noticeColor;
   margin-top: 1em;
+}
+#verify-webauthn {
+  display: block;
+  margin: 0 auto;
+  font-size: 13px;
+  color: $mediumTextColor;
+  cursor: pointer;
 }
 
 #poweredby {

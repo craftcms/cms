@@ -16,6 +16,7 @@
         {% if username|length > 0 or (authenticationChain is not null and not authenticationChain.isComplete) %}
             {% set knownUserName = user.username|default(username) %}
                 <div id="authentication-greeting">{{ 'Hello, {user}'|t('app', {user: knownUserName}) }}. (<a id="restart-authentication">{{ 'Not {user}?'|t('app', {user: knownUserName}) }}</a>)</div>
+                <hr />
         {% endif %}
     {% endblock %}
 
@@ -69,16 +70,15 @@
         {% endif %}
     {% endblock %}
 
-    {% block accountRecovery %}
-        {% if authenticationChain.isNew|default(false) %}
-            <div id="login-form-bottom">
-                {% if showRememberMe %}
-                    {{ forms.checkboxField({ id: 'rememberMe', label: 'Keep me logged in'|t('app') }) }}
-                {% endif %}
-
-                <button id="recover-account" rel="recovery" type="button">{{ 'Trouble logging in?'|t('app') }}</button>
-                <button id="cancel-recover" rel="authentication"   class="hidden" type="button">{{ 'Back to login'|t('app') }}</button>
-            </div>
+    {% block rememberMe %}
+        {% if showRememberMe %}
+            {{ forms.checkboxField({ id: 'rememberMe', label: 'Keep me logged in'|t('app') }) }}
         {% endif %}
+
+    {% endblock %}
+
+    {% block accountRecovery %}
+            <button id="recover-account" rel="recovery" type="button">{{ 'Trouble logging in?'|t('app') }}</button>
+            <button id="cancel-recover" rel="authentication"   class="hidden" type="button">{{ 'Back to login'|t('app') }}</button>
     {% endblock %}
 {% endembed %}

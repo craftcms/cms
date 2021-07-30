@@ -21,6 +21,26 @@ use craft\base\Model;
 class Scenario extends Model
 {
     /**
+     * Slightly massage the branch data before using.
+     *
+     * @param array $config
+     */
+    public function __construct($config = [])
+    {
+        $branches = [];
+
+        foreach ($config['branches'] as $branch) {
+            $branches[$branch['title']] = [
+                'steps' => $branch['steps']
+            ];
+        }
+        
+        $config['branches'] = $branches;
+            
+        parent::__construct($config);
+    }
+
+    /**
      * Auth chain branches.
      *
      * @var Branch[]
