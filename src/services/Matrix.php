@@ -444,8 +444,8 @@ class Matrix extends Component
                 }
 
                 // Restore the contentTable and the fieldColumnPrefix to original values.
-                $contentService->fieldColumnPrefix = $originalFieldColumnPrefix;
                 $contentService->contentTable = $originalContentTable;
+                $contentService->fieldColumnPrefix = $originalFieldColumnPrefix;
 
                 // Delete the field layout
                 $fieldLayoutId = (new Query())
