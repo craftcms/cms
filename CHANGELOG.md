@@ -2,6 +2,13 @@
 
 ## Unreleased
 
+### Added
+- Added `craft\web\twig\CpExtension`.
+- Added `craft\web\twig\GlobalsExtension`.
+
+### Changed
+- Craft’s global Twig variables (e.g. `craft`) can now be autocompleted within Twig templates when using PhpStorm with the [Symfony Support](https://plugins.jetbrains.com/plugin/7219-symfony-support) plugin.
+
 ### Fixed
 - Fixed a bug where the site menu on Edit Category pages wasn’t working properly. ([#9658](https://github.com/craftcms/cms/issues/9658))
 - Fixed a bug where the “Save and add another” action on Edit Category pages wasn’t retaining the currently-selected site or parent category selection.
