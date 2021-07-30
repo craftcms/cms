@@ -434,18 +434,22 @@ class Matrix extends Component
             if ($matrixField instanceof MatrixField) {
                 $contentService->contentTable = $matrixField->contentTable;
 
-                // Set the new fieldColumnPrefix
-                $originalFieldColumnPrefix = Craft::$app->getContent()->fieldColumnPrefix;
-                Craft::$app->getContent()->fieldColumnPrefix = 'field_' . $blockType->handle . '_';
+                // Set the new fieldColumnPrefix + oldFieldColumnPrefix
+                $originalFieldColumnPrefix = $contentService->fieldColumnPrefix;
+                $originalOldFieldColumnPrefix = $fieldsService->oldFieldColumnPrefix;
+
+                $contentService->fieldColumnPrefix = "field_{$blockType->handle}_";
+                $fieldsService->oldFieldColumnPrefix = "field_{$blockType->handle}_";
 
                 // Now delete the block type fields
                 foreach ($blockType->getFields() as $field) {
-                    Craft::$app->getFields()->deleteField($field);
+                    $fieldsService->deleteField($field);
                 }
 
                 // Restore the contentTable and the fieldColumnPrefix to original values.
-                Craft::$app->getContent()->fieldColumnPrefix = $originalFieldColumnPrefix;
                 $contentService->contentTable = $originalContentTable;
+                $contentService->fieldColumnPrefix = $originalFieldColumnPrefix;
+                $fieldsService->oldFieldColumnPrefix = $originalOldFieldColumnPrefix;
 
                 // Delete the field layout
                 $fieldLayoutId = (new Query())
@@ -455,7 +459,7 @@ class Matrix extends Component
                     ->scalar();
 
                 // Delete the field layout
-                Craft::$app->getFields()->deleteLayoutById($fieldLayoutId);
+                $fieldsService->deleteLayoutById($fieldLayoutId);
 
                 // Finally delete the actual block type
                 Db::delete(Table::MATRIXBLOCKTYPES, [

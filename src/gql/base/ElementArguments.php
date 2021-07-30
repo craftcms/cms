@@ -209,7 +209,7 @@ abstract class ElementArguments extends Arguments
             'draftOf' => [
                 'name' => 'draftOf',
                 'type' => QueryArgument::getType(),
-                'description' => 'The source element ID that drafts should be returned for. Set to `false` to fetch unpublished drafts.',
+                'description' => 'Narrows the query results to only drafts of a given element.  Set to `false` to fetch unpublished drafts.',
             ],
             'draftId' => [
                 'name' => 'draftId',

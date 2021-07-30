@@ -1,5 +1,23 @@
 # Release Notes for Craft CMS 3.x
 
+## 3.7.7 - 2021-07-29
+
+### Added
+- Added the `canonicalId` GraphQL field for entries.
+
+### Deprecated
+- Deprecated the `sourceId` and `sourceUid` GraphQL fields for entries. `canonicalId` should be used instead.
+
+### Fixed
+- Fixed an error that could occur when creating a new entry, if the section’s Entry URI Format contained `{canonicalId}`. ([#6080](https://github.com/craftcms/cms/issues/6080))
+- Fixed a bug where `craft\helpers\Db::isTextualColumnType()` was always returning `false`.
+- Fixed a bug where `:empty:` element query conditions weren’t working correctly for empty string values on Postgres. ([#9641](https://github.com/craftcms/cms/issues/9641))
+- Fixed an error that occurred if an entry’s `getSupportedSites()` method was called on a front-end, non-action request. ([#9649](https://github.com/craftcms/cms/issues/9649))
+- Fixed a SQL error that could occur when running the “Find and Replace” utility. ([#9651](https://github.com/craftcms/cms/pull/9651))
+- Fixed a bug where Date fields that were set to only show the time input weren’t saving new values properly. ([#9650](https://github.com/craftcms/cms/issues/9650))
+- Fixed a bug where `craft\services\Fields::$oldFieldColumnPrefix` wasn’t getting set properly when deleting a Matrix block type.
+- Fixed a bug where Matrix sub-fields were getting new content columns whenever their block type’s handle was changed, when the existing columns should have been renamed.
+
 ## 3.7.6 - 2021-07-27
 
 ### Added
