@@ -467,13 +467,14 @@ class Category extends Element
     {
         $group = $this->getGroup();
 
-        $url = UrlHelper::cpUrl('categories/' . $group->handle . '/' . $this->id . ($this->slug ? '-' . $this->slug : ''));
+        $path = "categories/$group->handle/$this->id" . ($this->slug ? "-$this->slug" : '');
 
+        $params = [];
         if (Craft::$app->getIsMultiSite()) {
-            $url .= '/' . $this->getSite()->handle;
+            $params['site'] = $this->getSite()->handle;
         }
 
-        return $url;
+        return UrlHelper::cpUrl($path, $params);
     }
 
     /**

@@ -1403,7 +1403,25 @@ class Extension extends AbstractExtension implements GlobalsInterface
         $generalConfig = Craft::$app->getConfig()->getGeneral();
         $setPasswordRequestPath = $generalConfig->getSetPasswordRequestPath();
 
-        $globals = [
+        if ($isInstalled && !Craft::$app->getUpdates()->getIsCraftUpdatePending()) {
+            /** @noinspection PhpUnhandledExceptionInspection */
+            $currentSite = Craft::$app->getSites()->getCurrentSite();
+
+            $currentUser = Craft::$app->getUser()->getIdentity();
+            $siteName = Craft::t('site', $currentSite->getName());
+            $siteUrl = $currentSite->getBaseUrl();
+            $systemName = Craft::$app->getSystemName();
+        } else {
+            $currentSite = $currentUser = $siteName = $siteUrl = $systemName = null;
+        }
+
+        return [
+            'craft' => new CraftVariable(),
+            'currentSite' => $currentSite,
+            'currentUser' => $currentUser,
+            'siteName' => $siteName,
+            'siteUrl' => $siteUrl,
+            'systemName' => $systemName,
             'view' => $this->view,
 
             'devMode' => YII_DEBUG,
@@ -1427,46 +1445,5 @@ class Extension extends AbstractExtension implements GlobalsInterface
             'setPasswordUrl' => $setPasswordRequestPath !== null ? UrlHelper::siteUrl($setPasswordRequestPath) : null,
             'now' => new DateTime(null, new \DateTimeZone(Craft::$app->getTimeZone())),
         ];
-
-        $globals['craft'] = new CraftVariable();
-
-        if ($isInstalled && !$request->getIsConsoleRequest() && !Craft::$app->getUpdates()->getIsCraftUpdatePending()) {
-            $globals['currentUser'] = Craft::$app->getUser()->getIdentity();
-        } else {
-            $globals['currentUser'] = null;
-        }
-
-        $templateMode = $this->view->getTemplateMode();
-
-        // CP-only variables
-        if ($templateMode === View::TEMPLATE_MODE_CP) {
-            $globals['CraftEdition'] = Craft::$app->getEdition();
-            $globals['CraftSolo'] = Craft::Solo;
-            $globals['CraftPro'] = Craft::Pro;
-        }
-
-        // Only set these things when Craft is installed and not being updated
-        if ($isInstalled && !Craft::$app->getUpdates()->getIsCraftUpdatePending()) {
-            $globals['systemName'] = Craft::$app->getSystemName();
-            /** @noinspection PhpUnhandledExceptionInspection */
-            $site = Craft::$app->getSites()->getCurrentSite();
-            $globals['currentSite'] = $site;
-            $globals['siteName'] = Craft::t('site', $site->getName());
-            $globals['siteUrl'] = $site->getBaseUrl();
-
-            // Global sets (site templates only)
-            if ($templateMode === View::TEMPLATE_MODE_SITE) {
-                foreach (Craft::$app->getGlobals()->getAllSets() as $globalSet) {
-                    $globals[$globalSet->handle] = $globalSet;
-                }
-            }
-        } else {
-            $globals['systemName'] = null;
-            $globals['currentSite'] = null;
-            $globals['siteName'] = null;
-            $globals['siteUrl'] = null;
-        }
-
-        return $globals;
     }
 }

@@ -17,8 +17,10 @@ use craft\helpers\Html;
 use craft\helpers\Json;
 use craft\helpers\Path;
 use craft\helpers\StringHelper;
+use craft\web\twig\CpExtension;
 use craft\web\twig\Environment;
 use craft\web\twig\Extension;
+use craft\web\twig\GlobalsExtension;
 use craft\web\twig\TemplateLoader;
 use Twig\Error\LoaderError as TwigLoaderError;
 use Twig\Error\RuntimeError as TwigRuntimeError;
@@ -294,6 +296,12 @@ class View extends \yii\web\View
 
         $twig->addExtension(new StringLoaderExtension());
         $twig->addExtension(new Extension($this, $twig));
+
+        if ($this->_templateMode === self::TEMPLATE_MODE_CP) {
+            $twig->addExtension(new CpExtension());
+        } else {
+            $twig->addExtension(new GlobalsExtension());
+        }
 
         if (YII_DEBUG) {
             $twig->addExtension(new DebugExtension());
