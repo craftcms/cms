@@ -1475,7 +1475,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
         $generalConfig = Craft::$app->getConfig()->getGeneral();
         $setPasswordRequestPath = $generalConfig->getSetPasswordRequestPath();
 
-        if ($isInstalled && !$request->getIsConsoleRequest() && !Craft::$app->getUpdates()->getIsCraftDbMigrationNeeded()) {
+        if ($isInstalled && !Craft::$app->getUpdates()->getIsCraftDbMigrationNeeded()) {
             /** @noinspection PhpUnhandledExceptionInspection */
             $currentSite = Craft::$app->getSites()->getCurrentSite();
 
