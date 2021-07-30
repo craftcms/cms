@@ -188,9 +188,9 @@ class DbController extends Controller
     /**
      * Converts tables’ character sets and collations. (MySQL only)
      *
-     * @param string|null $charset   The target character set, which honors [[DbConfig::$charset]]
+     * @param string|null $charset   The target character set, which honors `DbConfig::$charset`
      *                               or defaults to `utf8`.
-     * @param string|null $collation The target collation, which honors [[DbConfig::$collation]]
+     * @param string|null $collation The target collation, which honors `DbConfig::$collation`
      *                               or defaults to `utf8_unicode_ci`.
      * @return int
      */

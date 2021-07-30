@@ -23,15 +23,16 @@ class OffController extends Controller
     /**
      * @var int|null Number of seconds the `Retry-After` HTTP header should be set to for 503 responses.
      *
-     * The [Retry Duration](config3:retryDuration) setting can be used to configure a *system-wide* `Retry-After` header.
+     * The `retryDuration` config setting can be used to configure a *system-wide* `Retry-After` header.
      *
      * ::: warning
-     * The <config3:isSystemLive> setting takes precedence over the `system.live` project config value, so if `config/general.php` sets `isSystemLive` to `true` or `false` these `on`/`off` commands to error out.
+     * The `isSystemLive` config setting takes precedence over the `system.live` project config value,
+     * so if `config/general.php` sets `isSystemLive` to `true` or `false` these `on`/`off` commands error out.
      * :::
      *
      * **Example**
      *
-     * Running the following takes the system offline and returns 503 responses until it’s switched [on](#on) again:
+     * Running the following takes the system offline and returns 503 responses until it’s switched on again:
      *
      * ```
      * $ php craft off --retry=60
@@ -52,20 +53,20 @@ class OffController extends Controller
     }
 
     /**
-     * Disables `system.live` project config value—bypassing any <config3:allowAdminChanges> restrictions—
+     * Disables `system.live` project config value—bypassing any `allowAdminChanges` config setting restrictions—
      * meant for temporary use during the deployment process.
      *
      * @return int
      */
     public function actionIndex(): int
     {
-        // If the isSystemLive config setting is set, then we can't control it from here
+        // If the isSystemLive config setting is set, then we can’t control it from here
         if (is_bool($live = Craft::$app->getConfig()->getGeneral()->isSystemLive)) {
             $this->stderr('It\'s not possible to toggle the system status when the `isSystemLive` config setting is set.' . PHP_EOL, Console::FG_RED);
             return ExitCode::UNSPECIFIED_ERROR;
         }
 
-        // Allow changes to the project config even if it's supposed to be read only,
+        // Allow changes to the project config even if it’s supposed to be read only,
         // and prevent changes from getting written to YAML
         $projectConfig = Craft::$app->getProjectConfig();
         $projectConfig->readOnly = false;
