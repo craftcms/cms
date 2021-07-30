@@ -30,7 +30,7 @@ class GraphqlController extends Controller
     const GQL_SCHEMA_EXTENSION = ".graphql";
 
     /**
-     * @var string|null The token to look up to determine the appropriate GraphQL schema
+     * @var string|null The token to look up to determine the appropriate GraphQL schema.
      */
     public ?string $token = null;
 
@@ -52,7 +52,7 @@ class GraphqlController extends Controller
     }
 
     /**
-     * Print out a given GraphQL schema.
+     * Prints a given GraphQL schema.
      *
      * @return int
      */
@@ -74,7 +74,7 @@ class GraphqlController extends Controller
     }
 
     /**
-     * Dump out a given GraphQL schema to a file.
+     * Dumps a given GraphQL schema to a file.
      *
      * @return int
      */

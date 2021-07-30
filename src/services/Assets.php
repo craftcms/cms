@@ -201,7 +201,7 @@ class Assets extends Component
         $asset->newFolderId = $folder->id;
 
         // If the filename hasn’t changed, then we can use the `move` scenario
-        if ($filename === '' || $filename === $asset->filename) {
+        if ($filename === '' || $filename === $asset->getFilename()) {
             $asset->setScenario(Asset::SCENARIO_MOVE);
         } else {
             $asset->newFilename = $filename;
@@ -607,7 +607,7 @@ class Assets extends Component
             return $event->url;
         }
 
-        if ($transform === null || !Image::canManipulateAsImage(pathinfo($asset->filename, PATHINFO_EXTENSION))) {
+        if ($transform === null || !Image::canManipulateAsImage(pathinfo($asset->getFilename(), PATHINFO_EXTENSION))) {
             $volume = $asset->getVolume();
 
             return AssetsHelper::generateUrl($volume, $asset);

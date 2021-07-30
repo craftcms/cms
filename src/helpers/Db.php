@@ -1169,7 +1169,7 @@ class Db
      */
     public static function reset(): void
     {
-        if (self::$_db) {
+        if (isset(self::$_db)) {
             self::$_db->close();
         }
         self::$_db = null;

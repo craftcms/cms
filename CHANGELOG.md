@@ -15,6 +15,7 @@
 - Added `craft\controllers\AssetIndexesController`.
 - Added `craft\db\Migration::convertColumnToJson()`.
 - Added `craft\db\Table::ASSETINDEXINGSESSIONS`.
+- Added `craft\elements\Asset::setFilename()`.
 - Added `craft\errors\MissingVolumeFolderException`.
 - Added `craft\helpers\Assets::downloadFile()`.
 - Added `craft\helpers\Db::parseNumericParam()`.
