@@ -15,6 +15,7 @@
 - Fixed an error that occurred if an entry’s `getSupportedSites()` method was called on a front-end, non-action request. ([#9649](https://github.com/craftcms/cms/issues/9649))
 - Fixed a SQL error that could occur when running the “Find and Replace” utility. ([#9651](https://github.com/craftcms/cms/pull/9651))
 - Fixed a bug where Date fields that were set to only show the time input weren’t saving new values properly. ([#9650](https://github.com/craftcms/cms/issues/9650))
+- Fixed a bug where `craft\services\Fields::$oldFieldColumnPrefix` wasn’t getting set properly when deleting a Matrix block type.
 
 ## 3.7.6 - 2021-07-27
 

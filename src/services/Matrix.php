@@ -434,9 +434,12 @@ class Matrix extends Component
             if ($matrixField instanceof MatrixField) {
                 $contentService->contentTable = $matrixField->contentTable;
 
-                // Set the new fieldColumnPrefix
+                // Set the new fieldColumnPrefix + oldFieldColumnPrefix
                 $originalFieldColumnPrefix = $contentService->fieldColumnPrefix;
+                $originalOldFieldColumnPrefix = $fieldsService->oldFieldColumnPrefix;
+
                 $contentService->fieldColumnPrefix = "field_{$blockType->handle}_";
+                $fieldsService->oldFieldColumnPrefix = "field_{$blockType->handle}_";
 
                 // Now delete the block type fields
                 foreach ($blockType->getFields() as $field) {
@@ -446,6 +449,7 @@ class Matrix extends Component
                 // Restore the contentTable and the fieldColumnPrefix to original values.
                 $contentService->contentTable = $originalContentTable;
                 $contentService->fieldColumnPrefix = $originalFieldColumnPrefix;
+                $fieldsService->oldFieldColumnPrefix = $originalOldFieldColumnPrefix;
 
                 // Delete the field layout
                 $fieldLayoutId = (new Query())
