@@ -763,7 +763,7 @@ class AssetTransforms extends Component
         $volume = $asset->getVolume();
         $index->detectedFormat = $index->format ?: $this->detectAutoTransformFormat($asset);
 
-        $transformFilename = pathinfo($asset->filename, PATHINFO_FILENAME) . '.' . $index->detectedFormat;
+        $transformFilename = pathinfo($asset->getFilename(), PATHINFO_FILENAME) . '.' . $index->detectedFormat;
         $index->filename = $transformFilename;
 
         $matchFound = false;
@@ -1085,7 +1085,7 @@ class AssetTransforms extends Component
                     // Delete it just in case it's a 0-byter
                     FileHelper::unlink($imageSourcePath);
 
-                    $prefix = pathinfo($asset->filename, PATHINFO_FILENAME) . '.delimiter.';
+                    $prefix = pathinfo($asset->getFilename(), PATHINFO_FILENAME) . '.delimiter.';
                     $extension = $asset->getExtension();
                     $tempFilename = uniqid($prefix, true) . '.' . $extension;
                     $tempPath = Craft::$app->getPath()->getTempPath();
@@ -1111,8 +1111,9 @@ class AssetTransforms extends Component
                         if (!FileHelper::unlink($tempFilePath)) {
                             Craft::warning("Unable to delete the file \"$tempFilePath\".", __METHOD__);
                         }
-                        throw new VolumeException(Craft::t('app', 'Tried to download the source file for image “{file}”, but it was 0 bytes long.',
-                            ['file' => $asset->filename]));
+                        throw new VolumeException(Craft::t('app', 'Tried to download the source file for image “{file}”, but it was 0 bytes long.', [
+                            'file' => $asset->getFilename(),
+                        ]));
                     }
 
                     $this->storeLocalSource($tempFilePath, $imageSourcePath);
@@ -1130,7 +1131,7 @@ class AssetTransforms extends Component
         }
 
         if (!is_file($imageSourcePath)) {
-            throw new VolumeObjectNotFoundException("The file \"{$asset->filename}\" does not exist.");
+            throw new VolumeObjectNotFoundException("The file \"{$asset->getFilename()}\" does not exist.");
         }
 
         $asset->setTransformSource($imageSourcePath);
@@ -1234,7 +1235,7 @@ class AssetTransforms extends Component
 
         $volume = $asset->getVolume();
 
-        $tempFilename = uniqid(pathinfo($asset->filename, PATHINFO_FILENAME), true) . '.' . $asset->getExtension();
+        $tempFilename = uniqid(pathinfo($asset->getFilename(), PATHINFO_FILENAME), true) . '.' . $asset->getExtension();
         $tempPath = Craft::$app->getPath()->getTempPath() . DIRECTORY_SEPARATOR . $tempFilename;
         AssetsHelper::downloadFile($volume, $asset->getPath(), $tempPath);
 
@@ -1269,7 +1270,7 @@ class AssetTransforms extends Component
     {
         $path = $index->location;
 
-        if (!empty($index->filename) && $index->filename !== $asset->filename) {
+        if (!empty($index->filename) && $index->filename !== $asset->getFilename()) {
             $path .= DIRECTORY_SEPARATOR . $asset->id;
         }
 
@@ -1285,7 +1286,7 @@ class AssetTransforms extends Component
      */
     public function getTransformFilename(Asset $asset, AssetTransformIndex $index): string
     {
-        return $index->filename ?: $asset->filename;
+        return $index->filename ?: $asset->getFilename();
     }
 
     /**
@@ -1329,7 +1330,7 @@ class AssetTransforms extends Component
         $this->deleteCreatedTransformsForAsset($asset);
         $this->deleteTransformIndexDataByAssetId($asset->id);
 
-        $file = Craft::$app->getPath()->getAssetSourcesPath() . DIRECTORY_SEPARATOR . $asset->id . '.' . pathinfo($asset->filename, PATHINFO_EXTENSION);
+        $file = Craft::$app->getPath()->getAssetSourcesPath() . DIRECTORY_SEPARATOR . $asset->id . '.' . pathinfo($asset->getFilename(), PATHINFO_EXTENSION);
 
         if (!FileHelper::unlink($file)) {
             Craft::warning("Unable to delete the file \"$file\".", __METHOD__);
@@ -1535,7 +1536,7 @@ class AssetTransforms extends Component
      */
     private function _createTransformForAsset(Asset $asset, AssetTransformIndex $index): void
     {
-        if (!Image::canManipulateAsImage(pathinfo($asset->filename, PATHINFO_EXTENSION))) {
+        if (!Image::canManipulateAsImage(pathinfo($asset->getFilename(), PATHINFO_EXTENSION))) {
             return;
         }
 

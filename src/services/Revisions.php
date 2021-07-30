@@ -56,7 +56,7 @@ class Revisions extends Component
      *
      * If the element appears to have not changed since its last revision, its last revision will be returned instead.
      *
-     * @param ElementInterface $source The element to create a revision for
+     * @param ElementInterface $canonical The element to create a revision for
      * @param int|null $creatorId The user ID that the revision should be attributed to
      * @param string|null $notes The revision notes
      * @param array $newAttributes any attributes to apply to the draft
@@ -64,17 +64,17 @@ class Revisions extends Component
      * @return ElementInterface The new revision
      * @throws \Throwable
      */
-    public function createRevision(ElementInterface $source, ?int $creatorId = null, ?string $notes = null, array $newAttributes = [], bool $force = false): ElementInterface
+    public function createRevision(ElementInterface $canonical, ?int $creatorId = null, ?string $notes = null, array $newAttributes = [], bool $force = false): ElementInterface
     {
         // Make sure the source isn't a draft or revision
-        if ($source->getIsDraft() || $source->getIsRevision()) {
+        if ($canonical->getIsDraft() || $canonical->getIsRevision()) {
             throw new InvalidArgumentException('Cannot create a revision from another revision or draft.');
         }
 
-        $lockKey = 'revision:' . $source->id;
+        $lockKey = 'revision:' . $canonical->id;
         $mutex = Craft::$app->getMutex();
         if (!$mutex->acquire($lockKey)) {
-            throw new Exception('Could not acquire a lock to save a revision for element ' . $source->id);
+            throw new Exception('Could not acquire a lock to save a revision for element ' . $canonical->id);
         }
 
         $db = Craft::$app->getDb();
@@ -83,11 +83,11 @@ class Revisions extends Component
 
         if (!$force || !$num) {
             // Find the source's last revision number, if it has one
-            $lastRevisionNum = $db->usePrimary(function() use ($source) {
+            $lastRevisionNum = $db->usePrimary(function() use ($canonical) {
                 return (new Query())
                     ->select(['num'])
                     ->from([Table::REVISIONS])
-                    ->where(['sourceId' => $source->id])
+                    ->where(['canonicalId' => $canonical->id])
                     ->orderBy(['num' => SORT_DESC])
                     ->limit(1)
                     ->scalar();
@@ -96,10 +96,10 @@ class Revisions extends Component
             if (!$force && $lastRevisionNum) {
                 // Get the revision, if it exists for the source's site
                 /** @var ElementInterface|RevisionBehavior|null $lastRevision */
-                $lastRevision = $db->usePrimary(function() use ($source, $lastRevisionNum) {
-                    return $source::find()
-                        ->revisionOf($source)
-                        ->siteId($source->siteId)
+                $lastRevision = $db->usePrimary(function() use ($canonical, $lastRevisionNum) {
+                    return $canonical::find()
+                        ->revisionOf($canonical)
+                        ->siteId($canonical->siteId)
                         ->status(null)
                         ->andWhere(['revisions.num' => $lastRevisionNum])
                         ->one();
@@ -107,7 +107,7 @@ class Revisions extends Component
 
                 // If the source hasn't been updated since the revision's creation date,
                 // there's no need to create a new one
-                if ($lastRevision && $source->dateUpdated->getTimestamp() === $lastRevision->dateCreated->getTimestamp()) {
+                if ($lastRevision && $canonical->dateUpdated->getTimestamp() === $lastRevision->dateCreated->getTimestamp()) {
                     $mutex->release($lockKey);
                     return $lastRevision;
                 }
@@ -128,7 +128,7 @@ class Revisions extends Component
 
         // Fire a 'beforeCreateRevision' event
         $event = new RevisionEvent([
-            'source' => $source,
+            'canonical' => $canonical,
             'creatorId' => $creatorId,
             'revisionNum' => $num,
             'revisionNotes' => $notes,
@@ -136,7 +136,7 @@ class Revisions extends Component
         $this->trigger(self::EVENT_BEFORE_CREATE_REVISION, $event);
         $notes = $event->revisionNotes;
         $creatorId = $event->creatorId;
-        $source = $event->source;
+        $canonical = $event->canonical;
 
         $elementsService = Craft::$app->getElements();
 
@@ -144,14 +144,14 @@ class Revisions extends Component
         try {
             // Create the revision row
             Db::insert(Table::REVISIONS, [
-                'sourceId' => $source->id, // todo: remove in v4
+                'canonicalId' => $canonical->id,
                 'creatorId' => $creatorId,
                 'num' => $num,
                 'notes' => $notes,
             ], false);
 
             // Duplicate the element
-            $newAttributes['canonicalId'] = $source->id;
+            $newAttributes['canonicalId'] = $canonical->id;
             $newAttributes['revisionId'] = $db->getLastInsertID(Table::REVISIONS);
             $newAttributes['behaviors']['revision'] = [
                 'class' => RevisionBehavior::class,
@@ -161,10 +161,10 @@ class Revisions extends Component
             ];
 
             if (!isset($newAttributes['dateCreated'])) {
-                $newAttributes['dateCreated'] = $source->dateUpdated;
+                $newAttributes['dateCreated'] = $canonical->dateUpdated;
             }
 
-            $revision = $elementsService->duplicateElement($source, $newAttributes);
+            $revision = $elementsService->duplicateElement($canonical, $newAttributes);
 
             $transaction->commit();
         } catch (\Throwable $e) {
@@ -176,7 +176,7 @@ class Revisions extends Component
         // Fire an 'afterCreateRevision' event
         if ($this->hasEventHandlers(self::EVENT_AFTER_CREATE_REVISION)) {
             $this->trigger(self::EVENT_AFTER_CREATE_REVISION, new RevisionEvent([
-                'source' => $source,
+                'canonical' => $canonical,
                 'creatorId' => $creatorId,
                 'revisionNum' => $num,
                 'revisionNotes' => $notes,
@@ -189,9 +189,9 @@ class Revisions extends Component
         // Prune any excess revisions
         if (Craft::$app->getConfig()->getGeneral()->maxRevisions) {
             Queue::push(new PruneRevisions([
-                'elementType' => get_class($source),
-                'sourceId' => $source->id,
-                'siteId' => $source->siteId,
+                'elementType' => get_class($canonical),
+                'canonicalId' => $canonical->id,
+                'siteId' => $canonical->siteId,
             ]), 2049);
         }
 
@@ -215,7 +215,7 @@ class Revisions extends Component
         // Fire a 'beforeRevertToRevision' event
         if ($this->hasEventHandlers(self::EVENT_BEFORE_REVERT_TO_REVISION)) {
             $this->trigger(self::EVENT_BEFORE_REVERT_TO_REVISION, new RevisionEvent([
-                'source' => $canonical,
+                'canonical' => $canonical,
                 'creatorId' => $creatorId,
                 'revisionNum' => $revision->revisionNum,
                 'revisionNotes' => $revision->revisionNotes,
@@ -232,7 +232,7 @@ class Revisions extends Component
         // Fire an 'afterRevertToRevision' event
         if ($this->hasEventHandlers(self::EVENT_AFTER_REVERT_TO_REVISION)) {
             $this->trigger(self::EVENT_AFTER_REVERT_TO_REVISION, new RevisionEvent([
-                'source' => $newSource,
+                'canonical' => $newSource,
                 'creatorId' => $creatorId,
                 'revisionNum' => $revision->revisionNum,
                 'revisionNotes' => $revision->revisionNotes,

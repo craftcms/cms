@@ -82,7 +82,7 @@ class TemplateLoader implements LoaderInterface
         // If this is a CP request and a DB update is needed, force a recompile.
         $request = Craft::$app->getRequest();
 
-        if ($request->getIsCpRequest() && Craft::$app->getUpdates()->getIsCraftDbMigrationNeeded()) {
+        if ($request->getIsCpRequest() && Craft::$app->getUpdates()->getIsCraftUpdatePending()) {
             return false;
         }
 

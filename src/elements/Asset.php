@@ -67,6 +67,7 @@ use yii\base\UnknownPropertyException;
  * @property int|float|null $height the image height
  * @property int|float|null $width the image width
  * @property int|null $volumeId the volume ID
+ * @property string $filename the filename (with extension)
  * @property string|array|null $focalPoint the focal point represented as an array with `x` and `y` keys, or null if it's not an image
  * @property-read Markup|null $img an `<img>` tag based on this asset
  * @property-read VolumeFolder $folder the asset’s volume folder
@@ -327,7 +328,7 @@ class Asset extends Element
     /**
      * @inheritdoc
      */
-    protected static function defineActions(?string $source = null): array
+    protected static function defineActions(string $source): array
     {
         $actions = [];
 
@@ -572,12 +573,6 @@ class Asset extends Element
     public ?string $folderPath = null;
 
     /**
-     * @var string|null Filename
-     * @todo rename to private $_basename w/ getter & setter in 4.0; and getFilename() should not include the extension (to be like PATHINFO_FILENAME). We can add a getBasename() for getting the whole thing.
-     */
-    public ?string $filename = null;
-
-    /**
      * @var string|null Kind
      */
     public ?string $kind = null;
@@ -655,6 +650,11 @@ class Asset extends Element
      * @var int|null Volume ID
      */
     private ?int $_volumeId = null;
+
+    /**
+     * @var string Filename
+     */
+    private string $_filename;
 
     /**
      * @var int|float|null Width
@@ -1296,17 +1296,34 @@ class Asset extends Element
     }
 
     /**
-     * Returns the file name, with or without the extension.
+     * Returns the filename, with or without the extension.
      *
      * @param bool $withExtension
      * @return string
+     * @throws InvalidConfigException if the filename isn’t set yet
      */
     public function getFilename(bool $withExtension = true): string
     {
-        if ($withExtension) {
-            return $this->filename;
+        if (!isset($this->_filename)) {
+            throw new InvalidConfigException('Asset not configured with its filename');
         }
-        return pathinfo($this->filename, PATHINFO_FILENAME);
+
+        if ($withExtension) {
+            return $this->_filename;
+        }
+
+        return pathinfo($this->_filename, PATHINFO_FILENAME);
+    }
+
+    /**
+     * Sets the filename (with extension).
+     *
+     * @param string $filename
+     * @since 4.0.0
+     */
+    public function setFilename(string $filename): void
+    {
+        $this->_filename = $filename;
     }
 
     /**
@@ -1316,7 +1333,7 @@ class Asset extends Element
      */
     public function getExtension(): string
     {
-        return pathinfo($this->filename, PATHINFO_EXTENSION);
+        return pathinfo($this->_filename, PATHINFO_EXTENSION);
     }
 
     /**
@@ -1328,7 +1345,7 @@ class Asset extends Element
     {
         // todo: maybe we should be passing this off to volume types
         // so Local volumes can call FileHelper::getMimeType() (uses magic file instead of ext)
-        return FileHelper::getMimeTypeByExtension($this->filename);
+        return FileHelper::getMimeTypeByExtension($this->_filename);
     }
 
     /**
@@ -1458,7 +1475,7 @@ class Asset extends Element
      */
     public function getPath(?string $filename = null): string
     {
-        return $this->folderPath . ($filename ?: $this->filename);
+        return $this->folderPath . ($filename ?: $this->_filename);
     }
 
     /**
@@ -1486,7 +1503,7 @@ class Asset extends Element
      */
     public function getCopyOfFile(): string
     {
-        $tempFilename = uniqid(pathinfo($this->filename, PATHINFO_FILENAME), true) . '.' . $this->getExtension();
+        $tempFilename = uniqid(pathinfo($this->_filename, PATHINFO_FILENAME), true) . '.' . $this->getExtension();
         $tempPath = Craft::$app->getPath()->getTempPath() . DIRECTORY_SEPARATOR . $tempFilename;
         Assets::downloadFile($this->getVolume(), $this->getPath(), $tempPath);
 
@@ -1617,7 +1634,7 @@ class Asset extends Element
                 return $uploader ? Cp::elementHtml($uploader) : '';
 
             case 'filename':
-                return Html::tag('span', Html::encode($this->filename), [
+                return Html::tag('span', Html::encode($this->_filename), [
                     'class' => 'break-word',
                 ]);
 
@@ -1729,7 +1746,7 @@ class Asset extends Element
                 'label' => Craft::t('app', 'Filename'),
                 'id' => 'newFilename',
                 'name' => 'newFilename',
-                'value' => $this->filename,
+                'value' => $this->_filename,
                 'errors' => $this->getErrors('newLocation'),
                 'first' => true,
                 'required' => true,
@@ -1843,7 +1860,7 @@ class Asset extends Element
         }
         if (isset($this->newFolderId) || isset($this->newFilename)) {
             $folderId = $this->newFolderId ?: $this->folderId;
-            $filename = $this->newFilename ?? $this->filename;
+            $filename = $this->newFilename ?? $this->_filename;
             $this->newLocation = "{folder:$folderId}$filename";
             $this->newFolderId = $this->newFilename = null;
         }
@@ -1867,13 +1884,13 @@ class Asset extends Element
         }
 
         // Set the kind based on filename, if not set already
-        if (!isset($this->kind) && isset($this->filename)) {
-            $this->kind = AssetsHelper::getFileKindByExtension($this->filename);
+        if (!isset($this->kind) && isset($this->_filename)) {
+            $this->kind = AssetsHelper::getFileKindByExtension($this->_filename);
         }
 
         // Give it a default title based on the file name, if it doesn't have a title yet
         if (!$this->id && !$this->title) {
-            $this->title = AssetsHelper::filename2Title(pathinfo($this->filename, PATHINFO_FILENAME));
+            $this->title = AssetsHelper::filename2Title(pathinfo($this->_filename, PATHINFO_FILENAME));
         }
 
         // Set the field layout
@@ -1921,7 +1938,7 @@ class Asset extends Element
                 $record->id = (int)$this->id;
             }
 
-            $record->filename = $this->filename;
+            $record->filename = $this->_filename;
             $record->volumeId = $this->getVolumeId();
             $record->folderId = (int)$this->folderId;
             $record->uploaderId = (int)$this->uploaderId ?: null;
@@ -1994,8 +2011,8 @@ class Asset extends Element
         $attributes = [];
 
         if ($this->kind === self::KIND_IMAGE) {
-            $attributes['data-image-width'] = $this->getWidth();
-            $attributes['data-image-height'] = $this->getHeight();
+            $attributes['data']['image-width'] = $this->getWidth();
+            $attributes['data']['image-height'] = $this->getHeight();
         }
 
         $volume = $this->getVolume();
@@ -2003,10 +2020,10 @@ class Asset extends Element
         $imageEditable = $context === 'index' && $this->getSupportsImageEditor();
 
         if ($volume instanceof Temp || $userSession->getId() == $this->uploaderId) {
-            $attributes['data-own-file'] = null;
+            $attributes['data']['own-file'] = true;
             $movable = $replaceable = true;
         } else {
-            $attributes['data-peer-file'] = null;
+            $attributes['data']['peer-file'] = true;
             $movable = (
                 $userSession->checkPermission("editPeerFilesInVolume:$volume->uid") &&
                 $userSession->checkPermission("deletePeerFilesInVolume:$volume->uid")
@@ -2019,15 +2036,15 @@ class Asset extends Element
         }
 
         if ($movable) {
-            $attributes['data-movable'] = null;
+            $attributes['data']['movable'] = true;
         }
 
         if ($replaceable) {
-            $attributes['data-replaceable'] = null;
+            $attributes['data']['replaceable'] = true;
         }
 
         if ($imageEditable) {
-            $attributes['data-editable-image'] = null;
+            $attributes['data']['editable-image'] = true;
         }
 
         return $attributes;
@@ -2118,7 +2135,7 @@ class Asset extends Element
             [$folderId, $filename] = AssetsHelper::parseFileLocation($this->newLocation);
         } else {
             $folderId = $this->folderId;
-            $filename = $this->filename;
+            $filename = $this->_filename;
         }
 
         $hasNewFolder = $folderId != $this->folderId;
@@ -2189,7 +2206,7 @@ class Asset extends Element
         $this->setVolumeId($newFolder->volumeId);
         $this->folderId = $folderId;
         $this->folderPath = $newFolder->path;
-        $this->filename = $filename;
+        $this->_filename = $filename;
         $this->_volume = $newVolume;
 
         // If there was a new file involved, update file data.

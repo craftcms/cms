@@ -15,7 +15,7 @@ use yii\console\ExitCode;
 use yii\db\Expression;
 
 /**
- * Updates all users’ usernames to ensure they match their email address
+ * Updates all users’ usernames to ensure they match their email address.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.5.8
@@ -23,7 +23,7 @@ use yii\db\Expression;
 class UpdateUsernamesController extends Controller
 {
     /**
-     * Updates all users’ usernames to ensure they match their email address
+     * Updates all users’ usernames to ensure they match their email address.
      *
      * @return int
      */

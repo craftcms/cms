@@ -882,11 +882,10 @@ class Elements extends Component
                 'elementId' => $canonical->id,
                 'siteId' => $attribute['siteId'],
                 'attribute' => $attribute['attribute'],
-            ], [
                 'dateUpdated' => $timestamp,
                 'propagated' => $attribute['propagated'],
                 'userId' => $attribute['userId'],
-            ], [], false);
+            ], true, [], false);
         }
 
         $fields = (new Query())
@@ -900,11 +899,7 @@ class Elements extends Component
                 'elementId' => $canonical->id,
                 'siteId' => $field['siteId'],
                 'fieldId' => $field['fieldId'],
-            ], [
-                'dateUpdated' => $timestamp,
-                'propagated' => $field['propagated'],
-                'userId' => $field['userId'],
-            ], [], false);
+            ], true, [], false);
         }
 
         return $updatedCanonical;
@@ -2745,11 +2740,10 @@ class Elements extends Component
                     'elementId' => $element->id,
                     'siteId' => $element->siteId,
                     'attribute' => $attributeName,
-                ], [
                     'dateUpdated' => $timestamp,
                     'propagated' => $element->propagating,
                     'userId' => $userId,
-                ], [], false);
+                ], true, [], false);
             }
 
             if (($fieldLayout = $element->getFieldLayout()) !== null) {
@@ -2759,11 +2753,10 @@ class Elements extends Component
                             'elementId' => $element->id,
                             'siteId' => $element->siteId,
                             'fieldId' => $field->id,
-                        ], [
                             'dateUpdated' => $timestamp,
                             'propagated' => $element->propagating,
                             'userId' => $userId,
-                        ], [], false);
+                        ], true, [], false);
                     }
                 }
             }
@@ -2882,14 +2875,14 @@ class Elements extends Component
     /**
      * Soft-deletes or restores the drafts and revisions of the given element.
      *
-     * @param int $sourceId The source element ID
+     * @param int $canonicalId The canonical element ID
      * @param bool $delete `true` if the drafts/revisions should be soft-deleted; `false` if they should be restored
      */
-    private function _cascadeDeleteDraftsAndRevisions(int $sourceId, bool $delete = true): void
+    private function _cascadeDeleteDraftsAndRevisions(int $canonicalId, bool $delete = true): void
     {
         $params = [
             'dateDeleted' => $delete ? Db::prepareDateForDb(new \DateTime()) : null,
-            'sourceId' => $sourceId,
+            'canonicalId' => $canonicalId,
         ];
 
         $db = Craft::$app->getDb();
@@ -2901,7 +2894,7 @@ class Elements extends Component
 UPDATE $elementsTable [[e]]
 INNER JOIN $table [[t]] ON [[t.id]] = [[e.$fk]]
 SET [[e.dateDeleted]] = :dateDeleted
-WHERE [[t.sourceId]] = :sourceId
+WHERE [[t.canonicalId]] = :canonicalId
 SQL;
             } else {
                 $sql = <<<SQL
@@ -2909,7 +2902,7 @@ UPDATE $elementsTable [[e]]
 SET [[dateDeleted]] = :dateDeleted
 FROM $table [[t]]
 WHERE [[t.id]] = [[e.$fk]]
-AND [[t.sourceId]] = :sourceId
+AND [[t.canonicalId]] = :canonicalId
 SQL;
             }
 

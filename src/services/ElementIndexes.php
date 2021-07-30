@@ -142,7 +142,6 @@ class ElementIndexes extends Component
 
         $success = (bool)Db::upsert(Table::ELEMENTINDEXSETTINGS, [
             'type' => $elementType,
-        ], [
             'settings' => $settings,
         ]);
 

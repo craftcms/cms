@@ -11,16 +11,15 @@ use craft\elements\Asset;
 use yii\base\Event;
 
 /**
- * Get Asset thumb url event class
+ * Define asset thumb URL event class
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0.0
- * @todo rename to AssetThumbUrlEvent in Craft 4
+ * @since 4.0.0
  */
-class GetAssetThumbUrlEvent extends Event
+class DefineAssetThumbUrlEvent extends Event
 {
     /**
-     * @var Asset The Asset which the thumbnail should be for.
+     * @var Asset The asset which the thumbnail should be for.
      */
     public Asset $asset;
 

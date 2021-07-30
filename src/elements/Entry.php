@@ -307,7 +307,7 @@ class Entry extends Element
     /**
      * @inheritdoc
      */
-    protected static function defineActions(?string $source = null): array
+    protected static function defineActions(string $source): array
     {
         // Get the selected site
         $controller = Craft::$app->controller;
@@ -834,7 +834,7 @@ class Entry extends Element
     {
         $section = $this->getSection();
         /** @var Site[] $allSites */
-        $allSites = ArrayHelper::index(Craft::$app->getSites()->getAllSites(), 'id');
+        $allSites = ArrayHelper::index(Craft::$app->getSites()->getAllSites(true), 'id');
         $sites = [];
 
         // If the section is leaving it up to entries to decide which sites to be propagated to,

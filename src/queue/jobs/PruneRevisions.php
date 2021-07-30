@@ -25,9 +25,9 @@ class PruneRevisions extends BaseJob
     public $elementType;
 
     /**
-     * @var int The ID of the source element.
+     * @var int The ID of the canonical element.
      */
-    public int $sourceId;
+    public int $canonicalId;
 
     /**
      * @var int The site ID of the source element
@@ -56,7 +56,7 @@ class PruneRevisions extends BaseJob
 
         $class = $this->elementType;
         $extraRevisions = $class::find()
-            ->revisionOf($this->sourceId)
+            ->revisionOf($this->canonicalId)
             ->siteId($this->siteId)
             ->status(null)
             ->orderBy(['num' => SORT_DESC])

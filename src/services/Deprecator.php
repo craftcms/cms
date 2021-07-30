@@ -125,7 +125,6 @@ class Deprecator extends Component
                 Db::upsert(Table::DEPRECATIONERRORS, [
                     'key' => $log->key,
                     'fingerprint' => $log->fingerprint,
-                ], [
                     'lastOccurrence' => Db::prepareDateForDb($log->lastOccurrence),
                     'file' => $log->file,
                     'line' => $log->line,

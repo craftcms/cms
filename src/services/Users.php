@@ -303,9 +303,8 @@ class Users extends Component
 
         Db::upsert(Table::USERPREFERENCES, [
             'userId' => $user->id,
-        ], [
             'preferences' => $preferences,
-        ], [], false);
+        ], true, [], false);
     }
 
     /**
@@ -435,7 +434,7 @@ class Users extends Component
             $photo = new Asset();
             $photo->setScenario(Asset::SCENARIO_CREATE);
             $photo->tempFilePath = $fileLocation;
-            $photo->filename = $filename;
+            $photo->setFilename($filename);
             $photo->newFolderId = $folderId;
             $photo->setVolumeId($volume->id);
 
@@ -851,7 +850,6 @@ class Users extends Component
         return (bool)Db::upsert(Table::SHUNNEDMESSAGES, [
             'userId' => $userId,
             'message' => $message,
-        ], [
             'expiryDate' => Db::prepareDateForDb($expiryDate),
         ]);
     }

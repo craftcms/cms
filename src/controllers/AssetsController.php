@@ -333,7 +333,7 @@ class AssetsController extends Controller
 
             $asset = new Asset();
             $asset->tempFilePath = $tempPath;
-            $asset->filename = $filename;
+            $asset->setFilename($filename);
             $asset->newFolderId = $folder->id;
             $asset->setVolumeId($folder->volumeId);
             $asset->uploaderId = Craft::$app->getUser()->getId();
@@ -363,7 +363,7 @@ class AssetsController extends Controller
 
             return $this->asJson([
                 'success' => true,
-                'filename' => $asset->filename,
+                'filename' => $asset->getFilename(),
                 'assetId' => $asset->id,
             ]);
         } catch (Throwable $e) {
@@ -444,7 +444,7 @@ class AssetsController extends Controller
                 // If we have an actual asset for which to replace the file, just do it.
                 if (!empty($assetToReplace)) {
                     $tempPath = $sourceAsset->getCopyOfFile();
-                    $assets->replaceAssetFile($assetToReplace, $tempPath, $assetToReplace->filename);
+                    $assets->replaceAssetFile($assetToReplace, $tempPath, $assetToReplace->getFilename());
                     Craft::$app->getElements()->deleteElement($sourceAsset);
                 } else {
                     // If all we have is the filename, then make sure that the destination is empty and go for it.
@@ -467,7 +467,7 @@ class AssetsController extends Controller
         return $this->asJson([
             'success' => true,
             'assetId' => $assetId,
-            'filename' => $resultingAsset->filename,
+            'filename' => $resultingAsset->getFilename(),
             'formattedSize' => $resultingAsset->getFormattedSize(0),
             'formattedSizeInBytes' => $resultingAsset->getFormattedSizeInBytes(false),
             'formattedDateUpdated' => Craft::$app->getFormatter()->asDatetime($resultingAsset->dateUpdated, Formatter::FORMAT_WIDTH_SHORT),
@@ -678,7 +678,7 @@ class AssetsController extends Controller
         }
 
         // Get the target filename
-        $filename = $this->request->getBodyParam('filename', $asset->filename);
+        $filename = $this->request->getBodyParam('filename') ?? $asset->getFilename();
 
         // Check if it's possible to delete objects in source Volume and save Assets in target Volume.
         $this->requireVolumePermissionByFolder('saveAssetInVolume', $folder);
@@ -691,7 +691,7 @@ class AssetsController extends Controller
             $conflictingAsset = Asset::find()
                 ->select(['elements.id'])
                 ->folderId($folderId)
-                ->filename(Db::escapeParam($asset->filename))
+                ->filename(Db::escapeParam($asset->getFilename()))
                 ->one();
 
             // If there's an Asset conflicting, then merge and replace file.
@@ -699,7 +699,7 @@ class AssetsController extends Controller
                 Craft::$app->getElements()->mergeElementsByIds($conflictingAsset->id, $asset->id);
             } else {
                 $volume = $folder->getVolume();
-                $volume->deleteFile(rtrim($folder->path, '/') . '/' . $asset->filename);
+                $volume->deleteFile(rtrim($folder->path, '/') . '/' . $asset->getFilename());
             }
         }
 
@@ -967,7 +967,7 @@ class AssetsController extends Controller
             if (strtolower($asset->getExtension()) === 'svg') {
                 unlink($imageCopy);
                 $imageCopy = preg_replace('/(svg)$/i', 'png', $imageCopy);
-                $asset->filename = preg_replace('/(svg)$/i', 'png', $asset->filename);
+                $asset->setFilename(preg_replace('/(svg)$/i', 'png', $asset->getFilename()));
             }
 
             [$originalImageWidth, $originalImageHeight] = $imageSize;
@@ -1039,7 +1039,7 @@ class AssetsController extends Controller
 
                 // Only replace file if it changed, otherwise just save changed focal points
                 if ($imageChanged) {
-                    $assets->replaceAssetFile($asset, $imageCopy, $asset->filename);
+                    $assets->replaceAssetFile($asset, $imageCopy, $asset->getFilename());
                 } else if ($focalChanged) {
                     Craft::$app->getElements()->saveElement($asset);
                 }
@@ -1049,7 +1049,7 @@ class AssetsController extends Controller
                 $newAsset->setScenario(Asset::SCENARIO_CREATE);
 
                 $newAsset->tempFilePath = $imageCopy;
-                $newAsset->filename = $asset->filename;
+                $newAsset->setFilename($asset->getFilename());
                 $newAsset->newFolderId = $folder->id;
                 $newAsset->setVolumeId($folder->volumeId);
                 $newAsset->setFocalPoint($focal);
@@ -1098,7 +1098,7 @@ class AssetsController extends Controller
         if (count($assets) === 1) {
             $asset = reset($assets);
             return $this->response
-                ->sendStreamAsFile($asset->getStream(), $asset->filename, [
+                ->sendStreamAsFile($asset->getStream(), $asset->getFilename(), [
                     'fileSize' => $asset->size,
                     'mimeType' => $asset->getMimeType(),
                 ]);

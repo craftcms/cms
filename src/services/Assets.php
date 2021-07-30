@@ -29,8 +29,8 @@ use craft\errors\VolumeObjectExistsException;
 use craft\errors\VolumeObjectNotFoundException;
 use craft\events\AssetPreviewEvent;
 use craft\events\AssetThumbEvent;
-use craft\events\GetAssetThumbUrlEvent;
-use craft\events\GetAssetUrlEvent;
+use craft\events\DefineAssetThumbUrlEvent;
+use craft\events\DefineAssetUrlEvent;
 use craft\events\ReplaceAssetEvent;
 use craft\helpers\Assets as AssetsHelper;
 use craft\helpers\DateTimeHelper;
@@ -76,20 +76,25 @@ class Assets extends Component
     public const EVENT_AFTER_REPLACE_ASSET = 'afterReplaceFile';
 
     /**
-     * @event GetAssetUrlEvent The event that is triggered when a transform is being generated for an Asset.
+     * @event DefineAssetUrlEvent The event that is triggered when a transform is being generated for an asset.
+     * @see getAssetUrl()
+     * @since 4.0.0
      */
-    public const EVENT_GET_ASSET_URL = 'getAssetUrl';
+    public const EVENT_DEFINE_ASSET_URL = 'defineAssetUrl';
 
     /**
-     * @event GetAssetThumbUrlEvent The event that is triggered when a thumbnail is being generated for an Asset.
-     * @todo rename to GET_THUMB_URL in Craft 4
+     * @event DefineAssetThumbUrlEvent The event that is triggered when a thumbnail is being generated for an asset.
+     * @see getThumbUrl()
+     * @since 4.0.0
      */
-    public const EVENT_GET_ASSET_THUMB_URL = 'getAssetThumbUrl';
+    public const EVENT_DEFINE_THUMB_URL = 'defineThumbUrl';
 
     /**
      * @event AssetThumbEvent The event that is triggered when a thumbnail path is requested.
+     * @see getThumbPath()
+     * @since 4.0.0
      */
-    public const EVENT_GET_THUMB_PATH = 'getThumbPath';
+    public const EVENT_DEFINE_THUMB_PATH = 'defineThumbPath';
 
     /**
      * @event AssetPreviewEvent The event that is triggered when determining the preview handler for an asset.
@@ -196,7 +201,7 @@ class Assets extends Component
         $asset->newFolderId = $folder->id;
 
         // If the filename hasn’t changed, then we can use the `move` scenario
-        if ($filename === '' || $filename === $asset->filename) {
+        if ($filename === '' || $filename === $asset->getFilename()) {
             $asset->setScenario(Asset::SCENARIO_MOVE);
         } else {
             $asset->newFilename = $filename;
@@ -591,18 +596,18 @@ class Assets extends Component
     public function getAssetUrl(Asset $asset, $transform = null, ?bool $generateNow = null): ?string
     {
         // Maybe a plugin wants to do something here
-        $event = new GetAssetUrlEvent([
+        $event = new DefineAssetUrlEvent([
             'transform' => $transform,
             'asset' => $asset,
         ]);
-        $this->trigger(self::EVENT_GET_ASSET_URL, $event);
+        $this->trigger(self::EVENT_DEFINE_ASSET_URL, $event);
 
         // If a plugin set the url, we'll just use that.
         if ($event->url !== null) {
             return $event->url;
         }
 
-        if ($transform === null || !Image::canManipulateAsImage(pathinfo($asset->filename, PATHINFO_EXTENSION))) {
+        if ($transform === null || !Image::canManipulateAsImage(pathinfo($asset->getFilename(), PATHINFO_EXTENSION))) {
             $volume = $asset->getVolume();
 
             return AssetsHelper::generateUrl($volume, $asset);
@@ -664,15 +669,14 @@ class Assets extends Component
         }
 
         // Maybe a plugin wants to do something here
-        // todo: remove the `size` key in 4.0
-        if ($this->hasEventHandlers(self::EVENT_GET_ASSET_THUMB_URL)) {
-            $event = new GetAssetThumbUrlEvent([
+        if ($this->hasEventHandlers(self::EVENT_DEFINE_THUMB_URL)) {
+            $event = new DefineAssetThumbUrlEvent([
                 'asset' => $asset,
                 'width' => $width,
                 'height' => $height,
                 'generate' => $generate,
             ]);
-            $this->trigger(self::EVENT_GET_ASSET_THUMB_URL, $event);
+            $this->trigger(self::EVENT_DEFINE_THUMB_URL, $event);
 
             // If a plugin set the url, we'll just use that.
             if ($event->url !== null) {
@@ -712,7 +716,7 @@ class Assets extends Component
             'height' => $height,
             'generate' => $generate,
         ]);
-        $this->trigger(self::EVENT_GET_THUMB_PATH, $event);
+        $this->trigger(self::EVENT_DEFINE_THUMB_PATH, $event);
 
         // If a plugin set the url, we'll just use that.
         if ($event->path !== null) {

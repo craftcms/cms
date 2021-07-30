@@ -1277,7 +1277,7 @@ class ElementQuery extends Query implements ElementQueryInterface
             }
         } catch (SiteNotFoundException $e) {
             // Fail silently if Craft isn't installed yet or is in the middle of updating
-            if (Craft::$app->getIsInstalled() && !Craft::$app->getUpdates()->getIsCraftDbMigrationNeeded()) {
+            if (Craft::$app->getIsInstalled() && !Craft::$app->getUpdates()->getIsCraftUpdatePending()) {
                 /** @noinspection PhpUnhandledExceptionInspection */
                 throw $e;
             }
@@ -1529,13 +1529,6 @@ class ElementQuery extends Query implements ElementQueryInterface
      */
     public function ids(?Connection $db = null): array
     {
-        // TODO: Remove this in Craft 4
-        // Make sure $db is not a list of attributes
-        if ($this->_setAttributes($db)) {
-            Craft::$app->getDeprecator()->log('ElementQuery::ids($criteria)', 'Passing new criteria params to the `ids()` element query function is now deprecated. Set the parameters before calling `ids()`.');
-            $db = null;
-        }
-
         $select = $this->select;
         $this->select = ['elements.id' => 'elements.id'];
         $result = $this->column($db);
@@ -2841,27 +2834,5 @@ class ElementQuery extends Query implements ElementQueryInterface
         }
 
         return $elements;
-    }
-
-    /**
-     * Batch-sets attributes. Used by [[find()]], [[first()]], [[last()]], [[ids()]], and [[total()]].
-     *
-     * @param mixed $attributes
-     * @return bool Whether $attributes was an array
-     * @todo Remove this in Craft 4, along with the methods that call it.
-     */
-    private function _setAttributes($attributes): bool
-    {
-        if (is_array($attributes) || $attributes instanceof \IteratorAggregate) {
-            foreach ($attributes as $name => $value) {
-                if ($this->canSetProperty($name)) {
-                    $this->$name = $value;
-                }
-            }
-
-            return true;
-        }
-
-        return false;
     }
 }

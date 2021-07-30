@@ -564,23 +564,16 @@ class MigrationHelper
      *
      * @param string $tableName
      * @param Migration|null $migration
-     * @return array An array of the indexes that were just dropped.
-     * @todo drop the awkward return value in Craft 4
      */
-    public static function dropAllIndexesOnTable(string $tableName, ?Migration $migration = null): array
+    public static function dropAllIndexesOnTable(string $tableName, ?Migration $migration = null): void
     {
         $db = $migration ? $migration->db : Craft::$app->getDb();
         $schema = $db->getSchema();
-        $rawTableName = $schema->getRawTableName($tableName);
-        $indexes = [];
         $allIndexes = $schema->findIndexes($tableName);
 
         foreach ($allIndexes as $indexName => $index) {
-            $indexes[$rawTableName][$indexName] = $index['columns'];
             self::_dropIndex($tableName, $indexName, $migration);
         }
-
-        return $indexes;
     }
 
     /**

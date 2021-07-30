@@ -919,6 +919,8 @@ Craft.DraftEditor = Garnish.Base.extend({
 
     afterUpdate: function(data) {
         Craft.cp.$primaryForm.data('initialSerializedValue', data);
+        Craft.initialDeltaValues = {};
+
         const $statusIcons = this.statusIcons()
             .velocity('stop')
             .css('opacity', '')

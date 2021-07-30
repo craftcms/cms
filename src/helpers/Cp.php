@@ -290,60 +290,55 @@ class Cp
             $imgHtml = '';
         }
 
-        $htmlAttributes = array_merge(
-            $element->getHtmlAttributes($context),
+        $attributes = ArrayHelper::merge(
+            Html::normalizeTagAttributes($element->getHtmlAttributes($context)),
             [
-                'class' => 'element ' . $size,
-                'data-type' => get_class($element),
-                'data-id' => $element->id,
-                'data-site-id' => $element->siteId,
-                'data-status' => $element->getStatus(),
-                'data-label' => (string)$element,
-                'data-url' => $element->getUrl(),
-                'data-level' => $element->level,
+                'class' => ['element', $size],
                 'title' => $label . (Craft::$app->getIsMultiSite() ? ' – ' . Craft::t('site', $element->getSite()->getName()) : ''),
-            ]);
+                'data' => [
+                    'type' => get_class($element),
+                    'id' => $element->id,
+                    'site-id' => $element->siteId,
+                    'status' => $element->getStatus(),
+                    'label' => (string)$element,
+                    'url' => $element->getUrl(),
+                    'level' => $element->level,
+                ],
+            ]
+        );
 
         if ($context === 'field') {
-            $htmlAttributes['class'] .= ' removable';
+            $attributes['class'][] = 'removable';
         }
 
         if ($element->hasErrors()) {
-            $htmlAttributes['class'] .= ' error';
+            $attributes['class'][] = 'error';
         }
 
         if ($showStatus) {
-            $htmlAttributes['class'] .= ' hasstatus';
+            $attributes['class'][] = 'hasstatus';
         }
 
         if ($thumbUrl !== null) {
-            $htmlAttributes['class'] .= ' hasthumb';
-        }
-
-        $html = '<div';
-
-        // todo: swap this with Html::renderTagAttributse in 4.0
-        // (that will cause a couple breaking changes since `null` means "don't show" and `true` means "no value".)
-        foreach ($htmlAttributes as $attribute => $value) {
-            $html .= ' ' . $attribute . ($value !== null ? '="' . Html::encode($value) . '"' : '');
+            $attributes['class'][] = 'hasthumb';
         }
 
         if (ElementHelper::isElementEditable($element)) {
-            $html .= ' data-editable';
+            $attributes['data']['editable'] = true;
         }
 
         if ($context === 'index' && $element->getIsDeletable()) {
-            $html .= ' data-deletable';
+            $attributes['data']['deletable'] = true;
         }
 
         if ($element->trashed) {
-            $html .= ' data-trashed';
+            $attributes['data']['trashed'] = true;
         }
 
-        $html .= '>';
+        $innerHtml = '';
 
         if ($context === 'field' && $inputName !== null) {
-            $html .= Html::hiddenInput($inputName . ($single ? '' : '[]'), $element->id) .
+            $innerHtml .= Html::hiddenInput($inputName . ($single ? '' : '[]'), $element->id) .
                 Html::tag('a', '', [
                     'class' => ['delete', 'icon'],
                     'title' => Craft::t('app', 'Remove'),
@@ -352,7 +347,7 @@ class Cp
 
         if ($showStatus) {
             if ($isDraft) {
-                $html .= Html::tag('span', '', [
+                $innerHtml .= Html::tag('span', '', [
                     'class' => ['icon'],
                     'aria' => [
                         'hidden' => 'true',
@@ -363,7 +358,7 @@ class Cp
                 ]);
             } else {
                 $status = !$isRevision ? $element->getStatus() : null;
-                $html .= Html::tag('span', '', [
+                $innerHtml .= Html::tag('span', '', [
                     'class' => array_filter([
                         'status',
                         $status,
@@ -373,11 +368,11 @@ class Cp
             }
         }
 
-        $html .= $imgHtml;
+        $innerHtml .= $imgHtml;
 
         if ($showLabel) {
-            $html .= '<div class="label">';
-            $html .= '<span class="title">';
+            $innerHtml .= '<div class="label">';
+            $innerHtml .= '<span class="title">';
 
             $encodedLabel = Html::encode($label);
 
@@ -394,17 +389,15 @@ class Cp
                 !$element->trashed &&
                 ($cpEditUrl = $element->getCpEditUrl())
             ) {
-                $html .= Html::a($encodedLabel, $cpEditUrl);
+                $innerHtml .= Html::a($encodedLabel, $cpEditUrl);
             } else {
-                $html .= $encodedLabel;
+                $innerHtml .= $encodedLabel;
             }
 
-            $html .= '</span></div>';
+            $innerHtml .= '</span></div>';
         }
 
-        $html .= '</div>';
-
-        return $html;
+        return Html::tag('div', $innerHtml, $attributes);
     }
 
     /**

@@ -399,7 +399,7 @@ class Db
      */
     public static function isTextualColumnType(string $columnType): bool
     {
-        return in_array(self::parseColumnLength($columnType), self::$_textualColumnTypes, true);
+        return in_array(self::parseColumnType($columnType), self::$_textualColumnTypes, true);
     }
 
     /**
@@ -460,6 +460,8 @@ class Db
             return '';
         }
 
+        $parsedColumnType = $columnType ? static::parseColumnType($columnType) : null;
+
         $firstVal = strtolower(reset($value));
         $negate = false;
 
@@ -496,7 +498,7 @@ class Db
             $operator = self::_parseParamOperator($val, $defaultOperator, $negate);
 
             if ($columnType !== null) {
-                if ($columnType === Schema::TYPE_BOOLEAN) {
+                if ($parsedColumnType === Schema::TYPE_BOOLEAN) {
                     // Convert val to a boolean
                     $val = ($val && $val !== ':empty:');
                     if ($operator === '!=') {
@@ -1167,7 +1169,7 @@ class Db
      */
     public static function reset(): void
     {
-        if (self::$_db) {
+        if (isset(self::$_db)) {
             self::$_db->close();
         }
         self::$_db = null;

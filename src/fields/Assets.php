@@ -347,7 +347,7 @@ class Assets extends BaseRelationField
         $value = $element->getFieldValue($this->handle);
         foreach ($value->all() as $asset) {
             /** @var Asset $asset */
-            $filenames[] = $asset->filename;
+            $filenames[] = $asset->getFilename();
         }
 
         // Get any uploaded filenames
@@ -532,7 +532,7 @@ class Assets extends BaseRelationField
                     $folder = $assetsService->getFolderById($targetFolderId);
                     $asset = new Asset();
                     $asset->tempFilePath = $tempPath;
-                    $asset->filename = $file['filename'];
+                    $asset->setFilename($file['filename']);
                     $asset->newFolderId = $targetFolderId;
                     $asset->setVolumeId($folder->volumeId);
                     $asset->uploaderId = Craft::$app->getUser()->getId();
