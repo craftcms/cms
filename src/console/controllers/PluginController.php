@@ -13,7 +13,7 @@ use craft\helpers\Console;
 use yii\console\ExitCode;
 
 /**
- * Manage plugins
+ * Manage plugins.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.5.0
@@ -54,7 +54,7 @@ class PluginController extends Controller
     /**
      * Installs a plugin.
      *
-     * @param string $handle The plugin handle
+     * @param string $handle The plugin handle.
      * @return int
      */
     public function actionInstall(string $handle): int
@@ -77,7 +77,7 @@ class PluginController extends Controller
     /**
      * Uninstalls a plugin.
      *
-     * @param string $handle The plugin handle
+     * @param string $handle The plugin handle.
      * @return int
      */
     public function actionUninstall(string $handle): int
@@ -104,7 +104,7 @@ class PluginController extends Controller
     /**
      * Enables a plugin.
      *
-     * @param string $handle The plugin handle
+     * @param string $handle The plugin handle.
      * @return int
      */
     public function actionEnable(string $handle): int
@@ -127,7 +127,7 @@ class PluginController extends Controller
     /**
      * Disables a plugin.
      *
-     * @param string $handle The plugin handle
+     * @param string $handle The plugin handle.
      * @return int
      */
     public function actionDisable(string $handle): int
