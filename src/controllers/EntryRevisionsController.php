@@ -346,6 +346,7 @@ class EntryRevisionsController extends BaseEntriesController
         $this->requirePostRequest();
 
         $draftId = $this->request->getBodyParam('draftId');
+        $siteId = $this->request->getBodyParam('siteId');
         $provisional = (bool)($this->request->getBodyParam('provisional') ?? false);
 
         /** @var Entry|DraftBehavior $draft */
@@ -353,6 +354,8 @@ class EntryRevisionsController extends BaseEntriesController
             ->draftId($draftId)
             ->provisionalDrafts($provisional)
             ->siteId('*')
+            ->preferSites([$siteId])
+            ->unique()
             ->anyStatus()
             ->one();
 
