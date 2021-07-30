@@ -128,7 +128,7 @@ class SetupController extends Controller
     }
 
     /**
-     * Called from the post-create-project-cmd Composer hook.
+     * Called from the `post-create-project-cmd` Composer hook.
      *
      * @return int
      */
@@ -171,7 +171,7 @@ EOD;
     }
 
     /**
-     * Generates a new application ID and saves it in the .env file.
+     * Generates a new application ID and saves it in the `.env` file.
      *
      * @return int
      * @since 3.4.25
@@ -188,7 +188,7 @@ EOD;
     }
 
     /**
-     * Generates a new security key and saves it in the .env file.
+     * Generates a new security key and saves it in the `.env` file.
      *
      * @return int
      */
@@ -206,7 +206,7 @@ EOD;
     }
 
     /**
-     * Stores new DB connection settings to the .env file.
+     * Stores new DB connection settings to the `.env` file.
      *
      * @return int
      */
@@ -495,7 +495,7 @@ EOD;
     }
 
     /**
-     * Sets an environment variable value in the project's .env file.
+     * Sets an environment variable value in the project’s `.env` file.
      *
      * @param $name
      * @param $value

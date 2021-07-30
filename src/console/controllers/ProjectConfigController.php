@@ -63,7 +63,7 @@ class ProjectConfigController extends Controller
                 $options[] = 'force';
                 break;
             case 'diff':
-                $options[] = 'reverse';
+                $options[] = 'invert';
         }
 
         return $options;

@@ -84,7 +84,7 @@ class MigrateController extends BaseMigrateController
     /**
      * @var string|null The migration track to work with (e.g. `craft`, `content`, `plugin:commerce`, etc.)
      *
-     * If --plugin is passed, this will automatically be set to the plugin’s track. Otherwise defaults to 'content'.
+     * Defaults to `content`, or automatically set to the plugin’s track when `--plugin` is passed.
      * @since 3.5.0
      */
     public ?string $track = MigrationManager::TRACK_CONTENT;
@@ -96,7 +96,7 @@ class MigrateController extends BaseMigrateController
     public ?string $type = null;
 
     /**
-     * @var string|PluginInterface|null The handle of the plugin to use during migration operations, or the plugin itself
+     * @var string|PluginInterface|null The handle of the plugin to use during migration operations, or the plugin itself.
      */
     public $plugin;
 
@@ -255,9 +255,9 @@ class MigrateController extends BaseMigrateController
      * craft migrate/create create_news_section
      * ```
      *
-     * By default the migration will be created within the project's migrations/
-     * folder (as a "content migration").
-     * Use `--plugin=<plugin-handle>` to create a new plugin migration.
+     * By default, the migration is created in the project’s `migrations/`
+     * folder (as a “content migration”).\
+     * Use `--plugin=<plugin-handle>` to create a new plugin migration.\
      * Use `--type=app` to create a new Craft CMS app migration.
      *
      * @param string $name the name of the new migration. This should only contain

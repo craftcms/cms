@@ -332,7 +332,10 @@ class Date extends Field implements PreviewableFieldInterface, SortableFieldInte
             $value = $value['date'];
         }
 
-        if (!$value || (is_array($value) && empty($value['date']))) {
+        if (
+            !$value ||
+            (is_array($value) && empty($value['date']) && empty($value['time']))
+        ) {
             return null;
         }
 

@@ -173,9 +173,9 @@ class Fields extends Component
     const CONFIG_FIELDS_KEY = 'fields';
 
     /**
-     * @var string
+     * @var string|null
      */
-    public string $oldFieldColumnPrefix = 'field_';
+    public ?string $oldFieldColumnPrefix = null;
 
     /**
      * @var MemoizableArray|null
@@ -1008,9 +1008,10 @@ class Fields extends Component
     {
         $contentService = Craft::$app->getContent();
         $db = Craft::$app->getDb();
+        $columnPrefix = $this->oldFieldColumnPrefix ?? $contentService->fieldColumnPrefix;
 
         if ($columnSuffix === null) {
-            $column = ElementHelper::fieldColumn(null, $handle, null);
+            $column = ElementHelper::fieldColumn($columnPrefix, $handle, null);
             if (!isset($newColumns[$column]) && $db->columnExists($contentService->contentTable, $column)) {
                 $db->createCommand()
                     ->dropColumn($contentService->contentTable, $column)
@@ -1018,10 +1019,11 @@ class Fields extends Component
             }
         } else {
             $allColumns = array_keys($db->getSchema()->getTableSchema($contentService->contentTable)->columns);
+            $qColumnPrefix = preg_quote($columnPrefix, '/');
             $qHandle = preg_quote($handle, '/');
             $qColumnSuffix = preg_quote($columnSuffix, '/');
             foreach ($allColumns as $column) {
-                if (!isset($newColumns[$column]) && preg_match("/[\b_]$qHandle(_\w+)?_$qColumnSuffix\$/", $column)) {
+                if (!isset($newColumns[$column]) && preg_match("/^$qColumnPrefix$qHandle(_\w+)?_$qColumnSuffix\$/", $column)) {
                     $db->createCommand()
                         ->dropColumn($contentService->contentTable, $column)
                         ->execute();
@@ -1668,13 +1670,13 @@ class Fields extends Component
                 if (is_array($columnType)) {
                     foreach ($columnType as $i => $type) {
                         [$key, $type] = explode(':', $type, 2);
-                        $oldColumn = !$isNewField ? ElementHelper::fieldColumn(null, $oldHandle, $oldColumnSuffix, $i !== 0 ? $key : null) : null;
+                        $oldColumn = !$isNewField ? ElementHelper::fieldColumn($this->oldFieldColumnPrefix, $oldHandle, $oldColumnSuffix, $i !== 0 ? $key : null) : null;
                         $newColumn = ElementHelper::fieldColumn(null, $data['handle'], $data['columnSuffix'] ?? null, $i !== 0 ? $key : null);
                         $this->_updateColumn($db, $transaction, $contentService->contentTable, $oldColumn, $newColumn, $type);
                         $newColumns[$newColumn] = true;
                     }
                 } else {
-                    $oldColumn = !$isNewField ? ElementHelper::fieldColumn(null, $oldHandle, $oldColumnSuffix) : null;
+                    $oldColumn = !$isNewField ? ElementHelper::fieldColumn($this->oldFieldColumnPrefix, $oldHandle, $oldColumnSuffix) : null;
                     $newColumn = ElementHelper::fieldColumn(null, $data['handle'], $data['columnSuffix'] ?? null);;
                     $this->_updateColumn($db, $transaction, $contentService->contentTable, $oldColumn, $newColumn, $columnType);
                     $newColumns[$newColumn] = true;
