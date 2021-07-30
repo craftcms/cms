@@ -3,10 +3,10 @@
 ## Unreleased
 
 ### Added
-- Added the `canonicalId` and `canonicalUid` fields to elements that support drafts for GraphQL API.
+- Added the `canonicalId` GraphQL field for entries.
 
 ### Deprecated
-- Deprecated the `sourceId` and `sourceUid` fields to elements that support drafts for GraphQL API.
+- Deprecated the `sourceId` and `sourceUid` GraphQL fields for entries. `canonicalId` should be used instead.
 
 ### Fixed
 - Fixed an error that could occur when creating a new entry, if the section’s Entry URI Format contained `{canonicalId}`. ([#6080](https://github.com/craftcms/cms/issues/6080))
