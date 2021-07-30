@@ -1,5 +1,11 @@
 # Release Notes for Craft CMS 3.x
 
+## Unreleased
+
+### Fixed
+- Fixed a bug where the site menu on Edit Category pages wasn’t working properly. ([#9658](https://github.com/craftcms/cms/issues/9658))
+- Fixed a bug where the “Save and add another” action on Edit Category pages wasn’t retaining the currently-selected site or parent category selection.
+
 ## 3.7.7 - 2021-07-29
 
 ### Added
