@@ -206,9 +206,11 @@ class ElementQueryConditionBuilder extends Component
                 case 'Variable':
                     return $this->_resolveInfo->variableValues[$argumentNodeValue->name->value];
                 case 'ListValue':
-                    return array_map(function($value) {
-                        return $this->_extractArgumentValue($value);
-                    }, array_values($argumentNodeValue->values));
+                    $extractedValue = [];
+                    foreach ($argumentNodeValue->values as $value) {
+                        $extractedValue[] = $this->_extractArgumentValue($value);
+                    }
+                    return $extractedValue;
                 case 'ObjectValue':
                     $extractedValue = [];
                     foreach ($argumentNodeValue->fields as $fieldNode) {
