@@ -85,13 +85,13 @@ class m190114_143000_more_asset_field_setting_changes extends Migration
                         unset($source);
                     }
                 }
+
+                if (!empty($fieldData['settings'])) {
+                    $this->update(Table::FIELDS, ['settings' => Json::encode($fieldData['settings'])], ['uid' => $fieldUid]);
+                }
             }
 
             $projectConfig->set(Matrix::CONFIG_BLOCKTYPE_KEY . '.' . $matrixBlockTypeUid, $matrixBlockType);
-
-            if (!empty($fieldData['settings'])) {
-                $this->update(Table::FIELDS, ['settings' => Json::encode($fieldData['settings'])], ['uid' => $fieldUid]);
-            }
         }
 
         $projectConfig->muteEvents = false;
