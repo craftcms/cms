@@ -497,10 +497,8 @@ class AssetsController extends Controller
                 'folderUid' => $folderModel->uid,
                 'folderId' => $folderModel->id,
             ]);
-        } catch (AssetException $exception) {
-            return $this->asErrorJson($exception->getMessage());
-        } catch (ForbiddenHttpException $exception) {
-            return $this->asErrorJson($exception->getMessage());
+        } catch (AssetException|ForbiddenHttpException $e) {
+            return $this->asErrorJson($e->getMessage());
         }
     }
 
