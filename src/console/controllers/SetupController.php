@@ -310,13 +310,15 @@ EOD;
         // Test the DB connection
         $this->stdout('Testing database credentials ... ', Console::FG_YELLOW);
 
-        try {
-            $dbConfig = Craft::$app->getConfig()->getDb();
-        } catch (InvalidConfigException $e) {
-            $dbConfig = new DbConfig();
-        }
-
         test:
+
+        if (!isset($dbConfig)) {
+            try {
+                $dbConfig = Craft::$app->getConfig()->getDb();
+            } catch (InvalidConfigException $e) {
+                $dbConfig = new DbConfig();
+            }
+        }
 
         $dbConfig->driver = $this->driver;
         $dbConfig->server = $this->server;

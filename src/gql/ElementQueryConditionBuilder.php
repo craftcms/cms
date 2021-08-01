@@ -188,16 +188,13 @@ class ElementQueryConditionBuilder extends Component
      */
     private function _extractArgumentValue(Node $argumentNode)
     {
-
         // Deal with a raw object value.
         if ($argumentNode->kind === 'ObjectValue') {
             /** @var ObjectValueNode $argumentNode */
             $extractedValue = [];
-
             foreach ($argumentNode->fields as $fieldNode) {
                 $extractedValue[$fieldNode->name->value] = $this->_extractArgumentValue($fieldNode);
             }
-
             return $extractedValue;
         }
 
@@ -207,29 +204,24 @@ class ElementQueryConditionBuilder extends Component
 
             switch ($argumentNodeValue->kind) {
                 case 'Variable':
-                    $extractedValue = $this->_resolveInfo->variableValues[$argumentNodeValue->name->value];
-                    break;
+                    return $this->_resolveInfo->variableValues[$argumentNodeValue->name->value];
                 case 'ListValue':
-                    $extractedValue = [];
-
-                    foreach ($argumentNodeValue->values as $value) {
-                        $extractedValue[] = $this->_extractArgumentValue($value);
-                    }
-                    break;
+                    return array_map(function($value) {
+                        return $this->_extractArgumentValue($value);
+                    }, array_values($argumentNodeValue->values));
                 case 'ObjectValue':
+                    $extractedValue = [];
                     foreach ($argumentNodeValue->fields as $fieldNode) {
                         $extractedValue[$fieldNode->name->value] = $this->_extractArgumentValue($fieldNode);
                     }
-                    break;
+                    return $extractedValue;
                 default:
-                    $extractedValue = $argumentNodeValue->value;
+                    return $argumentNodeValue->value;
             }
-        } else {
-            $value = $argumentNode->value ?? null;
-            $extractedValue = $argumentNode->kind === 'IntValue' ? (int)$value : $value;
         }
 
-        return $extractedValue;
+        $value = $argumentNode->value ?? null;
+        return $argumentNode->kind === 'IntValue' ? (int)$value : $value;
     }
 
     /**

@@ -604,11 +604,14 @@ class Sections extends Component
                 $structure->maxLevels = $data['structure']['maxLevels'];
                 Craft::$app->getStructures()->saveStructure($structure);
                 $sectionRecord->structureId = $structure->id;
-            } else if (!$isNewSection && $sectionRecord->structureId) {
-                // Delete the old one
-                Craft::$app->getStructures()->deleteStructureById($sectionRecord->structureId);
+            } else {
                 $sectionRecord->structureId = null;
                 $isNewStructure = false;
+
+                if ($sectionRecord->structureId) {
+                    // Delete the old one
+                    Craft::$app->getStructures()->deleteStructureById($sectionRecord->structureId);
+                }
             }
 
             $resaveEntries = (

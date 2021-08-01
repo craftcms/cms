@@ -89,38 +89,8 @@ class EventTagAdder extends BaseEventTagVisitor
 
         // Are we looking for `<body>`?
         if (static::$foundBeginBody === false) {
-            // Does it start here?
-            if ($this->_bodyTag === null) {
-                if (preg_match('/<body\b/i', $data, $matches, PREG_OFFSET_CAPTURE)) {
-                    $offsetOffset = $matches[0][1];
-                    $this->_bodyTag = substr($data, $matches[0][1]);
-                    $this->_bodyAttrOffset = 5;
-                }
-            } else {
-                // Append this text node to $_bodyTag
-                $offsetOffset = -strlen($this->_bodyTag);
-                $this->_bodyTag .= $data;
-            }
-
-            if ($this->_bodyTag !== null) {
-                do {
-                    try {
-                        $attribute = Html::parseTagAttribute($this->_bodyTag, $this->_bodyAttrOffset, $start, $end);
-                    } catch (InvalidArgumentException $e) {
-                        // The tag is probably split between a couple text nodes. Keep trying on the next text node
-                        break;
-                    }
-
-                    // No more attributes?
-                    if ($attribute === null) {
-                        static::$foundBeginBody = true;
-                        $beginBodyPos = $offsetOffset + strpos($this->_bodyTag, '>', $this->_bodyAttrOffset) + 1;
-                        return $this->_insertEventNode($node, $beginBodyPos, 'beginBody');
-                    }
-
-                    // Try again where this one ended
-                    $this->_bodyAttrOffset = $end;
-                } while (true);
+            if (($newNode = $this->_findBeginBody($node)) !== null) {
+                return $newNode;
             }
         }
 
@@ -132,6 +102,53 @@ class EventTagAdder extends BaseEventTagVisitor
         }
 
         return $node;
+    }
+
+    /**
+     * Searches the text node for the beginning of the `<body>` tag.
+     *
+     * @param TextNode $node
+     * @return Node|null
+     */
+    private function _findBeginBody(TextNode $node): ?Node
+    {
+        $data = $node->getAttribute('data');
+
+        // Does it start here?
+        if ($this->_bodyTag === null) {
+            if (!preg_match('/<body\b/i', $data, $matches, PREG_OFFSET_CAPTURE)) {
+                return null;
+            }
+
+            $offsetOffset = $matches[0][1];
+            $this->_bodyTag = substr($data, $matches[0][1]);
+            $this->_bodyAttrOffset = 5;
+        } else {
+            // Append this text node to $_bodyTag
+            $offsetOffset = -strlen($this->_bodyTag);
+            $this->_bodyTag .= $data;
+        }
+
+        do {
+            try {
+                $attribute = Html::parseTagAttribute($this->_bodyTag, $this->_bodyAttrOffset, $start, $end);
+            } catch (InvalidArgumentException $e) {
+                // The tag is probably split between a couple text nodes. Keep trying on the next text node
+                break;
+            }
+
+            // No more attributes?
+            if ($attribute === null) {
+                static::$foundBeginBody = true;
+                $beginBodyPos = $offsetOffset + strpos($this->_bodyTag, '>', $this->_bodyAttrOffset) + 1;
+                return $this->_insertEventNode($node, $beginBodyPos, 'beginBody');
+            }
+
+            // Try again where this one ended
+            $this->_bodyAttrOffset = $end;
+        } while (true);
+
+        return null;
     }
 
     /**
