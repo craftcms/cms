@@ -160,6 +160,7 @@
 - Removed the `getFootHtml()` Twig function. `endBody()` can be used instead.`
 - Removed the `getHeadHtml()` Twig function. `head()` can be used instead.
 - Removed the `round()` Twig function. The `|round` filter can be used instead.
+- Removed support for deprecated `DateTime` faux Twig methods `atom()`, `cookie()`, `iso8601()`, `rfc822()`, `rfc850()`, `rfc1036()`, `rfc1123()`, `rfc2822()`, `rfc3339()`, `rss()`, `w3c()`, `w3cDate()`, `mySqlDateTime()`, `localeDate()`, `localeTime()`, `year()`, `month()`, `day()`, `nice()`, and `uiTimestamp()`.
 - Removed the `craft.categoryGroups` Twig variable.
 - Removed the `craft.config` Twig variable.
 - Removed the `craft.deprecator` Twig variable.
