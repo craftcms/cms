@@ -179,11 +179,6 @@ class Sites extends Component
      */
     public function init(): void
     {
-        // No technical reason to put this here, but it's sortof related
-        if (defined('CRAFT_LOCALE')) {
-            Craft::$app->getDeprecator()->log('CRAFT_LOCALE', 'The `CRAFT_LOCALE` constant has been deprecated. Use `CRAFT_SITE` instead, which can be set to a site ID or handle.');
-        }
-
         // Load all the sites up front
         $this->_loadAllSites();
     }

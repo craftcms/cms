@@ -165,7 +165,7 @@ return [
         ],
         'sites' => [
             'class' => craft\services\Sites::class,
-            'currentSite' => defined('CRAFT_SITE') ? CRAFT_SITE : (defined('CRAFT_LOCALE') ? CRAFT_LOCALE : null),
+            'currentSite' => defined('CRAFT_SITE') ? CRAFT_SITE : null,
         ],
         'i18n' => [
             'class' => craft\i18n\I18N::class,

@@ -250,8 +250,8 @@ class TestSetup
             $configService->getConfigFromFile("app.{$appType}")
         );
 
-        if (defined('CRAFT_SITE') || defined('CRAFT_LOCALE')) {
-            $config['components']['sites']['currentSite'] = defined('CRAFT_SITE') ? CRAFT_SITE : CRAFT_LOCALE;
+        if (defined('CRAFT_SITE')) {
+            $config['components']['sites']['currentSite'] = CRAFT_SITE;
         }
 
         $config['vendorPath'] = $vendorPath;
