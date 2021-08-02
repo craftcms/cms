@@ -759,7 +759,7 @@ return [
     'Keep both' => 'Beide behouden',
     'Keep me logged in' => 'Hou me ingelogd',
     'Keep them' => 'Behouden',
-    'Knowledge Base' => 'Knowledge Base',
+    'Knowledge Base' => 'Kennisbank',
     'Label' => 'Label',
     'Language' => 'Taal',
     'Large Thumbnails' => 'Grote miniatuurweergave',
