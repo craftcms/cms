@@ -15,8 +15,10 @@
     {% block switchUser %}
         {% if username|length > 0 or (authenticationChain is not null and not authenticationChain.isComplete) %}
             {% set knownUserName = user.username|default(username) %}
-                <div id="authentication-greeting">{{ 'Hello, {user}'|t('app', {user: knownUserName}) }}. (<a id="restart-authentication">{{ 'Not {user}?'|t('app', {user: knownUserName}) }}</a>)</div>
-                <hr />
+                <div id="authentication-greeting">
+                    {{ 'Hello, {user}'|t('app', {user: knownUserName}) }}. (<a id="restart-authentication">{{ 'Not {user}?'|t('app', {user: knownUserName}) }}</a>)
+                    <hr />
+                </div>
         {% endif %}
     {% endblock %}
 
