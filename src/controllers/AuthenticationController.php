@@ -59,7 +59,8 @@ class AuthenticationController extends Controller
             return $this->asJson(['loginFormHtml' => Craft::$app->getView()->renderTemplate('_special/login/login_form')]);
         }
 
-        $user = Craft::$app->getUsers()->getUserByUsernameOrEmail($username);
+        $userService = Craft::$app->getUsers();
+        $user = $userService->getUserByUsernameOrEmail($username);
 
         if (!$user) {
             if (!Craft::$app->getConfig()->getGeneral()->preventUserEnumeration) {
@@ -70,12 +71,18 @@ class AuthenticationController extends Controller
         }
 
         Craft::$app->getSession()->set(self::AUTH_USER_NAME, $username);
-        Craft::$app->getUser()->sendUsernameCookie($user);
-        Craft::$app->getAuthentication()->invalidateAllAuthenticationStates();
+
+        $userComponent = Craft::$app->getUser();
+        $userComponent->sendUsernameCookie($user);
+
+        $authentication = Craft::$app->getAuthentication();
+        $authentication->invalidateAllAuthenticationStates();
+        $chain = $authentication->getCpAuthenticationChain($user);
 
         return $this->asJson([
             'loginFormHtml' => Craft::$app->getView()->renderTemplate('_special/login/login_form', compact('user')),
-            'footHtml' => Craft::$app->getView()->getBodyHtml()
+            'footHtml' => Craft::$app->getView()->getBodyHtml(),
+            'stepType' => $chain->getNextAuthenticationStep()->getStepType()
         ]);
     }
     /**
@@ -341,6 +348,7 @@ class AuthenticationController extends Controller
             'stepType' => $step->getStepType(),
             'message' => $session->getNotice(),
             'error' => $session->getError(),
+
         ];
 
         return $this->asJson($output);
