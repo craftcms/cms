@@ -493,10 +493,10 @@ class Gql extends Component
      */
     public function executeQuery(
         GqlSchema $schema,
-        string $query,
-        array $variables = null,
-        string $operationName = null,
-        bool $debugMode = false
+        string    $query,
+        array     $variables = null,
+        string    $operationName = null,
+        bool      $debugMode = false
     ): array
     {
         $event = new ExecuteGqlQueryEvent([
@@ -1274,11 +1274,11 @@ class Gql extends Component
      */
     private function _getCacheKey(
         GqlSchema $schema,
-        string $query,
-        $rootValue,
-        $context,
-        array $variables = null,
-        string $operationName = null
+        string    $query,
+                  $rootValue,
+                  $context,
+        array     $variables = null,
+        string    $operationName = null
     )
     {
         // No cache key, if explicitly disabled

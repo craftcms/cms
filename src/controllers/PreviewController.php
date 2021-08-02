@@ -101,11 +101,11 @@ class PreviewController extends Controller
      */
     public function actionPreview(
         string $elementType,
-        int $sourceId,
-        int $siteId,
-        ?int $draftId = null,
-        ?int $revisionId = null,
-        bool $provisional = false
+        int    $sourceId,
+        int    $siteId,
+        ?int   $draftId = null,
+        ?int   $revisionId = null,
+        bool   $provisional = false
     ): Response
     {
         // Make sure a token was used to get here

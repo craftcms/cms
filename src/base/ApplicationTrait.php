@@ -658,7 +658,7 @@ trait ApplicationTrait
                 ->from([Table::INFO])
                 ->where(['id' => 1])
                 ->one();
-        } catch (DbException|DbConnectException $e) {
+        } catch (DbException | DbConnectException $e) {
             if ($throwException) {
                 throw $e;
             }
@@ -830,7 +830,7 @@ trait ApplicationTrait
         /** @var WebApplication|ConsoleApplication $this */
         try {
             $this->getDb()->open();
-        } catch (DbConnectException|InvalidConfigException $e) {
+        } catch (DbConnectException | InvalidConfigException $e) {
             Craft::error('There was a problem connecting to the database: ' . $e->getMessage(), __METHOD__);
             /** @var ErrorHandler $errorHandler */
             $errorHandler = $this->getErrorHandler();

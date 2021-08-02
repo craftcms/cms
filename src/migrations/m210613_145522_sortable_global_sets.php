@@ -4,7 +4,6 @@ namespace craft\migrations;
 
 use Craft;
 use craft\db\Migration;
-use craft\db\Query;
 use craft\db\Table;
 use craft\helpers\ArrayHelper;
 use craft\helpers\MigrationHelper;
