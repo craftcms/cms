@@ -1374,7 +1374,6 @@ class ProjectConfig extends Component
                 $filename = pathinfo(array_pop($configPath), PATHINFO_FILENAME);
                 $insertionPoint = &$generatedConfig;
 
-                /** @var string $pathSegment */
                 foreach ($configPath as $pathSegment) {
                     if (!isset($insertionPoint[$pathSegment])) {
                         $insertionPoint[$pathSegment] = [];
@@ -1383,6 +1382,8 @@ class ProjectConfig extends Component
                     $insertionPoint = &$insertionPoint[$pathSegment];
                 }
 
+                /** @var string $pathSegment */
+                /** @phpstan-ignore-next-line */
                 if ($pathSegment === $filename) {
                     $insertionPoint = array_merge($insertionPoint, $yamlConfig);
                 } else {

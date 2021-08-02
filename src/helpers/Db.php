@@ -1060,9 +1060,13 @@ class Db
                 $parsed[$n] = $v;
             }
         }
+
         if ($key === null) {
+            // todo: remove comment when phpstan#5401 is fixed
+            /** @phpstan-ignore-next-line */
             return $parsed;
         }
+
         return false;
     }
 

@@ -1713,15 +1713,11 @@ class Asset extends Element
      */
     public function getSidebarHtml(): string
     {
-        $components = [
-
+        return implode("\n", [
             // Omit preview button on sidebar of slideouts
-            $this->getPreviewHtml(false),
-
+            $this->getPreviewHtml(),
             parent::getSidebarHtml(),
-        ];
-
-        return implode("\n", $components);
+        ]);
     }
 
     /**

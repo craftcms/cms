@@ -80,7 +80,7 @@ class FixturesTest extends Unit
             // Entry type nesting inside section and handle
             [
                 ['entryTypes.' . $entryTypeUid . '.handle' => $randomHandle],
-                function() use ($sectionUid, $randomHandle, $entryTypeUid) {
+                function() use ($randomHandle, $entryTypeUid) {
                     $sectionService = $this->make(Sections::class);
                     return $sectionService->getEntryTypesByHandle($randomHandle)[0]->uid === $entryTypeUid;
                 }

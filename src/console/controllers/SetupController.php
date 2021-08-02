@@ -312,6 +312,7 @@ EOD;
 
         test:
 
+        /** @phpstan-ignore-next-line */
         if (!isset($dbConfig)) {
             try {
                 $dbConfig = Craft::$app->getConfig()->getDb();

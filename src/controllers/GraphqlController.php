@@ -157,8 +157,8 @@ class GraphqlController extends Controller
         $generalConfig->generateTransformsBeforePageLoad = true;
 
         // Check for the cache-bust header
-        $gqlCacheHeader = $this->request->getHeaders()->get('x-craft-gql-cache', null, true);
-        if ($gqlCacheHeader === 'no-cache') {
+        $noCache = $this->request->getHeaders()->get('x-craft-gql-cache', null, true) === 'no-cache';
+        if ($noCache) {
             $cacheSetting = $generalConfig->enableGraphqlCaching;
             $generalConfig->enableGraphqlCaching = false;
         }
@@ -184,7 +184,7 @@ class GraphqlController extends Controller
             }
         }
 
-        if ($gqlCacheHeader === 'no-cache') {
+        if ($noCache) {
             $generalConfig->enableGraphqlCaching = $cacheSetting;
         }
 

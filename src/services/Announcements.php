@@ -95,7 +95,7 @@ class Announcements extends Component
 
         $formatter = Craft::$app->getFormatter();
 
-        return array_map(function(array $result) use ($formatter, $pluginsService) {
+        return array_map(function(array $result) use ($formatter) {
             return [
                 'id' => (int)$result['id'],
                 'heading' => Html::widont(Html::encode($result['heading'])),
