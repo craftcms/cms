@@ -682,7 +682,6 @@ class Sections extends Component
                 // rows
                 $affectedSiteUids = array_keys($siteSettingData);
 
-                /** @noinspection PhpUndefinedVariableInspection */
                 foreach ($allOldSiteSettingsRecords as $siteId => $siteSettingsRecord) {
                     $siteUid = array_search($siteId, $siteIdMap, false);
                     if (!in_array($siteUid, $affectedSiteUids, false)) {
