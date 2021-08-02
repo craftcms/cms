@@ -1016,9 +1016,10 @@ class Matrix extends Component
         $ownerSiteIds = ArrayHelper::getColumn(ElementHelper::supportedSitesForElement($owner), 'siteId');
         $siteIds = [];
 
+        $view = Craft::$app->getView();
+        $elementsService = Craft::$app->getElements();
+
         if ($propagationMethod === MatrixField::PROPAGATION_METHOD_CUSTOM && $propagationKeyFormat !== null) {
-            $view = Craft::$app->getView();
-            $elementsService = Craft::$app->getElements();
             $propagationKey = $view->renderObjectTemplate($propagationKeyFormat, $owner);
         }
 

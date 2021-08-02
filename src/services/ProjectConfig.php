@@ -1374,6 +1374,7 @@ class ProjectConfig extends Component
                 $filename = pathinfo(array_pop($configPath), PATHINFO_FILENAME);
                 $insertionPoint = &$generatedConfig;
 
+                /** @var string $pathSegment */
                 foreach ($configPath as $pathSegment) {
                     if (!isset($insertionPoint[$pathSegment])) {
                         $insertionPoint[$pathSegment] = [];

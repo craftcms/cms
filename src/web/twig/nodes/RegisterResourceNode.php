@@ -51,6 +51,8 @@ class RegisterResourceNode extends Node implements NodeCaptureInterface
             $position = 'endBody';
         }
 
+        $positionPhp = null;
+
         if ($position !== null) {
             // Figure out what the position's PHP value is
             switch ($position) {

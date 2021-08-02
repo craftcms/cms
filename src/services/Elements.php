@@ -2508,7 +2508,6 @@ class Elements extends Component
         $updateSearchIndex = $this->_updateSearchIndex = $updateSearchIndex ?? $this->_updateSearchIndex ?? true;
 
         $transaction = Craft::$app->getDb()->beginTransaction();
-        $e = null;
 
         try {
             // No need to save the element record multiple times
@@ -2678,14 +2677,11 @@ class Elements extends Component
             $transaction->commit();
         } catch (\Throwable $e) {
             $transaction->rollBack();
-        }
-
-        $this->_updateSearchIndex = $oldUpdateSearchIndex;
-
-        if ($e !== null) {
             $element->firstSave = $originalFirstSave;
             $element->propagateAll = $originalPropagateAll;
             throw $e;
+        } finally {
+            $this->_updateSearchIndex = $oldUpdateSearchIndex;
         }
 
         if (!$element->propagating) {

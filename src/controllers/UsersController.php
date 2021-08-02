@@ -1299,6 +1299,8 @@ class UsersController extends Controller
         }
 
         // Is this the current user, and did their username just change?
+        // todo: remove comment when WI-61732 is fixed
+        /** @noinspection PhpUndefinedVariableInspection */
         if ($isCurrentUser && $user->username !== $oldUsername) {
             // Update the username cookie
             $userSession->sendUsernameCookie($user);
