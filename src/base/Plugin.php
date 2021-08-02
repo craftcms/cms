@@ -10,7 +10,6 @@ namespace craft\base;
 use Craft;
 use craft\db\Migration;
 use craft\db\MigrationManager;
-use craft\errors\MigrationException;
 use craft\events\ModelEvent;
 use craft\events\RegisterTemplateRootsEvent;
 use craft\helpers\ArrayHelper;

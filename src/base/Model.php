@@ -7,7 +7,6 @@
 
 namespace craft\base;
 
-use Craft;
 use craft\events\DefineBehaviorsEvent;
 use craft\events\DefineFieldsEvent;
 use craft\events\DefineRulesEvent;

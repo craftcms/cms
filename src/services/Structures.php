@@ -16,7 +16,6 @@ use craft\events\MoveElementEvent;
 use craft\models\Structure;
 use craft\records\Structure as StructureRecord;
 use craft\records\StructureElement;
-use yii\base\BaseObject;
 use yii\base\Component;
 use yii\base\Exception;
 

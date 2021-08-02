@@ -37,7 +37,6 @@ use craft\queue\jobs\ResaveElements;
 use craft\records\EntryType as EntryTypeRecord;
 use craft\records\Section as SectionRecord;
 use craft\records\Section_SiteSettings as Section_SiteSettingsRecord;
-use craft\web\View;
 use yii\base\Component;
 use yii\base\Exception;
 

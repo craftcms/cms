@@ -276,7 +276,7 @@ class EntriesController extends BaseEntriesController
                 'tabs' => $tabs,
                 'containerAttributes' => [
                     'id' => 'tabs',
-                ]
+                ],
             ]) : null,
             'fieldsHtml' => $form->render(),
             'headHtml' => $view->getHeadHtml(),

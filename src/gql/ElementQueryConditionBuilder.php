@@ -509,7 +509,7 @@ class ElementQueryConditionBuilder extends Component
                     if (!$transformableAssetProperty) {
                         /** @var InlineFragmentNode|FragmentDefinitionNode $wrappingFragment */
                         if ($wrappingFragment) {
-                            $plan->when = function (Element $element) use ($wrappingFragment) {
+                            $plan->when = function(Element $element) use ($wrappingFragment) {
                                 return $element->getGqlTypeName() === $wrappingFragment->typeCondition->name->value;
                             };
                         }

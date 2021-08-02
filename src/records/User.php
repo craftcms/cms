@@ -7,7 +7,6 @@
 
 namespace craft\records;
 
-use Craft;
 use craft\db\ActiveQuery;
 use craft\db\ActiveRecord;
 use craft\db\Table;

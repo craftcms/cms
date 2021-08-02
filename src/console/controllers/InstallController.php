@@ -181,7 +181,7 @@ class InstallController extends Controller
         try {
             $migrator->migrateUp($migration);
         } catch (MigrationException $e) {
-            $this->stderr('*** failed to install Craft: ' . $e->getMessage(). PHP_EOL . PHP_EOL, Console::FG_RED);
+            $this->stderr('*** failed to install Craft: ' . $e->getMessage() . PHP_EOL . PHP_EOL, Console::FG_RED);
             return ExitCode::UNSPECIFIED_ERROR;
         }
 

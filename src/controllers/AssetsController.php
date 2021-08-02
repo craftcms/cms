@@ -17,7 +17,6 @@ use craft\fields\Assets as AssetsField;
 use craft\helpers\App;
 use craft\helpers\Assets;
 use craft\helpers\Db;
-use craft\helpers\Html;
 use craft\helpers\Image;
 use craft\helpers\StringHelper;
 use craft\helpers\UrlHelper;

@@ -14,7 +14,6 @@ use yii\helpers\VarDumper;
 use yii\log\Target;
 use yii\web\Request;
 use yii\web\Session;
-use yii\web\User;
 
 /**
  * LogTargetTrait implements the common methods and properties for log target classes.

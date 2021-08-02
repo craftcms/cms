@@ -16,7 +16,6 @@ use craft\helpers\Json;
 use craft\helpers\UrlHelper;
 use craft\models\CategoryGroup;
 use craft\models\CategoryGroup_SiteSettings;
-use craft\models\Site;
 use craft\web\Controller;
 use yii\base\Exception;
 use yii\web\BadRequestHttpException;

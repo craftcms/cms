@@ -8,7 +8,6 @@
 namespace craft\cache;
 
 use Craft;
-use yii\caching\Cache;
 use yii\caching\Dependency;
 
 /**

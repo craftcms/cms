@@ -7,7 +7,6 @@
 
 namespace craft\db;
 
-use Craft;
 use craft\helpers\Db;
 use yii\db\ColumnSchemaBuilder;
 

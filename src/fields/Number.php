@@ -16,9 +16,9 @@ use craft\gql\types\Number as NumberType;
 use craft\helpers\Db;
 use craft\helpers\Html;
 use craft\helpers\Localization;
+use craft\helpers\Number as NumberHelper;
 use craft\i18n\Locale;
 use yii\base\InvalidArgumentException;
-use craft\helpers\Number as NumberHelper;
 
 /**
  * Number represents a Number field.

@@ -11,7 +11,6 @@ use Craft;
 use craft\events\DefineBehaviorsEvent;
 use craft\helpers\Db;
 use craft\helpers\StringHelper;
-use yii\db\Schema;
 
 /**
  * Active Record base class.
