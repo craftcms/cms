@@ -1,16 +1,26 @@
 class EmailStep extends AuthenticationStep
 {
-    private inputSelector = '#email';
-
     constructor()
     {
         super('craft\\authentication\\type\\Email');
-        this.$loginForm.on('input', this.inputSelector, this.onInput.bind(this));
+    }
+
+    get $inputField () { return $('#email');}
+
+    public init()
+    {
+        this.$inputField.on('input', this.onInput.bind(this));
+    }
+
+    public cleanup()
+    {
+        this.$inputField.off('input', this.onInput.bind(this));
     }
 
     protected validate()
     {
-        const emailAddress = this.getEmailInput().val() as string;
+        const emailAddress = this.$inputField.val() as string;
+
         if (emailAddress.length === 0) {
             return Craft.t('app', 'Please enter a valid email address');
         }
@@ -21,13 +31,8 @@ class EmailStep extends AuthenticationStep
     protected returnFormData()
     {
         return {
-            "email": this.getEmailInput().val(),
+            "email": this.$inputField.val(),
         };
-    }
-
-    protected getEmailInput(): JQuery
-    {
-        return this.$loginForm.find(this.inputSelector);
     }
 }
 

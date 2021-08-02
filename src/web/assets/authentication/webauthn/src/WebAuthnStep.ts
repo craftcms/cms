@@ -1,20 +1,39 @@
 class WebAuthnStep extends AuthenticationStep
 {
-    readonly $button = $('#verify-webauthn');
-
     constructor()
     {
         super('craft\\authentication\\type\\mfa\\WebAuthn');
-        this.$loginForm.trigger('submit');
-        this.$button.on('click', () => { this.$loginForm.trigger('submit')});
-        this.$submit.hide();
     }
+
+    get $button() { return $('#verify-webauthn');};
 
     public validate(): true
     {
         this.$button.addClass('hidden');
         return true;
     }
+
+    public init()
+    {
+        this.$loginForm.trigger('submit');
+        this.$button.on('click', this.onButtonClick.bind(this));
+        this.$submit.addClass('hidden');
+    }
+
+
+    public cleanup()
+    {
+        this.$button.off('click', this.onButtonClick.bind(this));
+        this.$submit.removeClass('hidden');
+    }
+
+    /**
+     * Submit the form again, when the authentication button is clicked.
+     */
+    public onButtonClick (){
+        this.$loginForm.trigger('submit');
+    };
+
 
     protected async returnFormData()
     {
@@ -44,6 +63,7 @@ class WebAuthnStep extends AuthenticationStep
 
         let credential: PublicKeyCredential | null;
 
+        // Finally, try to get the credentials based on the provided data.
         try {
             credential = await navigator.credentials.get({
                 publicKey: requestOptions
@@ -56,6 +76,7 @@ class WebAuthnStep extends AuthenticationStep
 
         const response = credential.response as AuthenticatorAssertionResponse;
 
+        // Prep and return the data for the request
         return {
             credentialResponse: {
                 id: credential.id,

@@ -3,9 +3,14 @@ class AuthenticationStep {
     constructor(stepType) {
         this.validateOnInput = false;
         this.stepType = stepType;
-        Craft.AuthenticationChainHandler.registerStepHandler(stepType, this.prepareData.bind(this));
-        this.$loginForm = Craft.AuthenticationChainHandler.loginHandler.$loginForm;
-        this.$submit = Craft.AuthenticationChainHandler.loginHandler.$submit;
+        Craft.AuthenticationChainHandler.registerAuthenticationStep(stepType, this);
+        this.doInit();
+    }
+    get $loginForm() { return Craft.AuthenticationChainHandler.loginForm.$loginForm; }
+    get $submit() { return Craft.AuthenticationChainHandler.loginForm.$submit; }
+    doInit() {
+        this.cleanup();
+        this.init();
     }
     /**
      * @param ev

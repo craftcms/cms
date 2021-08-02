@@ -1,16 +1,24 @@
 abstract class VerificationCode extends AuthenticationStep
 {
-    private inputSelector = '#verificationCode';
-
     protected constructor(stepType: string)
     {
         super(stepType);
-        this.$loginForm.on('input', this.inputSelector, this.onInput.bind(this));
+    }
+
+    get $verificationCode() { return $('#verificationCode'); }
+
+    public init()
+    {
+        this.$verificationCode.on('input', this.onInput.bind(this));
+    }
+
+    public cleanup() {
+        this.$verificationCode.off('input', this.onInput.bind(this));
     }
 
     public validate()
     {
-        const verificationCode = this.getVerificationCodeInput().val() as string;
+        const verificationCode = this.$verificationCode.val() as string;
 
         if (verificationCode.length === 0) {
             return Craft.t('app', 'Please enter a verification code');
@@ -22,7 +30,7 @@ abstract class VerificationCode extends AuthenticationStep
     protected returnFormData()
     {
         return {
-            "verification-code": this.getVerificationCodeInput().val()
+            "verification-code": this.$verificationCode.val()
         };
     }
 

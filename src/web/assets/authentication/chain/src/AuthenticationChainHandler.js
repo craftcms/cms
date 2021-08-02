@@ -1,10 +1,10 @@
 "use strict";
 class AuthenticationChainHandler {
-    constructor(loginHandler) {
+    constructor(loginForm) {
         this.performAuthenticationEndpoint = 'authentication/perform-authentication';
         this.startAuthenticationEndpoint = 'authentication/start-authentication';
-        this.stepHandlers = {};
-        this.loginHandler = loginHandler;
+        this.authenticationSteps = {};
+        this.loginForm = loginForm;
         this.attachListeners();
     }
     get $alternatives() { return $('#alternative-types'); }
@@ -22,20 +22,29 @@ class AuthenticationChainHandler {
             this.switchStep($(ev.target).attr('rel'));
         });
         this.$restartAuthentication.on('click', (event) => {
-            this.$authenticationStep.empty().attr('rel', '');
-            this.$authenticationGreeting.remove();
-            this.$startAuthentication.removeClass('hidden');
+            this.resetAuthenticationControls();
             event.preventDefault();
         });
     }
     /**
-     * Register a step handler for a specific type
+     * Reset the authentication chain controls and anything related in the login form.
+     */
+    resetAuthenticationControls() {
+        this.$authenticationStep.empty().attr('rel', '');
+        this.$authenticationGreeting.remove();
+        this.$startAuthentication.removeClass('hidden');
+        this.$startAuthentication.removeClass('hidden');
+        this.loginForm.$submit.removeClass('hidden');
+        this.clearErrors();
+    }
+    /**
+     * Register an authentication step
      *
      * @param stepType
-     * @param handler
+     * @param step
      */
-    registerStepHandler(stepType, handler) {
-        this.stepHandlers[stepType] = handler;
+    registerAuthenticationStep(stepType, step) {
+        this.authenticationSteps[stepType] = step;
     }
     /**
      * Perform the authentication step against the endpoint.
@@ -52,10 +61,10 @@ class AuthenticationChainHandler {
      * @param stepType
      */
     switchStep(stepType) {
-        if (this.loginHandler.isDisabled()) {
+        if (this.loginForm.isDisabled()) {
             return;
         }
-        this.loginHandler.disableForm();
+        this.loginForm.disableForm();
         Craft.postActionRequest(this.performAuthenticationEndpoint, {
             stepType: stepType,
             switch: true
@@ -68,7 +77,7 @@ class AuthenticationChainHandler {
      * @protected
      */
     processResponse(response, textStatus) {
-        var _a;
+        var _a, _b, _c;
         if (textStatus == 'success') {
             if (response.success && ((_a = response.returnUrl) === null || _a === void 0 ? void 0 : _a.length)) {
                 window.location.href = response.returnUrl;
@@ -77,18 +86,11 @@ class AuthenticationChainHandler {
             }
             else {
                 if (response.error) {
-                    this.loginHandler.showError(response.error);
-                    Garnish.shake(this.loginHandler.$loginForm);
+                    this.loginForm.showError(response.error);
+                    Garnish.shake(this.loginForm.$loginForm);
                 }
                 if (response.message) {
-                    this.loginHandler.showMessage(response.message);
-                }
-                if (response.html) {
-                    this.$authenticationStep.html(response.html);
-                }
-                if (response.loginFormHtml) {
-                    this.loginHandler.$loginForm.html(response.loginFormHtml);
-                    this.attachListeners();
+                    this.loginForm.showMessage(response.message);
                 }
                 if (response.alternatives && Object.keys(response.alternatives).length > 0) {
                     this.showAlternatives(response.alternatives);
@@ -118,15 +120,29 @@ class AuthenticationChainHandler {
                         Craft.appendFootHtml(response.footHtml);
                     }
                 }
+                const initStepType = (stepType) => {
+                    if (this.authenticationSteps[stepType]) {
+                        this.authenticationSteps[stepType].init();
+                    }
+                };
+                if (response.html) {
+                    (_b = this.currentStep) === null || _b === void 0 ? void 0 : _b.cleanup();
+                    this.$authenticationStep.html(response.html);
+                    initStepType(response.stepType);
+                }
+                if (response.loginFormHtml) {
+                    (_c = this.currentStep) === null || _c === void 0 ? void 0 : _c.cleanup();
+                    this.loginForm.$loginForm.html(response.loginFormHtml);
+                    this.attachListeners();
+                    initStepType(response.stepType);
+                }
                 // Just in case this was the first step, remove all the misc things.
                 if (response.stepComplete) {
-                    this.loginHandler.$rememberMeCheckbox.parent().remove();
-                    this.loginHandler.$cancelRecover.remove();
-                    this.loginHandler.$recoverAccount.remove();
+                    this.loginForm.$rememberMeCheckbox.parent().remove();
                 }
             }
         }
-        this.loginHandler.enableForm();
+        this.loginForm.enableForm();
     }
     showAlternatives(alternatives) {
         this.$alternatives.removeClass('hidden');
@@ -151,27 +167,28 @@ class AuthenticationChainHandler {
             let requestData;
             if (this.isExistingChain()) {
                 const stepType = this.$authenticationStep.attr('rel');
-                const handler = this.stepHandlers[stepType];
-                requestData = Object.assign(Object.assign({}, await handler()), additionalData);
+                const stepHandler = this.authenticationSteps[stepType];
+                requestData = Object.assign(Object.assign({}, await stepHandler.prepareData()), additionalData);
+                this.currentStep = stepHandler;
             }
             else {
                 requestData = additionalData;
             }
-            if (this.loginHandler.isDisabled()) {
+            if (this.loginForm.isDisabled()) {
                 return;
             }
-            this.loginHandler.disableForm();
+            this.loginForm.disableForm();
             this.performStep(this.isExistingChain() ? this.performAuthenticationEndpoint : this.startAuthenticationEndpoint, requestData);
         }
         catch (error) {
-            this.loginHandler.showError(error);
-            this.loginHandler.enableForm();
+            this.loginForm.showError(error);
+            this.loginForm.enableForm();
         }
     }
     isExistingChain() {
         return this.$authenticationStep.attr('rel').length > 0;
     }
     clearErrors() {
-        this.loginHandler.clearErrors();
+        this.loginForm.clearErrors();
     }
 }

@@ -3,17 +3,25 @@ class PasswordStep extends AuthenticationStep {
     constructor() {
         super('craft\\authentication\\type\\Password');
         this.passwordSelector = '#password';
-        new Craft.PasswordInput(this.passwordSelector, {
+    }
+    get $passwordField() { return $(this.passwordSelector); }
+    init() {
+        this.passwordInput = new Craft.PasswordInput(this.passwordSelector, {
             onToggleInput: ($newPasswordInput) => {
-                this.getPasswordInput().off('input');
-                this.getPasswordInput().replaceWith($newPasswordInput);
-                this.getPasswordInput().on('input', this.onInput.bind(this));
+                this.$passwordField.off('input');
+                this.$passwordField.replaceWith($newPasswordInput);
+                this.$passwordField.on('input', this.onInput.bind(this));
             }
         });
-        this.$loginForm.on('input', this.passwordSelector, this.onInput.bind(this));
+        this.$passwordField.on('input', this.onInput.bind(this));
+    }
+    cleanup() {
+        delete this.passwordInput;
+        delete this.passwordInput;
+        this.$passwordField.off('input', this.onInput.bind(this));
     }
     validate() {
-        const passwordLength = this.getPasswordInput().val().length;
+        const passwordLength = this.$passwordField.val().length;
         // @ts-ignore
         if (passwordLength < window.minPasswordLength) {
             return Craft.t('yii', '{attribute} should contain at least {min, number} {min, plural, one{character} other{characters}}.', {
@@ -34,11 +42,8 @@ class PasswordStep extends AuthenticationStep {
     }
     returnFormData() {
         return {
-            password: this.getPasswordInput().val(),
+            password: this.$passwordField.val(),
         };
-    }
-    getPasswordInput() {
-        return this.$loginForm.find(this.passwordSelector);
     }
 }
 new PasswordStep();

@@ -1,25 +1,38 @@
 class PasswordStep extends AuthenticationStep
 {
     private passwordSelector = '#password';
+    private passwordInput?: any;
 
     constructor()
     {
         super('craft\\authentication\\type\\Password');
+    }
 
-        new Craft.PasswordInput(this.passwordSelector, {
+    get $passwordField() { return $(this.passwordSelector);}
+
+    public init()
+    {
+        this.passwordInput = new Craft.PasswordInput(this.passwordSelector, {
             onToggleInput: ($newPasswordInput: JQuery): void => {
-                this.getPasswordInput().off('input');
-                this.getPasswordInput().replaceWith($newPasswordInput);
-                this.getPasswordInput().on('input', this.onInput.bind(this));
+                this.$passwordField.off('input');
+                this.$passwordField.replaceWith($newPasswordInput);
+                this.$passwordField.on('input', this.onInput.bind(this));
             }
         });
 
-        this.$loginForm.on('input', this.passwordSelector, this.onInput.bind(this));
+        this.$passwordField.on('input', this.onInput.bind(this));
+    }
+
+    public cleanup()
+    {
+        delete this.passwordInput;
+        delete this.passwordInput;
+        this.$passwordField.off('input', this.onInput.bind(this));
     }
 
     public validate()
     {
-        const passwordLength = (this.getPasswordInput().val() as string).length;
+        const passwordLength = (this.$passwordField.val() as string).length;
 
         // @ts-ignore
         if (passwordLength < window.minPasswordLength) {
@@ -45,13 +58,8 @@ class PasswordStep extends AuthenticationStep
     protected returnFormData()
     {
         return {
-            password: this.getPasswordInput().val(),
+            password: this.$passwordField.val(),
         };
-    }
-
-    protected getPasswordInput(): JQuery
-    {
-        return this.$loginForm.find(this.passwordSelector);
     }
 }
 

@@ -6,20 +6,40 @@ abstract class AuthenticationStep
 
     protected stepType: string;
 
-    protected $loginForm: JQuery;
-    protected $submit: JQuery;
-
+    /**
+     * Validate the inputs. Return `true` for valid or a string as the error message.
+     */
     protected abstract validate(): true | string;
+
+    /**
+     * Return the form data gathered from the appropriate inputs.
+     */
     protected abstract returnFormData(): AuthenticationRequest;
+
+    /**
+     * Initialize the authentication step.
+     */
+    public abstract init(): void;
+
+    /**
+     * Clean up the step as it stops being the current step.
+     */
+    public abstract cleanup(): void;
 
     protected constructor(stepType: string)
     {
         this.stepType = stepType;
-        Craft.AuthenticationChainHandler.registerStepHandler(stepType, this.prepareData.bind(this));
-        this.$loginForm = Craft.AuthenticationChainHandler.loginHandler.$loginForm;
-        this.$submit = Craft.AuthenticationChainHandler.loginHandler.$submit;
+        Craft.AuthenticationChainHandler.registerAuthenticationStep(stepType, this);
+        this.doInit();
     }
 
+    get $loginForm() { return Craft.AuthenticationChainHandler.loginForm.$loginForm;}
+    get $submit() { return Craft.AuthenticationChainHandler.loginForm.$submit;}
+
+    protected doInit() {
+        this.cleanup();
+        this.init();
+    }
     /**
      * @param ev
      */

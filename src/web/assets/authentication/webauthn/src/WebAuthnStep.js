@@ -2,15 +2,29 @@
 class WebAuthnStep extends AuthenticationStep {
     constructor() {
         super('craft\\authentication\\type\\mfa\\WebAuthn');
-        this.$button = $('#verify-webauthn');
-        this.$loginForm.trigger('submit');
-        this.$button.on('click', () => { this.$loginForm.trigger('submit'); });
-        this.$submit.hide();
     }
+    get $button() { return $('#verify-webauthn'); }
+    ;
     validate() {
         this.$button.addClass('hidden');
         return true;
     }
+    init() {
+        this.$loginForm.trigger('submit');
+        this.$button.on('click', this.onButtonClick.bind(this));
+        this.$submit.addClass('hidden');
+    }
+    cleanup() {
+        this.$button.off('click', this.onButtonClick.bind(this));
+        this.$submit.removeClass('hidden');
+    }
+    /**
+     * Submit the form again, when the authentication button is clicked.
+     */
+    onButtonClick() {
+        this.$loginForm.trigger('submit');
+    }
+    ;
     async returnFormData() {
         const optionData = this.$button.data('request-options');
         // Sort-of deep copy
@@ -30,6 +44,7 @@ class WebAuthnStep extends AuthenticationStep {
             };
         }
         let credential;
+        // Finally, try to get the credentials based on the provided data.
         try {
             credential = await navigator.credentials.get({
                 publicKey: requestOptions
@@ -40,6 +55,7 @@ class WebAuthnStep extends AuthenticationStep {
             throw Craft.t('app', 'Failed to authenticate');
         }
         const response = credential.response;
+        // Prep and return the data for the request
         return {
             credentialResponse: {
                 id: credential.id,
