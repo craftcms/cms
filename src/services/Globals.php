@@ -384,7 +384,7 @@ class Globals extends Component
                 throw new ElementNotFoundException('Unable to save the element required for global set.');
             }
 
-            // Save the volume
+            // Save the global set
             $globalSetRecord->id = $element->id;
             $globalSetRecord->save(false);
 
