@@ -1169,7 +1169,7 @@ return [
     'Save tags in the “{tagGroup}” tag group' => 'Schlagwörter in der Schlagwort-Gruppe „{tagGroup}“ speichern',
     'Save the loaded project config data to YAML files in your <code>{folder}</code> folder.' => 'Speichern Sie die geladenen Projektkonfigurationsdateien in YAML Dateien in Ihrem <code>{folder}</code> Ordner.',
     'Save' => 'Speichern',
-    'Saved {timestamp} by {creator}' => 'Gespeichert am {timestamp} von {creator}',
+    'Saved {timestamp} by {creator}' => 'Gespeichert {timestamp} von {creator}',
     'Saved {timestamp}' => 'Gespeichert: {timestamp}',
     'Saving' => 'Speichern',
     'Scale and crop' => 'Skalieren und zuschneiden',
