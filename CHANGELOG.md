@@ -13,6 +13,7 @@
 - Fixed a bug where the site menu on Edit Category pages wasn’t working properly. ([#9658](https://github.com/craftcms/cms/issues/9658))
 - Fixed a bug where the “Save and add another” action on Edit Category pages wasn’t retaining the currently-selected site or parent category selection.
 - Fixed a bug where the “Discard changes” button on Edit Entry pages wasn’t retaining the currently-selected site. ([#9663](https://github.com/craftcms/cms/issues/9663))
+- Fixed an error that occurred when attempting to change a global set’s handle, if its former handle was a reserved word.
 
 ## 3.7.7 - 2021-07-29
 
