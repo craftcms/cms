@@ -3,6 +3,7 @@
 ## Unreleased
 
 ### Added
+- It’s now possible to bypass console warnings about running Craft as the root/super user by defining a `CRAFT_ALLOW_SUPERUSER` environment variable. ([#7955](https://github.com/craftcms/cms/issues/7955))
 - Added `craft\web\twig\CpExtension`.
 - Added `craft\web\twig\GlobalsExtension`.
 

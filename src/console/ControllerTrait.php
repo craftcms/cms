@@ -10,6 +10,7 @@ namespace craft\console;
 use Composer\Util\Platform;
 use Composer\Util\Silencer;
 use craft\base\Model;
+use craft\helpers\App;
 use craft\helpers\Console;
 
 /**
@@ -45,14 +46,14 @@ trait ControllerTrait
      */
     protected function checkRootUser(): bool
     {
-        if (Platform::isWindows() || !function_exists('exec')) {
+        if (Platform::isWindows() || !function_exists('exec') || App::env('CRAFT_ALLOW_SUPERUSER')) {
             return true;
         }
 
         // Check if we're running as root. Borrowed heavily from
         // https://github.com/composer/composer/blob/master/src/Composer/Console/Application.php
         if (function_exists('posix_getuid') && posix_getuid() === 0) {
-            $this->stdout('Craft commands should not be run as the root user.' . PHP_EOL, Console::FG_RED);
+            $this->stdout('Craft commands should not be run as the root/super user.' . PHP_EOL, Console::FG_RED);
             $this->stdout('See https://craftcms.com/knowledge-base/craft-console-root for details on why that’s a bad idea.' . PHP_EOL, Console::FG_GREY);
 
             if ($this->interactive && !$this->confirm('Proceed anyway?')) {
