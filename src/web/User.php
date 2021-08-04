@@ -30,7 +30,7 @@ use yii\web\IdentityInterface;
  *
  * @property bool $hasElevatedSession Whether the user currently has an elevated session
  * @property UserElement|null $identity The logged-in user.
- * @method UserElement|null getIdentity($autoRenew = true) Returns the logged-in user.
+ * @method UserElement|null getIdentity(bool $autoRenew = true) Returns the logged-in user.
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */

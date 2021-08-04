@@ -780,7 +780,7 @@ abstract class Field extends SavableComponent implements FieldInterface
      * Returns an array that lists the scopes this custom field allows when eager-loading or false if eager-loading
      * should not be allowed in the GraphQL context.
      *
-     * @return array|false
+     * @return array|null
      * @since 3.3.0
      */
     public function getEagerLoadingGqlConditions(): ?array

@@ -54,9 +54,10 @@ class User extends Component
     /**
      * Returns the current identity object.
      *
-     * @return UserElement|IdentityInterface|false|null
+     * @param bool $autoRenew
+     * @return UserElement|null
      */
-    public function getIdentity()
+    public function getIdentity(bool $autoRenew = true)
     {
         return $this->_identity ?: null;
     }

@@ -8,6 +8,7 @@
 namespace craft\console\controllers;
 
 use Craft;
+use craft\base\Element;
 use craft\base\ElementInterface;
 use craft\console\Controller;
 use craft\elements\Asset;
@@ -251,13 +252,14 @@ class ResaveController extends Controller
     }
 
     /**
-     * @param string|ElementInterface $elementType The element type that should be resaved
+     * @param string $elementType The element type that should be resaved
      * @param array $criteria The element criteria that determines which elements should be resaved
      * @return int
      * @since 3.7.0
      */
     public function resaveElements(string $elementType, array $criteria = []): int
     {
+        /** @var string|ElementInterface $elementType */
         $criteria += $this->_baseCriteria();
 
         if ($this->queue) {

@@ -27,7 +27,7 @@ trait VolumeTrait
     public ?string $handle = null;
 
     /**
-     * @var bool|null Whether the volume has a public URL
+     * @var bool Whether the volume has a public URL
      */
     public bool $hasUrls = false;
 

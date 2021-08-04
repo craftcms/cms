@@ -74,8 +74,8 @@ use yii\validators\Validator;
  *
  * @property int|null $canonicalId The element’s canonical ID
  * @property-read string $canonicalUid The element’s canonical UID
- * @property-read $isCanonical Whether this is the canonical element
- * @property-read $isDerivative Whether this is a derivative element, such as a draft or revision
+ * @property-read bool $isCanonical Whether this is the canonical element
+ * @property-read bool $isDerivative Whether this is a derivative element, such as a draft or revision
  * @property ElementQueryInterface $ancestors The element’s ancestors
  * @property ElementQueryInterface $children The element’s children
  * @property string $contentTable The name of the table this element’s content is stored in
@@ -659,7 +659,7 @@ abstract class Element extends Component implements ElementInterface
     /**
      * Defines the available element actions for a given source.
      *
-     * @param string|null $source The selected source’s key, if any.
+     * @param string $source The selected source’s key, if any.
      * @return array The available element actions.
      * @see actions()
      */
@@ -3408,14 +3408,14 @@ abstract class Element extends Component implements ElementInterface
                 $this->_currentRevision = $elements[0] ?? false;
                 break;
             case 'draftCreator':
-                /** @var DraftBehavior|null $behavior */
                 if ($behavior = $this->getBehavior('draft')) {
+                    /** @var DraftBehavior $behavior */
                     $behavior->setCreator($elements[0] ?? null);
                 }
                 break;
             case 'revisionCreator':
-                /** @var RevisionBehavior|null $behavior */
                 if ($behavior = $this->getBehavior('revision')) {
+                    /** @var RevisionBehavior $behavior */
                     $behavior->setCreator($elements[0] ?? null);
                 }
                 break;

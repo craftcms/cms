@@ -66,8 +66,8 @@ trait LogTargetTrait
             $userID = '-';
         }
 
-        /** @var $session Session */
         $session = Craft::$app->has('session', true) ? Craft::$app->get('session') : null;
+        /** @var Session|null $session */
         $sessionID = $session && $session->getIsActive() ? $session->getId() : '-';
 
         return "[$ip][$userID][$sessionID]";

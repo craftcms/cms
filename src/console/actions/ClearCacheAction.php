@@ -8,6 +8,7 @@
 namespace craft\console\actions;
 
 use Craft;
+use craft\console\controllers\ClearCachesController;
 use craft\helpers\FileHelper;
 use yii\base\Action;
 use yii\base\InvalidArgumentException;
@@ -16,6 +17,7 @@ use yii\helpers\Console;
 
 /**
  * @inheritdoc
+ * @property ClearCachesController $controller
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.37
  */

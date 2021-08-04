@@ -84,6 +84,7 @@ use craft\services\Volumes;
 use craft\web\Application as WebApplication;
 use craft\web\AssetManager;
 use craft\web\Request as WebRequest;
+use craft\web\Response as WebResponse;
 use craft\web\View;
 use yii\base\Application;
 use yii\base\ErrorHandler;
@@ -564,7 +565,7 @@ trait ApplicationTrait
     public function getCanTestEditions(): bool
     {
         $request = $this->getRequest();
-        if ($request->getIsConsoleRequest()) {
+        if ($request instanceof ConsoleRequest) {
             return false;
         }
 
@@ -1163,7 +1164,7 @@ trait ApplicationTrait
     /**
      * Returns the queue service.
      *
-     * @return Queue|QueueInterface The queue service
+     * @return Queue The queue service
      */
     public function getQueue(): Queue
     {
@@ -1365,8 +1366,9 @@ trait ApplicationTrait
         $this->updateTargetLanguage();
 
         // Prevent browser caching if this is a control panel request
-        if ($request->getIsCpRequest()) {
-            $this->getResponse()->setNoCacheHeaders();
+        $response = $this->getResponse();
+        if ($response instanceof WebResponse) {
+            $response->setNoCacheHeaders();
         }
     }
 
