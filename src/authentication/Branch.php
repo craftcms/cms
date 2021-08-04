@@ -246,10 +246,11 @@ class Branch extends Component
 
     /**
      * For a given step return a list of alternative steps that can be performed.
-     * @param string $chosenStep
+     *
+     * @param string $excludedStep
      * @return array
      */
-    public function getAlternativeSteps(string $chosenStep = ''): array
+    public function getAlternativeSteps(string $excludedStep = ''): array
     {
         if ($this->getIsComplete()) {
             return [];
@@ -258,11 +259,11 @@ class Branch extends Component
         $availableTypes = $this->_getAvailableStepTypes();
         $alternativeSteps = [];
 
-        if (empty($chosenStep)) {
-            $chosenStep = reset($availableTypes)['type'];
+        if (empty($excludedStep)) {
+            $excludedStep = reset($availableTypes)['type'];
         }
         foreach ($availableTypes as $config) {
-            if ($config['type'] !== $chosenStep) {
+            if ($config['type'] !== $excludedStep) {
                 $step = $config['type'];
                 $alternativeSteps[$step] = $step::displayName();
             }
