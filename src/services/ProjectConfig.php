@@ -1347,7 +1347,7 @@ class ProjectConfig extends Component
     }
 
     /**
-     * Retrieve a a config file tree with modified times based on the main configuration file.
+     * Retrieve a config file tree with modified times based on the main configuration file.
      *
      * @return int
      */
