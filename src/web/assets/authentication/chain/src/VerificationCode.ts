@@ -33,9 +33,4 @@ abstract class VerificationCode extends AuthenticationStep
             "verification-code": this.$verificationCode.val()
         };
     }
-
-    protected getVerificationCodeInput(): JQuery
-    {
-        return this.$loginForm.find(this.inputSelector);
-    }
 }

@@ -70,7 +70,7 @@ class AuthenticationChainHandler
         this.$authenticationStep.empty().attr('rel', '');
         this.$authenticationGreeting.remove();
         this.$startAuthentication.removeClass('hidden');
-        this.$startAuthentication.removeClass('hidden');
+        this.loginForm.$rememberMeCheckbox.parents('.field').removeClass('hidden');
         this.loginForm.$submit.removeClass('hidden');
         this.clearErrors();
     }
@@ -190,7 +190,7 @@ class AuthenticationChainHandler
 
                 // Just in case this was the first step, remove all the misc things.
                 if (response.stepComplete) {
-                    this.loginForm.$rememberMeCheckbox.parent().remove();
+                    this.loginForm.$rememberMeCheckbox.parents('.field').addClass('hidden');
                 }
             }
         }

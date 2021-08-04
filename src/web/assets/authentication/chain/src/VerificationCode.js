@@ -22,7 +22,4 @@ class VerificationCode extends AuthenticationStep {
             "verification-code": this.$verificationCode.val()
         };
     }
-    getVerificationCodeInput() {
-        return this.$loginForm.find(this.inputSelector);
-    }
 }
