@@ -31,7 +31,7 @@ class m210613_145522_sortable_global_sets extends Migration
 
         $globalSets = $projectConfig->get(Globals::CONFIG_GLOBALSETS_KEY) ?? [];
         ArrayHelper::multisort($globalSets, 'name');
-        $sortOrder = 1;
+        $sortOrder = 0;
 
         foreach ($globalSets as $uid => $data) {
             $projectConfig->set(Globals::CONFIG_GLOBALSETS_KEY . ".$uid.sortOrder", ++$sortOrder);
