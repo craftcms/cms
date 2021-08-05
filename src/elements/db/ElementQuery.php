@@ -2772,7 +2772,14 @@ class ElementQuery extends Query implements ElementQueryInterface
                 ->limit(null)
                 ->ids();
 
-            $searchResults = Craft::$app->getSearch()->filterElementIdsByQuery($elementIds, $this->search, true, $this->siteId, true);
+            $searchResults = Craft::$app->getSearch()->filterElementIdsByQuery(
+                $elementIds,
+                $this->search,
+                true,
+                $this->siteId,
+                true,
+                $this->customFields
+            );
 
             // No results?
             if (empty($searchResults)) {
