@@ -633,6 +633,18 @@ class Request extends \yii\web\Request
     }
 
     /**
+     * Overrides whether this request should be treated as an action request.
+     *
+     * @param bool $isActionRequest
+     * @see checkIfActionRequest()
+     * @since 3.7.8
+     */
+    public function setIsActionRequest(bool $isActionRequest): void
+    {
+        $this->_isActionRequest = $isActionRequest;
+    }
+
+    /**
      * Returns whether this was a Login request.
      *
      * @return bool
@@ -664,7 +676,7 @@ class Request extends \yii\web\Request
     public function getActionSegments()
     {
         $this->checkIfActionRequest();
-        return $this->_actionSegments;
+        return $this->_isActionRequest ? $this->_actionSegments : null;
     }
 
     /**

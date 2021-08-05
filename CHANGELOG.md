@@ -4,6 +4,7 @@
 
 ### Added
 - It’s now possible to bypass console warnings about running Craft as the root/super user by defining a `CRAFT_ALLOW_SUPERUSER` environment variable. ([#7955](https://github.com/craftcms/cms/issues/7955))
+- Added `craft\web\Request::setIsActionRequest()`.
 - Added `craft\web\twig\CpExtension`.
 - Added `craft\web\twig\GlobalsExtension`.
 
@@ -16,6 +17,7 @@
 - Fixed a bug where the “Discard changes” button on Edit Entry pages wasn’t retaining the currently-selected site. ([#9663](https://github.com/craftcms/cms/issues/9663))
 - Fixed an error that occurred when attempting to change a global set’s handle, if its former handle was a reserved word.
 - Fixed a bug where it wasn’t possible to search for Matrix blocks by a specific sub-field’s handle using the `search` param. ([#9679](https://github.com/craftcms/cms/issues/9679))
+- Fixed an infinite loop that could occur when handing a front-end set-password request, if there was a validation error on the submitted password. ([#9684](https://github.com/craftcms/cms/issues/9684))
 
 ## 3.7.7 - 2021-07-29
 
