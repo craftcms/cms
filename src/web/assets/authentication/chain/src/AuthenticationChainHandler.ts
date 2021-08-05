@@ -72,6 +72,7 @@ class AuthenticationChainHandler
         this.$startAuthentication.removeClass('hidden');
         this.loginForm.$rememberMeCheckbox.parents('.field').removeClass('hidden');
         this.loginForm.$submit.removeClass('hidden');
+        this.hideAlternatives();
         this.clearErrors();
     }
 

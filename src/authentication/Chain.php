@@ -10,6 +10,7 @@ use craft\elements\User;
 use craft\errors\AuthenticationException;
 use craft\errors\AuthenticationStateException;
 use craft\helpers\Authentication as AuthHelper;
+use craft\helpers\StringHelper;
 use craft\models\authentication\State;
 use yii\base\InvalidConfigException;
 
@@ -43,6 +44,11 @@ class Chain extends Component
      * @var bool True, if branches were switched mid-auth
      */
     protected bool $didSwitchBranches = false;
+
+    /**
+     * @var string The key to use for storing the list of randomized step names.
+     */
+    const OBFUSCATED_STEP_KEY = 'craft.authentication.obfuscated-steps';
 
     /**
      * Authentication chain constructor.
@@ -132,17 +138,78 @@ class Chain extends Component
      */
     public function switchStep(string $stepType): TypeInterface
     {
+        $stepNames = Craft::$app->getSession()->get(self::OBFUSCATED_STEP_KEY);
+        $step = $stepNames[$stepType] ?? null;
+
+        if (!$step) {
+            return $this->_activeBranch->getNextAuthenticationStep();
+        }
+
+        [$branch, $stepType] = explode('|', $step);
+
+        $config = $this->branchConfigs[$branch] ?? null;
+
+        if (!$config) {
+            return $this->_activeBranch->getNextAuthenticationStep();
+        }
+
+        if ($branch === $this->_activeBranch->getName()) {
+            return $this->_activeBranch->switchStep($stepType);
+        }
+
+        $state = AuthHelper::createAuthState($this->scenario, $branch, $this->_activeBranch->getState()->getResolvedUser());
+        $this->_activeBranch = $this->createBranch($branch, $config, $state);
+
+        Craft::$app->getAuthentication()->storeAuthenticationState($state);
         return $this->_activeBranch->switchStep($stepType);
     }
 
     /**
      * For a given step return a list of alternative steps that can be performed.
-     * @param string $chosenStep
+     *
+     * @param string $excludedStep
      * @return array
      */
-    public function getAlternativeSteps(string $chosenStep = ''): array
+    public function getAlternativeSteps(string $excludedStep = ''): array
     {
-        return $this->_activeBranch->getAlternativeSteps($chosenStep);
+        $alternativeSteps = [];
+
+        $alternativeSteps[$this->_activeBranch->getName()] = $this->_activeBranch->getAlternativeSteps($excludedStep);
+
+        $otherBranches = array_diff($this->branchNames, [$this->_activeBranch->getName()]);
+
+        foreach ($otherBranches as $branchName) {
+            // Don't list any impossible branches for the current user, such as WebAuthn on unsecure HTTP
+            $potentialBranch = $this->createBranch($branchName, $this->branchConfigs[$branchName], $this->_activeBranch->getState());
+            if (!$potentialBranch->getIsValid()) {
+                continue;
+            }
+
+            $possibleSteps = $this->branchConfigs[$branchName]['steps'][0]['choices'] ?? [];
+
+            foreach ($possibleSteps as $possibleStep) {
+                $step = $possibleStep['type'];
+                $alternativeSteps[$branchName][$step] = $step::displayName();
+            }
+        }
+
+        $stepList = [];
+        $obfuscatedStepNames = [];
+
+        // Hide the branch names and step types behind a randomized string for paranoia reasons
+        foreach ($alternativeSteps as $branchName => $alternatives) {
+            if (!empty($alternatives)) {
+                foreach ($alternatives as $step => $stepName) {
+                    $randomizedName = StringHelper::randomString();
+                    $obfuscatedStepNames[$randomizedName] = $branchName . '|' . $step;
+                    $stepList[$randomizedName] = $stepName;
+                }
+            }
+        }
+
+        Craft::$app->getSession()->set(self::OBFUSCATED_STEP_KEY, $obfuscatedStepNames);
+
+        return $stepList;
     }
 
     /**

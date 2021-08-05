@@ -17,6 +17,7 @@ use craft\authentication\webauthn\CredentialRepository;
 use craft\elements\User;
 use craft\helpers\Authentication as AuthenticationHelper;
 use craft\helpers\Json;
+use craft\helpers\StringHelper;
 use craft\services\Authentication;
 use craft\web\Controller;
 use Webauthn\Server;
@@ -59,15 +60,10 @@ class AuthenticationController extends Controller
             return $this->asJson(['loginFormHtml' => Craft::$app->getView()->renderTemplate('_special/login/login_form')]);
         }
 
-        $userService = Craft::$app->getUsers();
-        $user = $userService->getUserByUsernameOrEmail($username);
+        $user = $this->_getUser($username);
 
         if (!$user) {
-            if (!Craft::$app->getConfig()->getGeneral()->preventUserEnumeration) {
-                return $this->asErrorJson(Craft::t('app', 'Invalid username or email.'));
-            }
-
-            $user = new User(['username' => $username, 'email' => $username]);
+            return $this->asErrorJson(Craft::t('app', 'Invalid username or email.'));
         }
 
         Craft::$app->getSession()->set(self::AUTH_USER_NAME, $username);
@@ -79,10 +75,17 @@ class AuthenticationController extends Controller
         $authentication->invalidateAllAuthenticationStates();
         $chain = $authentication->getCpAuthenticationChain($user);
 
+        $nextStep = $chain->getNextAuthenticationStep();
+        $nextStep->prepareForAuthentication($user);
+
+        $session = Craft::$app->getSession();
+
         return $this->asJson([
             'loginFormHtml' => Craft::$app->getView()->renderTemplate('_special/login/login_form', compact('user')),
             'footHtml' => Craft::$app->getView()->getBodyHtml(),
-            'stepType' => $chain->getNextAuthenticationStep()->getStepType()
+            'stepType' => $nextStep->getStepType(),
+            'message' => $session->getNotice(),
+            'error' => $session->getError(),
         ]);
     }
     /**
@@ -103,10 +106,7 @@ class AuthenticationController extends Controller
         $user = null;
 
         if ($username) {
-            $user = Craft::$app->getUsers()->getUserByUsernameOrEmail($username);
-            if (!$user && Craft::$app->getConfig()->getGeneral()->preventUserEnumeration) {
-                $user = new User(['username' => $username]);
-            }
+            $user = $this->_getUser($username);
         }
 
         if (!$user) {
@@ -352,5 +352,26 @@ class AuthenticationController extends Controller
         ];
 
         return $this->asJson($output);
+    }
+
+    /**
+     * Return a user by username, faking it, if required by config.
+     *
+     * @param string $username
+     * @return User|null
+     */
+    private function _getUser(string $username): ?User {
+        $user = Craft::$app->getUsers()->getUserByUsernameOrEmail($username);
+
+        if (!$user && Craft::$app->getConfig()->getGeneral()->preventUserEnumeration) {
+            $user = new User([
+                'username' => $username,
+                'email' => $username,
+                'uid' => StringHelper::UUID(),
+                'id' => 0
+            ]);
+        }
+
+        return $user;
     }
 }

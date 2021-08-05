@@ -49,9 +49,6 @@ class Password extends Type
     public function authenticate(array $credentials, User $user = null): State
     {
         if (!$user) {
-            if (Craft::$app->getConfig()->getGeneral()->preventUserEnumeration) {
-                return $this->failToAuthenticate(new User());
-            }
             return $this->state;
         }
 

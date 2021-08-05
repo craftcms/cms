@@ -109,7 +109,7 @@ abstract class Type extends Component implements TypeInterface
         /** @var State $state */
         /** @noinspection PhpUnnecessaryLocalVariableInspection */
         $state = Craft::createObject(State::class, [[
-            'resolvedUserId' => $user->id ?? null,
+            'resolvedUser' => $user,
             'lastCompletedStepType' => $this->getStepType(),
             'authenticationScenario' => $this->state->getAuthenticationScenario(),
             'authenticationBranch' => $this->state->getAuthenticationBranch()

@@ -52,9 +52,16 @@ class EmailCode extends MfaType
      */
     public function prepareForAuthentication(User $user = null): void
     {
-        // TODO ensure a user is identified beforehand, likely in a parent class.
-        $code = StringHelper::randomString(4).'-'.StringHelper::randomString(4).'-'.StringHelper::randomString(4);
         $session = Craft::$app->getSession();
+
+        // Pretend to send an email for fake users
+        if (empty($user->id)) {
+            sleep(2);
+            $session->setNotice(Craft::t('app', 'Verification email sent!'));
+            return;
+        }
+
+        $code = StringHelper::randomString(4).'-'.StringHelper::randomString(4).'-'.StringHelper::randomString(4);
         $session->set(static::CODE_KEY, $code);
 
         /** @var Message $message */

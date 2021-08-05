@@ -18,7 +18,7 @@ use craft\elements\User;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.0.0
  *
- * @property-read User|null $resolvedUser
+ * @property-read User $resolvedUser
  * @property-write null|string $lastCompletedStep
  * @property-read bool $isNew
  */
@@ -40,9 +40,9 @@ class State extends Model
     protected ?string $lastCompletedStepType = null;
 
     /**
-     * @var int|null The resolved user id
+     * @var User The resolved user
      */
-    protected ?int $resolvedUserId = null;
+    protected User $resolvedUser;
 
     /**
      * Get the authentication scenario.
@@ -75,23 +75,14 @@ class State extends Model
     }
 
     /**
-     * Return the resolved user id, if any.
+     * Return the resolved user.
      *
-     * @return int|null
+     * @return User
      */
-    public function getResolvedUserId(): ?int
+    public function getResolvedUser(): User
     {
-        return $this->resolvedUserId;
-    }
-
-    /**
-     * Return the resolved user, if any.
-     *
-     * @return User|null
-     */
-    public function getResolvedUser(): ?User
-    {
-        return $this->resolvedUserId ? Craft::$app->getUsers()->getUserById($this->resolvedUserId) : null;
+        // The only way `resolvedUserId` doesn't return a valid user id is if we're faking it to defeat user enumeration.
+        return $this->resolvedUser;
     }
 
     /**
@@ -105,7 +96,7 @@ class State extends Model
             'authenticationScenario' => $this->authenticationScenario,
             'authenticationBranch' => $this->authenticationBranch,
             'lastCompletedStepType' => $this->lastCompletedStepType,
-            'resolvedUserId' => $this->resolvedUserId,
+            'resolvedUser' => $this->resolvedUser->toArray(['username', 'email', 'id', 'uid']),
         ];
     }
 
@@ -122,7 +113,7 @@ class State extends Model
     /**
      * Set the authentication branch value.
      *
-     * @param string $scenario
+     * @param string $branch
      */
     protected function setAuthenticationBranch(string $branch): void
     {
@@ -130,13 +121,17 @@ class State extends Model
     }
 
     /**
-     * Set the resolved user id value.
+     * Set the resolved user value.
      *
-     * @param ?int $userId
+     * @param User $user
      */
-    protected function setResolvedUserId(int $userId = null): void
+    protected function setResolvedUser($user): void
     {
-        $this->resolvedUserId = $userId;
+       if (is_array($user)) {
+           $user = Craft::createObject(User::class, [$user]);
+       }
+
+        $this->resolvedUser = $user;
     }
 
     /**

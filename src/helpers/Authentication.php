@@ -60,7 +60,7 @@ class Authentication
         return Craft::createObject(State::class, [[
             'authenticationScenario' => $scenario,
             'authenticationBranch' => $branch,
-            'resolvedUserId' => $user->id
+            'resolvedUser' => $user
         ]]);
     }
 
