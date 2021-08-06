@@ -4,7 +4,6 @@ const colors = require('./colors/colors')
 const createSemanticTailwindColors = require('./utils/createSemanticTailwindColors')
 const createSemanticColors = require('./utils/createSemanticColors')
 const defaultConfig = require('./stubs/defaultConfig.stub')
-const rtlPlugin = require('tailwindcss-rtl')
 const formsPlugin = require('@tailwindcss/forms')
 
 module.exports = index.withOptions(
@@ -13,7 +12,6 @@ module.exports = index.withOptions(
             const { addBase, addUtilities, theme, variants, e } = options
 
             // Call other plugins
-            rtlPlugin.handler(options)
             formsPlugin(options)
 
             // Colors
