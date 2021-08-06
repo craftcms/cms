@@ -78,6 +78,8 @@ class AuthenticationController extends Controller
         $nextStep = $chain->getNextAuthenticationStep();
         $nextStep->prepareForAuthentication($user);
 
+        $chain->persistChainState();
+
         $session = Craft::$app->getSession();
 
         return $this->asJson([

@@ -233,6 +233,14 @@ class Chain extends Component
     }
 
     /**
+     * Persist the current chain state to the session
+     */
+    public function persistChainState()
+    {
+        Craft::$app->getAuthentication()->storeAuthenticationState($this->_activeBranch->getState());
+    }
+
+    /**
      * Determine the next possible branch name, based on the last invalid branch name.
      *
      * @param string $invalidBranchName
