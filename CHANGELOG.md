@@ -16,6 +16,7 @@
 - Fixed a bug where the “Discard changes” button on Edit Entry pages wasn’t retaining the currently-selected site. ([#9663](https://github.com/craftcms/cms/issues/9663))
 - Fixed an error that occurred when attempting to change a global set’s handle, if its former handle was a reserved word.
 - Fixed a bug where it wasn’t possible to search for Matrix blocks by a specific sub-field’s handle using the `search` param. ([#9679](https://github.com/craftcms/cms/issues/9679))
+- Fix a JavaScript error that would occur when Craft tried to refresh Element Index sources. ([#9686](https://github.com/craftcms/cms/issues/9686))
 
 ## 3.7.7 - 2021-07-29
 
