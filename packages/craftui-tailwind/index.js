@@ -4,15 +4,11 @@ const colors = require('./colors/colors')
 const createSemanticTailwindColors = require('./utils/createSemanticTailwindColors')
 const createSemanticColors = require('./utils/createSemanticColors')
 const defaultConfig = require('./stubs/defaultConfig.stub')
-const formsPlugin = require('@tailwindcss/forms')
 
 module.exports = index.withOptions(
     function(pluginOptions) {
         return function(options) {
             const { addBase, addUtilities, theme, variants, e } = options
-
-            // Call other plugins
-            formsPlugin(options)
 
             // Colors
             const semanticColors = createSemanticColors(colors, pluginOptions)
