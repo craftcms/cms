@@ -38,8 +38,7 @@ module.exports = function(colors) {
             'warning': { light: colors.yellow[400], dark: colors.yellow[400] },
             'field-disabled': { light: colors['gray'][300], dark: colors['gray'][600], highContrast: colors['gray'][500] },
         },
-
-        global: {
+        colors: {
             // Base
             'info': { light: colors.blue[500], dark: colors.blue[500] },
             'success': { light: colors.green[500], dark: colors.green[500] },
