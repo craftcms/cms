@@ -1,14 +1,3 @@
-{% set username = craft.app.config.general.rememberUsernameDuration ? craft.app.user.getRememberedUsername(): '' %}
-{% set user = user|default(username ? craft.users.username(username).one() : null) %}
-
-{% if username and (user is null) %}
-    {% set user = craft.app.elements.createElement({type: "craft\\elements\\User", "username": username}) %}
-{% endif %}
-
-{% set authenticationChain = user is not null? craft.app.authentication.getCpAuthenticationChain(user) : null %}
-{% set alternativeSteps = authenticationChain.alternativeSteps|default(null) %}
-{% set showRememberMe = craft.app.config.general.rememberedUserSessionDuration %}
-
 {% embed '_special/login/authentication_chain' %}
     {% import "_includes/forms" as forms %}
 

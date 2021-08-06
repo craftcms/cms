@@ -153,7 +153,28 @@ class UsersController extends Controller
             return $this->_handleSuccessfulLogin();
         }
 
+        $generalConfig = Craft::$app->getConfig()->getGeneral();
+        
         if (!$this->request->getIsPost()) {
+            $username = $generalConfig->rememberedUserSessionDuration ? Craft::$app->getUser()->getRememberedUsername() : null;
+            $user = $username ? User::findOne(['username' => $username]) : null;
+
+            if ($username && !$user && $generalConfig->preventUserEnumeration) {
+                $user = AuthenticationHelper::getFakeUser($username);
+            }
+
+            $authChain = $user ? Craft::$app->getAuthentication()->getCpAuthenticationChain($user) : null;
+            $alternativeSteps = $authChain ? $authChain->getAlternativeSteps() : null;
+            $showRememberMe = (bool)$generalConfig->rememberedUserSessionDuration;
+
+            Craft::$app->getUrlManager()->setRouteParams([
+                'username' => $username,
+                'user' => $user,
+                'authenticationChain' => $authChain,
+                'alternativeSteps' => $alternativeSteps,
+                'showRememberMe' => $showRememberMe
+            ]);
+
             return null;
         }
 
@@ -176,7 +197,6 @@ class UsersController extends Controller
         }
 
         // Get the session duration
-        $generalConfig = Craft::$app->getConfig()->getGeneral();
         if ($rememberMe && $generalConfig->rememberedUserSessionDuration !== 0) {
             $duration = $generalConfig->rememberedUserSessionDuration;
         } else {
@@ -846,7 +866,6 @@ class UsersController extends Controller
                     $mfaStepTypes[] = new $authenticator();
                 }
             }
-
         }
 
         // Give plugins a chance to modify these, or add new ones
