@@ -78,4 +78,21 @@ class Authentication
 
         return $authenticator;
     }
+
+    /**
+     * Return a fake user for a given username to foil enumeration attempts.
+     *
+     * @param string $username
+     * @return User
+     * @throws \Exception
+     */
+    public static function getFakeUser(string $username): User
+    {
+        return new User([
+            'username' => $username,
+            'email' => $username,
+            'uid' => StringHelper::UUID(),
+            'id' => 0
+        ]);
+    }
 }

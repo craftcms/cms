@@ -366,12 +366,7 @@ class AuthenticationController extends Controller
         $user = Craft::$app->getUsers()->getUserByUsernameOrEmail($username);
 
         if (!$user && Craft::$app->getConfig()->getGeneral()->preventUserEnumeration) {
-            $user = new User([
-                'username' => $username,
-                'email' => $username,
-                'uid' => StringHelper::UUID(),
-                'id' => 0
-            ]);
+            $user = AuthenticationHelper::getFakeUser($username);
         }
 
         return $user;
