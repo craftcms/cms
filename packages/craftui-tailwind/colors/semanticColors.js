@@ -5,8 +5,6 @@ module.exports = function(colors) {
             'default': { light: colors['gray'][200], dark: colors['gray'][600] },
             'field': { light: colors.white, dark: colors['gray'][700] },
             'info': { light: colors.blue[200], dark: colors.blue[800] },
-            'primary': { light: colors.white, dark: colors['gray'][900] },
-            'secondary': { light: colors['gray'][100], dark: colors['gray'][800] },
             'tertiary': { light: colors['gray'][50], dark: colors['gray'][800] },
             'success': { light: colors.green[200], dark: colors.green[800] },
             'warning': { light: colors.yellow[200], dark: colors.yellow[800] },
