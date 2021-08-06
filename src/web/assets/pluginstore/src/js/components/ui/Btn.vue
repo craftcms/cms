@@ -196,7 +196,7 @@ export default {
 a.c-btn,
 button.c-btn {
     &:focus {
-        @apply tw-outline-none tw-shadow-outline;
+        @apply tw-outline-none tw-ring;
     }
 
     &.block {
