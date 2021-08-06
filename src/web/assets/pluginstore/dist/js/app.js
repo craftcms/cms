@@ -113,7 +113,7 @@
 /******/
 /******/ 	var hotApplyOnUpdate = true;
 /******/ 	// eslint-disable-next-line no-unused-vars
-/******/ 	var hotCurrentHash = "26cf12231de6d8581b6e";
+/******/ 	var hotCurrentHash = "e23f1d824159f3fd7874";
 /******/ 	var hotRequestTimeout = 10000;
 /******/ 	var hotCurrentModuleData = {};
 /******/ 	var hotCurrentChildModule;
@@ -2941,12 +2941,12 @@ var _id_component = Object(componentNormalizer["a" /* default */])(
 )
 
 /* harmony default export */ var _id = (_id_component.exports);
-// CONCATENATED MODULE: /Users/ben/Sites/craft4/repos/cms/node_modules/vue-loader/lib/loaders/templateLoader.js??vue-loader-options!/Users/ben/Sites/craft4/repos/cms/node_modules/vue-loader/lib??vue-loader-options!./js/pages/upgrade-craft.vue?vue&type=template&id=8c2732aa&
-var upgrade_craftvue_type_template_id_8c2732aa_render = function () {var _vm=this;var _h=_vm.$createElement;var _c=_vm._self._c||_h;return _c('div',{staticClass:"ps-container"},[_c('h1',[_vm._v(_vm._s(_vm._f("t")("Upgrade Craft CMS",'app')))]),_vm._v(" "),_c('hr'),_vm._v(" "),(!_vm.loading)?[(_vm.errorMsg)?[(_vm.errorMsg)?_c('div',{staticClass:"error"},[_vm._v("\n                "+_vm._s(_vm.errorMsg)+"\n            ")]):_vm._e()]:[_c('cms-editions')]]:[_c('spinner')]],2)}
-var upgrade_craftvue_type_template_id_8c2732aa_staticRenderFns = []
+// CONCATENATED MODULE: /Users/ben/Sites/craft4/repos/cms/node_modules/vue-loader/lib/loaders/templateLoader.js??vue-loader-options!/Users/ben/Sites/craft4/repos/cms/node_modules/vue-loader/lib??vue-loader-options!./js/pages/upgrade-craft.vue?vue&type=template&id=44309402&
+var upgrade_craftvue_type_template_id_44309402_render = function () {var _vm=this;var _h=_vm.$createElement;var _c=_vm._self._c||_h;return _c('div',{staticClass:"ps-container"},[_c('div',{staticClass:"tw-border tw-border-solid"},[_vm._v("\n        hello world\n    ")]),_vm._v(" "),_c('h1',[_vm._v(_vm._s(_vm._f("t")("Upgrade Craft CMS",'app')))]),_vm._v(" "),_c('hr'),_vm._v(" "),(!_vm.loading)?[(_vm.errorMsg)?[(_vm.errorMsg)?_c('div',{staticClass:"error"},[_vm._v("\n                "+_vm._s(_vm.errorMsg)+"\n            ")]):_vm._e()]:[_c('cms-editions')]]:[_c('spinner')]],2)}
+var upgrade_craftvue_type_template_id_44309402_staticRenderFns = []
 
 
-// CONCATENATED MODULE: ./js/pages/upgrade-craft.vue?vue&type=template&id=8c2732aa&
+// CONCATENATED MODULE: ./js/pages/upgrade-craft.vue?vue&type=template&id=44309402&
 
 // CONCATENATED MODULE: /Users/ben/Sites/craft4/repos/cms/node_modules/vue-loader/lib/loaders/templateLoader.js??vue-loader-options!/Users/ben/Sites/craft4/repos/cms/node_modules/vue-loader/lib??vue-loader-options!./js/components/upgradecraft/CmsEditions.vue?vue&type=template&id=3ebb086d&
 var CmsEditionsvue_type_template_id_3ebb086d_render = function () {var _vm=this;var _h=_vm.$createElement;var _c=_vm._self._c||_h;return _c('div',{staticClass:"cms-editions"},_vm._l((_vm.cmsEditions),function(edition,key){return _c('cms-edition',{key:key,attrs:{"edition":edition}})}),1)}
@@ -3441,6 +3441,9 @@ var CmsEditions_component = Object(componentNormalizer["a" /* default */])(
 //
 //
 //
+//
+//
+//
 
 /* harmony default export */ var upgrade_craftvue_type_script_lang_js_ = ({
   components: {
@@ -3475,8 +3478,8 @@ var CmsEditions_component = Object(componentNormalizer["a" /* default */])(
 
 var upgrade_craft_component = Object(componentNormalizer["a" /* default */])(
   pages_upgrade_craftvue_type_script_lang_js_,
-  upgrade_craftvue_type_template_id_8c2732aa_render,
-  upgrade_craftvue_type_template_id_8c2732aa_staticRenderFns,
+  upgrade_craftvue_type_template_id_44309402_render,
+  upgrade_craftvue_type_template_id_44309402_staticRenderFns,
   false,
   null,
   null,
@@ -8371,8 +8374,8 @@ var swiper = __webpack_require__(216);
 
 
 external_Vue_default.a.use(vue_awesome_swiper_default.a);
-// CONCATENATED MODULE: /Users/ben/Sites/craft4/repos/cms/node_modules/vue-loader/lib/loaders/templateLoader.js??vue-loader-options!/Users/ben/Sites/craft4/repos/cms/node_modules/vue-loader/lib??vue-loader-options!./js/components/ui/Btn.vue?vue&type=template&id=efb69840&
-var Btnvue_type_template_id_efb69840_render = function () {
+// CONCATENATED MODULE: /Users/ben/Sites/craft4/repos/cms/node_modules/vue-loader/lib/loaders/templateLoader.js??vue-loader-options!/Users/ben/Sites/craft4/repos/cms/node_modules/vue-loader/lib??vue-loader-options!./js/components/ui/Btn.vue?vue&type=template&id=aa8dfb36&
+var Btnvue_type_template_id_aa8dfb36_render = function () {
 var _obj;
 var _vm=this;var _h=_vm.$createElement;var _c=_vm._self._c||_h;return _c(_vm.component,_vm._b({tag:"component",staticClass:"c-btn truncate",class:[( _obj = {
             small: _vm.small,
@@ -8381,10 +8384,10 @@ var _vm=this;var _h=_vm.$createElement;var _c=_vm._self._c||_h;return _c(_vm.com
             outline: _vm.outline,
             loading: _vm.loading
         }, _obj[_vm.kind] = true, _obj['c-btn-icon'] =  _vm.icon && !_vm.$slots.default, _obj['group'] =  true, _obj['tw-inline-block tw-px-4 tw-py-2 tw-rounded-md'] =  true, _obj['tw-text-sm tw-leading-5 tw-no-underline'] =  true, _obj['tw-border tw-border-solid'] =  true, _obj['disabled:tw-opacity-50 disabled:tw-cursor-default'] =  true, _obj['tw-text-interactive-inverse'] =  (_vm.kind === 'primary' || _vm.kind === 'danger') && !_vm.outline, _obj['hover:tw-text-interactive-inverse'] =  (_vm.kind === 'primary' || _vm.kind === 'danger') && !_vm.outline, _obj['active:tw-text-interactive-inverse'] =  (_vm.kind === 'primary' || _vm.kind === 'danger') && !_vm.outline, _obj['tw-text-interactive'] =  _vm.kind === 'default', _obj['tw-border-interactive-primary'] =  _vm.kind === 'primary', _obj['tw-bg-interactive-primary'] =  _vm.kind === 'primary' && !_vm.outline, _obj['hover:tw-bg-interactive-primary-hover hover:tw-border-interactive-primary-hover'] =  _vm.kind === 'primary' && !_vm.outline, _obj['active:tw-bg-interactive-primary-active active:tw-border-interactive-primary-active'] =  _vm.kind === 'primary' && !_vm.outline, _obj['disabled:tw-bg-interactive-primary disabled:tw-border-interactive-primary'] =  _vm.kind === 'primary' && !_vm.outline, _obj['tw-text-interactive-primary'] =  _vm.kind === 'primary' && _vm.outline, _obj['hover:tw-bg-interactive-primary'] =  _vm.kind === 'primary' && _vm.outline, _obj['active:tw-bg-interactive-primary-active'] =  _vm.kind === 'primary' && _vm.outline, _obj['tw-border-interactive-secondary tw-text-interactive'] =  _vm.kind === 'secondary', _obj['hover:tw-cursor-pointer hover:tw-bg-interactive-secondary-hover hover:tw-border-interactive-secondary-hover hover:tw-no-underline'] =  _vm.kind === 'secondary', _obj['active:tw-cursor-pointer active:tw-bg-interactive-secondary-active active:tw-border-interactive-secondary-active'] =  _vm.kind === 'secondary', _obj['tw-bg-interactive-secondary'] =  _vm.kind === 'secondary' && !_vm.outline, _obj['tw-text-interactive'] =  _vm.kind === 'secondary' && !_vm.outline, _obj['tw-border-interactive-danger'] =  _vm.kind === 'danger', _obj['tw-bg-interactive-danger'] =  _vm.kind === 'danger' && !_vm.outline, _obj['hover:tw-bg-interactive-danger-hover hover:tw-border-interactive-danger-hover'] =  _vm.kind === 'danger' && !_vm.outline, _obj['active:tw-bg-interactive-danger-active active:tw-border-interactive-danger-active'] =  _vm.kind === 'danger' && !_vm.outline, _obj['disabled:tw-bg-interactive-danger disabled:tw-border-interactive-danger'] =  _vm.kind === 'danger' && !_vm.outline, _obj['tw-text-interactive-danger'] =  _vm.kind === 'danger' && _vm.outline, _obj['hover:tw-bg-interactive-danger'] =  _vm.kind === 'danger' && _vm.outline, _obj['active:tw-bg-interactive-danger-active'] =  _vm.kind === 'danger' && _vm.outline, _obj )],attrs:{"to":_vm.to,"href":_vm.href,"target":_vm.target,"type":_vm.computedType},on:{"click":function($event){return _vm.$emit('click')}}},'component',_vm.additionalAttributes,false),[(_vm.loading)?[_c('spinner',{attrs:{"animationClass":("border-" + _vm.animationColor + " group-hover:border-" + _vm.animationColorHover)}})]:_vm._e(),_vm._v(" "),_c('div',{staticClass:"c-btn-content"},[(_vm.icon && _vm.icon.length > 0)?_c('icon',{attrs:{"icon":_vm.icon,"size":"sm"}}):_vm._e(),_vm._v(" "),_vm._t("default"),_vm._v(" "),(_vm.trailingIcon && _vm.trailingIcon.length > 0)?_c('icon',{staticClass:"ml-1",attrs:{"icon":_vm.trailingIcon,"size":"sm"}}):_vm._e()],2)],2)}
-var Btnvue_type_template_id_efb69840_staticRenderFns = []
+var Btnvue_type_template_id_aa8dfb36_staticRenderFns = []
 
 
-// CONCATENATED MODULE: ./js/components/ui/Btn.vue?vue&type=template&id=efb69840&
+// CONCATENATED MODULE: ./js/components/ui/Btn.vue?vue&type=template&id=aa8dfb36&
 
 // CONCATENATED MODULE: /Users/ben/Sites/craft4/repos/cms/node_modules/babel-loader/lib??ref--1!/Users/ben/Sites/craft4/repos/cms/node_modules/vue-loader/lib??vue-loader-options!./js/components/ui/Btn.vue?vue&type=script&lang=js&
 //
@@ -8591,8 +8594,8 @@ var Btnvue_type_style_index_0_lang_scss_ = __webpack_require__(218);
 
 var Btn_component = Object(componentNormalizer["a" /* default */])(
   ui_Btnvue_type_script_lang_js_,
-  Btnvue_type_template_id_efb69840_render,
-  Btnvue_type_template_id_efb69840_staticRenderFns,
+  Btnvue_type_template_id_aa8dfb36_render,
+  Btnvue_type_template_id_aa8dfb36_staticRenderFns,
   false,
   null,
   null,

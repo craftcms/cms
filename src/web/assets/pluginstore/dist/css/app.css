@@ -25,8 +25,8 @@
   border-color:rgba(113, 113, 122, var(--tw-border-opacity));
   padding-left:0.5rem;
   padding-right:0.5rem;
-  padding-top:0;
-  padding-bottom:0;
+  padding-top:0px;
+  padding-bottom:0px;
   font-size:0.75rem;
   line-height:1rem;
   text-transform:uppercase;
@@ -199,7 +199,7 @@ body.rtl .plugin-card .installed[data-v-4baf6246]{
     width: 33.333333%
 }
 .cms-editions .cms-editions-edition:not(:last-child){
-    margin-bottom: 0
+    margin-bottom: 0px
 }
 }
 .developer-card .avatar[data-v-5488eebc]{
@@ -292,8 +292,8 @@ body.rtl .changelog-release .version .anchor{
   border-color:rgba(239, 68, 68, var(--tw-border-opacity));
   padding-left:0.25rem;
   padding-right:0.25rem;
-  padding-top:0;
-  padding-bottom:0;
+  padding-top:0px;
+  padding-bottom:0px;
   font-size:0.875rem;
   line-height:1.25rem;
   text-transform:uppercase;
@@ -343,7 +343,7 @@ body.rtl .changelog-release .version .anchor{
 }
 .plugin-changelog.collapsed .more{
   position:absolute;
-  bottom:0;
+  bottom:0px;
   display:block;
   width:100%;
   padding-bottom:1rem;
@@ -448,7 +448,7 @@ body.rtl .changelog-release .version .anchor{
     width: 33.333333%
 }
 .plugin-editions .plugin-editions-edition:not(:last-child){
-    margin-bottom: 0
+    margin-bottom: 0px
 }
 }
 .screenshots{
@@ -595,18 +595,18 @@ table.cart-data tr td.expiry-date{
 }
 #pluginstore-modal{
   position:absolute;
-  top:0;
-  left:0;
+  top:0px;
+  left:0px;
   max-width:850px;
   max-height:650px;
   z-index:20000
 }
 #pluginstore-modal .pluginstore-modal-flex{
   position:absolute;
-  top:0;
-  right:0;
-  bottom:0;
-  left:0;
+  top:0px;
+  right:0px;
+  bottom:0px;
+  left:0px;
   display:-webkit-flex;
   display:flex;
   -webkit-flex-direction:column;
@@ -627,7 +627,7 @@ body.rtl #pluginstore-modal .pluginstore-modal-flex header .btn-left{
 }
 #pluginstore-modal .pluginstore-modal-flex .pluginstore-modal-main{
   position:relative;
-  margin-bottom:0;
+  margin-bottom:0px;
   display:-webkit-flex;
   display:flex;
   min-height:0px;
@@ -674,7 +674,7 @@ body.rtl #pluginstore-modal .pluginstore-modal-flex header .btn-left{
           user-select:none;
   opacity:.8;
   position:absolute;
-  right:0;
+  right:0px;
   top:calc(50% - 10px);
   font-size:16px;
   width:43px;
@@ -686,8 +686,8 @@ body.rtl #pluginstore-modal .pluginstore-modal-flex header .btn-left{
 }
 .category-selector[data-v-756ced68]{
   position:fixed;
-  top:0;
-  left:0;
+  top:0px;
+  left:0px;
   z-index:20;
   display:none;
   -webkit-flex-direction:column;
@@ -749,10 +749,10 @@ ul.categories[data-v-5e5fb078]{
 }
 #screenshot-modal{
   position:fixed;
-  top:0;
-  right:0;
-  bottom:0;
-  left:0;
+  top:0px;
+  right:0px;
+  bottom:0px;
+  left:0px;
   overflow:hidden;
   --tw-bg-opacity:1;
   background-color:rgba(250, 250, 250, var(--tw-bg-opacity));
@@ -760,8 +760,8 @@ ul.categories[data-v-5e5fb078]{
 }
 #screenshot-modal .close{
   position:absolute;
-  top:0;
-  left:0;
+  top:0px;
+  left:0px;
   z-index:30;
   display:inline-block;
   text-align:center;
@@ -776,10 +776,10 @@ ul.categories[data-v-5e5fb078]{
 }
 #screenshot-modal .carousel{
   position:absolute;
-  top:0;
-  right:0;
-  bottom:0;
-  left:0;
+  top:0px;
+  right:0px;
+  bottom:0px;
+  left:0px;
   display:-webkit-flex;
   display:flex
 }
@@ -847,12 +847,12 @@ ul.categories[data-v-5e5fb078]{
   background-image:none
 }
 #screenshot-modal .carousel .swiper-button-prev .c-icon, #screenshot-modal .carousel .swiper-button-next .c-icon{
-  top:0;
+  top:0px;
   -webkit-flex:1 1 0%;
           flex:1 1 0%
 }
 #screenshot-modal .carousel .swiper-button-prev{
-  left:0;
+  left:0px;
   margin-left:1rem;
   border-radius:0.25rem;
   padding-left:0.5rem;
@@ -864,7 +864,7 @@ ul.categories[data-v-5e5fb078]{
   left:-2px
 }
 #screenshot-modal .carousel .swiper-button-next{
-  right:0;
+  right:0px;
   margin-right:1rem;
   border-radius:0.25rem;
   padding-left:0.5rem;
@@ -874,13 +874,13 @@ ul.categories[data-v-5e5fb078]{
 }
 #screenshot-modal .carousel .pagination-wrapper{
   position:absolute;
-  bottom:0;
+  bottom:0px;
   z-index:10;
   display:-webkit-flex;
   display:flex;
   width:100%;
-  padding-top:0;
-  padding-bottom:0;
+  padding-top:0px;
+  padding-bottom:0px;
   bottom:40px
 }
 #screenshot-modal .carousel .pagination-wrapper .pagination-content{
@@ -903,7 +903,7 @@ ul.categories[data-v-5e5fb078]{
   border-radius:9999px;
   --tw-bg-opacity:1;
   background-color:rgba(228, 228, 231, var(--tw-bg-opacity));
-  padding:0
+  padding:0px
 }
 #screenshot-modal .carousel .pagination-wrapper .pagination-content .swiper-pagination .swiper-pagination-bullet{
   -webkit-flex:1 1 0%;
@@ -1047,7 +1047,7 @@ hr{
   border-color:rgba(244, 244, 245, var(--tw-border-opacity))
 }
 h1{
-  margin-bottom:0;
+  margin-bottom:0px;
   font-size:18px
 }
 h2{
@@ -1217,17 +1217,17 @@ ul.categories li{
 }
 ul.categories li:before, ul.categories li:last-child:after{
   position:absolute;
-  right:0;
-  left:0
+  right:0px;
+  left:0px
 }
 ul.categories li:before,ul.categories li:last-child:after{
   content:""
 }
 ul.categories li:before{
-  top:0
+  top:0px
 }
 ul.categories li:last-child:after{
-  bottom:0
+  bottom:0px
 }
 ul.categories li a{
   position:relative;
@@ -1388,10 +1388,11 @@ ul.categories li a.router-link-active{
   opacity:0
 }
 .c-btn:focus, a.c-btn:focus, button.c-btn:focus{
-  --tw-shadow:0 0 0 3px var(--craftui-global-shadow-outline);
-  box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow);
   outline:2px solid transparent;
-  outline-offset:2px
+  outline-offset:2px;
+  --tw-ring-offset-shadow:var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color);
+  --tw-ring-shadow:var(--tw-ring-inset) 0 0 0 calc(3px + var(--tw-ring-offset-width)) var(--tw-ring-color);
+  box-shadow:var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow, 0 0 #0000)
 }
 .c-btn.block, a.c-btn.block, button.c-btn.block{
   margin-top:0.5rem;
@@ -1420,10 +1421,10 @@ ul.categories li a.router-link-active{
 }
 .c-btn.loading .c-spinner, a.c-btn.loading .c-spinner, button.c-btn.loading .c-spinner{
   position:absolute;
-  top:0;
-  right:0;
-  bottom:0;
-  left:0;
+  top:0px;
+  right:0px;
+  bottom:0px;
+  left:0px;
   display:-webkit-flex;
   display:flex;
   -webkit-align-items:center;
