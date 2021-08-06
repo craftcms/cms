@@ -373,8 +373,10 @@ Craft.BaseElementIndex = Garnish.Base.extend({
         this.setIndexBusy();
 
         Craft.sendActionRequest('POST', this.settings.refreshSourcesAction, {
-            context: this.settings.context,
-            elementType: this.elementType,
+            data: {
+                context: this.settings.context,
+                elementType: this.elementType,
+            }
         }).then((response) => {
             this.setIndexAvailable();
             this.getSourceContainer().replaceWith(response.data.html);
