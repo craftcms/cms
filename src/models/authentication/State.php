@@ -96,7 +96,7 @@ class State extends Model
             'authenticationScenario' => $this->authenticationScenario,
             'authenticationBranch' => $this->authenticationBranch,
             'lastCompletedStepType' => $this->lastCompletedStepType,
-            'resolvedUser' => $this->resolvedUser->toArray(['username', 'email', 'id', 'uid']),
+            'resolvedUser' => serialize($this->resolvedUser),
         ];
     }
 
@@ -127,8 +127,8 @@ class State extends Model
      */
     protected function setResolvedUser($user): void
     {
-       if (is_array($user)) {
-           $user = Craft::createObject(User::class, [$user]);
+       if (is_string($user)) {
+           $user = unserialize($user, [User::class]);
        }
 
         $this->resolvedUser = $user;
