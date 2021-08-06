@@ -1,5 +1,6 @@
 *, ::before, ::after {
-  border-color: var(--craftui-bordercolor-separator);
+  --tw-border-opacity: 1;
+  border-color: rgba(255, 0, 0, var(--tw-border-opacity));
 }
 
 [type='text'],[type='email'],[type='url'],[type='password'],[type='number'],[type='date'],[type='search'],[type='time'],[multiple],textarea,select {
@@ -159,150 +160,65 @@ select {
 }
 
 body {
-  --craftui-backgroundcolor-danger: #fecaca;
-  --craftui-backgroundcolor-default: #e4e4e7;
-  --craftui-backgroundcolor-field: #fff;
-  --craftui-backgroundcolor-info: #bfdbfe;
-  --craftui-backgroundcolor-primary: #fff;
-  --craftui-backgroundcolor-secondary: #f4f4f5;
-  --craftui-backgroundcolor-tertiary: #fafafa;
-  --craftui-backgroundcolor-success: #bbf7d0;
-  --craftui-backgroundcolor-warning: #fef08a;
-  --craftui-backgroundcolor-field-disabled: #f4f4f5;
-  --craftui-textcolor-danger: #991b1b;
-  --craftui-textcolor-dark: #27272a;
-  --craftui-textcolor-default: #27272a;
-  --craftui-textcolor-info: #1e40af;
+  --craftui-backgroundcolor-interactive-danger: #dc2626;
+  --craftui-backgroundcolor-interactive-danger-active: #991b1b;
+  --craftui-backgroundcolor-interactive-danger-hover: #b91c1c;
+  --craftui-backgroundcolor-interactive-primary: #3b82f6;
+  --craftui-backgroundcolor-interactive-primary-active: #1e40af;
+  --craftui-backgroundcolor-interactive-primary-hover: #1d4ed8;
+  --craftui-backgroundcolor-interactive-secondary: #e4e4e7;
+  --craftui-backgroundcolor-interactive-secondary-active: #a1a1aa;
+  --craftui-backgroundcolor-interactive-secondary-hover: #d4d4d8;
   --craftui-textcolor-interactive: #000;
   --craftui-textcolor-interactive-inverse: #fff;
-  --craftui-textcolor-ultralight: #d4d4d8;
-  --craftui-textcolor-light: #71717a;
-  --craftui-textcolor-success: #166534;
-  --craftui-textcolor-text: #000;
-  --craftui-textcolor-text-inverse: #fff;
-  --craftui-textcolor-warning: #854d0e;
-  --craftui-textcolor-spinner: #a1a1aa;
   --craftui-bordercolor-danger: #f87171;
   --craftui-bordercolor-field: #d4d4d8;
-  --craftui-bordercolor-info: #60a5fa;
-  --craftui-bordercolor-separator: #e4e4e7;
-  --craftui-bordercolor-ui-opaque: #d4d4d8;
-  --craftui-bordercolor-ui: #e4e4e7;
-  --craftui-bordercolor-success: #4ade80;
-  --craftui-bordercolor-warning: #facc15;
-  --craftui-bordercolor-field-disabled: #d4d4d8;
-  --craftui-global-info: #3b82f6;
-  --craftui-global-success: #22c55e;
-  --craftui-global-warning: #eab308;
-  --craftui-global-danger: #ef4444;
-  --craftui-global-interactive-danger: #dc2626;
-  --craftui-global-interactive-link: #2563eb;
-  --craftui-global-interactive-primary: #3b82f6;
-  --craftui-global-interactive-secondary: #e4e4e7;
-  --craftui-global-interactive-success: #22c55e;
-  --craftui-global-interactive-tertiary: #52525b;
-  --craftui-global-interactive-danger-active: #991b1b;
-  --craftui-global-interactive-primary-active: #1e40af;
-  --craftui-global-interactive-secondary-active: #a1a1aa;
-  --craftui-global-interactive-success-active: #166534;
-  --craftui-global-interactive-tertiary-active: #18181b;
-  --craftui-global-interactive-danger-hover: #b91c1c;
-  --craftui-global-interactive-link-hover: #1e40af;
-  --craftui-global-interactive-primary-hover: #1d4ed8;
-  --craftui-global-interactive-secondary-hover: #d4d4d8;
-  --craftui-global-interactive-success-hover: #16a34a;
-  --craftui-global-interactive-tertiary-hover: #3f3f46;
-  --craftui-global-primary-gradient-1: rgba(255, 255, 255, 0);
-  --craftui-global-primary-gradient-2: rgba(255, 255, 255, 1);
-  --craftui-global-shadow-1: rgba(0, 0, 0, 0.1);
-  --craftui-global-shadow-04: rgba(0, 0, 0, 0.04);
-  --craftui-global-shadow-05: rgba(0, 0, 0, 0.05);
-  --craftui-global-shadow-06: rgba(0, 0, 0, 0.06);
-  --craftui-global-shadow-25: rgba(0, 0, 0, 0.25);
-  --craftui-global-shadow-outline: rgba(66, 153, 225, 0.5);
+  --craftui-bordercolor-interactive-danger: #dc2626;
+  --craftui-bordercolor-interactive-danger-active: #991b1b;
+  --craftui-bordercolor-interactive-danger-hover: #b91c1c;
+  --craftui-bordercolor-interactive-primary: #3b82f6;
+  --craftui-bordercolor-interactive-primary-active: #1e40af;
+  --craftui-bordercolor-interactive-primary-hover: #1d4ed8;
+  --craftui-bordercolor-interactive-secondary: #e4e4e7;
+  --craftui-bordercolor-interactive-secondary-active: #a1a1aa;
+  --craftui-bordercolor-interactive-secondary-hover: #d4d4d8;
 }
 
 @media (prefers-color-scheme: dark) {
   body {
-    --craftui-backgroundcolor-danger: #991b1b;
-    --craftui-backgroundcolor-default: #52525b;
-    --craftui-backgroundcolor-field: #3f3f46;
-    --craftui-backgroundcolor-info: #1e40af;
-    --craftui-backgroundcolor-primary: #18181b;
-    --craftui-backgroundcolor-secondary: #27272a;
-    --craftui-backgroundcolor-tertiary: #27272a;
-    --craftui-backgroundcolor-success: #166534;
-    --craftui-backgroundcolor-warning: #854d0e;
-    --craftui-backgroundcolor-field-disabled: #3f3f46;
-    --craftui-textcolor-danger: #fecaca;
-    --craftui-textcolor-dark: #e4e4e7;
-    --craftui-textcolor-default: #e4e4e7;
-    --craftui-textcolor-info: #bfdbfe;
+    --craftui-backgroundcolor-interactive-danger: #dc2626;
+    --craftui-backgroundcolor-interactive-danger-active: #991b1b;
+    --craftui-backgroundcolor-interactive-danger-hover: #b91c1c;
+    --craftui-backgroundcolor-interactive-primary: #2563eb;
+    --craftui-backgroundcolor-interactive-primary-active: #60a5fa;
+    --craftui-backgroundcolor-interactive-primary-hover: #3b82f6;
+    --craftui-backgroundcolor-interactive-secondary: #3f3f46;
+    --craftui-backgroundcolor-interactive-secondary-active: #71717a;
+    --craftui-backgroundcolor-interactive-secondary-hover: #52525b;
     --craftui-textcolor-interactive: #fff;
     --craftui-textcolor-interactive-inverse: #fff;
-    --craftui-textcolor-ultralight: #52525b;
-    --craftui-textcolor-light: #71717a;
-    --craftui-textcolor-success: #bbf7d0;
-    --craftui-textcolor-text: #fff;
-    --craftui-textcolor-text-inverse: #000;
-    --craftui-textcolor-warning: #fef08a;
-    --craftui-textcolor-spinner: #71717a;
     --craftui-bordercolor-danger: #f87171;
     --craftui-bordercolor-field: #52525b;
-    --craftui-bordercolor-info: #60a5fa;
-    --craftui-bordercolor-separator: #3f3f46;
-    --craftui-bordercolor-ui-opaque: #000;
-    --craftui-bordercolor-ui: #000;
-    --craftui-bordercolor-success: #4ade80;
-    --craftui-bordercolor-warning: #facc15;
-    --craftui-bordercolor-field-disabled: #52525b;
-    --craftui-global-info: #3b82f6;
-    --craftui-global-success: #22c55e;
-    --craftui-global-warning: #eab308;
-    --craftui-global-danger: #ef4444;
-    --craftui-global-interactive-danger: #dc2626;
-    --craftui-global-interactive-link: #60a5fa;
-    --craftui-global-interactive-primary: #2563eb;
-    --craftui-global-interactive-secondary: #3f3f46;
-    --craftui-global-interactive-success: #22c55e;
-    --craftui-global-interactive-tertiary: #a1a1aa;
-    --craftui-global-interactive-danger-active: #991b1b;
-    --craftui-global-interactive-primary-active: #60a5fa;
-    --craftui-global-interactive-secondary-active: #71717a;
-    --craftui-global-interactive-success-active: #bbf7d0;
-    --craftui-global-interactive-tertiary-active: #f4f4f5;
-    --craftui-global-interactive-danger-hover: #b91c1c;
-    --craftui-global-interactive-link-hover: #bfdbfe;
-    --craftui-global-interactive-primary-hover: #3b82f6;
-    --craftui-global-interactive-secondary-hover: #52525b;
-    --craftui-global-interactive-success-hover: #4ade80;
-    --craftui-global-interactive-tertiary-hover: #d4d4d8;
-    --craftui-global-primary-gradient-1: rgba(39, 48, 63, 0);
-    --craftui-global-primary-gradient-2: rgba(39, 48, 63, 1);
-    --craftui-global-shadow-1: rgba(0, 0, 0, 1);
-    --craftui-global-shadow-04: rgba(0, 0, 0, 0.04);
-    --craftui-global-shadow-05: rgba(0, 0, 0, 0.05);
-    --craftui-global-shadow-06: rgba(0, 0, 0, 0.06);
-    --craftui-global-shadow-25: rgba(0, 0, 0, 0.25);
-    --craftui-global-shadow-outline: rgba(66, 153, 225, 0.5);
+    --craftui-bordercolor-interactive-danger: #dc2626;
+    --craftui-bordercolor-interactive-danger-active: #991b1b;
+    --craftui-bordercolor-interactive-danger-hover: #b91c1c;
+    --craftui-bordercolor-interactive-primary: #2563eb;
+    --craftui-bordercolor-interactive-primary-active: #60a5fa;
+    --craftui-bordercolor-interactive-primary-hover: #3b82f6;
+    --craftui-bordercolor-interactive-secondary: #3f3f46;
+    --craftui-bordercolor-interactive-secondary-active: #71717a;
+    --craftui-bordercolor-interactive-secondary-hover: #52525b;
   }
 }
 
 @media (prefers-contrast: high) {
   body {
     --craftui-bordercolor-field: #71717a;
-    --craftui-bordercolor-separator: #71717a;
-    --craftui-bordercolor-ui-opaque: #3f3f46;
-    --craftui-bordercolor-ui: #71717a;
-    --craftui-bordercolor-field-disabled: #71717a;
   }
 }
 
 @media (prefers-color-scheme: dark) and (prefers-contrast: high) {
   body {
-    --craftui-bordercolor-separator: #71717a;
-    --craftui-bordercolor-ui-opaque: #71717a;
-    --craftui-bordercolor-ui: #71717a;
   }
 }
 
@@ -324,31 +240,31 @@ label {
 }
 
 .tw-inset-0 {
-  top: 0;
-  right: 0;
-  bottom: 0;
-  left: 0;
+  top: 0px;
+  right: 0px;
+  bottom: 0px;
+  left: 0px;
 }
 
 .tw-inset-y-0 {
-  top: 0;
-  bottom: 0;
+  top: 0px;
+  bottom: 0px;
 }
 
 .tw-top-0 {
-  top: 0;
+  top: 0px;
 }
 
 .tw-right-0 {
-  right: 0;
+  right: 0px;
 }
 
 .tw-bottom-0 {
-  bottom: 0;
+  bottom: 0px;
 }
 
 .tw-left-0 {
-  left: 0;
+  left: 0px;
 }
 
 .tw-z-10 {
@@ -381,7 +297,7 @@ label {
 }
 
 .tw-mt-0 {
-  margin-top: 0;
+  margin-top: 0px;
 }
 
 .tw-mt-2 {
@@ -413,7 +329,7 @@ label {
 }
 
 .tw-mb-0 {
-  margin-bottom: 0;
+  margin-bottom: 0px;
 }
 
 .tw-mb-1 {
@@ -781,58 +697,6 @@ label {
   border-color: rgba(113, 113, 122, var(--tw-border-opacity));
 }
 
-.tw-border-danger {
-  border-color: var(--craftui-bordercolor-danger);
-}
-
-.tw-border-interactive-danger {
-  border-color: var(--craftui-global-interactive-danger);
-}
-
-.tw-border-interactive-primary {
-  border-color: var(--craftui-global-interactive-primary);
-}
-
-.tw-border-interactive-secondary {
-  border-color: var(--craftui-global-interactive-secondary);
-}
-
-.tw-border-field {
-  border-color: var(--craftui-bordercolor-field);
-}
-
-.hover\:tw-border-interactive-danger-hover:hover {
-  border-color: var(--craftui-global-interactive-danger-hover);
-}
-
-.hover\:tw-border-interactive-primary-hover:hover {
-  border-color: var(--craftui-global-interactive-primary-hover);
-}
-
-.hover\:tw-border-interactive-secondary-hover:hover {
-  border-color: var(--craftui-global-interactive-secondary-hover);
-}
-
-.active\:tw-border-interactive-danger-active:active {
-  border-color: var(--craftui-global-interactive-danger-active);
-}
-
-.active\:tw-border-interactive-primary-active:active {
-  border-color: var(--craftui-global-interactive-primary-active);
-}
-
-.active\:tw-border-interactive-secondary-active:active {
-  border-color: var(--craftui-global-interactive-secondary-active);
-}
-
-.disabled\:tw-border-interactive-danger:disabled {
-  border-color: var(--craftui-global-interactive-danger);
-}
-
-.disabled\:tw-border-interactive-primary:disabled {
-  border-color: var(--craftui-global-interactive-primary);
-}
-
 .tw-bg-white {
   --tw-bg-opacity: 1;
   background-color: rgba(255, 255, 255, var(--tw-bg-opacity));
@@ -854,15 +718,15 @@ label {
 }
 
 .tw-bg-interactive-danger {
-  background-color: var(--craftui-global-interactive-danger);
+  background-color: var(--craftui-backgroundcolor-interactive-danger);
 }
 
 .tw-bg-interactive-primary {
-  background-color: var(--craftui-global-interactive-primary);
+  background-color: var(--craftui-backgroundcolor-interactive-primary);
 }
 
 .tw-bg-interactive-secondary {
-  background-color: var(--craftui-global-interactive-secondary);
+  background-color: var(--craftui-backgroundcolor-interactive-secondary);
 }
 
 .hover\:tw-bg-gray-100:hover {
@@ -871,23 +735,23 @@ label {
 }
 
 .hover\:tw-bg-interactive-danger:hover {
-  background-color: var(--craftui-global-interactive-danger);
-}
-
-.hover\:tw-bg-interactive-primary:hover {
-  background-color: var(--craftui-global-interactive-primary);
+  background-color: var(--craftui-backgroundcolor-interactive-danger);
 }
 
 .hover\:tw-bg-interactive-danger-hover:hover {
-  background-color: var(--craftui-global-interactive-danger-hover);
+  background-color: var(--craftui-backgroundcolor-interactive-danger-hover);
+}
+
+.hover\:tw-bg-interactive-primary:hover {
+  background-color: var(--craftui-backgroundcolor-interactive-primary);
 }
 
 .hover\:tw-bg-interactive-primary-hover:hover {
-  background-color: var(--craftui-global-interactive-primary-hover);
+  background-color: var(--craftui-backgroundcolor-interactive-primary-hover);
 }
 
 .hover\:tw-bg-interactive-secondary-hover:hover {
-  background-color: var(--craftui-global-interactive-secondary-hover);
+  background-color: var(--craftui-backgroundcolor-interactive-secondary-hover);
 }
 
 .active\:tw-bg-gray-200:active {
@@ -896,23 +760,23 @@ label {
 }
 
 .active\:tw-bg-interactive-danger-active:active {
-  background-color: var(--craftui-global-interactive-danger-active);
+  background-color: var(--craftui-backgroundcolor-interactive-danger-active);
 }
 
 .active\:tw-bg-interactive-primary-active:active {
-  background-color: var(--craftui-global-interactive-primary-active);
+  background-color: var(--craftui-backgroundcolor-interactive-primary-active);
 }
 
 .active\:tw-bg-interactive-secondary-active:active {
-  background-color: var(--craftui-global-interactive-secondary-active);
+  background-color: var(--craftui-backgroundcolor-interactive-secondary-active);
 }
 
 .disabled\:tw-bg-interactive-danger:disabled {
-  background-color: var(--craftui-global-interactive-danger);
+  background-color: var(--craftui-backgroundcolor-interactive-danger);
 }
 
 .disabled\:tw-bg-interactive-primary:disabled {
-  background-color: var(--craftui-global-interactive-primary);
+  background-color: var(--craftui-backgroundcolor-interactive-primary);
 }
 
 .tw-fill-current {
@@ -920,7 +784,7 @@ label {
 }
 
 .tw-p-0 {
-  padding: 0;
+  padding: 0px;
 }
 
 .tw-p-1 {
@@ -957,8 +821,8 @@ label {
 }
 
 .tw-py-0 {
-  padding-top: 0;
-  padding-bottom: 0;
+  padding-top: 0px;
+  padding-bottom: 0px;
 }
 
 .tw-py-1 {
@@ -1103,14 +967,6 @@ label {
 .tw-text-gray-800 {
   --tw-text-opacity: 1;
   color: rgba(39, 39, 42, var(--tw-text-opacity));
-}
-
-.tw-text-interactive-danger {
-  color: var(--craftui-global-interactive-danger);
-}
-
-.tw-text-interactive-primary {
-  color: var(--craftui-global-interactive-primary);
 }
 
 .tw-text-interactive {
