@@ -61,14 +61,6 @@ abstract class Type extends Component implements TypeInterface
     /**
      * @inheritdoc
      */
-    public function prepareForAuthentication(User $user = null): void
-    {
-        // Do nothing.
-    }
-
-    /**
-     * @inheritdoc
-     */
     public function getRequiresInput(): bool
     {
         return true;

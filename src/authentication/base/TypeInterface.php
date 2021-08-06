@@ -27,14 +27,6 @@ interface TypeInterface
     public function getFields(): ?array;
 
     /**
-     * Perform any actions that are required before authentication can take place.
-     *
-     * @param User|null $user
-     * @return void
-     */
-    public function prepareForAuthentication(User $user = null): void;
-
-    /**
      * Given a set of credentials, perform authorization and return the new AuthenticationState
      *
      * @param array $credentials

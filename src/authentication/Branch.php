@@ -210,9 +210,8 @@ class Branch extends Component
                 // Prepare the next step.
                 /** @var TypeInterface $nextStep */
                 $nextStep = $this->getNextAuthenticationStep();
-                $nextStep->prepareForAuthentication($this->_getResolvedUser());
 
-                // If next step is not interactive, repeat
+                // If next step is not interactive, repeat.
                 if (!$nextStep->getRequiresInput()) {
                     // Intentionally not use the return result
                     $this->performAuthenticationStep(get_class($nextStep));
@@ -240,7 +239,6 @@ class Branch extends Component
             throw new InvalidConfigException("Invalid authentication chain configuration. $stepType type requested, but not available at this point of the chain.");
         }
 
-        $switchedStep->prepareForAuthentication($this->_getResolvedUser());
         return $switchedStep;
     }
 
@@ -423,6 +421,7 @@ class Branch extends Component
 
             // If no applicable steps, invalidate the branch
             if (empty($filteredCollection) && $stepConfiguration['required']) {
+                // Invalidate the branch, unless there's no identified user, but we're pretending that there is.
                 $this->isValid = false;
             }
         }

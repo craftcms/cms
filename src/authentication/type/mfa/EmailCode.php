@@ -5,6 +5,7 @@ namespace craft\authentication\type\mfa;
 
 use Craft;
 use craft\authentication\base\MfaType;
+use craft\authentication\base\PreparableTypeInterface;
 use craft\elements\User;
 use craft\helpers\StringHelper;
 use craft\mail\Message;
@@ -19,9 +20,14 @@ use craft\models\authentication\State;
  *
  * @property-read string $inputFieldHtml
  */
-class EmailCode extends MfaType
+class EmailCode extends MfaType implements PreparableTypeInterface
 {
     protected const CODE_KEY = 'craft.authentication.data.emailCode';
+
+    /**
+     * @var bool Whether the verification email has been sent already,
+     */
+    protected $emailSent = false;
 
     /**
      * @inheritdoc
@@ -50,9 +56,16 @@ class EmailCode extends MfaType
     /**
      * @inheritdoc
      */
-    public function prepareForAuthentication(User $user = null): void
+    public function prepareForAuthentication(): void
     {
+        if ($this->emailSent) {
+            return;
+        }
+
+        $this->emailSent = true;
+
         $session = Craft::$app->getSession();
+        $user = $this->state->getResolvedUser();
 
         // Pretend to send an email for fake users
         if (empty($user->id)) {
@@ -105,6 +118,7 @@ class EmailCode extends MfaType
      */
     public function getInputFieldHtml(): string
     {
+        $this->prepareForAuthentication();
         return Craft::$app->getView()->renderTemplate('_components/authenticationsteps/EmailCode/input');
     }
 }

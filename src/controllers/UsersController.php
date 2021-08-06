@@ -154,7 +154,7 @@ class UsersController extends Controller
         }
 
         $generalConfig = Craft::$app->getConfig()->getGeneral();
-        
+
         if (!$this->request->getIsPost()) {
             $username = $generalConfig->rememberedUserSessionDuration ? Craft::$app->getUser()->getRememberedUsername() : null;
             $user = $username ? User::findOne(['username' => $username]) : null;

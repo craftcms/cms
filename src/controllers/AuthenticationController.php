@@ -75,9 +75,6 @@ class AuthenticationController extends Controller
         $authentication->invalidateAllAuthenticationStates();
         $chain = $authentication->getCpAuthenticationChain($user);
 
-        $nextStep = $chain->getNextAuthenticationStep();
-        $nextStep->prepareForAuthentication($user);
-
         $chain->persistChainState();
 
         $session = Craft::$app->getSession();
@@ -85,7 +82,7 @@ class AuthenticationController extends Controller
         return $this->asJson([
             'loginFormHtml' => Craft::$app->getView()->renderTemplate('_special/login/login_form', compact('user')),
             'footHtml' => Craft::$app->getView()->getBodyHtml(),
-            'stepType' => $nextStep->getStepType(),
+            'stepType' => $chain->getNextAuthenticationStep()->getStepType(),
             'message' => $session->getNotice(),
             'error' => $session->getError(),
         ]);

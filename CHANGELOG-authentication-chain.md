@@ -4,6 +4,7 @@
 - Added `craft\authentication\Chain`.
 - Added `craft\authentication\base\MfaInterface`.
 - Added `craft\authentication\base\Mfa`.
+- Added `craft\authentication\base\PreparableTypeInterface`.
 - Added `craft\authentication\base\TypeInterface`.
 - Added `craft\authentication\base\Type`.
 - Added `craft\authentication\type\Password`.
