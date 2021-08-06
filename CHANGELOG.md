@@ -18,6 +18,7 @@
 - Fixed an error that occurred when attempting to change a global set’s handle, if its former handle was a reserved word.
 - Fixed a bug where it wasn’t possible to search for Matrix blocks by a specific sub-field’s handle using the `search` param. ([#9679](https://github.com/craftcms/cms/issues/9679))
 - Fixed an infinite loop that could occur when handing a front-end set-password request, if there was a validation error on the submitted password. ([#9684](https://github.com/craftcms/cms/issues/9684))
+- Fixed a bug where entries could lose other sites’ content when being saved from an unpublished draft, if their section’s Propagation Method was set to “Let each entry choose which sites it should be saved to”. ([#9680](https://github.com/craftcms/cms/issues/9680))
 
 ## 3.7.7 - 2021-07-29
 
