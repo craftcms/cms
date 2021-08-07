@@ -21,6 +21,7 @@
 - Fixed an infinite loop that could occur when handing a front-end set-password request, if there was a validation error on the submitted password. ([#9684](https://github.com/craftcms/cms/issues/9684))
 - Fixed a bug where entries could lose other sites’ content when being saved from an unpublished draft, if their section’s Propagation Method was set to “Let each entry choose which sites it should be saved to”. ([#9680](https://github.com/craftcms/cms/issues/9680))
 - Fixed a bug where entries that were created via the “Save as a new entry” action on an Edit Entry page didn’t include all content changes made in the original entries’ provisional draft. ([#9681](https://github.com/craftcms/cms/issues/9681))
+- Fixed a bug where code blocks in field instructions could bleed into the subsequent field. ([#9683](https://github.com/craftcms/cms/issues/9683))
 
 ## 3.7.7 - 2021-07-29
 

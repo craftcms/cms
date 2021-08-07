@@ -157,6 +157,8 @@ code, .code, .code input, .code textarea { font-family: "SFMono-Regular", Consol
 
 code.smalltext, .code.smalltext, .code input.smalltext, .code textarea.smalltext { font-size: 0.8em !important; }
 
+pre code { display: block; overflow-x: auto; }
+
 /* links */
 a { color: #0B69A3; cursor: pointer; }
 
