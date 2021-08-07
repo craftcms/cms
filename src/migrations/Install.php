@@ -1195,22 +1195,15 @@ class Install extends Migration
         $tempResponse = new Response(['isSent' => true]);
         Craft::$app->set('response', $tempResponse);
 
-        $e = null;
-
         try {
             foreach ($pluginConfigs as $handle => $pluginConfig) {
                 echo "    > installing {$handle} ... ";
                 $pluginsService->installPlugin($handle);
                 echo "done\n";
             }
-        } catch (\Throwable $e) {
-        }
-
-        // Put the real response back
-        Craft::$app->set('response', $realResponse);
-
-        if ($e !== null) {
-            throw $e;
+        } finally {
+            // Put the real response back
+            Craft::$app->set('response', $realResponse);
         }
     }
 

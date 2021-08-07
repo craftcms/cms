@@ -56,6 +56,8 @@ class RegisterResourceNode extends Node implements NodeCaptureInterface
             }
         }
 
+        $positionPhp = null;
+
         if ($position !== null) {
             // Figure out what the position's PHP value is
             switch ($position) {
@@ -99,13 +101,11 @@ class RegisterResourceNode extends Node implements NodeCaptureInterface
                 if ($positionOption) {
                     // Do we have to merge the position with other options?
                     if ($options !== null) {
-                        /** @noinspection PhpUndefinedVariableInspection */
                         $compiler
                             ->raw('array_merge(')
                             ->subcompile($options)
                             ->raw(", ['position' => $positionPhp])");
                     } else {
-                        /** @noinspection PhpUndefinedVariableInspection */
                         $compiler
                             ->raw("['position' => $positionPhp]");
                     }

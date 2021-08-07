@@ -91,7 +91,7 @@ class Volumes extends Component
     const CONFIG_VOLUME_KEY = 'volumes';
 
     /**
-     * @var MemoizableArray|null
+     * @var MemoizableArray<VolumeInterface>|null
      * @see _volumes()
      */
     private $_volumes;
@@ -216,7 +216,7 @@ class Volumes extends Component
     /**
      * Returns a memoizable array of all volumes.
      *
-     * @return MemoizableArray
+     * @return MemoizableArray<VolumeInterface>
      */
     private function _volumes(): MemoizableArray
     {

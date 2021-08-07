@@ -126,7 +126,7 @@ class Sites extends Component
     const CONFIG_SITES_KEY = 'sites';
 
     /**
-     * @var MemoizableArray|null
+     * @var MemoizableArray<SiteGroup>|null
      * @see _groups()
      */
     private $_groups;
@@ -194,7 +194,7 @@ class Sites extends Component
     /**
      * Returns a memoizable array of all site groups.
      *
-     * @return MemoizableArray
+     * @return MemoizableArray<SiteGroup>
      */
     private function _groups(): MemoizableArray
     {

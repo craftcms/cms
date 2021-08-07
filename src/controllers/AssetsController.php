@@ -17,7 +17,6 @@ use craft\fields\Assets as AssetsField;
 use craft\helpers\App;
 use craft\helpers\Assets;
 use craft\helpers\Db;
-use craft\helpers\Html;
 use craft\helpers\Image;
 use craft\helpers\StringHelper;
 use craft\helpers\UrlHelper;
@@ -497,10 +496,8 @@ class AssetsController extends Controller
                 'folderUid' => $folderModel->uid,
                 'folderId' => $folderModel->id,
             ]);
-        } catch (AssetException $exception) {
-            return $this->asErrorJson($exception->getMessage());
-        } catch (ForbiddenHttpException $exception) {
-            return $this->asErrorJson($exception->getMessage());
+        } catch (AssetException | ForbiddenHttpException $e) {
+            return $this->asErrorJson($e->getMessage());
         }
     }
 

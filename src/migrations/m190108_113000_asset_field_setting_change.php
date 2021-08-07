@@ -80,14 +80,14 @@ class m190108_113000_asset_field_setting_change extends Migration
                             $fieldData['settings']['defaultUploadLocationSource'] = $this->_normalizeSourceKey((string)$fieldData['settings']['defaultUploadLocationSource']);
                         }
                     }
+
+                    if (!empty($fieldData['settings'])) {
+                        $this->update(Table::FIELDS, ['settings' => Json::encode($fieldData['settings'])], ['uid' => $fieldUid]);
+                    }
                 }
             }
 
             $projectConfig->set(Matrix::CONFIG_BLOCKTYPE_KEY . '.' . $matrixBlockTypeUid, $matrixBlockType);
-
-            if (!empty($fieldData['settings'])) {
-                $this->update(Table::FIELDS, ['settings' => Json::encode($fieldData['settings'])], ['uid' => $fieldUid]);
-            }
         }
 
         $projectConfig->muteEvents = false;

@@ -282,7 +282,7 @@ class EntriesController extends BaseEntriesController
                 'tabs' => $tabs,
                 'containerAttributes' => [
                     'id' => 'tabs',
-                ]
+                ],
             ]) : null,
             'fieldsHtml' => $form->render(),
             'headHtml' => $view->getHeadHtml(),
@@ -328,6 +328,8 @@ class EntriesController extends BaseEntriesController
         if ($duplicate) {
             try {
                 $wasEnabled = $entry->enabled;
+                $entry->draftId = null;
+                $entry->isProvisionalDraft = false;
                 $entry = Craft::$app->getElements()->duplicateElement($entry);
                 if ($wasEnabled && !$entry->enabled) {
                     $forceDisabled = true;
@@ -808,18 +810,36 @@ class EntriesController extends BaseEntriesController
         $siteId = $this->request->getBodyParam('siteId');
 
         if ($entryId) {
+            // Is this a provisional draft?
+            $provisional = $this->request->getBodyParam('provisional');
+            if ($provisional) {
+                $entry = Entry::find()
+                    ->provisionalDrafts()
+                    ->draftOf($entryId)
+                    ->draftCreator(Craft::$app->getUser()->getIdentity())
+                    ->siteId($siteId)
+                    ->anyStatus()
+                    ->one();
+
+                if ($entry) {
+                    return $entry;
+                }
+            }
+
             $entry = Craft::$app->getEntries()->getEntryById($entryId, $siteId);
 
-            if (!$entry) {
-                throw new NotFoundHttpException('Entry not found');
+            if ($entry) {
+                return $entry;
             }
-        } else {
-            $entry = new Entry();
-            $entry->sectionId = $this->request->getRequiredBodyParam('sectionId');
 
-            if ($siteId) {
-                $entry->siteId = $siteId;
-            }
+            throw new NotFoundHttpException('Entry not found');
+        }
+
+        $entry = new Entry();
+        $entry->sectionId = $this->request->getRequiredBodyParam('sectionId');
+
+        if ($siteId) {
+            $entry->siteId = $siteId;
         }
 
         return $entry;

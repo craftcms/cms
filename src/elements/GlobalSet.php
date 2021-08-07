@@ -193,12 +193,14 @@ class GlobalSet extends Element
             ['name', 'handle'],
             UniqueValidator::class,
             'targetClass' => GlobalSetRecord::class,
+            'except' => [self::SCENARIO_ESSENTIALS],
         ];
 
         $rules[] = [
             ['handle'],
             HandleValidator::class,
             'reservedWords' => ['id', 'dateCreated', 'dateUpdated', 'uid', 'title'],
+            'except' => [self::SCENARIO_ESSENTIALS],
         ];
 
         return $rules;

@@ -1311,6 +1311,8 @@ class UsersController extends Controller
         }
 
         // Is this the current user, and did their username just change?
+        // todo: remove comment when WI-51866 is fixed
+        /** @noinspection PhpUndefinedVariableInspection */
         if ($isCurrentUser && $user->username !== $oldUsername) {
             // Update the username cookie
             $userSession->sendUsernameCookie($user);
@@ -1862,7 +1864,13 @@ class UsersController extends Controller
                 Craft::$app->getUrlManager()->setRouteParams([
                     'variables' => $variables,
                 ]);
-                Craft::$app->getRequest()->checkIfActionRequest(true, true, false);
+
+                // Avoid re-routing to the same action again
+                $this->request->checkIfActionRequest(true, true, false);
+                if ($this->request->getActionSegments() === ['users', 'set-password']) {
+                    $this->request->setIsActionRequest(false);
+                }
+
                 return Craft::$app->handleRequest($this->request, true);
             } catch (NotFoundHttpException $e) {
                 // Just go with the CP template

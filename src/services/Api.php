@@ -121,20 +121,15 @@ class Api extends Component
             'headers' => ApiHelper::headers(),
         ]);
 
-        $e = null;
-
         try {
             $response = $this->client->request($method, $uri, $options);
         } catch (RequestException $e) {
-            if (($response = $e->getResponse()) === null || $response->getStatusCode() === 500) {
-                throw $e;
-            }
-        }
-
-        ApiHelper::processResponseHeaders($response->getHeaders());
-
-        if ($e !== null) {
+            $response = $e->getResponse();
             throw $e;
+        } finally {
+            if (isset($response) && $response->getStatusCode() !== 500) {
+                ApiHelper::processResponseHeaders($response->getHeaders());
+            }
         }
 
         return $response;

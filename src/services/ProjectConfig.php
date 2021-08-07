@@ -1347,7 +1347,7 @@ class ProjectConfig extends Component
     }
 
     /**
-     * Retrieve a a config file tree with modified times based on the main configuration file.
+     * Retrieve a config file tree with modified times based on the main configuration file.
      *
      * @return int
      */
@@ -1389,6 +1389,7 @@ class ProjectConfig extends Component
                 $filename = pathinfo(array_pop($configPath), PATHINFO_FILENAME);
                 $insertionPoint = &$generatedConfig;
 
+                /** @var string $pathSegment */
                 foreach ($configPath as $pathSegment) {
                     if (!isset($insertionPoint[$pathSegment])) {
                         $insertionPoint[$pathSegment] = [];

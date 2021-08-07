@@ -4,7 +4,6 @@ namespace craft\migrations;
 
 use Craft;
 use craft\db\Migration;
-use craft\db\Query;
 use craft\db\Table;
 use craft\helpers\ArrayHelper;
 use craft\helpers\MigrationHelper;
@@ -32,7 +31,7 @@ class m210613_145522_sortable_global_sets extends Migration
 
         $globalSets = $projectConfig->get(Globals::CONFIG_GLOBALSETS_KEY) ?? [];
         ArrayHelper::multisort($globalSets, 'name');
-        $sortOrder = 1;
+        $sortOrder = 0;
 
         foreach ($globalSets as $uid => $data) {
             $projectConfig->set(Globals::CONFIG_GLOBALSETS_KEY . ".$uid.sortOrder", ++$sortOrder);

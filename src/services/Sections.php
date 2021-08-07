@@ -123,7 +123,7 @@ class Sections extends Component
     public $autoResaveEntries = true;
 
     /**
-     * @var MemoizableArray|null
+     * @var MemoizableArray<Section>|null
      * @see _sections()
      */
     private $_sections;
@@ -189,7 +189,7 @@ class Sections extends Component
     /**
      * Returns a memoizable array of all sections.
      *
-     * @return MemoizableArray
+     * @return MemoizableArray<Section>
      */
     private function _sections(): MemoizableArray
     {
@@ -604,11 +604,14 @@ class Sections extends Component
                 $structure->maxLevels = $data['structure']['maxLevels'];
                 Craft::$app->getStructures()->saveStructure($structure);
                 $sectionRecord->structureId = $structure->id;
-            } else if (!$isNewSection && $sectionRecord->structureId) {
-                // Delete the old one
-                Craft::$app->getStructures()->deleteStructureById($sectionRecord->structureId);
+            } else {
                 $sectionRecord->structureId = null;
                 $isNewStructure = false;
+
+                if ($sectionRecord->structureId) {
+                    // Delete the old one
+                    Craft::$app->getStructures()->deleteStructureById($sectionRecord->structureId);
+                }
             }
 
             $resaveEntries = (
@@ -679,7 +682,6 @@ class Sections extends Component
                 // rows
                 $affectedSiteUids = array_keys($siteSettingData);
 
-                /** @noinspection PhpUndefinedVariableInspection */
                 foreach ($allOldSiteSettingsRecords as $siteId => $siteSettingsRecord) {
                     $siteUid = array_search($siteId, $siteIdMap, false);
                     if (!in_array($siteUid, $affectedSiteUids, false)) {

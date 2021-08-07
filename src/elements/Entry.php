@@ -847,8 +847,8 @@ class Entry extends Element
                     ->id($this->id)
                     ->siteId('*')
                     ->select('elements_sites.siteId')
-                    ->drafts($this->getIsDraft())
-                    ->provisionalDrafts($this->isProvisionalDraft)
+                    ->drafts(null)
+                    ->provisionalDrafts(null)
                     ->revisions($this->getIsRevision())
                     ->column();
             } else {
@@ -862,8 +862,8 @@ class Entry extends Element
                     ->id($this->duplicateOf->id)
                     ->siteId('*')
                     ->select('elements_sites.siteId')
-                    ->drafts($this->duplicateOf->getIsDraft())
-                    ->provisionalDrafts($this->duplicateOf->isProvisionalDraft)
+                    ->drafts(null)
+                    ->provisionalDrafts(null)
                     ->revisions($this->duplicateOf->getIsRevision())
                     ->column()
                 );

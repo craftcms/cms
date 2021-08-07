@@ -62,7 +62,7 @@ class Tags extends Component
     const CONFIG_TAGGROUP_KEY = 'tagGroups';
 
     /**
-     * @var MemoizableArray|null
+     * @var MemoizableArray<TagGroup>|null
      * @see _tagGroups()
      */
     private $_tagGroups;
@@ -95,7 +95,7 @@ class Tags extends Component
     /**
      * Returns a memoizable array of all tag groups.
      *
-     * @return MemoizableArray
+     * @return MemoizableArray<TagGroup>
      */
     private function _tagGroups(): MemoizableArray
     {
