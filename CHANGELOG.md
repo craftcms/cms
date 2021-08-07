@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 3.x
 
-## Unreleased
+## 3.7.8 - 2021-08-06
 
 ### Added
 - It’s now possible to bypass console warnings about running Craft as the root/super user by defining a `CRAFT_ALLOW_SUPERUSER` environment variable. ([#7955](https://github.com/craftcms/cms/issues/7955))
