@@ -917,17 +917,17 @@ class Db
      *
      * @param string $table the table where the data will be deleted from
      * @param Connection|null $db The database connection to use
-     * @return int The number of rows affected by the execution
+     * @return void
      * @throws DbException if execution failed
      * @since 3.6.8
      */
-    public static function truncateTable(string $table, ?Connection $db = null): int
+    public static function truncateTable(string $table, ?Connection $db = null): void
     {
         if ($db === null) {
             $db = self::db();
         }
 
-        return $db->createCommand()
+        $db->createCommand()
             ->truncateTable($table)
             ->execute();
     }
