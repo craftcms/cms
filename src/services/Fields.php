@@ -178,13 +178,13 @@ class Fields extends Component
     public ?string $oldFieldColumnPrefix = null;
 
     /**
-     * @var MemoizableArray|null
+     * @var MemoizableArray<FieldGroup>|null
      * @see _groups()
      */
     private ?MemoizableArray $_groups = null;
 
     /**
-     * @var MemoizableArray|null
+     * @var MemoizableArray<FieldInterface>|null
      * @see _fields()
      */
     private ?MemoizableArray $_fields = null;
@@ -222,7 +222,7 @@ class Fields extends Component
     /**
      * Returns a memoizable array of all field groups.
      *
-     * @return MemoizableArray
+     * @return MemoizableArray<FieldGroup>
      */
     private function _groups(): MemoizableArray
     {
@@ -596,7 +596,7 @@ class Fields extends Component
      * @param string|string[]|false|null $context The field context(s) to fetch fields from. Defaults to [[\craft\services\Content::$fieldContext]].
      * Set to `false` to get all fields regardless of context.
      *
-     * @return MemoizableArray
+     * @return MemoizableArray<FieldInterface>
      */
     private function _fields($context = null): MemoizableArray
     {

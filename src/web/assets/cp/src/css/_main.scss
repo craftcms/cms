@@ -320,6 +320,11 @@ code,
   }
 }
 
+pre code {
+  display: block;
+  overflow-x: auto;
+}
+
 /* links */
 a {
   color: $linkColor;

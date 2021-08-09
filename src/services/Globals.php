@@ -47,7 +47,7 @@ class Globals extends Component
     const CONFIG_GLOBALSETS_KEY = 'globalSets';
 
     /**
-     * @var MemoizableArray[]|null
+     * @var MemoizableArray<GlobalSet>[]|null
      * @see _allSets()
      */
     private ?array $_allGlobalSets = null;
@@ -385,7 +385,7 @@ class Globals extends Component
                 throw new ElementNotFoundException('Unable to save the element required for global set.');
             }
 
-            // Save the volume
+            // Save the global set
             $globalSetRecord->id = $element->id;
             $globalSetRecord->save(false);
 
@@ -563,7 +563,7 @@ class Globals extends Component
      * Returns a memoizable array of all global sets for the given site.
      *
      * @param int $siteId
-     * @return MemoizableArray
+     * @return MemoizableArray<GlobalSet>
      */
     private function _allSets(int $siteId): MemoizableArray
     {

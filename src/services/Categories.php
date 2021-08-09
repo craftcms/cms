@@ -70,7 +70,7 @@ class Categories extends Component
     const CONFIG_CATEGORYROUP_KEY = 'categoryGroups';
 
     /**
-     * @var MemoizableArray|null
+     * @var MemoizableArray<CategoryGroup>|null
      * @see _groups()
      */
     private ?MemoizableArray $_groups = null;
@@ -111,7 +111,7 @@ class Categories extends Component
     /**
      * Returns a memoizable array of all category groups.
      *
-     * @return MemoizableArray
+     * @return MemoizableArray<CategoryGroup>
      */
     private function _groups(): MemoizableArray
     {

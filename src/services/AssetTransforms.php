@@ -100,7 +100,7 @@ class AssetTransforms extends Component
     public $db = 'db';
 
     /**
-     * @var MemoizableArray|null
+     * @var MemoizableArray<AssetTransform>|null
      * @see _transforms()
      */
     private ?MemoizableArray $_transforms = null;
@@ -144,7 +144,7 @@ class AssetTransforms extends Component
     /**
      * Returns a memoizable array of all named asset transforms.
      *
-     * @return MemoizableArray
+     * @return MemoizableArray<AssetTransform>
      */
     private function _transforms(): MemoizableArray
     {

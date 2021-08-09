@@ -122,7 +122,7 @@ class Sections extends Component
     public bool $autoResaveEntries = true;
 
     /**
-     * @var MemoizableArray|null
+     * @var MemoizableArray<Section>|null
      * @see _sections()
      */
     private ?MemoizableArray $_sections = null;
@@ -188,7 +188,7 @@ class Sections extends Component
     /**
      * Returns a memoizable array of all sections.
      *
-     * @return MemoizableArray
+     * @return MemoizableArray<Section>
      */
     private function _sections(): MemoizableArray
     {

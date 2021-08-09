@@ -28,6 +28,7 @@ use IteratorAggregate;
  * }
  * ```
  *
+ * @template T
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.5.8
  */
@@ -54,7 +55,7 @@ class MemoizableArray implements IteratorAggregate, Countable
     /**
      * Returns all items.
      *
-     * @return array
+     * @return array<T>
      */
     public function all(): array
     {
@@ -69,7 +70,7 @@ class MemoizableArray implements IteratorAggregate, Countable
      * @param string $key the column name whose result will be used to index the array
      * @param mixed $value the value that `$key` should be compared with
      * @param bool $strict whether a strict type comparison should be used when checking array element values against `$value`
-     * @return self the filtered array
+     * @return self<T> the filtered array
      */
     public function where(string $key, $value = true, bool $strict = false): self
     {
@@ -91,7 +92,7 @@ class MemoizableArray implements IteratorAggregate, Countable
      * @param string $key the column name whose result will be used to index the array
      * @param mixed[] $values the value that `$key` should be compared with
      * @param bool $strict whether a strict type comparison should be used when checking array element values against `$values`
-     * @return self the filtered array
+     * @return self<T> the filtered array
      */
     public function whereIn(string $key, array $values, bool $strict = false): self
     {
@@ -110,7 +111,7 @@ class MemoizableArray implements IteratorAggregate, Countable
      * @param string $key the column name whose result will be used to index the array
      * @param mixed $value the value that `$key` should be compared with
      * @param bool $strict whether a strict type comparison should be used when checking array element values against `$value`
-     * @return mixed the first matching value, or `null` if no match is found
+     * @return T the first matching value, or `null` if no match is found
      */
     public function firstWhere(string $key, $value = true, bool $strict = false)
     {
