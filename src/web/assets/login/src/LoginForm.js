@@ -3,8 +3,6 @@ class LoginForm {
     constructor() {
         this.disabled = false;
         // todo allow constructor to pass in other login handlers
-        this.$loginForm.on('click', '#recover-account', this.switchForm.bind(this));
-        this.$loginForm.on('click', '#cancel-recover', this.switchForm.bind(this));
         Craft.AuthenticationChainHandler = new AuthenticationChainHandler(this);
         this.$loginForm.on('submit', (event) => {
             this.clearErrors();
@@ -13,7 +11,7 @@ class LoginForm {
                 rememberMe: this.$rememberMeCheckbox.prop('checked'),
             };
             if (!Craft.AuthenticationChainHandler.isExistingChain()) {
-                additionalData.username = this.$username.val();
+                additionalData.loginName = this.$username.val();
             }
             Craft.AuthenticationChainHandler.handleFormSubmit(event, additionalData);
             event.preventDefault();
@@ -29,7 +27,7 @@ class LoginForm {
     get $pendingSpinner() { return $('#spinner-pending'); }
     get $submit() { return $('#submit'); }
     get $rememberMeCheckbox() { return $('#rememberMe'); }
-    get $username() { return $('#start-authentication input'); }
+    get $username() { return $('#username-field input'); }
     get $cancelRecover() { return $('#cancel-recover'); }
     get $recoverAccount() { return $('#recover-account'); }
     /**
@@ -86,15 +84,6 @@ class LoginForm {
     }
     isDisabled() {
         return this.disabled;
-    }
-    /**
-     * Switch the displayed form between authentication and recovery.
-     *
-     * @protected
-     */
-    switchForm() {
-        this.$cancelRecover.toggleClass('hidden');
-        this.$recoverAccount.toggleClass('hidden');
     }
 }
 new LoginForm();

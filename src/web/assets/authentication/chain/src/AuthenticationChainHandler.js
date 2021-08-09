@@ -3,6 +3,8 @@ class AuthenticationChainHandler {
     constructor(loginForm) {
         this.performAuthenticationEndpoint = 'authentication/perform-authentication';
         this.startAuthenticationEndpoint = 'authentication/start-authentication';
+        this.recoverAccountEndpoint = 'users/send-password-reset-email';
+        this.recoverAccount = false;
         this.authenticationSteps = {};
         this.loginForm = loginForm;
         this.attachListeners();
@@ -10,8 +12,10 @@ class AuthenticationChainHandler {
     get $alternatives() { return $('#alternative-types'); }
     get $authenticationStep() { return $('#authentication-step'); }
     get $restartAuthentication() { return $('#restart-authentication'); }
-    get $startAuthentication() { return $('#start-authentication'); }
+    get $usernameField() { return $('#username-field'); }
+    get $recoveryButtons() { return $('#recover-account, #cancel-recover'); }
     get $authenticationGreeting() { return $('#authentication-greeting'); }
+    get $toggleRecover() { return $('.toggle-recover'); }
     /**
      * Attach relevant event listeners.
      *
@@ -21,10 +25,8 @@ class AuthenticationChainHandler {
         this.$alternatives.on('click', 'li', (ev) => {
             this.switchStep($(ev.target).attr('rel'));
         });
-        this.$restartAuthentication.on('click', (event) => {
-            this.resetAuthenticationControls();
-            event.preventDefault();
-        });
+        this.$restartAuthentication.on('click', this.restartAuthentication.bind(this));
+        this.$recoveryButtons.on('click', this.toggleRecoverAccountForm.bind(this));
     }
     /**
      * Reset the authentication chain controls and anything related in the login form.
@@ -32,7 +34,7 @@ class AuthenticationChainHandler {
     resetAuthenticationControls() {
         this.$authenticationStep.empty().attr('rel', '');
         this.$authenticationGreeting.remove();
-        this.$startAuthentication.removeClass('hidden');
+        this.$usernameField.removeClass('hidden');
         this.loginForm.$rememberMeCheckbox.parents('.field').removeClass('hidden');
         this.loginForm.$submit.removeClass('hidden');
         this.hideAlternatives();
@@ -46,6 +48,37 @@ class AuthenticationChainHandler {
      */
     registerAuthenticationStep(stepType, step) {
         this.authenticationSteps[stepType] = step;
+    }
+    /**
+     * Restart authentication from scratch.
+     * @param event
+     */
+    restartAuthentication(event) {
+        this.resetAuthenticationControls();
+        if (event) {
+            event.preventDefault();
+        }
+    }
+    /**
+     * Toggle the account recovery form
+     */
+    toggleRecoverAccountForm() {
+        this.recoverAccount = !this.recoverAccount;
+        if (this.recoverAccount) {
+            this.$usernameField.removeClass('hidden');
+            this.loginForm.$submit.removeClass('hidden');
+            this.$authenticationStep.addClass('hidden');
+        }
+        else {
+            this.$usernameField.addClass('hidden');
+            this.loginForm.$submit.addClass('hidden');
+            this.$authenticationStep.removeClass('hidden');
+            this.$authenticationStep.attr('rel');
+            if (this.$authenticationStep.attr('rel').length > 0) {
+                const stepType = this.authenticationSteps[this.$authenticationStep.attr('rel')];
+                stepType.init();
+            }
+        }
     }
     /**
      * Perform the authentication step against the endpoint.
@@ -71,6 +104,17 @@ class AuthenticationChainHandler {
             switch: true
         }, this.processResponse.bind(this));
     }
+    //     Garnish.Modal.extend({
+    //                              init: function() {
+    //     var $container = $('<div class="modal fitted email-sent"><div class="body">' + Craft.t('app', 'Check your email for instructions to reset your password.') + '</div></div>')
+    //     .appendTo(Garnish.$bod);
+    //
+    //     this.base($container);
+    // },
+    //
+    // hide: function() {
+    // }
+    // });
     /**
      * Process authentication response.
      * @param response
@@ -86,6 +130,7 @@ class AuthenticationChainHandler {
                 return;
             }
             else {
+                // Take not of errors and messages
                 if (response.error) {
                     this.loginForm.showError(response.error);
                     Garnish.shake(this.loginForm.$loginForm);
@@ -93,15 +138,25 @@ class AuthenticationChainHandler {
                 if (response.message) {
                     this.loginForm.showMessage(response.message);
                 }
+                // Handle password reset response early and bail
+                if (response.passwordReset) {
+                    if (!response.error) {
+                        this.toggleRecoverAccountForm();
+                        this.restartAuthentication();
+                    }
+                }
+                // Ensure alternative login options are handled
                 if (response.alternatives && Object.keys(response.alternatives).length > 0) {
                     this.showAlternatives(response.alternatives);
                 }
                 else {
                     this.hideAlternatives();
                 }
+                // Keep track of current step type
                 if (response.stepType) {
                     this.$authenticationStep.attr('rel', response.stepType);
                 }
+                // Load any JS files if needed
                 if (response.footHtml) {
                     const jsFiles = response.footHtml.match(/([^"']+\.js)/gm);
                     const existingSources = Array.from(document.scripts).map(node => node.getAttribute('src')).filter(val => val && val.length > 0);
@@ -126,11 +181,13 @@ class AuthenticationChainHandler {
                         this.authenticationSteps[stepType].init();
                     }
                 };
+                // Display the HTML
                 if (response.html) {
                     (_b = this.currentStep) === null || _b === void 0 ? void 0 : _b.cleanup();
                     this.$authenticationStep.html(response.html);
                     initStepType(response.stepType);
                 }
+                // Display the HTML
                 if (response.loginFormHtml) {
                     (_c = this.currentStep) === null || _c === void 0 ? void 0 : _c.cleanup();
                     this.loginForm.$loginForm.html(response.loginFormHtml);
@@ -179,7 +236,8 @@ class AuthenticationChainHandler {
                 return;
             }
             this.loginForm.disableForm();
-            this.performStep(this.isExistingChain() ? this.performAuthenticationEndpoint : this.startAuthenticationEndpoint, requestData);
+            const endpoint = this.recoverAccount ? this.recoverAccountEndpoint : (this.isExistingChain() ? this.performAuthenticationEndpoint : this.startAuthenticationEndpoint);
+            this.performStep(endpoint, requestData);
         }
         catch (error) {
             this.loginForm.showError(error);

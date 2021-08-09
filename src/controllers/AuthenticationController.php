@@ -54,7 +54,7 @@ class AuthenticationController extends Controller
     {
         $this->requireAcceptsJson();
         $request = Craft::$app->getRequest();
-        $username = $request->getBodyParam('username');
+        $username = $request->getBodyParam('loginName');
 
         if (empty($username)) {
             return $this->asJson(['loginFormHtml' => Craft::$app->getView()->renderTemplate('_special/login/login_form')]);
@@ -77,12 +77,19 @@ class AuthenticationController extends Controller
 
         $chain->persistChainState();
 
+        $currentStep = $chain->getNextAuthenticationStep()->getStepType();
+
         $session = Craft::$app->getSession();
 
         return $this->asJson([
-            'loginFormHtml' => Craft::$app->getView()->renderTemplate('_special/login/login_form', compact('user')),
+            'loginFormHtml' => Craft::$app->getView()->renderTemplate('_special/login/login_form', [
+                'user' => $user,
+                'username' => $user->username,
+                'authenticationChain' => $chain,
+                'alternativeSteps' => $chain->getAlternativeSteps($currentStep)
+            ]),
             'footHtml' => Craft::$app->getView()->getBodyHtml(),
-            'stepType' => $chain->getNextAuthenticationStep()->getStepType(),
+            'stepType' => $currentStep,
             'message' => $session->getNotice(),
             'error' => $session->getError(),
         ]);

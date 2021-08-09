@@ -1,10 +1,10 @@
-{% embed '_special/login/authentication_chain' %}
+{% embed '_special/login/authentication_chain' with {'user': user} %}
     {% import "_includes/forms" as forms %}
 
     {% block switchUser %}
         {% if username|length > 0 or (authenticationChain is not null and not authenticationChain.isComplete) %}
             {% set knownUserName = user.username|default(username) %}
-                <div id="authentication-greeting">
+                <div id="authentication-greeting" class="toggle-recover">
                     {{ 'Hello, {user}'|t('app', {user: knownUserName}) }}. (<a id="restart-authentication">{{ 'Not {user}?'|t('app', {user: knownUserName}) }}</a>)
                     <hr />
                 </div>
@@ -21,7 +21,7 @@
         {% endif %}
     {% endblock %}
 
-    {% block startAuthentication %}
+    {% block usernameField %}
         {% if craft.app.config.general.useEmailAsUsername %}
             {% set usernameLabel = 'Email'|t('app') %}
             {% set usernameType = 'email' %}
@@ -30,26 +30,24 @@
             {% set usernameType = 'text' %}
         {% endif %}
 
-        <div id="start-authentication" class="{{ (user is not null) ? 'hidden' : '' }}">
-            {{ forms.textField({
-                id: 'loginName',
-                name: 'username',
-                placeholder: usernameLabel,
-                value: username,
-                autocomplete: 'username',
-                type: usernameType,
-                inputAttributes: {
-                    aria: {
-                        label: usernameLabel,
-                        required: 'true',
-                    },
+        {{ forms.textField({
+            id: 'loginName',
+            name: 'username',
+            placeholder: usernameLabel,
+            value: username,
+            autocomplete: 'username',
+            type: usernameType,
+            inputAttributes: {
+                aria: {
+                    label: usernameLabel,
+                    required: 'true',
                 },
-            }) }}
-        </div>
+            },
+        }) }}
     {% endblock %}
 
     {% block alternativeSteps %}
-        {% if alternativeSteps is not null %}
+        {% if alternativeSteps is defined and alternativeSteps is not null %}
             <div id="alternative-types" class="{{ (alternativeSteps|length == 0) ? 'hidden' : '' }}" >
                 <label>Other options:</label>
                 <ul>
@@ -62,14 +60,9 @@
     {% endblock %}
 
     {% block rememberMe %}
-        {% if showRememberMe %}
+        {% if showRememberMe is defined and showRememberMe %}
             {{ forms.checkboxField({ id: 'rememberMe', label: 'Keep me logged in'|t('app') }) }}
         {% endif %}
 
-    {% endblock %}
-
-    {% block accountRecovery %}
-            <button id="recover-account" rel="recovery" type="button">{{ 'Trouble logging in?'|t('app') }}</button>
-            <button id="cancel-recover" rel="authentication"   class="hidden" type="button">{{ 'Back to login'|t('app') }}</button>
     {% endblock %}
 {% endembed %}

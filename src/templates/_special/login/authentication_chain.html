@@ -9,7 +9,10 @@
         {% endblock %}
     </div>
 
-    {% block startAuthentication %}
+</div>
+
+<div id="username-field" class="{{ (user is not null) ? 'hidden' : '' }}">
+    {% block usernameField %}
 
     {% endblock %}
 </div>
@@ -19,13 +22,20 @@
 {% endblock %}
 
 <div id="login-form-bottom">
-    {% block rememberMe %}
+    <div class="toggle-recover">
+        {% block rememberMe %}
 
-    {% endblock %}
+        {% endblock %}
+    </div>
 
-    {% block accountRecovery %}
+    <div class="toggle-recover hidden initially-hidden">
+        {% block recoverAccount%}
 
-    {% endblock %}
+        {% endblock %}
+    </div>
+
+    <button id="recover-account" class="toggle-recover" rel="recovery" type="button">{{ 'Trouble logging in?'|t('app') }}</button>
+    <button id="cancel-recover" rel="authentication" class="toggle-recover hidden initially-hidden" type="button">{{ 'Back to login'|t('app') }}</button>
 </div>
 
 
