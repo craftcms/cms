@@ -314,6 +314,61 @@ abstract class Migration extends \yii\db\Migration
     }
 
     /**
+     * Creates and executes a SQL statement for dropping an index if it exists.
+     *
+     * @param string $table The table that the index was created for. The table name will be properly quoted by the method.
+     * @param string|string[] $columns The column(s) that are included in the index. If there are multiple
+     * columns, separate them by commas or use an array.
+     * @param bool $unique Whether the index has a UNIQUE constraint.
+     * @since 4.0.0
+     */
+    public function dropIndexIfExists(string $table, $columns, bool $unique = false): void
+    {
+        $time = $this->beginCommand("dropping index on $table if it exists");
+        Db::dropIndexIfExists($table, $columns, $unique, $this->db);
+        $this->endCommand($time);
+    }
+
+    /**
+     * Creates and executes a SQL statement for dropping a foreign key if it exists.
+     *
+     * @param string $table The table that the foreign key was created for. The table name will be properly quoted by the method.
+     * @param string|string[] $columns The column(s) that are included in the foreign key. If there are multiple
+     * columns, separate them by commas or use an array.
+     * @since 4.0.0
+     */
+    public function dropForeignKeyIfExists(string $table, $columns): void
+    {
+        $time = $this->beginCommand("dropping foreign key on $table if it exists");
+        Db::dropForeignKeyIfExists($table, $columns, $this->db);
+        $this->endCommand($time);
+    }
+
+    /**
+     * Creates and executes a SQL statement for dropping all foreign keys to a table.
+     *
+     * @param string $table The table that the foreign keys should reference.
+     * @since 4.0.0
+     */
+    public function dropAllForeignKeysToTable(string $table): void
+    {
+        $time = $this->beginCommand("dropping all foreign keys to $table");
+        Db::dropAllForeignKeysToTable($table, $this->db);
+        $this->endCommand($time);
+    }
+
+    /**
+     * Builds and executes a SQL statement for renaming a DB table and its corresponding sequence (if PostgreSQL).
+     * @since 4.0.0
+     */
+    public function renameTable($table, $newName)
+    {
+        $time = $this->beginCommand("rename table $table to $newName");
+        Db::renameTable($table, $newName);
+        $this->endCommand($time);
+    }
+
+    /**
      * Creates and executes a SQL statement for renaming a DB sequence.
      *
      * @param string $oldName the sequence to be renamed. The name will be properly quoted by the method.

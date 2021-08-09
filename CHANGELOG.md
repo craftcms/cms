@@ -14,11 +14,21 @@
 - Added `craft\behaviors\SessionBehavior::getNotice()`.
 - Added `craft\controllers\AssetIndexesController`.
 - Added `craft\db\Migration::convertColumnToJson()`.
+- Added `craft\db\Migration::dropAllForeignKeysToTable()`.
+- Added `craft\db\Migration::dropForeignKeyIfExists()`.
+- Added `craft\db\Migration::dropIndexIfExists()`.
+- Added `craft\db\Migration::renameTable()`.
 - Added `craft\db\Table::ASSETINDEXINGSESSIONS`.
 - Added `craft\elements\Asset::setFilename()`.
 - Added `craft\errors\MissingVolumeFolderException`.
 - Added `craft\helpers\Assets::downloadFile()`.
+- Added `craft\helpers\Db::dropAllForeignKeysToTable()`.
+- Added `craft\helpers\Db::dropForeignKeyIfExists()`.
+- Added `craft\helpers\Db::dropIndexIfExists()`.
+- Added `craft\helpers\Db::findForeignKey()`.
+- Added `craft\helpers\Db::findIndex()`.
 - Added `craft\helpers\Db::parseNumericParam()`.
+- Added `craft\helpers\Db::renameTable()`.
 - Added `craft\helpers\Number::isInt()`.
 - Added `craft\helpers\Number::toIntOrFloat()`.
 - Added `craft\models\AssetIndexingSession`.
@@ -141,6 +151,7 @@
 - Deprecated `craft\base\VolumeInterface::updateFileByStream()`.
 - Deprecated `craft\helpers\ArrayHelper::append()`. `array_unshift()` should be used instead.
 - Deprecated `craft\helpers\ArrayHelper::prepend()`. `array_push()` should be used instead.
+- Deprecated `craft\helpers\MigrationHelper`.
 - Deprecated `craft\web\AssetBundle`. `yii\web\AssetBundle` should be used instead.
 
 ### Removed
