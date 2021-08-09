@@ -195,12 +195,11 @@ abstract class Migration extends \yii\db\Migration
      */
     public function insert($table, $columns, bool $includeAuditColumns = true): void
     {
-        echo "    > insert into $table ...";
-        $time = microtime(true);
+        $time = $this->beginCommand("insert into $table");
         $this->db->createCommand()
             ->insert($table, $columns, $includeAuditColumns)
             ->execute();
-        echo ' done (time: ' . sprintf('%.3f', microtime(true) - $time) . "s)\n";
+        $this->endCommand($time);
     }
 
     /**
@@ -215,12 +214,11 @@ abstract class Migration extends \yii\db\Migration
      */
     public function batchInsert($table, $columns, $rows, bool $includeAuditColumns = true): void
     {
-        echo "    > batch insert into $table ...";
-        $time = microtime(true);
+        $time = $this->beginCommand("batch insert into $table");
         $this->db->createCommand()
             ->batchInsert($table, $columns, $rows, $includeAuditColumns)
             ->execute();
-        echo ' done (time: ' . sprintf('%.3f', microtime(true) - $time) . "s)\n";
+        $this->endCommand($time);
     }
 
     /**
@@ -256,12 +254,11 @@ abstract class Migration extends \yii\db\Migration
      */
     public function update($table, $columns, $condition = '', $params = [], bool $includeAuditColumns = true): void
     {
-        echo "    > update in $table ...";
-        $time = microtime(true);
+        $time = $this->beginCommand("update in $table");
         $this->db->createCommand()
             ->update($table, $columns, $condition, $params, $includeAuditColumns)
             ->execute();
-        echo ' done (time: ' . sprintf('%.3f', microtime(true) - $time) . "s)\n";
+        $this->endCommand($time);
     }
 
     /**
@@ -292,12 +289,11 @@ abstract class Migration extends \yii\db\Migration
      */
     public function replace(string $table, string $column, string $find, string $replace, $condition = '', array $params = []): void
     {
-        echo "    > replace \"$find\" with \"$replace\" in $table.$column ...";
-        $time = microtime(true);
+        $time = $this->beginCommand("replace \"$find\" with \"$replace\" in $table.$column");
         $this->db->createCommand()
             ->replace($table, $column, $find, $replace, $condition, $params)
             ->execute();
-        echo ' done (time: ' . sprintf('%.3f', microtime(true) - $time) . "s)\n";
+        $this->endCommand($time);
     }
 
     // Schema Manipulation Methods
@@ -310,12 +306,11 @@ abstract class Migration extends \yii\db\Migration
      */
     public function dropTableIfExists(string $table): void
     {
-        echo "    > dropping $table if it exists ...";
-        $time = microtime(true);
+        $time = $this->beginCommand("dropping $table if it exists");
         $this->db->createCommand()
             ->dropTableIfExists($table)
             ->execute();
-        echo ' done (time: ' . sprintf('%.3f', microtime(true) - $time) . "s)\n";
+        $this->endCommand($time);
     }
 
     /**
@@ -326,12 +321,11 @@ abstract class Migration extends \yii\db\Migration
      */
     public function renameSequence(string $oldName, string $newName): void
     {
-        echo "    > rename sequence $oldName to $newName ...";
-        $time = microtime(true);
+        $time = $this->beginCommand("rename sequence $oldName to $newName");
         $this->db->createCommand()
             ->renameSequence($oldName, $newName)
             ->execute();
-        echo ' done (time: ' . sprintf('%.3f', microtime(true) - $time) . "s)\n";
+        $this->endCommand($time);
     }
 
     /**
@@ -397,12 +391,11 @@ abstract class Migration extends \yii\db\Migration
      */
     public function softDelete(string $table, $condition = '', array $params = []): void
     {
-        echo "    > soft delete from $table ...";
-        $time = microtime(true);
+        $time = $this->beginCommand("soft delete from $table");
         $this->db->createCommand()
             ->softDelete($table, $condition, $params)
             ->execute();
-        echo ' done (time: ' . sprintf('%.3f', microtime(true) - $time) . "s)\n";
+        $this->endCommand($time);
     }
 
     /**
@@ -416,12 +409,11 @@ abstract class Migration extends \yii\db\Migration
      */
     public function restore(string $table, $condition = '', array $params = []): void
     {
-        echo "    > restore from $table ...";
-        $time = microtime(true);
+        $time = $this->beginCommand("restore from $table");
         $this->db->createCommand()
             ->restore($table, $condition, $params)
             ->execute();
-        echo ' done (time: ' . sprintf('%.3f', microtime(true) - $time) . "s)\n";
+        $this->endCommand($time);
     }
 
     /**
