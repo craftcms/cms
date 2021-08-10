@@ -143,7 +143,6 @@ class Install extends Migration
             'dateModified' => $this->dateTime(),
             'dateCreated' => $this->dateTime()->notNull(),
             'dateUpdated' => $this->dateTime()->notNull(),
-            'uid' => $this->uid(),
             'PRIMARY KEY([[id]])',
         ]);
         $this->createTable(Table::ASSETTRANSFORMINDEX, [
@@ -184,7 +183,6 @@ class Install extends Migration
             'deletedWithGroup' => $this->boolean()->null(),
             'dateCreated' => $this->dateTime()->notNull(),
             'dateUpdated' => $this->dateTime()->notNull(),
-            'uid' => $this->uid(),
             'PRIMARY KEY([[id]])',
         ]);
         $this->createTable(Table::CATEGORYGROUPS, [
@@ -342,7 +340,6 @@ class Install extends Migration
             'deletedWithEntryType' => $this->boolean()->null(),
             'dateCreated' => $this->dateTime()->notNull(),
             'dateUpdated' => $this->dateTime()->notNull(),
-            'uid' => $this->uid(),
             'PRIMARY KEY([[id]])',
         ]);
         $this->createTable(Table::ENTRYTYPES, [
@@ -466,7 +463,6 @@ class Install extends Migration
             'deletedWithOwner' => $this->boolean()->null(),
             'dateCreated' => $this->dateTime()->notNull(),
             'dateUpdated' => $this->dateTime()->notNull(),
-            'uid' => $this->uid(),
             'PRIMARY KEY([[id]])',
         ]);
         $this->createTable(Table::MATRIXBLOCKTYPES, [
@@ -646,7 +642,6 @@ class Install extends Migration
             'deletedWithGroup' => $this->boolean()->null(),
             'dateCreated' => $this->dateTime()->notNull(),
             'dateUpdated' => $this->dateTime()->notNull(),
-            'uid' => $this->uid(),
             'PRIMARY KEY([[id]])',
         ]);
         $this->createTable(Table::TOKENS, [
@@ -730,7 +725,6 @@ class Install extends Migration
             'lastPasswordChangeDate' => $this->dateTime(),
             'dateCreated' => $this->dateTime()->notNull(),
             'dateUpdated' => $this->dateTime()->notNull(),
-            'uid' => $this->uid(),
             'PRIMARY KEY([[id]])',
         ]);
         $this->createTable(Table::VOLUMEFOLDERS, [
@@ -901,7 +895,6 @@ class Install extends Migration
         $this->createIndex(null, Table::USERPERMISSIONS_USERGROUPS, ['groupId'], false);
         $this->createIndex(null, Table::USERPERMISSIONS_USERS, ['permissionId', 'userId'], true);
         $this->createIndex(null, Table::USERPERMISSIONS_USERS, ['userId'], false);
-        $this->createIndex(null, Table::USERS, ['uid'], false);
         $this->createIndex(null, Table::USERS, ['verificationCode'], false);
         $this->createIndex(null, Table::VOLUMEFOLDERS, ['name', 'parentId', 'volumeId'], true);
         $this->createIndex(null, Table::VOLUMEFOLDERS, ['parentId'], false);

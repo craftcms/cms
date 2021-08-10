@@ -487,7 +487,7 @@ class DbHelperTest extends Unit
     public function deleteIfExistsDataProvider(): array
     {
         return [
-            [0, Table::USERS . ' users', "[[users.id]] = 1234567890 and [[users.uid]] = 'THISISNOTAUID'"]
+            [0, Table::USERS, ['id' => 1234567890]],
         ];
     }
 
