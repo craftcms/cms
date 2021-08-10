@@ -20,7 +20,6 @@ use craft\helpers\ArrayHelper;
 use craft\helpers\Db;
 use craft\helpers\ElementHelper;
 use craft\helpers\Html;
-use craft\helpers\MigrationHelper;
 use craft\helpers\StringHelper;
 use craft\migrations\CreateMatrixContentTable;
 use craft\models\FieldLayout;
@@ -542,7 +541,7 @@ class Matrix extends Component
             if (!$db->tableExists($matrixField->contentTable)) {
                 $oldContentTable = $matrixField->oldSettings['contentTable'] ?? null;
                 if ($oldContentTable && $db->tableExists($oldContentTable)) {
-                    MigrationHelper::renameTable($oldContentTable, $matrixField->contentTable);
+                    Db::renameTable($oldContentTable, $matrixField->contentTable);
                 } else {
                     $this->_createContentTable($matrixField->contentTable);
                 }
