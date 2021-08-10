@@ -1,10 +1,12 @@
 {% embed '_special/login/authentication_chain' with {'user': user} %}
     {% import "_includes/forms" as forms %}
 
+    {% set authenticationInProgress = username|length > 0 or (authenticationChain is not null and not authenticationChain.isComplete) %}
+
     {% block switchUser %}
-        {% if username|length > 0 or (authenticationChain is not null and not authenticationChain.isComplete) %}
+        {% if authenticationInProgress %}
             {% set knownUserName = user.username|default(username) %}
-                <div id="authentication-greeting" class="toggle-recover">
+                <div id="authentication-greeting">
                     {{ 'Hello, {user}'|t('app', {user: knownUserName}) }}. (<a id="restart-authentication">{{ 'Not {user}?'|t('app', {user: knownUserName}) }}</a>)
                     <hr />
                 </div>
@@ -24,11 +26,15 @@
     {% block usernameField %}
         {% if craft.app.config.general.useEmailAsUsername %}
             {% set usernameLabel = 'Email'|t('app') %}
+            {% set recoveryMessage = 'Enter your email to continue'|t('app') %}
             {% set usernameType = 'email' %}
         {% else %}
             {% set usernameLabel = 'Username or Email'|t('app') %}
+            {% set recoveryMessage = 'Enter your username or email to continue'|t('app') %}
             {% set usernameType = 'text' %}
         {% endif %}
+
+        <div id="recovery-message" class="hidden">{{ recoveryMessage }}</div>
 
         {{ forms.textField({
             id: 'loginName',
@@ -60,9 +66,9 @@
     {% endblock %}
 
     {% block rememberMe %}
-        {% if showRememberMe is defined and showRememberMe %}
+        <div id="remember-me-container" {{ authenticationInProgress ? 'class="hidden"' : '' }}>
             {{ forms.checkboxField({ id: 'rememberMe', label: 'Keep me logged in'|t('app') }) }}
-        {% endif %}
+        </div>
 
     {% endblock %}
 {% endembed %}

@@ -8,7 +8,7 @@ class LoginForm {
             this.clearErrors();
             this.clearMessages();
             let additionalData = {
-                rememberMe: this.$rememberMeCheckbox.prop('checked'),
+                rememberMe: this.$rememberMe.find('input').prop('checked'),
             };
             if (!Craft.AuthenticationChainHandler.isExistingChain()) {
                 additionalData.loginName = this.$username.val();
@@ -26,10 +26,11 @@ class LoginForm {
     get $spinner() { return $('#spinner'); }
     get $pendingSpinner() { return $('#spinner-pending'); }
     get $submit() { return $('#submit'); }
-    get $rememberMeCheckbox() { return $('#rememberMe'); }
+    get $rememberMe() { return $('#remember-me-container'); }
     get $username() { return $('#username-field input'); }
     get $cancelRecover() { return $('#cancel-recover'); }
     get $recoverAccount() { return $('#recover-account'); }
+    get canRememberUser() { return this.$loginForm.data('can-remember'); }
     /**
      * Show an error.
      *
@@ -84,6 +85,22 @@ class LoginForm {
     }
     isDisabled() {
         return this.disabled;
+    }
+    showRememberMe() {
+        if (this.canRememberUser) {
+            this.$loginForm.addClass('remember-me');
+            this.$rememberMe.removeClass('hidden');
+        }
+    }
+    hideRememberMe() {
+        this.$loginForm.removeClass('remember-me');
+        this.$rememberMe.addClass('hidden');
+    }
+    showSubmitButton() {
+        this.$submit.removeClass('hidden');
+    }
+    hideSubmitButton() {
+        this.$submit.addClass('hidden');
     }
 }
 new LoginForm();

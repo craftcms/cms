@@ -15,7 +15,7 @@ class AuthenticationChainHandler {
     get $usernameField() { return $('#username-field'); }
     get $recoveryButtons() { return $('#recover-account, #cancel-recover'); }
     get $authenticationGreeting() { return $('#authentication-greeting'); }
-    get $toggleRecover() { return $('.toggle-recover'); }
+    get $recoveryMessage() { return $('#recovery-message'); }
     /**
      * Attach relevant event listeners.
      *
@@ -27,6 +27,14 @@ class AuthenticationChainHandler {
         });
         this.$restartAuthentication.on('click', this.restartAuthentication.bind(this));
         this.$recoveryButtons.on('click', this.toggleRecoverAccountForm.bind(this));
+        if (this.loginForm.canRememberUser) {
+            if (!this.isExistingChain()) {
+                this.loginForm.showRememberMe();
+            }
+            else {
+                this.loginForm.hideRememberMe();
+            }
+        }
     }
     /**
      * Reset the authentication chain controls and anything related in the login form.
@@ -35,10 +43,15 @@ class AuthenticationChainHandler {
         this.$authenticationStep.empty().attr('rel', '');
         this.$authenticationGreeting.remove();
         this.$usernameField.removeClass('hidden');
-        this.loginForm.$rememberMeCheckbox.parents('.field').removeClass('hidden');
-        this.loginForm.$submit.removeClass('hidden');
+        this.$recoveryMessage.addClass('hidden');
+        this.loginForm.showSubmitButton();
+        this.loginForm.showRememberMe();
         this.hideAlternatives();
         this.clearErrors();
+        if (this.recoverAccount) {
+            this.$recoveryButtons.toggleClass('hidden');
+            this.recoverAccount = false;
+        }
     }
     /**
      * Register an authentication step
@@ -64,20 +77,34 @@ class AuthenticationChainHandler {
      */
     toggleRecoverAccountForm() {
         this.recoverAccount = !this.recoverAccount;
+        this.$recoveryButtons.toggleClass('hidden');
+        if (this.recoverAccount) {
+            this.$recoveryMessage.removeClass('hidden');
+        }
+        else {
+            this.$recoveryMessage.addClass('hidden');
+        }
+        // Presumably, the login name input is shown already.
+        if (!this.isExistingChain()) {
+            return;
+        }
+        // Determine if we have an auth step type
+        let stepType = null;
+        if (this.$authenticationStep.attr('rel').length > 0) {
+            stepType = this.authenticationSteps[this.$authenticationStep.attr('rel')];
+        }
         if (this.recoverAccount) {
             this.$usernameField.removeClass('hidden');
-            this.loginForm.$submit.removeClass('hidden');
             this.$authenticationStep.addClass('hidden');
+            this.$alternatives.addClass('hidden');
+            stepType === null || stepType === void 0 ? void 0 : stepType.cleanup();
         }
         else {
             this.$usernameField.addClass('hidden');
-            this.loginForm.$submit.addClass('hidden');
             this.$authenticationStep.removeClass('hidden');
             this.$authenticationStep.attr('rel');
-            if (this.$authenticationStep.attr('rel').length > 0) {
-                const stepType = this.authenticationSteps[this.$authenticationStep.attr('rel')];
-                stepType.init();
-            }
+            this.$alternatives.removeClass('hidden');
+            stepType === null || stepType === void 0 ? void 0 : stepType.init();
         }
     }
     /**
@@ -104,17 +131,6 @@ class AuthenticationChainHandler {
             switch: true
         }, this.processResponse.bind(this));
     }
-    //     Garnish.Modal.extend({
-    //                              init: function() {
-    //     var $container = $('<div class="modal fitted email-sent"><div class="body">' + Craft.t('app', 'Check your email for instructions to reset your password.') + '</div></div>')
-    //     .appendTo(Garnish.$bod);
-    //
-    //     this.base($container);
-    // },
-    //
-    // hide: function() {
-    // }
-    // });
     /**
      * Process authentication response.
      * @param response
@@ -196,7 +212,7 @@ class AuthenticationChainHandler {
                 }
                 // Just in case this was the first step, remove all the misc things.
                 if (response.stepComplete) {
-                    this.loginForm.$rememberMeCheckbox.parents('.field').addClass('hidden');
+                    this.loginForm.hideRememberMe();
                 }
             }
         }

@@ -12,7 +12,7 @@ class LoginForm
             this.clearMessages();
 
             let additionalData: AuthenticationRequest = {
-                rememberMe: this.$rememberMeCheckbox.prop('checked'),
+                rememberMe: this.$rememberMe.find('input').prop('checked'),
             };
 
             if (!Craft.AuthenticationChainHandler.isExistingChain()) {
@@ -35,11 +35,12 @@ class LoginForm
     get $spinner() {return $('#spinner');}
     get $pendingSpinner() {return $('#spinner-pending');}
     get $submit() {return $('#submit');}
-    get $rememberMeCheckbox() {return $('#rememberMe');}
+    get $rememberMe() { return $('#remember-me-container');}
     get $username() {return $('#username-field input');}
     get $cancelRecover() {return $('#cancel-recover');}
     get $recoverAccount() {return $('#recover-account');}
 
+    get canRememberUser() { return this.$loginForm.data('can-remember'); }
     /**
      * Show an error.
      *
@@ -107,6 +108,30 @@ class LoginForm
     public isDisabled(): boolean
     {
         return this.disabled;
+    }
+
+    public showRememberMe()
+    {
+        if (this.canRememberUser) {
+            this.$loginForm.addClass('remember-me');
+            this.$rememberMe.removeClass('hidden');
+        }
+    }
+
+    public hideRememberMe()
+    {
+        this.$loginForm.removeClass('remember-me');
+        this.$rememberMe.addClass('hidden');
+    }
+
+    public showSubmitButton()
+    {
+        this.$submit.removeClass('hidden');
+    }
+
+    public hideSubmitButton()
+    {
+        this.$submit.addClass('hidden');
     }
 }
 

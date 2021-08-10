@@ -74,6 +74,12 @@ body.ltr .modal.email-sent .body:before { left: 24px; }
 
 body.rtl .modal.email-sent .body:before { right: 24px; }
 
-#alternatives li { cursor: pointer; }
+#alternative-types { padding: 10px 4px; }
+
+#alternative-types li { cursor: pointer; padding: 3px 0 3px 5px; }
+
+#alternative-types li:hover, #alternative-types li:focus { color: #0B69A3; }
+
+#recovery-message { padding: 10px; }
 
 /*# sourceMappingURL=login.css.map */

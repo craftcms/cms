@@ -180,6 +180,21 @@ body {
   color: $linkColor;
 }
 
-#alternatives li {
-  cursor: pointer;
+#alternative-types {
+  padding: 10px 4px;
 }
+
+#alternative-types li {
+  cursor: pointer;
+  padding: 3px 0 3px 5px;
+}
+
+#alternative-types li:hover,
+#alternative-types li:focus {
+  color: $linkColor;
+}
+
+#recovery-message {
+  padding: 10px;
+}
+

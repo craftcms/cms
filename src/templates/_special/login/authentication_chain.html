@@ -22,20 +22,18 @@
 {% endblock %}
 
 <div id="login-form-bottom">
-    <div class="toggle-recover">
-        {% block rememberMe %}
+    {% block rememberMe %}
 
-        {% endblock %}
-    </div>
+    {% endblock %}
 
-    <div class="toggle-recover hidden initially-hidden">
+    <div class="hidden">
         {% block recoverAccount%}
 
         {% endblock %}
     </div>
 
-    <button id="recover-account" class="toggle-recover" rel="recovery" type="button">{{ 'Trouble logging in?'|t('app') }}</button>
-    <button id="cancel-recover" rel="authentication" class="toggle-recover hidden initially-hidden" type="button">{{ 'Back to login'|t('app') }}</button>
+    <button id="recover-account" rel="recovery" type="button">{{ 'Trouble logging in?'|t('app') }}</button>
+    <button id="cancel-recover" rel="authentication" class="hidden" type="button">{{ 'Back to login'|t('app') }}</button>
 </div>
 
 
