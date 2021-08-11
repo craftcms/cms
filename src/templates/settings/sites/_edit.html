@@ -108,11 +108,12 @@
     {% if (craft.app.isMultiSite or not site.id) %}
         <div class="meta">
             {{ forms.lightswitchField({
-                label: 'Enable on the front end'|t('app'),
+                label: 'Enabled'|t('app'),
                 id: 'enabled',
                 name: 'enabled',
                 on: site.primary or site.enabled,
                 disabled: site.primary,
+                instructions: site.primary ? 'Primary site cannot be disabled.'|t('app') : null,
                 errors: site.getErrors('enabled'),
             }) }}
         </div>
