@@ -113,7 +113,7 @@
                 name: 'enabled',
                 on: site.primary or site.enabled,
                 disabled: site.primary,
-                instructions: site.primary ? 'Primary site cannot be disabled.'|t('app') : null,
+                instructions: site.primary ? 'The primary site cannot be disabled.'|t('app') : null,
                 errors: site.getErrors('enabled'),
             }) }}
         </div>

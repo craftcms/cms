@@ -1043,7 +1043,6 @@ return [
     'Previous Page' => 'Previous Page',
     'Price includes 1 year of updates.' => 'Price includes 1 year of updates.',
     'Primary {type} page' => 'Primary {type} page',
-    'Primary site cannot be disabled.' => 'Primary site cannot be disabled.',
     'Primary' => 'Primary',
     'Pro Rate Discount' => 'Pro Rate Discount',
     'Profile Twig templates when Dev Mode is disabled' => 'Profile Twig templates when Dev Mode is disabled',
