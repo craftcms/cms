@@ -41,7 +41,7 @@ class AuthenticationChainHandler
     public constructor(loginForm: LoginForm)
     {
         this.loginForm = loginForm;
-        this.attachListeners();
+        this.prepareForm();
     }
 
     get $alternatives() { return $('#alternative-types');}
@@ -55,18 +55,15 @@ class AuthenticationChainHandler
 
 
     /**
-     * Attach relevant event listeners.
+     * Prepare form by cleaning up visibility of some items and attaching relevant event listeners.
      *
      * @protected
      */
-    protected attachListeners()
+    protected prepareForm()
     {
         this.$alternatives.on('click', 'li', (ev) => {
             this.switchStep($(ev.target).attr('rel')!);
         });
-
-        this.$restartAuthentication.on('click', this.restartAuthentication.bind(this));
-        this.$recoveryButtons.on('click', this.toggleRecoverAccountForm.bind(this));
 
         if (this.loginForm.canRememberUser) {
             if (!this.isExistingChain()) {
@@ -75,6 +72,9 @@ class AuthenticationChainHandler
                 this.loginForm.hideRememberMe();
             }
         }
+
+        this.$restartAuthentication.on('click', this.restartAuthentication.bind(this));
+        this.$recoveryButtons.on('click', this.toggleRecoverAccountForm.bind(this));
     }
 
     /**
@@ -260,18 +260,18 @@ class AuthenticationChainHandler
                     }
                 }
 
-                // Display the HTML
+                // Display the HTML for the auth step.
                 if (response.html) {
                     this.currentStep?.cleanup();
                     this.$authenticationStep.html(response.html);
                     initStepType(response.stepType!);
                 }
 
-                // Display the HTML
+                // Display the HTML for the entire login form, in case we just started an authentication chain
                 if (response.loginFormHtml) {
                     this.currentStep?.cleanup();
                     this.loginForm.$loginForm.html(response.loginFormHtml);
-                    this.attachListeners();
+                    this.prepareForm();
                     initStepType(response.stepType!);
                 }
 
@@ -285,6 +285,11 @@ class AuthenticationChainHandler
         this.loginForm.enableForm();
     }
 
+    /**
+     * Show the alternative authentication methods available at this point.
+     *
+     * @param alternatives
+     */
     public showAlternatives(alternatives: AuthenticationAlternatives)
     {
         this.$alternatives.removeClass('hidden');
@@ -295,18 +300,27 @@ class AuthenticationChainHandler
         }
     }
 
+    /**
+     * Hide the alternative authentication methods.
+     */
     public hideAlternatives()
     {
         this.$alternatives.addClass('hidden');
         this.$alternatives.find('ul').empty();
     }
 
+    /**
+     * Handle the login form submission.
+     *
+     * @param ev
+     * @param additionalData
+     */
     public handleFormSubmit (ev: any, additionalData: AuthenticationRequest) {
         this.invokeStepHandler(ev, additionalData)
     }
 
     /**
-     * Invoke the current step handler bound to the authentication container
+     * Invoke the current step handler
      * @param ev
      */
     protected async invokeStepHandler(ev: any, additionalData: AuthenticationRequest)
@@ -337,11 +351,17 @@ class AuthenticationChainHandler
 
     }
 
+    /**
+     * Return true if there is an existing authentication chain being traversed
+     */
     public isExistingChain(): boolean
     {
         return this.$authenticationStep.attr('rel')!.length > 0;
     }
 
+    /**
+     * Clear the error from the login form.
+     */
     public clearErrors()
     {
         this.loginForm.clearErrors();

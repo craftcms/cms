@@ -82,7 +82,7 @@ class AuthenticationController extends Controller
         $session = Craft::$app->getSession();
 
         return $this->asJson([
-            'loginFormHtml' => Craft::$app->getView()->renderTemplate('_special/login/login_form', [
+            'loginFormHtml' => Craft::$app->getView()->renderTemplate('_special/login/authentication_chain', [
                 'user' => $user,
                 'username' => $user->username,
                 'authenticationChain' => $chain,

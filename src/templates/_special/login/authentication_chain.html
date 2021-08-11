@@ -1,42 +1,81 @@
-{% block switchUser %}
+{% import "_includes/forms" as forms %}
+{% set authenticationInProgress = username|length > 0 or (authenticationChain is not null and not authenticationChain.isComplete) %}
 
-{% endblock %}
+{### User greeting ###}
+{% if authenticationInProgress %}
+    {% set knownUserName = user.username|default(username) %}
+    <div id="authentication-greeting">
+        {{ 'Hello, {user}'|t('app', {user: knownUserName}) }}. (<a id="restart-authentication">{{ 'Not {user}?'|t('app', {user: knownUserName}) }}</a>)
+        <hr />
+    </div>
+{% endif %}
 
+{### Authentication step ###}
 <div id="login-form-top">
     <div id="authentication-step" rel="{{ (authenticationChain and authenticationChain.nextAuthenticationStep) ? authenticationChain.nextAuthenticationStep.stepType : '' }}">
-        {% block authStepHtml %}
-
-        {% endblock %}
+        {% if authenticationChain is not null %}
+            {% if not authenticationChain.isComplete %}
+                {{ authenticationChain.nextAuthenticationStep.inputFieldHtml|raw }}
+            {% else %}
+                <div id="spinner-pending" class="spinner big over-bg"></div>
+            {% endif %}
+        {% endif %}
     </div>
-
 </div>
 
+{### Username field to be used when starting auth chain or recovering an account  ###}
 <div id="username-field" class="{{ (user is not null) ? 'hidden' : '' }}">
-    {% block usernameField %}
+    {% if craft.app.config.general.useEmailAsUsername %}
+        {% set usernameLabel = 'Email'|t('app') %}
+        {% set recoveryMessage = 'Enter your email to continue'|t('app') %}
+        {% set usernameType = 'email' %}
+    {% else %}
+        {% set usernameLabel = 'Username or Email'|t('app') %}
+        {% set recoveryMessage = 'Enter your username or email to continue'|t('app') %}
+        {% set usernameType = 'text' %}
+    {% endif %}
 
-    {% endblock %}
+    <div id="recovery-message" class="hidden">{{ recoveryMessage }}</div>
+
+    {{ forms.textField({
+        id: 'loginName',
+        name: 'username',
+        placeholder: usernameLabel,
+        value: username,
+        autocomplete: 'username',
+        type: usernameType,
+        inputAttributes: {
+            aria: {
+                label: usernameLabel,
+                required: 'true',
+            },
+        },
+    }) }}
 </div>
 
-{% block alternativeSteps %}
+{### Alternative authentication steps ###}
+{% if alternativeSteps is defined and alternativeSteps is not null %}
+    <div id="alternative-types" class="{{ (alternativeSteps|length == 0) ? 'hidden' : '' }}" >
+        <label>Other options:</label>
+        <ul>
+            {% for type, name in authenticationChain.alternativeSteps %}
+                <li rel="{{ type }}">{{ name }}</li>
+            {% endfor %}
+        </ul>
+    </div>
+{% endif %}
 
-{% endblock %}
-
+{### Remember me checkbox and account recovry controls ###}
 <div id="login-form-bottom">
-    {% block rememberMe %}
-
-    {% endblock %}
-
-    <div class="hidden">
-        {% block recoverAccount%}
-
-        {% endblock %}
+    <div id="remember-me-container" {{ authenticationInProgress ? 'class="hidden"' : '' }}>
+        {{ forms.checkboxField({ id: 'rememberMe', label: 'Keep me logged in'|t('app') }) }}
     </div>
 
     <button id="recover-account" rel="recovery" type="button">{{ 'Trouble logging in?'|t('app') }}</button>
     <button id="cancel-recover" rel="authentication" class="hidden" type="button">{{ 'Back to login'|t('app') }}</button>
 </div>
 
-
+{### Submit button and spinner ###}
 <div class="buttons">
     {% if not authenticationChain or not authenticationChain.isComplete %}
         <button id="submit" class="btn submit" type="submit">{{ 'Submit'|t('app') }}</button>
