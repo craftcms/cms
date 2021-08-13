@@ -521,6 +521,12 @@ class DateTimeHelperTest extends Unit
                 },
                 '2021',
             ],
+            'datetime-with-timezone' => [
+                function() {
+                    return new DateTime('2021-09-01T12:00', new DateTimeZone('Europe/Berlin'));
+                },
+                ['datetime' => '2021-09-01T12:00', 'timezone' => 'Europe/Berlin'],
+            ],
         ];
     }
 
