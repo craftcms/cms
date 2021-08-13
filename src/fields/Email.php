@@ -72,10 +72,7 @@ class Email extends Field implements PreviewableFieldInterface
      */
     public function normalizeValue($value, ElementInterface $element = null)
     {
-        if ($value === '') {
-            return null;
-        }
-        return $value;
+        return $value !== '' ? $value : null;
     }
 
     /**
