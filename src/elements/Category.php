@@ -456,8 +456,13 @@ class Category extends Element
     protected function cpEditUrl(): ?string
     {
         $group = $this->getGroup();
+        $path = "categories/$group->handle";
 
-        $path = "categories/$group->handle/$this->id" . ($this->slug ? "-$this->slug" : '');
+        if ($this->id) {
+            $path .= "/$this->id" . ($this->slug ? "-$this->slug" : '');
+        } else {
+            $path .= '/new';
+        }
 
         $params = [];
         if (Craft::$app->getIsMultiSite()) {

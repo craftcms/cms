@@ -162,19 +162,13 @@ Craft.EntryIndex = Craft.BaseElementIndex.extend({
 
     _getSectionTriggerHref: function(section) {
         if (this.settings.context === 'index') {
-            var uri = 'entries/' + section.handle + '/new';
-            let params = {};
-            if (this.siteId) {
-                for (var i = 0; i < Craft.sites.length; i++) {
-                    if (Craft.sites[i].id == this.siteId) {
-                        params.site = Craft.sites[i].handle;
-                    }
-                }
-            }
-            return 'href="' + Craft.getUrl(uri, params) + '"';
-        } else {
-            return 'data-id="' + section.id + '"';
+            const uri = `entries/${section.handle}/new`;
+            const site = this.getSite();
+            const params = site ? {site: site.handle} : undefined;
+            return `href="${Craft.getUrl(uri, params)}"`;
         }
+
+        return `data-id="${section.id}"`;
     },
 
     _openCreateEntryModal: function(sectionId) {
