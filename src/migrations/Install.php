@@ -9,6 +9,9 @@
 namespace craft\migrations;
 
 use Craft;
+use craft\authentication\type\mfa\AuthenticatorCode;
+use craft\authentication\type\mfa\WebAuthn;
+use craft\authentication\type\Password;
 use craft\base\Field;
 use craft\db\Migration;
 use craft\db\Table;
@@ -25,6 +28,7 @@ use craft\models\CategoryGroup;
 use craft\models\Info;
 use craft\models\Section;
 use craft\models\Site;
+use craft\services\Authentication;
 use craft\services\Plugins;
 use craft\services\ProjectConfig;
 use craft\web\Response;
@@ -1233,6 +1237,46 @@ class Install extends Migration
         $siteGroupUid = StringHelper::UUID();
 
         return [
+            'authentication-chains' => [
+                Authentication::CP_AUTHENTICATION_CHAIN => [
+                    'branches' => [
+                        [
+                            'title' => 'WebAuthn',
+                            'steps' => [
+                                [
+                                    'choices' => [
+                                        [
+                                            'type' => WebAuthn::class
+                                        ],
+                                    ],
+                                    'required' => true
+                                ],
+                            ],
+                        ],
+                        [
+                            'title' => 'Optional 2FA',
+                            'steps' => [
+                                [
+                                    'choices' => [
+                                        [
+                                            'type' => Password::class
+                                        ],
+                                    ],
+                                    'required' => true
+                                ],
+                                [
+                                    'choices' => [
+                                        [
+                                            'type' => AuthenticatorCode::class
+                                        ],
+                                    ],
+                                    'required' => false
+                                ],
+                            ],
+                        ],
+                    ],
+                ]
+            ],
             'dateModified' => DateTimeHelper::currentTimeStamp(),
             'fieldGroups' => [
                 StringHelper::UUID() => [
