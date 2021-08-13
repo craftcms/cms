@@ -553,7 +553,6 @@ return [
     'Email settings saved.' => 'تنظیمات پست الکترونیکی ذخیره گردید.',
     'Email verified' => 'پست الکترونیکی فعال شد',
     'Email' => 'پست الکترونیکی',
-    'Enable on the front end' => 'فعال کردن در صفحات سایت',
     'Enable the [Intl extension]({link1}) or install additional [locale data files]({link2}) for more language options.' => 'فعالسازی [Intl extension]({link1}) یا نصب [locale data files]({link2}) اضافی برای امکانات بیشتر زبان.',
     'Enable versioning for entries in this section' => 'فعال کردن ایجاد نسخه برای محتواها در این بخش',
     'Enable' => 'فعال کردن',

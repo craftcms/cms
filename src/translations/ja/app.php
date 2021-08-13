@@ -553,7 +553,6 @@ return [
     'Email settings saved.' => 'メールの設定を保存しました。',
     'Email verified' => '電子メール検証済み',
     'Email' => 'メール',
-    'Enable on the front end' => 'フロントエンドで有効にする',
     'Enable the [Intl extension]({link1}) or install additional [locale data files]({link2}) for more language options.' => 'より多くの言語オプションを得るには、[Intl 拡張]({link1}) を有効にするか、追加の [ロケールデータファイル]({link2}) をインストールします。',
     'Enable versioning for entries in this section' => 'このセクションのエントリのバージョン管理を有効にする',
     'Enable' => '有効',

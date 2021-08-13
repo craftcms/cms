@@ -553,7 +553,6 @@ return [
     'Email settings saved.' => 'E-mail instellingen bewaard.',
     'Email verified' => 'E-mail gecontroleerd',
     'Email' => 'E-mail',
-    'Enable on the front end' => 'Inschakelen voor de frontend',
     'Enable the [Intl extension]({link1}) or install additional [locale data files]({link2}) for more language options.' => 'Schakel de [extensie Intl]({link1}) in of installeer aanvullende [gegevensbestanden met landinstellingen]({link2}) voor meer taalopties.',
     'Enable versioning for entries in this section' => 'Versiebeheer voor inhoud in deze rubriek inschakelen',
     'Enable' => 'Inschakelen',

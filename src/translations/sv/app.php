@@ -553,7 +553,6 @@ return [
     'Email settings saved.' => 'E-postinställningar sparade.',
     'Email verified' => 'E-post har verifierats',
     'Email' => 'E-post',
-    'Enable on the front end' => 'Aktivera i frontend',
     'Enable the [Intl extension]({link1}) or install additional [locale data files]({link2}) for more language options.' => 'Aktivera [Intl tillägg]({link1}) eller installera ytterligare [lokala datafiler]({link2}) för fler språkalternativ.',
     'Enable versioning for entries in this section' => 'Aktivera versionshantering för inlägg i denna sektion',
     'Enable' => 'Aktivera',

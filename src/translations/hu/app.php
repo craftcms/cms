@@ -553,7 +553,6 @@ return [
     'Email settings saved.' => 'E-mail beállítások elmentve.',
     'Email verified' => 'Ez e-mail ellenőrizve',
     'Email' => 'E-mail',
-    'Enable on the front end' => 'Engedélyezni az előtérben',
     'Enable the [Intl extension]({link1}) or install additional [locale data files]({link2}) for more language options.' => 'További nyelvi beállításokért engedélyezze a(z) [Intl extension]({link1}) kiterjesztést, vagy telepítsen további [locale data files]({link2}) fájlokat.',
     'Enable versioning for entries in this section' => 'Verzióválasztás bekapcsolása a szekció bejegyzéseihez',
     'Enable' => 'Engedélyez',
