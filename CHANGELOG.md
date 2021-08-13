@@ -7,6 +7,7 @@
 
 ### Changed
 - Custom fields’ search keywords are now indexed for entry drafts.
+- Email fields now allow IDNA ASCII characters in the domain name, on servers with the Intl extension. ([#9698](https://github.com/craftcms/cms/discussions/9698))
 - Updated Yii to 2.0.43.
 
 ### Fixed

@@ -11,8 +11,10 @@ use Craft;
 use craft\base\ElementInterface;
 use craft\base\Field;
 use craft\base\PreviewableFieldInterface;
+use craft\helpers\App;
 use craft\helpers\Cp;
 use craft\helpers\Html;
+use craft\helpers\StringHelper;
 use yii\db\Schema;
 
 /**
@@ -78,6 +80,14 @@ class Email extends Field implements PreviewableFieldInterface
     /**
      * @inheritdoc
      */
+    public function serializeValue($value, ElementInterface $element = null)
+    {
+        return $value !== null ? StringHelper::idnToUtf8Email($value) : null;
+    }
+
+    /**
+     * @inheritdoc
+     */
     protected function inputHtml($value, ElementInterface $element = null): string
     {
         $id = Html::id($this->handle);
@@ -99,7 +109,7 @@ class Email extends Field implements PreviewableFieldInterface
     {
         return [
             ['trim'],
-            ['email'],
+            ['email', 'enableIDN' => App::supportsIdn(), 'enableLocalIDN' => false],
         ];
     }
 
