@@ -553,7 +553,6 @@ return [
     'Email settings saved.' => 'Настройки почты сохранены.',
     'Email verified' => 'Адрес электронной почты подтвержден',
     'Email' => 'Почта',
-    'Enable on the front end' => 'Включить в интерфейсе',
     'Enable the [Intl extension]({link1}) or install additional [locale data files]({link2}) for more language options.' => 'Активизируйте [расширение Intl]({link1}) или установите [файлы данных языковых стандартов]({link2}) для расширения возможностей выбора языка.',
     'Enable versioning for entries in this section' => 'Включить управление версиями в этом разделе',
     'Enable' => 'Включить',

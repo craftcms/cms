@@ -553,7 +553,6 @@ return [
     'Email settings saved.' => 'Eposta ayarları kaydedildi.',
     'Email verified' => 'E-posta doğrulandı',
     'Email' => 'Eposta',
-    'Enable on the front end' => 'Ön uçta etkinleştir',
     'Enable the [Intl extension]({link1}) or install additional [locale data files]({link2}) for more language options.' => 'Daha fazla dil seçeneği için [Intl uzantısını]({link1}) etkinleştirin veya ek [yerel ayar veri dosyaları]({link2}) yükleyin.',
     'Enable versioning for entries in this section' => 'Bu bölümdeki kayıtların sürümlendirilmesini etkinleştir',
     'Enable' => 'Etkinleştir',
