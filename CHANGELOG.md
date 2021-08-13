@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+### Added
+- Added `craft\helpers\App::supportsIdn()`.
+
 ### Changed
 - Custom fields’ search keywords are now indexed for entry drafts.
 

@@ -301,6 +301,17 @@ class App
     }
 
     /**
+     * Returns whether the server supports IDNA ASCII strings.
+     *
+     * @return bool
+     * @since 3.7.9
+     */
+    public static function supportsIdn(): bool
+    {
+        return function_exists('idn_to_ascii') && defined('INTL_IDNA_VARIANT_UTS46');
+    }
+
+    /**
      * Returns a humanized class name.
      *
      * @param string $class

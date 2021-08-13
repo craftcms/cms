@@ -11,6 +11,7 @@ use Craft;
 use craft\base\RequestTrait;
 use craft\config\GeneralConfig;
 use craft\errors\SiteNotFoundException;
+use craft\helpers\App;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Session as SessionHelper;
 use craft\helpers\StringHelper;
@@ -1528,9 +1529,8 @@ class Request extends \yii\web\Request
             $hostName &&
             $parsed['host'] !== $hostName &&
             (
-                !function_exists('idn_to_ascii') ||
+                !App::supportsIdn() ||
                 !defined('IDNA_NONTRANSITIONAL_TO_ASCII') ||
-                !defined('INTL_IDNA_VARIANT_UTS46') ||
                 idn_to_ascii($parsed['host'], IDNA_NONTRANSITIONAL_TO_ASCII, INTL_IDNA_VARIANT_UTS46) !== $hostName
             )
         ) {
