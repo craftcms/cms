@@ -70,10 +70,11 @@ class App
     }
 
     /**
-     * Returns whether Craft is running within [Nitro](https://getnitro.sh).
+     * Returns whether Craft is running within [Nitro](https://getnitro.sh) v1.
      *
      * @return bool
      * @since 3.4.19
+     * @deprecated in 3.7.9.
      */
     public static function isNitro(): bool
     {

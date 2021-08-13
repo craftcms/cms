@@ -10,6 +10,9 @@
 - Email fields now allow IDNA ASCII characters in the domain name, on servers with the Intl extension. ([#9698](https://github.com/craftcms/cms/discussions/9698))
 - Updated Yii to 2.0.43.
 
+### Deprecated
+- Deprecated `craft\helper\App::isNitro()`. ([#9709](https://github.com/craftcms/cms/issues/9709))
+
 ### Fixed
 - Fixed a bug where custom fields’ search keywords weren’t getting indexed for newly-created entries. ([#9699](https://github.com/craftcms/cms/issues/9699))
 - Fixed a bug where user email addresses would validate if they had IDNA ASCII characters in the local part, even though Swiftmailer doesn’t allow it. ([#9096](https://github.com/craftcms/cms/issues/9096))
