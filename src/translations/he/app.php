@@ -553,7 +553,6 @@ return [
     'Email settings saved.' => 'הגדרות האימייל נשמרו.',
     'Email verified' => 'הדוא"ל אומת',
     'Email' => 'אימייל',
-    'Enable on the front end' => 'אפשר בצד המשתמש',
     'Enable the [Intl extension]({link1}) or install additional [locale data files]({link2}) for more language options.' => 'הפוך את [סיומת בינלאומית]({link1}) לזמינה או התקן [קובצי נתוני אזור]({link2}) נוספים עבור אפשרויות שפה נוספות.',
     'Enable versioning for entries in this section' => 'הפעל ניהול גרסאות עבור רשומות בסקשן הזה',
     'Enable' => 'הפעל',
