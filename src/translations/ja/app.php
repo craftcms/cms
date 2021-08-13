@@ -445,7 +445,7 @@ return [
     'Delete entries with the “{entryType}” entry type' => '“{entryType}” エントリタイプのエントリを削除',
     'Delete entries' => 'エントリを削除する',
     'Delete folder' => 'フォルダを削除する',
-    'Delete for site' => 'サイトのために削除',
+    'Delete for site' => 'サイトから削除',
     'Delete heading' => '見出しを削除する',
     'Delete icon' => 'アイコンを削除',
     'Delete it' => '削除する',
