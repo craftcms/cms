@@ -22,10 +22,10 @@ class ColumnSchemaBuilder extends YiiColumnSchemaBuilder
      */
     public function init()
     {
-        $this->categoryMap[Schema::TYPE_TINYTEXT] = self::CATEGORY_STRING;
-        $this->categoryMap[Schema::TYPE_MEDIUMTEXT] = self::CATEGORY_STRING;
-        $this->categoryMap[Schema::TYPE_LONGTEXT] = self::CATEGORY_STRING;
-        $this->categoryMap[Schema::TYPE_ENUM] = self::CATEGORY_STRING;
+        static::$typeCategoryMap[Schema::TYPE_TINYTEXT] = self::CATEGORY_STRING;
+        static::$typeCategoryMap[Schema::TYPE_MEDIUMTEXT] = self::CATEGORY_STRING;
+        static::$typeCategoryMap[Schema::TYPE_LONGTEXT] = self::CATEGORY_STRING;
+        static::$typeCategoryMap[Schema::TYPE_ENUM] = self::CATEGORY_STRING;
     }
 
     /**
