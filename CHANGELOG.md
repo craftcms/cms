@@ -18,6 +18,7 @@
 - Fixed a bug where custom fields’ search keywords weren’t getting indexed for newly-created entries. ([#9699](https://github.com/craftcms/cms/issues/9699))
 - Fixed a bug where user email addresses would validate if they had IDNA ASCII characters in the local part, even though Swiftmailer doesn’t allow it. ([#9096](https://github.com/craftcms/cms/issues/9096))
 - Fixed a bug where Date fields weren’t handling array values with `datetime` keys properly. ([#9708](https://github.com/craftcms/cms/issues/9708))
+- Fixed a bug where Edit Asset pages for top-level assets had an extra breadcrumb. ([#9720](https://github.com/craftcms/cms/issues/9720))
 
 ## 3.7.8 - 2021-08-06
 
