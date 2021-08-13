@@ -27,7 +27,6 @@ class Authentication extends Component
 
     public const CONFIG_AUTH_CHAINS = 'authentication-chains';
     public const CP_AUTHENTICATION_CHAIN = 'cpLogin';
-    public const CP_RECOVERY_CHAIN = 'cpRecovery';
 
     /**
      * Return an authentication chain based on a scenario.
