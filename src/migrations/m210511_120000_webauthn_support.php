@@ -4,12 +4,11 @@ namespace craft\migrations;
 
 use craft\db\Migration;
 use craft\db\Table;
-use craft\helpers\MigrationHelper;
 
 /**
- * m270511_120000_webauthn_support migration.
+ * m210511_120000_webauthn_support. migration.
  */
-class m270511_120000_webauthn_support extends Migration
+class m210511_120000_webauthn_support extends Migration
 {
     /**
      * @inheritdoc
@@ -36,7 +35,7 @@ class m270511_120000_webauthn_support extends Migration
      */
     public function safeDown()
     {
-        echo "m270511_120000_webauthn_support cannot be reverted.\n";
+        echo "m210511_120000_webauthn_support. cannot be reverted.\n";
         return false;
     }
 }
