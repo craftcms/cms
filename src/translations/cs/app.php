@@ -553,7 +553,6 @@ return [
     'Email settings saved.' => 'Nastavení emailu uložena.',
     'Email verified' => 'E-mail ověřen',
     'Email' => 'E-mail',
-    'Enable on the front end' => 'Aktivovat rozhraní front-end',
     'Enable the [Intl extension]({link1}) or install additional [locale data files]({link2}) for more language options.' => 'Chcete-li mít více možností jazyka, povolte [mez. příponu]({link1}) nebo nainstalujte další [datové soubory s národním prostředím]({link2}).',
     'Enable versioning for entries in this section' => 'Zapnout verzování záznamů v této sekci',
     'Enable' => 'Zapnout',
