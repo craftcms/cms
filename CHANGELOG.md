@@ -1,5 +1,13 @@
 # Release Notes for Craft CMS 3.x
 
+## Unreleased
+
+### Changed
+- Custom fields’ search keywords are now indexed for entry drafts.
+
+### Fixed
+- Fixed a bug where custom fields’ search keywords weren’t getting indexed for newly-created entries. ([#9699](https://github.com/craftcms/cms/issues/9699))
+
 ## 3.7.8 - 2021-08-06
 
 ### Added

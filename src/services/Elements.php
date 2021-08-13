@@ -2734,7 +2734,7 @@ class Elements extends Component
                     'elementType' => get_class($element),
                     'elementId' => $element->id,
                     'siteId' => $propagate ? '*' : $element->siteId,
-                    'fieldHandles' => $element->getIsDraft() ? [] : $element->getDirtyFields(),
+                    'fieldHandles' => $element->getDirtyFields(),
                 ]), 2048);
             }
         }
