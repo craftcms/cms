@@ -22,6 +22,7 @@
 - Fixed a bug where the “New category” button on the Categories index page would link to a 404 when a non-primary site was selected. ([#9722](https://github.com/craftcms/cms/issues/9722))
 - Fixed a bug where changing the site from an Edit Category page would go to a 404 when editing a new, unsaved category.
 - Fixed a bug where deep-linking to a volume’s subfolder that contained any non-ASCII characters would return a 404. ([#9723](https://github.com/craftcms/cms/issues/9723))
+- Fixed a bug where the Assets index page wasn’t updating the URL when selecting a subfolder that had been renamed on the same page load.
 
 ## 3.7.8 - 2021-08-06
 
