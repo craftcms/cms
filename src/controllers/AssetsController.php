@@ -610,8 +610,7 @@ class AssetsController extends Controller
         $this->requireVolumePermissionByFolder('createFoldersInVolume', $folder);
 
         try {
-            $newName = Craft::$app->getAssets()->renameFolderById($folderId,
-                $newName);
+            $newName = Craft::$app->getAssets()->renameFolderById($folderId, $newName);
         } catch (\Throwable $exception) {
             return $this->asErrorJson($exception->getMessage());
         }

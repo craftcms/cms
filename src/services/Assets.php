@@ -270,14 +270,13 @@ class Assets extends Component
         $folder = $this->getFolderById($folderId);
 
         if (!$folder) {
-            throw new AssetLogicException(Craft::t('app',
-                'No folder exists with the ID “{id}”',
-                ['id' => $folderId]));
+            throw new AssetLogicException(Craft::t('app', 'No folder exists with the ID “{id}”', [
+                'id' => $folderId,
+            ]));
         }
 
         if (!$folder->parentId) {
-            throw new AssetLogicException(Craft::t('app',
-                'It’s not possible to rename the top folder of a Volume.'));
+            throw new AssetLogicException(Craft::t('app', 'It’s not possible to rename the top folder of a Volume.'));
         }
 
         $conflictingFolder = $this->findFolder([
@@ -286,9 +285,9 @@ class Assets extends Component
         ]);
 
         if ($conflictingFolder) {
-            throw new AssetConflictException(Craft::t('app',
-                'A folder with the name “{folderName}” already exists in the folder.',
-                ['folderName' => $folder->name]));
+            throw new AssetConflictException(Craft::t('app', 'A folder with the name “{folderName}” already exists in the folder.', [
+                'folderName' => $folder->name,
+            ]));
         }
 
         $parentFolderPath = dirname($folder->path);
