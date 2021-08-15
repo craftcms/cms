@@ -156,7 +156,7 @@ class InstallController extends Controller
 
         // Try to save the site URL to a PRIMARY_SITE_URL environment variable
         // if it's not already set to an alias or environment variable
-        if ($site->baseUrl[0] !== '@' && $site->baseUrl[0] !== '$') {
+        if (!in_array($site->getBaseUrl(false)[0], ['@', '$'])) {
             try {
                 $configService->setDotEnvVar('PRIMARY_SITE_URL', $site->baseUrl);
                 $site->baseUrl = '$PRIMARY_SITE_URL';
