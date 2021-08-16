@@ -13,6 +13,6 @@
     "autoprefixer": "^9.8.6",
     "lodash": "^4.17.21",
     "postcss": "^7.0.35",
-    "tailwindcss": "npm:@tailwindcss/postcss7-compat@^2.2.4",
+    "tailwindcss": "npm:@tailwindcss/postcss7-compat@^2.2.4"
   }
 }
