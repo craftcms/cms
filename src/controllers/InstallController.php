@@ -97,7 +97,6 @@ class InstallController extends Controller
         $worldIcon = file_get_contents($iconsPath . DIRECTORY_SEPARATOR . 'world.svg');
 
         return $this->renderTemplate('_special/install', compact(
-            'isNitro',
             'showDbScreen',
             'license',
             'defaultSystemName',
