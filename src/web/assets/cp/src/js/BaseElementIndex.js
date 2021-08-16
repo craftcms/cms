@@ -319,6 +319,13 @@ Craft.BaseElementIndex = Garnish.Base.extend({
         return this.sourceSelect.$items;
     },
 
+    getSite: function() {
+        if (!this.siteId) {
+            return undefined;
+        }
+        return Craft.sites.find(s => s.id == this.siteId);
+    },
+
     initSources: function() {
         var $sources = this._getSourcesInList(this.getSourceContainer());
 

@@ -116,7 +116,7 @@ class Assets
             $v .= ",{$fp['x']},{$fp['y']}";
         }
 
-        return "?$v";
+        return "?v=$v";
     }
 
     /**

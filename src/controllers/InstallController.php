@@ -68,8 +68,6 @@ class InstallController extends Controller
             return $response;
         }
 
-        $isNitro = App::isNitro();
-
         // Can we establish a DB connection?
         try {
             Craft::$app->getDb()->open();
@@ -334,12 +332,10 @@ class InstallController extends Controller
         }
 
         // Map the DB settings we definitely care about to their environment variable names
-        $vars = [];
-
-        if (!App::isNitro()) {
-            $vars['user'] = 'DB_USER';
-            $vars['password'] = 'DB_PASSWORD';
-        }
+        $vars = [
+            'user' => 'DB_USER',
+            'password' => 'DB_PASSWORD',
+        ];
 
         // If there's a DB_DSN environment variable, go with that
         if (App::env('DB_DSN') !== false) {

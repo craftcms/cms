@@ -755,30 +755,36 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend({
         }
 
         // Update the URL if we're on the Assets index
-        // ---------------------------------------------------------------------
-
-        if ($source.length && this.settings.context === 'index' && typeof history !== 'undefined') {
-            // Find all the subfolder sources. At the end, $thisSource will be the root volume source
-            let nestedSources = [];
-            let $thisSource = $source;
-            let $parent;
-            while (($parent = this._getParentSource($thisSource)) && $parent.length) {
-                nestedSources.unshift($thisSource);
-                $thisSource = $parent;
-            }
-
-            let uri = 'assets';
-            if ($thisSource.data('volume-handle')) {
-                uri += '/' + $thisSource.data('volume-handle');
-                nestedSources.forEach($s => {
-                    uri += '/' + $s.children('.label').text();
-                });
-            }
-
-            history.replaceState({}, '', Craft.getUrl(uri));
+        if ($source.length && this.settings.context === 'index') {
+            this._updateUrl($source);
         }
 
         this.base();
+    },
+
+    _updateUrl: function($source) {
+        if (typeof history === 'undefined') {
+            return;
+        }
+
+        // Find all the subfolder sources. At the end, $thisSource will be the root volume source
+        let nestedSources = [];
+        let $thisSource = $source;
+        let $parent;
+        while (($parent = this._getParentSource($thisSource)) && $parent.length) {
+            nestedSources.unshift($thisSource);
+            $thisSource = $parent;
+        }
+
+        let uri = 'assets';
+        if ($thisSource.data('volume-handle')) {
+            uri += '/' + $thisSource.data('volume-handle');
+            nestedSources.forEach($s => {
+                uri += '/' + $s.children('.label').text();
+            });
+        }
+
+        history.replaceState({}, '', Craft.getUrl(uri));
     },
 
     _getFolderUidFromSourceKey: function(sourceKey) {
@@ -1340,35 +1346,41 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend({
     /**
      * Rename
      */
-    _renameFolder: function($targetFolder) {
-        var oldName = $.trim($targetFolder.text()),
-            newName = prompt(Craft.t('app', 'Rename folder'), oldName);
+    _renameFolder: function($source) {
+        const $label = $source.children('.label');
+        const oldName = Craft.trim($label.text())
+        const newName = prompt(Craft.t('app', 'Rename folder'), oldName);
 
-        if (newName && newName !== oldName) {
-            var params = {
-                folderId: $targetFolder.data('folder-id'),
-                newName: newName
-            };
+        if (!newName || newName === oldName) {
+            return;
+        }
 
-            this.setIndexBusy();
+        this.setIndexBusy();
 
-            Craft.postActionRequest('assets/rename-folder', params, (data, textStatus) => {
-                this.setIndexAvailable();
+        Craft.sendActionRequest('POST', 'assets/rename-folder', {
+            data: {
+                folderId: $source.data('folder-id'),
+                newName: newName,
+            },
+        }).then(response => {
+            if (response.data.success) {
+                $label.text(response.data.newName);
 
-                if (textStatus === 'success' && data.success) {
-                    $targetFolder.text(data.newName);
+                // Is this the selected source?
+                if ($source.data('key') === this.$source.data('key')) {
+                    this.updateElements();
 
-                    // If the current folder was renamed.
-                    if (this._getFolderUidFromSourceKey(this.sourceSelect.$selectedItems.data('key')) === this._getFolderUidFromSourceKey($targetFolder.data('key'))) {
-                        this.updateElements();
+                    // Update the URL if we're on the Assets index
+                    if (this.settings.context === 'index') {
+                        this._updateUrl($source);
                     }
                 }
-
-                if (textStatus === 'success' && data.error) {
-                    alert(data.error);
-                }
-            }, 'json');
-        }
+            } else if (response.data.error) {
+                alert(response.data.error);
+            }
+        }).finally(() => {
+            this.setIndexAvailable();
+        });
     },
 
     /**

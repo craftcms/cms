@@ -928,6 +928,18 @@ class Matrix extends Component
      */
     public function mergeCanonicalChanges(MatrixField $field, ElementInterface $owner): void
     {
+        // Get the owner across all sites
+        $localizedOwners = $owner::find()
+            ->id($owner->id ?: false)
+            ->siteId(['not', $owner->siteId])
+            ->drafts($owner->getIsDraft())
+            ->provisionalDrafts($owner->isProvisionalDraft)
+            ->revisions($owner->getIsRevision())
+            ->anyStatus()
+            ->ignorePlaceholders()
+            ->indexBy('siteId')
+            ->all();
+
         // Get the canonical owner across all sites
         $canonicalOwners = $owner::find()
             ->id($owner->getCanonicalId())
@@ -984,8 +996,8 @@ class Matrix extends Component
                     $elementsService->duplicateElement($canonicalBlock, [
                         'canonicalId' => $canonicalBlock->id,
                         'ownerId' => $owner->id,
-                        'owner' => $owner,
-                        'siteId' => $canonicalOwner->siteId,
+                        'owner' => $localizedOwners[$canonicalBlock->siteId] ?? $owner,
+                        'siteId' => $canonicalBlock->siteId,
                         'propagating' => false,
                     ]);
                 }

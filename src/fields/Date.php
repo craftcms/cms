@@ -8,21 +8,25 @@
 namespace craft\fields;
 
 use Craft;
+use craft\base\Element;
 use craft\base\ElementInterface;
 use craft\base\Field;
 use craft\base\PreviewableFieldInterface;
 use craft\base\SortableFieldInterface;
 use craft\elements\db\ElementQuery;
 use craft\elements\db\ElementQueryInterface;
+use craft\gql\directives\FormatDateTime;
 use craft\gql\types\DateTime as DateTimeType;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
 use craft\helpers\ElementHelper;
+use craft\helpers\Gql;
 use craft\helpers\Html;
 use craft\i18n\Locale;
 use craft\validators\DateTimeValidator;
 use DateTime;
 use DateTimeZone;
+use GraphQL\Type\Definition\ResolveInfo;
 use yii\db\Schema;
 
 /**
@@ -334,7 +338,7 @@ class Date extends Field implements PreviewableFieldInterface, SortableFieldInte
 
         if (
             !$value ||
-            (is_array($value) && empty($value['date']) && empty($value['time']))
+            (is_array($value) && empty($value['date']) && empty($value['time']) && empty($value['datetime']))
         ) {
             return null;
         }
@@ -389,7 +393,21 @@ class Date extends Field implements PreviewableFieldInterface, SortableFieldInte
      */
     public function getContentGqlType()
     {
-        return DateTimeType::getType();
+        return [
+            'name' => $this->handle,
+            'type' => DateTimeType::getType(),
+            'resolve' => function ($source, array $arguments, $context, ResolveInfo $resolveInfo) {
+                $fieldName = Gql::getFieldNameWithAlias($resolveInfo, $source, $context);
+                $value = $source->getFieldValue($fieldName);
+
+                // Set the timezone, unless it has been already set by the field itself.
+                if (!$this->showTimeZone) {
+                    $value->setTimeZone(new DateTimeZone(FormatDateTime::defaultTimezone()));
+                }
+
+                return Gql::applyDirectives($source, $resolveInfo, $value);
+            }
+        ];
     }
 
     /**
