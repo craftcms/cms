@@ -9,6 +9,7 @@
 - Custom fields’ search keywords are now indexed for entry drafts.
 - Email fields now allow IDNA ASCII characters in the domain name, on servers with the Intl extension. ([#9698](https://github.com/craftcms/cms/discussions/9698))
 - Revved asset URLs now use a `v` query string param. ([#9716](https://github.com/craftcms/cms/issues/9716))
+- The timezone set in the field settings is used as the default timezone when querying date fields using the GraphQL API. ([#9719](https://github.com/craftcms/cms/issues/9719))
 - Updated Yii to 2.0.43.
 
 ### Deprecated
