@@ -3,6 +3,7 @@
 ## Unreleased
 
 ### Added
+- Added the `utils/prune-provisional-drafts` command, which prunes provisional drafts for entries that have more than one per user.
 - Added `craft\helpers\App::supportsIdn()`.
 
 ### Changed
