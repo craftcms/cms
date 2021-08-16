@@ -553,7 +553,6 @@ return [
     'Email settings saved.' => 'Paramètres de messagerie enregistrés.',
     'Email verified' => 'Email vérifié',
     'Email' => 'E-mail',
-    'Enable on the front end' => 'Activer le front end',
     'Enable the [Intl extension]({link1}) or install additional [locale data files]({link2}) for more language options.' => 'Activez l’[extension Intl]({link1}) ou installez des [fichiers de données de langue]({link2}) additionnels pour obtenir plus d’options de langue.',
     'Enable versioning for entries in this section' => 'Activer les versions multiples pour les entrées de cette section ',
     'Enable' => 'Activer',
