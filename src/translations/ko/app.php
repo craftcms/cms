@@ -553,7 +553,6 @@ return [
     'Email settings saved.' => '이메일 설정이 저장되었습니다.',
     'Email verified' => '이메일 확인됨',
     'Email' => '이메일',
-    'Enable on the front end' => '프런트 엔드에서 활성화',
     'Enable the [Intl extension]({link1}) or install additional [locale data files]({link2}) for more language options.' => '추가 언어 옵션을 사용하려면 [Intl extension]({link1})을(를) 활성화하거나 추가 [locale data files]({link2})을(를) 설치하십시오.',
     'Enable versioning for entries in this section' => '이 섹션에서 항목의 버전 관리를 활성화하시겠습니까',
     'Enable' => '활성화',
