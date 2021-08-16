@@ -553,7 +553,6 @@ return [
     'Email settings saved.' => '电子邮件设置已保存。',
     'Email verified' => '已验证电子邮件',
     'Email' => '电子邮件',
-    'Enable on the front end' => '在前端上启用',
     'Enable the [Intl extension]({link1}) or install additional [locale data files]({link2}) for more language options.' => '启用[Intl扩展]({link1})或者安装附加的[区域设置数据文件]({link2})以获得更多的语言选项。',
     'Enable versioning for entries in this section' => '对此板块内的条目启用版本控制',
     'Enable' => '启用',
