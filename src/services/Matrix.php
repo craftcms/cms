@@ -935,7 +935,7 @@ class Matrix extends Component
             ->drafts($owner->getIsDraft())
             ->provisionalDrafts($owner->isProvisionalDraft)
             ->revisions($owner->getIsRevision())
-            ->anyStatus()
+            ->status(null)
             ->ignorePlaceholders()
             ->indexBy('siteId')
             ->all();

@@ -13,7 +13,7 @@ class m210809_124211_remove_superfluous_uids extends Migration
     /**
      * @inheritdoc
      */
-    public function safeUp()
+    public function safeUp(): bool
     {
         $this->dropIndexIfExists(Table::USERS, ['uid'], false);
 
@@ -29,12 +29,14 @@ class m210809_124211_remove_superfluous_uids extends Migration
         foreach ($tables as $table) {
             $this->dropColumn($table, 'uid');
         }
+
+        return true;
     }
 
     /**
      * @inheritdoc
      */
-    public function safeDown()
+    public function safeDown(): bool
     {
         echo "m210809_124211_remove_superfluous_uids cannot be reverted.\n";
         return false;

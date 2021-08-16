@@ -404,7 +404,7 @@ class EntriesController extends BaseEntriesController
             ->draftOf($entry->id)
             ->draftCreator(Craft::$app->getUser()->getIdentity())
             ->siteId($entry->siteId)
-            ->anyStatus()
+            ->status(null)
             ->one();
 
         if ($provisional) {
@@ -812,7 +812,7 @@ class EntriesController extends BaseEntriesController
                     ->draftOf($entryId)
                     ->draftCreator(Craft::$app->getUser()->getIdentity())
                     ->siteId($siteId)
-                    ->anyStatus()
+                    ->status(null)
                     ->one();
 
                 if ($entry) {
