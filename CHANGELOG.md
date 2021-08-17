@@ -10,6 +10,7 @@
 - Custom fields’ search keywords are now indexed for entry drafts.
 - Email fields now allow IDNA ASCII characters in the domain name, on servers with the Intl extension. ([#9698](https://github.com/craftcms/cms/discussions/9698))
 - Revved asset URLs now use a `v` query string param. ([#9716](https://github.com/craftcms/cms/issues/9716))
+- Element sources’ badge counts are now kept up-to-date when performing bulk element actions. ([#9728](https://github.com/craftcms/cms/issues/9728))
 - Date fields that are set to show the time zone now set their values to the selected time zone by default when queried via GraphQL, to be consistent with the PHP and Twig APIs. ([#9719](https://github.com/craftcms/cms/issues/9719))
 - The `utils/prune-revisions` command now has a `--dry-run` flag.
 - The `utils/prune-revisions` command will now output how many excess revisions it could actually load for each entry, if it differed from the original estimate.
