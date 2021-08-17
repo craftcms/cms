@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 3.x
 
-## Unreleased
+## 3.7.9 - 2021-08-17
 
 ### Added
 - Added the `utils/prune-provisional-drafts` command, which prunes provisional drafts for entries that have more than one per user.
