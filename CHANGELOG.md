@@ -31,6 +31,7 @@
 - Fixed a bug where the CLI installer would always save a `PRIMARY_SITE_URL` environment variable to the `.env` file, even if the initial site’s base URL was already set to an alias or environment variable. ([#9724](https://github.com/craftcms/cms/issues/9724))
 - Fixed an `UnsupportedSiteException` error that could occur on Edit Entry pages for provisional drafts, if any upstream Matrix blocks needed to be merged in, whose Matrix field’s Propagation Method was set to something besides “Save blocks to all sites the owner element is saved in”. ([#9664](https://github.com/craftcms/cms/issues/9664))
 - Fixed a bug where replacing an asset’s file from an Edit Asset page would seem to not take effect until the page was refreshed. ([#9700](https://github.com/craftcms/cms/issues/9700))
+- Fixed a bug where upstream translatable field changes weren’t always getting merged into entry drafts properly. ([#9729](https://github.com/craftcms/cms/issues/9729))
 
 ## 3.7.8 - 2021-08-06
 
