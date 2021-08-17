@@ -646,16 +646,16 @@ class UserQuery extends ElementQuery
         $this->joinElementTable('users');
 
         $this->query->select([
-            'users.username',
             'users.photoId',
+            'users.pending',
+            'users.locked',
+            'users.suspended',
+            'users.admin',
+            'users.username',
             'users.firstName',
             'users.lastName',
             'users.email',
             'users.unverifiedEmail',
-            'users.admin',
-            'users.locked',
-            'users.pending',
-            'users.suspended',
             'users.lastLoginDate',
             'users.lockoutDate',
             'users.hasDashboard',

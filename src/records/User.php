@@ -16,16 +16,16 @@ use yii\db\ActiveQueryInterface;
  * Class User record.
  *
  * @property int $id ID
- * @property string $username Username
  * @property int $photoId Photo ID
+ * @property bool $pending Pending
+ * @property bool $locked Locked
+ * @property bool $suspended Suspended
+ * @property bool $admin Admin
+ * @property string $username Username
  * @property string $firstName First name
  * @property string $lastName Last name
  * @property string $email Email
  * @property string $password Password
- * @property bool $admin Admin
- * @property bool $locked Locked
- * @property bool $suspended Suspended
- * @property bool $pending Pending
  * @property \DateTime $lastLoginDate Last login date
  * @property string $lastLoginAttemptIp Last login attempt IP
  * @property \DateTime $invalidLoginWindowStart Invalid login window start

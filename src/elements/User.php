@@ -487,14 +487,34 @@ class User extends Element implements IdentityInterface
     }
 
     /**
-     * @var string|null Username
-     */
-    public ?string $username = null;
-
-    /**
      * @var int|null Photo asset id
      */
     public ?int $photoId = null;
+
+    /**
+     * @var bool Pending
+     */
+    public bool $pending = false;
+
+    /**
+     * @var bool Locked
+     */
+    public bool $locked = false;
+
+    /**
+     * @var bool Suspended
+     */
+    public bool $suspended = false;
+
+    /**
+     * @var bool Admin
+     */
+    public bool $admin = false;
+
+    /**
+     * @var string|null Username
+     */
+    public ?string $username = null;
 
     /**
      * @var string|null First name
@@ -515,26 +535,6 @@ class User extends Element implements IdentityInterface
      * @var string|null Password
      */
     public ?string $password = null;
-
-    /**
-     * @var bool Admin
-     */
-    public bool $admin = false;
-
-    /**
-     * @var bool Locked
-     */
-    public bool $locked = false;
-
-    /**
-     * @var bool Suspended
-     */
-    public bool $suspended = false;
-
-    /**
-     * @var bool Pending
-     */
-    public bool $pending = false;
 
     /**
      * @var DateTime|null Last login date
@@ -1517,6 +1517,10 @@ class User extends Element implements IdentityInterface
                 throw new Exception('Invalid user ID: ' . $this->id);
             }
 
+            if ($this->pending != $record->pending) {
+                throw new Exception('Unable to change a user’s pending state like this.');
+            }
+
             if ($this->locked != $record->locked) {
                 throw new Exception('Unable to change a user’s locked state like this.');
             }
@@ -1524,24 +1528,20 @@ class User extends Element implements IdentityInterface
             if ($this->suspended != $record->suspended) {
                 throw new Exception('Unable to change a user’s suspended state like this.');
             }
-
-            if ($this->pending != $record->pending) {
-                throw new Exception('Unable to change a user’s pending state like this.');
-            }
         } else {
             $record = new UserRecord();
             $record->id = (int)$this->id;
+            $record->pending = $this->pending;
             $record->locked = $this->locked;
             $record->suspended = $this->suspended;
-            $record->pending = $this->pending;
         }
 
+        $record->photoId = (int)$this->photoId ?: null;
+        $record->admin = $this->admin;
         $record->username = $this->username;
         $record->firstName = $this->firstName;
         $record->lastName = $this->lastName;
-        $record->photoId = (int)$this->photoId ?: null;
         $record->email = $this->email;
-        $record->admin = $this->admin;
         $record->passwordResetRequired = $this->passwordResetRequired;
         $record->unverifiedEmail = $this->unverifiedEmail;
 
