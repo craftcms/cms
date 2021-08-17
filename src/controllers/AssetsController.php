@@ -15,6 +15,7 @@ use craft\errors\AssetLogicException;
 use craft\errors\UploadFailedException;
 use craft\fields\Assets as AssetsField;
 use craft\helpers\App;
+use craft\helpers\ArrayHelper;
 use craft\helpers\Assets;
 use craft\helpers\Db;
 use craft\helpers\Image;
@@ -113,7 +114,7 @@ class AssetsController extends Controller
             ],
         ];
 
-        $subfolders = explode('/', trim($asset->folderPath, '/'));
+        $subfolders = ArrayHelper::filterEmptyStringsFromArray(explode('/', $asset->folderPath));
         foreach ($subfolders as $subfolder) {
             $uri .= "/$subfolder";
             $crumbs[] = [
@@ -609,8 +610,7 @@ class AssetsController extends Controller
         $this->requireVolumePermissionByFolder('createFoldersInVolume', $folder);
 
         try {
-            $newName = Craft::$app->getAssets()->renameFolderById($folderId,
-                $newName);
+            $newName = Craft::$app->getAssets()->renameFolderById($folderId, $newName);
         } catch (\Throwable $exception) {
             return $this->asErrorJson($exception->getMessage());
         }

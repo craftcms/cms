@@ -17,21 +17,15 @@ use yii\console\ExitCode;
 use yii\db\Expression;
 
 /**
- * Prunes excess element revisions.
+ * Prunes provisional drafts for elements that have more than one per user.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.4.0
+ * @since 3.7.9
  */
-class PruneRevisionsController extends Controller
+class PruneProvisionalDraftsController extends Controller
 {
     /**
-     * @var int The maximum number of revisions an element can have.
-     */
-    public $maxRevisions;
-
-    /**
      * @var bool Whether this is a dry run.
-     * @since 3.7.9
      */
     public $dryRun = false;
 
@@ -41,32 +35,22 @@ class PruneRevisionsController extends Controller
     public function options($actionID)
     {
         $options = parent::options($actionID);
-        $options[] = 'maxRevisions';
         $options[] = 'dryRun';
         return $options;
     }
 
     /**
-     * Prunes excess element revisions.
+     * Prunes provisional drafts for elements that have more than one per user.
      *
      * @return int
      */
     public function actionIndex(): int
     {
-        if ($this->maxRevisions === null) {
-            $this->maxRevisions = $this->prompt('What is the max number of revisions an element can have?', [
-                'default' => Craft::$app->getConfig()->getGeneral()->maxRevisions,
-                'validator' => function($input) {
-                    return filter_var($input, FILTER_VALIDATE_INT, FILTER_NULL_ON_FAILURE) !== null && $input >= 0;
-                },
-            ]);
-        }
-
-        // Get the elements with too many revisions
-        $this->stdout('Finding elements with too many revisions ... ');
+        $this->stdout('Finding elements with multiple provisional drafts per user ... ');
         $elements = (new Query())
             ->select([
                 'id' => 's.sourceId',
+                's.creatorId',
                 's.count',
                 'type' => (new Query())
                     ->select(['type'])
@@ -75,10 +59,11 @@ class PruneRevisionsController extends Controller
             ])
             ->from([
                 's' => (new Query())
-                    ->select(['sourceId', 'count' => 'COUNT(*)'])
-                    ->from(['r' => Table::REVISIONS])
-                    ->groupBy(['sourceId'])
-                    ->having(['>', 'COUNT(*)', $this->maxRevisions]),
+                    ->select(['sourceId', 'creatorId', 'count' => 'COUNT(*)'])
+                    ->from([Table::DRAFTS])
+                    ->where(['provisional' => true])
+                    ->groupBy(['sourceId', 'creatorId'])
+                    ->having('COUNT(*) > 1'),
             ])
             ->all();
         $this->stdout('done' . PHP_EOL . PHP_EOL, Console::FG_GREEN);
@@ -88,7 +73,7 @@ class PruneRevisionsController extends Controller
             return ExitCode::OK;
         }
 
-        $this->stdout('Pruning revisions ...' . PHP_EOL);
+        $this->stdout('Pruning extra provisional drafts ...' . PHP_EOL);
 
         $elementsService = Craft::$app->getElements();
 
@@ -99,35 +84,37 @@ class PruneRevisionsController extends Controller
 
             /** @var ElementInterface|string $elementType */
             $elementType = $element['type'];
-            $deleteCount = $element['count'] - $this->maxRevisions;
+            $deleteCount = $element['count'] - 1;
 
-            $this->stdout('- ' . $elementType::displayName() . " {$element['id']} ({$deleteCount} revisions) ... ");
+            $this->stdout('- ' . $elementType::displayName() . " {$element['id']} for user {$element['creatorId']} ($deleteCount provisional drafts) ... ");
 
-            $extraRevisions = $elementType::find()
-                ->revisionOf($element['id'])
+            $extraDrafts = $elementType::find()
+                ->provisionalDrafts()
+                ->draftOf($element['id'])
+                ->draftCreator($element['creatorId'])
                 ->siteId('*')
                 ->unique()
                 ->anyStatus()
-                ->orderBy(['num' => SORT_DESC])
-                ->offset($this->maxRevisions)
+                ->orderBy(['dateUpdated' => SORT_DESC])
+                ->offset(1)
                 ->all();
 
             if (!$this->dryRun) {
-                foreach ($extraRevisions as $extraRevision) {
-                    $elementsService->deleteElement($extraRevision, true);
+                foreach ($extraDrafts as $extraDraft) {
+                    $elementsService->deleteElement($extraDraft, true);
                 }
             }
 
             $this->stdout('done', Console::FG_GREEN);
 
-            if (count($extraRevisions) !== $deleteCount) {
-                $this->stdout(' (found ' . count($extraRevisions) . ')', Console::FG_RED);
+            if (count($extraDrafts) !== $deleteCount) {
+                $this->stdout(' (found ' . count($extraDrafts) . ')', Console::FG_RED);
             }
 
             $this->stdout(PHP_EOL);
         }
 
-        $this->stdout(PHP_EOL . 'Finished pruning revisions' . PHP_EOL . PHP_EOL, Console::FG_GREEN);
+        $this->stdout(PHP_EOL . 'Finished pruning extra provisional drafts' . PHP_EOL . PHP_EOL, Console::FG_GREEN);
         return ExitCode::OK;
     }
 }

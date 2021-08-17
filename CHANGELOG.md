@@ -1,5 +1,38 @@
 # Release Notes for Craft CMS 3.x
 
+## 3.7.9 - 2021-08-17
+
+### Added
+- Added the `utils/prune-provisional-drafts` command, which prunes provisional drafts for entries that have more than one per user.
+- Added `craft\helpers\App::supportsIdn()`.
+
+### Changed
+- Custom fields’ search keywords are now indexed for entry drafts.
+- Email fields now allow IDNA ASCII characters in the domain name, on servers with the Intl extension. ([#9698](https://github.com/craftcms/cms/discussions/9698))
+- Revved asset URLs now use a `v` query string param. ([#9716](https://github.com/craftcms/cms/issues/9716))
+- Element sources’ badge counts are now kept up-to-date when performing bulk element actions. ([#9728](https://github.com/craftcms/cms/issues/9728))
+- Date fields that are set to show the time zone now set their values to the selected time zone by default when queried via GraphQL, to be consistent with the PHP and Twig APIs. ([#9719](https://github.com/craftcms/cms/issues/9719))
+- The `utils/prune-revisions` command now has a `--dry-run` flag.
+- The `utils/prune-revisions` command will now output how many excess revisions it could actually load for each entry, if it differed from the original estimate.
+- Updated Yii to 2.0.43.
+
+### Deprecated
+- Deprecated `craft\helper\App::isNitro()`. ([#9709](https://github.com/craftcms/cms/issues/9709))
+
+### Fixed
+- Fixed a bug where custom fields’ search keywords weren’t getting indexed for newly-created entries. ([#9699](https://github.com/craftcms/cms/issues/9699))
+- Fixed a bug where user email addresses would validate if they had IDNA ASCII characters in the local part, even though Swiftmailer doesn’t allow it. ([#9096](https://github.com/craftcms/cms/issues/9096))
+- Fixed a bug where Date fields weren’t handling array values with `datetime` keys properly. ([#9708](https://github.com/craftcms/cms/issues/9708))
+- Fixed a bug where Edit Asset pages for top-level assets had an extra breadcrumb. ([#9720](https://github.com/craftcms/cms/issues/9720))
+- Fixed a bug where the “New category” button on the Categories index page would link to a 404 when a non-primary site was selected. ([#9722](https://github.com/craftcms/cms/issues/9722))
+- Fixed a bug where changing the site from an Edit Category page would go to a 404 when editing a new, unsaved category.
+- Fixed a bug where deep-linking to a volume’s subfolder that contained any non-ASCII characters would return a 404. ([#9723](https://github.com/craftcms/cms/issues/9723))
+- Fixed a bug where the Assets index page wasn’t updating the URL when selecting a subfolder that had been renamed on the same page load.
+- Fixed a bug where the CLI installer would always save a `PRIMARY_SITE_URL` environment variable to the `.env` file, even if the initial site’s base URL was already set to an alias or environment variable. ([#9724](https://github.com/craftcms/cms/issues/9724))
+- Fixed an `UnsupportedSiteException` error that could occur on Edit Entry pages for provisional drafts, if any upstream Matrix blocks needed to be merged in, whose Matrix field’s Propagation Method was set to something besides “Save blocks to all sites the owner element is saved in”. ([#9664](https://github.com/craftcms/cms/issues/9664))
+- Fixed a bug where replacing an asset’s file from an Edit Asset page would seem to not take effect until the page was refreshed. ([#9700](https://github.com/craftcms/cms/issues/9700))
+- Fixed a bug where upstream translatable field changes weren’t always getting merged into entry drafts properly. ([#9729](https://github.com/craftcms/cms/issues/9729))
+
 ## 3.7.8 - 2021-08-06
 
 ### Added

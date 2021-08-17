@@ -603,7 +603,7 @@ interface ElementInterface extends ComponentInterface
     public function getIsUnpublishedDraft(): bool;
 
     /**
-     * Merges changes from a given canonical element into this one.
+     * Merges changes from the canonical element into this one.
      *
      * @return void
      * @see \craft\services\Elements::mergeCanonicalChanges()

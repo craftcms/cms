@@ -553,7 +553,6 @@ return [
     'Email settings saved.' => 'تم حفظ إعدادات البريد.',
     'Email verified' => 'تم التحقق من البريد الإلكتروني',
     'Email' => 'البريد',
-    'Enable on the front end' => 'التمكين في الواجهة الأمامية',
     'Enable the [Intl extension]({link1}) or install additional [locale data files]({link2}) for more language options.' => 'قم بتمكين [الملحق Intl]({link1}) أو قم بتثبيت [ملفات بيانات إعدادات محلية] إضافية ({link2}) للحصول على مزيد من الخيارات للإعدادات المحلية.',
     'Enable versioning for entries in this section' => 'تمكين عمل الإصدارات للإدخالات في هذا القسم',
     'Enable' => 'تمكين',
