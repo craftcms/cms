@@ -4666,6 +4666,8 @@ fieldset {
 }
 
 .field {
+  min-inline-size: initial;
+
   & > .status-badge {
     position: absolute;
     top: 0;
