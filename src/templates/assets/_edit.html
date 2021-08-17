@@ -105,7 +105,7 @@
 
 {% js on ready %}
     var assetId = {{ element.id|json_encode|raw }};
-    var $previewThumbContainer = $('#preview-thumb-container');
+    var $previewThumbContainer = $('#details .preview-thumb-container');
 
     function updatePreviewThumb() {
         $previewThumbContainer.addClass('loading');
@@ -153,6 +153,7 @@
             events: {
                 fileuploadstart: function() {
                     $previewThumbContainer.addClass('loading');
+                    console.log('okay');
                 },
                 fileuploaddone: function(event, data) {
                     if (data.result.error) {
