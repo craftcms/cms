@@ -191,21 +191,13 @@ class SearchTest extends Unit
     private function _usernameEmailArrayToIdList(array $usernameOrEmails, bool $typecastToInt = true): array
     {
         $ids = [];
+        $usersService = Craft::$app->getUsers();
 
         foreach ($usernameOrEmails as $usernameOrEmail) {
-            $userId = $this->_getUserIdByEmailOrUserName($usernameOrEmail)->id;
+            $userId = $usersService->getUserByUsernameOrEmail($usernameOrEmail)->id;
             $ids[] = $typecastToInt === true ? (int)$userId : $userId;
         }
 
         return $ids;
-    }
-
-    /**
-     * @param string $emailOrUsername
-     * @return User|null
-     */
-    private function _getUserIdByEmailOrUserName(string $emailOrUsername): ?User
-    {
-        return Craft::$app->getUsers()->getUserByUsernameOrEmail($emailOrUsername);
     }
 }
