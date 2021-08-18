@@ -164,7 +164,11 @@ class GlobalSet extends Element
      */
     public function __toString(): string
     {
-        return (string)$this->name ?: static::class;
+        if ($this->name) {
+            return $this->name;
+        }
+
+        return parent::__toString();
     }
 
     /**
