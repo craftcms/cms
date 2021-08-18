@@ -729,6 +729,8 @@ class UsersController extends Controller
         }
 
         $currentUser = $userSession->getIdentity();
+        $canAdministrateUsers = $currentUser->can('administrateUsers');
+        $canModerateUsers = $currentUser->can('moderateUsers');
 
         // Determine which actions should be available
         // ---------------------------------------------------------------------
@@ -747,7 +749,7 @@ class UsersController extends Controller
                         'action' => 'users/send-activation-email',
                         'label' => Craft::t('app', 'Send activation email'),
                     ];
-                    if ($userSession->checkPermission('administrateUsers')) {
+                    if ($canAdministrateUsers) {
                         // Only need to show the "Copy activation URL" option if they don't have a password
                         if (!$user->password) {
                             $statusActions[] = [
@@ -763,7 +765,7 @@ class UsersController extends Controller
                     break;
                 case User::STATUS_SUSPENDED:
                     $statusLabel = Craft::t('app', 'Suspended');
-                    if ($userSession->checkPermission('moderateUsers')) {
+                    if ($canModerateUsers) {
                         $statusActions[] = [
                             'action' => 'users/unsuspend-user',
                             'label' => Craft::t('app', 'Unsuspend'),
@@ -776,7 +778,7 @@ class UsersController extends Controller
                         if (
                             !$isCurrentUser &&
                             ($currentUser->admin || !$user->admin) &&
-                            $userSession->checkPermission('moderateUsers') &&
+                            $canModerateUsers &&
                             (
                                 ($previousUserId = Session::get(User::IMPERSONATE_KEY)) === null ||
                                 $user->id != $previousUserId
@@ -796,7 +798,7 @@ class UsersController extends Controller
                             'action' => 'users/send-password-reset-email',
                             'label' => Craft::t('app', 'Send password reset email'),
                         ];
-                        if ($userSession->checkPermission('administrateUsers')) {
+                        if ($canAdministrateUsers) {
                             $statusActions[] = [
                                 'id' => 'copy-passwordreset-url',
                                 'label' => Craft::t('app', 'Copy password reset URL'),
@@ -818,7 +820,7 @@ class UsersController extends Controller
                     ];
                 }
 
-                if ($userSession->checkPermission('moderateUsers') && $user->getStatus() != User::STATUS_SUSPENDED) {
+                if ($canModerateUsers && $user->getStatus() != User::STATUS_SUSPENDED) {
                     $destructiveActions[] = [
                         'action' => 'users/suspend-user',
                         'label' => Craft::t('app', 'Suspend'),
