@@ -44,7 +44,20 @@ class Color extends Field implements PreviewableFieldInterface
     /**
      * @var string|null The default color hex
      */
-    public $defaultColor;
+    public ?string $defaultColor = null;
+
+    /**
+     * @inheritdoc
+     */
+    public function __construct($config = [])
+    {
+        // Config normalization
+        if (($config['defaultColor'] ?? null) === '') {
+            unset($config['defaultColor']);
+        }
+
+        parent::__construct($config);
+    }
 
     /**
      * @inheritdoc
@@ -54,8 +67,8 @@ class Color extends Field implements PreviewableFieldInterface
         return Schema::TYPE_STRING . '(7)';
     }
 
-    /* @inheritdoc */
-    public function getSettingsHtml()
+    /** @inheritdoc */
+    public function getSettingsHtml(): ?string
     {
         return Cp::colorFieldHtml([
             'label' => Craft::t('app', 'Default Color'),
@@ -87,7 +100,7 @@ class Color extends Field implements PreviewableFieldInterface
     /**
      * @inheritdoc
      */
-    public function normalizeValue($value, ElementInterface $element = null)
+    public function normalizeValue($value, ?ElementInterface $element = null)
     {
         if ($value instanceof ColorData) {
             return $value;
@@ -121,9 +134,9 @@ class Color extends Field implements PreviewableFieldInterface
     /**
      * @inheritdoc
      */
-    protected function inputHtml($value, ElementInterface $element = null): string
+    protected function inputHtml($value, ?ElementInterface $element = null): string
     {
-        /* @var ColorData|null $value */
+        /** @var ColorData|null $value */
         $id = Html::id($this->handle);
         return Craft::$app->getView()->renderTemplate('_includes/forms/color', [
             'id' => $id,
@@ -138,7 +151,7 @@ class Color extends Field implements PreviewableFieldInterface
      */
     public function getStaticHtml($value, ElementInterface $element): string
     {
-        /* @var ColorData|null $value */
+        /** @var ColorData|null $value */
         if (!$value) {
             return '';
         }
@@ -155,7 +168,7 @@ class Color extends Field implements PreviewableFieldInterface
      */
     public function getTableAttributeHtml($value, ElementInterface $element): string
     {
-        /* @var ColorData|null $value */
+        /** @var ColorData|null $value */
         if (!$value) {
             return '<div class="color small static"><div class="color-preview"></div></div>';
         }

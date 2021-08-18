@@ -41,15 +41,16 @@ use craft\test\mockclasses\gql\MockDirective;
 use craft\test\mockclasses\gql\MockType;
 use craft\volumes\Local;
 use GraphQL\Type\Definition\ObjectType;
+use UnitTester;
 use yii\base\Event;
 use yii\base\InvalidArgumentException;
 
 class GqlTest extends Unit
 {
     /**
-     * @var \UnitTester
+     * @var UnitTester
      */
-    protected $tester;
+    protected UnitTester $tester;
 
     protected function _before()
     {

@@ -46,7 +46,7 @@ use yii\web\NotFoundHttpException;
 use yii\web\Response;
 use yii\web\ServerErrorHttpException;
 
-/* @noinspection ClassOverridesFieldOfSuperClassInspection */
+/** @noinspection ClassOverridesFieldOfSuperClassInspection */
 
 /**
  * The UsersController class is a controller that handles various user account related tasks such as logging-in,
@@ -126,7 +126,7 @@ class UsersController extends Controller
     /**
      * @inheritdoc
      */
-    public function beforeAction($action)
+    public function beforeAction($action): bool
     {
         // Don't enable CSRF validation for login requests if the user is already logged-in.
         // (Guards against double-clicking a Login button.)
@@ -143,7 +143,7 @@ class UsersController extends Controller
      * @return Response|null
      * @throws BadRequestHttpException
      */
-    public function actionLogin()
+    public function actionLogin(): ?Response
     {
         $userSession = Craft::$app->getUser();
         if (!$userSession->getIsGuest()) {
@@ -197,7 +197,7 @@ class UsersController extends Controller
      * @throws BadRequestHttpException
      * @throws ForbiddenHttpException
      */
-    public function actionImpersonate()
+    public function actionImpersonate(): ?Response
     {
         $this->requirePostRequest();
 
@@ -277,7 +277,7 @@ class UsersController extends Controller
      * @throws ForbiddenHttpException
      * @since 3.6.0
      */
-    public function actionImpersonateWithToken(int $userId, int $prevUserId)
+    public function actionImpersonateWithToken(int $userId, int $prevUserId): ?Response
     {
         $this->requireToken();
 
@@ -311,18 +311,6 @@ class UsersController extends Controller
     }
 
     /**
-     * Returns how many seconds are left in the current user session.
-     *
-     * @return Response
-     * @deprecated in 3.4.0. Use [[actionSessionInfo()]] instead.
-     */
-    public function actionGetRemainingSessionTime(): Response
-    {
-        Craft::$app->getDeprecator()->log(__METHOD__, 'The `users/get-remaining-session-time` action is deprecated. Use `users/session-info` instead.');
-        return $this->runAction('session-info');
-    }
-
-    /**
      * Returns information about the current user session, if any.
      *
      * @return Response
@@ -333,7 +321,7 @@ class UsersController extends Controller
         $this->requireAcceptsJson();
 
         $userSession = Craft::$app->getUser();
-        /* @var User|null $user */
+        /** @var User|null $user */
         $user = $userSession->getIdentity();
 
         $return = [
@@ -372,9 +360,9 @@ class UsersController extends Controller
     /**
      * Starts an elevated user session.
      *
-     * return Response
+     * @return Response
      */
-    public function actionStartElevatedSession()
+    public function actionStartElevatedSession(): Response
     {
         $password = $this->request->getBodyParam('currentPassword') ?? $this->request->getBodyParam('password');
 
@@ -432,7 +420,7 @@ class UsersController extends Controller
      * @return Response|null
      * @throws NotFoundHttpException if the requested user cannot be found
      */
-    public function actionSendPasswordResetEmail()
+    public function actionSendPasswordResetEmail(): ?Response
     {
         $this->requirePostRequest();
         $errors = [];
@@ -454,7 +442,7 @@ class UsersController extends Controller
             }
         }
 
-        /* @noinspection UnSafeIsSetOverArrayInspection - FP */
+        /** @noinspection UnSafeIsSetOverArrayInspection - FP */
         if (!isset($user)) {
             $loginName = $this->request->getBodyParam('loginName');
 
@@ -500,7 +488,7 @@ class UsersController extends Controller
      * @return Response
      * @throws BadRequestHttpException if the existing password submitted with the request is invalid
      */
-    public function actionGetPasswordResetUrl()
+    public function actionGetPasswordResetUrl(): Response
     {
         $this->requirePermission('administrateUsers');
 
@@ -533,9 +521,9 @@ class UsersController extends Controller
                 return $info;
             }
 
-            /* @var User $user */
-            /* @var string $uid */
-            /* @var string $code */
+            /** @var User $user */
+            /** @var string $uid */
+            /** @var string $code */
             [$user, $uid, $code] = $info;
 
             Craft::$app->getUser()->sendUsernameCookie($user);
@@ -629,7 +617,7 @@ class UsersController extends Controller
             return $info;
         }
 
-        /* @var User $user */
+        /** @var User $user */
         [$user] = $info;
         $pending = $user->pending;
         $usersService = Craft::$app->getUsers();
@@ -695,7 +683,7 @@ class UsersController extends Controller
      * @throws NotFoundHttpException if the requested user cannot be found
      * @throws BadRequestHttpException if there’s a mismatch between|null $userId and|null $user
      */
-    public function actionEditUser($userId = null, User $user = null, array $errors = null): Response
+    public function actionEditUser($userId = null, ?User $user = null, ?array $errors = null): Response
     {
         if (!empty($errors)) {
             $this->setFailFlash(reset($errors));
@@ -713,7 +701,7 @@ class UsersController extends Controller
                 $user = User::find()
                     ->addSelect(['users.password', 'users.passwordResetRequired'])
                     ->id($userId === 'current' ? $userSession->getId() : $userId)
-                    ->anyStatus()
+                    ->status(null)
                     ->one();
             } else if ($edition === Craft::Pro) {
                 // Registering a new user
@@ -725,7 +713,7 @@ class UsersController extends Controller
             }
         }
 
-        /* @var User $user */
+        /** @var User $user */
         $isNewUser = !$user->id;
 
         // Make sure they have permission to edit this user
@@ -958,7 +946,7 @@ class UsersController extends Controller
         // ---------------------------------------------------------------------
 
         if ($isCurrentUser) {
-            /* @var Locale[] $allLocales */
+            /** @var Locale[] $allLocales */
             $allLocales = ArrayHelper::index(Craft::$app->getI18n()->getAppLocales(), 'id');
             ArrayHelper::multisort($allLocales, 'displayName');
             $localeOptions = [];
@@ -1047,7 +1035,7 @@ class UsersController extends Controller
      * @throws BadRequestHttpException if attempting to create a client account, and one already exists
      * @throws ForbiddenHttpException if attempting public registration but public registration is not allowed
      */
-    public function actionSaveUser()
+    public function actionSaveUser(): ?Response
     {
         $this->requirePostRequest();
 
@@ -1071,7 +1059,7 @@ class UsersController extends Controller
         if ($userId) {
             $user = User::find()
                 ->id($userId)
-                ->anyStatus()
+                ->status(null)
                 ->addSelect(['users.password', 'users.passwordResetRequired'])
                 ->one();
 
@@ -1079,7 +1067,7 @@ class UsersController extends Controller
                 throw new NotFoundHttpException('User not found');
             }
 
-            /* @var User $user */
+            /** @var User $user */
             if (!$user->getIsCurrent()) {
                 // Make sure they have permission to edit other users
                 $this->requirePermission('editUsers');
@@ -1253,9 +1241,9 @@ class UsersController extends Controller
             }
 
             // Copy any 'unverifiedEmail' errors to 'email'
-            // todo: clear out the 'unverifiedEmail' errors in Craft 4
             if (!$user->hasErrors('email')) {
                 $user->addErrors(['email' => $user->getErrors('unverifiedEmail')]);
+                $user->clearErrors('unverifiedEmail');
             }
 
             if ($this->request->getAcceptsJson()) {
@@ -1285,7 +1273,7 @@ class UsersController extends Controller
             'language' => $this->request->getBodyParam('preferredLanguage', $user->getPreference('language')),
             'locale' => $this->request->getBodyParam('preferredLocale', $user->getPreference('locale')) ?: null,
             'weekStartDay' => $this->request->getBodyParam('weekStartDay', $user->getPreference('weekStartDay')),
-            'reduceFocusVisibility' => (bool)$this->request->getBodyParam('reduceFocusVisibility', $user->getPreference('reduceFocusVisibility')),
+            'alwaysShowFocusRings' => (bool)$this->request->getBodyParam('alwaysShowFocusRings', $user->getPreference('alwaysShowFocusRings')),
             'useShapes' => (bool)$this->request->getBodyParam('useShapes', $user->getPreference('useShapes')),
             'underlineLinks' => (bool)$this->request->getBodyParam('underlineLinks', $user->getPreference('underlineLinks')),
         ];
@@ -1311,6 +1299,10 @@ class UsersController extends Controller
         }
 
         // Is this the current user, and did their username just change?
+        // todo: remove comment when WI-51866 is fixed
+        /** @noinspection PhpUndefinedVariableInspection */
+        // todo: remove comment when phpstan#5401 is fixed
+        /** @phpstan-ignore-next-line */
         if ($isCurrentUser && $user->username !== $oldUsername) {
             // Update the username cookie
             $userSession->sendUsernameCookie($user);
@@ -1406,7 +1398,7 @@ class UsersController extends Controller
      * @return Response|null
      * @throws BadRequestHttpException if the uploaded file is not an image
      */
-    public function actionUploadUserPhoto()
+    public function actionUploadUserPhoto(): ?Response
     {
         $this->requireAcceptsJson();
 
@@ -1493,7 +1485,7 @@ class UsersController extends Controller
 
         $user = User::find()
             ->id($userId)
-            ->anyStatus()
+            ->status(null)
             ->addSelect(['users.password'])
             ->one();
 
@@ -1502,7 +1494,7 @@ class UsersController extends Controller
         }
 
         // Only allow activation emails to be send to pending users.
-        /* @var User $user */
+        /** @var User $user */
         if ($user->getStatus() !== User::STATUS_PENDING) {
             throw new BadRequestHttpException('Activation emails can only be sent to pending users');
         }
@@ -1566,7 +1558,7 @@ class UsersController extends Controller
      * @return Response|null
      * @throws ForbiddenHttpException if a non-admin is attempting to suspend an admin
      */
-    public function actionSuspendUser()
+    public function actionSuspendUser(): ?Response
     {
         $this->requirePostRequest();
         $this->requirePermission('moderateUsers');
@@ -1618,7 +1610,7 @@ class UsersController extends Controller
                 ->authorId($userIds)
                 ->siteId('*')
                 ->unique()
-                ->anyStatus()
+                ->status(null)
                 ->count();
 
             if ($entryCount) {
@@ -1643,7 +1635,7 @@ class UsersController extends Controller
      *
      * @return Response|null
      */
-    public function actionDeleteUser()
+    public function actionDeleteUser(): ?Response
     {
         $this->requirePostRequest();
 
@@ -1698,7 +1690,7 @@ class UsersController extends Controller
      * @return Response|null
      * @throws ForbiddenHttpException if a non-admin is attempting to unsuspend an admin
      */
-    public function actionUnsuspendUser()
+    public function actionUnsuspendUser(): ?Response
     {
         $this->requirePostRequest();
         $this->requirePermission('moderateUsers');
@@ -1731,7 +1723,7 @@ class UsersController extends Controller
      *
      * @return Response|null
      */
-    public function actionSaveFieldLayout()
+    public function actionSaveFieldLayout(): ?Response
     {
         $this->requirePostRequest();
         $this->requireAdmin();
@@ -1739,7 +1731,7 @@ class UsersController extends Controller
         // Set the field layout
         $fieldLayout = Craft::$app->getFields()->assembleLayoutFromPost();
         $fieldLayout->type = User::class;
-        $fieldLayout->reservedAttributes = [
+        $fieldLayout->reservedFieldHandles = [
             'groups',
             'photo',
         ];
@@ -1782,7 +1774,7 @@ class UsersController extends Controller
      * @return Response|null
      * @throws ServiceUnavailableHttpException
      */
-    private function _handleLoginFailure(string $authError = null, User $user = null)
+    private function _handleLoginFailure(?string $authError, ?User $user = null): ?Response
     {
         // Delay randomly between 0 and 1.5 seconds.
         usleep(random_int(0, 1500000));
@@ -1862,7 +1854,13 @@ class UsersController extends Controller
                 Craft::$app->getUrlManager()->setRouteParams([
                     'variables' => $variables,
                 ]);
-                Craft::$app->getRequest()->checkIfActionRequest(true, true, false);
+
+                // Avoid re-routing to the same action again
+                $this->request->checkIfActionRequest(true, true, false);
+                if ($this->request->getActionSegments() === ['users', 'set-password']) {
+                    $this->request->setIsActionRequest(false);
+                }
+
                 return Craft::$app->handleRequest($this->request, true);
             } catch (NotFoundHttpException $e) {
                 // Just go with the CP template
@@ -1878,7 +1876,7 @@ class UsersController extends Controller
      *
      * @throws NotFoundHttpException
      */
-    private function _noUserExists()
+    private function _noUserExists(): void
     {
         throw new NotFoundHttpException('User not found');
     }
@@ -1922,10 +1920,9 @@ class UsersController extends Controller
 
     /**
      * @param User $user
-     * @return void
      * @throws \Throwable if reasons
      */
-    private function _processUserPhoto(User $user)
+    private function _processUserPhoto(User $user): void
     {
         // Delete their photo?
         $users = Craft::$app->getUsers();
@@ -1993,7 +1990,7 @@ class UsersController extends Controller
      * @param User $currentUser
      * @throws ForbiddenHttpException if the user account doesn't have permission to assign the attempted permissions
      */
-    private function _saveUserPermissions(User $user, User $currentUser)
+    private function _saveUserPermissions(User $user, User $currentUser): void
     {
         if (!$currentUser->can('assignUserPermissions')) {
             return;
@@ -2043,7 +2040,7 @@ class UsersController extends Controller
      * @param User $currentUser
      * @throws ForbiddenHttpException if the user account doesn't have permission to assign the attempted groups
      */
-    private function _saveUserGroups(User $user, User $currentUser)
+    private function _saveUserGroups(User $user, User $currentUser): void
     {
         if (!$currentUser->can('assignUserGroups')) {
             return;
@@ -2060,7 +2057,7 @@ class UsersController extends Controller
             $groupIds = [];
         }
 
-        /* @var UserGroup[] $allGroups */
+        /** @var UserGroup[] $allGroups */
         $allGroups = ArrayHelper::index(Craft::$app->getUserGroups()->getAllGroups(), 'id');
 
         // See if there are any new groups in here
@@ -2100,10 +2097,10 @@ class UsersController extends Controller
         $uid = $this->request->getRequiredParam('id');
         $code = $this->request->getRequiredParam('code');
 
-        /* @var User|null $user */
+        /** @var User|null $user */
         $user = User::find()
             ->uid($uid)
-            ->anyStatus()
+            ->status(null)
             ->addSelect(['users.password'])
             ->one();
 
@@ -2140,11 +2137,11 @@ class UsersController extends Controller
     }
 
     /**
-     * @param User|null
+     * @param User|null $user
      * @return Response
      * @throws HttpException if the verification code is invalid
      */
-    private function _processInvalidToken(User $user = null): Response
+    private function _processInvalidToken(?User $user = null): Response
     {
         $this->trigger(self::EVENT_INVALID_USER_TOKEN, new InvalidUserTokenEvent([
             'user' => $user,
@@ -2179,7 +2176,7 @@ class UsersController extends Controller
      * @param User $user The user that was just activated
      * @return Response|null
      */
-    private function _onAfterActivateUser(User $user)
+    private function _onAfterActivateUser(User $user): ?Response
     {
         $this->_maybeLoginUserAfterAccountActivation($user);
 
@@ -2211,7 +2208,7 @@ class UsersController extends Controller
      * @param User $user The user to redirect
      * @return Response|null
      */
-    private function _redirectUserToCp(User $user)
+    private function _redirectUserToCp(User $user): ?Response
     {
         // Can they access the CP?
         if ($user->can('accessCp')) {
@@ -2254,10 +2251,10 @@ class UsersController extends Controller
      * @param string|null $loginName
      * @return Response|null
      */
-    private function _handleSendPasswordResetError(array $errors, string $loginName = null)
+    private function _handleSendPasswordResetError(array $errors, ?string $loginName = null): ?Response
     {
         if ($this->request->getAcceptsJson()) {
-            /* @noinspection CallableParameterUseCaseInTypeContextInspection */
+            /** @noinspection CallableParameterUseCaseInTypeContextInspection */
             $errors = implode(', ', $errors);
 
             return $this->asErrorJson($errors);
@@ -2289,5 +2286,18 @@ class UsersController extends Controller
         return $view->renderTemplate('users/_photo', [
             'user' => $user,
         ], $templateMode);
+    }
+
+    /**
+     * Marks the user’s feature announcements as read.
+     *
+     * @return Response
+     */
+    public function actionMarkAnnouncementsAsRead(): Response
+    {
+        $this->requirePostRequest();
+        $ids = $this->request->getRequiredBodyParam('ids');
+        Craft::$app->getAnnouncements()->markAsRead($ids);
+        return $this->asJson(['success' => true]);
     }
 }

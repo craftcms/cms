@@ -19,7 +19,7 @@ use craft\base\Serializable as SerializableInterface;
 class Serializable implements SerializableInterface
 {
     /**
-     * @return mixed|string
+     * @inheritdoc
      */
     public function serialize()
     {

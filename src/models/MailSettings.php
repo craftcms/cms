@@ -24,38 +24,38 @@ class MailSettings extends Model
     /**
      * @var string|null The default email address that emails should be sent from
      */
-    public $fromEmail;
+    public ?string $fromEmail = null;
 
     /**
      * @var string|null The default Reply-To email address that emails should have
      * @since 3.4.0
      */
-    public $replyToEmail;
+    public ?string $replyToEmail = null;
 
     /**
      * @var string|null The default name that emails should be sent from
      */
-    public $fromName;
+    public ?string $fromName = null;
 
     /**
      * @var string|null The template that emails should be sent with
      */
-    public $template;
+    public ?string $template = null;
 
     /**
      * @var string|null The transport type that should be used
      */
-    public $transportType = Sendmail::class;
+    public ?string $transportType = Sendmail::class;
 
     /**
      * @var array|null The transport type’s settings
      */
-    public $transportSettings;
+    public ?array $transportSettings = null;
 
     /**
      * @inheritdoc
      */
-    public function behaviors()
+    public function behaviors(): array
     {
         $behaviors = parent::behaviors();
         $behaviors['parser'] = [
@@ -73,7 +73,7 @@ class MailSettings extends Model
     /**
      * @inheritdoc
      */
-    public function attributeLabels()
+    public function attributeLabels(): array
     {
         return [
             'fromEmail' => Craft::t('app', 'System Email Address'),

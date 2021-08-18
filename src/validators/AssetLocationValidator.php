@@ -26,64 +26,64 @@ class AssetLocationValidator extends Validator
     /**
      * @var string The folder ID attribute on the model
      */
-    public $folderIdAttribute = 'folderId';
+    public string $folderIdAttribute = 'folderId';
 
     /**
      * @var string The filename attribute on the model
      */
-    public $filenameAttribute = 'filename';
+    public string $filenameAttribute = 'filename';
 
     /**
      * @var string The suggested filename attribute on the model
      */
-    public $suggestedFilenameAttribute = 'suggestedFilename';
+    public string $suggestedFilenameAttribute = 'suggestedFilename';
 
     /**
      * @var string The conflicting filename attribute on the model
      */
-    public $conflictingFilenameAttribute = 'conflictingFilename';
+    public string $conflictingFilenameAttribute = 'conflictingFilename';
 
     /**
      * @var string The error code attribute on the model
      */
-    public $errorCodeAttribute = 'locationError';
+    public string $errorCodeAttribute = 'locationError';
 
     /**
-     * @var string[]|null Allowed file extensions
+     * @var string[]|string|null Allowed file extensions. Set to `'*'` to allow all extensions.
      */
-    public $allowedExtensions;
+    public $allowedExtensions = null;
 
     /**
      * @var string|null User-defined error message used when the extension is disallowed.
      */
-    public $disallowedExtension;
+    public ?string $disallowedExtension = null;
 
     /**
      * @var string|null User-defined error message used when a file already exists with the same name.
      */
-    public $filenameConflict;
+    public ?string $filenameConflict = null;
 
     /**
      * @var bool Whether Asset should avoid filename conflicts when saved.
      */
-    public $avoidFilenameConflicts;
+    public bool $avoidFilenameConflicts;
 
     /**
      * @inheritdoc
      */
-    public function init()
+    public function init(): void
     {
         parent::init();
 
-        if ($this->allowedExtensions === null) {
+        if (!isset($this->allowedExtensions)) {
             $this->allowedExtensions = Craft::$app->getConfig()->getGeneral()->allowedFileExtensions;
         }
 
-        if ($this->disallowedExtension === null) {
+        if (!isset($this->disallowedExtension)) {
             $this->disallowedExtension = Craft::t('app', '“{extension}” is not an allowed file extension.');
         }
 
-        if ($this->filenameConflict === null) {
+        if (!isset($this->filenameConflict)) {
             $this->filenameConflict = Craft::t('app', 'A file with the name “{filename}” already exists.');
         }
     }
@@ -91,9 +91,9 @@ class AssetLocationValidator extends Validator
     /**
      * @inheritdoc
      */
-    public function validateAttribute($model, $attribute)
+    public function validateAttribute($model, $attribute): void
     {
-        /* @var Asset $model */
+        /** @var Asset $model */
         [$folderId, $filename] = Assets::parseFileLocation($model->$attribute);
 
         // Figure out which of them has changed
@@ -115,9 +115,8 @@ class AssetLocationValidator extends Validator
         // Make sure the new filename has a valid extension
         $extension = strtolower(pathinfo($filename, PATHINFO_EXTENSION));
 
-        if (!in_array($extension, $this->allowedExtensions, true)) {
+        if (is_array($this->allowedExtensions) && !in_array($extension, $this->allowedExtensions, true)) {
             $this->addLocationError($model, $attribute, Asset::ERROR_DISALLOWED_EXTENSION, $this->disallowedExtension, ['extension' => $extension]);
-
             return;
         }
 
@@ -149,11 +148,11 @@ class AssetLocationValidator extends Validator
      * @param string $message
      * @param array $params
      */
-    public function addLocationError(Model $model, string $attribute, string $errorCode, string $message, array $params = [])
+    public function addLocationError(Model $model, string $attribute, string $errorCode, string $message, array $params = []): void
     {
         $this->addError($model, $attribute, $message, $params);
 
-        if ($this->errorCodeAttribute !== null) {
+        if (isset($this->errorCodeAttribute)) {
             $model->{$this->errorCodeAttribute} = $errorCode;
         }
     }

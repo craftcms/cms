@@ -29,32 +29,32 @@ class Smtp extends BaseTransportAdapter
     /**
      * @var string|null The host that should be used
      */
-    public $host;
+    public ?string $host = null;
 
     /**
      * @var string|null The port that should be used
      */
-    public $port;
+    public ?string $port = null;
 
     /**
      * @var bool|null Whether to use authentication
      */
-    public $useAuthentication;
+    public ?bool $useAuthentication = null;
 
     /**
      * @var string|null The username that should be used
      */
-    public $username;
+    public ?string $username = null;
 
     /**
      * @var string|null The password that should be used
      */
-    public $password;
+    public ?string $password = null;
 
     /**
      * @var string|null The encryption method that should be used, if any (ssl or tls)
      */
-    public $encryptionMethod;
+    public ?string $encryptionMethod = null;
 
     /**
      * @var string The timeout duration (in seconds)
@@ -64,7 +64,22 @@ class Smtp extends BaseTransportAdapter
     /**
      * @inheritdoc
      */
-    public function behaviors()
+    public function __construct($config = [])
+    {
+        // Config normalization
+        foreach (['host', 'port', 'useAuthentication', 'username', 'password', 'encryptionMethod'] as $name) {
+            if (($config[$name] ?? null) === '') {
+                unset($config[$name]);
+            }
+        }
+
+        parent::__construct($config);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function behaviors(): array
     {
         $behaviors = parent::behaviors();
         $behaviors['parser'] = [
@@ -82,7 +97,7 @@ class Smtp extends BaseTransportAdapter
     /**
      * @inheritdoc
      */
-    public function attributeLabels()
+    public function attributeLabels(): array
     {
         return [
             'host' => Craft::t('app', 'Host Name'),
@@ -107,7 +122,7 @@ class Smtp extends BaseTransportAdapter
             ['username', 'password'],
             'required',
             'when' => function($model) {
-                /* @var self $model */
+                /** @var self $model */
                 return (bool)$model->useAuthentication;
             },
         ];
@@ -119,7 +134,7 @@ class Smtp extends BaseTransportAdapter
     /**
      * @inheritdoc
      */
-    public function getSettingsHtml()
+    public function getSettingsHtml(): ?string
     {
         return Craft::$app->getView()->renderTemplate('_components/mailertransportadapters/Smtp/settings', [
             'adapter' => $this,

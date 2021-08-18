@@ -11,8 +11,6 @@ use Craft;
 use craft\helpers\Image as ImageHelper;
 use yii\base\Exception;
 
-Craft::$app->requireEdition(Craft::Pro);
-
 /**
  * Rebranding functions.
  *
@@ -22,14 +20,22 @@ Craft::$app->requireEdition(Craft::Pro);
 class Rebrand
 {
     /**
-     * @var
+     * @var string[]|false[]
      */
-    private $_paths = [];
+    private array $_paths = [];
 
     /**
-     * @var
+     * @var Image[]|false[]
      */
-    private $_imageVariables = [];
+    private array $_imageVariables = [];
+
+    /**
+     * @throws \craft\errors\WrongEditionException
+     */
+    public function __construct()
+    {
+        Craft::$app->requireEdition(Craft::Pro);
+    }
 
     /**
      * Returns whether a custom logo has been uploaded.
@@ -67,7 +73,7 @@ class Rebrand
      *
      * @return Image|null
      */
-    public function getLogo()
+    public function getLogo(): ?Image
     {
         return $this->getImageVariable('logo');
     }
@@ -77,7 +83,7 @@ class Rebrand
      *
      * @return Image|null
      */
-    public function getIcon()
+    public function getIcon(): ?Image
     {
         return $this->getImageVariable('icon');
     }
@@ -88,7 +94,7 @@ class Rebrand
      * @param string $type
      * @return Image|null
      */
-    public function getImageVariable(string $type)
+    public function getImageVariable(string $type): ?Image
     {
         if (!in_array($type, ['logo', 'icon'], true)) {
             return null;

@@ -29,24 +29,9 @@ use yii\di\ServiceLocator;
 /**
  * Craft defines the `craft` global template variable.
  *
- * @property Config $config
- * @property ElementIndexes $elementIndexes
- * @property CategoryGroups $categoryGroups
  * @property Cp $cp
- * @property Deprecator $deprecator
- * @property Fields $fields
- * @property Feeds $feeds
- * @property Globals $globals
- * @property Request $request
  * @property Routes $routes
- * @property Sections $sections
- * @property SystemSettings $systemSettings
- * @property UserSession $session
- * @property I18n $i18n
  * @property Io $io
- * @property UserGroups $userGroups
- * @property UserPermissions $userPermissions
- * @property EmailMessages $emailMessages
  * @property Rebrand $rebrand
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
@@ -66,13 +51,6 @@ class CraftVariable extends ServiceLocator
     const EVENT_DEFINE_BEHAVIORS = 'defineBehaviors';
 
     /**
-     * @event DefineComponentsEvent The event that is triggered when defining the Service Locator components.
-     * @see __construct()
-     * @deprecated in 3.0.0-beta.23
-     */
-    const EVENT_DEFINE_COMPONENTS = 'defineComponents';
-
-    /**
      * @var \craft\web\Application|\craft\console\Application|null The Craft application class
      */
     public $app;
@@ -83,38 +61,15 @@ class CraftVariable extends ServiceLocator
     public function __construct($config = [])
     {
         // Set the core components
-        /* @noinspection PhpDeprecationInspection */
         $components = [
             'cp' => Cp::class,
             'io' => Io::class,
             'routes' => Routes::class,
-
-            // Deprecated
-            'categoryGroups' => CategoryGroups::class,
-            'config' => Config::class,
-            'deprecator' => Deprecator::class,
-            'elementIndexes' => ElementIndexes::class,
-            'feeds' => Feeds::class,
-            'fields' => Fields::class,
-            'globals' => Globals::class,
-            'i18n' => I18N::class,
-            'request' => Request::class,
-            'sections' => Sections::class,
-            'systemSettings' => SystemSettings::class,
-            'session' => UserSession::class,
         ];
 
         if (Craft::$app->getEdition() === Craft::Pro) {
-            /* @noinspection PhpDeprecationInspection */
-            /* @noinspection PhpDeprecationInspection */
-            /* @noinspection SuspiciousAssignmentsInspection */
             $components = array_merge($components, [
                 'rebrand' => Rebrand::class,
-
-                // Deprecated
-                'emailMessages' => EmailMessages::class,
-                'userGroups' => UserGroups::class,
-                'userPermissions' => UserPermissions::class,
             ]);
         }
 
@@ -126,7 +81,7 @@ class CraftVariable extends ServiceLocator
     /**
      * @inheritdoc
      */
-    public function init()
+    public function init(): void
     {
         parent::init();
 
@@ -154,7 +109,7 @@ class CraftVariable extends ServiceLocator
     /**
      * @inheritdoc
      */
-    public function behaviors()
+    public function behaviors(): array
     {
         // Fire a 'defineBehaviors' event
         $event = new DefineBehaviorsEvent();
@@ -168,7 +123,7 @@ class CraftVariable extends ServiceLocator
     /**
      * @inheritdoc
      */
-    public function canGetProperty($name, $checkVars = true, $checkBehaviors = true)
+    public function canGetProperty($name, $checkVars = true, $checkBehaviors = true): bool
     {
         // Check the services
         if ($this->has($name)) {
@@ -176,30 +131,6 @@ class CraftVariable extends ServiceLocator
         }
 
         return parent::canGetProperty($name, $checkVars, $checkBehaviors);
-    }
-
-    /**
-     * Gets the current language in use.
-     *
-     * @return string
-     * @deprecated in 3.0.0
-     */
-    public function locale(): string
-    {
-        Craft::$app->getDeprecator()->log('craft.locale()', '`craft.locale()` has been deprecated. Use `craft.app.language` instead.');
-        return Craft::$app->language;
-    }
-
-    /**
-     * Returns whether this site has multiple locales.
-     *
-     * @return bool
-     * @deprecated in 3.0.0. Use craft.app.isMultiSite instead
-     */
-    public function isLocalized(): bool
-    {
-        Craft::$app->getDeprecator()->log('craft.isLocalized', '`craft.isLocalized` has been deprecated. Use `craft.app.isMultiSite` instead.');
-        return Craft::$app->getIsMultiSite();
     }
 
     // Queries

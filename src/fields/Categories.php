@@ -67,49 +67,62 @@ class Categories extends BaseRelationField
     /**
      * @inheritdoc
      */
-    public $allowLimit = false;
+    public bool $allowLimit = false;
 
     /**
      * @inheritdoc
      */
-    public $allowMultipleSources = false;
+    public bool $allowMultipleSources = false;
 
     /**
      * @var int|null Branch limit
      */
-    public $branchLimit;
+    public ?int $branchLimit = null;
 
     /**
      * @inheritdoc
      */
-    protected $settingsTemplate = '_components/fieldtypes/Categories/settings';
+    protected string $settingsTemplate = '_components/fieldtypes/Categories/settings';
 
     /**
      * @inheritdoc
      */
-    protected $inputTemplate = '_components/fieldtypes/Categories/input';
+    protected string $inputTemplate = '_components/fieldtypes/Categories/input';
 
     /**
      * @inheritdoc
      */
-    protected $inputJsClass = 'Craft.CategorySelectInput';
+    protected ?string $inputJsClass = 'Craft.CategorySelectInput';
 
     /**
      * @inheritdoc
      */
-    protected $sortable = false;
+    protected bool $sortable = false;
 
     /**
      * @inheritdoc
      */
-    public function normalizeValue($value, ElementInterface $element = null)
+    public function __construct(array $config = [])
+    {
+        // Config normalization
+        if (($config['branchLimit'] ?? null) === '') {
+            unset($config['branchLimit']);
+        }
+
+        parent::__construct($config);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function normalizeValue($value, ?ElementInterface $element = null)
     {
         if (is_array($value)) {
-            /* @var Category[] $categories */
+            /** @var Category[] $categories */
             $categories = Category::find()
                 ->siteId($this->targetSiteId($element))
                 ->id(array_values(array_filter($value)))
-                ->anyStatus()
+                ->status(null)
                 ->all();
 
             // Fill in any gaps
@@ -130,7 +143,7 @@ class Categories extends BaseRelationField
     /**
      * @inheritdoc
      */
-    protected function inputHtml($value, ElementInterface $element = null): string
+    protected function inputHtml($value, ?ElementInterface $element = null): string
     {
         // Make sure the field is set to a valid category group
         if ($this->source) {
@@ -147,7 +160,7 @@ class Categories extends BaseRelationField
     /**
      * @inheritdoc
      */
-    protected function inputTemplateVariables($value = null, ElementInterface $element = null): array
+    protected function inputTemplateVariables($value = null, ?ElementInterface $element = null): array
     {
         $variables = parent::inputTemplateVariables($value, $element);
         $variables['branchLimit'] = $this->branchLimit;
@@ -182,13 +195,13 @@ class Categories extends BaseRelationField
      * @inheritdoc
      * @since 3.3.0
      */
-    public function getEagerLoadingGqlConditions()
+    public function getEagerLoadingGqlConditions(): ?array
     {
         $allowedEntities = Gql::extractAllowedEntitiesFromSchema();
         $allowedCategoryUids = $allowedEntities['categorygroups'] ?? [];
 
         if (empty($allowedCategoryUids)) {
-            return false;
+            return null;
         }
 
         $categoryIds = Db::idsByUids(DbTable::CATEGORYGROUPS, $allowedCategoryUids);

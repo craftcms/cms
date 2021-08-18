@@ -70,20 +70,20 @@ class UrlManager extends \yii\web\UrlManager
      * @var bool Whether [[parseRequest()]] should check for a token on the request and route the request based on that.
      * @since 3.2.0
      */
-    public $checkToken = true;
+    public bool $checkToken = true;
 
     /**
      * @var array Params that should be included in the
      */
-    private $_routeParams = [];
+    private array $_routeParams = [];
 
     /**
-     * @var
+     * @var ElementInterface|false|null
      */
-    private $_matchedElement;
+    private $_matchedElement = null;
 
     /**
-     * @var
+     * @var mixed
      */
     private $_matchedElementRoute;
 
@@ -105,7 +105,7 @@ class UrlManager extends \yii\web\UrlManager
      */
     public function parseRequest($request)
     {
-        /* @var Request $request */
+        /** @var Request $request */
         // Just in case...
         if ($request->getIsConsoleRequest()) {
             return false;
@@ -129,7 +129,7 @@ class UrlManager extends \yii\web\UrlManager
     /**
      * @inheritdoc
      */
-    public function createUrl($params)
+    public function createUrl($params): string
     {
         if (!Craft::$app->getIsInitialized()) {
             Craft::warning(__METHOD__ . "() was called before the application was fully initialized.\n" .
@@ -148,7 +148,7 @@ class UrlManager extends \yii\web\UrlManager
     /**
      * @inheritdoc
      */
-    public function createAbsoluteUrl($params, $scheme = null)
+    public function createAbsoluteUrl($params, $scheme = null): string
     {
         if (!Craft::$app->getIsInitialized()) {
             Craft::warning(__METHOD__ . "() was called before the application was fully initialized.\n" .
@@ -172,7 +172,7 @@ class UrlManager extends \yii\web\UrlManager
      *
      * @return array|null
      */
-    public function getRouteParams()
+    public function getRouteParams(): ?array
     {
         return $this->_routeParams;
     }
@@ -183,7 +183,7 @@ class UrlManager extends \yii\web\UrlManager
      * @param array $params The route params
      * @param bool $merge Whether these params should be merged with existing params
      */
-    public function setRouteParams(array $params, bool $merge = true)
+    public function setRouteParams(array $params, bool $merge = true): void
     {
         if ($merge) {
             $this->_routeParams = ArrayHelper::merge($this->_routeParams, $params);
@@ -219,7 +219,7 @@ class UrlManager extends \yii\web\UrlManager
                 "Stack trace:\n" . App::backtrace(), __METHOD__);
         }
 
-        if ($this->_matchedElement !== null) {
+        if (isset($this->_matchedElement)) {
             return $this->_matchedElement;
         }
 
@@ -239,7 +239,7 @@ class UrlManager extends \yii\web\UrlManager
      * @param ElementInterface|false|null $element
      * @since 3.2.3
      */
-    public function setMatchedElement($element)
+    public function setMatchedElement($element): void
     {
         if ($element instanceof ElementInterface) {
             if ($route = $element->getRoute()) {
@@ -262,13 +262,13 @@ class UrlManager extends \yii\web\UrlManager
     /**
      * @inheritdoc
      */
-    protected function buildRules($rules)
+    protected function buildRules($ruleDeclarations): array
     {
         // Add support for patterns in keys even if the value is an array
         $i = 0;
         $verbs = 'GET|HEAD|POST|PUT|PATCH|DELETE|OPTIONS';
 
-        foreach ($rules as $key => $rule) {
+        foreach ($ruleDeclarations as $key => $rule) {
             if (is_string($key) && is_array($rule)) {
                 // Code adapted from \yii\web\UrlManager::init()
                 if (
@@ -285,13 +285,13 @@ class UrlManager extends \yii\web\UrlManager
                 }
 
                 $rule['pattern'] = $key;
-                array_splice($rules, $i, 1, [$rule]);
+                array_splice($ruleDeclarations, $i, 1, [$rule]);
             }
 
             $i++;
         }
 
-        return parent::buildRules($rules);
+        return parent::buildRules($ruleDeclarations);
     }
 
     /**
@@ -299,7 +299,7 @@ class UrlManager extends \yii\web\UrlManager
      *
      * @return array|null The rules, or null if it's a console request
      */
-    private function _getRules()
+    private function _getRules(): ?array
     {
         $request = Craft::$app->getRequest();
 
@@ -310,7 +310,7 @@ class UrlManager extends \yii\web\UrlManager
         // Load the config file rules
         if ($request->getIsCpRequest()) {
             $baseCpRoutesPath = Craft::$app->getBasePath() . DIRECTORY_SEPARATOR . 'config' . DIRECTORY_SEPARATOR . 'cproutes';
-            /* @var array $rules */
+            /** @var array $rules */
             $rules = require $baseCpRoutesPath . DIRECTORY_SEPARATOR . 'common.php';
 
             if (Craft::$app->getEdition() === Craft::Pro) {
@@ -377,7 +377,7 @@ class UrlManager extends \yii\web\UrlManager
      */
     private function _getMatchedElementRoute(Request $request)
     {
-        if ($this->_matchedElementRoute !== null) {
+        if (isset($this->_matchedElementRoute)) {
             return $this->_matchedElementRoute;
         }
 
@@ -416,12 +416,12 @@ class UrlManager extends \yii\web\UrlManager
      * Attempts to match a path with the registered URL routes.
      *
      * @param Request $request
-     * @return mixed
+     * @return array|false
      */
     private function _getMatchedUrlRoute(Request $request)
     {
         // Code adapted from \yii\web\UrlManager::parseRequest()
-        /* @var $rule YiiUrlRule */
+        /** @var $rule YiiUrlRule */
         foreach ($this->rules as $rule) {
             $route = $rule->parseRequest($this, $request);
 
@@ -449,7 +449,7 @@ class UrlManager extends \yii\web\UrlManager
      * Attempts to match a path with a “well-known” URL.
      *
      * @param Request $request
-     * @return mixed
+     * @return array|false
      */
     private function _getMatchedDiscoverableUrlRoute(Request $request)
     {
@@ -510,7 +510,7 @@ class UrlManager extends \yii\web\UrlManager
      * Checks if the path could be a public template path and if so, returns a route to that template.
      *
      * @param Request $request
-     * @return array|bool
+     * @return array|false
      */
     private function _getTemplateRoute(Request $request)
     {

@@ -124,14 +124,26 @@ class DateTimeHelperTest extends Unit
     }
 
     /**
-     * @dataProvider invalidToDateTimeFormatsDataProvider
+     * @dataProvider toDateTimeDataProvider
      *
-     * @param $format
+     * @param callable|DateTime|false $expected
+     * @param $value
      * @throws Exception
      */
-    public function testToDateTimeInvalidFormats($format)
+    public function testToDateTime($expected, $value)
     {
-        self::assertFalse(DateTimeHelper::toDateTime($format));
+        if (is_callable($expected)) {
+            $expected = $expected();
+        }
+
+        if ($expected === false) {
+            self::assertFalse(DateTimeHelper::toDateTime($value));
+        } else {
+            $timestamp = $expected->getTimestamp();
+            $date = DateTimeHelper::toDateTime($value);
+            self::assertInstanceOf(DateTime::class, $date);
+            self::assertEqualsWithDelta($timestamp, $date->getTimestamp(), 1);
+        }
     }
 
     /**
@@ -487,15 +499,34 @@ class DateTimeHelperTest extends Unit
     /**
      * @return array
      */
-    public function invalidToDateTimeFormatsDataProvider(): array
+    public function toDateTimeDataProvider(): array
     {
         return [
-            'no-params' => [['date' => '', 'time' => '']],
-            'invalid-separator' => ['2018/08/09 20:00:00'],
-            'invalid-separator-2' => ['2018.08.09 20:00:00'],
-            'null-type' => [null],
-            'empty-string' => [''],
-            'empty-array' => [[]]
+            'timestamp' => [new DateTime('@1625575906'), 1625575906],
+            'now' => [
+                function() {
+                    return new DateTime();
+                },
+                'now',
+            ],
+            'no-params' => [false, ['date' => '', 'time' => '']],
+            'invalid-separator' => [false, '2018/08/09 20:00:00'],
+            'invalid-separator-2' => [false, '2018.08.09 20:00:00'],
+            'null-type' => [false, null],
+            'empty-string' => [false, ''],
+            'empty-array' => [false, []],
+            'year' => [
+                function() {
+                    return new DateTime('2021-01-01 00:00:00', new DateTimeZone('UTC'));
+                },
+                '2021',
+            ],
+            'datetime-with-timezone' => [
+                function() {
+                    return new DateTime('2021-09-01T12:00', new DateTimeZone('Europe/Berlin'));
+                },
+                ['datetime' => '2021-09-01T12:00', 'timezone' => 'Europe/Berlin'],
+            ],
         ];
     }
 
@@ -509,7 +540,7 @@ class DateTimeHelperTest extends Unit
             'mysql' => ['2018-08-08 20:00:00'],
             'array' => [['date' => '08-09-2018', 'time' => '08:00 PM']],
             'w3c-format' => ['2018-08-09T20:00:00'],
-            'dtobject' => [new DateTime('2018-08-09', new DateTimeZone('UTC'))]
+            'dtobject' => [new DateTime('2018-08-09', new DateTimeZone('UTC'))],
         ];
     }
 
@@ -584,17 +615,17 @@ class DateTimeHelperTest extends Unit
             'mysql-format' => [
                 '2018-08-09 20:00:00',
                 $basicDateTimeCreator('UTC'),
-                new DateTimeZone('UTC')
+                new DateTimeZone('UTC'),
             ],
             'array-format' => [
                 ['date' => '08-09-2018', 'time' => '08:00 PM', 'timezone' => 'Asia/Tokyo'],
                 $basicDateTimeCreator('Asia/Tokyo'),
-                new DateTimeZone('Asia/Tokyo')
+                new DateTimeZone('Asia/Tokyo'),
             ],
             'w3c-format' => [
                 '2018-08-09T20:00:00+09:00',
                 $basicDateTimeCreator('+09:00'),
-                new DateTimeZone('+09:00')
+                new DateTimeZone('+09:00'),
             ],
         ];
     }
@@ -748,7 +779,7 @@ class DateTimeHelperTest extends Unit
     {
         return [
             [86400, 'P1D'],
-            [90000, 'P1DT1H']
+            [90000, 'P1DT1H'],
         ];
     }
 
@@ -764,7 +795,7 @@ class DateTimeHelperTest extends Unit
         return [
             ['2018-08-08T20:00:00+09:00', $tokyoTime],
             ['2018-08-08T20:00:00+02:00', $amsterdamTime],
-            'invalid-format-returns-false' => [false, ['date' => '']]
+            'invalid-format-returns-false' => [false, ['date' => '']],
         ];
     }
 

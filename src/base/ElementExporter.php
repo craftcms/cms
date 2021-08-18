@@ -31,7 +31,7 @@ abstract class ElementExporter extends Component implements ElementExporterInter
     /**
      * @inheritdoc
      */
-    public function setElementType(string $elementType)
+    public function setElementType(string $elementType): void
     {
         $this->elementType = $elementType;
     }
@@ -41,7 +41,7 @@ abstract class ElementExporter extends Component implements ElementExporterInter
      */
     public function getFilename(): string
     {
-        /* @var ElementInterface $elementType */
+        /** @var ElementInterface $elementType */
         $elementType = $this->elementType;
         return $elementType::pluralLowerDisplayName();
     }

@@ -25,17 +25,17 @@ class DbController extends Controller
     /**
      * @var bool Whether the backup should be saved as a zip file.
      */
-    public $zip = false;
+    public bool $zip = false;
 
     /**
      * @var bool Whether to overwrite an existing backup file, if a specific file path is given.
      */
-    public $overwrite = false;
+    public bool $overwrite = false;
 
     /**
      * @inheritdoc
      */
-    public function options($actionID)
+    public function options($actionID): array
     {
         $options = parent::options($actionID);
 
@@ -50,17 +50,22 @@ class DbController extends Controller
     /**
      * Creates a new database backup.
      *
+     * Example:
+     * ```
+     * php craft db/backup ./my-backups/
+     * ```
+     *
      * @param string|null $path The path the database backup should be created at.
      * Can be any of the following:
      *
      * - A full file path
      * - A folder path (backup will be saved in there with a dynamically-generated name)
      * - A filename (backup will be saved in the working directory with the given name)
-     * - Blank (backup will be saved to the config/backups/ folder with a dynamically-generated name)
+     * - Blank (backup will be saved to the `config/backups/` folder with a dynamically-generated name)
      *
      * @return int
      */
-    public function actionBackup(string $path = null): int
+    public function actionBackup(?string $path = null): int
     {
         $this->stdout('Backing up the database ... ');
         $db = Craft::$app->getDb();
@@ -95,7 +100,7 @@ class DbController extends Controller
                             $this->stdout('Aborting' . PHP_EOL);
                             return ExitCode::OK;
                         }
-                        $this->stderr("$checkPath already exists. Retry with the --overwire flag to overwrite it." . PHP_EOL, Console::FG_RED);
+                        $this->stderr("$checkPath already exists. Retry with the --overwrite flag to overwrite it." . PHP_EOL, Console::FG_RED);
                         return ExitCode::UNSPECIFIED_ERROR;
                     }
                 }
@@ -125,10 +130,10 @@ class DbController extends Controller
     /**
      * Restores a database backup.
      *
-     * @param string|null The path to the database backup file.
+     * @param string|null $path The path to the database backup file.
      * @return int
      */
-    public function actionRestore(string $path = null): int
+    public function actionRestore(?string $path = null): int
     {
         if (!is_file($path)) {
             $this->stderr("Backup file doesn't exist: $path" . PHP_EOL);
@@ -183,8 +188,10 @@ class DbController extends Controller
     /**
      * Converts tables’ character sets and collations. (MySQL only)
      *
-     * @param string|null $charset The character set
-     * @param string|null $collation
+     * @param string|null $charset The target character set, which honors `DbConfig::$charset`
+     *                               or defaults to `utf8`.
+     * @param string|null $collation The target collation, which honors `DbConfig::$collation`
+     *                               or defaults to `utf8_unicode_ci`.
      * @return int
      */
     public function actionConvertCharset(?string $charset = null, ?string $collation = null): int

@@ -38,17 +38,17 @@ class Updates extends Component
     /**
      * @var string
      */
-    public $cacheKey = 'updates';
+    public string $cacheKey = 'updates';
 
     /**
      * @var UpdatesModel|null
      */
-    private $_updates;
+    private ?UpdatesModel $_updates = null;
 
     /**
      * @var bool|null
      */
-    private $_isCraftDbMigrationNeeded;
+    private ?bool $_isCraftDbMigrationNeeded = null;
 
     /**
      * Returns whether the update info is cached.
@@ -57,7 +57,7 @@ class Updates extends Component
      */
     public function getIsUpdateInfoCached(): bool
     {
-        return ($this->_updates !== null || Craft::$app->getCache()->exists($this->cacheKey));
+        return (isset($this->_updates) || Craft::$app->getCache()->exists($this->cacheKey));
     }
 
     /**
@@ -93,7 +93,7 @@ class Updates extends Component
     public function getUpdates(bool $refresh = false): UpdatesModel
     {
         if (!$refresh) {
-            if ($this->_updates !== null) {
+            if (isset($this->_updates)) {
                 return $this->_updates;
             }
 
@@ -163,13 +163,13 @@ class Updates extends Component
      */
     public function getAreMigrationsPending(bool $includeContent = false): bool
     {
-        if ($this->getIsCraftDbMigrationNeeded()) {
+        if ($this->getIsCraftUpdatePending()) {
             return true;
         }
 
         $pluginsService = Craft::$app->getPlugins();
         foreach ($pluginsService->getAllPlugins() as $plugin) {
-            if ($pluginsService->doesPluginRequireDatabaseUpdate($plugin)) {
+            if ($pluginsService->isPluginUpdatePending($plugin)) {
                 return true;
             }
         }
@@ -197,13 +197,13 @@ class Updates extends Component
     {
         $handles = [];
 
-        if ($this->getIsCraftDbMigrationNeeded()) {
+        if ($this->getIsCraftUpdatePending()) {
             $handles[] = 'craft';
         }
 
         $pluginsService = Craft::$app->getPlugins();
         foreach ($pluginsService->getAllPlugins() as $plugin) {
-            if ($pluginsService->doesPluginRequireDatabaseUpdate($plugin)) {
+            if ($pluginsService->isPluginUpdatePending($plugin)) {
                 $handles[] = $plugin->id;
             }
         }
@@ -225,7 +225,7 @@ class Updates extends Component
      * @throws MigrateException
      * @see getPendingMigrationHandles()
      */
-    public function runMigrations(array $handles)
+    public function runMigrations(array $handles): void
     {
         // Make sure Craft is first
         if (ArrayHelper::remove($handles, 'craft') !== null) {
@@ -284,21 +284,21 @@ class Updates extends Component
      */
     public function getIsUpdatePending(): bool
     {
-        return $this->getIsCraftDbMigrationNeeded() || $this->getIsPluginDbUpdateNeeded();
+        return $this->getIsCraftUpdatePending() || $this->getIsPluginUpdatePending();
     }
 
     /**
      * Returns whether a plugin needs to run a database update.
      *
      * @return bool
-     * @todo rename to getIsPluginUpdatePending() in v4
+     * @since 4.0.0
      */
-    public function getIsPluginDbUpdateNeeded(): bool
+    public function getIsPluginUpdatePending(): bool
     {
         $plugins = Craft::$app->getPlugins()->getAllPlugins();
 
         foreach ($plugins as $plugin) {
-            if (Craft::$app->getPlugins()->doesPluginRequireDatabaseUpdate($plugin)) {
+            if (Craft::$app->getPlugins()->isPluginUpdatePending($plugin)) {
                 return true;
             }
         }
@@ -343,11 +343,11 @@ class Updates extends Component
      * Returns whether Craft needs to run any database migrations.
      *
      * @return bool
-     * @todo rename to getIsCraftUpdatePending() in v4
+     * @since 4.0.0
      */
-    public function getIsCraftDbMigrationNeeded(): bool
+    public function getIsCraftUpdatePending(): bool
     {
-        if ($this->_isCraftDbMigrationNeeded === null) {
+        if (!isset($this->_isCraftDbMigrationNeeded)) {
             $storedSchemaVersion = Craft::$app->getInfo()->schemaVersion;
             $this->_isCraftDbMigrationNeeded = version_compare(Craft::$app->schemaVersion, $storedSchemaVersion, '>');
         }

@@ -42,12 +42,12 @@
         {% for route in routes %}
             <div class="route" data-uid="{{ route.uid }}"{% if route.siteUid %} data-site-uid="{{ route.siteUid }}"{% endif %}>
                 <div class="uri-container">
-                    {%- spaceless %}
+                    {%- apply spaceless %}
                         {% if craft.app.getIsMultiSite() %}
                             <span class="site">{{ route.siteUid ? craft.app.sites.getSiteByUid(route.siteUid).name|t('site') : "Global"|t('app') }}</span>
                         {% endif %}
                         <span class="uri">{{ route.uriDisplayHtml|raw }}</span>
-                    {% endspaceless -%}
+                    {% endapply -%}
                 </div>
                 <div class="template">{{ route.template }}</div>
             </div>

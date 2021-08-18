@@ -7,9 +7,9 @@
 
 namespace craft\web\assets\plugins;
 
-use craft\web\AssetBundle;
 use craft\web\assets\cp\CpAsset;
 use craft\web\View;
+use yii\web\AssetBundle;
 
 /**
  * Asset bundle for the Plugins page
@@ -45,7 +45,7 @@ class PluginsAsset extends AssetBundle
     /**
      * @inheritdoc
      */
-    public function registerAssetFiles($view)
+    public function registerAssetFiles($view): void
     {
         parent::registerAssetFiles($view);
 

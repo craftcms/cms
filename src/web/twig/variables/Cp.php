@@ -122,7 +122,7 @@ class Cp extends Component
      *
      * @return string
      */
-    public function craftIdAccountUrl()
+    public function craftIdAccountUrl(): string
     {
         return Craft::$app->getPluginStore()->craftIdEndpoint . '/account';
     }
@@ -271,7 +271,7 @@ class Cp extends Component
             $badgeCount = 0;
 
             foreach ($utilities as $class) {
-                /* @var UtilityInterface $class */
+                /** @var UtilityInterface $class */
                 $badgeCount += $class::badgeCount();
             }
 
@@ -574,7 +574,7 @@ class Cp extends Component
      * @return array|null
      * @since 3.1.9
      */
-    public function getAsciiCharMap(string $language)
+    public function getAsciiCharMap(string $language): ?array
     {
         if ($language === Craft::$app->language) {
             return null;
@@ -600,6 +600,7 @@ class Cp extends Component
 
         $directory = new \RecursiveDirectoryIterator($root);
 
+        /** @noinspection PhpParamsInspection */
         $filter = new \RecursiveCallbackFilterIterator($directory, function($current) {
             // Skip hidden files and directories, as well as node_modules/ folders
             if ($current->getFilename()[0] === '.' || $current->getFilename() === 'node_modules') {
@@ -609,12 +610,12 @@ class Cp extends Component
         });
 
         $iterator = new \RecursiveIteratorIterator($filter);
-        /* @var \SplFileInfo[] $files */
+        /** @var \SplFileInfo[] $files */
         $files = [];
         $pathLengths = [];
 
         foreach ($iterator as $file) {
-            /* @var \SplFileInfo $file */
+            /** @var \SplFileInfo $file */
             if (!$file->isDir() && $file->getFilename()[0] !== '.') {
                 $files[] = $file;
                 $pathLengths[] = strlen($file->getRealPath());

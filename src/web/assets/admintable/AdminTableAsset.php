@@ -7,9 +7,9 @@
 
 namespace craft\web\assets\admintable;
 
-use craft\web\AssetBundle;
 use craft\web\assets\cp\CpAsset;
 use craft\web\assets\vue\VueAsset;
+use yii\web\AssetBundle;
 
 /**
  * Asset bundle for admin tables
@@ -19,7 +19,7 @@ class AdminTableAsset extends AssetBundle
     /**
      * @var bool
      */
-    private $useDevServer = false;
+    private bool $useDevServer = false;
 
     /**
      * @var bool
@@ -29,7 +29,7 @@ class AdminTableAsset extends AssetBundle
     /**
      * @inheritdoc
      */
-    public function init()
+    public function init(): void
     {
         $this->sourcePath = __DIR__ . '/dist/';
 

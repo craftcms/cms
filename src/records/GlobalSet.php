@@ -7,11 +7,10 @@
 
 namespace craft\records;
 
-use Craft;
+use craft\db\ActiveQuery;
 use craft\db\ActiveRecord;
 use craft\db\Query;
 use craft\db\Table;
-use yii\db\ActiveQuery;
 use yii\db\ActiveQueryInterface;
 
 /**
@@ -21,6 +20,7 @@ use yii\db\ActiveQueryInterface;
  * @property int $fieldLayoutId Field layout ID
  * @property string $name Name
  * @property string $handle Handle
+ * @property int $sortOrder Sort order
  * @property Element $element Element
  * @property FieldLayout $fieldLayout Field layout
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
@@ -40,23 +40,15 @@ class GlobalSet extends ActiveRecord
     /**
      * @return ActiveQuery
      */
-    public static function find()
+    public static function find(): ActiveQuery
     {
-        $query = parent::find();
-
-        // todo: remove schema version condition after next beakpoint
-        $schemaVersion = Craft::$app->getInstalledSchemaVersion();
-        if (version_compare($schemaVersion, '3.1.19', '>=')) {
-            $query
-                ->where([
-                    'exists', (new Query())
-                        ->from(['e' => Table::ELEMENTS])
-                        ->where('[[e.id]] = ' . static::tableName() . '.[[id]]')
-                        ->andWhere(['e.dateDeleted' => null]),
-                ]);
-        }
-
-        return $query;
+        return parent::find()
+            ->where([
+                'exists', (new Query())
+                    ->from(['e' => Table::ELEMENTS])
+                    ->where('[[e.id]] = ' . static::tableName() . '.[[id]]')
+                    ->andWhere(['e.dateDeleted' => null]),
+            ]);
     }
 
     /**

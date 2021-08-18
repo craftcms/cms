@@ -320,7 +320,7 @@ class UrlHelper
         $path = trim($path, '/');
         $url = self::_createUrl($path, $params, $scheme, false);
 
-        /* @noinspection UnSafeIsSetOverArrayInspection - FP */
+        /** @noinspection UnSafeIsSetOverArrayInspection - FP */
         if (isset($currentSite)) {
             // Restore the original current site
             $sites->setCurrentSite($currentSite);
@@ -453,7 +453,7 @@ class UrlHelper
             }
         } catch (SiteNotFoundException $e) {
             // Fail silently if Craft isn't installed yet or is in the middle of updating
-            if (Craft::$app->getIsInstalled() && !Craft::$app->getUpdates()->getIsCraftDbMigrationNeeded()) {
+            if (Craft::$app->getIsInstalled() && !Craft::$app->getUpdates()->getIsCraftUpdatePending()) {
                 throw $e;
             }
         }
@@ -566,35 +566,6 @@ class UrlHelper
         return implode('/', array_filter([Craft::$app->getConfig()->getGeneral()->cpTrigger, $path]));
     }
 
-    // Deprecated Methods
-    // -------------------------------------------------------------------------
-
-    /**
-     * Returns a URL with a specific scheme.
-     *
-     * @param string $url the URL
-     * @param string $scheme the scheme ('http' or 'https')
-     * @return string
-     * @deprecated in 3.0.0. Use [[urlWithScheme()]] instead.
-     */
-    public static function urlWithProtocol(string $url, string $scheme): string
-    {
-        return static::urlWithScheme($url, $scheme);
-    }
-
-    /**
-     * Returns what the scheme part of the URL should be (http/https)
-     * for any tokenized URLs in Craft (email verification links, password reset
-     * urls, share entry URLs, etc.
-     *
-     * @return string
-     * @deprecated in 3.0.0. Use [[getSchemeForTokenizedUrl()]] instead.
-     */
-    public static function getProtocolForTokenizedUrl(): string
-    {
-        return static::getSchemeForTokenizedUrl();
-    }
-
     /**
      * Returns a URL.
      *
@@ -606,7 +577,7 @@ class UrlHelper
      * @param bool|null $addToken
      * @return string
      */
-    private static function _createUrl(string $path, $params, ?string $scheme = null, bool $cpUrl, ?bool $showScriptName = null, ?bool $addToken = null): string
+    private static function _createUrl(string $path, $params, ?string $scheme, bool $cpUrl, ?bool $showScriptName = null, ?bool $addToken = null): string
     {
         // Extract any params/fragment from the path
         [$path, $baseParams, $baseFragment] = self::_extractParams($path);

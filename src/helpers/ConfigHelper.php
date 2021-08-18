@@ -57,7 +57,7 @@ class ConfigHelper
      *
      * Accepted formats;
      * - integer (the size in bytes)
-     * - string (a [shorthand byte value](http://php.net/manual/en/faq.using.php#faq.using.shorthandbytes) ending in `K` (Kilobytes), `M` (Megabytes), or `G` (Gigabytes))
+     * - string (a [shorthand byte value](https://php.net/manual/en/faq.using.php#faq.using.shorthandbytes) ending in `K` (Kilobytes), `M` (Megabytes), or `G` (Gigabytes))
      *
      * @param int|string $value The size
      * @return int|float The size in bytes
@@ -110,7 +110,7 @@ class ConfigHelper
         }
 
         if ($siteHandle === null) {
-            /* @noinspection PhpUnhandledExceptionInspection */
+            /** @noinspection PhpUnhandledExceptionInspection */
             $siteHandle = Craft::$app->getSites()->getCurrentSite()->handle;
         }
 

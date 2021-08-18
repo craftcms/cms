@@ -24,8 +24,8 @@ class MissingWidget extends Widget implements MissingComponentInterface
     /**
      * @inheritdoc
      */
-    public function getBodyHtml()
+    public function getBodyHtml(): ?string
     {
-        return false;
+        return null;
     }
 }

@@ -33,7 +33,7 @@ class StringHelper extends \yii\helpers\StringHelper
      * @var array Character mappings
      * @see asciiCharMap()
      */
-    private static $_asciiCharMaps;
+    private static array $_asciiCharMaps;
 
     /**
      * Gets the substring after the first occurrence of a separator.
@@ -107,7 +107,7 @@ class StringHelper extends \yii\helpers\StringHelper
      * @return string The newly appended string.
      * @since 3.3.0
      */
-    public static function appendUniqueIdentifier(string $str, $entropyExtra = '', bool $md5 = true): string
+    public static function appendUniqueIdentifier(string $str, string $entropyExtra = '', bool $md5 = true): string
     {
         return (string)BaseStringy::create($str)->appendUniqueIdentifier($entropyExtra, $md5);
     }
@@ -619,7 +619,7 @@ class StringHelper extends \yii\helpers\StringHelper
      * @param string $needle The substring to look for.
      * @param int $offset The offset from which to search.
      * @param bool $caseSensitive Whether to perform a case-sensitive search or not.
-     * @return int|bool The occurrence's index if found, otherwise false.
+     * @return int|false The occurrence's index if found, otherwise false.
      */
     public static function indexOf(string $str, string $needle, int $offset = 0, bool $caseSensitive = true)
     {
@@ -640,7 +640,7 @@ class StringHelper extends \yii\helpers\StringHelper
      * @param string $needle The substring to look for.
      * @param int $offset The offset from which to search.
      * @param bool $caseSensitive Whether to perform a case-sensitive search or not.
-     * @return int|bool The occurrence's last index if found, otherwise false.
+     * @return int|false The occurrence's last index if found, otherwise false.
      */
     public static function indexOfLast(string $str, string $needle, int $offset = 0, bool $caseSensitive = true)
     {
@@ -710,7 +710,7 @@ class StringHelper extends \yii\helpers\StringHelper
      * @return bool Whether or not $str is base64 encoded.
      * @since 3.3.0
      */
-    public static function isBase64(string $str, $emptyStringIsValid = true): bool
+    public static function isBase64(string $str, bool $emptyStringIsValid = true): bool
     {
         return BaseStringy::create($str)->isBase64($emptyStringIsValid);
     }
@@ -909,7 +909,7 @@ class StringHelper extends \yii\helpers\StringHelper
             $lines[$i] = $line;
         }
 
-        /* @var string[] $lines */
+        /** @var string[] $lines */
         return $lines;
     }
 
@@ -1063,7 +1063,7 @@ class StringHelper extends \yii\helpers\StringHelper
      * @param string $pattern The regular expression pattern.
      * @param string $replacement The string to replace with.
      * @param string $options Matching conditions to be used. Defaults to 'msr'. See
-     * [here](http://php.net/manual/en/function.mb-ereg-replace.php) for all options.
+     * [here](https://php.net/manual/en/function.mb-ereg-replace.php) for all options.
      * @return string The resulting string after the replacements.
      */
     public static function regexReplace(string $str, string $pattern, string $replacement, string $options = 'msr'): string
@@ -1376,14 +1376,14 @@ class StringHelper extends \yii\helpers\StringHelper
      * Returns true if the string begins with $substring, false otherwise. By default, the comparison is case-sensitive,
      * but can be made insensitive by setting $caseSensitive to false.
      *
-     * @param string $str The string to check the start of.
-     * @param string $substring The substring to look for.
+     * @param string $string The string to check the start of.
+     * @param string $with The substring to look for.
      * @param bool $caseSensitive Whether or not to enforce case-sensitivity.
      * @return bool Whether or not $str starts with $substring.
      */
-    public static function startsWith($str, $substring, $caseSensitive = true): bool
+    public static function startsWith($string, $with, $caseSensitive = true): bool
     {
-        return BaseStringy::create($str)->startsWith($substring, $caseSensitive);
+        return BaseStringy::create($string)->startsWith($with, $caseSensitive);
     }
 
     /**
@@ -1397,7 +1397,7 @@ class StringHelper extends \yii\helpers\StringHelper
      * @return bool Whether or not $str starts with $substring.
      * @since 3.3.0
      */
-    public static function startsWithAny($str, array $substrings, bool $caseSensitive = true): bool
+    public static function startsWithAny(string $str, array $substrings, bool $caseSensitive = true): bool
     {
         return BaseStringy::create($str)->startsWithAny($substrings, $caseSensitive);
     }

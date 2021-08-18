@@ -37,7 +37,6 @@ use craft\web\Request;
 use DateTime;
 use yii\base\Component;
 use yii\base\InvalidArgumentException;
-use yii\db\Exception as DbException;
 
 /**
  * The Users service provides APIs for managing users.
@@ -156,9 +155,9 @@ class Users extends Component
      * @param int $userId The user’s ID.
      * @return User|null The user with the given ID, or `null` if a user could not be found.
      */
-    public function getUserById(int $userId)
+    public function getUserById(int $userId): ?User
     {
-        /* @noinspection PhpIncompatibleReturnTypeInspection */
+        /** @noinspection PhpIncompatibleReturnTypeInspection */
         return Craft::$app->getElements()->getElementById($userId, User::class);
     }
 
@@ -172,11 +171,11 @@ class Users extends Component
      * @param string $usernameOrEmail The user’s username or email.
      * @return User|null The user with the given username/email, or `null` if a user could not be found.
      */
-    public function getUserByUsernameOrEmail(string $usernameOrEmail)
+    public function getUserByUsernameOrEmail(string $usernameOrEmail): ?User
     {
         $query = User::find()
             ->addSelect(['users.password', 'users.passwordResetRequired'])
-            ->anyStatus();
+            ->status(null);
 
         if (Craft::$app->getDb()->getIsMysql()) {
             $query
@@ -210,11 +209,11 @@ class Users extends Component
      * @param string $uid The user’s UID.
      * @return User|null The user with the given UID, or `null` if a user could not be found.
      */
-    public function getUserByUid(string $uid)
+    public function getUserByUid(string $uid): ?User
     {
         return User::find()
             ->uid($uid)
-            ->anyStatus()
+            ->status(null)
             ->one();
     }
 
@@ -281,20 +280,15 @@ class Users extends Component
      * @param int|null $userId The user’s ID
      * @return array The user’s preferences
      */
-    public function getUserPreferences(int $userId = null): array
+    public function getUserPreferences(?int $userId = null): array
     {
-        // TODO: Remove try/catch after next breakpoint
-        try {
-            $preferences = (new Query())
-                ->select(['preferences'])
-                ->from([Table::USERPREFERENCES])
-                ->where(['userId' => $userId])
-                ->scalar();
+        $preferences = (new Query())
+            ->select(['preferences'])
+            ->from([Table::USERPREFERENCES])
+            ->where(['userId' => $userId])
+            ->scalar();
 
-            return $preferences ? Json::decode($preferences) : [];
-        } catch (DbException $e) {
-            return [];
-        }
+        return $preferences ? Json::decode($preferences) : [];
     }
 
     /**
@@ -303,15 +297,14 @@ class Users extends Component
      * @param User $user The user
      * @param array $preferences The user’s new preferences
      */
-    public function saveUserPreferences(User $user, array $preferences)
+    public function saveUserPreferences(User $user, array $preferences): void
     {
         $preferences = $user->mergePreferences($preferences);
 
         Db::upsert(Table::USERPREFERENCES, [
             'userId' => $user->id,
-        ], [
-            'preferences' => Json::encode($preferences),
-        ], [], false);
+            'preferences' => $preferences,
+        ], true, [], false);
     }
 
     /**
@@ -322,7 +315,7 @@ class Users extends Component
      * @param mixed $default The default value, if the preference hasn’t been set
      * @return mixed The user’s preference
      */
-    public function getUserPreference(int $userId = null, string $key, $default = null)
+    public function getUserPreference(?int $userId, string $key, $default = null)
     {
         $preferences = $this->getUserPreferences($userId);
         return $preferences[$key] ?? $default;
@@ -420,7 +413,7 @@ class Users extends Component
      * @throws ImageException if the file provided is not a manipulatable image
      * @throws VolumeException if the user photo Volume is not provided or is invalid
      */
-    public function saveUserPhoto(string $fileLocation, User $user, string $filename = null)
+    public function saveUserPhoto(string $fileLocation, User $user, ?string $filename = null): void
     {
         $filename = AssetsHelper::prepareAssetName($filename ?? pathinfo($fileLocation, PATHINFO_BASENAME), true, true);
 
@@ -441,7 +434,7 @@ class Users extends Component
             $photo = new Asset();
             $photo->setScenario(Asset::SCENARIO_CREATE);
             $photo->tempFilePath = $fileLocation;
-            $photo->filename = $filename;
+            $photo->setFilename($filename);
             $photo->newFolderId = $folderId;
             $photo->setVolumeId($volume->id);
 
@@ -460,7 +453,7 @@ class Users extends Component
      * @param User $user
      * @since 3.5.14
      */
-    public function relocateUserPhoto(User $user)
+    public function relocateUserPhoto(User $user): void
     {
         if (!$user->photoId || ($photo = $user->getPhoto()) === null) {
             return;
@@ -473,7 +466,7 @@ class Users extends Component
             return;
         }
 
-        $photo->setScenario(Asset::SCENARIO_FILEOPS);
+        $photo->setScenario(Asset::SCENARIO_MOVE);
         $photo->avoidFilenameConflicts = true;
         $photo->newFolderId = $folderId;
         Craft::$app->getElements()->saveElement($photo);
@@ -521,7 +514,7 @@ class Users extends Component
             }
         }
 
-        return Craft::$app->getAssets()->ensureFolderByFullPathAndVolume($subpath, $volume);
+        return Craft::$app->getAssets()->ensureFolderByFullPathAndVolume($subpath, $volume)->id;
     }
 
     /**
@@ -546,7 +539,7 @@ class Users extends Component
      *
      * @param User $user The user
      */
-    public function handleValidLogin(User $user)
+    public function handleValidLogin(User $user): void
     {
         $now = DateTimeHelper::currentUTCDateTime();
 
@@ -572,7 +565,7 @@ class Users extends Component
      *
      * @param User $user The user
      */
-    public function handleInvalidLogin(User $user)
+    public function handleInvalidLogin(User $user): void
     {
         $userRecord = $this->_getUserRecordById($user->id);
         $now = DateTimeHelper::currentUTCDateTime();
@@ -852,12 +845,11 @@ class Users extends Component
      * @param DateTime|null $expiryDate When the message should be un-shunned. Defaults to `null` (never un-shun).
      * @return bool Whether the message was shunned successfully.
      */
-    public function shunMessageForUser(int $userId, string $message, DateTime $expiryDate = null): bool
+    public function shunMessageForUser(int $userId, string $message, ?DateTime $expiryDate = null): bool
     {
         return (bool)Db::upsert(Table::SHUNNEDMESSAGES, [
             'userId' => $userId,
             'message' => $message,
-        ], [
             'expiryDate' => Db::prepareDateForDb($expiryDate),
         ]);
     }
@@ -926,8 +918,9 @@ class Users extends Component
      * setting, and if it is set to a valid duration, it will delete any user
      * accounts that were created that duration ago, and have still not
      * activated their account.
+     *
      */
-    public function purgeExpiredPendingUsers()
+    public function purgeExpiredPendingUsers(): void
     {
         $generalConfig = Craft::$app->getConfig()->getGeneral();
 
@@ -1096,7 +1089,7 @@ class Users extends Component
      *
      * @param ConfigEvent $event
      */
-    public function handleChangedUserFieldLayout(ConfigEvent $event)
+    public function handleChangedUserFieldLayout(ConfigEvent $event): void
     {
         // Use this because we want this to trigger this if anything changes inside but ONLY ONCE
         static $parsed = false;
@@ -1135,7 +1128,7 @@ class Users extends Component
      * @param bool $runValidation Whether the layout should be validated
      * @return bool
      */
-    public function saveLayout(FieldLayout $layout, bool $runValidation = true)
+    public function saveLayout(FieldLayout $layout, bool $runValidation = true): bool
     {
         if ($runValidation && !$layout->validate()) {
             Craft::info('Field layout not saved due to validation error.', __METHOD__);
@@ -1194,7 +1187,7 @@ class Users extends Component
      *
      * @param FieldEvent $event
      */
-    public function pruneDeletedField(FieldEvent $event)
+    public function pruneDeletedField(FieldEvent $event): void
     {
         $field = $event->field;
         $fieldUid = $field->uid;

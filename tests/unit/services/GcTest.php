@@ -144,7 +144,7 @@ class GcTest extends Unit
 
         $count = User::find()
             ->username(['user1', 'user2', 'user3', 'user4'])
-            ->anyStatus()
+            ->status(null)
             ->count();
 
         // Make sure all 4 users are in there
@@ -157,7 +157,7 @@ class GcTest extends Unit
 
         $count = User::find()
             ->username(['user1', 'user2', 'user3', 'user4'])
-            ->anyStatus()
+            ->status(null)
             ->count();
 
         // Should only be 2 users now

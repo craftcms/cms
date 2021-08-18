@@ -21,7 +21,7 @@ class SiteIdValidator extends Validator
     /**
      * @inheritdoc
      */
-    public function validateAttribute($model, $attribute)
+    public function validateAttribute($model, $attribute): void
     {
         $siteId = $model->$attribute;
 

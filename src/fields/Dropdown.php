@@ -40,14 +40,14 @@ class Dropdown extends BaseOptionsField implements SortableFieldInterface
     /**
      * @inheritdoc
      */
-    public $optgroups = true;
+    protected bool $optgroups = true;
 
     /**
      * @inheritdoc
      */
-    protected function inputHtml($value, ElementInterface $element = null): string
+    protected function inputHtml($value, ?ElementInterface $element = null): string
     {
-        /* @var SingleOptionFieldData $value */
+        /** @var SingleOptionFieldData $value */
         if (!$value->valid) {
             Craft::$app->getView()->setInitialDeltaValue($this->handle, null);
         }

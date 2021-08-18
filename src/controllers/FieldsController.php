@@ -35,7 +35,7 @@ class FieldsController extends Controller
     /**
      * @inheritdoc
      */
-    public function beforeAction($action)
+    public function beforeAction($action): bool
     {
         // All field actions require an admin
         $this->requireAdmin();
@@ -116,7 +116,7 @@ class FieldsController extends Controller
      * @throws NotFoundHttpException if the requested field/field group cannot be found
      * @throws ServerErrorHttpException if no field groups exist
      */
-    public function actionEditField(int $fieldId = null, FieldInterface $field = null, int $groupId = null): Response
+    public function actionEditField(?int $fieldId = null, ?FieldInterface $field = null, ?int $groupId = null): Response
     {
         $this->requireAdmin();
 
@@ -148,7 +148,7 @@ class FieldsController extends Controller
         // ---------------------------------------------------------------------
 
         $supportedTranslationMethods = [];
-        /* @var string[]|FieldInterface[] $allFieldTypes */
+        /** @var string[]|FieldInterface[] $allFieldTypes */
         $allFieldTypes = $fieldsService->getAllFieldTypes();
 
         foreach ($allFieldTypes as $class) {
@@ -166,7 +166,7 @@ class FieldsController extends Controller
             $compatibleFieldTypes = $fieldsService->getCompatibleFieldTypes($field, true);
         }
 
-        /* @var string[]|FieldInterface[] $compatibleFieldTypes */
+        /** @var string[]|FieldInterface[] $compatibleFieldTypes */
         $fieldTypeOptions = [];
 
         foreach ($allFieldTypes as $class) {
@@ -292,7 +292,7 @@ JS;
      * @return Response|null
      * @throws BadRequestHttpException
      */
-    public function actionSaveField()
+    public function actionSaveField(): ?Response
     {
         $this->requirePostRequest();
 
@@ -317,6 +317,8 @@ JS;
             'groupId' => $this->request->getRequiredBodyParam('group'),
             'name' => $this->request->getBodyParam('name'),
             'handle' => $this->request->getBodyParam('handle'),
+            // todo: remove comment when phpstan#3283 is fixed
+            /** @phpstan-ignore-next-line */
             'columnSuffix' => $oldField->columnSuffix ?? null,
             'instructions' => $this->request->getBodyParam('instructions'),
             'searchable' => (bool)$this->request->getBodyParam('searchable', true),

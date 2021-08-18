@@ -15,6 +15,7 @@ use craft\base\ElementInterface;
 use craft\base\Field;
 use craft\base\PreviewableFieldInterface;
 use craft\db\Query;
+use craft\db\QueryAbortedException;
 use craft\db\Table as DbTable;
 use craft\elements\db\ElementQuery;
 use craft\elements\db\ElementQueryInterface;
@@ -24,6 +25,7 @@ use craft\events\ElementCriteriaEvent;
 use craft\events\ElementEvent;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Cp;
+use craft\helpers\Db;
 use craft\helpers\ElementHelper;
 use craft\helpers\Html;
 use craft\helpers\Queue;
@@ -102,13 +104,13 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
      * @var array Related elements that have been validated
      * @see _validateRelatedElement()
      */
-    private static $_relatedElementValidates = [];
+    private static array $_relatedElementValidates = [];
 
     /**
      * @var bool Whether we're listening for related element saves yet
      * @see _validateRelatedElement()
      */
-    private static $_listeningForRelatedElementSave = false;
+    private static bool $_listeningForRelatedElementSave = false;
 
     /**
      * @var string|string[]|null The source keys that this field can relate elements from (used if [[allowMultipleSources]] is set to true)
@@ -118,91 +120,110 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
     /**
      * @var string|null The source key that this field can relate elements from (used if [[allowMultipleSources]] is set to false)
      */
-    public $source;
+    public ?string $source = null;
 
     /**
      * @var string|null The UID of the site that this field should relate elements from
      */
-    public $targetSiteId;
+    public ?string $targetSiteId = null;
 
     /**
      * @var bool Whether the site menu should be shown in element selector modals.
      *
      * @since 3.5.0
      */
-    public $showSiteMenu = false;
+    public bool $showSiteMenu = false;
 
     /**
      * @var string|null The view mode
      */
-    public $viewMode;
+    public ?string $viewMode = null;
 
     /**
      * @var int|null The maximum number of relations this field can have (used if [[allowLimit]] is set to true)
      */
-    public $limit;
+    public ?int $limit = null;
 
     /**
      * @var string|null The label that should be used on the selection input
      */
-    public $selectionLabel;
+    public ?string $selectionLabel = null;
 
     /**
      * @var bool Whether related elements should be validated when the source element is saved.
      */
-    public $validateRelatedElements = false;
+    public bool $validateRelatedElements = false;
 
     /**
-     * @var int Whether each site should get its own unique set of relations
+     * @var bool Whether each site should get its own unique set of relations
      */
-    public $localizeRelations = false;
+    public bool $localizeRelations = false;
 
     /**
      * @var bool Whether to allow multiple source selection in the settings
      */
-    public $allowMultipleSources = true;
+    public bool $allowMultipleSources = true;
 
     /**
      * @var bool Whether to allow the Limit setting
      */
-    public $allowLimit = true;
+    public bool $allowLimit = true;
 
     /**
      * @var bool Whether elements should be allowed to relate themselves.
      * @since 3.4.21
      */
-    public $allowSelfRelations = false;
+    public bool $allowSelfRelations = false;
 
     /**
      * @var bool Whether to allow the “Large Thumbnails” view mode
      */
-    protected $allowLargeThumbsView = false;
+    protected bool $allowLargeThumbsView = false;
 
     /**
      * @var string Template to use for settings rendering
      */
-    protected $settingsTemplate = '_components/fieldtypes/elementfieldsettings';
+    protected string $settingsTemplate = '_components/fieldtypes/elementfieldsettings';
 
     /**
      * @var string Template to use for field rendering
      */
-    protected $inputTemplate = '_includes/forms/elementSelect';
+    protected string $inputTemplate = '_includes/forms/elementSelect';
 
     /**
      * @var string|null The JS class that should be initialized for the input
      */
-    protected $inputJsClass;
+    protected ?string $inputJsClass = null;
 
     /**
      * @var bool Whether the elements have a custom sort order
      */
-    protected $sortable = true;
+    protected bool $sortable = true;
 
     /**
      * @inheritdoc
      */
     public function __construct(array $config = [])
     {
+        // Config normalization
+        $nullables = [
+            'source',
+            'targetSiteId',
+            'viewMode',
+            'limit',
+            'selectionLabel',
+        ];
+        foreach ($nullables as $name) {
+            if (($config[$name] ?? null) === '') {
+                unset($config[$name]);
+            }
+        }
+
+        if (array_key_exists('sources', $config) && empty($config['sources'])) {
+            // Not possible to have no sources selected, so go with the default
+            unset($config['sources']);
+        }
+
         // If useTargetSite is in here, but empty, then disregard targetSiteId
         if (array_key_exists('useTargetSite', $config)) {
             if (empty($config['useTargetSite'])) {
@@ -217,24 +238,6 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
         }
 
         parent::__construct($config);
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function init()
-    {
-        parent::init();
-
-        // Not possible to have no sources selected
-        if (!$this->sources) {
-            $this->sources = '*';
-        }
-
-        $this->validateRelatedElements = (bool)$this->validateRelatedElements;
-        $this->allowSelfRelations = (bool)$this->allowSelfRelations;
-        $this->showSiteMenu = (bool)$this->showSiteMenu;
-        $this->localizeRelations = (bool)$this->localizeRelations;
     }
 
     /**
@@ -271,7 +274,7 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
     /**
      * @inheritdoc
      */
-    public function getSettingsHtml()
+    public function getSettingsHtml(): ?string
     {
         $variables = $this->settingsTemplateVariables();
         return Craft::$app->getView()->renderTemplate($this->settingsTemplate, $variables);
@@ -302,18 +305,19 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
      *
      * @param ElementInterface $element
      */
-    public function validateRelatedElements(ElementInterface $element)
+    public function validateRelatedElements(ElementInterface $element): void
     {
         // Prevent circular relations from worrying about this entry
         $sourceId = $element->getCanonicalId();
         $sourceValidates = self::$_relatedElementValidates[$sourceId][$element->siteId] ?? null;
         self::$_relatedElementValidates[$sourceId][$element->siteId] = true;
 
-        /* @var ElementQueryInterface $query */
+        /** @var ElementQueryInterface $query */
         $query = $element->getFieldValue($this->handle);
         $errorCount = 0;
 
         foreach ($query->all() as $i => $related) {
+            /** @var Element $related */
             if ($related->enabled && $related->getEnabledForSite()) {
                 if (!self::_validateRelatedElement($related)) {
                     $element->addModelErrors($related, "{$this->handle}[{$i}]");
@@ -330,7 +334,7 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
         }
 
         if ($errorCount) {
-            /* @var ElementInterface|string $elementType */
+            /** @var ElementInterface|string $elementType */
             $elementType = static::elementType();
             $element->addError($this->handle, Craft::t('app', 'Fix validation errors on the related {type}.', [
                 'type' => $errorCount === 1 ? $elementType::lowerDisplayName() : $elementType::pluralLowerDisplayName(),
@@ -372,7 +376,7 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
      */
     public function isValueEmpty($value, ElementInterface $element): bool
     {
-        /* @var ElementQueryInterface|ElementInterface[] $value */
+        /** @var ElementQueryInterface|ElementInterface[] $value */
         if ($value instanceof ElementQueryInterface) {
             return !$this->_all($value, $element)->exists();
         }
@@ -383,15 +387,15 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
     /**
      * @inheritdoc
      */
-    public function normalizeValue($value, ElementInterface $element = null)
+    public function normalizeValue($value, ?ElementInterface $element = null)
     {
         if ($value instanceof ElementQueryInterface) {
             return $value;
         }
 
-        /* @var ElementInterface $class */
+        /** @var ElementInterface $class */
         $class = static::elementType();
-        /* @var ElementQuery $query */
+        /** @var ElementQuery $query */
         $query = $class::find()
             ->siteId($this->targetSiteId($element));
 
@@ -444,26 +448,26 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
     /**
      * @inheritdoc
      */
-    public function serializeValue($value, ElementInterface $element = null)
+    public function serializeValue($value, ?ElementInterface $element = null)
     {
-        /* @var ElementQueryInterface $value */
+        /** @var ElementQueryInterface $value */
         return $this->_all($value, $element)->ids();
     }
 
     /**
      * @inheritdoc
      */
-    public function modifyElementsQuery(ElementQueryInterface $query, $value)
+    public function modifyElementsQuery(ElementQueryInterface $query, $value): void
     {
         if (empty($value)) {
-            return null;
+            return;
         }
 
         if (!is_array($value)) {
             $value = [$value];
         }
 
-        /* @var ElementQuery $query */
+        /** @var ElementQuery $query */
         $conditions = [];
 
         if (isset($value[0]) && in_array($value[0], [':notempty:', ':empty:', 'not :empty:'])) {
@@ -514,19 +518,17 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
         }
 
         if (empty($conditions)) {
-            return false;
+            throw new QueryAbortedException();
         }
 
         array_unshift($conditions, 'or');
         $query->subQuery->andWhere($conditions);
-
-        return null;
     }
 
     /**
      * @inheritdoc
      */
-    public function modifyElementIndexQuery(ElementQueryInterface $query)
+    public function modifyElementIndexQuery(ElementQueryInterface $query): void
     {
         $criteria = [
             'status' => null,
@@ -547,7 +549,7 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
     /**
      * @inheritdoc
      */
-    public function getIsTranslatable(ElementInterface $element = null): bool
+    public function getIsTranslatable(?ElementInterface $element = null): bool
     {
         return $this->localizeRelations;
     }
@@ -555,16 +557,16 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
     /**
      * @inheritdoc
      */
-    protected function inputHtml($value, ElementInterface $element = null): string
+    protected function inputHtml($value, ?ElementInterface $element = null): string
     {
         if ($element !== null && $element->hasEagerLoadedElements($this->handle)) {
             $value = $element->getEagerLoadedElements($this->handle);
         } else {
-            /* @var ElementQueryInterface $value */
+            /** @var ElementQueryInterface $value */
             $value = $this->_all($value, $element);
         }
 
-        /* @var ElementQuery|array $value */
+        /** @var ElementQuery|array $value */
         $variables = $this->inputTemplateVariables($value, $element);
 
         return Craft::$app->getView()->renderTemplate($this->inputTemplate, $variables);
@@ -575,7 +577,7 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
      */
     protected function searchKeywords($value, ElementInterface $element): string
     {
-        /* @var ElementQuery $value */
+        /** @var ElementQuery $value */
         $titles = [];
 
         foreach ($this->_all($value, $element)->all() as $relatedElement) {
@@ -705,10 +707,10 @@ JS;
     /**
      * @inheritdoc
      */
-    public function afterSave(bool $isNew)
+    public function afterSave(bool $isNew): void
     {
         // If the propagation method just changed, resave all the Matrix blocks
-        if ($this->oldSettings !== null) {
+        if (isset($this->oldSettings)) {
             $oldLocalizeRelations = (bool)($this->oldSettings['localizeRelations'] ?? false);
             if ($this->localizeRelations !== $oldLocalizeRelations) {
                 Queue::push(new LocalizeRelations([
@@ -723,14 +725,14 @@ JS;
     /**
      * @inheritdoc
      */
-    public function afterElementSave(ElementInterface $element, bool $isNew)
+    public function afterElementSave(ElementInterface $element, bool $isNew): void
     {
         // Skip if nothing changed, or the element is just propagating and we're not localizing relations
         if (
             $element->isFieldDirty($this->handle) &&
             (!$element->propagating || $this->localizeRelations)
         ) {
-            /* @var ElementQuery $value */
+            /** @var ElementQuery $value */
             $value = $element->getFieldValue($this->handle);
 
             // $id will be set if we're saving new relations
@@ -740,12 +742,34 @@ JS;
                 $targetIds = $this->_all($value, $element)->ids();
             }
 
-            /* @var int|int[]|false|null $targetIds */
+            /** @var int|int[]|false|null $targetIds */
             Craft::$app->getRelations()->saveRelations($this, $element, $targetIds);
 
             // Reset the field value if this is a new element
             if ($isNew) {
                 $element->setFieldValue($this->handle, null);
+            }
+
+            if (!$this->localizeRelations && ElementHelper::shouldTrackChanges($element)) {
+                // Mark the field as dirty across all of the element’s sites
+                // (this is a little hacky but there’s not really a non-hacky alternative unfortunately.)
+                $siteIds = ArrayHelper::getColumn(ElementHelper::supportedSitesForElement($element), 'siteId');
+                $siteIds = ArrayHelper::withoutValue($siteIds, $element->siteId);
+                if (!empty($siteIds)) {
+                    $userId = Craft::$app->getUser()->getId();
+                    $timestamp = Db::prepareDateForDb(new \DateTime());
+
+                    foreach ($siteIds as $siteId) {
+                        Db::upsert(DbTable::CHANGEDFIELDS, [
+                            'elementId' => $element->id,
+                            'siteId' => $siteId,
+                            'fieldId' => $this->id,
+                            'dateUpdated' => $timestamp,
+                            'propagated' => $element->propagating,
+                            'userId' => $userId,
+                        ], true, [], false);
+                    }
+                }
             }
         }
 
@@ -784,9 +808,9 @@ JS;
      *
      * @return string|null
      */
-    public function getTargetSiteFieldHtml()
+    public function getTargetSiteFieldHtml(): ?string
     {
-        /* @var ElementInterface|string $class */
+        /** @var ElementInterface|string $class */
         $class = static::elementType();
 
         if (!Craft::$app->getIsMultiSite() || !$class::isLocalized()) {
@@ -843,7 +867,7 @@ JS;
      *
      * @return string|null
      */
-    public function getViewModeFieldHtml()
+    public function getViewModeFieldHtml(): ?string
     {
         $supportedViewModes = $this->supportedViewModes();
 
@@ -875,7 +899,7 @@ JS;
      */
     protected function settingsTemplateVariables(): array
     {
-        /* @var ElementInterface|string $elementType */
+        /** @var ElementInterface|string $elementType */
         $elementType = $this->elementType();
 
         return [
@@ -892,11 +916,11 @@ JS;
      * @param ElementInterface|null $element
      * @return array
      */
-    protected function inputTemplateVariables($value = null, ElementInterface $element = null): array
+    protected function inputTemplateVariables($value = null, ?ElementInterface $element = null): array
     {
         if ($value instanceof ElementQueryInterface) {
             $value = $value
-                ->anyStatus()
+                ->status(null)
                 ->all();
         } else if (!is_array($value)) {
             $value = [];
@@ -913,7 +937,7 @@ JS;
         }
 
         $selectionCriteria = $this->inputSelectionCriteria();
-        $selectionCriteria['siteId'] = $this->inputSiteId($element);
+        $selectionCriteria['siteId'] = $this->targetSiteId($element);
 
         $disabledElementIds = [];
 
@@ -965,7 +989,7 @@ JS;
      * @param ElementInterface|null $element
      * @return array|string
      */
-    protected function inputSources(ElementInterface $element = null)
+    protected function inputSources(?ElementInterface $element = null)
     {
         if ($this->allowMultipleSources) {
             $sources = $this->sources;
@@ -990,25 +1014,12 @@ JS;
     }
 
     /**
-     * Returns the site ID that the input should select elements from.
-     *
-     * @param ElementInterface|null $element
-     * @return int|null
-     * @since 3.4.19
-     * @deprecated in 3.5.16
-     */
-    protected function inputSiteId(ElementInterface $element = null)
-    {
-        return $this->targetSiteId($element);
-    }
-
-    /**
      * Returns the site ID that target elements should have.
      *
      * @param ElementInterface|null $element
      * @return int
      */
-    protected function targetSiteId(ElementInterface $element = null): int
+    protected function targetSiteId(?ElementInterface $element = null): int
     {
         if (Craft::$app->getIsMultiSite()) {
             if ($this->targetSiteId) {
@@ -1019,7 +1030,7 @@ JS;
                 }
             }
 
-            if ($element !== null) {
+            if ($element !== null && $element::isLocalized()) {
                 return $element->siteId;
             }
         }
@@ -1079,11 +1090,11 @@ JS;
      * @param ElementInterface|null $element
      * @return ElementQueryInterface
      */
-    private function _all(ElementQueryInterface $query, ElementInterface $element = null): ElementQueryInterface
+    private function _all(ElementQueryInterface $query, ?ElementInterface $element = null): ElementQueryInterface
     {
         $clone = clone $query;
         $clone
-            ->anyStatus()
+            ->status(null)
             ->siteId('*')
             ->limit(null)
             ->unique();

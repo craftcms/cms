@@ -29,7 +29,7 @@ use yii\db\Connection;
  * @property string|string[]|UserGroup $authorGroup The handle(s) of the user group(s) that resulting entries’ authors must belong to.
  * @method Entry[]|array all($db = null)
  * @method Entry|array|null one($db = null)
- * @method Entry|array|null nth(int $n, Connection $db = null)
+ * @method Entry|array|null nth(int $n, ?Connection $db = null)
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  * @doc-path entries.md
@@ -56,7 +56,7 @@ class EntryQuery extends ElementQuery
      * @var bool Whether to only return entries that the user has permission to edit.
      * @used-by editable()
      */
-    public $editable = false;
+    public bool $editable = false;
 
     /**
      * @var int|int[]|null The section ID(s) that the resulting entries must be in.
@@ -192,7 +192,7 @@ class EntryQuery extends ElementQuery
     /**
      * @inheritdoc
      */
-    protected $defaultOrderBy = ['entries.postDate' => SORT_DESC];
+    protected array $defaultOrderBy = ['entries.postDate' => SORT_DESC];
 
     /**
      * @inheritdoc
@@ -232,9 +232,9 @@ class EntryQuery extends ElementQuery
     /**
      * @inheritdoc
      */
-    public function init()
+    public function init(): void
     {
-        if ($this->withStructure === null) {
+        if (!isset($this->withStructure)) {
             $this->withStructure = true;
         }
 
@@ -245,10 +245,10 @@ class EntryQuery extends ElementQuery
      * Sets the [[$editable]] property.
      *
      * @param bool $value The property value (defaults to true)
-     * @return static self reference
+     * @return self self reference
      * @uses $editable
      */
-    public function editable(bool $value = true)
+    public function editable(bool $value = true): self
     {
         $this->editable = $value;
         return $this;
@@ -284,10 +284,10 @@ class EntryQuery extends ElementQuery
      * ```
      *
      * @param string|string[]|Section|null $value The property value
-     * @return static self reference
+     * @return self self reference
      * @uses $sectionId
      */
-    public function section($value)
+    public function section($value): self
     {
         // If the value is a section handle, swap it with the section
         if (is_string($value) && ($section = Craft::$app->getSections()->getSectionByHandle($value))) {
@@ -343,10 +343,10 @@ class EntryQuery extends ElementQuery
      * ```
      *
      * @param int|int[]|null $value The property value
-     * @return static self reference
+     * @return self self reference
      * @uses $sectionId
      */
-    public function sectionId($value)
+    public function sectionId($value): self
     {
         $this->sectionId = $value;
         return $this;
@@ -384,10 +384,10 @@ class EntryQuery extends ElementQuery
      * ```
      *
      * @param string|string[]|EntryType|null $value The property value
-     * @return static self reference
+     * @return self self reference
      * @uses $typeId
      */
-    public function type($value)
+    public function type($value): self
     {
         if ($value instanceof EntryType) {
             $this->typeId = [$value->id];
@@ -433,10 +433,10 @@ class EntryQuery extends ElementQuery
      * ```
      *
      * @param int|int[]|null $value The property value
-     * @return static self reference
+     * @return self self reference
      * @uses $typeId
      */
-    public function typeId($value)
+    public function typeId($value): self
     {
         $this->typeId = $value;
         return $this;
@@ -471,10 +471,10 @@ class EntryQuery extends ElementQuery
      * ```
      *
      * @param int|int[]|null $value The property value
-     * @return static self reference
+     * @return self self reference
      * @uses $authorId
      */
-    public function authorId($value)
+    public function authorId($value): self
     {
         $this->authorId = $value;
         return $this;
@@ -510,10 +510,10 @@ class EntryQuery extends ElementQuery
      * ```
      *
      * @param string|string[]|UserGroup|null $value The property value
-     * @return static self reference
+     * @return self self reference
      * @uses $authorGroupId
      */
-    public function authorGroup($value)
+    public function authorGroup($value): self
     {
         if ($value instanceof UserGroup) {
             $this->authorGroupId = $value->id;
@@ -559,10 +559,10 @@ class EntryQuery extends ElementQuery
      * ```
      *
      * @param int|int[]|null $value The property value
-     * @return static self reference
+     * @return self self reference
      * @uses $authorGroupId
      */
-    public function authorGroupId($value)
+    public function authorGroupId($value): self
     {
         $this->authorGroupId = $value;
         return $this;
@@ -602,10 +602,10 @@ class EntryQuery extends ElementQuery
      * ```
      *
      * @param mixed $value The property value
-     * @return static self reference
+     * @return self self reference
      * @uses $postDate
      */
-    public function postDate($value)
+    public function postDate($value): self
     {
         $this->postDate = $value;
         return $this;
@@ -642,10 +642,10 @@ class EntryQuery extends ElementQuery
      * ```
      *
      * @param string|\DateTime $value The property value
-     * @return static self reference
+     * @return self self reference
      * @uses $before
      */
-    public function before($value)
+    public function before($value): self
     {
         $this->before = $value;
         return $this;
@@ -682,10 +682,10 @@ class EntryQuery extends ElementQuery
      * ```
      *
      * @param string|\DateTime $value The property value
-     * @return static self reference
+     * @return self self reference
      * @uses $after
      */
-    public function after($value)
+    public function after($value): self
     {
         $this->after = $value;
         return $this;
@@ -725,10 +725,10 @@ class EntryQuery extends ElementQuery
      * ```
      *
      * @param mixed $value The property value
-     * @return static self reference
+     * @return self self reference
      * @uses $expiryDate
      */
-    public function expiryDate($value)
+    public function expiryDate($value): self
     {
         $this->expiryDate = $value;
         return $this;
@@ -763,7 +763,7 @@ class EntryQuery extends ElementQuery
      *     ->all();
      * ```
      */
-    public function status($value)
+    public function status($value): self
     {
         return parent::status($value);
     }
@@ -812,13 +812,13 @@ class EntryQuery extends ElementQuery
 
         if (Craft::$app->getEdition() === Craft::Pro) {
             if ($this->authorId) {
-                $this->subQuery->andWhere(Db::parseParam('entries.authorId', $this->authorId));
+                $this->subQuery->andWhere(Db::parseNumericParam('entries.authorId', $this->authorId));
             }
 
             if ($this->authorGroupId) {
                 $this->subQuery
                     ->innerJoin(['usergroups_users' => Table::USERGROUPS_USERS], '[[usergroups_users.userId]] = [[entries.authorId]]')
-                    ->andWhere(Db::parseParam('usergroups_users.groupId', $this->authorGroupId));
+                    ->andWhere(Db::parseNumericParam('usergroups_users.groupId', $this->authorGroupId));
             }
         }
 
@@ -880,7 +880,7 @@ class EntryQuery extends ElementQuery
      *
      * @throws QueryAbortedException
      */
-    private function _applyEditableParam()
+    private function _applyEditableParam(): void
     {
         if (!$this->editable) {
             return;
@@ -914,7 +914,7 @@ class EntryQuery extends ElementQuery
      *
      * @throws InvalidConfigException
      */
-    private function _normalizeTypeId()
+    private function _normalizeTypeId(): void
     {
         if (empty($this->typeId)) {
             $this->typeId = is_array($this->typeId) ? [] : null;
@@ -924,7 +924,7 @@ class EntryQuery extends ElementQuery
             $this->typeId = (new Query())
                 ->select(['id'])
                 ->from([Table::ENTRYTYPES])
-                ->where(Db::parseParam('id', $this->typeId))
+                ->where(Db::parseNumericParam('id', $this->typeId))
                 ->column();
         }
     }
@@ -932,17 +932,17 @@ class EntryQuery extends ElementQuery
     /**
      * Applies the 'sectionId' param to the query being prepared.
      */
-    private function _applySectionIdParam()
+    private function _applySectionIdParam(): void
     {
         if ($this->sectionId) {
             $this->subQuery->andWhere(['entries.sectionId' => $this->sectionId]);
 
             // Should we set the structureId param?
-            if ($this->structureId === null && count($this->sectionId) === 1) {
+            if (!isset($this->structureId) && count($this->sectionId) === 1) {
                 $structureId = (new Query())
                     ->select(['structureId'])
                     ->from([Table::SECTIONS])
-                    ->where(Db::parseParam('id', $this->sectionId))
+                    ->where(Db::parseNumericParam('id', $this->sectionId))
                     ->andWhere(['type' => Section::TYPE_STRUCTURE])
                     ->scalar();
                 $this->structureId = (int)$structureId ?: false;
@@ -953,7 +953,7 @@ class EntryQuery extends ElementQuery
     /**
      * Normalizes the sectionId param to an array of IDs or null
      */
-    private function _normalizeSectionId()
+    private function _normalizeSectionId(): void
     {
         if (empty($this->sectionId)) {
             $this->sectionId = is_array($this->sectionId) ? [] : null;
@@ -963,7 +963,7 @@ class EntryQuery extends ElementQuery
             $this->sectionId = (new Query())
                 ->select(['id'])
                 ->from([Table::SECTIONS])
-                ->where(Db::parseParam('id', $this->sectionId))
+                ->where(Db::parseNumericParam('id', $this->sectionId))
                 ->column();
         }
     }
@@ -971,7 +971,7 @@ class EntryQuery extends ElementQuery
     /**
      * Applies the 'ref' param to the query being prepared.
      */
-    private function _applyRefParam()
+    private function _applyRefParam(): void
     {
         if (!$this->ref) {
             return;

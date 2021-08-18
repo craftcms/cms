@@ -7,7 +7,6 @@
 
 namespace craft\base;
 
-use Craft;
 use craft\events\DefineBehaviorsEvent;
 use craft\events\DefineFieldsEvent;
 use craft\events\DefineRulesEvent;
@@ -58,19 +57,24 @@ abstract class Model extends \yii\base\Model
      */
     const EVENT_DEFINE_EXTRA_FIELDS = 'defineExtraFields';
 
+    public function __construct($config = [])
+    {
+        // Normalize the DateTime attributes
+        foreach ($this->datetimeAttributes() as $attribute) {
+            if (array_key_exists($attribute, $config) && $config[$attribute] !== null) {
+                $config[$attribute] = DateTimeHelper::toDateTime($config[$attribute]);
+            }
+        }
+
+        parent::__construct($config);
+    }
+
     /**
      * @inheritdoc
      */
-    public function init()
+    public function init(): void
     {
         parent::init();
-
-        // Normalize the DateTime attributes
-        foreach ($this->datetimeAttributes() as $attribute) {
-            if ($this->$attribute !== null) {
-                $this->$attribute = DateTimeHelper::toDateTime($this->$attribute);
-            }
-        }
 
         if ($this->hasEventHandlers(self::EVENT_INIT)) {
             $this->trigger(self::EVENT_INIT);
@@ -80,7 +84,7 @@ abstract class Model extends \yii\base\Model
     /**
      * @inheritdoc
      */
-    public function behaviors()
+    public function behaviors(): array
     {
         // Fire a 'defineBehaviors' event
         $event = new DefineBehaviorsEvent();
@@ -91,7 +95,7 @@ abstract class Model extends \yii\base\Model
     /**
      * @inheritdoc
      */
-    public function rules()
+    public function rules(): array
     {
         $rules = $this->defineRules();
 
@@ -113,7 +117,7 @@ abstract class Model extends \yii\base\Model
      *
      * @param Validator|array $rule
      */
-    private function _normalizeRule(&$rule)
+    private function _normalizeRule(&$rule): void
     {
         if (is_array($rule) && isset($rule[1]) && $rule[1] instanceof \Closure) {
             // Wrap the closure in another one, so InlineValidator doesn’t bind it to the model
@@ -168,8 +172,24 @@ abstract class Model extends \yii\base\Model
 
     /**
      * @inheritdoc
+     * @since 4.0.0
      */
-    public function fields()
+    public function setAttributes($values, $safeOnly = true): void
+    {
+        // Normalize the date/time attributes
+        foreach ($this->datetimeAttributes() as $name) {
+            if (isset($values[$name])) {
+                $values[$name] = DateTimeHelper::toDateTime($values[$name]) ?: null;
+            }
+        }
+
+        parent::setAttributes($values, $safeOnly);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function fields(): array
     {
         $fields = parent::fields();
 
@@ -194,7 +214,7 @@ abstract class Model extends \yii\base\Model
     /**
      * @inheritdoc
      */
-    public function extraFields()
+    public function extraFields(): array
     {
         $fields = parent::extraFields();
         $event = new DefineFieldsEvent([
@@ -210,7 +230,7 @@ abstract class Model extends \yii\base\Model
      * @param \yii\base\Model $model The other model
      * @param string $attrPrefix The prefix that should be added to error attributes when adding them to this model
      */
-    public function addModelErrors(\yii\base\Model $model, string $attrPrefix = '')
+    public function addModelErrors(\yii\base\Model $model, string $attrPrefix = ''): void
     {
         if ($attrPrefix !== '') {
             $attrPrefix = rtrim($attrPrefix, '.') . '.';
@@ -226,7 +246,7 @@ abstract class Model extends \yii\base\Model
     /**
      * @inheritdoc
      */
-    public function hasErrors($attribute = null)
+    public function hasErrors($attribute = null): bool
     {
         $includeNested = $attribute !== null && StringHelper::endsWith($attribute, '.*');
 
@@ -250,22 +270,5 @@ abstract class Model extends \yii\base\Model
         }
 
         return false;
-    }
-
-    // Deprecated Methods
-    // -------------------------------------------------------------------------
-
-    /**
-     * Returns the first error of the specified attribute.
-     *
-     * @param string $attribute The attribute name.
-     * @return string|null The error message, or null if there are no errors.
-     * @deprecated in 3.0.0. Use [[getFirstError()]] instead.
-     */
-    public function getError(string $attribute)
-    {
-        Craft::$app->getDeprecator()->log('Model::getError()', '`getError()` has been deprecated. Use `getFirstError()` instead.');
-
-        return $this->getFirstError($attribute);
     }
 }

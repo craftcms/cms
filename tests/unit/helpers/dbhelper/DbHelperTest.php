@@ -235,6 +235,17 @@ class DbHelperTest extends Unit
     }
 
     /**
+     * @dataProvider isTextualColumnTypeDataProvider
+     *
+     * @param bool $expected
+     * @param string $columnType
+     */
+    public function testIsTextualColumnType(bool $expected, string $columnType)
+    {
+        self::assertSame($expected, Db::isTextualColumnType($columnType));
+    }
+
+    /**
      * @dataProvider getTextualColumnStorageCapacityDataProvider
      *
      * @param int|null|false $expected
@@ -410,15 +421,9 @@ class DbHelperTest extends Unit
     public function parseColumnTypeDataProvider(): array
     {
         return [
-            ['test', 'test'],
-            [null, '!@#$%^&*()craftcms'],
-            ['craftcms', 'craftcms!@#$%^&*()'],
-            ['craft', 'craft,cms'],
-            ['123', '123 craft'],
-            ['craft', 'CRAFT'],
-            [null, '🎧𢵌 😀😘⛄'],
-            [null, 'Δδ'],
-            [null, '"craftcms"']
+            ['string', 'STRING(255)'],
+            ['decimal', 'DECIMAL(14,4)'],
+            [null, '"invalid"'],
         ];
     }
 
@@ -482,7 +487,7 @@ class DbHelperTest extends Unit
     public function deleteIfExistsDataProvider(): array
     {
         return [
-            [0, Table::USERS . ' users', "[[users.id]] = 1234567890 and [[users.uid]] = 'THISISNOTAUID'"]
+            [0, Table::USERS, ['id' => 1234567890]],
         ];
     }
 
@@ -532,13 +537,38 @@ class DbHelperTest extends Unit
     public function isNumericColumnTypeDataProvider(): array
     {
         return [
+            [true, 'smallint'],
+            [true, 'integer'],
+            [true, 'integer(1)'],
+            [true, 'bigint(5)'],
+            [true, 'float'],
+            [true, 'double'],
+            [true, 'decimal(14,4)'],
+            [false, 'string(255)'],
+        ];
+    }
+
+    /**
+     * @return array
+     */
+    public function isTextualColumnTypeDataProvider(): array
+    {
+        return [
+            [true, 'string(255)'],
+            [true, 'string'],
+            [true, 'char'],
+            [true, 'text'],
+            [true, 'tinytext'],
+            [true, 'mediumtext'],
+            [true, 'longtext'],
+            [true, "enum('foo', 'bar', 'baz')"],
+            [false, 'smallint'],
+            [false, 'integer'],
             [false, 'integer(1)'],
-            [false, 'decimal'],
             [false, 'bigint(5)'],
             [false, 'float'],
-            [false, '[[float]]'],
-            [false, '1234567890!@#$%^&*()'],
-            [false, 'textual'],
+            [false, 'double'],
+            [false, 'decimal(14,4)'],
         ];
     }
 

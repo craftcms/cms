@@ -25,7 +25,7 @@ class SingleSectionUriValidator extends UriFormatValidator
     /**
      * @inheritdoc
      */
-    public function validateAttribute($model, $attribute)
+    public function validateAttribute($model, $attribute): void
     {
         if (!($model instanceof Section_SiteSettings) || $attribute !== 'uriFormat') {
             throw new InvalidConfigException('Invalid use of SingleSectionUriValidator');
@@ -33,7 +33,7 @@ class SingleSectionUriValidator extends UriFormatValidator
 
         parent::validateAttribute($model, $attribute);
 
-        /* @var Section_SiteSettings $model */
+        /** @var Section_SiteSettings $model */
         $section = $model->getSection();
 
         // Make sure no other elements are using this URI already

@@ -30,23 +30,23 @@ class Delete extends ElementAction implements DeleteActionInterface
      * @var bool Whether to delete the element’s descendants as well.
      * @since 3.5.0
      */
-    public $withDescendants = false;
+    public bool $withDescendants = false;
 
     /**
      * @var bool Whether to permanently delete the elements.
      * @since 3.5.0
      */
-    public $hard = false;
+    public bool $hard = false;
 
     /**
      * @var string|null The confirmation message that should be shown before the elements get deleted
      */
-    public $confirmationMessage;
+    public ?string $confirmationMessage = null;
 
     /**
      * @var string|null The message that should be shown after the elements get deleted
      */
-    public $successMessage;
+    public ?string $successMessage = null;
 
     /**
      * @inheritdoc
@@ -68,7 +68,7 @@ class Delete extends ElementAction implements DeleteActionInterface
      * @inheritdoc
      * @since 3.5.0
      */
-    public function getTriggerHtml()
+    public function getTriggerHtml(): ?string
     {
         // Only enable for deletable elements, per getIsDeletable()
         $type = Json::encode(static::class);
@@ -123,13 +123,13 @@ JS;
     /**
      * @inheritdoc
      */
-    public function getConfirmationMessage()
+    public function getConfirmationMessage(): ?string
     {
-        if ($this->confirmationMessage !== null) {
+        if (isset($this->confirmationMessage)) {
             return $this->confirmationMessage;
         }
 
-        /* @var ElementInterface|string $elementType */
+        /** @var ElementInterface|string $elementType */
         $elementType = $this->elementType;
 
         if ($this->hard) {
@@ -201,10 +201,10 @@ JS;
             }
         }
 
-        if ($this->successMessage !== null) {
+        if (isset($this->successMessage)) {
             $this->setMessage($this->successMessage);
         } else {
-            /* @var ElementInterface|string $elementType */
+            /** @var ElementInterface|string $elementType */
             $elementType = $this->elementType;
             $this->setMessage(Craft::t('app', '{type} deleted.', [
                 'type' => $elementType::pluralDisplayName(),

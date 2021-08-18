@@ -171,7 +171,7 @@ class Dashboard extends Component
      * @param int $id The widget’s ID
      * @return WidgetInterface|null The widget, or null if it doesn’t exist
      */
-    public function getWidgetById(int $id)
+    public function getWidgetById(int $id): ?WidgetInterface
     {
         $result = $this->_createWidgetsQuery()
             ->where(['id' => $id, 'userId' => Craft::$app->getUser()->getIdentity()->id])
@@ -357,7 +357,7 @@ class Dashboard extends Component
     /**
      * Adds the default widgets to the logged-in user.
      */
-    private function _addDefaultUserWidgets()
+    private function _addDefaultUserWidgets(): void
     {
         $user = Craft::$app->getUser()->getIdentity();
 
@@ -396,7 +396,7 @@ class Dashboard extends Component
      * @param int|null $widgetId
      * @return WidgetRecord
      */
-    private function _getUserWidgetRecordById(int $widgetId = null): WidgetRecord
+    private function _getUserWidgetRecordById(?int $widgetId = null): WidgetRecord
     {
         $userId = Craft::$app->getUser()->getIdentity()->id;
 
@@ -423,7 +423,7 @@ class Dashboard extends Component
      * @param int $widgetId
      * @throws WidgetNotFoundException
      */
-    private function _noWidgetExists(int $widgetId)
+    private function _noWidgetExists(int $widgetId): void
     {
         throw new WidgetNotFoundException("No widget exists with the ID '{$widgetId}'");
     }

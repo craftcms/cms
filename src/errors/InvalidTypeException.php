@@ -18,14 +18,14 @@ use yii\base\Exception;
 class InvalidTypeException extends Exception
 {
     /**
-     * @var string|null The invalid class name
+     * @var string The invalid class name
      */
-    public $class;
+    public string $class;
 
     /**
-     * @var string|null The base class or interface that [[$class]] was supposed to be
+     * @var string The base class or interface that [[$class]] was supposed to be
      */
-    public $requiredType;
+    public string $requiredType;
 
     /**
      * Constructor.
@@ -35,7 +35,7 @@ class InvalidTypeException extends Exception
      * @param string|null $message The error message
      * @param int $code The error code
      */
-    public function __construct(string $handle, string $requiredType, string $message = null, int $code = 0)
+    public function __construct(string $handle, string $requiredType, ?string $message = null, int $code = 0)
     {
         $this->class = $handle;
         $this->requiredType = $requiredType;
@@ -50,7 +50,7 @@ class InvalidTypeException extends Exception
     /**
      * @return string the user-friendly name of this exception
      */
-    public function getName()
+    public function getName(): string
     {
         return 'Invalid component type';
     }

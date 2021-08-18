@@ -38,12 +38,12 @@ class UpdateSearchIndex extends BaseJob
      * @var string[]|null The field handles that should be indexed
      * @since 3.4.0
      */
-    public $fieldHandles;
+    public ?array $fieldHandles = null;
 
     /**
      * @inheritdoc
      */
-    public function execute($queue)
+    public function execute($queue): void
     {
         $class = $this->elementType;
         $elements = $class::find()
@@ -51,7 +51,7 @@ class UpdateSearchIndex extends BaseJob
             ->provisionalDrafts(null)
             ->id($this->elementId)
             ->siteId($this->siteId)
-            ->anyStatus()
+            ->status(null)
             ->all();
         $total = count($elements);
         $searchService = Craft::$app->getSearch();
@@ -65,7 +65,7 @@ class UpdateSearchIndex extends BaseJob
     /**
      * @inheritdoc
      */
-    protected function defaultDescription(): string
+    protected function defaultDescription(): ?string
     {
         return Craft::t('app', 'Updating search indexes');
     }

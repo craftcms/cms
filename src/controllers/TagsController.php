@@ -53,7 +53,7 @@ class TagsController extends Controller
      * @return Response
      * @throws NotFoundHttpException if the requested tag group cannot be found
      */
-    public function actionEditTagGroup(int $tagGroupId = null, TagGroup $tagGroup = null): Response
+    public function actionEditTagGroup(?int $tagGroupId = null, ?TagGroup $tagGroup = null): Response
     {
         $this->requireAdmin();
 
@@ -101,7 +101,7 @@ class TagsController extends Controller
      * @return Response|null
      * @throws BadRequestHttpException
      */
-    public function actionSaveTagGroup()
+    public function actionSaveTagGroup(): ?Response
     {
         $this->requirePostRequest();
         $this->requireAdmin();

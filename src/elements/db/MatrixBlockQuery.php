@@ -27,7 +27,7 @@ use yii\db\Connection;
  * @property string|string[]|MatrixBlockType $type The handle(s) of the block type(s) that resulting Matrix blocks must have
  * @method MatrixBlock[]|array all($db = null)
  * @method MatrixBlock|array|null one($db = null)
- * @method MatrixBlock|array|null nth(int $n, Connection $db = null)
+ * @method MatrixBlock|array|null nth(int $n, ?Connection $db = null)
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  * @doc-path matrix-blocks.md
@@ -44,7 +44,7 @@ class MatrixBlockQuery extends ElementQuery
     /**
      * @inheritdoc
      */
-    protected $defaultOrderBy = ['matrixblocks.sortOrder' => SORT_ASC];
+    protected array $defaultOrderBy = ['matrixblocks.sortOrder' => SORT_ASC];
 
     // General parameters
     // -------------------------------------------------------------------------
@@ -63,24 +63,18 @@ class MatrixBlockQuery extends ElementQuery
     public $ownerId;
 
     /**
-     * @var mixed
-     * @deprecated in 3.2.0
-     */
-    public $ownerSiteId;
-
-    /**
      * @var bool|null Whether the owner elements can be drafts.
      * @used-by allowOwnerDrafts()
      * @since 3.3.10
      */
-    public $allowOwnerDrafts;
+    public ?bool $allowOwnerDrafts = null;
 
     /**
      * @var bool|null Whether the owner elements can be revisions.
      * @used-by allowOwnerRevisions()
      * @since 3.3.10
      */
-    public $allowOwnerRevisions;
+    public ?bool $allowOwnerRevisions = null;
 
     /**
      * @var int|int[]|null The block type ID(s) that the resulting Matrix blocks must have.
@@ -108,14 +102,8 @@ class MatrixBlockQuery extends ElementQuery
     public function __set($name, $value)
     {
         switch ($name) {
-            case 'ownerSite':
-                Craft::$app->getDeprecator()->log('MatrixBlockQuery::ownerSite()', 'The `ownerSite` Matrix block query param has been deprecated. Use `site` or `siteId` instead.');
-                break;
             case 'type':
                 $this->type($value);
-                break;
-            case 'ownerLocale':
-                Craft::$app->getDeprecator()->log('MatrixBlockQuery::ownerLocale()', 'The `ownerLocale` Matrix block query param has been deprecated. Use `site` or `siteId` instead.');
                 break;
             default:
                 parent::__set($name, $value);
@@ -152,11 +140,11 @@ class MatrixBlockQuery extends ElementQuery
      * ```
      *
      * @param string|string[]|MatrixField|null $value The property value
-     * @return static self reference
+     * @return self self reference
      * @uses $fieldId
      * @since 3.4.0
      */
-    public function field($value)
+    public function field($value): self
     {
         if ($value instanceof MatrixField) {
             $this->fieldId = [$value->id];
@@ -213,10 +201,10 @@ class MatrixBlockQuery extends ElementQuery
      * ```
      *
      * @param int|int[]|null $value The property value
-     * @return static self reference
+     * @return self self reference
      * @uses $fieldId
      */
-    public function fieldId($value)
+    public function fieldId($value): self
     {
         $this->fieldId = $value;
         return $this;
@@ -251,42 +239,12 @@ class MatrixBlockQuery extends ElementQuery
      * ```
      *
      * @param int|int[]|null $value The property value
-     * @return static self reference
+     * @return self self reference
      * @uses $ownerId
      */
-    public function ownerId($value)
+    public function ownerId($value): self
     {
         $this->ownerId = $value;
-        return $this;
-    }
-
-    /**
-     * @return static self reference
-     * @deprecated in 3.2.0
-     */
-    public function ownerSiteId()
-    {
-        Craft::$app->getDeprecator()->log('MatrixBlockQuery::ownerSiteId()', 'The `ownerSiteId` Matrix block query param has been deprecated. Use `site` or `siteId` instead.');
-        return $this;
-    }
-
-    /**
-     * @return static self reference
-     * @deprecated in 3.2.0
-     */
-    public function ownerSite()
-    {
-        Craft::$app->getDeprecator()->log('MatrixBlockQuery::ownerSite()', 'The `ownerSite` Matrix block query param has been deprecated. Use `site` or `siteId` instead.');
-        return $this;
-    }
-
-    /**
-     * @return static self reference
-     * @deprecated in 3.0.0
-     */
-    public function ownerLocale()
-    {
-        Craft::$app->getDeprecator()->log('MatrixBlockQuery::ownerLocale()', 'The `ownerLocale` Matrix block query param has been deprecated. Use `site` or `siteId` instead.');
         return $this;
     }
 
@@ -310,10 +268,10 @@ class MatrixBlockQuery extends ElementQuery
      * ```
      *
      * @param ElementInterface $owner The owner element
-     * @return static self reference
+     * @return self self reference
      * @uses $ownerId
      */
-    public function owner(ElementInterface $owner)
+    public function owner(ElementInterface $owner): self
     {
         $this->ownerId = [$owner->id];
         $this->siteId = $owner->siteId;
@@ -331,11 +289,11 @@ class MatrixBlockQuery extends ElementQuery
      * | `false` | which cannot belong to a draft.
      *
      * @param bool|null $value The property value
-     * @return static self reference
+     * @return self self reference
      * @uses $allowOwnerDrafts
      * @since 3.3.10
      */
-    public function allowOwnerDrafts($value = true)
+    public function allowOwnerDrafts(?bool $value = true): self
     {
         $this->allowOwnerDrafts = $value;
         return $this;
@@ -352,11 +310,11 @@ class MatrixBlockQuery extends ElementQuery
      * | `false` | which cannot belong to a revision.
      *
      * @param bool|null $value The property value
-     * @return static self reference
+     * @return self self reference
      * @uses $allowOwnerDrafts
      * @since 3.3.10
      */
-    public function allowOwnerRevisions($value = true)
+    public function allowOwnerRevisions(?bool $value = true): self
     {
         $this->allowOwnerRevisions = $value;
         return $this;
@@ -392,10 +350,10 @@ class MatrixBlockQuery extends ElementQuery
      * ```
      *
      * @param string|string[]|MatrixBlockType|null $value The property value
-     * @return static self reference
+     * @return self self reference
      * @uses $typeId
      */
-    public function type($value)
+    public function type($value): self
     {
         if ($value instanceof MatrixBlockType) {
             $this->typeId = $value->id;
@@ -441,10 +399,10 @@ class MatrixBlockQuery extends ElementQuery
      * ```
      *
      * @param int|int[]|null $value The property value
-     * @return static self reference
+     * @return self self reference
      * @uses $typeId
      */
-    public function typeId($value)
+    public function typeId($value): self
     {
         $this->typeId = $value;
         return $this;
@@ -463,7 +421,7 @@ class MatrixBlockQuery extends ElementQuery
         // Figure out which content table to use
         $this->contentTable = null;
         if ($this->fieldId && count($this->fieldId) === 1) {
-            /* @var MatrixField $matrixField */
+            /** @var MatrixField $matrixField */
             $matrixField = Craft::$app->getFields()->getFieldById(reset($this->fieldId));
             if ($matrixField) {
                 $this->contentTable = $matrixField->contentTable;
@@ -485,13 +443,13 @@ class MatrixBlockQuery extends ElementQuery
             $this->subQuery->andWhere(['matrixblocks.ownerId' => $this->ownerId]);
         }
 
-        if ($this->typeId !== null) {
+        if (isset($this->typeId)) {
             // If typeId is an empty array, it's because type() was called but no valid type handles were passed in
             if (empty($this->typeId)) {
                 return false;
             }
 
-            $this->subQuery->andWhere(Db::parseParam('matrixblocks.typeId', $this->typeId));
+            $this->subQuery->andWhere(Db::parseNumericParam('matrixblocks.typeId', $this->typeId));
         }
 
         // Ignore revision/draft blocks by default
@@ -519,14 +477,14 @@ class MatrixBlockQuery extends ElementQuery
      *
      * @throws QueryAbortedException
      */
-    private function _normalizeFieldId()
+    private function _normalizeFieldId(): void
     {
-        if ($this->fieldId === null && $this->id) {
+        if (!isset($this->fieldId) && $this->id) {
             $this->fieldId = (new Query())
                 ->select(['fieldId'])
                 ->distinct()
                 ->from([Table::MATRIXBLOCKS])
-                ->where(Db::parseParam('id', $this->id))
+                ->where(Db::parseNumericParam('id', $this->id))
                 ->column() ?: false;
         }
 
@@ -542,7 +500,7 @@ class MatrixBlockQuery extends ElementQuery
             $this->fieldId = (new Query())
                 ->select(['id'])
                 ->from([Table::FIELDS])
-                ->where(Db::parseParam('id', $this->fieldId))
+                ->where(Db::parseNumericParam('id', $this->fieldId))
                 ->andWhere(['type' => Matrix::class])
                 ->column();
         }
@@ -553,7 +511,7 @@ class MatrixBlockQuery extends ElementQuery
      *
      * @throws InvalidConfigException
      */
-    private function _normalizeOwnerId()
+    private function _normalizeOwnerId(): void
     {
         if (empty($this->ownerId)) {
             $this->ownerId = null;
@@ -570,7 +528,7 @@ class MatrixBlockQuery extends ElementQuery
     protected function customFields(): array
     {
         // This method won't get called if $this->fieldId isn't set to a single int
-        /* @var MatrixField $matrixField */
+        /** @var MatrixField $matrixField */
         $matrixField = Craft::$app->getFields()->getFieldById(reset($this->fieldId));
         return $matrixField->getBlockTypeFields();
     }

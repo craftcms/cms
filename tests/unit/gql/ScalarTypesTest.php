@@ -9,7 +9,9 @@ namespace craftunit\gql;
 
 use Codeception\Test\Unit;
 use Craft as Craft;
+use craft\elements\Entry;
 use craft\errors\GqlException;
+use craft\fields\Date;
 use craft\gql\directives\FormatDateTime;
 use craft\gql\GqlEntityRegistry;
 use craft\gql\types\DateTime;
@@ -20,6 +22,7 @@ use GraphQL\Language\AST\FloatValueNode;
 use GraphQL\Language\AST\IntValueNode;
 use GraphQL\Language\AST\NullValueNode;
 use GraphQL\Language\AST\StringValueNode;
+use GraphQL\Type\Definition\ResolveInfo;
 use GraphQL\Type\Definition\ScalarType;
 
 class ScalarTypesTest extends Unit
@@ -108,17 +111,35 @@ class ScalarTypesTest extends Unit
         Craft::$app->setTimeZone('America/New_York');
 
         $dateTime = new \DateTime('now', new \DateTimeZone('UTC'));
+        $dateField = $this->make(Date::class, [
+            'showTimeZone' => false,
+            'handle' => 'fieldName'
+        ]);
+        $resolveInfo = $this->make(ResolveInfo::class, [
+            'fieldName' => 'fieldName'
+        ]);
+        $resolver = $dateField->getContentGqlType()['resolve'];
+        $element = $this->make(Entry::class, [
+            'getFieldValue' => function () use ($dateTime) { return clone $dateTime; }
+        ]);
 
         $settingValue = Craft::$app->getConfig()->getGeneral()->setGraphqlDatesToSystemTimeZone;
+        $currentTimezone = Craft::$app->getTimeZone();
 
+        // Make sure we don't use UTC
+        $newTimezone = 'America/New_York';
+
+        Craft::$app->setTimeZone($newTimezone);
         Craft::$app->getConfig()->getGeneral()->setGraphqlDatesToSystemTimeZone = true;
-        $value1 = DateTime::getType()->serialize(clone $dateTime);
+        $value1 = $resolver($element, [], null, $resolveInfo);
+
         Craft::$app->getConfig()->getGeneral()->setGraphqlDatesToSystemTimeZone = false;
-        $value2 = DateTime::getType()->serialize(clone $dateTime);
+        $value2 = $resolver($element, [], null, $resolveInfo);
 
         Craft::$app->getConfig()->getGeneral()->setGraphqlDatesToSystemTimeZone = $settingValue;
 
-        $this->assertNotEquals($value1, $value2);
+        $this->assertNotEquals($value1->getTimeZone(), $value2->getTimeZone());
+        Craft::$app->setTimeZone($currentTimezone);
     }
 
     /**
@@ -133,7 +154,7 @@ class ScalarTypesTest extends Unit
         return [
             [DateTime::getType(), 'testString', 'testString'],
             [DateTime::getType(), null, null],
-            [DateTime::getType(), clone $now, $now->setTimezone(new \DateTimeZone(FormatDateTime::defaultTimezone()))->format(FormatDateTime::DEFAULT_FORMAT)],
+            [DateTime::getType(), clone $now, $now->setTimezone(new \DateTimeZone(FormatDateTime::defaultTimeZone()))->format(FormatDateTime::DEFAULT_FORMAT)],
 
             [Number::getType(), 'testString', 'testString'],
             [Number::getType(), '', null],

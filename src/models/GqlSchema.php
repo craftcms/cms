@@ -24,12 +24,12 @@ class GqlSchema extends Model
     /**
      * @var int|null ID
      */
-    public $id;
+    public ?int $id = null;
 
     /**
      * @var string Schema name
      */
-    public $name;
+    public string $name;
 
     /**
      * @var array The schema’s scope
@@ -42,22 +42,22 @@ class GqlSchema extends Model
     public $isPublic = false;
 
     /**
-     * @var string $uid
+     * @var string|null $uid
      */
-    public $uid;
+    public ?string $uid = null;
 
     /**
      * @var array Instance cache for the extracted scope pairs
      * @since 3.3.16
      */
-    private $_cachedPairs = [];
+    private array $_cachedPairs = [];
 
     public function __construct($config = [])
     {
         parent::__construct($config);
 
         if (is_string($this->scope)) {
-            $this->scope = Json::decodeIfJson($this->scope);
+            $this->scope = Json::decode($this->scope);
         }
     }
 
@@ -90,7 +90,7 @@ class GqlSchema extends Model
     /**
      * Return whether this schema can perform an action
      *
-     * @param $name
+     * @param string $name
      * @return bool
      */
     public function has(string $name): bool

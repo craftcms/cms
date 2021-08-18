@@ -37,33 +37,27 @@ class ElementIndexesController extends BaseElementsController
     /**
      * @var string|null
      */
-    protected $elementType;
+    protected ?string $elementType = null;
 
     /**
      * @var string|null
      */
-    protected $context;
+    protected ?string $context = null;
 
     /**
      * @var string|null
      */
-    protected $sourceKey;
+    protected ?string $sourceKey = null;
 
     /**
      * @var array|null
      */
-    protected $source;
+    protected ?array $source = null;
 
     /**
      * @var array|null
      */
-    protected $viewState;
-
-    /**
-     * @var bool
-     * @deprecated in 3.4.6
-     */
-    protected $paginated = false;
+    protected ?array $viewState = null;
 
     /**
      * @var ElementQueryInterface|ElementQuery|null
@@ -73,17 +67,17 @@ class ElementIndexesController extends BaseElementsController
     /**
      * @var ElementActionInterface[]|null
      */
-    protected $actions;
+    protected ?array $actions = null;
 
     /**
      * @var ElementExporterInterface[]|null
      */
-    protected $exporters;
+    protected ?array $exporters = null;
 
     /**
      * @inheritdoc
      */
-    public function beforeAction($action)
+    public function beforeAction($action): bool
     {
         if (!parent::beforeAction($action)) {
             return false;
@@ -98,10 +92,9 @@ class ElementIndexesController extends BaseElementsController
         $this->sourceKey = $this->request->getParam('source') ?: null;
         $this->source = $this->source();
         $this->viewState = $this->viewState();
-        $this->paginated = (bool)$this->request->getParam('paginated');
         $this->elementQuery = $this->elementQuery();
 
-        if ($this->includeActions() && $this->sourceKey !== null) {
+        if ($this->includeActions() && isset($this->sourceKey)) {
             $this->actions = $this->availableActions();
             $this->exporters = $this->availableExporters();
         }
@@ -180,7 +173,7 @@ class ElementIndexesController extends BaseElementsController
 
         // Find that action from the list of available actions for the source
         if (!empty($this->actions)) {
-            /* @var ElementAction $availableAction */
+            /** @var ElementAction $availableAction */
             foreach ($this->actions as $availableAction) {
                 if ($actionClass === get_class($availableAction)) {
                     $action = clone $availableAction;
@@ -189,7 +182,7 @@ class ElementIndexesController extends BaseElementsController
             }
         }
 
-        /* @noinspection UnSafeIsSetOverArrayInspection - FP */
+        /** @noinspection UnSafeIsSetOverArrayInspection - FP */
         if (!isset($action)) {
             throw new BadRequestHttpException('Element action is not supported by the element type');
         }
@@ -209,7 +202,7 @@ class ElementIndexesController extends BaseElementsController
         }
 
         // Perform the action
-        /* @var ElementQuery $actionCriteria */
+        /** @var ElementQuery $actionCriteria */
         $actionCriteria = clone $this->elementQuery;
         $actionCriteria->offset = 0;
         $actionCriteria->limit = null;
@@ -314,7 +307,7 @@ class ElementIndexesController extends BaseElementsController
                     break;
                 case Response::FORMAT_XML:
                     Craft::$app->language = 'en-US';
-                    /* @var string|ElementInterface $elementType */
+                    /** @var string|ElementInterface $elementType */
                     $elementType = $this->elementType;
                     $this->response->formatters[Response::FORMAT_XML]['rootTag'] = $elementType::pluralLowerDisplayName();
                     break;
@@ -378,9 +371,9 @@ class ElementIndexesController extends BaseElementsController
      * @return array|null
      * @throws ForbiddenHttpException if the user is not permitted to access the requested source
      */
-    protected function source()
+    protected function source(): ?array
     {
-        if ($this->sourceKey === null) {
+        if (!isset($this->sourceKey)) {
             return null;
         }
 
@@ -417,7 +410,7 @@ class ElementIndexesController extends BaseElementsController
      */
     protected function elementQuery(): ElementQueryInterface
     {
-        /* @var string|ElementInterface $elementType */
+        /** @var string|ElementInterface $elementType */
         $elementType = $this->elementType;
         $query = $elementType::find();
 
@@ -455,7 +448,7 @@ class ElementIndexesController extends BaseElementsController
                 ->orderBy(null)
                 ->positionedAfter(null)
                 ->positionedBefore(null)
-                ->anyStatus();
+                ->status(null);
 
             // Get the actual elements
             $collapsedElementsQuery = clone $descendantQuery;
@@ -499,7 +492,7 @@ class ElementIndexesController extends BaseElementsController
      */
     protected function elementResponseData(bool $includeContainer, bool $includeActions): array
     {
-        /* @var string|ElementInterface $elementType */
+        /** @var string|ElementInterface $elementType */
         $elementType = $this->elementType;
         $responseData = [];
         $view = $this->getView();
@@ -540,13 +533,13 @@ class ElementIndexesController extends BaseElementsController
      *
      * @return ElementActionInterface[]|null
      */
-    protected function availableActions()
+    protected function availableActions(): ?array
     {
         if ($this->request->isMobileBrowser()) {
             return null;
         }
 
-        /* @var string|ElementInterface $elementType */
+        /** @var string|ElementInterface $elementType */
         $elementType = $this->elementType;
         $actions = $elementType::actions($this->sourceKey);
 
@@ -599,13 +592,13 @@ class ElementIndexesController extends BaseElementsController
      * @return ElementExporterInterface[]|null
      * @since 3.4.0
      */
-    protected function availableExporters()
+    protected function availableExporters(): ?array
     {
         if ($this->request->isMobileBrowser()) {
             return null;
         }
 
-        /* @var string|ElementInterface $elementType */
+        /** @var string|ElementInterface $elementType */
         $elementType = $this->elementType;
         $exporters = $elementType::exporters($this->sourceKey);
 
@@ -634,7 +627,7 @@ class ElementIndexesController extends BaseElementsController
      *
      * @return array|null
      */
-    protected function actionData()
+    protected function actionData(): ?array
     {
         if (empty($this->actions)) {
             return null;
@@ -642,7 +635,7 @@ class ElementIndexesController extends BaseElementsController
 
         $actionData = [];
 
-        /* @var ElementAction $action */
+        /** @var ElementAction $action */
         foreach ($this->actions as $action) {
             $actionData[] = [
                 'type' => get_class($action),
@@ -664,7 +657,7 @@ class ElementIndexesController extends BaseElementsController
      * @return array|null
      * @since 3.4.0
      */
-    protected function exporterData()
+    protected function exporterData(): ?array
     {
         if (empty($this->exporters)) {
             return null;

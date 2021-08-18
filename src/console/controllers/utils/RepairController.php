@@ -22,7 +22,7 @@ use yii\console\ExitCode;
 use yii\db\Expression;
 
 /**
- * Repairs data
+ * Repairs data.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.4.24
@@ -30,14 +30,14 @@ use yii\db\Expression;
 class RepairController extends Controller
 {
     /**
-     * @var bool Whether to only do a dry run of the repair process
+     * @var bool Whether to only do a dry run of the repair process.
      */
-    public $dryRun = false;
+    public bool $dryRun = false;
 
     /**
      * @inheritdoc
      */
-    public function options($actionID)
+    public function options($actionID): array
     {
         $options = parent::options($actionID);
         $options[] = 'dryRun';
@@ -45,9 +45,9 @@ class RepairController extends Controller
     }
 
     /**
-     * Repairs structure data for a section
+     * Repairs structure data for a section.
      *
-     * @param string $handle The section handle
+     * @param string $handle The section handle.
      * @return int
      */
     public function actionSectionStructure(string $handle): int
@@ -68,9 +68,9 @@ class RepairController extends Controller
     }
 
     /**
-     * Repairs structure data for a category group
+     * Repairs structure data for a category group.
      *
-     * @param string $handle The category group handle
+     * @param string $handle The category group handle.
      * @return int
      */
     public function actionCategoryGroupStructure(string $handle): int
@@ -106,7 +106,7 @@ class RepairController extends Controller
         $elements = $query
             ->siteId('*')
             ->unique()
-            ->anyStatus()
+            ->status(null)
             ->withStructure(false)
             ->addSelect([
                 'structureelements.root',
@@ -126,7 +126,7 @@ class RepairController extends Controller
             ])
             ->all();
 
-        /* @var string|ElementInterface $elementType */
+        /** @var string|ElementInterface $elementType */
         $elementType = $query->elementType;
         $displayName = $elementType::pluralLowerDisplayName();
 
@@ -153,7 +153,7 @@ class RepairController extends Controller
             }
 
             foreach ($elements as $element) {
-                /* @var ElementInterface $element */
+                /** @var ElementInterface $element */
                 if (!$element->level) {
                     $issue = 'was missing from structure';
                     if (!$this->dryRun) {

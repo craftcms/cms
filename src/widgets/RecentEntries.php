@@ -33,7 +33,7 @@ class RecentEntries extends Widget
     /**
      * @inheritdoc
      */
-    public static function icon()
+    public static function icon(): ?string
     {
         return Craft::getAlias('@appicons/clock.svg');
     }
@@ -41,7 +41,7 @@ class RecentEntries extends Widget
     /**
      * @var int|null The site ID that the widget should pull entries from
      */
-    public $siteId;
+    public ?int $siteId = null;
 
     /**
      * @var string|int[] The section IDs that the widget should pull entries from
@@ -51,18 +51,19 @@ class RecentEntries extends Widget
     /**
      * @var int The total number of entries that the widget should show
      */
-    public $limit = 10;
+    public int $limit = 10;
 
     /**
      * @inheritdoc
      */
-    public function init()
+    public function __construct($config = [])
     {
-        parent::init();
-
-        if ($this->siteId === null) {
-            $this->siteId = Craft::$app->getSites()->getCurrentSite()->id;
+        // Config normalization
+        if (empty($config['siteId'])) {
+            $config['siteId'] = Craft::$app->getSites()->getCurrentSite()->id;
         }
+
+        parent::__construct($config);
     }
 
     /**
@@ -78,7 +79,7 @@ class RecentEntries extends Widget
     /**
      * @inheritdoc
      */
-    public function getSettingsHtml()
+    public function getSettingsHtml(): ?string
     {
         return Craft::$app->getView()->renderTemplate('_components/widgets/RecentEntries/settings',
             [
@@ -89,7 +90,7 @@ class RecentEntries extends Widget
     /**
      * @inheritdoc
      */
-    public function getTitle(): string
+    public function getTitle(): ?string
     {
         if (is_numeric($this->section)) {
             $section = Craft::$app->getSections()->getSectionById($this->section);
@@ -101,7 +102,7 @@ class RecentEntries extends Widget
             }
         }
 
-        /* @noinspection UnSafeIsSetOverArrayInspection - FP */
+        /** @noinspection UnSafeIsSetOverArrayInspection - FP */
         if (!isset($title)) {
             $title = Craft::t('app', 'Recent Entries');
         }
@@ -126,7 +127,7 @@ class RecentEntries extends Widget
     /**
      * @inheritdoc
      */
-    public function getBodyHtml()
+    public function getBodyHtml(): ?string
     {
         $params = [];
 
@@ -175,7 +176,7 @@ class RecentEntries extends Widget
         }
 
         $query = Entry::find();
-        $query->anyStatus();
+        $query->status(null);
         $query->siteId($targetSiteId);
         $query->sectionId($targetSectionId);
         $query->editable(true);

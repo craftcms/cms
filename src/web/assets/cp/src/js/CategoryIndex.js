@@ -149,18 +149,13 @@ Craft.CategoryIndex = Craft.BaseElementIndex.extend({
 
     _getGroupTriggerHref: function(group) {
         if (this.settings.context === 'index') {
-            var uri = 'categories/' + group.handle + '/new';
-            if (this.siteId && this.siteId != Craft.primarySiteId) {
-                for (var i = 0; i < Craft.sites.length; i++) {
-                    if (Craft.sites[i].id == this.siteId) {
-                        uri += '/' + Craft.sites[i].handle;
-                    }
-                }
-            }
-            return 'href="' + Craft.getUrl(uri) + '"';
-        } else {
-            return 'data-id="' + group.id + '"';
+            const uri = `categories/${group.handle}/new`;
+            const site = this.getSite();
+            const params = site ? {site: site.handle} : undefined;
+            return `href="${Craft.getUrl(uri, params)}"`;
         }
+
+        return `data-id="${group.id}"`;
     },
 
     _openCreateCategoryModal: function(groupId) {

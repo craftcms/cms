@@ -22,7 +22,7 @@ class SwitchNode extends Node
     /**
      * @inheritdoc
      */
-    public function compile(Compiler $compiler)
+    public function compile(Compiler $compiler): void
     {
         $compiler
             ->addDebugInfo($this)
@@ -32,7 +32,7 @@ class SwitchNode extends Node
             ->indent();
 
         foreach ($this->getNode('cases') as $case) {
-            /* @var Node $case */
+            /** @var Node $case */
             // The 'body' node may have been removed by Twig if it was an empty text node in a sub-template,
             // outside of any blocks
             if (!$case->hasNode('body')) {

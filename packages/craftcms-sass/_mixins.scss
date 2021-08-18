@@ -216,7 +216,7 @@ $radioSize: 16px;
 
 @mixin pane {
   background: $white;
-  box-shadow: 0 0 0 1px transparentize($grey300, 0.75), 0 2px 12px transparentize($grey200, 0.5);
+  box-shadow: 0 0 0 1px $grey200, 0 2px 12px transparentize($grey200, 0.5);
 
   &:focus {
     box-shadow: $darkFocusRing
@@ -454,6 +454,20 @@ $radioSize: 16px;
     &:focus {
       background-color: darken($grey200, 5%);
     }
+  }
+}
+
+@mixin header-btn {
+  width: 34px;
+  height: 30px;
+  padding-left: 0;
+  padding-right: 0;
+
+  &:not(:hover):not(:active):not(.active) {
+    background-color: transparent;
+  }
+  &:not(:active):not(.active):hover {
+    background-color: transparentize($grey300, 0.85);
   }
 }
 

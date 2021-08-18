@@ -17,11 +17,11 @@ use craft\gql\ArgumentManager;
  */
 abstract class ArgumentHandler implements ArgumentHandlerInterface
 {
-    /* @var ArgumentManager */
-    protected $argumentManager;
+    /** @var ArgumentManager */
+    protected ArgumentManager $argumentManager;
 
-    /* @var string */
-    protected $argumentName;
+    /** @var string */
+    protected string $argumentName;
 
     /**
      * @inheritdoc

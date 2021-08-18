@@ -55,7 +55,7 @@ class App
     /**
      * @var bool
      */
-    private static $_iconv;
+    private static bool $_iconv;
 
     /**
      * Returns an environment variable, checking for it in `$_SERVER` and calling `getenv()` as a fallback.
@@ -70,10 +70,11 @@ class App
     }
 
     /**
-     * Returns whether Craft is running within [Nitro](https://getnitro.sh).
+     * Returns whether Craft is running within [Nitro](https://getnitro.sh) v1.
      *
      * @return bool
      * @since 3.4.19
+     * @deprecated in 3.7.9.
      */
     public static function isNitro(): bool
     {
@@ -291,13 +292,24 @@ class App
      */
     public static function checkForValidIconv(): bool
     {
-        if (self::$_iconv !== null) {
+        if (isset(self::$_iconv)) {
             return self::$_iconv;
         }
 
         // Check if iconv is installed. Note we can't just use HTMLPurifier_Encoder::iconvAvailable() because they
         // don't consider iconv "installed" if it's there but "unusable".
         return self::$_iconv = (function_exists('iconv') && \HTMLPurifier_Encoder::testIconvTruncateBug() === \HTMLPurifier_Encoder::ICONV_OK);
+    }
+
+    /**
+     * Returns whether the server supports IDNA ASCII strings.
+     *
+     * @return bool
+     * @since 3.7.9
+     */
+    public static function supportsIdn(): bool
+    {
+        return function_exists('idn_to_ascii') && defined('INTL_IDNA_VARIANT_UTS46');
     }
 
     /**
@@ -317,8 +329,9 @@ class App
      * Sets PHP’s memory limit to the maximum specified by the
      * <config3:phpMaxMemoryLimit> config setting, and gives the script an
      * unlimited amount of time to execute.
+     *
      */
-    public static function maxPowerCaptain()
+    public static function maxPowerCaptain(): void
     {
         // Don't mess with the memory_limit, even at the config's request, if it's already set to -1 or >= 1.5GB
         $memoryLimit = static::phpConfigValueInBytes('memory_limit');
@@ -334,7 +347,7 @@ class App
     /**
      * @return string|null
      */
-    public static function licenseKey()
+    public static function licenseKey(): ?string
     {
         if (defined('CRAFT_LICENSE_KEY')) {
             $licenseKey = CRAFT_LICENSE_KEY;
@@ -580,7 +593,7 @@ class App
      * @since 3.0.18
      * @deprecated in 3.6.0. Override `components.log.targets` instead
      */
-    public static function logConfig()
+    public static function logConfig(): ?array
     {
         // Using Yii's Dispatcher class here is intentional
         return [
@@ -622,19 +635,19 @@ class App
 
             // Only log errors and warnings, unless Craft is running in Dev Mode or it's being installed/updated
             // (Explicitly check GeneralConfig::$devMode here, because YII_DEBUG is always `1` for console requests.)
-            $devModeLogging = (
+            $onlyLogErrors = (
                 !Craft::$app->getConfig()->getGeneral()->devMode &&
                 Craft::$app->getIsInstalled() &&
-                !Craft::$app->getUpdates()->getIsCraftDbMigrationNeeded()
+                !Craft::$app->getUpdates()->getIsCraftUpdatePending()
             );
 
-            if ($devModeLogging) {
+            if ($onlyLogErrors) {
                 $fileTargetConfig['levels'] = Logger::LEVEL_ERROR | Logger::LEVEL_WARNING;
             }
 
             $targets[Dispatcher::TARGET_FILE] = $fileTargetConfig;
 
-            if (defined('CRAFT_STREAM_LOG') && CRAFT_STREAM_LOG === true) {
+            if (!Craft::$app->getRequest()->isConsoleRequest && defined('CRAFT_STREAM_LOG') && CRAFT_STREAM_LOG === true) {
                 $streamErrLogTarget = [
                     'class' => StreamLogTarget::class,
                     'url' => 'php://stderr',
@@ -644,7 +657,7 @@ class App
 
                 $targets[Dispatcher::TARGET_STDERR] = $streamErrLogTarget;
 
-                if ($devModeLogging) {
+                if (!$onlyLogErrors) {
                     $streamOutLogTarget = [
                         'class' => StreamLogTarget::class,
                         'url' => 'php://stdout',

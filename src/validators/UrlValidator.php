@@ -8,6 +8,7 @@
 namespace craft\validators;
 
 use Craft;
+use craft\helpers\App;
 use yii\validators\UrlValidator as YiiUrlValidator;
 
 /**
@@ -27,7 +28,7 @@ class UrlValidator extends YiiUrlValidator
      * @var bool Whether the value can begin with an alias
      * @deprecated
      */
-    public $allowAlias = false;
+    public bool $allowAlias = false;
 
     /**
      * @inheritdoc
@@ -40,7 +41,7 @@ class UrlValidator extends YiiUrlValidator
         }
 
         // Enable support for validating international domain names if the intl extension is available.
-        if (!isset($config['enableIDN']) && function_exists('idn_to_ascii') && defined('INTL_IDNA_VARIANT_UTS46')) {
+        if (!isset($config['enableIDN']) && App::supportsIdn()) {
             $config['enableIDN'] = true;
         }
 
@@ -50,7 +51,7 @@ class UrlValidator extends YiiUrlValidator
     /**
      * @inheritdoc
      */
-    public function validateValue($value)
+    public function validateValue($value): ?array
     {
         if ($this->allowAlias && strncmp($value, '@', 1) === 0) {
             $value = Craft::getAlias($value);
@@ -60,7 +61,7 @@ class UrlValidator extends YiiUrlValidator
         }
 
         // Add support for protocol-relative URLs
-        if ($this->defaultScheme !== null && strpos($value, '/') === 0) {
+        if (isset($this->defaultScheme) && strpos($value, '/') === 0) {
             $this->defaultScheme = null;
         }
 

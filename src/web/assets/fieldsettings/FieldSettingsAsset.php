@@ -7,8 +7,8 @@
 
 namespace craft\web\assets\fieldsettings;
 
-use craft\web\AssetBundle;
 use craft\web\assets\cp\CpAsset;
+use yii\web\AssetBundle;
 
 /**
  * Asset bundle for field settings views

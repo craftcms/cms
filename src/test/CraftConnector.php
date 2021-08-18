@@ -48,7 +48,7 @@ class CraftConnector extends Yii2
      * @param bool $disableRequiredUserAgent
      * @throws ConfigurationException
      */
-    public function findAndLoginUser($user, bool $disableRequiredUserAgent = true)
+    public function findAndLoginUser($user, bool $disableRequiredUserAgent = true): void
     {
         $oldRequirement = Craft::$app->getConfig()->getGeneral()->requireUserAgentAndIpForSession;
         if ($disableRequiredUserAgent) {
@@ -65,7 +65,7 @@ class CraftConnector extends Yii2
     /**
      * @inheritdoc
      */
-    protected function mockMailer(array $config)
+    protected function mockMailer(array $config): array
     {
         $config = parent::mockMailer($config);
         $config['components']['mailer'] = array_merge($config['components']['mailer'], [
@@ -81,7 +81,7 @@ class CraftConnector extends Yii2
      * @param Application $app
      * @throws InvalidPluginException
      */
-    public function resetRequest(Application $app)
+    public function resetRequest(Application $app): void
     {
         parent::resetRequest($app);
         $app->getRequest()->setIsConsoleRequest(false);
@@ -89,7 +89,7 @@ class CraftConnector extends Yii2
         // Reset the view object
         $app->set('view', new View());
 
-        /* @var Module $module */
+        /** @var Module $module */
         foreach (Craft::$app->getModules() as $module) {
             $moduleClass = get_class($module);
             $moduleId = $module->id;
@@ -115,9 +115,9 @@ class CraftConnector extends Yii2
     }
 
     /**
-     * @inheritDoc
+     * @inheritdoc
      */
-    public function resetApplication($closeSession = true)
+    public function resetApplication($closeSession = true): void
     {
         parent::resetApplication($closeSession);
         Db::reset();

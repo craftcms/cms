@@ -37,10 +37,12 @@
         },
 
         addNewGroup: function() {
-            var name = this.promptForGroupName('');
+            this.promptForGroupName('').then(name => {
+                if (!name) {
+                    return;
+                }
 
-            if (name) {
-                var data = {
+                let data = {
                     name: name
                 };
 
@@ -56,14 +58,11 @@
                         }
                     }
                 });
-            }
+            }).catch(() => {});
         },
 
         renameSelectedGroup: function() {
-            var oldName = this.$selectedGroup.text(),
-                newName = this.promptForGroupName(oldName);
-
-            if (newName && newName !== oldName) {
+            this.promptForGroupName(this.$selectedGroup.data('raw-name')).then(newName => {
                 var data = {
                     id: this.$selectedGroup.data('id'),
                     name: newName
@@ -73,6 +72,7 @@
                     if (textStatus === 'success') {
                         if (response.success) {
                             this.$selectedGroup.text(response.group.name);
+                            this.$selectedGroup.data('raw-name', newName);
                             Craft.cp.displayNotice(Craft.t('app', 'Group renamed.'));
                         } else if (response.errors) {
                             var errors = this.flattenErrors(response.errors);
@@ -82,11 +82,51 @@
                         }
                     }
                 });
-            }
+            }).catch(() => {});
         },
 
         promptForGroupName: function(oldName) {
-            return prompt(Craft.t('app', 'What do you want to name the group?'), oldName);
+            return new Promise((resolve, reject) => {
+                Craft.sendActionRequest('POST', 'sites/rename-group-field', {
+                    data: {name: oldName},
+                }).then(response => {
+                    let $form = $('<form/>', {class: 'modal prompt'}).appendTo(Garnish.$bod);
+                    let $body = $('<div/>', {class: 'body'}).append(response.data.html).appendTo($form);
+                    let $buttons = $('<div/>', {class: 'buttons right'}).appendTo($body);
+                    let $cancelBtn = $('<button/>', {type: 'button', class: 'btn', text: Craft.t('app', 'Cancel')}).appendTo($buttons);
+                    let $saveBtn = $('<button/>', {type: 'submit', class: 'btn submit', text: Craft.t('app', 'Save')}).appendTo($buttons);
+
+                    Craft.appendFootHtml(response.data.js);
+
+                    let success = false;
+                    let modal = new Garnish.Modal($form, {
+                        onShow: () => {
+                            setTimeout(() => {
+                                Craft.setFocusWithin($body);
+                            }, 100);
+                        },
+                        onHide: () => {
+                            if (!success) {
+                                reject();
+                            }
+                        },
+                    });
+
+                    $form.on('submit', ev => {
+                        ev.preventDefault();
+                        let newName = $('.text', $body).val();
+                        if (newName && newName !== oldName) {
+                            resolve(newName);
+                            success = true;
+                        }
+                        modal.hide();
+                    });
+
+                    $cancelBtn.on('click', () => {
+                        modal.hide();
+                    });
+                });
+            });
         },
 
         deleteSelectedGroup: function() {

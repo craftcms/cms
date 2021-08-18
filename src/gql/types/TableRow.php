@@ -23,7 +23,7 @@ class TableRow extends ObjectType
     /**
      * @inheritdoc
      */
-    protected function resolve($source, $arguments, $context, ResolveInfo $resolveInfo)
+    protected function resolve($source, array $arguments, $context, ResolveInfo $resolveInfo)
     {
         $fieldName = $resolveInfo->fieldName;
 
@@ -38,7 +38,7 @@ class TableRow extends ObjectType
      * @param bool $includeHandles Whether columns also should be present by their field handles.
      * @return array
      */
-    public static function prepareRowFieldDefinition(array $columns, string $typeName, $includeHandles = true): array
+    public static function prepareRowFieldDefinition(array $columns, string $typeName, bool $includeHandles = true): array
     {
         $contentFields = [];
 

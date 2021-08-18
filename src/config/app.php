@@ -3,14 +3,17 @@
 return [
     'id' => 'CraftCMS',
     'name' => 'Craft CMS',
-    'version' => '3.7.0-alpha',
-    'schemaVersion' => '3.7.5',
-    'minVersionRequired' => '2.6.2788',
+    'version' => '4.0.0-alpha',
+    'schemaVersion' => '4.0.0',
+    'minVersionRequired' => '2.7.0-beta.3',
     'basePath' => dirname(__DIR__), // Defines the @app alias
     'runtimePath' => '@storage/runtime', // Defines the @runtime alias
     'controllerNamespace' => 'craft\controllers',
 
     'components' => [
+        'announcements' => [
+            'class' => craft\services\Announcements::class,
+        ],
         'api' => [
             'class' => craft\services\Api::class,
         ],
@@ -49,12 +52,6 @@ return [
         ],
         'entries' => [
             'class' => craft\services\Entries::class,
-        ],
-        'entryRevisions' => [
-            'class' => craft\services\EntryRevisions::class,
-        ],
-        'feeds' => [
-            'class' => craft\feeds\Feeds::class,
         ],
         'fields' => [
             'class' => craft\services\Fields::class,
@@ -168,10 +165,7 @@ return [
         ],
         'sites' => [
             'class' => craft\services\Sites::class,
-            'currentSite' => defined('CRAFT_SITE') ? CRAFT_SITE : (defined('CRAFT_LOCALE') ? CRAFT_LOCALE : null),
-        ],
-        'systemSettings' => [
-            'class' => craft\services\SystemSettings::class,
+            'currentSite' => defined('CRAFT_SITE') ? CRAFT_SITE : null,
         ],
         'i18n' => [
             'class' => craft\i18n\I18N::class,

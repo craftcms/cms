@@ -14,7 +14,6 @@ use craft\db\Query;
 use craft\db\Table;
 use craft\fields\BaseRelationField;
 use craft\fields\Matrix;
-use craft\helpers\ArrayHelper;
 use craft\helpers\StringHelper;
 use craft\models\Site;
 use yii\base\BaseObject;
@@ -34,27 +33,27 @@ class ElementRelationParamParser extends BaseObject
     /**
      * @var int
      */
-    private static $_relateSourceMatrixBlocksCount = 0;
+    private static int $_relateSourceMatrixBlocksCount = 0;
 
     /**
      * @var int
      */
-    private static $_relateTargetMatrixBlocksCount = 0;
+    private static int $_relateTargetMatrixBlocksCount = 0;
 
     /**
      * @var int
      */
-    private static $_relateSourcesCount = 0;
+    private static int $_relateSourcesCount = 0;
 
     /**
      * @var int
      */
-    private static $_relateTargetsCount = 0;
+    private static int $_relateTargetsCount = 0;
 
     /**
      * @var FieldInterface[]|null The custom fields that are game for the query.
      */
-    public $fields;
+    public ?array $fields = null;
 
     /**
      * Normalizes a `relatedTo` param for [[parse()]].
@@ -97,7 +96,7 @@ class ElementRelationParamParser extends BaseObject
                     && $relCriteria['field'] === null &&
                     $relCriteria['sourceSite'] === null
                 ) {
-                    ArrayHelper::append($orElements, ...array_slice($relCriteria['element'], 1));
+                    array_push($orElements, ...array_slice($relCriteria['element'], 1));
                     unset($relatedToParam[$i]);
                 }
             }
@@ -262,9 +261,9 @@ class ElementRelationParamParser extends BaseObject
                         }
                     } else if ($element instanceof ElementQueryInterface) {
                         $ids = $element->ids();
-                        ArrayHelper::append($relElementIds, ...$ids);
+                        array_push($relElementIds, ...$ids);
                         if ($elementParam === 'element') {
-                            ArrayHelper::append($relSourceElementIds, ...$ids);
+                            array_push($relSourceElementIds, ...$ids);
                         }
                     }
                 }
@@ -481,10 +480,10 @@ class ElementRelationParamParser extends BaseObject
      * Returns a field model based on its handle or ID.
      *
      * @param mixed $field
-     * @param array|null &$fieldHandleParts
+     * @param array|null $fieldHandleParts
      * @return FieldInterface|null
      */
-    private function _getField($field, array &$fieldHandleParts = null)
+    private function _getField($field, ?array &$fieldHandleParts = null): ?FieldInterface
     {
         if (is_numeric($field)) {
             $fieldHandleParts = null;

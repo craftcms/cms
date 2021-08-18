@@ -32,7 +32,7 @@ abstract class ElementResolver extends Resolver
      * @param array $arguments
      * @param $context
      * @param ResolveInfo $resolveInfo
-     * @return ElementInterface|null|mixed
+     * @return mixed
      */
     public static function resolveOne($source, array $arguments, $context, ResolveInfo $resolveInfo)
     {
@@ -58,7 +58,7 @@ abstract class ElementResolver extends Resolver
      * @param array $arguments
      * @param $context
      * @param ResolveInfo $resolveInfo
-     * @return ElementInterface|null|mixed
+     * @return mixed
      */
     public static function resolveCount($source, array $arguments, $context, ResolveInfo $resolveInfo)
     {
@@ -77,7 +77,7 @@ abstract class ElementResolver extends Resolver
      */
     protected static function prepareElementQuery($source, array $arguments, $context, ResolveInfo $resolveInfo)
     {
-        /* @var ArgumentManager $argumentManager */
+        /** @var ArgumentManager $argumentManager */
         $argumentManager = empty($context['argumentManager']) ? Craft::createObject(['class' => ArgumentManager::class]) : $context['argumentManager'];
         $arguments = $argumentManager->prepareArguments($arguments);
 
@@ -103,14 +103,14 @@ abstract class ElementResolver extends Resolver
             }
         }
 
-        /* @var ElementQueryConditionBuilder $conditionBuilder */
+        /** @var ElementQueryConditionBuilder $conditionBuilder */
         $conditionBuilder = empty($context['conditionBuilder']) ? Craft::createObject(['class' => ElementQueryConditionBuilder::class]) : $context['conditionBuilder'];
         $conditionBuilder->setResolveInfo($resolveInfo);
         $conditionBuilder->setArgumentManager($argumentManager);
 
         $conditions = $conditionBuilder->extractQueryConditions($parentField);
 
-        /* @var ElementQuery $query */
+        /** @var ElementQuery $query */
         foreach ($conditions as $method => $parameters) {
             if (method_exists($query, $method)) {
                 $query = $query->{$method}($parameters);
@@ -139,7 +139,6 @@ abstract class ElementResolver extends Resolver
      * @param mixed $source The source. Null if top-level field being resolved.
      * @param array $arguments Arguments to apply to the query.
      * @param null $fieldName Field name to resolve on the source, if not a top-level resolution.
-     *
      * @return mixed
      */
     abstract protected static function prepareQuery($source, array $arguments, $fieldName = null);

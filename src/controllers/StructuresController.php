@@ -28,18 +28,18 @@ class StructuresController extends Controller
     /**
      * @var Structure|null
      */
-    private $_structure;
+    private ?Structure $_structure = null;
 
     /**
      * @var ElementInterface|null
      */
-    private $_element;
+    private ?ElementInterface $_element = null;
 
     /**
      * @inheritdoc
      * @throws NotFoundHttpException if the requested element cannot be found
      */
-    public function beforeAction($action)
+    public function beforeAction($action): bool
     {
         $this->requirePostRequest();
         $this->requireAcceptsJson();
@@ -66,17 +66,17 @@ class StructuresController extends Controller
             throw new NotFoundHttpException('Element not found');
         }
 
-        /* @var ElementInterface|string $elementType */
+        /** @var ElementInterface|string $elementType */
         $this->_element = $elementType::find()
             ->drafts(null)
             ->provisionalDrafts(null)
             ->id($elementId)
             ->siteId($siteId)
-            ->anyStatus()
+            ->status(null)
             ->structureId($structureId)
             ->one();
 
-        if ($this->_element === null) {
+        if (!isset($this->_element)) {
             throw new NotFoundHttpException('Element not found');
         }
 

@@ -10,6 +10,7 @@ namespace craft\utilities;
 use Craft;
 use craft\base\Utility;
 use craft\helpers\Html;
+use craft\i18n\Locale;
 use craft\web\assets\assetindexes\AssetIndexesAsset;
 
 /**
@@ -39,7 +40,7 @@ class AssetIndexes extends Utility
     /**
      * @inheritdoc
      */
-    public static function iconPath()
+    public static function iconPath(): ?string
     {
         return Craft::getAlias('@appicons/photo.svg');
     }
@@ -69,10 +70,14 @@ class AssetIndexes extends Utility
         ]);
 
         $view->registerAssetBundle(AssetIndexesAsset::class);
-        $view->registerJs('new Craft.AssetIndexesUtility(\'asset-indexes\');');
+        $dateFormat = Craft::$app->getLocale()->getDateTimeFormat('short', Locale::FORMAT_PHP);
+
+        $existingIndexingSessions = Craft::$app->getAssetIndexer()->getExistingIndexingSessions();
 
         return $view->renderTemplate('_components/utilities/AssetIndexes', [
+            'existingSessions' => $existingIndexingSessions,
             'checkboxSelectHtml' => $checkboxSelectHtml,
+            'dateFormat' => $dateFormat,
         ]);
     }
 }

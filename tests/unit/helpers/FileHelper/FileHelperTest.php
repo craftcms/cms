@@ -24,10 +24,7 @@ use yii\base\InvalidConfigException;
  */
 class FileHelperTest extends Unit
 {
-    /**
-     * @var UnitTester
-     */
-    protected $tester;
+    protected UnitTester $tester;
 
     /**
      * @throws ErrorException
@@ -40,9 +37,9 @@ class FileHelperTest extends Unit
         self::assertDirectoryExists($location);
 
         FileHelper::removeDirectory($location);
-        self::assertDirectoryNotExists($location);
+        self::assertDirectoryDoesNotExist($location);
 
-        self::assertNull(FileHelper::removeDirectory('notadir'));
+        FileHelper::removeDirectory('notadir');
     }
 
     /**

@@ -7,8 +7,8 @@
 
 namespace craft\web\assets\utilities;
 
-use craft\web\AssetBundle;
 use craft\web\assets\cp\CpAsset;
+use yii\web\AssetBundle;
 
 /**
  * Asset bundle for the Utilities section
@@ -18,7 +18,7 @@ class UtilitiesAsset extends AssetBundle
     /**
      * @inheritdoc
      */
-    public function init()
+    public function init(): void
     {
         $this->sourcePath = __DIR__ . '/dist';
 

@@ -30,7 +30,7 @@ class Tokens extends Component
     /**
      * @var bool
      */
-    private $_deletedExpiredTokens = false;
+    private bool $_deletedExpiredTokens = false;
 
     /**
      * Creates a new token and returns it.
@@ -48,14 +48,14 @@ class Tokens extends Component
      * Craft::$app->tokens->createToken(['template' => 'template/path']);
      * ```
      *
-     * @param mixed $route Where matching requests should be routed to.
+     * @param string|array $route Where matching requests should be routed to.
      * @param int|null $usageLimit The maximum number of times this token can be
      * used. Defaults to no limit.
      * @param DateTime|null $expiryDate The date that the token expires.
      * Defaults to the 'defaultTokenDuration' config setting.
      * @return string|false The generated token, or `false` if there was an error.
      */
-    public function createToken($route, int $usageLimit = null, DateTime $expiryDate = null)
+    public function createToken($route, ?int $usageLimit = null, ?DateTime $expiryDate = null)
     {
         if (!$expiryDate) {
             $generalConfig = Craft::$app->getConfig()->getGeneral();
@@ -66,7 +66,7 @@ class Tokens extends Component
 
         $tokenRecord = new TokenRecord();
         $tokenRecord->token = Craft::$app->getSecurity()->generateRandomString(32);
-        $tokenRecord->route = $route;
+        $tokenRecord->route = (array)$route;
 
         if ($usageLimit !== null) {
             $tokenRecord->usageCount = 0;
@@ -81,6 +81,22 @@ class Tokens extends Component
         }
 
         return false;
+    }
+
+    /**
+     * Creates a new token for previewing content, using the <config3:previewTokenDuration> to determine the duration, if set.
+     *
+     * @param mixed $route Where matching requests should be routed to.
+     * @param int|null $usageLimit The maximum number of times this token can be
+     * used. Defaults to no limit.
+     * @return string|false The generated token, or `false` if there was an error.
+     * @since 3.7.0
+     */
+    public function createPreviewToken($route, ?int $usageLimit = null)
+    {
+        $interval = DateTimeHelper::secondsToInterval(Craft::$app->getConfig()->getGeneral()->previewTokenDuration);
+        $expiryDate = DateTimeHelper::currentUTCDateTime()->add($interval);
+        return $this->createToken($route, $usageLimit, $expiryDate);
     }
 
     /**
@@ -121,13 +137,7 @@ class Tokens extends Component
             }
         }
 
-        // Figure out where we should route the request
-        $route = $result['route'];
-
-        // Might be JSON, might not be
-        $route = Json::decodeIfJson($route);
-
-        return (array)$route;
+        return Json::decode($result['route']);
     }
 
     /**

@@ -1,4 +1,4 @@
-{% spaceless %}
+{% apply spaceless %}
 {% set keyPrefix = keyPrefix ?? '' %}
 
 {% macro sourceLink(key, source, isTopLevel, elementType) %}
@@ -62,4 +62,4 @@
         {% endif %}
     {% endfor %}
 </ul>
-{% endspaceless %}
+{% endapply %}

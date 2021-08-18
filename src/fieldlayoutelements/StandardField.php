@@ -23,34 +23,34 @@ abstract class StandardField extends BaseField
     /**
      * @var bool Whether the field *must* be present within the layout.
      */
-    public $mandatory = false;
+    public bool $mandatory = false;
 
     /**
      * @var bool Whether the field can optionally be marked as required.
      */
-    public $requirable = false;
+    public bool $requirable = false;
 
     /**
      * @var string the element attribute this field is for.
      */
-    public $attribute;
+    public string $attribute;
 
     /**
      * @var string|null The input’s `id` attribute value.
      *
      * If this is not set, [[attribute()]] will be used by default.
      */
-    public $id;
+    public ?string $id = null;
 
     /**
      * @var array HTML attributes for the field container
      */
-    public $containerAttributes = [];
+    public array $containerAttributes = [];
 
     /**
      * @var array HTML attributes for the input container
      */
-    public $inputContainerAttributes = [];
+    public array $inputContainerAttributes = [];
 
     /**
      * @var string|null The ID of the field label
@@ -60,12 +60,12 @@ abstract class StandardField extends BaseField
     /**
      * @var string|null The field’s orientation (`ltr` or `rtl`)
      */
-    public $orientation;
+    public ?string $orientation = null;
 
     /**
      * @var bool Whether the field is translatable
      */
-    public $translatable = false;
+    public bool $translatable = false;
 
     /**
      * @inheritdoc
@@ -102,7 +102,7 @@ abstract class StandardField extends BaseField
     /**
      * @inheritdoc
      */
-    protected function containerAttributes(ElementInterface $element = null, bool $static = false): array
+    protected function containerAttributes(?ElementInterface $element = null, bool $static = false): array
     {
         $attributes = parent::containerAttributes($element, $static);
         return ArrayHelper::merge($attributes, $this->containerAttributes);
@@ -111,7 +111,7 @@ abstract class StandardField extends BaseField
     /**
      * @inheritdoc
      */
-    protected function inputContainerAttributes(ElementInterface $element = null, bool $static = false): array
+    protected function inputContainerAttributes(?ElementInterface $element = null, bool $static = false): array
     {
         return $this->inputContainerAttributes;
     }
@@ -119,7 +119,7 @@ abstract class StandardField extends BaseField
     /**
      * @inheritdoc
      */
-    protected function labelAttributes(ElementInterface $element = null, bool $static = false): array
+    protected function labelAttributes(?ElementInterface $element = null, bool $static = false): array
     {
         return $this->labelAttributes;
     }
@@ -127,7 +127,7 @@ abstract class StandardField extends BaseField
     /**
      * @inheritdoc
      */
-    protected function tip(ElementInterface $element = null, bool $static = false)
+    protected function tip(?ElementInterface $element = null, bool $static = false): ?string
     {
         return $this->tip;
     }
@@ -135,7 +135,7 @@ abstract class StandardField extends BaseField
     /**
      * @inheritdoc
      */
-    protected function warning(ElementInterface $element = null, bool $static = false)
+    protected function warning(?ElementInterface $element = null, bool $static = false): ?string
     {
         return $this->warning;
     }
@@ -143,7 +143,7 @@ abstract class StandardField extends BaseField
     /**
      * @inheritdoc
      */
-    protected function orientation(ElementInterface $element = null, bool $static = false): string
+    protected function orientation(?ElementInterface $element = null, bool $static = false): string
     {
         return $this->orientation ?? parent::orientation($element, $static);
     }
@@ -151,7 +151,7 @@ abstract class StandardField extends BaseField
     /**
      * @inheritdoc
      */
-    protected function translatable(ElementInterface $element = null, bool $static = false): bool
+    protected function translatable(?ElementInterface $element = null, bool $static = false): bool
     {
         return $this->translatable;
     }

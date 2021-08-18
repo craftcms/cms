@@ -37,7 +37,7 @@ class PhpInfo extends Utility
     /**
      * @inheritdoc
      */
-    public static function iconPath()
+    public static function iconPath(): ?string
     {
         return Craft::getAlias('@appicons/info-circle.svg');
     }
@@ -63,21 +63,17 @@ class PhpInfo extends Utility
         $envVals = [];
         $serverVals = [];
 
-        if (isset($_ENV)) {
-            foreach ($_ENV as $key => $value) {
-                if (is_array($value)) {
-                    $envVals[$key] = $value;
-                    $_ENV[$key] = 'Array';
-                }
+        foreach ($_ENV as $key => $value) {
+            if (is_array($value)) {
+                $envVals[$key] = $value;
+                $_ENV[$key] = 'Array';
             }
         }
 
-        if (isset($_SERVER)) {
-            foreach ($_SERVER as $key => $value) {
-                if (is_array($value)) {
-                    $serverVals[$key] = $value;
-                    $_SERVER[$key] = 'Array';
-                }
+        foreach ($_SERVER as $key => $value) {
+            if (is_array($value)) {
+                $serverVals[$key] = $value;
+                $_SERVER[$key] = 'Array';
             }
         }
 
@@ -125,7 +121,7 @@ class PhpInfo extends Utility
             $heading = substr($section, 0, strpos($section, '</h2>'));
 
             if (preg_match_all('#%S%(?:<td>(.*?)</td>)?(?:<td>(.*?)</td>)?(?:<td>(.*?)</td>)?%E%#', $section, $matches, PREG_SET_ORDER) !== 0) {
-                /* @var array[] $matches */
+                /** @var array[] $matches */
                 foreach ($matches as $row) {
                     if (!isset($row[2])) {
                         continue;

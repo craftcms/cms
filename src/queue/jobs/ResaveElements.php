@@ -31,20 +31,20 @@ class ResaveElements extends BaseJob
     /**
      * @var array|null The element criteria that determines which elements should be resaved
      */
-    public $criteria;
+    public ?array $criteria = null;
 
     /**
      * @var bool Whether to update the search indexes for the resaved elements.
      * @since 3.4.2
      */
-    public $updateSearchIndex = false;
+    public bool $updateSearchIndex = false;
 
     /**
      * @inheritdoc
      */
-    public function execute($queue)
+    public function execute($queue): void
     {
-        /* @var ElementQuery $query */
+        /** @var ElementQuery $query */
         $query = $this->_query();
         $total = $query->count();
         if ($query->limit) {
@@ -69,11 +69,11 @@ class ResaveElements extends BaseJob
     /**
      * @inheritdoc
      */
-    protected function defaultDescription(): string
+    protected function defaultDescription(): ?string
     {
-        /* @var ElementQuery $query */
+        /** @var ElementQuery $query */
         $query = $this->_query();
-        /* @var ElementInterface $elementType */
+        /** @var ElementInterface $elementType */
         $elementType = $query->elementType;
         return Craft::t('app', 'Resaving {type}', [
             'type' => $elementType::pluralLowerDisplayName(),

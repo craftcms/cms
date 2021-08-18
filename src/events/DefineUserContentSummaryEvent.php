@@ -25,5 +25,5 @@ class DefineUserContentSummaryEvent extends Event
     /**
      * @var string[] Summary of content that is owned by the user(s)
      */
-    public $contentSummary = [];
+    public array $contentSummary = [];
 }

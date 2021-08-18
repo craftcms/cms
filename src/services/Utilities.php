@@ -123,7 +123,7 @@ class Utilities extends Component
      */
     public function checkAuthorization(string $class): bool
     {
-        /* @var string|UtilityInterface $class */
+        /** @var string|UtilityInterface $class */
         $utilityId = $class::id();
         $user = Craft::$app->getUser();
 
@@ -136,10 +136,10 @@ class Utilities extends Component
      * @param string $id
      * @return string|null
      */
-    public function getUtilityTypeById(string $id)
+    public function getUtilityTypeById(string $id): ?string
     {
         foreach ($this->getAllUtilityTypes() as $class) {
-            /* @var UtilityInterface $class */
+            /** @var UtilityInterface $class */
             if ($class::id() === $id) {
                 return $class;
             }

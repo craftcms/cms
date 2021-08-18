@@ -18,7 +18,7 @@ class MultiOptionsFieldData extends \ArrayObject
     /**
      * @var OptionData[]
      */
-    private $_options = [];
+    private array $_options = [];
 
     /**
      * Returns the options.
@@ -35,7 +35,7 @@ class MultiOptionsFieldData extends \ArrayObject
      *
      * @param OptionData[] $options
      */
-    public function setOptions(array $options)
+    public function setOptions(array $options): void
     {
         $this->_options = $options;
     }
@@ -49,7 +49,7 @@ class MultiOptionsFieldData extends \ArrayObject
         $value = (string)$value;
 
         foreach ($this as $selectedValue) {
-            /* @var OptionData $selectedValue */
+            /** @var OptionData $selectedValue */
             if ($value === $selectedValue->value) {
                 return true;
             }

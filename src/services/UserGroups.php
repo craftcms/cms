@@ -82,7 +82,7 @@ class UserGroups extends Component
      * @param User|null $user The recipient of the user groups. If set, their current groups will be included as well.
      * @return UserGroup[]
      */
-    public function getAssignableGroups(User $user = null): array
+    public function getAssignableGroups(?User $user = null): array
     {
         $currentUser = Craft::$app->getUser()->getIdentity();
         if (!$currentUser && !$user) {
@@ -117,7 +117,7 @@ class UserGroups extends Component
      * @param int $groupId
      * @return UserGroup|null
      */
-    public function getGroupById(int $groupId)
+    public function getGroupById(int $groupId): ?UserGroup
     {
         $result = $this->_createUserGroupsQuery()
             ->where(['id' => $groupId])
@@ -132,7 +132,7 @@ class UserGroups extends Component
      * @param string $uid
      * @return UserGroup|null
      */
-    public function getGroupByUid(string $uid)
+    public function getGroupByUid(string $uid): ?UserGroup
     {
         $result = $this->_createUserGroupsQuery()
             ->where(['uid' => $uid])
@@ -147,7 +147,7 @@ class UserGroups extends Component
      * @param string $groupHandle
      * @return UserGroup|null
      */
-    public function getGroupByHandle(string $groupHandle)
+    public function getGroupByHandle(string $groupHandle): ?UserGroup
     {
         $result = $this->_createUserGroupsQuery()
             ->where(['handle' => $groupHandle])
@@ -283,7 +283,7 @@ class UserGroups extends Component
      *
      * @param ConfigEvent $event
      */
-    public function handleChangedUserGroup(ConfigEvent $event)
+    public function handleChangedUserGroup(ConfigEvent $event): void
     {
         $uid = $event->tokenMatches[0];
         $data = $event->newValue;
@@ -293,13 +293,8 @@ class UserGroups extends Component
 
         $groupRecord->name = $data['name'];
         $groupRecord->handle = $data['handle'];
+        $groupRecord->description = $data['description'] ?? null;
         $groupRecord->uid = $uid;
-
-        // todo: remove schema version conditions after next beakpoint
-        if (version_compare(Craft::$app->getInstalledSchemaVersion(), '3.5.5', '>=')) {
-            $groupRecord->description = $data['description'] ?? null;
-        }
-
         $groupRecord->save(false);
 
         // Prevent permission information from being saved. Allowing it would prevent the appropriate event from firing.
@@ -322,7 +317,7 @@ class UserGroups extends Component
      *
      * @param ConfigEvent $event
      */
-    public function handleDeletedUserGroup(ConfigEvent $event)
+    public function handleDeletedUserGroup(ConfigEvent $event): void
     {
         $uid = $event->tokenMatches[0];
 
@@ -402,21 +397,14 @@ class UserGroups extends Component
      */
     private function _createUserGroupsQuery(): Query
     {
-        $query = (new Query())
+        return (new Query())
             ->select([
                 'id',
                 'name',
                 'handle',
+                'description',
                 'uid',
             ])
             ->from([Table::USERGROUPS]);
-
-        // todo: remove schema version conditions after next beakpoint
-        $schemaVersion = Craft::$app->getInstalledSchemaVersion();
-        if (version_compare($schemaVersion, '3.5.5', '>=')) {
-            $query->addSelect(['description']);
-        }
-
-        return $query;
     }
 }

@@ -8,11 +8,10 @@
 namespace craft\controllers;
 
 use Craft;
+use craft\base\Field;
 use craft\base\VolumeInterface;
-use craft\db\Table;
 use craft\elements\Asset;
 use craft\helpers\ArrayHelper;
-use craft\helpers\Db;
 use craft\helpers\Json;
 use craft\helpers\UrlHelper;
 use craft\volumes\Local;
@@ -36,7 +35,7 @@ class VolumesController extends Controller
     /**
      * @inheritdoc
      */
-    public function beforeAction($action)
+    public function beforeAction($action): bool
     {
         // All asset volume actions require an admin
         $this->requireAdmin();
@@ -66,7 +65,7 @@ class VolumesController extends Controller
      * @throws ForbiddenHttpException if the user is not an admin
      * @throws NotFoundHttpException if the requested volume cannot be found
      */
-    public function actionEditVolume(int $volumeId = null, VolumeInterface $volume = null): Response
+    public function actionEditVolume(?int $volumeId = null, ?VolumeInterface $volume = null): Response
     {
         $this->requireAdmin();
 
@@ -91,7 +90,7 @@ class VolumesController extends Controller
             }
         }
 
-        /* @var string[]|VolumeInterface[] $allVolumeTypes */
+        /** @var string[]|VolumeInterface[] $allVolumeTypes */
         $allVolumeTypes = $volumes->getAllVolumeTypes();
 
         // Make sure the selected volume class is in there
@@ -160,7 +159,7 @@ class VolumesController extends Controller
      * @return Response|null
      * @throws BadRequestHttpException
      */
-    public function actionSaveVolume()
+    public function actionSaveVolume(): ?Response
     {
         $this->requirePostRequest();
 
@@ -177,14 +176,18 @@ class VolumesController extends Controller
 
         $volume = $volumesService->createVolume([
             'id' => $volumeId,
+            // todo: remove comment when phpstan#3283 is fixed
+            /** @phpstan-ignore-next-line */
             'uid' => $oldVolume->uid ?? null,
+            // todo: remove comment when phpstan#3283 is fixed
+            /** @phpstan-ignore-next-line */
             'sortOrder' => $oldVolume->sortOrder ?? null,
             'type' => $type,
             'name' => $this->request->getBodyParam('name'),
             'handle' => $this->request->getBodyParam('handle'),
             'hasUrls' => (bool)$this->request->getBodyParam('hasUrls'),
             'url' => $this->request->getBodyParam('url'),
-            'titleTranslationMethod' => $this->request->getBodyParam('titleTranslationMethod'),
+            'titleTranslationMethod' => $this->request->getBodyParam('titleTranslationMethod', Field::TRANSLATION_METHOD_SITE),
             'titleTranslationKeyFormat' => $this->request->getBodyParam('titleTranslationKeyFormat'),
             'settings' => $this->request->getBodyParam('types.' . $type),
         ]);

@@ -19,7 +19,6 @@ use craft\helpers\DateTimeHelper;
 use craft\helpers\ElementHelper;
 use craft\helpers\Html;
 use craft\helpers\StringHelper;
-use ReflectionMethod;
 use yii\web\BadRequestHttpException;
 use yii\web\ForbiddenHttpException;
 use yii\web\NotFoundHttpException;
@@ -38,7 +37,7 @@ class ElementsController extends BaseElementsController
     /**
      * @inheritdoc
      */
-    public function beforeAction($action)
+    public function beforeAction($action): bool
     {
         if (!parent::beforeAction($action)) {
             return false;
@@ -210,14 +209,14 @@ class ElementsController extends BaseElementsController
     {
         $categoryIds = $this->request->getParam('categoryIds', []);
 
-        /* @var Category[] $categories */
+        /** @var Category[] $categories */
         $categories = [];
 
         if (!empty($categoryIds)) {
             $categories = Category::find()
                 ->id($categoryIds)
                 ->siteId($this->request->getParam('siteId'))
-                ->anyStatus()
+                ->status(null)
                 ->all();
 
             // Fill in the gaps
@@ -285,7 +284,7 @@ class ElementsController extends BaseElementsController
         $elementsService = Craft::$app->getElements();
 
         $elementId = $this->request->getBodyParam('elementId');
-        /* @noinspection PhpUnhandledExceptionInspection */
+        /** @noinspection PhpUnhandledExceptionInspection */
         $siteId = $this->request->getBodyParam('siteId') ?: Craft::$app->getSites()->getCurrentSite()->id;
 
         // Determine the element type
@@ -373,7 +372,7 @@ class ElementsController extends BaseElementsController
      * @return ElementInterface
      * @throws BadRequestHttpException
      */
-    private function _getEditorElementInternal(int $elementId = null, string $elementType, int $siteId, array $attributes): ElementInterface
+    private function _getEditorElementInternal(?int $elementId, string $elementType, int $siteId, array $attributes): ElementInterface
     {
         if ($elementId !== null) {
             $element = Craft::$app->getElements()->getElementById($elementId, $elementType, $siteId);
@@ -483,6 +482,7 @@ class ElementsController extends BaseElementsController
             'headHtml' => $view->getHeadHtml(),
             'footHtml' => $view->getBodyHtml(),
             'deltaNames' => $view->getDeltaNames(),
+            'initialDeltaValues' => $view->getInitialDeltaValues(),
             'editUrl' => $element->getCpEditUrl(),
         ];
 

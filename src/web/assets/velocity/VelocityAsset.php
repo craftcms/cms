@@ -7,7 +7,7 @@
 
 namespace craft\web\assets\velocity;
 
-use craft\web\AssetBundle;
+use yii\web\AssetBundle;
 
 /**
  * Velocity asset bundle.
@@ -17,7 +17,7 @@ class VelocityAsset extends AssetBundle
     /**
      * @inheritdoc
      */
-    public function init()
+    public function init(): void
     {
         $this->sourcePath = '@lib/velocity';
 

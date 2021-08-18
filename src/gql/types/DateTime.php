@@ -62,7 +62,6 @@ class DateTime extends ScalarType
     {
         // The value not being a datetime would indicate an already formatted date.
         if ($value instanceof \DateTime) {
-            $value->setTimezone(new \DateTimeZone(FormatDateTime::defaultTimezone()));
             $value = $value->format(FormatDateTime::DEFAULT_FORMAT);
         }
 
@@ -85,7 +84,7 @@ class DateTime extends ScalarType
     /**
      * @inheritdoc
      */
-    public function parseLiteral($valueNode, array $variables = null)
+    public function parseLiteral($valueNode, ?array $variables = null)
     {
         if ($valueNode instanceof StringValueNode) {
             return new \DateTime($valueNode->value);

@@ -12,6 +12,7 @@ use craft\elements\User;
 use craft\helpers\App;
 use craft\helpers\Template;
 use craft\web\View;
+use Swift_TransportException;
 use yii\base\InvalidConfigException;
 use yii\helpers\Markdown;
 use yii\mail\MailEvent;
@@ -34,7 +35,7 @@ class Mailer extends \yii\swiftmailer\Mailer
     /**
      * @var string|null The email template that should be used
      */
-    public $template;
+    public ?string $template = null;
 
     /**
      * @var string|array|User|User[]|null The default sender’s email address, or their user model(s).
@@ -83,7 +84,7 @@ class Mailer extends \yii\swiftmailer\Mailer
     /**
      * @inheritdoc
      */
-    public function send($message)
+    public function send($message): bool
     {
         // fire a beforePrep event
         $this->trigger(self::EVENT_BEFORE_PREP, new MailEvent([
@@ -173,13 +174,18 @@ class Mailer extends \yii\swiftmailer\Mailer
 
         try {
             return parent::send($message);
-        } catch (\Throwable $e) {
+        } catch (Swift_TransportException $e) {
             $eMessage = $e->getMessage();
 
             // Remove the stack trace to get rid of any sensitive info. Note that Swiftmailer includes a debug
             // backlog in the exception message. :-/
             $eMessage = substr($eMessage, 0, strpos($eMessage, 'Stack trace:') - 1);
             Craft::warning('Error sending email: ' . $eMessage);
+
+            // Save the exception on the message, for plugins to make use of
+            if ($message instanceof Message) {
+                $message->error = $e;
+            }
 
             $this->afterSend($message, false);
             return false;

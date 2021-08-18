@@ -242,14 +242,14 @@ class Cp
      */
     public static function elementHtml(
         ElementInterface $element,
-        string $context = 'index',
-        string $size = self::ELEMENT_SIZE_SMALL,
-        ?string $inputName = null,
-        bool $showStatus = true,
-        bool $showThumb = true,
-        bool $showLabel = true,
-        bool $showDraftName = true,
-        bool $single = false
+        string           $context = 'index',
+        string           $size = self::ELEMENT_SIZE_SMALL,
+        ?string          $inputName = null,
+        bool             $showStatus = true,
+        bool             $showThumb = true,
+        bool             $showLabel = true,
+        bool             $showDraftName = true,
+        bool             $single = false
     ): string
     {
         $isDraft = $element->getIsDraft();
@@ -290,60 +290,55 @@ class Cp
             $imgHtml = '';
         }
 
-        $htmlAttributes = array_merge(
-            $element->getHtmlAttributes($context),
+        $attributes = ArrayHelper::merge(
+            Html::normalizeTagAttributes($element->getHtmlAttributes($context)),
             [
-                'class' => 'element ' . $size,
-                'data-type' => get_class($element),
-                'data-id' => $element->id,
-                'data-site-id' => $element->siteId,
-                'data-status' => $element->getStatus(),
-                'data-label' => (string)$element,
-                'data-url' => $element->getUrl(),
-                'data-level' => $element->level,
+                'class' => ['element', $size],
                 'title' => $label . (Craft::$app->getIsMultiSite() ? ' – ' . Craft::t('site', $element->getSite()->getName()) : ''),
-            ]);
+                'data' => [
+                    'type' => get_class($element),
+                    'id' => $element->id,
+                    'site-id' => $element->siteId,
+                    'status' => $element->getStatus(),
+                    'label' => (string)$element,
+                    'url' => $element->getUrl(),
+                    'level' => $element->level,
+                ],
+            ]
+        );
 
         if ($context === 'field') {
-            $htmlAttributes['class'] .= ' removable';
+            $attributes['class'][] = 'removable';
         }
 
         if ($element->hasErrors()) {
-            $htmlAttributes['class'] .= ' error';
+            $attributes['class'][] = 'error';
         }
 
         if ($showStatus) {
-            $htmlAttributes['class'] .= ' hasstatus';
+            $attributes['class'][] = 'hasstatus';
         }
 
         if ($thumbUrl !== null) {
-            $htmlAttributes['class'] .= ' hasthumb';
-        }
-
-        $html = '<div';
-
-        // todo: swap this with Html::renderTagAttributse in 4.0
-        // (that will cause a couple breaking changes since `null` means "don't show" and `true` means "no value".)
-        foreach ($htmlAttributes as $attribute => $value) {
-            $html .= ' ' . $attribute . ($value !== null ? '="' . Html::encode($value) . '"' : '');
+            $attributes['class'][] = 'hasthumb';
         }
 
         if (ElementHelper::isElementEditable($element)) {
-            $html .= ' data-editable';
+            $attributes['data']['editable'] = true;
         }
 
         if ($context === 'index' && $element->getIsDeletable()) {
-            $html .= ' data-deletable';
+            $attributes['data']['deletable'] = true;
         }
 
         if ($element->trashed) {
-            $html .= ' data-trashed';
+            $attributes['data']['trashed'] = true;
         }
 
-        $html .= '>';
+        $innerHtml = '';
 
         if ($context === 'field' && $inputName !== null) {
-            $html .= Html::hiddenInput($inputName . ($single ? '' : '[]'), $element->id) .
+            $innerHtml .= Html::hiddenInput($inputName . ($single ? '' : '[]'), $element->id) .
                 Html::tag('a', '', [
                     'class' => ['delete', 'icon'],
                     'title' => Craft::t('app', 'Remove'),
@@ -352,7 +347,7 @@ class Cp
 
         if ($showStatus) {
             if ($isDraft) {
-                $html .= Html::tag('span', '', [
+                $innerHtml .= Html::tag('span', '', [
                     'class' => ['icon'],
                     'aria' => [
                         'hidden' => 'true',
@@ -363,7 +358,7 @@ class Cp
                 ]);
             } else {
                 $status = !$isRevision ? $element->getStatus() : null;
-                $html .= Html::tag('span', '', [
+                $innerHtml .= Html::tag('span', '', [
                     'class' => array_filter([
                         'status',
                         $status,
@@ -373,16 +368,16 @@ class Cp
             }
         }
 
-        $html .= $imgHtml;
+        $innerHtml .= $imgHtml;
 
         if ($showLabel) {
-            $html .= '<div class="label">';
-            $html .= '<span class="title">';
+            $innerHtml .= '<div class="label">';
+            $innerHtml .= '<span class="title">';
 
             $encodedLabel = Html::encode($label);
 
             if ($showDraftName && $isDraft && !$element->getIsUnpublishedDraft()) {
-                /* @var DraftBehavior|ElementInterface $element */
+                /** @var DraftBehavior|ElementInterface $element */
                 $encodedLabel .= Html::tag('span', $element->draftName ?: Craft::t('app', 'Draft'), [
                     'class' => 'draft-label',
                 ]);
@@ -394,17 +389,15 @@ class Cp
                 !$element->trashed &&
                 ($cpEditUrl = $element->getCpEditUrl())
             ) {
-                $html .= Html::a($encodedLabel, $cpEditUrl);
+                $innerHtml .= Html::a($encodedLabel, $cpEditUrl);
             } else {
-                $html .= $encodedLabel;
+                $innerHtml .= $encodedLabel;
             }
 
-            $html .= '</span></div>';
+            $innerHtml .= '</span></div>';
         }
 
-        $html .= '</div>';
-
-        return $html;
+        return Html::tag('div', $innerHtml, $attributes);
     }
 
     /**
@@ -420,12 +413,12 @@ class Cp
      * @since 3.6.3
      */
     public static function elementPreviewHtml(
-        array $elements,
+        array  $elements,
         string $size = self::ELEMENT_SIZE_SMALL,
-        bool $showStatus = true,
-        bool $showThumb = true,
-        bool $showLabel = true,
-        bool $showDraftName = true
+        bool   $showStatus = true,
+        bool   $showThumb = true,
+        bool   $showLabel = true,
+        bool   $showDraftName = true
     ): string
     {
         if (empty($elements)) {
@@ -773,8 +766,45 @@ class Cp
     }
 
     /**
+     * Renders an autosuggest field’s HTML.
+     *
+     * @param array $config
+     * @return string
+     * @throws InvalidArgumentException if `$config['siteId']` is invalid
+     * @since 3.7.0
+     */
+    public static function autosuggestFieldHtml(array $config): string
+    {
+        $config['id'] = $config['id'] ?? 'autosuggest' . mt_rand();
+
+        // Suggest an environment variable / alias?
+        if ($config['suggestEnvVars'] ?? false) {
+            $value = $config['value'] ?? '';
+            if (!isset($config['tip']) && (!isset($value[0]) || !in_array($value[0], ['$', '@']))) {
+                if ($config['suggestAliases'] ?? false) {
+                    $config['tip'] = Craft::t('app', 'This can be set to an environment variable, or begin with an alias.');
+                } else {
+                    $config['tip'] = Craft::t('app', 'This can be set to an environment variable.');
+                }
+                $config['tip'] .= ' ' .
+                    Html::a(Craft::t('app', 'Learn more'), 'https://craftcms.com/docs/3.x/config/#environmental-configuration', [
+                        'class' => 'go',
+                    ]);
+            } else if (
+                !isset($config['warning']) &&
+                ($value === '@web' || strpos($value, '@web/') === 0) &&
+                Craft::$app->getRequest()->isWebAliasSetDynamically
+            ) {
+                $config['warning'] = Craft::t('app', 'The `@web` alias is not recommended if it is determined automatically.');
+            }
+        }
+
+        return static::fieldHtml('template:_includes/forms/autosuggest', $config);
+    }
+
+    /**
      * Returns a metadata component’s HTML.
-     * 
+     *
      * @param array $data The data, with keys representing the labels. The values can either be strings or callables.
      * If a value is `false`, it will be omitted.
      * @return string
@@ -782,7 +812,7 @@ class Cp
     public static function metadataHtml(array $data): string
     {
         $defs = [];
-        
+
         foreach ($data as $label => $value) {
             if (is_callable($value)) {
                 $value = $value();
@@ -804,7 +834,7 @@ class Cp
             'class' => ['meta', 'read-only'],
         ]);
     }
-    
+
     /**
      * Returns the page title and document title that should be used for Edit Element pages.
      *
@@ -817,7 +847,7 @@ class Cp
         $title = trim((string)$element->title);
 
         if ($title === '') {
-            if ($element->getIsUnpublishedDraft()) {
+            if (!$element->id || $element->getIsUnpublishedDraft()) {
                 $title = Craft::t('app', 'Create a new {type}', [
                     'type' => $element::lowerDisplayName(),
                 ]);
@@ -832,7 +862,7 @@ class Cp
 
         if ($element->getIsDraft()) {
             /** @var ElementInterface|DraftBehavior $element */
-            if ($element->getIsProvisionalDraft()) {
+            if ($element->isProvisionalDraft) {
                 $docTitle .= ' — ' . Craft::t('app', 'Edited');
             } else {
                 $docTitle .= " ($element->draftName)";

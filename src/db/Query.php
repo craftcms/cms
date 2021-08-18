@@ -11,6 +11,7 @@ use craft\base\ClonefixTrait;
 use craft\events\DefineBehaviorsEvent;
 use craft\helpers\ArrayHelper;
 use yii\base\Exception;
+use yii\base\Model;
 use yii\db\Connection as YiiConnection;
 
 /**
@@ -38,7 +39,7 @@ class Query extends \yii\db\Query
     /**
      * @inheritdoc
      */
-    public function init()
+    public function init(): void
     {
         parent::init();
 
@@ -50,7 +51,7 @@ class Query extends \yii\db\Query
     /**
      * @inheritdoc
      */
-    public function behaviors()
+    public function behaviors(): array
     {
         // Fire a 'defineBehaviors' event
         $event = new DefineBehaviorsEvent();
@@ -78,7 +79,7 @@ class Query extends \yii\db\Query
     /**
      * @inheritdoc
      */
-    public function where($condition, $params = [])
+    public function where($condition, $params = []): self
     {
         if (!$condition) {
             $condition = null;
@@ -90,7 +91,7 @@ class Query extends \yii\db\Query
     /**
      * @inheritdoc
      */
-    public function andWhere($condition, $params = [])
+    public function andWhere($condition, $params = []): self
     {
         if (!$condition) {
             return $this;
@@ -102,7 +103,7 @@ class Query extends \yii\db\Query
     /**
      * @inheritdoc
      */
-    public function orWhere($condition, $params = [])
+    public function orWhere($condition, $params = []): self
     {
         if (!$condition) {
             return $this;
@@ -122,7 +123,7 @@ class Query extends \yii\db\Query
      * @return array the query results. If the query results in nothing, an empty array will be returned.
      * @throws Exception if less than two columns were selected
      */
-    public function pairs(YiiConnection $db = null): array
+    public function pairs(?YiiConnection $db = null): array
     {
         try {
             $rows = $this->createCommand($db)->queryAll();
@@ -146,7 +147,7 @@ class Query extends \yii\db\Query
     /**
      * @inheritdoc
      */
-    public function all($db = null)
+    public function all($db = null): array
     {
         try {
             return parent::all($db);
@@ -157,8 +158,7 @@ class Query extends \yii\db\Query
 
     /**
      * @inheritdoc
-     * @return array|null the first row (in terms of an array) of the query result. Null is returned if the query
-     * results in nothing.
+     * @return array|Model|null first row of the query result array, or `null` if there are no query results.
      */
     public function one($db = null)
     {
@@ -196,7 +196,7 @@ class Query extends \yii\db\Query
     /**
      * @inheritdoc
      */
-    public function column($db = null)
+    public function column($db = null): array
     {
         try {
             return parent::column($db);
@@ -208,7 +208,7 @@ class Query extends \yii\db\Query
     /**
      * @inheritdoc
      */
-    public function exists($db = null)
+    public function exists($db = null): bool
     {
         try {
             return parent::exists($db);
@@ -223,10 +223,10 @@ class Query extends \yii\db\Query
      * @param int $n The offset of the row to return. If [[offset]] is set, $offset will be added to it.
      * @param YiiConnection|null $db The database connection used to generate the SQL statement.
      * If this parameter is not given, the `db` application component will be used.
-     * @return array|null The row (in terms of an array) of the query result. Null is returned if the query
+     * @return array|Model|null The row (in terms of an array) of the query result. Null is returned if the query
      * results in nothing.
      */
-    public function nth(int $n, YiiConnection $db = null)
+    public function nth(int $n, ?YiiConnection $db = null)
     {
         $offset = $this->offset;
         $this->offset = ($offset ?: 0) + $n;
@@ -245,7 +245,7 @@ class Query extends \yii\db\Query
      * @see createCommand()
      * @see \yii\db\Command::getRawSql()
      */
-    public function getRawSql(YiiConnection $db = null): string
+    public function getRawSql(?YiiConnection $db = null): string
     {
         return $this->createCommand($db)->getRawSql();
     }

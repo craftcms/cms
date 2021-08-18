@@ -10,6 +10,7 @@ namespace craft\controllers;
 use Craft;
 use craft\base\Element;
 use craft\elements\GlobalSet;
+use craft\helpers\Json;
 use craft\helpers\UrlHelper;
 use craft\web\Controller;
 use yii\web\BadRequestHttpException;
@@ -34,7 +35,7 @@ class GlobalsController extends Controller
      * @return Response
      * @throws ForbiddenHttpException if the user isn't authorized to edit any global sets
      */
-    public function actionIndex()
+    public function actionIndex(): Response
     {
         $editableSets = Craft::$app->getGlobals()->getEditableSets();
 
@@ -52,7 +53,7 @@ class GlobalsController extends Controller
      * @throws NotFoundHttpException if the requested global set cannot be found
      * @throws BadRequestHttpException
      */
-    public function actionSaveSet()
+    public function actionSaveSet(): ?Response
     {
         $this->requirePostRequest();
         $this->requireAdmin();
@@ -94,6 +95,23 @@ class GlobalsController extends Controller
     }
 
     /**
+     * Reorders global sets.
+     *
+     * @return Response
+     * @since 3.7.0
+     */
+    public function actionReorderSets(): Response
+    {
+        $this->requirePostRequest();
+        $this->requireAcceptsJson();
+
+        $setIds = Json::decode($this->request->getRequiredBodyParam('ids'));
+        Craft::$app->getGlobals()->reorderSets($setIds);
+
+        return $this->asJson(['success' => true]);
+    }
+
+    /**
      * Deletes a global set.
      *
      * @return Response
@@ -121,7 +139,7 @@ class GlobalsController extends Controller
      * @throws ForbiddenHttpException if the user is not permitted to edit the global set
      * @throws NotFoundHttpException if the requested site handle is invalid
      */
-    public function actionEditContent(string $globalSetHandle, string $siteHandle = null, GlobalSet $globalSet = null): Response
+    public function actionEditContent(string $globalSetHandle, ?string $siteHandle = null, ?GlobalSet $globalSet = null): Response
     {
         if (Craft::$app->getIsMultiSite()) {
             // Get the sites the user is allowed to edit
@@ -141,7 +159,7 @@ class GlobalsController extends Controller
                     $site = Craft::$app->getSites()->getSiteById($siteId);
                 } else {
                     // Are they allowed to edit the current site?
-                    /* @noinspection PhpUnhandledExceptionInspection */
+                    /** @noinspection PhpUnhandledExceptionInspection */
                     $currentSite = Craft::$app->getSites()->getCurrentSite();
                     if (in_array($currentSite->id, $editableSiteIds, false)) {
                         $site = $currentSite;
@@ -167,7 +185,7 @@ class GlobalsController extends Controller
             }
 
             // Set the siteId cookie
-            /* @var Cookie $cookie */
+            /** @var Cookie $cookie */
             $cookie = Craft::createObject(Craft::cookieConfig([
                 'class' => Cookie::class,
                 'name' => $siteCookieName,
@@ -177,7 +195,7 @@ class GlobalsController extends Controller
             ]));
             $this->response->getRawCookies()->add($cookie);
         } else {
-            /* @noinspection PhpUnhandledExceptionInspection */
+            /** @noinspection PhpUnhandledExceptionInspection */
             $site = Craft::$app->getSites()->getPrimarySite();
         }
 
@@ -221,7 +239,7 @@ class GlobalsController extends Controller
      * @return Response|null
      * @throws NotFoundHttpException if the requested global set cannot be found
      */
-    public function actionSaveContent()
+    public function actionSaveContent(): ?Response
     {
         $this->requirePostRequest();
 

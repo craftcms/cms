@@ -36,9 +36,9 @@ class Asset extends Element
     /**
      * @inheritdoc
      */
-    protected function resolve($source, $arguments, $context, ResolveInfo $resolveInfo)
+    protected function resolve($source, array $arguments, $context, ResolveInfo $resolveInfo)
     {
-        /* @var AssetElement $source */
+        /** @var AssetElement $source */
         $fieldName = $resolveInfo->fieldName;
 
         if (!empty($arguments) && in_array($fieldName, ['url', 'width', 'height'], true)) {

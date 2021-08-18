@@ -21,7 +21,7 @@ class StandardTextField extends StandardField
     /**
      * @var string The input type
      */
-    public $type = 'text';
+    public string $type = 'text';
 
     /**
      * @var string|bool|null The input’s `autocomplete` attribute value.
@@ -40,74 +40,74 @@ class StandardTextField extends StandardField
     /**
      * @var int|null The input’s `size` attribute value.
      */
-    public $size;
+    public ?int $size = null;
 
     /**
      * @var string|null The input’s `name` attribute value.
      *
      * If this is not set, [[attribute()]] will be used by default.
      */
-    public $name;
+    public ?string $name = null;
 
     /**
      * @var int|null The input’s `maxlength` attribute value.
      */
-    public $maxlength;
+    public ?int $maxlength = null;
 
     /**
      * @var bool Whether the input should get an `autofocus` attribute.
      */
-    public $autofocus = false;
+    public bool $autofocus = false;
 
     /**
      * @var bool Whether the input should support autocorrect.
      */
-    public $autocorrect = true;
+    public bool $autocorrect = true;
 
     /**
      * @var bool Whether the input should support auto-capitalization.
      */
-    public $autocapitalize = true;
+    public bool $autocapitalize = true;
 
     /**
      * @var bool Whether the input should get a `disabled` attribute.
      */
-    public $disabled = false;
+    public bool $disabled = false;
 
     /**
      * @var bool Whether the input should get a `readonly` attribute.
      */
-    public $readonly = false;
+    public bool $readonly = false;
 
     /**
      * @var string|null The input’s `title` attribute value.
      */
-    public $title;
+    public ?string $title = null;
 
     /**
      * @var string|null The input’s `placeholder` attribute value.
      */
-    public $placeholder;
+    public ?string $placeholder = null;
 
     /**
      * @var int|null The input’s `step` attribute value.
      */
-    public $step;
+    public ?int $step = null;
 
     /**
      * @var int|null The input’s `min` attribute value.
      */
-    public $min;
+    public ?int $min = null;
 
     /**
      * @var int|null The input’s `max` attribute value.
      */
-    public $max;
+    public ?int $max = null;
 
     /**
      * @inheritdoc
      */
-    public function fields()
+    public function fields(): array
     {
         $fields = parent::fields();
 
@@ -120,7 +120,7 @@ class StandardTextField extends StandardField
     /**
      * @inheritdoc
      */
-    protected function inputHtml(ElementInterface $element = null, bool $static = false)
+    protected function inputHtml(?ElementInterface $element = null, bool $static = false): ?string
     {
         $id = $this->id();
         return Craft::$app->getView()->renderTemplate('_includes/forms/text', [

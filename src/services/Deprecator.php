@@ -13,7 +13,6 @@ use craft\db\Table;
 use craft\elements\db\ElementQuery;
 use craft\errors\DeprecationException;
 use craft\helpers\Db;
-use craft\helpers\Json;
 use craft\helpers\StringHelper;
 use craft\helpers\Template;
 use craft\models\DeprecationError;
@@ -36,7 +35,7 @@ class Deprecator extends Component
      * @var bool Whether deprecation warnings should throw exceptions rather than being logged.
      * @since 3.1.18
      */
-    public $throwExceptions = false;
+    public bool $throwExceptions = false;
 
     /**
      * @var string|false Whether deprecation errors should be logged in the database ('db'),
@@ -52,18 +51,18 @@ class Deprecator extends Component
     /**
      * @var DeprecationError[] The deprecation errors that were logged in the current request
      */
-    private $_requestLogs = [];
+    private array $_requestLogs = [];
 
     /**
      * @var DeprecationError[]|null All the unique deprecation errors that have been logged
      */
-    private $_allLogs;
+    private ?array $_allLogs = null;
 
     /**
      * @inheritdoc
      * @since 3.4.12
      */
-    public function init()
+    public function init(): void
     {
         if (!$this->throwExceptions && $this->logTarget === 'db') {
             Craft::$app->on(Application::EVENT_AFTER_REQUEST, [$this, 'storeLogs'], null, false);
@@ -81,7 +80,7 @@ class Deprecator extends Component
      * @param int|null $line
      * @throws DeprecationException
      */
-    public function log(string $key, string $message, string $file = null, int $line = null)
+    public function log(string $key, string $message, ?string $file = null, ?int $line = null): void
     {
         if ($this->logTarget === false) {
             return;
@@ -117,7 +116,7 @@ class Deprecator extends Component
      *
      * @since 3.4.12
      */
-    public function storeLogs()
+    public function storeLogs(): void
     {
         $db = Craft::$app->getDb();
 
@@ -126,12 +125,11 @@ class Deprecator extends Component
                 Db::upsert(Table::DEPRECATIONERRORS, [
                     'key' => $log->key,
                     'fingerprint' => $log->fingerprint,
-                ], [
                     'lastOccurrence' => Db::prepareDateForDb($log->lastOccurrence),
                     'file' => $log->file,
                     'line' => $log->line,
                     'message' => $log->message,
-                    'traces' => Json::encode($log->traces),
+                    'traces' => $log->traces,
                 ]);
                 $log->id = $db->getLastInsertID();
             } catch (Exception $e) {
@@ -170,9 +168,9 @@ class Deprecator extends Component
      * @param int|null $limit
      * @return DeprecationError[]
      */
-    public function getLogs(int $limit = null): array
+    public function getLogs(?int $limit = null): array
     {
-        if ($this->_allLogs !== null) {
+        if (isset($this->_allLogs)) {
             return $this->_allLogs;
         }
 
@@ -196,7 +194,7 @@ class Deprecator extends Component
      * @param int $logId
      * @return DeprecationError|null
      */
-    public function getLogById(int $logId)
+    public function getLogById(int $logId): ?DeprecationError
     {
         $log = $this->_createDeprecationErrorQuery()
             ->where(['id' => $logId])
@@ -369,7 +367,7 @@ class Deprecator extends Component
      * @param int|null $actualCodeLine
      * @return int|null
      */
-    private function _findTemplateLine(TwigTemplate $template, int $actualCodeLine = null)
+    private function _findTemplateLine(TwigTemplate $template, ?int $actualCodeLine = null): ?int
     {
         if ($actualCodeLine === null) {
             return null;

@@ -9,7 +9,6 @@ namespace craft\db;
 
 use Composer\Util\Platform;
 use Craft;
-use craft\config\DbConfig;
 use craft\db\mysql\QueryBuilder as MysqlQueryBuilder;
 use craft\db\mysql\Schema as MysqlSchema;
 use craft\db\pgsql\QueryBuilder as PgsqlQueryBuilder;
@@ -18,7 +17,6 @@ use craft\errors\DbConnectException;
 use craft\errors\ShellCommandException;
 use craft\events\BackupEvent;
 use craft\events\RestoreEvent;
-use craft\helpers\App;
 use craft\helpers\Db;
 use craft\helpers\FileHelper;
 use craft\helpers\StringHelper;
@@ -68,24 +66,11 @@ class Connection extends \yii\db\Connection
     const EVENT_AFTER_RESTORE_BACKUP = 'afterRestoreBackup';
 
     /**
-     * Creates a new Connection instance based off the given DbConfig object.
-     *
-     * @param DbConfig $config
-     * @return static
-     * @deprecated in 3.0.18. Use [[App::dbConfig()]] instead.
-     */
-    public static function createFromConfig(DbConfig $config): Connection
-    {
-        $config = App::dbConfig($config);
-        return Craft::createObject($config);
-    }
-
-    /**
      * @var bool|null whether the database supports 4+ byte characters
      * @see getSupportsMb4()
      * @see setSupportsMb4()
      */
-    private $_supportsMb4;
+    private ?bool $_supportsMb4 = null;
 
     /**
      * Returns whether this is a MySQL connection.
@@ -108,24 +93,13 @@ class Connection extends \yii\db\Connection
     }
 
     /**
-     * Returns the version of the DB.
-     *
-     * @return string
-     * @deprecated in 3.4.21. Use [[\yii\db\Schema::getServerVersion()]] instead.
-     */
-    public function getVersion(): string
-    {
-        return App::normalizeVersion($this->getSchema()->getServerVersion());
-    }
-
-    /**
      * Returns whether the database supports 4+ byte characters.
      *
      * @return bool
      */
     public function getSupportsMb4(): bool
     {
-        if ($this->_supportsMb4 !== null) {
+        if (isset($this->_supportsMb4)) {
             return $this->_supportsMb4;
         }
         return $this->_supportsMb4 = $this->getIsPgsql();
@@ -136,7 +110,7 @@ class Connection extends \yii\db\Connection
      *
      * @param bool $supportsMb4
      */
-    public function setSupportsMb4(bool $supportsMb4)
+    public function setSupportsMb4(bool $supportsMb4): void
     {
         $this->_supportsMb4 = $supportsMb4;
     }
@@ -146,7 +120,7 @@ class Connection extends \yii\db\Connection
      * @throws DbConnectException if there are any issues
      * @throws \Throwable
      */
-    public function open()
+    public function open(): void
     {
         try {
             parent::open();
@@ -181,7 +155,7 @@ class Connection extends \yii\db\Connection
      * @inheritdoc
      * @since 3.4.11
      */
-    public function close()
+    public function close(): void
     {
         parent::close();
         $this->_supportsMb4 = null;
@@ -196,7 +170,7 @@ class Connection extends \yii\db\Connection
     public function getBackupFilePath(): string
     {
         // Determine the backup file path
-        $systemName = mb_strtolower(FileHelper::sanitizeFilename($this->_getFixedSystemName(), [
+        $systemName = mb_strtolower(FileHelper::sanitizeFilename(Craft::$app->getSystemName(), [
             'asciiOnly' => true,
         ]));
         $filename = ($systemName ? $systemName . '--' : '') . gmdate('Y-m-d-His') . '--v' . Craft::$app->getVersion();
@@ -220,11 +194,7 @@ class Connection extends \yii\db\Connection
             Table::ASSETINDEXDATA,
             Table::ASSETTRANSFORMINDEX,
             Table::SESSIONS,
-            Table::TEMPLATECACHES,
-            Table::TEMPLATECACHEQUERIES,
-            Table::TEMPLATECACHEELEMENTS,
             '{{%cache}}',
-            '{{%templatecachecriteria}}',
         ];
     }
 
@@ -253,7 +223,7 @@ class Connection extends \yii\db\Connection
      * @throws Exception if the backupCommand config setting is false
      * @throws ShellCommandException in case of failure
      */
-    public function backupTo(string $filePath)
+    public function backupTo(string $filePath): void
     {
         // Fire a 'beforeCreateBackup' event
         $event = new BackupEvent([
@@ -316,7 +286,7 @@ class Connection extends \yii\db\Connection
      * @throws Exception if the restoreCommand config setting is false
      * @throws ShellCommandException in case of failure
      */
-    public function restore(string $filePath)
+    public function restore(string $filePath): void
     {
         // Fire a 'beforeRestoreBackup' event
         if ($this->hasEventHandlers(self::EVENT_BEFORE_RESTORE_BACKUP)) {
@@ -366,7 +336,7 @@ class Connection extends \yii\db\Connection
      * @param bool|null $refresh
      * @return bool
      */
-    public function tableExists(string $table, bool $refresh = null): bool
+    public function tableExists(string $table, ?bool $refresh = null): bool
     {
         // Default to refreshing the tables if Craft isn't installed yet
         if ($refresh || ($refresh === null && !Craft::$app->getIsInstalled())) {
@@ -387,7 +357,7 @@ class Connection extends \yii\db\Connection
      * @return bool
      * @throws NotSupportedException if there is no support for the current driver type
      */
-    public function columnExists(string $table, string $column, bool $refresh = null): bool
+    public function columnExists(string $table, string $column, ?bool $refresh = null): bool
     {
         // Default to refreshing the tables if Craft isn't installed yet
         if ($refresh || ($refresh === null && !Craft::$app->getIsInstalled())) {
@@ -432,49 +402,6 @@ class Connection extends \yii\db\Connection
     }
 
     /**
-     * Ensures that an object name is within the schema's limit.
-     *
-     * @param string $name
-     * @return string
-     * @deprecated in 3.6.0
-     */
-    public function trimObjectName(string $name): string
-    {
-        $schema = $this->getSchema();
-
-        if (!isset($schema->maxObjectNameLength)) {
-            return $name;
-        }
-
-        $name = trim($name, '_');
-        $nameLength = StringHelper::length($name);
-
-        if ($nameLength > $schema->maxObjectNameLength) {
-            $parts = array_filter(explode('_', $name));
-            $totalParts = count($parts);
-            $totalLetters = $nameLength - ($totalParts - 1);
-            $maxLetters = $schema->maxObjectNameLength - ($totalParts - 1);
-
-            // Consecutive underscores could have put this name over the top
-            if ($totalLetters > $maxLetters) {
-                foreach ($parts as $i => $part) {
-                    $newLength = round($maxLetters * StringHelper::length($part) / $totalLetters);
-                    $parts[$i] = mb_substr($part, 0, $newLength);
-                }
-            }
-
-            $name = implode('_', $parts);
-
-            // Just to be safe
-            if (StringHelper::length($name) > $schema->maxObjectNameLength) {
-                $name = mb_substr($name, 0, $schema->maxObjectNameLength);
-            }
-        }
-
-        return $name;
-    }
-
-    /**
      * Generates a FK, index, or PK name.
      *
      * @param string $prefix
@@ -512,7 +439,7 @@ class Connection extends \yii\db\Connection
      * @param string $file The path to the backup file
      * @return string
      */
-    private function _parseCommandTokens(string $command, $file): string
+    private function _parseCommandTokens(string $command, string $file): string
     {
         $parsed = Db::parseDsn($this->dsn);
         $username = $this->getIsPgsql() && !empty($parsed['user']) ? $parsed['user'] : $this->username;
@@ -534,7 +461,7 @@ class Connection extends \yii\db\Connection
      * @param ShellCommand $command
      * @throws ShellCommandException
      */
-    private function _executeDatabaseShellCommand(ShellCommand $command)
+    private function _executeDatabaseShellCommand(ShellCommand $command): void
     {
         $success = $command->execute();
 
@@ -573,22 +500,5 @@ class Connection extends \yii\db\Connection
 
             throw new ShellCommandException($execCommand, $command->getExitCode(), $command->getStdErr());
         }
-    }
-
-    /**
-     * TODO: remove this method after the next breakpoint and just use `Craft::$app->getSystemName()` directly.
-     *
-     * @return string
-     */
-    private function _getFixedSystemName(): string
-    {
-        if ($this->columnExists(Table::INFO, 'siteName')) {
-            return (new Query())
-                ->select(['siteName'])
-                ->from([Table::INFO])
-                ->scalar($this) ?: 'CraftCMS';
-        }
-
-        return Craft::$app->getSystemName();
     }
 }

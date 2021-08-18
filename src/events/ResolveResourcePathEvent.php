@@ -20,10 +20,10 @@ class ResolveResourcePathEvent extends Event
     /**
      * @var string The resource URI (sans "cpresources/").
      */
-    public $uri;
+    public string $uri;
 
     /**
      * @var string|null The file path that the URI should resolve to.
      */
-    public $path;
+    public ?string $path = null;
 }

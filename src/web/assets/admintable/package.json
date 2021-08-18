@@ -21,7 +21,7 @@
     "@pixelandtonic/craftui": "~0.3.8",
     "lodash": "^4.17.21",
     "sortablejs": "^1.13.0",
-    "vue": "^2.5.17",
+    "vue": "^2.6.13",
     "vuetable-2": "^1.7.5",
     "vuex": "^3.6.2"
   },
@@ -31,7 +31,7 @@
     "@vue/cli-service": "^3.12.1",
     "node-sass": "^4.9.0",
     "sass-loader": "^7.0.1",
-    "vue-template-compiler": "^2.5.17",
+    "vue-template-compiler": "^2.6.14",
     "webpack-manifest-plugin": "^2.0.4"
   },
   "postcss": {

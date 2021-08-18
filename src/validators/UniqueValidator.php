@@ -35,23 +35,23 @@ class UniqueValidator extends YiiUniqueValidator
     /**
      * @var Model|null The model that is being validated
      */
-    protected $originalModel;
+    protected ?Model $originalModel = null;
 
     /**
      * @var bool Whether a case-insensitive check should be performed.
      */
-    public $caseInsensitive = false;
+    public bool $caseInsensitive = false;
 
     /**
      * @inheritdoc
      */
-    public function validateAttribute($model, $attribute)
+    public function validateAttribute($model, $attribute): void
     {
         if ($targetClass = $this->targetClass) {
             // Exclude this model's row using the filter
-            /* @var ActiveRecord|string $targetClass */
+            /** @var ActiveRecord|string $targetClass */
             $pks = $targetClass::primaryKey();
-            if ($this->pk !== null) {
+            if (isset($this->pk)) {
                 $pkMap = is_string($this->pk) ? StringHelper::split($this->pk) : $this->pk;
             } else {
                 $pkMap = $pks;
@@ -109,10 +109,10 @@ class UniqueValidator extends YiiUniqueValidator
     /**
      * @inheritdoc
      */
-    public function addError($model, $attribute, $message, $params = [])
+    public function addError($model, $attribute, $message, $params = []): void
     {
         // Use the original model if there is one
-        if ($this->originalModel !== null) {
+        if (isset($this->originalModel)) {
             $model = $this->originalModel;
         }
 

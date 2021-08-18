@@ -38,9 +38,9 @@ class Element extends ObjectType
     /**
      * @inheritdoc
      */
-    protected function resolve($source, $arguments, $context, ResolveInfo $resolveInfo)
+    protected function resolve($source, array $arguments, $context, ResolveInfo $resolveInfo)
     {
-        /* @var BaseElementInterface $source */
+        /** @var BaseElementInterface $source */
         $fieldName = $resolveInfo->fieldName;
 
         if ($fieldName === Gql::GRAPHQL_COUNT_FIELD && !empty($arguments['field'])) {

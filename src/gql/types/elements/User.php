@@ -35,9 +35,9 @@ class User extends Element
     /**
      * @inheritdoc
      */
-    protected function resolve($source, $arguments, $context, ResolveInfo $resolveInfo)
+    protected function resolve($source, array $arguments, $context, ResolveInfo $resolveInfo)
     {
-        /* @var UserElement $source */
+        /** @var UserElement $source */
         $fieldName = $resolveInfo->fieldName;
 
         if ($fieldName === 'preferences') {

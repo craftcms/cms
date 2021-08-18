@@ -11,6 +11,7 @@ use Craft;
 use craft\elements\User;
 use craft\errors\WrongEditionException;
 use craft\events\RegisterUserPermissionsEvent;
+use craft\helpers\ArrayHelper;
 use craft\services\UserPermissions;
 use craft\test\TestCase;
 use crafttests\fixtures\GlobalSetFixture;
@@ -81,14 +82,15 @@ class UserPermissionsTest extends TestCase
             $permissions = $this->userPermissions->getAllPermissions();
         }, RegisterUserPermissionsEvent::class);
 
-        // Just check for the main keys.
-        self::assertArrayHasKey('General', $permissions);
-        self::assertArrayHasKey('Sites', $permissions);
-        self::assertArrayHasKey('Section - Single', $permissions);
-        self::assertArrayHasKey('Section - Test 1', $permissions);
-        self::assertArrayHasKey('Global Sets', $permissions);
-        self::assertArrayHasKey('Volume - Test volume 1', $permissions);
-        self::assertArrayHasKey('Utilities', $permissions);
+        // Just check for the main group headings.
+        $headings = ArrayHelper::getColumn($permissions, 'heading');
+        self::assertContains('General', $headings);
+        self::assertContains('Sites', $headings);
+        self::assertContains('Section - Single', $headings);
+        self::assertContains('Section - Test 1', $headings);
+        self::assertContains('Global Sets', $headings);
+        self::assertContains('Volume - Test volume 1', $headings);
+        self::assertContains('Utilities', $headings);
     }
 
     /**

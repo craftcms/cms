@@ -27,8 +27,8 @@ class Category extends ElementMutationResolver
 {
     use StructureMutationTrait;
 
-    /* @inheritdoc */
-    protected $immutableAttributes = ['id', 'uid', 'groupId'];
+    /** @inheritdoc */
+    protected array $immutableAttributes = ['id', 'uid', 'groupId'];
 
     /**
      * Save a category using the passed arguments.
@@ -37,12 +37,12 @@ class Category extends ElementMutationResolver
      * @param array $arguments
      * @param $context
      * @param ResolveInfo $resolveInfo
-     * @return mixed
+     * @return CategoryElement
      * @throws \Throwable if reasons.
      */
-    public function saveCategory($source, array $arguments, $context, ResolveInfo $resolveInfo)
+    public function saveCategory($source, array $arguments, $context, ResolveInfo $resolveInfo): CategoryElement
     {
-        /* @var CategoryGroup $categoryGroup */
+        /** @var CategoryGroup $categoryGroup */
         $categoryGroup = $this->getResolutionData('categoryGroup');
         $canIdentify = !empty($arguments['id']) || !empty($arguments['uid']);
         $elementService = Craft::$app->getElements();
@@ -67,12 +67,13 @@ class Category extends ElementMutationResolver
 
         $this->requireSchemaAction('categorygroups.' . $categoryGroup->uid, 'save');
 
-        $category = $this->populateElementWithData($category, $arguments);
+        $category = $this->populateElementWithData($category, $arguments, $resolveInfo);
 
         $category = $this->saveElement($category);
 
         $this->performStructureOperations($category, $arguments);
 
+        /** @noinspection PhpIncompatibleReturnTypeInspection */
         return $elementService->getElementById($category->id, CategoryElement::class);
     }
 
@@ -83,10 +84,9 @@ class Category extends ElementMutationResolver
      * @param array $arguments
      * @param $context
      * @param ResolveInfo $resolveInfo
-     * @return mixed
      * @throws \Throwable if reasons.
      */
-    public function deleteCategory($source, array $arguments, $context, ResolveInfo $resolveInfo)
+    public function deleteCategory($source, array $arguments, $context, ResolveInfo $resolveInfo): void
     {
         $categoryId = $arguments['id'];
 
@@ -94,14 +94,12 @@ class Category extends ElementMutationResolver
         $category = $elementService->getElementById($categoryId, CategoryElement::class);
 
         if (!$category) {
-            return true;
+            return;
         }
 
         $categoryGroupUid = Db::uidById(Table::CATEGORYGROUPS, $category->groupId);
         $this->requireSchemaAction('categorygroups.' . $categoryGroupUid, 'delete');
 
         $elementService->deleteElementById($categoryId);
-
-        return true;
     }
 }

@@ -23,7 +23,7 @@ trait BackupTrait
     /**
      * @var string|null The path to the database backup
      */
-    protected $backupPath;
+    protected ?string $backupPath = null;
 
     /**
      * Attempts to backup the database.
@@ -75,7 +75,7 @@ trait BackupTrait
             return $backupOnUpdate;
         }
 
-        return $this->confirm('Backup the database?', $backupOnUpdate);
+        return $this->confirm('Create database backup?', $backupOnUpdate);
     }
 
     /**

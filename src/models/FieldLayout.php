@@ -22,7 +22,6 @@ use craft\fieldlayoutelements\HorizontalRule;
 use craft\fieldlayoutelements\Template;
 use craft\fieldlayoutelements\Tip;
 use craft\helpers\ArrayHelper;
-use craft\helpers\Html;
 use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
 
@@ -154,54 +153,54 @@ class FieldLayout extends Model
     /**
      * @var int|null ID
      */
-    public $id;
+    public ?int $id = null;
 
     /**
      * @var string|null The element type
      */
-    public $type;
+    public ?string $type = null;
 
     /**
      * @var string|null UID
      */
-    public $uid;
+    public ?string $uid = null;
 
     /**
-     * @var string[]|null Reserved attribute names
+     * @var string[]|null Reserved custom field handles
      * @since 3.7.0
      */
-    public $reservedAttributes;
+    public ?array $reservedFieldHandles = null;
 
     /**
      * @var BaseField[][]
      * @see getAvailableCustomFields()
      */
-    private $_availableCustomFields;
+    private array $_availableCustomFields;
 
     /**
      * @var BaseField[][]
      * @see getAvailableStandardFields()
      */
-    private $_availableStandardFields;
+    private array $_availableStandardFields;
 
     /**
      * @var FieldLayoutTab[]
      */
-    private $_tabs;
+    private array $_tabs;
 
     /**
      * @var BaseField[]
      * @see getTabs()
      * @see isFieldIncluded()
      */
-    private $_fields;
+    private array $_fields;
 
     /**
-     * @var FieldInterface[]
+     * @var FieldInterface[]|null
      * @see getFields()
      * @see setFields()
      */
-    private $_customFields;
+    private ?array $_customFields = null;
 
     /**
      * @inheritdoc
@@ -217,12 +216,11 @@ class FieldLayout extends Model
     /**
      * Validates the field selections.
      *
-     * @return void
      * @since 3.7.0
      */
     public function validateFields(): void
     {
-        if (!$this->reservedAttributes) {
+        if (!$this->reservedFieldHandles) {
             return;
         }
 
@@ -230,8 +228,8 @@ class FieldLayout extends Model
         foreach ($this->getTabs() as $tab) {
             foreach ($tab->elements as $element) {
                 if (
-                    $element instanceof BaseField &&
-                    in_array($element->attribute(), $this->reservedAttributes, true)
+                    $element instanceof CustomField &&
+                    in_array($element->attribute(), $this->reservedFieldHandles, true)
                 ) {
                     $this->addError('fields', Craft::t('app', '“{handle}” is a reserved word.', [
                         'handle' => $element->attribute(),
@@ -248,7 +246,7 @@ class FieldLayout extends Model
      */
     public function getTabs(): array
     {
-        if ($this->_tabs !== null) {
+        if (isset($this->_tabs)) {
             return $this->_tabs;
         }
 
@@ -270,7 +268,7 @@ class FieldLayout extends Model
         }
 
         // Make sure that we aren't missing any mandatory fields
-        /* @var BaseField[] $missingFields */
+        /** @var BaseField[] $missingFields */
         $missingFields = [];
         foreach ($this->getAvailableStandardFields() as $field) {
             if ($field->mandatory() && !isset($this->_fields[$field->attribute()])) {
@@ -302,7 +300,7 @@ class FieldLayout extends Model
      * @param array|FieldLayoutTab[] $tabs An array of the layout’s tabs, which can either be FieldLayoutTab
      * objects or arrays defining the tab’s attributes.
      */
-    public function setTabs($tabs)
+    public function setTabs(array $tabs): void
     {
         $this->_tabs = [];
         foreach ($tabs as $tab) {
@@ -322,7 +320,7 @@ class FieldLayout extends Model
      */
     public function getAvailableCustomFields(): array
     {
-        if ($this->_availableCustomFields === null) {
+        if (!isset($this->_availableCustomFields)) {
             $this->_availableCustomFields = [];
 
             foreach (Craft::$app->getFields()->getAllGroups() as $group) {
@@ -344,7 +342,7 @@ class FieldLayout extends Model
      */
     public function getAvailableStandardFields(): array
     {
-        if ($this->_availableStandardFields === null) {
+        if (!isset($this->_availableStandardFields)) {
             $event = new DefineFieldLayoutFieldsEvent();
             $this->trigger(self::EVENT_DEFINE_STANDARD_FIELDS, $event);
             $this->_availableStandardFields = $event->fields;
@@ -437,7 +435,7 @@ class FieldLayout extends Model
      * @return array|null
      * @since 3.1.0
      */
-    public function getConfig()
+    public function getConfig(): ?array
     {
         $tabConfigs = [];
 
@@ -464,7 +462,7 @@ class FieldLayout extends Model
      */
     public function getFields(): array
     {
-        if ($this->_customFields !== null) {
+        if (isset($this->_customFields)) {
             return $this->_customFields;
         }
 
@@ -476,29 +474,12 @@ class FieldLayout extends Model
     }
 
     /**
-     * Returns the IDs of the custom fields included in the layout.
-     *
-     * @return int[]
-     * @deprecated in 3.5.0.
-     */
-    public function getFieldIds(): array
-    {
-        $ids = [];
-
-        foreach ($this->getFields() as $field) {
-            $ids[] = $field->id;
-        }
-
-        return $ids;
-    }
-
-    /**
      * Returns a custom field by its handle.
      *
      * @param string $handle The field handle.
      * @return FieldInterface|null
      */
-    public function getFieldByHandle(string $handle)
+    public function getFieldByHandle(string $handle): ?FieldInterface
     {
         foreach ($this->getFields() as $field) {
             if ($field->handle === $handle) {
@@ -514,7 +495,7 @@ class FieldLayout extends Model
      *
      * @param FieldInterface[]|null $fields
      */
-    public function setFields(array $fields = null)
+    public function setFields(?array $fields = null): void
     {
         $this->_customFields = $fields;
     }
@@ -533,7 +514,7 @@ class FieldLayout extends Model
      * @return FieldLayoutForm
      * @since 3.5.0
      */
-    public function createForm(ElementInterface $element = null, bool $static = false, array $config = []): FieldLayoutForm
+    public function createForm(?ElementInterface $element = null, bool $static = false, array $config = []): FieldLayoutForm
     {
         $view = Craft::$app->getView();
         // Calling this with an existing namespace isn’t fully supported,

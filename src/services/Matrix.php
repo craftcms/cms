@@ -20,7 +20,6 @@ use craft\helpers\ArrayHelper;
 use craft\helpers\Db;
 use craft\helpers\ElementHelper;
 use craft\helpers\Html;
-use craft\helpers\MigrationHelper;
 use craft\helpers\StringHelper;
 use craft\migrations\CreateMatrixContentTable;
 use craft\models\FieldLayout;
@@ -42,35 +41,29 @@ use yii\base\Exception;
 class Matrix extends Component
 {
     /**
-     * @var bool Whether to ignore changes to the project config.
-     * @deprecated in 3.1.2. Use [[\craft\services\ProjectConfig::$muteEvents]] instead.
+     * @var MatrixBlockType[]|null[]
      */
-    public $ignoreProjectConfigChanges = false;
+    private array $_blockTypesById = [];
 
     /**
-     * @var
+     * @var MatrixBlockType[][]
      */
-    private $_blockTypesById;
+    private array $_blockTypesByFieldId = [];
 
     /**
-     * @var
+     * @var bool[]
      */
-    private $_blockTypesByFieldId;
+    private array $_fetchedAllBlockTypesForFieldId = [];
 
     /**
-     * @var
+     * @var MatrixBlockTypeRecord[]
      */
-    private $_fetchedAllBlockTypesForFieldId;
-
-    /**
-     * @var
-     */
-    private $_blockTypeRecordsById;
+    private array $_blockTypeRecordsById = [];
 
     /**
      * @var string[]
      */
-    private $_uniqueBlockTypeAndFieldHandles = [];
+    private array $_uniqueBlockTypeAndFieldHandles = [];
 
     const CONFIG_BLOCKTYPE_KEY = 'matrixBlockTypes';
 
@@ -130,9 +123,9 @@ class Matrix extends Component
      * @param int $blockTypeId The block type ID.
      * @return MatrixBlockType|null The block type, or `null` if it didn’t exist.
      */
-    public function getBlockTypeById(int $blockTypeId)
+    public function getBlockTypeById(int $blockTypeId): ?MatrixBlockType
     {
-        if ($this->_blockTypesById !== null && array_key_exists($blockTypeId, $this->_blockTypesById)) {
+        if (array_key_exists($blockTypeId, $this->_blockTypesById)) {
             return $this->_blockTypesById[$blockTypeId];
         }
 
@@ -258,12 +251,8 @@ class Matrix extends Component
      *
      * @param ConfigEvent $event
      */
-    public function handleChangedBlockType(ConfigEvent $event)
+    public function handleChangedBlockType(ConfigEvent $event): void
     {
-        if ($this->ignoreProjectConfigChanges) {
-            return;
-        }
-
         $blockTypeUid = $event->tokenMatches[0];
         $data = $event->newValue;
         $previousData = $event->oldValue;
@@ -300,7 +289,7 @@ class Matrix extends Component
             // Make sure that alterations, if any, occur in the correct context.
             $contentService->fieldContext = 'matrixBlockType:' . $blockTypeUid;
             $contentService->fieldColumnPrefix = 'field_' . $blockTypeRecord->handle . '_';
-            /* @var MatrixField $matrixField */
+            /** @var MatrixField $matrixField */
             $matrixField = $fieldsService->getFieldById($blockTypeRecord->fieldId);
 
             // Ignore it, if the parent field is not a Matrix field.
@@ -388,12 +377,8 @@ class Matrix extends Component
      * @param ConfigEvent $event
      * @throws \Throwable if reasons
      */
-    public function handleDeletedBlockType(ConfigEvent $event)
+    public function handleDeletedBlockType(ConfigEvent $event): void
     {
-        if ($this->ignoreProjectConfigChanges) {
-            return;
-        }
-
         $blockTypeUid = $event->tokenMatches[0];
         $blockTypeRecord = $this->_getBlockTypeRecord($blockTypeUid);
 
@@ -427,25 +412,29 @@ class Matrix extends Component
             $fieldsService = Craft::$app->getFields();
             $originalContentTable = $contentService->contentTable;
 
-            /* @var MatrixField $matrixField */
+            /** @var MatrixField $matrixField */
             $matrixField = $fieldsService->getFieldById($blockType->fieldId);
 
             // Ignore it, if the parent field is not a Matrix field.
             if ($matrixField instanceof MatrixField) {
                 $contentService->contentTable = $matrixField->contentTable;
 
-                // Set the new fieldColumnPrefix
-                $originalFieldColumnPrefix = Craft::$app->getContent()->fieldColumnPrefix;
-                Craft::$app->getContent()->fieldColumnPrefix = 'field_' . $blockType->handle . '_';
+                // Set the new fieldColumnPrefix + oldFieldColumnPrefix
+                $originalFieldColumnPrefix = $contentService->fieldColumnPrefix;
+                $originalOldFieldColumnPrefix = $fieldsService->oldFieldColumnPrefix;
+
+                $contentService->fieldColumnPrefix = "field_{$blockType->handle}_";
+                $fieldsService->oldFieldColumnPrefix = "field_{$blockType->handle}_";
 
                 // Now delete the block type fields
                 foreach ($blockType->getFields() as $field) {
-                    Craft::$app->getFields()->deleteField($field);
+                    $fieldsService->deleteField($field);
                 }
 
                 // Restore the contentTable and the fieldColumnPrefix to original values.
-                Craft::$app->getContent()->fieldColumnPrefix = $originalFieldColumnPrefix;
                 $contentService->contentTable = $originalContentTable;
+                $contentService->fieldColumnPrefix = $originalFieldColumnPrefix;
+                $fieldsService->oldFieldColumnPrefix = $originalOldFieldColumnPrefix;
 
                 // Delete the field layout
                 $fieldLayoutId = (new Query())
@@ -455,7 +444,7 @@ class Matrix extends Component
                     ->scalar();
 
                 // Delete the field layout
-                Craft::$app->getFields()->deleteLayoutById($fieldLayoutId);
+                $fieldsService->deleteLayoutById($fieldLayoutId);
 
                 // Finally delete the actual block type
                 Db::delete(Table::MATRIXBLOCKTYPES, [
@@ -537,7 +526,7 @@ class Matrix extends Component
      */
     public function saveSettings(MatrixField $matrixField, bool $validate = true): bool
     {
-        if (!$matrixField->contentTable) {
+        if (!isset($matrixField->contentTable)) {
             throw new Exception('Unable to save a Matrix field’s settings without knowing its content table.');
         }
 
@@ -552,7 +541,7 @@ class Matrix extends Component
             if (!$db->tableExists($matrixField->contentTable)) {
                 $oldContentTable = $matrixField->oldSettings['contentTable'] ?? null;
                 if ($oldContentTable && $db->tableExists($oldContentTable)) {
-                    MigrationHelper::renameTable($oldContentTable, $matrixField->contentTable);
+                    Db::renameTable($oldContentTable, $matrixField->contentTable);
                 } else {
                     $this->_createContentTable($matrixField->contentTable);
                 }
@@ -652,18 +641,6 @@ class Matrix extends Component
     }
 
     /**
-     * Returns the content table name for a given Matrix field.
-     *
-     * @param MatrixField $matrixField The Matrix field.
-     * @return string|false The table name, or `false` if $useOldHandle was set to `true` and there was no old handle.
-     * @deprecated in 3.0.23. Use [[MatrixField::$contentTable]] instead.
-     */
-    public function getContentTableName(MatrixField $matrixField)
-    {
-        return $matrixField->contentTable;
-    }
-
-    /**
      * Defines a new Matrix content table name.
      *
      * @param MatrixField $field
@@ -678,7 +655,7 @@ class Matrix extends Component
         do {
             $i++;
             $name = '{{%' . $baseName . ($i !== 0 ? '_' . $i : '') . '}}';
-        } while ($name !== $field->contentTable && $db->tableExists($name));
+        } while ($name !== ($field->contentTable ?? null) && $db->tableExists($name));
         return $name;
     }
 
@@ -689,9 +666,9 @@ class Matrix extends Component
      * @param int|null $siteId The site ID to return. Defaults to the current site.
      * @return MatrixBlock|null The Matrix block, or `null` if it didn’t exist.
      */
-    public function getBlockById(int $blockId, int $siteId = null)
+    public function getBlockById(int $blockId, ?int $siteId = null): ?MatrixBlock
     {
-        /* @noinspection PhpIncompatibleReturnTypeInspection */
+        /** @noinspection PhpIncompatibleReturnTypeInspection */
         return Craft::$app->getElements()->getElementById($blockId, MatrixBlock::class, $siteId);
     }
 
@@ -702,17 +679,17 @@ class Matrix extends Component
      * @param ElementInterface $owner The element the field is associated with
      * @throws \Throwable if reasons
      */
-    public function saveField(MatrixField $field, ElementInterface $owner)
+    public function saveField(MatrixField $field, ElementInterface $owner): void
     {
         $elementsService = Craft::$app->getElements();
-        /* @var MatrixBlockQuery $query */
+        /** @var MatrixBlockQuery $query */
         $query = $owner->getFieldValue($field->handle);
-        /* @var MatrixBlock[] $blocks */
+        /** @var MatrixBlock[] $blocks */
         if (($blocks = $query->getCachedResult()) !== null) {
             $saveAll = false;
         } else {
             $blocksQuery = clone $query;
-            $blocks = $blocksQuery->anyStatus()->all();
+            $blocks = $blocksQuery->status(null)->all();
             $saveAll = true;
         }
         $blockIds = [];
@@ -770,18 +747,18 @@ class Matrix extends Component
                     // Get the owner element across each of those sites
                     $localizedOwners = $owner::find()
                         ->drafts($owner->getIsDraft())
-                        ->provisionalDrafts($owner->getIsProvisionalDraft())
+                        ->provisionalDrafts($owner->isProvisionalDraft)
                         ->revisions($owner->getIsRevision())
                         ->id($owner->id)
                         ->siteId($otherSiteIds)
-                        ->anyStatus()
+                        ->status(null)
                         ->all();
 
                     // Duplicate Matrix blocks, ensuring we don't process the same blocks more than once
                     $handledSiteIds = [];
 
                     $cachedQuery = clone $query;
-                    $cachedQuery->anyStatus();
+                    $cachedQuery->status(null);
                     $cachedQuery->setCachedResult($blocks);
                     $owner->setFieldValue($field->handle, $cachedQuery);
 
@@ -800,11 +777,11 @@ class Matrix extends Component
                             !empty($sharedPreexistingOtherSiteIds = array_intersect($preexistingOtherSiteIds, $sourceSupportedSiteIds)) &&
                             $preexistingLocalizedOwner = $owner::find()
                                 ->drafts($owner->getIsDraft())
-                                ->provisionalDrafts($owner->getIsProvisionalDraft())
+                                ->provisionalDrafts($owner->isProvisionalDraft)
                                 ->revisions($owner->getIsRevision())
                                 ->id($owner->id)
                                 ->siteId($sharedPreexistingOtherSiteIds)
-                                ->anyStatus()
+                                ->status(null)
                                 ->one()
                         ) {
                             // Just resave Matrix blocks for that one site, and let them propagate over to the new site(s) from there
@@ -847,15 +824,15 @@ class Matrix extends Component
      * @throws \Throwable if reasons
      * @since 3.2.0
      */
-    public function duplicateBlocks(MatrixField $field, ElementInterface $source, ElementInterface $target, bool $checkOtherSites = false)
+    public function duplicateBlocks(MatrixField $field, ElementInterface $source, ElementInterface $target, bool $checkOtherSites = false): void
     {
         $elementsService = Craft::$app->getElements();
-        /* @var MatrixBlockQuery $query */
+        /** @var MatrixBlockQuery $query */
         $query = $source->getFieldValue($field->handle);
-        /* @var MatrixBlock[] $blocks */
+        /** @var MatrixBlock[] $blocks */
         if (($blocks = $query->getCachedResult()) === null) {
             $blocksQuery = clone $query;
-            $blocks = $blocksQuery->anyStatus()->all();
+            $blocks = $blocksQuery->status(null)->all();
         }
         $newBlockIds = [];
 
@@ -872,10 +849,10 @@ class Matrix extends Component
                 ];
 
                 if ($target->updatingFromDerivative && $block->getIsDerivative()) {
-                    /* @var MatrixBlock $newBlock */
+                    /** @var MatrixBlock $newBlock */
                     $newBlock = $elementsService->updateCanonicalElement($block, $newAttributes);
                 } else {
-                    /* @var MatrixBlock $newBlock */
+                    /** @var MatrixBlock $newBlock */
                     $newBlock = $elementsService->duplicateElement($block, $newAttributes);
                 }
 
@@ -902,19 +879,19 @@ class Matrix extends Component
                 // Get the original element and duplicated element for each of those sites
                 $otherSources = $target::find()
                     ->drafts($source->getIsDraft())
-                    ->provisionalDrafts($source->getIsProvisionalDraft())
+                    ->provisionalDrafts($source->isProvisionalDraft)
                     ->revisions($source->getIsRevision())
                     ->id($source->id)
                     ->siteId($otherSiteIds)
-                    ->anyStatus()
+                    ->status(null)
                     ->all();
                 $otherTargets = $target::find()
                     ->drafts($target->getIsDraft())
-                    ->provisionalDrafts($target->getIsProvisionalDraft())
+                    ->provisionalDrafts($target->isProvisionalDraft)
                     ->revisions($target->getIsRevision())
                     ->id($target->id)
                     ->siteId($otherSiteIds)
-                    ->anyStatus()
+                    ->status(null)
                     ->indexBy('siteId')
                     ->all();
 
@@ -947,16 +924,27 @@ class Matrix extends Component
      *
      * @param MatrixField $field The Matrix field
      * @param ElementInterface $owner The element the field is associated with
-     * @return void
      * @since 3.7.0
      */
     public function mergeCanonicalChanges(MatrixField $field, ElementInterface $owner): void
     {
+        // Get the owner across all sites
+        $localizedOwners = $owner::find()
+            ->id($owner->id ?: false)
+            ->siteId(['not', $owner->siteId])
+            ->drafts($owner->getIsDraft())
+            ->provisionalDrafts($owner->isProvisionalDraft)
+            ->revisions($owner->getIsRevision())
+            ->status(null)
+            ->ignorePlaceholders()
+            ->indexBy('siteId')
+            ->all();
+
         // Get the canonical owner across all sites
         $canonicalOwners = $owner::find()
             ->id($owner->getCanonicalId())
             ->siteId('*')
-            ->anyStatus()
+            ->status(null)
             ->ignorePlaceholders()
             ->all();
 
@@ -1008,8 +996,8 @@ class Matrix extends Component
                     $elementsService->duplicateElement($canonicalBlock, [
                         'canonicalId' => $canonicalBlock->id,
                         'ownerId' => $owner->id,
-                        'owner' => $owner,
-                        'siteId' => $canonicalOwner->siteId,
+                        'owner' => $localizedOwners[$canonicalBlock->siteId] ?? $owner,
+                        'siteId' => $canonicalBlock->siteId,
                         'propagating' => false,
                     ]);
                 }
@@ -1024,20 +1012,6 @@ class Matrix extends Component
     }
 
     /**
-     * Returns the site IDs that are supported by Matrix blocks for the given Matrix field and owner element.
-     *
-     * @param MatrixField $field
-     * @param ElementInterface $owner
-     * @return int[]
-     * @since 3.2.0
-     * @deprecated in 3.3.18. Use [[getSupportedSiteIds()]] instead.
-     */
-    public function getSupportedSiteIdsForField(MatrixField $field, ElementInterface $owner): array
-    {
-        return $this->getSupportedSiteIds($field->propagationMethod, $owner, $field->propagationKeyFormat);
-    }
-
-    /**
      * Returns the site IDs that are supported by Matrix blocks for the given propagation method and owner element.
      *
      * @param string $propagationMethod
@@ -1048,14 +1022,15 @@ class Matrix extends Component
      */
     public function getSupportedSiteIds(string $propagationMethod, ElementInterface $owner, ?string $propagationKeyFormat = null): array
     {
-        /* @var Site[] $allSites */
+        /** @var Site[] $allSites */
         $allSites = ArrayHelper::index(Craft::$app->getSites()->getAllSites(), 'id');
         $ownerSiteIds = ArrayHelper::getColumn(ElementHelper::supportedSitesForElement($owner), 'siteId');
         $siteIds = [];
 
+        $view = Craft::$app->getView();
+        $elementsService = Craft::$app->getElements();
+
         if ($propagationMethod === MatrixField::PROPAGATION_METHOD_CUSTOM && $propagationKeyFormat !== null) {
-            $view = Craft::$app->getView();
-            $elementsService = Craft::$app->getElements();
             $propagationKey = $view->renderObjectTemplate($propagationKeyFormat, $owner);
         }
 
@@ -1153,7 +1128,7 @@ class Matrix extends Component
      *
      * @param string $tableName
      */
-    private function _createContentTable(string $tableName)
+    private function _createContentTable(string $tableName): void
     {
         $migration = new CreateMatrixContentTable([
             'tableName' => $tableName,
@@ -1168,13 +1143,13 @@ class Matrix extends Component
      * Deletes blocks from an owner element
      *
      * @param MatrixField $field The Matrix field
-     * @param ElementInterface The owner element
+     * @param ElementInterface $owner The owner element
      * @param int[] $except Block IDs that should be left alone
      */
-    private function _deleteOtherBlocks(MatrixField $field, ElementInterface $owner, array $except)
+    private function _deleteOtherBlocks(MatrixField $field, ElementInterface $owner, array $except): void
     {
         $deleteBlocks = MatrixBlock::find()
-            ->anyStatus()
+            ->status(null)
             ->ownerId($owner->id)
             ->fieldId($field->id)
             ->siteId($owner->siteId)

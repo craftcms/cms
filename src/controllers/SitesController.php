@@ -8,7 +8,9 @@
 namespace craft\controllers;
 
 use Craft;
+use craft\helpers\Cp;
 use craft\helpers\Json;
+use craft\helpers\StringHelper;
 use craft\helpers\UrlHelper;
 use craft\models\Site;
 use craft\models\SiteGroup;
@@ -32,7 +34,7 @@ class SitesController extends Controller
     /**
      * @inheritdoc
      */
-    public function beforeAction($action)
+    public function beforeAction($action): bool
     {
         // All actions require an admin account
         $this->requireAdmin();
@@ -47,7 +49,7 @@ class SitesController extends Controller
      * @return Response
      * @throws NotFoundHttpException if $groupId is invalid
      */
-    public function actionSettingsIndex(int $groupId = null): Response
+    public function actionSettingsIndex(?int $groupId = null): Response
     {
         $sitesService = Craft::$app->getSites();
         $allGroups = $sitesService->getAllGroups();
@@ -92,6 +94,35 @@ class SitesController extends Controller
     // -------------------------------------------------------------------------
 
     /**
+     * Returns the HTML and JS for a rename-site-group modal.
+     *
+     * @return Response
+     * @since 3.7.0
+     */
+    public function actionRenameGroupField(): Response
+    {
+        $this->requirePostRequest();
+        $this->requireAcceptsJson();
+
+        $view = Craft::$app->getView();
+        $view->startJsBuffer();
+        $html = $view->namespaceInputs(function() {
+            return Cp::autosuggestFieldHtml([
+                'label' => Craft::t('app', 'Group Name'),
+                'instructions' => Craft::t('app', 'What this group will be called in the control panel.'),
+                'id' => 'name',
+                'name' => 'name',
+                'value' => $this->request->getBodyParam('name') ?? '',
+                'suggestEnvVars' => true,
+                'required' => true,
+            ]);
+        }, 'name' . StringHelper::randomString(10));
+        $js = $view->clearJsBuffer();
+
+        return $this->asJson(compact('html', 'js'));
+    }
+
+    /**
      * Saves a site group.
      *
      * @return Response
@@ -114,7 +145,7 @@ class SitesController extends Controller
             $group = new SiteGroup();
         }
 
-        $group->name = $this->request->getRequiredBodyParam('name');
+        $group->setName($this->request->getRequiredBodyParam('name'));
 
         if (!Craft::$app->getSites()->saveGroup($group)) {
             return $this->asJson([
@@ -122,9 +153,12 @@ class SitesController extends Controller
             ]);
         }
 
+        $attr = $group->getAttributes();
+        $attr['name'] = Craft::t('site', $attr['name']);
+
         return $this->asJson([
             'success' => true,
-            'group' => $group->getAttributes(),
+            'group' => $attr,
         ]);
     }
 
@@ -161,7 +195,7 @@ class SitesController extends Controller
      * @throws NotFoundHttpException if the requested site cannot be found
      * @throws ServerErrorHttpException if no site groups exist
      */
-    public function actionEditSite(int $siteId = null, Site $site = null, int $groupId = null): Response
+    public function actionEditSite(?int $siteId = null, ?Site $site = null, ?int $groupId = null): Response
     {
         $sitesService = Craft::$app->getSites();
 
@@ -211,7 +245,7 @@ class SitesController extends Controller
         foreach ($allGroups as $group) {
             $groupOptions[] = [
                 'value' => $group->id,
-                'label' => $group->name,
+                'label' => Craft::t('site', $group->getName()),
             ];
         }
 
@@ -259,7 +293,7 @@ class SitesController extends Controller
      * @return Response|null
      * @throws BadRequestHttpException
      */
-    public function actionSaveSite()
+    public function actionSaveSite(): ?Response
     {
         $this->requirePostRequest();
 

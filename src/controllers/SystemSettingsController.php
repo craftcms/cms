@@ -38,7 +38,7 @@ class SystemSettingsController extends Controller
     /**
      * @inheritdoc
      */
-    public function beforeAction($action)
+    public function beforeAction($action): bool
     {
         // All system setting actions require an admin
         $this->requireAdmin();
@@ -65,7 +65,7 @@ class SystemSettingsController extends Controller
      *
      * @return Response|null
      */
-    public function actionSaveGeneralSettings()
+    public function actionSaveGeneralSettings(): ?Response
     {
         $this->requirePostRequest();
 
@@ -89,7 +89,7 @@ class SystemSettingsController extends Controller
      * @return Response
      * @throws Exception if a plugin returns an invalid mail transport type
      */
-    public function actionEditEmailSettings(MailSettings $settings = null, TransportAdapterInterface $adapter = null): Response
+    public function actionEditEmailSettings(?MailSettings $settings = null, ?TransportAdapterInterface $adapter = null): Response
     {
         if ($settings === null) {
             $settings = App::mailSettings();
@@ -118,7 +118,7 @@ class SystemSettingsController extends Controller
         $transportTypeOptions = [];
 
         foreach ($allTransportAdapterTypes as $transportAdapterType) {
-            /* @var string|TransportAdapterInterface $transportAdapterType */
+            /** @var string|TransportAdapterInterface $transportAdapterType */
             if ($transportAdapterType === get_class($adapter) || $transportAdapterType::isSelectable()) {
                 $allTransportAdapters[] = MailerHelper::createTransportAdapter($transportAdapterType);
                 $transportTypeOptions[] = [
@@ -155,14 +155,14 @@ class SystemSettingsController extends Controller
      *
      * @return Response|null
      */
-    public function actionSaveEmailSettings()
+    public function actionSaveEmailSettings(): ?Response
     {
         $this->requirePostRequest();
 
         $settings = $this->_createMailSettingsFromPost();
         $settingsAreValid = $settings->validate();
 
-        /* @var BaseTransportAdapter $adapter */
+        /** @var BaseTransportAdapter $adapter */
         $adapter = MailerHelper::createTransportAdapter($settings->transportType, $settings->transportSettings);
         $adapterIsValid = $adapter->validate();
 
@@ -187,20 +187,20 @@ class SystemSettingsController extends Controller
     /**
      * Tests the email settings.
      */
-    public function actionTestEmailSettings()
+    public function actionTestEmailSettings(): void
     {
         $this->requirePostRequest();
 
         $settings = $this->_createMailSettingsFromPost();
         $settingsIsValid = $settings->validate();
 
-        /* @var BaseTransportAdapter $adapter */
+        /** @var BaseTransportAdapter $adapter */
         $adapter = MailerHelper::createTransportAdapter($settings->transportType, $settings->transportSettings);
         $adapterIsValid = $adapter->validate();
 
         if ($settingsIsValid && $adapterIsValid) {
             // Try to send the test email
-            /* @var Mailer $mailer */
+            /** @var Mailer $mailer */
             $mailer = Craft::createObject(App::mailerConfig($settings));
             $message = $mailer
                 ->composeFromKey('test_email', [
@@ -232,7 +232,7 @@ class SystemSettingsController extends Controller
      * @return Response
      * @throws NotFoundHttpException if the requested global set cannot be found
      */
-    public function actionEditGlobalSet(int $globalSetId = null, GlobalSet $globalSet = null): Response
+    public function actionEditGlobalSet(?int $globalSetId = null, ?GlobalSet $globalSet = null): Response
     {
         if ($globalSet === null) {
             if ($globalSetId !== null) {

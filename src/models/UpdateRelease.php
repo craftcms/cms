@@ -9,6 +9,7 @@ namespace craft\models;
 
 use craft\base\Model;
 use craft\helpers\DateTimeHelper;
+use DateTime;
 use DateTimeZone;
 
 /**
@@ -22,22 +23,22 @@ class UpdateRelease extends Model
     /**
      * @var string Version
      */
-    public $version;
+    public string $version;
 
     /**
-     * @var \DateTime|null Date
+     * @var DateTime|null Date
      */
-    public $date;
+    public ?DateTime $date = null;
 
     /**
      * @var bool Critical
      */
-    public $critical = false;
+    public bool $critical = false;
 
     /**
      * @var string|null Notes
      */
-    public $notes;
+    public ?string $notes = null;
 
     /**
      * @inheritdoc
@@ -52,13 +53,13 @@ class UpdateRelease extends Model
     /**
      * @inheritdoc
      */
-    public function fields()
+    public function fields(): array
     {
         $fields = parent::fields();
 
         // Don't include time zone in the date
         $fields['date'] = function(): ?string {
-            if ($this->date !== null) {
+            if (isset($this->date)) {
                 return DateTimeHelper::toDateTime($this->date)->setTimezone(new DateTimeZone('UTC'))->format('Y-m-d\TH:i:s');
             }
             return null;

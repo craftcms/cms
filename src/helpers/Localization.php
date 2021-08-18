@@ -21,9 +21,9 @@ use yii\i18n\MissingTranslationEvent;
 class Localization
 {
     /**
-     * @var
+     * @var string[][]
      */
-    private static $_translations;
+    private static array $_translations = [];
 
     /**
      * Normalizes a language into the correct format (e.g. `en-US`).
@@ -84,7 +84,7 @@ class Localization
      * @param string $localeId
      * @return array|null
      */
-    public static function localeData(string $localeId)
+    public static function localeData(string $localeId): ?array
     {
         $data = null;
 
@@ -112,7 +112,7 @@ class Localization
      *
      * @param MissingTranslationEvent $event
      */
-    public static function findMissingTranslation(MissingTranslationEvent $event)
+    public static function findMissingTranslation(MissingTranslationEvent $event): void
     {
         // Look for translation file from most to least specific.  So nl_nl.php gets checked before nl.php, for example.
         $translationFiles = [];
@@ -132,7 +132,7 @@ class Localization
 
             // We've loaded the translation file already, just check for the translation.
             if (isset(self::$_translations[$translationFile])) {
-                /* @noinspection PhpUnusedLocalVariableInspection */
+                /** @noinspection PhpUnusedLocalVariableInspection */
                 $loadedAlready = true;
 
                 if (isset(self::$_translations[$translationFile][$event->message])) {

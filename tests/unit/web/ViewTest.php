@@ -466,6 +466,8 @@ TWIG;
             ["{% verbatim %}\n{foo}\n{% endverbatim %}", "{% verbatim %}\n{foo}\n{% endverbatim %}"],
             ["{%- verbatim -%}\n{foo}\n{%- endverbatim -%}", "{%- verbatim -%}\n{foo}\n{%- endverbatim -%}"],
             ['{{ clone(productCategory).level(1).one().slug|raw }}', '{clone(productCategory).level(1).one().slug}'],
+            ['{{ #{foo} }}', '{{ #{foo} }}'],
+            ['{% set string = "test #{foo} 5" %}{{string}}', '{% set string = "test #{foo} 5" %}{{string}}'],
         ];
     }
 

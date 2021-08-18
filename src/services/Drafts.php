@@ -8,6 +8,7 @@
 namespace craft\services;
 
 use Craft;
+use craft\base\Element;
 use craft\base\ElementInterface;
 use craft\behaviors\DraftBehavior;
 use craft\db\Connection;
@@ -43,42 +44,16 @@ class Drafts extends Component
     const EVENT_AFTER_CREATE_DRAFT = 'afterCreateDraft';
 
     /**
-     * @event DraftEvent The event that is triggered before source changes are merged into a draft.
-     * @since 3.4.0
-     * @deprecated in 3.7.0. Use [[Elements::EVENT_BEFORE_MERGE_CANONICAL_CHANGES]] instead.
-     */
-    const EVENT_BEFORE_MERGE_SOURCE_CHANGES = 'beforeMergeSource';
-
-    /**
-     * @event DraftEvent The event that is triggered after source changes are merged into a draft.
-     * @since 3.4.0
-     * @deprecated in 3.7.0. Use [[Elements::EVENT_AFTER_MERGE_CANONICAL_CHANGES]] instead.
-     */
-    const EVENT_AFTER_MERGE_SOURCE_CHANGES = 'afterMergeSource';
-
-    /**
      * @event DraftEvent The event that is triggered before a draft is published.
      * @since 3.6.0
      */
-    const EVENT_BEFORE_PUBLISH_DRAFT = 'beforePublishDraft';
+    const EVENT_BEFORE_APPLY_DRAFT = 'beforeApplyDraft';
 
     /**
-     * @event DraftEvent The event that is triggered after a draft is published.
-     * @since 3.6.0
+     * @event DraftEvent The event that is triggered after a draft is applied to its canonical element.
+     * @see applyDraft()
      */
-    const EVENT_AFTER_PUBLISH_DRAFT = 'afterPublishDraft';
-
-    /**
-     * @event DraftEvent The event that is triggered before a draft is published.
-     * @deprecated in 3.6.0. Use [[EVENT_BEFORE_PUBLISH_DRAFT]] instead.
-     */
-    const EVENT_BEFORE_APPLY_DRAFT = self::EVENT_BEFORE_PUBLISH_DRAFT;
-
-    /**
-     * @event DraftEvent The event that is triggered after a draft is published.
-     * @deprecated in 3.6.0. Use [[EVENT_AFTER_PUBLISH_DRAFT]] instead.
-     */
-    const EVENT_AFTER_APPLY_DRAFT = self::EVENT_AFTER_PUBLISH_DRAFT;
+    const EVENT_AFTER_APPLY_DRAFT = 'afterApplyDraft';
 
     /**
      * @var Connection|array|string The database connection to use
@@ -89,7 +64,7 @@ class Drafts extends Component
     /**
      * @inheritdoc
      */
-    public function init()
+    public function init(): void
     {
         parent::init();
         $this->db = Instance::ensure($this->db, Connection::class);
@@ -102,7 +77,7 @@ class Drafts extends Component
      * @param string|null $permission
      * @return ElementInterface[]
      */
-    public function getEditableDrafts(ElementInterface $element, string $permission = null): array
+    public function getEditableDrafts(ElementInterface $element, ?string $permission = null): array
     {
         $user = Craft::$app->getUser()->getIdentity();
         if (!$user) {
@@ -112,7 +87,7 @@ class Drafts extends Component
         $query = $element::find()
             ->draftOf($element)
             ->siteId($element->siteId)
-            ->anyStatus()
+            ->status(null)
             ->orderBy(['dateUpdated' => SORT_DESC]);
 
         if (!$permission || !$user->can($permission)) {
@@ -125,7 +100,7 @@ class Drafts extends Component
     /**
      * Creates a new draft for the given element.
      *
-     * @param ElementInterface $source The element to create a draft for
+     * @param ElementInterface $canonical The element to create a draft for
      * @param int $creatorId The user ID that the draft should be attributed to
      * @param string|null $name The draft name
      * @param string|null $notes The draft notes
@@ -135,21 +110,22 @@ class Drafts extends Component
      * @throws \Throwable
      */
     public function createDraft(
-        ElementInterface $source,
-        int $creatorId,
-        string $name = null,
-        string $notes = null,
-        array $newAttributes = [],
-        bool $provisional = false
-    ): ElementInterface {
-        // Make sure the source isn't a draft or revision
-        if ($source->getIsDraft() || $source->getIsRevision()) {
+        ElementInterface $canonical,
+        int              $creatorId,
+        ?string          $name = null,
+        ?string          $notes = null,
+        array            $newAttributes = [],
+        bool             $provisional = false
+    ): ElementInterface
+    {
+        // Make sure the canonical element isn't a draft or revision
+        if ($canonical->getIsDraft() || $canonical->getIsRevision()) {
             throw new InvalidArgumentException('Cannot create a draft from another draft or revision.');
         }
 
         // Fire a 'beforeCreateDraft' event
         $event = new DraftEvent([
-            'source' => $source,
+            'canonical' => $canonical,
             'creatorId' => $creatorId,
             'provisional' => $provisional,
             'draftName' => $name,
@@ -160,27 +136,27 @@ class Drafts extends Component
         $notes = $event->draftNotes;
 
         if ($name === null || $name === '') {
-            $name = $this->generateDraftName($source->id);
+            $name = $this->generateDraftName($canonical->id);
         }
 
         $transaction = $this->db->beginTransaction();
         try {
             // Create the draft row
-            $draftId = $this->insertDraftRow($name, $notes, $creatorId, $source->id, $source::trackChanges(), $provisional);
+            $draftId = $this->insertDraftRow($name, $notes, $creatorId, $canonical->id, $canonical::trackChanges(), $provisional);
 
             // Duplicate the element
             $newAttributes['isProvisionalDraft'] = $provisional;
-            $newAttributes['canonicalId'] = $source->id;
+            $newAttributes['canonicalId'] = $canonical->id;
             $newAttributes['draftId'] = $draftId;
             $newAttributes['behaviors']['draft'] = [
                 'class' => DraftBehavior::class,
                 'creatorId' => $creatorId,
                 'draftName' => $name,
                 'draftNotes' => $notes,
-                'trackChanges' => $source::trackChanges(),
+                'trackChanges' => $canonical::trackChanges(),
             ];
 
-            $draft = Craft::$app->getElements()->duplicateElement($source, $newAttributes);
+            $draft = Craft::$app->getElements()->duplicateElement($canonical, $newAttributes);
 
             $transaction->commit();
         } catch (\Throwable $e) {
@@ -191,7 +167,7 @@ class Drafts extends Component
         // Fire an 'afterCreateDraft' event
         if ($this->hasEventHandlers(self::EVENT_AFTER_CREATE_DRAFT)) {
             $this->trigger(self::EVENT_AFTER_CREATE_DRAFT, new DraftEvent([
-                'source' => $source,
+                'canonical' => $canonical,
                 'creatorId' => $creatorId,
                 'provisional' => $provisional,
                 'draftName' => $name,
@@ -204,19 +180,19 @@ class Drafts extends Component
     }
 
     /**
-     * Returns the next auto-generated draft name that should be assigned, for the given source element.
+     * Returns the next auto-generated draft name that should be assigned, for the given canonical element.
      *
-     * @param int $sourceId The source element’s ID
+     * @param int $canonicalId The canonical element’s ID
      * @return string
      * @since 3.6.5
      */
-    public function generateDraftName(int $sourceId): string
+    public function generateDraftName(int $canonicalId): string
     {
-        // Get all of the source's current draft names
+        // Get all of the canonical element’s current draft names
         $draftNames = (new Query())
             ->select(['name'])
             ->from([Table::DRAFTS])
-            ->where(['sourceId' => $sourceId])
+            ->where(['canonicalId' => $canonicalId])
             ->column();
         $draftNames = array_flip($draftNames);
 
@@ -262,36 +238,23 @@ class Drafts extends Component
     }
 
     /**
-     * Merges recent source element changes into a draft.
+     * Applies a draft to its canonical element, and deletes the draft.
+     *
+     * If an unpublished draft is passed, its draft data will simply be removed from it.
      *
      * @param ElementInterface $draft The draft
-     * @since 3.4.0
-     * @deprecated in 3.7.0. Use [[Elements::mergeCanonicalChanges()]] instead.
-     */
-    public function mergeSourceChanges(ElementInterface $draft)
-    {
-        try {
-            Craft::$app->getElements()->mergeCanonicalChanges($draft);
-        } catch (InvalidArgumentException $e) {
-        }
-    }
-
-    /**
-     * Publishes a draft.
-     *
-     * @param ElementInterface $draft The draft
-     * @return ElementInterface The updated source element
+     * @return ElementInterface The canonical element with the draft applied to it
      * @throws \Throwable
      * @since 3.6.0
      */
-    public function publishDraft(ElementInterface $draft): ElementInterface
+    public function applyDraft(ElementInterface $draft): ElementInterface
     {
-        /* @var ElementInterface|DraftBehavior $draft */
-        /* @var DraftBehavior $behavior */
+        /** @var ElementInterface|DraftBehavior $draft */
+        /** @var DraftBehavior $behavior */
         $behavior = $draft->getBehavior('draft');
         $canonical = $draft->getCanonical(true);
 
-        // If the source ended up being from a different site than the draft, get the draft in that site
+        // If the canonical element ended up being from a different site than the draft, get the draft in that site
         if ($canonical->siteId != $draft->siteId) {
             $draft = $draft::find()
                 ->drafts()
@@ -299,17 +262,17 @@ class Drafts extends Component
                 ->id($draft->id)
                 ->siteId($canonical->siteId)
                 ->structureId($canonical->structureId)
-                ->anyStatus()
+                ->status(null)
                 ->one();
             if ($draft === null) {
                 throw new Exception("Could not load the draft for site ID $canonical->siteId");
             }
         }
 
-        // Fire a 'beforePublishDraft' event
-        if ($this->hasEventHandlers(self::EVENT_BEFORE_PUBLISH_DRAFT)) {
-            $this->trigger(self::EVENT_BEFORE_PUBLISH_DRAFT, new DraftEvent([
-                'source' => $canonical,
+        // Fire a 'beforeApplyDraft' event
+        if ($this->hasEventHandlers(self::EVENT_BEFORE_APPLY_DRAFT)) {
+            $this->trigger(self::EVENT_BEFORE_APPLY_DRAFT, new DraftEvent([
+                'canonical' => $canonical,
                 'creatorId' => $behavior->creatorId,
                 'draftName' => $behavior->draftName,
                 'draftNotes' => $behavior->draftNotes,
@@ -323,45 +286,48 @@ class Drafts extends Component
         $transaction = $this->db->beginTransaction();
         try {
             if ($canonical !== $draft) {
-                // Merge in any attribute & field values that were updated in the source element, but not the draft
+                // Merge in any attribute & field values that were updated in the canonical element, but not the draft
                 $elementsService->mergeCanonicalChanges($draft);
 
-                // "Duplicate" the draft with the source element's ID, UID, and content ID
-                $newSource = $elementsService->updateCanonicalElement($draft, [
+                // "Duplicate" the draft with the canonical element's ID, UID, and content ID
+                $newCanonical = $elementsService->updateCanonicalElement($draft, [
                     'revisionNotes' => $draftNotes ?: Craft::t('app', 'Applied “{name}”', ['name' => $draft->draftName]),
                 ]);
 
-                // Move the new source element after the draft?
+                // Move the new canonical element after the draft?
                 if ($draft->structureId && $draft->root) {
-                    Craft::$app->getStructures()->moveAfter($draft->structureId, $newSource, $draft);
+                    Craft::$app->getStructures()->moveAfter($draft->structureId, $newCanonical, $draft);
                 }
-            } else {
-                // Detach the draft behavior
-                $behavior = $draft->detachBehavior('draft');
 
-                // Duplicate the draft as a new element
-                $e = null;
+                // Now delete the draft
+                $elementsService->deleteElement($draft, true);
+            } else {
+                // Just remove the draft data
+                $draftId = $draft->draftId;
+                $draft->draftId = null;
+                $draft->detachBehavior('draft');
+                $draft->setRevisionNotes($draftNotes);
+                $draft->firstSave = true;
+
+                // We still need to validate so the SlugValidator gets run
+                $draft->setScenario(Element::SCENARIO_ESSENTIALS);
+
                 try {
-                    $newSource = $elementsService->duplicateElement($draft, [
-                        'draftId' => null,
-                        'revisionNotes' => $draftNotes,
+                    $elementsService->saveElement($draft);
+                    Db::delete(Table::DRAFTS, [
+                        'id' => $draftId,
                     ]);
                 } catch (\Throwable $e) {
-                    // Don't throw it just yet, until we reattach the draft behavior
-                }
-
-                // Now reattach the draft behavior to the draft
-                if ($behavior !== null) {
+                    // Put everything back
+                    $draft->draftId = $draftId;
                     $draft->attachBehavior('draft', $behavior);
-                }
-
-                if ($e !== null) {
+                    $draft->firstSave = false;
                     throw $e;
                 }
-            }
 
-            // Now delete the draft
-            $elementsService->deleteElement($draft, true);
+                $draft->firstSave = false;
+                $newCanonical = $draft;
+            }
 
             $transaction->commit();
         } catch (\Throwable $e) {
@@ -375,10 +341,10 @@ class Drafts extends Component
             throw $e;
         }
 
-        // Fire an 'afterPublishDraft' event
-        if ($this->hasEventHandlers(self::EVENT_AFTER_PUBLISH_DRAFT)) {
-            $this->trigger(self::EVENT_AFTER_PUBLISH_DRAFT, new DraftEvent([
-                'source' => $newSource,
+        // Fire an 'afterApplyDraft' event
+        if ($this->hasEventHandlers(self::EVENT_AFTER_APPLY_DRAFT)) {
+            $this->trigger(self::EVENT_AFTER_APPLY_DRAFT, new DraftEvent([
+                'canonical' => $newCanonical,
                 'creatorId' => $behavior->creatorId,
                 'draftName' => $behavior->draftName,
                 'draftNotes' => $behavior->draftNotes,
@@ -386,26 +352,11 @@ class Drafts extends Component
             ]));
         }
 
-        return $newSource;
+        return $newCanonical;
     }
 
     /**
-     * Publishes a draft.
-     *
-     * @param ElementInterface $draft The draft
-     * @return ElementInterface The updated source element
-     * @throws \Throwable
-     * @deprecated in 3.6.0. Use [[publishDraft()]] instead.
-     */
-    public function applyDraft(ElementInterface $draft): ElementInterface
-    {
-        return $this->publishDraft($draft);
-    }
-
-    /**
-     * Deletes any sourceless drafts that were never formally saved.
-     *
-     * @return void
+     * Deletes any unpublished drafts that were never formally saved.
      */
     public function purgeUnsavedDrafts(): void
     {
@@ -424,18 +375,18 @@ class Drafts extends Component
             ->from(['e' => Table::ELEMENTS])
             ->innerJoin(['d' => Table::DRAFTS], '[[d.id]] = [[e.draftId]]')
             ->where(['d.saved' => false])
-            ->andWhere(['d.sourceId' => null])
+            ->andWhere(['d.canonicalId' => null])
             ->andWhere(['<', 'e.dateUpdated', Db::prepareDateForDb($pastTime)])
             ->all();
 
         $elementsService = Craft::$app->getElements();
 
         foreach ($drafts as $draftInfo) {
-            /* @var ElementInterface|string $elementType */
+            /** @var ElementInterface|string $elementType */
             $elementType = $draftInfo['type'];
             $draft = $elementType::find()
                 ->draftId($draftInfo['draftId'])
-                ->anyStatus()
+                ->status(null)
                 ->siteId('*')
                 ->one();
 
@@ -460,7 +411,7 @@ class Drafts extends Component
      * @param string|null $name
      * @param string|null $notes
      * @param int|null $creatorId
-     * @param int|null $sourceId
+     * @param int|null $canonicalId
      * @param bool $trackChanges
      * @param bool $provisional
      * @return int The new draft ID
@@ -470,13 +421,14 @@ class Drafts extends Component
     public function insertDraftRow(
         ?string $name,
         ?string $notes = null,
-        int $creatorId = null,
-        ?int $sourceId = null,
-        bool $trackChanges = false,
-        bool $provisional = false
-    ): int {
+        ?int    $creatorId = null,
+        ?int    $canonicalId = null,
+        bool    $trackChanges = false,
+        bool    $provisional = false
+    ): int
+    {
         Db::insert(Table::DRAFTS, [
-            'sourceId' => $sourceId, // todo: remove this in v4
+            'canonicalId' => $canonicalId,
             'creatorId' => $creatorId,
             'provisional' => $provisional,
             'name' => $name,

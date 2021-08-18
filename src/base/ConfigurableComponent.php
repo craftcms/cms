@@ -72,7 +72,7 @@ abstract class ConfigurableComponent extends Component implements ConfigurableCo
     /**
      * @inheritdoc
      */
-    public function getSettingsHtml()
+    public function getSettingsHtml(): ?string
     {
         return null;
     }

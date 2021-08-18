@@ -31,6 +31,7 @@ use GraphQL\Language\AST\FragmentSpreadNode;
 use GraphQL\Language\AST\InlineFragmentNode;
 use GraphQL\Language\AST\ListValueNode;
 use GraphQL\Language\AST\Node;
+use GraphQL\Language\AST\NodeList;
 use GraphQL\Language\AST\ObjectFieldNode;
 use GraphQL\Language\AST\ObjectValueNode;
 use GraphQL\Language\AST\VariableNode;
@@ -81,12 +82,12 @@ class ElementQueryConditionBuilder extends Component
     /**
      * @var ArgumentManager
      */
-    private $_argumentManager;
+    private ArgumentManager $_argumentManager;
 
-    private $_fragments;
-    private $_eagerLoadableFieldsByContext = [];
-    private $_transformableAssetProperties = ['url', 'width', 'height'];
-    private $_additionalEagerLoadableNodes = null;
+    private array $_fragments;
+    private array $_eagerLoadableFieldsByContext = [];
+    private array $_transformableAssetProperties = ['url', 'width', 'height'];
+    private array $_additionalEagerLoadableNodes;
 
 
     /**
@@ -118,7 +119,7 @@ class ElementQueryConditionBuilder extends Component
      *
      * @param ResolveInfo $resolveInfo
      */
-    public function setResolveInfo(ResolveInfo $resolveInfo)
+    public function setResolveInfo(ResolveInfo $resolveInfo): void
     {
         $this->_resolveInfo = $resolveInfo;
         $this->_fragments = $this->_resolveInfo->fragments;
@@ -130,7 +131,7 @@ class ElementQueryConditionBuilder extends Component
      * @param ArgumentManager $argumentManager
      * @since 3.6.0
      */
-    public function setArgumentManager(ArgumentManager $argumentManager)
+    public function setArgumentManager(ArgumentManager $argumentManager): void
     {
         $this->_argumentManager = $argumentManager;
     }
@@ -139,10 +140,10 @@ class ElementQueryConditionBuilder extends Component
      * Extract the query conditions based on the resolve information passed in the constructor.
      * Returns an array of [methodName => parameters] to be called on the element query.
      *
-     * @param FieldInterface $startingParentField the starting parent field for the extraction, if any
+     * @param FieldInterface|null $startingParentField the starting parent field for the extraction, if any
      * @return array
      */
-    public function extractQueryConditions(FieldInterface $startingParentField = null)
+    public function extractQueryConditions(?FieldInterface $startingParentField = null): array
     {
         $startingNode = $this->_resolveInfo->fieldNodes[0];
 
@@ -167,10 +168,10 @@ class ElementQueryConditionBuilder extends Component
     /**
      * Extract arguments from an array of argument nodes, substituting variables wit the real values.
      *
-     * @param ArgumentNode[] $argumentNodes
+     * @param NodeList|ArgumentNode[] $argumentNodes
      * @return array
      */
-    private function _extractArguments($argumentNodes)
+    private function _extractArguments($argumentNodes): array
     {
         $arguments = [];
 
@@ -185,19 +186,17 @@ class ElementQueryConditionBuilder extends Component
      * Extract the value from an argument node, even if it's an array or a GraphQL variable.
      *
      * @param Node $argumentNode
+     * @return mixed
      */
     private function _extractArgumentValue(Node $argumentNode)
     {
-
         // Deal with a raw object value.
         if ($argumentNode->kind === 'ObjectValue') {
             /** @var ObjectValueNode $argumentNode */
             $extractedValue = [];
-
             foreach ($argumentNode->fields as $fieldNode) {
                 $extractedValue[$fieldNode->name->value] = $this->_extractArgumentValue($fieldNode);
             }
-
             return $extractedValue;
         }
 
@@ -207,29 +206,26 @@ class ElementQueryConditionBuilder extends Component
 
             switch ($argumentNodeValue->kind) {
                 case 'Variable':
-                    $extractedValue = $this->_resolveInfo->variableValues[$argumentNodeValue->name->value];
-                    break;
+                    return $this->_resolveInfo->variableValues[$argumentNodeValue->name->value];
                 case 'ListValue':
                     $extractedValue = [];
-
                     foreach ($argumentNodeValue->values as $value) {
                         $extractedValue[] = $this->_extractArgumentValue($value);
                     }
-                    break;
+                    return $extractedValue;
                 case 'ObjectValue':
+                    $extractedValue = [];
                     foreach ($argumentNodeValue->fields as $fieldNode) {
                         $extractedValue[$fieldNode->name->value] = $this->_extractArgumentValue($fieldNode);
                     }
-                    break;
+                    return $extractedValue;
                 default:
-                    $extractedValue = $argumentNodeValue->value;
+                    return $argumentNodeValue->value;
             }
-        } else {
-            $value = $argumentNode->value ?? null;
-            $extractedValue = $argumentNode->kind === 'IntValue' ? (int)$value : $value;
         }
 
-        return $extractedValue;
+        $value = $argumentNode->value ?? null;
+        return $argumentNode->kind === 'IntValue' ? (int)$value : $value;
     }
 
     /**
@@ -290,7 +286,7 @@ class ElementQueryConditionBuilder extends Component
      */
     private function _getKnownSpecialEagerLoadNodes(): array
     {
-        if ($this->_additionalEagerLoadableNodes === null) {
+        if (!isset($this->_additionalEagerLoadableNodes)) {
             $list = [
                 'photo' => [UserField::class, 'canBeAliased' => false],
                 'author' => [EntryField::class, 'canBeAliased' => false],
@@ -319,7 +315,7 @@ class ElementQueryConditionBuilder extends Component
             $this->_additionalEagerLoadableNodes = $list;
         }
 
-        return (array)$this->_additionalEagerLoadableNodes;
+        return $this->_additionalEagerLoadableNodes;
     }
 
     /**
@@ -328,7 +324,7 @@ class ElementQueryConditionBuilder extends Component
      * @param Node $node
      * @return array
      */
-    private function _extractTransformDirectiveArguments(Node $node)
+    private function _extractTransformDirectiveArguments(Node $node): array
     {
         $arguments = [];
         $directives = $node->directives ?? [];
@@ -348,7 +344,7 @@ class ElementQueryConditionBuilder extends Component
      * @param $arguments
      * @return array
      */
-    private function _prepareTransformArguments($arguments)
+    private function _prepareTransformArguments($arguments): array
     {
         if (empty($arguments)) {
             return [];
@@ -364,7 +360,7 @@ class ElementQueryConditionBuilder extends Component
      *
      * @return bool
      */
-    private function _isInsideAssetQuery()
+    private function _isInsideAssetQuery(): bool
     {
         if ($this->_resolveInfo->returnType instanceof WrappingType) {
             return $this->_resolveInfo->returnType->getWrappedType()->name === AssetInterface::getName();
@@ -387,7 +383,7 @@ class ElementQueryConditionBuilder extends Component
      * @param string $context the context in which to search fields
      * @return array
      */
-    private function _traversAndBuildPlans(Node $parentNode, EagerLoadPlan $parentPlan, FieldInterface $parentField = null, Node $wrappingFragment = null, $context = 'global'): array
+    private function _traversAndBuildPlans(Node $parentNode, EagerLoadPlan $parentPlan, ?FieldInterface $parentField = null, ?Node $wrappingFragment = null, string $context = 'global'): array
     {
         $subNodes = $parentNode->selectionSet->selections ?? [];
         $plans = [];
@@ -430,7 +426,6 @@ class ElementQueryConditionBuilder extends Component
 
                     $transformEagerLoadArguments = [];
 
-
                     // If it's a place where we can have transforms defined, grab the possible values from directive as well
                     if ($isAssetField) {
                         $transformEagerLoadArguments = $this->_extractTransformDirectiveArguments($subNode);
@@ -456,11 +451,11 @@ class ElementQueryConditionBuilder extends Component
 
                     // If this a custom Craft content field
                     if ($craftContentField) {
-                        /* @var EagerLoadingFieldInterface $craftContentField */
+                        /** @var EagerLoadingFieldInterface $craftContentField */
                         $additionalArguments = $craftContentField->getEagerLoadingGqlConditions();
 
                         // Load additional requirements enforced by schema, enforcing permissions to see content
-                        if ($additionalArguments === false) {
+                        if ($additionalArguments === null) {
                             // If `false` was returned, make sure nothing is returned by setting a constraint that always fails.
                             $arguments = ['id' => ['and', 1, 2]];
                         } else {
@@ -512,9 +507,8 @@ class ElementQueryConditionBuilder extends Component
 
                     // Add this to the eager loading list.
                     if (!$transformableAssetProperty) {
-                        /* @var InlineFragmentNode|FragmentDefinitionNode $wrappingFragment */
+                        /** @var InlineFragmentNode|FragmentDefinitionNode $wrappingFragment */
                         if ($wrappingFragment) {
-                            // TODO: In Craft 4, get rid of all closures
                             $plan->when = function(Element $element) use ($wrappingFragment) {
                                 return $element->getGqlTypeName() === $wrappingFragment->typeCondition->name->value;
                             };
@@ -622,7 +616,7 @@ class ElementQueryConditionBuilder extends Component
      * @param null $parentField
      * @return bool
      */
-    public function canNodeBeAliased(string $nodeName, $parentField = null)
+    public function canNodeBeAliased(string $nodeName, $parentField = null): bool
     {
         return !$this->_isAdditionalEagerLoadableNode($nodeName, $parentField) || $this->_canSpecialFieldBeAliased($nodeName);
     }

@@ -7,8 +7,11 @@
 
 namespace craft\base;
 
+use ArrayIterator;
+use Countable;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Json;
+use IteratorAggregate;
 
 /**
  * MemoizableArray represents an array of values that need to be run through [[ArrayHelper::where()]] or [[ArrayHelper::firstWhere()]] repeatedly,
@@ -25,23 +28,38 @@ use craft\helpers\Json;
  * }
  * ```
  *
+ * @template T
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.5.8
  */
-class MemoizableArray extends \ArrayObject
+class MemoizableArray implements IteratorAggregate, Countable
 {
-    private $_memoized = [];
+    /**
+     * @var array Array elements
+     */
+    private array $_elements;
+
+    /**
+     * @var array Memoized array elements
+     */
+    private array $_memoized = [];
+
+    /**
+     * Constructor
+     */
+    public function __construct(array $elements)
+    {
+        $this->_elements = $elements;
+    }
 
     /**
      * Returns all items.
      *
-     * @return array
+     * @return array<T>
      */
     public function all(): array
     {
-        // It's not clear from the PHP docs whether there is a difference between
-        // casting this as an array or calling getArrayCopy(). Casting feels safer though.
-        return (array)$this;
+        return $this->_elements;
     }
 
     /**
@@ -52,7 +70,7 @@ class MemoizableArray extends \ArrayObject
      * @param string $key the column name whose result will be used to index the array
      * @param mixed $value the value that `$key` should be compared with
      * @param bool $strict whether a strict type comparison should be used when checking array element values against `$value`
-     * @return self the filtered array
+     * @return self<T> the filtered array
      */
     public function where(string $key, $value = true, bool $strict = false): self
     {
@@ -74,7 +92,7 @@ class MemoizableArray extends \ArrayObject
      * @param string $key the column name whose result will be used to index the array
      * @param mixed[] $values the value that `$key` should be compared with
      * @param bool $strict whether a strict type comparison should be used when checking array element values against `$values`
-     * @return self the filtered array
+     * @return self<T> the filtered array
      */
     public function whereIn(string $key, array $values, bool $strict = false): self
     {
@@ -93,7 +111,7 @@ class MemoizableArray extends \ArrayObject
      * @param string $key the column name whose result will be used to index the array
      * @param mixed $value the value that `$key` should be compared with
      * @param bool $strict whether a strict type comparison should be used when checking array element values against `$value`
-     * @return mixed the first matching value, or `null` if no match is found
+     * @return T the first matching value, or `null` if no match is found
      */
     public function firstWhere(string $key, $value = true, bool $strict = false)
     {
@@ -125,92 +143,18 @@ class MemoizableArray extends \ArrayObject
     }
 
     /**
-     * @inheritdoc
+     * @return ArrayIterator
      */
-    public function append($value)
+    public function getIterator(): ArrayIterator
     {
-        parent::append($value);
-        $this->_memoized = [];
+        return new ArrayIterator($this->_elements);
     }
 
     /**
-     * @inheritdoc
+     * @return int
      */
-    public function asort(int $sort_flags = SORT_REGULAR)
+    public function count(): int
     {
-        parent::asort($sort_flags);
-        $this->_memoized = [];
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function exchangeArray($input)
-    {
-        parent::exchangeArray($input);
-        $this->_memoized = [];
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function ksort(int $sort_flags = SORT_REGULAR)
-    {
-        parent::ksort($sort_flags);
-        $this->_memoized = [];
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function natcasesort()
-    {
-        parent::natcasesort();
-        $this->_memoized = [];
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function natsort()
-    {
-        parent::natsort();
-        $this->_memoized = [];
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function offsetSet($index, $newval)
-    {
-        parent::offsetSet($index, $newval);
-        $this->_memoized = [];
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function offsetUnset($index)
-    {
-        parent::offsetUnset($index);
-        $this->_memoized = [];
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function uasort($cmp_function)
-    {
-        parent::uasort($cmp_function);
-        $this->_memoized = [];
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function uksort($cmp_function)
-    {
-        parent::uksort($cmp_function);
-        $this->_memoized = [];
+        return count($this->_elements);
     }
 }

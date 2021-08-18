@@ -48,7 +48,7 @@ class CallableAction extends Action
      * @return array the valid parameters that the action can run with.
      * @throws Exception if there are unknown options or missing arguments
      */
-    private function _bindActionParams($params): array
+    private function _bindActionParams(array $params): array
     {
         if (is_array($this->callable)) {
             $method = new \ReflectionMethod($this->callable[0], $this->callable[1]);

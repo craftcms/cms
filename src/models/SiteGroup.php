@@ -16,6 +16,7 @@ use craft\validators\UniqueValidator;
 /**
  * SiteGroup model class.
  *
+ * @property string $name The site group’s name
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
@@ -24,22 +25,55 @@ class SiteGroup extends Model
     /**
      * @var int|null ID
      */
-    public $id;
-
-    /**
-     * @var string|null Name
-     */
-    public $name;
+    public ?int $id = null;
 
     /**
      * @var string|null UID
      */
-    public $uid;
+    public ?string $uid = null;
+
+    /**
+     * @var string|null Name
+     */
+    private ?string $_name = null;
+
+    /**
+     * Returns the site group’s name.
+     *
+     * @param bool $parse Whether to parse the name for an environment variable
+     * @return string
+     * @since 3.7.0
+     */
+    public function getName(bool $parse = true): string
+    {
+        return ($parse ? Craft::parseEnv($this->_name) : $this->_name) ?? '';
+    }
+
+    /**
+     * Sets the site’s name.
+     *
+     * @param string $name
+     * @since 3.7.0
+     */
+    public function setName(string $name): void
+    {
+        $this->_name = $name;
+    }
 
     /**
      * @inheritdoc
      */
-    public function attributeLabels()
+    public function attributes(): array
+    {
+        $attributes = parent::attributes();
+        $attributes[] = 'name';
+        return $attributes;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function attributeLabels(): array
     {
         return [
             'name' => Craft::t('app', 'Name'),
@@ -66,7 +100,7 @@ class SiteGroup extends Model
      */
     public function __toString(): string
     {
-        return (string)$this->name ?: static::class;
+        return $this->_name ? $this->getName() : static::class;
     }
 
     /**
@@ -98,7 +132,7 @@ class SiteGroup extends Model
     public function getConfig(): array
     {
         return [
-            'name' => $this->name,
+            'name' => $this->_name,
         ];
     }
 }

@@ -7,7 +7,7 @@
 
 namespace craft\web\assets\picturefill;
 
-use craft\web\AssetBundle;
+use yii\web\AssetBundle;
 
 /**
  * Picturefill asset bundle.
@@ -17,7 +17,7 @@ class PicturefillAsset extends AssetBundle
     /**
      * @inheritdoc
      */
-    public function init()
+    public function init(): void
     {
         $this->sourcePath = '@lib/picturefill';
 

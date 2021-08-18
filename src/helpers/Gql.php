@@ -88,7 +88,7 @@ class Gql
      * @return bool
      * @throws GqlException
      */
-    public static function canSchema(string $component, $action = 'read', ?GqlSchema $schema = null): bool
+    public static function canSchema(string $component, string $action = 'read', ?GqlSchema $schema = null): bool
     {
         try {
             $schema = static::_schema($schema);
@@ -353,7 +353,7 @@ class Gql
     {
         if (isset($resolveInfo->fieldNodes[0]->directives)) {
             foreach ($resolveInfo->fieldNodes[0]->directives as $directive) {
-                /* @var Directive $directiveEntity */
+                /** @var Directive $directiveEntity */
                 $directiveEntity = GqlEntityRegistry::getEntity($directive->name->value);
                 $arguments = [];
 
@@ -438,7 +438,7 @@ class Gql
     /**
      * @param ValueNode|VariableNode $value
      * @param array $variableValues
-     * @return array|array[]|mixed
+     * @return mixed
      */
     private static function _convertArgumentValue($value, array $variableValues = [])
     {
@@ -468,7 +468,7 @@ class Gql
         $fieldName = is_array($resolveInfo->path) ? array_slice($resolveInfo->path, -1)[0] : $resolveInfo->fieldName;
         $isAlias = $fieldName !== $resolveInfo->fieldName;
 
-        /* @var ElementQueryConditionBuilder $conditionBuilder */
+        /** @var ElementQueryConditionBuilder $conditionBuilder */
         $conditionBuilder = $context['conditionBuilder'] ?? null;
 
         if ($isAlias) {

@@ -20,7 +20,7 @@ use yii\web\ForbiddenHttpException;
 use yii\web\Response;
 use yii\web\ServerErrorHttpException;
 
-/* @noinspection ClassOverridesFieldOfSuperClassInspection */
+/** @noinspection ClassOverridesFieldOfSuperClassInspection */
 
 /**
  * The QueueController class is a controller that handles various queue-related operations.
@@ -39,7 +39,7 @@ class QueueController extends Controller
      * @inheritdoc
      * @throws ServerErrorHttpException if the `queue` component doesn’t implement [[QueueInterface]]
      */
-    public function beforeAction($action)
+    public function beforeAction($action): bool
     {
         if (!parent::beforeAction($action)) {
             return false;

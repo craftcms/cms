@@ -889,6 +889,14 @@ class ExtensionTest extends Unit
     /**
      *
      */
+    public function testWidontFilter()
+    {
+        $this->testRenderResult('foo bar&nbsp;baz', '{{ "foo bar baz"|widont }}');
+    }
+
+    /**
+     *
+     */
     public function testCloneFunction()
     {
         $this->testRenderResult(
@@ -937,17 +945,6 @@ class ExtensionTest extends Unit
         $this->testRenderResult(
             'invalid',
             '{{ plugin("no-a-real-plugin") is same as(null) ? "invalid" }}'
-        );
-    }
-
-    /**
-     * @deprecated
-     */
-    public function testRoundFunction()
-    {
-        $this->testRenderResult(
-            '5',
-            '{{ round(4.8) }}'
         );
     }
 

@@ -7,17 +7,17 @@
 
 namespace craft\web\assets\vue;
 
-use craft\web\AssetBundle;
+use yii\web\AssetBundle;
 
 /**
  * Vue asset bundle.
  */
 class VueAsset extends AssetBundle
 {
-    /* @inheritdoc */
+    /** @inheritdoc */
     public $sourcePath = '@lib/vue';
 
-    /* @inheritdoc */
+    /** @inheritdoc */
     public $js = [
         'vue.js',
     ];

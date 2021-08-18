@@ -14,8 +14,8 @@ use craft\db\Migration;
 use craft\db\MigrationManager;
 use craft\feeds\Feeds;
 use craft\helpers\ArrayHelper;
+use craft\helpers\Db;
 use craft\helpers\FileHelper;
-use craft\helpers\MigrationHelper;
 use craft\i18n\Locale;
 use craft\mail\Mailer;
 use craft\migrations\Install;
@@ -50,7 +50,6 @@ use craft\services\Sections;
 use craft\services\Sites;
 use craft\services\Structures;
 use craft\services\SystemMessages;
-use craft\services\SystemSettings;
 use craft\services\Tags;
 use craft\services\TemplateCaches;
 use craft\services\Tokens;
@@ -127,7 +126,7 @@ class TestSetup
     /**
      * Taken from the Yii2 Module $i->_after
      */
-    public static function tearDownCraft()
+    public static function tearDownCraft(): void
     {
         $_SESSION = [];
         $_FILES = [];
@@ -156,7 +155,10 @@ class TestSetup
         $tables = $connection->schema->getTableNames();
 
         foreach ($tables as $table) {
-            MigrationHelper::dropTable($table);
+            Db::dropAllForeignKeysToTable($table, $connection);
+            $connection->createCommand()
+                ->dropTable($table)
+                ->execute();
         }
 
         $tables = $connection->schema->getTableNames();
@@ -251,8 +253,8 @@ class TestSetup
             $configService->getConfigFromFile("app.{$appType}")
         );
 
-        if (defined('CRAFT_SITE') || defined('CRAFT_LOCALE')) {
-            $config['components']['sites']['currentSite'] = defined('CRAFT_SITE') ? CRAFT_SITE : CRAFT_LOCALE;
+        if (defined('CRAFT_SITE')) {
+            $config['components']['sites']['currentSite'] = CRAFT_SITE;
         }
 
         $config['vendorPath'] = $vendorPath;
@@ -380,7 +382,7 @@ class TestSetup
      * @param string $projectConfigFolder - Whether to override the folder specified in codeception.yml with a custom folder.
      * @throws ErrorException
      */
-    public static function setupProjectConfig(string $projectConfigFolder = null)
+    public static function setupProjectConfig(?string $projectConfigFolder = null): void
     {
         if (!$projectConfigFolder) {
             $config = \craft\test\Craft::$instance->_getConfig('projectConfig');
@@ -401,10 +403,10 @@ class TestSetup
     }
 
     /**
-     * @param $path
+     * @param string $path
      * @throws ErrorException
      */
-    public static function removeProjectConfigFolders($path)
+    public static function removeProjectConfigFolders(string $path): void
     {
         // Clear any existing.
         if (is_dir($path)) {
@@ -417,7 +419,7 @@ class TestSetup
      *
      * @return array The project config in either yaml or as an array.
      */
-    public static function getSeedProjectConfigData()
+    public static function getSeedProjectConfigData(): array
     {
         if (!empty(self::$_parsedProjectConfig)) {
             return self::$_parsedProjectConfig;
@@ -448,7 +450,7 @@ class TestSetup
      * @param Connection $connection
      * @throws Exception
      */
-    public static function setupCraftDb(Connection $connection)
+    public static function setupCraftDb(Connection $connection): void
     {
         if ($connection->schema->getTableNames() !== []) {
             throw new Exception('Not allowed to setup the DB if it has not been cleansed');
@@ -502,7 +504,7 @@ class TestSetup
      * @return MockObject
      * @credit https://github.com/nerds-and-company/schematic/blob/master/tests/_support/Helper/Unit.php
      */
-    public static function getMockApp(CodeceptionTestCase $test, array $serviceMap = [], string $appClass = '')
+    public static function getMockApp(CodeceptionTestCase $test, array $serviceMap = [], string $appClass = ''): MockObject
     {
         $appClass = $appClass ?: self::appClass();
         $serviceMap = $serviceMap ?: self::getCraftServiceMap();
@@ -546,7 +548,7 @@ class TestSetup
      * @return MockObject
      * @credit https://github.com/nerds-and-company/schematic/blob/master/tests/_support/Helper/Unit.php
      */
-    public static function getMock(CodeceptionTestCase $test, string $class)
+    public static function getMock(CodeceptionTestCase $test, string $class): MockObject
     {
         return $test->getMockBuilder($class)
             ->disableOriginalConstructor()
@@ -576,8 +578,6 @@ class TestSetup
             [Elements::class, ['getElements', 'elements']],
             [SystemMessages::class, ['getSystemMessages', 'systemMessages']],
             [Entries::class, ['getEntries', 'entries']],
-            [EntryRevisions::class, ['getEntryRevisions', 'entryRevisions']],
-            [Feeds::class, ['getFeeds', 'feeds']],
             [Fields::class, ['getFields', 'fields']],
             [Globals::class, ['getGlobals', 'globals']],
             [Images::class, ['getImages', 'images']],
@@ -597,7 +597,6 @@ class TestSetup
             [Sections::class, ['getSections', 'sections']],
             [Sites::class, ['getSites', 'sites']],
             [Structures::class, ['getStructures', 'structures']],
-            [SystemSettings::class, ['getSystemSettings', 'systemSettings']],
             [SystemMessages::class, ['getSystemMessages', 'systemMessages']],
             [Tags::class, ['getTags', 'tags']],
             [TemplateCaches::class, ['getTemplateCaches', 'templateCaches']],

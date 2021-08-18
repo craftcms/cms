@@ -20,12 +20,12 @@ class DefineSourceTableAttributesEvent extends Event
     /**
      * @var string The element type class
      */
-    public $elementType;
+    public string $elementType;
 
     /**
      * @var string The element source key
      */
-    public $source;
+    public string $source;
 
     /**
      * @var array The available columns that can be shown.
@@ -41,5 +41,5 @@ class DefineSourceTableAttributesEvent extends Event
      * doesn’t have any effect on the table body, because the first column is reserved for displaying whatever
      * the elements’ [[\craft\base\ElementInterface::getUiLabel()|getUiLabel()]] methods return.
      */
-    public $attributes = [];
+    public array $attributes = [];
 }

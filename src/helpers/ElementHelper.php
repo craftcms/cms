@@ -80,18 +80,6 @@ class ElementHelper
     }
 
     /**
-     * Creates a slug based on a given string.
-     *
-     * @param string $str
-     * @return string
-     * @deprecated in 3.5.0. Use [[normalizeSlug()]] instead.
-     */
-    public static function createSlug(string $str): string
-    {
-        return static::normalizeSlug($str);
-    }
-
-    /**
      * Normalizes a slug.
      *
      * @param string $slug
@@ -130,7 +118,7 @@ class ElementHelper
      * @param ElementInterface $element
      * @throws OperationAbortedException if a unique URI could not be found
      */
-    public static function setUniqueUri(ElementInterface $element)
+    public static function setUniqueUri(ElementInterface $element): void
     {
         $uriFormat = $element->getUriFormat();
 
@@ -210,14 +198,19 @@ class ElementHelper
     {
         $variables = [];
 
-        // If the URI format contains {id} / {sourceId} but the element doesn't have one yet, preserve the tag
+        // If the URI format contains {id}/{canonicalId}/{sourceId} but the element doesn't have one yet, preserve the tag
         if (!$element->id) {
             $element->tempId = 'id-' . StringHelper::randomString(10);
             if (strpos($uriFormat, '{id') !== false) {
                 $variables['id'] = $element->tempId;
             }
-            if (!$element->getCanonicalId() && strpos($uriFormat, '{sourceId') !== false) {
-                $variables['sourceId'] = $element->tempId;
+            if (!$element->getCanonicalId()) {
+                if (strpos($uriFormat, '{canonicalId') !== false) {
+                    $variables['canonicalId'] = $element->tempId;
+                }
+                if (strpos($uriFormat, '{sourceId') !== false) {
+                    $variables['sourceId'] = $element->tempId;
+                }
             }
         }
 
@@ -291,7 +284,7 @@ class ElementHelper
      * @return array
      * @throws Exception if any of the element's supported sites are invalid
      */
-    public static function supportedSitesForElement(ElementInterface $element, $withUnpropagatedSites = false): array
+    public static function supportedSitesForElement(ElementInterface $element, bool $withUnpropagatedSites = false): array
     {
         $sites = [];
         $siteUidMap = ArrayHelper::map(Craft::$app->getSites()->getAllSites(), 'id', 'uid');
@@ -318,6 +311,24 @@ class ElementHelper
         }
 
         return $sites;
+    }
+
+    /**
+     * Returns whether changes should be tracked for the given element.
+     *
+     * @param ElementInterface $element
+     * @return bool
+     * @since 3.7.4
+     */
+    public static function shouldTrackChanges(ElementInterface $element): bool
+    {
+        return (
+            $element->id &&
+            $element->siteSettingsId &&
+            $element->duplicateOf === null &&
+            $element::trackChanges() &&
+            !$element->mergingCanonicalChanges
+        );
     }
 
     /**
@@ -440,9 +451,9 @@ class ElementHelper
      *
      * @param ElementInterface[] $elements The array of elements.
      */
-    public static function setNextPrevOnElements(array $elements)
+    public static function setNextPrevOnElements(array $elements): void
     {
-        /* @var ElementInterface $lastElement */
+        /** @var ElementInterface $lastElement */
         $lastElement = null;
 
         foreach ($elements as $i => $element) {
@@ -469,9 +480,9 @@ class ElementHelper
      * @param string|null $context The context
      * @return array|null The source definition, or null if it cannot be found
      */
-    public static function findSource(string $elementType, string $sourceKey, ?string $context = null)
+    public static function findSource(string $elementType, string $sourceKey, ?string $context = null): ?array
     {
-        /* @var string|ElementInterface $elementType */
+        /** @var string|ElementInterface $elementType */
         $path = explode('/', $sourceKey);
         $sources = $elementType::sources($context);
 
@@ -514,7 +525,7 @@ class ElementHelper
      * @return string|null
      * @since 3.5.0
      */
-    public static function translationDescription(string $translationMethod)
+    public static function translationDescription(string $translationMethod): ?string
     {
         switch ($translationMethod) {
             case Field::TRANSLATION_METHOD_SITE:

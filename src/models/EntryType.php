@@ -33,65 +33,65 @@ class EntryType extends Model
     /**
      * @var int|null ID
      */
-    public $id;
+    public ?int $id = null;
 
     /**
      * @var int|null Section ID
      */
-    public $sectionId;
+    public ?int $sectionId = null;
 
     /**
      * @var int|null Field layout ID
      */
-    public $fieldLayoutId;
+    public ?int $fieldLayoutId = null;
 
     /**
      * @var string|null Name
      */
-    public $name;
+    public ?string $name = null;
 
     /**
      * @var string|null Handle
      */
-    public $handle;
+    public ?string $handle = null;
 
     /**
      * @var int|null Sort order
      * @since 3.5.0
      */
-    public $sortOrder;
+    public ?int $sortOrder = null;
 
     /**
      * @var bool Has title field
      */
-    public $hasTitleField = true;
+    public bool $hasTitleField = true;
 
     /**
      * @var string Title translation method
      * @since 3.5.0
      */
-    public $titleTranslationMethod = Field::TRANSLATION_METHOD_SITE;
+    public string $titleTranslationMethod = Field::TRANSLATION_METHOD_SITE;
 
     /**
      * @var string|null Title translation key format
      * @since 3.5.0
      */
-    public $titleTranslationKeyFormat;
+    public ?string $titleTranslationKeyFormat = null;
 
     /**
      * @var string|null Title format
      */
-    public $titleFormat;
+    public ?string $titleFormat = null;
 
     /**
-     * @var string UID
+     * @var string|null UID
      */
-    public $uid;
+    public ?string $uid = null;
 
     /**
      * @inheritdoc
      */
-    public function behaviors()
+    public function behaviors(): array
     {
         $behaviors = parent::behaviors();
         $behaviors['fieldLayout'] = [
@@ -104,7 +104,7 @@ class EntryType extends Model
     /**
      * @inheritdoc
      */
-    public function attributeLabels()
+    public function attributeLabels(): array
     {
         return [
             'handle' => Craft::t('app', 'Handle'),
@@ -153,13 +153,12 @@ class EntryType extends Model
     /**
      * Validates the field layout.
      *
-     * @return void
      * @since 3.7.0
      */
     public function validateFieldLayout(): void
     {
         $fieldLayout = $this->getFieldLayout();
-        $fieldLayout->reservedAttributes = [
+        $fieldLayout->reservedFieldHandles = [
             'author',
             'section',
             'type',
@@ -198,7 +197,7 @@ class EntryType extends Model
      */
     public function getSection(): Section
     {
-        if ($this->sectionId === null) {
+        if (!isset($this->sectionId)) {
             throw new InvalidConfigException('Entry type is missing its section ID');
         }
 

@@ -33,13 +33,12 @@ class AssetIndexData extends ActiveRecord
     /**
      * @inheritdoc
      */
-    public function rules()
+    public function rules(): array
     {
         return [
             [['volumeId', 'recordId', 'size'], 'number', 'integerOnly' => true],
             [['timestamp'], DateTimeValidator::class],
             [['sessionId', 'volumeId'], 'required'],
-            [['sessionId'], 'string', 'length' => 36],
             [['uri'], 'string'],
             [['completed', 'inProgress'], 'boolean'],
         ];

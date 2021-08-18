@@ -8,6 +8,7 @@
 namespace craft\gql\resolvers\mutations;
 
 use Craft;
+use craft\behaviors\DraftBehavior;
 use craft\db\Table;
 use craft\elements\db\EntryQuery;
 use craft\elements\Entry as EntryElement;
@@ -29,8 +30,8 @@ class Entry extends ElementMutationResolver
 {
     use StructureMutationTrait;
 
-    /* @inheritdoc */
-    protected $immutableAttributes = ['id', 'uid', 'draftId'];
+    /** @inheritdoc */
+    protected array $immutableAttributes = ['id', 'uid', 'draftId'];
 
     /**
      * Save an entry or draft using the passed arguments.
@@ -39,21 +40,22 @@ class Entry extends ElementMutationResolver
      * @param array $arguments
      * @param $context
      * @param ResolveInfo $resolveInfo
-     * @return mixed
+     * @return EntryElement
      * @throws \Throwable if reasons.
      */
-    public function saveEntry($source, array $arguments, $context, ResolveInfo $resolveInfo)
+    public function saveEntry($source, array $arguments, $context, ResolveInfo $resolveInfo): EntryElement
     {
         $entry = $this->getEntryElement($arguments);
 
-        $entry = $this->populateElementWithData($entry, $arguments);
+        $entry = $this->populateElementWithData($entry, $arguments, $resolveInfo);
 
         $entry = $this->saveElement($entry);
         $this->performStructureOperations($entry, $arguments);
 
+        /** @noinspection PhpIncompatibleReturnTypeInspection */
         return Craft::$app->getElements()->createElementQuery(EntryElement::class)
             ->siteId($entry->siteId)
-            ->anyStatus()
+            ->status(null)
             ->id($entry->id)
             ->one();
     }
@@ -65,10 +67,9 @@ class Entry extends ElementMutationResolver
      * @param array $arguments
      * @param $context
      * @param ResolveInfo $resolveInfo
-     * @return mixed
      * @throws \Throwable if reasons.
      */
-    public function deleteEntry($source, array $arguments, $context, ResolveInfo $resolveInfo)
+    public function deleteEntry($source, array $arguments, $context, ResolveInfo $resolveInfo): void
     {
         $entryId = $arguments['id'];
         $siteId = $arguments['siteId'] ?? null;
@@ -77,15 +78,13 @@ class Entry extends ElementMutationResolver
         $entry = $elementService->getElementById($entryId, EntryElement::class, $siteId);
 
         if (!$entry) {
-            return true;
+            return;
         }
 
         $entryTypeUid = Db::uidById(Table::ENTRYTYPES, $entry->typeId);
         $this->requireSchemaAction('entrytypes.' . $entryTypeUid, 'delete');
 
         $elementService->deleteElementById($entryId);
-
-        return true;
     }
 
     /**
@@ -102,7 +101,7 @@ class Entry extends ElementMutationResolver
     {
         $entryId = $arguments['id'];
 
-        /* @var EntryElement $entry */
+        /** @var EntryElement $entry */
         $entry = Craft::$app->getElements()->getElementById($entryId, EntryElement::class);
 
         if (!$entry) {
@@ -112,7 +111,7 @@ class Entry extends ElementMutationResolver
         $entryTypeUid = Db::uidById(Table::ENTRYTYPES, $entry->typeId);
         $this->requireSchemaAction('entrytypes.' . $entryTypeUid, 'save');
 
-        /* @var Entry $draft */
+        /** @var Entry|DraftBehavior $draft */
         $draft = Craft::$app->getDrafts()->createDraft($entry, $entry->authorId);
 
         return $draft->draftId;
@@ -125,12 +124,12 @@ class Entry extends ElementMutationResolver
      * @param array $arguments
      * @param $context
      * @param ResolveInfo $resolveInfo
-     * @return mixed
+     * @return int
      * @throws \Throwable if reasons.
      */
-    public function publishDraft($source, array $arguments, $context, ResolveInfo $resolveInfo)
+    public function publishDraft($source, array $arguments, $context, ResolveInfo $resolveInfo): int
     {
-        $draft = Craft::$app->getElements()->createElementQuery(EntryElement::class)->anyStatus()->draftId($arguments['id'])->one();
+        $draft = Craft::$app->getElements()->createElementQuery(EntryElement::class)->status(null)->draftId($arguments['id'])->one();
 
         if (!$draft) {
             throw new Error('Unable to perform the action.');
@@ -139,8 +138,8 @@ class Entry extends ElementMutationResolver
         $entryTypeUid = Db::uidById(Table::ENTRYTYPES, $draft->typeId);
         $this->requireSchemaAction('entrytypes.' . $entryTypeUid, 'save');
 
-        /* @var Entry $draft */
-        $draft = Craft::$app->getDrafts()->publishDraft($draft);
+        /** @var EntryElement $draft */
+        $draft = Craft::$app->getDrafts()->applyDraft($draft);
 
         return $draft->id;
     }
@@ -154,8 +153,8 @@ class Entry extends ElementMutationResolver
      */
     protected function getEntryElement(array $arguments): EntryElement
     {
-        /* @var Section $section */
-        /* @var EntryType $entryType */
+        /** @var Section $section */
+        /** @var EntryType $entryType */
         $section = $this->getResolutionData('section');
         $entryType = $this->getResolutionData('entryType');
 
@@ -172,7 +171,8 @@ class Entry extends ElementMutationResolver
         if ($canIdentify) {
             // Prepare the element query
             $siteId = $arguments['siteId'] ?? Craft::$app->getSites()->getPrimarySite()->id;
-            $entryQuery = $elementService->createElementQuery(EntryElement::class)->anyStatus()->siteId($siteId);
+            /** @var EntryQuery $entryQuery */
+            $entryQuery = $elementService->createElementQuery(EntryElement::class)->status(null)->siteId($siteId);
             $entryQuery = $this->identifyEntry($entryQuery, $arguments);
 
             $entry = $entryQuery->one();
@@ -209,8 +209,8 @@ class Entry extends ElementMutationResolver
      */
     protected function identifyEntry(EntryQuery $entryQuery, array $arguments): EntryQuery
     {
-        /* @var Section $section */
-        /* @var EntryType $entryType */
+        /** @var Section $section */
+        /** @var EntryType $entryType */
         $section = $this->getResolutionData('section');
         $entryType = $this->getResolutionData('entryType');
 

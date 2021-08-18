@@ -25,14 +25,14 @@ class PreviewController extends Controller
     /**
      * @inheritdoc
      */
-    public $allowAnonymous = [
+    protected $allowAnonymous = [
         'preview' => self::ALLOW_ANONYMOUS_LIVE | self::ALLOW_ANONYMOUS_OFFLINE,
     ];
 
     /**
      * @inheritdoc
      */
-    public function beforeAction($action)
+    public function beforeAction($action): bool
     {
         // Don't require CSRF validation for POSTed preview requests
         if ($action->id === 'preview') {
@@ -67,8 +67,8 @@ class PreviewController extends Controller
             $this->requireAuthorization('previewElement:' . $sourceId);
         }
 
-        // Create a 24 hour token
-        $route = [
+        // Create the token
+        $token = Craft::$app->getTokens()->createPreviewToken([
             'preview/preview', [
                 'elementType' => $elementType,
                 'sourceId' => (int)$sourceId,
@@ -77,9 +77,7 @@ class PreviewController extends Controller
                 'revisionId' => (int)$revisionId ?: null,
                 'provisional' => $provisional,
             ],
-        ];
-
-        $token = Craft::$app->getTokens()->createToken($route);
+        ]);
 
         if (!$token) {
             throw new ServerErrorHttpException(Craft::t('app', 'Could not create a preview token.'));
@@ -103,19 +101,20 @@ class PreviewController extends Controller
      */
     public function actionPreview(
         string $elementType,
-        int $sourceId,
-        int $siteId,
-        ?int $draftId = null,
-        ?int $revisionId = null,
-        bool $provisional = false
-    ): Response {
+        int    $sourceId,
+        int    $siteId,
+        ?int   $draftId = null,
+        ?int   $revisionId = null,
+        bool   $provisional = false
+    ): Response
+    {
         // Make sure a token was used to get here
         $this->requireToken();
 
-        /* @var ElementInterface $elementType */
+        /** @var ElementInterface $elementType */
         $query = $elementType::find()
             ->siteId($siteId)
-            ->anyStatus();
+            ->status(null);
 
         if ($draftId) {
             $query

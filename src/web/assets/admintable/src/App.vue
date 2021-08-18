@@ -60,7 +60,7 @@
                             :api-url="apiUrl"
                             :css="tableCss"
                             :data="tableData"
-                            :detail-row-component="detailRow"
+                            :detail-row-component="detailRowComponent"
                             :fields="fields"
                             :per-page="perPage"
                             pagination-path="pagination"
@@ -103,7 +103,7 @@
                             </template>
                         </template>
                         <template slot="detail" slot-scope="props">
-                            <div class="detail-cursor-pointer" @click="handleDetailRow(props.rowData.id)" v-if="props.rowData.detail.content && props.rowData.detail.handle" v-html="props.rowData.detail.handle">asd</div>
+                            <div class="detail-cursor-pointer" @click="handleDetailRow(props.rowData.id)" v-if="props.rowData.detail.content && props.rowData.detail.handle" v-html="props.rowData.detail.handle"></div>
                             <div class="detail-cursor-pointer" @click="handleDetailRow(props.rowData.id)" v-if="props.rowData.detail.content && (!props.rowData.detail.handle || props.rowData.detail.handle == undefined) && (Object.keys(props.rowData.detail.content).length || props.rowData.detail.content.length)" data-icon="info" :title="props.rowData.detail.title"></div>
                         </template>
                         <template slot="reorder" slot-scope="props">
@@ -445,7 +445,7 @@
               }
 
               if (this.deleteCallback && {}.toString.call(this.deleteCallback) === '[object Function]') {
-                  this.deleteCallback();
+                  this.deleteCallback(id);
               }
 
               this.isLoading = false;
@@ -517,6 +517,20 @@
 
             canReorder() {
                 return (this.$refs.vuetable.tableData.length > 1 && this.reorderAction && this.$el.querySelector(this.tableBodySelector) && (!this.$refs.vuetable.tablePagination))
+            },
+
+            detailRowComponent() {
+                if (!this.tableData || this.tableData.length == 0) {
+                    return '';
+                }
+
+                if (!this.tableData.some(r => {
+                    return Object.keys(r).indexOf('detail') >= 0;
+                })) {
+                    return '';
+                }
+
+                return this.detailRow;
             },
 
             disabledCheckboxesCount() {
@@ -674,6 +688,10 @@
 
     .vue-admin-table-buttons {
         margin-left: auto;
+    }
+
+    .vue-admin-table-buttons .flex:not(.flex-nowrap) > * {
+        margin-bottom: 0;
     }
 
     .detail-cursor-pointer {

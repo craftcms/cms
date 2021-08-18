@@ -40,22 +40,22 @@ class Images extends Component
     /**
      * @var array Image formats that can be manipulated.
      */
-    public $supportedImageFormats = ['jpg', 'jpeg', 'gif', 'png'];
+    public array $supportedImageFormats = ['jpg', 'jpeg', 'gif', 'png'];
 
     /**
      * @var string Image driver.
      */
-    private $_driver = '';
+    private string $_driver = '';
 
     /**
      * @var string|null Imagick version being used, if any.
      */
-    private $_imagickVersion;
+    private ?string $_imagickVersion = null;
 
     /**
      * Decide on the image driver being used.
      */
-    public function init()
+    public function init(): void
     {
         if (strtolower(Craft::$app->getConfig()->getGeneral()->imageDriver) === 'gd') {
             $this->_driver = self::DRIVER_GD;
@@ -71,9 +71,9 @@ class Images extends Component
     /**
      * Returns whether image manipulations will be performed using GD or not.
      *
-     * @return bool|null
+     * @return bool
      */
-    public function getIsGd()
+    public function getIsGd(): bool
     {
         return $this->_driver === self::DRIVER_GD;
     }
@@ -131,7 +131,7 @@ class Images extends Component
      */
     public function getImageMagickApiVersion(): string
     {
-        if ($this->_imagickVersion !== null) {
+        if (isset($this->_imagickVersion)) {
             return $this->_imagickVersion;
         }
 
@@ -141,7 +141,7 @@ class Images extends Component
 
         // Taken from Imagick\Imagine() constructor.
         // Imagick::getVersion() is static only since Imagick PECL extension 3.2.0b1, so instantiate it.
-        /* @noinspection PhpStaticAsDynamicMethodCallInspection */
+        /** @noinspection PhpStaticAsDynamicMethodCallInspection */
         $versionString = \Imagick::getVersion()['versionString'];
         [$this->_imagickVersion] = sscanf($versionString, 'ImageMagick %s %04d-%02d-%02d %s %s');
 
@@ -278,7 +278,7 @@ class Images extends Component
      * @param string $filePath
      * @throws Exception if $filePath is a malformed SVG image
      */
-    public function cleanImage(string $filePath)
+    public function cleanImage(string $filePath): void
     {
         $cleanedByRotation = false;
         $cleanedByStripping = false;
@@ -362,7 +362,7 @@ class Images extends Component
             return false;
         }
 
-        /* @var Raster $image */
+        /** @var Raster $image */
         $image = $this->loadImage($filePath);
         $image->rotate($degrees);
 
@@ -375,7 +375,7 @@ class Images extends Component
      * @param string $filePath
      * @return array|null
      */
-    public function getExifData(string $filePath)
+    public function getExifData(string $filePath): ?array
     {
         if (!ImageHelper::canHaveExifData($filePath)) {
             return null;

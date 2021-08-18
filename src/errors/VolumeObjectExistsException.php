@@ -8,7 +8,7 @@
 namespace craft\errors;
 
 /**
- * Class VolumeFileExistsException
+ * Class VolumeObjectExistsException
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
@@ -18,8 +18,8 @@ class VolumeObjectExistsException extends VolumeException
     /**
      * @return string the user-friendly name of this exception
      */
-    public function getName()
+    public function getName(): string
     {
-        return 'Volume object exists';
+        return 'Volume object not found';
     }
 }

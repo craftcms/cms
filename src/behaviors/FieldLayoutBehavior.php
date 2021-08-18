@@ -24,12 +24,12 @@ class FieldLayoutBehavior extends Behavior
     /**
      * @var string|null The element type that the field layout will be associated with
      */
-    public $elementType;
+    public ?string $elementType = null;
 
     /**
      * @var string|null The attribute on the owner that holds the field layout ID
      */
-    public $idAttribute;
+    public ?string $idAttribute = null;
 
     /**
      * @var int|string|callable The field layout ID, or the name of a method on the owner that will return it, or a callback function that will return it
@@ -39,26 +39,26 @@ class FieldLayoutBehavior extends Behavior
     /**
      * @var FieldLayout|null The field layout associated with the owner
      */
-    private $_fieldLayout;
+    private ?FieldLayout $_fieldLayout = null;
 
     /**
      * @var FieldInterface[]|null The fields associated with the owner's field layout
      */
-    private $_fields;
+    private ?array $_fields = null;
 
     /**
      * @inheritdoc
      * @throws InvalidConfigException if the behavior was not configured properly
      */
-    public function init()
+    public function init(): void
     {
         parent::init();
 
-        if ($this->elementType === null) {
+        if (!isset($this->elementType)) {
             throw new InvalidConfigException('The element type has not been set.');
         }
 
-        if ($this->_fieldLayoutId === null && $this->idAttribute === null) {
+        if (!isset($this->_fieldLayoutId) && !isset($this->idAttribute)) {
             $this->idAttribute = 'fieldLayoutId';
         }
     }
@@ -75,7 +75,7 @@ class FieldLayoutBehavior extends Behavior
             return $this->_fieldLayoutId;
         }
 
-        if ($this->idAttribute !== null) {
+        if (isset($this->idAttribute)) {
             $id = $this->owner->{$this->idAttribute};
         } else if (is_callable($this->_fieldLayoutId)) {
             $id = call_user_func($this->_fieldLayoutId);
@@ -95,7 +95,7 @@ class FieldLayoutBehavior extends Behavior
      *
      * @param int|string|callable $id
      */
-    public function setFieldLayoutId($id)
+    public function setFieldLayoutId($id): void
     {
         $this->_fieldLayoutId = $id;
     }
@@ -108,7 +108,7 @@ class FieldLayoutBehavior extends Behavior
      */
     public function getFieldLayout(): FieldLayout
     {
-        if ($this->_fieldLayout !== null) {
+        if (isset($this->_fieldLayout)) {
             return $this->_fieldLayout;
         }
 
@@ -132,7 +132,7 @@ class FieldLayoutBehavior extends Behavior
      *
      * @param FieldLayout $fieldLayout
      */
-    public function setFieldLayout(FieldLayout $fieldLayout)
+    public function setFieldLayout(FieldLayout $fieldLayout): void
     {
         $this->_fieldLayout = $fieldLayout;
     }
@@ -144,7 +144,7 @@ class FieldLayoutBehavior extends Behavior
      */
     public function getFields(): array
     {
-        if ($this->_fields !== null) {
+        if (isset($this->_fields)) {
             return $this->_fields;
         }
 
@@ -162,7 +162,7 @@ class FieldLayoutBehavior extends Behavior
      *
      * @param FieldInterface[] $fields
      */
-    public function setFields(array $fields)
+    public function setFields(array $fields): void
     {
         $this->_fields = $fields;
     }

@@ -18,12 +18,12 @@ use craft\helpers\Cp;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Html;
 use craft\helpers\Json;
-use craft\helpers\StringHelper;
 use craft\validators\ColorValidator;
 use craft\validators\HandleValidator;
 use craft\validators\UrlValidator;
 use craft\web\assets\tablesettings\TableSettingsAsset;
 use craft\web\assets\timepicker\TimepickerAsset;
+use DateTime;
 use GraphQL\Type\Definition\InputObjectType;
 use GraphQL\Type\Definition\Type;
 use LitEmoji\LitEmoji;
@@ -57,22 +57,22 @@ class Table extends Field
     /**
      * @var string|null Custom add row button label
      */
-    public $addRowLabel;
+    public ?string $addRowLabel = null;
 
     /**
      * @var int|null Maximum number of Rows allowed
      */
-    public $maxRows;
+    public ?int $maxRows = null;
 
     /**
      * @var int|null Minimum number of Rows allowed
      */
-    public $minRows;
+    public ?int $minRows = null;
 
     /**
-     * @var array|null The columns that should be shown in the table
+     * @var array The columns that should be shown in the table
      */
-    public $columns = [
+    public array $columns = [
         'col1' => [
             'heading' => '',
             'handle' => '',
@@ -83,59 +83,68 @@ class Table extends Field
     /**
      * @var array The default row values that new elements should have
      */
-    public $defaults;
+    public array $defaults = [];
 
     /**
      * @var string The type of database column the field should have in the content table
      */
-    public $columnType = Schema::TYPE_TEXT;
+    public string $columnType = Schema::TYPE_TEXT;
 
     /**
      * @inheritdoc
      */
-    public function init()
+    public function __construct($config = [])
     {
-        parent::init();
-
-        if ($this->addRowLabel === null) {
-            $this->addRowLabel = Craft::t('app', 'Add a row');
-        }
-
-        if (!is_array($this->columns)) {
-            $this->columns = [];
-        } else {
-            foreach ($this->columns as $colId => &$column) {
-                // If the column doesn't specify a type, then it probably wasn't meant to be submitted
-                if (!isset($column['type'])) {
-                    unset($this->columns[$colId]);
-                    continue;
-                }
-
-                if ($column['type'] === 'select') {
-                    if (!isset($column['options'])) {
-                        $column['options'] = [];
-                    } else if (is_string($column['options'])) {
-                        $column['options'] = Json::decode($column['options']);
-                    }
-                } else {
-                    unset($column['options']);
-                }
+        // Config normalization
+        foreach (['minRows', 'maxRows', 'addRowLabel'] as $name) {
+            if (($config[$name] ?? null) === '') {
+                unset($config[$name]);
             }
-            unset($column);
         }
 
-        if (!is_array($this->defaults)) {
-            $this->defaults = $this->id || $this->defaults === '' ? [] : [[]];
-        } else {
-            // Make sure the array is non-associative and with incrementing keys
-            $this->defaults = array_values($this->defaults);
+        if (!isset($config['addRowLabel'])) {
+            $config['addRowLabel'] = Craft::t('app', 'Add a row');
+        }
+
+        if (array_key_exists('columns', $config)) {
+            if (!is_array($config['columns'])) {
+                unset($config['columns']);
+            } else {
+                foreach ($config['columns'] as $colId => &$column) {
+                    // If the column doesn't specify a type, then it probably wasn't meant to be submitted
+                    if (!isset($column['type'])) {
+                        unset($config['columns'][$colId]);
+                        continue;
+                    }
+
+                    if ($column['type'] === 'select') {
+                        if (!isset($column['options'])) {
+                            $column['options'] = [];
+                        } else if (is_string($column['options'])) {
+                            $column['options'] = Json::decode($column['options']);
+                        }
+                    } else {
+                        unset($column['options']);
+                    }
+                }
+                unset($column);
+            }
+        }
+
+        if (isset($config['defaults'])) {
+            if (!is_array($config['defaults'])) {
+                $config['defaults'] = (!empty($config['id']) || $config['defaults'] === '') ? [] : [[]];
+            } else {
+                // Make sure the array is non-associative and with incrementing keys
+                $config['defaults'] = array_values($config['defaults']);
+            }
         }
 
         // Convert default date cell values to ISO8601 strings
-        if (!empty($this->columns) && $this->defaults !== null) {
-            foreach ($this->columns as $colId => $col) {
+        if (!empty($config['columns']) && isset($config['defaults'])) {
+            foreach ($config['columns'] as $colId => $col) {
                 if (in_array($col['type'], ['date', 'time'], true)) {
-                    foreach ($this->defaults as &$row) {
+                    foreach ($config['defaults'] as &$row) {
                         if (isset($row[$colId])) {
                             $row[$colId] = DateTimeHelper::toIso8601($row[$colId]) ?: null;
                         }
@@ -143,6 +152,8 @@ class Table extends Field
                 }
             }
         }
+
+        parent::__construct($config);
     }
 
     /**
@@ -159,9 +170,9 @@ class Table extends Field
     }
 
     /**
-     * Validatse the column configs.
+     * Validates the column configs.
      */
-    public function validateColumns()
+    public function validateColumns(): void
     {
         foreach ($this->columns as &$col) {
             if ($col['handle']) {
@@ -215,7 +226,7 @@ class Table extends Field
     /**
      * @inheritdoc
      */
-    public function getSettingsHtml()
+    public function getSettingsHtml(): ?string
     {
         $typeOptions = [
             'checkbox' => Craft::t('app', 'Checkbox'),
@@ -329,7 +340,7 @@ class Table extends Field
     /**
      * @inheritdoc
      */
-    protected function inputHtml($value, ElementInterface $element = null): string
+    protected function inputHtml($value, ?ElementInterface $element = null): string
     {
         Craft::$app->getView()->registerAssetBundle(TimepickerAsset::class);
         return $this->_getInputHtml($value, $element, false);
@@ -348,7 +359,7 @@ class Table extends Field
      *
      * @param ElementInterface $element
      */
-    public function validateTableData(ElementInterface $element)
+    public function validateTableData(ElementInterface $element): void
     {
         $value = $element->getFieldValue($this->handle);
 
@@ -371,7 +382,7 @@ class Table extends Field
     /**
      * @inheritdoc
      */
-    public function normalizeValue($value, ElementInterface $element = null)
+    public function normalizeValue($value, ?ElementInterface $element = null)
     {
         if (is_string($value) && !empty($value)) {
             $value = Json::decodeIfJson($value);
@@ -407,7 +418,7 @@ class Table extends Field
     /**
      * @inheritdoc
      */
-    public function serializeValue($value, ElementInterface $element = null)
+    public function serializeValue($value, ?ElementInterface $element = null)
     {
         if (!is_array($value) || empty($this->columns)) {
             return null;
@@ -445,7 +456,9 @@ class Table extends Field
 
         foreach ($value as $row) {
             foreach (array_keys($this->columns) as $colId) {
-                $keywords[] = $row[$colId];
+                if (isset($row[$colId]) && !$row[$colId] instanceof DateTime) {
+                    $keywords[] = $row[$colId];
+                }
             }
         }
 
@@ -545,11 +558,11 @@ class Table extends Field
      *
      * @param string $type The cell type
      * @param mixed $value The cell value
-     * @param string|null &$error The error text to set on the element
+     * @param string|null $error The error text to set on the element
      * @return bool Whether the value is valid
      * @see normalizeValue()
      */
-    private function _validateCellValue(string $type, $value, string &$error = null): bool
+    private function _validateCellValue(string $type, $value, ?string &$error = null): bool
     {
         if ($value === null || $value === '') {
             return true;
@@ -557,7 +570,7 @@ class Table extends Field
 
         switch ($type) {
             case 'color':
-                /* @var ColorData $value */
+                /** @var ColorData $value */
                 $value = $value->getHex();
                 $validator = new ColorValidator();
                 break;
@@ -583,7 +596,7 @@ class Table extends Field
      * @param bool $static
      * @return string
      */
-    private function _getInputHtml($value, ElementInterface $element = null, bool $static): string
+    private function _getInputHtml($value, ?ElementInterface $element, bool $static): string
     {
         if (empty($this->columns)) {
             return '';

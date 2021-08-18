@@ -26,7 +26,7 @@ abstract class GlobalSetFixture extends BaseElementFixture
     /**
      * @inheritdoc
      */
-    public function load()
+    public function load(): void
     {
         parent::load();
         Craft::$app->getGlobals()->reset();
@@ -35,7 +35,7 @@ abstract class GlobalSetFixture extends BaseElementFixture
     /**
      * @inheritdoc
      */
-    public function unload()
+    public function unload(): void
     {
         parent::unload();
         Craft::$app->getGlobals()->reset();
@@ -54,7 +54,7 @@ abstract class GlobalSetFixture extends BaseElementFixture
      */
     protected function saveElement(ElementInterface $element): bool
     {
-        /* @var GlobalSet $element */
+        /** @var GlobalSet $element */
         if (!parent::saveElement($element)) {
             return false;
         }

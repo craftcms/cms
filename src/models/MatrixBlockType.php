@@ -34,42 +34,42 @@ class MatrixBlockType extends Model implements GqlInlineFragmentInterface
     /**
      * @var int|null Field ID
      */
-    public $fieldId;
+    public ?int $fieldId = null;
 
     /**
      * @var int|null Field layout ID
      */
-    public $fieldLayoutId;
+    public ?int $fieldLayoutId = null;
 
     /**
      * @var string|null Name
      */
-    public $name;
+    public ?string $name = null;
 
     /**
      * @var string|null Handle
      */
-    public $handle;
+    public ?string $handle = null;
 
     /**
      * @var int|null Sort order
      */
-    public $sortOrder;
+    public ?int $sortOrder = null;
 
     /**
      * @var bool
      */
-    public $hasFieldErrors = false;
+    public bool $hasFieldErrors = false;
 
     /**
-     * @var string|mixed
+     * @var string|null
      */
-    public $uid;
+    public ?string $uid = null;
 
     /**
      * @inheritdoc
      */
-    public function behaviors()
+    public function behaviors(): array
     {
         $behaviors = parent::behaviors();
         $behaviors['fieldLayout'] = [
@@ -118,11 +118,11 @@ class MatrixBlockType extends Model implements GqlInlineFragmentInterface
      */
     public function getField(): Matrix
     {
-        if ($this->fieldId === null) {
+        if (!isset($this->fieldId)) {
             throw new InvalidConfigException('Block type missing its field ID');
         }
 
-        /* @var Matrix $field */
+        /** @var Matrix $field */
         if (($field = Craft::$app->getFields()->getFieldById($this->fieldId)) === null) {
             throw new InvalidConfigException('Invalid field ID: ' . $this->fieldId);
         }

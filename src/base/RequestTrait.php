@@ -22,12 +22,12 @@ trait RequestTrait
     /**
      * @var bool
      */
-    public $isWebrootAliasSetDynamically = false;
+    public bool $isWebrootAliasSetDynamically = false;
 
     /**
      * @var bool
      */
-    public $isWebAliasSetDynamically = false;
+    public bool $isWebAliasSetDynamically = false;
 
     /**
      * Returns the requested script name being used to access Craft (e.g. “index.php”).
@@ -37,7 +37,7 @@ trait RequestTrait
      */
     public function getScriptFilename(): string
     {
-        /* @var $this \craft\web\Request|\craft\console\Request */
+        /** @var $this \craft\web\Request|\craft\console\Request */
         return basename($this->getScriptFile());
     }
 }

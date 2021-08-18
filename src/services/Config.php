@@ -48,27 +48,27 @@ class Config extends Component
      * {% endif %}
      * ```
      */
-    public $env;
+    public ?string $env = null;
 
     /**
      * @var string The path to the config directory
      */
-    public $configDir = '';
+    public string $configDir = '';
 
     /**
      * @var string The path to the directory containing the default application config settings
      */
-    public $appDefaultsDir = '';
+    public string $appDefaultsDir = '';
 
     /**
      * @var array
      */
-    private $_configSettings = [];
+    private array $_configSettings = [];
 
     /**
      * @var bool|null
      */
-    private $_dotEnvPath;
+    private ?bool $_dotEnvPath = null;
 
     /**
      * Returns all of the config settings for a given category.
@@ -101,8 +101,8 @@ class Config extends Component
 
         // todo: remove this eventually
         if ($category === self::CATEGORY_GENERAL) {
-            /* @var GeneralConfig $config */
-            if ($config->securityKey === null) {
+            /** @var GeneralConfig $config */
+            if (!isset($config->securityKey)) {
                 $keyPath = Craft::$app->getPath()->getRuntimePath() . DIRECTORY_SEPARATOR . 'validation.key';
                 if (file_exists($keyPath)) {
                     $config->securityKey = trim(file_get_contents($keyPath));
@@ -116,12 +116,6 @@ class Config extends Component
                     $config->securityKey = $key;
                 }
                 Craft::$app->getDeprecator()->log('validation.key', "The auto-generated validation key stored at `{$keyPath}` has been deprecated. Copy its value to the `securityKey` config setting in `config/general.php`.");
-            }
-            if ($config->siteUrl === null && defined('CRAFT_SITE_URL')) {
-                Craft::$app->getDeprecator()->log('CRAFT_SITE_URL', 'The `CRAFT_SITE_URL` constant has been deprecated. ' .
-                    'You can set your sites’ Base URL settings on a per-environment basis using aliases or environment variables. ' .
-                    'See [Environmental Configuration](https://craftcms.com/docs/3.x/config/#environmental-configuration) for more info.');
-                $config->siteUrl = CRAFT_SITE_URL;
             }
         }
 
@@ -144,6 +138,7 @@ class Config extends Component
      */
     public function getDb(): DbConfig
     {
+        /** @noinspection PhpIncompatibleReturnTypeInspection */
         return $this->getConfigSettings(self::CATEGORY_DB);
     }
 
@@ -165,6 +160,7 @@ class Config extends Component
      */
     public function getGeneral(): GeneralConfig
     {
+        /** @noinspection PhpIncompatibleReturnTypeInspection */
         return $this->getConfigSettings(self::CATEGORY_GENERAL);
     }
 
@@ -190,7 +186,7 @@ class Config extends Component
      * $settings = Craft::$app->config->getConfigFromFile('foo');
      * ```
      *
-     * @param $filename
+     * @param string $filename
      * @return array
      */
     public function getConfigFromFile(string $filename): array
@@ -211,7 +207,7 @@ class Config extends Component
         }
 
         // If no environment was specified, just look in the '*' array
-        if ($this->env === null) {
+        if (!isset($this->env)) {
             return $config['*'];
         }
 
@@ -242,7 +238,7 @@ class Config extends Component
      * @param string $value The environment variable value
      * @throws Exception if the .env file doesn't exist
      */
-    public function setDotEnvVar($name, $value)
+    public function setDotEnvVar(string $name, string $value): void
     {
         $path = $this->getDotEnvPath();
 

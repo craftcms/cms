@@ -27,7 +27,7 @@ class InfoAction extends Action
     /**
      * Info about queue status.
      */
-    public function run()
+    public function run(): void
     {
         Console::output($this->format('Jobs', Console::FG_GREEN));
 

@@ -19,6 +19,7 @@ use Imagine\Gd\Imagine as GdImagine;
 use Imagine\Image\AbstractFont as Font;
 use Imagine\Image\AbstractImage;
 use Imagine\Image\Box;
+use Imagine\Image\BoxInterface;
 use Imagine\Image\ImageInterface as Imagine;
 use Imagine\Image\Metadata\ExifMetadataReader;
 use Imagine\Image\Palette\RGB;
@@ -37,27 +38,27 @@ class Raster extends Image
     /**
      * @var string|null
      */
-    private $_imageSourcePath;
+    private ?string $_imageSourcePath = null;
 
     /**
      * @var string|null
      */
-    private $_extension;
+    private ?string $_extension = null;
 
     /**
      * @var bool
      */
-    private $_isAnimatedGif = false;
+    private bool $_isAnimatedGif = false;
 
     /**
      * @var int
      */
-    private $_quality = 0;
+    private int $_quality = 0;
 
     /**
      * @var AbstractImage|null
      */
-    private $_image;
+    private ?AbstractImage $_image = null;
 
     /**
      * @var Imagine|null
@@ -67,12 +68,12 @@ class Raster extends Image
     /**
      * @var RGB|null
      */
-    private $_palette;
+    private ?RGB $_palette = null;
 
     /**
      * @var Font|null
      */
-    private $_font;
+    private ?Font $_font = null;
 
     /**
      * @inheritdoc
@@ -109,7 +110,7 @@ class Raster extends Image
      *
      * @return AbstractImage|null
      */
-    public function getImagineImage()
+    public function getImagineImage(): ?AbstractImage
     {
         return $this->_image;
     }
@@ -141,7 +142,7 @@ class Raster extends Image
     /**
      * @inheritdoc
      */
-    public function loadImage(string $path)
+    public function loadImage(string $path): self
     {
         $imageService = Craft::$app->getImages();
 
@@ -179,6 +180,7 @@ class Raster extends Image
             $this->_image->getImagick()->transformImageColorspace(\Imagick::COLORSPACE_SRGB);
             $this->_image->save();
 
+            /** @noinspection PhpIncompatibleReturnTypeInspection */
             return Craft::$app->getImages()->loadImage($path);
         }
 
@@ -197,7 +199,7 @@ class Raster extends Image
     /**
      * @inheritdoc
      */
-    public function crop(int $x1, int $x2, int $y1, int $y2)
+    public function crop(int $x1, int $x2, int $y1, int $y2): self
     {
         $width = $x2 - $x1;
         $height = $y2 - $y1;
@@ -230,7 +232,7 @@ class Raster extends Image
     /**
      * @inheritdoc
      */
-    public function scaleToFit(int $targetWidth = null, int $targetHeight = null, bool $scaleIfSmaller = true)
+    public function scaleToFit(?int $targetWidth, ?int $targetHeight, bool $scaleIfSmaller = true): self
     {
         $this->normalizeDimensions($targetWidth, $targetHeight);
 
@@ -247,7 +249,7 @@ class Raster extends Image
     /**
      * @inheritdoc
      */
-    public function scaleAndCrop(int $targetWidth = null, int $targetHeight = null, bool $scaleIfSmaller = true, $cropPosition = 'center-center')
+    public function scaleAndCrop(?int $targetWidth, ?int $targetHeight, bool $scaleIfSmaller = true, $cropPosition = 'center-center'): self
     {
         $this->normalizeDimensions($targetWidth, $targetHeight);
 
@@ -353,7 +355,7 @@ class Raster extends Image
     /**
      * @inheritdoc
      */
-    public function resize(int $targetWidth = null, int $targetHeight = null)
+    public function resize(?int $targetWidth, ?int $targetHeight): self
     {
         $this->normalizeDimensions($targetWidth, $targetHeight);
 
@@ -395,9 +397,9 @@ class Raster extends Image
      * Rotates the image by the given degrees.
      *
      * @param float $degrees
-     * @return static Self reference
+     * @return self Self reference
      */
-    public function rotate(float $degrees)
+    public function rotate(float $degrees): self
     {
         $this->_image->rotate($degrees);
 
@@ -411,24 +413,22 @@ class Raster extends Image
     /**
      * Flips the image horizontally.
      *
-     * @return static Self reference
+     * @return self Self reference
      */
-    public function flipHorizontally()
+    public function flipHorizontally(): self
     {
         $this->_image->flipHorizontally();
-
         return $this;
     }
 
     /**
      * Flips the image vertically.
      *
-     * @return static Self reference
+     * @return self Self reference
      */
-    public function flipVertically()
+    public function flipVertically(): self
     {
         $this->_image->flipVertically();
-
         return $this;
     }
 
@@ -436,12 +436,11 @@ class Raster extends Image
      * Sets the image quality.
      *
      * @param int $quality
-     * @return static Self reference
+     * @return self Self reference
      */
-    public function setQuality(int $quality)
+    public function setQuality(int $quality): self
     {
         $this->_quality = $quality;
-
         return $this;
     }
 
@@ -449,9 +448,9 @@ class Raster extends Image
      * Sets the interlace setting.
      *
      * @param string $interlace
-     * @return static Self reference
+     * @return self Self reference
      */
-    public function setInterlace(string $interlace)
+    public function setInterlace(string $interlace): self
     {
         $this->_image->interlace($interlace);
 
@@ -497,10 +496,10 @@ class Raster extends Image
      * Loads an image from an SVG string.
      *
      * @param string $svgContent
-     * @return static Self reference
+     * @return self Self reference
      * @throws ImageException if the SVG string cannot be loaded.
      */
-    public function loadFromSVG(string $svgContent)
+    public function loadFromSVG(string $svgContent): self
     {
         try {
             $this->_image = $this->_instance->load($svgContent);
@@ -560,9 +559,9 @@ class Raster extends Image
      * @param int $size font size to use
      * @param string $color font color to use in hex format
      */
-    public function setFontProperties(string $fontFile, int $size, string $color)
+    public function setFontProperties(string $fontFile, int $size, string $color): void
     {
-        if ($this->_palette === null) {
+        if (!isset($this->_palette)) {
             $this->_palette = new RGB();
         }
 
@@ -574,12 +573,12 @@ class Raster extends Image
      *
      * @param string $text
      * @param int $angle
-     * @return \Imagine\Image\BoxInterface
+     * @return BoxInterface
      * @throws ImageException if attempting to create text box with no font properties
      */
-    public function getTextBox(string $text, int $angle = 0)
+    public function getTextBox(string $text, int $angle = 0): BoxInterface
     {
-        if ($this->_font === null) {
+        if (!isset($this->_font)) {
             throw new ImageException(Craft::t('app', 'No font properties have been set. Call Raster::setFontProperties() first.'));
         }
 
@@ -595,9 +594,9 @@ class Raster extends Image
      * @param int $angle
      * @throws ImageException If attempting to create text box with no font properties et.
      */
-    public function writeText(string $text, int $x, int $y, int $angle = 0)
+    public function writeText(string $text, int $x, int $y, int $angle = 0): void
     {
-        if ($this->_font === null) {
+        if (!isset($this->_font)) {
             throw new ImageException(Craft::t('app', 'No font properties have been set. Call ImageHelper::setFontProperties() first.'));
         }
 
@@ -608,9 +607,9 @@ class Raster extends Image
     /**
      * Disable animation if this is an animated image.
      *
-     * @return $this
+     * @return self Self-reference
      */
-    public function disableAnimation()
+    public function disableAnimation(): self
     {
         $this->_isAnimatedGif = false;
 
@@ -677,9 +676,9 @@ class Raster extends Image
     }
 
     /**
-     * @return mixed
+     * @return string
      */
-    private function _getResizeFilter()
+    private function _getResizeFilter(): string
     {
         return (Craft::$app->getImages()->getIsGd() ? Imagine::FILTER_UNDEFINED : Imagine::FILTER_LANCZOS);
     }
@@ -691,7 +690,7 @@ class Raster extends Image
      * @param string|null $extension
      * @return array
      */
-    private function _getSaveOptions(int $quality = null, string $extension = null): array
+    private function _getSaveOptions(?int $quality, ?string $extension = null): array
     {
         // Because it's possible for someone to set the quality to 0.
         $quality = $quality ?: $this->_quality;

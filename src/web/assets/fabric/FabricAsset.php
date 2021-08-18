@@ -7,7 +7,7 @@
 
 namespace craft\web\assets\fabric;
 
-use craft\web\AssetBundle;
+use yii\web\AssetBundle;
 
 /**
  * Fabric asset bundle.
@@ -17,7 +17,7 @@ class FabricAsset extends AssetBundle
     /**
      * @inheritdoc
      */
-    public function init()
+    public function init(): void
     {
         $this->sourcePath = '@lib/fabric';
 

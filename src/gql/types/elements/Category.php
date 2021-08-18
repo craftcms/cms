@@ -34,9 +34,9 @@ class Category extends Element
     /**
      * @inheritdoc
      */
-    protected function resolve($source, $arguments, $context, ResolveInfo $resolveInfo)
+    protected function resolve($source, array $arguments, $context, ResolveInfo $resolveInfo)
     {
-        /* @var CategoryElement $source */
+        /** @var CategoryElement $source */
         $fieldName = $resolveInfo->fieldName;
 
         switch ($fieldName) {

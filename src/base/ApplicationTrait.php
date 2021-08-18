@@ -34,26 +34,57 @@ use craft\helpers\Session;
 use craft\i18n\Formatter;
 use craft\i18n\I18N;
 use craft\i18n\Locale;
+use craft\mail\Mailer;
 use craft\models\FieldLayout;
 use craft\models\Info;
-use craft\queue\Queue;
 use craft\queue\QueueInterface;
+use craft\services\Announcements;
+use craft\services\Api;
+use craft\services\AssetIndexer;
+use craft\services\Assets;
 use craft\services\AssetTransforms;
 use craft\services\Categories;
+use craft\services\Composer;
+use craft\services\Config;
+use craft\services\Content;
+use craft\services\Dashboard;
+use craft\services\Deprecator;
+use craft\services\Drafts;
+use craft\services\ElementIndexes;
+use craft\services\Elements;
+use craft\services\Entries;
 use craft\services\Fields;
+use craft\services\Gc;
 use craft\services\Globals;
 use craft\services\Gql;
+use craft\services\Images;
 use craft\services\Matrix;
+use craft\services\Path;
+use craft\services\Plugins;
+use craft\services\PluginStore;
+use craft\services\ProjectConfig;
+use craft\services\Relations;
+use craft\services\Revisions;
+use craft\services\Routes;
+use craft\services\Search;
 use craft\services\Sections;
 use craft\services\Security;
 use craft\services\Sites;
+use craft\services\Structures;
+use craft\services\SystemMessages;
 use craft\services\Tags;
+use craft\services\TemplateCaches;
+use craft\services\Tokens;
+use craft\services\Updates;
 use craft\services\UserGroups;
+use craft\services\UserPermissions;
 use craft\services\Users;
+use craft\services\Utilities;
 use craft\services\Volumes;
 use craft\web\Application as WebApplication;
 use craft\web\AssetManager;
 use craft\web\Request as WebRequest;
+use craft\web\Response as WebResponse;
 use craft\web\View;
 use yii\base\Application;
 use yii\base\ErrorHandler;
@@ -64,6 +95,7 @@ use yii\caching\Cache;
 use yii\db\Exception as DbException;
 use yii\db\Expression;
 use yii\mutex\Mutex;
+use yii\queue\Queue;
 use yii\web\ServerErrorHttpException;
 
 /**
@@ -71,159 +103,155 @@ use yii\web\ServerErrorHttpException;
  *
  * @property bool $isInstalled Whether Craft is installed
  * @property int $edition The active Craft edition
- * @property-read \craft\db\MigrationManager $contentMigrator The content migration manager
- * @property-read \craft\db\MigrationManager $migrator The application’s migration manager
- * @property-read \craft\feeds\Feeds $feeds The feeds service
- * @property-read \craft\i18n\Locale $formattingLocale The Locale object that should be used to define the formatter
- * @property-read \craft\i18n\Locale $locale The Locale object for the target language
- * @property-read \craft\mail\Mailer $mailer The mailer component
- * @property-read \craft\services\Api $api The API service
- * @property-read \craft\services\AssetIndexer $assetIndexer The asset indexer service
- * @property-read \craft\services\Assets $assets The assets service
- * @property-read \craft\services\AssetTransforms $assetTransforms The asset transforms service
- * @property-read \craft\services\Categories $categories The categories service
- * @property-read \craft\services\Composer $composer The Composer service
- * @property-read \craft\services\Config $config The config service
- * @property-read \craft\services\Content $content The content service
- * @property-read \craft\services\Dashboard $dashboard The dashboard service
- * @property-read \craft\services\Deprecator $deprecator The deprecator service
- * @property-read \craft\services\Drafts $drafts The drafts service
- * @property-read \craft\services\ElementIndexes $elementIndexes The element indexes service
- * @property-read \craft\services\Elements $elements The elements service
- * @property-read \craft\services\Entries $entries The entries service
- * @property-read \craft\services\Fields $fields The fields service
- * @property-read \craft\services\Gc $gc The garbage collection service
- * @property-read \craft\services\Globals $globals The globals service
- * @property-read \craft\services\Gql $gql The GraphQl service
- * @property-read \craft\services\Images $images The images service
- * @property-read \craft\services\Matrix $matrix The matrix service
- * @property-read \craft\services\Path $path The path service
- * @property-read \craft\services\Plugins $plugins The plugins service
- * @property-read \craft\services\PluginStore $pluginStore The plugin store service
- * @property-read \craft\services\ProjectConfig $projectConfig The project config service
- * @property-read \craft\services\Relations $relations The relations service
- * @property-read \craft\services\Revisions $revisions The revisions service
- * @property-read \craft\services\Routes $routes The routes service
- * @property-read \craft\services\Search $search The search service
- * @property-read \craft\services\Sections $sections The sections service
- * @property-read \craft\services\Sites $sites The sites service
- * @property-read \craft\services\Structures $structures The structures service
- * @property-read \craft\services\SystemMessages $systemMessages The system email messages service
- * @property-read \craft\services\SystemSettings $systemSettings The system settings service
- * @property-read \craft\services\Tags $tags The tags service
- * @property-read \craft\services\TemplateCaches $templateCaches The template caches service
- * @property-read \craft\services\Tokens $tokens The tokens service
- * @property-read \craft\services\Updates $updates The updates service
- * @property-read \craft\services\UserGroups $userGroups The user groups service
- * @property-read \craft\services\UserPermissions $userPermissions The user permissions service
- * @property-read \craft\services\Users $users The users service
- * @property-read \craft\services\Utilities $utilities The utilities service
- * @property-read \craft\services\Volumes $volumes The volumes service
- * @property-read \yii\mutex\Mutex $mutex The application’s mutex service
+ * @property-read Announcements $announcements The announcements service
+ * @property-read Api $api The API service
+ * @property-read AssetIndexer $assetIndexer The asset indexer service
  * @property-read AssetManager $assetManager The asset manager component
+ * @property-read AssetTransforms $assetTransforms The asset transforms service
+ * @property-read Assets $assets The assets service
+ * @property-read Categories $categories The categories service
+ * @property-read Composer $composer The Composer service
+ * @property-read Config $config The config service
+ * @property-read Connection $db The database connection component
+ * @property-read Content $content The content service
+ * @property-read Dashboard $dashboard The dashboard service
+ * @property-read Deprecator $deprecator The deprecator service
+ * @property-read Drafts $drafts The drafts service
+ * @property-read ElementIndexes $elementIndexes The element indexes service
+ * @property-read Elements $elements The elements service
+ * @property-read Entries $entries The entries service
+ * @property-read Fields $fields The fields service
+ * @property-read Formatter $formatter The formatter component
+ * @property-read Gc $gc The garbage collection service
+ * @property-read Globals $globals The globals service
+ * @property-read Gql $gql The GraphQl service
+ * @property-read I18N $i18n The internationalization (i18n) component
+ * @property-read Images $images The images service
+ * @property-read Locale $formattingLocale The Locale object that should be used to define the formatter
+ * @property-read Locale $locale The Locale object for the target language
+ * @property-read Mailer $mailer The mailer component
+ * @property-read Matrix $matrix The matrix service
+ * @property-read MigrationManager $contentMigrator The content migration manager
+ * @property-read MigrationManager $migrator The application’s migration manager
+ * @property-read Mutex $mutex The application’s mutex service
+ * @property-read Path $path The path service
+ * @property-read PluginStore $pluginStore The plugin store service
+ * @property-read Plugins $plugins The plugins service
+ * @property-read ProjectConfig $projectConfig The project config service
+ * @property-read Queue|QueueInterface $queue The job queue
+ * @property-read Relations $relations The relations service
+ * @property-read Revisions $revisions The revisions service
+ * @property-read Routes $routes The routes service
+ * @property-read Search $search The search service
+ * @property-read Sections $sections The sections service
+ * @property-read Security $security The security component
+ * @property-read Sites $sites The sites service
+ * @property-read Structures $structures The structures service
+ * @property-read SystemMessages $systemMessages The system email messages service
+ * @property-read Tags $tags The tags service
+ * @property-read TemplateCaches $templateCaches The template caches service
+ * @property-read Tokens $tokens The tokens service
+ * @property-read Updates $updates The updates service
+ * @property-read UserGroups $userGroups The user groups service
+ * @property-read UserPermissions $userPermissions The user permissions service
+ * @property-read Users $users The users service
+ * @property-read Utilities $utilities The utilities service
+ * @property-read View $view The view component
+ * @property-read Volumes $volumes The volumes service
  * @property-read bool $canTestEditions Whether Craft is running on a domain that is eligible to test out the editions
  * @property-read bool $canUpgradeEdition Whether Craft is eligible to be upgraded to a different edition
  * @property-read bool $hasWrongEdition Whether Craft is running with the wrong edition
- * @property-read bool $isInitialized Whether Craft is fully initialized
  * @property-read bool $isInMaintenanceMode Whether someone is currently performing a system update
+ * @property-read bool $isInitialized Whether Craft is fully initialized
  * @property-read bool $isMultiSite Whether this site has multiple sites
  * @property-read bool $isSystemLive Whether the system is live
- * @property-read Connection $db The database connection component
- * @property-read Formatter $formatter The formatter component
- * @property-read I18N $i18n The internationalization (i18n) component
- * @property-read Queue|QueueInterface $queue The job queue
- * @property-read Security $security The security component
  * @property-read string $installedSchemaVersion The installed schema version
- * @property-read View $view The view component
  * @method AssetManager getAssetManager() Returns the asset manager component.
  * @method Connection getDb() Returns the database connection component.
  * @method Formatter getFormatter() Returns the formatter component.
  * @method I18N getI18n() Returns the internationalization (i18n) component.
  * @method Security getSecurity() Returns the security component.
  * @method View getView() Returns the view component.
+ * @mixin WebApplication
+ * @mixin ConsoleApplication
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
 trait ApplicationTrait
 {
     /**
-     * @var string|null Craft’s schema version number.
+     * @var string Craft’s schema version number.
      */
-    public $schemaVersion;
+    public string $schemaVersion;
 
     /**
-     * @var string|null The minimum Craft build number required to update to this build.
+     * @var string The minimum Craft build number required to update to this build.
      */
-    public $minVersionRequired;
+    public string $minVersionRequired;
 
     /**
      * @var string|null The environment ID Craft is currently running in.
      */
-    public $env;
+    public ?string $env = null;
 
     /**
      * @var string The base Craftnet API URL to use.
      * @since 3.3.16
      * @internal
      */
-    public $baseApiUrl = 'https://api.craftcms.com/v1/';
+    public string $baseApiUrl = 'https://api.craftcms.com/v1/';
 
     /**
      * @var string[]|null Query params that should be appended to Craftnet API requests.
      * @since 3.3.16
      * @internal
      */
-    public $apiParams;
+    public ?array $apiParams = null;
 
     /**
-     * @var
+     * @var bool|null
      */
-    private $_isInstalled;
+    private ?bool $_isInstalled = null;
 
     /**
      * @var bool Whether the application is fully initialized yet
      * @see getIsInitialized()
      */
-    private $_isInitialized = false;
+    private bool $_isInitialized = false;
 
     /**
      * @var bool
      * @see getIsMultiSite()
      */
-    private $_isMultiSite;
+    private bool $_isMultiSite;
 
     /**
      * @var bool
      * @see getIsMultiSite()
      */
-    private $_isMultiSiteWithTrashed;
+    private bool $_isMultiSiteWithTrashed;
 
     /**
-     * @var int|null The Craft edition
+     * @var int The Craft edition
      * @see getEdition()
      */
-    private $_edition;
+    private int $_edition;
 
     /**
-     * @var
+     * @var Info|null
      */
-    private $_info;
-
-    /**
-     * @var bool|null
-     */
-    private $_isDbConfigValid;
+    private ?Info $_info;
 
     /**
      * @var bool
      */
-    private $_gettingLanguage = false;
+    private bool $_gettingLanguage = false;
 
     /**
      * @var bool Whether we’re listening for the request end, to update the application info
      * @see saveInfoAfterRequest()
      */
-    private $_waitingToSaveInfo = false;
+    private bool $_waitingToSaveInfo = false;
 
     /**
      * Sets the target application language.
@@ -231,9 +259,8 @@ trait ApplicationTrait
      * @param bool|null $useUserLanguage Whether the user's preferred language should be used.
      * If null, the user’s preferred language will be used if this is a control panel request or a console request.
      */
-    public function updateTargetLanguage(bool $useUserLanguage = null)
+    public function updateTargetLanguage(?bool $useUserLanguage = null): void
     {
-        /* @var WebApplication|ConsoleApplication $this */
         // Defend against an infinite updateTargetLanguage() loop
         if ($this->_gettingLanguage === true) {
             // We tried to get the language, but something went wrong. Use fallback to prevent infinite loop.
@@ -261,12 +288,11 @@ trait ApplicationTrait
      */
     public function getTargetLanguage(bool $useUserLanguage = true): string
     {
-        /* @var WebApplication|ConsoleApplication $this */
         // Use the fallback language for console requests, or if Craft isn't installed or is updating
         if (
             $this instanceof ConsoleApplication ||
             !$this->getIsInstalled() ||
-            $this->getUpdates()->getIsCraftDbMigrationNeeded()
+            $this->getUpdates()->getIsCraftUpdatePending()
         ) {
             return $this->_getFallbackLanguage();
         }
@@ -287,7 +313,7 @@ trait ApplicationTrait
             return Craft::$app->getConfig()->getGeneral()->defaultCpLanguage ?? $this->_getFallbackLanguage();
         }
 
-        /* @noinspection PhpUnhandledExceptionInspection */
+        /** @noinspection PhpUnhandledExceptionInspection */
         return $this->getSites()->getCurrentSite()->language;
     }
 
@@ -304,7 +330,7 @@ trait ApplicationTrait
             $this->_info = null;
         }
 
-        if ($this->_isInstalled !== null) {
+        if (isset($this->_isInstalled)) {
             return $this->_isInstalled;
         }
 
@@ -314,14 +340,14 @@ trait ApplicationTrait
 
         try {
             $info = $this->getInfo(true);
-        } catch (DbException $e) {
+        } catch (DbException | ServerErrorHttpException $e) {
             // yii2-redis awkwardly throws yii\db\Exception's rather than their own exception class.
-            if (strpos($e->getMessage(), 'Redis') !== false) {
+            if ($e instanceof DbException && strpos($e->getMessage(), 'Redis') !== false) {
                 throw $e;
             }
 
             Craft::error('There was a problem fetching the info row: ' . $e->getMessage(), __METHOD__);
-            /* @var ErrorHandler $errorHandler */
+            /** @var ErrorHandler $errorHandler */
             $errorHandler = $this->getErrorHandler();
             $errorHandler->logException($e);
             return $this->_isInstalled = false;
@@ -335,9 +361,8 @@ trait ApplicationTrait
      *
      * @param bool|null $value
      */
-    public function setIsInstalled($value = true)
+    public function setIsInstalled(?bool $value = true): void
     {
-        /* @var WebApplication|ConsoleApplication $this */
         $this->_isInstalled = $value;
     }
 
@@ -372,9 +397,8 @@ trait ApplicationTrait
      */
     public function getIsMultiSite(bool $refresh = false, bool $withTrashed = false): bool
     {
-        /* @var WebApplication|ConsoleApplication $this */
         if ($withTrashed) {
-            if (!$refresh && $this->_isMultiSiteWithTrashed !== null) {
+            if (!$refresh && isset($this->_isMultiSiteWithTrashed)) {
                 return $this->_isMultiSiteWithTrashed;
             }
             // This is a ridiculous microoptimization for the `sites` table, but all we need to know is whether there is
@@ -390,7 +414,7 @@ trait ApplicationTrait
                     ->count() != 1;
         }
 
-        if (!$refresh && $this->_isMultiSite !== null) {
+        if (!$refresh && isset($this->_isMultiSite)) {
             return $this->_isMultiSite;
         }
         return $this->_isMultiSite = (count($this->getSites()->getAllSites()) > 1);
@@ -403,8 +427,7 @@ trait ApplicationTrait
      */
     public function getEdition(): int
     {
-        /* @var WebApplication|ConsoleApplication $this */
-        if ($this->_edition === null) {
+        if (!isset($this->_edition)) {
             $handle = $this->getProjectConfig()->get('system.edition') ?? 'solo';
             $this->_edition = App::editionIdByHandle($handle);
         }
@@ -418,7 +441,6 @@ trait ApplicationTrait
      */
     public function getEditionName(): string
     {
-        /* @var WebApplication|ConsoleApplication $this */
         return App::editionName($this->getEdition());
     }
 
@@ -427,9 +449,8 @@ trait ApplicationTrait
      *
      * @return int|null
      */
-    public function getLicensedEdition()
+    public function getLicensedEdition(): ?int
     {
-        /* @var WebApplication|ConsoleApplication $this */
         $licensedEdition = $this->getCache()->get('licensedEdition');
 
         if ($licensedEdition !== false) {
@@ -444,9 +465,8 @@ trait ApplicationTrait
      *
      * @return string|null
      */
-    public function getLicensedEditionName()
+    public function getLicensedEditionName(): ?string
     {
-        /* @var WebApplication|ConsoleApplication $this */
         $licensedEdition = $this->getLicensedEdition();
 
         if ($licensedEdition !== null) {
@@ -463,7 +483,6 @@ trait ApplicationTrait
      */
     public function getHasWrongEdition(): bool
     {
-        /* @var WebApplication|ConsoleApplication $this */
         $licensedEdition = $this->getLicensedEdition();
 
         return ($licensedEdition !== null && $licensedEdition !== $this->getEdition() && !$this->getCanTestEditions());
@@ -477,13 +496,12 @@ trait ApplicationTrait
      */
     public function setEdition(int $edition): bool
     {
-        /* @var WebApplication|ConsoleApplication $this */
         $oldEdition = $this->getEdition();
         $this->getProjectConfig()->set('system.edition', App::editionHandle($edition), "Craft CMS edition change");
         $this->_edition = $edition;
 
         // Fire an 'afterEditionChange' event
-        /* @var WebRequest|ConsoleRequest $request */
+        /** @var WebRequest|ConsoleRequest $request */
         $request = $this->getRequest();
         if (!$request->getIsConsoleRequest() && $this->hasEventHandlers(WebApplication::EVENT_AFTER_EDITION_CHANGE)) {
             $this->trigger(WebApplication::EVENT_AFTER_EDITION_CHANGE, new EditionChangeEvent([
@@ -502,9 +520,8 @@ trait ApplicationTrait
      * @param bool $orBetter If true, makes $edition the minimum edition required.
      * @throws WrongEditionException if attempting to do something not allowed by the current Craft edition
      */
-    public function requireEdition(int $edition, bool $orBetter = true)
+    public function requireEdition(int $edition, bool $orBetter = true): void
     {
-        /* @var WebApplication|ConsoleApplication $this */
         if ($this->getIsInstalled() && !$this->getProjectConfig()->getIsApplyingYamlChanges()) {
             $installedEdition = $this->getEdition();
 
@@ -522,7 +539,6 @@ trait ApplicationTrait
      */
     public function getCanUpgradeEdition(): bool
     {
-        /* @var WebApplication|ConsoleApplication $this */
         // Only admin accounts can upgrade Craft
         if (
             $this->getUser()->getIsAdmin() &&
@@ -548,13 +564,12 @@ trait ApplicationTrait
      */
     public function getCanTestEditions(): bool
     {
-        /* @var WebApplication|ConsoleApplication $this */
         $request = $this->getRequest();
-        if ($request->getIsConsoleRequest()) {
+        if ($request instanceof ConsoleRequest) {
             return false;
         }
 
-        /* @var Cache $cache */
+        /** @var Cache $cache */
         $cache = $this->getCache();
         return $cache->get('editionTestableDomain@' . $request->getHostName());
     }
@@ -564,9 +579,8 @@ trait ApplicationTrait
      *
      * @return string|null
      */
-    public function getSystemUid()
+    public function getSystemUid(): ?string
     {
-        /* @var WebApplication|ConsoleApplication $this */
         return $this->getInfo()->uid;
     }
 
@@ -578,24 +592,11 @@ trait ApplicationTrait
      */
     public function getIsLive(): bool
     {
-        /* @var WebApplication|ConsoleApplication $this */
         if (is_bool($live = $this->getConfig()->getGeneral()->isSystemLive)) {
             return $live;
         }
 
         return (bool)$this->getProjectConfig()->get('system.live');
-    }
-
-    /**
-     * Returns whether the system is currently live.
-     *
-     * @return bool
-     * @deprecated in 3.1.0. Use [[getIsLive()]] instead.
-     */
-    public function getIsSystemOn(): bool
-    {
-        /* @var WebApplication|ConsoleApplication $this */
-        return $this->getIsLive();
     }
 
     /**
@@ -607,7 +608,6 @@ trait ApplicationTrait
      */
     public function getIsInMaintenanceMode(): bool
     {
-        /* @var WebApplication|ConsoleApplication $this */
         return (bool)$this->getInfo()->maintenance;
     }
 
@@ -620,7 +620,6 @@ trait ApplicationTrait
      */
     public function enableMaintenanceMode(): bool
     {
-        /* @var WebApplication|ConsoleApplication $this */
         return $this->_setMaintenanceMode(true);
     }
 
@@ -633,7 +632,6 @@ trait ApplicationTrait
      */
     public function disableMaintenanceMode(): bool
     {
-        /* @var WebApplication|ConsoleApplication $this */
         return $this->_setMaintenanceMode(false);
     }
 
@@ -647,8 +645,7 @@ trait ApplicationTrait
      */
     public function getInfo(bool $throwException = false): Info
     {
-        /* @var WebApplication|ConsoleApplication $this */
-        if ($this->_info !== null) {
+        if (isset($this->_info)) {
             return $this->_info;
         }
 
@@ -657,12 +654,7 @@ trait ApplicationTrait
                 ->from([Table::INFO])
                 ->where(['id' => 1])
                 ->one();
-        } catch (DbException $e) {
-            if ($throwException) {
-                throw $e;
-            }
-            return $this->_info = new Info();
-        } catch (DbConnectException $e) {
+        } catch (DbException | DbConnectException $e) {
             if ($throwException) {
                 throw $e;
             }
@@ -674,26 +666,6 @@ trait ApplicationTrait
             throw new ServerErrorHttpException("The {$tableName} table is missing its row");
         }
 
-        // TODO: Remove this after the next breakpoint
-        if (isset($row['build'])) {
-            $version = $row['version'];
-
-            switch ($row['track']) {
-                case 'dev':
-                    $version .= '.0-alpha.' . $row['build'];
-                    break;
-                case 'beta':
-                    $version .= '.0-beta.' . $row['build'];
-                    break;
-                default:
-                    $version .= '.' . $row['build'];
-                    break;
-            }
-
-            $row['version'] = $version;
-        }
-        unset($row['edition'], $row['name'], $row['timezone'], $row['on'], $row['siteName'], $row['siteUrl'], $row['build'], $row['releaseDate'], $row['track'], $row['config'], $row['configMap']);
-
         return $this->_info = new Info($row);
     }
 
@@ -702,7 +674,7 @@ trait ApplicationTrait
      *
      * @since 3.1.33
      */
-    public function saveInfoAfterRequest()
+    public function saveInfoAfterRequest(): void
     {
         if (!$this->_waitingToSaveInfo) {
             $this->_waitingToSaveInfo = true;
@@ -726,7 +698,7 @@ trait ApplicationTrait
      * @since 3.1.33
      * @internal
      */
-    public function saveInfoAfterRequestHandler()
+    public function saveInfoAfterRequestHandler(): void
     {
         $info = $this->getInfo();
         if (!$this->saveInfo($info)) {
@@ -742,9 +714,8 @@ trait ApplicationTrait
      * @param string[]|null $attributeNames The attributes to save
      * @return bool
      */
-    public function saveInfo(Info $info, array $attributeNames = null): bool
+    public function saveInfo(Info $info, ?array $attributeNames = null): bool
     {
-        /* @var WebApplication|ConsoleApplication $this */
 
         if ($attributeNames === null) {
             $attributeNames = ['version', 'schemaVersion', 'maintenance', 'fieldVersion'];
@@ -755,19 +726,6 @@ trait ApplicationTrait
         }
 
         $attributes = $info->getAttributes($attributeNames);
-
-        // TODO: Remove these after the next breakpoint
-        if (version_compare($info['version'], '3.5.6', '<')) {
-            unset($attributes['configVersion']);
-
-            if (version_compare($info['version'], '3.1', '<')) {
-                unset($attributes['config'], $attributes['configMap']);
-
-                if (version_compare($info['version'], '3.0', '<')) {
-                    unset($attributes['fieldVersion']);
-                }
-            }
-        }
 
         $infoRowExists = (new Query())
             ->from([Table::INFO])
@@ -831,19 +789,11 @@ trait ApplicationTrait
      */
     public function getIsDbConnectionValid(): bool
     {
-        /* @var WebApplication|ConsoleApplication $this */
-        $e = null;
         try {
             $this->getDb()->open();
-        } catch (DbConnectException $e) {
-            // throw it later
-        } catch (InvalidConfigException $e) {
-            // throw it later
-        }
-
-        if ($e !== null) {
+        } catch (DbConnectException | InvalidConfigException $e) {
             Craft::error('There was a problem connecting to the database: ' . $e->getMessage(), __METHOD__);
-            /* @var ErrorHandler $errorHandler */
+            /** @var ErrorHandler $errorHandler */
             $errorHandler = $this->getErrorHandler();
             $errorHandler->logException($e);
             return false;
@@ -856,90 +806,102 @@ trait ApplicationTrait
     // -------------------------------------------------------------------------
 
     /**
+     * Returns the announcements service.
+     *
+     * @return Announcements The announcements service
+     * @since 3.7.0
+     */
+    public function getAnnouncements(): Announcements
+    {
+        /** @noinspection PhpIncompatibleReturnTypeInspection */
+        return $this->get('announcements');
+    }
+
+    /**
      * Returns the API service.
      *
-     * @return \craft\services\Api The API service
+     * @return Api The API service
      */
-    public function getApi()
+    public function getApi(): Api
     {
-        /* @var WebApplication|ConsoleApplication $this */
+        /** @noinspection PhpIncompatibleReturnTypeInspection */
         return $this->get('api');
     }
 
     /**
      * Returns the assets service.
      *
-     * @return \craft\services\Assets The assets service
+     * @return Assets The assets service
      */
-    public function getAssets()
+    public function getAssets(): Assets
     {
-        /* @var WebApplication|ConsoleApplication $this */
+        /** @noinspection PhpIncompatibleReturnTypeInspection */
         return $this->get('assets');
     }
 
     /**
      * Returns the asset indexing service.
      *
-     * @return \craft\services\AssetIndexer The asset indexing service
+     * @return AssetIndexer The asset indexing service
      */
-    public function getAssetIndexer()
+    public function getAssetIndexer(): AssetIndexer
     {
-        /* @var WebApplication|ConsoleApplication $this */
+        /** @noinspection PhpIncompatibleReturnTypeInspection */
         return $this->get('assetIndexer');
     }
 
     /**
      * Returns the asset transforms service.
      *
-     * @return \craft\services\AssetTransforms The asset transforms service
+     * @return AssetTransforms The asset transforms service
      */
-    public function getAssetTransforms()
+    public function getAssetTransforms(): AssetTransforms
     {
-        /* @var WebApplication|ConsoleApplication $this */
+        /** @noinspection PhpIncompatibleReturnTypeInspection */
         return $this->get('assetTransforms');
     }
 
     /**
      * Returns the categories service.
      *
-     * @return \craft\services\Categories The categories service
+     * @return Categories The categories service
      */
-    public function getCategories()
+    public function getCategories(): Categories
     {
-        /* @var WebApplication|ConsoleApplication $this */
+        /** @noinspection PhpIncompatibleReturnTypeInspection */
         return $this->get('categories');
     }
 
     /**
      * Returns the Composer service.
      *
-     * @return \craft\services\Composer The Composer service
+     * @return Composer The Composer service
      */
-    public function getComposer()
+    public function getComposer(): Composer
     {
-        /* @var WebApplication|ConsoleApplication $this */
+        /** @noinspection PhpIncompatibleReturnTypeInspection */
         return $this->get('composer');
     }
 
     /**
      * Returns the config service.
      *
-     * @return \craft\services\Config The config service
+     * @return Config The config service
      */
-    public function getConfig()
+    public function getConfig(): Config
     {
-        /* @var WebApplication|ConsoleApplication $this */
+        /** @noinspection PhpIncompatibleReturnTypeInspection */
         return $this->get('config');
     }
 
     /**
      * Returns the content service.
      *
-     * @return \craft\services\Content The content service
+     * @return Content The content service
      */
-    public function getContent()
+    public function getContent(): Content
     {
-        /* @var WebApplication|ConsoleApplication $this */
+        /** @noinspection PhpIncompatibleReturnTypeInspection */
         return $this->get('content');
     }
 
@@ -950,120 +912,96 @@ trait ApplicationTrait
      */
     public function getContentMigrator(): MigrationManager
     {
-        /* @var WebApplication|ConsoleApplication $this */
+        /** @noinspection PhpIncompatibleReturnTypeInspection */
         return $this->get('contentMigrator');
     }
 
     /**
      * Returns the dashboard service.
      *
-     * @return \craft\services\Dashboard The dashboard service
+     * @return Dashboard The dashboard service
      */
-    public function getDashboard()
+    public function getDashboard(): Dashboard
     {
-        /* @var WebApplication|ConsoleApplication $this */
+        /** @noinspection PhpIncompatibleReturnTypeInspection */
         return $this->get('dashboard');
     }
 
     /**
      * Returns the deprecator service.
      *
-     * @return \craft\services\Deprecator The deprecator service
+     * @return Deprecator The deprecator service
      */
-    public function getDeprecator()
+    public function getDeprecator(): Deprecator
     {
-        /* @var WebApplication|ConsoleApplication $this */
+        /** @noinspection PhpIncompatibleReturnTypeInspection */
         return $this->get('deprecator');
     }
 
     /**
      * Returns the drafts service.
      *
-     * @return \craft\services\Drafts The drafts service
+     * @return Drafts The drafts service
      * @since 3.2.0
      */
-    public function getDrafts()
+    public function getDrafts(): Drafts
     {
-        /* @var WebApplication|ConsoleApplication $this */
+        /** @noinspection PhpIncompatibleReturnTypeInspection */
         return $this->get('drafts');
     }
 
     /**
      * Returns the element indexes service.
      *
-     * @return \craft\services\ElementIndexes The element indexes service
+     * @return ElementIndexes The element indexes service
      */
-    public function getElementIndexes()
+    public function getElementIndexes(): ElementIndexes
     {
-        /* @var WebApplication|ConsoleApplication $this */
+        /** @noinspection PhpIncompatibleReturnTypeInspection */
         return $this->get('elementIndexes');
     }
 
     /**
      * Returns the elements service.
      *
-     * @return \craft\services\Elements The elements service
+     * @return Elements The elements service
      */
-    public function getElements()
+    public function getElements(): Elements
     {
-        /* @var WebApplication|ConsoleApplication $this */
+        /** @noinspection PhpIncompatibleReturnTypeInspection */
         return $this->get('elements');
     }
 
     /**
      * Returns the system email messages service.
      *
-     * @return \craft\services\SystemMessages The system email messages service
+     * @return SystemMessages The system email messages service
      */
-    public function getSystemMessages()
+    public function getSystemMessages(): SystemMessages
     {
-        /* @var WebApplication|ConsoleApplication $this */
+        /** @noinspection PhpIncompatibleReturnTypeInspection */
         return $this->get('systemMessages');
     }
 
     /**
      * Returns the entries service.
      *
-     * @return \craft\services\Entries The entries service
+     * @return Entries The entries service
      */
-    public function getEntries()
+    public function getEntries(): Entries
     {
-        /* @var WebApplication|ConsoleApplication $this */
+        /** @noinspection PhpIncompatibleReturnTypeInspection */
         return $this->get('entries');
-    }
-
-    /**
-     * Returns the entry revisions service.
-     *
-     * @return \craft\services\EntryRevisions The entry revisions service
-     * @deprecated in 3.2.0.
-     */
-    public function getEntryRevisions()
-    {
-        /* @var WebApplication|ConsoleApplication $this */
-        return $this->get('entryRevisions');
-    }
-
-    /**
-     * Returns the feeds service.
-     *
-     * @return \craft\feeds\Feeds The feeds service
-     * @deprecated in 3.4.24
-     */
-    public function getFeeds()
-    {
-        /* @var WebApplication|ConsoleApplication $this */
-        return $this->get('feeds');
     }
 
     /**
      * Returns the fields service.
      *
-     * @return \craft\services\Fields The fields service
+     * @return Fields The fields service
      */
-    public function getFields()
+    public function getFields(): Fields
     {
-        /* @var WebApplication|ConsoleApplication $this */
+        /** @noinspection PhpIncompatibleReturnTypeInspection */
         return $this->get('fields');
     }
 
@@ -1075,50 +1013,52 @@ trait ApplicationTrait
      */
     public function getFormattingLocale(): Locale
     {
+        /** @noinspection PhpIncompatibleReturnTypeInspection */
         return $this->get('formattingLocale');
     }
 
     /**
      * Returns the garbage collection service.
      *
-     * @return \craft\services\Gc The garbage collection service
+     * @return Gc The garbage collection service
      */
-    public function getGc()
+    public function getGc(): Gc
     {
+        /** @noinspection PhpIncompatibleReturnTypeInspection */
         return $this->get('gc');
     }
 
     /**
      * Returns the globals service.
      *
-     * @return \craft\services\Globals The globals service
+     * @return Globals The globals service
      */
-    public function getGlobals()
+    public function getGlobals(): Globals
     {
-        /* @var WebApplication|ConsoleApplication $this */
+        /** @noinspection PhpIncompatibleReturnTypeInspection */
         return $this->get('globals');
     }
 
     /**
      * Returns the GraphQL service.
      *
-     * @return \craft\services\Gql The GraphQL service
+     * @return Gql The GraphQL service
      * @since 3.3.0
      */
-    public function getGql()
+    public function getGql(): Gql
     {
-        /* @var WebApplication|ConsoleApplication $this */
+        /** @noinspection PhpIncompatibleReturnTypeInspection */
         return $this->get('gql');
     }
 
     /**
      * Returns the images service.
      *
-     * @return \craft\services\Images The images service
+     * @return Images The images service
      */
-    public function getImages()
+    public function getImages(): Images
     {
-        /* @var WebApplication|ConsoleApplication $this */
+        /** @noinspection PhpIncompatibleReturnTypeInspection */
         return $this->get('images');
     }
 
@@ -1129,29 +1069,29 @@ trait ApplicationTrait
      */
     public function getLocale(): Locale
     {
-        /* @var WebApplication|ConsoleApplication $this */
+        /** @noinspection PhpIncompatibleReturnTypeInspection */
         return $this->get('locale');
     }
 
     /**
      * Returns the current mailer.
      *
-     * @return \craft\mail\Mailer The mailer component
+     * @return Mailer The mailer component
      */
-    public function getMailer()
+    public function getMailer(): Mailer
     {
-        /* @var WebApplication|ConsoleApplication $this */
+        /** @noinspection PhpIncompatibleReturnTypeInspection */
         return $this->get('mailer');
     }
 
     /**
      * Returns the matrix service.
      *
-     * @return \craft\services\Matrix The matrix service
+     * @return Matrix The matrix service
      */
-    public function getMatrix()
+    public function getMatrix(): Matrix
     {
-        /* @var WebApplication|ConsoleApplication $this */
+        /** @noinspection PhpIncompatibleReturnTypeInspection */
         return $this->get('matrix');
     }
 
@@ -1162,7 +1102,7 @@ trait ApplicationTrait
      */
     public function getMigrator(): MigrationManager
     {
-        /* @var WebApplication|ConsoleApplication $this */
+        /** @noinspection PhpIncompatibleReturnTypeInspection */
         return $this->get('migrator');
     }
 
@@ -1173,257 +1113,246 @@ trait ApplicationTrait
      */
     public function getMutex(): Mutex
     {
-        /* @var WebApplication|ConsoleApplication $this */
+        /** @noinspection PhpIncompatibleReturnTypeInspection */
         return $this->get('mutex');
     }
 
     /**
      * Returns the path service.
      *
-     * @return \craft\services\Path The path service
+     * @return Path The path service
      */
-    public function getPath()
+    public function getPath(): Path
     {
-        /* @var WebApplication|ConsoleApplication $this */
+        /** @noinspection PhpIncompatibleReturnTypeInspection */
         return $this->get('path');
     }
 
     /**
      * Returns the plugins service.
      *
-     * @return \craft\services\Plugins The plugins service
+     * @return Plugins The plugins service
      */
-    public function getPlugins()
+    public function getPlugins(): Plugins
     {
-        /* @var WebApplication|ConsoleApplication $this */
+        /** @noinspection PhpIncompatibleReturnTypeInspection */
         return $this->get('plugins');
     }
 
     /**
      * Returns the plugin store service.
      *
-     * @return \craft\services\PluginStore The plugin store service
+     * @return PluginStore The plugin store service
      */
-    public function getPluginStore()
+    public function getPluginStore(): PluginStore
     {
-        /* @var WebApplication|ConsoleApplication $this */
+        /** @noinspection PhpIncompatibleReturnTypeInspection */
         return $this->get('pluginStore');
+    }
+
+    /**
+     * Returns the system config service.
+     *
+     * @return ProjectConfig The system config service
+     */
+    public function getProjectConfig(): ProjectConfig
+    {
+        /** @noinspection PhpIncompatibleReturnTypeInspection */
+        return $this->get('projectConfig');
     }
 
     /**
      * Returns the queue service.
      *
-     * @return Queue|QueueInterface The queue service
+     * @return Queue The queue service
      */
-    public function getQueue()
+    public function getQueue(): Queue
     {
-        /* @var WebApplication|ConsoleApplication $this */
+        /** @noinspection PhpIncompatibleReturnTypeInspection */
         return $this->get('queue');
     }
 
     /**
      * Returns the relations service.
      *
-     * @return \craft\services\Relations The relations service
+     * @return Relations The relations service
      */
-    public function getRelations()
+    public function getRelations(): Relations
     {
-        /* @var WebApplication|ConsoleApplication $this */
+        /** @noinspection PhpIncompatibleReturnTypeInspection */
         return $this->get('relations');
     }
 
     /**
      * Returns the revisions service.
      *
-     * @return \craft\services\Revisions The revisions service
+     * @return Revisions The revisions service
      * @since 3.2.0
      */
-    public function getRevisions()
+    public function getRevisions(): Revisions
     {
-        /* @var WebApplication|ConsoleApplication $this */
+        /** @noinspection PhpIncompatibleReturnTypeInspection */
         return $this->get('revisions');
     }
 
     /**
      * Returns the routes service.
      *
-     * @return \craft\services\Routes The routes service
+     * @return Routes The routes service
      */
-    public function getRoutes()
+    public function getRoutes(): Routes
     {
-        /* @var WebApplication|ConsoleApplication $this */
+        /** @noinspection PhpIncompatibleReturnTypeInspection */
         return $this->get('routes');
     }
 
     /**
      * Returns the search service.
      *
-     * @return \craft\services\Search The search service
+     * @return Search The search service
      */
-    public function getSearch()
+    public function getSearch(): Search
     {
-        /* @var WebApplication|ConsoleApplication $this */
+        /** @noinspection PhpIncompatibleReturnTypeInspection */
         return $this->get('search');
     }
 
     /**
      * Returns the sections service.
      *
-     * @return \craft\services\Sections The sections service
+     * @return Sections The sections service
      */
-    public function getSections()
+    public function getSections(): Sections
     {
-        /* @var WebApplication|ConsoleApplication $this */
+        /** @noinspection PhpIncompatibleReturnTypeInspection */
         return $this->get('sections');
     }
 
     /**
      * Returns the sites service.
      *
-     * @return \craft\services\Sites The sites service
+     * @return Sites The sites service
      */
-    public function getSites()
+    public function getSites(): Sites
     {
-        /* @var WebApplication|ConsoleApplication $this */
+        /** @noinspection PhpIncompatibleReturnTypeInspection */
         return $this->get('sites');
     }
 
     /**
      * Returns the structures service.
      *
-     * @return \craft\services\Structures The structures service
+     * @return Structures The structures service
      */
-    public function getStructures()
+    public function getStructures(): Structures
     {
-        /* @var WebApplication|ConsoleApplication $this */
+        /** @noinspection PhpIncompatibleReturnTypeInspection */
         return $this->get('structures');
-    }
-
-    /**
-     * Returns the system config service.
-     *
-     * @return \craft\services\ProjectConfig The system config service
-     */
-    public function getProjectConfig()
-    {
-        /* @var WebApplication|ConsoleApplication $this */
-        return $this->get('projectConfig');
-    }
-
-    /**
-     * Returns the system settings service.
-     *
-     * @return \craft\services\SystemSettings The system settings service
-     */
-    public function getSystemSettings()
-    {
-        /* @var WebApplication|ConsoleApplication $this */
-        return $this->get('systemSettings');
     }
 
     /**
      * Returns the tags service.
      *
-     * @return \craft\services\Tags The tags service
+     * @return Tags The tags service
      */
-    public function getTags()
+    public function getTags(): Tags
     {
-        /* @var WebApplication|ConsoleApplication $this */
+        /** @noinspection PhpIncompatibleReturnTypeInspection */
         return $this->get('tags');
     }
 
     /**
      * Returns the template cache service.
      *
-     * @return \craft\services\TemplateCaches The template caches service
+     * @return TemplateCaches The template caches service
      */
-    public function getTemplateCaches()
+    public function getTemplateCaches(): TemplateCaches
     {
-        /* @var WebApplication|ConsoleApplication $this */
+        /** @noinspection PhpIncompatibleReturnTypeInspection */
         return $this->get('templateCaches');
     }
 
     /**
      * Returns the tokens service.
      *
-     * @return \craft\services\Tokens The tokens service
+     * @return Tokens The tokens service
      */
-    public function getTokens()
+    public function getTokens(): Tokens
     {
-        /* @var WebApplication|ConsoleApplication $this */
+        /** @noinspection PhpIncompatibleReturnTypeInspection */
         return $this->get('tokens');
     }
 
     /**
      * Returns the updates service.
      *
-     * @return \craft\services\Updates The updates service
+     * @return Updates The updates service
      */
-    public function getUpdates()
+    public function getUpdates(): Updates
     {
-        /* @var WebApplication|ConsoleApplication $this */
+        /** @noinspection PhpIncompatibleReturnTypeInspection */
         return $this->get('updates');
     }
 
     /**
      * Returns the user groups service.
      *
-     * @return \craft\services\UserGroups The user groups service
+     * @return UserGroups The user groups service
      */
-    public function getUserGroups()
+    public function getUserGroups(): UserGroups
     {
-        /* @var WebApplication|ConsoleApplication $this */
+        /** @noinspection PhpIncompatibleReturnTypeInspection */
         return $this->get('userGroups');
     }
 
     /**
      * Returns the user permissions service.
      *
-     * @return \craft\services\UserPermissions The user permissions service
+     * @return UserPermissions The user permissions service
      */
-    public function getUserPermissions()
+    public function getUserPermissions(): UserPermissions
     {
-        /* @var WebApplication|ConsoleApplication $this */
+        /** @noinspection PhpIncompatibleReturnTypeInspection */
         return $this->get('userPermissions');
     }
 
     /**
      * Returns the users service.
      *
-     * @return \craft\services\Users The users service
+     * @return Users The users service
      */
-    public function getUsers()
+    public function getUsers(): Users
     {
-        /* @var WebApplication|ConsoleApplication $this */
+        /** @noinspection PhpIncompatibleReturnTypeInspection */
         return $this->get('users');
     }
 
     /**
      * Returns the utilities service.
      *
-     * @return \craft\services\Utilities The utilities service
+     * @return Utilities The utilities service
      */
-    public function getUtilities()
+    public function getUtilities(): Utilities
     {
-        /* @var \craft\web\Application|\craft\console\Application $this */
+        /** @noinspection PhpIncompatibleReturnTypeInspection */
         return $this->get('utilities');
     }
 
     /**
      * Returns the volumes service.
      *
-     * @return \craft\services\Volumes The volumes service
+     * @return Volumes The volumes service
      */
-    public function getVolumes()
+    public function getVolumes(): Volumes
     {
-        /* @var WebApplication|ConsoleApplication $this */
+        /** @noinspection PhpIncompatibleReturnTypeInspection */
         return $this->get('volumes');
     }
 
     /**
      * Initializes things that should happen before the main Application::init()
      */
-    private function _preInit()
+    private function _preInit(): void
     {
         // Load the request before anything else, so everything else can safely check Craft::$app->has('request', true)
         // to avoid possible recursive fatal errors in the request initialization
@@ -1437,15 +1366,16 @@ trait ApplicationTrait
         $this->updateTargetLanguage();
 
         // Prevent browser caching if this is a control panel request
-        if ($request->getIsCpRequest()) {
-            $this->getResponse()->setNoCacheHeaders();
+        $response = $this->getResponse();
+        if ($response instanceof WebResponse) {
+            $response->setNoCacheHeaders();
         }
     }
 
     /**
      * Initializes things that should happen after the main Application::init()
      */
-    private function _postInit()
+    private function _postInit(): void
     {
         // Register field layout listeners
         $this->_registerFieldLayoutListener();
@@ -1463,7 +1393,7 @@ trait ApplicationTrait
             $this->trigger(WebApplication::EVENT_INIT);
         }
 
-        if (!$this->getUpdates()->getIsCraftDbMigrationNeeded()) {
+        if ($this->getIsInstalled() && !$this->getUpdates()->getIsCraftUpdatePending()) {
             // Possibly run garbage collection
             $this->getGc()->run();
         }
@@ -1472,9 +1402,8 @@ trait ApplicationTrait
     /**
      * Sets the system timezone.
      */
-    private function _setTimeZone()
+    private function _setTimeZone(): void
     {
-        /* @var WebApplication|ConsoleApplication $this */
         $timezone = $this->getConfig()->getGeneral()->timezone;
 
         if (!$timezone) {
@@ -1494,7 +1423,6 @@ trait ApplicationTrait
      */
     private function _setMaintenanceMode(bool $value): bool
     {
-        /* @var WebApplication|ConsoleApplication $this */
         $info = $this->getInfo();
         if ((bool)$info->maintenance === $value) {
             return true;
@@ -1512,7 +1440,6 @@ trait ApplicationTrait
      */
     private function _getFallbackLanguage(): string
     {
-        /* @var WebApplication|ConsoleApplication $this */
         // See if we have the CP translated in one of the user's browsers preferred language(s)
         if ($this instanceof WebApplication) {
             $languages = $this->getI18n()->getAppLocaleIds();
@@ -1526,10 +1453,10 @@ trait ApplicationTrait
     /**
      * Register event listeners for field layouts.
      */
-    private function _registerFieldLayoutListener()
+    private function _registerFieldLayoutListener(): void
     {
         Event::on(FieldLayout::class, FieldLayout::EVENT_DEFINE_STANDARD_FIELDS, function(DefineFieldLayoutFieldsEvent $event) {
-            /* @var FieldLayout $fieldLayout */
+            /** @var FieldLayout $fieldLayout */
             $fieldLayout = $event->sender;
 
             switch ($fieldLayout->type) {
@@ -1550,7 +1477,7 @@ trait ApplicationTrait
     /**
      * Register event listeners for config changes.
      */
-    private function _registerConfigListeners()
+    private function _registerConfigListeners(): void
     {
         $this->getProjectConfig()
             // Field groups

@@ -12,6 +12,7 @@ use craft\console\Controller;
 use craft\errors\GqlException;
 use craft\helpers\Console;
 use craft\helpers\Gql;
+use craft\models\GqlSchema;
 use GraphQL\Utils\SchemaPrinter;
 use yii\base\InvalidArgumentException;
 use yii\console\ExitCode;
@@ -29,19 +30,19 @@ class GraphqlController extends Controller
     const GQL_SCHEMA_EXTENSION = ".graphql";
 
     /**
-     * @var string The token to look up to determine the appropriate GraphQL schema
+     * @var string|null The token to look up to determine the appropriate GraphQL schema.
      */
-    public $token = null;
+    public ?string $token = null;
 
     /**
      * @var bool Whether full schema should be printed or dumped.
      */
-    public $fullSchema = false;
+    public bool $fullSchema = false;
 
     /**
      * @inheritdoc
      */
-    public function options($actionID)
+    public function options($actionID): array
     {
         $options = parent::options($actionID);
         $options[] = 'token';
@@ -51,7 +52,7 @@ class GraphqlController extends Controller
     }
 
     /**
-     * Print out a given GraphQL schema.
+     * Prints a given GraphQL schema.
      *
      * @return int
      */
@@ -73,7 +74,7 @@ class GraphqlController extends Controller
     }
 
     /**
-     * Dump out a given GraphQL schema to a file.
+     * Dumps a given GraphQL schema to a file.
      *
      * @return int
      */
@@ -98,11 +99,11 @@ class GraphqlController extends Controller
     }
 
     /**
-     * @return \craft\models\GqlSchema|null
+     * @return GqlSchema|null
      * @throws BadRequestHttpException
      * @throws \yii\base\Exception
      */
-    protected function getGqlSchema()
+    protected function getGqlSchema(): ?GqlSchema
     {
         if ($this->fullSchema) {
             return Gql::createFullAccessSchema();
@@ -112,7 +113,7 @@ class GraphqlController extends Controller
         $token = null;
 
         // First try to get the token from the passed in token
-        if ($this->token !== null) {
+        if (isset($this->token)) {
             try {
                 $token = $gqlService->getTokenByAccessToken($this->token);
             } catch (InvalidArgumentException $e) {

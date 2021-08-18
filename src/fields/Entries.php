@@ -88,14 +88,14 @@ class Entries extends BaseRelationField
      * @inheritdoc
      * @since 3.3.0
      */
-    public function getEagerLoadingGqlConditions()
+    public function getEagerLoadingGqlConditions(): ?array
     {
         $allowedEntities = Gql::extractAllowedEntitiesFromSchema();
         $allowedSectionUids = $allowedEntities['sections'] ?? [];
         $allowedEntryTypeUids = $allowedEntities['entrytypes'] ?? [];
 
         if (empty($allowedSectionUids) || empty($allowedEntryTypeUids)) {
-            return false;
+            return null;
         }
 
         $entryTypeIds = Db::idsByUids(DbTable::ENTRYTYPES, $allowedEntryTypeUids);

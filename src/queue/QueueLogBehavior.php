@@ -22,17 +22,17 @@ class QueueLogBehavior extends VerboseBehavior
     /**
      * @var float timestamp
      */
-    private $_jobStartedAt;
+    private float $_jobStartedAt;
 
     /**
      * @var bool Whether any jobs have executed yet
      */
-    private $_jobExecuted = false;
+    private bool $_jobExecuted = false;
 
     /**
      * @inheritdoc
      */
-    public function events()
+    public function events(): array
     {
         return [
             Queue::EVENT_BEFORE_EXEC => 'beforeExec',
@@ -44,7 +44,7 @@ class QueueLogBehavior extends VerboseBehavior
     /**
      * @param ExecEvent $event
      */
-    public function beforeExec(ExecEvent $event)
+    public function beforeExec(ExecEvent $event): void
     {
         if (!$this->_jobExecuted) {
             $this->_changeLogFile();
@@ -57,7 +57,7 @@ class QueueLogBehavior extends VerboseBehavior
     /**
      * @inheritdoc
      */
-    public function afterExec(ExecEvent $event)
+    public function afterExec(ExecEvent $event): void
     {
         $duration = $this->_formattedDuration();
         Craft::info(sprintf('%s - Done (time: %s)', parent::jobTitle($event), $duration), __METHOD__);
@@ -66,7 +66,7 @@ class QueueLogBehavior extends VerboseBehavior
     /**
      * @inheritdoc
      */
-    public function afterError(ExecEvent $event)
+    public function afterError(ExecEvent $event): void
     {
         $duration = $this->_formattedDuration();
 
@@ -83,7 +83,7 @@ class QueueLogBehavior extends VerboseBehavior
     /**
      * Changes the file that logs will get flushed to.
      */
-    private function _changeLogFile()
+    private function _changeLogFile(): void
     {
         $logDispatcher = Craft::$app->getLog();
 

@@ -18,5 +18,5 @@ class DeleteElementEvent extends ElementEvent
     /**
      * @var bool Whether to immediately hard-delete the element, rather than soft-deleting it
      */
-    public $hardDelete = false;
+    public bool $hardDelete = false;
 }

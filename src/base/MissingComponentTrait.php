@@ -28,7 +28,7 @@ trait MissingComponentTrait
     /**
      * @var string|null The exception message that explains why the component class was invalid
      */
-    public $errorMessage;
+    public ?string $errorMessage = null;
 
     /**
      * @var mixed The custom settings associated with the component, if it is savable
@@ -43,7 +43,7 @@ trait MissingComponentTrait
      */
     public function createFallback(string $type): ComponentInterface
     {
-        /* @var Arrayable $this */
+        /** @var Arrayable $this */
         $config = $this->toArray();
         unset($config['expectedType'], $config['errorMessage'], $config['settings']);
         $config['type'] = $type;

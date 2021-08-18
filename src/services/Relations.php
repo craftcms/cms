@@ -33,7 +33,7 @@ class Relations extends Component
      * @param array $targetIds
      * @throws \Throwable
      */
-    public function saveRelations(BaseRelationField $field, ElementInterface $source, array $targetIds)
+    public function saveRelations(BaseRelationField $field, ElementInterface $source, array $targetIds): void
     {
         if (!is_array($targetIds)) {
             $targetIds = [];
@@ -61,7 +61,7 @@ class Relations extends Component
             ->where($oldRelationConditions)
             ->all($db);
 
-        /* @var Command[] $updateCommands */
+        /** @var Command[] $updateCommands */
         $updateCommands = [];
         $deleteIds = [];
 

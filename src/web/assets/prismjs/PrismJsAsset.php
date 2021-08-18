@@ -7,7 +7,7 @@
 
 namespace craft\web\assets\prismjs;
 
-use craft\web\AssetBundle;
+use yii\web\AssetBundle;
 
 /**
  * PrismJs asset bundle.
@@ -17,7 +17,7 @@ class PrismJsAsset extends AssetBundle
     /**
      * @inheritdoc
      */
-    public function init()
+    public function init(): void
     {
         $this->sourcePath = '@lib/prismjs';
 

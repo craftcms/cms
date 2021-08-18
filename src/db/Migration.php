@@ -7,7 +7,6 @@
 
 namespace craft\db;
 
-use Craft;
 use craft\helpers\Db;
 use yii\db\ColumnSchemaBuilder;
 
@@ -36,15 +35,12 @@ abstract class Migration extends \yii\db\Migration
     // -------------------------------------------------------------------------
 
     /**
-     * This method contains the logic to be executed when applying this migration.
-     *
-     * Child classes may override this method to provide actual migration logic.
-     *
+     * @inheritdoc
      * @param bool $throwExceptions Whether exceptions should be thrown
-     * @return false|null
+     * @return bool Whether the operation was successful
      * @throws \Throwable
      */
-    public function up(bool $throwExceptions = false)
+    public function up(bool $throwExceptions = false): bool
     {
         // Copied from \yii\db\Migration::up(), but with added $e param
         $transaction = $this->db->beginTransaction();
@@ -68,20 +64,16 @@ abstract class Migration extends \yii\db\Migration
             $this->trigger(self::EVENT_AFTER_UP);
         }
 
-        return null;
+        return true;
     }
 
     /**
-     * This method contains the logic to be executed when removing this migration.
-     *
-     * The default implementation throws an exception indicating the migration cannot be removed.
-     * Child classes may override this method if the corresponding migrations can be removed.
-     *
+     * @inheritdoc
      * @param bool $throwExceptions Whether exceptions should be thrown
-     * @return false|null
+     * @return bool Whether the operation was successful
      * @throws \Throwable
      */
-    public function down(bool $throwExceptions = false)
+    public function down(bool $throwExceptions = false): bool
     {
         // Copied from \yii\db\Migration::down(), but with added $e param
         $transaction = $this->db->beginTransaction();
@@ -105,7 +97,7 @@ abstract class Migration extends \yii\db\Migration
             $this->trigger(self::EVENT_AFTER_DOWN);
         }
 
-        return null;
+        return true;
     }
 
     // Schema Builder Methods
@@ -201,14 +193,13 @@ abstract class Migration extends \yii\db\Migration
      * @param bool $includeAuditColumns Whether to include the data for the audit columns
      * (dateCreated, dateUpdated, uid).
      */
-    public function insert($table, $columns, $includeAuditColumns = true)
+    public function insert($table, $columns, bool $includeAuditColumns = true): void
     {
-        echo "    > insert into $table ...";
-        $time = microtime(true);
+        $time = $this->beginCommand("insert into $table");
         $this->db->createCommand()
             ->insert($table, $columns, $includeAuditColumns)
             ->execute();
-        echo ' done (time: ' . sprintf('%.3f', microtime(true) - $time) . "s)\n";
+        $this->endCommand($time);
     }
 
     /**
@@ -221,14 +212,13 @@ abstract class Migration extends \yii\db\Migration
      * @param array $rows The rows to be batch inserted into the table.
      * @param bool $includeAuditColumns Whether `dateCreated`, `dateUpdated`, and `uid` values should be added to $columns.
      */
-    public function batchInsert($table, $columns, $rows, $includeAuditColumns = true)
+    public function batchInsert($table, $columns, $rows, bool $includeAuditColumns = true): void
     {
-        echo "    > batch insert into $table ...";
-        $time = microtime(true);
+        $time = $this->beginCommand("batch insert into $table");
         $this->db->createCommand()
             ->batchInsert($table, $columns, $rows, $includeAuditColumns)
             ->execute();
-        echo ' done (time: ' . sprintf('%.3f', microtime(true) - $time) . "s)\n";
+        $this->endCommand($time);
     }
 
     /**
@@ -243,14 +233,8 @@ abstract class Migration extends \yii\db\Migration
      * @param bool $includeAuditColumns Whether `dateCreated`, `dateUpdated`, and `uid` values should be added to $columns.
      * @since 2.0.14
      */
-    public function upsert($table, $insertColumns, $updateColumns = true, $params = [], bool $includeAuditColumns = true)
+    public function upsert($table, $insertColumns, $updateColumns = true, $params = [], bool $includeAuditColumns = true): void
     {
-        if (is_bool($params)) {
-            $includeAuditColumns = $params;
-            $params = [];
-            Craft::$app->getDeprecator()->log('craft\\db\\Migration::upsert($includeAuditColumns)', 'The `$includeAuditColumns` argument on `craft\\db\\Migration::upsert()` has been moved to the 5th position');
-        }
-
         $time = $this->beginCommand("upsert into $table");
         $this->db->createCommand()->upsert($table, $insertColumns, $updateColumns, $params, $includeAuditColumns)->execute();
         $this->endCommand($time);
@@ -268,14 +252,13 @@ abstract class Migration extends \yii\db\Migration
      * @param array $params The parameters to be bound to the command.
      * @param bool $includeAuditColumns Whether the `dateUpdated` value should be added to $columns.
      */
-    public function update($table, $columns, $condition = '', $params = [], $includeAuditColumns = true)
+    public function update($table, $columns, $condition = '', $params = [], bool $includeAuditColumns = true): void
     {
-        echo "    > update in $table ...";
-        $time = microtime(true);
+        $time = $this->beginCommand("update in $table");
         $this->db->createCommand()
             ->update($table, $columns, $condition, $params, $includeAuditColumns)
             ->execute();
-        echo ' done (time: ' . sprintf('%.3f', microtime(true) - $time) . "s)\n";
+        $this->endCommand($time);
     }
 
     /**
@@ -286,7 +269,7 @@ abstract class Migration extends \yii\db\Migration
      * @param string $pk The primary key column name
      * @since 3.5.2
      */
-    public function deleteDuplicates(string $table, array $columns, string $pk = 'id')
+    public function deleteDuplicates(string $table, array $columns, string $pk = 'id'): void
     {
         $time = $this->beginCommand("delete duplicates from $table");
         $this->db->createCommand()->deleteDuplicates($table, $columns, $pk)->execute();
@@ -304,14 +287,13 @@ abstract class Migration extends \yii\db\Migration
      * refer to [[Query::where()]] on how to specify condition.
      * @param array $params The parameters to be bound to the command.
      */
-    public function replace(string $table, string $column, string $find, string $replace, $condition = '', array $params = [])
+    public function replace(string $table, string $column, string $find, string $replace, $condition = '', array $params = []): void
     {
-        echo "    > replace \"$find\" with \"$replace\" in $table.$column ...";
-        $time = microtime(true);
+        $time = $this->beginCommand("replace \"$find\" with \"$replace\" in $table.$column");
         $this->db->createCommand()
             ->replace($table, $column, $find, $replace, $condition, $params)
             ->execute();
-        echo ' done (time: ' . sprintf('%.3f', microtime(true) - $time) . "s)\n";
+        $this->endCommand($time);
     }
 
     // Schema Manipulation Methods
@@ -322,14 +304,68 @@ abstract class Migration extends \yii\db\Migration
      *
      * @param string $table The table to be dropped. The name will be properly quoted by the method.
      */
-    public function dropTableIfExists(string $table)
+    public function dropTableIfExists(string $table): void
     {
-        echo "    > dropping $table if it exists ...";
-        $time = microtime(true);
+        $time = $this->beginCommand("dropping $table if it exists");
         $this->db->createCommand()
             ->dropTableIfExists($table)
             ->execute();
-        echo ' done (time: ' . sprintf('%.3f', microtime(true) - $time) . "s)\n";
+        $this->endCommand($time);
+    }
+
+    /**
+     * Creates and executes a SQL statement for dropping an index if it exists.
+     *
+     * @param string $table The table that the index was created for. The table name will be properly quoted by the method.
+     * @param string|string[] $columns The column(s) that are included in the index. If there are multiple
+     * columns, separate them by commas or use an array.
+     * @param bool $unique Whether the index has a UNIQUE constraint.
+     * @since 4.0.0
+     */
+    public function dropIndexIfExists(string $table, $columns, bool $unique = false): void
+    {
+        $time = $this->beginCommand("dropping index on $table if it exists");
+        Db::dropIndexIfExists($table, $columns, $unique, $this->db);
+        $this->endCommand($time);
+    }
+
+    /**
+     * Creates and executes a SQL statement for dropping a foreign key if it exists.
+     *
+     * @param string $table The table that the foreign key was created for. The table name will be properly quoted by the method.
+     * @param string|string[] $columns The column(s) that are included in the foreign key. If there are multiple
+     * columns, separate them by commas or use an array.
+     * @since 4.0.0
+     */
+    public function dropForeignKeyIfExists(string $table, $columns): void
+    {
+        $time = $this->beginCommand("dropping foreign key on $table if it exists");
+        Db::dropForeignKeyIfExists($table, $columns, $this->db);
+        $this->endCommand($time);
+    }
+
+    /**
+     * Creates and executes a SQL statement for dropping all foreign keys to a table.
+     *
+     * @param string $table The table that the foreign keys should reference.
+     * @since 4.0.0
+     */
+    public function dropAllForeignKeysToTable(string $table): void
+    {
+        $time = $this->beginCommand("dropping all foreign keys to $table");
+        Db::dropAllForeignKeysToTable($table, $this->db);
+        $this->endCommand($time);
+    }
+
+    /**
+     * Builds and executes a SQL statement for renaming a DB table and its corresponding sequence (if PostgreSQL).
+     * @since 4.0.0
+     */
+    public function renameTable($table, $newName)
+    {
+        $time = $this->beginCommand("rename table $table to $newName");
+        Db::renameTable($table, $newName);
+        $this->endCommand($time);
     }
 
     /**
@@ -338,14 +374,13 @@ abstract class Migration extends \yii\db\Migration
      * @param string $oldName the sequence to be renamed. The name will be properly quoted by the method.
      * @param string $newName the new sequence name. The name will be properly quoted by the method.
      */
-    public function renameSequence(string $oldName, string $newName)
+    public function renameSequence(string $oldName, string $newName): void
     {
-        echo "    > rename sequence $oldName to $newName ...";
-        $time = microtime(true);
+        $time = $this->beginCommand("rename sequence $oldName to $newName");
         $this->db->createCommand()
             ->renameSequence($oldName, $newName)
             ->execute();
-        echo ' done (time: ' . sprintf('%.3f', microtime(true) - $time) . "s)\n";
+        $this->endCommand($time);
     }
 
     /**
@@ -354,13 +389,13 @@ abstract class Migration extends \yii\db\Migration
      * @param string $table the table that the primary key constraint will be added to.
      * @param string|array $columns comma separated string or array of columns that the primary key will consist of.
      */
-    public function addPrimaryKey($name, $table, $columns)
+    public function addPrimaryKey($name, $table, $columns): void
     {
         if ($name === null) {
             $name = $this->db->getPrimaryKeyName($table, $columns);
         }
 
-        return parent::addPrimaryKey($name, $table, $columns);
+        parent::addPrimaryKey($name, $table, $columns);
     }
 
     /**
@@ -373,13 +408,13 @@ abstract class Migration extends \yii\db\Migration
      * @param string $delete the ON DELETE option. Most DBMS support these options: RESTRICT, CASCADE, NO ACTION, SET DEFAULT, SET NULL
      * @param string $update the ON UPDATE option. Most DBMS support these options: RESTRICT, CASCADE, NO ACTION, SET DEFAULT, SET NULL
      */
-    public function addForeignKey($name, $table, $columns, $refTable, $refColumns, $delete = null, $update = null)
+    public function addForeignKey($name, $table, $columns, $refTable, $refColumns, $delete = null, $update = null): void
     {
         if ($name === null) {
             $name = $this->db->getForeignKeyName();
         }
 
-        return parent::addForeignKey($name, $table, $columns, $refTable, $refColumns, $delete, $update);
+        parent::addForeignKey($name, $table, $columns, $refTable, $refColumns, $delete, $update);
     }
 
     /**
@@ -391,13 +426,13 @@ abstract class Migration extends \yii\db\Migration
      * include a left parenthesis "(".
      * @param bool $unique whether to add UNIQUE constraint on the created index.
      */
-    public function createIndex($name, $table, $columns, $unique = false)
+    public function createIndex($name, $table, $columns, $unique = false): void
     {
         if ($name === null) {
             $name = $this->db->getIndexName();
         }
 
-        return parent::createIndex($name, $table, $columns, $unique);
+        parent::createIndex($name, $table, $columns, $unique);
     }
 
     /**
@@ -409,14 +444,13 @@ abstract class Migration extends \yii\db\Migration
      * @param array $params The parameters to be bound to the command.
      * @since 3.1.0
      */
-    public function softDelete(string $table, $condition = '', array $params = [])
+    public function softDelete(string $table, $condition = '', array $params = []): void
     {
-        echo "    > soft delete from $table ...";
-        $time = microtime(true);
+        $time = $this->beginCommand("soft delete from $table");
         $this->db->createCommand()
             ->softDelete($table, $condition, $params)
             ->execute();
-        echo ' done (time: ' . sprintf('%.3f', microtime(true) - $time) . "s)\n";
+        $this->endCommand($time);
     }
 
     /**
@@ -428,20 +462,40 @@ abstract class Migration extends \yii\db\Migration
      * @param array $params The parameters to be bound to the command.
      * @since 3.1.0
      */
-    public function restore(string $table, $condition = '', array $params = [])
+    public function restore(string $table, $condition = '', array $params = []): void
     {
-        echo "    > restore from $table ...";
-        $time = microtime(true);
+        $time = $this->beginCommand("restore from $table");
         $this->db->createCommand()
             ->restore($table, $condition, $params)
             ->execute();
-        echo ' done (time: ' . sprintf('%.3f', microtime(true) - $time) . "s)\n";
+        $this->endCommand($time);
+    }
+
+    /**
+     * Creates and executes a SQL statement for converting a column type to JSON.
+     *
+     * @param string $table The table whose column is to be changed. The table name will be properly quoted by the method.
+     * @param string $column The name of the column to be changed. The name will be properly quoted by the method.
+     * @since 4.0.0
+     */
+    public function convertColumnToJson(string $table, string $column): void
+    {
+        if ($this->db->getIsPgsql()) {
+            // h/t https://stackoverflow.com/a/31493531/1688568
+            $this->execute(
+                'ALTER TABLE ' . $this->db->quoteTableName($table) . ' ALTER COLUMN ' .
+                $this->db->quoteColumnName($column) . ' TYPE JSON USING ' .
+                $this->db->quoteColumnName($column) . '::JSON;'
+            );
+        } else {
+            $this->alterColumn($table, $column, $this->json());
+        }
     }
 
     /**
      * @param \Throwable|\Exception $e
      */
-    private function _printException($e)
+    private function _printException($e): void
     {
         // Copied from \yii\db\Migration::printException(), only because it’s private
         echo 'Exception: ' . $e->getMessage() . ' (' . $e->getFile() . ':' . $e->getLine() . ")\n";

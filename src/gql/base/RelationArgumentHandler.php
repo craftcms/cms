@@ -20,8 +20,8 @@ use craft\helpers\StringHelper;
  */
 abstract class RelationArgumentHandler extends ArgumentHandler
 {
-    /* @var array */
-    private $_memoizedValues = [];
+    /** @var array */
+    private array $_memoizedValues = [];
 
     /**
      * Get the IDs of elements returned by configuring the provided element query with given criteria.
@@ -35,7 +35,7 @@ abstract class RelationArgumentHandler extends ArgumentHandler
         $idSets = [];
 
         foreach ($criteriaList as $criteria) {
-            /* @var ElementQuery $elementQuery */
+            /** @var ElementQuery $elementQuery */
             $elementQuery = Craft::configure(Craft::$app->getElements()->createElementQuery($elementType), $criteria);
             $idSets[] = $elementQuery->ids();
         }

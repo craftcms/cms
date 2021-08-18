@@ -1,7 +1,7 @@
 {
   "name": "craftcms/cms",
   "description": "Craft CMS",
-  "version": "3.6.16",
+  "version": "4.0.0-alpha",
   "keywords": [
     "cms",
     "craftcms",
@@ -20,11 +20,11 @@
     "issues": "https://github.com/craftcms/cms/issues?state=open",
     "forum": "https://craftcms.stackexchange.com/",
     "source": "https://github.com/craftcms/cms",
-    "docs": "https://craftcms.com/docs/3.x/",
+    "docs": "https://docs.craftcms.com/v3/",
     "rss": "https://github.com/craftcms/cms/releases.atom"
   },
   "require": {
-    "php": ">=7.2.5",
+    "php": ">=7.4",
     "ext-curl": "*",
     "ext-dom": "*",
     "ext-json": "*",
@@ -36,25 +36,23 @@
     "composer/composer": "2.0.13",
     "craftcms/oauth2-craftid": "~1.0.0",
     "craftcms/plugin-installer": "~1.5.6",
-    "craftcms/server-check": "~1.2.0",
+    "craftcms/server-check": "~2.0.0",
     "creocoder/yii2-nested-sets": "~0.9.0",
     "elvanto/litemoji": "^3.0.1",
     "enshrined/svg-sanitize": "~0.14.0",
-    "guzzlehttp/guzzle": "^6.5.5|^7.2.0",
-    "laminas/laminas-feed": "~2.12.3|^2.13.1",
-    "league/flysystem": "^1.1.3",
+    "guzzlehttp/guzzle": "^7.2.0",
     "league/oauth2-client": "^2.6.0",
     "mikehaertl/php-shellcommand": "^1.6.3",
     "pixelandtonic/imagine": "~1.2.4.1",
     "seld/cli-prompt": "^1.0.4",
-    "symfony/yaml": "^5.2.1",
+    "symfony/yaml": "^5.2.3",
     "true/punycode": "^2.1.1",
-    "twig/twig": "~2.14.3",
+    "twig/twig": "~3.3.0",
     "voku/portable-utf8": "^5.4.51",
     "voku/stringy": "^6.4.0",
     "webonyx/graphql-php": "~14.4.1",
     "yii2tech/ar-softdelete": "^1.0.4",
-    "yiisoft/yii2": "~2.0.42.1",
+    "yiisoft/yii2": "~2.0.43",
     "yiisoft/yii2-debug": "^2.1.16",
     "yiisoft/yii2-queue": "~2.3.2",
     "yiisoft/yii2-swiftmailer": "^2.1.2"
@@ -66,8 +64,9 @@
     "codeception/module-phpbrowser": "^1.0.0",
     "codeception/module-rest": "^1.0.0",
     "codeception/module-yii2": "^1.0.0",
-    "fzaninotto/faker": "^1.8",
+    "fakerphp/faker": "^1.13.0",
     "league/factory-muffin": "^3.0",
+    "phpstan/phpstan": "^0.12.91",
     "vlucas/phpdotenv": "^3.0"
   },
   "provide": {
@@ -90,10 +89,14 @@
       "crafttests\\fixtures\\": "tests/fixtures/"
     }
   },
+  "scripts": {
+    "codecept-build": "codecept build",
+    "phpstan": "phpstan --memory-limit=1G"
+  },
   "config": {
     "sort-packages": true,
     "platform": {
-      "php":  "7.2.5"
+      "php":  "7.4"
     }
   }
 }

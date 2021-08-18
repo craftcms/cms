@@ -56,7 +56,7 @@ class DateTimeHelper
     /**
      * @var array Translation pairs for [[translateDate()]]
      */
-    private static $_translationPairs;
+    private static array $_translationPairs;
 
     /**
      * Converts a value into a DateTime object.
@@ -67,14 +67,15 @@ class DateTimeHelper
      *  - MySQL DATE and DATETIME formats (http://dev.mysql.com/doc/refman/5.1/en/datetime.html)
      *  - Relaxed versions of W3C and MySQL formats (single-digit months, days, and hours)
      *  - Unix timestamps
+     * - `now`
      *  - An array with at least one of these keys defined: `datetime`, `date`, or `time`. Supported keys include:
      *      - `date` – a date string in `YYYY-MM-DD` or `YYYY-MM-DD HH:MM:SS.MU` formats or the current locale’s short date format
      *      - `time` – a time string in `HH:MM` or `HH:MM:SS` (24-hour) format or the current locale’s short time format
      *      - `datetime` – A timestamp in any of the non-array formats supported by this method
-     *      - `timezone` – A [valid PHP timezone](http://php.net/manual/en/timezones.php). If set, this will override
+     *      - `timezone` – A [valid PHP timezone](https://php.net/manual/en/timezones.php). If set, this will override
      *        the assumed timezone per `$assumeSystemTimeZone`.
      *
-     * @param string|int|array|null $value The value that should be converted to a DateTime object.
+     * @param string|int|array|DateTime|null $value The value that should be converted to a DateTime object.
      * @param bool $assumeSystemTimeZone Whether it should be assumed that the value was set in the system timezone if
      * the timezone was not specified. If this is `false`, UTC will be assumed.
      * @param bool $setToSystemTimeZone Whether to set the resulting DateTime object to the system timezone.
@@ -107,8 +108,8 @@ class DateTimeHelper
 
             // Did they specify a full timestamp ?
             if (!empty($value['datetime'])) {
-                [$date, $format] = self::_parseDateTime($value['datetime'], $timeZone);
-                if ($format === false) {
+                $dt = self::_parseDateTime($value['datetime'], $timeZone);
+                if ($dt === null) {
                     return false;
                 }
             } else {
@@ -131,17 +132,20 @@ class DateTimeHelper
                 // Add the timezone
                 $format .= ' e';
                 $date .= ' ' . $timeZone;
+
+                $dt = DateTime::createFromFormat("!$format", $date);
+                if ($dt === false) {
+                    return false;
+                }
             }
         } else {
-            [$date, $format] = self::_parseDateTime($value, $defaultTimeZone);
-            if ($format === false) {
+            $dt = self::_parseDateTime($value, $defaultTimeZone);
+            if ($dt === null) {
                 return false;
             }
         }
 
-        $dt = DateTime::createFromFormat('!' . $format, $date);
-
-        if ($dt !== false && $setToSystemTimeZone) {
+        if ($setToSystemTimeZone) {
             $dt->setTimezone(new DateTimeZone(Craft::$app->getTimeZone()));
         }
 
@@ -218,8 +222,8 @@ class DateTimeHelper
 
     /**
      * Determines whether the given value is an ISO-8601-formatted date, as formatted by either
-     * [DateTime::ATOM](http://php.net/manual/en/class.datetime.php#datetime.constants.atom) or
-     * [DateTime::ISO8601](http://php.net/manual/en/class.datetime.php#datetime.constants.iso8601) (with or without
+     * [DateTime::ATOM](https://php.net/manual/en/class.datetime.php#datetime.constants.atom) or
+     * [DateTime::ISO8601](https://php.net/manual/en/class.datetime.php#datetime.constants.iso8601) (with or without
      * the colon between the hours and minutes of the timezone).
      *
      * @param mixed $value The timestamp to check
@@ -263,32 +267,6 @@ class DateTimeHelper
         $date = static::currentUTCDateTime();
 
         return $date->getTimestamp();
-    }
-
-    /**
-     * Translates the words in a formatted date string to the application’s language.
-     *
-     * @param string $str The formatted date string
-     * @param string|null $language The language code (e.g. `en-US`, `en`). If this is null, the current
-     * [[\yii\base\Application::language|application language]] will be used.
-     * @return string The translated date string
-     * @deprecated in 3.0.6. Use [[\craft\i18n\Formatter::asDate()]] instead.
-     */
-    public static function translateDate(string $str, ?string $language = null): string
-    {
-        Craft::$app->getDeprecator()->log(__METHOD__, '`' . __METHOD__ . '` is deprecated. Use `craft\i18n\Formatter::asDate()` instead.');
-
-        if ($language === null) {
-            $language = Craft::$app->language;
-        }
-
-        if (strpos($language, 'en') === 0) {
-            return $str;
-        }
-
-        $translations = self::_getDateTranslations($language);
-
-        return strtr($str, $translations);
     }
 
     /**
@@ -667,15 +645,17 @@ class DateTimeHelper
     }
 
     /**
-     * Normalizes and returns a date & time string along with the format it was set in.
-     *
      * @param string $value
      * @param string $defaultTimeZone
-     * @return array
+     * @return DateTime|null
      */
-    private static function _parseDateTime(string $value, string $defaultTimeZone): array
+    private static function _parseDateTime(string $value, string $defaultTimeZone): ?DateTime
     {
         $value = trim($value);
+
+        if ($value === 'now') {
+            return new DateTime();
+        }
 
         if (preg_match('/^
                 (?P<year>\d{4})                                  # YYYY (four digit year)
@@ -723,14 +703,15 @@ class DateTimeHelper
                 $date .= $defaultTimeZone;
             }
 
-            return [$date, $format];
+            return DateTime::createFromFormat("!$format", $date) ?: null;
         }
 
+        // This must go after the preg_match(), b/c isValidTimeStamp() will return true for years ("2021")
         if (static::isValidTimeStamp($value)) {
-            return [$value, 'U'];
+            return new DateTime("@$value");
         }
 
-        return [$value, false];
+        return null;
     }
 
     /**

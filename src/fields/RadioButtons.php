@@ -48,9 +48,9 @@ class RadioButtons extends BaseOptionsField implements SortableFieldInterface
     /**
      * @inheritdoc
      */
-    protected function inputHtml($value, ElementInterface $element = null): string
+    protected function inputHtml($value, ?ElementInterface $element = null): string
     {
-        /* @var SingleOptionFieldData $value */
+        /** @var SingleOptionFieldData $value */
         if (!$value->valid) {
             Craft::$app->getView()->setInitialDeltaValue($this->handle, null);
         }
