@@ -1876,11 +1876,11 @@ class UsersController extends Controller
     /**
      * Throws a "no user exists" exception
      *
-     * @throws NotFoundHttpException
+     * @throws BadRequestHttpException
      */
     private function _noUserExists(): void
     {
-        throw new NotFoundHttpException('User not found');
+        throw new BadRequestHttpException('User not found');
     }
 
     /**
