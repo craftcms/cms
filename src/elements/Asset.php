@@ -705,10 +705,11 @@ class Asset extends Element
             if (isset($this->_transform) && ($url = (string)$this->getUrl())) {
                 return $url;
             }
-            return parent::__toString();
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             ErrorHandler::convertExceptionToError($e);
         }
+
+        return parent::__toString();
     }
 
     /**

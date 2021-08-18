@@ -60,6 +60,7 @@ use craft\validators\StringValidator;
 use craft\web\UploadedFile;
 use DateTime;
 use Twig\Markup;
+use yii\base\ErrorHandler;
 use yii\base\Event;
 use yii\base\InvalidCallException;
 use yii\base\InvalidConfigException;
@@ -1594,7 +1595,16 @@ abstract class Element extends Component implements ElementInterface
         if (isset($this->title) && $this->title !== '') {
             return (string)$this->title;
         }
-        return (string)$this->id ?: static::class;
+
+        if ($this->id) {
+            return (string)$this->id;
+        }
+
+        try {
+            return static::displayName();
+        } catch (\Throwable $e) {
+            ErrorHandler::convertExceptionToError($e);
+        }
     }
 
     /**
