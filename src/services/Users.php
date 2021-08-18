@@ -917,10 +917,25 @@ class Users extends Component
     public function setVerificationCodeOnUser(User $user): string
     {
         $userRecord = $this->_getUserRecordById($user->id);
-        $unhashedVerificationCode = $this->_setVerificationCodeOnUserRecord($userRecord);
+
+        $securityService = Craft::$app->getSecurity();
+        $unhashedCode = $securityService->generateRandomString(32);
+
+        // Strip underscores so they don't get interpreted as italics markers in the Markdown parser
+        $unhashedCode = str_replace('_', StringHelper::randomString(1), $unhashedCode);
+        $issueDate = DateTimeHelper::currentUTCDateTime();
+
+        $hashedCode = $securityService->hashPassword($unhashedCode);
+        $userRecord->verificationCode = $hashedCode;
+        $userRecord->verificationCodeIssuedDate = $issueDate;
+
         $userRecord->save();
 
-        return $unhashedVerificationCode;
+        $user->pending = $userRecord->pending;
+        $user->verificationCode = $hashedCode;
+        $user->verificationCodeIssuedDate = $issueDate;
+
+        return $unhashedCode;
     }
 
     /**
@@ -1250,27 +1265,6 @@ class Users extends Component
     }
 
     /**
-     * Sets a user record up for a new verification code without saving it.
-     *
-     * @param UserRecord $userRecord
-     * @return string
-     */
-    private function _setVerificationCodeOnUserRecord(UserRecord $userRecord): string
-    {
-        $securityService = Craft::$app->getSecurity();
-        $unhashedCode = $securityService->generateRandomString(32);
-
-        // Strip underscores so they don't get interpreted as italics markers in the Markdown parser
-        $unhashedCode = str_replace('_', StringHelper::randomString(1), $unhashedCode);
-
-        $hashedCode = $securityService->hashPassword($unhashedCode);
-        $userRecord->verificationCode = $hashedCode;
-        $userRecord->verificationCodeIssuedDate = DateTimeHelper::currentUTCDateTime();
-
-        return $unhashedCode;
-    }
-
-    /**
      * Determines if a user is within their invalid login window.
      *
      * @param UserRecord $userRecord
@@ -1303,9 +1297,7 @@ class Users extends Component
      */
     private function _getUserUrl(User $user, string $fePath, string $cpPath): string
     {
-        $userRecord = $this->_getUserRecordById($user->id);
-        $unhashedVerificationCode = $this->_setVerificationCodeOnUserRecord($userRecord);
-        $userRecord->save();
+        $unhashedVerificationCode = $this->setVerificationCodeOnUser($user);
 
         $params = [
             'code' => $unhashedVerificationCode,
