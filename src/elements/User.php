@@ -187,10 +187,22 @@ class User extends Element implements IdentityInterface
     public static function statuses(): array
     {
         return [
-            self::STATUS_ACTIVE => Craft::t('app', 'Active'),
-            self::STATUS_PENDING => Craft::t('app', 'Pending'),
-            self::STATUS_SUSPENDED => Craft::t('app', 'Suspended'),
-            self::STATUS_LOCKED => Craft::t('app', 'Locked'),
+            self::STATUS_ACTIVE => [
+                'label' => Craft::t('app', 'Active'),
+                'color' => 'green',
+            ],
+            self::STATUS_PENDING => [
+                'label' => Craft::t('app', 'Pending'),
+                'color' => 'orange',
+            ],
+            self::STATUS_SUSPENDED => [
+                'label' => Craft::t('app', 'Suspended'),
+                'color' => 'red',
+            ],
+            self::STATUS_LOCKED => [
+                'label' => Craft::t('app', 'Locked'),
+                'color' => 'red',
+            ],
         ];
     }
 
