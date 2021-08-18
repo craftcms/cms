@@ -214,30 +214,26 @@ class User extends Element implements IdentityInterface
                 'label' => Craft::t('app', 'All users'),
                 'hasThumbs' => true,
             ],
-        ];
-
-        if (Craft::$app->getEdition() === Craft::Pro) {
-            // Admin source
-            $sources[] = [
+            [
                 'key' => 'admins',
                 'label' => Craft::t('app', 'Admins'),
                 'criteria' => ['admin' => true],
                 'hasThumbs' => true,
-            ];
+            ],
+        ];
 
-            $groups = Craft::$app->getUserGroups()->getAllGroups();
+        $groups = Craft::$app->getUserGroups()->getAllGroups();
 
-            if (!empty($groups)) {
-                $sources[] = ['heading' => Craft::t('app', 'Groups')];
+        if (!empty($groups)) {
+            $sources[] = ['heading' => Craft::t('app', 'Groups')];
 
-                foreach ($groups as $group) {
-                    $sources[] = [
-                        'key' => 'group:' . $group->uid,
-                        'label' => Craft::t('site', $group->name),
-                        'criteria' => ['groupId' => $group->id],
-                        'hasThumbs' => true,
-                    ];
-                }
+            foreach ($groups as $group) {
+                $sources[] = [
+                    'key' => 'group:' . $group->uid,
+                    'label' => Craft::t('site', $group->name),
+                    'criteria' => ['groupId' => $group->id],
+                    'hasThumbs' => true,
+                ];
             }
         }
 
