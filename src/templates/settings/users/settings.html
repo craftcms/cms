@@ -17,7 +17,7 @@
     requireEmailVerification: true,
     allowPublicRegistration: false,
     validateOnPublicRegistration: false,
-    suspendByDefault: false,
+    deactivateByDefault: false,
     defaultGroup: null,
 }|merge(settings) %}
 
@@ -94,10 +94,10 @@
                 }) }}
 
                 {{ forms.checkboxField({
-                    label: 'Suspend users by default'|t('app'),
-                    instructions: 'Should users who register their own accounts be suspended by default? This will prevent them from receiving an activation email.'|t('app'),
-                    name: 'suspendByDefault',
-                    checked: settings.suspendByDefault,
+                    label: 'Deactivate users by default'|t('app'),
+                    instructions: 'Should users who register their own accounts be deactivated by default? This will prevent them from receiving an activation email or logging in.'|t('app'),
+                    name: 'deactivateByDefault',
+                    checked: settings.deactivateByDefault,
                 }) }}
 
                 {% set groups = [{ label: "None"|t('app'), value: '' }] %}

@@ -647,6 +647,7 @@ class UserQuery extends ElementQuery
 
         $this->query->select([
             'users.photoId',
+            'users.active',
             'users.pending',
             'users.locked',
             'users.suspended',
@@ -716,19 +717,21 @@ class UserQuery extends ElementQuery
     protected function statusCondition(string $status)
     {
         switch ($status) {
+            case User::STATUS_INACTIVE:
+                return [
+                    'users.active' => false,
+                    'users.pending' => false,
+                ];
             case User::STATUS_ACTIVE:
                 return [
-                    'users.suspended' => false,
-                    'users.pending' => false,
+                    'users.active' => true,
                 ];
             case User::STATUS_PENDING:
                 return [
-                    'users.suspended' => false,
                     'users.pending' => true,
                 ];
             case User::STATUS_LOCKED:
                 return [
-                    'users.suspended' => false,
                     'users.locked' => true,
                 ];
             case User::STATUS_SUSPENDED:

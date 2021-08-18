@@ -17,6 +17,7 @@ use yii\db\ActiveQueryInterface;
  *
  * @property int $id ID
  * @property int $photoId Photo ID
+ * @property bool $active Active
  * @property bool $pending Pending
  * @property bool $locked Locked
  * @property bool $suspended Suspended

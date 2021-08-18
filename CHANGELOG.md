@@ -3,7 +3,10 @@
 ## Unreleased
 
 ### Added
+- Added the “Inactive” user status, which can be used by users which can’t be signed into. ([#8963](https://github.com/craftcms/cms/discussions/8963))
+- Added the “Deactivate…” user action for pending and active users.
 - Added the `index-assets/cleanup` command.
+- Added the “Deactivate users by default” user registration setting, which replaces “Suspend users by default”. ([#5830](https://github.com/craftcms/cms/issues/5830))
 - Added support for `JSON` columns. ([#9089](https://github.com/craftcms/cms/pull/9089))
 - Added `craft\base\Volume::CONFIG_MIMETYPE`.
 - Added `craft\base\Volume::CONFIG_VISIBILITY`.
@@ -20,6 +23,8 @@
 - Added `craft\db\Migration::renameTable()`.
 - Added `craft\db\Table::ASSETINDEXINGSESSIONS`.
 - Added `craft\elements\Asset::setFilename()`.
+- Added `craft\elements\User::$active`.
+- Added `craft\elements\User::STATUS_INACTIVE`.
 - Added `craft\errors\MissingVolumeFolderException`.
 - Added `craft\helpers\Assets::downloadFile()`.
 - Added `craft\helpers\Db::dropAllForeignKeysToTable()`.
@@ -47,9 +52,15 @@
 - Added `craft\services\AssetIndexer::startIndexingSession()`.
 - Added `craft\services\AssetIndexer::stopIndexingSession()`.
 - Added `craft\services\AssetTransforms::deleteTransformIndexDataByAssetIds()`.
+- Added `craft\services\Users::deactivateUser()`.
+- Added `craft\services\Users::EVENT_AFTER_DEACTIVATE_USER`.
+- Added `craft\services\Users::EVENT_BEFORE_DEACTIVATE_USER`.
+- Added `craft\services\Users::getUserByEmail()`, which will return a user for the given email, creating one if it didn’t exist yet.
 
 ### Changed
 - Craft now requires PHP 7.4 or later.
+- Users are no longer required to have a username or email.
+- Filtering users by `active`, `pending`, and `locked` statuses no longer excludes suspended users.
 - Relational fields now load elements in the current site rather than the primary site, if the source element isn’t localizable. ([#7048](https://github.com/craftcms/cms/issues/7048))
 - The `users/save-user` action no longer includes a `unverifiedEmail` key in failure responses.
 - All components’ `afterDelete()` methods must now have a `void` return type declaration.

@@ -93,6 +93,10 @@ class User extends Element implements IdentityInterface
     // User statuses
     // -------------------------------------------------------------------------
 
+    /**
+     * @since 4.0.0
+     */
+    const STATUS_INACTIVE = 'inactive';
     const STATUS_ACTIVE = 'active';
     const STATUS_LOCKED = 'locked';
     const STATUS_SUSPENDED = 'suspended';
@@ -202,6 +206,9 @@ class User extends Element implements IdentityInterface
             self::STATUS_LOCKED => [
                 'label' => Craft::t('app', 'Locked'),
                 'color' => 'red',
+            ],
+            self::STATUS_INACTIVE => [
+                'label' => Craft::t('app', 'Inactive'),
             ],
         ];
     }
@@ -500,6 +507,12 @@ class User extends Element implements IdentityInterface
     public ?int $photoId = null;
 
     /**
+     * @var bool Active
+     * @since 4.0.0
+     */
+    public bool $active = false;
+
+    /**
      * @var bool Pending
      */
     public bool $pending = false;
@@ -695,6 +708,14 @@ class User extends Element implements IdentityInterface
     /**
      * @inheritdoc
      */
+    protected function uiLabel(): ?string
+    {
+        return $this->getName() ?: ($this->email ?? $this->id ?? static::class);
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function attributes(): array
     {
         $names = parent::attributes();
@@ -756,17 +777,20 @@ class User extends Element implements IdentityInterface
     protected function defineRules(): array
     {
         $rules = parent::defineRules();
+
+        $treatAsActive = fn() => $this->active || $this->pending || $this->getScenario() === self::SCENARIO_REGISTRATION;
+
         $rules[] = [['lastLoginDate', 'lastInvalidLoginDate', 'lockoutDate', 'lastPasswordChangeDate', 'verificationCodeIssuedDate'], DateTimeValidator::class];
         $rules[] = [['invalidLoginCount', 'photoId'], 'number', 'integerOnly' => true];
         $rules[] = [['username', 'email', 'unverifiedEmail', 'firstName', 'lastName'], 'trim', 'skipOnEmpty' => true];
         $rules[] = [['email', 'unverifiedEmail'], 'email', 'enableIDN' => App::supportsIdn(), 'enableLocalIDN' => false];
-        $rules[] = [['email', 'password', 'unverifiedEmail'], 'string', 'max' => 255];
-        $rules[] = [['username', 'firstName', 'lastName', 'verificationCode'], 'string', 'max' => 100];
-        $rules[] = [['email'], 'required'];
+        $rules[] = [['email', 'username', 'firstName', 'lastName', 'password', 'unverifiedEmail'], 'string', 'max' => 255];
+        $rules[] = [['verificationCode'], 'string', 'max' => 100];
+        $rules[] = [['email'], 'required', 'when' => $treatAsActive];
         $rules[] = [['lastLoginAttemptIp'], 'string', 'max' => 45];
 
         if (!Craft::$app->getConfig()->getGeneral()->useEmailAsUsername) {
-            $rules[] = [['username'], 'required'];
+            $rules[] = [['username'], 'required', 'when' => $treatAsActive];
             $rules[] = [['username'], UsernameValidator::class];
         }
 
@@ -1155,7 +1179,11 @@ class User extends Element implements IdentityInterface
             return self::STATUS_PENDING;
         }
 
-        return self::STATUS_ACTIVE;
+        if ($this->active) {
+            return self::STATUS_ACTIVE;
+        }
+
+        return self::STATUS_INACTIVE;
     }
 
     /**
@@ -1478,7 +1506,7 @@ class User extends Element implements IdentityInterface
                 }
                 return $formatter->asDuration($duration);
             },
-            Craft::t('app', 'Registered at') => $formatter->asDatetime($this->dateCreated, Formatter::FORMAT_WIDTH_SHORT),
+            Craft::t('app', 'Created at') => $formatter->asDatetime($this->dateCreated, Formatter::FORMAT_WIDTH_SHORT),
             Craft::t('app', 'Last login') => function() use ($formatter) {
                 if ($this->pending) {
                     return false;
@@ -1529,6 +1557,10 @@ class User extends Element implements IdentityInterface
                 throw new Exception('Invalid user ID: ' . $this->id);
             }
 
+            if ($this->active != $record->active) {
+                throw new Exception('Unable to change a user’s active state like this.');
+            }
+
             if ($this->pending != $record->pending) {
                 throw new Exception('Unable to change a user’s pending state like this.');
             }
@@ -1543,6 +1575,7 @@ class User extends Element implements IdentityInterface
         } else {
             $record = new UserRecord();
             $record->id = (int)$this->id;
+            $record->active = $this->active;
             $record->pending = $this->pending;
             $record->locked = $this->locked;
             $record->suspended = $this->suspended;
@@ -1686,6 +1719,7 @@ class User extends Element implements IdentityInterface
     private function _getAuthError(): ?string
     {
         switch ($this->getStatus()) {
+            case self::STATUS_INACTIVE:
             case self::STATUS_ARCHIVED:
                 return self::AUTH_INVALID_CREDENTIALS;
             case self::STATUS_PENDING:

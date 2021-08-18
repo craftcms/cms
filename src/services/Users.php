@@ -36,7 +36,9 @@ use craft\records\User as UserRecord;
 use craft\web\Request;
 use DateTime;
 use yii\base\Component;
+use yii\base\Exception;
 use yii\base\InvalidArgumentException;
+use yii\validators\EmailValidator;
 
 /**
  * The Users service provides APIs for managing users.
@@ -68,6 +70,21 @@ class Users extends Component
      * @event UserEvent The event that is triggered after a user is activated.
      */
     const EVENT_AFTER_ACTIVATE_USER = 'afterActivateUser';
+
+    /**
+     * @event UserEvent The event that is triggered before a user is deactivated.
+     *
+     * You may set [[UserEvent::isValid]] to `false` to prevent the user from getting deactivated.
+     *
+     * @since 4.0.0
+     */
+    const EVENT_BEFORE_DEACTIVATE_USER = 'beforeDeactivateUser';
+
+    /**
+     * @event UserEvent The event that is triggered after a user is deactivated.
+     * @since 4.0.0
+     */
+    const EVENT_AFTER_DEACTIVATE_USER = 'afterDeactivateUser';
 
     /**
      * @event UserEvent The event that is triggered after a user is locked.
@@ -144,6 +161,38 @@ class Users extends Component
      * @since 3.1.0
      */
     const CONFIG_USERLAYOUT_KEY = self::CONFIG_USERS_KEY . '.' . 'fieldLayouts';
+
+    /**
+     * Returns a user by an email address.
+     *
+     * If no user exists for the given email, one will be created.
+     *
+     * @param string $email
+     * @return User
+     * @throws InvalidArgumentException if `$email` is invalid
+     * @throws Exception if the user couldn’t save for some unexpected reason
+     * @since 4.0.0
+     */
+    public function getUserByEmail(string $email): User
+    {
+        $user = User::find()
+            ->email($email)
+            ->status(null)
+            ->one();
+
+        if (!$user) {
+            $user = new User();
+            $user->email = $email;
+            if (!$user->validate(['email'])) {
+                throw new InvalidArgumentException($user->getFirstError('email'));
+            }
+            if (!Craft::$app->getElements()->saveElement($user, false)) {
+                throw new Exception('Unable to save user: ' . implode(', ', $user->getFirstErrors()));
+            }
+        }
+
+        return $user;
+    }
 
     /**
      * Returns a user by their ID.
@@ -639,6 +688,7 @@ class Users extends Component
         $transaction = Craft::$app->getDb()->beginTransaction();
         try {
             $userRecord = $this->_getUserRecordById($user->id);
+            $userRecord->active = true;
             $userRecord->pending = false;
             $userRecord->locked = false;
             $userRecord->suspended = false;
@@ -650,6 +700,7 @@ class Users extends Component
             $userRecord->lockoutDate = null;
             $userRecord->save();
 
+            $user->active = true;
             $user->pending = false;
             $user->locked = false;
             $user->suspended = false;
@@ -671,6 +722,67 @@ class Users extends Component
         // Fire an 'afterActivateUser' event
         if ($this->hasEventHandlers(self::EVENT_AFTER_ACTIVATE_USER)) {
             $this->trigger(self::EVENT_AFTER_ACTIVATE_USER, new UserEvent([
+                'user' => $user,
+            ]));
+        }
+
+        return true;
+    }
+
+    /**
+     * Deactivates a user.
+     *
+     * @param User $user The user.
+     * @return bool Whether the user was deactivated successfully.
+     * @throws \Throwable if reasons
+     * @since 4.0.0
+     */
+    public function deactivateUser(User $user): bool
+    {
+        // Fire a 'beforeActivateUser' event
+        $event = new UserEvent([
+            'user' => $user,
+        ]);
+        $this->trigger(self::EVENT_BEFORE_DEACTIVATE_USER, $event);
+
+        if (!$event->isValid) {
+            return false;
+        }
+
+        $transaction = Craft::$app->getDb()->beginTransaction();
+        try {
+            $userRecord = $this->_getUserRecordById($user->id);
+            $userRecord->active = false;
+            $userRecord->pending = false;
+            $userRecord->locked = false;
+            $userRecord->suspended = false;
+            $userRecord->verificationCode = null;
+            $userRecord->verificationCodeIssuedDate = null;
+            $userRecord->invalidLoginWindowStart = null;
+            $userRecord->invalidLoginCount = null;
+            $userRecord->lastInvalidLoginDate = null;
+            $userRecord->lockoutDate = null;
+            $userRecord->save();
+
+            $user->active = false;
+            $user->pending = false;
+            $user->locked = false;
+            $user->suspended = false;
+            $user->verificationCode = null;
+            $user->verificationCodeIssuedDate = null;
+            $user->invalidLoginCount = null;
+            $user->lastInvalidLoginDate = null;
+            $user->lockoutDate = null;
+
+            $transaction->commit();
+        } catch (\Throwable $e) {
+            $transaction->rollBack();
+            throw $e;
+        }
+
+        // Fire an 'afterActivateUser' event
+        if ($this->hasEventHandlers(self::EVENT_AFTER_DEACTIVATE_USER)) {
+            $this->trigger(self::EVENT_AFTER_DEACTIVATE_USER, new UserEvent([
                 'user' => $user,
             ]));
         }
@@ -928,6 +1040,11 @@ class Users extends Component
         $hashedCode = $securityService->hashPassword($unhashedCode);
         $userRecord->verificationCode = $hashedCode;
         $userRecord->verificationCodeIssuedDate = $issueDate;
+
+        // Make sure they are set to pending, if not already active
+        if (!$userRecord->active) {
+            $userRecord->pending = true;
+        }
 
         $userRecord->save();
 
