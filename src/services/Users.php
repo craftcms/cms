@@ -640,11 +640,24 @@ class Users extends Component
         try {
             $userRecord = $this->_getUserRecordById($user->id);
             $userRecord->pending = false;
+            $userRecord->locked = false;
+            $userRecord->suspended = false;
             $userRecord->verificationCode = null;
             $userRecord->verificationCodeIssuedDate = null;
+            $userRecord->invalidLoginWindowStart = null;
+            $userRecord->invalidLoginCount = null;
+            $userRecord->lastInvalidLoginDate = null;
+            $userRecord->lockoutDate = null;
             $userRecord->save();
 
             $user->pending = false;
+            $user->locked = false;
+            $user->suspended = false;
+            $user->verificationCode = null;
+            $user->verificationCodeIssuedDate = null;
+            $user->invalidLoginCount = null;
+            $user->lastInvalidLoginDate = null;
+            $user->lockoutDate = null;
 
             // If they have an unverified email address, now is the time to set it to their primary email address
             $this->verifyEmailForUser($user);
