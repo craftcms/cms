@@ -780,6 +780,10 @@ Craft.BaseElementIndex = Garnish.Base.extend({
                     this._resetCount();
                     this._updateView(viewParams, response.data);
 
+                    if (typeof response.data.badgeCounts !== 'undefined') {
+                        this._updateBadgeCounts(response.data.badgeCounts);
+                    }
+
                     if (response.data.message) {
                         Craft.cp.displayNotice(response.data.message);
                     }
@@ -1803,6 +1807,25 @@ Craft.BaseElementIndex = Garnish.Base.extend({
         // -------------------------------------------------------------
 
         this.onUpdateElements();
+    },
+
+    _updateBadgeCounts: function(badgeCounts) {
+        for (let sourceKey in badgeCounts) {
+            if (badgeCounts.hasOwnProperty(sourceKey)) {
+                const $source = this.getSourceByKey(sourceKey);
+                if ($source) {
+                    let $badge = $source.children('.badge');
+                    if (badgeCounts[sourceKey] !== null) {
+                        if (!$badge.length) {
+                            $badge = $('<span class="badge"/>').appendTo($source);
+                        }
+                        $badge.text(badgeCounts[sourceKey]);
+                    } else if ($badge) {
+                        $badge.remove();
+                    }
+                }
+            }
+        }
     },
 
     _countResults: function() {

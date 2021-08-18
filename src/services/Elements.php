@@ -798,13 +798,7 @@ class Elements extends Component
         }
 
         Craft::$app->getDb()->transaction(function() use ($element, $supportedSiteIds) {
-            // Start with $element's site
-            $element->mergeCanonicalChanges();
-            $element->dateLastMerged = new DateTime();
-            $element->mergingCanonicalChanges = true;
-            $this->saveElement($element, false, false);
-
-            // Now the other sites
+            // Start with the other sites (if any), so we don't update dateLastMerged until the end
             $siteElements = $element::find()
                 ->drafts(null)
                 ->provisionalDrafts(null)
@@ -815,10 +809,15 @@ class Elements extends Component
 
             foreach ($siteElements as $siteElement) {
                 $siteElement->mergeCanonicalChanges();
-                $siteElement->dateLastMerged = $element->dateLastMerged;
                 $siteElement->mergingCanonicalChanges = true;
                 $this->saveElement($siteElement, false, false);
             }
+
+            // Now the $element's site
+            $element->mergeCanonicalChanges();
+            $element->dateLastMerged = new DateTime();
+            $element->mergingCanonicalChanges = true;
+            $this->saveElement($element, false, false);
 
             // It's now fully merged and propagated
             $element->afterPropagate(false);
