@@ -28,7 +28,7 @@
                 {{ forms.textField({
                     label: "Server"|t('app'),
                     id: 'db-server',
-                    value: dbConfig.server != 'localhost' ? dbConfig.server,
+                    value: dbConfig.server != '127.0.0.1' ? dbConfig.server,
                     placeholder: '127.0.0.1',
                 }) }}
             </div>
