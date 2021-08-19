@@ -7,6 +7,7 @@
 
 ### Fixed
 - Fixed a bug where Tokenfield inputs weren’t getting sized correctly when the window was resized, if rendered within a field that used a fieldset. ([#9734](https://github.com/craftcms/cms/issues/9734))
+- Fixed a bug where row titles with a status were showing as bold in admin tables. ([#9704](https://github.com/craftcms/cms/issues/9704))
 
 ## 3.7.9 - 2021-08-17
 
