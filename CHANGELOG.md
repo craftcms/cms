@@ -53,9 +53,9 @@
 - Added `craft\services\AssetIndexer::stopIndexingSession()`.
 - Added `craft\services\AssetTransforms::deleteTransformIndexDataByAssetIds()`.
 - Added `craft\services\Users::deactivateUser()`.
+- Added `craft\services\Users::ensureUserByEmail()`, which will return a user for the given email, creating one if it didn’t exist yet.
 - Added `craft\services\Users::EVENT_AFTER_DEACTIVATE_USER`.
 - Added `craft\services\Users::EVENT_BEFORE_DEACTIVATE_USER`.
-- Added `craft\services\Users::getUserByEmail()`, which will return a user for the given email, creating one if it didn’t exist yet.
 
 ### Changed
 - Craft now requires PHP 7.4 or later.

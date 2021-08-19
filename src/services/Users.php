@@ -163,9 +163,7 @@ class Users extends Component
     const CONFIG_USERLAYOUT_KEY = self::CONFIG_USERS_KEY . '.' . 'fieldLayouts';
 
     /**
-     * Returns a user by an email address.
-     *
-     * If no user exists for the given email, one will be created.
+     * Returns a user by an email address, creating one if non already exists.
      *
      * @param string $email
      * @return User
@@ -173,7 +171,7 @@ class Users extends Component
      * @throws Exception if the user couldn’t save for some unexpected reason
      * @since 4.0.0
      */
-    public function getUserByEmail(string $email): User
+    public function ensureUserByEmail(string $email): User
     {
         $user = User::find()
             ->email($email)
