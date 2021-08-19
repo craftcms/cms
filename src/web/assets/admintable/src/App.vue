@@ -38,7 +38,7 @@
                                 :icon="button.icon"
                                 :href="button.href"
                                 :btn-class="button.class"
-                                :enabled="button.enabled"
+                                :enabled="isLoading ? false : (button.enabled != undefined ? button.enabled : true)"
                             ></admin-table-button>
                         </div>
                     </div>
