@@ -170,19 +170,6 @@ class UserQuery extends ElementQuery
     /**
      * @inheritdoc
      */
-    public function __construct($elementType, array $config = [])
-    {
-        // Default status
-        if (!isset($config['status'])) {
-            $config['status'] = [User::STATUS_ACTIVE];
-        }
-
-        parent::__construct($elementType, $config);
-    }
-
-    /**
-     * @inheritdoc
-     */
     public function __set($name, $value)
     {
         if ($name === 'group') {
@@ -646,16 +633,17 @@ class UserQuery extends ElementQuery
         $this->joinElementTable('users');
 
         $this->query->select([
-            'users.username',
             'users.photoId',
+            'users.active',
+            'users.pending',
+            'users.locked',
+            'users.suspended',
+            'users.admin',
+            'users.username',
             'users.firstName',
             'users.lastName',
             'users.email',
             'users.unverifiedEmail',
-            'users.admin',
-            'users.locked',
-            'users.pending',
-            'users.suspended',
             'users.lastLoginDate',
             'users.lockoutDate',
             'users.hasDashboard',
@@ -716,19 +704,21 @@ class UserQuery extends ElementQuery
     protected function statusCondition(string $status)
     {
         switch ($status) {
+            case User::STATUS_INACTIVE:
+                return [
+                    'users.active' => false,
+                    'users.pending' => false,
+                ];
             case User::STATUS_ACTIVE:
                 return [
-                    'users.suspended' => false,
-                    'users.pending' => false,
+                    'users.active' => true,
                 ];
             case User::STATUS_PENDING:
                 return [
-                    'users.suspended' => false,
                     'users.pending' => true,
                 ];
             case User::STATUS_LOCKED:
                 return [
-                    'users.suspended' => false,
                     'users.locked' => true,
                 ];
             case User::STATUS_SUSPENDED:

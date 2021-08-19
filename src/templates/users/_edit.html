@@ -87,7 +87,6 @@
                     id: 'email',
                     name: 'email',
                     value: user.email,
-                    required: true,
                     type: 'email',
                     errors: user.getErrors('email')|merge(user.getErrors('unverifiedEmail')),
                     inputAttributes: {
@@ -98,7 +97,6 @@
                 {{ forms.checkboxField({
                     label: 'Send an activation email now'|t('app'),
                     name: 'sendVerificationEmail',
-                    checked: true
                 }) }}
 
             {% elseif user.getIsCurrent() or canAdministrateUsers %}
@@ -111,7 +109,6 @@
                     id: 'email',
                     name: 'email',
                     value: user.email,
-                    required: true,
                     type: 'email',
                     errors: user.getErrors('email')|merge(user.getErrors('unverifiedEmail')),
                     inputAttributes: {
@@ -138,7 +135,7 @@
                     {% endjs %}
                 {% endif %}
 
-                {% if currentUser.admin %}
+                {% if currentUser.admin and (user.pending or user.active) %}
                     {{ forms.checkboxField({
                         label: "Require a password reset on next login"|t('app'),
                         name: 'passwordResetRequired',
@@ -342,10 +339,19 @@
                                         {% if not loop.first %}<hr>{% endif %}
                                         <ul>
                                             {% for actionItem in actionList %}
-                                                <li><a
-                                                        {%- if actionItem.id is defined %} id="{{ actionItem.id }}"{% if actionItem.id == 'delete-btn' %} class="error"{% endif %}{% endif %}
-                                                        {%- if actionItem.action is defined %} class="formsubmit" data-action="{{ actionItem.action }}"{% endif -%}
-                                                    >{{ actionItem.label }}</a>
+                                                <li>
+                                                  {{ tag('a', {
+                                                      id: actionItem.id ?? false,
+                                                      class: [
+                                                          (actionItem.action ?? false) ? 'formsubmit',
+                                                          (actionItem.destructive ?? false) ? 'error',
+                                                      ]|filter,
+                                                      data: {
+                                                          action: actionItem.action ?? false,
+                                                          confirm: actionItem.confirm ?? false,
+                                                      },
+                                                      text: actionItem.label,
+                                                  }) }}
                                                 </li>
                                             {% endfor %}
                                         </ul>
@@ -365,7 +371,7 @@
                 {% endif %}
 
                 <div class="data">
-                    <h5 class="heading">{{ "Registered at"|t('app') }}</h5>
+                    <h5 class="heading">{{ 'Created at'|t('app') }}</h5>
                     <p class="value">{{ user.dateCreated|datetime('short') }}</p>
                 </div>
 

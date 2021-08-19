@@ -53,7 +53,11 @@ class UserActionCest
 
         $I->amLoggedInAs($this->currentUser);
         $this->cpTrigger = Craft::$app->getConfig()->getGeneral()->cpTrigger;
-        $user = new User(['username' => 'craftcmsfunctionaltest', 'email' => 'craft@cms.com']);
+        $user = new User([
+            'active' => true,
+            'username' => 'craftcmsfunctionaltest',
+            'email' => 'craft@cms.com',
+        ]);
 
         Craft::$app->setEdition(Craft::Pro);
         $I->saveElement($user);
