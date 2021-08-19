@@ -4,6 +4,7 @@
 
 ### Changed
 - It’s now possible to hook into the delete process of a Vue admin table row.
+- Dynamically-served control panel resources no longer get cache headers, and no longer validate that the URI hash matches. ([#9738](https://github.com/craftcms/cms/issues/9738))
 
 ### Fixed
 - Fixed a bug where Tokenfield inputs weren’t getting sized correctly when the window was resized, if rendered within a field that used a fieldset. ([#9734](https://github.com/craftcms/cms/issues/9734))
