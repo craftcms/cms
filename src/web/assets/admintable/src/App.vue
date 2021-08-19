@@ -38,7 +38,7 @@
                                 :icon="button.icon"
                                 :href="button.href"
                                 :btn-class="button.class"
-                                :enabled="button.enabled"
+                                :enabled="isLoading ? false : (button.enabled != undefined ? button.enabled : true)"
                             ></admin-table-button>
                         </div>
                     </div>
@@ -80,8 +80,8 @@
                         </template>
                         <template slot="title" slot-scope="props">
                             <span v-if="props.rowData.status !== undefined" class="status" :class="{enabled: props.rowData.status}"></span>
-                            <a class="cell-bold" v-if="props.rowData.url" :href="props.rowData.url">{{ props.rowData.title }}</a>
-                            <span class="cell-bold" v-if="!props.rowData.url">{{ props.rowData.title }}</span>
+                            <a :class="{'cell-bold': props.rowData.status === undefined || props.rowData.status === false}" v-if="props.rowData.url" :href="props.rowData.url">{{ props.rowData.title }}</a>
+                            <span :class="{'cell-bold': props.rowData.status === undefined || props.rowData.status === false}" v-else>{{ props.rowData.title }}</span>
                         </template>
                         <template slot="handle" slot-scope="props">
                             <code>{{ props.rowData.handle }}</code>
@@ -113,11 +113,14 @@
                             <admin-table-delete-button
                                 :id="props.rowData.id"
                                 :name="props.rowData.title"
+                                :before="beforeDelete"
                                 :success-message="deleteSuccessMessage"
                                 :confirmation-message="deleteConfirmationMessage"
                                 :fail-message="deleteFailMessage"
                                 :action-url="deleteAction"
                                 :disabled="!canDelete"
+                                v-on:loading="loading()"
+                                v-on:finishloading="loading(false)"
                                 v-on:reload="remove(props.rowIndex, props.rowData.id)"
                                 v-if="props.rowData._showDelete == undefined || props.rowData._showDelete == true"
                             ></admin-table-delete-button>
@@ -167,6 +170,10 @@
             allowMultipleSelections: {
                 type: Boolean,
                 default: true,
+            },
+            beforeDelete: {
+                type: Function,
+                default: () => { return Promise.resolve(true) }
             },
             buttons: {
                 type: Array,
@@ -331,10 +338,10 @@
                 }
             },
 
-            loading() {
-              this.isLoading = true;
+            loading(isLoading = true) {
+              this.isLoading = isLoading;
 
-              if (this.onLoading instanceof Function) {
+              if (isLoading && this.onLoading instanceof Function) {
                   this.onLoading();
               }
             },
