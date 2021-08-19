@@ -51,17 +51,17 @@ use yii\web\IdentityInterface;
 /**
  * User represents a user element.
  *
- * @property DateTime|null $cooldownEndTime the time when the user will be over their cooldown period
+ * @property Asset|null $photo the user's photo
+ * @property UserGroup[] $groups the user's groups
+ * @property string $name the user's full name or username
  * @property string|null $friendlyName the user's first name or username
  * @property string|null $fullName the user's full name
- * @property UserGroup[] $groups the user's groups
- * @property bool $isCurrent whether this is the current logged-in user
- * @property string $name the user's full name or username
- * @property Asset|null $photo the user's photo
- * @property array $preferences the user’s preferences
- * @property string|null $preferredLanguage the user’s preferred language
- * @property string|null $preferredLocale the user’s preferred formatting locale
- * @property DateInterval|null $remainingCooldownTime the remaining cooldown time for this user, if they've entered their password incorrectly too many times
+ * @property-read DateInterval|null $remainingCooldownTime the remaining cooldown time for this user, if they've entered their password incorrectly too many times
+ * @property-read DateTime|null $cooldownEndTime the time when the user will be over their cooldown period
+ * @property-read array $preferences the user’s preferences
+ * @property-read bool $isCurrent whether this is the current logged-in user
+ * @property-read string|null $preferredLanguage the user’s preferred language
+ * @property-read string|null $preferredLocale the user’s preferred formatting locale
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
