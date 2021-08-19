@@ -27,9 +27,9 @@ class GqlSchema extends Model
     public ?int $id = null;
 
     /**
-     * @var string Schema name
+     * @var string|null Schema name
      */
-    public string $name;
+    public ?string $name = null;
 
     /**
      * @var array The schema’s scope
