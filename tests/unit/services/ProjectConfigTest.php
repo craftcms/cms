@@ -5,7 +5,7 @@
  * @license https://craftcms.github.io/license/
  */
 
-namespace crafttests\unit\services\projectConfig;
+namespace crafttests\unit\services;
 
 use Codeception\Stub\Expected;
 use Craft;
@@ -20,9 +20,9 @@ use yii\base\NotSupportedException;
  * Unit tests for ProjectConfig service.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.3.16
+ * @since 4.0.0
  */
-class NoFixturesTest extends TestCase
+class ProjectConfigTest extends TestCase
 {
     /**
      * @var UnitTester
@@ -49,70 +49,6 @@ class NoFixturesTest extends TestCase
         $projectConfig->rebuild();
 
         $projectConfig->readOnly = $readOnly;
-    }
-
-    /**
-     * Tests setting a value to project config.
-     *
-     * @dataProvider setConfigProvider
-     * @param $path
-     * @param $value
-     */
-    public function testSettingAndRemovingConfigValue($path, $value)
-    {
-        $projectConfig = Craft::$app->getProjectConfig();
-        $projectConfig->set($path, $value);
-
-        if (is_array($value)) {
-            $value = ProjectConfigHelper::cleanupConfig($value);
-        }
-
-        self::assertSame($projectConfig->get($path), $value);
-
-        $projectConfig->remove($path);
-        self::assertNull($projectConfig->get($path));
-    }
-
-    /**
-     * Tests whether setting a config value correctly appears in the database
-     */
-    public function testConfigChangesPropagatedToDb()
-    {
-        $yaml = [
-            'sections' => ['someUid' => ['handle' => 'someHandle']],
-            'sections.someUid' => ['handle' => 'otherHandle'],
-            'sections.someUid.handle' => 'otherHandle'
-        ];
-
-        $sectionService = $this->make(Sections::class, [
-            'handleChangedSection' => Expected::once()
-        ]);
-        $projectConfig = $this->make(ProjectConfig::class, [
-            '_storedConfig' => [
-                'sections' => [
-                    'someUid' => [
-                        'handle' => 'someHandle'
-                    ]
-                ]
-            ],
-            'get' => function($path, $useYaml) use ($yaml) {
-                return $yaml[$path];
-            }
-        ]);
-
-        // Mocking the project config killed all event listeners, though
-        $projectConfig->init();
-
-        $projectConfig
-            ->onAdd(Sections::CONFIG_SECTIONS_KEY . '.{uid}', [$sectionService, 'handleChangedSection'])
-            ->onUpdate(Sections::CONFIG_SECTIONS_KEY . '.{uid}', [$sectionService, 'handleChangedSection'])
-            ->onRemove(Sections::CONFIG_SECTIONS_KEY . '.{uid}', [$sectionService, 'handleDeletedSection']);
-
-
-        Craft::$app->set('sections', $sectionService);
-        Craft::$app->set('projectConfig', $projectConfig);
-
-        Craft::$app->getProjectConfig()->processConfigChanges('sections.someUid.handle', false, null, true);
     }
 
     /**
