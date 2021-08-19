@@ -1209,6 +1209,10 @@ class ProjectConfig extends Component
     {
         $this->reset();
 
+        $this->muteEvents = true;
+        $readOnly = $this->readOnly;
+        $this->readOnly = false;
+
         $config = $this->get();
         $config['dateModified'] = DateTimeHelper::currentTimeStamp();
         $config[self::CONFIG_SYSTEM] = $this->_systemConfig($config[self::CONFIG_SYSTEM] ?? []);
@@ -1233,10 +1237,6 @@ class ProjectConfig extends Component
             'config' => $config,
         ]);
         $this->trigger(self::EVENT_REBUILD, $event);
-
-        $this->muteEvents = true;
-        $readOnly = $this->readOnly;
-        $this->readOnly = false;
 
         $this->_discardProjectConfigNames();
 
