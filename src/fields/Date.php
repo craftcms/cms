@@ -401,7 +401,7 @@ class Date extends Field implements PreviewableFieldInterface, SortableFieldInte
                 $value = $source->getFieldValue($fieldName);
 
                 // Set the timezone, unless it has been already set by the field itself.
-                if (!$this->showTimeZone) {
+                if (!$this->showTimeZone && $value instanceof DateTime) {
                     $value->setTimeZone(new DateTimeZone(FormatDateTime::defaultTimezone()));
                 }
 

@@ -842,8 +842,10 @@ class App
 
         if (Craft::$app->getRequest()->getIsCpRequest() && !Craft::$app->getResponse()->isSent) {
             // Is someone logged in?
-            $id = SessionHelper::get(Craft::$app->getUser()->idParam);
-            if ($id) {
+            if (
+                Craft::$app->getIsInstalled() &&
+                ($id = SessionHelper::get(Craft::$app->getUser()->idParam))
+            ) {
                 // If they have a preferred locale, use it
                 $usersService = Craft::$app->getUsers();
                 if (
