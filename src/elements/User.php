@@ -240,6 +240,21 @@ class User extends Element implements IdentityInterface
                 'criteria' => ['admin' => true],
                 'hasThumbs' => true,
             ],
+            [
+                'heading' => Craft::t('app', 'Account Type'),
+            ],
+            [
+                'key' => 'credentialed',
+                'label' => Craft::t('app', 'Credentialed'),
+                'criteria' => ['status' => ['active', 'pending']],
+                'hasThumbs' => true,
+            ],
+            [
+                'key' => 'inactive',
+                'label' => Craft::t('app', 'Inactive'),
+                'criteria' => ['status' => 'inactive'],
+                'hasThumbs' => true,
+            ],
         ];
 
         $groups = Craft::$app->getUserGroups()->getAllGroups();

@@ -4,6 +4,7 @@
 
 ### Added
 - Added the “Inactive” user status, which can be used by users which can’t be signed into. ([#8963](https://github.com/craftcms/cms/discussions/8963))
+- Added “Credentialed” and “Inactive” user sources.
 - Added the “Deactivate…” user action for pending and active users.
 - Added the `index-assets/cleanup` command.
 - Added the “Deactivate users by default” user registration setting, which replaces “Suspend users by default”. ([#5830](https://github.com/craftcms/cms/issues/5830))
