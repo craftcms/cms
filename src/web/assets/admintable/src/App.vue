@@ -113,11 +113,14 @@
                             <admin-table-delete-button
                                 :id="props.rowData.id"
                                 :name="props.rowData.title"
+                                :before="beforeDelete"
                                 :success-message="deleteSuccessMessage"
                                 :confirmation-message="deleteConfirmationMessage"
                                 :fail-message="deleteFailMessage"
                                 :action-url="deleteAction"
                                 :disabled="!canDelete"
+                                v-on:loading="loading()"
+                                v-on:finishloading="loading(false)"
                                 v-on:reload="remove(props.rowIndex, props.rowData.id)"
                                 v-if="props.rowData._showDelete == undefined || props.rowData._showDelete == true"
                             ></admin-table-delete-button>
@@ -167,6 +170,10 @@
             allowMultipleSelections: {
                 type: Boolean,
                 default: true,
+            },
+            beforeDelete: {
+                type: Function,
+                default: () => { return Promise.resolve(true) }
             },
             buttons: {
                 type: Array,
@@ -331,10 +338,10 @@
                 }
             },
 
-            loading() {
-              this.isLoading = true;
+            loading(isLoading = true) {
+              this.isLoading = isLoading;
 
-              if (this.onLoading instanceof Function) {
+              if (isLoading && this.onLoading instanceof Function) {
                   this.onLoading();
               }
             },

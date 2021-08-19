@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+### Changed
+- It is now possible to hook into the delete process of an admin table row.
+
 ### Fixed
 - Fixed a bug where Tokenfield inputs weren’t getting sized correctly when the window was resized, if rendered within a field that used a fieldset. ([#9734](https://github.com/craftcms/cms/issues/9734))
 
