@@ -2325,6 +2325,8 @@ body.rtl .chars-left { margin: -27px 0 0 7px ; }
 
 .flex > .field, .flex > fieldset { margin-top: 0; margin-bottom: 0; }
 
+.field { min-inline-size: initial; }
+
 .field > .status-badge { position: absolute; top: 0; width: 2px; height: 100%; content: ''; cursor: help; }
 
 body.ltr .field > .status-badge { left: -25px; }

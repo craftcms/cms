@@ -1,5 +1,17 @@
 # Release Notes for Craft CMS 3.x
 
+## 3.7.10 - 2021-08-19
+
+### Changed
+- It’s now possible to hook into the delete process of a Vue admin table row.
+- Dynamically-served control panel resources no longer get cache headers, and no longer validate that the URI hash matches. ([#9738](https://github.com/craftcms/cms/issues/9738))
+
+### Fixed
+- Fixed a bug where Tokenfield inputs weren’t getting sized correctly when the window was resized, if rendered within a field that used a fieldset. ([#9734](https://github.com/craftcms/cms/issues/9734))
+- Fixed a bug where row headings that included a status were getting bold text in Vue admin tables. ([#9704](https://github.com/craftcms/cms/issues/9704))
+- Fix a bug where GraphQL queries could fail if they included Date fields with empty values.
+- Fixed an error that could occur when installing Craft using whe web-based install wizard, if a database connection couldn’t be established. ([#9740](https://github.com/craftcms/cms/pull/9740))
+
 ## 3.7.9 - 2021-08-17
 
 ### Added

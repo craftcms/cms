@@ -34,32 +34,33 @@ new Craft.VueAdminTable({...options...});
 
 ### Options
 
-| Name                      | Type     | Default                                     | Description                                                  |
-| ------------------------- | -------- | ------------------------------------------- | ------------------------------------------------------------ |
-| actions                   | Array    | `[]`                                        | Array of action options to create action buttons in the table toolbar. |
-| allowMultipleSelections | Bool | true | When using checkboxes, determines whether or not multiple selections are allowed. When set to `false` the select all checkbox is hidden. |
-| checkboxes                | Bool     | `false`                                     | Whether to show the checkbox column or not.                  |
-| checkboxStatus            | Function | `true`                                      | Callback function to determine if the row's checkbox should be disabled. [See example below](#checkboxstatus-example) |
-| columns                   | Array    | `[]`                                        | Used to define the table columns. See column definition.     |
-| container                 | String   | `null`                                      | CSS selector for which element the table should mounted on.     |
-| deleteAction              | String   | `null`                                      | The action URL used to post to for deleting an item. Enables the delete buttons when not `null`. |
-| deleteCallback            | Function | `null`                                      | Callback function after the delete action has taken place.   |
-| deleteConfirmationMessage | String   | `Are you sure you want to delete “{name}”?` | Message to be displayed in the confirmation message pop up.  |
-| deleteFailMessage | String | ` Couldn’t delete “{name}”.` | Message to be displayed as the fail error after a delete failure. |
-| deleteSuccessMessage      | String   | `“{name}” deleted.`                         | Message to be displayed as the success notice after successful deletion. |
-| emptyMessage              | String   | `No data available.`                        | Message to be displayed when there are no rows in the table data. |
-| fullPage                  | Bool     | `false`                                     | Set to this to true when the table is the only element on the template. Sets the correct styling classes. |
-| minItems                  | Int      | `null`                                      | The minimum number of items allowed in the table.            |
-| padded                   | Bool      | `false`                                     | Set this to true to add padding around the table. |
-| perPage                   | Int      | `null`                                      | Used with `tableDataEndpoint` to define the number of rows to show per page. |
-| reorderAction             | String   | `null`                                      | The action URL used to post to for reordering items. Reorder draggable handles are display when this option is provided. |
-| reorderSuccessMessage     | String   | `Items reordered`                           | Message to be displayed as the success notice after successful reorder. |
-| reorderFailMessage        | String   | `Couldn’t reorder items`                    | Message to be displayed as the fail notice after reorder failure. |
-| search                    | Bool     | `false`                                     | Whether or not to show the search field.                     |
-| searchPlaceholder         | String   | `Search`                                    | Search placeholder text.                                     |
-| buttons                   | Array    | `[]`                                        | Array of buttons to be placed in the toolbar.                                     |
-| tableData                 | Array    | `null`                                      | Array of objects used to populate the table data for data mode. |
-| tableDataEndpoint         | String   | `null`                                      | Endpoint for api mode to retrieve table data, pagination and table metadata (e.g. total count). |
+| Name                      | Type     | Default                                      | Description                                                                                                                              |
+| ------------------------- | -------- | -------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
+| actions                   | Array    | `[]`                                         | Array of action options to create action buttons in the table toolbar.                                                                   |
+| allowMultipleSelections   | Bool     | true                                         | When using checkboxes, determines whether or not multiple selections are allowed. When set to `false` the select all checkbox is hidden. |
+| beforeDelete              | Function | `() => { return new Promise.resolve(true) }` | Function that returns a promise which resolves to a `boolean`. This will determine if the delete process continues.                      |
+| buttons                   | Array    | `[]`                                         | Array of buttons to be placed in the toolbar.                                                                                            |
+| checkboxes                | Bool     | `false`                                      | Whether to show the checkbox column or not.                                                                                              |
+| checkboxStatus            | Function | `true`                                       | Callback function to determine if the row's checkbox should be disabled. [See example below](#checkboxstatus-example)                    |
+| columns                   | Array    | `[]`                                         | Used to define the table columns. See column definition.                                                                                 |
+| container                 | String   | `null`                                       | CSS selector for which element the table should mounted on.                                                                              |
+| deleteAction              | String   | `null`                                       | The action URL used to post to for deleting an item. Enables the delete buttons when not `null`.                                         |
+| deleteCallback            | Function | `null`                                       | Callback function after the delete action has taken place.                                                                               |
+| deleteConfirmationMessage | String   | `Are you sure you want to delete “{name}”?`  | Message to be displayed in the confirmation message pop up.                                                                              |
+| deleteFailMessage         | String   | ` Couldn’t delete “{name}”.`                 | Message to be displayed as the fail error after a delete failure.                                                                        |
+| deleteSuccessMessage      | String   | `“{name}” deleted.`                          | Message to be displayed as the success notice after successful deletion.                                                                 |
+| emptyMessage              | String   | `No data available.`                         | Message to be displayed when there are no rows in the table data.                                                                        |
+| fullPage                  | Bool     | `false`                                      | Set to this to true when the table is the only element on the template. Sets the correct styling classes.                                |
+| minItems                  | Int      | `null`                                       | The minimum number of items allowed in the table.                                                                                        |
+| padded                    | Bool     | `false`                                      | Set this to true to add padding around the table.                                                                                        |
+| perPage                   | Int      | `null`                                       | Used with `tableDataEndpoint` to define the number of rows to show per page.                                                             |
+| reorderAction             | String   | `null`                                       | The action URL used to post to for reordering items. Reorder draggable handles are display when this option is provided.                 |
+| reorderSuccessMessage     | String   | `Items reordered`                            | Message to be displayed as the success notice after successful reorder.                                                                  |
+| reorderFailMessage        | String   | `Couldn’t reorder items`                     | Message to be displayed as the fail notice after reorder failure.                                                                        |
+| search                    | Bool     | `false`                                      | Whether or not to show the search field.                                                                                                 |
+| searchPlaceholder         | String   | `Search`                                     | Search placeholder text.                                                                                                                 |
+| tableData                 | Array    | `null`                                       | Array of objects used to populate the table data for data mode.                                                                          |
+| tableDataEndpoint         | String   | `null`                                       | Endpoint for api mode to retrieve table data, pagination and table metadata (e.g. total count).                                          |
 
 #### `checkboxStatus` example
 
@@ -396,5 +397,29 @@ new Craft.VueAdminTable({
             enabled: () => true,
         }
     ],
+});
+```
+
+## Before Delete
+
+The before delete hook allows greater control over whether the delete process continues. It will allow you to hook into the process using a function returning a `Promise`.
+
+The `id` param is passed to the before delete method.
+
+### Example
+
+In the example below, after 1.5 seconds the promise will resolve with a `boolean` based on if the `id` is greater than `99`. 
+
+```js
+new Craft.VueAdminTable({
+    // ...
+    beforeDelete: id => {
+        return new Promise(function (resolve) {
+            setTimeout(() => {
+                resolve(id > 99);
+            }, 1500);
+        });
+    },
+    // ...
 });
 ```
