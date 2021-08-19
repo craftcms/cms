@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 3.x
 
-## Unreleased
+## 3.7.10 - 2021-08-19
 
 ### Changed
 - It’s now possible to hook into the delete process of a Vue admin table row.
