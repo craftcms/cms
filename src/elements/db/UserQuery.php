@@ -170,19 +170,6 @@ class UserQuery extends ElementQuery
     /**
      * @inheritdoc
      */
-    public function __construct($elementType, array $config = [])
-    {
-        // Default status
-        if (!isset($config['status'])) {
-            $config['status'] = [User::STATUS_ACTIVE];
-        }
-
-        parent::__construct($elementType, $config);
-    }
-
-    /**
-     * @inheritdoc
-     */
     public function __set($name, $value)
     {
         if ($name === 'group') {

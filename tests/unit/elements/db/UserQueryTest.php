@@ -71,7 +71,7 @@ class UserQueryTest extends TestCase
     {
         // Our admin user + Our active user + Our locked user are defaults
         $all = User::find()->all();
-        self::assertCount(4, $all);
+        self::assertCount(5, $all);
     }
 
     /**
@@ -80,7 +80,7 @@ class UserQueryTest extends TestCase
     public function testCount()
     {
         $count = User::find()->count();
-        self::assertSame('4', (string)$count);
+        self::assertSame('5', (string)$count);
     }
 
     /*

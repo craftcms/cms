@@ -62,6 +62,7 @@
 ### Changed
 - Craft now requires PHP 7.4 or later.
 - Users are no longer required to have a username or email.
+- User queries now return all users by default, rather than only active users.
 - Filtering users by `active`, `pending`, and `locked` statuses no longer excludes suspended users.
 - Relational fields now load elements in the current site rather than the primary site, if the source element isn’t localizable. ([#7048](https://github.com/craftcms/cms/issues/7048))
 - The `users/save-user` action no longer includes a `unverifiedEmail` key in failure responses.
