@@ -1133,10 +1133,11 @@ class Install extends Migration
         // Save the first user
         echo '    > saving the first user ... ';
         $user = new User([
+            'active' => true,
+            'admin' => true,
             'username' => $this->username,
             'newPassword' => $this->password,
             'email' => $this->email,
-            'admin' => true,
         ]);
         Craft::$app->getElements()->saveElement($user);
         echo "done\n";
