@@ -3,12 +3,12 @@
 ## Unreleased
 
 ### Changed
-- It is now possible to hook into the delete process of an admin table row.
+- It’s now possible to hook into the delete process of a Vue admin table row.
 
 ### Fixed
 - Fixed a bug where Tokenfield inputs weren’t getting sized correctly when the window was resized, if rendered within a field that used a fieldset. ([#9734](https://github.com/craftcms/cms/issues/9734))
-- Fixed a bug where row titles with a status were showing as bold in admin tables. ([#9704](https://github.com/craftcms/cms/issues/9704))
-- Fix a bug where GraphQL queries would fail if they included date fields that had no values and also had timezones turned off.
+- Fixed a bug where row headings that included a status were getting bold text in Vue admin tables. ([#9704](https://github.com/craftcms/cms/issues/9704))
+- Fix a bug where GraphQL queries could fail if they included Date fields with empty values.
 
 ## 3.7.9 - 2021-08-17
 
