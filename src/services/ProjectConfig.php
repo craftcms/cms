@@ -433,7 +433,7 @@ class ProjectConfig extends Component
     public function get(?string $path = null, bool $getFromYaml = false)
     {
         if ($getFromYaml) {
-            $source = $this->_changesBeingApplied ?? $this->_getConfigurationFromYaml();
+            $source = $this->_changesBeingApplied ?? $this->getConfigFromYaml();
         } else {
             $source = $this->_getLoadedConfig();
         }
@@ -509,7 +509,7 @@ class ProjectConfig extends Component
 
         // Save config only if something actually changed.
         if ($valueChanged) {
-            $config = $this->_getConfigurationFromYaml();
+            $config = $this->getConfigFromYaml();
             $this->_traverseDataArray($config, $path, $value, $value === null);
             $this->_saveConfig($config);
         }
@@ -652,7 +652,7 @@ class ProjectConfig extends Component
         }
 
         if ($path !== null) {
-            $storedConfig = $this->_getStoredConfig();
+            $storedConfig = $this->getConfigFromDb();
             $oldValue = $this->_traverseDataArray($storedConfig, $path);
             $newValue = $this->get($path, true);
             return $this->encodeValueAsString($oldValue) !== $this->encodeValueAsString($newValue);
@@ -704,7 +704,7 @@ class ProjectConfig extends Component
 
         $this->_parsedChanges[$path] = true;
 
-        $storedConfig = $this->_getStoredConfig();
+        $storedConfig = $this->getConfigFromDb();
         $oldValue = $this->_traverseDataArray($storedConfig, $path);
 
         // If this path is currently being processed, use its original pre-processed value as the "old" value
@@ -1350,7 +1350,7 @@ class ProjectConfig extends Component
      *
      * @return array
      */
-    private function _getConfigurationFromYaml(): array
+    protected function getConfigFromYaml(): array
     {
         if (!empty($this->_appliedConfig)) {
             return $this->_appliedConfig;
@@ -1419,7 +1419,7 @@ class ProjectConfig extends Component
         $currentConfig = $this->_getLoadedConfig() ?? [];
 
         if ($configData === null) {
-            $configData = $this->_getConfigurationFromYaml() ?? [];
+            $configData = $this->getConfigFromYaml() ?? [];
         }
 
         unset($configData['imports'], $currentConfig['imports']);
@@ -1629,7 +1629,7 @@ class ProjectConfig extends Component
         }
 
         // Otherwise just return whatever's in the DB
-        return $this->_getStoredConfig();
+        return $this->getConfigFromDb();
     }
 
     /**
@@ -1637,7 +1637,7 @@ class ProjectConfig extends Component
      *
      * @return array
      */
-    private function _getStoredConfig(): array
+    protected function getConfigFromDb(): array
     {
         if (!isset($this->_storedConfig)) {
             $this->_storedConfig = $this->_loadInternalConfigData();
