@@ -47,6 +47,11 @@ class UserElementTest extends TestCase
     protected $activeUser;
 
     /**
+     * @var User
+     */
+    protected $inactiveUser;
+
+    /**
      *
      */
     public function testValidateUnverifiedEmail()
@@ -284,6 +289,17 @@ class UserElementTest extends TestCase
     }
 
     /**
+     *
+     */
+    public function testAuthenticate()
+    {
+        $this->assertTrue($this->activeUser->authenticate('password'));
+        $this->assertFalse($this->inactiveUser->authenticate('password'));
+        $this->assertEquals($this->inactiveUser->authError, User::AUTH_INVALID_CREDENTIALS);
+        $this->inactiveUser->authError = null;
+    }
+
+    /**
      * @inheritdoc
      */
     protected function _before()
@@ -297,12 +313,24 @@ class UserElementTest extends TestCase
                 'lastName' => 'user',
                 'username' => 'activeUser',
                 'email' => 'active@user.com',
+                'password' => '$2a$13$5j8bSRoKQZipjtIg6FXWR.kGRR3UfCL.QeMIt2yTRH1.hCNHLQKtq',
+            ]
+        );
+
+        $this->inactiveUser = new User(
+            [
+                'firstName' => 'inactive',
+                'lastName' => 'user',
+                'username' => 'inactiveUser',
+                'email' => 'inactive@user.com',
+                'password' => '$2a$13$5j8bSRoKQZipjtIg6FXWR.kGRR3UfCL.QeMIt2yTRH1.hCNHLQKtq',
             ]
         );
 
         $this->users = Craft::$app->getUsers();
 
         $this->tester->saveElement($this->activeUser);
+        $this->tester->saveElement($this->inactiveUser);
     }
 
     /**
@@ -313,5 +341,6 @@ class UserElementTest extends TestCase
         parent::_after();
 
         $this->tester->deleteElement($this->activeUser);
+        $this->tester->deleteElement($this->inactiveUser);
     }
 }
