@@ -97,6 +97,7 @@ class SearchTest extends Unit
     {
         // Create a user
         $user = new User();
+        $user->active = true;
         $user->username = 'testIndexElementAttributes1';
         $user->email = 'testIndexElementAttributes1@test.com';
         $user->firstName = 'john smith';

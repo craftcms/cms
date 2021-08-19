@@ -96,6 +96,7 @@ class CraftCodeceptionModuleTest extends Unit
     public function testAssertElementsExist()
     {
         $configArray = [
+            'active' => true,
             'firstName' => 'john',
             'lastName' => 'smith',
             'username' => 'user2',
@@ -117,6 +118,7 @@ class CraftCodeceptionModuleTest extends Unit
     public function testAssertElementFails()
     {
         $configArray = [
+            'active' => true,
             'firstName' => 'john',
             'lastName' => 'smith',
             'username' => 'user2',
@@ -141,6 +143,7 @@ class CraftCodeceptionModuleTest extends Unit
     public function testAssertElementExistsWorksWithMultiple()
     {
         $configArray = [
+            'active' => true,
             'firstName' => 'john',
             'lastName' => 'smith',
             'username' => 'user2',

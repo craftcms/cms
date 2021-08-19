@@ -59,6 +59,7 @@ class UserElementTest extends TestCase
         self::assertSame([], $this->activeUser->getErrors());
 
         $user = new User([
+            'active' => true,
             'email' => 'unverifemail@email.com',
             'username' => 'unverifusername',
             'unverifiedEmail' => 'unverifemail@email.com',
@@ -291,6 +292,7 @@ class UserElementTest extends TestCase
 
         $this->activeUser = new User(
             [
+                'active' => true,
                 'firstName' => 'active',
                 'lastName' => 'user',
                 'username' => 'activeUser',
