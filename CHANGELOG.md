@@ -25,6 +25,7 @@
 - Added `craft\elements\Asset::setFilename()`.
 - Added `craft\elements\User::$active`.
 - Added `craft\elements\User::STATUS_INACTIVE`.
+- Added `craft\elements\User::getIsCredentialed()`.
 - Added `craft\errors\MissingVolumeFolderException`.
 - Added `craft\helpers\Assets::downloadFile()`.
 - Added `craft\helpers\Db::dropAllForeignKeysToTable()`.

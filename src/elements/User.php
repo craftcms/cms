@@ -59,6 +59,7 @@ use yii\web\IdentityInterface;
  * @property-read DateInterval|null $remainingCooldownTime the remaining cooldown time for this user, if they've entered their password incorrectly too many times
  * @property-read DateTime|null $cooldownEndTime the time when the user will be over their cooldown period
  * @property-read array $preferences the user’s preferences
+ * @property-read bool $isCredentialed whether the user account can be logged into
  * @property-read bool $isCurrent whether this is the current logged-in user
  * @property-read string|null $preferredLanguage the user’s preferred language
  * @property-read string|null $preferredLocale the user’s preferred formatting locale
@@ -722,6 +723,7 @@ class User extends Element implements IdentityInterface
         $names[] = 'cooldownEndTime';
         $names[] = 'friendlyName';
         $names[] = 'fullName';
+        $names[] = 'isCredentialed';
         $names[] = 'isCurrent';
         $names[] = 'name';
         $names[] = 'preferredLanguage';
@@ -832,6 +834,17 @@ class User extends Element implements IdentityInterface
         ];
 
         return $rules;
+    }
+
+    /**
+     * Returns whether the user account can be logged into.
+     *
+     * @return bool
+     * @since 4.0.0
+     */
+    public function getIsCredentialed(): bool
+    {
+        return $this->active || $this->pending;
     }
 
     /**

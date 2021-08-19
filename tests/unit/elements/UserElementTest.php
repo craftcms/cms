@@ -300,6 +300,15 @@ class UserElementTest extends TestCase
     }
 
     /**
+     *
+     */
+    public function testIsCredentialed()
+    {
+        $this->assertTrue($this->activeUser->getIsCredentialed());
+        $this->assertFalse($this->inactiveUser->getIsCredentialed());
+    }
+
+    /**
      * @inheritdoc
      */
     protected function _before()
