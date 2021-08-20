@@ -15,6 +15,7 @@ use craft\events\BatchElementActionEvent;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Db;
 use craft\helpers\ElementHelper;
+use craft\i18n\Translation;
 use craft\queue\BaseJob;
 use craft\services\Elements;
 
@@ -61,7 +62,7 @@ class ApplyNewPropagationMethod extends BaseJob
 
         $callback = function(BatchElementActionEvent $e) use ($elementType, $queue, $query, $total, $elementsService, $allSiteIds) {
             if ($e->query === $query) {
-                $this->setProgress($queue, ($e->position - 1) / $total, Craft::t('app', '{step, number} of {total, number}', [
+                $this->setProgress($queue, ($e->position - 1) / $total, Translation::prep('app', '{step, number} of {total, number}', [
                     'step' => $e->position,
                     'total' => $total,
                 ]));
@@ -127,6 +128,6 @@ class ApplyNewPropagationMethod extends BaseJob
      */
     protected function defaultDescription(): ?string
     {
-        return Craft::t('app', 'Applying new propagation method to elements');
+        return Translation::prep('app', 'Applying new propagation method to elements');
     }
 }

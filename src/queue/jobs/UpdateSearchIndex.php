@@ -9,6 +9,7 @@ namespace craft\queue\jobs;
 
 use Craft;
 use craft\base\ElementInterface;
+use craft\i18n\Translation;
 use craft\queue\BaseJob;
 
 /**
@@ -67,6 +68,6 @@ class UpdateSearchIndex extends BaseJob
      */
     protected function defaultDescription(): ?string
     {
-        return Craft::t('app', 'Updating search indexes');
+        return Translation::prep('app', 'Updating search indexes');
     }
 }

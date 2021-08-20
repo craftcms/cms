@@ -18,7 +18,12 @@ use yii\base\BaseObject;
 abstract class BaseJob extends BaseObject implements JobInterface
 {
     /**
-     * @var string|null The configured job description
+     * @var string|null The configured job description.
+     *
+     * ::: tip
+     * Run the description through [[\craft\i18n\Translation::prep()]] rather than [[\yii\BaseYii::t()|Craft::t()]]
+     * so it can be lazy-translated for users’ preferred languages rather that the current app language.
+     * :::
      */
     public ?string $description = null;
 
@@ -54,6 +59,11 @@ abstract class BaseJob extends BaseObject implements JobInterface
     /**
      * Returns a default description for [[getDescription()]].
      *
+     * ::: tip
+     * Run the description through [[\craft\i18n\Translation::prep()]] rather than [[\yii\BaseYii::t()|Craft::t()]]
+     * so it can be lazy-translated for users’ preferred languages rather that the current app language.
+     * :::
+     *
      * @return string|null
      */
     protected function defaultDescription(): ?string
@@ -63,6 +73,11 @@ abstract class BaseJob extends BaseObject implements JobInterface
 
     /**
      * Sets the job progress on the queue.
+     *
+     * ::: tip
+     * Run the label through [[\craft\i18n\Translation::prep()]] rather than [[\yii\BaseYii::t()|Craft::t()]]
+     * so it can be lazy-translated for users’ preferred languages rather that the current app language.
+     * :::
      *
      * @param \yii\queue\Queue|QueueInterface $queue
      * @param float $progress A number between 0 and 1
