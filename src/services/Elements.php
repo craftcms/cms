@@ -46,6 +46,7 @@ use craft\helpers\Db;
 use craft\helpers\ElementHelper;
 use craft\helpers\Queue;
 use craft\helpers\StringHelper;
+use craft\i18n\Translation;
 use craft\queue\jobs\FindAndReplace;
 use craft\queue\jobs\UpdateElementSlugsAndUris;
 use craft\queue\jobs\UpdateSearchIndex;
@@ -1535,13 +1536,13 @@ class Elements extends Component
                 $refTagPrefix = "{{$refHandle}:";
 
                 Queue::push(new FindAndReplace([
-                    'description' => Craft::t('app', 'Updating element references'),
+                    'description' => Translation::prep('app', 'Updating element references'),
                     'find' => $refTagPrefix . $mergedElement->id . ':',
                     'replace' => $refTagPrefix . $prevailingElement->id . ':',
                 ]));
 
                 Queue::push(new FindAndReplace([
-                    'description' => Craft::t('app', 'Updating element references'),
+                    'description' => Translation::prep('app', 'Updating element references'),
                     'find' => $refTagPrefix . $mergedElement->id . '}',
                     'replace' => $refTagPrefix . $prevailingElement->id . '}',
                 ]));

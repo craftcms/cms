@@ -12,6 +12,7 @@ use craft\base\ElementInterface;
 use craft\elements\db\ElementQuery;
 use craft\elements\db\ElementQueryInterface;
 use craft\events\BatchElementActionEvent;
+use craft\i18n\Translation;
 use craft\queue\BaseJob;
 use craft\services\Elements;
 
@@ -52,7 +53,7 @@ class PropagateElements extends BaseJob
 
         $callback = function(BatchElementActionEvent $e) use ($queue, $query, $total) {
             if ($e->query === $query) {
-                $this->setProgress($queue, ($e->position - 1) / $total, Craft::t('app', '{step, number} of {total, number}', [
+                $this->setProgress($queue, ($e->position - 1) / $total, Translation::prep('app', '{step, number} of {total, number}', [
                     'step' => $e->position,
                     'total' => $total,
                 ]));
@@ -74,7 +75,7 @@ class PropagateElements extends BaseJob
         /** @var ElementInterface $elementType */
         $elementType = $query->elementType;
         $total = $query->count();
-        return Craft::t('app', 'Propagating {type}', [
+        return Translation::prep('app', 'Propagating {type}', [
             'type' => $total == 1 ? $elementType::lowerDisplayName() : $elementType::pluralLowerDisplayName(),
         ]);
     }
