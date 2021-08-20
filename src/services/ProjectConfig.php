@@ -468,8 +468,8 @@ class ProjectConfig extends Component
     public function set(string $path, $value, ?string $message = null, bool $updateTimestamp = true, bool $rebuilding = false): void
     {
         // If we haven't yet pulled in the YAML changes, then anything in there should be discarded
-        if (empty($this->_appliedConfig)) {
-            $this->_appliedConfig = $this->_getLoadedConfig();
+        if (!$this->hasAppliedConfig()) {
+            $this->setAppliedConfig($this->_getLoadedConfig());
         }
 
         if (\is_array($value)) {
@@ -594,8 +594,8 @@ class ProjectConfig extends Component
         $this->_changesBeingApplied = null;
 
         // Cover an edge-case where we're applying changes, but there's no config file yet
-        if (empty($this->_appliedConfig)) {
-            $this->_appliedConfig = $configData;
+        if (!$this->hasAppliedConfig()) {
+            $this->setAppliedConfig($configData);
         }
     }
 
@@ -1352,8 +1352,8 @@ class ProjectConfig extends Component
      */
     protected function getConfigFromYaml(): array
     {
-        if (!empty($this->_appliedConfig)) {
-            return $this->_appliedConfig;
+        if ($this->hasAppliedConfig()) {
+            return $this->getAppliedConfig();
         }
 
         // If the file does not exist, just use the loaded config
@@ -1399,7 +1399,7 @@ class ProjectConfig extends Component
             }
         }
 
-        $this->_appliedConfig = $generatedConfig;
+        $this->setAppliedConfig($generatedConfig);
 
         return $generatedConfig ?? [];
     }
@@ -1542,7 +1542,7 @@ class ProjectConfig extends Component
      */
     private function _saveConfig(array $data): void
     {
-        $this->_appliedConfig = $data;
+        $this->setAppliedConfig($data);
         $this->_isConfigModified = true;
     }
 
@@ -1676,7 +1676,7 @@ class ProjectConfig extends Component
      */
     private function _updateYamlFiles(): void
     {
-        $config = ProjectConfigHelper::splitConfigIntoComponents($this->_appliedConfig);
+        $config = ProjectConfigHelper::splitConfigIntoComponents($this->getAppliedConfig());
 
         try {
             $basePath = Craft::$app->getPath()->getProjectConfigPath();
@@ -1885,6 +1885,36 @@ class ProjectConfig extends Component
         return new ExpressionDependency([
             'expression' => Craft::class . '::$app->getInfo()->configVersion',
         ]);
+    }
+
+    /**
+     * Return true if applied config is set.
+     * 
+     * @return bool
+     */
+    protected function hasAppliedConfig(): bool
+    {
+        return !empty($this->_appliedConfig);
+    }
+    
+    /**
+     * Get the applied config.
+     *
+     * @return array
+     */
+    protected function getAppliedConfig(): array
+    {
+        return $this->_appliedConfig;
+    }
+
+    /**
+     * Set the applied config.
+     *
+     * @param array $appliedConfig
+     */
+    protected function setAppliedConfig(array $appliedConfig): void
+    {
+        $this->_appliedConfig = $appliedConfig;
     }
 
     /**
