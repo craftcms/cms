@@ -29,6 +29,43 @@ class ProjectConfigTest extends TestCase
      */
     protected $tester;
 
+    protected $internalConfig = [
+        'a' => 'b',
+        'b' => [
+            'c' => 'd'
+        ],
+        'e' => [1, 2, 3],
+        'f' =>  'g'
+    ];
+    
+    protected $externalConfig = [
+        'aa' => 'bb',
+        'bb' => [
+            'vc' => 'dd'
+        ],
+        'ee' => [11, 22, 33],
+        'f' => 'g'
+    ];
+
+    /**
+     * @return ProjectConfig|mixed|\PHPUnit\Framework\MockObject\MockObject
+     * @throws \Exception
+     */
+    protected function getProjectConfig()
+    {
+        $projectConfig = $this->make(ProjectConfig::class, [
+            'getConfigFromYaml' => function () use (&$projectConfig) {
+                if ($this->invokeMethod($projectConfig, 'hasAppliedConfig')) {
+                    return $this->invokeMethod($projectConfig, 'getAppliedConfig');
+                }
+
+                return $this->externalConfig;
+            },
+            'getConfigFromDb' => $this->internalConfig,
+        ]);
+        return $projectConfig;
+    }
+    
     /**
      * Test if rebuilding project config ignores the `readOnly` flag.
      */
@@ -60,6 +97,45 @@ class ProjectConfigTest extends TestCase
     {
         $projectConfig = Craft::$app->getProjectConfig();
         self::assertSame($expectedResult, $this->invokeMethod($projectConfig, 'encodeValueAsString', [$incomingData]));
+    }
+
+    /**
+     * @param $path
+     * @param $useExternal
+     * @param $expectedValue
+     * @dataProvider getValueDataProvider
+     */
+    public function testGettingValue($path, $useExternal, $expectedValue)
+    {
+        self::assertSame($expectedValue, $this->getProjectConfig()->get($path, $useExternal));
+    }
+
+    /**
+     * @param $path
+     * @param $value
+     * @param $useExternal
+     * @dataProvider setValueDataProvider
+     */
+    public function testSettingValue($path, $value)
+    {
+        $projectConfig = $this->getProjectConfig();
+        $projectConfig->set($path, $value);
+
+        $actual = $projectConfig->get($path);
+        self::assertSame($value, $actual);
+    }
+
+    public function testSettingNewValueModifiesTimestamp()
+    {
+        $pc = Craft::$app->getProjectConfig();
+        $systemName = $pc->get('system.name');
+        $dateModified = $pc->get('dateModified');
+
+        $pc->set('system.name', $systemName);
+        self::assertSame($dateModified, $pc->get('dateModified'));
+
+        $pc->set('system.name', str_rot13($systemName));
+        self::assertNotSame($dateModified, $pc->get('dateModified'));
     }
 
     public function getConfigProvider()
@@ -150,6 +226,29 @@ class ProjectConfigTest extends TestCase
                 2.0,
                 '2.0'
             ],
+        ];
+    }
+
+    public function getValueDataProvider()
+    {
+        return [
+            ['a', false, 'b'],
+            ['aa', false, null],
+            ['aa', true, 'bb'],
+            ['b', false, ['c' => 'd']],
+            ['b.c', false, 'd'],
+            ['ee.1', true, 22],
+            ['ee', true, [11, 22, 33]],
+            [null, true, $this->externalConfig],
+        ];
+    }
+
+    public function setValueDataProvider()
+    {
+        return [
+            ['a', 'bar'],
+            ['x', ['a' => 'b']],
+            ['f', null],
         ];
     }
 }
