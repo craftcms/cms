@@ -66,6 +66,7 @@
 - Filtering users by `active`, `pending`, and `locked` statuses no longer excludes suspended users.
 - Relational fields now load elements in the current site rather than the primary site, if the source element isn’t localizable. ([#7048](https://github.com/craftcms/cms/issues/7048))
 - Template autosuggestions now include their filename. ([#9744](https://github.com/craftcms/cms/pull/9744))
+- All control panel templates end in `.twig` now. ([#9743](https://github.com/craftcms/cms/pull/9743))
 - The `users/save-user` action no longer includes a `unverifiedEmail` key in failure responses.
 - All components’ `afterDelete()` methods must now have a `void` return type declaration.
 - All components’ `afterSave()` methods must now have a `void` return type declaration.

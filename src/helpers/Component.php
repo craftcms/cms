@@ -175,7 +175,7 @@ class Component
      */
     private static function _defaultIconSvg(string $label): string
     {
-        return Craft::$app->getView()->renderTemplate('_includes/defaulticon.svg', [
+        return Craft::$app->getView()->renderTemplate('_includes/defaulticon.svg.twig', [
             'label' => $label,
         ]);
     }
