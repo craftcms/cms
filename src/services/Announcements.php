@@ -15,6 +15,7 @@ use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
 use craft\helpers\Html;
 use craft\helpers\Queue;
+use craft\i18n\Translation;
 use craft\queue\jobs\Announcement;
 use DateTime;
 use yii\base\Component;
@@ -31,24 +32,17 @@ class Announcements extends Component
     /**
      * Pushes a new announcement out to all control panel users.
      *
-     * @param string|callable $heading The announcement heading. Set to a callable if the heading text should be translated with `Craft::t()`.
-     * @param string|callable $body The announcement body. Set to a callable if the heading text should be translated with `Craft::t()`.
+     * ::: tip
+     * Run the heading and body through [[\craft\i18n\Translation::prep()]] rather than [[\yii\BaseYii::t()|Craft::t()]]
+     * so they can be lazy-translated for users’ preferred languages rather that the current app language.
+     * :::
+     *
+     * @param string $heading The announcement heading.
+     * @param string $body The announcement body.
      * @param string|null $pluginHandle The plugin handle, if this announcement belongs to a plugin
      */
-    public function push($heading, $body, ?string $pluginHandle = null): void
+    public function push(string $heading, string $body, ?string $pluginHandle = null): void
     {
-        if (is_callable($heading) || is_callable($body)) {
-            $t9nHeading = [];
-            $t9nBody = [];
-            // Translate the announcement into each of the supported languages
-            foreach (Craft::$app->getI18n()->getAppLocaleIds() as $language) {
-                $t9nHeading[$language] = (string)$heading($language);
-                $t9nBody[$language] = (string)$body($language);
-            }
-            $heading = $t9nHeading;
-            $body = $t9nBody;
-        }
-
         Queue::push(new Announcement([
             'heading' => $heading,
             'body' => $body,
@@ -98,8 +92,8 @@ class Announcements extends Component
         return array_map(function(array $result) use ($formatter) {
             return [
                 'id' => (int)$result['id'],
-                'heading' => Html::widont(Html::encode($result['heading'])),
-                'body' => Html::widont(Markdown::processParagraph(Html::encode($result['body']))),
+                'heading' => Html::widont(Html::encode(Translation::translate($result['heading']))),
+                'body' => Html::widont(Markdown::processParagraph(Html::encode(Translation::translate($result['body'])))),
                 'timestamp' => $formatter->asTimestamp(DateTimeHelper::toDateTime($result['dateCreated'])->format('Y-m-d')),
                 'unread' => (bool)$result['unread'],
             ];
