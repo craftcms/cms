@@ -64,7 +64,7 @@ class Announcements extends Component
         }
 
         $query = (new Query())
-            ->select(['a.id', 'a.heading', 'a.body', 'a.unread', 'a.dateCreated'])
+            ->select(['a.id', 'a.heading', 'a.body', 'a.unread'])
             ->from(['a' => Table::ANNOUNCEMENTS])
             ->orderBy(['a.dateCreated' => SORT_DESC])
             ->where(['userId' => $userId])
@@ -78,6 +78,7 @@ class Announcements extends Component
         $enabledPluginHandles = ArrayHelper::getColumn($pluginsService->getAllPlugins(), 'id');
         if (!empty($enabledPluginHandles)) {
             $query
+                ->addSelect(['pluginHandle' => 'p.handle'])
                 ->leftJoin(['p' => Table::PLUGINS], '[[p.id]] = [[a.pluginId]]')
                 ->andWhere(['or',
                     ['p.id' => null],
@@ -87,14 +88,21 @@ class Announcements extends Component
             $query->andWhere(['a.pluginId' => null]);
         }
 
-        $formatter = Craft::$app->getFormatter();
-
-        return array_map(function(array $result) use ($formatter) {
+        return array_map(function(array $result) use ($pluginsService) {
+            $plugin = !empty($result['pluginHandle']) ? $pluginsService->getPlugin($result['pluginHandle']) : null;
+            if ($plugin) {
+                $icon = $pluginsService->getPluginIconSvg($plugin->getHandle());
+                $label = $plugin->name;
+            } else {
+                $icon = file_get_contents(Craft::getAlias('@app/icons/craft-cms.svg'));
+                $label = 'Craft CMS';
+            }
             return [
                 'id' => (int)$result['id'],
+                'icon' => $icon,
+                'label' => $label,
                 'heading' => Html::widont(Html::encode(Translation::translate($result['heading']))),
                 'body' => Html::widont(Markdown::processParagraph(Html::encode(Translation::translate($result['body'])))),
-                'timestamp' => $formatter->asTimestamp(DateTimeHelper::toDateTime($result['dateCreated'])->format('Y-m-d')),
                 'unread' => (bool)$result['unread'],
             ];
         }, $query->all());
