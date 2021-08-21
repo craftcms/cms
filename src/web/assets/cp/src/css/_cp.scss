@@ -554,11 +554,23 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
       margin-top: 20px;
     }
 
-    .timestamp {
+    .announcement-label-container {
       margin-top: -3px;
-      font-size: 12px;
-      color: $lightTextColor;
+      display: flex;
+      align-items: center;
       margin-bottom: 3px;
+
+      .announcement-icon svg {
+        display: block;
+        width: 15px;
+        height: 15px;
+      }
+
+      .announcement-label {
+        margin-left: 5px;
+        font-size: 12px;
+        color: $lightTextColor;
+      }
     }
 
     h2 {

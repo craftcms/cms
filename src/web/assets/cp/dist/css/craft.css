@@ -3309,7 +3309,11 @@ body.rtl #announcements-btn.unread:after { left: 7px; }
 
 #announcements .announcement:not(:first-child) { margin-top: 20px; }
 
-#announcements .announcement .timestamp { margin-top: -3px; font-size: 12px; color: #606d7b; margin-bottom: 3px; }
+#announcements .announcement .announcement-label-container { margin-top: -3px; display: -webkit-flex; display: flex; -webkit-align-items: center; align-items: center; margin-bottom: 3px; }
+
+#announcements .announcement .announcement-label-container .announcement-icon svg { display: block; width: 15px; height: 15px; }
+
+#announcements .announcement .announcement-label-container .announcement-label { margin-left: 5px; font-size: 12px; color: #606d7b; }
 
 #announcements .announcement h2 { position: relative; margin: 0 0 3px; }
 

@@ -194,14 +194,15 @@ Craft.CP = Garnish.Base.extend({
             this.addListener($btn, 'click', () => {
                 if (!hud) {
                     let contents = '';
-                    Craft.group(Craft.announcements, 'timestamp').forEach(([announcements, timestamp]) => {
-                        announcements.forEach((a, i) => {
-                            contents += `<div class="announcement ${a.unread ? 'unread' : ''}">` +
-                                (i === 0 ? `<div class="timestamp">${a.timestamp}</div>` : '') +
-                                `<h2>${a.heading}</h2>` +
-                                `<p>${a.body}</p>` +
-                                '</div>';
-                        });
+                    Craft.announcements.forEach(a => {
+                        contents += `<div class="announcement ${a.unread ? 'unread' : ''}">` +
+                            '<div class="announcement-label-container">' +
+                            `<div class="announcement-icon">${a.icon}</div>` +
+                            `<div class="announcement-label">${a.label}</div>` +
+                            '</div>' +
+                            `<h2>${a.heading}</h2>` +
+                            `<p>${a.body}</p>` +
+                            '</div>';
                     });
                     hud = new Garnish.HUD($btn, `<div id="announcements">${contents}</div>`, {
                         onShow: () => {
