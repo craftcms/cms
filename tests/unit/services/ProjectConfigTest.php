@@ -29,29 +29,32 @@ class ProjectConfigTest extends TestCase
      */
     protected $tester;
 
+    protected $internal = [
+        'a' => 'b',
+        'b' => [
+            'c' => 'd'
+        ],
+        'e' => [1, 2, 3],
+        'f' => 'g'
+    ];
+
+    protected $external = [
+        'aa' => 'bb',
+        'bb' => [
+            'vc' => 'dd'
+        ],
+        'ee' => [11, 22, 33],
+        'f' => 'g'
+    ];
+
     /**
      * @return ProjectConfig|mixed|\PHPUnit\Framework\MockObject\MockObject
      * @throws \Exception
      */
     protected function getProjectConfig(array $internal = null, array $external = null)
     {
-        $internal = $internal ?? [
-                'a' => 'b',
-                'b' => [
-                    'c' => 'd'
-                ],
-                'e' => [1, 2, 3],
-                'f' => 'g'
-            ];
-
-        $external = $external ?? [
-                'aa' => 'bb',
-                'bb' => [
-                    'vc' => 'dd'
-                ],
-                'ee' => [11, 22, 33],
-                'f' => 'g'
-            ];
+        $internal = $internal ?? $this->internal;
+        $external = $external ?? $this->external;
 
         $projectConfig = $this->make(ProjectConfig::class, [
             'getConfigFromYaml' => function() use (&$projectConfig, $external) {
@@ -183,6 +186,19 @@ class ProjectConfigTest extends TestCase
         self::assertNotSame($timestamp, $pc->get('dateModified'));
     }
 
+    public function testEventsFiredAndDeltaStored()
+    {
+        $pc = $this->make(ProjectConfig::class, [
+            'trigger' => Expected::atLeastOnce(),
+            'storeYamlHistory'=> Expected::once(),
+            'updateYamlFiles' => true,
+            'updateConfigVersion' => true,
+        ]);
+
+        $pc->set('some.path', 'value');
+        $pc->saveModifiedConfigData();
+    }
+
     public function getConfigProvider()
     {
         return [
@@ -284,7 +300,7 @@ class ProjectConfigTest extends TestCase
             ['b.c', false, 'd'],
             ['ee.1', true, 22],
             ['ee', true, [11, 22, 33]],
-            [null, true, $this->externalConfig],
+            [null, true, $this->external],
         ];
     }
 

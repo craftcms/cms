@@ -207,7 +207,7 @@ class ProjectConfig extends Component
      * project config data, so there’s a chance that the Project Config utility will be a bit misleading.
      * :::
      *
-     * @see _updateYamlFiles()
+     * @see updateYamlFiles()
      * @since 3.5.13
      */
     public bool $writeYamlAutomatically = true;
@@ -572,7 +572,7 @@ class ProjectConfig extends Component
         // Kill the cached config data
         $cache->delete(self::STORED_CACHE_KEY);
         if ($anyChangesApplied) {
-            $this->_updateConfigVersion();
+            $this->updateConfigVersion();
         }
 
         $mutex->release($lockName);
@@ -827,10 +827,10 @@ class ProjectConfig extends Component
         $this->_processProjectConfigNameChanges();
 
         if ($this->_isConfigModified) {
-            $this->_updateConfigVersion();
+            $this->updateConfigVersion();
 
             if ($writeYaml ?? $this->writeYamlAutomatically) {
-                $this->_updateYamlFiles();
+                $this->updateYamlFiles();
             }
         }
 
@@ -927,7 +927,7 @@ class ProjectConfig extends Component
             }
 
             if (!empty($deltaEntry['changes'])) {
-                $this->_storeYamlHistory($deltaEntry);
+                $this->storeYamlHistory($deltaEntry);
             }
         }
     }
@@ -1247,11 +1247,11 @@ class ProjectConfig extends Component
 
         // Flush it out to yaml files.
         $this->_saveConfig($event->config);
-        $this->_updateConfigVersion();
+        $this->updateConfigVersion();
 
         if ($this->writeYamlAutomatically) {
             $this->_processProjectConfigNameChanges();
-            $this->_updateYamlFiles();
+            $this->updateYamlFiles();
         }
 
         // And now ensure that Project Config doesn't attempt to save to yaml files again
@@ -1597,7 +1597,7 @@ class ProjectConfig extends Component
      * @param array $configData config data to be saved as history
      * @throws Exception
      */
-    private function _storeYamlHistory(array $configData): void
+    protected function storeYamlHistory(array $configData): void
     {
         $basePath = Craft::$app->getPath()->getConfigDeltaPath() . '/' . self::CONFIG_DELTA_FILENAME;
 
@@ -1662,7 +1662,7 @@ class ProjectConfig extends Component
     /**
      * Updates the config version used for cache invalidation.
      */
-    private function _updateConfigVersion(): void
+    protected function updateConfigVersion(): void
     {
         $info = Craft::$app->getInfo();
         $info->configVersion = StringHelper::randomString(12);
@@ -1674,7 +1674,7 @@ class ProjectConfig extends Component
      *
      * @throws Exception if something goes wrong
      */
-    private function _updateYamlFiles(): void
+    protected function updateYamlFiles(): void
     {
         $config = ProjectConfigHelper::splitConfigIntoComponents($this->getAppliedConfig());
 
