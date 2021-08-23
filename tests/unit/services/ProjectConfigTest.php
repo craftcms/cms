@@ -190,13 +190,17 @@ class ProjectConfigTest extends TestCase
     {
         $pc = $this->make(ProjectConfig::class, [
             'trigger' => Expected::atLeastOnce(),
-            'storeYamlHistory'=> Expected::once(),
+            'storeYamlHistory'=> Expected::atLeastOnce(),
             'updateYamlFiles' => true,
             'updateConfigVersion' => true,
         ]);
 
         $pc->set('some.path', 'value');
         $pc->saveModifiedConfigData();
+        
+        $pc->remove('some.path');
+        $pc->saveModifiedConfigData();
+
     }
 
     public function getConfigProvider()
