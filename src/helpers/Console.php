@@ -133,7 +133,7 @@ class Console extends \yii\helpers\Console
     {
         $projectConfig = Craft::$app->getProjectConfig();
 
-        if ($projectConfig->writeYamlAutomatically && !$projectConfig->getDoesYamlExist()) {
+        if ($projectConfig->writeYamlAutomatically && !$projectConfig->getDoesExternalConfigExist()) {
             static::stdout('Generating project config files from the loaded project config ... ', static::FG_YELLOW);
             $projectConfig->regenerateYamlFromConfig();
             static::stdout('done' . PHP_EOL, static::FG_GREEN);

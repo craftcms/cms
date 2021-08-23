@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 /**
  * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
@@ -21,6 +22,7 @@ use craft\helpers\FileHelper;
 use craft\helpers\Json;
 use craft\helpers\ProjectConfig as ProjectConfigHelper;
 use craft\helpers\StringHelper;
+use craft\models\ProjectConfigData;
 use Symfony\Component\Yaml\Yaml;
 use yii\base\Application;
 use yii\base\Component;
@@ -34,6 +36,7 @@ use yii\web\ServerErrorHttpException;
  * Project config service.
  * An instance of the ProjectConfig service is globally accessible in Craft via [[\craft\base\ApplicationTrait::getProjectConfig()|`Craft::$app->projectConfig`]].
  *
+ * @property-read bool $isApplyingExternalChanges
  * @property-read bool $isApplyingYamlChanges
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.1.0
@@ -259,12 +262,6 @@ class ProjectConfig extends Component
     private array $_parsedChanges = [];
 
     /**
-     * @var array An array holding the currently applied config. As opposed to yaml files and internal config, this array
-     * holds the state of applied-but-not-yet-saved config.
-     */
-    private array $_appliedConfig = [];
-
-    /**
      * @var array A list of all config YAML files.
      */
     private array $_configFileList = [];
@@ -286,11 +283,11 @@ class ProjectConfig extends Component
     private bool $_waitingToUpdateParsedConfigTimes = false;
 
     /**
-     * @var bool Whether project.yaml changes are currently being applied.
+     * @var bool Whether external project config changes are currently being applied.
      * @see applyYamlChanges()
-     * @see getIsApplyingYamlChanges()
+     * @see getIsApplyingExternalChanges()
      */
-    private bool $_applyingYamlChanges = false;
+    private bool $_applyingExternalChanges = false;
 
     /**
      * @var bool Whether the config's dateModified timestamp has been updated by this request.
@@ -317,15 +314,20 @@ class ProjectConfig extends Component
     private array $_appliedChanges = [];
 
     /**
-     * @var array|null Current config as stored in database.
+     * @var ProjectConfigData|null Config as defined in the external config.
      */
-    private ?array $_storedConfig = null;
+    private ?ProjectConfigData $_externalConfig = null;
 
     /**
-     * @var array|null The currently-loaded config, possibly with pending changes
-     * that will be stored in the database & project.yaml at the end of the request
+     * @var ProjectConfigData|null Current config as stored in database.
      */
-    private ?array $_loadedConfig = null;
+    private ?ProjectConfigData $_internalConfig = null;
+
+    /**
+     * @var ProjectConfigData|null The currently working config - it consists of the current config plus any changes
+     * applied during this request.
+     */
+    private ?ProjectConfigData $_currentWorkingConfig = null;
 
     /**
      * @var array[] Config change handlers
@@ -403,14 +405,14 @@ class ProjectConfig extends Component
      */
     public function reset(): void
     {
-        $this->_storedConfig = null;
-        $this->_loadedConfig = null;
+        $this->_internalConfig = null;
+        $this->_externalConfig = null;
+        $this->_currentWorkingConfig = null;
         $this->_parsedChanges = [];
-        $this->_appliedConfig = [];
         $this->_configFileList = [];
         $this->_isConfigModified = false;
         $this->_updateInternalConfig = false;
-        $this->_applyingYamlChanges = false;
+        $this->_applyingExternalChanges = false;
         $this->_timestampUpdated = false;
         $this->_changesBeingApplied = null;
 
@@ -427,22 +429,23 @@ class ProjectConfig extends Component
      * ```
      *
      * @param string|null $path The config item path, or `null` if the entire config should be returned
-     * @param bool $getFromYaml whether data should be fetched from the project config files instead of the loaded config. Defaults to `false`.
+     * @param bool $getFromExternalConfig whether data should be fetched from the working config instead of the loaded config. Defaults to `false`.
      * @return mixed The config item value
      */
-    public function get(?string $path = null, bool $getFromYaml = false)
+    public function get(?string $path = null, bool $getFromExternalConfig = false)
     {
-        if ($getFromYaml) {
-            $source = $this->_changesBeingApplied ?? $this->getConfigFromYaml();
+        // For schema version, always get the value from Yaml file.
+        if ($getFromExternalConfig) {
+            $source = $this->getExternalConfig();
         } else {
-            $source = $this->_getLoadedConfig();
+            $source = $this->getCurrentWorkingConfig();
         }
 
         if ($path === null) {
-            return $source;
+            return $source->export();
         }
 
-        return $this->_traverseDataArray($source, $path);
+        return $source->get($path);
     }
 
     /**
@@ -467,11 +470,6 @@ class ProjectConfig extends Component
      */
     public function set(string $path, $value, ?string $message = null, bool $updateTimestamp = true, bool $rebuilding = false): void
     {
-        // If we haven't yet pulled in the YAML changes, then anything in there should be discarded
-        if (!$this->hasAppliedConfig()) {
-            $this->setAppliedConfig($this->_getLoadedConfig());
-        }
-
         if (\is_array($value)) {
             $value = ProjectConfigHelper::cleanupConfig($value);
         }
@@ -481,7 +479,7 @@ class ProjectConfig extends Component
         if (!$rebuilding && $value !== $this->get($path)) {
             if ($this->readOnly) {
                 // If we're applying yaml changes that are coming in via `project.yaml`, anyway, bail silently.
-                if ($this->getIsApplyingYamlChanges() && $value === $this->get($path, true)) {
+                if ($this->getIsApplyingExternalChanges() && $value === $this->get($path, true)) {
                     return;
                 }
 
@@ -509,9 +507,15 @@ class ProjectConfig extends Component
 
         // Save config only if something actually changed.
         if ($valueChanged) {
-            $config = $this->getConfigFromYaml();
-            $this->_traverseDataArray($config, $path, $value, $value === null);
-            $this->_saveConfig($config);
+            $workingConfig = $this->getCurrentWorkingConfig();
+            if ($value === null) {
+                $workingConfig->delete($path);
+            } else {
+                $workingConfig->set($path, $value);
+            }
+
+            $workingConfig->set($path, $value);
+            $this->_saveConfigAfterRequest();
         }
 
         $this->_processConfigChangesInternal($path, true, $message);
@@ -538,16 +542,33 @@ class ProjectConfig extends Component
      */
     public function regenerateYamlFromConfig(): void
     {
-        $loadedConfig = $this->_getLoadedConfig();
-        $this->_saveConfig($loadedConfig);
+        $this->isApplyingExternalChanges = false;
+
+        // Ensure we have the working config
+        $this->getCurrentWorkingConfig();
+
+        // And ensure we save it.
+        $this->_saveConfigAfterRequest();
         $this->updateParsedConfigTimesAfterRequest();
         $this->saveModifiedConfigData(true);
     }
 
     /**
      * Applies changes in `project.yaml` to the project config.
+     *
+     * @deprecated in 4.0.0. Use [[applyExternalChanges()]] instead.
      */
     public function applyYamlChanges(): void
+    {
+        $this->applyExternalChanges();
+    }
+
+    /**
+     * Applies changes in external config to project config.
+     *
+     * @since 4.0.0
+     */
+    public function applyExternalChanges(): void
     {
         $mutex = Craft::$app->getMutex();
         $lockName = 'project-config-sync';
@@ -559,7 +580,7 @@ class ProjectConfig extends Component
         // Disable read/write splitting for the remainder of this request
         Craft::$app->getDb()->enableReplicas = false;
 
-        $this->_applyingYamlChanges = true;
+        $this->_applyingExternalChanges = true;
         $cache = Craft::$app->getCache();
         $cache->delete(self::CACHE_KEY);
         $cache->delete(self::IGNORE_CACHE_KEY);
@@ -585,28 +606,35 @@ class ProjectConfig extends Component
      */
     public function applyConfigChanges(array $configData): void
     {
-        $this->_applyingYamlChanges = true;
+        $this->_applyingExternalChanges = true;
 
         $changes = $this->_getPendingChanges($configData);
 
         $this->_changesBeingApplied = $configData;
         $this->_applyChanges($changes);
         $this->_changesBeingApplied = null;
-
-        // Cover an edge-case where we're applying changes, but there's no config file yet
-        if (!$this->hasAppliedConfig()) {
-            $this->setAppliedConfig($configData);
-        }
     }
 
     /**
      * Returns whether project.yaml changes are currently being applied
      *
      * @return bool
+     * @deprecated in 4.0.0. Use [[getIsApplyingExternalChanges()]] instead.
      */
     public function getIsApplyingYamlChanges(): bool
     {
-        return $this->_applyingYamlChanges;
+        return $this->getIsApplyingExternalChanges();
+    }
+
+    /**
+     * Returns whether project.yaml changes are currently being applied
+     *
+     * @return bool
+     * @since 4.0.0
+     */
+    public function getIsApplyingExternalChanges(): bool
+    {
+        return $this->_applyingExternalChanges;
     }
 
     /**
@@ -614,8 +642,20 @@ class ProjectConfig extends Component
      *
      * @return bool
      * @since 3.5.13
+     * @deprecated in 4.0.0. Use [[getDoesExternalConfigExist()]].
      */
     public function getDoesYamlExist(): bool
+    {
+        return $this->getDoesExternalConfigExist();
+    }
+
+    /**
+     * Returns whether project config YAML files appear to exist.
+     *
+     * @return bool
+     * @since 4.0.0
+     */
+    public function getDoesExternalConfigExist(): bool
     {
         return file_exists(Craft::$app->getPath()->getProjectConfigFilePath());
     }
@@ -637,7 +677,7 @@ class ProjectConfig extends Component
         }
 
         // If the file does not exist, but should, generate it
-        if ($this->getHadFileWriteIssues() || !$this->getDoesYamlExist()) {
+        if ($this->getHadFileWriteIssues() || !$this->getDoesExternalConfigExist()) {
             if ($this->writeYamlAutomatically) {
                 $this->regenerateYamlFromConfig();
             }
@@ -652,9 +692,8 @@ class ProjectConfig extends Component
         }
 
         if ($path !== null) {
-            $storedConfig = $this->getConfigFromDb();
-            $oldValue = $this->_traverseDataArray($storedConfig, $path);
-            $newValue = $this->get($path, true);
+            $oldValue = $this->getInternalConfig()->get($path);
+            $newValue = $this->getExternalConfig()->get($path);
             return $this->encodeValueAsString($oldValue) !== $this->encodeValueAsString($newValue);
         }
 
@@ -666,7 +705,7 @@ class ProjectConfig extends Component
 
         // Clear the cached config, just in case it conflicts with what we've got here
         Craft::$app->getCache()->delete(self::STORED_CACHE_KEY);
-        $this->_loadedConfig = null;
+        $this->_currentWorkingConfig = null;
         return true;
     }
 
@@ -704,24 +743,8 @@ class ProjectConfig extends Component
 
         $this->_parsedChanges[$path] = true;
 
-        $storedConfig = $this->getConfigFromDb();
-        $oldValue = $this->_traverseDataArray($storedConfig, $path);
-
-        // If this path is currently being processed, use its original pre-processed value as the "old" value
-        foreach ($this->_oldValuesByPath as $thisPath => $thisOldValue) {
-            if (strpos("$path.", "$thisPath.") === 0) {
-                if ($path === $thisPath) {
-                    $oldValue = $thisOldValue;
-                } else if (is_array($thisOldValue)) {
-                    $oldValue = $this->_traverseDataArray($thisOldValue, substr($path, strlen($thisPath) + 1));
-                } else {
-                    $oldValue = null;
-                }
-                break;
-            }
-        }
-
-        $newValue = $this->get($path, true);
+        $oldValue = $this->getInternalConfig()->get($path);
+        $newValue = $this->getCurrentWorkingConfig()->get($path);
         $valueChanged = $triggerUpdate || $this->forceUpdate || $this->encodeValueAsString($oldValue) !== $this->encodeValueAsString($newValue);
 
         if ($newValue === null && is_array($oldValue)) {
@@ -756,8 +779,7 @@ class ProjectConfig extends Component
 
         if ($valueChanged) {
             // Memoize the new config data
-            $this->_updateInternalConfig($path, $oldValue, $newValue, $message);
-
+            $this->_rememberAppliedChanges($path, $oldValue, $newValue, $message);
             $this->updateStoredConfigAfterRequest();
 
             if ($this->writeYamlAutomatically) {
@@ -845,14 +867,13 @@ class ProjectConfig extends Component
             ];
 
             $db = Craft::$app->getDb();
+
             foreach ($this->_appliedChanges as $changeSet) {
                 // Allow modification of the array being looped over.
                 $currentSet = $changeSet;
 
                 if (!empty($changeSet['removed'])) {
-                    Db::delete(Table::PROJECTCONFIG, [
-                        'path' => array_keys($changeSet['removed']),
-                    ]);
+                    $this->removeInternalConfigValuesByPaths(array_keys($changeSet['removed']));
                 }
 
                 if (!empty($changeSet['added'])) {
@@ -867,7 +888,7 @@ class ProjectConfig extends Component
                         if (!mb_check_encoding($value, 'UTF-8') || ($isMysql && StringHelper::containsMb4($dbValue))) {
                             $dbValue = 'base64:' . base64_encode($dbValue);
                         }
-                        $batch[] = [$key, $dbValue];
+                        $batch[$key] = $dbValue;
                         $pathsToInsert[] = $key;
 
                         // Delete parent key, as it cannot hold a value AND be an array at the same time
@@ -903,13 +924,9 @@ class ProjectConfig extends Component
 
                     // Store in the DB
                     if (!empty($batch)) {
-                        Db::delete(Table::PROJECTCONFIG, [
-                            'path' => $pathsToInsert,
-                        ]);
-                        Db::delete(Table::PROJECTCONFIG, [
-                            'path' => array_keys($additionalCleanupPaths),
-                        ]);
-                        Db::batchInsert(Table::PROJECTCONFIG, ['path', 'value'], $batch, false);
+                        $this->removeInternalConfigValuesByPaths($pathsToInsert);
+                        $this->removeInternalConfigValuesByPaths(array_keys($additionalCleanupPaths));
+                        $this->persistInternalConfigValues($batch);
                     }
                 }
 
@@ -930,6 +947,36 @@ class ProjectConfig extends Component
                 $this->storeYamlHistory($deltaEntry);
             }
         }
+    }
+
+    /**
+     * Remove values from internal config by a list of paths.
+     *
+     * @param array $paths
+     * @throws \yii\db\Exception
+     */
+    protected function removeInternalConfigValuesByPaths(array $paths): void
+    {
+        Db::delete(Table::PROJECTCONFIG, [
+            'path' => $paths,
+        ]);
+    }
+
+    /**
+     * Persist an array of `$path => $value` to the internal config.
+     *
+     * @param array $values
+     * @throws \yii\db\Exception
+     */
+    protected function persistInternalConfigValues(array $values): void
+    {
+        $batch = [];
+
+        foreach ($values as $path => $value) {
+            $batch[] = [$path, $value];
+        }
+
+        Db::batchInsert(Table::PROJECTCONFIG, ['path', 'value'], $batch, false);
     }
 
     /**
@@ -968,8 +1015,8 @@ class ProjectConfig extends Component
      */
     public function getAreConfigSchemaVersionsCompatible(array &$issues = []): bool
     {
-        $incomingSchema = (string)$this->get(self::CONFIG_SCHEMA_VERSION_KEY, true);
-        $existingSchema = (string)Craft::$app->schemaVersion;
+        $incomingSchema = (string)$this->getExternalConfig()->get(self::CONFIG_SCHEMA_VERSION_KEY);
+        $existingSchema = Craft::$app->schemaVersion;
 
         // Compare existing Craft schema version with the one that is being applied.
         if (!version_compare($existingSchema, $incomingSchema, '=')) {
@@ -983,7 +1030,7 @@ class ProjectConfig extends Component
         $plugins = Craft::$app->getPlugins()->getAllPlugins();
 
         foreach ($plugins as $plugin) {
-            $incomingSchema = (string)$this->get(Plugins::CONFIG_PLUGINS_KEY . '.' . $plugin->handle . '.schemaVersion', true);
+            $incomingSchema = (string)$this->getExternalConfig()->get(Plugins::CONFIG_PLUGINS_KEY . '.' . $plugin->handle . '.schemaVersion');
             $existingSchema = (string)$plugin->schemaVersion;
 
             // Compare existing plugin schema version with the one that is being applied.
@@ -1213,7 +1260,7 @@ class ProjectConfig extends Component
         $readOnly = $this->readOnly;
         $this->readOnly = false;
 
-        $config = $this->get();
+        $config = $this->getInternalConfig()->export();
         $config['dateModified'] = DateTimeHelper::currentTimeStamp();
         $config[self::CONFIG_SYSTEM] = $this->_systemConfig($config[self::CONFIG_SYSTEM] ?? []);
         $config[Sites::CONFIG_SITEGROUP_KEY] = $this->_getSiteGroupData();
@@ -1245,8 +1292,8 @@ class ProjectConfig extends Component
             $this->set($path, $value, 'Project config rebuild', false, true);
         }
 
-        // Flush it out to yaml files.
-        $this->_saveConfig($event->config);
+        // Make sure we save it all.
+        $this->_saveConfigAfterRequest();
         $this->updateConfigVersion();
 
         if ($this->writeYamlAutomatically) {
@@ -1328,7 +1375,7 @@ class ProjectConfig extends Component
         }
 
         $this->updateParsedConfigTimesAfterRequest();
-        $this->_applyingYamlChanges = false;
+        $this->_applyingExternalChanges = false;
     }
 
     /**
@@ -1346,19 +1393,15 @@ class ProjectConfig extends Component
     }
 
     /**
-     * Generate the configuration based on the configuration files.
+     * Load the config stored in the external storage.
      *
-     * @return array
+     * @return ProjectConfigData
      */
-    protected function getConfigFromYaml(): array
+    private function _loadExternalConfig(): ProjectConfigData
     {
-        if ($this->hasAppliedConfig()) {
-            return $this->getAppliedConfig();
-        }
-
-        // If the file does not exist, just use the loaded config
-        if ($this->getHadFileWriteIssues() || !$this->getDoesYamlExist()) {
-            return $this->_getLoadedConfig();
+        // If the external config does not exist, just use the loaded config
+        if ($this->getHadFileWriteIssues() || !$this->getDoesExternalConfigExist()) {
+            return $this->getCurrentWorkingConfig();
         }
 
         $fileList = $this->_getConfigFileList();
@@ -1399,9 +1442,7 @@ class ProjectConfig extends Component
             }
         }
 
-        $this->setAppliedConfig($generatedConfig);
-
-        return $generatedConfig ?? [];
+        return new ProjectConfigData($generatedConfig);
     }
 
     /**
@@ -1416,10 +1457,10 @@ class ProjectConfig extends Component
         $newItems = [];
         $changedItems = [];
 
-        $currentConfig = $this->_getLoadedConfig() ?? [];
+        $currentConfig = $this->getCurrentWorkingConfig()->export();
 
         if ($configData === null) {
-            $configData = $this->getConfigFromYaml() ?? [];
+            $configData = $this->getExternalConfig()->export();
         }
 
         unset($configData['imports'], $currentConfig['imports']);
@@ -1536,59 +1577,13 @@ class ProjectConfig extends Component
     }
 
     /**
-     * Save configuration data.
+     * Save configuration data after the request.
      *
      * @param array $data
      */
-    private function _saveConfig(array $data): void
+    private function _saveConfigAfterRequest(): void
     {
-        $this->setAppliedConfig($data);
         $this->_isConfigModified = true;
-    }
-
-    /**
-     * Traverse a nested data array according to path and perform an action depending on parameters.
-     *
-     * @param array $data A nested array of data to traverse
-     * @param array|string $path Path used to traverse the array. Either an array or a dot.based.path
-     * @param mixed $value Value to set at the destination. If null, will return the value, unless deleting
-     * @param bool $delete Whether to delete the value at the destination or not.
-     * @return mixed
-     */
-    private function _traverseDataArray(array &$data, $path, $value = null, bool $delete = false)
-    {
-        if (is_string($path)) {
-            $path = explode('.', $path);
-        }
-
-        $nextSegment = array_shift($path);
-
-        // Last piece?
-        if (count($path) === 0) {
-            if ($delete) {
-                unset($data[$nextSegment]);
-            } else if ($value === null) {
-                return $data[$nextSegment] ?? null;
-            } else {
-                $data[$nextSegment] = $value;
-            }
-        } else {
-            if (!isset($data[$nextSegment])) {
-                // If the path doesn't exist, it's fine if we wanted to delete or read
-                if ($delete || $value === null) {
-                    return null;
-                }
-
-                $data[$nextSegment] = [];
-            } else if (!is_array($data[$nextSegment])) {
-                // If the next part is not an array, but we have to travel further, make it an array.
-                $data[$nextSegment] = [];
-            }
-
-            return $this->_traverseDataArray($data[$nextSegment], $path, $value, $delete);
-        }
-
-        return null;
     }
 
     /**
@@ -1615,37 +1610,6 @@ class ProjectConfig extends Component
 
         file_put_contents($basePath, Yaml::dump($configData, 20, 2));
     }
-
-    /**
-     * Returns the loaded config.
-     *
-     * @return array
-     */
-    private function _getLoadedConfig(): array
-    {
-        // _loadedConfig will be set if we've made any changes in this request
-        if (isset($this->_loadedConfig)) {
-            return $this->_loadedConfig;
-        }
-
-        // Otherwise just return whatever's in the DB
-        return $this->getConfigFromDb();
-    }
-
-    /**
-     * Returns the stored config.
-     *
-     * @return array
-     */
-    protected function getConfigFromDb(): array
-    {
-        if (!isset($this->_storedConfig)) {
-            $this->_storedConfig = $this->_loadInternalConfigData();
-        }
-
-        return $this->_storedConfig;
-    }
-
 
     /**
      * Create a Query object ready to retrieve internal project config values.
@@ -1676,7 +1640,7 @@ class ProjectConfig extends Component
      */
     protected function updateYamlFiles(): void
     {
-        $config = ProjectConfigHelper::splitConfigIntoComponents($this->getAppliedConfig());
+        $config = ProjectConfigHelper::splitConfigIntoComponents($this->getCurrentWorkingConfig()->export());
 
         try {
             $basePath = Craft::$app->getPath()->getProjectConfigPath();
@@ -1686,7 +1650,7 @@ class ProjectConfig extends Component
                 'except' => ['.*', '.*/'],
             ]);
 
-            $projectConfigNames = $this->get(self::CONFIG_NAMES_KEY);
+            $projectConfigNames = $this->getInternalConfig()->get(self::CONFIG_NAMES_KEY);
 
             $uids = [];
             $replacements = [];
@@ -1775,12 +1739,8 @@ class ProjectConfig extends Component
      * @param mixed $newValue
      * @param string|null $message message describing the changes made.
      */
-    private function _updateInternalConfig(string $path, $oldValue, $newValue, ?string $message = null): void
+    private function _rememberAppliedChanges(string $path, $oldValue, $newValue, ?string $message = null): void
     {
-        $currentLoadedConfig = $this->_getLoadedConfig();
-        $this->_traverseDataArray($currentLoadedConfig, $path, $newValue, $newValue === null);
-        $this->_loadedConfig = $currentLoadedConfig;
-
         $appliedChanges = [];
 
         $modified = $this->encodeValueAsString($oldValue) !== $this->encodeValueAsString($newValue);
@@ -1815,20 +1775,61 @@ class ProjectConfig extends Component
     }
 
     /**
-     * Load internal config data by a given path.
+     * Get the external project config data.
      *
-     * @return mixed
+     * @return ProjectConfigData
      */
-    private function _loadInternalConfigData()
+    protected function getExternalConfig(): ProjectConfigData
     {
-        $data = [];
+        if ($this->_externalConfig === null) {
+            $this->_externalConfig = $this->_loadExternalConfig();
+        }
 
+        return $this->_externalConfig;
+    }
+
+    /**
+     * Get the internal project config data.
+     *
+     * @return ProjectConfigData
+     */
+    protected function getInternalConfig(): ProjectConfigData
+    {
+        if ($this->_internalConfig === null) {
+            $this->_internalConfig = $this->_loadInternalConfig();
+        }
+
+        return $this->_internalConfig;
+    }
+
+    /**
+     * Get the current working project config data.
+     *
+     * @return ProjectConfigData
+     */
+    protected function getCurrentWorkingConfig(): ProjectConfigData
+    {
+        if ($this->_currentWorkingConfig === null) {
+            // We are only ever interested in the external config if we're applying changes from it.
+            $this->_currentWorkingConfig = clone ($this->_applyingExternalChanges ? $this->getExternalConfig() : $this->getInternalConfig());
+        }
+
+        return $this->_currentWorkingConfig;
+    }
+
+    /**
+     * Load the config stored in the Db
+     *
+     * @return ProjectConfigData
+     */
+    private function _loadInternalConfig(): ProjectConfigData
+    {
         if (!Craft::$app->getIsInstalled()) {
-            return $data;
+            return new ProjectConfigData();
         }
 
         if (Craft::$app->getIsInstalled() && version_compare(Craft::$app->getInfo()->schemaVersion, '3.1.1', '<')) {
-            return $data;
+            return new ProjectConfigData();
         }
 
         if (Craft::$app->getIsInstalled() && version_compare(Craft::$app->getInfo()->schemaVersion, '3.4.4', '<')) {
@@ -1836,6 +1837,8 @@ class ProjectConfig extends Component
                 ->select(['config'])
                 ->from([Table::INFO])
                 ->scalar();
+
+            $data = [];
 
             if ($config) {
                 // Try to decode it in case it contains any 4+ byte characters
@@ -1847,11 +1850,11 @@ class ProjectConfig extends Component
                 }
             }
 
-            return $data;
+            return new ProjectConfigData($data);
         }
 
         // See if we can get away with using the cached data
-        return Craft::$app->getCache()->getOrSet(self::STORED_CACHE_KEY, function() {
+        $data = Craft::$app->getCache()->getOrSet(self::STORED_CACHE_KEY, function() {
             $data = [];
             // Load the project config data
             $rows = $this->_createProjectConfigQuery()->orderBy('path')->pairs();
@@ -1872,6 +1875,8 @@ class ProjectConfig extends Component
             }
             return ProjectConfigHelper::cleanupConfig($data);
         }, null, $this->getCacheDependency());
+
+        return new ProjectConfigData($data);
     }
 
     /**
@@ -1885,36 +1890,6 @@ class ProjectConfig extends Component
         return new ExpressionDependency([
             'expression' => Craft::class . '::$app->getInfo()->configVersion',
         ]);
-    }
-
-    /**
-     * Return true if applied config is set.
-     * 
-     * @return bool
-     */
-    protected function hasAppliedConfig(): bool
-    {
-        return !empty($this->_appliedConfig);
-    }
-    
-    /**
-     * Get the applied config.
-     *
-     * @return array
-     */
-    protected function getAppliedConfig(): array
-    {
-        return $this->_appliedConfig;
-    }
-
-    /**
-     * Set the applied config.
-     *
-     * @param array $appliedConfig
-     */
-    protected function setAppliedConfig(array $appliedConfig): void
-    {
-        $this->_appliedConfig = $appliedConfig;
     }
 
     /**
@@ -2226,7 +2201,7 @@ class ProjectConfig extends Component
         foreach ($data as $key => $value) {
             // Traverse further
             if (is_array($value)) {
-                $this->_setContainedProjectConfigNames($key, $value);
+                $this->_setContainedProjectConfigNames((string)$key, $value);
             }
         }
     }

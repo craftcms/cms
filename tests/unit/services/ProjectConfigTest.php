@@ -10,6 +10,7 @@ namespace crafttests\unit\services;
 use Codeception\Stub\Expected;
 use Craft;
 use craft\helpers\ProjectConfig as ProjectConfigHelper;
+use craft\models\ProjectConfigData;
 use craft\services\ProjectConfig;
 use craft\services\Sections;
 use craft\test\TestCase;
@@ -51,23 +52,24 @@ class ProjectConfigTest extends TestCase
      * @return ProjectConfig|mixed|\PHPUnit\Framework\MockObject\MockObject
      * @throws \Exception
      */
-    protected function getProjectConfig(array $internal = null, array $external = null)
+    protected function getProjectConfig(array $internal = null, array $external = null, array $additionalConfig = [])
     {
         $internal = $internal ?? $this->internal;
         $external = $external ?? $this->external;
 
-        $projectConfig = $this->make(ProjectConfig::class, [
-            'getConfigFromYaml' => function() use (&$projectConfig, $external) {
-                if ($this->invokeMethod($projectConfig, 'hasAppliedConfig')) {
-                    return $this->invokeMethod($projectConfig, 'getAppliedConfig');
-                }
-
-                return $external;
+        $mockConfig = [
+            'getExternalConfig' => function() use ($external) {
+                return new ProjectConfigData($external);
             },
-            'getConfigFromDb' => $internal
-        ]);
+            'getInternalConfig' => new ProjectConfigData($internal),
+            'persistInternalConfigValues' => null,
+            'removeInternalConfigValuesByPaths' => null,
+            'updateYamlFiles' => true,
+            'updateConfigVersion' => true,
+        ];
+        $mockConfig = array_merge($mockConfig, $additionalConfig);
 
-        return $projectConfig;
+        return $this->make(ProjectConfig::class, $mockConfig);
     }
 
     /**
@@ -111,7 +113,8 @@ class ProjectConfigTest extends TestCase
      */
     public function testGettingValue($path, $useExternal, $expectedValue)
     {
-        self::assertSame($expectedValue, $this->getProjectConfig()->get($path, $useExternal));
+        $actualValue = $this->getProjectConfig()->get($path, $useExternal);
+        self::assertSame($expectedValue, $actualValue);
     }
 
     /**
@@ -188,11 +191,9 @@ class ProjectConfigTest extends TestCase
 
     public function testEventsFiredAndDeltaStored()
     {
-        $pc = $this->make(ProjectConfig::class, [
+        $pc = $this->getProjectConfig(null, null, [
             'trigger' => Expected::atLeastOnce(),
             'storeYamlHistory'=> Expected::atLeastOnce(),
-            'updateYamlFiles' => true,
-            'updateConfigVersion' => true,
         ]);
 
         $pc->set('some.path', 'value');

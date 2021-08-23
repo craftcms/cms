@@ -142,7 +142,7 @@ class ProjectConfigController extends Controller
         }
 
         // Do we need to create a new config file?
-        if (!$projectConfig->getDoesYamlExist()) {
+        if (!$projectConfig->getDoesExternalConfigExist()) {
             $this->stdout("No project config files found. Generating them from internal config ... ", Console::FG_YELLOW);
             $projectConfig->regenerateYamlFromConfig();
         } else {
@@ -271,7 +271,7 @@ class ProjectConfigController extends Controller
     {
         $projectConfig = Craft::$app->getProjectConfig();
 
-        if ($projectConfig->writeYamlAutomatically && !$projectConfig->getDoesYamlExist()) {
+        if ($projectConfig->writeYamlAutomatically && !$projectConfig->getDoesExternalConfigExist()) {
             $this->stdout("No project config files found. Generating them from internal config ... ", Console::FG_YELLOW);
             $projectConfig->regenerateYamlFromConfig();
         }
