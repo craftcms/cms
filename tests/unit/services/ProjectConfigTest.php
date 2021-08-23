@@ -29,43 +29,44 @@ class ProjectConfigTest extends TestCase
      */
     protected $tester;
 
-    protected $internalConfig = [
-        'a' => 'b',
-        'b' => [
-            'c' => 'd'
-        ],
-        'e' => [1, 2, 3],
-        'f' =>  'g'
-    ];
-    
-    protected $externalConfig = [
-        'aa' => 'bb',
-        'bb' => [
-            'vc' => 'dd'
-        ],
-        'ee' => [11, 22, 33],
-        'f' => 'g'
-    ];
-
     /**
      * @return ProjectConfig|mixed|\PHPUnit\Framework\MockObject\MockObject
      * @throws \Exception
      */
-    protected function getProjectConfig()
+    protected function getProjectConfig(array $internal = null, array $external = null)
     {
+        $internal = $internal ?? [
+                'a' => 'b',
+                'b' => [
+                    'c' => 'd'
+                ],
+                'e' => [1, 2, 3],
+                'f' => 'g'
+            ];
+
+        $external = $external ?? [
+                'aa' => 'bb',
+                'bb' => [
+                    'vc' => 'dd'
+                ],
+                'ee' => [11, 22, 33],
+                'f' => 'g'
+            ];
+
         $projectConfig = $this->make(ProjectConfig::class, [
-            'getConfigFromYaml' => function () use (&$projectConfig) {
+            'getConfigFromYaml' => function() use (&$projectConfig, $external) {
                 if ($this->invokeMethod($projectConfig, 'hasAppliedConfig')) {
                     return $this->invokeMethod($projectConfig, 'getAppliedConfig');
                 }
 
-                return $this->externalConfig;
+                return $external;
             },
-            'getConfigFromDb' => $this->internalConfig,
+            'getConfigFromDb' => $internal
         ]);
+
         return $projectConfig;
     }
-    
+
     /**
      * Test if rebuilding project config ignores the `readOnly` flag.
      */
@@ -136,6 +137,24 @@ class ProjectConfigTest extends TestCase
 
         $pc->set('system.name', str_rot13($systemName));
         self::assertNotSame($dateModified, $pc->get('dateModified'));
+    }
+
+
+    public function testPreventChangesIfReadOnly()
+    {
+        $pc = $this->getProjectConfig();
+        $pc->readOnly = true;
+        $this->expectExceptionMessage('while in read-only');
+        $pc->set('path', 'value');
+
+    }
+
+    public function testSettingValueChangesTimestamp()
+    {
+        $pc = $this->getProjectConfig();
+        $timestamp = $pc->get('dateModified');
+        $pc->set('path', 'value');
+        self::assertNotSame($timestamp, $pc->get('dateModified'));
     }
 
     public function getConfigProvider()
