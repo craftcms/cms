@@ -139,6 +139,32 @@ class ProjectConfigTest extends TestCase
         self::assertNotSame($dateModified, $pc->get('dateModified'));
     }
 
+    public function testSettingValueIgnoresExternalValue()
+    {
+        $internal = [
+            'common' => [
+                'foo' => 'bar',
+                'bar' => 'baz'
+            ]
+        ];
+
+        $external = [
+            'common' => [
+                'box' => 'bax',
+            ]
+        ];
+        $pc = $this->getProjectConfig($internal, $external);
+
+        $pc->set('common.fizz', 'buzz');
+
+        // Expect project config to have the merged value
+        self::assertSame('buzz', $pc->get('common.fizz'));
+        self::assertSame('bar', $pc->get('common.foo'));
+
+        // Expect the external storage to be unaware of anything
+        self::assertSame('bax', $pc->get('common.box', true));
+        self::assertSame(null, $pc->get('common.fizz', true));
+    }
 
     public function testPreventChangesIfReadOnly()
     {
