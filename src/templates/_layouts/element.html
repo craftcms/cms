@@ -295,6 +295,10 @@
                 <button type="button" class="btn submit menubtn"></button>
                 {% include '_layouts/components/form-action-menu' %}
             </div>
+        {% elseif isUnpublishedDraft %}
+            <div id="save-btn-container" class="btngroup submit">
+                <button type="submit" class="btn submit formsubmit" data-action="{{ saveDraftAction }}" data-redirect="{{ (redirectUrl ~ '#')|hash }}">{{ 'Save draft'|t('app') }}</button>
+            </div>
         {% endif %}
     {% elseif isDraft %}
         {% if canUpdateSource and publishDraftAction %}

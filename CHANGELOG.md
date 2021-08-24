@@ -1,5 +1,10 @@
 # Release Notes for Craft CMS 3.x
 
+## Unreleased
+
+### Changed
+- Edit Entry pages now show a “Save draft” button for users without the “Publish live changes” permission. ([#9750](https://github.com/craftcms/cms/issues/9750))
+
 ## 3.7.10 - 2021-08-19
 
 ### Changed
