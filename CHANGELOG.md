@@ -5,6 +5,10 @@
 ### Changed
 - Edit Entry pages now show a “Save draft” button for users without the “Publish live changes” permission. ([#9750](https://github.com/craftcms/cms/issues/9750))
 - Users without the “Delete entries” permission can now delete their own unpublished drafts.
+- `craft\services\Matrix::validateBlockType()` no longer has a `$validateUniques` argument.
+
+### Deprecated
+- Deprecated `craft\records\MatrixBlockType::$validateUniques`.
 
 ### Fixed
 - Fixed an error that could occur when saving Matrix fields, if the Type Linked Field and Expanded Singles plugins were both installed. ([#9749](https://github.com/craftcms/cms/issues/9749))

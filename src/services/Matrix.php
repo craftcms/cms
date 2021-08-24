@@ -149,11 +149,9 @@ class Matrix extends Component
      * If the block type doesn’t validate, any validation errors will be stored on the block type.
      *
      * @param MatrixBlockType $blockType The block type.
-     * @param bool $validateUniques Whether the Name and Handle attributes should be validated to
-     * ensure they’re unique. Defaults to `true`.
      * @return bool Whether the block type validated.
      */
-    public function validateBlockType(MatrixBlockType $blockType, bool $validateUniques = true): bool
+    public function validateBlockType(MatrixBlockType $blockType): bool
     {
         $validates = true;
 
@@ -163,14 +161,10 @@ class Matrix extends Component
         $blockTypeRecord->name = $blockType->name;
         $blockTypeRecord->handle = $blockType->handle;
 
-        $blockTypeRecord->validateUniques = $validateUniques;
-
         if (!$blockTypeRecord->validate()) {
             $validates = false;
             $blockType->addErrors($blockTypeRecord->getErrors());
         }
-
-        $blockTypeRecord->validateUniques = true;
 
         foreach ($blockType->getFields() as $field) {
             // Hack to allow blank field names

@@ -30,6 +30,7 @@ class MatrixBlockType extends ActiveRecord
 {
     /**
      * @var bool Whether the Name and Handle attributes should validated to ensure they’re unique.
+     * @deprecated in 3.7.11
      */
     public $validateUniques = true;
 
