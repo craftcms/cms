@@ -172,16 +172,6 @@ class Matrix extends Component
 
         $blockTypeRecord->validateUniques = true;
 
-        // Can't validate multiple new rows at once so we'll need to give these temporary context to avoid false unique
-        // handle validation errors, and just validate those manually. Also apply the future fieldColumnPrefix so that
-        // field handle validation takes its length into account.
-        $contentService = Craft::$app->getContent();
-        $originalFieldContext = $contentService->fieldContext;
-        $originalFieldColumnPrefix = $contentService->fieldColumnPrefix;
-
-        $contentService->fieldContext = StringHelper::randomString(10);
-        $contentService->fieldColumnPrefix = 'field_' . $blockType->handle . '_';
-
         foreach ($blockType->getFields() as $field) {
             // Hack to allow blank field names
             if (!$field->name) {
@@ -216,9 +206,6 @@ class Matrix extends Component
                 $validates = false;
             }
         }
-
-        $contentService->fieldContext = $originalFieldContext;
-        $contentService->fieldColumnPrefix = $originalFieldColumnPrefix;
 
         return $validates;
     }
