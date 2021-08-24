@@ -560,6 +560,7 @@ class ProjectConfig extends Component
      */
     public function applyYamlChanges(): void
     {
+        Craft::$app->getDeprecator()->log(__CLASS__ . '::applyYamlChanges()', '`' . __CLASS__ . '::applyYamlChanges()` has been deprecated. Use `applyExternalChanges()` instead.');
         $this->applyExternalChanges();
     }
 
@@ -623,6 +624,7 @@ class ProjectConfig extends Component
      */
     public function getIsApplyingYamlChanges(): bool
     {
+        Craft::$app->getDeprecator()->log(__CLASS__ . '::getIsApplyingYamlChanges()', '`' . __CLASS__ . '::applyYamlChanges()` has been deprecated. Use `getIsApplyingExternalChanges()` instead.');
         return $this->getIsApplyingExternalChanges();
     }
 
@@ -646,6 +648,7 @@ class ProjectConfig extends Component
      */
     public function getDoesYamlExist(): bool
     {
+        Craft::$app->getDeprecator()->log(__CLASS__ . '::getDoesYamlExist()', '`' . __CLASS__ . '::getDoesYamlExist()` has been deprecated. Use `getDoesExternalConfigExist()` instead.');
         return $this->getDoesExternalConfigExist();
     }
 
