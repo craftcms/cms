@@ -456,7 +456,7 @@ class ElementHelper
         /** @var ElementInterface $lastElement */
         $lastElement = null;
 
-        foreach ($elements as $i => $element) {
+        foreach ($elements as $element) {
             if ($lastElement) {
                 $lastElement->setNext($element);
                 $element->setPrev($lastElement);
