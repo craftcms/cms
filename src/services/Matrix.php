@@ -484,7 +484,7 @@ class Matrix extends Component
         $uniqueAttributeValues = [];
 
         foreach ($matrixField->getBlockTypes() as $blockType) {
-            if (!$this->validateBlockType($blockType, false)) {
+            if (!$this->validateBlockType($blockType)) {
                 // Don't break out of the loop because we still want to get validation errors for the remaining block
                 // types.
                 $validates = false;
