@@ -563,7 +563,7 @@ interface ElementInterface extends ComponentInterface
     /**
      * Returns the canonical version of the element.
      *
-     * If this is a draft or revision, the source element will be returned.
+     * If this is a draft or revision, the canonical element will be returned.
      *
      * @param bool $anySite Whether the canonical element can be retrieved in any site
      * @return static
@@ -582,7 +582,7 @@ interface ElementInterface extends ComponentInterface
     /**
      * Returns the element’s canonical ID.
      *
-     * If this is a draft or revision, the source element’s ID will be returned.
+     * If this is a draft or revision, the canonical element’s ID will be returned.
      *
      * @return int|null
      * @since 3.7.0
@@ -596,6 +596,16 @@ interface ElementInterface extends ComponentInterface
      * @since 3.7.0
      */
     public function setCanonicalId(?int $canonicalId): void;
+
+    /**
+     * Returns the element’s canonical UUID.
+     *
+     * If this is a draft or revision, the canonical element’s UUID will be returned.
+     *
+     * @return string|null
+     * @since 3.7.11
+     */
+    public function getCanonicalUid(): ?string;
 
     /**
      * Returns whether the element is an unpublished draft.
