@@ -234,7 +234,7 @@ class MigrateController extends BaseMigrateController
         // Make sure that the project config YAML exists in case any migrations need to check incoming YAML values
         $projectConfig = Craft::$app->getProjectConfig();
         if ($projectConfig->writeYamlAutomatically && !$projectConfig->getDoesExternalConfigExist()) {
-            $projectConfig->regenerateYamlFromConfig();
+            $projectConfig->regenerateExternalConfig();
         }
 
         if (!parent::beforeAction($action)) {

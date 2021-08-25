@@ -260,7 +260,7 @@ class AppController extends Controller
 
             // Sync project.yaml?
             if ($applyProjectConfigChanges) {
-                $projectConfigService->applyYamlChanges();
+                $projectConfigService->applyExternalChanges();
             }
 
             $transaction->commit();

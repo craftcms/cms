@@ -747,7 +747,7 @@ class Sections extends Component
         if (
             !$isNewSection &&
             $section->type === Section::TYPE_SINGLE &&
-            !Craft::$app->getProjectConfig()->getIsApplyingYamlChanges()
+            !Craft::$app->getProjectConfig()->getIsApplyingExternalChanges()
         ) {
             $this->_ensureSingleEntry($section, $siteSettingData);
         }

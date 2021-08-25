@@ -66,8 +66,8 @@ class ProjectConfigController extends Controller
             throw new ForbiddenHttpException('Rebuilding the project config is not allowed while it’s in read-only mode.');
         }
 
-        $projectConfig->regenerateYamlFromConfig();
-        $this->setSuccessFlash(Craft::t('app', 'Project config YAML changes discarded.'));
+        $projectConfig->regenerateExternalConfig();
+        $this->setSuccessFlash(Craft::t('app', 'Project config external changes discarded.'));
         return $this->redirectToPostedUrl();
     }
 

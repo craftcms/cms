@@ -135,7 +135,7 @@ class Console extends \yii\helpers\Console
 
         if ($projectConfig->writeYamlAutomatically && !$projectConfig->getDoesExternalConfigExist()) {
             static::stdout('Generating project config files from the loaded project config ... ', static::FG_YELLOW);
-            $projectConfig->regenerateYamlFromConfig();
+            $projectConfig->regenerateExternalConfig();
             static::stdout('done' . PHP_EOL, static::FG_GREEN);
         }
     }

@@ -144,7 +144,7 @@ class ProjectConfigController extends Controller
         // Do we need to create a new config file?
         if (!$projectConfig->getDoesExternalConfigExist()) {
             $this->stdout("No project config files found. Generating them from internal config ... ", Console::FG_YELLOW);
-            $projectConfig->regenerateYamlFromConfig();
+            $projectConfig->regenerateExternalConfig();
         } else {
             // Any plugins need to be installed/uninstalled?
             $loadedConfigPlugins = array_keys($projectConfig->get(Plugins::CONFIG_PLUGINS_KEY) ?? []);
@@ -171,7 +171,7 @@ class ProjectConfigController extends Controller
                 $projectConfig->on(ProjectConfigService::EVENT_UPDATE_ITEM, [$this, 'onStartProcessingItem'], ['label' => 'updating'], false);
                 $projectConfig->on(ProjectConfigService::EVENT_UPDATE_ITEM, [$this, 'onFinishProcessingItem'], ['label' => 'updating'], true);
 
-                $projectConfig->applyYamlChanges();
+                $projectConfig->applyExternalChanges();
 
                 $projectConfig->forceUpdate = $forceUpdate;
             } catch (\Throwable $e) {
@@ -256,7 +256,7 @@ class ProjectConfigController extends Controller
     public function actionWrite(): int
     {
         $this->stdout('Writing out project config files ... ');
-        Craft::$app->getProjectConfig()->regenerateYamlFromConfig();
+        Craft::$app->getProjectConfig()->regenerateExternalConfig();
         $this->stdout('done' . PHP_EOL, Console::FG_GREEN);
         return ExitCode::OK;
     }
@@ -273,7 +273,7 @@ class ProjectConfigController extends Controller
 
         if ($projectConfig->writeYamlAutomatically && !$projectConfig->getDoesExternalConfigExist()) {
             $this->stdout("No project config files found. Generating them from internal config ... ", Console::FG_YELLOW);
-            $projectConfig->regenerateYamlFromConfig();
+            $projectConfig->regenerateExternalConfig();
         }
 
         $this->stdout('Rebuilding the project config from the current state ... ', Console::FG_YELLOW);

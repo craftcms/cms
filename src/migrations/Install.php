@@ -1098,7 +1098,7 @@ class Install extends Migration
         if ($applyExistingProjectConfig) {
             // Save the existing system settings
             echo '    > applying existing project config ... ';
-            $projectConfig->applyYamlChanges();
+            $projectConfig->applyExternalChanges();
             echo "done\n";
         } else {
             // Save the default system settings
