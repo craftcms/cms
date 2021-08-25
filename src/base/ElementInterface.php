@@ -11,6 +11,7 @@ use craft\elements\db\ElementQueryInterface;
 use craft\errors\InvalidFieldException;
 use craft\models\FieldLayout;
 use craft\models\Site;
+use Illuminate\Support\Collection;
 use Twig\Markup;
 
 
@@ -1283,9 +1284,9 @@ interface ElementInterface extends ComponentInterface
      * Returns the eager-loaded elements for a given handle.
      *
      * @param string $handle The handle of the eager-loaded elements
-     * @return ElementInterface[]|null The eager-loaded elements, or null if they hadn't been eager-loaded
+     * @return Collection|null The eager-loaded elements, or null if they hadn't been eager-loaded
      */
-    public function getEagerLoadedElements(string $handle): ?array;
+    public function getEagerLoadedElements(string $handle): ?Collection;
 
     /**
      * Sets some eager-loaded elements on a given handle.

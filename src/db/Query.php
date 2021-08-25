@@ -10,6 +10,7 @@ namespace craft\db;
 use craft\base\ClonefixTrait;
 use craft\events\DefineBehaviorsEvent;
 use craft\helpers\ArrayHelper;
+use Illuminate\Support\Collection;
 use yii\base\Exception;
 use yii\base\Model;
 use yii\db\Connection as YiiConnection;
@@ -154,6 +155,19 @@ class Query extends \yii\db\Query
         } catch (QueryAbortedException $e) {
             return [];
         }
+    }
+
+    /**
+     * Executes the query and returns all results as a collection.
+     *
+     * @param YiiConnection|null $db The database connection used to generate the SQL statement.
+     * If this parameter is not given, the `db` application component will be used.
+     * @return Collection A collection of the resulting elements.
+     * @since 4.0.0
+     */
+    public function collect(?YiiConnection $db = null): Collection
+    {
+        return new Collection($this->all($db));
     }
 
     /**
