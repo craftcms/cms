@@ -456,9 +456,9 @@ class Entry extends Element
                 }
 
                 // Delete?
-                if ($userSession->checkPermission("deleteEntries:$section->uid")) {
-                    $actions[] = Delete::class;
+                $actions[] = Delete::class;
 
+                if ($userSession->checkPermission("deleteEntries:$section->uid")) {
                     if (
                         $section->type === Section::TYPE_STRUCTURE &&
                         $section->maxLevels != 1 &&
@@ -1262,7 +1262,7 @@ class Entry extends Element
         $userSession = Craft::$app->getUser();
         $userId = $userSession->getId();
 
-        if ($this->getIsDraft() && !$this->getIsUnpublishedDraft()) {
+        if ($this->getIsDraft()) {
             /** @var Entry|DraftBehavior $this */
             return $this->creatorId == $userId || $userSession->checkPermission("deletePeerEntryDrafts:$section->uid");
         }
