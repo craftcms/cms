@@ -3,11 +3,13 @@
 ## Unreleased
 
 ### Added
+- Added the `canonicalUid` field to entries queried via GraphQL.
 - Added `craft\base\ElementInterface::getCanonicalUid()`. ([#9757](https://github.com/craftcms/cms/issues/9757))
 
 ### Changed
 - Edit Entry pages now show a “Save draft” button for users without the “Publish live changes” permission. ([#9750](https://github.com/craftcms/cms/issues/9750))
 - Users without the “Delete entries” permission can now delete their own unpublished drafts.
+- All entries now have a `canonicalId` field when queried via GraphQL now; not just drafts.
 - `craft\services\Matrix::validateBlockType()` no longer has a `$validateUniques` argument.
 
 ### Deprecated
