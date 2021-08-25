@@ -34,6 +34,7 @@ use craft\queue\jobs\LocalizeRelations;
 use craft\services\Elements;
 use craft\validators\ArrayValidator;
 use GraphQL\Type\Definition\Type;
+use Illuminate\Support\Collection;
 use yii\base\Event;
 use yii\base\InvalidConfigException;
 use yii\base\NotSupportedException;
@@ -632,13 +633,13 @@ JS;
     /**
      * Returns the HTML that should be shown for this field in Table View.
      *
-     * @param ElementInterface[] $elements
+     * @param Collection $elements
      * @return string
      * @since 3.6.3
      */
-    protected function tableAttributeHtml(array $elements): string
+    protected function tableAttributeHtml(Collection $elements): string
     {
-        return Cp::elementPreviewHtml($elements);
+        return Cp::elementPreviewHtml($elements->all());
     }
 
     /**

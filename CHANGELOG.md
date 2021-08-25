@@ -22,6 +22,7 @@
 - Added `craft\db\Migration::dropForeignKeyIfExists()`.
 - Added `craft\db\Migration::dropIndexIfExists()`.
 - Added `craft\db\Migration::renameTable()`.
+- Added `craft\db\Query::collect()`, which returns the query results as an `Illuminate\Support\Collection` object rather than an array. ([#8513](https://github.com/craftcms/cms/discussions/8513))
 - Added `craft\db\Table::ASSETINDEXINGSESSIONS`.
 - Added `craft\elements\Asset::setFilename()`.
 - Added `craft\elements\User::$active`.
@@ -59,6 +60,7 @@
 - Added `craft\services\Users::ensureUserByEmail()`, which will return a user for the given email, creating one if it didn’t exist yet.
 - Added `craft\services\Users::EVENT_AFTER_DEACTIVATE_USER`.
 - Added `craft\services\Users::EVENT_BEFORE_DEACTIVATE_USER`.
+- Added the Illuminate Collections package. ([#8475](https://github.com/craftcms/cms/discussions/8475))
 
 ### Changed
 - Craft now requires PHP 7.4 or later.
@@ -134,6 +136,7 @@
 - Widgets’ `getTitle()` methods can now have a `?string` return type declaration.
 - Widgets’ `icon()` methods must now have a `?string` return type declaration.
 - Widgets’ `maxColspan()` methods must now have an `?int` return type declaration.
+- `craft\base\ElementInterface::getEagerLoadedElements()` now returns an `Illuminate\Support\Collection` object instead of an array. ([#8513](https://github.com/craftcms/cms/discussions/8513))
 - `craft\base\MemoizableArray` no longer extends `ArrayObject`, and now implements `IteratorAggregate` and `Countable` directly.
 - `craft\base\Model::datetimeAttributes()` is now called from the constructor, instead of the `init()` method.
 - `craft\base\Model::setAttributes()` now normalizes date attributes into `DateTime` objects.
