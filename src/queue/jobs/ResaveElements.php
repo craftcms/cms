@@ -12,6 +12,7 @@ use craft\base\ElementInterface;
 use craft\elements\db\ElementQuery;
 use craft\elements\db\ElementQueryInterface;
 use craft\events\BatchElementActionEvent;
+use craft\i18n\Translation;
 use craft\queue\BaseJob;
 use craft\services\Elements;
 
@@ -54,7 +55,7 @@ class ResaveElements extends BaseJob
 
         $callback = function(BatchElementActionEvent $e) use ($queue, $query, $total) {
             if ($e->query === $query) {
-                $this->setProgress($queue, ($e->position - 1) / $total, Craft::t('app', '{step, number} of {total, number}', [
+                $this->setProgress($queue, ($e->position - 1) / $total, Translation::prep('app', '{step, number} of {total, number}', [
                     'step' => $e->position,
                     'total' => $total,
                 ]));
@@ -75,7 +76,7 @@ class ResaveElements extends BaseJob
         $query = $this->_query();
         /** @var ElementInterface $elementType */
         $elementType = $query->elementType;
-        return Craft::t('app', 'Resaving {type}', [
+        return Translation::prep('app', 'Resaving {type}', [
             'type' => $elementType::pluralLowerDisplayName(),
         ]);
     }

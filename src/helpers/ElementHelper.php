@@ -16,6 +16,7 @@ use craft\base\FieldInterface;
 use craft\db\Query;
 use craft\db\Table;
 use craft\errors\OperationAbortedException;
+use Illuminate\Support\Collection;
 use yii\base\Exception;
 
 /**
@@ -449,14 +450,14 @@ class ElementHelper
      * Given an array of elements, will go through and set the appropriate "next"
      * and "prev" elements on them.
      *
-     * @param ElementInterface[] $elements The array of elements.
+     * @param iterable|ElementInterface[] $elements The array of elements.
      */
-    public static function setNextPrevOnElements(array $elements): void
+    public static function setNextPrevOnElements($elements): void
     {
         /** @var ElementInterface $lastElement */
         $lastElement = null;
 
-        foreach ($elements as $i => $element) {
+        foreach ($elements as $element) {
             if ($lastElement) {
                 $lastElement->setNext($element);
                 $element->setPrev($lastElement);

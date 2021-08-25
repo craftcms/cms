@@ -91,7 +91,8 @@ interface QueueInterface
      * - `delay` – the number of seconds remaining before the job will start
      * - `status` – the job status (1 = waiting, 2 = reserved, 3 = done, 4 = failed)
      * - `progress` – the job progress (0-100)
-     * - `description` – the job description
+     * - `progressLabel` – the progress label (lazy-translated with [[\craft\i18n\Translation::translate()]])
+     * - `description` – the job description (lazy-translated with [[\craft\i18n\Translation::translate()]])
      * - `error` – the error message (if the job failed)
      *
      * @param int|null $limit
@@ -107,7 +108,8 @@ interface QueueInterface
      * - `delay` – the number of seconds remaining before the job will start
      * - `status` – the job status (1 = waiting, 2 = reserved, 3 = done, 4 = failed)
      * - `progress` – the job progress (0-100)
-     * - `description` – the job description
+     * - `progressLabel` – the progress label (lazy-translated with [[\craft\i18n\Translation::translate()]])
+     * - `description` – the job description (lazy-translated with [[\craft\i18n\Translation::translate()]])
      * - `ttr` – the job’s time-to-reserve, in seconds
      * - `error` – the error message (if the job failed)
      * - `job` – the deserialized job

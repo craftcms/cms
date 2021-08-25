@@ -59,6 +59,7 @@ use craft\validators\SlugValidator;
 use craft\validators\StringValidator;
 use craft\web\UploadedFile;
 use DateTime;
+use Illuminate\Support\Collection;
 use Twig\Markup;
 use yii\base\ErrorHandler;
 use yii\base\Event;
@@ -1546,7 +1547,7 @@ abstract class Element extends Component implements ElementInterface
     private $_nextSibling;
 
     /**
-     * @var ElementInterface[][]
+     * @var Collection[]
      */
     private array $_eagerLoadedElements = [];
 
@@ -3394,7 +3395,7 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @inheritdoc
      */
-    public function getEagerLoadedElements(string $handle): ?array
+    public function getEagerLoadedElements(string $handle): ?Collection
     {
         if (!isset($this->_eagerLoadedElements[$handle])) {
             return null;
@@ -3438,7 +3439,7 @@ abstract class Element extends Component implements ElementInterface
                 $this->trigger(self::EVENT_SET_EAGER_LOADED_ELEMENTS, $event);
                 if (!$event->handled) {
                     // No takers. Just store it in the internal array then.
-                    $this->_eagerLoadedElements[$handle] = $elements;
+                    $this->_eagerLoadedElements[$handle] = new Collection($elements);
                 }
         }
     }
