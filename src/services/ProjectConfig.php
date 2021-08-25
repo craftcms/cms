@@ -262,7 +262,7 @@ class ProjectConfig extends Component
     private array $_parsedChanges = [];
 
     /**
-     * @var array A list of all config YAML files.
+     * @var array A list of all external files.
      */
     private array $_configFileList = [];
 
@@ -277,14 +277,13 @@ class ProjectConfig extends Component
     private bool $_updateInternalConfig = false;
 
     /**
-     * @var bool Whether we’re listening for the request end, to update the Yaml caches.
+     * @var bool Whether we’re listening for the request end, to update the config parse time caches.
      * @see updateParsedConfigTimes()
      */
     private bool $_waitingToUpdateParsedConfigTimes = false;
 
     /**
      * @var bool Whether external project config changes are currently being applied.
-     * @see applyYamlChanges()
      * @see getIsApplyingExternalChanges()
      */
     private bool $_applyingExternalChanges = false;
@@ -434,7 +433,6 @@ class ProjectConfig extends Component
      */
     public function get(?string $path = null, bool $getFromExternalConfig = false)
     {
-        // For schema version, always get the value from Yaml file.
         if ($getFromExternalConfig) {
             $source = $this->getExternalConfig();
         } else {
@@ -539,8 +537,19 @@ class ProjectConfig extends Component
 
     /**
      * Regenerates `project.yaml` based on the loaded project config.
+     * @deprecated in 4.0.0. use [[regenerateExternalConfig()]] instead.
      */
     public function regenerateYamlFromConfig(): void
+    {
+        Craft::$app->getDeprecator()->log(__CLASS__ . '::regenerateYamlFromConfig()', '`' . __CLASS__ . '::regenerateYamlFromConfig()` has been deprecated. Use `regenerateExternalConfig()` instead.');
+        $this->regenerateExternalConfig();
+    }
+
+    /**
+     * Regenerates the external config based on the loaded project config.
+     * @since 4.0.0
+     */
+    public function regenerateExternalConfig(): void
     {
         $this->isApplyingExternalChanges = false;
 
@@ -629,7 +638,7 @@ class ProjectConfig extends Component
     }
 
     /**
-     * Returns whether project.yaml changes are currently being applied
+     * Returns whether external changes are currently being applied
      *
      * @return bool
      * @since 4.0.0
@@ -653,7 +662,7 @@ class ProjectConfig extends Component
     }
 
     /**
-     * Returns whether project config YAML files appear to exist.
+     * Returns whether external project config files appear to exist.
      *
      * @return bool
      * @since 4.0.0
@@ -667,7 +676,7 @@ class ProjectConfig extends Component
      * Returns whether a given path has pending changes that need to be applied to the loaded project config.
      *
      * @param string|null $path A specific config path that should be checked for pending changes.
-     * If this is null, then `true` will be returned if there are *any* pending changes in `project.yaml`.
+     * If this is null, then `true` will be returned if there are *any* pending changes in external config.
      * @param bool $force Whether to check for changes even if it doesn’t look like anything has changed since
      * the last time [[ignorePendingChanges()]] has been called.
      * @return bool
@@ -682,7 +691,7 @@ class ProjectConfig extends Component
         // If the file does not exist, but should, generate it
         if ($this->getHadFileWriteIssues() || !$this->getDoesExternalConfigExist()) {
             if ($this->writeYamlAutomatically) {
-                $this->regenerateYamlFromConfig();
+                $this->regenerateExternalConfig();
             }
 
             $this->saveModifiedConfigData();
@@ -715,17 +724,17 @@ class ProjectConfig extends Component
     /**
      * Processes changes in the project config files for a given config item path.
      *
-     * Note that this will only have an effect if project config YAML changes are currently getting [[getIsApplyingYamlChanges()|applied]].
+     * Note that this will only have an effect if external project config changes are currently getting [[getIsApplyingExternalChanges()|applied]].
      *
      * @param string $path The config item path
      * @param bool $triggerUpdate Whether an update event should be triggered even if no changes are detected
      * @param string|null $message The message describing changes, if changes are detected
      * @param bool $force Whether the config change should be processed regardless of previous records,
-     * or whether YAML changes are currently being applied
+     * or whether external changes are currently being applied
      */
     public function processConfigChanges(string $path, bool $triggerUpdate = false, ?string $message = null, bool $force = false): void
     {
-        if ($force || $this->getIsApplyingYamlChanges()) {
+        if ($force || $this->getIsApplyingExternalChanges()) {
             $this->_processConfigChangesInternal($path, $triggerUpdate, $message, $force);
         }
     }
@@ -844,17 +853,17 @@ class ProjectConfig extends Component
     /**
      * Saves all the config data that has been modified up to now.
      *
-     * @param bool|null $writeYaml Whether to update the YAML files. Defaults to [[$writeYamlAutomatically]].
+     * @param bool|null $writeExternalConfig Whether to update the external config. Defaults to [[$writeYamlAutomatically]].
      * @throws ErrorException
      */
-    public function saveModifiedConfigData(?bool $writeYaml = null): void
+    public function saveModifiedConfigData(?bool $writeExternalConfig = null): void
     {
         $this->_processProjectConfigNameChanges();
 
         if ($this->_isConfigModified) {
             $this->updateConfigVersion();
 
-            if ($writeYaml ?? $this->writeYamlAutomatically) {
+            if ($writeExternalConfig ?? $this->writeYamlAutomatically) {
                 $this->updateYamlFiles();
             }
         }
@@ -1304,7 +1313,7 @@ class ProjectConfig extends Component
             $this->updateYamlFiles();
         }
 
-        // And now ensure that Project Config doesn't attempt to save to yaml files again
+        // And now ensure that Project Config doesn't attempt to export the config again
         $this->_isConfigModified = false;
         $this->_updateInternalConfig = true;
 
