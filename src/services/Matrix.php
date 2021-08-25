@@ -142,11 +142,9 @@ class Matrix extends Component
      * If the block type doesn’t validate, any validation errors will be stored on the block type.
      *
      * @param MatrixBlockType $blockType The block type.
-     * @param bool $validateUniques Whether the Name and Handle attributes should be validated to
-     * ensure they’re unique. Defaults to `true`.
      * @return bool Whether the block type validated.
      */
-    public function validateBlockType(MatrixBlockType $blockType, bool $validateUniques = true): bool
+    public function validateBlockType(MatrixBlockType $blockType): bool
     {
         $validates = true;
 
@@ -156,24 +154,10 @@ class Matrix extends Component
         $blockTypeRecord->name = $blockType->name;
         $blockTypeRecord->handle = $blockType->handle;
 
-        $blockTypeRecord->validateUniques = $validateUniques;
-
         if (!$blockTypeRecord->validate()) {
             $validates = false;
             $blockType->addErrors($blockTypeRecord->getErrors());
         }
-
-        $blockTypeRecord->validateUniques = true;
-
-        // Can't validate multiple new rows at once so we'll need to give these temporary context to avoid false unique
-        // handle validation errors, and just validate those manually. Also apply the future fieldColumnPrefix so that
-        // field handle validation takes its length into account.
-        $contentService = Craft::$app->getContent();
-        $originalFieldContext = $contentService->fieldContext;
-        $originalFieldColumnPrefix = $contentService->fieldColumnPrefix;
-
-        $contentService->fieldContext = StringHelper::randomString(10);
-        $contentService->fieldColumnPrefix = 'field_' . $blockType->handle . '_';
 
         foreach ($blockType->getFields() as $field) {
             // Hack to allow blank field names
@@ -209,9 +193,6 @@ class Matrix extends Component
                 $validates = false;
             }
         }
-
-        $contentService->fieldContext = $originalFieldContext;
-        $contentService->fieldColumnPrefix = $originalFieldColumnPrefix;
 
         return $validates;
     }
