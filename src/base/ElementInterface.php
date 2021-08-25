@@ -598,6 +598,16 @@ interface ElementInterface extends ComponentInterface
     public function setCanonicalId(?int $canonicalId): void;
 
     /**
+     * Returns the element’s canonical UUID.
+     *
+     * If this is a draft or revision, the canonical element’s UUID will be returned.
+     *
+     * @return string|null
+     * @since 3.7.11
+     */
+    public function getCanonicalUid(): ?string;
+
+    /**
      * Returns whether the element is an unpublished draft.
      *
      * @return bool

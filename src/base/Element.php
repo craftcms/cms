@@ -1452,6 +1452,12 @@ abstract class Element extends Component implements ElementInterface
     private $_canonical;
 
     /**
+     * @var string|null
+     * @see getCanonicalUid()
+     */
+    private $_canonicalUid;
+
+    /**
      * @var array|null
      * @see _outdatedAttributes()
      */
@@ -1785,6 +1791,7 @@ abstract class Element extends Component implements ElementInterface
         return [
             'ancestors',
             'canonical',
+            'canonicalUid',
             'children',
             'descendants',
             'hasDescendants',
@@ -2194,6 +2201,35 @@ abstract class Element extends Component implements ElementInterface
     }
 
     /**
+     * @inheritdoc
+     */
+    public function getCanonicalUid(): ?string
+    {
+        // If this is the canonical element, return its UUID
+        if ($this->getIsCanonical()) {
+            return $this->uid;
+        }
+
+        // If the canonical element is already memoized via getCanonical(), go with its UUID
+        if ($this->_canonical !== null) {
+            return $this->_canonical->uid;
+        }
+
+        // Just fetch that one value ourselves
+        if ($this->_canonicalUid === null) {
+            $this->_canonicalUid = static::find()
+                ->select(['elements.uid'])
+                ->id($this->_canonicalId)
+                ->siteId('*')
+                ->anyStatus()
+                ->ignorePlaceholders()
+                ->scalar();
+        }
+
+        return $this->_canonicalUid;
+    }
+
+    /**
      * Returns the element’s canonical ID.
      *
      * @return int|null
@@ -2211,12 +2247,12 @@ abstract class Element extends Component implements ElementInterface
      *
      * @return string
      * @since 3.2.0
-     * @deprecated in 3.7.0. Use [[getCanonical()]] instead.
+     * @deprecated in 3.7.0. Use [[getCanonicalUid()]] instead.
      */
     public function getSourceUid(): string
     {
-        Craft::$app->getDeprecator()->log(__METHOD__, 'Elements’ `getSourceUid()` method has been deprecated. Use `getCanonical(true)->uid` instead.');
-        return $this->getCanonical(true)->uid;
+        Craft::$app->getDeprecator()->log(__METHOD__, 'Elements’ `getSourceUid()` method has been deprecated. Use `getCanonicalUid()` instead.');
+        return $this->getCanonicalUid();
     }
 
     /**
