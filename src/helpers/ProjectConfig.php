@@ -56,7 +56,7 @@ class ProjectConfig
     {
         $projectConfig = Craft::$app->getProjectConfig();
 
-        if (static::$_processedFields || !$projectConfig->getIsApplyingYamlChanges()) {
+        if (static::$_processedFields || !$projectConfig->getIsApplyingExternalChanges()) {
             return;
         }
 
@@ -85,7 +85,7 @@ class ProjectConfig
     {
         $projectConfig = Craft::$app->getProjectConfig();
 
-        if (static::$_processedSites || (!$force && !$projectConfig->getIsApplyingYamlChanges())) {
+        if (static::$_processedSites || (!$force && !$projectConfig->getIsApplyingExternalChanges())) {
             return;
         }
 
@@ -112,7 +112,7 @@ class ProjectConfig
     {
         $projectConfig = Craft::$app->getProjectConfig();
 
-        if (static::$_processedUserGroups || !$projectConfig->getIsApplyingYamlChanges()) {
+        if (static::$_processedUserGroups || !$projectConfig->getIsApplyingExternalChanges()) {
             return;
         }
 
@@ -136,7 +136,7 @@ class ProjectConfig
     {
         $projectConfig = Craft::$app->getProjectConfig();
 
-        if (static::$_processedGqlSchemas || !$projectConfig->getIsApplyingYamlChanges()) {
+        if (static::$_processedGqlSchemas || !$projectConfig->getIsApplyingExternalChanges()) {
             return;
         }
 
