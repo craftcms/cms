@@ -312,6 +312,7 @@
 - Removed `craft\models\Site::overrideName()`.
 - Removed `craft\queue\jobs\ApplyMatrixPropagationMethod`. `ApplyNewPropagationMethod` can be used instead.
 - Removed `craft\queue\jobs\DeleteStaleTemplateCaches`.
+- Removed `craft\records\MatrixBlockType::$validateUniques`.
 - Removed `craft\services\AssetIndexer::deleteStaleIndexingData()`.
 - Removed `craft\services\AssetIndexer::extractFolderItemsFromIndexList()`.
 - Removed `craft\services\AssetIndexer::extractSkippedItemsFromIndexList()`.
