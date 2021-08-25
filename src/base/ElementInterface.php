@@ -561,7 +561,7 @@ interface ElementInterface extends ComponentInterface
     /**
      * Returns the canonical version of the element.
      *
-     * If this is a draft or revision, the source element will be returned.
+     * If this is a draft or revision, the canonical element will be returned.
      *
      * @param bool $anySite Whether the canonical element can be retrieved in any site
      * @return static
@@ -581,7 +581,7 @@ interface ElementInterface extends ComponentInterface
     /**
      * Returns the element’s canonical ID.
      *
-     * If this is a draft or revision, the source element’s ID will be returned.
+     * If this is a draft or revision, the canonical element’s ID will be returned.
      *
      * @return int|null
      * @since 3.7.0
