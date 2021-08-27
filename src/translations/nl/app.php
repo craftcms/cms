@@ -404,7 +404,7 @@ return [
     'Create {type}' => '{type} maken',
     'Create' => 'Maken',
     'Created at' => 'Gemaakt op',
-    'Credentialed' => 'Credentialed',
+    'Credentialed' => 'Gecertificeerd',
     'Critical' => 'Kritische',
     'Crop' => 'Bijsnijden',
     'Current Password' => 'Huidige wachtwoord',
