@@ -899,6 +899,9 @@ class Elements extends Component
                 'elementId' => $canonical->id,
                 'siteId' => $field['siteId'],
                 'fieldId' => $field['fieldId'],
+                'dateUpdated' => $timestamp,
+                'propagated' => $field['propagated'],
+                'userId' => $field['userId'],
             ], true, [], false);
         }
 
