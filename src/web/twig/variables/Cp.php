@@ -637,13 +637,6 @@ class Cp extends Component
 
         foreach ($files as $file) {
             $template = substr($file->getRealPath(), $rootLength + 1);
-
-            // Can we chop off the extension?
-            $extension = $file->getExtension();
-            if (in_array($extension, $config->defaultTemplateExtensions, true)) {
-                $template = substr($template, 0, strlen($template) - (strlen($extension) + 1));
-            }
-
             $hint = null;
 
             // Is it in a site template directory?

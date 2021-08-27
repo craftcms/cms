@@ -132,7 +132,7 @@ class UserPermissions extends Component
                         ],
                         'administrateUsers' => [
                             'label' => Craft::t('app', 'Administrate users'),
-                            'info' => Craft::t('app', 'Includes activating user accounts, resetting passwords, and changing email addresses.'),
+                            'info' => Craft::t('app', 'Includes activating/deactivating user accounts, resetting passwords, and changing email addresses.'),
                             'warning' => Craft::t('app', 'Accounts with this permission could use it to escalate their own permissions.'),
                         ],
                         'impersonateUsers' => [

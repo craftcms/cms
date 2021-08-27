@@ -26,6 +26,7 @@ use craft\helpers\Json;
 use craft\helpers\ProjectConfig as ProjectConfigHelper;
 use craft\helpers\Queue;
 use craft\helpers\StringHelper;
+use craft\i18n\Translation;
 use craft\models\EntryType;
 use craft\models\FieldLayout;
 use craft\models\Section;
@@ -704,7 +705,7 @@ class Sections extends Component
                 // If the propagation method just changed, we definitely need to update entries for that
                 if ($propagationMethodChanged) {
                     Queue::push(new ApplyNewPropagationMethod([
-                        'description' => Craft::t('app', 'Applying new propagation method to {section} entries', [
+                        'description' => Translation::prep('app', 'Applying new propagation method to {section} entries', [
                             'section' => $sectionRecord->name,
                         ]),
                         'elementType' => Entry::class,
@@ -715,7 +716,7 @@ class Sections extends Component
                     ]));
                 } else if ($this->autoResaveEntries) {
                     Queue::push(new ResaveElements([
-                        'description' => Craft::t('app', 'Resaving {section} entries', [
+                        'description' => Translation::prep('app', 'Resaving {section} entries', [
                             'section' => $sectionRecord->name,
                         ]),
                         'elementType' => Entry::class,
@@ -1206,7 +1207,7 @@ class Sections extends Component
         } else if (!$isNewEntryType && $resaveEntries && $this->autoResaveEntries) {
             // Re-save the entries of this type
             Queue::push(new ResaveElements([
-                'description' => Craft::t('app', 'Resaving {type} entries', [
+                'description' => Translation::prep('app', 'Resaving {type} entries', [
                     'type' => ($section->type !== Section::TYPE_SINGLE ? $section->name . ' - ' : '') . $entryType->name,
                 ]),
                 'elementType' => Entry::class,

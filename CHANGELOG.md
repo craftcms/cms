@@ -3,7 +3,11 @@
 ## Unreleased
 
 ### Added
+- Added the “Inactive” user status, which can be used by users which can’t be signed into. ([#8963](https://github.com/craftcms/cms/discussions/8963))
+- Added “Credentialed” and “Inactive” user sources.
+- Added the “Deactivate…” user action for pending and active users.
 - Added the `index-assets/cleanup` command.
+- Added the “Deactivate users by default” user registration setting, which replaces “Suspend users by default”. ([#5830](https://github.com/craftcms/cms/issues/5830))
 - Added support for `JSON` columns. ([#9089](https://github.com/craftcms/cms/pull/9089))
 - Added `craft\base\Volume::CONFIG_MIMETYPE`.
 - Added `craft\base\Volume::CONFIG_VISIBILITY`.
@@ -18,8 +22,12 @@
 - Added `craft\db\Migration::dropForeignKeyIfExists()`.
 - Added `craft\db\Migration::dropIndexIfExists()`.
 - Added `craft\db\Migration::renameTable()`.
+- Added `craft\db\Query::collect()`, which returns the query results as an `Illuminate\Support\Collection` object rather than an array. ([#8513](https://github.com/craftcms/cms/discussions/8513))
 - Added `craft\db\Table::ASSETINDEXINGSESSIONS`.
 - Added `craft\elements\Asset::setFilename()`.
+- Added `craft\elements\User::$active`.
+- Added `craft\elements\User::STATUS_INACTIVE`.
+- Added `craft\elements\User::getIsCredentialed()`.
 - Added `craft\errors\MissingVolumeFolderException`.
 - Added `craft\helpers\Assets::downloadFile()`.
 - Added `craft\helpers\Db::dropAllForeignKeysToTable()`.
@@ -31,6 +39,7 @@
 - Added `craft\helpers\Db::renameTable()`.
 - Added `craft\helpers\Number::isInt()`.
 - Added `craft\helpers\Number::toIntOrFloat()`.
+- Added `craft\i18n\Translation`.
 - Added `craft\models\AssetIndexingSession`.
 - Added `craft\models\VolumeListing`.
 - Added `craft\records\AssetIndexingSession`.
@@ -47,10 +56,22 @@
 - Added `craft\services\AssetIndexer::startIndexingSession()`.
 - Added `craft\services\AssetIndexer::stopIndexingSession()`.
 - Added `craft\services\AssetTransforms::deleteTransformIndexDataByAssetIds()`.
+- Added `craft\services\Users::deactivateUser()`.
+- Added `craft\services\Users::ensureUserByEmail()`, which will return a user for the given email, creating one if it didn’t exist yet.
+- Added `craft\services\Users::EVENT_AFTER_DEACTIVATE_USER`.
+- Added `craft\services\Users::EVENT_BEFORE_DEACTIVATE_USER`.
+- Added the Illuminate Collections package. ([#8475](https://github.com/craftcms/cms/discussions/8475))
 
 ### Changed
 - Craft now requires PHP 7.4 or later.
+- The “What’ New” HUD now displays an icon and label above each announcement, identifying where it came from (Craft CMS or a plugin). ([#9747](https://github.com/craftcms/cms/discussions/9747))
+- Users are no longer required to have a username or email.
+- User queries now return all users by default, rather than only active users.
+- Filtering users by `active`, `pending`, and `locked` statuses no longer excludes suspended users.
 - Relational fields now load elements in the current site rather than the primary site, if the source element isn’t localizable. ([#7048](https://github.com/craftcms/cms/issues/7048))
+- Built-in queue jobs are now always translated for the current user’s language. ([#9745](https://github.com/craftcms/cms/pull/9745))
+- Template autosuggestions now include their filename. ([#9744](https://github.com/craftcms/cms/pull/9744))
+- All control panel templates end in `.twig` now. ([#9743](https://github.com/craftcms/cms/pull/9743))
 - The `users/save-user` action no longer includes a `unverifiedEmail` key in failure responses.
 - All components’ `afterDelete()` methods must now have a `void` return type declaration.
 - All components’ `afterSave()` methods must now have a `void` return type declaration.
@@ -115,6 +136,7 @@
 - Widgets’ `getTitle()` methods can now have a `?string` return type declaration.
 - Widgets’ `icon()` methods must now have a `?string` return type declaration.
 - Widgets’ `maxColspan()` methods must now have an `?int` return type declaration.
+- `craft\base\ElementInterface::getEagerLoadedElements()` now returns an `Illuminate\Support\Collection` object instead of an array. ([#8513](https://github.com/craftcms/cms/discussions/8513))
 - `craft\base\MemoizableArray` no longer extends `ArrayObject`, and now implements `IteratorAggregate` and `Countable` directly.
 - `craft\base\Model::datetimeAttributes()` is now called from the constructor, instead of the `init()` method.
 - `craft\base\Model::setAttributes()` now normalizes date attributes into `DateTime` objects.
@@ -131,6 +153,7 @@
 - `craft\helpers\Db::prepareValueForDb()` now has a `$columnType` argument.
 - `craft\helpers\Db::truncateTable()` now returns `void` rather than `int`.
 - `craft\helpers\MigrationHelper::dropAllIndexesOnTable()` no longer returns an array of the dropped indexes.
+- `craft\services\Announcements::push()` no longer accepts callables to be passed to the `$heading` and `$body` arguments. `craft\i18n\Translation::prep()` should be used to prepare the messages to be lazy-translated instead.
 - `craft\services\AssetIndexer::storeIndexList()` now expects the first argument to be a generator that returns `craft\models\VolumeListing` objects.
 - `craft\services\Assets::ensureFolderByFullPathAndVolume()` now returns a `craft\models\VolumeFolder` object rather than a folder ID.
 - `craft\services\Assets::EVENT_GET_ASSET_THUMB_URL` has been renamed to `EVENT_DEFINE_THUMB_URL`.
@@ -292,6 +315,7 @@
 - Removed `craft\models\Site::overrideName()`.
 - Removed `craft\queue\jobs\ApplyMatrixPropagationMethod`. `ApplyNewPropagationMethod` can be used instead.
 - Removed `craft\queue\jobs\DeleteStaleTemplateCaches`.
+- Removed `craft\records\MatrixBlockType::$validateUniques`.
 - Removed `craft\services\AssetIndexer::deleteStaleIndexingData()`.
 - Removed `craft\services\AssetIndexer::extractFolderItemsFromIndexList()`.
 - Removed `craft\services\AssetIndexer::extractSkippedItemsFromIndexList()`.

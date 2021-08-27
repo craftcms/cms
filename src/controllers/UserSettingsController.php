@@ -130,7 +130,7 @@ class UserSettingsController extends Controller
             $settings['requireEmailVerification'] = (bool)$this->request->getBodyParam('requireEmailVerification');
             $settings['validateOnPublicRegistration'] = (bool)$this->request->getBodyParam('validateOnPublicRegistration');
             $settings['allowPublicRegistration'] = (bool)$this->request->getBodyParam('allowPublicRegistration');
-            $settings['suspendByDefault'] = (bool)$this->request->getBodyParam('suspendByDefault');
+            $settings['deactivateByDefault'] = (bool)$this->request->getBodyParam('deactivateByDefault');
             $settings['defaultGroup'] = $this->request->getBodyParam('defaultGroup');
         }
 

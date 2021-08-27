@@ -36,7 +36,9 @@ use craft\records\User as UserRecord;
 use craft\web\Request;
 use DateTime;
 use yii\base\Component;
+use yii\base\Exception;
 use yii\base\InvalidArgumentException;
+use yii\validators\EmailValidator;
 
 /**
  * The Users service provides APIs for managing users.
@@ -68,6 +70,21 @@ class Users extends Component
      * @event UserEvent The event that is triggered after a user is activated.
      */
     const EVENT_AFTER_ACTIVATE_USER = 'afterActivateUser';
+
+    /**
+     * @event UserEvent The event that is triggered before a user is deactivated.
+     *
+     * You may set [[UserEvent::isValid]] to `false` to prevent the user from getting deactivated.
+     *
+     * @since 4.0.0
+     */
+    const EVENT_BEFORE_DEACTIVATE_USER = 'beforeDeactivateUser';
+
+    /**
+     * @event UserEvent The event that is triggered after a user is deactivated.
+     * @since 4.0.0
+     */
+    const EVENT_AFTER_DEACTIVATE_USER = 'afterDeactivateUser';
 
     /**
      * @event UserEvent The event that is triggered after a user is locked.
@@ -144,6 +161,36 @@ class Users extends Component
      * @since 3.1.0
      */
     const CONFIG_USERLAYOUT_KEY = self::CONFIG_USERS_KEY . '.' . 'fieldLayouts';
+
+    /**
+     * Returns a user by an email address, creating one if non already exists.
+     *
+     * @param string $email
+     * @return User
+     * @throws InvalidArgumentException if `$email` is invalid
+     * @throws Exception if the user couldn’t save for some unexpected reason
+     * @since 4.0.0
+     */
+    public function ensureUserByEmail(string $email): User
+    {
+        $user = User::find()
+            ->email($email)
+            ->status(null)
+            ->one();
+
+        if (!$user) {
+            $user = new User();
+            $user->email = $email;
+            if (!$user->validate(['email'])) {
+                throw new InvalidArgumentException($user->getFirstError('email'));
+            }
+            if (!Craft::$app->getElements()->saveElement($user, false)) {
+                throw new Exception('Unable to save user: ' . implode(', ', $user->getFirstErrors()));
+            }
+        }
+
+        return $user;
+    }
 
     /**
      * Returns a user by their ID.
@@ -639,12 +686,27 @@ class Users extends Component
         $transaction = Craft::$app->getDb()->beginTransaction();
         try {
             $userRecord = $this->_getUserRecordById($user->id);
+            $userRecord->active = true;
             $userRecord->pending = false;
+            $userRecord->locked = false;
+            $userRecord->suspended = false;
             $userRecord->verificationCode = null;
             $userRecord->verificationCodeIssuedDate = null;
+            $userRecord->invalidLoginWindowStart = null;
+            $userRecord->invalidLoginCount = null;
+            $userRecord->lastInvalidLoginDate = null;
+            $userRecord->lockoutDate = null;
             $userRecord->save();
 
+            $user->active = true;
             $user->pending = false;
+            $user->locked = false;
+            $user->suspended = false;
+            $user->verificationCode = null;
+            $user->verificationCodeIssuedDate = null;
+            $user->invalidLoginCount = null;
+            $user->lastInvalidLoginDate = null;
+            $user->lockoutDate = null;
 
             // If they have an unverified email address, now is the time to set it to their primary email address
             $this->verifyEmailForUser($user);
@@ -658,6 +720,67 @@ class Users extends Component
         // Fire an 'afterActivateUser' event
         if ($this->hasEventHandlers(self::EVENT_AFTER_ACTIVATE_USER)) {
             $this->trigger(self::EVENT_AFTER_ACTIVATE_USER, new UserEvent([
+                'user' => $user,
+            ]));
+        }
+
+        return true;
+    }
+
+    /**
+     * Deactivates a user.
+     *
+     * @param User $user The user.
+     * @return bool Whether the user was deactivated successfully.
+     * @throws \Throwable if reasons
+     * @since 4.0.0
+     */
+    public function deactivateUser(User $user): bool
+    {
+        // Fire a 'beforeActivateUser' event
+        $event = new UserEvent([
+            'user' => $user,
+        ]);
+        $this->trigger(self::EVENT_BEFORE_DEACTIVATE_USER, $event);
+
+        if (!$event->isValid) {
+            return false;
+        }
+
+        $transaction = Craft::$app->getDb()->beginTransaction();
+        try {
+            $userRecord = $this->_getUserRecordById($user->id);
+            $userRecord->active = false;
+            $userRecord->pending = false;
+            $userRecord->locked = false;
+            $userRecord->suspended = false;
+            $userRecord->verificationCode = null;
+            $userRecord->verificationCodeIssuedDate = null;
+            $userRecord->invalidLoginWindowStart = null;
+            $userRecord->invalidLoginCount = null;
+            $userRecord->lastInvalidLoginDate = null;
+            $userRecord->lockoutDate = null;
+            $userRecord->save();
+
+            $user->active = false;
+            $user->pending = false;
+            $user->locked = false;
+            $user->suspended = false;
+            $user->verificationCode = null;
+            $user->verificationCodeIssuedDate = null;
+            $user->invalidLoginCount = null;
+            $user->lastInvalidLoginDate = null;
+            $user->lockoutDate = null;
+
+            $transaction->commit();
+        } catch (\Throwable $e) {
+            $transaction->rollBack();
+            throw $e;
+        }
+
+        // Fire an 'afterActivateUser' event
+        if ($this->hasEventHandlers(self::EVENT_AFTER_DEACTIVATE_USER)) {
+            $this->trigger(self::EVENT_AFTER_DEACTIVATE_USER, new UserEvent([
                 'user' => $user,
             ]));
         }
@@ -904,10 +1027,30 @@ class Users extends Component
     public function setVerificationCodeOnUser(User $user): string
     {
         $userRecord = $this->_getUserRecordById($user->id);
-        $unhashedVerificationCode = $this->_setVerificationCodeOnUserRecord($userRecord);
+
+        $securityService = Craft::$app->getSecurity();
+        $unhashedCode = $securityService->generateRandomString(32);
+
+        // Strip underscores so they don't get interpreted as italics markers in the Markdown parser
+        $unhashedCode = str_replace('_', StringHelper::randomString(1), $unhashedCode);
+        $issueDate = DateTimeHelper::currentUTCDateTime();
+
+        $hashedCode = $securityService->hashPassword($unhashedCode);
+        $userRecord->verificationCode = $hashedCode;
+        $userRecord->verificationCodeIssuedDate = $issueDate;
+
+        // Make sure they are set to pending, if not already active
+        if (!$userRecord->active) {
+            $userRecord->pending = true;
+        }
+
         $userRecord->save();
 
-        return $unhashedVerificationCode;
+        $user->pending = $userRecord->pending;
+        $user->verificationCode = $hashedCode;
+        $user->verificationCodeIssuedDate = $issueDate;
+
+        return $unhashedCode;
     }
 
     /**
@@ -1237,27 +1380,6 @@ class Users extends Component
     }
 
     /**
-     * Sets a user record up for a new verification code without saving it.
-     *
-     * @param UserRecord $userRecord
-     * @return string
-     */
-    private function _setVerificationCodeOnUserRecord(UserRecord $userRecord): string
-    {
-        $securityService = Craft::$app->getSecurity();
-        $unhashedCode = $securityService->generateRandomString(32);
-
-        // Strip underscores so they don't get interpreted as italics markers in the Markdown parser
-        $unhashedCode = str_replace('_', StringHelper::randomString(1), $unhashedCode);
-
-        $hashedCode = $securityService->hashPassword($unhashedCode);
-        $userRecord->verificationCode = $hashedCode;
-        $userRecord->verificationCodeIssuedDate = DateTimeHelper::currentUTCDateTime();
-
-        return $unhashedCode;
-    }
-
-    /**
      * Determines if a user is within their invalid login window.
      *
      * @param UserRecord $userRecord
@@ -1290,9 +1412,7 @@ class Users extends Component
      */
     private function _getUserUrl(User $user, string $fePath, string $cpPath): string
     {
-        $userRecord = $this->_getUserRecordById($user->id);
-        $unhashedVerificationCode = $this->_setVerificationCodeOnUserRecord($userRecord);
-        $userRecord->save();
+        $unhashedVerificationCode = $this->setVerificationCodeOnUser($user);
 
         $params = [
             'code' => $unhashedVerificationCode,

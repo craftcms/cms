@@ -701,16 +701,17 @@ class Install extends Migration
         ]);
         $this->createTable(Table::USERS, [
             'id' => $this->integer()->notNull(),
-            'username' => $this->string(100)->notNull(),
             'photoId' => $this->integer(),
-            'firstName' => $this->string(100),
-            'lastName' => $this->string(100),
-            'email' => $this->string()->notNull(),
-            'password' => $this->string(),
-            'admin' => $this->boolean()->defaultValue(false)->notNull(),
+            'active' => $this->boolean()->defaultValue(false)->notNull(),
+            'pending' => $this->boolean()->defaultValue(false)->notNull(),
             'locked' => $this->boolean()->defaultValue(false)->notNull(),
             'suspended' => $this->boolean()->defaultValue(false)->notNull(),
-            'pending' => $this->boolean()->defaultValue(false)->notNull(),
+            'admin' => $this->boolean()->defaultValue(false)->notNull(),
+            'username' => $this->string(),
+            'firstName' => $this->string(),
+            'lastName' => $this->string(),
+            'email' => $this->string(),
+            'password' => $this->string(),
             'lastLoginDate' => $this->dateTime(),
             'lastLoginAttemptIp' => $this->string(45),
             'invalidLoginWindowStart' => $this->dateTime(),
@@ -895,6 +896,10 @@ class Install extends Migration
         $this->createIndex(null, Table::USERPERMISSIONS_USERGROUPS, ['groupId'], false);
         $this->createIndex(null, Table::USERPERMISSIONS_USERS, ['permissionId', 'userId'], true);
         $this->createIndex(null, Table::USERPERMISSIONS_USERS, ['userId'], false);
+        $this->createIndex(null, Table::USERS, ['active'], false);
+        $this->createIndex(null, Table::USERS, ['locked'], false);
+        $this->createIndex(null, Table::USERS, ['pending'], false);
+        $this->createIndex(null, Table::USERS, ['suspended'], false);
         $this->createIndex(null, Table::USERS, ['verificationCode'], false);
         $this->createIndex(null, Table::VOLUMEFOLDERS, ['name', 'parentId', 'volumeId'], true);
         $this->createIndex(null, Table::VOLUMEFOLDERS, ['parentId'], false);
@@ -1128,10 +1133,11 @@ class Install extends Migration
         // Save the first user
         echo '    > saving the first user ... ';
         $user = new User([
+            'active' => true,
+            'admin' => true,
             'username' => $this->username,
             'newPassword' => $this->password,
             'email' => $this->email,
-            'admin' => true,
         ]);
         Craft::$app->getElements()->saveElement($user);
         echo "done\n";

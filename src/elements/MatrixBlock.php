@@ -22,6 +22,7 @@ use craft\models\MatrixBlockType;
 use craft\models\MatrixBlockType as MatrixBlockTypeModel;
 use craft\records\MatrixBlock as MatrixBlockRecord;
 use craft\web\assets\matrix\MatrixAsset;
+use Illuminate\Support\Collection;
 use yii\base\Exception;
 use yii\base\InvalidConfigException;
 
@@ -373,7 +374,7 @@ class MatrixBlock extends Element implements BlockElementInterface
     /**
      * @inheritdoc
      */
-    public function getEagerLoadedElements(string $handle): ?array
+    public function getEagerLoadedElements(string $handle): ?Collection
     {
         // See if we have this stored with a block type-specific handle
         $blockTypeHandle = $this->getType()->handle . ':' . $handle;

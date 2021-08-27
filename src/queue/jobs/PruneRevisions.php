@@ -9,6 +9,7 @@ namespace craft\queue\jobs;
 
 use Craft;
 use craft\base\ElementInterface;
+use craft\i18n\Translation;
 use craft\queue\BaseJob;
 
 /**
@@ -81,6 +82,6 @@ class PruneRevisions extends BaseJob
      */
     protected function defaultDescription(): ?string
     {
-        return Craft::t('app', 'Pruning extra revisions');
+        return Translation::prep('app', 'Pruning extra revisions');
     }
 }

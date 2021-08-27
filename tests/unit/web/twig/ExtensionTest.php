@@ -63,7 +63,11 @@ class ExtensionTest extends Unit
     {
         // We want web for this part.
         Craft::$app->getRequest()->setIsConsoleRequest(false);
-        $user = new User(['firstName' => 'John', 'lastName' => 'Smith']);
+        $user = new User([
+            'active' => true,
+            'firstName' => 'John',
+            'lastName' => 'Smith',
+        ]);
         Craft::$app->getUser()->setIdentity($user);
         Craft::$app->getRequest()->setRawBody('This is a raw body');
 

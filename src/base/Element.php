@@ -59,7 +59,9 @@ use craft\validators\SlugValidator;
 use craft\validators\StringValidator;
 use craft\web\UploadedFile;
 use DateTime;
+use Illuminate\Support\Collection;
 use Twig\Markup;
+use yii\base\ErrorHandler;
 use yii\base\Event;
 use yii\base\InvalidCallException;
 use yii\base\InvalidConfigException;
@@ -93,6 +95,7 @@ use yii\validators\Validator;
  * @property array $htmlAttributes Any attributes that should be included in the element’s DOM representation in the control panel
  * @property bool $isEditable Whether the current user can edit the element
  * @property Markup|null $link An anchor pre-filled with this element’s URL and title
+ * @property ElementInterface|null $canonical The canonical element, if one exists for the current site
  * @property ElementInterface|null $next The next element relative to this one, from a given set of criteria
  * @property ElementInterface|null $nextSibling The element’s next sibling
  * @property ElementInterface|null $parent The element’s parent
@@ -1448,6 +1451,12 @@ abstract class Element extends Component implements ElementInterface
     private $_canonical;
 
     /**
+     * @var string|null
+     * @see getCanonicalUid()
+     */
+    private ?string $_canonicalUid = null;
+
+    /**
      * @var array|null
      * @see _outdatedAttributes()
      */
@@ -1545,7 +1554,7 @@ abstract class Element extends Component implements ElementInterface
     private $_nextSibling;
 
     /**
-     * @var ElementInterface[][]
+     * @var Collection[]
      */
     private array $_eagerLoadedElements = [];
 
@@ -1594,7 +1603,16 @@ abstract class Element extends Component implements ElementInterface
         if (isset($this->title) && $this->title !== '') {
             return (string)$this->title;
         }
-        return (string)$this->id ?: static::class;
+
+        if ($this->id) {
+            return (string)$this->id;
+        }
+
+        try {
+            return static::displayName();
+        } catch (\Throwable $e) {
+            ErrorHandler::convertExceptionToError($e);
+        }
     }
 
     /**
@@ -1762,6 +1780,8 @@ abstract class Element extends Component implements ElementInterface
     {
         return [
             'ancestors',
+            'canonical',
+            'canonicalUid',
             'children',
             'descendants',
             'hasDescendants',
@@ -2158,6 +2178,35 @@ abstract class Element extends Component implements ElementInterface
     }
 
     /**
+     * @inheritdoc
+     */
+    public function getCanonicalUid(): ?string
+    {
+        // If this is the canonical element, return its UUID
+        if ($this->getIsCanonical()) {
+            return $this->uid;
+        }
+
+        // If the canonical element is already memoized via getCanonical(), go with its UUID
+        if (isset($this->_canonical)) {
+            return $this->_canonical->uid;
+        }
+
+        // Just fetch that one value ourselves
+        if (!isset($this->_canonicalUid)) {
+            $this->_canonicalUid = static::find()
+                ->select(['elements.uid'])
+                ->id($this->_canonicalId)
+                ->siteId('*')
+                ->status(null)
+                ->ignorePlaceholders()
+                ->scalar();
+        }
+
+        return $this->_canonicalUid;
+    }
+
+    /**
      * Returns the element’s canonical ID.
      *
      * @return int|null
@@ -2175,12 +2224,12 @@ abstract class Element extends Component implements ElementInterface
      *
      * @return string
      * @since 3.2.0
-     * @deprecated in 3.7.0. Use [[getCanonical()]] instead.
+     * @deprecated in 3.7.0. Use [[getCanonicalUid()]] instead.
      */
     public function getSourceUid(): string
     {
-        Craft::$app->getDeprecator()->log(__METHOD__, 'Elements’ `getSourceUid()` method has been deprecated. Use `getCanonical(true)->uid` instead.');
-        return $this->getCanonical(true)->uid;
+        Craft::$app->getDeprecator()->log(__METHOD__, 'Elements’ `getSourceUid()` method has been deprecated. Use `getCanonicalUid()` instead.');
+        return $this->getCanonicalUid();
     }
 
     /**
@@ -3384,7 +3433,7 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @inheritdoc
      */
-    public function getEagerLoadedElements(string $handle): ?array
+    public function getEagerLoadedElements(string $handle): ?Collection
     {
         if (!isset($this->_eagerLoadedElements[$handle])) {
             return null;
@@ -3428,7 +3477,7 @@ abstract class Element extends Component implements ElementInterface
                 $this->trigger(self::EVENT_SET_EAGER_LOADED_ELEMENTS, $event);
                 if (!$event->handled) {
                     // No takers. Just store it in the internal array then.
-                    $this->_eagerLoadedElements[$handle] = $elements;
+                    $this->_eagerLoadedElements[$handle] = new Collection($elements);
                 }
         }
     }

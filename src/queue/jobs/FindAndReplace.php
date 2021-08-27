@@ -13,6 +13,7 @@ use craft\db\Table;
 use craft\fields\Matrix;
 use craft\helpers\Db;
 use craft\helpers\ElementHelper;
+use craft\i18n\Translation;
 use craft\queue\BaseJob;
 use yii\base\Exception;
 
@@ -72,7 +73,7 @@ class FindAndReplace extends BaseJob
      */
     protected function defaultDescription(): ?string
     {
-        return Craft::t('app', 'Replacing “{find}” with “{replace}”', [
+        return Translation::prep('app', 'Replacing “{find}” with “{replace}”', [
             'find' => $this->find,
             'replace' => $this->replace,
         ]);

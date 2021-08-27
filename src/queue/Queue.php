@@ -15,6 +15,7 @@ use craft\helpers\Db;
 use craft\helpers\Json;
 use craft\helpers\StringHelper;
 use craft\helpers\UrlHelper;
+use craft\i18n\Translation;
 use yii\base\Exception;
 use yii\base\InvalidArgumentException;
 use yii\db\Expression;
@@ -406,8 +407,8 @@ class Queue extends \yii\queue\cli\Queue implements QueueInterface
             'status' => $this->_status($result),
             'error' => $result['error'] ?? '',
             'progress' => $result['progress'],
-            'progressLabel' => $result['progressLabel'],
-            'description' => $result['description'],
+            'progressLabel' => Translation::translate((string)$result['progressLabel']) ?: null,
+            'description' => Translation::translate((string)$result['description']) ?: null,
             'job' => $job,
             'ttr' => (int)$result['ttr'],
             'Priority' => $result['priority'],
@@ -463,8 +464,8 @@ class Queue extends \yii\queue\cli\Queue implements QueueInterface
                 'delay' => max(0, $result['timePushed'] + $result['delay'] - time()),
                 'status' => $this->_status($result),
                 'progress' => (int)$result['progress'],
-                'progressLabel' => $result['progressLabel'],
-                'description' => $result['description'],
+                'progressLabel' => Translation::translate((string)$result['progressLabel']) ?: null,
+                'description' => Translation::translate((string)$result['description']) ?: null,
                 'error' => $result['error'],
             ];
         }

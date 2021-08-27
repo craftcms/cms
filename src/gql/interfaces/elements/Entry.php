@@ -70,6 +70,28 @@ class Entry extends Structure
     public static function getFieldDefinitions(): array
     {
         return TypeManager::prepareFieldDefinitions(array_merge(parent::getFieldDefinitions(), static::getDraftFieldDefinitions(), self::getConditionalFields(), [
+            'canonicalId' => [
+                'name' => 'canonicalId',
+                'type' => Type::int(),
+                'description' => 'Returns the entry’s canonical ID.',
+            ],
+            'canonicalUid' => [
+                'name' => 'canonicalUid',
+                'type' => Type::string(),
+                'description' => 'Returns the entry’s canonical UUID.',
+            ],
+            'sourceId' => [
+                'name' => 'sourceId',
+                'type' => Type::int(),
+                'description' => 'Returns the entry’s canonical ID.',
+                'deprecationReason' => 'this field has been deprecated since Craft 3.7.7. Use `canonicalId` instead.',
+            ],
+            'sourceUid' => [
+                'name' => 'sourceUid',
+                'type' => Type::string(),
+                'description' => 'Returns the entry’s canonical UUID.',
+                'deprecationReason' => 'this field has been deprecated since Craft 3.7.7. Use `canonicalUid` instead.',
+            ],
             'sectionId' => [
                 'name' => 'sectionId',
                 'type' => Type::int(),

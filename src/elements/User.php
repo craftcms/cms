@@ -51,17 +51,18 @@ use yii\web\IdentityInterface;
 /**
  * User represents a user element.
  *
- * @property DateTime|null $cooldownEndTime the time when the user will be over their cooldown period
+ * @property Asset|null $photo the user's photo
+ * @property UserGroup[] $groups the user's groups
+ * @property string $name the user's full name or username
  * @property string|null $friendlyName the user's first name or username
  * @property string|null $fullName the user's full name
- * @property UserGroup[] $groups the user's groups
- * @property bool $isCurrent whether this is the current logged-in user
- * @property string $name the user's full name or username
- * @property Asset|null $photo the user's photo
- * @property array $preferences the user’s preferences
- * @property string|null $preferredLanguage the user’s preferred language
- * @property string|null $preferredLocale the user’s preferred formatting locale
- * @property DateInterval|null $remainingCooldownTime the remaining cooldown time for this user, if they've entered their password incorrectly too many times
+ * @property-read DateInterval|null $remainingCooldownTime the remaining cooldown time for this user, if they've entered their password incorrectly too many times
+ * @property-read DateTime|null $cooldownEndTime the time when the user will be over their cooldown period
+ * @property-read array $preferences the user’s preferences
+ * @property-read bool $isCredentialed whether the user account can be logged into
+ * @property-read bool $isCurrent whether this is the current logged-in user
+ * @property-read string|null $preferredLanguage the user’s preferred language
+ * @property-read string|null $preferredLocale the user’s preferred formatting locale
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
@@ -93,6 +94,10 @@ class User extends Element implements IdentityInterface
     // User statuses
     // -------------------------------------------------------------------------
 
+    /**
+     * @since 4.0.0
+     */
+    const STATUS_INACTIVE = 'inactive';
     const STATUS_ACTIVE = 'active';
     const STATUS_LOCKED = 'locked';
     const STATUS_SUSPENDED = 'suspended';
@@ -187,10 +192,25 @@ class User extends Element implements IdentityInterface
     public static function statuses(): array
     {
         return [
-            self::STATUS_ACTIVE => Craft::t('app', 'Active'),
-            self::STATUS_PENDING => Craft::t('app', 'Pending'),
-            self::STATUS_SUSPENDED => Craft::t('app', 'Suspended'),
-            self::STATUS_LOCKED => Craft::t('app', 'Locked'),
+            self::STATUS_ACTIVE => [
+                'label' => Craft::t('app', 'Active'),
+                'color' => 'green',
+            ],
+            self::STATUS_PENDING => [
+                'label' => Craft::t('app', 'Pending'),
+                'color' => 'orange',
+            ],
+            self::STATUS_SUSPENDED => [
+                'label' => Craft::t('app', 'Suspended'),
+                'color' => 'red',
+            ],
+            self::STATUS_LOCKED => [
+                'label' => Craft::t('app', 'Locked'),
+                'color' => 'red',
+            ],
+            self::STATUS_INACTIVE => [
+                'label' => Craft::t('app', 'Inactive'),
+            ],
         ];
     }
 
@@ -214,30 +234,41 @@ class User extends Element implements IdentityInterface
                 'label' => Craft::t('app', 'All users'),
                 'hasThumbs' => true,
             ],
-        ];
-
-        if (Craft::$app->getEdition() === Craft::Pro) {
-            // Admin source
-            $sources[] = [
+            [
                 'key' => 'admins',
                 'label' => Craft::t('app', 'Admins'),
                 'criteria' => ['admin' => true],
                 'hasThumbs' => true,
-            ];
+            ],
+            [
+                'heading' => Craft::t('app', 'Account Type'),
+            ],
+            [
+                'key' => 'credentialed',
+                'label' => Craft::t('app', 'Credentialed'),
+                'criteria' => ['status' => ['active', 'pending']],
+                'hasThumbs' => true,
+            ],
+            [
+                'key' => 'inactive',
+                'label' => Craft::t('app', 'Inactive'),
+                'criteria' => ['status' => 'inactive'],
+                'hasThumbs' => true,
+            ],
+        ];
 
-            $groups = Craft::$app->getUserGroups()->getAllGroups();
+        $groups = Craft::$app->getUserGroups()->getAllGroups();
 
-            if (!empty($groups)) {
-                $sources[] = ['heading' => Craft::t('app', 'Groups')];
+        if (!empty($groups)) {
+            $sources[] = ['heading' => Craft::t('app', 'Groups')];
 
-                foreach ($groups as $group) {
-                    $sources[] = [
-                        'key' => 'group:' . $group->uid,
-                        'label' => Craft::t('site', $group->name),
-                        'criteria' => ['groupId' => $group->id],
-                        'hasThumbs' => true,
-                    ];
-                }
+            foreach ($groups as $group) {
+                $sources[] = [
+                    'key' => 'group:' . $group->uid,
+                    'label' => Craft::t('site', $group->name),
+                    'criteria' => ['groupId' => $group->id],
+                    'hasThumbs' => true,
+                ];
             }
         }
 
@@ -487,14 +518,40 @@ class User extends Element implements IdentityInterface
     }
 
     /**
-     * @var string|null Username
-     */
-    public ?string $username = null;
-
-    /**
      * @var int|null Photo asset id
      */
     public ?int $photoId = null;
+
+    /**
+     * @var bool Active
+     * @since 4.0.0
+     */
+    public bool $active = false;
+
+    /**
+     * @var bool Pending
+     */
+    public bool $pending = false;
+
+    /**
+     * @var bool Locked
+     */
+    public bool $locked = false;
+
+    /**
+     * @var bool Suspended
+     */
+    public bool $suspended = false;
+
+    /**
+     * @var bool Admin
+     */
+    public bool $admin = false;
+
+    /**
+     * @var string|null Username
+     */
+    public ?string $username = null;
 
     /**
      * @var string|null First name
@@ -515,26 +572,6 @@ class User extends Element implements IdentityInterface
      * @var string|null Password
      */
     public ?string $password = null;
-
-    /**
-     * @var bool Admin
-     */
-    public bool $admin = false;
-
-    /**
-     * @var bool Locked
-     */
-    public bool $locked = false;
-
-    /**
-     * @var bool Suspended
-     */
-    public bool $suspended = false;
-
-    /**
-     * @var bool Pending
-     */
-    public bool $pending = false;
 
     /**
      * @var DateTime|null Last login date
@@ -674,10 +711,22 @@ class User extends Element implements IdentityInterface
     public function __toString(): string
     {
         try {
-            return $this->getName() ?: static::class;
-        } catch (\Exception $e) {
+            if (($name = $this->getName()) !== '') {
+                return $name;
+            }
+        } catch (\Throwable $e) {
             ErrorHandler::convertExceptionToError($e);
         }
+
+        return parent::__toString();
+    }
+
+    /**
+     * @inheritdoc
+     */
+    protected function uiLabel(): ?string
+    {
+        return $this->getName() ?: ($this->email ?? $this->id ?? static::class);
     }
 
     /**
@@ -689,6 +738,7 @@ class User extends Element implements IdentityInterface
         $names[] = 'cooldownEndTime';
         $names[] = 'friendlyName';
         $names[] = 'fullName';
+        $names[] = 'isCredentialed';
         $names[] = 'isCurrent';
         $names[] = 'name';
         $names[] = 'preferredLanguage';
@@ -744,17 +794,20 @@ class User extends Element implements IdentityInterface
     protected function defineRules(): array
     {
         $rules = parent::defineRules();
+
+        $treatAsActive = fn() => $this->active || $this->pending || $this->getScenario() === self::SCENARIO_REGISTRATION;
+
         $rules[] = [['lastLoginDate', 'lastInvalidLoginDate', 'lockoutDate', 'lastPasswordChangeDate', 'verificationCodeIssuedDate'], DateTimeValidator::class];
         $rules[] = [['invalidLoginCount', 'photoId'], 'number', 'integerOnly' => true];
         $rules[] = [['username', 'email', 'unverifiedEmail', 'firstName', 'lastName'], 'trim', 'skipOnEmpty' => true];
         $rules[] = [['email', 'unverifiedEmail'], 'email', 'enableIDN' => App::supportsIdn(), 'enableLocalIDN' => false];
-        $rules[] = [['email', 'password', 'unverifiedEmail'], 'string', 'max' => 255];
-        $rules[] = [['username', 'firstName', 'lastName', 'verificationCode'], 'string', 'max' => 100];
-        $rules[] = [['email'], 'required'];
+        $rules[] = [['email', 'username', 'firstName', 'lastName', 'password', 'unverifiedEmail'], 'string', 'max' => 255];
+        $rules[] = [['verificationCode'], 'string', 'max' => 100];
+        $rules[] = [['email'], 'required', 'when' => $treatAsActive];
         $rules[] = [['lastLoginAttemptIp'], 'string', 'max' => 45];
 
         if (!Craft::$app->getConfig()->getGeneral()->useEmailAsUsername) {
-            $rules[] = [['username'], 'required'];
+            $rules[] = [['username'], 'required', 'when' => $treatAsActive];
             $rules[] = [['username'], UsernameValidator::class];
         }
 
@@ -796,6 +849,17 @@ class User extends Element implements IdentityInterface
         ];
 
         return $rules;
+    }
+
+    /**
+     * Returns whether the user account can be logged into.
+     *
+     * @return bool
+     * @since 4.0.0
+     */
+    public function getIsCredentialed(): bool
+    {
+        return $this->active || $this->pending;
     }
 
     /**
@@ -1143,7 +1207,11 @@ class User extends Element implements IdentityInterface
             return self::STATUS_PENDING;
         }
 
-        return self::STATUS_ACTIVE;
+        if ($this->active) {
+            return self::STATUS_ACTIVE;
+        }
+
+        return self::STATUS_INACTIVE;
     }
 
     /**
@@ -1466,7 +1534,7 @@ class User extends Element implements IdentityInterface
                 }
                 return $formatter->asDuration($duration);
             },
-            Craft::t('app', 'Registered at') => $formatter->asDatetime($this->dateCreated, Formatter::FORMAT_WIDTH_SHORT),
+            Craft::t('app', 'Created at') => $formatter->asDatetime($this->dateCreated, Formatter::FORMAT_WIDTH_SHORT),
             Craft::t('app', 'Last login') => function() use ($formatter) {
                 if ($this->pending) {
                     return false;
@@ -1517,6 +1585,14 @@ class User extends Element implements IdentityInterface
                 throw new Exception('Invalid user ID: ' . $this->id);
             }
 
+            if ($this->active != $record->active) {
+                throw new Exception('Unable to change a user’s active state like this.');
+            }
+
+            if ($this->pending != $record->pending) {
+                throw new Exception('Unable to change a user’s pending state like this.');
+            }
+
             if ($this->locked != $record->locked) {
                 throw new Exception('Unable to change a user’s locked state like this.');
             }
@@ -1524,24 +1600,21 @@ class User extends Element implements IdentityInterface
             if ($this->suspended != $record->suspended) {
                 throw new Exception('Unable to change a user’s suspended state like this.');
             }
-
-            if ($this->pending != $record->pending) {
-                throw new Exception('Unable to change a user’s pending state like this.');
-            }
         } else {
             $record = new UserRecord();
             $record->id = (int)$this->id;
+            $record->active = $this->active;
+            $record->pending = $this->pending;
             $record->locked = $this->locked;
             $record->suspended = $this->suspended;
-            $record->pending = $this->pending;
         }
 
+        $record->photoId = (int)$this->photoId ?: null;
+        $record->admin = $this->admin;
         $record->username = $this->username;
         $record->firstName = $this->firstName;
         $record->lastName = $this->lastName;
-        $record->photoId = (int)$this->photoId ?: null;
         $record->email = $this->email;
-        $record->admin = $this->admin;
         $record->passwordResetRequired = $this->passwordResetRequired;
         $record->unverifiedEmail = $this->unverifiedEmail;
 
@@ -1674,6 +1747,7 @@ class User extends Element implements IdentityInterface
     private function _getAuthError(): ?string
     {
         switch ($this->getStatus()) {
+            case self::STATUS_INACTIVE:
             case self::STATUS_ARCHIVED:
                 return self::AUTH_INVALID_CREDENTIALS;
             case self::STATUS_PENDING:

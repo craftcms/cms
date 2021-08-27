@@ -39,6 +39,7 @@ use craft\helpers\Json;
 use craft\helpers\Queue;
 use craft\helpers\StringHelper;
 use craft\i18n\Locale;
+use craft\i18n\Translation;
 use craft\models\FieldLayoutTab;
 use craft\models\MatrixBlockType;
 use craft\queue\jobs\ApplyNewPropagationMethod;
@@ -988,7 +989,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
             $oldPropagationKeyFormat = $this->oldSettings['propagationKeyFormat'] ?? null;
             if ($this->propagationMethod !== $oldPropagationMethod || $this->propagationKeyFormat !== $oldPropagationKeyFormat) {
                 Queue::push(new ApplyNewPropagationMethod([
-                    'description' => Craft::t('app', 'Applying new propagation method to Matrix blocks'),
+                    'description' => Translation::prep('app', 'Applying new propagation method to Matrix blocks'),
                     'elementType' => MatrixBlock::class,
                     'criteria' => [
                         'fieldId' => $this->id,

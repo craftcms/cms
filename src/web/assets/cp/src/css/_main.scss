@@ -4666,6 +4666,8 @@ fieldset {
 }
 
 .field {
+  min-inline-size: initial;
+
   & > .status-badge {
     position: absolute;
     top: 0;
@@ -5644,12 +5646,12 @@ ul.errors li {
   @include sans-serif-font;
   font-size: 1em !important;
 
-  .autosuggest__results-before {
+  .autosuggest__results_title {
     @include h6-styles;
     margin-top: 14px !important;
   }
 
-  .autosuggest__results-item {
+  .autosuggest__results_item {
     @include menu-option-styles;
 
     &:hover,
