@@ -26,9 +26,9 @@ trait PluginTrait
     public ?string $name = null;
 
     /**
-     * @var string|null The plugin’s schema version number
+     * @var string The plugin’s schema version number
      */
-    public ?string $schemaVersion = '1.0.0';
+    public string $schemaVersion = '1.0.0';
 
     /**
      * @var string|null The plugin’s description
