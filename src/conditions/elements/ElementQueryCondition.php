@@ -25,6 +25,8 @@ abstract class ElementQueryCondition extends BaseCondition implements ElementQue
 {
     abstract public function getElementType(): string;
 
+    private $_showDebug = false;
+
     /**
      * @inheritDoc
      */
@@ -64,16 +66,20 @@ abstract class ElementQueryCondition extends BaseCondition implements ElementQue
      */
     public function getHtml(): string
     {
-        $titles = '';
-        foreach ($entries = $this->getQuery()->all() as $entry){
-         $titles .= $entry->title. '<br>';
+        if ($this->_showDebug) {
+            $titles = '';
+            foreach ($entries = $this->getQuery()->all() as $entry) {
+                $titles .= $entry->title . '<br>';
+            }
+            $html = parent::getHtml();
+            $html .= Html::tag('div',
+                Html::tag('h3', 'Element Query') .
+                Html::tag('pre', Json::encode($this->getQuery(), JSON_PRETTY_PRINT)),
+                ['class' => 'pane']);
+            $html .= Html::tag('div', Html::tag('h3', 'Results') . $titles, ['class' => 'pane']);
+            return $html;
+        } else {
+            return parent::getHtml();
         }
-        $html = parent::getHtml();
-        $html .= Html::tag('div',
-            Html::tag('h3','Element Query') .
-            Html::tag('pre', Json::encode($this->getQuery(), JSON_PRETTY_PRINT)),
-            ['class' => 'pane']);
-        $html .= Html::tag('div', Html::tag('h3','Results') . $titles, ['class' => 'pane']);
-        return $html;
     }
 }
