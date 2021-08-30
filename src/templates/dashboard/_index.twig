@@ -65,4 +65,11 @@
             </div>
         {% endfor %}
     </div>
+
+
+    {% include '_components/conditions/builder' with {
+        type : 'craft\\conditions\\elements\\entry\\EntryQueryCondition',
+        handle: 'entry'
+    }%}
+
 {% endblock %}

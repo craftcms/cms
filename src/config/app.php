@@ -32,6 +32,9 @@ return [
         'composer' => [
             'class' => \craft\services\Composer::class,
         ],
+        'conditions' => [
+            'class' => craft\services\Conditions::class,
+        ],
         'content' => [
             'class' => craft\services\Content::class,
         ],

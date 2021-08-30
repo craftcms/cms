@@ -3,53 +3,13 @@
 {% set elementType = 'craft\\elements\\Entry' %}
 {% set canHaveDrafts = true %}
 
-{% do view.registerAssetBundle('craft\\web\\assets\\conditionbuilder\\ConditionBuilderAsset') -%}
-
 {% do view.registerTranslations('app', [
     'New entry',
 ]) %}
-
-{% block main %}
-    <div class="pane">
-        <div id="element-query-builder"></div>
-    </div>
-    {{ parent() }}
-{% endblock %}
 
 {% if sectionHandle is defined %}
     {% js %}
         window.defaultSectionHandle = "{{ sectionHandle|e('js') }}";
     {% endjs %}
 {% endif %}
-
-{% js %}
-        new Craft.VueConditionBuilder({
-            container: '#element-query-builder',
-            rules: [
-                {
-                type: "text",
-                id: "elementId",
-                label: "ID"
-                },
-                {
-                type: "text",
-                id: "sectionId",
-                label: "Section ID"
-                },
-                {
-                  type: "radio",
-                  id: "status",
-                  label: "Status",
-                  choices: [
-                    { label: "Enabled", value: "enabled" },
-                    { label: "Disabled", value: "disabled" }
-                  ]
-                }
-              ],
-            query: {},
-            maxDepth: 5,
-            maxRuleUsage: 1,
-            groupOperatorEnabled: false
-        });
-{% endjs %}
 

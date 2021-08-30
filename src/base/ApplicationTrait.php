@@ -45,6 +45,7 @@ use craft\services\Assets;
 use craft\services\AssetTransforms;
 use craft\services\Categories;
 use craft\services\Composer;
+use craft\services\Conditions;
 use craft\services\Config;
 use craft\services\Content;
 use craft\services\Dashboard;
@@ -111,6 +112,7 @@ use yii\web\ServerErrorHttpException;
  * @property-read Assets $assets The assets service
  * @property-read Categories $categories The categories service
  * @property-read Composer $composer The Composer service
+ * @property-read Conditions $conditions The conditions service
  * @property-read Config $config The config service
  * @property-read Connection $db The database connection component
  * @property-read Content $content The content service
@@ -881,6 +883,17 @@ trait ApplicationTrait
     {
         /** @noinspection PhpIncompatibleReturnTypeInspection */
         return $this->get('composer');
+    }
+
+    /**
+     * Returns the conditions service.
+     *
+     * @return Conditions The conditions service
+     */
+    public function getConditions(): Conditions
+    {
+        /** @noinspection PhpIncompatibleReturnTypeInspection */
+        return $this->get('conditions');
     }
 
     /**

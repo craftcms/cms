@@ -1,0 +1,19 @@
+<script src="https://unpkg.com/htmx.org@1.5.0"></script>
+<script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
+
+{{ craft.app.conditions.createCondition({'type': type, 'handle': handle}).getHtml()|raw }}
+
+{% js %}
+htmx.onLoad(function(content) {
+    var sortables = content.querySelectorAll(".sortable");
+    for (var i = 0; i < sortables.length; i++) {
+        var sortable = sortables[i];
+        new Sortable(sortable, {
+            animation: 150,
+            draggable: '.draggable',
+            handle: '.draggable-handle',
+            direction: 'vertical',
+        });
+    }
+})
+{% endjs %}
