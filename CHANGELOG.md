@@ -11,6 +11,7 @@
 - Users without the “Delete entries” permission can now delete their own unpublished drafts.
 - All entries now have a `canonicalId` field when queried via GraphQL now; not just drafts.
 - `craft\services\Matrix::validateBlockType()` no longer has a `$validateUniques` argument.
+- Fixed a potential performance issue on the Entry index page on sites with large amounts of entries.
 
 ### Deprecated
 - Deprecated `craft\records\MatrixBlockType::$validateUniques`.
