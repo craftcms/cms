@@ -13,7 +13,7 @@ use craft\conditions\QueryConditionInterface;
 /**
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 4.0.0
+ * @since 4.0
  */
 interface ElementQueryConditionInterface extends QueryConditionInterface, ConditionInterface
 {

@@ -13,7 +13,7 @@ use Illuminate\Support\Collection;
  * @property-read string|null $html
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 4.0.0
+ * @since 4.0
  */
 abstract class BaseConditionRule extends Component implements ConditionRuleInterface
 {

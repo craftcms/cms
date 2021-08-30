@@ -19,14 +19,14 @@ use Illuminate\Support\Collection;
  * @property Collection $conditionRules
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 4.0.0
+ * @since 4.0
  */
 abstract class BaseCondition extends Component
 {
     /**
      * @event DefineConditionRuleTypesEvent The event that is triggered when defining the condition rule types
      * @see conditionRuleTypes()
-     * @since 4.0.0
+     * @since 4.0
      */
     public const EVENT_DEFINE_CONDITION_RULE_TYPES = 'defineConditionRuleTypes';
 

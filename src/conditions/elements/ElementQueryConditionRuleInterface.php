@@ -12,7 +12,7 @@ use craft\conditions\QueryConditionRuleInterface;
 /**
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 4.0.0
+ * @since 4.0
  */
 interface ElementQueryConditionRuleInterface extends QueryConditionRuleInterface
 {
