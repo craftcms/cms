@@ -115,22 +115,34 @@ class Command extends \yii\db\Command
      */
     public function upsert($table, $insertColumns, $updateColumns = true, $params = [], bool $includeAuditColumns = true): Command
     {
-        if ($includeAuditColumns && $updateColumns !== false) {
-            if ($updateColumns === true) {
-                $updateColumns = array_merge($insertColumns);
-            }
+        if ($updateColumns === true) {
+            $updateColumns = array_merge($insertColumns);
+        }
 
+        if ($includeAuditColumns) {
             $tableSchema = $this->db->getTableSchema($table);
             $now = Db::prepareDateForDb(new \DateTime());
 
+            $defaultValues = [];
+
+            // Make a list of columns and default values
             if (isset($tableSchema->columns['dateCreated'])) {
-                $updateColumns['dateCreated'] = $now;
+                $defaultValues['dateCreated'] = $now;
             }
             if (isset($tableSchema->columns['dateUpdated'])) {
-                $updateColumns['dateUpdated'] = $now;
+                $defaultValues['dateUpdated'] = $now;
             }
             if (isset($tableSchema->columns['uid'])) {
-                $updateColumns['uid'] = StringHelper::UUID();
+                $defaultValues['uid'] = StringHelper::UUID();
+            }
+
+            // Loop through default values and set the values, if no value exist.
+            foreach ($defaultValues as $column => $defaultValue) {
+                $insertColumns[$column] = $insertColumns[$column] ?? $defaultValue;
+
+                if ($updateColumns !== false) {
+                    $updateColumns[$column] = $updateColumns[$column] ?? $defaultValue;
+                }
             }
         }
 

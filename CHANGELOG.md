@@ -73,6 +73,24 @@
 - Template autosuggestions now include their filename. ([#9744](https://github.com/craftcms/cms/pull/9744))
 - All control panel templates end in `.twig` now. ([#9743](https://github.com/craftcms/cms/pull/9743))
 - The `users/save-user` action no longer includes a `unverifiedEmail` key in failure responses.
+- When using GraphQL to mutate entries, the `enabled` status is now affected on a per-site basis when specifying both the `enabled` and `siteId` parameters. ([#9771](https://github.com/craftcms/cms/issues/9771))
+- Plugins’ `$changelogUrl` properties must now have a `?string` type declaration.
+- Plugins’ `$description` properties must now have a `?string` type declaration.
+- Plugins’ `$developer` properties must now have a `?string` type declaration.
+- Plugins’ `$developerEmail` properties must now have a `?string` type declaration.
+- Plugins’ `$developerUrl` properties must now have a `?string` type declaration.
+- Plugins’ `$documentationUrl` properties must now have a `?string` type declaration.
+- Plugins’ `$downloadUrl` properties must now have a `?string` type declaration.
+- Plugins’ `$edition` properties must now have a `string` type declaration.
+- Plugins’ `$hasCpSection` properties must now have a `bool` type declaration.
+- Plugins’ `$hasCpSettings` properties must now have a `bool` type declaration.
+- Plugins’ `$isInstalled` properties must now have a `bool` type declaration.
+- Plugins’ `$minVersionRequired` properties must now have a `string` type declaration.
+- Plugins’ `$name` properties must now have a `?string` type declaration.
+- Plugins’ `$packageName` properties must now have a `?string` type declaration.
+- Plugins’ `$schemaVersion` properties must now have a `string` type declaration.
+- Plugins’ `$sourceLanguage` properties must now have a `string` type declaration.
+- Plugins’ `$t9nCategory` properties must now have a `?string` type declaration.
 - All components’ `afterDelete()` methods must now have a `void` return type declaration.
 - All components’ `afterSave()` methods must now have a `void` return type declaration.
 - All components’ `attributes()` methods must now have an `array` return type declaration.
