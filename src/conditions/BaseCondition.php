@@ -284,7 +284,7 @@ abstract class BaseCondition extends Component
     /**
      * @inheritdoc
      */
-    public function defineRules(): array
+    protected function defineRules(): array
     {
         return [['conditionRules', 'safe']];
     }

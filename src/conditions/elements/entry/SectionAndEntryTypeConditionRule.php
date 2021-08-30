@@ -131,7 +131,7 @@ class SectionAndEntryTypeConditionRule extends BaseConditionRule implements Elem
     /**
      * @inheritdoc
      */
-    public function defineRules(): array
+    protected function defineRules(): array
     {
         $rules = parent::defineRules();
         $rules[] = [['sectionHandle', 'entryTypeHandle'], 'safe'];

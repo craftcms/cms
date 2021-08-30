@@ -86,7 +86,7 @@ abstract class BaseValueConditionRule extends BaseConditionRule
     /**
      * @inheritdoc
      */
-    public function defineRules(): array
+    protected function defineRules(): array
     {
         $rules = parent::defineRules();
         $rules[] = [['value', 'operator'], 'safe'];
