@@ -359,7 +359,7 @@ class Assets extends BaseRelationField
     }
 
     /**
-     * Validates the files to make sure they are one of the allowed file kinds.
+     * Validates the files to make sure they are under the allowed max file size.
      *
      * @param ElementInterface $element
      */
@@ -529,22 +529,27 @@ class Assets extends BaseRelationField
                     $asset->uploaderId = Craft::$app->getUser()->getId();
                     $asset->avoidFilenameConflicts = true;
                     $asset->setScenario(Asset::SCENARIO_CREATE);
-                    Craft::$app->getElements()->saveElement($asset);
 
-                    $assetIds[] = $asset->id;
+                    if (Craft::$app->getElements()->saveElement($asset)) {
+                        $assetIds[] = $asset->id;
+                    } else {
+                        Craft::warning('Couldn’t save uploaded asset due to validation errors: ' . implode(', ', $asset->getFirstErrors()), __METHOD__);
+                    }
                 }
 
-                // Add the newly uploaded IDs to the mix.
-                if (\is_array($query->id)) {
-                    $query = $this->normalizeValue(array_merge($query->id, $assetIds), $element);
-                } else {
-                    $query = $this->normalizeValue($assetIds, $element);
+                if (!empty($assetIds)) {
+                    // Add the newly uploaded IDs to the mix.
+                    if (\is_array($query->id)) {
+                        $query = $this->normalizeValue(array_merge($query->id, $assetIds), $element);
+                    } else {
+                        $query = $this->normalizeValue($assetIds, $element);
+                    }
+
+                    $element->setFieldValue($this->handle, $query);
+
+                    // Make sure that all traces of processed files are removed.
+                    $this->_uploadedDataFiles = null;
                 }
-
-                $element->setFieldValue($this->handle, $query);
-
-                // Make sure that all traces of processed files are removed.
-                $this->_uploadedDataFiles = null;
             }
         }
 
