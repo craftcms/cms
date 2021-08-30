@@ -82,7 +82,7 @@ abstract class BaseConditionRule extends Component implements ConditionRuleInter
     /**
      * @return BaseCondition
      */
-    public function getCondition():BaseCondition
+    public function getCondition(): BaseCondition
     {
         return $this->_condition;
     }
@@ -93,5 +93,16 @@ abstract class BaseConditionRule extends Component implements ConditionRuleInter
     public function getHtml(): string
     {
         return $this->getInputHtml();
+    }
+
+    /**
+     * @inheritDoc
+     */
+    protected function defineRules(): array
+    {
+        $rules = parent::defineRules();
+        $rules[] = ['uid', 'safe'];
+
+        return $rules;
     }
 }
