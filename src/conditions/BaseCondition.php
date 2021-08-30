@@ -194,7 +194,7 @@ abstract class BaseCondition extends Component
     public function getHtml(): string
     {
         $conditionId = Html::namespaceId('condition', $this->handle);
-        $indicatorId = Html::namespaceId('indicator' , $this->handle);
+        $indicatorId = Html::namespaceId('indicator', $this->handle);
 
         // Main Condition tag, and htmx inheritable options
         $attr = Html::renderTagAttributes([
@@ -274,9 +274,15 @@ abstract class BaseCondition extends Component
             ]);
             $html .= "<div class='rightalign'><button $addButtonAttr>" . $this->getAddRuleLabel() . "</button></div>";
         }
+
+        $html .= Html::tag('div',
+            Html::tag('pre', Json::encode($this->getConfig(), JSON_PRETTY_PRINT)),
+            ['class' => 'pane']
+        );
+
         $html .= "</form>";
 
-        $html .= "<div class='pane'><pre>" . Json::encode($this->getConfig(), JSON_PRETTY_PRINT) . "</pre></div>";
+
 
         return $html;
     }
