@@ -70,7 +70,10 @@ Craft.PasswordInput = Garnish.Base.extend({
 
         if (!this.$textInput) {
             this.$textInput = this.$passwordInput.clone(true);
-            this.$textInput.attr('type', 'text');
+            this.$textInput.attr({
+                type: 'text',
+                autocapitalize: 'off',
+            });
             this.initInputFocusEvents(this.$textInput);
         }
 

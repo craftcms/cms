@@ -12,6 +12,7 @@
 - All entries now have a `canonicalId` field when queried via GraphQL now; not just drafts.
 - `craft\services\Matrix::validateBlockType()` no longer has a `$validateUniques` argument.
 - Improved the performance of entry queries for installs with several hundred thousand entries or more.
+- Visible password inputs now prevent the browser from auto-capitalizing the input text.
 
 ### Deprecated
 - Deprecated `craft\records\MatrixBlockType::$validateUniques`.
