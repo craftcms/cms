@@ -8,10 +8,12 @@
 namespace craft\queue;
 
 use yii\base\InvalidArgumentException;
+use yii\queue\Queue as BaseQueue;
 
 /**
  * QueueInterface defines the common interface to be implemented by queue classes.
  *
+ * @mixin BaseQueue
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
