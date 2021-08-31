@@ -18,6 +18,7 @@
 
 ### Fixed
 - Fixed an error that could occur when saving Matrix fields, if the Type Linked Field and Expanded Singles plugins were both installed. ([#9749](https://github.com/craftcms/cms/issues/9749))
+- Fixed a bug where `craft\helpers\Queue::push()` wasn’t returning the job ID. ([#9764](https://github.com/craftcms/cms/issues/9764))
 
 ## 3.7.10 - 2021-08-19
 
