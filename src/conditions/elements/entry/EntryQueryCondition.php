@@ -17,9 +17,10 @@ class EntryQueryCondition extends ElementQueryCondition
     protected function defineConditionRuleTypes(): array
     {
         return [
-            SectionAndEntryTypeConditionRule::class,
-            SectionConditionRuleBase::class,
-            Slug::class
+            EntryTypeConditionRule::class,
+            EntrySectionConditionRule::class,
+            Slug::class,
+            AuthorGroupConditionRule::class
         ];
     }
 

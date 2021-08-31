@@ -30,8 +30,6 @@ class ConditionsController extends Controller
      */
     public function actionRender(): string
     {
-        $this->loadCondition();
-
         // Render condition
         $this->_condition = $this->loadCondition();
 
@@ -47,8 +45,7 @@ class ConditionsController extends Controller
 
         // Add new rule
         if ($firstAvailable = collect($this->_condition->conditionRuleTypes())->first()) {
-            $rule = new $firstAvailable;
-            $rule->setCondition($this->_condition);
+            $rule = Craft::$app->getConditions()->createConditionRule(['type' => $firstAvailable]);
             $this->_condition->addConditionRule($rule);
         }
 

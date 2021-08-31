@@ -17,7 +17,7 @@ use yii\db\QueryInterface;
  * @property-read string $inputHtml
  * @property-read array $inputAttributes
  */
-class SectionAndEntryTypeConditionRule extends BaseConditionRule implements ElementQueryConditionRuleInterface
+class EntryTypeConditionRule extends BaseConditionRule implements ElementQueryConditionRuleInterface
 {
     /**
      * @var \craft\models\Section[]
@@ -34,9 +34,13 @@ class SectionAndEntryTypeConditionRule extends BaseConditionRule implements Elem
     {
         $this->_sections = Craft::$app->getSections()->getAllSections();
 
+        // Set a default section
         if (!$this->sectionHandle) {
             $this->sectionHandle = ArrayHelper::firstValue($this->_sections)->handle;
         }
+
+        // Once we have a section, set a default entry type
+        $this->_ensureEntryType();
 
         parent::init();
     }
@@ -58,7 +62,7 @@ class SectionAndEntryTypeConditionRule extends BaseConditionRule implements Elem
      */
     public static function displayName(): string
     {
-        return Craft::t('app', 'Section & Entry Type');
+        return Craft::t('app', 'Type');
     }
 
     /**
@@ -83,40 +87,40 @@ class SectionAndEntryTypeConditionRule extends BaseConditionRule implements Elem
         return $options;
     }
 
-    protected function getInputAttributes(): array
-    {
-        return [
-            'hx-post' => UrlHelper::actionUrl('conditions/render')
-        ];
-    }
-
     /**
      * @return string
      */
     public function getInputHtml(): string
     {
+        $inputAttributes = ['hx-post' => UrlHelper::actionUrl('conditions/render')];
+
         $html = Craft::$app->getView()->renderTemplate('_includes/forms/select', [
             'name' => 'sectionHandle',
             'value' => $this->sectionHandle,
             'options' => $this->getSectionOptions(),
-            'inputAttributes' => $this->getInputAttributes()
+            'inputAttributes' => $inputAttributes
         ]);
 
-        if ($this->sectionHandle) {
+        $this->_ensureEntryType();
 
-            if (!$this->entryTypeHandle || !ArrayHelper::keyExists($this->entryTypeHandle, $this->getEntryTypeOptions())) {
-                $this->entryTypeHandle = ArrayHelper::firstKey($this->getEntryTypeOptions());
-            }
-
-            $html .= Craft::$app->getView()->renderTemplate('_includes/forms/select', [
-                'name' => 'entryTypeHandle',
-                'value' => $this->entryTypeHandle,
-                'options' => $this->getEntryTypeOptions(),
-                'inputAttributes' => $this->getInputAttributes()
-            ]);
-        }
+        $html .= Craft::$app->getView()->renderTemplate('_includes/forms/select', [
+            'name' => 'entryTypeHandle',
+            'value' => $this->entryTypeHandle,
+            'options' => $this->getEntryTypeOptions(),
+            'inputAttributes' => $inputAttributes
+        ]);
 
         return $html;
+    }
+
+    /**
+     *
+     */
+    private function _ensureEntryType(): void
+    {
+        if (!$this->entryTypeHandle || !ArrayHelper::keyExists($this->entryTypeHandle, $this->getEntryTypeOptions())) {
+            $this->entryTypeHandle = ArrayHelper::firstKey($this->getEntryTypeOptions());
+        }
     }
 
     /**

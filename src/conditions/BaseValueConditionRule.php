@@ -22,9 +22,9 @@ abstract class BaseValueConditionRule extends BaseConditionRule
     protected bool $showOperator = false;
 
     /**
-     * @var string
+     * @var mixed
      */
-    public string $value = '';
+    public $value;
 
     /**
      * @var string

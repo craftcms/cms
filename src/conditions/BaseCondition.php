@@ -4,7 +4,7 @@ namespace craft\conditions;
 
 use Craft;
 use craft\base\Component;
-use craft\events\DefineConditionRuleTypesEvent;
+use craft\events\RegisterConditionRuleTypesEvent;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Html;
 use craft\helpers\Json;
@@ -28,7 +28,7 @@ abstract class BaseCondition extends Component implements ConditionInterface
      * @see conditionRuleTypes()
      * @since 4.0
      */
-    public const EVENT_DEFINE_CONDITION_RULE_TYPES = 'defineConditionRuleTypes';
+    public const EVENT_REGISTER_CONDITION_RULE_TYPES = 'registerConditionRuleTypes';
 
     /**
      * @var Collection
@@ -73,7 +73,7 @@ abstract class BaseCondition extends Component implements ConditionInterface
     /**
      * Returns the condition rule types for this condition
      *
-     * Condition rule should override this method instead of [[conditionRuleTypes()]]
+     * Conditions should override this method instead of [[conditionRuleTypes()]]
      * so [[EVENT_DEFINE_CONDITION_RULE_TYPES]] handlers can modify the class-defined condition rule types.
      *
      * @return array
@@ -91,11 +91,11 @@ abstract class BaseCondition extends Component implements ConditionInterface
         $conditionRuleTypes = $this->defineConditionRuleTypes();
 
         // Give plugins a chance to modify them
-        $event = new DefineConditionRuleTypesEvent([
+        $event = new RegisterConditionRuleTypesEvent([
             'conditionRuleTypes' => $conditionRuleTypes,
         ]);
 
-        $this->trigger(self::EVENT_DEFINE_CONDITION_RULE_TYPES, $event);
+        $this->trigger(self::EVENT_REGISTER_CONDITION_RULE_TYPES, $event);
 
         return $event->conditionRuleTypes;
     }
@@ -155,6 +155,7 @@ abstract class BaseCondition extends Component implements ConditionInterface
      */
     public function addConditionRule(BaseConditionRule $conditionRule): void
     {
+        $conditionRule->setCondition($this);
         $this->_conditionRules->add($conditionRule);
     }
 
@@ -225,24 +226,33 @@ abstract class BaseCondition extends Component implements ConditionInterface
                     'hx-post' => UrlHelper::actionUrl('conditions/render'),
                 ]
             ]);
-            $ruleHtml = "<div class='condition-rule-type'>" . $ruleHtml . "</div>";
+            $ruleHtml = Html::tag('div', $ruleHtml, ['class' => 'condition-rule-type']);
             $ruleHtml .= Html::hiddenInput('uid', $rule->uid);
 
             // Get rule input html
-            $ruleHtml .= "<div class='flex-grow'>" . $rule->getHtml() . "</div>";
+            $ruleHtml .= Html::tag('div', $rule->getHtml(), ['class' => 'flex-grow']);
 
             // Add delete button
-            $removeButtonAttr = Html::renderTagAttributes([
+            $deleteButtonAttr = [
                 'class' => 'delete icon',
                 'hx-vals' => '{"uid": "' . $rule->uid . '"}',
                 'hx-post' => UrlHelper::actionUrl('conditions/remove-rule'),
-            ]);
-            $ruleHtml .= "<div><a title='" . Craft::t('app', 'Delete') . "' $removeButtonAttr></a></div>";
+                'title' => Craft::t('app', 'Delete'),
+            ];
+            $deleteButton = Html::tag('a', '', $deleteButtonAttr);
+            $ruleHtml .= Html::tag('div', $deleteButton);
 
             // Namespace the rule
-            $ruleHtml = Html::namespaceHtml($ruleHtml, "conditionRules[$rule->uid]");
+            $ruleHtml = Craft::$app->getView()->namespaceInputs(function() use ($ruleHtml) {
+                return $ruleHtml;
+            }, "conditionRules[$rule->uid]");
 
-            $allRulesHtml .= "<div class='flex draggable'><a class='move icon draggable-handle'></a>" . $ruleHtml . '</div>';
+            $draggableHandle = Html::tag('a', '', ['class' => 'move icon draggable-handle']);
+
+            $allRulesHtml .= Html::tag('div',
+                $draggableHandle . $ruleHtml,
+                ['class' => 'flex draggable']
+            );
         }
 
         $allRulesHtml = Html::namespaceHtml($allRulesHtml, $this->handle);
@@ -251,16 +261,17 @@ abstract class BaseCondition extends Component implements ConditionInterface
         $html .= Html::tag('div', $allRulesHtml, [
                 'class' => 'sortable',
                 'hx-post' => UrlHelper::actionUrl('conditions/render'),
-                'hx-trigger' => 'end'
+                'hx-trigger' => 'end' // sortable library triggers this event
             ]
         );
 
         if (count($this->conditionRuleTypes()) > 0) {
-            $addButtonAttr = Html::renderTagAttributes([
+            $addButtonAttr = [
                 'class' => 'btn add icon',
                 'hx-post' => UrlHelper::actionUrl('conditions/add-rule'),
-            ]);
-            $html .= "<div class='rightalign'><button $addButtonAttr>" . $this->getAddRuleLabel() . "</button></div>";
+            ];
+            $addButton = Html::tag('button', $this->getAddRuleLabel(), $addButtonAttr);
+            $html .= Html::tag('div', $addButton, ['class' => 'rightalign']);
         }
 
         $html .= Html::tag('div',
@@ -268,7 +279,7 @@ abstract class BaseCondition extends Component implements ConditionInterface
             ['class' => 'pane']
         );
 
-        $html .= "</form>";
+        $html .= Html::endTag('form');
 
 
         return $html;

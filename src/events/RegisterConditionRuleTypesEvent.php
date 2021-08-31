@@ -15,7 +15,7 @@ use yii\base\Event;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.0.0
  */
-class DefineConditionRuleTypesEvent extends Event
+class RegisterConditionRuleTypesEvent extends Event
 {
     /**
      * @var array The condition rules types

@@ -32,6 +32,8 @@ abstract class BaseConditionRule extends Component implements ConditionRuleInter
      */
     public function init(): void
     {
+        parent::init();
+
         if (!isset($this->uid)) {
             $this->uid = StringHelper::UUID();
         }

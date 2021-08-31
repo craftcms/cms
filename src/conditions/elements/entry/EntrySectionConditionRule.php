@@ -11,7 +11,7 @@ use yii\db\QueryInterface;
 /**
  *
  */
-class SectionConditionRuleBase extends BaseSelectValueConditionRule implements ElementQueryConditionRuleInterface
+class EntrySectionConditionRule extends BaseSelectValueConditionRule implements ElementQueryConditionRuleInterface
 {
     /**
      * @inheritDoc
