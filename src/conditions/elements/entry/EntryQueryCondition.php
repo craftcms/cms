@@ -3,6 +3,7 @@
 namespace craft\conditions\elements\entry;
 
 use craft\conditions\elements\ElementQueryCondition;
+use craft\elements\db\ElementQuery;
 use craft\elements\Entry;
 
 /**
@@ -22,8 +23,8 @@ class EntryQueryCondition extends ElementQueryCondition
         ];
     }
 
-    public function getElementType(): string
+    public function getElementQuery(): ElementQuery
     {
-        return Entry::class;
+        return Entry::find();
     }
 }

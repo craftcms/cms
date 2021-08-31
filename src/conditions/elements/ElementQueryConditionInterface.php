@@ -7,14 +7,21 @@
 
 namespace craft\conditions\elements;
 
+use craft\base\Element;
 use craft\conditions\ConditionInterface;
 use craft\conditions\QueryConditionInterface;
+use craft\elements\db\ElementQuery;
 
 /**
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.0
  */
-interface ElementQueryConditionInterface extends QueryConditionInterface, ConditionInterface
+interface ElementQueryConditionInterface extends QueryConditionInterface
 {
+
+    /**
+     * @return ElementQuery
+     */
+    public function getElementQuery(): ElementQuery;
 }

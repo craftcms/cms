@@ -19,11 +19,15 @@ use yii\db\QueryInterface;
  * @property-read string $elementType
  * @property-read QueryInterface $query
  * @property-read string $html
+ * @property-read \craft\elements\db\ElementQuery $elementQuery
  * @property Collection $conditionRules
  */
 abstract class ElementQueryCondition extends BaseCondition implements ElementQueryConditionInterface
 {
-    abstract public function getElementType(): string;
+    /**
+     * @inheritDoc
+     */
+    abstract public function getElementQuery(): ElementQuery;
 
     private $_showDebug = false;
 
@@ -41,7 +45,7 @@ abstract class ElementQueryCondition extends BaseCondition implements ElementQue
     public function getQuery(): QueryInterface
     {
         /** @var ElementQuery $query */
-        $query = $this->getElementType()::find();
+        $query = $this->getElementQuery();
         return $this->modifyQuery($query);
     }
 
@@ -68,7 +72,7 @@ abstract class ElementQueryCondition extends BaseCondition implements ElementQue
     {
         if ($this->_showDebug) {
             $titles = '';
-            foreach ($entries = $this->getQuery()->all() as $entry) {
+            foreach ($this->getQuery()->all() as $entry) {
                 $titles .= $entry->title . '<br>';
             }
             $html = parent::getHtml();

@@ -46,7 +46,7 @@ class ConditionsController extends Controller
         $this->loadCondition();
 
         // Add new rule
-        if ($firstAvailable = collect($this->_condition->availableRuleTypes())->first()) {
+        if ($firstAvailable = collect($this->_condition->conditionRuleTypes())->first()) {
             $rule = new $firstAvailable;
             $rule->setCondition($this->_condition);
             $this->_condition->addConditionRule($rule);

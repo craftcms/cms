@@ -21,7 +21,7 @@ use Illuminate\Support\Collection;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.0
  */
-abstract class BaseCondition extends Component
+abstract class BaseCondition extends Component implements ConditionInterface
 {
     /**
      * @event DefineConditionRuleTypesEvent The event that is triggered when defining the condition rule types
@@ -101,23 +101,13 @@ abstract class BaseCondition extends Component
     }
 
     /**
-     * Returns the condition rule types available based on the current state of the condition.
-     *
-     * @return array Array of condition classes
-     */
-    public function availableRuleTypes(): array
-    {
-        return $this->conditionRuleTypes();
-    }
-
-    /**
      * Returns all available condition rule options for use in a select
      *
      * @return array Array of condition classes available to add to the condition
      */
     public function availableRuleTypesOptions(): array
     {
-        $rules = $this->availableRuleTypes();
+        $rules = $this->conditionRuleTypes();
         $options = [];
         foreach ($rules as $rule) {
             /** @var $rule string */
@@ -197,18 +187,16 @@ abstract class BaseCondition extends Component
         $indicatorId = Html::namespaceId('indicator', $this->handle);
 
         // Main Condition tag, and htmx inheritable options
-        $attr = Html::renderTagAttributes([
+        $html = Html::beginTag('form', [
             'id' => 'condition',
             'class' => 'pane',
             'hx-target' => '#' . $conditionId, // replace self
             'hx-swap' => 'outerHTML', // replace this tag with the response
             'hx-indicator' => '#' . $indicatorId, // ID of the spinner
         ]);
-        $html = "<form $attr>";
 
         // Loading indicator
-        $attr = Html::renderTagAttributes(['id' => 'indicator', 'class' => 'htmx-indicator spinner']);
-        $html .= "<div $attr></div>";
+        $html .= Html::tag('div', '', ['id' => 'indicator', 'class' => 'htmx-indicator spinner']);
 
         // Condition hidden inputs
         $html .= Html::hiddenInput('handle', $this->handle);
@@ -267,7 +255,7 @@ abstract class BaseCondition extends Component
             ]
         );
 
-        if (count($this->availableRuleTypes()) > 0) {
+        if (count($this->conditionRuleTypes()) > 0) {
             $addButtonAttr = Html::renderTagAttributes([
                 'class' => 'btn add icon',
                 'hx-post' => UrlHelper::actionUrl('conditions/add-rule'),
@@ -281,7 +269,6 @@ abstract class BaseCondition extends Component
         );
 
         $html .= "</form>";
-
 
 
         return $html;
