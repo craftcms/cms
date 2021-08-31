@@ -19,6 +19,7 @@
 ### Fixed
 - Fixed an error that could occur when saving Matrix fields, if the Type Linked Field and Expanded Singles plugins were both installed. ([#9749](https://github.com/craftcms/cms/issues/9749))
 - Fixed a bug where `craft\helpers\Queue::push()` wasn’t returning the job ID. ([#9764](https://github.com/craftcms/cms/issues/9764))
+- Fixed a bug where code editors powered by Monaco Editor were showing focus rings on the text cursor. ([#9772](https://github.com/craftcms/cms/issues/9772))
 
 ## 3.7.10 - 2021-08-19
 
