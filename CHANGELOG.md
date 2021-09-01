@@ -1,5 +1,11 @@
 # Release Notes for Craft CMS 3.x
 
+## Unreleased
+
+### Changed
+- Forms must now opt into delta name registration by calling `Craft::$app->view->setIsDeltaRegistrationActive(true)` before being rendered.
+- It’s now possible for field types to disable delta name registration for nested custom fields by calling `Craft::$app->view->setIsDeltaRegistrationActive(false);` before rendering them.
+
 ## 3.7.11 - 2021-08-31
 
 ### Added

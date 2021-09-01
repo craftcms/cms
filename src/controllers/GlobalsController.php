@@ -220,6 +220,9 @@ class GlobalsController extends Controller
             $globalSet = $editableGlobalSets[$globalSetHandle];
         }
 
+        // Enable delta registration
+        Craft::$app->getView()->setIsDeltaRegistrationActive(true);
+
         // Prep the form tabs & content
         $form = $globalSet->getFieldLayout()->createForm($globalSet);
 
