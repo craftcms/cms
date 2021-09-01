@@ -960,6 +960,9 @@ class UsersController extends Controller
             }
         }
 
+        // Enable delta registration
+        Craft::$app->getView()->setIsDeltaRegistrationActive(true);
+
         $fieldsHtml = $form->render(false);
 
         // Prepare the language/locale options

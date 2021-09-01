@@ -416,6 +416,9 @@ class ElementsController extends BaseElementsController
         $fieldLayout = $element->getFieldLayout();
 
         if ($fieldLayout) {
+            // Enable delta registration
+            $view->setIsDeltaRegistrationActive(true);
+
             // If only the placeholder was returned, wa can safely pull in the full field layout form render
             if ($editorHtml === '<!-- FIELD LAYOUT -->') {
                 $form = $fieldLayout->createForm($element, false, [
