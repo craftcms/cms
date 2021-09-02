@@ -96,7 +96,7 @@ class ApplyNewPropagationMethod extends BaseJob
                     ], [], false);
                 }
 
-                // Duplicate those blocks so their content can live on
+                // Duplicate those elements so their content can live on
                 while (!empty($otherSiteElements)) {
                     $otherSiteElement = array_pop($otherSiteElements);
                     try {
@@ -110,8 +110,8 @@ class ApplyNewPropagationMethod extends BaseJob
 
                     // This may support more than just the site it was saved in
                     $newElementSiteIds = ArrayHelper::getColumn(ElementHelper::supportedSitesForElement($newElement), 'siteId');
-                    foreach ($newElementSiteIds as $newBlockSiteId) {
-                        unset($otherSiteElements[$newBlockSiteId]);
+                    foreach ($newElementSiteIds as $newElementSiteId) {
+                        unset($otherSiteElements[$newElementSiteId]);
                     }
                 }
             }
