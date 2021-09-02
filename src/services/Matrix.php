@@ -952,7 +952,7 @@ class Matrix extends Component
         // Get the canonical owner across all sites
         $canonicalOwners = $owner::find()
             ->id($owner->getCanonicalId())
-            ->siteId('*')
+            ->siteId(array_keys($localizedOwners))
             ->anyStatus()
             ->ignorePlaceholders()
             ->all();
@@ -1005,7 +1005,7 @@ class Matrix extends Component
                     $elementsService->duplicateElement($canonicalBlock, [
                         'canonicalId' => $canonicalBlock->id,
                         'ownerId' => $owner->id,
-                        'owner' => $localizedOwners[$canonicalBlock->siteId] ?? $owner,
+                        'owner' => $localizedOwners[$canonicalBlock->siteId],
                         'siteId' => $canonicalBlock->siteId,
                         'propagating' => false,
                     ]);
