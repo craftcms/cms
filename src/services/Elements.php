@@ -1102,12 +1102,13 @@ class Elements extends Component
      *
      * @param ElementInterface $element the element to duplicate
      * @param array $newAttributes any attributes to apply to the duplicate
+     * @param bool $placeInStructure whether to position the cloned element after the original one in its structure
      * @return ElementInterface the duplicated element
      * @throws UnsupportedSiteException if the element is being duplicated into a site it doesn’t support
      * @throws InvalidElementException if saveElement() returns false for any of the sites
      * @throws \Throwable if reasons
      */
-    public function duplicateElement(ElementInterface $element, array $newAttributes = []): ElementInterface
+    public function duplicateElement(ElementInterface $element, array $newAttributes = [], bool $placeInStructure = true): ElementInterface
     {
         // Make sure the element exists
         if (!$element->id) {
@@ -1208,6 +1209,7 @@ class Elements extends Component
 
             // Should we add the clone to the source element's structure?
             if (
+                $placeInStructure &&
                 $element->structureId &&
                 $element->root &&
                 !$mainClone->root &&
