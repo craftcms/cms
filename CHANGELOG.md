@@ -39,8 +39,12 @@
 - Added `craft\helpers\Db::renameTable()`.
 - Added `craft\helpers\Number::isInt()`.
 - Added `craft\helpers\Number::toIntOrFloat()`.
+- Added `craft\helpers\ProjectConfig::encodeValueAsString()`.
+- Added `craft\helpers\ProjectConfig::ensureAllSectionsProcessed()`.
 - Added `craft\i18n\Translation`.
 - Added `craft\models\AssetIndexingSession`.
+- Added `craft\models\ProjectConfigData`.
+- Added `craft\models\ReadOnlyProjectConfigData`.
 - Added `craft\models\VolumeListing`.
 - Added `craft\records\AssetIndexingSession`.
 - Added `craft\services\AssetIndexer::createIndexingSession()`.
@@ -56,6 +60,7 @@
 - Added `craft\services\AssetIndexer::startIndexingSession()`.
 - Added `craft\services\AssetIndexer::stopIndexingSession()`.
 - Added `craft\services\AssetTransforms::deleteTransformIndexDataByAssetIds()`.
+- Added `craft\services\ProjectConfig::rememberAppliedChanges()`.
 - Added `craft\services\Users::deactivateUser()`.
 - Added `craft\services\Users::ensureUserByEmail()`, which will return a user for the given email, creating one if it didn’t exist yet.
 - Added `craft\services\Users::EVENT_AFTER_DEACTIVATE_USER`.

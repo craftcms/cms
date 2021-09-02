@@ -10,7 +10,7 @@ namespace crafttests\unit\services;
 use Codeception\Stub\Expected;
 use Craft;
 use craft\helpers\ProjectConfig as ProjectConfigHelper;
-use craft\models\ProjectConfigData;
+use craft\models\ReadOnlyProjectConfigData;
 use craft\services\ProjectConfig;
 use craft\services\Sections;
 use craft\test\TestCase;
@@ -59,9 +59,9 @@ class ProjectConfigTest extends TestCase
 
         $mockConfig = [
             'getExternalConfig' => function() use ($external) {
-                return new ProjectConfigData($external);
+                return new ReadOnlyProjectConfigData($external);
             },
-            'getInternalConfig' => new ProjectConfigData($internal),
+            'getInternalConfig' => new ReadOnlyProjectConfigData($internal),
             'persistInternalConfigValues' => null,
             'removeInternalConfigValuesByPaths' => null,
             'updateYamlFiles' => true,
@@ -92,17 +92,6 @@ class ProjectConfigTest extends TestCase
         $projectConfig->rebuild();
 
         $projectConfig->readOnly = $readOnly;
-    }
-
-    /**
-     * @param $incomingData
-     * @param $expectedResult
-     * @dataProvider encodeTestDataProvider
-     */
-    public function testEncodeData($incomingData, $expectedResult)
-    {
-        $projectConfig = Craft::$app->getProjectConfig();
-        self::assertSame($expectedResult, $this->invokeMethod($projectConfig, 'encodeValueAsString', [$incomingData]));
     }
 
     /**
@@ -195,6 +184,7 @@ class ProjectConfigTest extends TestCase
             'trigger' => Expected::atLeastOnce(),
             'storeYamlHistory'=> Expected::atLeastOnce(),
         ]);
+        Craft::$app->set('projectConfig', $pc);
 
         $pc->set('some.path', 'value');
         $pc->saveModifiedConfigData();
@@ -254,44 +244,6 @@ class ProjectConfigTest extends TestCase
                 'a.b',
                 ['foo' => 'bar', 'bar' => ['baz']]
             ]
-        ];
-    }
-
-    public function encodeTestDataProvider()
-    {
-        return [
-            [
-                'foo',
-                '"foo"'
-            ],
-            [
-                true,
-                'true'
-            ],
-            [
-                null,
-                'null'
-            ],
-            [
-                false,
-                'false'
-            ],
-            [
-                2.5,
-                '2.5'
-            ],
-            [
-                0,
-                '0'
-            ],
-            [
-                2,
-                '2'
-            ],
-            [
-                2.0,
-                '2.0'
-            ],
         ];
     }
 

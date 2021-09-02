@@ -1121,6 +1121,7 @@ class Sections extends Component
         // Make sure fields are processed
         ProjectConfigHelper::ensureAllSitesProcessed();
         ProjectConfigHelper::ensureAllFieldsProcessed();
+        ProjectConfigHelper::ensureAllSectionsProcessed();
 
         $section = $this->getSectionByUid($data['section']);
         $entryTypeRecord = $this->_getEntryTypeRecord($entryTypeUid, true);

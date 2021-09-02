@@ -23,6 +23,7 @@ use craft\helpers\Json;
 use craft\helpers\ProjectConfig as ProjectConfigHelper;
 use craft\helpers\StringHelper;
 use craft\models\ProjectConfigData;
+use craft\models\ReadOnlyProjectConfigData;
 use Symfony\Component\Yaml\Yaml;
 use yii\base\Application;
 use yii\base\Component;
@@ -251,17 +252,6 @@ class ProjectConfig extends Component
     public bool $forceUpdate = false;
 
     /**
-     * @var array Map of paths being processed and their original loaded values.
-     * @since 3.4.0
-     */
-    private array $_previousValuesByPath = [];
-
-    /**
-     * @var array A list of already parsed change paths
-     */
-    private array $_parsedChanges = [];
-
-    /**
      * @var array A list of all external files.
      */
     private array $_configFileList = [];
@@ -308,14 +298,14 @@ class ProjectConfig extends Component
     private array $_appliedChanges = [];
 
     /**
-     * @var ProjectConfigData|null Config as defined in the external config.
+     * @var ReadOnlyProjectConfigData|null Config as defined in the external config.
      */
-    private ?ProjectConfigData $_externalConfig = null;
+    private ?ReadOnlyProjectConfigData $_externalConfig = null;
 
     /**
-     * @var ProjectConfigData|null Current config as stored in database.
+     * @var ReadOnlyProjectConfigData|null Current config as stored in database.
      */
-    private ?ProjectConfigData $_internalConfig = null;
+    private ?ReadOnlyProjectConfigData $_internalConfig = null;
 
     /**
      * @var ProjectConfigData|null The currently working config - it consists of the current config plus any changes
@@ -359,11 +349,6 @@ class ProjectConfig extends Component
     private array $_sortedChangeEventHandlers = [];
 
     /**
-     * @var array A list of updated project config name changes.
-     */
-    private array $_projectConfigNameChanges = [];
-
-    /**
      * @inheritdoc
      */
     public function __construct($config = [])
@@ -402,7 +387,6 @@ class ProjectConfig extends Component
         $this->_internalConfig = null;
         $this->_externalConfig = null;
         $this->_currentWorkingConfig = null;
-        $this->_parsedChanges = [];
         $this->_configFileList = [];
         $this->_isConfigModified = false;
         $this->_updateInternalConfig = false;
@@ -466,7 +450,7 @@ class ProjectConfig extends Component
             $value = ProjectConfigHelper::cleanupConfig($value);
         }
 
-        $valueChanged = $rebuilding;
+        $valueHasChanged = $rebuilding;
         $workingConfig = $this->getCurrentWorkingConfig();
         $previousValue = $workingConfig->get($path);
 
@@ -485,33 +469,13 @@ class ProjectConfig extends Component
                 $this->set('dateModified', DateTimeHelper::currentTimeStamp(), 'Update timestamp for project config');
             }
 
-            $valueChanged = true;
+            $valueHasChanged = true;
         }
 
-        // Mark this path (and its parent paths) as being processed, and store their current values
-        // Ensure that new data is processed for this path and all its parent paths
-        $tok = strtok($path, '.');
-        $thisPath = '';
-        while ($tok !== false) {
-            $thisPath .= ($thisPath !== '' ? '.' : '') . $tok;
-            $this->_previousValuesByPath[$thisPath] = $workingConfig->get($thisPath);
-            unset($this->_parsedChanges[$thisPath]);
-            $tok = strtok('.');
-        }
-
-        // Save config only if something actually changed.
-        if ($valueChanged) {
-            if ($value === null) {
-                $workingConfig->delete($path);
-            } else {
-                $workingConfig->set($path, $value);
-            }
-
-            $workingConfig->set($path, $value);
+        if ($valueHasChanged) {
+            $this->getCurrentWorkingConfig()->commitChanges($previousValue, $value, $path, $valueHasChanged, $message);
             $this->_saveConfigAfterRequest();
         }
-
-        $this->_processConfigChangesInternal($previousValue, $value, $path, true, $message);
     }
 
     /**
@@ -617,7 +581,7 @@ class ProjectConfig extends Component
         $this->_applyingExternalChanges = true;
 
         $changes = $this->_getPendingChanges($configData);
-        $this->_applyChanges($changes, $this->getCurrentWorkingConfig(), new ProjectConfigData($configData));
+        $this->_applyChanges($changes, $this->getCurrentWorkingConfig(), new ReadOnlyProjectConfigData($configData));
     }
 
     /**
@@ -679,7 +643,7 @@ class ProjectConfig extends Component
     public function areChangesPending(?string $path = null, bool $force = false): bool
     {
         // If the path is currently being processed, return true
-        if ($path !== null && array_key_exists($path, $this->_previousValuesByPath)) {
+        if ($path !== null && $this->getCurrentWorkingConfig()->getHasPathBeenModified($path)) {
             return true;
         }
 
@@ -701,7 +665,7 @@ class ProjectConfig extends Component
         if ($path !== null) {
             $oldValue = $this->getInternalConfig()->get($path);
             $newValue = $this->getExternalConfig()->get($path);
-            return $this->encodeValueAsString($oldValue) !== $this->encodeValueAsString($newValue);
+            return ProjectConfigHelper::encodeValueAsString($oldValue) !== ProjectConfigHelper::encodeValueAsString($newValue);
         }
 
         // If the file contents haven't changed, just update the cached file modification date
@@ -722,77 +686,13 @@ class ProjectConfig extends Component
      * Note that this will only have an effect if external project config changes are currently getting [[getIsApplyingExternalChanges()|applied]].
      *
      * @param string $path The config item path
-     * @param bool $triggerUpdate Whether an update event should be triggered even if no changes are detected
-     * @param string|null $message The message describing changes, if changes are detected
      * @param bool $force Whether the config change should be processed regardless of previous records,
      * or whether external changes are currently being applied
      */
-    public function processConfigChanges(string $path, bool $triggerUpdate = false, ?string $message = null, bool $force = false): void
+    public function processConfigChanges(string $path, bool $force = false): void
     {
         if ($force || $this->getIsApplyingExternalChanges()) {
-            $this->_processConfigChangesInternal($this->getInternalConfig()->get($path), $this->getExternalConfig()->get($path), $path, $triggerUpdate, $message, $force);
-        }
-    }
-
-    /**
-     * Processes changes in the project config files for a given config item path.
-     *
-     * @param mixed $oldValue The previous value
-     * @param mixed $newValue The new value that is replacing the old value
-     * @param string $path The config item path
-     * @param bool $triggerUpdate is set to true and no changes are detected, an update event will be triggered, anyway.
-     * @param string|null $message The message describing changes, if modifications are made.
-     * @param bool $force Whether the config change should be processed regardless of previous records
-     */
-    private function _processConfigChangesInternal($oldValue, $newValue, string $path, bool $triggerUpdate = false, ?string $message = null, bool $force = false): void
-    {
-        if (!$force && !empty($this->_parsedChanges[$path])) {
-            return;
-        }
-
-        $this->_parsedChanges[$path] = true;
-
-        $valueChanged = $triggerUpdate || $this->forceUpdate || $this->encodeValueAsString($oldValue) !== $this->encodeValueAsString($newValue);
-
-        if ($newValue === null && is_array($oldValue)) {
-            $this->_removeContainedProjectConfigNames(pathinfo($path, PATHINFO_EXTENSION), $oldValue);
-        } else if (is_array($newValue)) {
-            $this->_setContainedProjectConfigNames(pathinfo($path, PATHINFO_EXTENSION), $newValue);
-        }
-
-        if ($valueChanged && !$this->muteEvents) {
-            $event = new ConfigEvent(compact('path', 'oldValue', 'newValue'));
-            if ($newValue === null && $oldValue !== null) {
-                // Fire a 'removeItem' event
-                $this->trigger(self::EVENT_REMOVE_ITEM, $event);
-            } else if ($oldValue === null && $newValue !== null) {
-                // Fire an 'addItem' event
-                $this->trigger(self::EVENT_ADD_ITEM, $event);
-            } else {
-                // Fire an 'updateItem' event
-                $this->trigger(self::EVENT_UPDATE_ITEM, $event);
-            }
-        }
-
-        // Mark this path, and any parent paths, as parsed
-        $tok = strtok($path, '.');
-        $thisPath = '';
-        while ($tok !== false) {
-            $thisPath .= ($thisPath !== '' ? '.' : '') . $tok;
-            unset($this->_previousValuesByPath[$thisPath]);
-            $this->_parsedChanges[$thisPath] = true;
-            $tok = strtok('.');
-        }
-
-        if ($valueChanged) {
-            // Memoize the new config data
-            $this->_rememberAppliedChanges($path, $oldValue, $newValue, $message);
-            $this->getCurrentWorkingConfig()->set($path, $newValue);
-            $this->updateStoredConfigAfterRequest();
-
-            if ($this->writeYamlAutomatically) {
-                $this->updateParsedConfigTimesAfterRequest();
-            }
+            $this->getCurrentWorkingConfig()->commitChanges($this->getInternalConfig()->get($path), $this->getExternalConfig()->get($path), $path, false, null, $force);
         }
     }
 
@@ -892,7 +792,7 @@ class ProjectConfig extends Component
 
                     foreach ($currentSet['added'] as $key => $value) {
                         // Prepare for storage
-                        $dbValue = $this->encodeValueAsString($value);
+                        $dbValue = ProjectConfigHelper::encodeValueAsString($value);
                         if (!mb_check_encoding($value, 'UTF-8') || ($isMysql && StringHelper::containsMb4($dbValue))) {
                             $dbValue = 'base64:' . base64_encode($dbValue);
                         }
@@ -1217,8 +1117,8 @@ class ProjectConfig extends Component
                 // Is this a nested path?
                 if (isset($matches['extra'])) {
                     $path = $matches['path'];
-                    $this->_processConfigChangesInternal($this->getInternalConfig()->get($path), $this->getCurrentWorkingConfig()->get($path), $path);
-
+                    $incomingConfig = $this->getIsApplyingExternalChanges() ? $this->getExternalConfig() : $this->getCurrentWorkingConfig();
+                    $this->getCurrentWorkingConfig()->commitChanges($this->getInternalConfig()->get($path), $incomingConfig->get($path), $path);
                     continue;
                 }
 
@@ -1295,8 +1195,6 @@ class ProjectConfig extends Component
         ]);
         $this->trigger(self::EVENT_REBUILD, $event);
 
-        $this->_discardProjectConfigNames();
-
         // Process the changes
         foreach ($event->config as $path => $value) {
             $this->set($path, $value, 'Project config rebuild', false, true);
@@ -1323,15 +1221,15 @@ class ProjectConfig extends Component
      * Applies changes from a configuration array.
      *
      * @param array $changes array nested array with keys `removedItems`, `changedItems` and `newItems`
-     * @param ProjectConfigData $existingConfig The config data repository that holds the current data
-     * @param ProjectConfigData $incomingConfig The config data repository that holds the incoming data
+     * @param ReadOnlyProjectConfigData $existingConfig The config data repository that holds the current data
+     * @param ReadOnlyProjectConfigData $incomingConfig The config data repository that holds the incoming data
      * @throws OperationAbortedException
      */
-    private function _applyChanges(array $changes, ProjectConfigData $existingConfig, ProjectConfigData $incomingConfig): void
+    private function _applyChanges(array $changes, ReadOnlyProjectConfigData $existingConfig, ReadOnlyProjectConfigData $incomingConfig): void
     {
         Craft::info('Looking for pending changes', __METHOD__);
 
-        $processChanges = fn ($path) => $this->_processConfigChangesInternal($existingConfig->get($path), $incomingConfig->get($path), $path, false, null, true);
+        $processChanges = fn ($path) => $this->getCurrentWorkingConfig()->commitChanges($existingConfig->get($path), $incomingConfig->get($path), $path, false, null, true);
 
         // If we're parsing all the changes, we better work the actual config map.
         if (!empty($changes['removedItems'])) {
@@ -1409,9 +1307,9 @@ class ProjectConfig extends Component
     /**
      * Load the config stored in the external storage.
      *
-     * @return ProjectConfigData
+     * @return ReadOnlyProjectConfigData
      */
-    private function _loadExternalConfig(): ProjectConfigData
+    private function _loadExternalConfig(): ReadOnlyProjectConfigData
     {
         // If the external config does not exist, just use the loaded config
         if ($this->getHadFileWriteIssues() || !$this->getDoesExternalConfigExist()) {
@@ -1456,7 +1354,7 @@ class ProjectConfig extends Component
             }
         }
 
-        return new ProjectConfigData($generatedConfig);
+        return new ReadOnlyProjectConfigData($generatedConfig);
     }
 
     /**
@@ -1709,29 +1607,16 @@ class ProjectConfig extends Component
     }
 
     /**
-     * Discard all project config names.
-     *
-     * @throws \yii\db\Exception
-     */
-    private function _discardProjectConfigNames(): void
-    {
-        $this->_projectConfigNameChanges = [];
-        $this->set(self::CONFIG_NAMES_KEY, []);
-    }
-
-    /**
      * Process any queued up project config name changes.
      *
      * @throws \yii\db\Exception
      */
     private function _processProjectConfigNameChanges(): void
     {
-        if (!empty($this->_projectConfigNameChanges) && !$this->readOnly) {
-            foreach ($this->_projectConfigNameChanges as $uid => $name) {
+        if (!$this->readOnly) {
+            foreach ($this->getCurrentWorkingConfig()->getProjectConfigNameChanges() as $uid => $name) {
                 $this->set(self::CONFIG_NAMES_KEY . '.' . $uid, $name);
             }
-
-            $this->_projectConfigNameChanges = [];
         }
     }
 
@@ -1755,11 +1640,11 @@ class ProjectConfig extends Component
      * @param mixed $newValue
      * @param string|null $message message describing the changes made.
      */
-    private function _rememberAppliedChanges(string $path, $oldValue, $newValue, ?string $message = null): void
+    public function rememberAppliedChanges(string $path, $oldValue, $newValue, ?string $message = null): void
     {
         $appliedChanges = [];
 
-        $modified = $this->encodeValueAsString($oldValue) !== $this->encodeValueAsString($newValue);
+        $modified = ProjectConfigHelper::encodeValueAsString($oldValue) !== ProjectConfigHelper::encodeValueAsString($newValue);
 
         if ($newValue !== null && ($oldValue === null || $modified)) {
             if (!is_scalar($newValue)) {
@@ -1793,9 +1678,9 @@ class ProjectConfig extends Component
     /**
      * Get the external project config data.
      *
-     * @return ProjectConfigData
+     * @return ReadOnlyProjectConfigData
      */
-    protected function getExternalConfig(): ProjectConfigData
+    protected function getExternalConfig(): ReadOnlyProjectConfigData
     {
         if ($this->_externalConfig === null) {
             $this->_externalConfig = $this->_loadExternalConfig();
@@ -1807,9 +1692,9 @@ class ProjectConfig extends Component
     /**
      * Get the internal project config data.
      *
-     * @return ProjectConfigData
+     * @return ReadOnlyProjectConfigData
      */
-    protected function getInternalConfig(): ProjectConfigData
+    protected function getInternalConfig(): ReadOnlyProjectConfigData
     {
         if ($this->_internalConfig === null) {
             $this->_internalConfig = $this->_loadInternalConfig();
@@ -1826,7 +1711,7 @@ class ProjectConfig extends Component
     protected function getCurrentWorkingConfig(): ProjectConfigData
     {
         if ($this->_currentWorkingConfig === null) {
-            $this->_currentWorkingConfig = clone $this->getInternalConfig();
+            $this->_currentWorkingConfig = new ProjectConfigData($this->getInternalConfig()->export());
         }
 
         return $this->_currentWorkingConfig;
@@ -1835,16 +1720,16 @@ class ProjectConfig extends Component
     /**
      * Load the config stored in the Db
      *
-     * @return ProjectConfigData
+     * @return ReadOnlyProjectConfigData
      */
-    private function _loadInternalConfig(): ProjectConfigData
+    private function _loadInternalConfig(): ReadOnlyProjectConfigData
     {
         if (!Craft::$app->getIsInstalled()) {
-            return new ProjectConfigData();
+            return new ReadOnlyProjectConfigData();
         }
 
         if (Craft::$app->getIsInstalled() && version_compare(Craft::$app->getInfo()->schemaVersion, '3.1.1', '<')) {
-            return new ProjectConfigData();
+            return new ReadOnlyProjectConfigData();
         }
 
         if (Craft::$app->getIsInstalled() && version_compare(Craft::$app->getInfo()->schemaVersion, '3.4.4', '<')) {
@@ -1865,7 +1750,7 @@ class ProjectConfig extends Component
                 }
             }
 
-            return new ProjectConfigData($data);
+            return new ReadOnlyProjectConfigData($data);
         }
 
         // See if we can get away with using the cached data
@@ -1891,7 +1776,7 @@ class ProjectConfig extends Component
             return ProjectConfigHelper::cleanupConfig($data);
         }, null, $this->getCacheDependency());
 
-        return new ProjectConfigData($data);
+        return new ReadOnlyProjectConfigData($data);
     }
 
     /**
@@ -2188,56 +2073,5 @@ class ProjectConfig extends Component
         }
 
         return $data;
-    }
-
-    /**
-     * Returns a project config compatible value encoded for storage.
-     *
-     * @param $value
-     * @return string
-     */
-    protected function encodeValueAsString($value): string
-    {
-        return Json::encode($value, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_PRESERVE_ZERO_FRACTION);
-    }
-
-    /**
-     * Set all the contained project config names to the buffer.
-     *
-     * @param string $lastPathSegment
-     * @param array $data
-     */
-    private function _setContainedProjectConfigNames(string $lastPathSegment, array $data): void
-    {
-        if (preg_match('/^' . StringHelper::UUID_PATTERN . '$/i', $lastPathSegment) && isset($data['name'])) {
-            $this->_projectConfigNameChanges[$lastPathSegment] = $data['name'];
-        }
-
-        foreach ($data as $key => $value) {
-            // Traverse further
-            if (is_array($value)) {
-                $this->_setContainedProjectConfigNames((string)$key, $value);
-            }
-        }
-    }
-
-    /**
-     * Mark any contained project config names for removal.
-     *
-     * @param string $lastPathSegment
-     * @param array $data
-     */
-    private function _removeContainedProjectConfigNames(string $lastPathSegment, array $data): void
-    {
-        if (preg_match('/^' . StringHelper::UUID_PATTERN . '$/i', $lastPathSegment)) {
-            $this->_projectConfigNameChanges[$lastPathSegment] = null;
-        }
-
-        foreach ($data as $key => $value) {
-            // Traverse further
-            if (is_array($value)) {
-                $this->_setContainedProjectConfigNames($key, $value);
-            }
-        }
     }
 }

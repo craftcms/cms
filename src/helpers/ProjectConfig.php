@@ -11,6 +11,7 @@ use Craft;
 use craft\services\Fields;
 use craft\services\Gql as GqlService;
 use craft\services\ProjectConfig as ProjectConfigService;
+use craft\services\Sections;
 use craft\services\Sites;
 use craft\services\UserGroups;
 use yii\base\InvalidConfigException;
@@ -25,6 +26,17 @@ use yii\caching\ExpressionDependency;
  */
 class ProjectConfig
 {
+    /**
+     * Returns a project config compatible value encoded for storage.
+     *
+     * @param $value
+     * @return string
+     */
+    public static function encodeValueAsString($value): string
+    {
+        return Json::encode($value, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_PRESERVE_ZERO_FRACTION);
+    }
+
     /**
      * @var bool Whether we've already processed all field configs.
      * @see ensureAllFieldsProcessed()
@@ -42,6 +54,12 @@ class ProjectConfig
      * @see ensureAllUserGroupsProcessed()
      */
     private static bool $_processedUserGroups = false;
+
+    /**
+     * @var bool Whether we've already processed all section configs.
+     * @see ensureAllSectionsProcessed()
+     */
+    private static bool $_processedSections = false;
 
     /**
      * @var bool Whether we've already processed all GraphQL schemas.
@@ -96,12 +114,12 @@ class ProjectConfig
 
         foreach ($allGroups as $groupUid => $groupData) {
             // Ensure group is processed
-            $projectConfig->processConfigChanges(Sites::CONFIG_SITEGROUP_KEY . '.' . $groupUid, false, null, $force);
+            $projectConfig->processConfigChanges(Sites::CONFIG_SITEGROUP_KEY . '.' . $groupUid, $force);
         }
 
         foreach ($allSites as $siteUid => $siteData) {
             // Ensure site is processed
-            $projectConfig->processConfigChanges(Sites::CONFIG_SITES_KEY . '.' . $siteUid, false, null, $force);
+            $projectConfig->processConfigChanges(Sites::CONFIG_SITES_KEY . '.' . $siteUid, $force);
         }
     }
 
@@ -125,6 +143,30 @@ class ProjectConfig
                 $path = UserGroups::CONFIG_USERPGROUPS_KEY . '.';
                 // Ensure group is processed
                 $projectConfig->processConfigChanges($path . $groupUid);
+            }
+        }
+    }
+
+    /**
+     * Ensure all seection config changes are processed immediately in a safe manner.
+     */
+    public static function ensureAllSectionsProcessed(): void
+    {
+        $projectConfig = Craft::$app->getProjectConfig();
+
+        if (static::$_processedSections || !$projectConfig->getIsApplyingExternalChanges()) {
+            return;
+        }
+
+        static::$_processedSections = true;
+
+        $allSections = $projectConfig->get(Sections::CONFIG_SECTIONS_KEY, true);
+
+        if (is_array($allSections)) {
+            foreach ($allSections as $sectionUid => $sectionData) {
+                $path = Sections::CONFIG_SECTIONS_KEY . '.';
+                // Ensure section is processed
+                $projectConfig->processConfigChanges($path . $sectionUid);
             }
         }
     }

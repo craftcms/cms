@@ -8,86 +8,176 @@ declare(strict_types=1);
 
 namespace craft\models;
 
-use craft\base\Model;
+use Craft;
+use craft\events\ConfigEvent;
+use craft\helpers\ProjectConfig as ProjectConfigHelper;
+use craft\helpers\StringHelper;
+use craft\services\ProjectConfig as ProjectConfigService;
 
 /**
- * ProjectConfigData model class represents an instance of a project config data structure.
+ * ProjectConfigData model class represents a modifiable instance of a project config data structure that can be modified
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.0.0
  */
-class ProjectConfigData extends Model
+class ProjectConfigData extends ReadOnlyProjectConfigData
 {
-    private array $_data;
+    /**
+     * @var array Holds the already parsed paths as keys.
+     */
+    protected array $parsedChanges = [];
 
-    public function __construct(array $data = []) {
-        $this->_data = $data;
-        parent::__construct();
+    /**
+     * @var array Keeps track of all the project config name changes.
+     */
+    protected array $projectConfigNameChanges = [];
+
+    /**
+     * Return true if a path has been modified over the lifetime of this project config set.
+     *
+     * @param string $path
+     * @return bool
+     */
+    public function getHasPathBeenModified(string $path): bool
+    {
+        return array_key_exists($path, $this->parsedChanges);
     }
 
-    public function set($path, $value) {
+    /**
+     * Commit changes by firing the appropriate events and updating the appropriate storages.
+     *
+     * @param $oldValue
+     * @param $newValue
+     * @param string $path
+     * @param bool $triggerUpdate
+     * @param string|null $message
+     * @param bool $force
+     */
+    public function commitChanges($oldValue, $newValue, string $path, bool $triggerUpdate = false, ?string $message = null, bool $force = false): void
+    {
+        if (!$force && !empty($this->parsedChanges[$path])) {
+            return;
+        }
+
+        $this->parsedChanges[$path] = true;
+
+        $projectConfig = Craft::$app->getProjectConfig();
+        $valueChanged = $triggerUpdate || $projectConfig->forceUpdate || ProjectConfigHelper::encodeValueAsString($oldValue) !== ProjectConfigHelper::encodeValueAsString($newValue);
+
+        if ($newValue === null && is_array($oldValue)) {
+            $this->removeContainedProjectConfigNames(pathinfo($path, PATHINFO_EXTENSION), $oldValue);
+        } else if (is_array($newValue)) {
+            $this->setContainedProjectConfigNames(pathinfo($path, PATHINFO_EXTENSION), $newValue);
+        }
+
+        if ($valueChanged && !$projectConfig->muteEvents) {
+            $event = new ConfigEvent(compact('path', 'oldValue', 'newValue'));
+            if ($newValue === null && $oldValue !== null) {
+                // Fire a 'removeItem' event
+                $projectConfig->trigger(ProjectConfigService::EVENT_REMOVE_ITEM, $event);
+            } else if ($oldValue === null && $newValue !== null) {
+                // Fire an 'addItem' event
+                $projectConfig->trigger(ProjectConfigService::EVENT_ADD_ITEM, $event);
+            } else {
+                // Fire an 'updateItem' event
+                $projectConfig->trigger(ProjectConfigService::EVENT_UPDATE_ITEM, $event);
+            }
+        }
+
+        // Mark this path, and any parent paths, as parsed
+        $tok = strtok($path, '.');
+        $thisPath = '';
+        while ($tok !== false) {
+            $thisPath .= ($thisPath !== '' ? '.' : '') . $tok;
+            $this->parsedChanges[$thisPath] = true;
+            $tok = strtok('.');
+        }
+
+        if ($valueChanged) {
+            // Memoize the new config data
+            $projectConfig->rememberAppliedChanges($path, $oldValue, $newValue, $message);
+            $this->setInternal($path, $newValue);
+            $projectConfig->updateStoredConfigAfterRequest();
+
+            if ($projectConfig->writeYamlAutomatically) {
+                $projectConfig->updateParsedConfigTimesAfterRequest();
+            }
+        }
+
+    }
+
+    /**
+     * Update the internal data storage.
+     *
+     * @param $path
+     * @param $value
+     */
+    protected function setInternal($path, $value): void
+    {
         if ($value === null) {
             $this->delete($path);
         }
 
-        $this->_traverseDataArray($this->_data, $path, $value);
-    }
-
-    public function get($path) {
-        return $this->_traverseDataArray($this->_data, $path);
-    }
-
-    public function delete($path) {
-        return $this->_traverseDataArray($this->_data, $path, null, true);
-    }
-
-    public function export()
-    {
-        return $this->_data;
+        $this->traverseDataArray($this->data, $path, $value);
     }
 
     /**
-     * Traverse a nested data array according to path and perform an action depending on parameters.
+     * Delete a path from the internal data storage.
      *
-     * @param array $data A nested array of data to traverse
-     * @param array|string $path Path used to traverse the array. Either an array or a dot.based.path
-     * @param mixed $value Value to set at the destination. If null, will return the value, unless deleting
-     * @param bool $delete Whether to delete the value at the destination or not.
-     * @return mixed
+     * @param $path
+     * @return mixed|null
      */
-    private function _traverseDataArray(array &$data, $path, $value = null, bool $delete = false)
+    protected function delete($path) {
+        return $this->traverseDataArray($this->data, $path, null, true);
+    }
+
+    /**
+     * Get a list of all the project name changes.
+     *
+     * @return array
+     */
+    public function getProjectConfigNameChanges(): array
     {
-        if (is_string($path)) {
-            $path = explode('.', $path);
+        return $this->projectConfigNameChanges;
+    }
+
+    /**
+     * Set all the contained project config names to the buffer.
+     *
+     * @param string $lastPathSegment
+     * @param array $data
+     */
+    protected function setContainedProjectConfigNames(string $lastPathSegment, array $data): void
+    {
+        if (preg_match('/^' . StringHelper::UUID_PATTERN . '$/i', $lastPathSegment) && isset($data['name'])) {
+            $this->projectConfigNameChanges[$lastPathSegment] = $data['name'];
         }
 
-        $nextSegment = array_shift($path);
-
-        // Last piece?
-        if (count($path) === 0) {
-            if ($delete) {
-                unset($data[$nextSegment]);
-            } else if ($value === null) {
-                return $data[$nextSegment] ?? null;
-            } else {
-                $data[$nextSegment] = $value;
+        foreach ($data as $key => $value) {
+            // Traverse further
+            if (is_array($value)) {
+                $this->setContainedProjectConfigNames((string)$key, $value);
             }
-        } else {
-            if (!isset($data[$nextSegment])) {
-                // If the path doesn't exist, it's fine if we wanted to delete or read
-                if ($delete || $value === null) {
-                    return null;
-                }
+        }
+    }
 
-                $data[$nextSegment] = [];
-            } else if (!is_array($data[$nextSegment])) {
-                // If the next part is not an array, but we have to travel further, make it an array.
-                $data[$nextSegment] = [];
-            }
-
-            return $this->_traverseDataArray($data[$nextSegment], $path, $value, $delete);
+    /**
+     * Mark any contained project config names for removal.
+     *
+     * @param string $lastPathSegment
+     * @param array $data
+     */
+    protected function removeContainedProjectConfigNames(string $lastPathSegment, array $data): void
+    {
+        if (preg_match('/^' . StringHelper::UUID_PATTERN . '$/i', $lastPathSegment)) {
+            $this->projectConfigNameChanges[$lastPathSegment] = null;
         }
 
-        return null;
+        foreach ($data as $key => $value) {
+            // Traverse further
+            if (is_array($value)) {
+                $this->setContainedProjectConfigNames($key, $value);
+            }
+        }
     }
 }
