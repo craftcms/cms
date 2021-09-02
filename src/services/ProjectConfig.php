@@ -581,7 +581,9 @@ class ProjectConfig extends Component
         $this->_applyingExternalChanges = true;
 
         $changes = $this->_getPendingChanges($configData);
-        $this->_applyChanges($changes, $this->getCurrentWorkingConfig(), new ReadOnlyProjectConfigData($configData));
+        $incomingConfig = Craft::createObject(ReadOnlyProjectConfigData::class, ['data' => $configData]);
+
+        $this->_applyChanges($changes, $this->getCurrentWorkingConfig(), $incomingConfig);
     }
 
     /**
@@ -1711,7 +1713,7 @@ class ProjectConfig extends Component
     protected function getCurrentWorkingConfig(): ProjectConfigData
     {
         if ($this->_currentWorkingConfig === null) {
-            $this->_currentWorkingConfig = new ProjectConfigData($this->getInternalConfig()->export());
+            $this->_currentWorkingConfig = Craft::createObject(ProjectConfigData::class, ['data' => $this->getInternalConfig()->export()]);
         }
 
         return $this->_currentWorkingConfig;
@@ -1725,11 +1727,11 @@ class ProjectConfig extends Component
     private function _loadInternalConfig(): ReadOnlyProjectConfigData
     {
         if (!Craft::$app->getIsInstalled()) {
-            return new ReadOnlyProjectConfigData();
+            return Craft::createObject(ReadOnlyProjectConfigData::class);
         }
 
         if (Craft::$app->getIsInstalled() && version_compare(Craft::$app->getInfo()->schemaVersion, '3.1.1', '<')) {
-            return new ReadOnlyProjectConfigData();
+            return Craft::createObject(ReadOnlyProjectConfigData::class);
         }
 
         if (Craft::$app->getIsInstalled() && version_compare(Craft::$app->getInfo()->schemaVersion, '3.4.4', '<')) {
@@ -1750,7 +1752,7 @@ class ProjectConfig extends Component
                 }
             }
 
-            return new ReadOnlyProjectConfigData($data);
+            return Craft::createObject(ReadOnlyProjectConfigData::class, ['data' => $data]);
         }
 
         // See if we can get away with using the cached data
@@ -1776,7 +1778,7 @@ class ProjectConfig extends Component
             return ProjectConfigHelper::cleanupConfig($data);
         }, null, $this->getCacheDependency());
 
-        return new ReadOnlyProjectConfigData($data);
+        return Craft::createObject(ReadOnlyProjectConfigData::class, ['data' => $data]);
     }
 
     /**
