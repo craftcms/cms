@@ -895,6 +895,7 @@ class UsersController extends Controller
 
         $form = $user->getFieldLayout()->createForm($user, false, [
             'tabIdPrefix' => 'profile',
+            'registerDeltas' => true,
         ]);
         $selectedTab = 'account';
 
@@ -959,9 +960,6 @@ class UsersController extends Controller
                 }
             }
         }
-
-        // Enable delta registration
-        Craft::$app->getView()->setIsDeltaRegistrationActive(true);
 
         $fieldsHtml = $form->render(false);
 
