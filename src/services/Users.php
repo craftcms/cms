@@ -38,7 +38,6 @@ use DateTime;
 use yii\base\Component;
 use yii\base\Exception;
 use yii\base\InvalidArgumentException;
-use yii\validators\EmailValidator;
 
 /**
  * The Users service provides APIs for managing users.

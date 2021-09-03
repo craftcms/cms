@@ -16,7 +16,6 @@ use craft\base\FieldInterface;
 use craft\db\Query;
 use craft\db\Table;
 use craft\errors\OperationAbortedException;
-use Illuminate\Support\Collection;
 use yii\base\Exception;
 
 /**

@@ -8,12 +8,7 @@
 namespace craft\helpers;
 
 use Craft;
-use Illuminate\Contracts\Support\Arrayable;
-use Illuminate\Contracts\Support\Jsonable;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Enumerable;
-use JsonSerializable;
-use Traversable;
 
 /**
  * Class ArrayHelper

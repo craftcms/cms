@@ -53,7 +53,7 @@ class FormatDateTime extends Directive
                 new FieldArgument([
                     'name' => 'timezone',
                     'type' => Type::string(),
-                    'description' => 'The full name of the timezone (e.g., America/New_York). Defaults to ' . self::defaultTimeZone() .  ' if no timezone set on the field.',
+                    'description' => 'The full name of the timezone (e.g., America/New_York). Defaults to ' . self::defaultTimeZone() . ' if no timezone set on the field.',
                     'defaultValue' => self::defaultTimeZone(),
                 ]),
                 new FieldArgument([
