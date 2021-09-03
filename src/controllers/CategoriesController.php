@@ -263,7 +263,7 @@ class CategoriesController extends Controller
         $variables = [
             'groupHandle' => $groupHandle,
             'categoryId' => $categoryId,
-            'category' => $category,
+            'element' => $category,
             'site' => $siteModel,
         ];
 
