@@ -77,6 +77,9 @@ class Lightswitch extends Field implements PreviewableFieldInterface, SortableFi
                 unset($config[$name]);
             }
         }
+        if (array_key_exists('default', $config) && !is_bool($config['default'])) {
+            $config['default'] = (bool)$config['default'];
+        }
 
         parent::__construct($config);
     }

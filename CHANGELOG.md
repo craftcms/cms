@@ -68,6 +68,7 @@
 - Users are no longer required to have a username or email.
 - User queries now return all users by default, rather than only active users.
 - Filtering users by `active`, `pending`, and `locked` statuses no longer excludes suspended users.
+- Entry queries’ `authorGroup()` param method now accepts an array of `craft\models\UserGroup` objects.
 - Relational fields now load elements in the current site rather than the primary site, if the source element isn’t localizable. ([#7048](https://github.com/craftcms/cms/issues/7048))
 - Built-in queue jobs are now always translated for the current user’s language. ([#9745](https://github.com/craftcms/cms/pull/9745))
 - Template autosuggestions now include their filename. ([#9744](https://github.com/craftcms/cms/pull/9744))

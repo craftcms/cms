@@ -507,6 +507,7 @@ class FieldLayout extends Model
      *
      * - `tabIdPrefix` – prefix that should be applied to the tab content containers’ `id` attributes
      * - `namespace` – Namespace that should be applied to the tab contents
+     * - `registerDeltas` – Whether delta name registration should be enabled/disabled for the form (by default its state will be left alone)
      *
      * @param ElementInterface|null $element The element the form is being rendered for
      * @param bool $static Whether the form should be static (non-interactive)
@@ -517,10 +518,19 @@ class FieldLayout extends Model
     public function createForm(?ElementInterface $element = null, bool $static = false, array $config = []): FieldLayoutForm
     {
         $view = Craft::$app->getView();
+
         // Calling this with an existing namespace isn’t fully supported,
         // since the tab anchors’ `href` attributes won’t end up getting set properly
-        $oldNamespace = $view->getNamespace();
         $namespace = ArrayHelper::remove($config, 'namespace');
+
+        // Register delta names?
+        $registerDeltas = ArrayHelper::remove($config, 'registerDeltas');
+        $changeDeltaRegistration = $registerDeltas !== null;
+        if ($changeDeltaRegistration) {
+            $view = Craft::$app->getView();
+            $isDeltaRegistrationActive = $view->getIsDeltaRegistrationActive();
+            $view->setIsDeltaRegistrationActive($registerDeltas);
+        }
 
         $form = new FieldLayoutForm($config);
         $tabs = $this->getTabs();
@@ -557,6 +567,10 @@ class FieldLayout extends Model
                     'content' => implode("\n", $tabHtml),
                 ]);
             }
+        }
+
+        if ($changeDeltaRegistration) {
+            $view->setIsDeltaRegistrationActive($isDeltaRegistrationActive);
         }
 
         return $form;

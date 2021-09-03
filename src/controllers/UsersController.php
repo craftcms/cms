@@ -895,6 +895,7 @@ class UsersController extends Controller
 
         $form = $user->getFieldLayout()->createForm($user, false, [
             'tabIdPrefix' => 'profile',
+            'registerDeltas' => true,
         ]);
         $selectedTab = 'account';
 
