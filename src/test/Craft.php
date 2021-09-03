@@ -342,9 +342,9 @@ class Craft extends Yii2
     public function expectEvent(
         string $class,
         string $eventName,
-        $callback,
+               $callback,
         string $eventInstance = '',
-        array $eventValues = []
+        array  $eventValues = []
     )
     {
         // Add this event.

@@ -119,7 +119,8 @@ class TestCase extends Unit
      * @throws ReflectionException
      * @credit https://github.com/yiisoft/yii2/blob/master/tests/TestCase.php#L134
      */
-    protected function invokeStaticMethod($className, $method, $args = [], $revoke = true) {
+    protected function invokeStaticMethod($className, $method, $args = [], $revoke = true)
+    {
         $method = (new ReflectionClass($className))->getMethod($method);
         return $this->_invokeMethodInternal($method, null, $args, $revoke);
     }
