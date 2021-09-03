@@ -537,7 +537,6 @@ class FieldLayout extends Model
         $view = Craft::$app->getView();
         // Calling this with an existing namespace isn’t fully supported,
         // since the tab anchors’ `href` attributes won’t end up getting set properly
-        $oldNamespace = $view->getNamespace();
         $namespace = ArrayHelper::remove($config, 'namespace');
 
         $form = new FieldLayoutForm($config);
