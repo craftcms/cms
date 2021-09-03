@@ -917,7 +917,6 @@ class Db
      *
      * @param string $table the table where the data will be deleted from
      * @param Connection|null $db The database connection to use
-     * @return void
      * @throws DbException if execution failed
      * @since 3.6.8
      */
