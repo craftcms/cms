@@ -4,7 +4,6 @@ namespace craft\conditions;
 
 use craft\base\Component;
 use craft\helpers\StringHelper;
-use Illuminate\Support\Collection;
 
 /**
  *

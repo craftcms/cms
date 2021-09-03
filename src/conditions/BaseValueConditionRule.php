@@ -72,8 +72,8 @@ abstract class BaseValueConditionRule extends BaseConditionRule
                 'value' => $this->operator,
                 'options' => $this->getOperators(),
                 'inputAttributes' => [
-                    'hx-post' => UrlHelper::actionUrl('conditions/render')
-                ]
+                    'hx-post' => UrlHelper::actionUrl('conditions/render'),
+                ],
             ]));
         }
 

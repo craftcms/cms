@@ -140,7 +140,7 @@ abstract class BaseCondition extends Component implements ConditionInterface
         foreach ($rules as $rule) {
             if (is_array($rule)) {
                 $conditionRules[] = Craft::$app->getConditions()->createConditionRule($rule);
-            } elseif ($rule instanceof BaseConditionRule) {
+            } else if ($rule instanceof BaseConditionRule) {
                 $conditionRules[] = $rule;
             }
         }
@@ -167,7 +167,7 @@ abstract class BaseCondition extends Component implements ConditionInterface
         $config = [
             'type' => get_class($this),
             'handle' => $this->handle,
-            'conditionRules' => []
+            'conditionRules' => [],
         ];
 
         foreach ($this->getConditionRules() as $conditionRule) {
@@ -224,7 +224,7 @@ abstract class BaseCondition extends Component implements ConditionInterface
                 'class' => '',
                 'inputAttributes' => [
                     'hx-post' => UrlHelper::actionUrl('conditions/render'),
-                ]
+                ],
             ]);
             $ruleHtml = Html::tag('div', $ruleHtml, ['class' => 'condition-rule-type']);
             $ruleHtml .= Html::hiddenInput('uid', $rule->uid);

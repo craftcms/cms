@@ -20,7 +20,7 @@ class EntryQueryCondition extends ElementQueryCondition
             EntryTypeConditionRule::class,
             EntrySectionConditionRule::class,
             Slug::class,
-            AuthorGroupConditionRule::class
+            AuthorGroupConditionRule::class,
         ];
     }
 

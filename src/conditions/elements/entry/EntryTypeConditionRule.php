@@ -98,7 +98,7 @@ class EntryTypeConditionRule extends BaseConditionRule implements ElementQueryCo
             'name' => 'sectionHandle',
             'value' => $this->sectionHandle,
             'options' => $this->getSectionOptions(),
-            'inputAttributes' => $inputAttributes
+            'inputAttributes' => $inputAttributes,
         ]);
 
         $this->_ensureEntryType();
@@ -107,7 +107,7 @@ class EntryTypeConditionRule extends BaseConditionRule implements ElementQueryCo
             'name' => 'entryTypeHandle',
             'value' => $this->entryTypeHandle,
             'options' => $this->getEntryTypeOptions(),
-            'inputAttributes' => $inputAttributes
+            'inputAttributes' => $inputAttributes,
         ]);
 
         return $html;

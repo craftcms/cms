@@ -5,7 +5,6 @@ namespace craft\conditions\elements;
 use Craft;
 use craft\conditions\BaseCondition;
 use craft\elements\db\ElementQuery;
-use craft\elements\db\ElementQueryInterface;
 use craft\helpers\Html;
 use craft\helpers\Json;
 use Illuminate\Support\Collection;

@@ -9,7 +9,6 @@ namespace craft\controllers;
 
 use Craft;
 use craft\conditions\BaseCondition;
-use craft\conditions\BaseConditionRule;
 use craft\web\Controller;
 
 /**

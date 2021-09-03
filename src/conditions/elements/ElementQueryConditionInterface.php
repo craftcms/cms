@@ -7,8 +7,6 @@
 
 namespace craft\conditions\elements;
 
-use craft\base\Element;
-use craft\conditions\ConditionInterface;
 use craft\conditions\QueryConditionInterface;
 use craft\elements\db\ElementQuery;
 

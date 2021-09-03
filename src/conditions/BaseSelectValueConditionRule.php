@@ -32,7 +32,7 @@ abstract class BaseSelectValueConditionRule extends BaseValueConditionRule
     protected function getInputAttributes(): array
     {
         return [
-            'hx-post' => UrlHelper::actionUrl('conditions/render')
+            'hx-post' => UrlHelper::actionUrl('conditions/render'),
         ];
     }
 
@@ -45,7 +45,7 @@ abstract class BaseSelectValueConditionRule extends BaseValueConditionRule
             'name' => 'value',
             'value' => $this->value,
             'options' => $this->getSelectOptions(),
-            'inputAttributes' => $this->getInputAttributes()
+            'inputAttributes' => $this->getInputAttributes(),
         ]);
     }
 }

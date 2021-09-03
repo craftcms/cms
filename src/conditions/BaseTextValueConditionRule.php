@@ -27,7 +27,7 @@ abstract class BaseTextValueConditionRule extends BaseValueConditionRule
     public function getInputHtml(): string
     {
         $html = Craft::$app->getView()->renderTemplate('_includes/forms/text', [
-            'inputAttributes' => $this->getInputAttributes()
+            'inputAttributes' => $this->getInputAttributes(),
         ]);
 
         return $html;

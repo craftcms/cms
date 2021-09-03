@@ -10,11 +10,7 @@ namespace craft\services;
 use Craft;
 use craft\conditions\BaseCondition;
 use craft\conditions\BaseConditionRule;
-use craft\db\Query;
-use craft\db\Table;
 use craft\helpers\ArrayHelper;
-use craft\helpers\Db;
-use craft\helpers\Json;
 use yii\base\Component;
 use yii\base\InvalidArgumentException;
 

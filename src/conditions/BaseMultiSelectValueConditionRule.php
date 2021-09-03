@@ -33,7 +33,7 @@ abstract class BaseMultiSelectValueConditionRule extends BaseValueConditionRule
     {
         return [
             'hx-post' => UrlHelper::actionUrl('conditions/render'),
-            'hx-trigger' => 'change changed delay:750ms'
+            'hx-trigger' => 'change changed delay:750ms',
         ];
     }
 
@@ -47,7 +47,7 @@ abstract class BaseMultiSelectValueConditionRule extends BaseValueConditionRule
             'name' => 'value',
             'values' => $this->value,
             'options' => $this->getSelectOptions(),
-            'inputAttributes' => $this->getInputAttributes()
+            'inputAttributes' => $this->getInputAttributes(),
         ]);
 
         $js = <<<EOD
