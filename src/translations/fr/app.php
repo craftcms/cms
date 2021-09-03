@@ -468,7 +468,7 @@ return [
     'Delete {num, plural, =1{user} other{users}} and content' => 'Supprimer {num, plural, one {} =1{l\'utilisateur} other{les utilisateurs}} et le contenu',
     'Delete {num, plural, =1{user} other{users}}' => 'Supprimer {num, plural, one {} =1{l\'utilisateur} other{les utilisateurs}}',
     'Delete {site}' => 'Supprimer {site}',
-    'Delete {type} for this site' => 'Supprimer le {type} sur ce site',
+    'Delete {type} for this site' => 'Supprimer {type, select, entrée{l’} other{le }}{type} sur ce site',
     'Delete {type}' => 'Supprimer {type}',
     'Delete' => 'Supprimer',
     'Delete…' => 'Supprimer…',
