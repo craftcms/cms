@@ -19,7 +19,7 @@ use enshrined\svgSanitize\data\AttributeInterface;
 class SvgAllowedAttributes implements AttributeInterface
 {
     /**
-     * @inheritDoc
+     * @inheritdoc
      */
     public static function getAttributes()
     {

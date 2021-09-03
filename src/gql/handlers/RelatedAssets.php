@@ -21,7 +21,7 @@ class RelatedAssets extends RelationArgumentHandler
     protected $argumentName = 'relatedToAssets';
 
     /**
-     * @inheritDoc
+     * @inheritdoc
      */
     protected function handleArgument($argumentValue)
     {

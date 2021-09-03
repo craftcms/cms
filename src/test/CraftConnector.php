@@ -115,7 +115,7 @@ class CraftConnector extends Yii2
     }
 
     /**
-     * @inheritDoc
+     * @inheritdoc
      */
     public function resetApplication($closeSession = true)
     {

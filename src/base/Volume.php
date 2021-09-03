@@ -148,7 +148,7 @@ abstract class Volume extends SavableComponent implements VolumeInterface
     }
 
     /**
-     * @inheritDoc
+     * @inheritdoc
      */
     public function directoryExists(string $path): bool
     {
