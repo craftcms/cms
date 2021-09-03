@@ -1289,7 +1289,7 @@ class Asset extends Element
     }
 
     /**
-     * @inheritDoc
+     * @inheritdoc
      */
     public function getPreviewTargets(): array
     {
