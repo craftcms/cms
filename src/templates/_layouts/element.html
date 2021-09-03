@@ -29,8 +29,6 @@
 {% extends '_layouts/cp' %}
 {% import '_includes/forms' as forms %}
 
-{% do view.setIsDeltaRegistrationActive(true) %}
-
 {% set generalConfig = craft.app.config.general %}
 
 {% set saveSourceAction = saveSourceAction ?? null %}
@@ -116,7 +114,9 @@
     {% set saveShortcutRedirect = '{cpEditUrl}' %}
 {% endif %}
 
-{% set form = element.getFieldLayout().createForm(element, isRevision or not canEdit) %}
+{% set form = element.getFieldLayout().createForm(element, isRevision or not canEdit, {
+    registerDeltas: true,
+}) %}
 
 {% if tabs is not defined %}
     {% set tabs = form.getTabMenu() %}

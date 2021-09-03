@@ -416,14 +416,12 @@ class ElementsController extends BaseElementsController
         $fieldLayout = $element->getFieldLayout();
 
         if ($fieldLayout) {
-            // Enable delta registration
-            $view->setIsDeltaRegistrationActive(true);
-
             // If only the placeholder was returned, wa can safely pull in the full field layout form render
             if ($editorHtml === '<!-- FIELD LAYOUT -->') {
                 $form = $fieldLayout->createForm($element, false, [
                     'namespace' => $namespace,
                     'tabIdPrefix' => "$namespace-tab",
+                    'registerDeltas' => true,
                 ]);
                 $editorHtml = $form->render();
 
@@ -433,6 +431,8 @@ class ElementsController extends BaseElementsController
                     ]);
                 }
             } else {
+                $isDeltaRegistrationActive = $view->getIsDeltaRegistrationActive();
+                $view->setIsDeltaRegistrationActive(true);
                 $editorHtml = preg_replace_callback('/<!-- FIELD LAYOUT -->/', function() use ($element, $view, $namespace) {
                     return $view->namespaceInputs(function() use ($element) {
                         $fieldLayout = $element->getFieldLayout();
@@ -453,6 +453,7 @@ class ElementsController extends BaseElementsController
                         return implode("\n", $fields);
                     }, $namespace);
                 }, $editorHtml, 1);
+                $view->setIsDeltaRegistrationActive($isDeltaRegistrationActive);
             }
         } else {
             $editorHtml = preg_replace('<!-- FIELD LAYOUT -->', '', $editorHtml, 1);

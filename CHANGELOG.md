@@ -3,13 +3,14 @@
 ## Unreleased
 
 ### Changed
-- Forms must now opt into delta name registration by calling `Craft::$app->view->setIsDeltaRegistrationActive(true)` before being rendered.
 - It’s now possible for field types to disable delta name registration for nested custom fields by calling `Craft::$app->view->setIsDeltaRegistrationActive(false);` before rendering them.
+- `craft\models\FieldLayout::createForm()` now accepts a `registerDeltas` key in its `$config` argument, which can be set to `true` or `false` to enable/disable delta name registration for any custom fields in the form.
 - `craft\services\Elements::duplicateElement()` now has a `$placeInStructure` argument.
 
 ### Fixed
 - Fixed an error that occurred when merging upstream Matrix field changes into a draft, if the draft didn’t exist in all the same sites as its canonical entry. ([#9774](https://github.com/craftcms/cms/issues/9774))
 - Fixed a bug where duplicated entries that were created via an “Applying new propagation method” job weren’t getting positioned correctly based on the original entries’ structure. ([#9782](https://github.com/craftcms/cms/issues/9782))
+- Fixed a bug where `craft\fieldlayoutelements\CustomField::formHtml()` was always enabling delta name registration, unless the form was static.
 
 ## 3.7.11 - 2021-08-31
 
