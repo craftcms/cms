@@ -13,6 +13,7 @@
 - Fixed a bug where duplicated entries that were created via an “Applying new propagation method” job weren’t getting positioned correctly based on the original entries’ structure. ([#9782](https://github.com/craftcms/cms/issues/9782))
 - Fixed a bug where `craft\fieldlayoutelements\CustomField::formHtml()` was always enabling delta name registration, unless the form was static.
 - Fixed an exception that could occur if an invalid alias was passed to the `svg()` Twig function.
+- Fixed a bug where Edit Category pages weren’t remembering changes or showing validation errors in the event that a category couldn’t be saved. ([#9796](https://github.com/craftcms/cms/issues/9796))
 
 ## 3.7.11 - 2021-08-31
 
