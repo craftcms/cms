@@ -46,7 +46,7 @@ abstract class ElementQueryCondition extends BaseCondition implements ElementQue
      */
     protected function validateConditionRule($rule): bool
     {
-        return $rule instanceof ElementQueryConditionInterface;
+        return $rule instanceof ElementQueryConditionRuleInterface;
     }
 
     /**
