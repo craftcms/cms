@@ -10,8 +10,10 @@ use craft\helpers\Html;
 use craft\helpers\Json;
 use craft\helpers\UrlHelper;
 use Illuminate\Support\Collection;
+use yii\base\InvalidArgumentException;
 
 /**
+ * Base condition class.
  *
  * @property-read string $addRuleLabel
  * @property-read array $config
@@ -19,76 +21,67 @@ use Illuminate\Support\Collection;
  * @property Collection $conditionRules
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 4.0
+ * @since 4.0.0
  */
 abstract class BaseCondition extends Component implements ConditionInterface
 {
     /**
-     * @event DefineConditionRuleTypesEvent The event that is triggered when defining the condition rule types
-     * @see conditionRuleTypes()
-     * @since 4.0
+     * @event RegisterConditionRuleTypesEvent The event that is triggered when defining the condition rule types.
+     * @see getConditionRuleTypes()
      */
     public const EVENT_REGISTER_CONDITION_RULE_TYPES = 'registerConditionRuleTypes';
 
     /**
-     * @var Collection
-     */
-    private Collection $_conditionRules;
-
-    /**
-     * @var string
+     * @var string The condition handle.
      */
     public string $handle;
 
     /**
-     * @inheritDoc
+     * @var Collection|ConditionRuleInterface[]
+     */
+    private Collection $_conditionRules;
+
+    /**
+     * @inheritdoc
      */
     public function init(): void
     {
+        parent::init();
+
         if (!isset($this->_conditionRules)) {
             $this->_conditionRules = new Collection();
         }
     }
 
     /**
-     * @inheritDoc
+     * @inheritdoc
      */
-    public function attributes()
+    public function attributes(): array
     {
-        $attributes = parent::attributes();
-        $attributes[] = 'conditionRules';
-        $attributes[] = 'handle';
-
-        return $attributes;
+        return array_merge(parent::attributes(), [
+            'conditionRules',
+            'handle',
+        ]);
     }
 
     /**
+     * Returns the label for the “Add a rule” button.
+     *
      * @return string
      */
     public function getAddRuleLabel(): string
     {
-        return Craft::t('app', 'Add Rule');
+        return Craft::t('app', 'Add a rule');
     }
 
     /**
-     * Returns the condition rule types for this condition
+     * Returns the available rule types for this condition.
      *
-     * Conditions should override this method instead of [[conditionRuleTypes()]]
-     * so [[EVENT_DEFINE_CONDITION_RULE_TYPES]] handlers can modify the class-defined condition rule types.
-     *
-     * @return array
-     * @since 4.0
+     * @return string[]
      */
-    abstract protected function defineConditionRuleTypes(): array;
-
-    /**
-     * Returns the condition rule types for this condition
-     *
-     * @return array Condition rule types
-     */
-    public function conditionRuleTypes(): array
+    public function getConditionRuleTypes(): array
     {
-        $conditionRuleTypes = $this->defineConditionRuleTypes();
+        $conditionRuleTypes = $this->conditionRuleTypes();
 
         // Give plugins a chance to modify them
         $event = new RegisterConditionRuleTypesEvent([
@@ -96,29 +89,21 @@ abstract class BaseCondition extends Component implements ConditionInterface
         ]);
 
         $this->trigger(self::EVENT_REGISTER_CONDITION_RULE_TYPES, $event);
-
         return $event->conditionRuleTypes;
     }
 
     /**
-     * Returns all available condition rule options for use in a select
+     * Returns the available rule types for this condition.
      *
-     * @return array Array of condition classes available to add to the condition
+     * Conditions should override this method instead of [[getConditionRuleTypes()]]
+     * so [[EVENT_REGISTER_CONDITION_RULE_TYPES]] handlers can modify the class-defined rule types.
+     *
+     * @return string[]
      */
-    public function availableRuleTypesOptions(): array
-    {
-        $rules = $this->conditionRuleTypes();
-        $options = [];
-        foreach ($rules as $rule) {
-            /** @var $rule string */
-            $options[$rule] = $rule::displayName();
-        }
-
-        return $options;
-    }
+    abstract protected function conditionRuleTypes(): array;
 
     /**
-     * Returns all condition rules
+     * Returns the rules this condition is configured with.
      *
      * @return Collection
      */
@@ -128,61 +113,69 @@ abstract class BaseCondition extends Component implements ConditionInterface
     }
 
     /**
-     * Sets the condition rules
+     * Sets the rules this condition should be configured with.
      *
-     * @param BaseConditionRule[]|array $rules
-     * @return void
-     * @throws \yii\base\InvalidConfigException
+     * @param ConditionRuleInterface[]|array[] $rules
+     * @throws InvalidArgumentException if any of the rules don’t validate
      */
     public function setConditionRules(array $rules): void
     {
-        $conditionRules = [];
-        foreach ($rules as $rule) {
+        $this->_conditionRules = new Collection(array_map(function($rule) {
             if (is_array($rule)) {
-                $conditionRules[] = Craft::$app->getConditions()->createConditionRule($rule);
-            } else if ($rule instanceof BaseConditionRule) {
-                $conditionRules[] = $rule;
+                $rule = Craft::$app->getConditions()->createConditionRule($rule);;
             }
-        }
-
-        $this->_conditionRules = new Collection($conditionRules);
+            if (!$this->validateConditionRule($rule)) {
+                throw new InvalidArgumentException('Invalid condition rule');
+            }
+            $rule->setCondition($this);
+            return $rule;
+        }, $rules));
     }
 
     /**
-     * Add a Rule to the Condition
+     * Adds a rule to the condition.
      *
-     * @param BaseConditionRule $conditionRule
+     * @param ConditionRuleInterface $rule
+     * @throws InvalidArgumentException if the rule doesn’t validate
      */
-    public function addConditionRule(BaseConditionRule $conditionRule): void
+    public function addConditionRule(ConditionRuleInterface $rule): void
     {
-        $conditionRule->setCondition($this);
-        $this->_conditionRules->add($conditionRule);
+        if (!$this->validateConditionRule($rule)) {
+            throw new InvalidArgumentException('Invalid condition rule');
+        }
+        $rule->setCondition($this);
+        $this->_conditionRules->add($rule);
     }
 
     /**
-     * @return array
+     * Validates a given rule to ensure it can be used with this condition.
+     *
+     * @param mixed $rule
+     * @return bool
+     */
+    protected function validateConditionRule($rule): bool
+    {
+        return $rule instanceof ConditionRuleInterface;
+    }
+
+    /**
+     * @inheritdoc
      */
     public function getConfig(): array
     {
-        $config = [
+        return [
             'type' => get_class($this),
             'handle' => $this->handle,
-            'conditionRules' => [],
+            'conditionRules' => $this->getConditionRules()
+                ->map(fn(ConditionRuleInterface $rule) => $rule->getConfig())
+                ->all()
         ];
-
-        foreach ($this->getConditionRules() as $conditionRule) {
-            $config['conditionRules'][] = $conditionRule->getConfig();
-        }
-
-        return $config;
     }
 
     /**
-     * Renders the condition
-     *
-     * @return string
+     * @inheritdoc
      */
-    public function getHtml(): string
+    public function getBuilderHtml(): string
     {
         $conditionId = Html::namespaceId('condition', $this->handle);
         $indicatorId = Html::namespaceId('indicator', $this->handle);
@@ -208,18 +201,24 @@ abstract class BaseCondition extends Component implements ConditionInterface
         $html .= Html::hiddenInput('conditionLocation', $this->handle);
 
         $allRulesHtml = '';
-        /** @var BaseConditionRule $rule */
         foreach ($this->_conditionRules as $rule) {
-            // Rules types available
+            /** @var string|ConditionRuleInterface $ruleClass */
             $ruleClass = get_class($rule);
-            $availableRules = $this->availableRuleTypesOptions();
-            ArrayHelper::remove($availableRules, $ruleClass); // since we are adding it, remove it so we don't have duplicates
-            $availableRules[$ruleClass] = $rule::displayName(); // should always be in the list since it is the current rule
+            $ruleTypeOptions = [];
+            foreach ($this->getConditionRuleTypes() as $type) {
+                /** @var string|ConditionRuleInterface $type */
+                if ($type !== $ruleClass) {
+                    $ruleTypeOptions[] = ['value' => $type, 'label' => $type::displayName()];
+                }
+            }
+            $ruleTypeOptions[] = ['value' => $ruleClass, 'label' => $ruleClass::displayName()];
+
+            ArrayHelper::multisort($ruleTypeOptions, 'label');
 
             // Add rule type selector
             $ruleHtml = Craft::$app->getView()->renderTemplate('_includes/forms/select', [
                 'name' => 'type',
-                'options' => $availableRules,
+                'options' => $ruleTypeOptions,
                 'value' => $ruleClass,
                 'class' => '',
                 'inputAttributes' => [
@@ -265,7 +264,7 @@ abstract class BaseCondition extends Component implements ConditionInterface
             ]
         );
 
-        if (count($this->conditionRuleTypes()) > 0) {
+        if (count($this->getConditionRuleTypes()) > 0) {
             $addButtonAttr = [
                 'class' => 'btn add icon',
                 'hx-post' => UrlHelper::actionUrl('conditions/add-rule'),
@@ -280,8 +279,6 @@ abstract class BaseCondition extends Component implements ConditionInterface
         );
 
         $html .= Html::endTag('form');
-
-
         return $html;
     }
 
@@ -290,6 +287,8 @@ abstract class BaseCondition extends Component implements ConditionInterface
      */
     protected function defineRules(): array
     {
-        return [['conditionRules', 'safe']];
+        return [
+            [['conditionRules'], 'safe']
+        ];
     }
 }

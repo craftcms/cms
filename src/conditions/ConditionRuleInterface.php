@@ -2,12 +2,15 @@
 
 namespace craft\conditions;
 
+use craft\base\ComponentInterface;
+
 /**
+ * ConditionRuleInterface defines the common interface to be implemented by condition rule classes.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 4.0
+ * @since 4.0.0
  */
-interface ConditionRuleInterface
+interface ConditionRuleInterface extends ComponentInterface
 {
     /**
      * @return string
@@ -16,7 +19,6 @@ interface ConditionRuleInterface
 
     /**
      * @return string
-     * @since 4.0
      */
     public function getInputHtml(): string;
 }

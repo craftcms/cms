@@ -5,6 +5,7 @@ namespace craft\conditions\elements;
 use Craft;
 use craft\conditions\BaseCondition;
 use craft\elements\db\ElementQuery;
+use craft\elements\db\ElementQueryInterface;
 use craft\helpers\Html;
 use craft\helpers\Json;
 use Illuminate\Support\Collection;
@@ -20,26 +21,36 @@ use yii\db\QueryInterface;
  * @property-read string $html
  * @property-read \craft\elements\db\ElementQuery $elementQuery
  * @property Collection $conditionRules
+ * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ * @since 4.0.0
  */
 abstract class ElementQueryCondition extends BaseCondition implements ElementQueryConditionInterface
 {
     /**
-     * @inheritDoc
+     * @inheritdoc
      */
-    abstract public function getElementQuery(): ElementQuery;
+    abstract public function getElementQuery(): ElementQueryInterface;
 
     private $_showDebug = false;
 
     /**
-     * @inheritDoc
+     * @inheritdoc
      */
     public function getAddRuleLabel(): string
     {
-        return Craft::t('app', 'Add Condition');
+        return Craft::t('app', 'Add a filter');
     }
 
     /**
-     * @inheritDoc
+     * @inheritdoc
+     */
+    protected function validateConditionRule($rule): bool
+    {
+        return $rule instanceof ElementQueryConditionInterface;
+    }
+
+    /**
+     * @inheritdoc
      */
     public function getQuery(): QueryInterface
     {
@@ -49,7 +60,7 @@ abstract class ElementQueryCondition extends BaseCondition implements ElementQue
     }
 
     /**
-     * @inheritDoc
+     * @inheritdoc
      */
     public function modifyQuery(QueryInterface $query): QueryInterface
     {
@@ -65,24 +76,24 @@ abstract class ElementQueryCondition extends BaseCondition implements ElementQue
     }
 
     /**
-     * @inheritDoc
+     * @inheritdoc
      */
-    public function getHtml(): string
+    public function getBuilderHtml(): string
     {
         if ($this->_showDebug) {
             $titles = '';
             foreach ($this->getQuery()->all() as $entry) {
                 $titles .= $entry->title . '<br>';
             }
-            $html = parent::getHtml();
+            $html = parent::getBuilderHtml();
             $html .= Html::tag('div',
                 Html::tag('h3', 'Element Query') .
                 Html::tag('pre', Json::encode($this->getQuery(), JSON_PRETTY_PRINT)),
                 ['class' => 'pane']);
             $html .= Html::tag('div', Html::tag('h3', 'Results') . $titles, ['class' => 'pane']);
             return $html;
-        } else {
-            return parent::getHtml();
         }
+
+        return parent::getBuilderHtml();
     }
 }

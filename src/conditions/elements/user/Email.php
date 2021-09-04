@@ -9,17 +9,23 @@ use craft\elements\db\UserQuery;
 use yii\db\QueryInterface;
 
 /**
+ * Email condition rule.
  *
+ * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ * @since 4.0.0
  */
 class Email extends BaseTextValueConditionRule implements ElementQueryConditionRuleInterface
 {
+    /**
+     * @inheritdoc
+     */
     public static function displayName(): string
     {
         return Craft::t('app', 'Email');
     }
 
     /**
-     * @inheritDoc
+     * @inheritdoc
      */
     public function modifyQuery(QueryInterface $query): QueryInterface
     {

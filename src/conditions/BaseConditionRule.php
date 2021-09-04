@@ -7,17 +7,17 @@ use craft\helpers\StringHelper;
 
 /**
  *
- * @property BaseCondition $condition
+ * @property ConditionInterface $condition
  * @property-read array $config
  * @property-read string|null $html
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 4.0
+ * @since 4.0.0
  */
 abstract class BaseConditionRule extends Component implements ConditionRuleInterface
 {
     /**
-     * @var string
+     * @var string UUID
      */
     public string $uid;
 
@@ -27,7 +27,7 @@ abstract class BaseConditionRule extends Component implements ConditionRuleInter
     private ConditionInterface $_condition;
 
     /**
-     * @inheritDoc
+     * @inheritdoc
      */
     public function init(): void
     {
@@ -50,26 +50,23 @@ abstract class BaseConditionRule extends Component implements ConditionRuleInter
     }
 
     /**
-     * @inheritDoc
+     * @inheritdoc
      */
-    public function attributes()
+    public function attributes(): array
     {
-        $attributes = parent::attributes();
-        $attributes[] = 'conditionRules';
-
-        return $attributes;
+        return array_merge(parent::attributes(), [
+            'conditionRules',
+        ]);
     }
 
     /**
-     * @inheritDoc
+     * @inheritdoc
      */
     public function fields(): array
     {
-        $fields = parent::fields();
-        $fields['type'] = function(): ?string {
-            return get_class($this);
-        };
-        return $fields;
+        return array_merge(parent::fields(), [
+            'type' => fn() => get_class($this),
+        ]);
     }
 
     /**
@@ -81,15 +78,15 @@ abstract class BaseConditionRule extends Component implements ConditionRuleInter
     }
 
     /**
-     * @return BaseCondition
+     * @return ConditionInterface
      */
-    public function getCondition(): BaseCondition
+    public function getCondition(): ConditionInterface
     {
         return $this->_condition;
     }
 
     /**
-     * @inheritDoc
+     * @inheritdoc
      */
     public function getHtml(): string
     {
@@ -97,13 +94,12 @@ abstract class BaseConditionRule extends Component implements ConditionRuleInter
     }
 
     /**
-     * @inheritDoc
+     * @inheritdoc
      */
     protected function defineRules(): array
     {
-        $rules = parent::defineRules();
-        $rules[] = ['uid', 'safe'];
-
-        return $rules;
+        return [
+            [['uid'], 'safe'],
+        ];
     }
 }

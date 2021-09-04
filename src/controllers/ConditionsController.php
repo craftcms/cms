@@ -20,6 +20,9 @@ use craft\web\Controller;
  */
 class ConditionsController extends Controller
 {
+    /**
+     * @inheritdoc
+     */
     protected $allowAnonymous = self::ALLOW_ANONYMOUS_LIVE; // TODO move this to the the condition config?
 
     private BaseCondition $_condition;
@@ -32,7 +35,7 @@ class ConditionsController extends Controller
         // Render condition
         $this->_condition = $this->loadCondition();
 
-        return $this->_condition->getHtml();
+        return $this->_condition->getBuilderHtml();
     }
 
     /**
@@ -43,12 +46,12 @@ class ConditionsController extends Controller
         $this->loadCondition();
 
         // Add new rule
-        if ($firstAvailable = collect($this->_condition->conditionRuleTypes())->first()) {
+        if ($firstAvailable = collect($this->_condition->getConditionRuleTypes())->first()) {
             $rule = Craft::$app->getConditions()->createConditionRule(['type' => $firstAvailable]);
             $this->_condition->addConditionRule($rule);
         }
 
-        return $this->_condition->getHtml();
+        return $this->_condition->getBuilderHtml();
     }
 
     /**
@@ -67,7 +70,7 @@ class ConditionsController extends Controller
 
         $this->_condition->setConditionRules($conditionRules);
 
-        return $this->_condition->getHtml();
+        return $this->_condition->getBuilderHtml();
     }
 
     /**

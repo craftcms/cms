@@ -3,18 +3,21 @@
 namespace craft\conditions\elements\entry;
 
 use craft\conditions\elements\ElementQueryCondition;
-use craft\elements\db\ElementQuery;
+use craft\elements\db\ElementQueryInterface;
 use craft\elements\Entry;
 
 /**
+ * Entry query condition.
  *
+ * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ * @since 4.0.0
  */
 class EntryQueryCondition extends ElementQueryCondition
 {
     /**
-     * @inheritDoc
+     * @inheritdoc
      */
-    protected function defineConditionRuleTypes(): array
+    protected function conditionRuleTypes(): array
     {
         return [
             EntryTypeConditionRule::class,
@@ -24,7 +27,7 @@ class EntryQueryCondition extends ElementQueryCondition
         ];
     }
 
-    public function getElementQuery(): ElementQuery
+    public function getElementQuery(): ElementQueryInterface
     {
         return Entry::find();
     }

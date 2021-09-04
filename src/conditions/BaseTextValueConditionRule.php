@@ -11,26 +11,24 @@ use craft\helpers\UrlHelper;
  * @property-read array $inputAttributes
  * @property-read string $inputHtml
  * @property-read string $settingsHtml
- *
- * @since 4.0
+ * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ * @since 4.0.0
  */
 abstract class BaseTextValueConditionRule extends BaseValueConditionRule
 {
     /**
-     * @inerhitDoc
+     * @inheritdoc
      */
     protected bool $showOperator = true;
 
     /**
-     * @inerhitDoc
+     * @inheritdoc
      */
     public function getInputHtml(): string
     {
-        $html = Craft::$app->getView()->renderTemplate('_includes/forms/text', [
+        return Craft::$app->getView()->renderTemplate('_includes/forms/text', [
             'inputAttributes' => $this->getInputAttributes(),
         ]);
-
-        return $html;
     }
 
     /**

@@ -13,7 +13,7 @@ use craft\helpers\UrlHelper;
  * @property-read string $inputHtml
  * @property-read string $settingsHtml
  *
- * @since 4.0
+ * @since 4.0.0
  */
 abstract class BaseMultiSelectValueConditionRule extends BaseValueConditionRule
 {
@@ -21,13 +21,11 @@ abstract class BaseMultiSelectValueConditionRule extends BaseValueConditionRule
      * The selectable options in the select input
      *
      * @return array
-     * @since 4.0
      */
     abstract public function getSelectOptions(): array;
 
     /**
      * @return array
-     * @since 4.0
      */
     protected function getInputAttributes(): array
     {
@@ -38,7 +36,7 @@ abstract class BaseMultiSelectValueConditionRule extends BaseValueConditionRule
     }
 
     /**
-     * @inheritDoc
+     * @inheritdoc
      */
     public function getInputHtml(): string
     {
@@ -50,12 +48,13 @@ abstract class BaseMultiSelectValueConditionRule extends BaseValueConditionRule
             'inputAttributes' => $this->getInputAttributes(),
         ]);
 
-        $js = <<<EOD
+        $html .= <<<JS
 <script>
-$('#author-groups').selectize({ placeholder: "Select a author group" });
+$('#author-groups').selectize({
+  placeholder: 'Select a author group'
+});
 </script>
-EOD;
-        $html .= $js;
+JS;
 
         return $html;
     }

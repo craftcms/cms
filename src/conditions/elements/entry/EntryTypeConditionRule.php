@@ -8,19 +8,31 @@ use craft\conditions\elements\ElementQueryConditionRuleInterface;
 use craft\elements\db\EntryQuery;
 use craft\helpers\ArrayHelper;
 use craft\helpers\UrlHelper;
+use craft\models\Section;
 use yii\db\QueryInterface;
 
 /**
+ * Entry type condition rule.
  *
  * @property-read array $entryTypeOptions
  * @property-read array $sectionOptions
  * @property-read string $inputHtml
  * @property-read array $inputAttributes
+ * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ * @since 4.0.0
  */
 class EntryTypeConditionRule extends BaseConditionRule implements ElementQueryConditionRuleInterface
 {
     /**
-     * @var \craft\models\Section[]
+     * @inheritdoc
+     */
+    public static function displayName(): string
+    {
+        return Craft::t('app', 'Type');
+    }
+
+    /**
+     * @var Section[]
      */
     private array $_sections = [];
 
@@ -28,7 +40,7 @@ class EntryTypeConditionRule extends BaseConditionRule implements ElementQueryCo
     public string $entryTypeHandle = '';
 
     /**
-     * @inheritDoc
+     * @inheritdoc
      */
     public function init(): void
     {
@@ -46,23 +58,14 @@ class EntryTypeConditionRule extends BaseConditionRule implements ElementQueryCo
     }
 
     /**
-     * @inheritDoc
+     * @inheritdoc
      */
     public function getConfig(): array
     {
-        $config = parent::getConfig();
-        $config['sectionHandle'] = $this->sectionHandle;
-        $config['entryTypeHandle'] = $this->entryTypeHandle;
-
-        return $config;
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public static function displayName(): string
-    {
-        return Craft::t('app', 'Type');
+        return array_merge(parent::getConfig(), [
+            'sectionHandle' => $this->sectionHandle,
+            'entryTypeHandle' => $this->entryTypeHandle,
+        ]);
     }
 
     /**
@@ -124,12 +127,14 @@ class EntryTypeConditionRule extends BaseConditionRule implements ElementQueryCo
     }
 
     /**
-     * @inheritDoc
+     * @inheritdoc
      */
     public function modifyQuery(QueryInterface $query): QueryInterface
     {
         /** @var EntryQuery $query */
-        return $query->section($this->sectionHandle)->type($this->entryTypeHandle);
+        return $query
+            ->section($this->sectionHandle)
+            ->type($this->entryTypeHandle);
     }
 
     /**
@@ -137,9 +142,8 @@ class EntryTypeConditionRule extends BaseConditionRule implements ElementQueryCo
      */
     protected function defineRules(): array
     {
-        $rules = parent::defineRules();
-        $rules[] = [['sectionHandle', 'entryTypeHandle'], 'safe'];
-
-        return $rules;
+        return array_merge(parent::defineRules(), [
+            [['sectionHandle', 'entryTypeHandle'], 'safe'],
+        ]);
     }
 }

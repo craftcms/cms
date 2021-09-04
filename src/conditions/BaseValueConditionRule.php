@@ -11,8 +11,8 @@ use craft\helpers\UrlHelper;
  *
  * @property-read array $config
  * @property-read array $operators
- *
- * @since 4.0
+ * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ * @since 4.0.0
  */
 abstract class BaseValueConditionRule extends BaseConditionRule
 {
@@ -32,20 +32,18 @@ abstract class BaseValueConditionRule extends BaseConditionRule
     public string $operator = '=';
 
     /**
-     * @inheritDoc
+     * @inheritdoc
      */
     public function getConfig(): array
     {
-        $config = parent::getConfig();
-        $config['value'] = $this->value;
-        $config['operator'] = $this->operator;
-
-        return $config;
+        return array_merge(parent::getConfig(), [
+            'value' => $this->value,
+            'operator' => $this->operator,
+        ]);
     }
 
     /**
      * @return array
-     * @since 4.0
      */
     protected function getOperators(): array
     {
@@ -60,7 +58,7 @@ abstract class BaseValueConditionRule extends BaseConditionRule
     }
 
     /**
-     * @inheritDoc
+     * @inheritdoc
      */
     public function getHtml(): string
     {
@@ -79,7 +77,6 @@ abstract class BaseValueConditionRule extends BaseConditionRule
 
         $html .= Html::tag('div', $this->getInputHtml());
         $html .= Html::endTag('div');
-
         return $html;
     }
 
@@ -88,9 +85,8 @@ abstract class BaseValueConditionRule extends BaseConditionRule
      */
     protected function defineRules(): array
     {
-        $rules = parent::defineRules();
-        $rules[] = [['value', 'operator'], 'safe'];
-
-        return $rules;
+        return array_merge(parent::defineRules(), [
+            [['value', 'operator'], 'safe'],
+        ]);
     }
 }

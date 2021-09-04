@@ -10,18 +10,18 @@ namespace craft\conditions;
 use yii\db\QueryInterface;
 
 /**
+ * QueryConditionRuleInterface defines the common interface to be implemented by query condition rule classes.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 4.0
+ * @since 4.0.0
  */
-interface QueryConditionRuleInterface
+interface QueryConditionRuleInterface extends ConditionRuleInterface
 {
     /**
-     * Takes an element query and modifies it.
+     * Modifies the given query based.
      *
      * @param QueryInterface $query
      * @return QueryInterface
-     * @since 4.0
      */
     public function modifyQuery(QueryInterface $query): QueryInterface;
 }

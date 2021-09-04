@@ -12,22 +12,22 @@ use craft\helpers\UrlHelper;
  * @property-read array $inputAttributes
  * @property-read string $inputHtml
  * @property-read string $settingsHtml
- *
- * @since 4.0
+ * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ * @since 4.0.0
  */
 abstract class BaseSelectValueConditionRule extends BaseValueConditionRule
 {
     /**
-     * The selectable options in the select input
+     * Returns the selectable options in the select input.
      *
      * @return array
-     * @since 4.0
      */
     abstract public function getSelectOptions(): array;
 
     /**
+     * Returns the input attributes.
+     *
      * @return array
-     * @since 4.0
      */
     protected function getInputAttributes(): array
     {
@@ -37,7 +37,7 @@ abstract class BaseSelectValueConditionRule extends BaseValueConditionRule
     }
 
     /**
-     * @inheritDoc
+     * @inheritdoc
      */
     public function getInputHtml(): string
     {

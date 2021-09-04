@@ -13,6 +13,7 @@ use craft\conditions\BaseConditionRule;
 use craft\helpers\ArrayHelper;
 use yii\base\Component;
 use yii\base\InvalidArgumentException;
+use yii\base\InvalidConfigException;
 
 /**
  * The Conditions service provides APIs for managing conditions
@@ -29,9 +30,8 @@ class Conditions extends Component
      *
      * @param array $config
      * @return BaseCondition
-     * @throws InvalidArgumentException|\yii\base\InvalidConfigException if `$config['type']` does not implement [[BaseCondition]]
-     * @throws \yii\base\InvalidConfigException
-     * @since 3.5.0
+     * @throws InvalidArgumentException|InvalidConfigException if `$config['type']` does not implement [[BaseCondition]]
+     * @throws InvalidConfigException
      */
     public function createCondition(array $config): BaseCondition
     {
@@ -42,10 +42,8 @@ class Conditions extends Component
         }
 
         $config['class'] = $type;
-        /** @var BaseCondition $condition */
-        $condition = Craft::createObject($config);
-
-        return $condition;
+        /** @noinspection PhpIncompatibleReturnTypeInspection */
+        return Craft::createObject($config);
     }
 
     /**
@@ -53,9 +51,8 @@ class Conditions extends Component
      *
      * @param array $config
      * @return BaseConditionRule
-     * @throws InvalidArgumentException|\yii\base\InvalidConfigException if `$config['type']` does not implement [[BaseConditionRule]]
-     * @throws \yii\base\InvalidConfigException
-     * @since 3.5.0
+     * @throws InvalidArgumentException|InvalidConfigException if `$config['type']` does not implement [[BaseConditionRule]]
+     * @throws InvalidConfigException
      */
     public function createConditionRule(array $config): BaseConditionRule
     {

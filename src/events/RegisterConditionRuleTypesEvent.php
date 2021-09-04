@@ -18,7 +18,7 @@ use yii\base\Event;
 class RegisterConditionRuleTypesEvent extends Event
 {
     /**
-     * @var array The condition rules types
+     * @var string[] The condition rules types.
      */
     public array $conditionRuleTypes = [];
 }

@@ -1862,4 +1862,13 @@ return [
     '“{handle}” is a reserved word.' => '“{handle}” is a reserved word.',
     '“{handle}” isn’t a valid handle.' => '“{handle}” isn’t a valid handle.',
     '“{name}” deleted.' => '“{name}” deleted.',
+    'Add a rule' => 'Add a rule',
+    'Add a filter' => 'Add a filter',
+    'equals' => 'equals',
+    'does not equal' => 'does not equal',
+    'is less than' => 'is less than',
+    'is less than or equals' => 'is less than or equals',
+    'is greater than' => 'is greater than',
+    'is greater than or equals' => 'is greater than or equals',
+    'Author Group' => 'Author Group',
 ];

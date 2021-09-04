@@ -889,6 +889,7 @@ trait ApplicationTrait
      * Returns the conditions service.
      *
      * @return Conditions The conditions service
+     * @since 4.0.0
      */
     public function getConditions(): Conditions
     {

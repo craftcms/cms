@@ -12,12 +12,15 @@ use craft\helpers\Db;
 use yii\db\QueryInterface;
 
 /**
+ * Author group condition rule.
  *
+ * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ * @since 4.0.0
  */
 class AuthorGroupConditionRule extends BaseMultiSelectValueConditionRule implements ElementQueryConditionRuleInterface
 {
     /**
-     * @inheritDoc
+     * @inheritdoc
      */
     public function init(): void
     {
@@ -29,7 +32,7 @@ class AuthorGroupConditionRule extends BaseMultiSelectValueConditionRule impleme
     }
 
     /**
-     * @inheritDoc
+     * @inheritdoc
      */
     public static function displayName(): string
     {
@@ -37,7 +40,7 @@ class AuthorGroupConditionRule extends BaseMultiSelectValueConditionRule impleme
     }
 
     /**
-     * @inheritDoc
+     * @inheritdoc
      */
     public function getSelectOptions(): array
     {
@@ -46,17 +49,15 @@ class AuthorGroupConditionRule extends BaseMultiSelectValueConditionRule impleme
     }
 
     /**
-     * @inheritDoc
+     * @inheritdoc
      */
     public function modifyQuery(QueryInterface $query): QueryInterface
     {
-        $ids = [];
-        foreach ($this->value as $userGroupUid) {
-            if ($id = Db::idByUid(Table::USERGROUPS, $userGroupUid)) {
-                $ids[] = $id;
-            }
-        }
         /** @var EntryQuery $query */
-        return $query->authorGroup($ids);
+        $userGroupsService = Craft::$app->getUserGroups();
+        $userGroups = array_filter(array_map(function(string $uid) use ($userGroupsService) {
+            return $userGroupsService->getGroupByUid($uid);
+        }, $this->value));
+        return $query->authorGroup($userGroups);
     }
 }

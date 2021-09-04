@@ -10,9 +10,10 @@ namespace craft\conditions\elements;
 use craft\conditions\QueryConditionRuleInterface;
 
 /**
+ * ElementQueryConditionRuleInterface defines the common interface to be implemented by element query condition rule classes.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 4.0
+ * @since 4.0.0
  */
 interface ElementQueryConditionRuleInterface extends QueryConditionRuleInterface
 {

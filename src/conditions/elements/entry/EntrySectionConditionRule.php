@@ -5,16 +5,20 @@ namespace craft\conditions\elements\entry;
 use Craft;
 use craft\conditions\BaseSelectValueConditionRule;
 use craft\conditions\elements\ElementQueryConditionRuleInterface;
+use craft\elements\db\EntryQuery;
 use craft\helpers\ArrayHelper;
 use yii\db\QueryInterface;
 
 /**
+ * Entry section condition rule.
  *
+ * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ * @since 4.0.0
  */
 class EntrySectionConditionRule extends BaseSelectValueConditionRule implements ElementQueryConditionRuleInterface
 {
     /**
-     * @inheritDoc
+     * @inheritdoc
      */
     public static function displayName(): string
     {
@@ -22,7 +26,7 @@ class EntrySectionConditionRule extends BaseSelectValueConditionRule implements 
     }
 
     /**
-     * @inheritDoc
+     * @inheritdoc
      */
     public function getSelectOptions(): array
     {
@@ -31,10 +35,11 @@ class EntrySectionConditionRule extends BaseSelectValueConditionRule implements 
     }
 
     /**
-     * @inheritDoc
+     * @inheritdoc
      */
     public function modifyQuery(QueryInterface $query): QueryInterface
     {
+        /** @var EntryQuery $query */
         return $query->section($this->value);
     }
 }
