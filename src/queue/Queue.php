@@ -596,7 +596,7 @@ EOD;
                     ->andWhere('[[timePushed]] + [[delay]] <= :time', ['time' => time()])
                     ->orderBy(['priority' => SORT_ASC, 'id' => SORT_ASC])
                     ->limit(1)
-                    ->one($this->db);
+                    ->one($this->db) ?: null;
             });
 
             if (is_array($payload)) {
