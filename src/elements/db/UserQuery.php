@@ -634,7 +634,6 @@ class UserQuery extends ElementQuery
 
         $this->query->select([
             'users.photoId',
-            'users.active',
             'users.pending',
             'users.locked',
             'users.suspended',
@@ -648,6 +647,11 @@ class UserQuery extends ElementQuery
             'users.lockoutDate',
             'users.hasDashboard',
         ]);
+
+        // todo: cleanup after next breakpoint
+        if (Craft::$app->getDb()->columnExists(Table::USERS, 'active')) {
+            $this->query->addSelect(['users.active']);
+        }
 
         if (is_bool($this->admin)) {
             $this->subQuery->andWhere(['users.admin' => $this->admin]);
