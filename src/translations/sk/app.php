@@ -679,7 +679,6 @@ return [
     'HTML Email Template' => 'HTML Šablóna Emailu',
     'HTML' => 'HTML',
     'Handle' => 'Identifikátor',
-    'Header Column Heading' => 'Nadpis stĺpca záhlavia',
     'Heading' => 'Záhlavie',
     'Height' => 'Výška',
     'Helper text to guide the author.' => 'Pomocný text usmerňujúci autora.',
