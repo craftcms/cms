@@ -122,7 +122,7 @@
                 <div class="clear hidden" title="{{ 'Clear'|t('app') }}" aria-label="{{ 'Clear'|t('app') }}"></div>
             </div>
 
-            {{ _self.fieldSelectors('Standard Fields'|t('app'), fieldLayout.getAvailableStandardFields(), _context) }}
+            {{ _self.fieldSelectors('Native Fields'|t('app'), fieldLayout.getAvailableNativeFields(), _context) }}
 
             {% for groupName, groupFields in fieldLayout.getAvailableCustomFields() %}
                 {{ _self.fieldSelectors(groupName, groupFields, _context) }}
