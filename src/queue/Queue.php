@@ -624,10 +624,10 @@ EOD;
     /**
      * Checks if $job is a resource and if so, convert it to a serialized format.
      *
-     * @param string $job
+     * @param string|resource $job
      * @return string
      */
-    private function _jobData(string $job): string
+    private function _jobData($job): string
     {
         if (is_resource($job)) {
             $job = stream_get_contents($job);
