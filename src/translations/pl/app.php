@@ -679,7 +679,6 @@ return [
     'HTML Email Template' => 'Szablon HTML e-mail',
     'HTML' => 'HTML',
     'Handle' => 'Odnośnik',
-    'Header Column Heading' => 'Nagłówek kolumny Nagłówek',
     'Heading' => 'Nagłówek',
     'Height' => 'Wysokość',
     'Helper text to guide the author.' => 'Tekst pomocniczy do kierowania autora.',
