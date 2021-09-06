@@ -1469,7 +1469,7 @@ trait ApplicationTrait
      */
     private function _registerFieldLayoutListener(): void
     {
-        Event::on(FieldLayout::class, FieldLayout::EVENT_DEFINE_STANDARD_FIELDS, function(DefineFieldLayoutFieldsEvent $event) {
+        Event::on(FieldLayout::class, FieldLayout::EVENT_DEFINE_NATIVE_FIELDS, function(DefineFieldLayoutFieldsEvent $event) {
             /** @var FieldLayout $fieldLayout */
             $fieldLayout = $event->sender;
 
