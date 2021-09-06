@@ -34,7 +34,7 @@ use yii\base\InvalidConfigException;
 class FieldLayout extends Model
 {
     /**
-     * @event DefineFieldLayoutFieldsEvent The event that is triggered when defining the standard (not custom) fields for the layout.
+     * @event DefineFieldLayoutFieldsEvent The event that is triggered when defining the native (not custom) fields for the layout.
      *
      * ```php
      * use craft\models\FieldLayout;
@@ -43,22 +43,31 @@ class FieldLayout extends Model
      *
      * Event::on(
      *     FieldLayout::class,
-     *     FieldLayout::EVENT_DEFINE_STANDARD_FIELDS,
+     *     FieldLayout::EVENT_DEFINE_NATIVE_FIELDS,
      *     function(DefineFieldLayoutFieldsEvent $event) {
      *         // @var FieldLayout $layout
      *         $layout = $event->sender;
      *
      *         if ($layout->type === MyElementType::class) {
-     *             $event->fields[] = MyStandardField::class;
+     *             $event->fields[] = MyNativeField::class;
      *         }
      *     }
      * );
      * ```
      *
-     * @see getAvailableStandardFields()
-     * @since 3.5.0
+     * @see getAvailableNativeFields()
+     * @since 4.0.0
      */
-    const EVENT_DEFINE_STANDARD_FIELDS = 'defineStandardFields';
+    const EVENT_DEFINE_NATIVE_FIELDS = 'defineNativeFields';
+
+    /**
+     * @event DefineFieldLayoutFieldsEvent The event that is triggered when defining the native (not custom) fields for the layout.
+     *
+     * @see getAvailableNativeFields()
+     * @since 3.5.0
+     * @deprecated in 4.0.0. Use [[EVENT_DEFINE_NATIVE_FIELDS]] instead.
+     */
+    const EVENT_DEFINE_STANDARD_FIELDS = 'defineNativeFields';
 
     /**
      * @event DefineFieldLayoutElementsEvent The event that is triggered when defining UI elements for the layout.
@@ -77,7 +86,7 @@ class FieldLayout extends Model
      * );
      * ```
      *
-     * @see getAvailableStandardFields()
+     * @see getAvailableNativeFields()
      * @since 3.5.0
      */
     const EVENT_DEFINE_UI_ELEMENTS = 'defineUiElements';
@@ -179,7 +188,7 @@ class FieldLayout extends Model
 
     /**
      * @var BaseField[][]
-     * @see getAvailableStandardFields()
+     * @see getAvailableNativeFields()
      */
     private array $_availableStandardFields;
 
@@ -270,7 +279,7 @@ class FieldLayout extends Model
         // Make sure that we aren't missing any mandatory fields
         /** @var BaseField[] $missingFields */
         $missingFields = [];
-        foreach ($this->getAvailableStandardFields() as $field) {
+        foreach ($this->getAvailableNativeFields() as $field) {
             if ($field->mandatory() && !isset($this->_fields[$field->attribute()])) {
                 $missingFields[$field->attribute()] = $field;
                 $this->_fields[$field->attribute()] = $field;
@@ -335,16 +344,16 @@ class FieldLayout extends Model
     }
 
     /**
-     * Returns the available standard fields.
+     * Returns the available native fields.
      *
      * @return BaseField[]
      * @since 3.5.0
      */
-    public function getAvailableStandardFields(): array
+    public function getAvailableNativeFields(): array
     {
         if (!isset($this->_availableStandardFields)) {
             $event = new DefineFieldLayoutFieldsEvent();
-            $this->trigger(self::EVENT_DEFINE_STANDARD_FIELDS, $event);
+            $this->trigger(self::EVENT_DEFINE_NATIVE_FIELDS, $event);
             $this->_availableStandardFields = $event->fields;
 
             // Instantiate them

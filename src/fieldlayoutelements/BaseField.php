@@ -15,7 +15,7 @@ use craft\helpers\Cp;
 use craft\helpers\Html;
 
 /**
- * BaseField is the base class for custom and standard fields that can be included in field layouts.
+ * BaseField is the base class for native and custom fields that can be included in field layouts.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.5.0

@@ -29,6 +29,8 @@
 - Added `craft\elements\User::STATUS_INACTIVE`.
 - Added `craft\elements\User::getIsCredentialed()`.
 - Added `craft\errors\MissingVolumeFolderException`.
+- Added `craft\fieldlayoutelements\BaseNativeField`, which replaces `craft\fieldlayoutelements\StandardField`.
+- Added `craft\fieldlayoutelements\TextField`, which replaces `craft\fieldlayoutelements\StandardTextField`.
 - Added `craft\helpers\Assets::downloadFile()`.
 - Added `craft\helpers\Db::dropAllForeignKeysToTable()`.
 - Added `craft\helpers\Db::dropForeignKeyIfExists()`.
@@ -41,6 +43,8 @@
 - Added `craft\helpers\Number::toIntOrFloat()`.
 - Added `craft\i18n\Translation`.
 - Added `craft\models\AssetIndexingSession`.
+- Added `craft\models\FieldLayout::EVENT_DEFINE_NATIVE_FIELDS`, which replaces `EVENT_DEFINE_STANDARD_FIELDS`.
+- Added `craft\models\FieldLayout::getAvailableNativeFields()`.
 - Added `craft\models\VolumeListing`.
 - Added `craft\records\AssetIndexingSession`.
 - Added `craft\services\AssetIndexer::createIndexingSession()`.
@@ -192,9 +196,12 @@
 - Deprecated `craft\base\VolumeInterface::createFileByStream()`.
 - Deprecated `craft\base\VolumeInterface::saveFileLocally()`.
 - Deprecated `craft\base\VolumeInterface::updateFileByStream()`.
+- Deprecated `craft\fieldlayoutelements\StandardField`. `craft\fieldlayoutelements\BaseNativeField` should be used instead.
+- Deprecated `craft\fieldlayoutelements\StandardTextField`. `craft\fieldlayoutelements\TextField` should be used instead.
 - Deprecated `craft\helpers\ArrayHelper::append()`. `array_unshift()` should be used instead.
 - Deprecated `craft\helpers\ArrayHelper::prepend()`. `array_push()` should be used instead.
 - Deprecated `craft\helpers\MigrationHelper`.
+- Deprecated `craft\models\FieldLayout::EVENT_DEFINE_STANDARD_FIELDS`. `EVENT_DEFINE_NATIVE_FIELDS` should be used instead.
 - Deprecated `craft\web\AssetBundle`. `yii\web\AssetBundle` should be used instead.
 
 ### Removed
@@ -322,6 +329,7 @@
 - Removed `craft\models\BaseEntryRevisionModel`.
 - Removed `craft\models\EntryDraft`.
 - Removed `craft\models\EntryVersion`.
+- Removed `craft\models\FieldLayout::getAvailableStandardFields()`. `getAvailableNativeFields()` can be used instead.
 - Removed `craft\models\FieldLayout::getFieldIds()`. `getFields()` can be used instead.
 - Removed `craft\models\Info::getEdition()`. `Craft::$app->getEdition()` can be used instead.
 - Removed `craft\models\Info::getName()`. `Craft::$app->getSystemName()` can be used instead.
