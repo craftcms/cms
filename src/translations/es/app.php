@@ -679,7 +679,6 @@ return [
     'HTML Email Template' => 'Plantilla HTML de email',
     'HTML' => 'HTML',
     'Handle' => 'Identificador',
-    'Header Column Heading' => 'Encabezamiento de la columna de cabecera',
     'Heading' => 'Encabezado',
     'Height' => 'Altura',
     'Helper text to guide the author.' => 'Texto de ayuda para guiar al autor.',
