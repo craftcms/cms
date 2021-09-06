@@ -679,7 +679,6 @@ return [
     'HTML Email Template' => 'HTML Eposta Şablonu',
     'HTML' => 'HTML',
     'Handle' => 'Simge',
-    'Header Column Heading' => 'Üstbilgi Sütun Başlığı',
     'Heading' => 'Başlık',
     'Height' => 'Yükseklik',
     'Helper text to guide the author.' => 'Yazarı yönlendirmek için yardımcı metin.',
