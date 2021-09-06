@@ -679,7 +679,6 @@ return [
     'HTML Email Template' => 'HTML Email Template',
     'HTML' => 'HTML',
     'Handle' => 'Handle',
-    'Header Column Heading' => 'Header Column Heading',
     'Heading' => 'Heading',
     'Height' => 'Height',
     'Helper text to guide the author.' => 'Helper text to guide the author.',
