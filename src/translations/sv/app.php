@@ -679,7 +679,6 @@ return [
     'HTML Email Template' => 'HTML e-postmall',
     'HTML' => 'HTML',
     'Handle' => 'Hantera',
-    'Header Column Heading' => 'Rubrik för kolumnrubrik',
     'Heading' => 'Rubrik',
     'Height' => 'Höjd',
     'Helper text to guide the author.' => 'Hjälptext som leder författaren.',
