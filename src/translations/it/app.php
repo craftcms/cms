@@ -679,7 +679,6 @@ return [
     'HTML Email Template' => 'Template email HTML',
     'HTML' => 'HTML',
     'Handle' => 'Puntatore',
-    'Header Column Heading' => 'Titolo colonna impostazione',
     'Heading' => 'Intestazione',
     'Height' => 'Altezza',
     'Helper text to guide the author.' => 'Testo di aiuto per guidare l\'autore.',
