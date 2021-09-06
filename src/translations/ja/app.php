@@ -679,7 +679,6 @@ return [
     'HTML Email Template' => 'HTMLメールのテンプレート',
     'HTML' => 'HTML',
     'Handle' => 'ハンドル',
-    'Header Column Heading' => 'ヘッダー列の見出し',
     'Heading' => '見出し',
     'Height' => '高さ',
     'Helper text to guide the author.' => '投稿者のための説明テキスト',
