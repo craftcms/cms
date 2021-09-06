@@ -679,7 +679,6 @@ return [
     'HTML Email Template' => 'HTML шаблон письма',
     'HTML' => 'HTML',
     'Handle' => 'Дескриптор',
-    'Header Column Heading' => 'Заголовок столбца заголовков',
     'Heading' => 'Заголовок',
     'Height' => 'Высота',
     'Helper text to guide the author.' => 'Вспомогательный текст для помощи автору.',
