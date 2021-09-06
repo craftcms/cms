@@ -679,7 +679,6 @@ return [
     'HTML Email Template' => 'תבנית HTML אימייל',
     'HTML' => 'HTML',
     'Handle' => 'מזהה ייחודי',
-    'Header Column Heading' => 'כותרת עמודת הכותרת העליונה',
     'Heading' => 'כותרת',
     'Height' => 'גובה',
     'Helper text to guide the author.' => 'טקסט הסבר לעורך התוכן.',
