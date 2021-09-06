@@ -679,7 +679,6 @@ return [
     'HTML Email Template' => 'HTML e-mail sjabloon',
     'HTML' => 'HTML',
     'Handle' => 'Ingang',
-    'Header Column Heading' => 'Kop van de headerkolom',
     'Heading' => 'Titel',
     'Height' => 'Hoogte',
     'Helper text to guide the author.' => 'Hulptekst om de auteur te ondersteunen.',
