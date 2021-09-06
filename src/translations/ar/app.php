@@ -679,7 +679,6 @@ return [
     'HTML Email Template' => 'قالب الرسالة بتنسيق HTML',
     'HTML' => 'HTML',
     'Handle' => 'المقبض',
-    'Header Column Heading' => 'عنوان رأس العمود',
     'Heading' => 'العنوان',
     'Height' => 'الارتفاع',
     'Helper text to guide the author.' => 'النص المساعد لتوجيه المؤلف.',
