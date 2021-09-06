@@ -679,7 +679,6 @@ return [
     'HTML Email Template' => 'قالب پست الکترونیکی HTML',
     'HTML' => 'HTML',
     'Handle' => 'مشخصه',
-    'Header Column Heading' => 'هدر ستون هدر',
     'Heading' => 'سرنویس',
     'Height' => 'ارتفاع',
     'Helper text to guide the author.' => 'متن راهنما برای راهنمایی کردن نویسنده.',
