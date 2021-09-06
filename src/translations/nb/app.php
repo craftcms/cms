@@ -679,7 +679,6 @@ return [
     'HTML Email Template' => 'HTML e-postmal',
     'HTML' => 'HTML',
     'Handle' => 'Kodeord',
-    'Header Column Heading' => 'Overskrift til kolonnetittel',
     'Heading' => 'Overskrift',
     'Height' => 'Høyde',
     'Helper text to guide the author.' => 'Hjelpetekst som forteller brukeren om feltets hensikt.',
