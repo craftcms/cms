@@ -679,7 +679,6 @@ return [
     'HTML Email Template' => 'HTML 이메일 템플릿',
     'HTML' => 'HTML',
     'Handle' => '핸들',
-    'Header Column Heading' => '헤더 열 제목',
     'Heading' => '제목',
     'Height' => '높이',
     'Helper text to guide the author.' => '저자를 안내하는 도움말 텍스트.',
