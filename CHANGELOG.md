@@ -129,6 +129,7 @@
 - Element types’ `getUriFormat()` methods must now have a `?string` return type declaration.
 - Element types’ `prepElementQueryForTableAttribute()` methods must now have a `void` return type declaration.
 - Element types’ `refHandle()` methods must now have a `?string` return type declaration.
+- Element types’ `tableAttributes()` and `defineTableAttributes()` methods should no longer return a generic attribute for defining the header column heading at the beginning of the returned array. The header column heading is now set to the element type’s display name, per its `displayName()` method.
 - Element queries’ `status()` methods must now have a `self` return type declaration.
 - Fields’ `afterElementDelete()` methods must now have a `void` return type declaration.
 - Fields’ `afterElementPropagate()` methods must now have a `void` return type declaration.
@@ -205,6 +206,7 @@
 - Deprecated `craft\web\AssetBundle`. `yii\web\AssetBundle` should be used instead.
 
 ### Removed
+- Removed the “Header Column Heading” element source setting.
 - Removed the `customAsciiCharMappings` config setting.
 - Removed the `siteName` config setting. Environment-specific site names can be defined via environment variables.
 - Removed the `sitUrl` config setting. Environment-specific site URLs can be defined via environment variables.

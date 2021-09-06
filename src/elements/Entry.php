@@ -547,7 +547,6 @@ class Entry extends Element
     protected static function defineTableAttributes(): array
     {
         $attributes = [
-            'title' => ['label' => Craft::t('app', 'Entry')],
             'section' => ['label' => Craft::t('app', 'Section')],
             'type' => ['label' => Craft::t('app', 'Entry Type')],
             'author' => ['label' => Craft::t('app', 'Author')],

@@ -133,8 +133,6 @@ class ElementIndexes extends Component
             foreach ($settings['sources'] as $key => &$source) {
                 if (!isset($indexedBaseSources[$key])) {
                     unset($settings['sources'][$key]);
-                } else if (empty($source['headerColHeading'])) {
-                    unset($source['headerColHeading']);
                 }
             }
             unset($source);
@@ -251,33 +249,16 @@ class ElementIndexes extends Component
             $this->getSourceTableAttributes($elementType, $sourceKey)
         );
 
-        // Get the source settings
-        $settings = $this->getSettings($elementType);
+        $attributeKeys = $this->getSettings($elementType)['sources'][$sourceKey]['tableAttributes']
+            ?? $elementType::defaultTableAttributes($sourceKey);
 
-        $attributes = [];
+        $attributes = [
+            // Start with the element type’s display name
+            ['title', ['label' => $elementType::displayName()]],
+        ];
 
-        // Start with the first available attribute, no matter what
-        $firstKey = null;
-        foreach ($availableAttributes as $key => $attributeInfo) {
-            $firstKey = $key;
-            if (isset($settings['sources'][$sourceKey]['headerColHeading'])) {
-                $attributeInfo['defaultLabel'] = $attributeInfo['label'];
-                $attributeInfo['label'] = $settings['sources'][$sourceKey]['headerColHeading'];
-            }
-            $attributes[] = [$key, $attributeInfo];
-            break;
-        }
-
-        // Is there a custom attributes list?
-        if (isset($settings['sources'][$sourceKey]['tableAttributes'])) {
-            $attributeKeys = $settings['sources'][$sourceKey]['tableAttributes'];
-        } else {
-            $attributeKeys = $elementType::defaultTableAttributes($sourceKey);
-        }
-
-        // Assemble the remainder of the list
         foreach ($attributeKeys as $key) {
-            if ($key != $firstKey && isset($availableAttributes[$key])) {
+            if (isset($availableAttributes[$key])) {
                 $attributes[] = [$key, $availableAttributes[$key]];
             }
         }
