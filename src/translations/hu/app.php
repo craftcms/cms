@@ -679,7 +679,6 @@ return [
     'HTML Email Template' => 'HTML Email Sablon',
     'HTML' => 'HTML',
     'Handle' => 'Elnevezés',
-    'Header Column Heading' => 'Fejlécoszlop felirata',
     'Heading' => 'Fejléc',
     'Height' => 'Magasság',
     'Helper text to guide the author.' => 'Segítség a szerkesztőnek.',
