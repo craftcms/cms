@@ -680,7 +680,6 @@ return [
     'HTML Email Template' => 'HTML Email Skabelon',
     'HTML' => 'HTML',
     'Handle' => 'Kodetagget',
-    'Header Column Heading' => 'Overskrift til kolonneoverskrift',
     'Heading' => 'Overskrift',
     'Height' => 'Højde',
     'Helper text to guide the author.' => 'Hjælpe tekst til at guide brugeren.',
