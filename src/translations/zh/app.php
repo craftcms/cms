@@ -679,7 +679,6 @@ return [
     'HTML Email Template' => 'HTML 电子邮件模版',
     'HTML' => 'HTML',
     'Handle' => '句柄',
-    'Header Column Heading' => '标题列标题',
     'Heading' => '标题',
     'Height' => '高度',
     'Helper text to guide the author.' => '指导作者的辅助文字。',
