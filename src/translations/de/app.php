@@ -679,7 +679,6 @@ return [
     'HTML Email Template' => 'Template für HTML-E-Mails',
     'HTML' => 'HTML',
     'Handle' => 'Kurzname',
-    'Header Column Heading' => 'Kopfzeilen-Spaltenüberschrift',
     'Heading' => 'Kopfzeile',
     'Height' => 'Höhe',
     'Helper text to guide the author.' => 'Hilfetext, um den Autor zu unterstützen.',
