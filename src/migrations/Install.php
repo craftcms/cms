@@ -268,14 +268,6 @@ class Install extends Migration
             'dateLastMerged' => $this->dateTime(),
             'saved' => $this->boolean()->notNull()->defaultValue(true),
         ]);
-        $this->createTable(Table::ELEMENTINDEXSETTINGS, [
-            'id' => $this->primaryKey(),
-            'type' => $this->string()->notNull(),
-            'settings' => $this->json(),
-            'dateCreated' => $this->dateTime()->notNull(),
-            'dateUpdated' => $this->dateTime()->notNull(),
-            'uid' => $this->uid(),
-        ]);
         $this->createTable(Table::ELEMENTS, [
             'id' => $this->primaryKey(),
             'canonicalId' => $this->integer(),
@@ -800,7 +792,6 @@ class Install extends Migration
         $this->createIndex(null, Table::DEPRECATIONERRORS, ['key', 'fingerprint'], true);
         $this->createIndex(null, Table::DRAFTS, ['creatorId', 'provisional'], false);
         $this->createIndex(null, Table::DRAFTS, ['saved'], false);
-        $this->createIndex(null, Table::ELEMENTINDEXSETTINGS, ['type'], true);
         $this->createIndex(null, Table::ELEMENTS, ['dateDeleted'], false);
         $this->createIndex(null, Table::ELEMENTS, ['fieldLayoutId'], false);
         $this->createIndex(null, Table::ELEMENTS, ['type'], false);

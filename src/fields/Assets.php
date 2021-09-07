@@ -30,6 +30,7 @@ use craft\helpers\Gql;
 use craft\helpers\Gql as GqlHelper;
 use craft\helpers\Html;
 use craft\models\GqlSchema;
+use craft\services\ElementSources;
 use craft\services\Gql as GqlService;
 use craft\web\UploadedFile;
 use GraphQL\Type\Definition\Type;
@@ -660,8 +661,8 @@ class Assets extends BaseRelationField
                 }
             }
         } else {
-            foreach (Craft::$app->getElementIndexes()->getSources(Asset::class) as $source) {
-                if (isset($source['key'])) {
+            foreach (Craft::$app->getElementSources()->getSources(Asset::class) as $source) {
+                if ($source['type'] !== ElementSources::TYPE_HEADING) {
                     $sources[] = $source['key'];
                 }
             }

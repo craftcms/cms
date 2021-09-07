@@ -51,7 +51,7 @@ use craft\services\Content;
 use craft\services\Dashboard;
 use craft\services\Deprecator;
 use craft\services\Drafts;
-use craft\services\ElementIndexes;
+use craft\services\ElementSources;
 use craft\services\Elements;
 use craft\services\Entries;
 use craft\services\Fields;
@@ -119,7 +119,7 @@ use yii\web\ServerErrorHttpException;
  * @property-read Dashboard $dashboard The dashboard service
  * @property-read Deprecator $deprecator The deprecator service
  * @property-read Drafts $drafts The drafts service
- * @property-read ElementIndexes $elementIndexes The element indexes service
+ * @property-read ElementSources $elementSources The element sources service
  * @property-read Elements $elements The elements service
  * @property-read Entries $entries The entries service
  * @property-read Fields $fields The fields service
@@ -967,12 +967,12 @@ trait ApplicationTrait
     /**
      * Returns the element indexes service.
      *
-     * @return ElementIndexes The element indexes service
+     * @return ElementSources The element indexes service
      */
-    public function getElementIndexes(): ElementIndexes
+    public function getElementSources(): ElementSources
     {
         /** @noinspection PhpIncompatibleReturnTypeInspection */
-        return $this->get('elementIndexes');
+        return $this->get('elementSources');
     }
 
     /**

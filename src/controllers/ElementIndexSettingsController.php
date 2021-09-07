@@ -8,6 +8,8 @@
 namespace craft\controllers;
 
 use Craft;
+use craft\helpers\ArrayHelper;
+use craft\services\ElementSources;
 use yii\web\Response;
 
 /**
@@ -45,22 +47,22 @@ class ElementIndexSettingsController extends BaseElementsController
         $elementType = $this->elementType();
 
         // Get the source info
-        $elementIndexesService = Craft::$app->getElementIndexes();
-        $sources = $elementIndexesService->getSources($elementType);
+        $sourcesService = Craft::$app->getElementSources();
+        $sources = $sourcesService->getSources($elementType);
 
         foreach ($sources as &$source) {
-            if (array_key_exists('heading', $source)) {
+            if ($source['type'] === ElementSources::TYPE_HEADING) {
                 continue;
             }
 
             // Available custom field attributes
             $source['availableTableAttributes'] = [];
-            foreach ($elementIndexesService->getSourceTableAttributes($elementType, $source['key']) as $key => $labelInfo) {
+            foreach ($sourcesService->getSourceTableAttributes($elementType, $source['key']) as $key => $labelInfo) {
                 $source['availableTableAttributes'][] = [$key, $labelInfo['label']];
             }
 
             // Selected table attributes
-            $tableAttributes = $elementIndexesService->getTableAttributes($elementType, $source['key']);
+            $tableAttributes = $sourcesService->getTableAttributes($elementType, $source['key']);
             array_shift($tableAttributes);
             $source['tableAttributes'] = array_map(fn($a) => [$a[0], $a[1]['label']], $tableAttributes);
         }
@@ -69,7 +71,7 @@ class ElementIndexSettingsController extends BaseElementsController
         // Get the available table attributes
         $availableTableAttributes = [];
 
-        foreach ($elementIndexesService->getAvailableTableAttributes($elementType) as $key => $labelInfo) {
+        foreach ($sourcesService->getAvailableTableAttributes($elementType) as $key => $labelInfo) {
             $availableTableAttributes[] = [$key, $labelInfo['label']];
         }
 
@@ -90,33 +92,38 @@ class ElementIndexSettingsController extends BaseElementsController
 
         $elementType = $this->elementType();
 
+        // Get the old source configs
+        $projectConfig = Craft::$app->getProjectConfig();
+        $oldSourceConfigs = $projectConfig->get("elementSources.$elementType") ?? [];
+        $oldSourceConfigs = ArrayHelper::index(array_filter($oldSourceConfigs, fn($s) => $s['type'] === ElementSources::TYPE_NATIVE), 'key');
+
         $sourceOrder = $this->request->getBodyParam('sourceOrder', []);
-        $sources = $this->request->getBodyParam('sources', []);
+        $sourceSettings = $this->request->getBodyParam('sources', []);
+        $newSourceConfigs = [];
 
         // Normalize to the way it's stored in the DB
-        foreach ($sourceOrder as $i => $source) {
+        foreach ($sourceOrder as $source) {
             if (isset($source['heading'])) {
-                $sourceOrder[$i] = ['heading', $source['heading']];
-            } else {
-                $sourceOrder[$i] = ['key', $source['key']];
+                $newSourceConfigs[] = [
+                    'type' => ElementSources::TYPE_HEADING,
+                    'heading' => $source['heading'],
+                ];
+            } else if (isset($source['key'])) {
+                $sourceConfig = [
+                    'type' => ElementSources::TYPE_NATIVE,
+                    'key' => $source['key'],
+                ];
+                // Were new settings posted?
+                if (isset($sourceSettings[$source['key']])) {
+                    $sourceConfig['tableAttributes'] = array_values(array_filter($sourceSettings[$source['key']]['tableAttributes'] ?? []));
+                } else if (isset($oldSourceConfigs[$source['key']])) {
+                    $sourceConfig += $oldSourceConfigs[$source['key']];
+                }
+                $newSourceConfigs[] = $sourceConfig;
             }
         }
 
-        // Remove the blank table attributes
-        foreach ($sources as &$source) {
-            $source['tableAttributes'] = array_filter($source['tableAttributes']);
-        }
-        unset($source);
-
-        $settings = [
-            'sourceOrder' => $sourceOrder,
-            'sources' => $sources,
-        ];
-
-        if (Craft::$app->getElementIndexes()->saveSettings($elementType, $settings)) {
-            return $this->asJson(['success' => true]);
-        }
-
-        return $this->asErrorJson(Craft::t('app', 'A server error occurred.'));
+        $projectConfig->set("elementSources.$elementType", $newSourceConfigs);
+        return $this->asJson(['success' => true]);
     }
 }

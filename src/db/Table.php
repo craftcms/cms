@@ -37,7 +37,6 @@ abstract class Table
     const DEPRECATIONERRORS = '{{%deprecationerrors}}';
     /** @since 3.2.0 */
     const DRAFTS = '{{%drafts}}';
-    const ELEMENTINDEXSETTINGS = '{{%elementindexsettings}}';
     const ELEMENTS = '{{%elements}}';
     const ELEMENTS_SITES = '{{%elements_sites}}';
     const RESOURCEPATHS = '{{%resourcepaths}}';

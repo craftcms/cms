@@ -47,8 +47,8 @@ return [
         'drafts' => [
             'class' => craft\services\Drafts::class,
         ],
-        'elementIndexes' => [
-            'class' => craft\services\ElementIndexes::class,
+        'elementSources' => [
+            'class' => craft\services\ElementSources::class,
         ],
         'elements' => [
             'class' => craft\services\Elements::class,

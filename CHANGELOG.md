@@ -8,7 +8,9 @@
 - Added the “Deactivate…” user action for pending and active users.
 - Added the `index-assets/cleanup` command.
 - Added the “Deactivate users by default” user registration setting, which replaces “Suspend users by default”. ([#5830](https://github.com/craftcms/cms/issues/5830))
+- Element source settings are now stored in the project config. ([#8616](https://github.com/craftcms/cms/discussions/8616))
 - Added support for `JSON` columns. ([#9089](https://github.com/craftcms/cms/pull/9089))
+- Added `craft\base\ApplicationTrait::getElementSources()`, which replaces `getElementIndexes()`.
 - Added `craft\base\Volume::CONFIG_MIMETYPE`.
 - Added `craft\base\Volume::CONFIG_VISIBILITY`.
 - Added `craft\base\Volume::VISIBILITY_DEFAULT`.
@@ -60,6 +62,7 @@
 - Added `craft\services\AssetIndexer::startIndexingSession()`.
 - Added `craft\services\AssetIndexer::stopIndexingSession()`.
 - Added `craft\services\AssetTransforms::deleteTransformIndexDataByAssetIds()`.
+- Added `craft\services\ElementSources`, which replaces `craft\services\ElementIndexes`.
 - Added `craft\services\Users::deactivateUser()`.
 - Added `craft\services\Users::ensureUserByEmail()`, which will return a user for the given email, creating one if it didn’t exist yet.
 - Added `craft\services\Users::EVENT_AFTER_DEACTIVATE_USER`.
@@ -258,6 +261,7 @@
 - Removed support for the `CRAFT_LOCALE` PHP constant. `CRAFT_SITE` can be used instead.
 - Removed `Craft::Client`. `Pro` can be used instead.
 - Removed `Craft::Personal`. `Solo` can be used instead.
+- Removed `craft\base\ApplicationTrait::getElementIndexes()`. `getElementSources()` can be used instead.
 - Removed `craft\base\ApplicationTrait::getEntryRevisions()`.
 - Removed `craft\base\ApplicationTrait::getFeed()`.
 - Removed `craft\base\ApplicationTrait::getIsSystemOn()`. `getIsLive()` can be used instead.
@@ -363,7 +367,7 @@
 - Removed `craft\services\Drafts::EVENT_BEFORE_PUBLISH_DRAFT`.
 - Removed `craft\services\Drafts::mergeSourceChanges()`. `craft\services\Elements::mergeCanonicalChanges()` can be used instead.
 - Removed `craft\services\Drafts::publishDraft()`.
-- Removed `craft\services\ElementIndexes::getAvailableTableFields()`. `getSourceTableAttributes()` can be used instead.
+- Removed `craft\services\ElementIndexes`. `craft\services\ElementSources` can be used instead.
 - Removed `craft\services\EntryRevisions`.
 - Removed `craft\services\Fields::$ignoreProjectConfigChanges`. `craft\services\ProjectConfig::$muteEvents` can be used instead.
 - Removed `craft\services\Gql::EVENT_REGISTER_GQL_PERMISSIONS`. `EVENT_REGISTER_GQL_SCHEMA_COMPONENTS` can be used instead.

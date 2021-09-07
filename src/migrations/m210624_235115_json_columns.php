@@ -19,7 +19,6 @@ class m210624_235115_json_columns extends Migration
         $this->truncateTable(Table::TOKENS);
 
         $this->convertColumnToJson(Table::DEPRECATIONERRORS, 'traces');
-        $this->convertColumnToJson(Table::ELEMENTINDEXSETTINGS, 'settings');
         $this->convertColumnToJson(Table::FIELDLAYOUTTABS, 'elements');
         $this->convertColumnToJson(Table::FIELDS, 'settings');
         $this->convertColumnToJson(Table::GQLSCHEMAS, 'scope');
