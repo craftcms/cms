@@ -42,19 +42,21 @@ abstract class BaseMultiSelectValueConditionRule extends BaseValueConditionRule
     {
         $html = Craft::$app->getView()->renderTemplate('_includes/forms/multiselect', [
             'id' => 'author-groups',
+            'class' => 'hidden selectize fullwidth',
             'name' => 'value',
             'values' => $this->value,
             'options' => $this->getSelectOptions(),
             'inputAttributes' => $this->getInputAttributes(),
         ]);
 
-        $html .= <<<JS
-<script>
-$('#author-groups').selectize({
-  placeholder: 'Select a author group'
-});
-</script>
-JS;
+        $id = Craft::$app->getView()->namespaceInputId('author-groups');
+        $js = <<<EOD
+htmx.onLoad(function(content) {
+ $('#$id').removeClass('hidden');
+ $('#$id').selectize();
+}
+EOD;
+        Craft::$app->getView()->registerJs($js);
 
         return $html;
     }

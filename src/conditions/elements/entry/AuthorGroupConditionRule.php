@@ -5,10 +5,8 @@ namespace craft\conditions\elements\entry;
 use Craft;
 use craft\conditions\BaseMultiSelectValueConditionRule;
 use craft\conditions\elements\ElementQueryConditionRuleInterface;
-use craft\db\Table;
 use craft\elements\db\EntryQuery;
 use craft\helpers\ArrayHelper;
-use craft\helpers\Db;
 use yii\db\QueryInterface;
 
 /**

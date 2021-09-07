@@ -6,6 +6,7 @@ use Craft;
 use craft\conditions\BaseTextValueConditionRule;
 use craft\conditions\elements\ElementQueryConditionRuleInterface;
 use craft\elements\db\ElementQueryInterface;
+use craft\helpers\Db;
 use yii\db\QueryInterface;
 
 /**
@@ -30,6 +31,6 @@ class Slug extends BaseTextValueConditionRule implements ElementQueryConditionRu
     public function modifyQuery(QueryInterface $query): QueryInterface
     {
         /** @var ElementQueryInterface $query */
-        return $query->slug($this->value);
+        return $query->slug($this->operator . Db::escapeParam($this->value));
     }
 }

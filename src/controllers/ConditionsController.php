@@ -45,11 +45,11 @@ class ConditionsController extends Controller
     {
         $this->loadCondition();
 
-        // Add new rule
-        if ($firstAvailable = collect($this->_condition->getConditionRuleTypes())->first()) {
-            $rule = Craft::$app->getConditions()->createConditionRule(['type' => $firstAvailable]);
-            $this->_condition->addConditionRule($rule);
-        }
+        $ruleType = collect($this->_condition->getConditionRuleTypes())->first();
+        $rule = Craft::$app->getConditions()->createConditionRule(['type' => $ruleType]);
+        $rule->setCondition($this->_condition);
+
+        $this->_condition->addConditionRule($rule); // Add next available condition rule
 
         return $this->_condition->getBuilderHtml();
     }
@@ -78,8 +78,7 @@ class ConditionsController extends Controller
      */
     protected function loadCondition(): BaseCondition
     {
-        $conditionLocation = $this->request->getParam('conditionLocation', 'condition');
-        $config = Craft::$app->getRequest()->getBodyParam($conditionLocation);
+        $config = Craft::$app->getRequest()->getBodyParam('condition');
 
         return $this->_condition = Craft::$app->getConditions()->createCondition($config);
     }

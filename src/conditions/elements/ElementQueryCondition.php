@@ -15,12 +15,13 @@ use yii\db\QueryInterface;
 /**
  * Base class for conditions designed for element queries.
  *
- * @property-read string $addRuleLabel
- * @property-read string $elementType
- * @property-read QueryInterface $query
- * @property-read string $html
- * @property-read \craft\elements\db\ElementQuery $elementQuery
  * @property Collection $conditionRules
+ * @property-read ElementQuery $elementQuery
+ * @property-read QueryInterface $query
+ * @property-read string $addRuleLabel
+ * @property-read string $builderHtml
+ * @property-read string $elementType
+ * @property-read string $html
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.0.0
  */
@@ -61,15 +62,12 @@ abstract class ElementQueryCondition extends BaseCondition implements ElementQue
 
     /**
      * @inheritdoc
+     * @throws InvalidConfigException
      */
     public function modifyQuery(QueryInterface $query): QueryInterface
     {
         foreach ($this->getConditionRules() as $conditionRule) {
-            if ($conditionRule instanceof ElementQueryConditionRuleInterface) {
-                $query = $conditionRule->modifyQuery($query);
-            } else {
-                throw new InvalidConfigException("Using a condition rule class " . get_class($conditionRule) . ", that is not compatible with element queries");
-            }
+            $query = $conditionRule->modifyQuery($query);
         }
 
         return $query;

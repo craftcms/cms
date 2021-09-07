@@ -13,6 +13,11 @@ use craft\base\ComponentInterface;
 interface ConditionRuleInterface extends ComponentInterface
 {
     /**
+     * @return array
+     */
+    public function getConfig(): array;
+
+    /**
      * @return string
      */
     public function getHtml(): string;

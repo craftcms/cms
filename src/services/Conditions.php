@@ -52,7 +52,6 @@ class Conditions extends Component
      * @param array $config
      * @return BaseConditionRule
      * @throws InvalidArgumentException|InvalidConfigException if `$config['type']` does not implement [[BaseConditionRule]]
-     * @throws InvalidConfigException
      */
     public function createConditionRule(array $config): BaseConditionRule
     {

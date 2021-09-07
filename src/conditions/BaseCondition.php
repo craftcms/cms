@@ -8,9 +8,11 @@ use craft\events\RegisterConditionRuleTypesEvent;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Html;
 use craft\helpers\Json;
+use craft\helpers\StringHelper;
 use craft\helpers\UrlHelper;
 use Illuminate\Support\Collection;
 use yii\base\InvalidArgumentException;
+use yii\base\InvalidConfigException;
 
 /**
  * Base condition class.
@@ -32,9 +34,9 @@ abstract class BaseCondition extends Component implements ConditionInterface
     public const EVENT_REGISTER_CONDITION_RULE_TYPES = 'registerConditionRuleTypes';
 
     /**
-     * @var string The condition handle.
+     * @var string
      */
-    public string $handle;
+    public string $uid;
 
     /**
      * @var Collection|ConditionRuleInterface[]
@@ -49,7 +51,11 @@ abstract class BaseCondition extends Component implements ConditionInterface
         parent::init();
 
         if (!isset($this->_conditionRules)) {
-            $this->_conditionRules = new Collection();
+            $this->setConditionRules([]);
+        }
+
+        if (!isset($this->uid)) {
+            $this->uid = StringHelper::UUID();
         }
     }
 
@@ -116,13 +122,13 @@ abstract class BaseCondition extends Component implements ConditionInterface
      * Sets the rules this condition should be configured with.
      *
      * @param ConditionRuleInterface[]|array[] $rules
-     * @throws InvalidArgumentException if any of the rules don’t validate
+     * @throws InvalidArgumentException|InvalidConfigException if any of the rules don’t validate
      */
     public function setConditionRules(array $rules): void
     {
         $this->_conditionRules = new Collection(array_map(function($rule) {
             if (is_array($rule)) {
-                $rule = Craft::$app->getConditions()->createConditionRule($rule);;
+                $rule = Craft::$app->getConditions()->createConditionRule($rule);
             }
             if (!$this->validateConditionRule($rule)) {
                 throw new InvalidArgumentException('Invalid condition rule');
@@ -143,8 +149,8 @@ abstract class BaseCondition extends Component implements ConditionInterface
         if (!$this->validateConditionRule($rule)) {
             throw new InvalidArgumentException('Invalid condition rule');
         }
-        $rule->setCondition($this);
-        $this->_conditionRules->add($rule);
+
+        $this->getConditionRules()->add($rule);
     }
 
     /**
@@ -165,7 +171,7 @@ abstract class BaseCondition extends Component implements ConditionInterface
     {
         return [
             'type' => get_class($this),
-            'handle' => $this->handle,
+            'uid' => $this->uid,
             'conditionRules' => $this->getConditionRules()
                 ->map(fn(ConditionRuleInterface $rule) => $rule->getConfig())
                 ->all()
@@ -177,84 +183,71 @@ abstract class BaseCondition extends Component implements ConditionInterface
      */
     public function getBuilderHtml(): string
     {
-        $conditionId = Html::namespaceId('condition', $this->handle);
-        $indicatorId = Html::namespaceId('indicator', $this->handle);
-
         // Main Condition tag, and htmx inheritable options
         $html = Html::beginTag('form', [
-            'id' => 'condition',
-            'class' => 'pane',
-            'hx-target' => '#' . $conditionId, // replace self
+            'id' => 'condition-' . $this->uid,
+            'hx-target' => 'this', // replace self
             'hx-swap' => 'outerHTML', // replace this tag with the response
-            'hx-indicator' => '#' . $indicatorId, // ID of the spinner
+            'hx-indicator' => '#indicator-' . $this->uid, // ID of the spinner
         ]);
 
         // Loading indicator
-        $html .= Html::tag('div', '', ['id' => 'indicator', 'class' => 'htmx-indicator spinner']);
+        $html .= Html::tag('div', '', ['id' => 'indicator' . $this->uid, 'class' => 'htmx-indicator spinner']);
 
         // Condition hidden inputs
-        $html .= Html::hiddenInput('handle', $this->handle);
-        $html .= Html::hiddenInput('type', get_class($this));
-        $html = Html::namespaceHtml($html, $this->handle);
-
-        $html .= Html::csrfInput();
-        $html .= Html::hiddenInput('conditionLocation', $this->handle);
+        $html .= Html::hiddenInput('condition[uid]', $this->uid);
+        $html .= Html::hiddenInput('condition[type]', get_class($this));
 
         $allRulesHtml = '';
-        foreach ($this->_conditionRules as $rule) {
-            /** @var string|ConditionRuleInterface $ruleClass */
-            $ruleClass = get_class($rule);
-            $ruleTypeOptions = [];
-            foreach ($this->getConditionRuleTypes() as $type) {
-                /** @var string|ConditionRuleInterface $type */
-                if ($type !== $ruleClass) {
-                    $ruleTypeOptions[] = ['value' => $type, 'label' => $type::displayName()];
+        foreach ($this->getConditionRules() as $rule) {
+            $ruleHtml = Craft::$app->getView()->namespaceInputs(function() use ($rule) {
+                /** @var string|ConditionRuleInterface $ruleClass */
+                $ruleClass = get_class($rule);
+                $ruleTypeOptions = [];
+                foreach ($this->getConditionRuleTypes() as $type) {
+                    /** @var string|ConditionRuleInterface $type */
+                    if ($type !== $ruleClass) {
+                        $ruleTypeOptions[] = ['value' => $type, 'label' => $type::displayName()];
+                    }
                 }
-            }
-            $ruleTypeOptions[] = ['value' => $ruleClass, 'label' => $ruleClass::displayName()];
+                $ruleTypeOptions[] = ['value' => $ruleClass, 'label' => $ruleClass::displayName()];
 
-            ArrayHelper::multisort($ruleTypeOptions, 'label');
+                ArrayHelper::multisort($ruleTypeOptions, 'label');
 
-            // Add rule type selector
-            $ruleHtml = Craft::$app->getView()->renderTemplate('_includes/forms/select', [
-                'name' => 'type',
-                'options' => $ruleTypeOptions,
-                'value' => $ruleClass,
-                'class' => '',
-                'inputAttributes' => [
-                    'hx-post' => UrlHelper::actionUrl('conditions/render'),
-                ],
-            ]);
-            $ruleHtml = Html::tag('div', $ruleHtml, ['class' => 'condition-rule-type']);
-            $ruleHtml .= Html::hiddenInput('uid', $rule->uid);
+                // Add rule type selector
+                $ruleHtml = Craft::$app->getView()->renderTemplate('_includes/forms/select', [
+                    'name' => 'type',
+                    'options' => $ruleTypeOptions,
+                    'value' => $ruleClass,
+                    'class' => '',
+                    'inputAttributes' => [
+                        'hx-post' => UrlHelper::actionUrl('conditions/render'),
+                    ],
+                ]);
+                $ruleHtml = Html::tag('div', $ruleHtml, ['class' => 'condition-rule-type']);
+                $ruleHtml .= Html::hiddenInput('uid', $rule->uid);
 
-            // Get rule input html
-            $ruleHtml .= Html::tag('div', $rule->getHtml(), ['class' => 'flex-grow']);
+                // Get rule input html
+                $ruleHtml .= Html::tag('div', $rule->getHtml(), ['class' => 'flex-grow']);
 
-            // Add delete button
-            $deleteButtonAttr = [
-                'class' => 'delete icon',
-                'hx-vals' => '{"uid": "' . $rule->uid . '"}',
-                'hx-post' => UrlHelper::actionUrl('conditions/remove-rule'),
-                'title' => Craft::t('app', 'Delete'),
-            ];
-            $deleteButton = Html::tag('a', '', $deleteButtonAttr);
-            $ruleHtml .= Html::tag('div', $deleteButton);
+                // Add delete button
+                $deleteButtonAttr = [
+                    'class' => 'delete icon',
+                    'hx-vals' => '{"uid": "' . $rule->uid . '"}',
+                    'hx-post' => UrlHelper::actionUrl('conditions/remove-rule'),
+                    'title' => Craft::t('app', 'Delete'),
+                ];
+                $deleteButton = Html::tag('a', '', $deleteButtonAttr);
+                $ruleHtml .= Html::tag('div', $deleteButton);
 
-            // Namespace the rule
-            $ruleHtml = Craft::$app->getView()->namespaceInputs(function() use ($ruleHtml) {
                 return $ruleHtml;
-            }, "conditionRules[$rule->uid]");
-
-            $draggableHandle = Html::tag('a', '', ['class' => 'move icon draggable-handle']);
+            }, "condition[conditionRules][$rule->uid]");
 
             $allRulesHtml .= Html::tag('div',
-                $draggableHandle . $ruleHtml,
+                Html::tag('a', '', ['class' => 'move icon draggable-handle']) . $ruleHtml,
                 ['class' => 'flex draggable']
             );
         }
-
-        $allRulesHtml = Html::namespaceHtml($allRulesHtml, $this->handle);
 
         // Sortable rules div
         $html .= Html::tag('div', $allRulesHtml, [
@@ -279,6 +272,7 @@ abstract class BaseCondition extends Component implements ConditionInterface
         );
 
         $html .= Html::endTag('form');
+
         return $html;
     }
 
@@ -287,8 +281,6 @@ abstract class BaseCondition extends Component implements ConditionInterface
      */
     protected function defineRules(): array
     {
-        return [
-            [['conditionRules'], 'safe']
-        ];
+        return [[['uid', 'type', 'conditionRules'], 'safe']];
     }
 }

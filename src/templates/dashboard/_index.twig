@@ -67,9 +67,10 @@
     </div>
 
 
-    {% include '_components/conditions/builder' with {
-        type : 'craft\\conditions\\elements\\entry\\EntryQueryCondition',
-        handle: 'entry'
-    }%}
+    <div class="pane">
+        {% include '_components/conditions/builder' with {
+            type : 'craft\\conditions\\elements\\entry\\EntryQueryCondition'
+        } %}
+    </div>
 
 {% endblock %}

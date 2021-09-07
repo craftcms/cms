@@ -76,6 +76,9 @@ class EntryTypeConditionRule extends BaseConditionRule implements ElementQueryCo
         return ArrayHelper::map($this->_sections, 'handle', 'name');
     }
 
+    /**
+     * @return array
+     */
     public function getEntryTypeOptions(): array
     {
         $options = [];
