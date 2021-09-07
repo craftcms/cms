@@ -49,7 +49,7 @@ class ConditionsController extends Controller
         $rule = Craft::$app->getConditions()->createConditionRule(['type' => $ruleType]);
         $rule->setCondition($this->_condition);
 
-        $this->_condition->addConditionRule($rule); // Add next available condition rule
+        $this->_condition->addConditionRule($rule);
 
         return $this->_condition->getBuilderHtml();
     }
