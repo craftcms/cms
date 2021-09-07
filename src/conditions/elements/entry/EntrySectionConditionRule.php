@@ -31,7 +31,7 @@ class EntrySectionConditionRule extends BaseSelectValueConditionRule implements 
     public function getSelectOptions(): array
     {
         $sections = Craft::$app->getSections()->getAllSections();
-        return ArrayHelper::map($sections, 'handle', 'name');
+        return ArrayHelper::map($sections, 'uid', 'name');
     }
 
     /**
@@ -39,7 +39,10 @@ class EntrySectionConditionRule extends BaseSelectValueConditionRule implements 
      */
     public function modifyQuery(QueryInterface $query): QueryInterface
     {
+        $sectionService = Craft::$app->getSections();
+        $section = $sectionService->getSectionByUid($this->value);
+
         /** @var EntryQuery $query */
-        return $query->section($this->value);
+        return $query->section($section);
     }
 }

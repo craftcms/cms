@@ -21,9 +21,4 @@ interface ConditionRuleInterface extends ComponentInterface
      * @return string
      */
     public function getHtml(): string;
-
-    /**
-     * @return string
-     */
-    public function getInputHtml(): string;
 }

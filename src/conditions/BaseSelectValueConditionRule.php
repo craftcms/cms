@@ -39,13 +39,17 @@ abstract class BaseSelectValueConditionRule extends BaseValueConditionRule
     /**
      * @inheritdoc
      */
-    public function getInputHtml(): string
+    public function getHtml(): string
     {
-        return Craft::$app->getView()->renderTemplate('_includes/forms/select', [
+        $html = parent::getHtml();
+
+        $html .= Craft::$app->getView()->renderTemplate('_includes/forms/select', [
             'name' => 'value',
             'value' => $this->value,
             'options' => $this->getSelectOptions(),
             'inputAttributes' => $this->getInputAttributes(),
         ]);
+
+        return $html;
     }
 }

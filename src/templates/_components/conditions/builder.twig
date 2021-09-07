@@ -6,8 +6,13 @@
 {% js %}
 document.body.addEventListener('htmx:configRequest', function(evt) {
     evt.detail.headers = {...evt.detail.headers, ...Craft._actionHeaders()};
-    console.log(evt.detail);
+    //console.log(evt.detail);
 });
+
+document.body.addEventListener('htmx:beforeOnLoad', function(evt) {
+    console.log(evt);
+});
+
 
 htmx.onLoad(function(content) {
     var sortables = content.querySelectorAll(".sortable");

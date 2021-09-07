@@ -38,9 +38,10 @@ abstract class BaseMultiSelectValueConditionRule extends BaseValueConditionRule
     /**
      * @inheritdoc
      */
-    public function getInputHtml(): string
+    public function getHtml(): string
     {
-        $html = Craft::$app->getView()->renderTemplate('_includes/forms/multiselect', [
+        $html = parent::getHtml();
+        $html .= Craft::$app->getView()->renderTemplate('_includes/forms/multiselect', [
             'id' => 'author-groups',
             'class' => 'hidden selectize fullwidth',
             'name' => 'value',
@@ -50,13 +51,14 @@ abstract class BaseMultiSelectValueConditionRule extends BaseValueConditionRule
         ]);
 
         $id = Craft::$app->getView()->namespaceInputId('author-groups');
+
         $js = <<<EOD
-htmx.onLoad(function(content) {
+<script type="application/javascript">
  $('#$id').removeClass('hidden');
  $('#$id').selectize();
-}
+</script>
 EOD;
-        Craft::$app->getView()->registerJs($js);
+        $html .= $js;
 
         return $html;
     }

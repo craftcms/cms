@@ -3,6 +3,7 @@
 namespace craft\conditions;
 
 use Craft;
+use craft\helpers\Html;
 use craft\helpers\UrlHelper;
 
 /**
@@ -24,24 +25,23 @@ abstract class BaseTextValueConditionRule extends BaseValueConditionRule
     /**
      * @inheritdoc
      */
-    public function getInputHtml(): string
+    public function getHtml(): string
     {
-        return Craft::$app->getView()->renderTemplate('_includes/forms/text', [
-            'inputAttributes' => $this->getInputAttributes(),
-        ]);
-    }
+        $html = Html::beginTag('div', ['class' => ['flex', 'flex-nowrap']]);
+        $html .= parent::getHtml();
+        $html .= Html::tag('div',
+            Craft::$app->getView()->renderTemplate('_includes/forms/text', [
+                'inputAttributes' => [
+                    'hx-post' => UrlHelper::actionUrl('conditions/render'),
+                    'hx-trigger' => 'keyup changed delay:750ms',
+                    'name' => 'value',
+                    'value' => $this->value,
+                    'autocomplete' => false,
+                ]
+            ])
+        );
+        $html .= Html::endTag('div');
 
-    /**
-     * @return array
-     */
-    protected function getInputAttributes(): array
-    {
-        return [
-            'hx-post' => UrlHelper::actionUrl('conditions/render'),
-            'hx-trigger' => 'keyup changed delay:750ms',
-            'name' => 'value',
-            'value' => $this->value,
-            'autocomplete' => false,
-        ];
+        return $html;
     }
 }

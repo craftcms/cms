@@ -62,8 +62,7 @@ abstract class BaseValueConditionRule extends BaseConditionRule
      */
     public function getHtml(): string
     {
-        $html = Html::beginTag('div', ['class' => ['flex', 'flex-nowrap']]);
-
+        $html = '';
         if ($this->showOperator) {
             $html .= Html::tag('div', Craft::$app->getView()->renderTemplate('_includes/forms/select', [
                 'name' => 'operator',
@@ -71,12 +70,10 @@ abstract class BaseValueConditionRule extends BaseConditionRule
                 'options' => $this->getOperators(),
                 'inputAttributes' => [
                     'hx-post' => UrlHelper::actionUrl('conditions/render'),
-                ],
+                ]
             ]));
         }
 
-        $html .= Html::tag('div', $this->getInputHtml());
-        $html .= Html::endTag('div');
         return $html;
     }
 
