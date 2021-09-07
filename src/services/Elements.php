@@ -822,7 +822,7 @@ class Elements extends Component
                 ->drafts(null)
                 ->provisionalDrafts(null)
                 ->id($element->id)
-                ->siteId(ArrayHelper::withoutValue($supportedSiteIds, $element->id))
+                ->siteId(ArrayHelper::withoutValue($supportedSiteIds, $element->siteId))
                 ->anyStatus()
                 ->all();
 
