@@ -14,6 +14,7 @@
 - Fixed a bug where `craft\fieldlayoutelements\CustomField::formHtml()` was always enabling delta name registration, unless the form was static.
 - Fixed an exception that could occur if an invalid alias was passed to the `svg()` Twig function.
 - Fixed a bug where Edit Category pages weren’t remembering changes or showing validation errors in the event that a category couldn’t be saved. ([#9796](https://github.com/craftcms/cms/issues/9796))
+- Fixed a bug where the `migrate/all` command wasn’t running Craft and plugin migrations if the schema versions hadn’t changed.
 
 ## 3.7.11 - 2021-08-31
 
