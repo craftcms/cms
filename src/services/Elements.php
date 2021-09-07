@@ -223,7 +223,7 @@ class Elements extends Component
     /**
      * @event \craft\events\ElementActionEvent The event that is triggered before an element action is performed.
      *
-     * You may set [[\craft\events\ElementActionEvent::isValid]] to `false` to prevent the action from being performed.
+     * You may set [[\craft\events\CancelableEvent::$isValid]] to `false` to prevent the action from being performed.
      */
     const EVENT_BEFORE_PERFORM_ACTION = 'beforePerformAction';
 
