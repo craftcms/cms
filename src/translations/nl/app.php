@@ -881,7 +881,7 @@ return [
     'My Account' => 'Mijn account',
     'My Drafts' => 'Mijn concepten',
     'Name' => 'Naam',
-    'Native Fields' => 'Native Fields',
+    'Native Fields' => 'Standaard Velden',
     'Never' => 'Nooit',
     'New Password' => 'Nieuw wachtwoord',
     'New Tab' => 'Nieuw label',
