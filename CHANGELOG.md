@@ -16,6 +16,7 @@
 - Fixed an exception that could occur if an invalid alias was passed to the `svg()` Twig function.
 - Fixed a bug where Edit Category pages weren’t remembering changes or showing validation errors in the event that a category couldn’t be saved. ([#9796](https://github.com/craftcms/cms/issues/9796))
 - Fixed a bug where the `migrate/all` command wasn’t running Craft and plugin migrations if the schema versions hadn’t changed.
+- Fixed a bug where Craft was indexing search keywords for block elements that belonged to entry revisions. ([#9801](https://github.com/craftcms/cms/discussions/9801))
 
 ## 3.7.11 - 2021-08-31
 
