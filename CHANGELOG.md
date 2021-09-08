@@ -8,6 +8,7 @@
 
 ### Changed
 - Improved the performance of applying drafts. ([#9802](https://github.com/craftcms/cms/issues/9802))
+- Improved the performance of element queries. ([#9806](https://github.com/craftcms/cms/discussions/9806))
 - Live Preview is once again supported by entries when the `autosaveDrafts` config setting is disabled.
 - Checkboxes, Dropdown, Multi-select, and Radio Buttons fields now include the selected options’ labels in their search keywords. ([#9799](https://github.com/craftcms/cms/issues/9799))
 - It’s now possible for field types to disable delta name registration for nested custom fields by calling `Craft::$app->view->setIsDeltaRegistrationActive(false);` before rendering them.
