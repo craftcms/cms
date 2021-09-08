@@ -270,7 +270,6 @@ class Number extends Field implements PreviewableFieldInterface, SortableFieldIn
 
         $js = <<<JS
 (function() {
-    console.log('#$id');
     \$('#$namespacedId').on('keydown', ev => {
         if (
             !ev.metaKey &&
