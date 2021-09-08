@@ -276,7 +276,7 @@ class ElementIndexesController extends BaseElementsController
     {
         $this->requireAcceptsJson();
 
-        $sources = Craft::$app->getElementIndexes()->getSources($this->elementType, $this->context);
+        $sources = Craft::$app->getElementSources()->getSources($this->elementType, $this->context);
 
         return $this->asJson([
             'html' => $this->getView()->renderTemplate('_elements/sources', [

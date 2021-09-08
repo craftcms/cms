@@ -32,6 +32,7 @@ use craft\helpers\Queue;
 use craft\helpers\StringHelper;
 use craft\queue\jobs\LocalizeRelations;
 use craft\services\Elements;
+use craft\services\ElementSources;
 use craft\validators\ArrayValidator;
 use GraphQL\Type\Definition\Type;
 use Illuminate\Support\Collection;
@@ -784,23 +785,11 @@ JS;
      */
     public function getSourceOptions(): array
     {
-        $options = [];
-        $optionNames = [];
-
-        foreach ($this->availableSources() as $source) {
-            // Make sure it's not a heading
-            if (!isset($source['heading'])) {
-                $options[] = [
-                    'label' => $source['label'],
-                    'value' => $source['key'],
-                ];
-                $optionNames[] = $source['label'];
-            }
-        }
-
-        // Sort alphabetically
-        array_multisort($optionNames, SORT_NATURAL | SORT_FLAG_CASE, $options);
-
+        $options = array_map(
+            fn($s) => ['label' => $s['label'], 'value' => $s['key']],
+            $this->availableSources()
+        );
+        ArrayHelper::multisort($options, 'label', SORT_ASC, SORT_NATURAL | SORT_FLAG_CASE);
         return $options;
     }
 
@@ -1081,7 +1070,10 @@ JS;
      */
     protected function availableSources(): array
     {
-        return Craft::$app->getElementIndexes()->getSources(static::elementType(), 'modal');
+        return ArrayHelper::where(
+            Craft::$app->getElementSources()->getSources(static::elementType(), 'modal'),
+            fn($s) => $s['type'] !== ElementSources::TYPE_HEADING
+        );
     }
 
     /**

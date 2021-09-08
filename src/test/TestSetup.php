@@ -31,7 +31,7 @@ use craft\services\Config;
 use craft\services\Content;
 use craft\services\Dashboard;
 use craft\services\Deprecator;
-use craft\services\ElementIndexes;
+use craft\services\ElementSources;
 use craft\services\Elements;
 use craft\services\Entries;
 use craft\services\EntryRevisions;
@@ -574,7 +574,7 @@ class TestSetup
             [MigrationManager::class, ['getContentMigrator', 'contentMigrator']],
             [Dashboard::class, ['getDashboard', 'dashboard']],
             [Deprecator::class, ['getDeprecator', 'deprecator']],
-            [ElementIndexes::class, ['getElementIndexes', 'elementIndexes']],
+            [ElementSources::class, ['getElementSources', 'elementSources']],
             [Elements::class, ['getElements', 'elements']],
             [SystemMessages::class, ['getSystemMessages', 'systemMessages']],
             [Entries::class, ['getEntries', 'entries']],

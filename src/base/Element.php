@@ -774,7 +774,7 @@ abstract class Element extends Component implements ElementInterface
 
         if ($viewState['mode'] === 'table') {
             // Get the table columns
-            $variables['attributes'] = Craft::$app->getElementIndexes()->getTableAttributes(static::class, $sourceKey);
+            $variables['attributes'] = Craft::$app->getElementSources()->getTableAttributes(static::class, $sourceKey);
 
             // Give each attribute a chance to modify the criteria
             foreach ($variables['attributes'] as $attribute) {
@@ -834,7 +834,7 @@ abstract class Element extends Component implements ElementInterface
     protected static function defineSortOptions(): array
     {
         // Default to the available table attributes
-        $tableAttributes = Craft::$app->getElementIndexes()->getAvailableTableAttributes(static::class);
+        $tableAttributes = Craft::$app->getElementSources()->getAvailableTableAttributes(static::class);
         $sortOptions = [];
 
         foreach ($tableAttributes as $key => $labelInfo) {
@@ -1414,7 +1414,7 @@ abstract class Element extends Component implements ElementInterface
         }
 
         // See if it's a source-specific sort option
-        foreach (Craft::$app->getElementIndexes()->getSourceSortOptions(static::class, $sourceKey) as $sortOption) {
+        foreach (Craft::$app->getElementSources()->getSourceSortOptions(static::class, $sourceKey) as $sortOption) {
             if ($sortOption['attribute'] === $viewState['order']) {
                 return $sortOption['orderBy'];
             }
