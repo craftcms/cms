@@ -1399,7 +1399,13 @@ class Extension extends AbstractExtension implements GlobalsInterface
             }
         } else if (stripos($svg, '<svg') === false) {
             // No <svg> tag, so it's probably a file path
-            $svg = Craft::getAlias($svg);
+            try {
+                $svg = Craft::getAlias($svg);
+            } catch (InvalidArgumentException $e) {
+                Craft::error("Could not get the contents of $svg: {$e->getMessage()}", __METHOD__);
+                Craft::$app->getErrorHandler()->logException($e);
+                return '';
+            }
             if (!is_file($svg) || !FileHelper::isSvg($svg)) {
                 Craft::warning("Could not get the contents of {$svg}: The file doesn't exist", __METHOD__);
                 return '';

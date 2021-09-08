@@ -10,6 +10,7 @@ namespace craft\behaviors;
 use craft\base\Element;
 use craft\db\Table;
 use craft\helpers\Db;
+use craft\helpers\ElementHelper;
 use DateTime;
 
 /**
@@ -100,24 +101,11 @@ class DraftBehavior extends BaseRevisionBehavior
      *
      * @return bool
      * @since 3.4.0
+     * @deprecated in 3.7.12. Use [[ElementHelper::isOutdated()]] instead.
      */
     public function getIsOutdated(): bool
     {
-        if ($this->owner->getIsCanonical()) {
-            return false;
-        }
-
-        $canonical = $this->owner->getCanonical();
-
-        if ($this->owner->dateCreated > $canonical->dateUpdated) {
-            return false;
-        }
-
-        if (!$this->owner->dateLastMerged) {
-            return true;
-        }
-
-        return $this->owner->dateLastMerged < $canonical->dateUpdated;
+        return ElementHelper::isOutdated($this->owner);
     }
 
     /**

@@ -8,7 +8,6 @@
 namespace craft\fields;
 
 use Craft;
-use craft\base\Element;
 use craft\base\ElementInterface;
 use craft\base\Field;
 use craft\base\PreviewableFieldInterface;
@@ -396,7 +395,7 @@ class Date extends Field implements PreviewableFieldInterface, SortableFieldInte
         return [
             'name' => $this->handle,
             'type' => DateTimeType::getType(),
-            'resolve' => function ($source, array $arguments, $context, ResolveInfo $resolveInfo) {
+            'resolve' => function($source, array $arguments, $context, ResolveInfo $resolveInfo) {
                 $fieldName = Gql::getFieldNameWithAlias($resolveInfo, $source, $context);
                 $value = $source->getFieldValue($fieldName);
 
@@ -406,7 +405,7 @@ class Date extends Field implements PreviewableFieldInterface, SortableFieldInte
                 }
 
                 return Gql::applyDirectives($source, $resolveInfo, $value);
-            }
+            },
         ];
     }
 

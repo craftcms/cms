@@ -1701,5 +1701,5 @@ Om du ikkje har bede om denne e-posten kan du berre sjå vekkifrå han.',
     'Community Support (Slack, Stack Exchange)' => 'Community Support (Slack, Stack Exchange)',
     'Total' => 'Total',
     'Application Info' => 'Application Info',
-    'Choose a site' => 'Choose a site'
+    'Choose a site' => 'Choose a site',
 ];

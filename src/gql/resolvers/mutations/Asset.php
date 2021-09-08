@@ -136,7 +136,7 @@ class Asset extends ElementMutationResolver
     }
 
     /**
-     * @inheritDoc
+     * @inheritdoc
      */
     protected function populateElementWithData(Element $asset, array $arguments, ResolveInfo $resolveInfo = null): Element
     {

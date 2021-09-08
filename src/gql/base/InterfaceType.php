@@ -39,7 +39,7 @@ abstract class InterfaceType
      *
      * @param Element $element
      * @return string
-     * @since 3.5
+     * @since 3.5.0
      */
     public static function resolveElementTypeName(Element $element): string
     {

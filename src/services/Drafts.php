@@ -18,6 +18,7 @@ use craft\errors\InvalidElementException;
 use craft\events\DraftEvent;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
+use craft\helpers\ElementHelper;
 use yii\base\Component;
 use yii\base\Exception;
 use yii\base\InvalidArgumentException;
@@ -332,7 +333,9 @@ class Drafts extends Component
         try {
             if ($canonical !== $draft) {
                 // Merge in any attribute & field values that were updated in the source element, but not the draft
-                $elementsService->mergeCanonicalChanges($draft);
+                if (ElementHelper::isOutdated($draft)) {
+                    $elementsService->mergeCanonicalChanges($draft);
+                }
 
                 // "Duplicate" the draft with the source element's ID, UID, and content ID
                 $newSource = $elementsService->updateCanonicalElement($draft, [

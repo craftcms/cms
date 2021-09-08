@@ -115,7 +115,7 @@ class Security extends \yii\base\Security
      * It indicates whether the hash value in the data is in binary format. If false, it means the hash value consists
      * of lowercase hex digits only.
      * hex digits will be generated.
-     * @return string the real data with the hash stripped off. False if the data is tampered.
+     * @return string|false the real data with the hash stripped off. False if the data is tampered.
      * @throws Exception if the validation key could not be written
      * @throws InvalidConfigException when HMAC generation fails.
      * @see hashData()

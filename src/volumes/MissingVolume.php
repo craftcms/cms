@@ -135,7 +135,7 @@ class MissingVolume extends Volume implements MissingComponentInterface
     }
 
     /**
-     * @inheritDoc
+     * @inheritdoc
      */
     public function getFileSize(string $uri): ?int
     {
@@ -143,7 +143,7 @@ class MissingVolume extends Volume implements MissingComponentInterface
     }
 
     /**
-     * @inheritDoc
+     * @inheritdoc
      */
     public function renameDirectory(string $path, string $newName)
     {
@@ -151,7 +151,7 @@ class MissingVolume extends Volume implements MissingComponentInterface
     }
 
     /**
-     * @inheritDoc
+     * @inheritdoc
      */
     public function getDateModified(string $uri): ?int
     {
@@ -159,7 +159,7 @@ class MissingVolume extends Volume implements MissingComponentInterface
     }
 
     /**
-     * @inheritDoc
+     * @inheritdoc
      */
     public function createDirectory(string $path)
     {
@@ -167,7 +167,7 @@ class MissingVolume extends Volume implements MissingComponentInterface
     }
 
     /**
-     * @inheritDoc
+     * @inheritdoc
      */
     public function deleteDirectory(string $path)
     {

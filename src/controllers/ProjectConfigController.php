@@ -27,7 +27,7 @@ use ZipArchive;
 class ProjectConfigController extends Controller
 {
     /**
-     * @inheritDoc
+     * @inheritdoc
      */
     public function beforeAction($action)
     {

@@ -1,5 +1,36 @@
 # Release Notes for Craft CMS 3.x
 
+## 3.7.12 - 2021-09-08
+
+### Added
+- Added `craft\helpers\ElementHelper::isOutdated()`.
+- Added `craft\services\Elements::EVENT_BEFORE_UPDATE_SEARCH_INDEX`. ([#9801](https://github.com/craftcms/cms/discussions/9801))
+
+### Changed
+- Improved the performance of applying drafts. ([#9802](https://github.com/craftcms/cms/issues/9802))
+- Improved the performance of element queries. ([#9806](https://github.com/craftcms/cms/discussions/9806))
+- Live Preview is once again supported by entries when the `autosaveDrafts` config setting is disabled.
+- Checkboxes, Dropdown, Multi-select, and Radio Buttons fields now include the selected options’ labels in their search keywords. ([#9799](https://github.com/craftcms/cms/issues/9799))
+- It’s now possible for field types to disable delta name registration for nested custom fields by calling `Craft::$app->view->setIsDeltaRegistrationActive(false);` before rendering them.
+- `craft\events\ElementEvent` now extends `craft\events\CancelableEvent`.
+- `craft\models\FieldLayout::createForm()` now accepts a `registerDeltas` key in its `$config` argument, which can be set to `true` or `false` to enable/disable delta name registration for any custom fields in the form.
+- `craft\services\Elements::duplicateElement()` now has a `$placeInStructure` argument.
+- The `Craft.t()` JS method now supports translation messages with [`select` parameters](https://www.yiiframework.com/doc/guide/2.0/en/tutorial-i18n#selection).
+
+### Deprecated
+- Deprecated `craft\behaviors\DraftBehavior::getIsOutdated()`.
+
+### Fixed
+- Fixed an error that occurred when merging upstream Matrix field changes into a draft, if the draft didn’t exist in all the same sites as its canonical entry. ([#9774](https://github.com/craftcms/cms/issues/9774))
+- Fixed a bug where duplicated entries that were created via an “Applying new propagation method” job weren’t getting positioned correctly based on the original entries’ structure. ([#9782](https://github.com/craftcms/cms/issues/9782))
+- Fixed a bug where `craft\fieldlayoutelements\CustomField::formHtml()` was always enabling delta name registration, unless the form was static.
+- Fixed an exception that could occur if an invalid alias was passed to the `svg()` Twig function.
+- Fixed a bug where Edit Category pages weren’t remembering changes or showing validation errors in the event that a category couldn’t be saved. ([#9796](https://github.com/craftcms/cms/issues/9796))
+- Fixed a bug where the `migrate/all` command wasn’t running Craft and plugin migrations if the schema versions hadn’t changed.
+- Fixed a bug where Craft was indexing search keywords for block elements that belonged to entry revisions. ([#9801](https://github.com/craftcms/cms/discussions/9801))
+- Fixed a bug where `craft\services\Elements::mergeCanonicalChanges()` was doing more work than it needed to. ([#9802](https://github.com/craftcms/cms/issues/9802))
+- Fixed a bug where it wasn’t possible to paste into a Number field on Windows. ([#9803](https://github.com/craftcms/cms/issues/9803))
+
 ## 3.7.11 - 2021-08-31
 
 ### Added

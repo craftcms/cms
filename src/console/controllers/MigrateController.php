@@ -230,8 +230,7 @@ class MigrateController extends BaseMigrateController
             FileHelper::createDirectory($this->migrationPath);
         }
 
-        // TODO remove after next breakpoint
-        // Make sure that the new project config structure is there before any migrations cause Project Config to look there.
+        // Make sure that the project config YAML exists in case any migrations need to check incoming YAML values
         $projectConfig = Craft::$app->getProjectConfig();
         if ($projectConfig->writeYamlAutomatically && !$projectConfig->getDoesYamlExist()) {
             $projectConfig->regenerateYamlFromConfig();
@@ -304,38 +303,40 @@ class MigrateController extends BaseMigrateController
      */
     public function actionAll(): int
     {
-        $updatesService = Craft::$app->getUpdates();
+        /** @var MigrationManager[] $migrators */
+        $migrators = [
+            MigrationManager::TRACK_CRAFT => Craft::$app->getMigrator(),
+        ];
 
-        // Get the handles in need of an update
-        $handles = $updatesService->getPendingMigrationHandles(!$this->noContent);
+        $plugins = Craft::$app->getPlugins()->getAllPlugins();
+        foreach ($plugins as $plugin) {
+            $migrators["plugin:$plugin->id"] = $plugin->getMigrator();
+        }
 
-        if (empty($handles)) {
+        if (!$this->noContent) {
+            $migrators[MigrationManager::TRACK_CONTENT] = Craft::$app->getContentMigrator();
+        }
+
+        $migrationsByTrack = [];
+
+        foreach ($migrators as $track => $migrator) {
+            $migrations = $migrator->getNewMigrations();
+            if (!empty($migrations)) {
+                $migrationsByTrack[$track] = $migrations;
+            }
+        }
+
+        if (empty($migrationsByTrack)) {
             $this->stdout('No new migrations found. Your system is up to date.' . PHP_EOL, Console::FG_GREEN);
             return ExitCode::OK;
         }
 
-        $migrationsByTrack = [];
         $total = 0;
 
-        foreach ($handles as $handle) {
-            if (in_array($handle, [MigrationManager::TRACK_CRAFT, MigrationManager::TRACK_CONTENT], true)) {
-                $track = $handle;
-            } else {
-                $track = "plugin:$handle";
-            }
-
-            try {
-                $migrations = $migrationsByTrack[$track] = $this->getMigrator($track)->getNewMigrations();
-            } catch (InvalidPluginException | InvalidConfigException $e) {
-                continue;
-            }
-
+        foreach ($migrationsByTrack as $track => $migrations) {
             $n = count($migrations);
-            if ($n === 0) {
-                continue;
-            }
 
-            switch ($handle) {
+            switch ($track) {
                 case MigrationManager::TRACK_CRAFT:
                     $which = 'Craft';
                     break;
@@ -343,7 +344,7 @@ class MigrateController extends BaseMigrateController
                     $which = 'content';
                     break;
                 default:
-                    $which = $this->_plugin($handle)->name;
+                    $which = $plugins[substr($track, 7)]->name;
             }
 
             $this->stdout("Total $n new $which " . ($n === 1 ? 'migration' : 'migrations') . ' to be applied:' . PHP_EOL, Console::FG_YELLOW);
@@ -355,19 +356,17 @@ class MigrateController extends BaseMigrateController
             $total += $n;
         }
 
-        if ($total && !$this->confirm('Apply the above ' . ($total === 1 ? 'migration' : 'migrations') . '?')) {
+        if (!$this->confirm('Apply the above ' . ($total === 1 ? 'migration' : 'migrations') . '?')) {
             return ExitCode::OK;
         }
 
-        if ($total) {
-            // Enable maintenance mode
-            Craft::$app->enableMaintenanceMode();
+        // Enable maintenance mode
+        Craft::$app->enableMaintenanceMode();
 
-            // Backup the DB
-            if (!$this->noBackup && !$this->backup()) {
-                Craft::$app->disableMaintenanceMode();
-                return ExitCode::UNSPECIFIED_ERROR;
-            }
+        // Backup the DB
+        if (!$this->noBackup && !$this->backup()) {
+            Craft::$app->disableMaintenanceMode();
+            return ExitCode::UNSPECIFIED_ERROR;
         }
 
         $applied = 0;
@@ -388,8 +387,8 @@ class MigrateController extends BaseMigrateController
             // Update version info
             if ($track === MigrationManager::TRACK_CRAFT) {
                 Craft::$app->getUpdates()->updateCraftVersionInfo();
-            } else if (preg_match('/^plugin:([\w\-]+)$/', $track, $match)) {
-                Craft::$app->getUpdates()->setNewPluginInfo($this->_plugin($match[1]));
+            } else if ($track !== MigrationManager::TRACK_CONTENT) {
+                Craft::$app->getUpdates()->setNewPluginInfo($plugins[substr($track, 7)]);
             }
         }
 
