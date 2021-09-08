@@ -23,6 +23,7 @@ Craft.DraftEditor = Garnish.Base.extend({
     siteIds: null,
     newSiteIds: null,
 
+    enableAutosave: null,
     lastSerializedValue: null,
     listeningForChanges: false,
     pauseLevel: 0,
@@ -46,6 +47,7 @@ Craft.DraftEditor = Garnish.Base.extend({
 
         this.queue = [];
         this.duplicatedElements = {};
+        this.enableAutosave = Craft.autosaveDrafts;
 
         this.siteIds = Object.keys(this.settings.siteStatuses).map(siteId => {
             return parseInt(siteId)
@@ -110,7 +112,7 @@ Craft.DraftEditor = Garnish.Base.extend({
     },
 
     listenForChanges: function() {
-        if (this.listeningForChanges || this.pauseLevel > 0 || !Craft.autosaveDrafts || !this.settings.saveDraftAction) {
+        if (this.listeningForChanges || this.pauseLevel > 0 || !this.enableAutosave || !this.settings.saveDraftAction) {
             return;
         }
 
@@ -154,8 +156,10 @@ Craft.DraftEditor = Garnish.Base.extend({
         // number of times that pause() was called
         this.pauseLevel--;
         if (this.pauseLevel === 0) {
-            this.checkForm();
-            this.listenForChanges();
+            if (this.enableAutosave) {
+                this.checkForm();
+                this.listenForChanges();
+            }
         }
     },
 
@@ -541,6 +545,22 @@ Craft.DraftEditor = Garnish.Base.extend({
     getPreview: function() {
         if (!this.preview) {
             this.preview = new Craft.Preview(this);
+            if (!this.enableAutosave) {
+                this.preview.on('open', () => {
+                    this.enableAutosave = true;
+                    this.listenForChanges();
+                });
+                this.preview.on('close', () => {
+                    this.enableAutosave = false;
+                    this.stopListeningForChanges();
+
+                    // Hide the status icon if the save was successful
+                    const $statusIcons = this.statusIcons();
+                    if ($statusIcons.hasClass('checkmark-icon')) {
+                        $statusIcons.addClass('hidden');
+                    }
+                });
+            }
         }
         return this.preview;
     },
@@ -597,7 +617,7 @@ Craft.DraftEditor = Garnish.Base.extend({
 
     checkForm: function(force) {
         // If this isn't a draft and there's no active preview, then there's nothing to check
-        if (this.settings.revisionId || this.pauseLevel > 0 || !Craft.autosaveDrafts || !this.settings.saveDraftAction) {
+        if (this.settings.revisionId || this.pauseLevel > 0 || !this.enableAutosave || !this.settings.saveDraftAction) {
             return;
         }
 

@@ -61,7 +61,7 @@ class Users extends Component
     /**
      * @event UserEvent The event that is triggered before a user is activated.
      *
-     * You may set [[UserEvent::isValid]] to `false` to prevent the user from getting activated.
+     * You may set [[\craft\events\CancelableEvent::$isValid]] to `false` to prevent the user from getting activated.
      */
     const EVENT_BEFORE_ACTIVATE_USER = 'beforeActivateUser';
 
@@ -93,7 +93,7 @@ class Users extends Component
     /**
      * @event UserEvent The event that is triggered before a user is unlocked.
      *
-     * You may set [[UserEvent::isValid]] to `false` to prevent the user from getting unlocked.
+     * You may set [[\craft\events\CancelableEvent::$isValid]] to `false` to prevent the user from getting unlocked.
      */
     const EVENT_BEFORE_UNLOCK_USER = 'beforeUnlockUser';
 
@@ -105,7 +105,7 @@ class Users extends Component
     /**
      * @event UserEvent The event that is triggered before a user is suspended.
      *
-     * You may set [[UserEvent::isValid]] to `false` to prevent the user from getting suspended.
+     * You may set [[\craft\events\CancelableEvent::$isValid]] to `false` to prevent the user from getting suspended.
      */
     const EVENT_BEFORE_SUSPEND_USER = 'beforeSuspendUser';
 
@@ -117,7 +117,7 @@ class Users extends Component
     /**
      * @event UserEvent The event that is triggered before a user is unsuspended.
      *
-     * You may set [[UserEvent::isValid]] to `false` to prevent the user from getting unsuspended.
+     * You may set [[\craft\events\CancelableEvent::isValid]] to `false` to prevent the user from getting unsuspended.
      */
     const EVENT_BEFORE_UNSUSPEND_USER = 'beforeUnsuspendUser';
 
@@ -129,7 +129,7 @@ class Users extends Component
     /**
      * @event UserGroupsAssignEvent The event that is triggered before a user is assigned to some user groups.
      *
-     * You may set [[UserGroupsAssignEvent::isValid]] to `false` to prevent the user from getting assigned to the groups.
+     * You may set [[\craft\events\CancelableEvent::$isValid]] to `false` to prevent the user from getting assigned to the groups.
      */
     const EVENT_BEFORE_ASSIGN_USER_TO_GROUPS = 'beforeAssignUserToGroups';
 
@@ -141,7 +141,7 @@ class Users extends Component
     /**
      * @event UserAssignGroupEvent The event that is triggered before a user is assigned to the default user group.
      *
-     * You may set [[UserAssignGroupEvent::isValid]] to `false` to prevent the user from getting assigned to the default
+     * You may set [[\craft\events\CancelableEvent::$isValid]] to `false` to prevent the user from getting assigned to the default
      * user group.
      */
     const EVENT_BEFORE_ASSIGN_USER_TO_DEFAULT_GROUP = 'beforeAssignUserToDefaultGroup';

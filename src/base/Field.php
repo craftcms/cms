@@ -46,42 +46,46 @@ abstract class Field extends SavableComponent implements FieldInterface
     // -------------------------------------------------------------------------
 
     /**
-     * @event FieldElementEvent The event that is triggered before the element is saved
-     * You may set [[FieldElementEvent::isValid]] to `false` to prevent the element from getting saved.
+     * @event FieldElementEvent The event that is triggered before the element is saved.
+     *
+     * You may set [[\yii\base\ModelEvent::$isValid]] to `false` to prevent the element from getting saved.
      */
     const EVENT_BEFORE_ELEMENT_SAVE = 'beforeElementSave';
 
     /**
-     * @event FieldElementEvent The event that is triggered after the element is saved
+     * @event FieldElementEvent The event that is triggered after the element is saved.
      */
     const EVENT_AFTER_ELEMENT_SAVE = 'afterElementSave';
 
     /**
-     * @event FieldElementEvent The event that is triggered after the element is fully saved and propagated to other sites
+     * @event FieldElementEvent The event that is triggered after the element is fully saved and propagated to other sites.
      * @since 3.2.0
      */
     const EVENT_AFTER_ELEMENT_PROPAGATE = 'afterElementPropagate';
 
     /**
-     * @event FieldElementEvent The event that is triggered before the element is deleted
-     * You may set [[FieldElementEvent::isValid]] to `false` to prevent the element from getting deleted.
+     * @event FieldElementEvent The event that is triggered before the element is deleted.
+     *
+     * You may set [[\yii\base\ModelEvent::$isValid]] to `false` to prevent the element from getting deleted.
      */
     const EVENT_BEFORE_ELEMENT_DELETE = 'beforeElementDelete';
 
     /**
-     * @event FieldElementEvent The event that is triggered after the element is deleted
+     * @event FieldElementEvent The event that is triggered after the element is deleted.
      */
     const EVENT_AFTER_ELEMENT_DELETE = 'afterElementDelete';
 
     /**
-     * @event FieldElementEvent The event that is triggered before the element is restored
-     * You may set [[FieldElementEvent::isValid]] to `false` to prevent the element from getting restored.
+     * @event FieldElementEvent The event that is triggered before the element is restored.
+     *
+     * You may set [[\yii\base\ModelEvent::$isValid]] to `false` to prevent the element from getting restored.
+     *
      * @since 3.1.0
      */
     const EVENT_BEFORE_ELEMENT_RESTORE = 'beforeElementRestore';
 
     /**
-     * @event FieldElementEvent The event that is triggered after the element is restored
+     * @event FieldElementEvent The event that is triggered after the element is restored.
      * @since 3.1.0
      */
     const EVENT_AFTER_ELEMENT_RESTORE = 'afterElementRestore';
