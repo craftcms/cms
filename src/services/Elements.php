@@ -2568,7 +2568,7 @@ class Elements extends Component
                     if (isset($element->dateUpdated)) {
                         $elementRecord->dateUpdated = Db::prepareValueForDb($element->dateUpdated);
                     }
-                } else if ($element->propagating || $element->resaving) {
+                } else if ($element->resaving) {
                     // Prevent ActiveRecord::prepareForDb() from changing the dateUpdated
                     $elementRecord->markAttributeDirty('dateUpdated');
                 } else {
