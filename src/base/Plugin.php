@@ -35,14 +35,14 @@ class Plugin extends Module implements PluginInterface
     /**
      * @event ModelEvent The event that is triggered before the plugin’s settings are saved.
      *
-     * You may set [[ModelEvent::isValid]] to `false` to prevent the plugin’s settings from saving.
+     * You may set [[\yii\base\ModelEvent::$isValid]] to `false` to prevent the plugin’s settings from saving.
      *
      * @since 3.0.16
      */
     const EVENT_BEFORE_SAVE_SETTINGS = 'beforeSaveSettings';
 
     /**
-     * @event \yii\base\Event The event that is triggered after the plugin’s settings are saved
+     * @event \yii\base\Event The event that is triggered after the plugin’s settings are saved.
      * @since 3.0.16
      */
     const EVENT_AFTER_SAVE_SETTINGS = 'afterSaveSettings';
