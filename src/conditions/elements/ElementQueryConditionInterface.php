@@ -17,5 +17,4 @@ use craft\conditions\QueryConditionInterface;
  */
 interface ElementQueryConditionInterface extends QueryConditionInterface
 {
-
 }

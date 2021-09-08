@@ -4,7 +4,6 @@ namespace craft\conditions;
 
 use Craft;
 use craft\helpers\Html;
-use craft\helpers\Json;
 use craft\helpers\UrlHelper;
 
 /**
