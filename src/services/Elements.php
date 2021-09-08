@@ -867,7 +867,7 @@ class Elements extends Component
             throw new InvalidArgumentException('Element was already canonical');
         }
 
-        // "Duplicate" the revision with the source element's ID, UID, and content ID
+        // "Duplicate" the derivative element with the canonical element's ID, UID, and content ID
         $canonical = $element->getCanonical();
 
         $newAttributes += [
