@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 3.x
 
-## Unreleased
+## 3.7.12 - 2021-09-08
 
 ### Added
 - Added `craft\helpers\ElementHelper::isOutdated()`.
