@@ -18,6 +18,7 @@ use craft\errors\InvalidElementException;
 use craft\errors\UnsupportedSiteException;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
+use craft\helpers\ElementHelper;
 use craft\helpers\UrlHelper;
 use craft\models\Section;
 use craft\models\Site;
@@ -673,7 +674,7 @@ class EntriesController extends BaseEntriesController
         $entry = $variables['entry'];
 
         // If this is an outdated draft, merge in the latest canonical changes
-        if ($entry->getIsDraft() && $entry->getIsDerivative() && $entry->getIsOutdated()) {
+        if ($entry->getIsDraft() && $entry->getIsDerivative() && ElementHelper::isOutdated($entry)) {
             Craft::$app->getElements()->mergeCanonicalChanges($entry);
             $variables['notices'][] = Craft::t('app', 'Recent changes to the Current revision have been merged into this draft.');
         }

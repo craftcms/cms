@@ -3,15 +3,20 @@
 ## Unreleased
 
 ### Added
+- Added `craft\helpers\ElementHelper::isOutdated()`.
 - Added `craft\services\Elements::EVENT_BEFORE_UPDATE_SEARCH_INDEX`. ([#9801](https://github.com/craftcms/cms/discussions/9801))
 
 ### Changed
+- Improved the performance of applying drafts. ([#9802](https://github.com/craftcms/cms/issues/9802))
 - Checkboxes, Dropdown, Multi-select, and Radio Buttons fields now include the selected options’ labels in their search keywords. ([#9799](https://github.com/craftcms/cms/issues/9799))
 - It’s now possible for field types to disable delta name registration for nested custom fields by calling `Craft::$app->view->setIsDeltaRegistrationActive(false);` before rendering them.
 - `craft\events\ElementEvent` now extends `craft\events\CancelableEvent`.
 - `craft\models\FieldLayout::createForm()` now accepts a `registerDeltas` key in its `$config` argument, which can be set to `true` or `false` to enable/disable delta name registration for any custom fields in the form.
 - `craft\services\Elements::duplicateElement()` now has a `$placeInStructure` argument.
 - The `Craft.t()` JS method now supports translation messages with [`select` parameters](https://www.yiiframework.com/doc/guide/2.0/en/tutorial-i18n#selection).
+
+### Deprecated
+- Deprecated `craft\behaviors\DraftBehavior::getIsOutdated()`.
 
 ### Fixed
 - Fixed an error that occurred when merging upstream Matrix field changes into a draft, if the draft didn’t exist in all the same sites as its canonical entry. ([#9774](https://github.com/craftcms/cms/issues/9774))

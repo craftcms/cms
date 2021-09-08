@@ -446,6 +446,32 @@ class ElementHelper
     }
 
     /**
+     * Returns whether the given derivative element is outdated compared to its canonical element.
+     *
+     * @param ElementInterface $element
+     * @return bool
+     * @since 3.7.12
+     */
+    public static function isOutdated(ElementInterface $element): bool
+    {
+        if ($element->getIsCanonical()) {
+            return false;
+        }
+
+        $canonical = $element->getCanonical();
+
+        if ($element->dateCreated > $canonical->dateUpdated) {
+            return false;
+        }
+
+        if (!$element->dateLastMerged) {
+            return true;
+        }
+
+        return $element->dateLastMerged < $canonical->dateUpdated;
+    }
+
+    /**
      * Returns the canonical version of an element.
      *
      * @param ElementInterface $element The source/draft/revision element
