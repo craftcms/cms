@@ -3,8 +3,8 @@
 namespace craft\conditions\elements\entry;
 
 use craft\conditions\elements\ElementQueryCondition;
-use craft\elements\db\ElementQueryInterface;
-use craft\elements\Entry;
+use craft\elements\db\EntryQuery;
+use yii\db\QueryInterface;
 
 /**
  * Entry query condition.
@@ -20,15 +20,20 @@ class EntryQueryCondition extends ElementQueryCondition
     protected function conditionRuleTypes(): array
     {
         return [
-            EntryTypeConditionRule::class,
-            EntrySectionConditionRule::class,
+            TypeConditionRule::class,
+            SectionConditionRule::class,
             Slug::class,
             AuthorGroupConditionRule::class,
         ];
     }
 
-    public function getElementQuery(): ElementQueryInterface
-    {
-        return Entry::find();
+    /**
+     * Modifies a given entry query based on the configured condition rules.
+     *
+     * @param EntryQuery $query
+     * @return void
+     */
+    public function modifyQuery(QueryInterface $query): void{
+
     }
 }

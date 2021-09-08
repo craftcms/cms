@@ -3,7 +3,7 @@
 namespace craft\conditions\elements\user;
 
 use Craft;
-use craft\conditions\BaseTextValueConditionRule;
+use craft\conditions\BaseTextOperatorConditionRule;
 use craft\conditions\elements\ElementQueryConditionRuleInterface;
 use craft\elements\db\UserQuery;
 use yii\db\QueryInterface;
@@ -14,7 +14,7 @@ use yii\db\QueryInterface;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.0.0
  */
-class Email extends BaseTextValueConditionRule implements ElementQueryConditionRuleInterface
+class Email extends BaseTextOperatorConditionRule implements ElementQueryConditionRuleInterface
 {
     /**
      * @inheritdoc
@@ -27,9 +27,9 @@ class Email extends BaseTextValueConditionRule implements ElementQueryConditionR
     /**
      * @inheritdoc
      */
-    public function modifyQuery(QueryInterface $query): QueryInterface
+    public function modifyQuery(QueryInterface $query): void
     {
         /** @var UserQuery $query */
-        return $query->email($this->value);
+        $query->email('=' . ' ' . $this->textValue);
     }
 }

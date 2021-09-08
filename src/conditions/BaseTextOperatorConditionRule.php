@@ -4,6 +4,7 @@ namespace craft\conditions;
 
 use Craft;
 use craft\helpers\Html;
+use craft\helpers\Json;
 use craft\helpers\UrlHelper;
 
 /**
@@ -15,12 +16,27 @@ use craft\helpers\UrlHelper;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.0.0
  */
-abstract class BaseTextValueConditionRule extends BaseValueConditionRule
+abstract class BaseTextOperatorConditionRule extends BaseOperatorConditionRule
 {
+    /**
+     * @var mixed
+     */
+    public $textValue;
+
     /**
      * @inheritdoc
      */
     protected bool $showOperator = true;
+
+    /**
+     * @inheritdoc
+     */
+    public function getConfig(): array
+    {
+        return array_merge(parent::getConfig(), [
+            'textValue' => $this->textValue,
+        ]);
+    }
 
     /**
      * @inheritdoc
@@ -35,7 +51,7 @@ abstract class BaseTextValueConditionRule extends BaseValueConditionRule
                     'hx-post' => UrlHelper::actionUrl('conditions/render'),
                     'hx-trigger' => 'keyup changed delay:750ms',
                     'name' => 'value',
-                    'value' => $this->value,
+                    'value' => $this->textValue,
                     'autocomplete' => false,
                 ]
             ])

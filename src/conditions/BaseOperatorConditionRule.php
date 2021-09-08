@@ -14,17 +14,12 @@ use craft\helpers\UrlHelper;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.0.0
  */
-abstract class BaseValueConditionRule extends BaseConditionRule
+abstract class BaseOperatorConditionRule extends BaseConditionRule
 {
     /**
      * @var bool
      */
     protected bool $showOperator = false;
-
-    /**
-     * @var mixed
-     */
-    public $value;
 
     /**
      * @var string
@@ -37,7 +32,6 @@ abstract class BaseValueConditionRule extends BaseConditionRule
     public function getConfig(): array
     {
         return array_merge(parent::getConfig(), [
-            'value' => $this->value,
             'operator' => $this->operator,
         ]);
     }
@@ -83,7 +77,7 @@ abstract class BaseValueConditionRule extends BaseConditionRule
     protected function defineRules(): array
     {
         return array_merge(parent::defineRules(), [
-            [['value', 'operator'], 'safe'],
+            [['operator'], 'safe'],
         ]);
     }
 }

@@ -23,7 +23,7 @@ use yii\db\QueryInterface;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.0.0
  */
-class EntryTypeConditionRule extends BaseConditionRule implements ElementQueryConditionRuleInterface
+class TypeConditionRule extends BaseConditionRule implements ElementQueryConditionRuleInterface
 {
     /**
      * @inheritdoc
@@ -122,7 +122,8 @@ class EntryTypeConditionRule extends BaseConditionRule implements ElementQueryCo
     }
 
     /**
-     *
+     * Ensures an entry type is set correctly based on the section selected.
+     * @return void
      */
     private function _ensureEntryType(): void
     {
@@ -134,7 +135,7 @@ class EntryTypeConditionRule extends BaseConditionRule implements ElementQueryCo
     /**
      * @inheritdoc
      */
-    public function modifyQuery(QueryInterface $query): QueryInterface
+    public function modifyQuery(QueryInterface $query): void
     {
         $sectionService = Craft::$app->getSections();
         $section = $sectionService->getSectionByUid($this->sectionUid);
@@ -142,9 +143,7 @@ class EntryTypeConditionRule extends BaseConditionRule implements ElementQueryCo
         $type = $sectionService->getEntryTypeById($typeId);
 
         /** @var EntryQuery $query */
-        return $query
-            ->section($section)
-            ->type($type);
+        $query->section($section)->type($type);
     }
 
     /**

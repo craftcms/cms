@@ -10,6 +10,8 @@ use craft\helpers\Html;
 use craft\helpers\Json;
 use craft\helpers\StringHelper;
 use craft\helpers\UrlHelper;
+use craft\web\assets\conditionbuilder\ConditionBuilderAsset;
+use craft\web\assets\sortable\HtmxAsset;
 use Illuminate\Support\Collection;
 use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
@@ -49,6 +51,10 @@ abstract class BaseCondition extends Component implements ConditionInterface
     public function init(): void
     {
         parent::init();
+
+        if (!isset($this->type)) {
+            $this->setConditionRules([]);
+        }
 
         if (!isset($this->_conditionRules)) {
             $this->setConditionRules([]);
@@ -181,10 +187,19 @@ abstract class BaseCondition extends Component implements ConditionInterface
     /**
      * @inheritdoc
      */
-    public function getBuilderHtml(): string
+    public function getBuilderHtml(array $options = []): string
     {
+        $options = array_merge([
+            'mainTag' => 'form',
+            'devMode' => false
+        ], $options);
+
+        $view = Craft::$app->getView();
+
+        $view->registerAssetBundle(ConditionBuilderAsset::class);
+
         // Main Condition tag, and htmx inheritable options
-        $html = Html::beginTag('form', [
+        $html = Html::beginTag($options['mainTag'], [
             'id' => 'condition-' . $this->uid,
             'hx-target' => 'this', // replace self
             'hx-swap' => 'outerHTML', // replace this tag with the response
@@ -192,11 +207,13 @@ abstract class BaseCondition extends Component implements ConditionInterface
         ]);
 
         // Loading indicator
-        $html .= Html::tag('div', '', ['id' => 'indicator' . $this->uid, 'class' => 'htmx-indicator spinner']);
+        $html .= Html::tag('div', '', ['id' => 'indicator-' . $this->uid, 'class' => 'htmx-indicator spinner']);
 
         // Condition hidden inputs
         $html .= Html::hiddenInput('condition[uid]', $this->uid);
         $html .= Html::hiddenInput('condition[type]', get_class($this));
+
+        $view->startJsBuffer();
 
         $allRulesHtml = '';
         foreach ($this->getConditionRules() as $rule) {
@@ -219,12 +236,11 @@ abstract class BaseCondition extends Component implements ConditionInterface
                     'name' => 'type',
                     'options' => $ruleTypeOptions,
                     'value' => $ruleClass,
-                    'class' => '',
                     'inputAttributes' => [
                         'hx-post' => UrlHelper::actionUrl('conditions/render'),
                     ],
                 ]);
-                $ruleHtml = Html::tag('div', $ruleHtml, ['class' => 'condition-rule-type']);
+                $ruleHtml = Html::tag('div', $ruleHtml, ['id' => Html::id('body')]);
                 $ruleHtml .= Html::hiddenInput('uid', $rule->uid);
 
                 // Get rule input html
@@ -232,6 +248,7 @@ abstract class BaseCondition extends Component implements ConditionInterface
 
                 // Add delete button
                 $deleteButtonAttr = [
+                    'id' => 'delete',
                     'class' => 'delete icon',
                     'hx-vals' => '{"uid": "' . $rule->uid . '"}',
                     'hx-post' => UrlHelper::actionUrl('conditions/remove-rule'),
@@ -249,6 +266,8 @@ abstract class BaseCondition extends Component implements ConditionInterface
             );
         }
 
+        $rulesJs = $view->clearJsBuffer(false);
+
         // Sortable rules div
         $html .= Html::tag('div', $allRulesHtml, [
                 'class' => 'sortable',
@@ -261,15 +280,24 @@ abstract class BaseCondition extends Component implements ConditionInterface
             $addButtonAttr = [
                 'class' => 'btn add icon',
                 'hx-post' => UrlHelper::actionUrl('conditions/add-rule'),
+
             ];
             $addButton = Html::tag('button', $this->getAddRuleLabel(), $addButtonAttr);
             $html .= Html::tag('div', $addButton, ['class' => 'rightalign']);
         }
 
-        $html .= Html::tag('div',
-            Html::tag('pre', Json::encode($this->getConfig(), JSON_PRETTY_PRINT)),
-            ['class' => 'pane']
-        );
+        if ($options['devMode'] == true) {
+            $html .= Html::tag('div',
+                Html::tag('pre', Json::encode($this->getConfig(), JSON_PRETTY_PRINT)),
+                ['class' => 'pane']
+            );
+        }
+
+        $headHtml = $view->getHeadHtml(false);
+        $footHtml = $view->getBodyHtml(false);
+        $html .= html::tag('script', $rulesJs, ['type' => 'text/javascript']);
+        $html .= html::tag('template', $footHtml, ['id' => 'foot-html']);
+        $html .= html::tag('template', $headHtml, ['id' => 'head-html']);
 
         $html .= Html::endTag('form');
 

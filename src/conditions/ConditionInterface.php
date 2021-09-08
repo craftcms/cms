@@ -12,9 +12,11 @@ interface ConditionInterface
 {
     /**
      * Renders the HTML for the condition builder.
+     *
+     * @param array $options The builder options
      * @return string
      */
-    public function getBuilderHtml(): string;
+    public function getBuilderHtml(array $options = []): string;
 
     /**
      * Returns the config for this condition.

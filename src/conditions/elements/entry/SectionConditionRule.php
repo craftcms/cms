@@ -3,9 +3,8 @@
 namespace craft\conditions\elements\entry;
 
 use Craft;
-use craft\conditions\BaseSelectValueConditionRule;
+use craft\conditions\BaseSelectOperatorConditionRule;
 use craft\conditions\elements\ElementQueryConditionRuleInterface;
-use craft\elements\db\EntryQuery;
 use craft\helpers\ArrayHelper;
 use yii\db\QueryInterface;
 
@@ -15,7 +14,7 @@ use yii\db\QueryInterface;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.0.0
  */
-class EntrySectionConditionRule extends BaseSelectValueConditionRule implements ElementQueryConditionRuleInterface
+class SectionConditionRule extends BaseSelectOperatorConditionRule implements ElementQueryConditionRuleInterface
 {
     /**
      * @inheritdoc
@@ -37,12 +36,11 @@ class EntrySectionConditionRule extends BaseSelectValueConditionRule implements 
     /**
      * @inheritdoc
      */
-    public function modifyQuery(QueryInterface $query): QueryInterface
+    public function modifyQuery(QueryInterface $query): void
     {
         $sectionService = Craft::$app->getSections();
         $section = $sectionService->getSectionByUid($this->value);
 
-        /** @var EntryQuery $query */
-        return $query->section($section);
+        $query->section($section);
     }
 }

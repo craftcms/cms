@@ -15,7 +15,7 @@ use craft\helpers\UrlHelper;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.0.0
  */
-abstract class BaseSelectValueConditionRule extends BaseValueConditionRule
+abstract class BaseSelectOperatorConditionRule extends BaseOperatorConditionRule
 {
     /**
      * Returns the selectable options in the select input.

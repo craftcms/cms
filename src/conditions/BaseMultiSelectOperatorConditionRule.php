@@ -15,8 +15,10 @@ use craft\helpers\UrlHelper;
  *
  * @since 4.0.0
  */
-abstract class BaseMultiSelectValueConditionRule extends BaseValueConditionRule
+abstract class BaseMultiSelectOperatorConditionRule extends BaseConditionRule
 {
+    protected string $_id = 'multi-select';
+
     /**
      * The selectable options in the select input
      *
@@ -31,7 +33,8 @@ abstract class BaseMultiSelectValueConditionRule extends BaseValueConditionRule
     {
         return [
             'hx-post' => UrlHelper::actionUrl('conditions/render'),
-            'hx-trigger' => 'change changed delay:750ms',
+            'hx-trigger' => 'change changed',
+            'id' => $this->_id
         ];
     }
 
@@ -40,25 +43,29 @@ abstract class BaseMultiSelectValueConditionRule extends BaseValueConditionRule
      */
     public function getHtml(): string
     {
-        $html = parent::getHtml();
-        $html .= Craft::$app->getView()->renderTemplate('_includes/forms/multiselect', [
-            'id' => 'author-groups',
-            'class' => 'hidden selectize fullwidth',
+
+        $id = Craft::$app->getView()->namespaceInputId($this->_id);
+
+        $html = Craft::$app->getView()->renderTemplate('_includes/forms/multiselect', [
+            'class' => 'selectize',
             'name' => 'value',
-            'values' => $this->value,
+            'values' => $this->authorGroups,
             'options' => $this->getSelectOptions(),
             'inputAttributes' => $this->getInputAttributes(),
         ]);
 
-        $id = Craft::$app->getView()->namespaceInputId('author-groups');
-
         $js = <<<EOD
-<script type="application/javascript">
- $('#$id').removeClass('hidden');
- $('#$id').selectize();
-</script>
+$('#$id').removeClass('hidden');
+
+$('#$id').selectize({
+    plugins: ["remove_button"],
+    onChange: function(e){
+       document.querySelector('#$id').dispatchEvent(new Event("change"));
+    }
+});
 EOD;
-        $html .= $js;
+
+        Craft::$app->getView()->registerJs($js);
 
         return $html;
     }

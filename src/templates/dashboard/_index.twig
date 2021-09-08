@@ -68,9 +68,14 @@
 
 
     <div class="pane">
-        {% include '_components/conditions/builder' with {
-            type : 'craft\\conditions\\elements\\entry\\EntryQueryCondition'
+        {% set conditionConfig = {
+            'type' : 'craft\\conditions\\elements\\entry\\EntryQueryCondition'
         } %}
+        {% set builderConfig = {
+            'mainTag' : 'form',
+            'devMode' : false
+        } %}
+        {{ craft.app.conditions.createCondition(conditionConfig).getBuilderHtml(builderConfig)|raw }}
     </div>
 
 {% endblock %}

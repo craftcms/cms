@@ -3,7 +3,7 @@
 namespace craft\conditions\elements\entry;
 
 use Craft;
-use craft\conditions\BaseTextValueConditionRule;
+use craft\conditions\BaseTextOperatorConditionRule;
 use craft\conditions\elements\ElementQueryConditionRuleInterface;
 use craft\elements\db\ElementQueryInterface;
 use craft\helpers\Db;
@@ -15,7 +15,7 @@ use yii\db\QueryInterface;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.0.0
  */
-class Slug extends BaseTextValueConditionRule implements ElementQueryConditionRuleInterface
+class Slug extends BaseTextOperatorConditionRule implements ElementQueryConditionRuleInterface
 {
     /**
      * @inheritdoc
@@ -28,9 +28,9 @@ class Slug extends BaseTextValueConditionRule implements ElementQueryConditionRu
     /**
      * @inheritdoc
      */
-    public function modifyQuery(QueryInterface $query): QueryInterface
+    public function modifyQuery(QueryInterface $query): void
     {
         /** @var ElementQueryInterface $query */
-        return $query->slug($this->operator . Db::escapeParam($this->value));
+        $query->slug($this->operator . ' ' . Db::escapeParam($this->textValue));
     }
 }

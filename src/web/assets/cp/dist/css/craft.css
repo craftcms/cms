@@ -2430,6 +2430,8 @@ body:not(.reduce-focus-visibility) input.checkbox:focus + label:before, body:not
 
 body.reduce-focus-visibility input.checkbox:focus-visible + label:before, body.reduce-focus-visibility :focus-visible div.checkbox:before { border-color: #127FBF; box-shadow: 0 0 0 2px rgba(18, 127, 191, 0.5); }
 
+.monaco-mouse-cursor-text:focus, .monaco-mouse-cursor-text:focus-visible { box-shadow: none !important; }
+
 fieldset .checkboxfield { margin: 5px 0; }
 
 .checkboxfield .instructions, .checkboxfield .notice, .checkboxfield .warning { margin-top: 2px; }

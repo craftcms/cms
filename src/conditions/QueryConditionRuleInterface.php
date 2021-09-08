@@ -18,10 +18,10 @@ use yii\db\QueryInterface;
 interface QueryConditionRuleInterface extends ConditionRuleInterface
 {
     /**
-     * Modifies the given query based.
+     * Modifies the given query with the rule.
      *
      * @param QueryInterface $query
-     * @return QueryInterface
+     * @return void
      */
-    public function modifyQuery(QueryInterface $query): QueryInterface;
+    public function modifyQuery(QueryInterface $query): void;
 }

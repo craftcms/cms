@@ -8,8 +8,6 @@
 namespace craft\conditions\elements;
 
 use craft\conditions\QueryConditionInterface;
-use craft\elements\db\ElementQuery;
-use craft\elements\db\ElementQueryInterface;
 
 /**
  * ElementQueryConditionInterface defines the common interface to be implemented by element query condition classes.
@@ -19,8 +17,5 @@ use craft\elements\db\ElementQueryInterface;
  */
 interface ElementQueryConditionInterface extends QueryConditionInterface
 {
-    /**
-     * @return ElementQuery
-     */
-    public function getElementQuery(): ElementQueryInterface;
+
 }
