@@ -272,7 +272,7 @@ class Number extends Field implements PreviewableFieldInterface, SortableFieldIn
 (function() {
     \$('#$namespacedId').on('keydown', ev => {
         if (
-            !ev.metaKey &&
+            !Garnish.isCtrlKeyPressed(ev) &&
             ![
                 9, // tab,
                 13, // return / enter

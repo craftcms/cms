@@ -28,6 +28,7 @@
 - Fixed a bug where the `migrate/all` command wasn’t running Craft and plugin migrations if the schema versions hadn’t changed.
 - Fixed a bug where Craft was indexing search keywords for block elements that belonged to entry revisions. ([#9801](https://github.com/craftcms/cms/discussions/9801))
 - Fixed a bug where `craft\services\Elements::mergeCanonicalChanges()` was doing more work than it needed to. ([#9802](https://github.com/craftcms/cms/issues/9802))
+- Fixed a bug where it wasn’t possible to paste into a Number field on Windows. ([#9803](https://github.com/craftcms/cms/issues/9803))
 
 ## 3.7.11 - 2021-08-31
 
