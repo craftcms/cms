@@ -861,6 +861,43 @@ class Plugins extends Component
     }
 
     /**
+     * Updates a plugin’s stored version & schema version to match what’s Composer-installed.
+     *
+     * @param PluginInterface $plugin
+     * @return void
+     * @throws InvalidPluginException if there’s no record of the plugin in the database
+     * @since 3.7.13
+     */
+    public function updatePluginVersionInfo(PluginInterface $plugin): void
+    {
+        $success = (bool)Db::update(Table::PLUGINS, [
+            'version' => $plugin->getVersion(),
+            'schemaVersion' => $plugin->schemaVersion,
+        ], [
+            'handle' => $plugin->id,
+        ]);
+
+        if (!$success) {
+            throw new InvalidPluginException($plugin->id);
+        }
+
+        // Update our cache of the versions
+        if (isset($this->_enabledPluginInfo[$plugin->id])) {
+            $this->_enabledPluginInfo[$plugin->id]['version'] = $plugin->getVersion();
+            $this->_enabledPluginInfo[$plugin->id]['schemaVersion'] = $plugin->schemaVersion;
+        }
+
+        // Only update the schema version if it's changed from what's in the file,
+        // so we don't accidentally overwrite other pending changes
+        $projectConfig = Craft::$app->getProjectConfig();
+        $key = self::CONFIG_PLUGINS_KEY . ".$plugin->id.schemaVersion";
+
+        if ($projectConfig->get($key, true) !== $plugin->schemaVersion) {
+            Craft::$app->getProjectConfig()->set($key, $plugin->schemaVersion, "Update plugin schema version for “{$plugin->handle}”");
+        }
+    }
+
+    /**
      * Returns the Composer-supplied info
      *
      * @param string|null $handle The plugin handle. If null is passed, info for all Composer-installed plugins will be returned.

@@ -208,6 +208,6 @@ class InstallController extends Controller
     public function actionPlugin(string $handle): int
     {
         Console::outputWarning("The install/plugin command is deprecated.\nRunning plugin/install instead...");
-        return Craft::$app->runAction('plugin/install', [$handle]);
+        return $this->run('plugin/install', [$handle]);
     }
 }
