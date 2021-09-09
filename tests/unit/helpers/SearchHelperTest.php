@@ -58,10 +58,7 @@ class SearchHelperTest extends Unit
             ['♠ ♣ ♥ ♦', ['♠', '♣', '♥', '♦'], [], false],
             ['test', 'test                       '],
             ['', 'test', ['test']],
-            ['🎧𢵌😀😘⛄', '🎧𢵌😀😘⛄'],
-
-            // Ignorance isn't mb-4 safe
-            ['🎧𢵌😀😘⛄', '🎧𢵌😀😘⛄', ['😀']],
+            ['test', 'test👍'],
 
             // https://github.com/craftcms/cms/issues/5214
             ['a doggs tale', 'A Dogg’s Tale'],
