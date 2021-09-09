@@ -74,7 +74,7 @@ class ConditionsController extends Controller
      */
     public function actionRemoveRule(): string
     {
-        $ruleUid = Craft::$app->getRequest()->getRequiredBodyParam('uid');
+        $ruleUid = $this->request->getRequiredBodyParam('uid');
 
         $conditionRules = $this->_condition->getConditionRules()->filter(function($rule) use ($ruleUid) {
             $uid = $rule->uid;
@@ -91,8 +91,7 @@ class ConditionsController extends Controller
      */
     protected function loadCondition(): BaseCondition
     {
-        $config = Craft::$app->getRequest()->getRequiredBodyParam('condition');
-
+        $config = $this->request->getRequiredBodyParam('condition');
         return $this->_condition = Craft::$app->getConditions()->createCondition($config);
     }
 
@@ -101,7 +100,8 @@ class ConditionsController extends Controller
      */
     protected function renderBuilderHtml(): string
     {
-        $options = Craft::$app->getRequest()->getBodyParam('options', []);
-        return $this->_condition->getBuilderHtml(Json::decodeIfJson($options));
+        $options = Json::decodeIfJson($this->request->getBodyParam('options', []));
+        $options['isAjax'] = true;
+        return $this->_condition->getBuilderHtml($options);
     }
 }

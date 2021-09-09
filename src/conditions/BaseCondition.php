@@ -176,7 +176,9 @@ abstract class BaseCondition extends Component implements ConditionInterface
     {
         $options = array_merge([
             'mainTag' => 'form',
-            'devMode' => false
+            'devMode' => false,
+            'namespace' => '',
+            'isAjax' => false
         ], $options);
 
         $view = Craft::$app->getView();
@@ -282,14 +284,20 @@ abstract class BaseCondition extends Component implements ConditionInterface
         }
 
         // Add inline scripts
-        $html .= html::tag('script', $rulesJs, ['type' => 'text/javascript']);
-
-        // Add head and foot/body scripts if any
-        if ($footHtml = $view->getBodyHtml(false)) {
-            $html .= html::tag('template', $footHtml, ['data' => 'hx-foot-html']);
+        if ($options['isAjax'] && $rulesJs) {
+            $html .= html::tag('script', $rulesJs, ['type' => 'text/javascript']);
+        } else {
+            $view->registerJs($rulesJs);
         }
-        if ($headHtml = $view->getHeadHtml(false)) {
-            $html .= html::tag('template', $headHtml, ['class' => 'hx-foot-html']);
+        
+        // Add head and foot/body scripts to html returned so crafts htmx condition builder can insert them into the DOM
+        if ($options['isAjax']) {
+            if ($footHtml = $view->getBodyHtml(false)) {
+                $html .= html::tag('template', $footHtml, ['data' => 'hx-foot-html']);
+            }
+            if ($headHtml = $view->getHeadHtml(false)) {
+                $html .= html::tag('template', $headHtml, ['class' => 'hx-foot-html']);
+            }
         }
 
         $html .= Html::endTag('form');

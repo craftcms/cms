@@ -69,12 +69,39 @@
 
     <div class="pane">
         {% set conditionConfig = {
-            'type' : 'craft\\conditions\\elements\\entry\\EntryQueryCondition'
+            "type": "craft\\conditions\\elements\\entry\\EntryQueryCondition",
+            "uid": "1431d655-195f-4a53-9934-59209d844d64",
+            "conditionRules": [
+                {
+                    "type": "craft\\conditions\\elements\\entry\\Slug",
+                    "uid": "966493a3-87cb-40bc-a6b0-f2f8ebbeace2",
+                    "operator": "=",
+                    "value": ""
+                },
+                {
+                    "type": "craft\\conditions\\elements\\entry\\SectionConditionRule",
+                    "uid": "307f62a8-ffbd-49d6-989e-6e7ab628a0d1",
+                    "operator": "=",
+                    "optionValue": "fd07c946-81a0-4307-a17c-9398d3a0f8dc"
+                },
+                {
+                    "type": "craft\\conditions\\elements\\entry\\TypeConditionRule",
+                    "uid": "23554832-881e-40a5-94ee-af02f8b63113",
+                    "sectionUid": "fd07c946-81a0-4307-a17c-9398d3a0f8dc",
+                    "entryTypeUid": "b43084a2-9b3f-46ac-bd4a-57fab21e55fe"
+                },
+                {
+                    "type": "craft\\conditions\\elements\\entry\\AuthorGroupConditionRule",
+                    "uid": "db2d895b-7629-4960-b975-af8de1ffd9c3",
+                    "optionValues": []
+                }
+            ]
         } %}
         {% set builderConfig = {
             'mainTag' : 'form',
             'devMode' : true
         } %}
+
         {{ craft.app.conditions.createCondition(conditionConfig).getBuilderHtml(builderConfig)|raw }}
     </div>
 
