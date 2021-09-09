@@ -4,9 +4,13 @@
 
 ### Added
 - Added the `up` command, which calls `migrate/all` and `project-config/apply`, wrapped in a mutex lock.
+- Added `craft\services\Plugins::updatePluginVersionInfo()`.
 
 ### Changed
 - Emoji characters are now stripped from search keywords. ([#9813](https://github.com/craftcms/cms/issues/9813))
+
+### Deprecated
+- Deprecated `craft\services\Updates::setNewPluginInfo()`. `craft\services\Plugins::updatePluginVersionInfo()` should be used instead.
 
 ### Fixed
 - Fixed an incompatibility with SEOmatic. ([#9811](https://github.com/craftcms/cms/issues/9811))

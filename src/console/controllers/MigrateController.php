@@ -388,7 +388,7 @@ class MigrateController extends BaseMigrateController
             if ($track === MigrationManager::TRACK_CRAFT) {
                 Craft::$app->getUpdates()->updateCraftVersionInfo();
             } else if ($track !== MigrationManager::TRACK_CONTENT) {
-                Craft::$app->getUpdates()->setNewPluginInfo($plugins[substr($track, 7)]);
+                Craft::$app->getPlugins()->updatePluginVersionInfo($plugins[substr($track, 7)]);
             }
         }
 
@@ -423,7 +423,7 @@ class MigrateController extends BaseMigrateController
             if ($this->track === MigrationManager::TRACK_CRAFT) {
                 Craft::$app->getUpdates()->updateCraftVersionInfo();
             } else if ($this->plugin) {
-                Craft::$app->getUpdates()->setNewPluginInfo($this->plugin);
+                Craft::$app->getPlugins()->updatePluginVersionInfo($this->plugin);
             }
 
             $this->_clearCompiledTemplates();
