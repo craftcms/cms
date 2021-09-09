@@ -15,7 +15,7 @@ use yii\db\QueryInterface;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.0.0
  */
-class Slug extends BaseTextOperatorConditionRule implements ElementQueryConditionRuleInterface
+class SlugConditionRule extends BaseTextOperatorConditionRule implements ElementQueryConditionRuleInterface
 {
     /**
      * @inheritdoc

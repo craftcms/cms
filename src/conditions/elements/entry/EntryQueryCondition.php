@@ -22,7 +22,8 @@ class EntryQueryCondition extends ElementQueryCondition
         return [
             TypeConditionRule::class,
             SectionConditionRule::class,
-            Slug::class,
+            SlugConditionRule::class,
+            StatusConditionRule::class,
             AuthorGroupConditionRule::class,
         ];
     }

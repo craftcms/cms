@@ -11,7 +11,7 @@ namespace crafttests\unit\conditions;
 use Codeception\Test\Unit;
 use craft\conditions\elements\entry\AuthorGroupConditionRule;
 use craft\conditions\elements\entry\EntryQueryCondition;
-use craft\conditions\elements\entry\Slug;
+use craft\conditions\elements\entry\SlugConditionRule;
 
 
 /**
@@ -31,7 +31,7 @@ class EntryQueryConditionTest extends Unit
         $condition = \Craft::$app->getConditions()->createCondition($config);
 
         $ruleConfig = [
-            'type' => Slug::class,
+            'type' => SlugConditionRule::class,
         ];
         $rule1 = \Craft::$app->getConditions()->createConditionRule($ruleConfig);
         $condition->addConditionRule($rule1);
