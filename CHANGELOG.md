@@ -8,12 +8,14 @@
 
 ### Changed
 - Emoji characters are now stripped from search keywords. ([#9813](https://github.com/craftcms/cms/issues/9813))
+- `craft\console\Controller::run()` now passes the `--interactive`, `--color`, and `--silentExitOnException` options to the sub-command.
 
 ### Deprecated
 - Deprecated `craft\services\Updates::setNewPluginInfo()`. `craft\services\Plugins::updatePluginVersionInfo()` should be used instead.
 
 ### Fixed
 - Fixed an incompatibility with SEOmatic. ([#9811](https://github.com/craftcms/cms/issues/9811))
+- Fixed a bug where the `backup`, `install/plugin`, `restore`, and `setup` commands weren’t passing the `--interactive`, `--color`, and `--silentExitOnException` options to their sub-commands.
 
 ## 3.7.12 - 2021-09-08
 

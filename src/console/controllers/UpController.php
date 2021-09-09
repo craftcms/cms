@@ -52,12 +52,12 @@ class UpController extends Controller
         $this->stdout("done\n\n", Console::FG_GREEN);
 
         try {
-            if ($this->module->runAction('migrate/all') !== ExitCode::OK) {
+            if ($this->run('migrate/all') !== ExitCode::OK) {
                 $this->stderr("\nAborting remaining tasks.\n", Console::FG_RED);
                 throw new OperationAbortedException();
             }
             $this->stdout("\n");
-            if ($this->module->runAction('project-config/apply') !== ExitCode::OK) {
+            if ($this->run('project-config/apply') !== ExitCode::OK) {
                 throw new OperationAbortedException();
             }
             $this->stdout("\n");
