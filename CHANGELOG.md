@@ -5,6 +5,9 @@
 ### Added
 - Added the `up` command, which calls `migrate/all` and `project-config/apply`, wrapped in a mutex lock.
 
+### Changed
+- Emoji characters are now stripped from search keywords. ([#9813](https://github.com/craftcms/cms/issues/9813))
+
 ### Fixed
 - Fixed an incompatibility with SEOmatic. ([#9811](https://github.com/craftcms/cms/issues/9811))
 
