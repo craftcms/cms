@@ -375,6 +375,8 @@ class Updates extends Component
             Craft::$app->getProjectConfig()->set(ProjectConfig::CONFIG_SCHEMA_VERSION_KEY, $info->schemaVersion, 'Update Craft schema version');
         }
 
+        $this->_isCraftDbMigrationNeeded = null;
+
         return true;
     }
 }

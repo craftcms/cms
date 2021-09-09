@@ -1,6 +1,7 @@
 {% extends "_layouts/element" %}
 {% import "_includes/forms" as forms %}
 
+{% set element = category %}
 {% set redirectUrl = "categories/#{group.handle}" %}
 {% set addAnotherRedirectUrl = "categories/#{group.handle}/new?site=#{element.site.handle}&parentId={parent.id}" %}
 {% set canUpdateSource = true %}
