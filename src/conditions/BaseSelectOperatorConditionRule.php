@@ -18,11 +18,26 @@ use craft\helpers\UrlHelper;
 abstract class BaseSelectOperatorConditionRule extends BaseOperatorConditionRule
 {
     /**
+     * @var string
+     */
+    public string $optionValue = '';
+
+    /**
      * Returns the selectable options in the select input.
      *
      * @return array
      */
     abstract public function getSelectOptions(): array;
+
+    /**
+     * @inheritdoc
+     */
+    public function getConfig(): array
+    {
+        return array_merge(parent::getConfig(), [
+            'optionValue' => $this->optionValue,
+        ]);
+    }
 
     /**
      * Returns the input attributes.
@@ -44,12 +59,22 @@ abstract class BaseSelectOperatorConditionRule extends BaseOperatorConditionRule
         $html = parent::getHtml();
 
         $html .= Craft::$app->getView()->renderTemplate('_includes/forms/select', [
-            'name' => 'value',
-            'value' => $this->value,
+            'name' => 'optionValue',
+            'value' => $this->optionValue,
             'options' => $this->getSelectOptions(),
             'inputAttributes' => $this->getInputAttributes(),
         ]);
 
         return $html;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    protected function defineRules(): array
+    {
+        return array_merge(parent::defineRules(), [
+            [['optionValue'], 'safe'],
+        ]);
     }
 }

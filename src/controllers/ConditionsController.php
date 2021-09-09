@@ -9,6 +9,7 @@ namespace craft\controllers;
 
 use Craft;
 use craft\conditions\BaseCondition;
+use craft\helpers\Json;
 use craft\web\Controller;
 
 /**
@@ -17,25 +18,41 @@ use craft\web\Controller;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.0.0
+ *
+ * @property-read string|\craft\conditions\BaseCondition $builderHtml
  */
 class ConditionsController extends Controller
 {
     /**
      * @inheritdoc
      */
-    protected $allowAnonymous = self::ALLOW_ANONYMOUS_LIVE; // TODO move this to the the condition config?
+    protected $allowAnonymous = self::ALLOW_ANONYMOUS_LIVE;
 
+    /**
+     * @var BaseCondition
+     */
     private BaseCondition $_condition;
+
+    /**
+     * @inheritdoc
+     */
+    public function beforeAction($action): bool
+    {
+        $this->loadCondition();
+
+        if (!parent::beforeAction($action)) {
+            return false;
+        }
+
+        return true;
+    }
 
     /**
      * @return string
      */
     public function actionRender(): string
     {
-        // Render condition
-        $this->_condition = $this->loadCondition();
-
-        return $this->_condition->getBuilderHtml();
+        return $this->renderBuilderHtml();
     }
 
     /**
@@ -43,24 +60,20 @@ class ConditionsController extends Controller
      */
     public function actionAddRule(): string
     {
-        $this->loadCondition();
-
         $ruleType = collect($this->_condition->getConditionRuleTypes())->first();
         $rule = Craft::$app->getConditions()->createConditionRule(['type' => $ruleType]);
         $rule->setCondition($this->_condition);
 
         $this->_condition->addConditionRule($rule);
 
-        return $this->_condition->getBuilderHtml();
+        return $this->renderBuilderHtml();
     }
 
     /**
      * @return string
      */
-    public function actionRemoveRule()
+    public function actionRemoveRule(): string
     {
-        $this->loadCondition();
-
         $ruleUid = Craft::$app->getRequest()->getRequiredBodyParam('uid');
 
         $conditionRules = $this->_condition->getConditionRules()->filter(function($rule) use ($ruleUid) {
@@ -70,7 +83,7 @@ class ConditionsController extends Controller
 
         $this->_condition->setConditionRules($conditionRules);
 
-        return $this->_condition->getBuilderHtml();
+        return $this->renderBuilderHtml();
     }
 
     /**
@@ -78,8 +91,17 @@ class ConditionsController extends Controller
      */
     protected function loadCondition(): BaseCondition
     {
-        $config = Craft::$app->getRequest()->getBodyParam('condition');
+        $config = Craft::$app->getRequest()->getRequiredBodyParam('condition');
 
         return $this->_condition = Craft::$app->getConditions()->createCondition($config);
+    }
+
+    /**
+     * @return string
+     */
+    protected function renderBuilderHtml(): string
+    {
+        $options = Craft::$app->getRequest()->getBodyParam('options', []);
+        return $this->_condition->getBuilderHtml(Json::decodeIfJson($options));
     }
 }

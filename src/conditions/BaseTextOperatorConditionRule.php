@@ -7,7 +7,7 @@ use craft\helpers\Html;
 use craft\helpers\UrlHelper;
 
 /**
- * The BaseTextValueConditionRule class provides a condition rule with a single input.
+ * The BaseTextOperatorConditionRule class provides a condition rule with a single input with operator.
  *
  * @property-read array $inputAttributes
  * @property-read string $inputHtml
@@ -18,9 +18,9 @@ use craft\helpers\UrlHelper;
 abstract class BaseTextOperatorConditionRule extends BaseOperatorConditionRule
 {
     /**
-     * @var mixed
+     * @var string
      */
-    public $textValue;
+    public string $value = '';
 
     /**
      * @inheritdoc
@@ -33,7 +33,7 @@ abstract class BaseTextOperatorConditionRule extends BaseOperatorConditionRule
     public function getConfig(): array
     {
         return array_merge(parent::getConfig(), [
-            'textValue' => $this->textValue,
+            'value' => $this->value,
         ]);
     }
 
@@ -50,7 +50,7 @@ abstract class BaseTextOperatorConditionRule extends BaseOperatorConditionRule
                     'hx-post' => UrlHelper::actionUrl('conditions/render'),
                     'hx-trigger' => 'keyup changed delay:750ms',
                     'name' => 'value',
-                    'value' => $this->textValue,
+                    'value' => $this->value,
                     'autocomplete' => false,
                 ]
             ])
@@ -58,5 +58,15 @@ abstract class BaseTextOperatorConditionRule extends BaseOperatorConditionRule
         $html .= Html::endTag('div');
 
         return $html;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    protected function defineRules(): array
+    {
+        return array_merge(parent::defineRules(), [
+            [['value'], 'safe'],
+        ]);
     }
 }

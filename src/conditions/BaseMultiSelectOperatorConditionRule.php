@@ -20,6 +20,38 @@ abstract class BaseMultiSelectOperatorConditionRule extends BaseConditionRule
     protected string $_id = 'multi-select';
 
     /**
+     * @var array
+     */
+    private array $_optionValues = [];
+
+    /**
+     * @param $value
+     */
+    public function setOptionValues($value): void
+    {
+        if (!is_array($value)) {
+            $value = [];
+        }
+
+        $this->_optionValues = $value;
+    }
+
+    public function getOptionValues()
+    {
+        return $this->_optionValues;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getConfig(): array
+    {
+        return array_merge(parent::getConfig(), [
+            'optionValues' => $this->_optionValues,
+        ]);
+    }
+
+    /**
      * The selectable options in the select input
      *
      * @return array
@@ -33,8 +65,9 @@ abstract class BaseMultiSelectOperatorConditionRule extends BaseConditionRule
     {
         return [
             'hx-post' => UrlHelper::actionUrl('conditions/render'),
-            'hx-trigger' => 'change changed',
-            'id' => $this->_id
+            'hx-trigger' => 'change delay:100ms',
+            'id' => $this->_id,
+            'style' => 'display:none;' // Hide it before selectize does
         ];
     }
 
@@ -48,25 +81,33 @@ abstract class BaseMultiSelectOperatorConditionRule extends BaseConditionRule
 
         $html = Craft::$app->getView()->renderTemplate('_includes/forms/multiselect', [
             'class' => 'selectize',
-            'name' => 'value',
-            'values' => $this->authorGroups,
+            'name' => 'optionValues',
+            'values' => $this->_optionValues,
             'options' => $this->getSelectOptions(),
             'inputAttributes' => $this->getInputAttributes(),
         ]);
 
-        $js = <<<EOD
-$('#$id').removeClass('hidden');
-
+        $js = <<<JS
 $('#$id').selectize({
     plugins: ["remove_button"],
-    onChange: function(e){
-       document.querySelector('#$id').dispatchEvent(new Event("change"));
+    onDropdownClose: function(x) {
+        htmx.trigger(htmx.find("#$id"), "change");
     }
 });
-EOD;
+JS;
 
         Craft::$app->getView()->registerJs($js);
 
         return $html;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    protected function defineRules(): array
+    {
+        return array_merge(parent::defineRules(), [
+            [['optionValues'], 'safe'],
+        ]);
     }
 }

@@ -31,6 +31,6 @@ class Slug extends BaseTextOperatorConditionRule implements ElementQueryConditio
     public function modifyQuery(QueryInterface $query): void
     {
         /** @var ElementQueryInterface $query */
-        $query->slug($this->operator . ' ' . Db::escapeParam($this->textValue));
+        $query->slug($this->operator . ' ' . Db::escapeParam($this->value));
     }
 }

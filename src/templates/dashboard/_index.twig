@@ -73,7 +73,7 @@
         } %}
         {% set builderConfig = {
             'mainTag' : 'form',
-            'devMode' : false
+            'devMode' : true
         } %}
         {{ craft.app.conditions.createCondition(conditionConfig).getBuilderHtml(builderConfig)|raw }}
     </div>

@@ -30,6 +30,6 @@ class Email extends BaseTextOperatorConditionRule implements ElementQueryConditi
     public function modifyQuery(QueryInterface $query): void
     {
         /** @var UserQuery $query */
-        $query->email('=' . ' ' . $this->textValue);
+        $query->email('=' . ' ' . $this->value);
     }
 }

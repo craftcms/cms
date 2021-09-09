@@ -17,31 +17,7 @@ use yii\db\QueryInterface;
  */
 class AuthorGroupConditionRule extends BaseMultiSelectOperatorConditionRule implements ElementQueryConditionRuleInterface
 {
-    public array $authorGroups;
-
-    /**
-     * @inheritdoc
-     */
-    public function init(): void
-    {
-        parent::init();
-
-        $this->_id = 'author-groups';
-
-        if (!isset($this->authorGroups)) {
-            $this->authorGroups = [];
-        }
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function attributes(): array
-    {
-        return array_merge(parent::attributes(), [
-            'authorGroups',
-        ]);
-    }
+    protected string $_id = 'author-groups';
 
     /**
      * @inheritdoc
@@ -65,13 +41,11 @@ class AuthorGroupConditionRule extends BaseMultiSelectOperatorConditionRule impl
      */
     public function modifyQuery(QueryInterface $query): void
     {
-        $value = $this->value ?? false;
-
         /** @var EntryQuery $query */
         $userGroupsService = Craft::$app->getUserGroups();
         $userGroups = array_filter(array_map(static function(string $uid) use ($userGroupsService) {
             return $userGroupsService->getGroupByUid($uid);
-        }, $value));
+        }, $this->_optionValues));
 
         $query->authorGroup($userGroups);
     }

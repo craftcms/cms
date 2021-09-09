@@ -11,7 +11,6 @@ use craft\helpers\Json;
 use craft\helpers\StringHelper;
 use craft\helpers\UrlHelper;
 use craft\web\assets\conditionbuilder\ConditionBuilderAsset;
-use craft\web\assets\sortable\HtmxAsset;
 use Illuminate\Support\Collection;
 use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
@@ -22,6 +21,7 @@ use yii\base\InvalidConfigException;
  * @property-read string $addRuleLabel
  * @property-read array $config
  * @property-read string $html
+ * @property-read string[] $conditionRuleTypes
  * @property Collection $conditionRules
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
@@ -51,10 +51,6 @@ abstract class BaseCondition extends Component implements ConditionInterface
     public function init(): void
     {
         parent::init();
-
-        if (!isset($this->type)) {
-            $this->setConditionRules([]);
-        }
 
         if (!isset($this->_conditionRules)) {
             $this->setConditionRules([]);
@@ -132,6 +128,7 @@ abstract class BaseCondition extends Component implements ConditionInterface
      */
     public function setConditionRules(array $rules): void
     {
+//        $conditionRules = array_map(function($rule) {
         $this->_conditionRules = new Collection(array_map(function($rule) {
             if (is_array($rule)) {
                 $rule = Craft::$app->getConditions()->createConditionRule($rule);
@@ -142,6 +139,8 @@ abstract class BaseCondition extends Component implements ConditionInterface
             $rule->setCondition($this);
             return $rule;
         }, $rules));
+
+//        $this->_conditionRules = new Collection($conditionRules);
     }
 
     /**
@@ -175,12 +174,14 @@ abstract class BaseCondition extends Component implements ConditionInterface
      */
     public function getConfig(): array
     {
+        $conditionRules = $this->getConditionRules()
+            ->map(fn(ConditionRuleInterface $rule) => $rule->getConfig())
+            ->all();
+
         return [
             'type' => get_class($this),
             'uid' => $this->uid,
-            'conditionRules' => $this->getConditionRules()
-                ->map(fn(ConditionRuleInterface $rule) => $rule->getConfig())
-                ->all()
+            'conditionRules' => array_values($conditionRules)
         ];
     }
 
@@ -205,6 +206,9 @@ abstract class BaseCondition extends Component implements ConditionInterface
             'hx-swap' => 'outerHTML', // replace this tag with the response
             'hx-indicator' => '#indicator-' . $this->uid, // ID of the spinner
         ]);
+
+        // Builder options
+        $html .= Html::input('hidden', 'options', Json::encode($options));
 
         // Loading indicator
         $html .= Html::tag('div', '', ['id' => 'indicator-' . $this->uid, 'class' => 'htmx-indicator spinner']);
@@ -293,11 +297,16 @@ abstract class BaseCondition extends Component implements ConditionInterface
             );
         }
 
-        $headHtml = $view->getHeadHtml(false);
-        $footHtml = $view->getBodyHtml(false);
+        // Add inline scripts
         $html .= html::tag('script', $rulesJs, ['type' => 'text/javascript']);
-        $html .= html::tag('template', $footHtml, ['id' => 'foot-html']);
-        $html .= html::tag('template', $headHtml, ['id' => 'head-html']);
+
+        // Add head and foot/body scripts if any
+        if ($footHtml = $view->getBodyHtml(false)) {
+            $html .= html::tag('template', $footHtml, ['data' => 'hx-foot-html']);
+        }
+        if ($headHtml = $view->getHeadHtml(false)) {
+            $html .= html::tag('template', $headHtml, ['class' => 'hx-foot-html']);
+        }
 
         $html .= Html::endTag('form');
 
