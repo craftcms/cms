@@ -47,8 +47,9 @@ class Updates extends Component
 
     /**
      * @var bool|null
+     * @see getIsCraftUpdatePending()
      */
-    private ?bool $_isCraftDbMigrationNeeded = null;
+    private ?bool $_isCraftUpdatePending = null;
 
     /**
      * Returns whether the update info is cached.
@@ -347,12 +348,12 @@ class Updates extends Component
      */
     public function getIsCraftUpdatePending(): bool
     {
-        if (!isset($this->_isCraftDbMigrationNeeded)) {
+        if (!isset($this->_isCraftUpdatePending)) {
             $storedSchemaVersion = Craft::$app->getInfo()->schemaVersion;
-            $this->_isCraftDbMigrationNeeded = version_compare(Craft::$app->schemaVersion, $storedSchemaVersion, '>');
+            $this->_isCraftUpdatePending = version_compare(Craft::$app->schemaVersion, $storedSchemaVersion, '>');
         }
 
-        return $this->_isCraftDbMigrationNeeded;
+        return $this->_isCraftUpdatePending;
     }
 
     /**
@@ -375,7 +376,7 @@ class Updates extends Component
             Craft::$app->getProjectConfig()->set(ProjectConfig::CONFIG_SCHEMA_VERSION_KEY, $info->schemaVersion, 'Update Craft schema version');
         }
 
-        $this->_isCraftDbMigrationNeeded = null;
+        $this->_isCraftUpdatePending = null;
 
         return true;
     }
