@@ -124,7 +124,7 @@ class SetupController extends Controller
         }
 
         $this->stdout(PHP_EOL);
-        return $this->module->runAction('install');
+        return $this->run('install/craft');
     }
 
     /**
