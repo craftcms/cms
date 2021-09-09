@@ -69,6 +69,8 @@ htmx.on('htmx:afterSwap', function(evt) {
         console.log('Appending', footHtml);
         Craft.appendHeadHtml(footHtml);
     }
+    
+    Craft.initUiElements(content);
 });
 JS;
         $view->registerJs($js, View::POS_END);

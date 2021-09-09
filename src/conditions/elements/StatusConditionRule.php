@@ -1,15 +1,15 @@
 <?php
 
-namespace craft\conditions\elements\entry;
+namespace craft\conditions\elements;
 
 use Craft;
 use craft\conditions\BaseSelectOperatorConditionRule;
-use craft\conditions\elements\ElementQueryConditionRuleInterface;
+use craft\elements\db\ElementQuery;
 use craft\elements\Entry;
 use yii\db\QueryInterface;
 
 /**
- * Entry status condition rule.
+ * Element status condition rule.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.0.0
@@ -38,6 +38,7 @@ class StatusConditionRule extends BaseSelectOperatorConditionRule implements Ele
      */
     public function modifyQuery(QueryInterface $query): void
     {
+        /** @var ElementQuery $query */
         $query->status($this->value);
     }
 }

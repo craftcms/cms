@@ -3,6 +3,8 @@
 namespace craft\conditions\elements\entry;
 
 use craft\conditions\elements\ElementQueryCondition;
+use craft\conditions\elements\StatusConditionRule;
+use craft\conditions\elements\TrashedConditionRule;
 use craft\elements\db\EntryQuery;
 use yii\db\QueryInterface;
 
@@ -25,6 +27,7 @@ class EntryQueryCondition extends ElementQueryCondition
             SlugConditionRule::class,
             StatusConditionRule::class,
             AuthorGroupConditionRule::class,
+            TrashedConditionRule::class,
         ];
     }
 
