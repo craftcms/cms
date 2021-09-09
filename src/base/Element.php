@@ -287,7 +287,7 @@ abstract class Element extends Component implements ElementInterface
     const EVENT_DEFINE_IS_DELETABLE = 'defineIsDeletable';
 
     /**
-     * @event SetElementRouteEvent The event that is triggered when defining the route that should be used when this element’s URL is requested
+     * @event SetElementRouteEvent The event that is triggered when defining the route that should be used when this element’s URL is requested.
      *
      * Set [[Event::$handled]] to `true` to explicitly tell the element that a route has been set (even if you’re
      * setting it to `null`).
@@ -338,8 +338,9 @@ abstract class Element extends Component implements ElementInterface
     const EVENT_DEFINE_KEYWORDS = 'defineKeywords';
 
     /**
-     * @event ModelEvent The event that is triggered before the element is saved
-     * You may set [[ModelEvent::isValid]] to `false` to prevent the element from getting saved.
+     * @event ModelEvent The event that is triggered before the element is saved.
+     *
+     * You may set [[\yii\base\ModelEvent::$isValid]] to `false` to prevent the element from getting saved.
      *
      * If you want to ignore events for drafts or revisions, call [[\craft\helpers\ElementHelper::isDraftOrRevision()]]
      * from your event handler:
@@ -366,7 +367,7 @@ abstract class Element extends Component implements ElementInterface
     const EVENT_BEFORE_SAVE = 'beforeSave';
 
     /**
-     * @event ModelEvent The event that is triggered after the element is saved
+     * @event ModelEvent The event that is triggered after the element is saved.
      *
      * If you want to ignore events for drafts or revisions, call [[\craft\helpers\ElementHelper::isDraftOrRevision()]]
      * from your event handler:
@@ -393,7 +394,7 @@ abstract class Element extends Component implements ElementInterface
     const EVENT_AFTER_SAVE = 'afterSave';
 
     /**
-     * @event ModelEvent The event that is triggered after the element is fully saved and propagated to other sites
+     * @event ModelEvent The event that is triggered after the element is fully saved and propagated to other sites.
      *
      * If you want to ignore events for drafts or revisions, call [[\craft\helpers\ElementHelper::isDraftOrRevision()]]
      * from your event handler:
@@ -422,25 +423,27 @@ abstract class Element extends Component implements ElementInterface
     const EVENT_AFTER_PROPAGATE = 'afterPropagate';
 
     /**
-     * @event ModelEvent The event that is triggered before the element is deleted
-     * You may set [[ModelEvent::isValid]] to `false` to prevent the element from getting deleted.
+     * @event ModelEvent The event that is triggered before the element is deleted.
+     *
+     * You may set [[\yii\base\ModelEvent::$isValid]] to `false` to prevent the element from getting deleted.
      */
     const EVENT_BEFORE_DELETE = 'beforeDelete';
 
     /**
-     * @event \yii\base\Event The event that is triggered after the element is deleted
+     * @event \yii\base\Event The event that is triggered after the element is deleted.
      */
     const EVENT_AFTER_DELETE = 'afterDelete';
 
     /**
-     * @event ModelEvent The event that is triggered before the element is restored
-     * You may set [[ModelEvent::isValid]] to `false` to prevent the element from getting restored.
+     * @event ModelEvent The event that is triggered before the element is restored.
+     *
+     * You may set [[\yii\base\ModelEvent::$isValid]] to `false` to prevent the element from getting restored.
      * @since 3.1.0
      */
     const EVENT_BEFORE_RESTORE = 'beforeRestore';
 
     /**
-     * @event \yii\base\Event The event that is triggered after the element is restored
+     * @event \yii\base\Event The event that is triggered after the element is restored.
      * @since 3.1.0
      */
     const EVENT_AFTER_RESTORE = 'afterRestore';
@@ -448,7 +451,7 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @event ElementStructureEvent The event that is triggered before the element is moved in a structure.
      *
-     * You may set [[ElementStructureEvent::isValid]] to `false` to prevent the element from getting moved.
+     * You may set [[\yii\base\ModelEvent::$isValid]] to `false` to prevent the element from getting moved.
      */
     const EVENT_BEFORE_MOVE_IN_STRUCTURE = 'beforeMoveInStructure';
 

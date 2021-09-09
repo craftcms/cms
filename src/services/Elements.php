@@ -173,6 +173,16 @@ class Elements extends Component
     const EVENT_AFTER_SAVE_ELEMENT = 'afterSaveElement';
 
     /**
+     * @event ElementEvent The event that is triggered before indexing an element’s search keywords,
+     * or queuing the element’s search keywords to be updated.
+     *
+     * You may set [[\craft\events\CancelableEvent::$isValid]] to `false` to prevent the search index from being updated.
+     *
+     * @since 3.7.12
+     */
+    const EVENT_BEFORE_UPDATE_SEARCH_INDEX = 'beforeUpdateSearchIndex';
+
+    /**
      * @event ElementQueryEvent The event that is triggered before resaving a batch of elements.
      */
     const EVENT_BEFORE_RESAVE_ELEMENTS = 'beforeResaveElements';
@@ -225,7 +235,7 @@ class Elements extends Component
     /**
      * @event \craft\events\ElementActionEvent The event that is triggered before an element action is performed.
      *
-     * You may set [[\craft\events\ElementActionEvent::isValid]] to `false` to prevent the action from being performed.
+     * You may set [[\craft\events\CancelableEvent::$isValid]] to `false` to prevent the action from being performed.
      */
     const EVENT_BEFORE_PERFORM_ACTION = 'beforePerformAction';
 
@@ -804,7 +814,7 @@ class Elements extends Component
                 ->drafts(null)
                 ->provisionalDrafts(null)
                 ->id($element->id)
-                ->siteId(ArrayHelper::withoutValue($supportedSiteIds, $element->id))
+                ->siteId(ArrayHelper::withoutValue($supportedSiteIds, $element->siteId))
                 ->status(null)
                 ->all();
 
@@ -849,7 +859,7 @@ class Elements extends Component
             throw new InvalidArgumentException('Element was already canonical');
         }
 
-        // "Duplicate" the revision with the source element's ID, UID, and content ID
+        // "Duplicate" the derivative element with the canonical element's ID, UID, and content ID
         $canonical = $element->getCanonical();
 
         $newAttributes += [
@@ -2549,7 +2559,7 @@ class Elements extends Component
                     if (isset($element->dateUpdated)) {
                         $elementRecord->dateUpdated = Db::prepareValueForDb($element->dateUpdated);
                     }
-                } else if ($element->propagating || $element->resaving) {
+                } else if ($element->resaving) {
                     // Prevent ActiveRecord::prepareForDb() from changing the dateUpdated
                     $elementRecord->markAttributeDirty('dateUpdated');
                 } else {
@@ -2718,16 +2728,22 @@ class Elements extends Component
         }
 
         // Update search index
-        if ($updateSearchIndex && !$element->getIsRevision()) {
-            if (Craft::$app->getRequest()->getIsConsoleRequest()) {
-                Craft::$app->getSearch()->indexElementAttributes($element);
-            } else {
-                Queue::push(new UpdateSearchIndex([
-                    'elementType' => get_class($element),
-                    'elementId' => $element->id,
-                    'siteId' => $propagate ? '*' : $element->siteId,
-                    'fieldHandles' => $element->getDirtyFields(),
-                ]), 2048);
+        if ($updateSearchIndex && !ElementHelper::isRevision($element)) {
+            $event = new ElementEvent([
+                'element' => $element,
+            ]);
+            $this->trigger(self::EVENT_BEFORE_UPDATE_SEARCH_INDEX, $event);
+            if ($event->isValid) {
+                if (Craft::$app->getRequest()->getIsConsoleRequest()) {
+                    Craft::$app->getSearch()->indexElementAttributes($element);
+                } else {
+                    Queue::push(new UpdateSearchIndex([
+                        'elementType' => get_class($element),
+                        'elementId' => $element->id,
+                        'siteId' => $propagate ? '*' : $element->siteId,
+                        'fieldHandles' => $element->getDirtyFields(),
+                    ]), 2048);
+                }
             }
         }
 
