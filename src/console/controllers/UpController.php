@@ -25,12 +25,12 @@ class UpController extends Controller
     /**
      * @var bool Whether to perform the action even if a mutex lock could not be acquired.
      */
-    public $force = false;
+    public bool $force = false;
 
     /**
      * @inheritdoc
      */
-    public function options($actionID)
+    public function options($actionID): array
     {
         return array_merge(parent::options($actionID), [
             'force',
