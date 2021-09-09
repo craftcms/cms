@@ -128,7 +128,6 @@ abstract class BaseCondition extends Component implements ConditionInterface
      */
     public function setConditionRules(array $rules): void
     {
-//        $conditionRules = array_map(function($rule) {
         $this->_conditionRules = new Collection(array_map(function($rule) {
             if (is_array($rule)) {
                 $rule = Craft::$app->getConditions()->createConditionRule($rule);
@@ -139,8 +138,6 @@ abstract class BaseCondition extends Component implements ConditionInterface
             $rule->setCondition($this);
             return $rule;
         }, $rules));
-
-//        $this->_conditionRules = new Collection($conditionRules);
     }
 
     /**
