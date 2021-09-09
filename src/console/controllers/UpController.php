@@ -11,7 +11,6 @@ use Craft;
 use craft\console\Controller;
 use craft\errors\OperationAbortedException;
 use craft\helpers\Console;
-use yii\console\Exception;
 use yii\console\ExitCode;
 
 /**
