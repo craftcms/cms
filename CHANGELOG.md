@@ -5,6 +5,9 @@
 ### Added
 - Added the `up` command, which calls `migrate/all` and `project-config/apply`, wrapped in a mutex lock.
 
+### Fixed
+- Fixed an incompatibility with SEOmatic. ([#9811](https://github.com/craftcms/cms/issues/9811))
+
 ## 3.7.12 - 2021-09-08
 
 ### Added
