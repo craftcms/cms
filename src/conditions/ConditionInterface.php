@@ -24,4 +24,11 @@ interface ConditionInterface
      * @return array
      */
     public function getConfig(): array;
+
+    /**
+     * Returns the available rule types for this condition.
+     *
+     * @return string[]
+     */
+    public function getConditionRuleTypes(): array;
 }

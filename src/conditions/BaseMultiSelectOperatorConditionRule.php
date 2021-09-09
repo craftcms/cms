@@ -80,7 +80,7 @@ abstract class BaseMultiSelectOperatorConditionRule extends BaseConditionRule
         $id = Craft::$app->getView()->namespaceInputId($this->_id);
 
         $html = Craft::$app->getView()->renderTemplate('_includes/forms/multiselect', [
-            'class' => 'selectize',
+            'class' => 'selectize fullwidth',
             'name' => 'optionValues',
             'values' => $this->_optionValues,
             'options' => $this->getSelectOptions(),

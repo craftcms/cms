@@ -62,17 +62,6 @@ abstract class BaseCondition extends Component implements ConditionInterface
     }
 
     /**
-     * @inheritdoc
-     */
-    public function attributes(): array
-    {
-        return array_merge(parent::attributes(), [
-            'conditionRules',
-            'handle',
-        ]);
-    }
-
-    /**
      * Returns the label for the “Add a rule” button.
      *
      * @return string
@@ -83,9 +72,7 @@ abstract class BaseCondition extends Component implements ConditionInterface
     }
 
     /**
-     * Returns the available rule types for this condition.
-     *
-     * @return string[]
+     * @inheritdoc
      */
     public function getConditionRuleTypes(): array
     {
