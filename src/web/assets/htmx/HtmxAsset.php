@@ -53,7 +53,7 @@ htmx.on('htmx:configRequest', function(evt) {
 });
 
 // Anytime Htmx does a swap, look for html in templates to be added to head or foot in CP
-htmx.on('htmx:afterSwap', function(evt) {
+htmx.on('htmx:afterOnLoad', function(evt) {
     const content = evt.detail.elt;
     const headHtmls = content.querySelectorAll("template.hx-head-html");
     const footHtmls = content.querySelectorAll("template.hx-foot-html");
