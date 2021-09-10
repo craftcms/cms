@@ -257,7 +257,18 @@ class Application extends \yii\web\Application
             return $response;
         }
 
-        // If we're still here, finally let Yii do it's thing.
+        // If this is a request to a configured baseCpUrl,
+        // redirect any would-be site requests to the CP.
+        $currentBaseUrl = rtrim(Craft::$app->getRequest()->hostInfo, '/') . '/';
+        if (Craft::$app->getRequest()->isSiteRequest &&
+            $currentBaseUrl === UrlHelper::baseCpUrl() &&
+            $this->getConfig()->getGeneral()->baseCpUrl
+        ) {
+            Craft::$app->getResponse()->redirect(UrlHelper::cpUrl());
+            $this->end();
+        }
+
+        // If we're still here, finally let Yii do its thing.
         try {
             return parent::handleRequest($request);
         } catch (\Throwable $e) {
