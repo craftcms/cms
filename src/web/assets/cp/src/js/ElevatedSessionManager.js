@@ -13,14 +13,19 @@ Craft.ElevatedSessionManager = Garnish.Base.extend({
     $errorPara: null,
 
     callback: null,
+    canceledCallback: null,
+
+    wasSuccessful: false,
 
     /**
      * Requires that the user has an elevated session.
      *
      * @param {function} callback The callback function that should be called once the user has an elevated session
+     * @param {function} canceledCallback The callback function that should be called if user declines or fails to elevate session
      */
-    requireElevatedSession: function(callback) {
+    requireElevatedSession: function(callback, canceledCallback) {
         this.callback = callback;
+        this.canceledCallback = canceledCallback;
 
         // Check the time remaining on the user's elevated session (if any)
         this.fetchingTimeout = true;
@@ -31,7 +36,7 @@ Craft.ElevatedSessionManager = Garnish.Base.extend({
             if (textStatus === 'success') {
                 // Is there still enough time left or has it been disabled?
                 if (response.timeout === false || response.timeout >= Craft.ElevatedSessionManager.minSafeElevatedSessionTimeout) {
-                    this.callback();
+                    this.success();
                 } else {
                     // Show the password modal
                     this.showPasswordModal();
@@ -66,6 +71,9 @@ Craft.ElevatedSessionManager = Garnish.Base.extend({
                 },
                 onFadeOut: () => {
                     this.$passwordInput.val('');
+                    if (!this.wasSuccessful) {
+                        this.canceled();
+                    }
                 },
             });
 
@@ -120,7 +128,7 @@ Craft.ElevatedSessionManager = Garnish.Base.extend({
             if (textStatus === 'success') {
                 if (response.success) {
                     this.passwordModal.hide();
-                    this.callback();
+                    this.success();
                 } else {
                     this.showPasswordError(response.message || Craft.t('app', 'Incorrect password.'));
                     Garnish.shake(this.passwordModal.$container);
@@ -143,6 +151,17 @@ Craft.ElevatedSessionManager = Garnish.Base.extend({
 
     clearLoginError: function() {
         this.showPasswordError('');
+    },
+
+    success: function () {
+        this.wasSuccessful = true;
+        this.callback();
+    },
+
+    canceled: function () {
+        if (this.canceledCallback) {
+            this.canceledCallback();
+        }
     }
 }, {
     minSafeElevatedSessionTimeout: 5
