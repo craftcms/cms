@@ -210,8 +210,7 @@ class AuthenticationController extends Controller
         $this->requireAcceptsJson();
         $this->requireLogin();
 
-        // TODO require elevated session once admintable allows support for it
-        //$this->requireElevatedSession();
+        $this->requireElevatedSession();
         $userSession = Craft::$app->getUser();
         $currentUser = $userSession->getIdentity();
 
