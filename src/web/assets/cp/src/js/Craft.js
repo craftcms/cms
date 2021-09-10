@@ -164,70 +164,96 @@ $.extend(Craft,
             const type = typeof token[1] !== 'undefined' ? Craft.trim(token[1]) : 'none';
             switch (type) {
                 case 'number':
-                    let format = typeof token[2] !== 'undefined' ? Craft.trim(token[2]) : null;
-                    if (format !== null && format !== 'integer') {
-                        throw `Message format 'number' is only supported for integer values.`;
-                    }
-                    let number = Craft.formatNumber(arg);
-                    let pos;
-                    if (format === null && (pos = `${arg}`.indexOf('.')) !== -1) {
-                        number += `.${arg.substr(pos + 1)}`;
-                    }
-
-                    return number;
+                    return (() => {
+                        let format = typeof token[2] !== 'undefined' ? Craft.trim(token[2]) : null;
+                        if (format !== null && format !== 'integer') {
+                            throw `Message format 'number' is only supported for integer values.`;
+                        }
+                        let number = Craft.formatNumber(arg);
+                        let pos;
+                        if (format === null && (pos = `${arg}`.indexOf('.')) !== -1) {
+                            number += `.${arg.substr(pos + 1)}`;
+                        }
+                        return number;
+                    })();
                 case 'none':
                     return arg;
-                case 'plural':
-                    /* http://icu-project.org/apiref/icu4c/classicu_1_1PluralFormat.html
-                    pluralStyle = [offsetValue] (selector '{' message '}')+
-                    offsetValue = "offset:" number
-                    selector = explicitValue | keyword
-                    explicitValue = '=' number  // adjacent, no white space in between
-                    keyword = [^[[:Pattern_Syntax:][:Pattern_White_Space:]]]+
-                    message: see MessageFormat
-                    */
-                    if (typeof token[2] === 'undefined') {
-                        return false;
-                    }
-                    let plural = this._tokenizePattern(token[2]);
-                    const c = plural.length;
-                    let message = false;
-                    let offset = 0;
-                    for (let i = 0; i + 1 < c; i++) {
-                        if (typeof plural[i] === 'object' || typeof plural[i + 1] !== 'object') {
+                case 'select':
+                    return (() => {
+                        /* http://icu-project.org/apiref/icu4c/classicu_1_1SelectFormat.html
+                        selectStyle = (selector '{' message '}')+
+                        */
+                        if (typeof token[2] === 'undefined') {
                             return false;
                         }
-                        let selector = Craft.trim(plural[i++]);
-                        let selectorChars = [...selector];
-
-                        if (i === 1 && selector.substring(0, 7) === 'offset:') {
-                            let pos = [...selector.replace(/[\n\r\t]/g, ' ')].indexOf(' ', 7);
-                            if (pos === -1) {
-                                throw 'Message pattern is invalid.';
+                        let select = this._tokenizePattern(token[2]);
+                        let c = select.length;
+                        let message = false;
+                        for (let i = 0; i + 1 < c; i++) {
+                            if (Garnish.isArray(select[i]) || !Garnish.isArray(select[i + 1])) {
+                                return false;
                             }
-                            let offset = parseInt(Craft.trim(selectorChars.slice(7, pos).join('')));
-                            selector = Craft.trim(selectorChars.slice(pos + 1, pos + 1 + selectorChars.length).join(''));
+                            let selector = Craft.trim(select[i++]);
+                            if (message === false && selector === 'other' || selector == arg) {
+                                message = select[i].join(',');
+                            }
                         }
-                        if (
-                            message === false &&
-                            selector === 'other' ||
-                            selector[0] === '=' && parseInt(selectorChars.slice(1, 1 + selectorChars.length).join('')) === arg ||
-                            selector === 'one' && arg - offset === 1
-                        ) {
-                            message = (typeof plural[i] === 'string' ? [plural[i]] : plural[i]).map((p) => {
-                                return p.replace('#', arg - offset);
-                            }).join(',');
+                        if (message === false) {
+                            return false;
                         }
-                    }
-                    if (message !== false) {
                         return this.formatMessage(message, args);
-                    }
-                    break;
+                    })();
+                case 'plural':
+                    return (() => {
+                        /* http://icu-project.org/apiref/icu4c/classicu_1_1PluralFormat.html
+                        pluralStyle = [offsetValue] (selector '{' message '}')+
+                        offsetValue = "offset:" number
+                        selector = explicitValue | keyword
+                        explicitValue = '=' number  // adjacent, no white space in between
+                        keyword = [^[[:Pattern_Syntax:][:Pattern_White_Space:]]]+
+                        message: see MessageFormat
+                        */
+                        if (typeof token[2] === 'undefined') {
+                            return false;
+                        }
+                        let plural = this._tokenizePattern(token[2]);
+                        const c = plural.length;
+                        let message = false;
+                        let offset = 0;
+                        for (let i = 0; i + 1 < c; i++) {
+                            if (typeof plural[i] === 'object' || typeof plural[i + 1] !== 'object') {
+                                return false;
+                            }
+                            let selector = Craft.trim(plural[i++]);
+                            let selectorChars = [...selector];
+
+                            if (i === 1 && selector.substring(0, 7) === 'offset:') {
+                                let pos = [...selector.replace(/[\n\r\t]/g, ' ')].indexOf(' ', 7);
+                                if (pos === -1) {
+                                    throw 'Message pattern is invalid.';
+                                }
+                                offset = parseInt(Craft.trim(selectorChars.slice(7, pos).join('')));
+                                selector = Craft.trim(selectorChars.slice(pos + 1, pos + 1 + selectorChars.length).join(''));
+                            }
+                            if (
+                              message === false &&
+                              selector === 'other' ||
+                              selector[0] === '=' && parseInt(selectorChars.slice(1, 1 + selectorChars.length).join('')) === arg ||
+                              selector === 'one' && arg - offset === 1
+                            ) {
+                                message = (typeof plural[i] === 'string' ? [plural[i]] : plural[i]).map((p) => {
+                                    return p.replace('#', arg - offset);
+                                }).join(',');
+                            }
+                        }
+                        if (message === false) {
+                            return false;
+                        }
+                        return this.formatMessage(message, args);
+                    })();
                 default:
                     throw `Message format '${type}' is not supported.`;
             }
-
-            return false;
         },
 
         formatDate: function(date) {

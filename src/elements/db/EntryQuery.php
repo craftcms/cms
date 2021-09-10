@@ -18,6 +18,7 @@ use craft\helpers\StringHelper;
 use craft\models\EntryType;
 use craft\models\Section;
 use craft\models\UserGroup;
+use Illuminate\Support\Collection;
 use yii\base\InvalidConfigException;
 use yii\db\Connection;
 
@@ -492,6 +493,7 @@ class EntryQuery extends ElementQuery
      * | `['foo', 'bar']` | with an author in a group with a handle of `foo` or `bar`.
      * | `['not', 'foo', 'bar']` | not with an author in a group with a handle of `foo` or `bar`.
      * | a [[UserGroup|UserGroup]] object | with an author in a group represented by the object.
+     * | an array of [[UserGroup|UserGroup]] objects | with an author in a group represented by the objects.
      *
      * ---
      *
@@ -517,7 +519,18 @@ class EntryQuery extends ElementQuery
     {
         if ($value instanceof UserGroup) {
             $this->authorGroupId = $value->id;
-        } else if ($value !== null) {
+            return $this;
+        }
+
+        if (ArrayHelper::isTraversable($value)) {
+            $collection = new Collection($value);
+            if ($collection->every(fn($v) => $v instanceof UserGroup)) {
+                $this->authorGroupId = $collection->map(fn(UserGroup $g) => $g->id)->all();
+                return $this;
+            }
+        }
+
+        if ($value !== null) {
             $this->authorGroupId = (new Query())
                 ->select(['id'])
                 ->from([Table::USERGROUPS])

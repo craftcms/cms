@@ -4900,6 +4900,13 @@ body.reduce-focus-visibility {
   }
 }
 
+.monaco-mouse-cursor-text {
+  &:focus,
+  &:focus-visible {
+    box-shadow: none !important;
+  }
+}
+
 fieldset {
   .checkboxfield {
     margin: 5px 0;

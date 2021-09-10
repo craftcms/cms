@@ -57,7 +57,7 @@ class BackupController extends Controller
     public function actionDb(?string $path = null): int
     {
         Console::outputWarning("The backup command is deprecated.\nRunning db/backup instead...");
-        return Craft::$app->runAction('db/backup', func_get_args() + [
+        return $this->run('db/backup', func_get_args() + [
                 'zip' => $this->zip,
                 'overwrite' => $this->overwrite,
             ]);

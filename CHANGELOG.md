@@ -29,6 +29,8 @@
 - Added `craft\elements\User::STATUS_INACTIVE`.
 - Added `craft\elements\User::getIsCredentialed()`.
 - Added `craft\errors\MissingVolumeFolderException`.
+- Added `craft\fieldlayoutelements\BaseNativeField`, which replaces `craft\fieldlayoutelements\StandardField`.
+- Added `craft\fieldlayoutelements\TextField`, which replaces `craft\fieldlayoutelements\StandardTextField`.
 - Added `craft\helpers\Assets::downloadFile()`.
 - Added `craft\helpers\Db::dropAllForeignKeysToTable()`.
 - Added `craft\helpers\Db::dropForeignKeyIfExists()`.
@@ -43,6 +45,8 @@
 - Added `craft\helpers\ProjectConfig::ensureAllSectionsProcessed()`.
 - Added `craft\i18n\Translation`.
 - Added `craft\models\AssetIndexingSession`.
+- Added `craft\models\FieldLayout::EVENT_DEFINE_NATIVE_FIELDS`, which replaces `EVENT_DEFINE_STANDARD_FIELDS`.
+- Added `craft\models\FieldLayout::getAvailableNativeFields()`.
 - Added `craft\models\ProjectConfigData`.
 - Added `craft\models\ReadOnlyProjectConfigData`.
 - Added `craft\models\VolumeListing`.
@@ -77,11 +81,30 @@
 - Users are no longer required to have a username or email.
 - User queries now return all users by default, rather than only active users.
 - Filtering users by `active`, `pending`, and `locked` statuses no longer excludes suspended users.
+- Entry queries’ `authorGroup()` param method now accepts an array of `craft\models\UserGroup` objects.
 - Relational fields now load elements in the current site rather than the primary site, if the source element isn’t localizable. ([#7048](https://github.com/craftcms/cms/issues/7048))
 - Built-in queue jobs are now always translated for the current user’s language. ([#9745](https://github.com/craftcms/cms/pull/9745))
 - Template autosuggestions now include their filename. ([#9744](https://github.com/craftcms/cms/pull/9744))
 - All control panel templates end in `.twig` now. ([#9743](https://github.com/craftcms/cms/pull/9743))
 - The `users/save-user` action no longer includes a `unverifiedEmail` key in failure responses.
+- When using GraphQL to mutate entries, the `enabled` status is now affected on a per-site basis when specifying both the `enabled` and `siteId` parameters. ([#9771](https://github.com/craftcms/cms/issues/9771))
+- Plugins’ `$changelogUrl` properties must now have a `?string` type declaration.
+- Plugins’ `$description` properties must now have a `?string` type declaration.
+- Plugins’ `$developer` properties must now have a `?string` type declaration.
+- Plugins’ `$developerEmail` properties must now have a `?string` type declaration.
+- Plugins’ `$developerUrl` properties must now have a `?string` type declaration.
+- Plugins’ `$documentationUrl` properties must now have a `?string` type declaration.
+- Plugins’ `$downloadUrl` properties must now have a `?string` type declaration.
+- Plugins’ `$edition` properties must now have a `string` type declaration.
+- Plugins’ `$hasCpSection` properties must now have a `bool` type declaration.
+- Plugins’ `$hasCpSettings` properties must now have a `bool` type declaration.
+- Plugins’ `$isInstalled` properties must now have a `bool` type declaration.
+- Plugins’ `$minVersionRequired` properties must now have a `string` type declaration.
+- Plugins’ `$name` properties must now have a `?string` type declaration.
+- Plugins’ `$packageName` properties must now have a `?string` type declaration.
+- Plugins’ `$schemaVersion` properties must now have a `string` type declaration.
+- Plugins’ `$sourceLanguage` properties must now have a `string` type declaration.
+- Plugins’ `$t9nCategory` properties must now have a `?string` type declaration.
 - All components’ `afterDelete()` methods must now have a `void` return type declaration.
 - All components’ `afterSave()` methods must now have a `void` return type declaration.
 - All components’ `attributes()` methods must now have an `array` return type declaration.
@@ -115,6 +138,7 @@
 - Element types’ `getUriFormat()` methods must now have a `?string` return type declaration.
 - Element types’ `prepElementQueryForTableAttribute()` methods must now have a `void` return type declaration.
 - Element types’ `refHandle()` methods must now have a `?string` return type declaration.
+- Element types’ `tableAttributes()` and `defineTableAttributes()` methods should no longer return a generic attribute for defining the header column heading at the beginning of the returned array. The header column heading is now set to the element type’s display name, per its `displayName()` method.
 - Element queries’ `status()` methods must now have a `self` return type declaration.
 - Fields’ `afterElementDelete()` methods must now have a `void` return type declaration.
 - Fields’ `afterElementPropagate()` methods must now have a `void` return type declaration.
@@ -182,9 +206,12 @@
 - Deprecated `craft\base\VolumeInterface::createFileByStream()`.
 - Deprecated `craft\base\VolumeInterface::saveFileLocally()`.
 - Deprecated `craft\base\VolumeInterface::updateFileByStream()`.
+- Deprecated `craft\fieldlayoutelements\StandardField`. `craft\fieldlayoutelements\BaseNativeField` should be used instead.
+- Deprecated `craft\fieldlayoutelements\StandardTextField`. `craft\fieldlayoutelements\TextField` should be used instead.
 - Deprecated `craft\helpers\ArrayHelper::append()`. `array_unshift()` should be used instead.
 - Deprecated `craft\helpers\ArrayHelper::prepend()`. `array_push()` should be used instead.
 - Deprecated `craft\helpers\MigrationHelper`.
+- Deprecated `craft\models\FieldLayout::EVENT_DEFINE_STANDARD_FIELDS`. `EVENT_DEFINE_NATIVE_FIELDS` should be used instead.
 - Deprecated `craft\services\ProjectConfig::applyYamlChanges()`. `applyExternalChanges()` should be used instead.
 - Deprecated `craft\services\ProjectConfig::getDoesYamlExist()`. `getDoesExternalConfigExist()` should be used instead.
 - Deprecated `craft\services\ProjectConfig::getIsApplyingYamlChanges()`. `getIsApplyingExternalChangers()` should be used instead.
@@ -192,6 +219,7 @@
 - Deprecated `craft\web\AssetBundle`. `yii\web\AssetBundle` should be used instead.
 
 ### Removed
+- Removed the “Header Column Heading” element source setting.
 - Removed the `customAsciiCharMappings` config setting.
 - Removed the `siteName` config setting. Environment-specific site names can be defined via environment variables.
 - Removed the `sitUrl` config setting. Environment-specific site URLs can be defined via environment variables.
@@ -316,6 +344,7 @@
 - Removed `craft\models\BaseEntryRevisionModel`.
 - Removed `craft\models\EntryDraft`.
 - Removed `craft\models\EntryVersion`.
+- Removed `craft\models\FieldLayout::getAvailableStandardFields()`. `getAvailableNativeFields()` can be used instead.
 - Removed `craft\models\FieldLayout::getFieldIds()`. `getFields()` can be used instead.
 - Removed `craft\models\Info::getEdition()`. `Craft::$app->getEdition()` can be used instead.
 - Removed `craft\models\Info::getName()`. `Craft::$app->getSystemName()` can be used instead.

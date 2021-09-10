@@ -10,7 +10,6 @@ namespace craft\helpers;
 use Craft;
 use craft\base\ElementInterface;
 use craft\db\Paginator;
-use craft\i18n\Locale;
 use craft\web\twig\variables\Paginate;
 use craft\web\View;
 use Twig\Environment;

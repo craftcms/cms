@@ -28,7 +28,7 @@
             instructions: "What this site will be called in the control panel."|t('app'),
             id: 'name',
             name: 'name',
-            value: site.originalName ?? site.getName(false),
+            value: site.getName(false),
             suggestEnvVars: true,
             errors: site.getErrors('name'),
             autofocus: true,
@@ -97,7 +97,7 @@
                 suggestEnvVars: true,
                 suggestAliases: true,
                 name: 'baseUrl',
-                value: site.originalBaseUrl ?? site.getBaseUrl(false),
+                value: site.getBaseUrl(false),
                 errors: site.getErrors('baseUrl')
             }) }}
         </div>

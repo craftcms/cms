@@ -270,7 +270,7 @@ class CategoriesController extends Controller
         $this->_prepEditCategoryVariables($variables);
 
         /** @var Category $category */
-        $category = $variables['element'];
+        $category = $variables['category'];
 
         $this->_enforceEditCategoryPermissions($category);
 
@@ -646,18 +646,18 @@ class CategoriesController extends Controller
         // Get the category
         // ---------------------------------------------------------------------
 
-        if (empty($variables['element'])) {
+        if (empty($variables['category'])) {
             if (!empty($variables['categoryId'])) {
-                $variables['element'] = Craft::$app->getCategories()->getCategoryById($variables['categoryId'], $variables['site']->id);
+                $variables['category'] = Craft::$app->getCategories()->getCategoryById($variables['categoryId'], $variables['site']->id);
 
-                if (!$variables['element']) {
+                if (!$variables['category']) {
                     throw new NotFoundHttpException('Category not found');
                 }
             } else {
-                $variables['element'] = new Category();
-                $variables['element']->groupId = $variables['group']->id;
-                $variables['element']->enabled = true;
-                $variables['element']->siteId = $variables['site']->id;
+                $variables['category'] = new Category();
+                $variables['category']->groupId = $variables['group']->id;
+                $variables['category']->enabled = true;
+                $variables['category']->siteId = $variables['site']->id;
             }
         }
     }

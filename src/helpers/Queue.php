@@ -26,20 +26,21 @@ class Queue
      * @param int|null $priority
      * @param int|null $delay
      * @param int|null $ttr
+     * @return string|null The new job ID
      */
-    public static function push(JobInterface $job, ?int $priority = null, ?int $delay = null, ?int $ttr = null): void
+    public static function push(JobInterface $job, ?int $priority = null, ?int $delay = null, ?int $ttr = null): ?string
     {
         $queue = Craft::$app->getQueue();
 
         try {
-            $queue
+            return $queue
                 ->priority($priority)
                 ->delay($delay)
                 ->ttr($ttr)
                 ->push($job);
         } catch (NotSupportedException $e) {
             // Some queue drivers don't support priority
-            $queue
+            return $queue
                 ->delay($delay)
                 ->ttr($ttr)
                 ->push($job);

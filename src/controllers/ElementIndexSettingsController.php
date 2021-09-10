@@ -61,26 +61,8 @@ class ElementIndexSettingsController extends BaseElementsController
 
             // Selected table attributes
             $tableAttributes = $elementIndexesService->getTableAttributes($elementType, $source['key']);
-            $source['tableAttributes'] = [];
-
-            foreach ($tableAttributes as $attribute) {
-                $source['tableAttributes'][] = [
-                    $attribute[0],
-                    $attribute[1]['label'],
-                ];
-            }
-
-            // Header column info
-            if ($firstAttribute = reset($tableAttributes)) {
-                [, $attributeInfo] = $firstAttribute;
-                // Is there a custom header col heading?
-                if (isset($attributeInfo['defaultLabel'])) {
-                    $source['headerColHeading'] = $attributeInfo['label'];
-                    $source['defaultHeaderColHeading'] = $attributeInfo['defaultLabel'];
-                } else {
-                    $source['defaultHeaderColHeading'] = $attributeInfo['label'];
-                }
-            }
+            array_shift($tableAttributes);
+            $source['tableAttributes'] = array_map(fn($a) => [$a[0], $a[1]['label']], $tableAttributes);
         }
         unset($source);
 

@@ -596,7 +596,7 @@ EOD;
                     ->andWhere('[[timePushed]] + [[delay]] <= :time', ['time' => time()])
                     ->orderBy(['priority' => SORT_ASC, 'id' => SORT_ASC])
                     ->limit(1)
-                    ->one($this->db);
+                    ->one($this->db) ?: null;
             });
 
             if (is_array($payload)) {
@@ -624,10 +624,10 @@ EOD;
     /**
      * Checks if $job is a resource and if so, convert it to a serialized format.
      *
-     * @param string $job
+     * @param string|resource $job
      * @return string
      */
-    private function _jobData(string $job): string
+    private function _jobData($job): string
     {
         if (is_resource($job)) {
             $job = stream_get_contents($job);

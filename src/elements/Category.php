@@ -332,7 +332,6 @@ class Category extends Element
     protected static function defineTableAttributes(): array
     {
         return [
-            'title' => ['label' => Craft::t('app', 'Category')],
             'slug' => ['label' => Craft::t('app', 'Slug')],
             'uri' => ['label' => Craft::t('app', 'URI')],
             'link' => ['label' => Craft::t('app', 'Link'), 'icon' => 'world'],

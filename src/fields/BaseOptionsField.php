@@ -312,6 +312,30 @@ abstract class BaseOptionsField extends Field implements PreviewableFieldInterfa
 
     /**
      * @inheritdoc
+     */
+    protected function searchKeywords($value, ElementInterface $element): string
+    {
+        $keywords = [];
+
+        if ($this->multi) {
+            /** @var MultiOptionsFieldData|OptionData[] $value */
+            foreach ($value as $option) {
+                $keywords[] = $option->value;
+                $keywords[] = $option->label;
+            }
+        } else {
+            /** @var SingleOptionFieldData $value */
+            if ($value->value !== null) {
+                $keywords[] = $value->value;
+                $keywords[] = $value->label;
+            }
+        }
+
+        return implode(' ', $keywords);
+    }
+
+    /**
+     * @inheritdoc
      * @since 3.4.6
      */
     public function modifyElementsQuery(ElementQueryInterface $query, $value): void

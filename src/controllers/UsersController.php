@@ -895,6 +895,7 @@ class UsersController extends Controller
 
         $form = $user->getFieldLayout()->createForm($user, false, [
             'tabIdPrefix' => 'profile',
+            'registerDeltas' => true,
         ]);
         $selectedTab = 'account';
 
@@ -1139,20 +1140,20 @@ class UsersController extends Controller
                 // Should we be sending a verification email now?
                 // Even if verification isn't required, send one out on account creation if we don't have a password yet
                 $sendVerificationEmail = (!$isPublicRegistration || !$deactivateByDefault) && (
-                    (
-                        $requireEmailVerification && (
-                            $isPublicRegistration ||
-                            ($isCurrentUser && !$canAdministrateUsers) ||
-                            $this->request->getBodyParam('sendVerificationEmail')
+                        (
+                            $requireEmailVerification && (
+                                $isPublicRegistration ||
+                                ($isCurrentUser && !$canAdministrateUsers) ||
+                                $this->request->getBodyParam('sendVerificationEmail')
+                            )
+                        ) ||
+                        (
+                            !$requireEmailVerification && $isNewUser && (
+                                ($isPublicRegistration && $generalConfig->deferPublicRegistrationPassword) ||
+                                $this->request->getBodyParam('sendVerificationEmail')
+                            )
                         )
-                    ) ||
-                    (
-                        !$requireEmailVerification && $isNewUser && (
-                            ($isPublicRegistration && $generalConfig->deferPublicRegistrationPassword) ||
-                            $this->request->getBodyParam('sendVerificationEmail')
-                        )
-                    )
-                );
+                    );
 
                 if ($sendVerificationEmail) {
                     $user->unverifiedEmail = $newEmail;

@@ -20,7 +20,6 @@ use craft\helpers\ArrayHelper;
 use craft\helpers\Db;
 use craft\helpers\ElementHelper;
 use craft\helpers\Html;
-use craft\helpers\StringHelper;
 use craft\migrations\CreateMatrixContentTable;
 use craft\models\FieldLayout;
 use craft\models\MatrixBlockType;
@@ -830,14 +829,20 @@ class Matrix extends Component
                 ];
 
                 if ($target->updatingFromDerivative && $block->getIsDerivative()) {
-                    /** @var MatrixBlock $newBlock */
-                    $newBlock = $elementsService->updateCanonicalElement($block, $newAttributes);
+                    if ($block->getOwner()->isFieldModified($field->handle)) {
+                        /** @var MatrixBlock $newBlock */
+                        $newBlock = $elementsService->updateCanonicalElement($block, $newAttributes);
+                        $newBlockId = $newBlock->id;
+                    } else {
+                        $newBlockId = $block->getCanonicalId();
+                    }
                 } else {
                     /** @var MatrixBlock $newBlock */
                     $newBlock = $elementsService->duplicateElement($block, $newAttributes);
+                    $newBlockId = $newBlock->id;
                 }
 
-                $newBlockIds[] = $newBlock->id;
+                $newBlockIds[] = $newBlockId;
             }
 
             // Delete any blocks that shouldn't be there anymore
@@ -924,7 +929,7 @@ class Matrix extends Component
         // Get the canonical owner across all sites
         $canonicalOwners = $owner::find()
             ->id($owner->getCanonicalId())
-            ->siteId('*')
+            ->siteId(array_keys($localizedOwners))
             ->status(null)
             ->ignorePlaceholders()
             ->all();
@@ -968,7 +973,7 @@ class Matrix extends Component
                         if ($derivativeBlock->dateUpdated == $derivativeBlock->dateCreated) {
                             $elementsService->deleteElement($derivativeBlock);
                         }
-                    } else if (!$derivativeBlock->trashed) {
+                    } else if (!$derivativeBlock->trashed && ElementHelper::isOutdated($derivativeBlock)) {
                         // Merge the upstream changes into the derivative block
                         $elementsService->mergeCanonicalChanges($derivativeBlock);
                     }
@@ -977,7 +982,7 @@ class Matrix extends Component
                     $elementsService->duplicateElement($canonicalBlock, [
                         'canonicalId' => $canonicalBlock->id,
                         'ownerId' => $owner->id,
-                        'owner' => $localizedOwners[$canonicalBlock->siteId] ?? $owner,
+                        'owner' => $localizedOwners[$canonicalBlock->siteId],
                         'siteId' => $canonicalBlock->siteId,
                         'propagating' => false,
                     ]);

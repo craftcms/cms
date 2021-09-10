@@ -69,7 +69,7 @@
 {% endif %}
 
 {% set previewTargets = element.getPreviewTargets() %}
-{% set enablePreview = previewTargets and not craft.app.request.isMobileBrowser(true) and generalConfig.autosaveDrafts %}
+{% set enablePreview = previewTargets and not craft.app.request.isMobileBrowser(true) %}
 
 {% set canDeleteDraft = (
     isDraft and
@@ -114,7 +114,9 @@
     {% set saveShortcutRedirect = '{cpEditUrl}' %}
 {% endif %}
 
-{% set form = element.getFieldLayout().createForm(element, isRevision or not canEdit) %}
+{% set form = element.getFieldLayout().createForm(element, isRevision or not canEdit, {
+    registerDeltas: true,
+}) %}
 
 {% if tabs is not defined %}
     {% set tabs = form.getTabMenu() %}

@@ -394,7 +394,6 @@ class User extends Element implements IdentityInterface
     protected static function defineTableAttributes(): array
     {
         return [
-            'user' => ['label' => Craft::t('app', 'User')],
             'email' => ['label' => Craft::t('app', 'Email')],
             'username' => ['label' => Craft::t('app', 'Username')],
             'fullName' => ['label' => Craft::t('app', 'Full Name')],

@@ -16,7 +16,6 @@ use craft\base\FieldInterface;
 use craft\db\Query;
 use craft\db\Table;
 use craft\errors\OperationAbortedException;
-use Illuminate\Support\Collection;
 use yii\base\Exception;
 
 /**
@@ -430,6 +429,32 @@ class ElementHelper
     {
         $root = static::rootElement($element);
         return $root->getIsDraft() || $root->getIsRevision();
+    }
+
+    /**
+     * Returns whether the given derivative element is outdated compared to its canonical element.
+     *
+     * @param ElementInterface $element
+     * @return bool
+     * @since 3.7.12
+     */
+    public static function isOutdated(ElementInterface $element): bool
+    {
+        if ($element->getIsCanonical()) {
+            return false;
+        }
+
+        $canonical = $element->getCanonical();
+
+        if ($element->dateCreated > $canonical->dateUpdated) {
+            return false;
+        }
+
+        if (!$element->dateLastMerged) {
+            return true;
+        }
+
+        return $element->dateLastMerged < $canonical->dateUpdated;
     }
 
     /**
