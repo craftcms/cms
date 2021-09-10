@@ -42,7 +42,6 @@ use craft\validators\UsernameValidator;
 use craft\validators\UserPasswordValidator;
 use DateInterval;
 use DateTime;
-use yii\base\BaseObject;
 use yii\base\ErrorHandler;
 use yii\base\Exception;
 use yii\base\InvalidArgumentException;
@@ -69,7 +68,6 @@ use yii\web\IdentityInterface;
  * @property-read string|null $preferredLocale the user’s preferred formatting locale * @property-read string $gqlTypeName
  * @property-read bool $hasRoundedThumb
  * @property-read mixed $authKey
- * @property DateInterval|null $remainingCooldownTime the remaining cooldown time for this user, if they've entered their password incorrectly too many times
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
@@ -583,11 +581,6 @@ class User extends Element implements IdentityInterface
      * @var string|null Email
      */
     public ?string $email = null;
-
-    /**
-     * @var string|null Password
-     */
-    public ?string $password = null;
 
     /**
      * @var DateTime|null Last login date
@@ -1319,9 +1312,9 @@ class User extends Element implements IdentityInterface
 
         if ($this->pending) {
             return self::STATUS_PENDING;
-        if ($this->active) {
         }
 
+        if ($this->active) {
             return self::STATUS_ACTIVE;
         }
 
