@@ -9,7 +9,6 @@ namespace craft\composer;
 
 use Composer\Config;
 use Composer\Downloader\DownloadManager;
-use Composer\Package\Archiver;
 use Composer\Package\Archiver\ArchiveManager;
 use Composer\Util\Loop;
 

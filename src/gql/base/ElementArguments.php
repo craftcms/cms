@@ -224,7 +224,7 @@ abstract class ElementArguments extends Arguments
             'provisionalDrafts' => [
                 'name' => 'provisionalDrafts',
                 'type' => Type::boolean(),
-                'description' => 'Whether provisional drafts should be returned.'
+                'description' => 'Whether provisional drafts should be returned.',
             ],
         ];
     }

@@ -16,6 +16,7 @@
 
         props: {
             actionUrl: String,
+            before: Function,
             confirmationMessage: String,
             disabled: Boolean,
             failMessage: String,
@@ -49,20 +50,34 @@
                 return confirm(this.confirm);
             },
             handleClick() {
-                if (!this.disabled && this.confirmDelete()) {
-                  axios.post(Craft.getActionUrl(this.actionUrl), {id: this.id}, {
-                        headers: {
-                            'X-CSRF-Token': Craft.csrfTokenValue
-                        }
-                    }).then(response => {
-                        if (response.data && response.data.success !== undefined && response.data.success) {
-                            Craft.cp.displayNotice(this.success);
-                            this.$emit('reload');
-                        } else {
-                            Craft.cp.displayError(this.failed);
-                        }
-                    });
+                let _this = this;
+
+                if (_this.disabled) {
+                    return;
                 }
+
+                _this.$emit('loading');
+
+                _this.before(_this.id).then(continueDelete => {
+                    console.log('continue delete', continueDelete);
+                    if (continueDelete && _this.confirmDelete()) {
+                        axios.post(Craft.getActionUrl(_this.actionUrl), {id: _this.id}, {
+                            headers: {
+                                'X-CSRF-Token': Craft.csrfTokenValue
+                            }
+                        }).then(response => {
+                            if (response.data && response.data.success !== undefined && response.data.success) {
+                                Craft.cp.displayNotice(_this.success);
+                                _this.$emit('reload');
+                            } else {
+                                Craft.cp.displayError(_this.failed);
+                                _this.$emit('finishloading');
+                            }
+                        });
+                    } else {
+                        _this.$emit('finishloading');
+                    }
+                });
             }
         }
     }

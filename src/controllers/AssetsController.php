@@ -15,9 +15,9 @@ use craft\errors\UploadFailedException;
 use craft\errors\VolumeException;
 use craft\fields\Assets as AssetsField;
 use craft\helpers\App;
+use craft\helpers\ArrayHelper;
 use craft\helpers\Assets;
 use craft\helpers\Db;
-use craft\helpers\Html;
 use craft\helpers\Image;
 use craft\helpers\StringHelper;
 use craft\helpers\UrlHelper;
@@ -117,7 +117,7 @@ class AssetsController extends Controller
             ],
         ];
 
-        $subfolders = explode('/', trim($asset->folderPath, '/'));
+        $subfolders = ArrayHelper::filterEmptyStringsFromArray(explode('/', $asset->folderPath));
         foreach ($subfolders as $subfolder) {
             $uri .= "/$subfolder";
             $crumbs[] = [

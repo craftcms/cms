@@ -11,6 +11,7 @@ use Craft;
 use craft\db\Table;
 use craft\elements\User;
 use craft\helpers\Db;
+use craft\i18n\Translation;
 use craft\queue\BaseJob;
 use DateTime;
 use yii\base\Exception;
@@ -24,14 +25,14 @@ use yii\base\Exception;
 class Announcement extends BaseJob
 {
     /**
-     * @var string|string[] The announcement heading
+     * @var string The announcement heading
      */
-    public $heading;
+    public string $heading;
 
     /**
-     * @var string|string[] The announcement body
+     * @var string The announcement body
      */
-    public $body;
+    public string $body;
 
     /**
      * @var string|null The plugin handle
@@ -71,24 +72,11 @@ class Announcement extends BaseJob
             $rows = [];
 
             foreach ($batch as $user) {
-                $heading = $this->heading;
-                $body = $this->body;
-
-                if (is_array($heading) || is_array($body)) {
-                    $language = $user->getPreferredLanguage() ?? Craft::$app->language;
-                    if (is_array($heading)) {
-                        $heading = $heading[$language] ?? $heading[Craft::$app->language] ?? reset($heading);
-                    }
-                    if (is_array($body)) {
-                        $body = $body[$language] ?? $body[Craft::$app->language] ?? reset($body);
-                    }
-                }
-
                 $rows[] = [
                     $user->id,
                     $pluginId,
-                    $heading,
-                    $body,
+                    $this->heading,
+                    $this->body,
                     $dateCreated,
                 ];
             }
@@ -108,6 +96,6 @@ class Announcement extends BaseJob
      */
     protected function defaultDescription(): ?string
     {
-        return Craft::t('app', 'Pushing announcement to control panel users');
+        return Translation::prep('app', 'Pushing announcement to control panel users');
     }
 }

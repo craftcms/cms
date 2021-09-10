@@ -17,8 +17,10 @@ use craft\helpers\Html;
 use craft\helpers\Json;
 use craft\helpers\Path;
 use craft\helpers\StringHelper;
+use craft\web\twig\CpExtension;
 use craft\web\twig\Environment;
 use craft\web\twig\Extension;
+use craft\web\twig\GlobalsExtension;
 use craft\web\twig\TemplateLoader;
 use Twig\Error\LoaderError as TwigLoaderError;
 use Twig\Error\RuntimeError as TwigRuntimeError;
@@ -295,6 +297,12 @@ class View extends \yii\web\View
         $twig->addExtension(new StringLoaderExtension());
         $twig->addExtension(new Extension($this, $twig));
 
+        if ($this->_templateMode === self::TEMPLATE_MODE_CP) {
+            $twig->addExtension(new CpExtension());
+        } else {
+            $twig->addExtension(new GlobalsExtension());
+        }
+
         if (YII_DEBUG) {
             $twig->addExtension(new DebugExtension());
         }
@@ -377,22 +385,14 @@ class View extends \yii\web\View
         $renderingTemplate = $this->_renderingTemplate;
         $this->_renderingTemplate = $template;
 
-        $e = null;
         try {
             $output = $this->getTwig()->render($template, $variables);
-        } catch (\Throwable $e) {
-            // throw it later
-        }
-
-        $this->_renderingTemplate = $renderingTemplate;
-        $this->setTemplateMode($oldTemplateMode);
-
-        if ($e !== null) {
-            throw $e;
+        } finally {
+            $this->_renderingTemplate = $renderingTemplate;
+            $this->setTemplateMode($oldTemplateMode);
         }
 
         $this->afterRenderTemplate($template, $variables, $templateMode, $output);
-
         return $output;
     }
 
@@ -437,25 +437,17 @@ class View extends \yii\web\View
         $isRenderingPageTemplate = $this->_isRenderingPageTemplate;
         $this->_isRenderingPageTemplate = true;
 
-        $e = null;
         try {
             $this->beginPage();
             echo $this->renderTemplate($template, $variables);
             $this->endPage();
-        } catch (\Throwable $e) {
-            // throw it later
-        }
-
-        $this->_isRenderingPageTemplate = $isRenderingPageTemplate;
-        $this->setTemplateMode($oldTemplateMode);
-        $output = ob_get_clean();
-
-        if ($e !== null) {
-            throw $e;
+        } finally {
+            $this->_isRenderingPageTemplate = $isRenderingPageTemplate;
+            $this->setTemplateMode($oldTemplateMode);
+            $output = ob_get_clean();
         }
 
         $this->afterRenderPageTemplate($template, $variables, $templateMode, $output);
-
         return $output;
     }
 
@@ -484,22 +476,13 @@ class View extends \yii\web\View
         $lastRenderingTemplate = $this->_renderingTemplate;
         $this->_renderingTemplate = 'string:' . $template;
 
-        $e = null;
         try {
-            $result = $twig->createTemplate($template)->render($variables);
-        } catch (\Throwable $e) {
-            // throw it later
+            return $twig->createTemplate($template)->render($variables);
+        } finally {
+            $this->_renderingTemplate = $lastRenderingTemplate;
+            $twig->setDefaultEscaperStrategy();
+            $this->setTemplateMode($oldTemplateMode);
         }
-
-        $this->_renderingTemplate = $lastRenderingTemplate;
-        $twig->setDefaultEscaperStrategy();
-        $this->setTemplateMode($oldTemplateMode);
-
-        if ($e !== null) {
-            throw $e;
-        }
-
-        return $result;
     }
 
     /**
@@ -543,7 +526,6 @@ class View extends \yii\web\View
         $lastRenderingTemplate = $this->_renderingTemplate;
         $this->_renderingTemplate = 'string:' . $template;
 
-        $e = null;
         try {
             // Is this the first time we've parsed this template?
             $cacheKey = md5($template);
@@ -582,25 +564,17 @@ class View extends \yii\web\View
             // Render it!
             /** @var TwigTemplate $templateObj */
             $templateObj = $this->_objectTemplates[$cacheKey];
-            $output = $templateObj->render($variables);
-        } catch (\Throwable $e) {
-            // throw it later
+            return $templateObj->render($variables);
+        } finally {
+            $this->_renderingTemplate = $lastRenderingTemplate;
+            $twig->setDefaultEscaperStrategy();
+            $this->setTemplateMode($oldTemplateMode);
+
+            // Re-enable strict variables
+            if ($strictVariables) {
+                $twig->enableStrictVariables();
+            }
         }
-
-        $this->_renderingTemplate = $lastRenderingTemplate;
-        $twig->setDefaultEscaperStrategy();
-        $this->setTemplateMode($oldTemplateMode);
-
-        // Re-enable strict variables
-        if ($strictVariables) {
-            $twig->enableStrictVariables();
-        }
-
-        if ($e !== null) {
-            throw $e;
-        }
-
-        return $output;
     }
 
     /**
@@ -784,20 +758,11 @@ class View extends \yii\web\View
         $oldTemplateMode = $this->getTemplateMode();
         $this->setTemplateMode($templateMode);
 
-        $e = null;
         try {
-            $path = $this->_resolveTemplateInternal($name);
-        } catch (\Throwable $e) {
-            // throw it later
+            return $this->_resolveTemplateInternal($name);
+        } finally {
+            $this->setTemplateMode($oldTemplateMode);
         }
-
-        $this->setTemplateMode($oldTemplateMode);
-
-        if ($e !== null) {
-            throw $e;
-        }
-
-        return $path;
     }
 
     /**

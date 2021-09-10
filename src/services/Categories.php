@@ -70,7 +70,7 @@ class Categories extends Component
     const CONFIG_CATEGORYROUP_KEY = 'categoryGroups';
 
     /**
-     * @var MemoizableArray|null
+     * @var MemoizableArray<CategoryGroup>|null
      * @see _groups()
      */
     private ?MemoizableArray $_groups = null;
@@ -111,7 +111,7 @@ class Categories extends Component
     /**
      * Returns a memoizable array of all category groups.
      *
-     * @return MemoizableArray
+     * @return MemoizableArray<CategoryGroup>
      */
     private function _groups(): MemoizableArray
     {
@@ -402,7 +402,8 @@ class Categories extends Component
                 // site rows
                 $affectedSiteUids = array_keys($siteData);
 
-                /** @noinspection PhpUndefinedVariableInspection */
+                // todo: remove comment when phpstan#5401 is fixed
+                /** @phpstan-ignore-next-line */
                 foreach ($allOldSiteSettingsRecords as $siteId => $siteSettingsRecord) {
                     $siteUid = array_search($siteId, $siteIdMap, false);
                     if (!in_array($siteUid, $affectedSiteUids, false)) {

@@ -88,6 +88,7 @@ use craft\services\Volumes;
 use craft\web\Application as WebApplication;
 use craft\web\AssetManager;
 use craft\web\Request as WebRequest;
+use craft\web\Response as WebResponse;
 use craft\web\View;
 use GraphQL\Type\Definition\Type;
 use yii\base\Application;
@@ -570,7 +571,7 @@ trait ApplicationTrait
     public function getCanTestEditions(): bool
     {
         $request = $this->getRequest();
-        if ($request->getIsConsoleRequest()) {
+        if ($request instanceof ConsoleRequest) {
             return false;
         }
 
@@ -659,12 +660,7 @@ trait ApplicationTrait
                 ->from([Table::INFO])
                 ->where(['id' => 1])
                 ->one();
-        } catch (DbException $e) {
-            if ($throwException) {
-                throw $e;
-            }
-            return $this->_info = new Info();
-        } catch (DbConnectException $e) {
+        } catch (DbException | DbConnectException $e) {
             if ($throwException) {
                 throw $e;
             }
@@ -799,16 +795,9 @@ trait ApplicationTrait
      */
     public function getIsDbConnectionValid(): bool
     {
-        $e = null;
         try {
             $this->getDb()->open();
-        } catch (DbConnectException $e) {
-            // throw it later
-        } catch (InvalidConfigException $e) {
-            // throw it later
-        }
-
-        if ($e !== null) {
+        } catch (DbConnectException | InvalidConfigException $e) {
             Craft::error('There was a problem connecting to the database: ' . $e->getMessage(), __METHOD__);
             /** @var ErrorHandler $errorHandler */
             $errorHandler = $this->getErrorHandler();
@@ -1192,7 +1181,7 @@ trait ApplicationTrait
     /**
      * Returns the queue service.
      *
-     * @return Queue|QueueInterface The queue service
+     * @return Queue The queue service
      */
     public function getQueue(): Queue
     {
@@ -1394,8 +1383,9 @@ trait ApplicationTrait
         $this->updateTargetLanguage();
 
         // Prevent browser caching if this is a control panel request
-        if ($request->getIsCpRequest()) {
-            $this->getResponse()->setNoCacheHeaders();
+        $response = $this->getResponse();
+        if ($response instanceof WebResponse) {
+            $response->setNoCacheHeaders();
         }
     }
 
@@ -1482,7 +1472,7 @@ trait ApplicationTrait
      */
     private function _registerFieldLayoutListener(): void
     {
-        Event::on(FieldLayout::class, FieldLayout::EVENT_DEFINE_STANDARD_FIELDS, function(DefineFieldLayoutFieldsEvent $event) {
+        Event::on(FieldLayout::class, FieldLayout::EVENT_DEFINE_NATIVE_FIELDS, function(DefineFieldLayoutFieldsEvent $event) {
             /** @var FieldLayout $fieldLayout */
             $fieldLayout = $event->sender;
 

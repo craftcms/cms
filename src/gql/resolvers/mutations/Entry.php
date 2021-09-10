@@ -47,6 +47,16 @@ class Entry extends ElementMutationResolver
     {
         $entry = $this->getEntryElement($arguments);
 
+        // If saving an entry for a site and the enabled status is provided, honor it.
+        if (array_key_exists('enabled', $arguments)) {
+            if (!empty($arguments['siteId'])) {
+                $entry->setEnabledForSite([$arguments['siteId'] => $arguments['enabled']]);
+            } else {
+                $entry->enabled = $arguments['enabled'];
+            }
+            unset($arguments['enabled']);
+        }
+
         $entry = $this->populateElementWithData($entry, $arguments, $resolveInfo);
 
         $entry = $this->saveElement($entry);

@@ -431,7 +431,6 @@ class Asset extends Element
     protected static function defineTableAttributes(): array
     {
         $attributes = [
-            'title' => ['label' => Craft::t('app', 'Asset')],
             'filename' => ['label' => Craft::t('app', 'Filename')],
             'size' => ['label' => Craft::t('app', 'File Size')],
             'kind' => ['label' => Craft::t('app', 'File Kind')],
@@ -705,10 +704,11 @@ class Asset extends Element
             if (isset($this->_transform) && ($url = (string)$this->getUrl())) {
                 return $url;
             }
-            return parent::__toString();
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             ErrorHandler::convertExceptionToError($e);
         }
+
+        return parent::__toString();
     }
 
     /**
@@ -1288,7 +1288,7 @@ class Asset extends Element
     }
 
     /**
-     * @inheritDoc
+     * @inheritdoc
      */
     public function getPreviewTargets(): array
     {
@@ -1713,15 +1713,11 @@ class Asset extends Element
      */
     public function getSidebarHtml(): string
     {
-        $components = [
-
+        return implode("\n", [
             // Omit preview button on sidebar of slideouts
-            $this->getPreviewHtml(false),
-
+            $this->getPreviewHtml(),
             parent::getSidebarHtml(),
-        ];
-
-        return implode("\n", $components);
+        ]);
     }
 
     /**

@@ -7,8 +7,6 @@
 
 namespace craft\events;
 
-use craft\base\ElementInterface;
-
 /**
  * Mutation populate event class.
  *

@@ -70,10 +70,11 @@ class App
     }
 
     /**
-     * Returns whether Craft is running within [Nitro](https://getnitro.sh).
+     * Returns whether Craft is running within [Nitro](https://getnitro.sh) v1.
      *
      * @return bool
      * @since 3.4.19
+     * @deprecated in 3.7.9.
      */
     public static function isNitro(): bool
     {
@@ -298,6 +299,17 @@ class App
         // Check if iconv is installed. Note we can't just use HTMLPurifier_Encoder::iconvAvailable() because they
         // don't consider iconv "installed" if it's there but "unusable".
         return self::$_iconv = (function_exists('iconv') && \HTMLPurifier_Encoder::testIconvTruncateBug() === \HTMLPurifier_Encoder::ICONV_OK);
+    }
+
+    /**
+     * Returns whether the server supports IDNA ASCII strings.
+     *
+     * @return bool
+     * @since 3.7.9
+     */
+    public static function supportsIdn(): bool
+    {
+        return function_exists('idn_to_ascii') && defined('INTL_IDNA_VARIANT_UTS46');
     }
 
     /**
@@ -830,8 +842,10 @@ class App
 
         if (Craft::$app->getRequest()->getIsCpRequest() && !Craft::$app->getResponse()->isSent) {
             // Is someone logged in?
-            $id = SessionHelper::get(Craft::$app->getUser()->idParam);
-            if ($id) {
+            if (
+                Craft::$app->getIsInstalled() &&
+                ($id = SessionHelper::get(Craft::$app->getUser()->idParam))
+            ) {
                 // If they have a preferred locale, use it
                 $usersService = Craft::$app->getUsers();
                 if (

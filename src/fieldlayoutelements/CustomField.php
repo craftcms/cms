@@ -207,12 +207,12 @@ class CustomField extends BaseField
     public function formHtml(?ElementInterface $element = null, bool $static = false): ?string
     {
         $view = Craft::$app->getView();
-        $registerDeltas = ($element->id ?? false) && $view->getIsDeltaRegistrationActive();
-        $view->setIsDeltaRegistrationActive(!$static);
+        $isDeltaRegistrationActive = $view->getIsDeltaRegistrationActive();
+        $view->setIsDeltaRegistrationActive($isDeltaRegistrationActive && ($element->id ?? false) && !$static);
         $html = $view->namespaceInputs(function() use ($element, $static) {
             return (string)parent::formHtml($element, $static);
         }, 'fields');
-        $view->setIsDeltaRegistrationActive($registerDeltas);
+        $view->setIsDeltaRegistrationActive($isDeltaRegistrationActive);
 
         return $html;
     }

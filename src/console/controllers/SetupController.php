@@ -124,7 +124,7 @@ class SetupController extends Controller
         }
 
         $this->stdout(PHP_EOL);
-        return $this->module->runAction('install');
+        return $this->run('install/craft');
     }
 
     /**
@@ -213,7 +213,6 @@ EOD;
     public function actionDbCreds(): int
     {
         $badUserCredentials = false;
-        $isNitro = App::isNitro();
 
         top:
 
@@ -231,15 +230,11 @@ EOD;
         }
 
         // server
-        if ($isNitro) {
-            $this->server = '127.0.0.1';
-        } else {
-            $this->server = $this->prompt('Database server name or IP address:', [
-                'required' => true,
-                'default' => $this->server ?: '127.0.0.1',
-            ]);
-            $this->server = strtolower($this->server);
-        }
+        $this->server = $this->prompt('Database server name or IP address:', [
+            'required' => true,
+            'default' => $this->server ?: '127.0.0.1',
+        ]);
+        $this->server = strtolower($this->server);
 
         // port
         $this->port = (int)$this->prompt('Database port:', [
@@ -253,18 +248,13 @@ EOD;
         userCredentials:
 
         // user & password
-        if ($isNitro) {
-            $this->user = 'nitro';
-            $this->password = 'nitro';
-        } else {
-            $this->user = $this->prompt('Database username:', [
-                'default' => $this->user ?: null,
-            ]);
+        $this->user = $this->prompt('Database username:', [
+            'default' => $this->user ?: null,
+        ]);
 
-            if ($this->interactive) {
-                $this->stdout('Database password: ');
-                $this->password = CliPrompt::hiddenPrompt(true);
-            }
+        if ($this->interactive) {
+            $this->stdout('Database password: ');
+            $this->password = CliPrompt::hiddenPrompt(true);
         }
 
         if ($badUserCredentials) {
@@ -310,13 +300,16 @@ EOD;
         // Test the DB connection
         $this->stdout('Testing database credentials ... ', Console::FG_YELLOW);
 
-        try {
-            $dbConfig = Craft::$app->getConfig()->getDb();
-        } catch (InvalidConfigException $e) {
-            $dbConfig = new DbConfig();
-        }
-
         test:
+
+        /** @phpstan-ignore-next-line */
+        if (!isset($dbConfig)) {
+            try {
+                $dbConfig = Craft::$app->getConfig()->getDb();
+            } catch (InvalidConfigException $e) {
+                $dbConfig = new DbConfig();
+            }
+        }
 
         /** @noinspection PhpFieldAssignmentTypeMismatchInspection */
         $dbConfig->driver = $this->driver;

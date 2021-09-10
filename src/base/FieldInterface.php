@@ -12,6 +12,7 @@ use craft\elements\db\ElementQueryInterface;
 use craft\models\FieldGroup;
 use craft\models\GqlSchema;
 use GraphQL\Type\Definition\Type;
+use yii\base\Component as YiiComponent;
 use yii\validators\Validator;
 
 /**
@@ -19,6 +20,7 @@ use yii\validators\Validator;
  * A class implementing this interface should also use [[SavableComponentTrait]] and [[FieldTrait]].
  *
  * @mixin FieldTrait
+ * @mixin YiiComponent
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */

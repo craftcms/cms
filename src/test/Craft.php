@@ -342,9 +342,9 @@ class Craft extends Yii2
     public function expectEvent(
         string $class,
         string $eventName,
-        $callback,
+               $callback,
         string $eventInstance = '',
-        array $eventValues = []
+        array  $eventValues = []
     ): void
     {
         // Add this event.
@@ -545,9 +545,9 @@ class Craft extends Yii2
             throw new InvalidArgumentException('Not a job');
         }
 
-        Craft::$app->getQueue()->push($job);
-
-        Craft::$app->getQueue()->run();
+        $queue = \Craft::$app->getQueue();
+        $queue->push($job);
+        $queue->run();
     }
 
     /**

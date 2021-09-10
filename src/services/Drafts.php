@@ -18,6 +18,7 @@ use craft\errors\InvalidElementException;
 use craft\events\DraftEvent;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
+use craft\helpers\ElementHelper;
 use yii\base\Component;
 use yii\base\Exception;
 use yii\base\InvalidArgumentException;
@@ -111,11 +112,11 @@ class Drafts extends Component
      */
     public function createDraft(
         ElementInterface $canonical,
-        int $creatorId,
-        ?string $name = null,
-        ?string $notes = null,
-        array $newAttributes = [],
-        bool $provisional = false
+        int              $creatorId,
+        ?string          $name = null,
+        ?string          $notes = null,
+        array            $newAttributes = [],
+        bool             $provisional = false
     ): ElementInterface
     {
         // Make sure the canonical element isn't a draft or revision
@@ -287,7 +288,9 @@ class Drafts extends Component
         try {
             if ($canonical !== $draft) {
                 // Merge in any attribute & field values that were updated in the canonical element, but not the draft
-                $elementsService->mergeCanonicalChanges($draft);
+                if (ElementHelper::isOutdated($draft)) {
+                    $elementsService->mergeCanonicalChanges($draft);
+                }
 
                 // "Duplicate" the draft with the canonical element's ID, UID, and content ID
                 $newCanonical = $elementsService->updateCanonicalElement($draft, [
@@ -421,10 +424,10 @@ class Drafts extends Component
     public function insertDraftRow(
         ?string $name,
         ?string $notes = null,
-        ?int $creatorId = null,
-        ?int $canonicalId = null,
-        bool $trackChanges = false,
-        bool $provisional = false
+        ?int    $creatorId = null,
+        ?int    $canonicalId = null,
+        bool    $trackChanges = false,
+        bool    $provisional = false
     ): int
     {
         Db::insert(Table::DRAFTS, [

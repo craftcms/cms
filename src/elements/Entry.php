@@ -456,9 +456,9 @@ class Entry extends Element
                 }
 
                 // Delete?
-                if ($userSession->checkPermission("deleteEntries:$section->uid")) {
-                    $actions[] = Delete::class;
+                $actions[] = Delete::class;
 
+                if ($userSession->checkPermission("deleteEntries:$section->uid")) {
                     if (
                         $section->type === Section::TYPE_STRUCTURE &&
                         $section->maxLevels != 1 &&
@@ -547,7 +547,6 @@ class Entry extends Element
     protected static function defineTableAttributes(): array
     {
         $attributes = [
-            'title' => ['label' => Craft::t('app', 'Entry')],
             'section' => ['label' => Craft::t('app', 'Section')],
             'type' => ['label' => Craft::t('app', 'Entry Type')],
             'author' => ['label' => Craft::t('app', 'Author')],
@@ -849,8 +848,8 @@ class Entry extends Element
                     ->id($this->id)
                     ->siteId('*')
                     ->select('elements_sites.siteId')
-                    ->drafts($this->getIsDraft())
-                    ->provisionalDrafts($this->isProvisionalDraft)
+                    ->drafts(null)
+                    ->provisionalDrafts(null)
                     ->revisions($this->getIsRevision())
                     ->column();
             } else {
@@ -864,8 +863,8 @@ class Entry extends Element
                     ->id($this->duplicateOf->id)
                     ->siteId('*')
                     ->select('elements_sites.siteId')
-                    ->drafts($this->duplicateOf->getIsDraft())
-                    ->provisionalDrafts($this->duplicateOf->isProvisionalDraft)
+                    ->drafts(null)
+                    ->provisionalDrafts(null)
                     ->revisions($this->duplicateOf->getIsRevision())
                     ->column()
                 );
@@ -1262,7 +1261,7 @@ class Entry extends Element
         $userSession = Craft::$app->getUser();
         $userId = $userSession->getId();
 
-        if ($this->getIsDraft() && !$this->getIsUnpublishedDraft()) {
+        if ($this->getIsDraft()) {
             /** @var Entry|DraftBehavior $this */
             return $this->creatorId == $userId || $userSession->checkPermission("deletePeerEntryDrafts:$section->uid");
         }

@@ -28,7 +28,7 @@
             instructions: "What this site will be called in the control panel."|t('app'),
             id: 'name',
             name: 'name',
-            value: site.originalName ?? site.getName(false),
+            value: site.getName(false),
             suggestEnvVars: true,
             errors: site.getErrors('name'),
             autofocus: true,
@@ -97,7 +97,7 @@
                 suggestEnvVars: true,
                 suggestAliases: true,
                 name: 'baseUrl',
-                value: site.originalBaseUrl ?? site.getBaseUrl(false),
+                value: site.getBaseUrl(false),
                 errors: site.getErrors('baseUrl')
             }) }}
         </div>
@@ -108,11 +108,12 @@
     {% if (craft.app.isMultiSite or not site.id) %}
         <div class="meta">
             {{ forms.lightswitchField({
-                label: 'Enable on the front end'|t('app'),
+                label: 'Enabled'|t('app'),
                 id: 'enabled',
                 name: 'enabled',
                 on: site.primary or site.enabled,
                 disabled: site.primary,
+                instructions: site.primary ? 'The primary site cannot be disabled.'|t('app') : null,
                 errors: site.getErrors('enabled'),
             }) }}
         </div>

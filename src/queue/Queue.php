@@ -15,6 +15,7 @@ use craft\helpers\Db;
 use craft\helpers\Json;
 use craft\helpers\StringHelper;
 use craft\helpers\UrlHelper;
+use craft\i18n\Translation;
 use yii\base\Exception;
 use yii\base\InvalidArgumentException;
 use yii\db\Expression;
@@ -406,8 +407,8 @@ class Queue extends \yii\queue\cli\Queue implements QueueInterface
             'status' => $this->_status($result),
             'error' => $result['error'] ?? '',
             'progress' => $result['progress'],
-            'progressLabel' => $result['progressLabel'],
-            'description' => $result['description'],
+            'progressLabel' => Translation::translate((string)$result['progressLabel']) ?: null,
+            'description' => Translation::translate((string)$result['description']) ?: null,
             'job' => $job,
             'ttr' => (int)$result['ttr'],
             'Priority' => $result['priority'],
@@ -463,8 +464,8 @@ class Queue extends \yii\queue\cli\Queue implements QueueInterface
                 'delay' => max(0, $result['timePushed'] + $result['delay'] - time()),
                 'status' => $this->_status($result),
                 'progress' => (int)$result['progress'],
-                'progressLabel' => $result['progressLabel'],
-                'description' => $result['description'],
+                'progressLabel' => Translation::translate((string)$result['progressLabel']) ?: null,
+                'description' => Translation::translate((string)$result['description']) ?: null,
                 'error' => $result['error'],
             ];
         }
@@ -595,7 +596,7 @@ EOD;
                     ->andWhere('[[timePushed]] + [[delay]] <= :time', ['time' => time()])
                     ->orderBy(['priority' => SORT_ASC, 'id' => SORT_ASC])
                     ->limit(1)
-                    ->one($this->db);
+                    ->one($this->db) ?: null;
             });
 
             if (is_array($payload)) {
@@ -623,10 +624,10 @@ EOD;
     /**
      * Checks if $job is a resource and if so, convert it to a serialized format.
      *
-     * @param string $job
+     * @param string|resource $job
      * @return string
      */
-    private function _jobData(string $job): string
+    private function _jobData($job): string
     {
         if (is_resource($job)) {
             $job = stream_get_contents($job);

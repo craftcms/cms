@@ -49,6 +49,7 @@ trait GqlTypeTrait
     public static function getType(?array $fields = null): Type
     {
         return GqlEntityRegistry::getEntity(static::class) ?: GqlEntityRegistry::createEntity(static::class, new GqlObjectType([
+            /** @phpstan-ignore-next-line */
             'name' => static::getName(),
             'fields' => $fields ?: (static::class . '::getFieldDefinitions'),
         ]));

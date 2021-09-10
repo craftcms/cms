@@ -10,7 +10,6 @@ namespace craft\helpers;
 use Craft;
 use craft\base\ElementInterface;
 use craft\db\Paginator;
-use craft\i18n\Locale;
 use craft\web\twig\variables\Paginate;
 use craft\web\View;
 use Twig\Environment;
@@ -95,11 +94,6 @@ class Template
             if (is_object($value) && get_class($value) === Markup::class) {
                 $arguments[$key] = (string)$value;
             }
-        }
-
-        // Add deprecated support for the old DateTime methods
-        if ($object instanceof \DateTime && ($value = self::_dateTimeAttribute($object, $item, $type)) !== false) {
-            return $value;
         }
 
         try {
@@ -232,109 +226,6 @@ class Template
     private static function _profileToken(string $type, string $name, int $count): string
     {
         return "render {$type}: {$name}" . ($count === 1 ? '' : " ({$count})");
-    }
-
-    /**
-     * Adds (deprecated) support for the old Craft\DateTime methods.
-     *
-     * @param \DateTime $object
-     * @param string $item
-     * @param string $type
-     * @return string|false
-     */
-    private static function _dateTimeAttribute(\DateTime $object, string $item, string $type)
-    {
-        switch ($item) {
-            case 'atom':
-                $format = \DateTime::ATOM;
-                $filter = 'atom';
-                break;
-            case 'cookie':
-                $format = \DateTime::COOKIE;
-                break;
-            case 'iso8601':
-                $format = \DateTime::ISO8601;
-                break;
-            case 'rfc822':
-                $format = \DateTime::RFC822;
-                break;
-            case 'rfc850':
-                $format = \DateTime::RFC850;
-                break;
-            case 'rfc1036':
-                $format = \DateTime::RFC1036;
-                break;
-            case 'rfc1123':
-                $format = \DateTime::RFC1123;
-                break;
-            case 'rfc2822':
-                $format = \DateTime::RFC2822;
-                break;
-            case 'rfc3339':
-                $format = \DateTime::RFC3339;
-                break;
-            case 'rss':
-                $format = \DateTime::RSS;
-                $filter = 'rss';
-                break;
-            case 'w3c':
-                $format = \DateTime::W3C;
-                break;
-            case 'w3cDate':
-                $format = 'Y-m-d';
-                break;
-            case 'mySqlDateTime':
-                $format = 'Y-m-d H:i:s';
-                break;
-            case 'localeDate':
-                $value = Craft::$app->getFormatter()->asDate($object, Locale::LENGTH_SHORT);
-                $filter = 'date(\'short\')';
-                break;
-            case 'localeTime':
-                $value = Craft::$app->getFormatter()->asTime($object, Locale::LENGTH_SHORT);
-                $filter = 'time(\'short\')';
-                break;
-            case 'year':
-                $format = 'Y';
-                break;
-            case 'month':
-                $format = 'n';
-                break;
-            case 'day':
-                $format = 'j';
-                break;
-            case 'nice':
-                $value = Craft::$app->getFormatter()->asDatetime($object, Locale::LENGTH_SHORT);
-                $filter = 'datetime(\'short\')';
-                break;
-            case 'uiTimestamp':
-                $value = Craft::$app->getFormatter()->asTimestamp($object, Locale::LENGTH_SHORT);
-                $filter = 'timestamp(\'short\')';
-                break;
-            default:
-                return false;
-        }
-
-        if (isset($format)) {
-            if (!isset($value)) {
-                $value = $object->format($format);
-            }
-            if (!isset($filter)) {
-                $filter = 'date(\'' . addslashes($format) . '\')';
-            }
-        }
-
-        $key = "DateTime::{$item}()";
-        /** @noinspection PhpUndefinedVariableInspection */
-        $message = "`DateTime::{$item}" . ($type === TwigTemplate::METHOD_CALL ? '()' : '') . "` is deprecated. Use the `|{$filter}` filter instead.";
-
-        if ($item === 'iso8601') {
-            $message = rtrim($message, '.') . ', or consider using the `|atom` filter, which will give you an actual ISO-8601 string (unlike the old `.iso8601()` method).';
-        }
-
-        Craft::$app->getDeprecator()->log($key, $message);
-        /** @noinspection PhpUndefinedVariableInspection */
-        return $value;
     }
 
     /**

@@ -235,14 +235,16 @@ class InterfaceAndGeneratorTest extends Unit
                 'uid' => 'volume-uid-1',
                 'handle' => 'mockVolume1',
                 '__call' => function($name, $params) {
-                    return $name == 'getFields' ? [] : parent::__get($name, $params);
+                    /** @phpstan-ignore-next-line */
+                    return $name === 'getFields' ? [] : parent::__get($name, $params);
                 },
             ]),
             $this->make(Local::class, [
                 'uid' => 'volume-uid-2',
                 'handle' => 'mockVolume2',
                 '__call' => function($name, $params) {
-                    return $name == 'getFields' ? [$this->make(PlainText::class, ['name' => 'Mock Field', 'handle' => 'mockField'])] : parent::__get($name, $params);
+                    /** @phpstan-ignore-next-line */
+                    return $name === 'getFields' ? [$this->make(PlainText::class, ['name' => 'Mock Field', 'handle' => 'mockField'])] : parent::__get($name, $params);
                 },
             ]),
         ];
@@ -262,7 +264,8 @@ class InterfaceAndGeneratorTest extends Unit
                 'handle' => 'mockType1',
                 'getSection' => $this->make(Section::class, ['uid' => 'section-uid-1', 'handle' => 'mockSection1']),
                 '__call' => function($name, $params) {
-                    return $name == 'getFields' ? [] : parent::__get($name, $params);
+                    /** @phpstan-ignore-next-line */
+                    return $name === 'getFields' ? [] : parent::__get($name, $params);
                 },
             ]),
             $this->make(EntryType::class, [
@@ -270,7 +273,8 @@ class InterfaceAndGeneratorTest extends Unit
                 'handle' => 'mockType2',
                 'getSection' => $this->make(Section::class, ['uid' => 'section-uid-1', 'handle' => 'mockSection2']),
                 '__call' => function($name, $params) {
-                    return $name == 'getFields' ? [$this->make(PlainText::class, ['name' => 'Mock field', 'handle' => 'mockField'])] : parent::__get($name, $params);
+                    /** @phpstan-ignore-next-line */
+                    return $name === 'getFields' ? [$this->make(PlainText::class, ['name' => 'Mock field', 'handle' => 'mockField'])] : parent::__get($name, $params);
                 },
             ]),
         ];
@@ -289,7 +293,8 @@ class InterfaceAndGeneratorTest extends Unit
                 'uid' => 'globalset-uid-1',
                 'handle' => 'mockGlobal',
                 '__call' => function($name, $params) {
-                    return $name == 'getFields' ? [$this->make(PlainText::class, ['name' => 'Mock Field', 'handle' => 'mockField'])] : parent::__get($name, $params);
+                    /** @phpstan-ignore-next-line */
+                    return $name === 'getFields' ? [$this->make(PlainText::class, ['name' => 'Mock Field', 'handle' => 'mockField'])] : parent::__get($name, $params);
                 },
             ]),
         ];
@@ -308,7 +313,8 @@ class InterfaceAndGeneratorTest extends Unit
                 'uid' => 'categoyGroup-uid-1',
                 'handle' => 'mockCategoryGroup',
                 '__call' => function($name, $params) {
-                    return $name == 'getFields' ? [$this->make(PlainText::class, ['name' => 'Mock Field', 'handle' => 'mockField'])] : parent::__get($name, $params);
+                    /** @phpstan-ignore-next-line */
+                    return $name === 'getFields' ? [$this->make(PlainText::class, ['name' => 'Mock Field', 'handle' => 'mockField'])] : parent::__get($name, $params);
                 },
             ]),
         ];
@@ -327,7 +333,8 @@ class InterfaceAndGeneratorTest extends Unit
                 'uid' => 'tagGroup-uid-1',
                 'handle' => 'mockTagGroup',
                 '__call' => function($name, $params) {
-                    return $name == 'getFields' ? [$this->make(PlainText::class, ['name' => 'Mock Field', 'handle' => 'mockField'])] : parent::__get($name, $params);
+                    /** @phpstan-ignore-next-line */
+                    return $name === 'getFields' ? [$this->make(PlainText::class, ['name' => 'Mock Field', 'handle' => 'mockField'])] : parent::__get($name, $params);
                 },
             ]),
         ];
@@ -346,7 +353,8 @@ class InterfaceAndGeneratorTest extends Unit
                 'uid' => 'matrixBlock-uid-1',
                 'handle' => 'mockMatrixBlock',
                 '__call' => function($name, $params) {
-                    return $name == 'getFields' ? [$this->make(PlainText::class, ['name' => 'Mock Field', 'handle' => 'mockField'])] : parent::__get($name, $params);
+                    /** @phpstan-ignore-next-line */
+                    return $name === 'getFields' ? [$this->make(PlainText::class, ['name' => 'Mock Field', 'handle' => 'mockField'])] : parent::__get($name, $params);
                 },
                 'getField' => $this->makeEmpty(MatrixField::class, ['handle' => 'matrixField']),
             ]),

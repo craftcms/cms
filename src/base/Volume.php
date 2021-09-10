@@ -144,7 +144,7 @@ abstract class Volume extends SavableComponent implements VolumeInterface
     }
 
     /**
-     * @inheritDoc
+     * @inheritdoc
      */
     public function createFileByStream(string $path, $stream, array $config): void
     {
@@ -152,7 +152,7 @@ abstract class Volume extends SavableComponent implements VolumeInterface
     }
 
     /**
-     * @inheritDoc
+     * @inheritdoc
      */
     public function updateFileByStream(string $path, $stream, array $config): void
     {

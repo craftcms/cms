@@ -17,7 +17,7 @@ use yii\base\Behavior;
  *
  * @property ElementInterface $owner
  * @property User|null $creator
- * @property-read $sourceId
+ * @property-read int $sourceId
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.5.0
  */

@@ -432,6 +432,32 @@ class ElementHelper
     }
 
     /**
+     * Returns whether the given derivative element is outdated compared to its canonical element.
+     *
+     * @param ElementInterface $element
+     * @return bool
+     * @since 3.7.12
+     */
+    public static function isOutdated(ElementInterface $element): bool
+    {
+        if ($element->getIsCanonical()) {
+            return false;
+        }
+
+        $canonical = $element->getCanonical();
+
+        if ($element->dateCreated > $canonical->dateUpdated) {
+            return false;
+        }
+
+        if (!$element->dateLastMerged) {
+            return true;
+        }
+
+        return $element->dateLastMerged < $canonical->dateUpdated;
+    }
+
+    /**
      * Returns the canonical version of an element.
      *
      * @param ElementInterface $element The source/draft/revision element
@@ -449,14 +475,14 @@ class ElementHelper
      * Given an array of elements, will go through and set the appropriate "next"
      * and "prev" elements on them.
      *
-     * @param ElementInterface[] $elements The array of elements.
+     * @param iterable|ElementInterface[] $elements The array of elements.
      */
-    public static function setNextPrevOnElements(array $elements): void
+    public static function setNextPrevOnElements($elements): void
     {
         /** @var ElementInterface $lastElement */
         $lastElement = null;
 
-        foreach ($elements as $i => $element) {
+        foreach ($elements as $element) {
             if ($lastElement) {
                 $lastElement->setNext($element);
                 $element->setPrev($lastElement);

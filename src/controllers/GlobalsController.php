@@ -221,7 +221,9 @@ class GlobalsController extends Controller
         }
 
         // Prep the form tabs & content
-        $form = $globalSet->getFieldLayout()->createForm($globalSet);
+        $form = $globalSet->getFieldLayout()->createForm($globalSet, false, [
+            'registerDeltas' => true,
+        ]);
 
         // Render the template!
         return $this->renderTemplate('globals/_edit', [

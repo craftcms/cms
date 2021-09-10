@@ -147,7 +147,6 @@ class Install extends Migration
             'dateModified' => $this->dateTime(),
             'dateCreated' => $this->dateTime()->notNull(),
             'dateUpdated' => $this->dateTime()->notNull(),
-            'uid' => $this->uid(),
             'PRIMARY KEY([[id]])',
         ]);
         $this->createTable(Table::ASSETTRANSFORMINDEX, [
@@ -208,7 +207,6 @@ class Install extends Migration
             'deletedWithGroup' => $this->boolean()->null(),
             'dateCreated' => $this->dateTime()->notNull(),
             'dateUpdated' => $this->dateTime()->notNull(),
-            'uid' => $this->uid(),
             'PRIMARY KEY([[id]])',
         ]);
         $this->createTable(Table::CATEGORYGROUPS, [
@@ -366,7 +364,6 @@ class Install extends Migration
             'deletedWithEntryType' => $this->boolean()->null(),
             'dateCreated' => $this->dateTime()->notNull(),
             'dateUpdated' => $this->dateTime()->notNull(),
-            'uid' => $this->uid(),
             'PRIMARY KEY([[id]])',
         ]);
         $this->createTable(Table::ENTRYTYPES, [
@@ -490,7 +487,6 @@ class Install extends Migration
             'deletedWithOwner' => $this->boolean()->null(),
             'dateCreated' => $this->dateTime()->notNull(),
             'dateUpdated' => $this->dateTime()->notNull(),
-            'uid' => $this->uid(),
             'PRIMARY KEY([[id]])',
         ]);
         $this->createTable(Table::MATRIXBLOCKTYPES, [
@@ -670,7 +666,6 @@ class Install extends Migration
             'deletedWithGroup' => $this->boolean()->null(),
             'dateCreated' => $this->dateTime()->notNull(),
             'dateUpdated' => $this->dateTime()->notNull(),
-            'uid' => $this->uid(),
             'PRIMARY KEY([[id]])',
         ]);
         $this->createTable(Table::TOKENS, [
@@ -730,16 +725,17 @@ class Install extends Migration
         ]);
         $this->createTable(Table::USERS, [
             'id' => $this->integer()->notNull(),
-            'username' => $this->string(100)->notNull(),
             'photoId' => $this->integer(),
-            'firstName' => $this->string(100),
-            'lastName' => $this->string(100),
-            'email' => $this->string()->notNull(),
-            'password' => $this->string(),
-            'admin' => $this->boolean()->defaultValue(false)->notNull(),
+            'active' => $this->boolean()->defaultValue(false)->notNull(),
+            'pending' => $this->boolean()->defaultValue(false)->notNull(),
             'locked' => $this->boolean()->defaultValue(false)->notNull(),
             'suspended' => $this->boolean()->defaultValue(false)->notNull(),
-            'pending' => $this->boolean()->defaultValue(false)->notNull(),
+            'admin' => $this->boolean()->defaultValue(false)->notNull(),
+            'username' => $this->string(),
+            'firstName' => $this->string(),
+            'lastName' => $this->string(),
+            'email' => $this->string(),
+            'password' => $this->string(),
             'lastLoginDate' => $this->dateTime(),
             'lastLoginAttemptIp' => $this->string(45),
             'invalidLoginWindowStart' => $this->dateTime(),
@@ -754,7 +750,6 @@ class Install extends Migration
             'lastPasswordChangeDate' => $this->dateTime(),
             'dateCreated' => $this->dateTime()->notNull(),
             'dateUpdated' => $this->dateTime()->notNull(),
-            'uid' => $this->uid(),
             'PRIMARY KEY([[id]])',
         ]);
         $this->createTable(Table::VOLUMEFOLDERS, [
@@ -836,7 +831,7 @@ class Install extends Migration
         $this->createIndex(null, Table::ELEMENTS, ['type'], false);
         $this->createIndex(null, Table::ELEMENTS, ['enabled'], false);
         $this->createIndex(null, Table::ELEMENTS, ['archived', 'dateCreated'], false);
-        $this->createIndex(null, Table::ELEMENTS, ['archived', 'dateDeleted', 'draftId', 'revisionId'], false);
+        $this->createIndex(null, Table::ELEMENTS, ['archived', 'dateDeleted', 'draftId', 'revisionId', 'canonicalId'], false);
         $this->createIndex(null, Table::ELEMENTS_SITES, ['elementId', 'siteId'], true);
         $this->createIndex(null, Table::ELEMENTS_SITES, ['siteId'], false);
         $this->createIndex(null, Table::ELEMENTS_SITES, ['slug', 'siteId'], false);
@@ -926,7 +921,10 @@ class Install extends Migration
         $this->createIndex(null, Table::USERPERMISSIONS_USERGROUPS, ['groupId'], false);
         $this->createIndex(null, Table::USERPERMISSIONS_USERS, ['permissionId', 'userId'], true);
         $this->createIndex(null, Table::USERPERMISSIONS_USERS, ['userId'], false);
-        $this->createIndex(null, Table::USERS, ['uid'], false);
+        $this->createIndex(null, Table::USERS, ['active'], false);
+        $this->createIndex(null, Table::USERS, ['locked'], false);
+        $this->createIndex(null, Table::USERS, ['pending'], false);
+        $this->createIndex(null, Table::USERS, ['suspended'], false);
         $this->createIndex(null, Table::USERS, ['verificationCode'], false);
         $this->createIndex(null, Table::VOLUMEFOLDERS, ['name', 'parentId', 'volumeId'], true);
         $this->createIndex(null, Table::VOLUMEFOLDERS, ['parentId'], false);
@@ -1162,10 +1160,11 @@ class Install extends Migration
         // Save the first user
         echo '    > saving the first user ... ';
         $user = new User([
+            'active' => true,
+            'admin' => true,
             'username' => $this->username,
             'newPassword' => $this->password,
             'email' => $this->email,
-            'admin' => true,
         ]);
         Craft::$app->getElements()->saveElement($user);
         echo "done\n";
@@ -1208,22 +1207,15 @@ class Install extends Migration
         $tempResponse = new Response(['isSent' => true]);
         Craft::$app->set('response', $tempResponse);
 
-        $e = null;
-
         try {
             foreach ($pluginConfigs as $handle => $pluginConfig) {
                 echo "    > installing {$handle} ... ";
                 $pluginsService->installPlugin($handle);
                 echo "done\n";
             }
-        } catch (\Throwable $e) {
-        }
-
-        // Put the real response back
-        Craft::$app->set('response', $realResponse);
-
-        if ($e !== null) {
-            throw $e;
+        } finally {
+            // Put the real response back
+            Craft::$app->set('response', $realResponse);
         }
     }
 

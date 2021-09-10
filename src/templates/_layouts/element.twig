@@ -69,7 +69,7 @@
 {% endif %}
 
 {% set previewTargets = element.getPreviewTargets() %}
-{% set enablePreview = previewTargets and not craft.app.request.isMobileBrowser(true) and generalConfig.autosaveDrafts %}
+{% set enablePreview = previewTargets and not craft.app.request.isMobileBrowser(true) %}
 
 {% set canDeleteDraft = (
     isDraft and
@@ -114,7 +114,9 @@
     {% set saveShortcutRedirect = '{cpEditUrl}' %}
 {% endif %}
 
-{% set form = element.getFieldLayout().createForm(element, isRevision or not canEdit) %}
+{% set form = element.getFieldLayout().createForm(element, isRevision or not canEdit, {
+    registerDeltas: true,
+}) %}
 
 {% if tabs is not defined %}
     {% set tabs = form.getTabMenu() %}
@@ -292,6 +294,12 @@
                         type: element.lowerDisplayName(),
                     }) : 'Save'|t('app') }}
                 </button>
+                <button type="button" class="btn submit menubtn"></button>
+                {% include '_layouts/components/form-action-menu' %}
+            </div>
+        {% elseif isUnpublishedDraft %}
+            <div id="save-btn-container" class="btngroup submit">
+                <button type="submit" class="btn submit formsubmit" data-action="{{ saveDraftAction }}" data-redirect="{{ (redirectUrl ~ '#')|hash }}">{{ 'Save draft'|t('app') }}</button>
                 <button type="button" class="btn submit menubtn"></button>
                 {% include '_layouts/components/form-action-menu' %}
             </div>

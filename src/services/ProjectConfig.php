@@ -1332,7 +1332,7 @@ class ProjectConfig extends Component
     }
 
     /**
-     * Retrieve a a config file tree with modified times based on the main configuration file.
+     * Retrieve a config file tree with modified times based on the main configuration file.
      *
      * @return int
      */
@@ -1382,6 +1382,8 @@ class ProjectConfig extends Component
                     $insertionPoint = &$insertionPoint[$pathSegment];
                 }
 
+                /** @var string $pathSegment */
+                /** @phpstan-ignore-next-line */
                 if ($pathSegment === $filename) {
                     $insertionPoint = array_merge($insertionPoint, $yamlConfig);
                 } else {

@@ -164,7 +164,11 @@ class GlobalSet extends Element
      */
     public function __toString(): string
     {
-        return (string)$this->name ?: static::class;
+        if ($this->name) {
+            return $this->name;
+        }
+
+        return parent::__toString();
     }
 
     /**
@@ -194,12 +198,14 @@ class GlobalSet extends Element
             ['name', 'handle'],
             UniqueValidator::class,
             'targetClass' => GlobalSetRecord::class,
+            'except' => [self::SCENARIO_ESSENTIALS],
         ];
 
         $rules[] = [
             ['handle'],
             HandleValidator::class,
             'reservedWords' => ['id', 'dateCreated', 'dateUpdated', 'uid', 'title'],
+            'except' => [self::SCENARIO_ESSENTIALS],
         ];
 
         return $rules;

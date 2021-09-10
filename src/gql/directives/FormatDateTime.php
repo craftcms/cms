@@ -53,7 +53,7 @@ class FormatDateTime extends Directive
                 new FieldArgument([
                     'name' => 'timezone',
                     'type' => Type::string(),
-                    'description' => 'The full name of the timezone (e.g., America/New_York). Defaults to ' . self::defaultTimeZone(),
+                    'description' => 'The full name of the timezone (e.g., America/New_York). Defaults to ' . self::defaultTimeZone() . ' if no timezone set on the field.',
                     'defaultValue' => self::defaultTimeZone(),
                 ]),
                 new FieldArgument([
@@ -84,7 +84,6 @@ class FormatDateTime extends Directive
         if ($value instanceof \DateTime) {
             /** @var \DateTime $value */
             $format = $arguments['format'] ?? self::DEFAULT_FORMAT;
-            $timezone = $arguments['timezone'] ?? self::defaultTimeZone();
 
             // Is this a custom PHP date format?
             if ($format !== null && !in_array($format, [Locale::LENGTH_SHORT, Locale::LENGTH_MEDIUM, Locale::LENGTH_LONG, Locale::LENGTH_FULL], true)) {
@@ -102,7 +101,16 @@ class FormatDateTime extends Directive
             }
 
             $formatter->datetimeFormat = $format;
+
+            // Leave timezone alone, unless directed to modify with arguments.
+            if (!empty($arguments['timezone'])) {
+                $timezone = $arguments['timezone'];
+            } else {
+                $timezone = $value->getTimezone()->getName();
+            }
+
             $formatter->timeZone = $timezone;
+
             $value = $formatter->asDatetime($value, $format);
         }
 
@@ -116,6 +124,6 @@ class FormatDateTime extends Directive
      */
     public static function defaultTimeZone(): string
     {
-        return Craft::$app->getConfig()->getGeneral()->setGraphqlDatesToSystemTimeZone ? Craft::$app->getTimezone() : self::DEFAULT_TIMEZONE;
+        return Craft::$app->getConfig()->getGeneral()->setGraphqlDatesToSystemTimeZone ? Craft::$app->getTimeZone() : self::DEFAULT_TIMEZONE;
     }
 }

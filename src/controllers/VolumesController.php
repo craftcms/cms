@@ -176,7 +176,11 @@ class VolumesController extends Controller
 
         $volume = $volumesService->createVolume([
             'id' => $volumeId,
+            // todo: remove comment when phpstan#3283 is fixed
+            /** @phpstan-ignore-next-line */
             'uid' => $oldVolume->uid ?? null,
+            // todo: remove comment when phpstan#3283 is fixed
+            /** @phpstan-ignore-next-line */
             'sortOrder' => $oldVolume->sortOrder ?? null,
             'type' => $type,
             'name' => $this->request->getBodyParam('name'),

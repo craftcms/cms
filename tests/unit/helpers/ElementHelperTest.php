@@ -124,7 +124,7 @@ class ElementHelperTest extends Unit
         }
 
         $example = new ExampleElement($config);
-        self::assertNull(ElementHelper::setUniqueUri($example));
+        ElementHelper::setUniqueUri($example);
 
         foreach ($expected as $key => $res) {
             self::assertSame($res, $example->$key);

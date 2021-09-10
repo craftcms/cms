@@ -492,18 +492,14 @@ class Application extends \yii\web\Application
         // Publish the directory
         [$publishedDir] = $this->getAssetManager()->publish(Craft::getAlias($sourcePath));
 
-        // Make sure the hashes match
-        if (basename($publishedDir) !== $hash) {
-            throw new NotFoundHttpException("$filePath does not exist.");
-        }
-
         $publishedPath = $publishedDir . DIRECTORY_SEPARATOR . $filePath;
         if (!file_exists($publishedPath)) {
             throw new NotFoundHttpException("$filePath does not exist.");
         }
 
+        // Don't send cache headers here, in case we're in the middle of deploying an update across multiple
+        // servers and this one hasn't been updated yet (https://github.com/craftcms/cms/issues/9140#issuecomment-877521916)
         $this->getResponse()
-            ->setCacheHeaders()
             ->sendFile($publishedPath, null, ['inline' => true]);
         $this->end();
     }

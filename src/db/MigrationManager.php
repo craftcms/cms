@@ -16,7 +16,6 @@ use yii\base\Component;
 use yii\base\Exception;
 use yii\base\InvalidConfigException;
 use yii\base\NotSupportedException;
-use yii\db\Expression;
 use yii\db\MigrationInterface;
 use yii\di\Instance;
 

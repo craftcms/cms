@@ -26,6 +26,7 @@ use craft\helpers\Json;
 use craft\helpers\ProjectConfig as ProjectConfigHelper;
 use craft\helpers\Queue;
 use craft\helpers\StringHelper;
+use craft\i18n\Translation;
 use craft\models\EntryType;
 use craft\models\FieldLayout;
 use craft\models\Section;
@@ -37,7 +38,6 @@ use craft\queue\jobs\ResaveElements;
 use craft\records\EntryType as EntryTypeRecord;
 use craft\records\Section as SectionRecord;
 use craft\records\Section_SiteSettings as Section_SiteSettingsRecord;
-use craft\web\View;
 use yii\base\Component;
 use yii\base\Exception;
 
@@ -123,7 +123,7 @@ class Sections extends Component
     public bool $autoResaveEntries = true;
 
     /**
-     * @var MemoizableArray|null
+     * @var MemoizableArray<Section>|null
      * @see _sections()
      */
     private ?MemoizableArray $_sections = null;
@@ -189,7 +189,7 @@ class Sections extends Component
     /**
      * Returns a memoizable array of all sections.
      *
-     * @return MemoizableArray
+     * @return MemoizableArray<Section>
      */
     private function _sections(): MemoizableArray
     {
@@ -599,11 +599,14 @@ class Sections extends Component
                 $structure->maxLevels = $data['structure']['maxLevels'];
                 Craft::$app->getStructures()->saveStructure($structure);
                 $sectionRecord->structureId = $structure->id;
-            } else if (!$isNewSection && $sectionRecord->structureId) {
-                // Delete the old one
-                Craft::$app->getStructures()->deleteStructureById($sectionRecord->structureId);
+            } else {
                 $sectionRecord->structureId = null;
                 $isNewStructure = false;
+
+                if ($sectionRecord->structureId) {
+                    // Delete the old one
+                    Craft::$app->getStructures()->deleteStructureById($sectionRecord->structureId);
+                }
             }
 
             $resaveEntries = (
@@ -674,7 +677,6 @@ class Sections extends Component
                 // rows
                 $affectedSiteUids = array_keys($siteSettingData);
 
-                /** @noinspection PhpUndefinedVariableInspection */
                 foreach ($allOldSiteSettingsRecords as $siteId => $siteSettingsRecord) {
                     $siteUid = array_search($siteId, $siteIdMap, false);
                     if (!in_array($siteUid, $affectedSiteUids, false)) {
@@ -703,7 +705,7 @@ class Sections extends Component
                 // If the propagation method just changed, we definitely need to update entries for that
                 if ($propagationMethodChanged) {
                     Queue::push(new ApplyNewPropagationMethod([
-                        'description' => Craft::t('app', 'Applying new propagation method to {section} entries', [
+                        'description' => Translation::prep('app', 'Applying new propagation method to {section} entries', [
                             'section' => $sectionRecord->name,
                         ]),
                         'elementType' => Entry::class,
@@ -714,7 +716,7 @@ class Sections extends Component
                     ]));
                 } else if ($this->autoResaveEntries) {
                     Queue::push(new ResaveElements([
-                        'description' => Craft::t('app', 'Resaving {section} entries', [
+                        'description' => Translation::prep('app', 'Resaving {section} entries', [
                             'section' => $sectionRecord->name,
                         ]),
                         'elementType' => Entry::class,
@@ -1205,7 +1207,7 @@ class Sections extends Component
         } else if (!$isNewEntryType && $resaveEntries && $this->autoResaveEntries) {
             // Re-save the entries of this type
             Queue::push(new ResaveElements([
-                'description' => Craft::t('app', 'Resaving {type} entries', [
+                'description' => Translation::prep('app', 'Resaving {type} entries', [
                     'type' => ($section->type !== Section::TYPE_SINGLE ? $section->name . ' - ' : '') . $entryType->name,
                 ]),
                 'elementType' => Entry::class,

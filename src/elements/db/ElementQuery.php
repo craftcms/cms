@@ -1313,6 +1313,7 @@ class ElementQuery extends Query implements ElementQueryInterface
             ->from(['elements' => Table::ELEMENTS])
             ->innerJoin(['elements_sites' => Table::ELEMENTS_SITES], '[[elements_sites.elementId]] = [[elements.id]]')
             ->andWhere($this->where)
+            ->andWhere(['elements.type' => $this->elementType])
             ->offset($this->offset)
             ->limit($this->limit)
             ->addParams($this->params);
@@ -2087,7 +2088,8 @@ class ElementQuery extends Query implements ElementQueryInterface
                 $exception = null;
                 try {
                     $field->modifyElementsQuery($this, $fieldAttributeValue);
-                } catch (QueryAbortedException $exception) {}
+                } catch (QueryAbortedException $exception) {
+                }
 
                 // Set it back
                 $contentService->fieldColumnPrefix = $originalFieldColumnPrefix;
@@ -2505,7 +2507,14 @@ class ElementQuery extends Query implements ElementQueryInterface
                 ->limit(null)
                 ->ids();
 
-            $searchResults = Craft::$app->getSearch()->filterElementIdsByQuery($elementIds, $this->search, true, $this->siteId, true);
+            $searchResults = Craft::$app->getSearch()->filterElementIdsByQuery(
+                $elementIds,
+                $this->search,
+                true,
+                $this->siteId,
+                true,
+                $this->customFields
+            );
 
             // No results?
             if (empty($searchResults)) {

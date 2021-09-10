@@ -315,13 +315,7 @@ Craft.CustomizeSourcesModal.BaseSource = Garnish.Base.extend({
 
 Craft.CustomizeSourcesModal.Source = Craft.CustomizeSourcesModal.BaseSource.extend({
     createSettings: function() {
-        let $settings = $('<div/>').append(Craft.ui.createTextField({
-            label: Craft.t('app', 'Header Column Heading'),
-            id: 'defaultHeaderColHeading' + Math.floor(Math.random() * 100000),
-            name: `sources[${this.sourceData.key}][headerColHeading]`,
-            value: this.sourceData.headerColHeading,
-            placeholder: this.sourceData.defaultHeaderColHeading,
-        }));
+        let $settings = $('<div/>');
 
         if (this.sourceData.tableAttributes.length) {
             $settings.append(this.createTableColumnsField());
@@ -331,20 +325,15 @@ Craft.CustomizeSourcesModal.Source = Craft.CustomizeSourcesModal.BaseSource.exte
     },
 
     createTableColumnsField: function() {
-        // Create the title column option
-        let [firstKey, firstLabel] = this.sourceData.tableAttributes[0];
-        let $titleColumnCheckbox = this.createTableColumnOption(firstKey, firstLabel, true, true);
-
-        // Create the rest of the options
         let $columnCheckboxes = $('<div/>');
-        let selectedAttributes = [firstKey];
+        let selectedAttributes = [];
 
         $('<input type="hidden" name="sources[' + this.sourceData.key + '][tableAttributes][]" value=""/>').appendTo($columnCheckboxes);
 
         // Add the selected columns, in the selected order
-        for (let i = 1; i < this.sourceData.tableAttributes.length; i++) {
+        for (let i = 0; i < this.sourceData.tableAttributes.length; i++) {
             let [key, label] = this.sourceData.tableAttributes[i];
-            $columnCheckboxes.append(this.createTableColumnOption(key, label, false, true));
+            $columnCheckboxes.append(this.createTableColumnOption(key, label, true));
             selectedAttributes.push(key);
         }
 
@@ -355,7 +344,7 @@ Craft.CustomizeSourcesModal.Source = Craft.CustomizeSourcesModal.BaseSource.exte
         for (let i = 0; i < availableTableAttributes.length; i++) {
             let [key, label] = availableTableAttributes[i];
             if (!Craft.inArray(key, selectedAttributes)) {
-                $columnCheckboxes.append(this.createTableColumnOption(key, label, false, false));
+                $columnCheckboxes.append(this.createTableColumnOption(key, label, false));
             }
         }
 
@@ -364,14 +353,14 @@ Craft.CustomizeSourcesModal.Source = Craft.CustomizeSourcesModal.BaseSource.exte
             axis: 'y'
         });
 
-        return Craft.ui.createField($([$titleColumnCheckbox[0], $columnCheckboxes[0]]), {
+        return Craft.ui.createField($columnCheckboxes, {
             label: Craft.t('app', 'Table Columns'),
             instructions: Craft.t('app', 'Choose which table columns should be visible for this source, and in which order.')
         });
     },
 
-    createTableColumnOption: function(key, label, first, checked) {
-        var $option = $('<div class="customize-sources-table-column"/>')
+    createTableColumnOption: function(key, label, checked) {
+        return $('<div class="customize-sources-table-column"/>')
             .append('<div class="icon move"/>')
             .append(
                 Craft.ui.createCheckbox({
@@ -379,15 +368,8 @@ Craft.CustomizeSourcesModal.Source = Craft.CustomizeSourcesModal.BaseSource.exte
                     name: 'sources[' + this.sourceData.key + '][tableAttributes][]',
                     value: key,
                     checked: checked,
-                    disabled: first
                 })
             );
-
-        if (first) {
-            $option.children('.move').addClass('disabled');
-        }
-
-        return $option;
     },
 
     getIndexSource: function() {

@@ -16,6 +16,7 @@ use craft\helpers\FileHelper;
 use GuzzleHttp\Client;
 use yii\base\ExitException;
 use yii\db\Expression;
+use yii\helpers\Inflector;
 use yii\helpers\VarDumper;
 use yii\web\Request;
 
@@ -157,6 +158,12 @@ class Craft extends Yii
      */
     public static function autoload($className): void
     {
+        // todo: remove this once https://github.com/yiisoft/yii2/issues/18832 is resolved
+        if ($className === Inflector::class) {
+            require dirname(__DIR__) . '/lib/yii2/helpers/Inflector.php';
+            return;
+        }
+
         if ($className === CustomFieldBehavior::class) {
             self::_autoloadCustomFieldBehavior();
         }

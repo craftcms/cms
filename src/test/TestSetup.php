@@ -14,8 +14,8 @@ use craft\db\Migration;
 use craft\db\MigrationManager;
 use craft\feeds\Feeds;
 use craft\helpers\ArrayHelper;
+use craft\helpers\Db;
 use craft\helpers\FileHelper;
-use craft\helpers\MigrationHelper;
 use craft\i18n\Locale;
 use craft\mail\Mailer;
 use craft\migrations\Install;
@@ -155,7 +155,10 @@ class TestSetup
         $tables = $connection->schema->getTableNames();
 
         foreach ($tables as $table) {
-            MigrationHelper::dropTable($table);
+            Db::dropAllForeignKeysToTable($table, $connection);
+            $connection->createCommand()
+                ->dropTable($table)
+                ->execute();
         }
 
         $tables = $connection->schema->getTableNames();
@@ -250,8 +253,8 @@ class TestSetup
             $configService->getConfigFromFile("app.{$appType}")
         );
 
-        if (defined('CRAFT_SITE') || defined('CRAFT_LOCALE')) {
-            $config['components']['sites']['currentSite'] = defined('CRAFT_SITE') ? CRAFT_SITE : CRAFT_LOCALE;
+        if (defined('CRAFT_SITE')) {
+            $config['components']['sites']['currentSite'] = CRAFT_SITE;
         }
 
         $config['vendorPath'] = $vendorPath;

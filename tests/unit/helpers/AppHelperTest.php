@@ -35,21 +35,6 @@ class AppHelperTest extends TestCase
     /**
      *
      */
-    public function testIsNitro()
-    {
-        $old = $_SERVER['CRAFT_NITRO'] ?? false;
-        $_SERVER['CRAFT_NITRO'] = '1';
-        self::assertTrue(App::isNitro());
-        if ($old !== false) {
-            $_SERVER['CRAFT_NITRO'] = $old;
-        } else {
-            unset($_SERVER['CRAFT_NITRO']);
-        }
-    }
-
-    /**
-     *
-     */
     public function testEditions()
     {
         self::assertEquals([Craft::Solo, Craft::Pro], App::editions());

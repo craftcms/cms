@@ -42,6 +42,7 @@
     "elvanto/litemoji": "^3.0.1",
     "enshrined/svg-sanitize": "~0.14.0",
     "guzzlehttp/guzzle": "^7.2.0",
+    "illuminate/collections": "^8.55",
     "league/oauth2-client": "^2.6.0",
     "mikehaertl/php-shellcommand": "^1.6.3",
     "pixelandtonic/imagine": "~1.2.4.1",
@@ -56,7 +57,7 @@
     "web-auth/webauthn-lib": "^3.3.0",
     "webonyx/graphql-php": "~14.4.1",
     "yii2tech/ar-softdelete": "^1.0.4",
-    "yiisoft/yii2": "~2.0.42.1",
+    "yiisoft/yii2": "~2.0.43",
     "yiisoft/yii2-debug": "^2.1.16",
     "yiisoft/yii2-queue": "~2.3.2",
     "yiisoft/yii2-swiftmailer": "^2.1.2"
@@ -70,6 +71,7 @@
     "codeception/module-yii2": "^1.0.0",
     "fakerphp/faker": "^1.13.0",
     "league/factory-muffin": "^3.0",
+    "phpstan/phpstan": "^0.12.91",
     "vlucas/phpdotenv": "^3.0"
   },
   "provide": {
@@ -91,6 +93,10 @@
       "craft\\": "src/",
       "crafttests\\fixtures\\": "tests/fixtures/"
     }
+  },
+  "scripts": {
+    "codecept-build": "codecept build",
+    "phpstan": "phpstan --memory-limit=1G"
   },
   "config": {
     "sort-packages": true,

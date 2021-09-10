@@ -176,7 +176,7 @@ class InstallController extends BaseUpdaterController
     /**
      * @inheritdoc
      */
-    protected function initialState(): array
+    protected function initialState(bool $force = false): array
     {
         // Make sure we can find composer.json
         if (!$this->ensureComposerJson()) {

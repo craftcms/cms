@@ -8,7 +8,6 @@
 namespace craft\gql\mutations;
 
 use Craft;
-use craft\base\Volume;
 use craft\base\VolumeInterface;
 use craft\elements\Asset as AssetElement;
 use craft\gql\arguments\mutations\Asset as AssetMutationArguments;

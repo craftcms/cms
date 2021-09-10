@@ -468,7 +468,7 @@ class UtilitiesController extends Controller
     private function _getDefaultUtilityIconSvg(string $class): string
     {
         /** @var UtilityInterface $class */
-        return $this->getView()->renderTemplate('_includes/defaulticon.svg', [
+        return $this->getView()->renderTemplate('_includes/defaulticon.svg.twig', [
             'label' => $class::displayName(),
         ]);
     }

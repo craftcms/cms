@@ -42,6 +42,9 @@ class Search
         // Get rid of entities
         $str = preg_replace('/&#?[a-z0-9]{2,8};/i', '', $str);
 
+        // Get rid of emoji
+        $str = StringHelper::replaceMb4($str, '');
+
         // Normalize to lowercase
         $str = mb_strtolower($str);
 

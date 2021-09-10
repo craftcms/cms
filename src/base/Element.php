@@ -59,7 +59,9 @@ use craft\validators\SlugValidator;
 use craft\validators\StringValidator;
 use craft\web\UploadedFile;
 use DateTime;
+use Illuminate\Support\Collection;
 use Twig\Markup;
+use yii\base\ErrorHandler;
 use yii\base\Event;
 use yii\base\InvalidCallException;
 use yii\base\InvalidConfigException;
@@ -74,8 +76,8 @@ use yii\validators\Validator;
  *
  * @property int|null $canonicalId The element’s canonical ID
  * @property-read string $canonicalUid The element’s canonical UID
- * @property-read $isCanonical Whether this is the canonical element
- * @property-read $isDerivative Whether this is a derivative element, such as a draft or revision
+ * @property-read bool $isCanonical Whether this is the canonical element
+ * @property-read bool $isDerivative Whether this is a derivative element, such as a draft or revision
  * @property ElementQueryInterface $ancestors The element’s ancestors
  * @property ElementQueryInterface $children The element’s children
  * @property string $contentTable The name of the table this element’s content is stored in
@@ -93,6 +95,7 @@ use yii\validators\Validator;
  * @property array $htmlAttributes Any attributes that should be included in the element’s DOM representation in the control panel
  * @property bool $isEditable Whether the current user can edit the element
  * @property Markup|null $link An anchor pre-filled with this element’s URL and title
+ * @property ElementInterface|null $canonical The canonical element, if one exists for the current site
  * @property ElementInterface|null $next The next element relative to this one, from a given set of criteria
  * @property ElementInterface|null $nextSibling The element’s next sibling
  * @property ElementInterface|null $parent The element’s parent
@@ -284,7 +287,7 @@ abstract class Element extends Component implements ElementInterface
     const EVENT_DEFINE_IS_DELETABLE = 'defineIsDeletable';
 
     /**
-     * @event SetElementRouteEvent The event that is triggered when defining the route that should be used when this element’s URL is requested
+     * @event SetElementRouteEvent The event that is triggered when defining the route that should be used when this element’s URL is requested.
      *
      * Set [[Event::$handled]] to `true` to explicitly tell the element that a route has been set (even if you’re
      * setting it to `null`).
@@ -335,8 +338,9 @@ abstract class Element extends Component implements ElementInterface
     const EVENT_DEFINE_KEYWORDS = 'defineKeywords';
 
     /**
-     * @event ModelEvent The event that is triggered before the element is saved
-     * You may set [[ModelEvent::isValid]] to `false` to prevent the element from getting saved.
+     * @event ModelEvent The event that is triggered before the element is saved.
+     *
+     * You may set [[\yii\base\ModelEvent::$isValid]] to `false` to prevent the element from getting saved.
      *
      * If you want to ignore events for drafts or revisions, call [[\craft\helpers\ElementHelper::isDraftOrRevision()]]
      * from your event handler:
@@ -363,7 +367,7 @@ abstract class Element extends Component implements ElementInterface
     const EVENT_BEFORE_SAVE = 'beforeSave';
 
     /**
-     * @event ModelEvent The event that is triggered after the element is saved
+     * @event ModelEvent The event that is triggered after the element is saved.
      *
      * If you want to ignore events for drafts or revisions, call [[\craft\helpers\ElementHelper::isDraftOrRevision()]]
      * from your event handler:
@@ -390,7 +394,7 @@ abstract class Element extends Component implements ElementInterface
     const EVENT_AFTER_SAVE = 'afterSave';
 
     /**
-     * @event ModelEvent The event that is triggered after the element is fully saved and propagated to other sites
+     * @event ModelEvent The event that is triggered after the element is fully saved and propagated to other sites.
      *
      * If you want to ignore events for drafts or revisions, call [[\craft\helpers\ElementHelper::isDraftOrRevision()]]
      * from your event handler:
@@ -419,25 +423,27 @@ abstract class Element extends Component implements ElementInterface
     const EVENT_AFTER_PROPAGATE = 'afterPropagate';
 
     /**
-     * @event ModelEvent The event that is triggered before the element is deleted
-     * You may set [[ModelEvent::isValid]] to `false` to prevent the element from getting deleted.
+     * @event ModelEvent The event that is triggered before the element is deleted.
+     *
+     * You may set [[\yii\base\ModelEvent::$isValid]] to `false` to prevent the element from getting deleted.
      */
     const EVENT_BEFORE_DELETE = 'beforeDelete';
 
     /**
-     * @event \yii\base\Event The event that is triggered after the element is deleted
+     * @event \yii\base\Event The event that is triggered after the element is deleted.
      */
     const EVENT_AFTER_DELETE = 'afterDelete';
 
     /**
-     * @event ModelEvent The event that is triggered before the element is restored
-     * You may set [[ModelEvent::isValid]] to `false` to prevent the element from getting restored.
+     * @event ModelEvent The event that is triggered before the element is restored.
+     *
+     * You may set [[\yii\base\ModelEvent::$isValid]] to `false` to prevent the element from getting restored.
      * @since 3.1.0
      */
     const EVENT_BEFORE_RESTORE = 'beforeRestore';
 
     /**
-     * @event \yii\base\Event The event that is triggered after the element is restored
+     * @event \yii\base\Event The event that is triggered after the element is restored.
      * @since 3.1.0
      */
     const EVENT_AFTER_RESTORE = 'afterRestore';
@@ -445,7 +451,7 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @event ElementStructureEvent The event that is triggered before the element is moved in a structure.
      *
-     * You may set [[ElementStructureEvent::isValid]] to `false` to prevent the element from getting moved.
+     * You may set [[\yii\base\ModelEvent::$isValid]] to `false` to prevent the element from getting moved.
      */
     const EVENT_BEFORE_MOVE_IN_STRUCTURE = 'beforeMoveInStructure';
 
@@ -659,7 +665,7 @@ abstract class Element extends Component implements ElementInterface
     /**
      * Defines the available element actions for a given source.
      *
-     * @param string|null $source The selected source’s key, if any.
+     * @param string $source The selected source’s key, if any.
      * @return array The available element actions.
      * @see actions()
      */
@@ -1448,6 +1454,12 @@ abstract class Element extends Component implements ElementInterface
     private $_canonical;
 
     /**
+     * @var string|null
+     * @see getCanonicalUid()
+     */
+    private ?string $_canonicalUid = null;
+
+    /**
      * @var array|null
      * @see _outdatedAttributes()
      */
@@ -1545,7 +1557,7 @@ abstract class Element extends Component implements ElementInterface
     private $_nextSibling;
 
     /**
-     * @var ElementInterface[][]
+     * @var Collection[]
      */
     private array $_eagerLoadedElements = [];
 
@@ -1594,7 +1606,16 @@ abstract class Element extends Component implements ElementInterface
         if (isset($this->title) && $this->title !== '') {
             return (string)$this->title;
         }
-        return (string)$this->id ?: static::class;
+
+        if ($this->id) {
+            return (string)$this->id;
+        }
+
+        try {
+            return static::displayName();
+        } catch (\Throwable $e) {
+            ErrorHandler::convertExceptionToError($e);
+        }
     }
 
     /**
@@ -1762,6 +1783,8 @@ abstract class Element extends Component implements ElementInterface
     {
         return [
             'ancestors',
+            'canonical',
+            'canonicalUid',
             'children',
             'descendants',
             'hasDescendants',
@@ -2158,6 +2181,35 @@ abstract class Element extends Component implements ElementInterface
     }
 
     /**
+     * @inheritdoc
+     */
+    public function getCanonicalUid(): ?string
+    {
+        // If this is the canonical element, return its UUID
+        if ($this->getIsCanonical()) {
+            return $this->uid;
+        }
+
+        // If the canonical element is already memoized via getCanonical(), go with its UUID
+        if (isset($this->_canonical)) {
+            return $this->_canonical->uid;
+        }
+
+        // Just fetch that one value ourselves
+        if (!isset($this->_canonicalUid)) {
+            $this->_canonicalUid = static::find()
+                ->select(['elements.uid'])
+                ->id($this->_canonicalId)
+                ->siteId('*')
+                ->status(null)
+                ->ignorePlaceholders()
+                ->scalar();
+        }
+
+        return $this->_canonicalUid;
+    }
+
+    /**
      * Returns the element’s canonical ID.
      *
      * @return int|null
@@ -2175,12 +2227,12 @@ abstract class Element extends Component implements ElementInterface
      *
      * @return string
      * @since 3.2.0
-     * @deprecated in 3.7.0. Use [[getCanonical()]] instead.
+     * @deprecated in 3.7.0. Use [[getCanonicalUid()]] instead.
      */
     public function getSourceUid(): string
     {
-        Craft::$app->getDeprecator()->log(__METHOD__, 'Elements’ `getSourceUid()` method has been deprecated. Use `getCanonical(true)->uid` instead.');
-        return $this->getCanonical(true)->uid;
+        Craft::$app->getDeprecator()->log(__METHOD__, 'Elements’ `getSourceUid()` method has been deprecated. Use `getCanonicalUid()` instead.');
+        return $this->getCanonicalUid();
     }
 
     /**
@@ -3384,7 +3436,7 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @inheritdoc
      */
-    public function getEagerLoadedElements(string $handle): ?array
+    public function getEagerLoadedElements(string $handle): ?Collection
     {
         if (!isset($this->_eagerLoadedElements[$handle])) {
             return null;
@@ -3408,14 +3460,14 @@ abstract class Element extends Component implements ElementInterface
                 $this->_currentRevision = $elements[0] ?? false;
                 break;
             case 'draftCreator':
-                /** @var DraftBehavior|null $behavior */
                 if ($behavior = $this->getBehavior('draft')) {
+                    /** @var DraftBehavior $behavior */
                     $behavior->setCreator($elements[0] ?? null);
                 }
                 break;
             case 'revisionCreator':
-                /** @var RevisionBehavior|null $behavior */
                 if ($behavior = $this->getBehavior('revision')) {
+                    /** @var RevisionBehavior $behavior */
                     $behavior->setCreator($elements[0] ?? null);
                 }
                 break;
@@ -3428,7 +3480,7 @@ abstract class Element extends Component implements ElementInterface
                 $this->trigger(self::EVENT_SET_EAGER_LOADED_ELEMENTS, $event);
                 if (!$event->handled) {
                     // No takers. Just store it in the internal array then.
-                    $this->_eagerLoadedElements[$handle] = $elements;
+                    $this->_eagerLoadedElements[$handle] = new Collection($elements);
                 }
         }
     }

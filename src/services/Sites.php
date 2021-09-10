@@ -107,7 +107,7 @@ class Sites extends Component
     /**
      * @event DeleteSiteEvent The event that is triggered before a site is deleted.
      *
-     * You may set [[SiteEvent::isValid]] to `false` to prevent the site from getting deleted.
+     * You may set [[\craft\events\CancelableEvent::$isValid]] to `false` to prevent the site from getting deleted.
      */
     const EVENT_BEFORE_DELETE_SITE = 'beforeDeleteSite';
 
@@ -126,7 +126,7 @@ class Sites extends Component
     const CONFIG_SITES_KEY = 'sites';
 
     /**
-     * @var MemoizableArray|null
+     * @var MemoizableArray<SiteGroup>|null
      * @see _groups()
      */
     private ?MemoizableArray $_groups = null;
@@ -179,11 +179,6 @@ class Sites extends Component
      */
     public function init(): void
     {
-        // No technical reason to put this here, but it's sortof related
-        if (defined('CRAFT_LOCALE')) {
-            Craft::$app->getDeprecator()->log('CRAFT_LOCALE', 'The `CRAFT_LOCALE` constant has been deprecated. Use `CRAFT_SITE` instead, which can be set to a site ID or handle.');
-        }
-
         // Load all the sites up front
         $this->_loadAllSites();
     }
@@ -194,7 +189,7 @@ class Sites extends Component
     /**
      * Returns a memoizable array of all site groups.
      *
-     * @return MemoizableArray
+     * @return MemoizableArray<SiteGroup>
      */
     private function _groups(): MemoizableArray
     {

@@ -46,6 +46,7 @@ use craft\helpers\Db;
 use craft\helpers\ElementHelper;
 use craft\helpers\Queue;
 use craft\helpers\StringHelper;
+use craft\i18n\Translation;
 use craft\queue\jobs\FindAndReplace;
 use craft\queue\jobs\UpdateElementSlugsAndUris;
 use craft\queue\jobs\UpdateSearchIndex;
@@ -172,6 +173,16 @@ class Elements extends Component
     const EVENT_AFTER_SAVE_ELEMENT = 'afterSaveElement';
 
     /**
+     * @event ElementEvent The event that is triggered before indexing an element’s search keywords,
+     * or queuing the element’s search keywords to be updated.
+     *
+     * You may set [[\craft\events\CancelableEvent::$isValid]] to `false` to prevent the search index from being updated.
+     *
+     * @since 3.7.12
+     */
+    const EVENT_BEFORE_UPDATE_SEARCH_INDEX = 'beforeUpdateSearchIndex';
+
+    /**
      * @event ElementQueryEvent The event that is triggered before resaving a batch of elements.
      */
     const EVENT_BEFORE_RESAVE_ELEMENTS = 'beforeResaveElements';
@@ -224,7 +235,7 @@ class Elements extends Component
     /**
      * @event \craft\events\ElementActionEvent The event that is triggered before an element action is performed.
      *
-     * You may set [[\craft\events\ElementActionEvent::isValid]] to `false` to prevent the action from being performed.
+     * You may set [[\craft\events\CancelableEvent::$isValid]] to `false` to prevent the action from being performed.
      */
     const EVENT_BEFORE_PERFORM_ACTION = 'beforePerformAction';
 
@@ -798,27 +809,26 @@ class Elements extends Component
         }
 
         Craft::$app->getDb()->transaction(function() use ($element, $supportedSiteIds) {
-            // Start with $element's site
-            $element->mergeCanonicalChanges();
-            $element->dateLastMerged = new DateTime();
-            $element->mergingCanonicalChanges = true;
-            $this->saveElement($element, false, false);
-
-            // Now the other sites
+            // Start with the other sites (if any), so we don't update dateLastMerged until the end
             $siteElements = $element::find()
                 ->drafts(null)
                 ->provisionalDrafts(null)
                 ->id($element->id)
-                ->siteId(ArrayHelper::withoutValue($supportedSiteIds, $element->id))
+                ->siteId(ArrayHelper::withoutValue($supportedSiteIds, $element->siteId))
                 ->status(null)
                 ->all();
 
             foreach ($siteElements as $siteElement) {
                 $siteElement->mergeCanonicalChanges();
-                $siteElement->dateLastMerged = $element->dateLastMerged;
                 $siteElement->mergingCanonicalChanges = true;
                 $this->saveElement($siteElement, false, false);
             }
+
+            // Now the $element's site
+            $element->mergeCanonicalChanges();
+            $element->dateLastMerged = new DateTime();
+            $element->mergingCanonicalChanges = true;
+            $this->saveElement($element, false, false);
 
             // It's now fully merged and propagated
             $element->afterPropagate(false);
@@ -849,7 +859,7 @@ class Elements extends Component
             throw new InvalidArgumentException('Element was already canonical');
         }
 
-        // "Duplicate" the revision with the source element's ID, UID, and content ID
+        // "Duplicate" the derivative element with the canonical element's ID, UID, and content ID
         $canonical = $element->getCanonical();
 
         $newAttributes += [
@@ -899,6 +909,9 @@ class Elements extends Component
                 'elementId' => $canonical->id,
                 'siteId' => $field['siteId'],
                 'fieldId' => $field['fieldId'],
+                'dateUpdated' => $timestamp,
+                'propagated' => $field['propagated'],
+                'userId' => $field['userId'],
             ], true, [], false);
         }
 
@@ -1091,12 +1104,13 @@ class Elements extends Component
      *
      * @param ElementInterface $element the element to duplicate
      * @param array $newAttributes any attributes to apply to the duplicate
+     * @param bool $placeInStructure whether to position the cloned element after the original one in its structure
      * @return ElementInterface the duplicated element
      * @throws UnsupportedSiteException if the element is being duplicated into a site it doesn’t support
      * @throws InvalidElementException if saveElement() returns false for any of the sites
      * @throws \Throwable if reasons
      */
-    public function duplicateElement(ElementInterface $element, array $newAttributes = []): ElementInterface
+    public function duplicateElement(ElementInterface $element, array $newAttributes = [], bool $placeInStructure = true): ElementInterface
     {
         // Make sure the element exists
         if (!$element->id) {
@@ -1197,6 +1211,7 @@ class Elements extends Component
 
             // Should we add the clone to the source element's structure?
             if (
+                $placeInStructure &&
                 $element->structureId &&
                 $element->root &&
                 !$mainClone->root &&
@@ -1536,13 +1551,13 @@ class Elements extends Component
                 $refTagPrefix = "{{$refHandle}:";
 
                 Queue::push(new FindAndReplace([
-                    'description' => Craft::t('app', 'Updating element references'),
+                    'description' => Translation::prep('app', 'Updating element references'),
                     'find' => $refTagPrefix . $mergedElement->id . ':',
                     'replace' => $refTagPrefix . $prevailingElement->id . ':',
                 ]));
 
                 Queue::push(new FindAndReplace([
-                    'description' => Craft::t('app', 'Updating element references'),
+                    'description' => Translation::prep('app', 'Updating element references'),
                     'find' => $refTagPrefix . $mergedElement->id . '}',
                     'replace' => $refTagPrefix . $prevailingElement->id . '}',
                 ]));
@@ -2508,7 +2523,6 @@ class Elements extends Component
         $updateSearchIndex = $this->_updateSearchIndex = $updateSearchIndex ?? $this->_updateSearchIndex ?? true;
 
         $transaction = Craft::$app->getDb()->beginTransaction();
-        $e = null;
 
         try {
             // No need to save the element record multiple times
@@ -2545,7 +2559,7 @@ class Elements extends Component
                     if (isset($element->dateUpdated)) {
                         $elementRecord->dateUpdated = Db::prepareValueForDb($element->dateUpdated);
                     }
-                } else if ($element->propagating || $element->resaving) {
+                } else if ($element->resaving) {
                     // Prevent ActiveRecord::prepareForDb() from changing the dateUpdated
                     $elementRecord->markAttributeDirty('dateUpdated');
                 } else {
@@ -2678,14 +2692,11 @@ class Elements extends Component
             $transaction->commit();
         } catch (\Throwable $e) {
             $transaction->rollBack();
-        }
-
-        $this->_updateSearchIndex = $oldUpdateSearchIndex;
-
-        if ($e !== null) {
             $element->firstSave = $originalFirstSave;
             $element->propagateAll = $originalPropagateAll;
             throw $e;
+        } finally {
+            $this->_updateSearchIndex = $oldUpdateSearchIndex;
         }
 
         if (!$element->propagating) {
@@ -2717,16 +2728,22 @@ class Elements extends Component
         }
 
         // Update search index
-        if ($updateSearchIndex && !$element->getIsRevision()) {
-            if (Craft::$app->getRequest()->getIsConsoleRequest()) {
-                Craft::$app->getSearch()->indexElementAttributes($element);
-            } else {
-                Queue::push(new UpdateSearchIndex([
-                    'elementType' => get_class($element),
-                    'elementId' => $element->id,
-                    'siteId' => $propagate ? '*' : $element->siteId,
-                    'fieldHandles' => $element->getIsDraft() ? [] : $element->getDirtyFields(),
-                ]), 2048);
+        if ($updateSearchIndex && !ElementHelper::isRevision($element)) {
+            $event = new ElementEvent([
+                'element' => $element,
+            ]);
+            $this->trigger(self::EVENT_BEFORE_UPDATE_SEARCH_INDEX, $event);
+            if ($event->isValid) {
+                if (Craft::$app->getRequest()->getIsConsoleRequest()) {
+                    Craft::$app->getSearch()->indexElementAttributes($element);
+                } else {
+                    Queue::push(new UpdateSearchIndex([
+                        'elementType' => get_class($element),
+                        'elementId' => $element->id,
+                        'siteId' => $propagate ? '*' : $element->siteId,
+                        'fieldHandles' => $element->getDirtyFields(),
+                    ]), 2048);
+                }
             }
         }
 

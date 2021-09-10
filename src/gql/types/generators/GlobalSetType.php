@@ -8,7 +8,6 @@
 namespace craft\gql\types\generators;
 
 use Craft;
-use craft\base\Field;
 use craft\elements\GlobalSet as GlobalSetElement;
 use craft\gql\base\Generator;
 use craft\gql\base\GeneratorInterface;

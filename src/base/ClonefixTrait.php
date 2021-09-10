@@ -8,6 +8,7 @@
 namespace craft\base;
 
 use craft\db\Query;
+use yii\base\Component as YiiComponent;
 
 /**
  * Trait ClonefixTrait.
@@ -16,6 +17,7 @@ use craft\db\Query;
  * which rushes a fix for https://github.com/yiisoft/yii2/issues/16247.
  *
  * @since 3.0.13
+ * @mixin YiiComponent
  */
 trait ClonefixTrait
 {
@@ -24,7 +26,6 @@ trait ClonefixTrait
         /** @var Model|Query $this */
         $behaviors = $this->getBehaviors();
         parent::__clone();
-        /** @var \yii\base\Component $this */
         foreach ($behaviors as $name => $behavior) {
             $this->attachBehavior($name, clone $behavior);
         }

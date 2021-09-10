@@ -4,13 +4,11 @@ use craft\helpers\StringHelper;
 
 return [
     'assets/edit/<assetId:\d+><filename:(?:-[^\/]*)?>' => 'assets/edit-asset',
-    'assets/<defaultSource:[a-zA-Z][a-zA-Z0-9\-_/]*>' => ['template' => 'assets'],
+    'assets/<defaultSource:{handle}(\/.*)?>' => ['template' => 'assets'],
     'categories' => 'categories/category-index',
     'categories/<groupHandle:{handle}>' => 'categories/category-index',
     'categories/<groupHandle:{handle}>/new' => 'categories/edit-category',
     'categories/<groupHandle:{handle}>/<categoryId:\d+><slug:(?:-[^\/]*)?>' => 'categories/edit-category',
-    'categories/<groupHandle:{handle}>/<categoryId:\d+><slug:(?:-[^\/]*)?>/<siteHandle:{handle}>' => 'categories/edit-category',
-    'categories/<groupHandle:{handle}>/new/<siteHandle:{handle}>' => 'categories/edit-category',
     'dashboard' => 'dashboard/index',
     'edit/<id:\d+>' => 'edit/by-id',
     'edit/<uid:' . StringHelper::UUID_PATTERN . '>' => 'edit/by-uid',

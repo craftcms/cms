@@ -132,7 +132,9 @@ class Gc extends Component
         }
 
         $folders = (new Query())->select(['id', 'path'])->from([Table::VOLUMEFOLDERS])->where(['volumeId' => $volumeIds])->all();
-        usort($folders, function ($a, $b) { return substr_count($a['path'], '/') < substr_count($b['path'], '/');});
+        usort($folders, function($a, $b) {
+            return substr_count($a['path'], '/') < substr_count($b['path'], '/');
+        });
 
         foreach ($folders as $folder) {
             VolumeFolder::deleteAll(['id' => $folder['id']]);

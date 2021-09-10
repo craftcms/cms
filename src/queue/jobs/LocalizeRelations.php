@@ -11,6 +11,7 @@ use Craft;
 use craft\db\Query;
 use craft\db\Table;
 use craft\helpers\Db;
+use craft\i18n\Translation;
 use craft\queue\BaseJob;
 
 /**
@@ -72,6 +73,6 @@ class LocalizeRelations extends BaseJob
      */
     protected function defaultDescription(): ?string
     {
-        return Craft::t('app', 'Localizing relations');
+        return Translation::prep('app', 'Localizing relations');
     }
 }

@@ -8,6 +8,7 @@
 namespace craft\helpers;
 
 use Craft;
+use Illuminate\Support\Collection;
 
 /**
  * Class ArrayHelper
@@ -405,11 +406,6 @@ class ArrayHelper extends \yii\helpers\ArrayHelper
      */
     public static function isNumeric(array $array): bool
     {
-        foreach ($array as $val) {
-            if (!is_numeric($val)) {
-                return false;
-            }
-        }
-        return true;
+        return (new Collection($array))->every(fn($v) => is_numeric($v));
     }
 }

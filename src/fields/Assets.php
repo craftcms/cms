@@ -33,6 +33,7 @@ use craft\models\GqlSchema;
 use craft\services\Gql as GqlService;
 use craft\web\UploadedFile;
 use GraphQL\Type\Definition\Type;
+use Illuminate\Support\Collection;
 use yii\base\InvalidConfigException;
 
 /**
@@ -193,7 +194,7 @@ class Assets extends BaseRelationField
             'defaultUploadLocationSubpath',
             'singleUploadLocationSource',
             'singleUploadLocationSubpath',
-            'allowedKinds'
+            'allowedKinds',
         ];
         foreach ($nullables as $name) {
             if (($config[$name] ?? null) === '') {
@@ -368,7 +369,7 @@ class Assets extends BaseRelationField
     }
 
     /**
-     * Validates the files to make sure they are one of the allowed file kinds.
+     * Validates the files to make sure they are under the allowed max file size.
      *
      * @param ElementInterface $element
      */
@@ -486,9 +487,9 @@ class Assets extends BaseRelationField
     /**
      * @inheritdoc
      */
-    protected function tableAttributeHtml(array $elements): string
+    protected function tableAttributeHtml(Collection $elements): string
     {
-        return Cp::elementPreviewHtml($elements, Cp::ELEMENT_SIZE_SMALL, false, true, $this->previewMode === self::PREVIEW_MODE_FULL);
+        return Cp::elementPreviewHtml($elements->all(), Cp::ELEMENT_SIZE_SMALL, false, true, $this->previewMode === self::PREVIEW_MODE_FULL);
     }
 
     // Events
@@ -538,22 +539,27 @@ class Assets extends BaseRelationField
                     $asset->uploaderId = Craft::$app->getUser()->getId();
                     $asset->avoidFilenameConflicts = true;
                     $asset->setScenario(Asset::SCENARIO_CREATE);
-                    Craft::$app->getElements()->saveElement($asset);
 
-                    $assetIds[] = $asset->id;
+                    if (Craft::$app->getElements()->saveElement($asset)) {
+                        $assetIds[] = $asset->id;
+                    } else {
+                        Craft::warning('Couldn’t save uploaded asset due to validation errors: ' . implode(', ', $asset->getFirstErrors()), __METHOD__);
+                    }
                 }
 
-                // Add the newly uploaded IDs to the mix.
-                if (\is_array($query->id)) {
-                    $query = $this->normalizeValue(array_merge($query->id, $assetIds), $element);
-                } else {
-                    $query = $this->normalizeValue($assetIds, $element);
+                if (!empty($assetIds)) {
+                    // Add the newly uploaded IDs to the mix.
+                    if (\is_array($query->id)) {
+                        $query = $this->normalizeValue(array_merge($query->id, $assetIds), $element);
+                    } else {
+                        $query = $this->normalizeValue($assetIds, $element);
+                    }
+
+                    $element->setFieldValue($this->handle, $query);
+
+                    // Make sure that all traces of processed files are removed.
+                    $this->_uploadedDataFiles = null;
                 }
-
-                $element->setFieldValue($this->handle, $query);
-
-                // Make sure that all traces of processed files are removed.
-                $this->_uploadedDataFiles = null;
             }
         }
 

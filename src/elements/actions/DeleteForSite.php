@@ -11,13 +11,10 @@ use Craft;
 use craft\base\Element;
 use craft\base\ElementAction;
 use craft\base\ElementInterface;
-use craft\db\Query;
 use craft\db\Table;
 use craft\elements\db\ElementQueryInterface;
-use craft\helpers\ArrayHelper;
 use craft\helpers\Db;
 use craft\helpers\Json;
-use yii\base\BaseObject;
 
 /**
  * Delete represents a “Delete for site” element action.

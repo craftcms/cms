@@ -14,7 +14,6 @@ use yii\helpers\VarDumper;
 use yii\log\Target;
 use yii\web\Request;
 use yii\web\Session;
-use yii\web\User;
 
 /**
  * LogTargetTrait implements the common methods and properties for log target classes.
@@ -67,8 +66,8 @@ trait LogTargetTrait
             $userID = '-';
         }
 
-        /** @var $session Session */
         $session = Craft::$app->has('session', true) ? Craft::$app->get('session') : null;
+        /** @var Session|null $session */
         $sessionID = $session && $session->getIsActive() ? $session->getId() : '-';
 
         return "[$ip][$userID][$sessionID]";
