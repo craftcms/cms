@@ -303,6 +303,12 @@ class MigrateController extends BaseMigrateController
      */
     public function actionAll(): int
     {
+        if ($this->noContent) {
+            $this->stdout("Checking for pending Craft and plugin migrations ...\n");
+        } else {
+            $this->stdout("Checking for pending migrations ...\n");
+        }
+
         /** @var MigrationManager[] $migrators */
         $migrators = [
             MigrationManager::TRACK_CRAFT => Craft::$app->getMigrator(),
@@ -416,6 +422,19 @@ class MigrateController extends BaseMigrateController
      */
     public function actionUp($limit = 0)
     {
+        switch ($this->track) {
+            case MigrationManager::TRACK_CRAFT:
+                $this->stdout("Checking for pending Craft migrations ...\n");
+                break;
+            case MigrationManager::TRACK_CONTENT:
+                $this->stdout("Checking for pending content migrations ...\n");
+                break;
+            default:
+                if ($this->plugin instanceof PluginInterface) {
+                    $this->stdout("Checking for pending {$this->plugin->name} migrations ...\n");
+                }
+        }
+
         $res = parent::actionUp($limit) ?? ExitCode::OK;
 
         if ($res === ExitCode::OK && empty($this->getNewMigrations())) {
@@ -556,5 +575,16 @@ class MigrateController extends BaseMigrateController
     protected function truncateDatabase()
     {
         $this->getMigrator()->truncateHistory();
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function stdout($string)
+    {
+        if (strpos($string, 'Yii Migration Tool') === 0) {
+            return false;
+        }
+        return parent::stdout(...func_get_args());
     }
 }
