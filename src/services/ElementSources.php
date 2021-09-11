@@ -71,7 +71,7 @@ class ElementSources extends Component
         if (!empty($sourceConfigs)) {
             // Merge native source settings into the configs
             $sources = [];
-            $indexedNativeSources = ArrayHelper::index(array_filter($sources, fn($s) => $s['type'] === self::TYPE_NATIVE), 'key');
+            $indexedNativeSources = ArrayHelper::index(array_filter($nativeSources, fn($s) => $s['type'] === self::TYPE_NATIVE), 'key');
             $nativeSourceKeys = [];
             foreach ($sourceConfigs as $source) {
                 if ($source['type'] === self::TYPE_NATIVE) {
