@@ -174,14 +174,14 @@ abstract class BaseCondition extends Component implements ConditionInterface
      */
     public function getBuilderHtml(array $options = []): string
     {
+        $isHtmx = (bool)Craft::$app->getRequest()->getHeaders()->get('HX-Request', false);
         $options = array_merge([
             'mainTag' => 'form',
             'devMode' => false,
-            'isAjax' => false
+            'isAjax' => $isHtmx
         ], $options);
 
         $view = Craft::$app->getView();
-
         $view->registerAssetBundle(ConditionBuilderAsset::class);
 
         // Main Condition tag, and Htmx inheritable options
