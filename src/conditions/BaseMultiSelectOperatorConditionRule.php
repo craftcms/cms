@@ -74,7 +74,7 @@ abstract class BaseMultiSelectOperatorConditionRule extends BaseConditionRule
     /**
      * @inheritdoc
      */
-    public function getHtml(): string
+    public function getHtml(array $options = []): string
     {
 
         $id = Craft::$app->getView()->namespaceInputId($this->_id);

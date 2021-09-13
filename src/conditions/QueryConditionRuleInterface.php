@@ -18,7 +18,7 @@ use yii\db\QueryInterface;
 interface QueryConditionRuleInterface extends ConditionRuleInterface
 {
     /**
-     * Modifies the given query with the rule.
+     * Modifies the given query with the condition rule.
      *
      * @param QueryInterface $query
      * @return void

@@ -98,7 +98,7 @@ class TypeConditionRule extends BaseConditionRule implements ElementQueryConditi
     /**
      * @inheritdoc
      */
-    public function getHtml(): string
+    public function getHtml(array $options = []): string
     {
         $inputAttributes = ['hx-post' => UrlHelper::actionUrl('conditions/render')];
 

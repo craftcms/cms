@@ -57,17 +57,20 @@ htmx.on('htmx:afterOnLoad', function(evt) {
     const content = evt.detail.elt;
     const headHtmls = content.querySelectorAll("template.hx-head-html");
     const footHtmls = content.querySelectorAll("template.hx-foot-html");
-
     for (var i = 0; i < headHtmls.length; i++) {
         var headHtml = headHtmls[i].innerHTML;
-        console.log('Appending', headHtml);
-        Craft.appendHeadHtml(headHtml);
+        console.log('Appending to head:', headHtml);
+        if(headHtml){
+            Craft.appendHeadHtml(headHtml);
+        }
     }
     
     for (var i = 0; i < footHtmls.length; i++) {
         var footHtml = footHtmls[i].innerHTML;
-        console.log('Appending', footHtml);
-        Craft.appendHeadHtml(footHtml);
+        console.log('Appending to head', footHtml);
+        if(footHtml){
+            Craft.appendFootHtml(footHtml);
+        }
     }
     
     Craft.initUiElements(content);

@@ -88,7 +88,7 @@ abstract class BaseConditionRule extends Component implements ConditionRuleInter
     /**
      * @inheritdoc
      */
-    abstract public function getHtml(): string;
+    abstract public function getHtml(array $options = []): string;
 
     /**
      * @inheritdoc

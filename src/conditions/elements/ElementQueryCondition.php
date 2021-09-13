@@ -3,7 +3,7 @@
 namespace craft\conditions\elements;
 
 use Craft;
-use craft\conditions\BaseCondition;
+use craft\conditions\BaseQueryCondition;
 
 /**
  * Base class for conditions designed for queries.
@@ -13,7 +13,7 @@ use craft\conditions\BaseCondition;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.0.0
  */
-abstract class ElementQueryCondition extends BaseCondition implements ElementQueryConditionInterface
+class ElementQueryCondition extends BaseQueryCondition implements ElementQueryConditionInterface
 {
     /**
      * @inheritdoc
@@ -21,6 +21,19 @@ abstract class ElementQueryCondition extends BaseCondition implements ElementQue
     public function getAddRuleLabel(): string
     {
         return Craft::t('app', 'Add a filter');
+    }
+
+    /**
+     * @inheritdoc
+     */
+    protected function conditionRuleTypes(): array
+    {
+        return [
+            RelatedToConditionRule::class,
+            SlugConditionRule::class,
+            StatusConditionRule::class,
+            TrashedConditionRule::class,
+        ];
     }
 
     /**

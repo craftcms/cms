@@ -18,7 +18,8 @@ interface ConditionRuleInterface extends ComponentInterface
     public function getConfig(): array;
 
     /**
+     * @param array $options The condition builder options
      * @return string
      */
-    public function getHtml(): string;
+    public function getHtml(array $options = []): string;
 }

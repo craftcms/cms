@@ -35,7 +35,7 @@ abstract class BaseLightswitchConditionRule extends BaseConditionRule
     /**
      * @inheritdoc
      */
-    public function getHtml(): string
+    public function getHtml(array $options = []): string
     {
         $html = Html::beginTag('div', ['class' => ['flex', 'flex-nowrap']]);
         $html .= Html::tag('div',

@@ -4,9 +4,7 @@ namespace craft\conditions\elements;
 
 use Craft;
 use craft\conditions\BaseLightswitchConditionRule;
-use craft\conditions\BaseSelectOperatorConditionRule;
 use craft\elements\db\ElementQuery;
-use craft\elements\Entry;
 use yii\db\QueryInterface;
 
 /**

@@ -54,9 +54,9 @@ abstract class BaseSelectOperatorConditionRule extends BaseOperatorConditionRule
     /**
      * @inheritdoc
      */
-    public function getHtml(): string
+    public function getHtml(array $options = []): string
     {
-        $html = parent::getHtml();
+        $html = parent::getHtml($options);
 
         $html .= Craft::$app->getView()->renderTemplate('_includes/forms/select', [
             'name' => 'optionValue',

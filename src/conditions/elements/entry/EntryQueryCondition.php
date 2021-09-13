@@ -3,10 +3,6 @@
 namespace craft\conditions\elements\entry;
 
 use craft\conditions\elements\ElementQueryCondition;
-use craft\conditions\elements\StatusConditionRule;
-use craft\conditions\elements\TrashedConditionRule;
-use craft\elements\db\EntryQuery;
-use yii\db\QueryInterface;
 
 /**
  * Entry query condition.
@@ -21,23 +17,10 @@ class EntryQueryCondition extends ElementQueryCondition
      */
     protected function conditionRuleTypes(): array
     {
-        return [
+        return array_merge(parent::conditionRuleTypes(), [
             TypeConditionRule::class,
             SectionConditionRule::class,
-            SlugConditionRule::class,
-            StatusConditionRule::class,
-            AuthorGroupConditionRule::class,
-            TrashedConditionRule::class,
-        ];
-    }
-
-    /**
-     * Modifies a given entry query based on the configured condition rules.
-     *
-     * @param EntryQuery $query
-     * @return void
-     */
-    public function modifyQuery(QueryInterface $query): void{
-
+            AuthorGroupConditionRule::class
+        ]);
     }
 }

@@ -177,7 +177,6 @@ abstract class BaseCondition extends Component implements ConditionInterface
         $options = array_merge([
             'mainTag' => 'form',
             'devMode' => false,
-            'namespace' => '',
             'isAjax' => false
         ], $options);
 
@@ -185,20 +184,18 @@ abstract class BaseCondition extends Component implements ConditionInterface
 
         $view->registerAssetBundle(ConditionBuilderAsset::class);
 
-        // Main Condition tag, and htmx inheritable options
+        // Main Condition tag, and Htmx inheritable options
         $html = Html::beginTag($options['mainTag'], [
             'id' => 'condition-' . $this->uid,
             'hx-target' => 'this', // replace self
             'hx-swap' => 'outerHTML', // replace this tag with the response
             'hx-indicator' => '#indicator-' . $this->uid, // ID of the spinner
         ]);
-
-        // Builder options
-        $html .= Html::input('hidden', 'options', Json::encode($options));
-
         // Loading indicator
         $html .= Html::tag('div', '', ['id' => 'indicator-' . $this->uid, 'class' => 'htmx-indicator spinner']);
 
+        // Builder options
+        $html .= Html::hiddenInput('options', Json::encode($options));
         // Condition hidden inputs
         $html .= Html::hiddenInput('condition[uid]', $this->uid);
         $html .= Html::hiddenInput('condition[type]', get_class($this));
@@ -207,7 +204,12 @@ abstract class BaseCondition extends Component implements ConditionInterface
 
         $allRulesHtml = '';
         foreach ($this->getConditionRules() as $rule) {
-            $ruleHtml = Craft::$app->getView()->namespaceInputs(function() use ($rule) {
+            $ruleHtml = Craft::$app->getView()->namespaceInputs(function() use ($rule, $options) {
+
+                $moveButton = Html::tag('a', '', ['class' => 'move icon draggable-handle']);
+                $ruleHtml = Html::tag('div', $moveButton, ['id' => 'rule-move', 'class' => 'rule-move']);
+
+
                 /** @var string|ConditionRuleInterface $ruleClass */
                 $ruleClass = get_class($rule);
                 $ruleTypeOptions = [];
@@ -221,20 +223,22 @@ abstract class BaseCondition extends Component implements ConditionInterface
 
                 ArrayHelper::multisort($ruleTypeOptions, 'label');
 
-                // Add rule type selector
-                $ruleHtml = Craft::$app->getView()->renderTemplate('_includes/forms/select', [
+                // Add rule type selector and uid hidden field
+                $ruleBodyId = "#" . Craft::$app->getView()->namespaceInputId('rule-body', Craft::$app->getView()->getNamespace());
+                $switcherHtml = Craft::$app->getView()->renderTemplate('_includes/forms/select', [
                     'name' => 'type',
                     'options' => $ruleTypeOptions,
                     'value' => $ruleClass,
                     'inputAttributes' => [
-                        'hx-post' => UrlHelper::actionUrl('conditions/render'),
+                        'hx-post' => UrlHelper::actionUrl('conditions/render')
                     ],
                 ]);
-                $ruleHtml = Html::tag('div', $ruleHtml, ['id' => Html::id('body')]);
-                $ruleHtml .= Html::hiddenInput('uid', $rule->uid);
+                $switcherHtml .= Html::hiddenInput('uid', $rule->uid);
+
+                $ruleHtml .= Html::tag('div', $switcherHtml, ['id' => 'rule-switcher', 'class' => 'rule-switcher']);
 
                 // Get rule input html
-                $ruleHtml .= Html::tag('div', $rule->getHtml(), ['class' => 'flex-grow']);
+                $ruleHtml .= Html::tag('div', $rule->getHtml($options), ['id' => 'rule-body', 'class' => 'rule-body flex-grow']);
 
                 // Add delete button
                 $deleteButtonAttr = [
@@ -245,21 +249,19 @@ abstract class BaseCondition extends Component implements ConditionInterface
                     'title' => Craft::t('app', 'Delete'),
                 ];
                 $deleteButton = Html::tag('a', '', $deleteButtonAttr);
-                $ruleHtml .= Html::tag('div', $deleteButton);
+                $ruleHtml .= Html::tag('div', $deleteButton, ['id' => 'rule-actions', 'class' => 'rule-actions']);
 
-                return $ruleHtml;
+                return Html::tag('div', $ruleHtml, ['id' => 'condition-rule', 'class' => 'condition-rule flex draggable']);
             }, "condition[conditionRules][$rule->uid]");
 
-            $allRulesHtml .= Html::tag('div',
-                Html::tag('a', '', ['class' => 'move icon draggable-handle']) . $ruleHtml,
-                ['class' => 'flex draggable']
-            );
+            $allRulesHtml .= $ruleHtml;
         }
 
         $rulesJs = $view->clearJsBuffer(false);
 
         // Sortable rules div
         $html .= Html::tag('div', $allRulesHtml, [
+                'id' => 'condition-rules',
                 'class' => 'sortable',
                 'hx-post' => UrlHelper::actionUrl('conditions/render'),
                 'hx-trigger' => 'end' // sortable library triggers this event
@@ -285,19 +287,24 @@ abstract class BaseCondition extends Component implements ConditionInterface
 
         // Add inline scripts
         if ($options['isAjax'] && $rulesJs) {
-            $html .= html::tag('script', $rulesJs, ['type' => 'text/javascript']);
+            $html .= html::tag('script', $rulesJs, ['id' => 'inline-script', 'type' => 'text/javascript']);
         } else {
             $view->registerJs($rulesJs);
         }
-        
+
         // Add head and foot/body scripts to html returned so crafts htmx condition builder can insert them into the DOM
-        if ($options['isAjax']) {
-            if ($footHtml = $view->getBodyHtml(false)) {
-                $html .= html::tag('template', $footHtml, ['data' => 'hx-foot-html']);
-            }
-            if ($headHtml = $view->getHeadHtml(false)) {
-                $html .= html::tag('template', $headHtml, ['class' => 'hx-foot-html']);
-            }
+        // If this is not an ajax result, don't add scripts, since they will be in the page anyway.
+        if (($footHtml = $view->getBodyHtml(false)) && $options['isAjax']) {
+            $html .= html::tag('template', $footHtml, [
+                'id' => 'foot-html',
+                'class' => 'hx-foot-html',
+            ]);
+        }
+        if (($headHtml = $view->getHeadHtml(false)) && $options['isAjax']) {
+            $html .= html::tag('template', $headHtml, [
+                'id' => 'foot-html',
+                'class' => 'hx-foot-html'
+            ]);
         }
 
         $html .= Html::endTag('form');

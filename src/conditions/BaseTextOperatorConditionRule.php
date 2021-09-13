@@ -40,10 +40,10 @@ abstract class BaseTextOperatorConditionRule extends BaseOperatorConditionRule
     /**
      * @inheritdoc
      */
-    public function getHtml(): string
+    public function getHtml(array $options = []): string
     {
         $html = Html::beginTag('div', ['class' => ['flex', 'flex-nowrap']]);
-        $html .= parent::getHtml();
+        $html .= parent::getHtml($options);
         $html .= Html::tag('div',
             Craft::$app->getView()->renderTemplate('_includes/forms/text', [
                 'inputAttributes' => [
