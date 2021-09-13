@@ -174,11 +174,11 @@ abstract class BaseCondition extends Component implements ConditionInterface
      */
     public function getBuilderHtml(array $options = []): string
     {
-        $isHtmx = (bool)Craft::$app->getRequest()->getHeaders()->get('HX-Request', false);
+        $isHtmxRequest = (bool)Craft::$app->getRequest()->getHeaders()->get('HX-Request', false);
+
         $options = array_merge([
             'mainTag' => 'form',
-            'devMode' => false,
-            'isAjax' => $isHtmx
+            'devMode' => false
         ], $options);
 
         $view = Craft::$app->getView();
@@ -230,6 +230,7 @@ abstract class BaseCondition extends Component implements ConditionInterface
                     'options' => $ruleTypeOptions,
                     'value' => $ruleClass,
                     'inputAttributes' => [
+                        'hx-prompt' => 'Add a condition?',
                         'hx-post' => UrlHelper::actionUrl('conditions/render')
                     ],
                 ]);
@@ -286,15 +287,19 @@ abstract class BaseCondition extends Component implements ConditionInterface
         }
 
         // Add inline scripts
-        if ($options['isAjax'] && $rulesJs) {
+        if ($isHtmxRequest && $rulesJs) {
             $html .= html::tag('script', $rulesJs, ['id' => 'inline-script', 'type' => 'text/javascript']);
         } else {
+            $js = <<<JS
+htmx.process(document.body);
+JS;
+            $view->registerJs($js);
             $view->registerJs($rulesJs);
         }
 
         // Add head and foot/body scripts to html returned so crafts htmx condition builder can insert them into the DOM
         // If this is not an ajax result, don't add scripts, since they will be in the page anyway.
-        if ($options['isAjax']) {
+        if ($isHtmxRequest) {
             if ($footHtml = $view->getBodyHtml()) {
                 $html .= html::tag('template', $footHtml, [
                     'id' => 'foot-html',
