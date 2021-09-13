@@ -828,7 +828,7 @@ Craft.DraftEditor = Garnish.Base.extend({
                 const selectors = response.data.modifiedAttributes.map(attr => `[name="${attr}"],[name^="${attr}["]`)
                     .concat(modifiedFieldNames.map(name => `[name="${name}"]`));
 
-                const $fields = $(selectors.join(',')).closest('.field').filter(':not(:has(> .status-badge))');
+                const $fields = $(selectors.join(',')).parents().filter('.field:not(:has(> .status-badge))');
                 for (let i = 0; i < $fields.length; i++) {
                     $fields.eq(i).prepend(
                         $('<div/>', {
