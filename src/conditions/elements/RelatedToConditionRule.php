@@ -52,8 +52,10 @@ class RelatedToConditionRule extends BaseConditionRule implements ElementQueryCo
      */
     public function modifyQuery(QueryInterface $query): void
     {
-        /** @var ElementQuery $query */
-        $query->relatedTo((bool)$this->elementIds);
+        if (count($this->elementIds)) {
+            /** @var ElementQuery $query */
+            $query->relatedTo($this->elementIds);
+        }
     }
 
     /**
@@ -67,7 +69,7 @@ class RelatedToConditionRule extends BaseConditionRule implements ElementQueryCo
     }
 
     /**
-     * @inheritdoc
+     * @inheritdochandleException
      */
     public function getHtml(array $options = []): string
     {
@@ -76,7 +78,7 @@ class RelatedToConditionRule extends BaseConditionRule implements ElementQueryCo
 
         $html = Craft::$app->getView()->renderTemplate('_includes/forms/elementSelect', [
             'name' => 'elementIds',
-            'elements' => $this->elementIds,
+            'elements' => $this->elementIds ? Entry::find()->id($this->elementIds)->all() : [],
             'elementType' => Entry::class
         ]);
 
