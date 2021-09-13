@@ -8,8 +8,11 @@
 namespace craft\controllers;
 
 use Craft;
+use craft\base\ElementInterface;
 use craft\helpers\ArrayHelper;
 use craft\services\ElementSources;
+use craft\web\assets\conditionbuilder\ConditionBuilderAsset;
+use yii\base\NotSupportedException;
 use yii\web\Response;
 
 /**
@@ -44,11 +47,12 @@ class ElementIndexSettingsController extends BaseElementsController
     {
         $this->requirePermission('customizeSources');
 
+        /** @var string|ElementInterface $elementType */
         $elementType = $this->elementType();
 
         // Get the source info
         $sourcesService = Craft::$app->getElementSources();
-        $sources = $sourcesService->getSources($elementType);
+        $sources = $sourcesService->getSources($elementType, ElementSources::CONTEXT_INDEX);
 
         foreach ($sources as &$source) {
             if ($source['type'] === ElementSources::TYPE_HEADING) {
@@ -75,10 +79,36 @@ class ElementIndexSettingsController extends BaseElementsController
             $availableTableAttributes[] = [$key, $labelInfo['label']];
         }
 
-        return $this->asJson([
+        try {
+            $conditionBuilder = $elementType::createCondition();
+        } catch (NotSupportedException $e) {
+            $conditionBuilder = null;
+        }
+
+        $response = [
             'sources' => $sources,
             'availableTableAttributes' => $availableTableAttributes,
-        ]);
+            'elementTypeName' => $elementType::displayName(),
+        ];
+
+        if ($conditionBuilder) {
+            $view = Craft::$app->getView();
+            $view->registerAssetBundle(ConditionBuilderAsset::class);
+//            $view->startCssBuffer();
+//            $view->startScriptBuffer();
+//            $view->startJsBuffer();
+            $response += [
+                'conditionBuilderHtml' => $conditionBuilder->getBuilderHtml([
+                    'mainTag' => 'div',
+                ]),
+                'headHtml' => $view->getHeadHtml(),
+                'bodyHtml' => $view->getBodyHtml(),
+            ];
+//            $response['conditionBuilderHeadHtml'] = implode('', $view->clearCssBuffer());
+//            $response['conditionBuilderBodyHtml'] = implode('', $view->clearScriptBuffer()) . $view->clearJsBuffer();
+        }
+
+        return $this->asJson($response);
     }
 
     /**
@@ -95,7 +125,7 @@ class ElementIndexSettingsController extends BaseElementsController
         // Get the old source configs
         $projectConfig = Craft::$app->getProjectConfig();
         $oldSourceConfigs = $projectConfig->get("elementSources.$elementType") ?? [];
-        $oldSourceConfigs = ArrayHelper::index(array_filter($oldSourceConfigs, fn($s) => $s['type'] === ElementSources::TYPE_NATIVE), 'key');
+        $oldSourceConfigs = ArrayHelper::index(array_filter($oldSourceConfigs, fn($s) => $s['type'] !== ElementSources::TYPE_HEADING), 'key');
 
         $sourceOrder = $this->request->getBodyParam('sourceOrder', []);
         $sourceSettings = $this->request->getBodyParam('sources', []);
@@ -109,15 +139,27 @@ class ElementIndexSettingsController extends BaseElementsController
                     'heading' => $source['heading'],
                 ];
             } else if (isset($source['key'])) {
+                $isCustom = strpos($source['key'], 'custom:') === 0;
                 $sourceConfig = [
-                    'type' => ElementSources::TYPE_NATIVE,
+                    'type' => $isCustom ? ElementSources::TYPE_CUSTOM : ElementSources::TYPE_NATIVE,
                     'key' => $source['key'],
                 ];
+
                 // Were new settings posted?
                 if (isset($sourceSettings[$source['key']])) {
-                    $sourceConfig['tableAttributes'] = array_values(array_filter($sourceSettings[$source['key']]['tableAttributes'] ?? []));
+                    $postedSettings = $sourceSettings[$source['key']];
+                    $sourceConfig['tableAttributes'] = array_values(array_filter($postedSettings['tableAttributes'] ?? []));
+
+                    if ($isCustom) {
+                        $sourceConfig += [
+                            'label' => $postedSettings['label'],
+                        ];
+                    }
                 } else if (isset($oldSourceConfigs[$source['key']])) {
                     $sourceConfig += $oldSourceConfigs[$source['key']];
+                } else if ($isCustom) {
+                    // Ignore it
+                    continue;
                 }
                 $newSourceConfigs[] = $sourceConfig;
             }
