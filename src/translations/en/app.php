@@ -1870,4 +1870,8 @@ return [
     'is greater than' => 'is greater than',
     'is greater than or equals' => 'is greater than or equals',
     'Author Group' => 'Author Group',
+    'Add…' => 'Add…',
+    'New custom source' => 'New custom source',
+    'Delete custom source' => 'Delete custom source',
+    '{type} Criteria' => '{type} Criteria',
 ];

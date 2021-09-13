@@ -40,6 +40,10 @@ class ElementSources extends Component
     const TYPE_NATIVE = 'native';
     const TYPE_CUSTOM = 'custom';
 
+    const CONTEXT_INDEX = 'index';
+    const CONTEXT_MODAL = 'modal';
+    const CONTEXT_SETTINGS = 'settings';
+
     /**
      * Filters out any unnecessary headings from a given source list.
      *
@@ -63,7 +67,7 @@ class ElementSources extends Component
      * @param string $context The context
      * @return array[]
      */
-    public function getSources(string $elementType, string $context = 'index'): array
+    public function getSources(string $elementType, string $context = self::CONTEXT_INDEX): array
     {
         $nativeSources = $this->_nativeSources($elementType, $context);
         $sourceConfigs = $this->_sourceConfigs($elementType);
@@ -146,7 +150,7 @@ class ElementSources extends Component
             $this->getSourceTableAttributes($elementType, $sourceKey)
         );
 
-        $attributeKeys = $this->_nativeSourceConfig($elementType, $sourceKey)['tableAttributes']
+        $attributeKeys = $this->_sourceConfig($elementType, $sourceKey)['tableAttributes']
             ?? $elementType::defaultTableAttributes($sourceKey);
 
         $attributes = [
@@ -298,12 +302,12 @@ class ElementSources extends Component
      * @param string $sourceKey
      * @return array|null
      */
-    private function _nativeSourceConfig(string $elementType, string $sourceKey): ?array
+    private function _sourceConfig(string $elementType, string $sourceKey): ?array
     {
         $sourceConfigs = $this->_sourceConfigs($elementType);
         if (empty($sourceConfigs)) {
             return null;
         }
-        return ArrayHelper::firstWhere($sourceConfigs, fn($s) => $s['type'] === self::TYPE_NATIVE && $s['key'] === $sourceKey);
+        return ArrayHelper::firstWhere($sourceConfigs, fn($s) => $s['type'] !== self::TYPE_HEADING && $s['key'] === $sourceKey);
     }
 }

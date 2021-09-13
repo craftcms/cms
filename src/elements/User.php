@@ -226,7 +226,7 @@ class User extends Element implements IdentityInterface
     /**
      * @inheritdoc
      */
-    protected static function defineSources(?string $context = null): array
+    protected static function defineSources(string $context): array
     {
         $sources = [
             [

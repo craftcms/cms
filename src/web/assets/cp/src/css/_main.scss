@@ -887,91 +887,96 @@ td.right {
 
 .customize-sources-modal {
   @include padding-left(200px);
-}
 
-.customize-sources-modal > .spinner {
-  position: absolute;
-  top: calc(50% - 44px);
-  left: calc(50% - 12px);
-}
+  & > .cs-sidebar {
+    position: absolute;
+    top: 0;
+    @include left(0);
+    margin: 0;
+    padding: 10px 0;
+    border: none;
+    width: 200px;
+    height: calc(100% - 62px);
+    box-sizing: border-box;
+    background-color: $grey050;
+    overflow: auto;
+    box-shadow: inset -1px 0 0 $hairlineColor;
 
-.customize-sources-modal > .cs-sidebar {
-  position: absolute;
-  top: 0;
-  @include left(0);
-  margin: 0;
-  padding: 10px 0;
-  border: none;
-  width: 200px;
-  height: calc(100% - 62px);
-  box-sizing: border-box;
-  background-color: $grey050;
-  overflow: auto;
-  box-shadow: inset -1px 0 0 $hairlineColor;
-}
+    & > .btn {
+      @include margin(10px, 0, 0, 14px);
+      display: block;
+      width: calc(100% - 28px);
+    }
+  }
 
-.customize-sources-modal > .cs-sidebar > .btn {
-  @include margin(10px, 0, 0, 14px);
+  & > .source-settings {
+    position: relative;
+    height: calc(100% - 62px);
+    box-sizing: border-box;
+    padding: 24px;
+    overflow: auto;
+  }
+
+  & > .footer {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+  }
 }
 
 .customize-sources-item {
+  display: flex;
+  width: calc(100% - 1px);
+  box-sizing: border-box;
+  align-items: center;
   position: relative;
   margin-top: -1px;
-  @include margin-right(1px);
-  @include padding(10px, 14px, 10px, 40px);
+  padding: 8px 14px;
   background-color: $grey100;
   border: solid $hairlineColor;
   border-width: 1px 0;
   user-select: none;
   cursor: default;
-}
 
-.customize-sources-item + .customize-sources-item:not(.heading) {
-  border-top: 1px solid $hairlineColor;
-}
+  & + .customize-sources-item {
+    &.heading {
+      margin-top: 10px;
+    }
 
-.customize-sources-item.sel {
-  background-color: $grey200;
-  z-index: 1;
-}
+    &:not(.heading) {
+      border-top: 1px solid $hairlineColor;
+    }
+  }
 
-.customize-sources-item .move {
-  display: block;
-  position: absolute;
-  @include left(7px);
-  top: 11px;
-  width: 24px;
-  text-align: center;
-}
+  &.sel {
+    background-color: $grey200;
+    z-index: 1;
+  }
 
-.customize-sources-item + .customize-sources-item.heading {
-  margin-top: 10px;
-}
+  .label {
+    flex: 1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
 
-.customize-sources-item.heading .label {
-  text-transform: uppercase;
-  color: $lightTextColor;
-  font-size: 12px;
-  font-weight: bold;
-}
+  &.heading {
+    .label {
+      text-transform: uppercase;
+      color: $lightTextColor;
+      font-size: 12px;
+      font-weight: bold;
+    }
+  }
 
-.customize-sources-modal > .source-settings {
-  position: relative;
-  height: calc(100% - 62px);
-  box-sizing: border-box;
-  padding: 24px;
-  overflow: auto;
+  .move {
+    @include margin-left(7px);
+  }
 }
 
 .customize-sources-table-column .move {
   @include margin-right(10px);
-}
-
-.customize-sources-modal > .footer {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  width: 100%;
 }
 
 /* ----------------------------------------

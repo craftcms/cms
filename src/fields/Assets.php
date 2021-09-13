@@ -249,20 +249,12 @@ class Assets extends BaseRelationField
     /**
      * @inheritdoc
      */
-    public function getSourceOptions(): array
+    protected function availableSources(): array
     {
-        $sourceOptions = [];
-
-        foreach (Asset::sources('settings') as $key => $volume) {
-            if (!isset($volume['heading'])) {
-                $sourceOptions[] = [
-                    'label' => $volume['label'],
-                    'value' => $volume['key'],
-                ];
-            }
-        }
-
-        return $sourceOptions;
+        return ArrayHelper::where(
+            Craft::$app->getElementSources()->getSources(static::elementType(), 'settings'),
+            fn($s) => $s['type'] !== ElementSources::TYPE_HEADING
+        );
     }
 
     /**

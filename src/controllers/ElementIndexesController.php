@@ -253,7 +253,7 @@ class ElementIndexesController extends BaseElementsController
             /** @var string|ElementInterface $elementType */
             $elementType = $this->elementType;
             $formatter = Craft::$app->getFormatter();
-            foreach ($elementType::sources($this->context) as $source) {
+            foreach (Craft::$app->getElementSources()->getSources($elementType, $this->context) as $source) {
                 if (isset($source['key'])) {
                     if (isset($source['badgeCount'])) {
                         $responseData['badgeCounts'][$source['key']] = $formatter->asDecimal($source['badgeCount'], 0);

@@ -11,6 +11,7 @@ use Craft;
 use craft\behaviors\CustomFieldBehavior;
 use craft\behaviors\DraftBehavior;
 use craft\behaviors\RevisionBehavior;
+use craft\conditions\elements\ElementQueryConditionInterface;
 use craft\db\Query;
 use craft\db\Table;
 use craft\elements\db\ElementQuery;
@@ -586,8 +587,17 @@ abstract class Element extends Component implements ElementInterface
 
     /**
      * @inheritdoc
+     * @throws NotSupportedException
      */
-    public static function sources(?string $context = null): array
+    public static function createCondition(): ElementQueryConditionInterface
+    {
+        throw new NotSupportedException(static::class . '::createCondition() has not been implemented yet.');
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public static function sources(string $context): array
     {
         $sources = static::defineSources($context);
 
@@ -604,11 +614,11 @@ abstract class Element extends Component implements ElementInterface
     /**
      * Defines the sources that elements of this type may belong to.
      *
-     * @param string|null $context The context ('index' or 'modal').
+     * @param string $context The context ('index', 'modal', or 'settings').
      * @return array The sources.
      * @see sources()
      */
-    protected static function defineSources(?string $context = null): array
+    protected static function defineSources(string $context): array
     {
         return [];
     }
