@@ -294,17 +294,19 @@ abstract class BaseCondition extends Component implements ConditionInterface
 
         // Add head and foot/body scripts to html returned so crafts htmx condition builder can insert them into the DOM
         // If this is not an ajax result, don't add scripts, since they will be in the page anyway.
-        if (($footHtml = $view->getBodyHtml(false)) && $options['isAjax']) {
-            $html .= html::tag('template', $footHtml, [
-                'id' => 'foot-html',
-                'class' => 'hx-foot-html',
-            ]);
-        }
-        if (($headHtml = $view->getHeadHtml(false)) && $options['isAjax']) {
-            $html .= html::tag('template', $headHtml, [
-                'id' => 'foot-html',
-                'class' => 'hx-foot-html'
-            ]);
+        if ($options['isAjax']) {
+            if ($footHtml = $view->getBodyHtml()) {
+                $html .= html::tag('template', $footHtml, [
+                    'id' => 'foot-html',
+                    'class' => 'hx-foot-html',
+                ]);
+            }
+            if ($headHtml = $view->getHeadHtml()) {
+                $html .= html::tag('template', $headHtml, [
+                    'id' => 'foot-html',
+                    'class' => 'hx-foot-html'
+                ]);
+            }
         }
 
         $html .= Html::endTag('form');
