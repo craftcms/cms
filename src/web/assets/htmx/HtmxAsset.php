@@ -67,7 +67,7 @@ htmx.on('htmx:afterOnLoad', function(evt) {
     
     for (var i = 0; i < footHtmls.length; i++) {
         var footHtml = footHtmls[i].innerHTML;
-        console.log('Appending to head', footHtml);
+        console.log('Appending to body (foot):', footHtml);
         if(footHtml){
             Craft.appendFootHtml(footHtml);
         }
