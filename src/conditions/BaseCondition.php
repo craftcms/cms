@@ -184,10 +184,12 @@ abstract class BaseCondition extends Component implements ConditionInterface
         $view = Craft::$app->getView();
         $view->registerAssetBundle(ConditionBuilderAsset::class);
 
+        $mainId = 'condition-' . $this->uid;
         // Main Condition tag, and Htmx inheritable options
         $html = Html::beginTag($options['mainTag'], [
-            'id' => 'condition-' . $this->uid,
+            'id' => $mainId,
             'hx-target' => 'this', // replace self
+            'hx-include' => "#$mainId",//"[name^='condition'][name='options']",
             'hx-swap' => 'outerHTML', // replace this tag with the response
             'hx-indicator' => '#indicator-' . $this->uid, // ID of the spinner
         ]);
@@ -230,7 +232,6 @@ abstract class BaseCondition extends Component implements ConditionInterface
                     'options' => $ruleTypeOptions,
                     'value' => $ruleClass,
                     'inputAttributes' => [
-                        'hx-prompt' => 'Add a condition?',
                         'hx-post' => UrlHelper::actionUrl('conditions/render')
                     ],
                 ]);
@@ -272,8 +273,8 @@ abstract class BaseCondition extends Component implements ConditionInterface
         if (count($this->getConditionRuleTypes()) > 0) {
             $addButtonAttr = [
                 'class' => 'btn add icon',
-                'hx-post' => UrlHelper::actionUrl('conditions/add-rule'),
-
+                'hx-confirm' => 'Add a condition?',
+                'hx-post' => UrlHelper::actionUrl('conditions/add-rule')
             ];
             $addButton = Html::tag('button', $this->getAddRuleLabel(), $addButtonAttr);
             $html .= Html::tag('div', $addButton, ['class' => 'rightalign']);
@@ -291,17 +292,20 @@ abstract class BaseCondition extends Component implements ConditionInterface
             $html .= html::tag('script', $rulesJs, ['id' => 'inline-script', 'type' => 'text/javascript']);
         } else {
             $js = <<<JS
-htmx.process(document.body);
+console.log('Loaded:', '#$mainId');
+htmx.logAll();
+var conditionBuilder = htmx.find('#$mainId');
+// htmx.process();
 JS;
             $view->registerJs($js);
             $view->registerJs($rulesJs);
         }
 
         // Add head and foot/body scripts to html returned so crafts htmx condition builder can insert them into the DOM
-        // If this is not an ajax result, don't add scripts, since they will be in the page anyway.
+        // If this is not an htmx request, don't add scripts, since they will be in the page anyway.
         if ($isHtmxRequest) {
-            if ($footHtml = $view->getBodyHtml()) {
-                $html .= html::tag('template', $footHtml, [
+            if ($bodyHtml = $view->getBodyHtml()) {
+                $html .= html::tag('template', $bodyHtml, [
                     'id' => 'body-html',
                     'class' => 'hx-body-html',
                 ]);

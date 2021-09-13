@@ -65,4 +65,19 @@
             </div>
         {% endfor %}
     </div>
+
+
+    <div class="pane">
+        {% set conditionConfig = {
+            "type": "craft\\conditions\\elements\\entry\\EntryQueryCondition",
+            "uid": "1431d655-195f-4a53-9934-59209d844d64",
+            "conditionRules": []
+        } %}
+        {% set builderConfig = {
+            'mainTag' : 'div'
+        } %}
+
+        {{ craft.app.conditions.createCondition(conditionConfig).getBuilderHtml(builderConfig)|raw }}
+    </div>
+
 {% endblock %}
