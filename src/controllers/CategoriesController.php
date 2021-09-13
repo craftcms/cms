@@ -142,7 +142,7 @@ class CategoriesController extends Controller
         // Main group settings
         $group->name = $this->request->getBodyParam('name');
         $group->handle = $this->request->getBodyParam('handle');
-        $group->maxLevels = $this->request->getBodyParam('maxLevels');
+        $group->maxLevels = (int)$this->request->getBodyParam('maxLevels') ?: null;
         $group->defaultPlacement = $this->request->getBodyParam('defaultPlacement') ?? $group->defaultPlacement;
 
         // Site-specific settings
