@@ -1,7 +1,7 @@
 /** global: Craft */
 /** global: Garnish */
 /**
- * Element Monitor
+ * Element draft editor
  */
 Craft.DraftEditor = Garnish.Base.extend({
     $revisionBtn: null,
