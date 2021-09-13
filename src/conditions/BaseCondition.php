@@ -302,14 +302,14 @@ JS;
         if ($isHtmxRequest) {
             if ($footHtml = $view->getBodyHtml()) {
                 $html .= html::tag('template', $footHtml, [
-                    'id' => 'foot-html',
-                    'class' => 'hx-foot-html',
+                    'id' => 'body-html',
+                    'class' => 'hx-body-html',
                 ]);
             }
             if ($headHtml = $view->getHeadHtml()) {
                 $html .= html::tag('template', $headHtml, [
-                    'id' => 'foot-html',
-                    'class' => 'hx-foot-html'
+                    'id' => 'head-html',
+                    'class' => 'hx-head-html'
                 ]);
             }
         }
