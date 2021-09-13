@@ -30,7 +30,6 @@
     "gulp-concat": "^2.6.1",
     "gulp-footer": "^2.0.2",
     "gulp-header": "^2.0.9",
-    "gulp-if": "^3.0.0",
     "gulp-json-minify": "^1.2.0",
     "gulp-rename": "^1.4.0",
     "gulp-sass": "^4.1.0",
