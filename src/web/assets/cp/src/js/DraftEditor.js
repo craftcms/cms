@@ -231,9 +231,10 @@ Craft.DraftEditor = Garnish.Base.extend({
         }
 
         // Figure out what the "Enabled everywhere" lightswitch would have been set to when the page first loaded
-        const originalEnabledValue = (this.settings.enabled && !Craft.inArray(false, this.settings.siteStatuses))
-            ? '1'
-            : (this.settings.enabledForSite ? '-' : '');
+        const siteStatusValues = Object.values(this.settings.siteStatuses);
+        const hasEnabled = siteStatusValues.includes(true);
+        const hasDisabled = siteStatusValues.includes(false);
+        const originalEnabledValue = (hasEnabled && hasDisabled) ? '-' : (hasEnabled ? '1' : '');
         const originalSerializedStatus = encodeURIComponent(`enabledForSite[${this.settings.siteId}]`) +
             '=' + (this.settings.enabledForSite ? '1' : '');
 

@@ -17,6 +17,7 @@
 ### Fixed
 - Fixed an incompatibility with SEOmatic. ([#9811](https://github.com/craftcms/cms/issues/9811))
 - Fixed a bug where the `backup`, `install/plugin`, `restore`, and `setup` commands weren’t passing the `--interactive`, `--color`, and `--silentExitOnException` options to their sub-commands.
+- Fixed a bug where drafts were getting autosaved when the site status toggles were expanded, if the entry was disabled for the current site but enabled for other sites.
 
 ## 3.7.12 - 2021-09-08
 
