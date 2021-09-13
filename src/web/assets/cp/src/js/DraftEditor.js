@@ -42,6 +42,8 @@ Craft.DraftEditor = Garnish.Base.extend({
     previewToken: null,
     createdProvisionalDraft: false,
 
+    bc: null,
+
     init: function(settings) {
         this.setSettings(settings, Craft.DraftEditor.defaults);
 
@@ -109,6 +111,22 @@ Craft.DraftEditor = Garnish.Base.extend({
         this.addListener(this.$statusIcon, 'click', () => {
             this.showStatusHud(this.$statusIcon);
         });
+
+        if (BroadcastChannel && !this.settings.revisionId) {
+            this.bc = new BroadcastChannel('DraftEditor');
+            this.bc.onmessage = ev => {
+                if (
+                  ev.data.event === 'saveDraft' &&
+                  ev.data.canonicalId === this.settings.sourceId &&
+                  (
+                    ev.data.draftId === this.settings.draftId ||
+                    (ev.data.isProvisionalDraft && !this.settings.draftId)
+                  )
+                ) {
+                    window.location.reload();
+                }
+            };
+        }
     },
 
     listenForChanges: function() {
@@ -840,6 +858,16 @@ Craft.DraftEditor = Garnish.Base.extend({
                 }
 
                 this.afterUpdate(data);
+
+                if (this.bc) {
+                    this.bc.postMessage({
+                        event: 'saveDraft',
+                        canonicalId: this.settings.sourceId,
+                        draftId: this.settings.draftId,
+                        isProvisionalDraft: this.settings.isProvisionalDraft,
+                    });
+                }
+
                 resolve();
             }).catch(() => {
                 this._afterSaveRequest();

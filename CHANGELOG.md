@@ -8,6 +8,7 @@
 
 ### Changed
 - Matrix fields are now fully highlighted when changed, rather than just the specific sub-field. ([#9814](https://github.com/craftcms/cms/issues/9814))
+- When a draft is saved, Craft now automatically reloads other browser tabs that are opened to the same Edit Entry page.
 - Emoji characters are now stripped from search keywords. ([#9813](https://github.com/craftcms/cms/issues/9813))
 - Control panel pages now send `Content-Security-Policy: frame-ancestors 'self'` headers.
 - `craft\console\Controller::run()` now passes the `--interactive`, `--color`, and `--silentExitOnException` options to the sub-command.
