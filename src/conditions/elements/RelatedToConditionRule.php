@@ -80,12 +80,6 @@ class RelatedToConditionRule extends BaseConditionRule implements ElementQueryCo
             'elementType' => Entry::class
         ]);
 
-        $js = <<<JS
-console.log('loaded elementSelect form input')
-JS;
-
-        Craft::$app->getView()->registerJs($js);
-
         return $html;
     }
 
