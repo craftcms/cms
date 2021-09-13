@@ -291,13 +291,6 @@ abstract class BaseCondition extends Component implements ConditionInterface
         if ($isHtmxRequest && $rulesJs) {
             $html .= html::tag('script', $rulesJs, ['id' => 'inline-script', 'type' => 'text/javascript']);
         } else {
-            $js = <<<JS
-console.log('Loaded:', '#$mainId');
-htmx.logAll();
-var conditionBuilder = htmx.find('#$mainId');
-// htmx.process();
-JS;
-            $view->registerJs($js);
             $view->registerJs($rulesJs);
         }
 
