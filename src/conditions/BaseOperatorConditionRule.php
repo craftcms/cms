@@ -61,10 +61,7 @@ abstract class BaseOperatorConditionRule extends BaseConditionRule
             $html .= Html::tag('div', Craft::$app->getView()->renderTemplate('_includes/forms/select', [
                 'name' => 'operator',
                 'value' => $this->operator,
-                'options' => $this->getOperators(),
-                'inputAttributes' => [
-                    'hx-post' => UrlHelper::actionUrl('conditions/render'),
-                ]
+                'options' => $this->getOperators()
             ]));
         }
 
