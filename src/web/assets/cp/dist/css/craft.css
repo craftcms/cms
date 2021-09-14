@@ -3091,6 +3091,10 @@ body :focus { outline-style: solid; outline-color: transparent; }
 
 body:not(.reduce-focus-visibility) :focus, body.reduce-focus-visibility :focus-visible { box-shadow: 0 0 0 1px #127FBF, 0 0 0 3px rgba(18, 127, 191, 0.5); }
 
+.skip-link { position: absolute; left: -10000px; top: auto; width: 1px; height: 1px; overflow: hidden; z-index: 101; }
+
+.skip-link:focus { left: 0; width: auto; height: auto; background-color: #e4edf6 !important; }
+
 #global-container { position: relative; display: -webkit-flex; display: flex; -webkit-flex-direction: column; flex-direction: column; min-height: 100vh; }
 
 body.ltr #global-container { left: 0; }
