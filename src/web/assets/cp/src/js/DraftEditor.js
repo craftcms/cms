@@ -1,7 +1,7 @@
 /** global: Craft */
 /** global: Garnish */
 /**
- * Element Monitor
+ * Element draft editor
  */
 Craft.DraftEditor = Garnish.Base.extend({
     $revisionBtn: null,
@@ -36,11 +36,15 @@ Craft.DraftEditor = Garnish.Base.extend({
 
     duplicatedElements: null,
     errors: null,
+    httpStatus: null,
+    httpError: null,
 
     openingPreview: false,
     preview: null,
     previewToken: null,
     createdProvisionalDraft: false,
+
+    bc: null,
 
     init: function(settings) {
         this.setSettings(settings, Craft.DraftEditor.defaults);
@@ -109,6 +113,22 @@ Craft.DraftEditor = Garnish.Base.extend({
         this.addListener(this.$statusIcon, 'click', () => {
             this.showStatusHud(this.$statusIcon);
         });
+
+        if (BroadcastChannel && !this.settings.revisionId) {
+            this.bc = new BroadcastChannel('DraftEditor');
+            this.bc.onmessage = ev => {
+                if (
+                  ev.data.event === 'saveDraft' &&
+                  ev.data.canonicalId === this.settings.sourceId &&
+                  (
+                    ev.data.draftId === this.settings.draftId ||
+                    (ev.data.isProvisionalDraft && !this.settings.draftId)
+                  )
+                ) {
+                    window.location.reload();
+                }
+            };
+        }
     },
 
     listenForChanges: function() {
@@ -416,19 +436,32 @@ Craft.DraftEditor = Garnish.Base.extend({
         if (this.errors === null) {
             bodyHtml = `<p>${this._saveSuccessMessage()}</p>`;
         } else {
-            bodyHtml = `<p class="error">${this._saveFailMessage()}</p>`;
+            bodyHtml = `<p class="error"><strong>${this._saveFailMessage()}</strong></p>`;
 
             if (this.errors.length) {
                 bodyHtml += '<ul class="errors">' +
                     this.errors.map(e => `<li>${Craft.escapeHtml(e)}</li>`).join('') +
                     '</ul>';
             }
+
+            if (this.httpError) {
+                bodyHtml += `<p class="http-error code">${Craft.escapeHtml(this.httpError)}</p>`;
+            }
+
+            if (this.httpStatus === 400) {
+                bodyHtml += `<button class="btn refresh-btn">${Craft.t('app', 'Refresh')}</button>`;
+            }
         }
 
         const hud = new Garnish.HUD(target, bodyHtml, {
+            hudClass: 'hud revision-status-hud',
             onHide: function() {
                 hud.destroy();
             }
+        });
+
+        hud.$mainContainer.find('.refresh-btn').on('click', () => {
+            window.location.reload();
         });
     },
 
@@ -667,6 +700,8 @@ Craft.DraftEditor = Garnish.Base.extend({
             this.lastSerializedValue = data;
             this.saving = true;
             this.errors = null;
+            this.httpStatus = null;
+            this.httpError = null;
             this.cancelToken = axios.CancelToken.source();
             this.spinners().removeClass('hidden');
 
@@ -840,14 +875,28 @@ Craft.DraftEditor = Garnish.Base.extend({
                 }
 
                 this.afterUpdate(data);
+
+                if (this.bc) {
+                    this.bc.postMessage({
+                        event: 'saveDraft',
+                        canonicalId: this.settings.sourceId,
+                        draftId: this.settings.draftId,
+                        isProvisionalDraft: this.settings.isProvisionalDraft,
+                    });
+                }
+
                 resolve();
-            }).catch(() => {
+            }).catch(e => {
                 this._afterSaveRequest();
 
                 if (!this.ignoreFailedRequest) {
                     this.errors = [];
+                    if (e && e.response) {
+                        this.httpStatus = e.response.status;
+                        this.httpError = e.response.data ? e.response.data.error : null;
+                    }
                     this._showFailStatus();
-                    reject();
+                    reject(e);
                 }
 
                 this.ignoreFailedRequest = false;

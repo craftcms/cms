@@ -230,6 +230,10 @@ body.rtl #revision-menu ul li.sel .edited-desc .btn { margin-right: 14px; }
 
 #revision-menu .extralight { margin-top: 2px; }
 
+.revision-status-hud { max-width: 400px; }
+
+.revision-status-hud .http-error { border-radius: 4px; border: 1px solid rgba(51, 64, 77, 0.1); color: #606d7b; background-color: #f3f7fc; padding: 7px 14px; }
+
 /* toggles */
 button.toggle { -webkit-appearance: none; appearance: none; color: inherit; background: none; border: none; padding: 0; }
 
