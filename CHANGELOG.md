@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 3.x
 
-## Unreleased
+## 3.7.13 - 2021-09-14
 
 ### Added
 - Added the `up` command, which calls `migrate/all` and `project-config/apply`, wrapped in a mutex lock.
