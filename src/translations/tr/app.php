@@ -1251,6 +1251,7 @@ return [
     'Site' => 'Site',
     'Sites' => 'Siteler',
     'Size' => 'Boyut',
+    'Skip to content' => 'Skip to content',
     'Skipped files' => 'Atlanan dosyalar',
     'Slug' => 'Ek',
     'Some categories restored.' => 'Bazı kategoriler geri yüklendi.',
