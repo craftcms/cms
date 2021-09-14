@@ -30,7 +30,6 @@ class StatusConditionRule extends BaseSelectOperatorConditionRule implements Ele
     public function getSelectOptions(): array
     {
         return Entry::statuses();
-//        return ArrayHelper::map($sections, 'uid', 'name');
     }
 
     /**
