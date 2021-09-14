@@ -52,6 +52,9 @@
     {% endblock %}
 </head>
 <body {{ attr(bodyAttributes) }}>
+    {{ tag ('a', {
+        text: 'Skip to content',
+    }) }}
     {{ beginBody() }}
     {% block body %}{% endblock %}
     {% block foot %}{% endblock %}
