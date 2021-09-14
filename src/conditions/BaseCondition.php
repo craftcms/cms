@@ -8,6 +8,7 @@ use craft\events\RegisterConditionRuleTypesEvent;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Html;
 use craft\helpers\Json;
+use craft\helpers\ProjectConfig as ProjectConfigHelper;
 use craft\helpers\StringHelper;
 use craft\helpers\UrlHelper;
 use craft\web\assets\conditionbuilder\ConditionBuilderAsset;
@@ -178,8 +179,15 @@ abstract class BaseCondition extends Component implements ConditionInterface
 
         $options = array_merge([
             'mainTag' => 'form',
-            'devMode' => false
+            'baseInputName' => 'condition'
         ], $options);
+
+        $optionsInputs = [];
+        foreach ($options as $key => $value) {
+            $optionsInputs['options[' . $key . ']'] = $value;
+        }
+
+        $baseInputName = $options['baseInputName'];
 
         $view = Craft::$app->getView();
         $view->registerAssetBundle(ConditionBuilderAsset::class);
@@ -189,18 +197,16 @@ abstract class BaseCondition extends Component implements ConditionInterface
         $html = Html::beginTag($options['mainTag'], [
             'id' => $mainId,
             'hx-target' => 'this', // replace self
-            'hx-include' => "#$mainId",//"[name^='condition'][name='options']",
             'hx-swap' => 'outerHTML', // replace this tag with the response
             'hx-indicator' => '#indicator-' . $this->uid, // ID of the spinner
+            'hx-vals' => Json::encode($optionsInputs)
         ]);
         // Loading indicator
         $html .= Html::tag('div', '', ['id' => 'indicator-' . $this->uid, 'class' => 'htmx-indicator spinner']);
 
-        // Builder options
-        $html .= Html::hiddenInput('options', Json::encode($options));
         // Condition hidden inputs
-        $html .= Html::hiddenInput('condition[uid]', $this->uid);
-        $html .= Html::hiddenInput('condition[type]', get_class($this));
+        $html .= Html::hiddenInput($baseInputName . '[uid]', $this->uid);
+        $html .= Html::hiddenInput($baseInputName . '[type]', get_class($this));
 
         $view->startJsBuffer();
 
@@ -254,7 +260,7 @@ abstract class BaseCondition extends Component implements ConditionInterface
                 $ruleHtml .= Html::tag('div', $deleteButton, ['id' => 'rule-actions', 'class' => 'rule-actions']);
 
                 return Html::tag('div', $ruleHtml, ['id' => 'condition-rule', 'class' => 'condition-rule flex draggable']);
-            }, "condition[conditionRules][$rule->uid]");
+            }, $options['baseInputName'] . "[conditionRules][$rule->uid]");
 
             $allRulesHtml .= $ruleHtml;
         }
@@ -273,18 +279,10 @@ abstract class BaseCondition extends Component implements ConditionInterface
         if (count($this->getConditionRuleTypes()) > 0) {
             $addButtonAttr = [
                 'class' => 'btn add icon',
-                'hx-confirm' => 'Add a condition?',
                 'hx-post' => UrlHelper::actionUrl('conditions/add-rule')
             ];
             $addButton = Html::tag('button', $this->getAddRuleLabel(), $addButtonAttr);
             $html .= Html::tag('div', $addButton, ['class' => 'rightalign']);
-        }
-
-        if ($options['devMode'] == true) {
-            $html .= Html::tag('div',
-                Html::tag('pre', Json::encode($this->getConfig(), JSON_PRETTY_PRINT)),
-                ['class' => 'pane']
-            );
         }
 
         // Add inline scripts
@@ -292,14 +290,10 @@ abstract class BaseCondition extends Component implements ConditionInterface
             $html .= html::tag('script', $rulesJs, ['id' => 'inline-script', 'type' => 'text/javascript']);
         } else {
             $view->registerJs($rulesJs);
+        }
 
-            $js = <<<JS
-console.log('Loaded:', '#$mainId'); // TODO remove
-var conditionBuilder = htmx.find('#$mainId');
-console.log(conditionBuilder); // TODO (not finding, fix)
-//htmx.process(conditionBuilder); // TODO get working
-JS;
-            $view->registerJs($js);
+        if (!$isHtmxRequest) {
+            $view->registerJs("htmx.process(htmx.find('#$mainId'));");
         }
 
         // Add head and foot/body scripts to html returned so crafts htmx condition builder can insert them into the DOM

@@ -28,6 +28,7 @@ Craft.CustomizeSourcesModal = Garnish.Modal.extend({
     availableTableAttributes: null,
 
     conditionBuilderHtml: null,
+    conditionBuilderJs: null,
 
     init: function(elementIndex, settings) {
         this.base();
@@ -84,6 +85,7 @@ Craft.CustomizeSourcesModal = Garnish.Modal.extend({
         this.availableTableAttributes = response.availableTableAttributes;
         this.elementTypeName = response.elementTypeName;
         this.conditionBuilderHtml = response.conditionBuilderHtml;
+        this.conditionBuilderJs = response.conditionBuilderJs;
 
         if (response.headHtml) {
             Craft.appendHeadHtml(response.headHtml);
@@ -454,12 +456,15 @@ Craft.CustomizeSourcesModal.CustomSource = Craft.CustomizeSourcesModal.Source.ex
         }).appendTo($container);
         this.$labelInput = $labelField.find('.text');
 
-        Craft.ui.createField($('<div/>').append(this.modal.conditionBuilderHtml), {
+        const conditionBuilderHtml = this.sourceData.conditionBuilderHtml || this.modal.conditionBuilderHtml.replace(/\bSOURCE_KEY\b/g, this.sourceData.key);
+        const conditionBuilderJs = this.sourceData.conditionBuilderJs || this.modal.conditionBuilderJs.replace(/\bSOURCE_KEY\b/g, this.sourceData.key);
+        Craft.ui.createField($('<div/>').append(conditionBuilderHtml), {
             id: 'criteria',
             label: Craft.t('app', '{type} Criteria', {
                 type: this.modal.elementTypeName,
             }),
         }).appendTo($container);
+        Craft.appendFootHtml(conditionBuilderJs);
 
         this.createTableAttributesField($container);
 

@@ -11,6 +11,7 @@ use Craft;
 use craft\conditions\BaseCondition;
 use craft\helpers\Json;
 use craft\web\Controller;
+use yii\helpers\Url;
 
 /**
  * The ConditionsController class is a controller that handles various condition related actions including managing
@@ -23,6 +24,12 @@ use craft\web\Controller;
  */
 class ConditionsController extends Controller
 {
+
+    /**
+     * @var array
+     */
+    private $_options = [];
+
     /**
      * @inheritdoc
      */
@@ -38,7 +45,16 @@ class ConditionsController extends Controller
      */
     public function beforeAction($action): bool
     {
-        $this->loadCondition();
+        $this->_options = $this->request->getBodyParam('options', []);
+
+        $this->_options['isAjax'] = true;
+        $this->_options['baseInputName'] = $this->_options['baseInputName'] ?? 'condition';
+
+        $baseInputNamePath = str_replace('[', '.', $this->_options['baseInputName']);
+        $baseInputNamePath = str_replace(']', '', $baseInputNamePath);
+
+        $config = $this->request->getBodyParam($baseInputNamePath);
+        $this->_condition = Craft::$app->getConditions()->createCondition($config);
 
         if (!parent::beforeAction($action)) {
             return false;
@@ -87,21 +103,10 @@ class ConditionsController extends Controller
     }
 
     /**
-     * @return BaseCondition
-     */
-    protected function loadCondition(): BaseCondition
-    {
-        $config = $this->request->getRequiredBodyParam('condition');
-        return $this->_condition = Craft::$app->getConditions()->createCondition($config);
-    }
-
-    /**
      * @return string
      */
     protected function renderBuilderHtml(): string
     {
-        $options = Json::decodeIfJson($this->request->getBodyParam('options', []));
-        $options['isAjax'] = true;
-        return $this->_condition->getBuilderHtml($options);
+        return $this->_condition->getBuilderHtml($this->_options);
     }
 }

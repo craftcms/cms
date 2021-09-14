@@ -93,19 +93,19 @@ class ElementIndexSettingsController extends BaseElementsController
 
         if ($conditionBuilder) {
             $view = Craft::$app->getView();
-            $view->registerAssetBundle(ConditionBuilderAsset::class);
-//            $view->startCssBuffer();
-//            $view->startScriptBuffer();
-//            $view->startJsBuffer();
+//            $view->registerAssetBundle(ConditionBuilderAsset::class);
+            $view->startJsBuffer();
+            $conditionBuilderHtml = $conditionBuilder->getBuilderHtml([
+                'mainTag' => 'div',
+                'baseInputName' => 'sources[SOURCE_KEY][criteria]',
+            ]);
+            $conditionBuilderJs = $view->clearJsBuffer();
             $response += [
-                'conditionBuilderHtml' => $conditionBuilder->getBuilderHtml([
-                    'mainTag' => 'div',
-                ]),
+                'conditionBuilderHtml' => $conditionBuilderHtml,
+                'conditionBuilderJs' => $conditionBuilderJs,
                 'headHtml' => $view->getHeadHtml(),
                 'bodyHtml' => $view->getBodyHtml(),
             ];
-//            $response['conditionBuilderHeadHtml'] = implode('', $view->clearCssBuffer());
-//            $response['conditionBuilderBodyHtml'] = implode('', $view->clearScriptBuffer()) . $view->clearJsBuffer();
         }
 
         return $this->asJson($response);

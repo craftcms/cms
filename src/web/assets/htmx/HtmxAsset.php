@@ -12,17 +12,10 @@ use craft\web\View;
 use yii\web\AssetBundle;
 
 /**
- * Sortable asset bundle.
+ * Htmx asset bundle.
  */
 class HtmxAsset extends AssetBundle
 {
-    /**
-     * @inheritdoc
-     */
-    public $depends = [
-        CpAsset::class,
-    ];
-
     /**
      * @inheritdoc
      */
@@ -30,55 +23,14 @@ class HtmxAsset extends AssetBundle
     {
         $this->sourcePath = '@lib/htmx';
 
-        $this->css = [];
+        $this->depends = [
+            CpAsset::class,
+        ];
 
         $this->js = [
             'htmx.js',
         ];
 
         parent::init();
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function registerAssetFiles($view): void
-    {
-        parent::registerAssetFiles($view);
-
-        $js = <<<JS
-// Anytime Htmx does a server request, add standard Craft headers (includes CSRF)
-htmx.on('htmx:configRequest', function(evt) {
-    evt.detail.headers = {...evt.detail.headers, ...Craft._actionHeaders()};
-});
-
-// Anytime Htmx does a swap, look for html in templates to be added to head or foot in CP
-htmx.on('htmx:afterOnLoad', function(evt) {
-    
-    const content = evt.detail.elt;
-    
-    const headHtmls = content.querySelectorAll("template.hx-head-html");
-    const bodyHtmls = content.querySelectorAll("template.hx-body-html");
-    
-    for (var i = 0; i < headHtmls.length; i++) {
-        var headHtml = headHtmls[i].innerHTML;
-        console.log('Appending to head:', headHtml);
-        if(headHtml){
-            Craft.appendHeadHtml(headHtml);
-        }
-    }
-    
-    for (var i = 0; i < bodyHtmls.length; i++) {
-        var bodyHtml = bodyHtmls[i].innerHTML;
-        console.log('Appending to body:', bodyHtml);
-        if(bodyHtml){
-            Craft.appendFootHtml(bodyHtml);
-        }
-    }
-    
-    Craft.initUiElements(content);
-});
-JS;
-        $view->registerJs($js, View::POS_END);
     }
 }

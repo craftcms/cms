@@ -5,19 +5,17 @@
  * @license https://craftcms.github.io/license/
  */
 
-namespace craft\web\assets\conditionbuilder;
+namespace craft\web\assets\cphtmx;
 
 use craft\web\assets\cp\CpAsset;
-use craft\web\assets\cphtmx\CpHtmxAsset;
 use craft\web\assets\htmx\HtmxAsset;
-use craft\web\assets\sortable\SortableAsset;
 use craft\web\View;
 use yii\web\AssetBundle;
 
 /**
- * Condition Builder asset bundle.
+ * Sortable asset bundle.
  */
-class ConditionBuilderAsset extends AssetBundle
+class CpHtmxAsset extends AssetBundle
 {
     /**
      * @inheritdoc
@@ -28,8 +26,8 @@ class ConditionBuilderAsset extends AssetBundle
      * @inheritdoc
      */
     public $depends = [
-        CpHtmxAsset::class,
-        SortableAsset::class
+        CpAsset::class,
+        HtmxAsset::class
     ];
 
     /**
@@ -40,7 +38,7 @@ class ConditionBuilderAsset extends AssetBundle
         $this->css = [];
 
         $this->js = [
-            'js/ConditionBuilder.js',
+            'js/CpHtmx.js',
         ];
 
         parent::init();
