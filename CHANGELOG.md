@@ -22,6 +22,7 @@
 - Fixed a bug where the `backup`, `install/plugin`, `restore`, and `setup` commands weren’t passing the `--interactive`, `--color`, and `--silentExitOnException` options to their sub-commands.
 - Fixed a bug where drafts were getting autosaved when the site status toggles were expanded, if the entry was disabled for the current site but enabled for other sites.
 - Fixed a bug where it was possible for two provisional drafts to exist for the same entry and user.
+- Fixed an error that could occur if a log target was configured with a low flush interval. ([#9818](https://github.com/craftcms/cms/issues/9818))
 
 ## 3.7.12 - 2021-09-08
 

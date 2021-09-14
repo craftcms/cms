@@ -31,7 +31,7 @@ class Dispatcher extends \yii\log\Dispatcher
      */
     public function init()
     {
-        $this->targets = array_merge($this->targets, App::defaultLogTargets());
         parent::init();
+        $this->targets = array_merge($this->targets, App::defaultLogTargets());
     }
 }
