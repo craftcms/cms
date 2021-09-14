@@ -96,17 +96,30 @@ class TypeConditionRule extends BaseConditionRule implements ElementQueryConditi
     }
 
     /**
+     * Returns the input attributes.
+     *
+     * @return array
+     */
+    protected function getInputAttributes(): array
+    {
+        return [];
+    }
+
+    /**
      * @inheritdoc
      */
     public function getHtml(array $options = []): string
     {
-        $inputAttributes = ['hx-post' => UrlHelper::actionUrl('conditions/render')];
-
         $html = Craft::$app->getView()->renderTemplate('_includes/forms/select', [
             'name' => 'sectionUid',
             'value' => $this->sectionUid,
             'options' => $this->getSectionOptions(),
-            'inputAttributes' => $inputAttributes,
+            'inputAttributes' => array_merge($this->getInputAttributes(),[
+                'hx-post' => UrlHelper::actionUrl('conditions/render'), // Only the section re-renders the body
+                'hx-target' => 'closest .rule-body',
+                'hx-select' => $this->getRuleBodyId(),
+                'hx-swap' => 'outerHTML'
+            ])
         ]);
 
         $this->_ensureEntryType();
@@ -115,7 +128,7 @@ class TypeConditionRule extends BaseConditionRule implements ElementQueryConditi
             'name' => 'entryTypeUid',
             'value' => $this->entryTypeUid,
             'options' => $this->getEntryTypeOptions(),
-            'inputAttributes' => $inputAttributes,
+            'inputAttributes' => $this->getInputAttributes(),
         ]);
 
         return $html;
@@ -123,6 +136,7 @@ class TypeConditionRule extends BaseConditionRule implements ElementQueryConditi
 
     /**
      * Ensures an entry type is set correctly based on the section selected.
+     *
      * @return void
      */
     private function _ensureEntryType(): void

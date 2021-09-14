@@ -70,7 +70,7 @@ abstract class BaseConditionRule extends Component implements ConditionRuleInter
     }
 
     /**
-     * @param ConditionInterface $condition
+     * @inheritdoc
      */
     public function setCondition(ConditionInterface $condition): void
     {
@@ -78,7 +78,7 @@ abstract class BaseConditionRule extends Component implements ConditionRuleInter
     }
 
     /**
-     * @return ConditionInterface
+     * @inheritdoc
      */
     public function getCondition(): ConditionInterface
     {
@@ -98,5 +98,10 @@ abstract class BaseConditionRule extends Component implements ConditionRuleInter
         return [
             [['uid'], 'safe'],
         ];
+    }
+
+    protected function getRuleBodyId()
+    {
+        return "#" . \Craft::$app->getView()->namespaceInputId('rule-body', \Craft::$app->getView()->getNamespace());
     }
 }

@@ -46,9 +46,7 @@ abstract class BaseSelectOperatorConditionRule extends BaseOperatorConditionRule
      */
     protected function getInputAttributes(): array
     {
-        return [
-            'hx-post' => UrlHelper::actionUrl('conditions/render'),
-        ];
+        return [];
     }
 
     /**

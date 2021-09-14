@@ -64,10 +64,8 @@ abstract class BaseMultiSelectOperatorConditionRule extends BaseConditionRule
     protected function getInputAttributes(): array
     {
         return [
-            'hx-post' => UrlHelper::actionUrl('conditions/render'),
-            'hx-trigger' => 'change delay:100ms',
             'id' => $this->_id,
-            'style' => 'display:none;' // Hide it before selectize does
+            'style' => 'display:none;' // Hide it before selectize does it's thing
         ];
     }
 

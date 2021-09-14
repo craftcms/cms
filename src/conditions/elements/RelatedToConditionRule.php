@@ -79,7 +79,8 @@ class RelatedToConditionRule extends BaseConditionRule implements ElementQueryCo
         $html = Craft::$app->getView()->renderTemplate('_includes/forms/elementSelect', [
             'name' => 'elementIds',
             'elements' => $this->elementIds ? Entry::find()->id($this->elementIds)->all() : [],
-            'elementType' => Entry::class
+            'elementType' => Entry::class,
+            'single' => true
         ]);
 
         return $html;

@@ -199,7 +199,7 @@ abstract class BaseCondition extends Component implements ConditionInterface
             'hx-target' => 'this', // replace self
             'hx-swap' => 'outerHTML', // replace this tag with the response
             'hx-indicator' => '#indicator-' . $this->uid, // ID of the spinner
-            'hx-vals' => Json::encode($optionsInputs)
+            'hx-vals' => Json::encode($optionsInputs), // We want this outside of the namespaced input and this works
         ]);
         // Loading indicator
         $html .= Html::tag('div', '', ['id' => 'indicator-' . $this->uid, 'class' => 'htmx-indicator spinner']);
@@ -211,6 +211,7 @@ abstract class BaseCondition extends Component implements ConditionInterface
         $view->startJsBuffer();
 
         $allRulesHtml = '';
+        /** @var ConditionRuleInterface $rule */
         foreach ($this->getConditionRules() as $rule) {
             $ruleHtml = Craft::$app->getView()->namespaceInputs(function() use ($rule, $options) {
 
@@ -232,13 +233,12 @@ abstract class BaseCondition extends Component implements ConditionInterface
                 ArrayHelper::multisort($ruleTypeOptions, 'label');
 
                 // Add rule type selector and uid hidden field
-                $ruleBodyId = "#" . Craft::$app->getView()->namespaceInputId('rule-body', Craft::$app->getView()->getNamespace());
                 $switcherHtml = Craft::$app->getView()->renderTemplate('_includes/forms/select', [
                     'name' => 'type',
                     'options' => $ruleTypeOptions,
                     'value' => $ruleClass,
                     'inputAttributes' => [
-                        'hx-post' => UrlHelper::actionUrl('conditions/render')
+                        'hx-post' => UrlHelper::actionUrl('conditions/render'),
                     ],
                 ]);
                 $switcherHtml .= Html::hiddenInput('uid', $rule->uid);
@@ -284,7 +284,7 @@ abstract class BaseCondition extends Component implements ConditionInterface
             $addButton = Html::tag('button', $this->getAddRuleLabel(), $addButtonAttr);
             $html .= Html::tag('div', $addButton, ['class' => 'rightalign']);
         }
-
+        $view->registerCss('.htmx-swapping{ color:red}');
         // Add inline scripts
         if ($isHtmxRequest && $rulesJs) {
             $html .= html::tag('script', $rulesJs, ['id' => 'inline-script', 'type' => 'text/javascript']);

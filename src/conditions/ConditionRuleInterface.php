@@ -22,4 +22,14 @@ interface ConditionRuleInterface extends ComponentInterface
      * @return string
      */
     public function getHtml(array $options = []): string;
+    
+    /**
+     * @param ConditionInterface $condition
+     */
+    public function setCondition(ConditionInterface $condition): void;
+
+    /**
+     * @return ConditionInterface
+     */
+    public function getCondition(): ConditionInterface;
 }

@@ -23,6 +23,16 @@ abstract class BaseLightswitchConditionRule extends BaseConditionRule
     public $value;
 
     /**
+     * Returns the input container attributes.
+     *
+     * @return array
+     */
+    protected function getContainerAttributes(): array
+    {
+        return [];
+    }
+
+    /**
      * @inheritdoc
      */
     public function getConfig(): array
@@ -43,10 +53,7 @@ abstract class BaseLightswitchConditionRule extends BaseConditionRule
                 'small' => true,
                 'on' => (bool)$this->value,
                 'name' => 'value',
-                'id' => 'lightswitch',
-                'containerAttributes' => [ // adds it to the button lightswitch
-                    'hx-post' => UrlHelper::actionUrl('conditions/render'),
-                ]
+                'id' => 'lightswitch'
             ])
         );
         $html .= Html::endTag('div');
