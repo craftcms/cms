@@ -13,6 +13,7 @@
 - Control panel pages now send `Content-Security-Policy: frame-ancestors 'self'` headers.
 - Edit Entry pages now reveal some exception messages when drafts are unable to save.
 - Control panel pages now have a “Skip to content” link before the navigation, for screen readers. ([#9832](https://github.com/craftcms/cms/pull/9832))
+- Live Preview now maintains the window’s original scroll position when closed. ([#9828](https://github.com/craftcms/cms/issues/9828))
 - `craft\console\Controller::run()` now passes the `--interactive`, `--color`, and `--silentExitOnException` options to the sub-command.
 
 ### Deprecated
