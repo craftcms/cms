@@ -473,7 +473,7 @@ class ProjectConfig extends Component
         }
 
         if ($valueHasChanged) {
-            $this->getCurrentWorkingConfig()->commitChanges($previousValue, $value, $path, $valueHasChanged, $message);
+            $this->getCurrentWorkingConfig()->commitChanges($previousValue, $value, $path, $valueHasChanged, $message, true);
             $this->_saveConfigAfterRequest();
         }
     }
