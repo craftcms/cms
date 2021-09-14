@@ -56,7 +56,7 @@ class SystemSettingsController extends Controller
         $this->getView()->registerAssetBundle(GeneralSettingsAsset::class);
 
         return $this->renderTemplate('settings/general/_index', [
-            'system' => Craft::$app->getProjectConfig()->get('system'),
+            'system' => Craft::$app->getProjectConfig()->get('system') ?? [],
         ]);
     }
 
