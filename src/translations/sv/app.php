@@ -1251,6 +1251,7 @@ return [
     'Site' => 'Webbplats',
     'Sites' => 'Webbplatser',
     'Size' => 'Storlek',
+    'Skip to content' => 'Skip to content',
     'Skipped files' => 'Hoppade över filer',
     'Slug' => 'Slug - Tillägg till sökväg',
     'Some categories restored.' => 'Vissa kategorier återställdes.',
