@@ -466,6 +466,18 @@ li.sel a {
   }
 }
 
+.revision-status-hud {
+  max-width: 400px;
+
+  .http-error {
+    border-radius: $mediumBorderRadius;
+    border: 1px solid $hairlineColor;
+    color: $lightTextColor;
+    background-color: $grey050;
+    padding: 7px 14px;
+  }
+}
+
 /* toggles */
 button.toggle {
   appearance: none;

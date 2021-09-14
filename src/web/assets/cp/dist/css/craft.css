@@ -230,6 +230,10 @@ body.rtl #revision-menu ul li.sel .edited-desc .btn { margin-right: 14px; }
 
 #revision-menu .extralight { margin-top: 2px; }
 
+.revision-status-hud { max-width: 400px; }
+
+.revision-status-hud .http-error { border-radius: 4px; border: 1px solid rgba(51, 64, 77, 0.1); color: #606d7b; background-color: #f3f7fc; padding: 7px 14px; }
+
 /* toggles */
 button.toggle { -webkit-appearance: none; appearance: none; color: inherit; background: none; border: none; padding: 0; }
 
@@ -2430,6 +2434,8 @@ body:not(.reduce-focus-visibility) input.checkbox:focus + label:before, body:not
 
 body.reduce-focus-visibility input.checkbox:focus-visible + label:before, body.reduce-focus-visibility :focus-visible div.checkbox:before { border-color: #127FBF; box-shadow: 0 0 0 2px rgba(18, 127, 191, 0.5); }
 
+.monaco-mouse-cursor-text:focus, .monaco-mouse-cursor-text:focus-visible { box-shadow: none !important; }
+
 fieldset .checkboxfield { margin: 5px 0; }
 
 .checkboxfield .instructions, .checkboxfield .notice, .checkboxfield .warning { margin-top: 2px; }
@@ -3084,6 +3090,10 @@ body { min-height: 100vh; }
 body :focus { outline-style: solid; outline-color: transparent; }
 
 body:not(.reduce-focus-visibility) :focus, body.reduce-focus-visibility :focus-visible { box-shadow: 0 0 0 1px #127FBF, 0 0 0 3px rgba(18, 127, 191, 0.5); }
+
+.skip-link { position: absolute; left: -10000px; top: auto; width: 1px; height: 1px; overflow: hidden; z-index: 101; }
+
+.skip-link:focus { left: 0; width: auto; height: auto; background-color: #e4edf6 !important; }
 
 #global-container { position: relative; display: -webkit-flex; display: flex; -webkit-flex-direction: column; flex-direction: column; min-height: 100vh; }
 

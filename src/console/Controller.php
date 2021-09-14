@@ -199,6 +199,22 @@ class Controller extends YiiController
     /**
      * @inheritdoc
      */
+    public function run($route, $params = [])
+    {
+        // Pass along the common params
+        $passedOptions = $this->getPassedOptionValues();
+        foreach (['interactive', 'color', 'silentExitOnException'] as $param) {
+            if (!array_key_exists($param, $params) && array_key_exists($param, $passedOptions)) {
+                $params[$param] = $passedOptions[$param];
+            }
+        }
+
+        return parent::run($route, $params);
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function runAction($id, $params = [])
     {
         $this->_actionId = $id;

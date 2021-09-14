@@ -265,6 +265,22 @@ class EntryRevisionsController extends BaseEntriesController
                 $this->enforceSitePermission($entry->getSite());
                 $this->enforceEditEntryPermissions($entry);
 
+                if ($provisional) {
+                    // Make sure a provisional draft doesn't already exist for this entry/user combo
+                    $userId = Craft::$app->getUser()->getId();
+                    $provisionalExists = Entry::find()
+                        ->provisionalDrafts()
+                        ->draftOf($entryId)
+                        ->draftCreator($userId)
+                        ->site('*')
+                        ->anyStatus()
+                        ->exists();
+
+                    if ($provisionalExists) {
+                        throw new BadRequestHttpException("A provisional draft already exists for entry/user $entryId/$userId.");
+                    }
+                }
+
                 // Create the draft in a transaction so we can undo it if something goes wrong
                 $transaction = Craft::$app->getDb()->beginTransaction();
 
@@ -558,7 +574,7 @@ class EntryRevisionsController extends BaseEntriesController
         // Revert to the version
         Craft::$app->getRevisions()->revertToRevision($revision, $userId);
         $this->setSuccessFlash(Craft::t('app', 'Entry reverted to past revision.'));
-        return $this->redirectToPostedUrl($revision);
+        return $this->redirectToPostedUrl($entry);
     }
 
     /**
