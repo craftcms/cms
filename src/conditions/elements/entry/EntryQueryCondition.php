@@ -20,7 +20,8 @@ class EntryQueryCondition extends ElementQueryCondition
         return array_merge(parent::conditionRuleTypes(), [
             TypeConditionRule::class,
             SectionConditionRule::class,
-            AuthorGroupConditionRule::class
+            AuthorGroupConditionRule::class,
+            HasUrlConditionRule::class
         ]);
     }
 }
