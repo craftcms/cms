@@ -62,16 +62,6 @@ abstract class BaseConditionRule extends Component implements ConditionRuleInter
     /**
      * @inheritdoc
      */
-    public function fields(): array
-    {
-        return array_merge(parent::fields(), [
-            'type' => fn() => get_class($this),
-        ]);
-    }
-
-    /**
-     * @inheritdoc
-     */
     public function setCondition(ConditionInterface $condition): void
     {
         $this->_condition = $condition;
