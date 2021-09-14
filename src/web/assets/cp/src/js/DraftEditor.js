@@ -36,6 +36,8 @@ Craft.DraftEditor = Garnish.Base.extend({
 
     duplicatedElements: null,
     errors: null,
+    httpStatus: null,
+    httpError: null,
 
     openingPreview: false,
     preview: null,
@@ -434,19 +436,32 @@ Craft.DraftEditor = Garnish.Base.extend({
         if (this.errors === null) {
             bodyHtml = `<p>${this._saveSuccessMessage()}</p>`;
         } else {
-            bodyHtml = `<p class="error">${this._saveFailMessage()}</p>`;
+            bodyHtml = `<p class="error"><strong>${this._saveFailMessage()}</strong></p>`;
 
             if (this.errors.length) {
                 bodyHtml += '<ul class="errors">' +
                     this.errors.map(e => `<li>${Craft.escapeHtml(e)}</li>`).join('') +
                     '</ul>';
             }
+
+            if (this.httpError) {
+                bodyHtml += `<p class="http-error code">${Craft.escapeHtml(this.httpError)}</p>`;
+            }
+
+            if (this.httpStatus === 400) {
+                bodyHtml += `<button class="btn refresh-btn">${Craft.t('app', 'Refresh')}</button>`;
+            }
         }
 
         const hud = new Garnish.HUD(target, bodyHtml, {
+            hudClass: 'hud revision-status-hud',
             onHide: function() {
                 hud.destroy();
             }
+        });
+
+        hud.$mainContainer.find('.refresh-btn').on('click', () => {
+            window.location.reload();
         });
     },
 
@@ -685,6 +700,8 @@ Craft.DraftEditor = Garnish.Base.extend({
             this.lastSerializedValue = data;
             this.saving = true;
             this.errors = null;
+            this.httpStatus = null;
+            this.httpError = null;
             this.cancelToken = axios.CancelToken.source();
             this.spinners().removeClass('hidden');
 
@@ -869,13 +886,17 @@ Craft.DraftEditor = Garnish.Base.extend({
                 }
 
                 resolve();
-            }).catch(() => {
+            }).catch(e => {
                 this._afterSaveRequest();
 
                 if (!this.ignoreFailedRequest) {
                     this.errors = [];
+                    if (e && e.response) {
+                        this.httpStatus = e.response.status;
+                        this.httpError = e.response.data ? e.response.data.error : null;
+                    }
                     this._showFailStatus();
-                    reject();
+                    reject(e);
                 }
 
                 this.ignoreFailedRequest = false;

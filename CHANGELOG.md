@@ -11,6 +11,7 @@
 - When a draft is saved, Craft now automatically reloads other browser tabs that are opened to the same Edit Entry page.
 - Emoji characters are now stripped from search keywords. ([#9813](https://github.com/craftcms/cms/issues/9813))
 - Control panel pages now send `Content-Security-Policy: frame-ancestors 'self'` headers.
+- Edit Entry pages now reveal some exception messages when drafts are unable to save.
 - `craft\console\Controller::run()` now passes the `--interactive`, `--color`, and `--silentExitOnException` options to the sub-command.
 
 ### Deprecated
@@ -20,6 +21,7 @@
 - Fixed an incompatibility with SEOmatic. ([#9811](https://github.com/craftcms/cms/issues/9811))
 - Fixed a bug where the `backup`, `install/plugin`, `restore`, and `setup` commands weren’t passing the `--interactive`, `--color`, and `--silentExitOnException` options to their sub-commands.
 - Fixed a bug where drafts were getting autosaved when the site status toggles were expanded, if the entry was disabled for the current site but enabled for other sites.
+- Fixed a bug where it was possible for two provisional drafts to exist for the same entry and user.
 
 ## 3.7.12 - 2021-09-08
 
