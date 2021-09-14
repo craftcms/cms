@@ -1251,6 +1251,7 @@ return [
     'Site' => 'サイト',
     'Sites' => 'サイト',
     'Size' => 'サイズ',
+    'Skip to content' => 'Skip to content',
     'Skipped files' => 'スキップされたファイル',
     'Slug' => 'スラッグ',
     'Some categories restored.' => '一部のカテゴリが復元されました。',
