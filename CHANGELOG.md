@@ -24,6 +24,7 @@
 - Fixed a bug where it was possible for two provisional drafts to exist for the same entry and user.
 - Fixed an error that could occur if a log target was configured with a low flush interval. ([#9818](https://github.com/craftcms/cms/issues/9818))
 - Fixed an error that could occur on the Settings → General page if the `system` project config array was missing any values. ([#7350](https://github.com/craftcms/cms/issues/7350))
+- Fixed a bug where Edit Entry pages weren’t redirecting to the Current revision after reverting an entry to a prior revision. ([#9821](https://github.com/craftcms/cms/issues/9821))
 
 ## 3.7.12 - 2021-09-08
 

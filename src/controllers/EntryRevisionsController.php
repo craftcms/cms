@@ -574,7 +574,7 @@ class EntryRevisionsController extends BaseEntriesController
         // Revert to the version
         Craft::$app->getRevisions()->revertToRevision($revision, $userId);
         $this->setSuccessFlash(Craft::t('app', 'Entry reverted to past revision.'));
-        return $this->redirectToPostedUrl($revision);
+        return $this->redirectToPostedUrl($entry);
     }
 
     /**
