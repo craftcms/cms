@@ -795,7 +795,7 @@ class ProjectConfig extends Component
                     foreach ($currentSet['added'] as $key => $value) {
                         // Prepare for storage
                         $dbValue = ProjectConfigHelper::encodeValueAsString($value);
-                        if (!mb_check_encoding($value, 'UTF-8') || ($isMysql && StringHelper::containsMb4($dbValue))) {
+                        if (!mb_check_encoding($dbValue, 'UTF-8') || ($isMysql && StringHelper::containsMb4($dbValue))) {
                             $dbValue = 'base64:' . base64_encode($dbValue);
                         }
                         $batch[$key] = $dbValue;
