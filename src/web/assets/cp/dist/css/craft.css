@@ -3186,7 +3186,7 @@ body.rtl #system-name h2:after { left: 0; }
 
 #nav li a .label, #nav li a .label span { white-space: nowrap; overflow: hidden; -o-text-overflow: ellipsis; text-overflow: ellipsis; }
 
-#nav li a .badge { background-color: rgba(255, 255, 255, 0.5); color: #33404d; }
+#nav li a .badge { background-color: #cdd8e4; color: #33404d; }
 
 body.ltr #nav li a .badge { margin-right: 0; }
 

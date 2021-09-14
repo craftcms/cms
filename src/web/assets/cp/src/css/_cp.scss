@@ -309,7 +309,7 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
 
       .badge {
         @include margin-right(0);
-        background-color: transparentize($white, 0.5);
+        background-color: $grey200;
         color: $grey800;
       }
     }
