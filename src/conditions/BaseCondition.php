@@ -120,7 +120,7 @@ abstract class BaseCondition extends Component implements ConditionInterface
             if (is_array($rule)) {
                 $rule = Craft::$app->getConditions()->createConditionRule($rule);
             }
-            if (!$this->validateConditionRule($rule)) {
+            if (!$this->validateConditionRule($rule) || !$rule->validateCondition($this)) {
                 throw new InvalidArgumentException('Invalid condition rule');
             }
             $rule->setCondition($this);
@@ -136,7 +136,7 @@ abstract class BaseCondition extends Component implements ConditionInterface
      */
     public function addConditionRule(ConditionRuleInterface $rule): void
     {
-        if (!$this->validateConditionRule($rule)) {
+        if (!$this->validateConditionRule($rule) || !$rule->validateCondition($this)) {
             throw new InvalidArgumentException('Invalid condition rule');
         }
 
@@ -149,7 +149,7 @@ abstract class BaseCondition extends Component implements ConditionInterface
      * @param mixed $rule
      * @return bool
      */
-    protected function validateConditionRule($rule): bool
+    public function validateConditionRule(ConditionRuleInterface $rule): bool
     {
         return $rule instanceof ConditionRuleInterface;
     }

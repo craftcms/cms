@@ -4,6 +4,7 @@ namespace craft\conditions\elements;
 
 use Craft;
 use craft\conditions\BaseQueryCondition;
+use craft\conditions\ConditionRuleInterface;
 
 /**
  * Base class for conditions designed for queries.
@@ -39,8 +40,8 @@ class ElementQueryCondition extends BaseQueryCondition implements ElementQueryCo
     /**
      * @inheritdoc
      */
-    protected function validateConditionRule($rule): bool
+    public function validateConditionRule(ConditionRuleInterface $rule): bool
     {
-        return parent::validateConditionRule($rule) && ($rule instanceof ElementQueryConditionRuleInterface);
+        return parent::validateConditionRule($rule) && $rule instanceof ElementQueryConditionRuleInterface;
     }
 }

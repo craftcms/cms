@@ -4,7 +4,6 @@ namespace craft\conditions\elements;
 
 use Craft;
 use craft\conditions\BaseConditionRule;
-use craft\conditions\BaseLightswitchConditionRule;
 use craft\elements\db\ElementQuery;
 use craft\elements\Entry;
 use yii\db\QueryInterface;
@@ -56,7 +55,7 @@ class RelatedToConditionRule extends BaseConditionRule implements ElementQueryCo
      */
     public function modifyQuery(QueryInterface $query): void
     {
-        if (count($this->elementIds)) {
+        if (count($this->elementIds) > 0) {
             /** @var ElementQuery $query */
             $query->relatedTo($this->elementIds);
         }
