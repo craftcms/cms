@@ -35,6 +35,10 @@ class RelatedToConditionRule extends BaseConditionRule implements ElementQueryCo
      */
     public function setElementIds($value): void
     {
+        if (is_string($value) && !empty($value)) {
+            $value = [(int)$value];
+        }
+
         if (!is_array($value)) {
             $value = [];
         }
