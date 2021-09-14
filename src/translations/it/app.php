@@ -1251,6 +1251,7 @@ return [
     'Site' => 'Sito',
     'Sites' => 'Siti',
     'Size' => 'Dimensioni',
+    'Skip to content' => 'Skip to content',
     'Skipped files' => 'File ignorati',
     'Slug' => 'Slug',
     'Some categories restored.' => 'Alcune categorie ripristinate.',

@@ -1251,6 +1251,7 @@ return [
     'Site' => 'Site',
     'Sites' => 'Sites',
     'Size' => 'Size',
+    'Skip to content' => 'Skip to content',
     'Skipped files' => 'Skipped files',
     'Slug' => 'Slug',
     'Some categories restored.' => 'Some categories restored.',

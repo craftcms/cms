@@ -1251,6 +1251,7 @@ return [
     'Site' => 'Site',
     'Sites' => 'Sites',
     'Size' => 'Taille',
+    'Skip to content' => 'Skip to content',
     'Skipped files' => 'Fichiers ignorés',
     'Slug' => 'Identificateur',
     'Some categories restored.' => 'Certaines catégories ont été restaurées.',
