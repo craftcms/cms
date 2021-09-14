@@ -1251,6 +1251,7 @@ return [
     'Site' => 'Sitio',
     'Sites' => 'Sitios',
     'Size' => 'Tamaño',
+    'Skip to content' => 'Skip to content',
     'Skipped files' => 'Archivos saltados',
     'Slug' => 'Slug',
     'Some categories restored.' => 'Se restauraron algunas categorías.',
