@@ -10,6 +10,7 @@ namespace crafttests\unit\services;
 use Codeception\Stub\Expected;
 use Craft;
 use craft\helpers\ProjectConfig as ProjectConfigHelper;
+use craft\helpers\StringHelper;
 use craft\models\ReadOnlyProjectConfigData;
 use craft\services\ProjectConfig;
 use craft\services\Sections;
@@ -36,7 +37,9 @@ class ProjectConfigTest extends TestCase
             'c' => 'd'
         ],
         'e' => [1, 2, 3],
-        'f' => 'g'
+        'f' => 'g',
+        'randomString' => 'Entirely random',
+        'dateModified' => 1609452000
     ];
 
     protected $external = [
@@ -123,15 +126,16 @@ class ProjectConfigTest extends TestCase
 
     public function testSettingNewValueModifiesTimestamp()
     {
-        $pc = Craft::$app->getProjectConfig();
-        $systemName = $pc->get('system.name');
-        $dateModified = $pc->get('dateModified');
+        $projectConfig = $this->getProjectConfig();
+        $path = 'randomString';
+        $initialValue = $projectConfig->get($path);
+        $initialTimestamp = $projectConfig->get('dateModified');
 
-        $pc->set('system.name', $systemName);
-        self::assertSame($dateModified, $pc->get('dateModified'));
+        $projectConfig->set($path, $initialValue);
+        self::assertSame($initialTimestamp, $projectConfig->get('dateModified'));
 
-        $pc->set('system.name', str_rot13($systemName));
-        self::assertNotSame($dateModified, $pc->get('dateModified'));
+        $projectConfig->set($path, StringHelper::randomString());
+        self::assertNotSame($initialTimestamp, $projectConfig->get('dateModified'));
     }
 
     public function testSettingValueIgnoresExternalValue()
