@@ -41,6 +41,7 @@ use yii\helpers\Inflector;
 use yii\i18n\PhpMessageSource;
 use yii\log\Dispatcher as YiiDispatcher;
 use yii\log\Logger;
+use yii\log\Target;
 use yii\mutex\FileMutex;
 use yii\web\JsonParser;
 
@@ -604,7 +605,7 @@ class App
     /**
      * Returns the default log targets.
      *
-     * @return array
+     * @return Target[]
      * @since 3.6.14
      */
     public static function defaultLogTargets(): array
@@ -644,27 +645,23 @@ class App
                 $fileTargetConfig['levels'] = Logger::LEVEL_ERROR | Logger::LEVEL_WARNING;
             }
 
-            $targets[Dispatcher::TARGET_FILE] = $fileTargetConfig;
+            $targets[Dispatcher::TARGET_FILE] = Craft::createObject($fileTargetConfig);
 
             if (!Craft::$app->getRequest()->isConsoleRequest && defined('CRAFT_STREAM_LOG') && CRAFT_STREAM_LOG === true) {
-                $streamErrLogTarget = [
+                $targets[Dispatcher::TARGET_STDERR] = Craft::createObject([
                     'class' => StreamLogTarget::class,
                     'url' => 'php://stderr',
                     'levels' => Logger::LEVEL_ERROR | Logger::LEVEL_WARNING,
                     'includeUserIp' => $generalConfig->storeUserIps,
-                ];
-
-                $targets[Dispatcher::TARGET_STDERR] = $streamErrLogTarget;
+                ]);;
 
                 if (!$onlyLogErrors) {
-                    $streamOutLogTarget = [
+                    $targets[Dispatcher::TARGET_STDOUT] = Craft::createObject([
                         'class' => StreamLogTarget::class,
                         'url' => 'php://stdout',
                         'levels' => ~Logger::LEVEL_ERROR & ~Logger::LEVEL_WARNING,
                         'includeUserIp' => $generalConfig->storeUserIps,
-                    ];
-
-                    $targets[Dispatcher::TARGET_STDOUT] = $streamOutLogTarget;
+                    ]);
                 }
             }
         }

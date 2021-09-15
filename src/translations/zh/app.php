@@ -1251,6 +1251,7 @@ return [
     'Site' => '站点',
     'Sites' => '站点',
     'Size' => '大小',
+    'Skip to content' => 'Skip to content',
     'Skipped files' => '被略过的文件',
     'Slug' => '链接',
     'Some categories restored.' => '一些分类已恢复。',

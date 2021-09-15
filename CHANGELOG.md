@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 3.x
 
-## Unreleased
+## 3.7.13 - 2021-09-14
 
 ### Added
 - Added the `up` command, which calls `migrate/all` and `project-config/apply`, wrapped in a mutex lock.
@@ -12,6 +12,8 @@
 - Emoji characters are now stripped from search keywords. ([#9813](https://github.com/craftcms/cms/issues/9813))
 - Control panel pages now send `Content-Security-Policy: frame-ancestors 'self'` headers.
 - Edit Entry pages now reveal some exception messages when drafts are unable to save.
+- Control panel pages now have a “Skip to content” link before the navigation, for screen readers. ([#9832](https://github.com/craftcms/cms/pull/9832))
+- Live Preview now maintains the window’s original scroll position when closed. ([#9828](https://github.com/craftcms/cms/issues/9828))
 - `craft\console\Controller::run()` now passes the `--interactive`, `--color`, and `--silentExitOnException` options to the sub-command.
 
 ### Deprecated
@@ -22,6 +24,12 @@
 - Fixed a bug where the `backup`, `install/plugin`, `restore`, and `setup` commands weren’t passing the `--interactive`, `--color`, and `--silentExitOnException` options to their sub-commands.
 - Fixed a bug where drafts were getting autosaved when the site status toggles were expanded, if the entry was disabled for the current site but enabled for other sites.
 - Fixed a bug where it was possible for two provisional drafts to exist for the same entry and user.
+- Fixed an error that could occur if a log target was configured with a low flush interval. ([#9818](https://github.com/craftcms/cms/issues/9818))
+- Fixed an error that could occur on the Settings → General page if the `system` project config array was missing any values. ([#7350](https://github.com/craftcms/cms/issues/7350))
+- Fixed a bug where Edit Entry pages weren’t redirecting to the Current revision after reverting an entry to a prior revision. ([#9821](https://github.com/craftcms/cms/issues/9821))
+- Fixed a bug where Assets fields were suppressing some exceptions while rendering the subpath, which weren’t related to template rendering. ([#9824](https://github.com/craftcms/cms/issues/9824))
+- Fixed an error that could occur when setting an integer value on an active record attribute for a `MEDIUMTEXT` or `LONGTEXT` column. ([#9825](https://github.com/craftcms/cms/issues/9825))
+- Fixed a bug where it wasn’t possible to pinch-zoom the control panel on Android devices. ([#9833](https://github.com/craftcms/cms/pull/9833))
 
 ## 3.7.12 - 2021-09-08
 

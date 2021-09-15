@@ -42,6 +42,7 @@ Craft.DraftEditor = Garnish.Base.extend({
     openingPreview: false,
     preview: null,
     previewToken: null,
+    scrollY: null,
     createdProvisionalDraft: false,
 
     bc: null,
@@ -595,6 +596,12 @@ Craft.DraftEditor = Garnish.Base.extend({
                     }
                 });
             }
+            this.preview.on('close', () => {
+                if (this.scrollY) {
+                    window.scrollTo(0, this.scrollY);
+                    this.scrollY = null;
+                }
+            });
         }
         return this.preview;
     },
@@ -604,6 +611,7 @@ Craft.DraftEditor = Garnish.Base.extend({
             this.openingPreview = true;
             this.ensureIsDraftOrRevision(true)
                 .then(() => {
+                    this.scrollY = window.scrollY;
                     this.getPreview().open();
                     this.openingPreview = false;
                     resolve();
