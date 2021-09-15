@@ -1257,6 +1257,7 @@ return [
     'Site' => 'Сайт',
     'Sites' => 'Сайты',
     'Size' => 'Размер',
+    'Skip to content' => 'Skip to content',
     'Skipped files' => 'Пропущенные файлы',
     'Slug' => 'Поле динамичных данных',
     'Some categories restored.' => 'Удалось восстановить некоторые категории.',

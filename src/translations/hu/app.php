@@ -1257,6 +1257,7 @@ return [
     'Site' => 'Webhely',
     'Sites' => 'Webhelyek',
     'Size' => 'Méret',
+    'Skip to content' => 'Skip to content',
     'Skipped files' => 'Átugrott fájlok',
     'Slug' => 'Slug',
     'Some categories restored.' => 'Néhány kategória vissza lett állítva.',

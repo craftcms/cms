@@ -1257,6 +1257,7 @@ return [
     'Site' => '사이트',
     'Sites' => '사이트',
     'Size' => '크기',
+    'Skip to content' => 'Skip to content',
     'Skipped files' => '건너뛴 파일',
     'Slug' => '슬러그',
     'Some categories restored.' => '일부 카테고리가 복원되었습니다.',

@@ -1257,6 +1257,7 @@ return [
     'Site' => 'الموقع',
     'Sites' => 'مواقع',
     'Size' => 'الحجم',
+    'Skip to content' => 'Skip to content',
     'Skipped files' => 'الملفات التي تم تخطيها',
     'Slug' => 'الجزء المعرّف',
     'Some categories restored.' => 'تم استعادة بعض الفئات.',

@@ -1257,6 +1257,7 @@ return [
     'Site' => 'Nettsted',
     'Sites' => 'Nettsteder',
     'Size' => 'Størrelse',
+    'Skip to content' => 'Skip to content',
     'Skipped files' => 'Filer som er hoppet over',
     'Slug' => 'Lenke',
     'Some categories restored.' => 'Noen kategorier gjenopprettet.',

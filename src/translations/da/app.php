@@ -1258,6 +1258,7 @@ return [
     'Site' => 'Site',
     'Sites' => 'Sites',
     'Size' => 'Størrelse',
+    'Skip to content' => 'Skip to content',
     'Skipped files' => 'Ignorerede filer',
     'Slug' => 'Snegl',
     'Some categories restored.' => 'Nogle kategorier er blevet gendannet.',

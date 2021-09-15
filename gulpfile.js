@@ -10,7 +10,6 @@ const concat = require('gulp-concat');
 const es = require('event-stream');
 const footer = require('gulp-footer');
 const gulp = require('gulp');
-const gulpif = require('gulp-if');
 const header = require('gulp-header');
 const jsonMinify = require('gulp-json-minify');
 const rename = require('gulp-rename');

@@ -1257,6 +1257,7 @@ return [
     'Site' => 'Witryna',
     'Sites' => 'Witryny',
     'Size' => 'Rozmiar',
+    'Skip to content' => 'Skip to content',
     'Skipped files' => 'Pominięte pliki',
     'Slug' => 'Slug',
     'Some categories restored.' => 'Niektóre kategorie zostały przywrócone.',

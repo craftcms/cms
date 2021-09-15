@@ -1257,6 +1257,7 @@ return [
     'Site' => 'سایت',
     'Sites' => 'سایت ها',
     'Size' => 'سایز',
+    'Skip to content' => 'Skip to content',
     'Skipped files' => 'فایل های در نظر گرفته نشده',
     'Slug' => 'عنوان کوتاه',
     'Some categories restored.' => 'بعضی از دسته بندی ها بازگردانی شدند.',

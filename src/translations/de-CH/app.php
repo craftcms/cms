@@ -1257,6 +1257,7 @@ return [
     'Site' => 'Website',
     'Sites' => 'Websites',
     'Size' => 'Grösse',
+    'Skip to content' => 'Skip to content',
     'Skipped files' => 'Übersprungene Dateien',
     'Slug' => 'Slug',
     'Some categories restored.' => 'Einige Kategorien wurden wiederhergestellt.',

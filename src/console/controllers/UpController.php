@@ -9,6 +9,7 @@ namespace craft\console\controllers;
 
 use Craft;
 use craft\console\Controller;
+use craft\db\MigrationManager;
 use craft\errors\OperationAbortedException;
 use craft\helpers\Console;
 use yii\console\ExitCode;
@@ -52,12 +53,21 @@ class UpController extends Controller
         $this->stdout("done\n\n", Console::FG_GREEN);
 
         try {
-            if ($this->run('migrate/all') !== ExitCode::OK) {
+            // Craft + plugin migrations
+            if ($this->run('migrate/all', ['noContent' => true]) !== ExitCode::OK) {
                 $this->stderr("\nAborting remaining tasks.\n", Console::FG_RED);
                 throw new OperationAbortedException();
             }
             $this->stdout("\n");
+
+            // Project Config
             if ($this->run('project-config/apply') !== ExitCode::OK) {
+                throw new OperationAbortedException();
+            }
+            $this->stdout("\n");
+
+            // Content migrations
+            if ($this->run('migrate/up', ['track' => MigrationManager::TRACK_CONTENT]) !== ExitCode::OK) {
                 throw new OperationAbortedException();
             }
             $this->stdout("\n");

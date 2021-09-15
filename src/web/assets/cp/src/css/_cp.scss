@@ -7,10 +7,15 @@
 }
 
 $sidebarWidth: 226px;
+$sidebarZIndex: 100;
 $detailsWidth: 350px;
 $minFullUiWidth: 1200px;
 $minXlUiWidth: 1536px;
 $minHorizontalUiWidth: $minFullUiWidth - $sidebarWidth;
+
+// Colors
+$badgeBackgroundColor: $grey200;
+$badgeColor: $grey800;
 
 html {
   -webkit-text-size-adjust: 100%;
@@ -28,6 +33,23 @@ body {
   &:not(.reduce-focus-visibility) :focus,
   &.reduce-focus-visibility :focus-visible {
     box-shadow: $darkFocusRing;
+  }
+}
+
+.skip-link {
+  position: absolute;
+  left: -10000px;
+  top: auto;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  z-index: $sidebarZIndex + 1;
+
+  &:focus {
+    left: 0;
+    width: auto;
+    height: auto;
+    background-color: $grey100 !important;
   }
 }
 
@@ -53,7 +75,7 @@ $sidebarLinkSecondaryColor: $grey200;
 
 #global-sidebar {
   position: fixed;
-  z-index: 100;
+  z-index: $sidebarZIndex;
   display: flex;
   flex-direction: column;
   height: 100vh;
@@ -164,7 +186,8 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
 }
 
 #system-name {
-  h2 {
+  h2,
+  .h2 {
     margin: 0;
     width: 100%;
     overflow: hidden;
@@ -291,8 +314,8 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
 
       .badge {
         @include margin-right(0);
-        background-color: transparentize($white, 0.5);
-        color: $grey800;
+        background-color: $badgeBackgroundColor;
+        color: $badgeColor;
       }
     }
 

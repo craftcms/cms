@@ -5,7 +5,8 @@
     "gulp:cp": "gulp cp",
     "gulp:cp-sass": "gulp cp-sass",
     "gulp:cp-js": "gulp cp-js",
-    "gulp:deps": "gulp deps"
+    "gulp:deps": "gulp deps",
+    "watch": "gulp watch"
   },
   "devDependencies": {
     "@babel/core": "^7.14.0",
@@ -30,7 +31,6 @@
     "gulp-concat": "^2.6.1",
     "gulp-footer": "^2.0.2",
     "gulp-header": "^2.0.9",
-    "gulp-if": "^3.0.0",
     "gulp-json-minify": "^1.2.0",
     "gulp-rename": "^1.4.0",
     "gulp-sass": "^4.1.0",
