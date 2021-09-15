@@ -5,7 +5,8 @@
     "gulp:cp": "gulp cp",
     "gulp:cp-sass": "gulp cp-sass",
     "gulp:cp-js": "gulp cp-js",
-    "gulp:deps": "gulp deps"
+    "gulp:deps": "gulp deps",
+    "watch": "gulp watch"
   },
   "devDependencies": {
     "@babel/core": "^7.14.0",

@@ -13,6 +13,10 @@ $minFullUiWidth: 1200px;
 $minXlUiWidth: 1536px;
 $minHorizontalUiWidth: $minFullUiWidth - $sidebarWidth;
 
+// Colors
+$badgeBackgroundColor: $grey200;
+$badgeColor: $grey800;
+
 html {
   -webkit-text-size-adjust: 100%;
   min-height: 100vh;
@@ -182,7 +186,8 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
 }
 
 #system-name {
-  h2 {
+  h2,
+  .h2 {
     margin: 0;
     width: 100%;
     overflow: hidden;
@@ -309,8 +314,8 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
 
       .badge {
         @include margin-right(0);
-        background-color: transparentize($white, 0.5);
-        color: $grey800;
+        background-color: $badgeBackgroundColor;
+        color: $badgeColor;
       }
     }
 

@@ -1,5 +1,13 @@
 # Release Notes for Craft CMS 3.x
 
+## Unreleased
+
+### Changed
+- Enhanced the visibility of global navigation badges.
+
+### Fixed
+- Fixed the control panel heading order for more intuitive navigation by screen reader users.
+
 ## 3.7.13 - 2021-09-14
 
 ### Added
