@@ -190,6 +190,7 @@ abstract class BaseCondition extends Component implements ConditionInterface
         $baseInputName = $options['baseInputName'];
 
         $view = Craft::$app->getView();
+
         $view->registerAssetBundle(ConditionBuilderAsset::class);
 
         $mainId = 'condition-' . $this->uid;
@@ -260,7 +261,10 @@ abstract class BaseCondition extends Component implements ConditionInterface
                 $deleteButton = Html::tag('a', '', $deleteButtonAttr);
                 $ruleHtml .= Html::tag('div', $deleteButton, ['id' => 'rule-actions', 'class' => 'rule-actions']);
 
-                return Html::tag('div', $ruleHtml, ['id' => 'condition-rule', 'class' => 'condition-rule flex draggable']);
+                return Html::tag('div', $ruleHtml, [
+                    'id' => 'condition-rule',
+                    'class' => 'condition-rule flex draggable'
+                ]);
             }, $options['baseInputName'] . "[conditionRules][$rule->uid]");
 
             $allRulesHtml .= $ruleHtml;
