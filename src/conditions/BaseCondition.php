@@ -199,7 +199,7 @@ abstract class BaseCondition extends Component implements ConditionInterface
             'hx-target' => 'this', // replace self
             'hx-swap' => 'outerHTML', // replace this tag with the response
             'hx-indicator' => '#indicator-' . $this->uid, // ID of the spinner
-            'hx-include' => '[name^="'.$baseInputName.'"]',
+            'hx-include' => "#$mainId", // In case we are in a non form container
             'hx-vals' => Json::encode($optionsInputs), // We want this outside of the namespaced input and this works
         ]);
         // Loading indicator
