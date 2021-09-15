@@ -333,7 +333,7 @@
             {{ redirectInput('{cpEditUrl}') }}
             {{ hiddenInput('revisionId', element.revisionId) }}
             <div class="secondary-buttons">
-                <button type="button" class="btn secondary formsubmit">{{ 'Revert {type} to this revision'|t('app', { type: element.lowerDisplayName() }) }}</button>
+                <button type="button" class="btn secondary formsubmit">{{ 'Apply revision to {type}'|t('app', { type: element.lowerDisplayName() }) }}</button>
             </div>
         </form>
     {% endif %}
