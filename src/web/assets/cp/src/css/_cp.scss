@@ -13,6 +13,10 @@ $minFullUiWidth: 1200px;
 $minXlUiWidth: 1536px;
 $minHorizontalUiWidth: $minFullUiWidth - $sidebarWidth;
 
+// Colors
+$badgeBackgroundColor: $grey200;
+$badgeColor: $grey800;
+
 html {
   -webkit-text-size-adjust: 100%;
   min-height: 100vh;
@@ -309,8 +313,8 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
 
       .badge {
         @include margin-right(0);
-        background-color: $grey200;
-        color: $grey800;
+        background-color: $badgeBackgroundColor;
+        color: $badgeColor;
       }
     }
 
@@ -1389,8 +1393,6 @@ $toolbarIconColor: darken($inputColor, 10%);
           font-size: 11px;
           line-height: 16px;
           border-radius: 8px;
-          background-color: $mediumTextColor;
-          color: $white;
         }
       }
 
