@@ -215,40 +215,40 @@ body.rtl [data-icon-after=structure]:after {
 }
 
 /* headings */
-h1 {
+h1, .h1 {
   margin-bottom: 24px;
   font-size: 18px;
   font-weight: bold;
   line-height: 1.2;
 }
 
-h2 {
+h2, .h2 {
   margin: 14px 0;
   font-size: 16px;
   font-weight: bold;
   line-height: 20px;
 }
 
-h3 {
+h3, .h3 {
   margin: 14px 0;
   font-weight: bold;
   line-height: 1.2;
 }
 
-h4 {
+h4, .h4 {
   margin: 14px 0;
   font-weight: bold;
   line-height: 1.2;
   color: $mediumTextColor;
 }
 
-h5 {
+h5, .h5 {
   margin: 14px 0 3px;
   line-height: 1.2;
   color: $mediumTextColor;
 }
 
-h6 {
+h6, .h6 {
   @include h6-styles;
 }
 
