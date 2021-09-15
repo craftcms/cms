@@ -21,7 +21,9 @@ class EntryQueryCondition extends ElementQueryCondition
             TypeConditionRule::class,
             SectionConditionRule::class,
             AuthorGroupConditionRule::class,
-            HasUrlConditionRule::class
+            HasUrlConditionRule::class,
+            PostDateConditionRule::class,
+            ExpiryDateConditionRule::class
         ]);
     }
 }

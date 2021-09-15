@@ -3,27 +3,28 @@
 namespace craft\conditions\elements\entry;
 
 use Craft;
-use craft\conditions\BaseLightswitchConditionRule;
+use craft\conditions\BaseDateRangeConditionRule;
 use craft\conditions\ConditionInterface;
 use craft\conditions\elements\ElementQueryConditionRuleInterface;
 use craft\conditions\elements\entry\EntryQueryCondition;
 use craft\elements\db\ElementQuery;
+use craft\helpers\Db;
 use yii\db\QueryInterface;
 
 /**
- * Element has URL condition rule.
+ * Element expiry date condition rule.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.0.0
  */
-class HasUrlConditionRule extends BaseLightswitchConditionRule implements ElementQueryConditionRuleInterface
+class ExpiryDateConditionRule extends BaseDateRangeConditionRule implements ElementQueryConditionRuleInterface
 {
     /**
      * @inheritdoc
      */
     public static function displayName(): string
     {
-        return Craft::t('app', 'Has URL');
+        return Craft::t('app', 'Expiry Date');
     }
 
     /**
@@ -32,10 +33,12 @@ class HasUrlConditionRule extends BaseLightswitchConditionRule implements Elemen
     public function modifyQuery(QueryInterface $query): void
     {
         /** @var ElementQuery $query */
-        if ($this->value) {
-            $query->uri('not :empty:');
-        } else {
-            $query->uri(':empty:');
+        if ($this->startDate) {
+            $query->subQuery->andWhere(Db::parseDateParam('entries.expiryDate', $this->startDate, '>='));
+        }
+
+        if ($this->endDate) {
+            $query->subQuery->andWhere(Db::parseDateParam('entries.expiryDate', $this->endDate, '<'));
         }
     }
 
