@@ -1066,7 +1066,7 @@ class Sections extends Component
      */
     public function getEntryTypesByHandle(string $entryTypeHandle): array
     {
-        return $this->_entryTypes()->firstWhere('handle', $entryTypeHandle, true);
+        return $this->_entryTypes()->where('handle', $entryTypeHandle, true)->all();
     }
 
     /**
