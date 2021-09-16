@@ -7,6 +7,7 @@
 
 ### Fixed
 - Fixed the control panel heading order for more intuitive navigation by screen reader users.
+- Fixed an uncaught error that could occur when saving a draft. ([#9841](https://github.com/craftcms/cms/issues/9841))
 
 ## 3.7.13 - 2021-09-14
 
