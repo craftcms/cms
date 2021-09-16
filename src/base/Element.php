@@ -11,6 +11,7 @@ use Craft;
 use craft\behaviors\CustomFieldBehavior;
 use craft\behaviors\DraftBehavior;
 use craft\behaviors\RevisionBehavior;
+use craft\conditions\elements\ElementQueryCondition;
 use craft\conditions\elements\ElementQueryConditionInterface;
 use craft\db\Query;
 use craft\db\Table;
@@ -587,11 +588,10 @@ abstract class Element extends Component implements ElementInterface
 
     /**
      * @inheritdoc
-     * @throws NotSupportedException
      */
     public static function createCondition(): ElementQueryConditionInterface
     {
-        throw new NotSupportedException(static::class . '::createCondition() has not been implemented yet.');
+        return Craft::createObject(ElementQueryCondition::class);
     }
 
     /**
