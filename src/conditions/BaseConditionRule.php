@@ -87,9 +87,4 @@ abstract class BaseConditionRule extends Component implements ConditionRuleInter
             [['uid'], 'safe'],
         ];
     }
-
-    protected function getRuleBodyId()
-    {
-        return "#" . \Craft::$app->getView()->namespaceInputId('rule-body', \Craft::$app->getView()->getNamespace());
-    }
 }
