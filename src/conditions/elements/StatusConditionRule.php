@@ -38,6 +38,6 @@ class StatusConditionRule extends BaseSelectOperatorConditionRule implements Ele
     public function modifyQuery(QueryInterface $query): void
     {
         /** @var ElementQuery $query */
-        $query->status($this->value);
+        $query->status($this->optionValue);
     }
 }

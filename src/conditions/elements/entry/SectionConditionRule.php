@@ -5,6 +5,7 @@ namespace craft\conditions\elements\entry;
 use Craft;
 use craft\conditions\BaseSelectOperatorConditionRule;
 use craft\conditions\elements\ElementQueryConditionRuleInterface;
+use craft\elements\db\EntryQuery;
 use craft\helpers\ArrayHelper;
 use yii\db\QueryInterface;
 
@@ -38,9 +39,11 @@ class SectionConditionRule extends BaseSelectOperatorConditionRule implements El
      */
     public function modifyQuery(QueryInterface $query): void
     {
-        $sectionService = Craft::$app->getSections();
-        $section = $sectionService->getSectionByUid($this->value);
+        /** @var EntryQuery $query */
+        $section = Craft::$app->getSections()->getSectionByUid($this->optionValue);
 
-        $query->section($section);
+        if ($section) {
+            $query->section($section);
+        }
     }
 }
