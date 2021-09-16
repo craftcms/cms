@@ -287,7 +287,7 @@ class ElementHelper
     public static function supportedSitesForElement(ElementInterface $element, bool $withUnpropagatedSites = false): array
     {
         $sites = [];
-        $siteUidMap = ArrayHelper::map(Craft::$app->getSites()->getAllSites(), 'id', 'uid');
+        $siteUidMap = ArrayHelper::map(Craft::$app->getSites()->getAllSites(true), 'id', 'uid');
 
         foreach ($element->getSupportedSites() as $site) {
             if (!is_array($site)) {
