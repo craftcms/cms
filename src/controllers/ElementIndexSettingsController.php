@@ -49,6 +49,8 @@ class ElementIndexSettingsController extends BaseElementsController
 
         /** @var string|ElementInterface $elementType */
         $elementType = $this->elementType();
+        $conditionsService = Craft::$app->getConditions();
+        $view = Craft::$app->getView();
 
         // Get the source info
         $sourcesService = Craft::$app->getElementSources();
@@ -69,6 +71,17 @@ class ElementIndexSettingsController extends BaseElementsController
             $tableAttributes = $sourcesService->getTableAttributes($elementType, $source['key']);
             array_shift($tableAttributes);
             $source['tableAttributes'] = array_map(fn($a) => [$a[0], $a[1]['label']], $tableAttributes);
+
+            if ($source['type'] === ElementSources::TYPE_CUSTOM && isset($source['condition'])) {
+                $condition = $conditionsService->createCondition(ArrayHelper::remove($source, 'condition'));
+                $view->startJsBuffer();
+                $conditionBuilderHtml = $condition->getBuilderHtml([
+                    'mainTag' => 'div',
+                    'baseInputName' => "sources[{$source['key']}][condition]",
+                ]);
+                $conditionBuilderJs = $view->clearJsBuffer();
+                $source += compact('conditionBuilderHtml', 'conditionBuilderJs');
+            }
         }
         unset($source);
 
@@ -79,11 +92,7 @@ class ElementIndexSettingsController extends BaseElementsController
             $availableTableAttributes[] = [$key, $labelInfo['label']];
         }
 
-        try {
-            $conditionBuilder = $elementType::createCondition();
-        } catch (NotSupportedException $e) {
-            $conditionBuilder = null;
-        }
+        $condition = $elementType::createCondition();
 
         $response = [
             'sources' => $sources,
@@ -91,13 +100,11 @@ class ElementIndexSettingsController extends BaseElementsController
             'elementTypeName' => $elementType::displayName(),
         ];
 
-        if ($conditionBuilder) {
-            $view = Craft::$app->getView();
-//            $view->registerAssetBundle(ConditionBuilderAsset::class);
+        if ($condition) {
             $view->startJsBuffer();
-            $conditionBuilderHtml = $conditionBuilder->getBuilderHtml([
+            $conditionBuilderHtml = $condition->getBuilderHtml([
                 'mainTag' => 'div',
-                'baseInputName' => 'sources[SOURCE_KEY][criteria]',
+                'baseInputName' => 'sources[SOURCE_KEY][condition]',
             ]);
             $conditionBuilderJs = $view->clearJsBuffer();
             $response += [
@@ -153,6 +160,7 @@ class ElementIndexSettingsController extends BaseElementsController
                     if ($isCustom) {
                         $sourceConfig += [
                             'label' => $postedSettings['label'],
+                            'condition' => $postedSettings['condition'],
                         ];
                     }
                 } else if (isset($oldSourceConfigs[$source['key']])) {

@@ -12,6 +12,7 @@ use craft\base\ElementAction;
 use craft\base\ElementActionInterface;
 use craft\base\ElementExporterInterface;
 use craft\base\ElementInterface;
+use craft\conditions\elements\ElementQueryConditionInterface;
 use craft\elements\actions\DeleteActionInterface;
 use craft\elements\actions\Restore;
 use craft\elements\db\ElementQuery;
@@ -19,6 +20,7 @@ use craft\elements\db\ElementQueryInterface;
 use craft\elements\exporters\Raw;
 use craft\events\ElementActionEvent;
 use craft\helpers\ElementHelper;
+use craft\services\ElementSources;
 use yii\base\InvalidValueException;
 use yii\db\Expression;
 use yii\web\BadRequestHttpException;
@@ -429,8 +431,16 @@ class ElementIndexesController extends BaseElementsController
         $query = $elementType::find();
 
         // Does the source specify any criteria attributes?
-        if (isset($this->source['criteria'])) {
-            Craft::configure($query, $this->source['criteria']);
+        switch ($this->source['type']) {
+            case ElementSources::TYPE_NATIVE:
+                if (isset($this->source['criteria'])) {
+                    Craft::configure($query, $this->source['criteria']);
+                }
+                break;
+            case ElementSources::TYPE_CUSTOM:
+                /** @var ElementQueryConditionInterface $condition */
+                $condition = Craft::$app->getConditions()->createCondition($this->source['condition']);
+                $condition->modifyQuery($query);
         }
 
         // Override with the request's params
