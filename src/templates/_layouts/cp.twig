@@ -258,8 +258,13 @@
             </div><!-- #main-container -->
 
             <footer id="global-footer">
-                <div id="edition-logo" title="{{ '{edition} edition'|t('app', {edition: editionName}) ~ (isTrial ? ' ' ~ '(trial)'|t('app')) }}" aria-label="{{ '{edition} edition'|t('app', {edition: editionName}) ~ (isTrial ? ' ' ~ '(trial)'|t('app')) }}">
-                    <div class="edition-name">{{ editionName }}</div>
+                {% set fullEditionName = '{edition} edition'|t('app', {edition: editionName}) ~ (isTrial ? ' ' ~ '(trial)'|t('app')) %}
+                <div id="edition-logo" title="{{ fullEditionName }}">
+                    <div class="edition-name" aria-hidden="true">{{ editionName }}</div>
+                    {{ tag('span', {
+                        class: 'visually-hidden',
+                        text: fullEditionName,
+                    }) }}
                     {% if isTrial %}
                         <div class="edition-trial">{{ "Trial"|t('app') }}</div>
                     {% endif %}

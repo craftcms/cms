@@ -35,6 +35,7 @@ use craft\services\Gql as GqlService;
 use craft\web\UploadedFile;
 use GraphQL\Type\Definition\Type;
 use Illuminate\Support\Collection;
+use Twig\Error\RuntimeError;
 use yii\base\InvalidConfigException;
 
 /**
@@ -809,7 +810,7 @@ class Assets extends BaseRelationField
             // Prepare the path by parsing tokens and normalizing slashes.
             try {
                 $renderedSubpath = Craft::$app->getView()->renderObjectTemplate($subpath, $element);
-            } catch (\Throwable $e) {
+            } catch (InvalidConfigException|RuntimeError $e) {
                 throw new InvalidSubpathException($subpath, null, 0, $e);
             }
 

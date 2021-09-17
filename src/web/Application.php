@@ -168,6 +168,7 @@ class Application extends \yii\web\Application
 
             // Prevent some possible XSS attack vectors
             if ($request->getIsCpRequest()) {
+                $headers->add('Content-Security-Policy', "frame-ancestors 'self'");
                 $headers->set('X-Frame-Options', 'SAMEORIGIN');
                 $headers->set('X-Content-Type-Options', 'nosniff');
             }

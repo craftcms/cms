@@ -636,23 +636,6 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
 
     /**
      * @inheritdoc
-     */
-    public function getStatus(ElementInterface $element): ?array
-    {
-        // The only thing we need to actually present to the UI is whether it is outdated.
-        // Individual blocks will show their own field statuses.
-        if ($element->isFieldOutdated($this->handle)) {
-            return [
-                Element::ATTR_STATUS_OUTDATED,
-                Craft::t('app', 'This field was updated in the Current revision.'),
-            ];
-        }
-
-        return null;
-    }
-
-    /**
-     * @inheritdoc
      * @throws InvalidConfigException
      */
     protected function inputHtml($value, ?ElementInterface $element = null): string

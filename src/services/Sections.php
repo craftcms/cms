@@ -129,9 +129,10 @@ class Sections extends Component
     private ?MemoizableArray $_sections = null;
 
     /**
-     * @var EntryType[]
+     * @var MemoizableArray<EntryType>|null
+     * @see _entryTypes()
      */
-    private array $_entryTypesById = [];
+    private ?MemoizableArray $_entryTypes = null;
 
     /**
      * Serializer
@@ -968,16 +969,28 @@ class Sections extends Component
      */
     public function getEntryTypesBySectionId(int $sectionId): array
     {
-        $results = $this->_createEntryTypeQuery()
-            ->andWhere(['sectionId' => $sectionId])
-            ->orderBy(['sortOrder' => SORT_ASC])
-            ->all();
+        /** @var EntryType[] $entryTypes */
+        $entryTypes = $this->_entryTypes()->where('sectionId', $sectionId)->all();
+        ArrayHelper::multisort($entryTypes, 'sortOrder', SORT_ASC, SORT_NUMERIC);
+        return $entryTypes;
+    }
 
-        foreach ($results as $key => $result) {
-            $results[$key] = new EntryType($result);
+    /**
+     * Returns a memoizable array of all entry types.
+     *
+     * @return MemoizableArray<EntryType>
+     */
+    private function _entryTypes(): MemoizableArray
+    {
+        if (!isset($this->_entryTypes)) {
+            $entryTypes = [];
+            foreach ($this->_createEntryTypeQuery()->all() as $result) {
+                $entryTypes[] = new EntryType($result);
+            }
+            $this->_entryTypes = new MemoizableArray($entryTypes);
         }
 
-        return $results;
+        return $this->_entryTypes;
     }
 
     /**
@@ -994,14 +1007,7 @@ class Sections extends Component
      */
     public function getAllEntryTypes(): array
     {
-        $results = $this->_createEntryTypeQuery()
-            ->all();
-
-        foreach ($results as $key => $result) {
-            $results[$key] = new EntryType($result);
-        }
-
-        return $results;
+        return $this->_entryTypes()->all();
     }
 
     /**
@@ -1018,19 +1024,7 @@ class Sections extends Component
      */
     public function getEntryTypeById(int $entryTypeId): ?EntryType
     {
-        if (!$entryTypeId) {
-            return null;
-        }
-
-        if (array_key_exists($entryTypeId, $this->_entryTypesById)) {
-            return $this->_entryTypesById[$entryTypeId];
-        }
-
-        $result = $this->_createEntryTypeQuery()
-            ->andWhere(['id' => $entryTypeId])
-            ->one();
-
-        return $this->_entryTypesById[$entryTypeId] = $result ? new EntryType($result) : null;
+        return $this->_entryTypes()->firstWhere('id', $entryTypeId);
     }
 
     /**
@@ -1047,15 +1041,7 @@ class Sections extends Component
      */
     public function getEntryTypesByHandle(string $entryTypeHandle): array
     {
-        $results = $this->_createEntryTypeQuery()
-            ->andWhere(['handle' => $entryTypeHandle])
-            ->all();
-
-        foreach ($results as $key => $result) {
-            $results[$key] = new EntryType($result);
-        }
-
-        return $results;
+        return $this->_entryTypes()->where('handle', $entryTypeHandle, true)->all();
     }
 
     /**
@@ -1180,7 +1166,7 @@ class Sections extends Component
         }
 
         // Clear caches
-        unset($this->_entryTypesById[$entryTypeRecord->id]);
+        $this->_entryTypes = null;
 
         if ($wasTrashed) {
             // Restore the entries that were deleted with the entry type
@@ -1376,7 +1362,7 @@ class Sections extends Component
         }
 
         // Clear caches
-        unset($this->_entryTypesById[$entryType->id]);
+        $this->_entryTypes = null;
 
         // Fire an 'afterDeleteEntryType' event
         if ($this->hasEventHandlers(self::EVENT_AFTER_DELETE_ENTRY_TYPE)) {
