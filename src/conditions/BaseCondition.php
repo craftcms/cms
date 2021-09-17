@@ -220,7 +220,6 @@ abstract class BaseCondition extends Component implements ConditionInterface
                 $moveButton = Html::tag('a', '', ['class' => 'move icon draggable-handle']);
                 $ruleHtml = Html::tag('div', $moveButton, ['id' => 'rule-move', 'class' => 'rule-move']);
 
-
                 /** @var string|ConditionRuleInterface $ruleClass */
                 $ruleClass = get_class($rule);
                 $ruleTypeOptions = [];
@@ -289,7 +288,7 @@ abstract class BaseCondition extends Component implements ConditionInterface
             $addButton = Html::tag('button', $this->getAddRuleLabel(), $addButtonAttr);
             $html .= Html::tag('div', $addButton, ['class' => 'rightalign']);
         }
-        $view->registerCss('.htmx-swapping{ color:red}');
+
         // Add inline scripts
         if ($isHtmxRequest && $rulesJs) {
             $html .= html::tag('script', $rulesJs, ['id' => 'inline-script', 'type' => 'text/javascript']);
