@@ -52,8 +52,9 @@
 {% if showSiteMenu %}
     {% include "_elements/sitemenu" %}
 {% endif %}
-<div class="flex-grow texticon search icon clearable">
+<div class="flex-grow texticon search icon">
     {{ text({
+        class: 'clearable',
         placeholder: "Search"|t('app'),
         inputAttributes: {
             aria: {

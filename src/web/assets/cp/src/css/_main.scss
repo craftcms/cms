@@ -5069,6 +5069,10 @@ body.reduce-focus-visibility {
     }
   }
 
+  &.clearable {
+    @include padding-right(22px);
+  }
+
   input {
     margin: 0;
     padding: 0;
@@ -5101,10 +5105,6 @@ body.reduce-focus-visibility {
     .text {
       @include padding-left(26px);
     }
-  }
-
-  &.clearable .text {
-    @include padding-right(22px);
   }
 
   .clear {
