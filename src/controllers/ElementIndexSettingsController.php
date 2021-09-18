@@ -11,8 +11,6 @@ use Craft;
 use craft\base\ElementInterface;
 use craft\helpers\ArrayHelper;
 use craft\services\ElementSources;
-use craft\web\assets\conditionbuilder\ConditionBuilderAsset;
-use yii\base\NotSupportedException;
 use yii\web\Response;
 
 /**
@@ -92,30 +90,22 @@ class ElementIndexSettingsController extends BaseElementsController
             $availableTableAttributes[] = [$key, $labelInfo['label']];
         }
 
-        $condition = $elementType::createCondition();
+        $view->startJsBuffer();
+        $conditionBuilderHtml = $elementType::createCondition()->getBuilderHtml([
+            'mainTag' => 'div',
+            'baseInputName' => 'sources[SOURCE_KEY][condition]',
+        ]);
+        $conditionBuilderJs = $view->clearJsBuffer();
 
-        $response = [
+        return $this->asJson([
             'sources' => $sources,
             'availableTableAttributes' => $availableTableAttributes,
             'elementTypeName' => $elementType::displayName(),
-        ];
-
-        if ($condition) {
-            $view->startJsBuffer();
-            $conditionBuilderHtml = $condition->getBuilderHtml([
-                'mainTag' => 'div',
-                'baseInputName' => 'sources[SOURCE_KEY][condition]',
-            ]);
-            $conditionBuilderJs = $view->clearJsBuffer();
-            $response += [
-                'conditionBuilderHtml' => $conditionBuilderHtml,
-                'conditionBuilderJs' => $conditionBuilderJs,
-                'headHtml' => $view->getHeadHtml(),
-                'bodyHtml' => $view->getBodyHtml(),
-            ];
-        }
-
-        return $this->asJson($response);
+            'conditionBuilderHtml' => $conditionBuilderHtml,
+            'conditionBuilderJs' => $conditionBuilderJs,
+            'headHtml' => $view->getHeadHtml(),
+            'bodyHtml' => $view->getBodyHtml(),
+        ]);
     }
 
     /**
