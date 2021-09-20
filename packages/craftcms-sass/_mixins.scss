@@ -510,8 +510,19 @@ $radioSize: 16px;
 }
 
 @mixin menu-option-active-styles {
+  position: relative;
   color: $textColor;
   background-color: $grey050;
+
+  &::before {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 5px;
+    height: 100%;
+    background-color: $textColor;
+    content: '';
+  }
 }
 
 @mixin input-styles {
