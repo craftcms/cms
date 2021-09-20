@@ -3473,7 +3473,7 @@ body.rtl #details { padding-right: 14px; }
 
 #details .meta:not(.read-only):not(.warning) { background-color: #f3f7fc; }
 
-#details .meta.read-only { padding-top: 8px; padding-bottom: 8px; color: #606d7b; background-color: transparent; }
+#details .meta.read-only { padding-top: 8px; padding-bottom: 8px; color: #596673; background-color: transparent; }
 
 #details .meta.warning { border: 2px solid #FADB5F; padding: 19px 22px; background: #fff; color: #3f4d5a !important; }
 
