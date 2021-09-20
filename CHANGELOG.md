@@ -4,6 +4,8 @@
 
 ### Changed
 - Enhanced the visibility of global navigation badges.
+- Enhanced indicator of currently focused menu option for keyboard users.
+- Added screen reader text for Edit Element action menu.
 
 ### Fixed
 - Fixed the control panel heading order for more intuitive navigation by screen reader users.
