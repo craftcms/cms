@@ -514,7 +514,7 @@ $radioSize: 16px;
   color: $textColor;
   background-color: $grey050;
 
-  &::before {
+  &::after {
     position: absolute;
     top: 0;
     left: 0;

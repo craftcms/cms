@@ -2208,9 +2208,9 @@ body.ltr .menubtn span.icon, body.ltr .menu span.icon { margin-right: 10px; }
 
 body.rtl .menubtn span.icon, body.rtl .menu span.icon { margin-left: 10px; }
 
-.menu ul li a:not(.disabled):hover, .menu ul li a:not(.disabled):focus, .menu ul li a:not(.disabled):hover .light, .menu ul li a:not(.disabled):focus .light, .menu:not(:hover) ul li a:not(.disabled).hover, .menu:not(:hover) ul li a:not(.disabled).hover .light { position: relative; color: #3f4d5a; background-color: #f3f7fc; }
+.menu ul li a:not(.sel):not(.disabled):hover, .menu ul li a:not(.sel):not(.disabled):hover .light, .menu:not(:hover) ul li a:not(.disabled).hover, .menu:not(:hover) ul li a:not(.sel):not(.disabled).hover .light { position: relative; color: #3f4d5a; background-color: #f3f7fc; }
 
-.menu ul li a:not(.disabled):hover::before, .menu ul li a:not(.disabled):focus::before, .menu ul li a:not(.disabled):hover .light::before, .menu ul li a:not(.disabled):focus .light::before, .menu:not(:hover) ul li a:not(.disabled).hover::before, .menu:not(:hover) ul li a:not(.disabled).hover .light::before { position: absolute; top: 0; left: 0; width: 5px; height: 100%; background-color: #3f4d5a; content: ''; }
+.menu ul li a:not(.sel):not(.disabled):hover::after, .menu ul li a:not(.sel):not(.disabled):hover .light::after, .menu:not(:hover) ul li a:not(.disabled).hover::after, .menu:not(:hover) ul li a:not(.sel):not(.disabled).hover .light::after { position: absolute; top: 0; left: 0; width: 5px; height: 100%; background-color: #3f4d5a; content: ''; }
 
 body.ltr .menu hr.padded, body.ltr .menu h6.padded { margin-left: 10px; }
 
@@ -2683,7 +2683,7 @@ body .selectize-dropdown .optgroup-header { margin: 14px 0 3px; font-size: 10px;
 
 body .selectize-dropdown .active { position: relative; color: #3f4d5a; background-color: #f3f7fc; }
 
-body .selectize-dropdown .active::before { position: absolute; top: 0; left: 0; width: 5px; height: 100%; background-color: #3f4d5a; content: ''; }
+body .selectize-dropdown .active::after { position: absolute; top: 0; left: 0; width: 5px; height: 100%; background-color: #3f4d5a; content: ''; }
 
 /* time zones */
 .timezone { height: 34px; max-width: 25em; }
@@ -2832,7 +2832,7 @@ body.rtl .message-container { right: 0; }
 
 .autosuggest__results-container .autosuggest__results_item:hover, .autosuggest__results-container .autosuggest__results_item.autosuggest__results_item-highlighted { position: relative; color: #3f4d5a; background-color: #f3f7fc; cursor: pointer; }
 
-.autosuggest__results-container .autosuggest__results_item:hover::before, .autosuggest__results-container .autosuggest__results_item.autosuggest__results_item-highlighted::before { position: absolute; top: 0; left: 0; width: 5px; height: 100%; background-color: #3f4d5a; content: ''; }
+.autosuggest__results-container .autosuggest__results_item:hover::after, .autosuggest__results-container .autosuggest__results_item.autosuggest__results_item-highlighted::after { position: absolute; top: 0; left: 0; width: 5px; height: 100%; background-color: #3f4d5a; content: ''; }
 
 /* ----------------------------------------
 /* Matrix
