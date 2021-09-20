@@ -842,7 +842,7 @@ abstract class Field extends SavableComponent implements FieldInterface
         }
 
         if ($element) {
-            return $element->getHasFreshContent();
+            return $element->getIsFresh();
         }
 
         return true;

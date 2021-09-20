@@ -1588,6 +1588,13 @@ abstract class Element extends Component implements ElementInterface
     private $_uiLabel;
 
     /**
+     * @var bool|null
+     * @see getIsFresh()
+     * @see setIsFresh()
+     */
+    private $_isFresh;
+
+    /**
      * @inheritdoc
      */
     public function __clone()
@@ -3554,9 +3561,40 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @inheritdoc
      */
+    public function getIsFresh(): bool
+    {
+        if ($this->hasErrors()) {
+            return false;
+        }
+
+        if ($this->contentId === null) {
+            return true;
+        }
+
+        if ($this->_isFresh !== null) {
+            return $this->_isFresh;
+        }
+
+        return false;
+    }
+
+    /**
+     * Returns whether the element is "fresh" (not yet explicitly saved, and without validation errors).
+     *
+     * @deprecated in 3.7.14. [[getIsFresh()]] should be used instead.
+     * @return bool
+     */
     public function getHasFreshContent(): bool
     {
-        return ($this->contentId === null && !$this->hasErrors());
+        return $this->getIsFresh();
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function setIsFresh(bool $isFresh = true): void
+    {
+        $this->_isFresh = $isFresh;
     }
 
     /**
