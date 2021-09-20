@@ -2208,9 +2208,9 @@ body.ltr .menubtn span.icon, body.ltr .menu span.icon { margin-right: 10px; }
 
 body.rtl .menubtn span.icon, body.rtl .menu span.icon { margin-left: 10px; }
 
-.menu ul li a:not(.sel):not(.disabled):hover, .menu ul li a:not(.sel):not(.disabled):hover .light, .menu:not(:hover) ul li a:not(.disabled).hover, .menu:not(:hover) ul li a:not(.sel):not(.disabled).hover .light { position: relative; color: #3f4d5a; background-color: #f3f7fc; }
+.menu ul li a:not(.sel):not(.disabled):hover, .menu:not(:hover) ul li a:not(.disabled).hover { position: relative; color: #3f4d5a; background-color: #f3f7fc; }
 
-.menu ul li a:not(.sel):not(.disabled):hover::after, .menu ul li a:not(.sel):not(.disabled):hover .light::after, .menu:not(:hover) ul li a:not(.disabled).hover::after, .menu:not(:hover) ul li a:not(.sel):not(.disabled).hover .light::after { position: absolute; top: 0; left: 0; width: 5px; height: 100%; background-color: #3f4d5a; content: ''; }
+.menu ul li a:not(.sel):not(.disabled):hover::after, .menu:not(:hover) ul li a:not(.disabled).hover::after { position: absolute; top: 0; left: 0; width: 5px; height: 100%; background-color: #3f4d5a; content: ''; }
 
 body.ltr .menu hr.padded, body.ltr .menu h6.padded { margin-left: 10px; }
 
