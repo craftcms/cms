@@ -4,7 +4,7 @@ htmx.on('htmx:configRequest', function(evt) {
 });
 
 // Anytime Htmx does a swap, look for html in templates to be added to head or foot in CP
-htmx.on('htmx:afterOnLoad', function(evt) {
+htmx.on('htmx:load', function(evt) {
 
     const content = evt.detail.elt;
 
@@ -13,14 +13,14 @@ htmx.on('htmx:afterOnLoad', function(evt) {
 
     for (var i = 0; i < headHtmls.length; i++) {
         var headHtml = headHtmls[i].innerHTML;
-        if(headHtml){
+        if (headHtml) {
             Craft.appendHeadHtml(headHtml);
         }
     }
 
     for (var i = 0; i < bodyHtmls.length; i++) {
         var bodyHtml = bodyHtmls[i].innerHTML;
-        if(bodyHtml){
+        if (bodyHtml) {
             Craft.appendFootHtml(bodyHtml);
         }
     }

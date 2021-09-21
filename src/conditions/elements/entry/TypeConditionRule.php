@@ -114,10 +114,10 @@ class TypeConditionRule extends BaseConditionRule implements ElementQueryConditi
             'name' => 'sectionUid',
             'value' => $this->sectionUid,
             'options' => $this->getSectionOptions(),
-            'inputAttributes' => array_merge($this->getInputAttributes(),[
+            'inputAttributes' => array_merge($this->getInputAttributes(), [
                 'hx-post' => UrlHelper::actionUrl('conditions/render'), // Only the section re-renders the body
                 'hx-target' => 'closest .rule-body',
-                'hx-select' => $this->getRuleBodyId(),
+                'hx-select' => '#' . Craft::$app->getView()->namespaceInputId('rule-body'),
                 'hx-swap' => 'outerHTML'
             ])
         ]);
