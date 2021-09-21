@@ -2485,6 +2485,10 @@ body.reduce-focus-visibility .multiselect > select:focus-visible { border-color:
 
 .text.readable + .chars-left { margin-top: -23px; }
 
+body.ltr .text.clearable { padding-right: 22px; }
+
+body.rtl .text.clearable { padding-left: 22px; }
+
 .text input { margin: 0; padding: 0; border: none; background-color: transparent; }
 
 .input.errors > .text, .input.errors > .border-box, .input.errors > .passwordwrapper, .input.errors > .autosuggest-container .text, .text.error { border: 1px solid #CF1124 !important; }
@@ -2500,10 +2504,6 @@ body.rtl .texticon.icon:before { right: 9px; }
 body.ltr .texticon.icon .text { padding-left: 26px; }
 
 body.rtl .texticon.icon .text { padding-right: 26px; }
-
-body.ltr .texticon.clearable .text { padding-right: 22px; }
-
-body.rtl .texticon.clearable .text { padding-left: 22px; }
 
 .texticon .clear { position: absolute; top: 6px; color: #606d7b; cursor: pointer; }
 
