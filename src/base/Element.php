@@ -26,6 +26,7 @@ use craft\events\DefineMetadataEvent;
 use craft\events\DefineValueEvent;
 use craft\events\ElementStructureEvent;
 use craft\events\ModelEvent;
+use craft\events\PrepareElementQueryForTableAttributeEvent;
 use craft\events\RegisterElementActionsEvent;
 use craft\events\RegisterElementDefaultTableAttributesEvent;
 use craft\events\RegisterElementExportersEvent;
@@ -190,6 +191,58 @@ abstract class Element extends Component implements ElementInterface
      * @event RegisterElementTableAttributesEvent The event that is triggered when registering the table attributes for the element type.
      */
     const EVENT_REGISTER_DEFAULT_TABLE_ATTRIBUTES = 'registerDefaultTableAttributes';
+
+    /**
+     * @event ElementQueryEvent The event triggered for each attribute in an Element index table, while preparing the Query.
+     * 
+     * Paired with `EVENT_REGISTER_TABLE_ATTRIBUTES` and `EVENT_SET_TABLE_ATTRIBUTE_HTML`, this allows optimization of queries on Element indexes.
+     * 
+     * ```php
+     * use craft\elements\Entry;
+     * use craft\helpers\Cp;
+     * use craft\events\PrepareElementQueryForTableAttributeEvent;
+     * use craft\events\RegisterElementTableAttributesEvent;
+     * use craft\events\SetElementTableAttributeHtmlEvent;
+     * use yii\base\Event;
+     * 
+     * Event::on(
+     *     Entry::class,
+     *     Entry::EVENT_REGISTER_TABLE_ATTRIBUTES,
+     *     function (RegisterElementTableAttributesEvent $e) {
+     *         $e->attributes[] = 'authorExpertise';
+     *     });
+     * 
+     * Event::on(
+     *     Entry::class,
+     *     Entry::EVENT_PREP_QUERY_FOR_TABLE_ATTRIBUTE,
+     *     function (PrepareElementQueryForTableAttributeEvent $e) {
+     *         $query = $e->query;
+     *         $attr = $e->attribute;
+     * 
+     *         if ($attr === 'authorExpertise') {
+     *             $query->andWith(['author.areasOfExpertiseCategoryField']);
+     *         }
+     *     });
+     * 
+     * Event::on(
+     *     Entry::class,
+     *     Entry::EVENT_PREP_QUERY_FOR_TABLE_ATTRIBUTE,
+     *     function (SetElementTableAttributeHtmlEvent $e) {
+     *         $attribute = $e->attribute;
+     * 
+     *         if ($attribute !== 'authorExpertise') {
+     *             return;
+     *         }
+     * 
+     *         // The field data is eager-loaded!
+     *         $author = $e->sender->getAuthor();
+     *         $categories = $author->areasOfExpertiseCategoryField;
+     * 
+     *         $e->html = Cp::elementPreviewHtml($categories);
+     *     });
+     * ```
+     */
+    const EVENT_PREP_QUERY_FOR_TABLE_ATTRIBUTE = 'prepQueryForTableAttribute';
 
     /**
      * @event DefineEagerLoadingMapEvent The event that is triggered when defining an eager-loading map.
@@ -783,6 +836,13 @@ abstract class Element extends Component implements ElementInterface
             // Give each attribute a chance to modify the criteria
             foreach ($variables['attributes'] as $attribute) {
                 static::prepElementQueryForTableAttribute($elementQuery, $attribute[0]);
+
+                $event = new PrepareElementQueryForTableAttributeEvent([
+                    'query' => $elementQuery,
+                    'attribute' => $attribute[0],
+                ]);
+
+                Event::trigger(static::class, self::EVENT_PREP_QUERY_FOR_TABLE_ATTRIBUTE, $event);
             }
         }
 
