@@ -226,7 +226,7 @@ abstract class Element extends Component implements ElementInterface
      * 
      * Event::on(
      *     Entry::class,
-     *     Entry::EVENT_PREP_QUERY_FOR_TABLE_ATTRIBUTE,
+     *     Entry::EVENT_SET_TABLE_ATTRIBUTE_HTML,
      *     function (SetElementTableAttributeHtmlEvent $e) {
      *         $attribute = $e->attribute;
      * 
