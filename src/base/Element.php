@@ -199,10 +199,10 @@ abstract class Element extends Component implements ElementInterface
      * 
      * ```php
      * use craft\elements\Entry;
-     * use craft\helpers\Cp;
      * use craft\events\PrepareElementQueryForTableAttributeEvent;
      * use craft\events\RegisterElementTableAttributesEvent;
      * use craft\events\SetElementTableAttributeHtmlEvent;
+     * use craft\helpers\Cp;
      * use yii\base\Event;
      * 
      * Event::on(
