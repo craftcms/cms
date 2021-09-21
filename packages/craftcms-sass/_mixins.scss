@@ -96,7 +96,8 @@ $linkColor: $blue800;
 
 // menu colors
 $menuOptionColor: $textColor;
-$menuOptionActiveBackgroundColor: $grey050;
+$menuOptionActiveColor: $white;
+$menuOptionActiveBackgroundColor: $grey350;
 
 // hairline colors
 $hairlineColor: transparentize($grey800, 0.9);
@@ -515,9 +516,8 @@ $radioSize: 16px;
 }
 
 @mixin menu-option-active-styles {
-  color: $menuOptionColor;
+  color: $menuOptionActiveColor;
   background-color: $menuOptionActiveBackgroundColor;
-  box-shadow: inset 0 0 0 3px transparentize($darkFocusColor, 0.3);
 }
 
 @mixin input-styles {
