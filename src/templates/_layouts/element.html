@@ -365,7 +365,7 @@
 
         {# propagateAll param #}
         {% if isUnpublishedDraft and craft.app.request.getQueryParam('fresh') %}
-            {{ hiddenInput('propagateAll', '1') }}
+            {{ hiddenInput('isFresh', '1') }}
         {% endif %}
     {% endif %}
     {{ parent() }}
