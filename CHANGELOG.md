@@ -8,6 +8,7 @@
 
 ### Changed
 - Enhanced the visibility of global navigation badges.
+- Enhanced the visibility of focused menu options.
 
 ### Deprecated
 - Deprecated `craft\base\Element::getHasFreshContent()`. `getIsFresh()` should be used instead.
@@ -17,6 +18,9 @@
 - Fixed an uncaught error that could occur when saving a draft. ([#9841](https://github.com/craftcms/cms/issues/9841))
 - Fixed an error that occurred when mutating an entry via GraphQL, if it belonged to any disabled sites. ([#9842](https://github.com/craftcms/cms/issues/9842))
 - Fixed a bug where some field types wouldn’t use their configured default values on new entries, fields that weren’t included in the primary entry type. ([#9852](https://github.com/craftcms/cms/issues/9852))
+- Fixed a bug where some action menus didn’t have a label for screen readers.
+- Fixed a bug where `craft\web\Response::redirect()` no longer supported passing an array to the `$url` argument. ([#9857](https://github.com/craftcms/cms/issues/9857))
+- Fixed a bug where duplicated entries that were created via an “Applying new propagation method” job weren’t getting positioned correctly based on the original entries’ structure. ([#9782](https://github.com/craftcms/cms/issues/9782))
 
 ## 3.7.13 - 2021-09-14
 
