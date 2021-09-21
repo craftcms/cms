@@ -126,6 +126,7 @@ $smallBorderRadius: 3px;
 $mediumBorderRadius: 4px;
 $largeBorderRadius: 5px;
 
+$menuBorderRadius: $mediumBorderRadius;
 $checkboxSize: 16px;
 $radioSize: 16px;
 
@@ -497,7 +498,7 @@ $radioSize: 16px;
 
 @mixin menu-styles {
   z-index: 100;
-  border-radius: $mediumBorderRadius;
+  border-radius: $menuBorderRadius;
   padding: 0 14px;
   overflow: auto;
   background: $white;
@@ -514,19 +515,9 @@ $radioSize: 16px;
 }
 
 @mixin menu-option-active-styles {
-  position: relative;
   color: $menuOptionColor;
   background-color: $menuOptionActiveBackgroundColor;
-
-  &::after {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 5px;
-    height: 100%;
-    background-color: $menuOptionColor;
-    content: '';
-  }
+  box-shadow: inset 0 0 0 3px transparentize($darkFocusColor, 0.3);
 }
 
 @mixin input-styles {
