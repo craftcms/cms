@@ -81,7 +81,7 @@ Craft.BaseElementSelectInput = Garnish.Base.extend({
         });
     },
 
-    get totalSelected() {
+    getTotalSelected() {
         return this.$elements.length;
     },
 
