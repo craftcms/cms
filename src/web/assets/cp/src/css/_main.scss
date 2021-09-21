@@ -42,6 +42,12 @@
 /*  Basic stuff
 /* ----------------------------------------*/
 
+:root {
+  --text-color: #{$textColor};
+  --light-text-color: #{$lightTextColor};
+  --hairline-color: #{$hairlineColor};
+}
+
 body, html {
   background-color: $grey100;
 }
@@ -3044,7 +3050,7 @@ ul.tree,
 }
 
 .status:not(.on):not(.live):not(.active):not(.enabled):not(.pending):not(.off):not(.suspended):not(.expired):not(.yellow):not(.orange):not(.red):not(.pink):not(.purple):not(.blue):not(.green):not(.turquoise):not(.light):not(.grey):not(.black) {
-  border-color: transparentize($inputColor, 0.2);
+  border-color: var(--light-text-color);
 }
 
 .green,
@@ -4418,6 +4424,13 @@ ul.tree,
 .menu ul li a:not(.sel):not(.disabled):hover,
 .menu:not(:hover) ul li a:not(.disabled).hover {
   @include menu-option-active-styles;
+
+  --text-color: #{$white};
+  --light-text-color: #{$grey100};
+
+  span.icon {
+    color: $menuOptionActiveColor;
+  }
 }
 
 .menu {
