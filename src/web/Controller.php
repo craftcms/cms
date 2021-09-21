@@ -533,9 +533,6 @@ abstract class Controller extends \yii\web\Controller
      */
     public function redirect($url, $statusCode = 302): YiiResponse
     {
-        if (is_string($url)) {
-            $url = UrlHelper::url($url);
-        }
 
         if ($url !== null) {
             return $this->response->redirect($url, $statusCode);
