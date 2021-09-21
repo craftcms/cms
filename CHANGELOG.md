@@ -4,13 +4,13 @@
 
 ### Changed
 - Enhanced the visibility of global navigation badges.
-- Enhanced indicator of currently focused menu option for keyboard users.
-- Added screen reader text for Edit Element action menu.
+- Enhanced the visibility of focused menu options.
 
 ### Fixed
 - Fixed the control panel heading order for more intuitive navigation by screen reader users.
 - Fixed an uncaught error that could occur when saving a draft. ([#9841](https://github.com/craftcms/cms/issues/9841))
 - Fixed an error that occurred when mutating an entry via GraphQL, if it belonged to any disabled sites. ([#9842](https://github.com/craftcms/cms/issues/9842))
+- Fixed a bug where some action menus didn’t have a label for screen readers.
 
 ## 3.7.13 - 2021-09-14
 
