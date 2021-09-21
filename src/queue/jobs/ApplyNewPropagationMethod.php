@@ -135,8 +135,9 @@ class ApplyNewPropagationMethod extends BaseJob
                             $structuresService->moveAfter($element->structureId, $newElement, $element, Structures::MODE_INSERT);
                         } else {
                             // Append the clone to the source's parent
-                            $parentId = $element
-                                ->getAncestors(1)
+                            $parentId = $elementType::find()
+                                ->ancestorOf($element->id)
+                                ->ancestorDist(1)
                                 ->select(['elements.id'])
                                 ->siteId('*')
                                 ->unique()
