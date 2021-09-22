@@ -174,7 +174,7 @@ class TemplatesController extends Controller
      */
     public function actionRenderError(): Response
     {
-        /** @var \yii\web\ErrorHandler $errorHandler */ 
+        /** @var \yii\web\ErrorHandler $errorHandler */
         $errorHandler = Craft::$app->getErrorHandler();
         $exception = $errorHandler->exception;
 

@@ -895,6 +895,11 @@ class EntriesController extends BaseEntriesController
             $entry->newParentId = $parentId ?: false;
         }
 
+        // Is fresh?
+        if ($this->request->getBodyParam('isFresh')) {
+            $entry->setIsFresh();
+        }
+
         // Revision notes
         $entry->setRevisionNotes($this->request->getBodyParam('notes'));
     }

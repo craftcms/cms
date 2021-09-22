@@ -67,7 +67,8 @@ class Announcements extends Component
             ->from(['a' => Table::ANNOUNCEMENTS])
             ->orderBy(['a.dateCreated' => SORT_DESC])
             ->where(['userId' => $userId])
-            ->andWhere(['or',
+            ->andWhere([
+                'or',
                 ['a.unread' => true],
                 ['>', 'a.dateRead', Db::prepareDateForDb(new DateTime('7 days ago'))],
             ]);
@@ -79,7 +80,8 @@ class Announcements extends Component
             $query
                 ->addSelect(['pluginHandle' => 'p.handle'])
                 ->leftJoin(['p' => Table::PLUGINS], '[[p.id]] = [[a.pluginId]]')
-                ->andWhere(['or',
+                ->andWhere([
+                    'or',
                     ['p.id' => null],
                     ['p.handle' => $enabledPluginHandles],
                 ]);

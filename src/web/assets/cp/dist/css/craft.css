@@ -31,6 +31,8 @@ select { margin: 0; }
 /* ----------------------------------------
 /*  Basic stuff
 /* ----------------------------------------*/
+:root { --text-color: #3f4d5a; --light-text-color: #606d7b; --hairline-color: rgba(51, 64, 77, 0.1); }
+
 body, html { background-color: #e4edf6; }
 
 html.noscroll, html.noscroll body { overflow: hidden; }
@@ -1578,7 +1580,7 @@ body.use-shapes .status.pending { background-color: transparent; border-style: s
 
 body.use-shapes .status.off, body.use-shapes .status.suspended, body.use-shapes .status.expired { border-radius: 1px; }
 
-.status:not(.on):not(.live):not(.active):not(.enabled):not(.pending):not(.off):not(.suspended):not(.expired):not(.yellow):not(.orange):not(.red):not(.pink):not(.purple):not(.blue):not(.green):not(.turquoise):not(.light):not(.grey):not(.black) { border-color: rgba(96, 125, 159, 0.8); }
+.status:not(.on):not(.live):not(.active):not(.enabled):not(.pending):not(.off):not(.suspended):not(.expired):not(.yellow):not(.orange):not(.red):not(.pink):not(.purple):not(.blue):not(.green):not(.turquoise):not(.light):not(.grey):not(.black) { border-color: var(--light-text-color); }
 
 .green, .status.on, .status.live, .status.active, .status.enabled { background-color: #27AB83; }
 
@@ -2200,7 +2202,9 @@ body.ltr .menubtn span.icon, body.ltr .menu span.icon { margin-right: 10px; }
 
 body.rtl .menubtn span.icon, body.rtl .menu span.icon { margin-left: 10px; }
 
-.menu ul li a:not(.sel):not(.disabled):hover, .menu ul li a:not(.sel):not(.disabled):hover .light, .menu:not(:hover) ul li a:not(.disabled).hover, .menu:not(:hover) ul li a:not(.sel):not(.disabled).hover .light { color: #3f4d5a; background-color: #f3f7fc; }
+.menu ul li a:not(.sel):not(.disabled):hover, .menu:not(:hover) ul li a:not(.disabled).hover { color: #fff; background-color: #8b96a2; --text-color: #fff; --light-text-color: #e4edf6; }
+
+.menu ul li a:not(.sel):not(.disabled):hover span.icon, .menu:not(:hover) ul li a:not(.disabled).hover span.icon { color: #fff; }
 
 body.ltr .menu hr.padded, body.ltr .menu h6.padded { margin-left: 10px; }
 
@@ -2680,7 +2684,7 @@ body .selectize-dropdown [data-selectable], body .selectize-dropdown .optgroup-h
 
 body .selectize-dropdown .optgroup-header { margin: 14px 0 3px; font-size: 10px; line-height: 1.2; color: #606d7b; text-transform: uppercase; font-weight: bold; margin: 0; padding: 4px 0; }
 
-body .selectize-dropdown .active { color: #3f4d5a; background-color: #f3f7fc; }
+body .selectize-dropdown .active { color: #fff; background-color: #8b96a2; }
 
 /* time zones */
 .timezone { height: 34px; max-width: 25em; }
@@ -2827,7 +2831,7 @@ body.rtl .message-container { right: 0; }
 
 .autosuggest__results-container .autosuggest__results_item { margin: 0 -14px; padding: 10px 14px; color: #3f4d5a; text-decoration: none; white-space: nowrap; }
 
-.autosuggest__results-container .autosuggest__results_item:hover, .autosuggest__results-container .autosuggest__results_item.autosuggest__results_item-highlighted { color: #3f4d5a; background-color: #f3f7fc; cursor: pointer; }
+.autosuggest__results-container .autosuggest__results_item:hover, .autosuggest__results-container .autosuggest__results_item.autosuggest__results_item-highlighted { color: #fff; background-color: #8b96a2; cursor: pointer; }
 
 /* ----------------------------------------
 /* Matrix
@@ -3478,7 +3482,7 @@ body.rtl #details { padding-right: 14px; }
 
 #details .meta:not(.read-only):not(.warning) { background-color: #f3f7fc; }
 
-#details .meta.read-only { padding-top: 8px; padding-bottom: 8px; color: #606d7b; background-color: transparent; }
+#details .meta.read-only { padding-top: 8px; padding-bottom: 8px; color: #596673; background-color: transparent; }
 
 #details .meta.warning { border: 2px solid #FADB5F; padding: 19px 22px; background: #fff; color: #3f4d5a !important; }
 

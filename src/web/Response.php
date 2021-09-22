@@ -164,7 +164,10 @@ class Response extends \yii\web\Response
      */
     public function redirect($url, $statusCode = 302, $checkAjax = true): self
     {
-        $url = UrlHelper::url($url);
+        if (is_string($url)) {
+            $url = UrlHelper::url($url);
+        }
+
         return parent::redirect($url, $statusCode, $checkAjax);
     }
 

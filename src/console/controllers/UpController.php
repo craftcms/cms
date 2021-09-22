@@ -39,6 +39,7 @@ class UpController extends Controller
 
     /**
      * Runs pending migrations and applies pending project config changes.
+     *
      * @return int
      */
     public function actionIndex(): int

@@ -174,6 +174,7 @@ class AssetIndexesController extends Controller
 
     /**
      * Finish an indexing session, removing the specified file and folder records.
+     *
      * @return Response
      * @throws \Throwable
      */
