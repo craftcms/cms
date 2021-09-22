@@ -193,54 +193,61 @@ abstract class Element extends Component implements ElementInterface
     const EVENT_REGISTER_DEFAULT_TABLE_ATTRIBUTES = 'registerDefaultTableAttributes';
 
     /**
-     * @event ElementQueryEvent The event triggered for each attribute in an Element index table, while preparing the Query.
+     * @event PrepareElementQueryForTableAttributeEvent The event that is triggered when preparing an element query for an element index, for each
+     * attribute present in the table.
      * 
-     * Paired with `EVENT_REGISTER_TABLE_ATTRIBUTES` and `EVENT_SET_TABLE_ATTRIBUTE_HTML`, this allows optimization of queries on Element indexes.
+     * Paired with [[EVENT_REGISTER_TABLE_ATTRIBUTES]] and [[EVENT_SET_TABLE_ATTRIBUTE_HTML]], this allows optimization of queries on element indexes.
      * 
      * ```php
+     * use craft\base\Element;
      * use craft\elements\Entry;
      * use craft\events\PrepareElementQueryForTableAttributeEvent;
      * use craft\events\RegisterElementTableAttributesEvent;
      * use craft\events\SetElementTableAttributeHtmlEvent;
      * use craft\helpers\Cp;
      * use yii\base\Event;
-     * 
+     *
      * Event::on(
      *     Entry::class,
-     *     Entry::EVENT_REGISTER_TABLE_ATTRIBUTES,
-     *     function (RegisterElementTableAttributesEvent $e) {
+     *     Element::EVENT_REGISTER_TABLE_ATTRIBUTES,
+     *     function(RegisterElementTableAttributesEvent $e) {
      *         $e->attributes[] = 'authorExpertise';
-     *     });
-     * 
+     *     }
+     * );
+     *
      * Event::on(
      *     Entry::class,
-     *     Entry::EVENT_PREP_QUERY_FOR_TABLE_ATTRIBUTE,
-     *     function (PrepareElementQueryForTableAttributeEvent $e) {
+     *     Element::EVENT_PREP_QUERY_FOR_TABLE_ATTRIBUTE,
+     *     function(PrepareElementQueryForTableAttributeEvent $e) {
      *         $query = $e->query;
      *         $attr = $e->attribute;
-     * 
+     *
      *         if ($attr === 'authorExpertise') {
      *             $query->andWith(['author.areasOfExpertiseCategoryField']);
      *         }
-     *     });
-     * 
+     *     }
+     * );
+     *
      * Event::on(
      *     Entry::class,
-     *     Entry::EVENT_SET_TABLE_ATTRIBUTE_HTML,
-     *     function (SetElementTableAttributeHtmlEvent $e) {
+     *     Element::EVENT_SET_TABLE_ATTRIBUTE_HTML,
+     *     function(SetElementTableAttributeHtmlEvent $e) {
      *         $attribute = $e->attribute;
-     * 
+     *
      *         if ($attribute !== 'authorExpertise') {
      *             return;
      *         }
-     * 
+     *
      *         // The field data is eager-loaded!
      *         $author = $e->sender->getAuthor();
      *         $categories = $author->areasOfExpertiseCategoryField;
-     * 
+     *
      *         $e->html = Cp::elementPreviewHtml($categories);
-     *     });
+     *     }
+     * );
      * ```
+     *
+     * @since 3.7.14
      */
     const EVENT_PREP_QUERY_FOR_TABLE_ATTRIBUTE = 'prepQueryForTableAttribute';
 

@@ -12,11 +12,11 @@ use yii\base\Event;
 
 /**
  * Table attribute Element Query preparation event
- * 
- * Triggered while preparing an Element query for an Element index, for each attribute present in the table.
+ *
+ * Triggered while preparing an element query for an element index, for each attribute present in the table.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.7.13
+ * @since 3.7.14
  */
 class PrepareElementQueryForTableAttributeEvent extends Event
 {
