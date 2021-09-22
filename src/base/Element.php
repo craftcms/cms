@@ -92,7 +92,6 @@ use yii\validators\Validator;
  * @property array $fieldParamNamespace The namespace used by custom field params on the request
  * @property array $fieldValues The element’s normalized custom field values, indexed by their handles
  * @property bool $hasDescendants Whether the element has descendants
- * @property bool $hasFreshContent Whether the element’s content is "fresh" (unsaved and without validation errors)
  * @property array $htmlAttributes Any attributes that should be included in the element’s DOM representation in the control panel
  * @property bool $isEditable Whether the current user can edit the element
  * @property Markup|null $link An anchor pre-filled with this element’s URL and title
@@ -3595,17 +3594,6 @@ abstract class Element extends Component implements ElementInterface
         }
 
         return false;
-    }
-
-    /**
-     * Returns whether the element is "fresh" (not yet explicitly saved, and without validation errors).
-     *
-     * @deprecated in 3.7.14. [[getIsFresh()]] should be used instead.
-     * @return bool
-     */
-    public function getHasFreshContent(): bool
-    {
-        return $this->getIsFresh();
     }
 
     /**

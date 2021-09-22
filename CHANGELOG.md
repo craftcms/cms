@@ -263,6 +263,7 @@
 - Removed `craft\base\ApplicationTrait::getIsSystemOn()`. `getIsLive()` can be used instead.
 - Removed `craft\base\Element::ATTR_STATUS_CONFLICTED`.
 - Removed `craft\base\Element::getFieldStatus()`. Fields’ `getStatus()` methods can be used instead.
+- Removed `craft\base\Element::getHasFreshContent()`. `getIsFresh()` should be used instead.
 - Removed `craft\base\Element::getIsProvisionalDraft()`. `$isProvisionalDraft` can be used instead.
 - Removed `craft\base\Element::getIsUnsavedDraft()`. `getIsUnpublishedDraft()` can be used instead.
 - Removed `craft\base\Field::isEmpty()`. `isValueEmpty()` can be used instead.
