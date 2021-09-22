@@ -842,14 +842,16 @@ abstract class Element extends Component implements ElementInterface
 
             // Give each attribute a chance to modify the criteria
             foreach ($variables['attributes'] as $attribute) {
-                static::prepElementQueryForTableAttribute($elementQuery, $attribute[0]);
-
                 $event = new PrepareElementQueryForTableAttributeEvent([
                     'query' => $elementQuery,
                     'attribute' => $attribute[0],
                 ]);
 
                 Event::trigger(static::class, self::EVENT_PREP_QUERY_FOR_TABLE_ATTRIBUTE, $event);
+
+                if (!$event->handled) {
+                    static::prepElementQueryForTableAttribute($elementQuery, $attribute[0]);
+                }
             }
         }
 
