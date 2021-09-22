@@ -138,6 +138,7 @@ class StandardTextField extends StandardField
             'autocapitalize' => $this->autocapitalize,
             'disabled' => $static || $this->disabled,
             'readonly' => $this->readonly,
+            'required' => !$static && $this->required,
             'title' => $this->title,
             'placeholder' => $this->placeholder,
             'step' => $this->step,
