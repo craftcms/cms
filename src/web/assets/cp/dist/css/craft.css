@@ -2176,8 +2176,6 @@ body.rtl .menu ul.padded li a[data-icon]:before, body.rtl .menu ul.padded li a.i
 
 .menu ul li a.sel { cursor: default; }
 
-.menu ul li a .shortcut { color: #596673; }
-
 body.ltr .menu ul li a .shortcut { float: right; }
 
 body.rtl .menu ul li a .shortcut { float: left; }
