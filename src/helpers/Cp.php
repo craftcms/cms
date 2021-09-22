@@ -242,16 +242,15 @@ class Cp
      */
     public static function elementHtml(
         ElementInterface $element,
-        string           $context = 'index',
-        string           $size = self::ELEMENT_SIZE_SMALL,
-        ?string          $inputName = null,
-        bool             $showStatus = true,
-        bool             $showThumb = true,
-        bool             $showLabel = true,
-        bool             $showDraftName = true,
-        bool             $single = false
-    ): string
-    {
+        string $context = 'index',
+        string $size = self::ELEMENT_SIZE_SMALL,
+        ?string $inputName = null,
+        bool $showStatus = true,
+        bool $showThumb = true,
+        bool $showLabel = true,
+        bool $showDraftName = true,
+        bool $single = false
+    ): string {
         $isDraft = $element->getIsDraft();
         $isRevision = !$isDraft && $element->getIsRevision();
         $label = $element->getUiLabel();
@@ -413,14 +412,13 @@ class Cp
      * @since 3.6.3
      */
     public static function elementPreviewHtml(
-        array  $elements,
+        array $elements,
         string $size = self::ELEMENT_SIZE_SMALL,
-        bool   $showStatus = true,
-        bool   $showThumb = true,
-        bool   $showLabel = true,
-        bool   $showDraftName = true
-    ): string
-    {
+        bool $showStatus = true,
+        bool $showThumb = true,
+        bool $showLabel = true,
+        bool $showDraftName = true
+    ): string {
         if (empty($elements)) {
             return '';
         }

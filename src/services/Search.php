@@ -187,14 +187,13 @@ class Search extends Component
      * @return array The filtered list of element IDs.
      */
     public function filterElementIdsByQuery(
-        array  $elementIds,
-               $query,
-        bool   $scoreResults = true,
-               $siteId = null,
-        bool   $returnScores = false,
+        array $elementIds,
+        $query,
+        bool $scoreResults = true,
+        $siteId = null,
+        bool $returnScores = false,
         ?array $customFields = null
-    ): array
-    {
+    ): array {
         if (is_string($query)) {
             $query = new SearchQuery($query, Craft::$app->getConfig()->getGeneral()->defaultSearchTermOptions);
         } else if (is_array($query)) {

@@ -9,11 +9,9 @@ namespace craft\services;
 
 use Craft;
 use craft\base\PluginInterface;
-use craft\db\Table;
 use craft\errors\InvalidPluginException;
 use craft\errors\MigrateException;
 use craft\helpers\ArrayHelper;
-use craft\helpers\Db;
 use craft\helpers\FileHelper;
 use craft\models\Updates as UpdatesModel;
 use yii\base\Component;

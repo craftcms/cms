@@ -112,13 +112,12 @@ class Drafts extends Component
      */
     public function createDraft(
         ElementInterface $canonical,
-        int              $creatorId,
-        ?string          $name = null,
-        ?string          $notes = null,
-        array            $newAttributes = [],
-        bool             $provisional = false
-    ): ElementInterface
-    {
+        int $creatorId,
+        ?string $name = null,
+        ?string $notes = null,
+        array $newAttributes = [],
+        bool $provisional = false
+    ): ElementInterface {
         // Make sure the canonical element isn't a draft or revision
         if ($canonical->getIsDraft() || $canonical->getIsRevision()) {
             throw new InvalidArgumentException('Cannot create a draft from another draft or revision.');
@@ -424,12 +423,11 @@ class Drafts extends Component
     public function insertDraftRow(
         ?string $name,
         ?string $notes = null,
-        ?int    $creatorId = null,
-        ?int    $canonicalId = null,
-        bool    $trackChanges = false,
-        bool    $provisional = false
-    ): int
-    {
+        ?int $creatorId = null,
+        ?int $canonicalId = null,
+        bool $trackChanges = false,
+        bool $provisional = false
+    ): int {
         Db::insert(Table::DRAFTS, [
             'canonicalId' => $canonicalId,
             'creatorId' => $creatorId,

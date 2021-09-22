@@ -359,6 +359,7 @@ abstract class Migration extends \yii\db\Migration
 
     /**
      * Builds and executes a SQL statement for renaming a DB table and its corresponding sequence (if PostgreSQL).
+     *
      * @since 4.0.0
      */
     public function renameTable($table, $newName)
