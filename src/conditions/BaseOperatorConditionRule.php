@@ -4,7 +4,6 @@ namespace craft\conditions;
 
 use Craft;
 use craft\helpers\Html;
-use craft\helpers\UrlHelper;
 
 /**
  * The BaseValueConditionRule has a single `value` attribute that stores the value entered.

@@ -8,7 +8,6 @@ use craft\events\RegisterConditionRuleTypesEvent;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Html;
 use craft\helpers\Json;
-use craft\helpers\ProjectConfig as ProjectConfigHelper;
 use craft\helpers\StringHelper;
 use craft\helpers\UrlHelper;
 use craft\web\assets\conditionbuilder\ConditionBuilderAsset;

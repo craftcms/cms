@@ -6,7 +6,6 @@ use Craft;
 use craft\conditions\BaseDateRangeConditionRule;
 use craft\conditions\ConditionInterface;
 use craft\conditions\elements\ElementQueryConditionRuleInterface;
-use craft\conditions\elements\entry\EntryQueryCondition;
 use craft\elements\db\ElementQuery;
 use craft\helpers\Db;
 use yii\db\QueryInterface;

@@ -4,7 +4,6 @@ namespace craft\conditions\elements;
 
 use Craft;
 use craft\conditions\BaseTextOperatorConditionRule;
-use craft\conditions\elements\ElementQueryConditionRuleInterface;
 use craft\elements\db\ElementQueryInterface;
 use craft\helpers\Db;
 use yii\db\QueryInterface;

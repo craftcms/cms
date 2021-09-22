@@ -3,7 +3,6 @@
 namespace craft\conditions;
 
 use Craft;
-use craft\helpers\UrlHelper;
 
 /**
  * The BaseSelectValueConditionRule class provides a condition rule with a single select box.

@@ -38,5 +38,5 @@ interface ConditionInterface
      * @param ConditionRuleInterface $rule
      * @return bool
      */
-     function validateConditionRule(ConditionRuleInterface $rule): bool;
+    function validateConditionRule(ConditionRuleInterface $rule): bool;
 }

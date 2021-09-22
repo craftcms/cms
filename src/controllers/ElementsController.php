@@ -97,7 +97,7 @@ class ElementsController extends BaseElementsController
         }
 
         // Show the sidebar if there are at least two (non-heading) sources
-        $showSidebar = (function() use($sources): bool {
+        $showSidebar = (function() use ($sources): bool {
             $foundSource = false;
             foreach ($sources as $source) {
                 if ($source['type'] !== ElementSources::TYPE_HEADING) {

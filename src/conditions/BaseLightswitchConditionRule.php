@@ -4,7 +4,6 @@ namespace craft\conditions;
 
 use Craft;
 use craft\helpers\Html;
-use craft\helpers\UrlHelper;
 
 /**
  * The BaseTextOperatorConditionRule class provides a condition rule with a single input with operator.

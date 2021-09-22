@@ -5,7 +5,6 @@ namespace craft\conditions;
 use Craft;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Html;
-use craft\helpers\UrlHelper;
 
 /**
  * The BaseDateRangeConditionRule class provides a condition rule with two dates inputs for after and before dates.
