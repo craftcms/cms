@@ -26,7 +26,7 @@ use craft\events\DefineMetadataEvent;
 use craft\events\DefineValueEvent;
 use craft\events\ElementStructureEvent;
 use craft\events\ModelEvent;
-use craft\events\PrepareElementQueryForTableAttributeEvent;
+use craft\events\ElementIndexTableAttributeEvent;
 use craft\events\RegisterElementActionsEvent;
 use craft\events\RegisterElementDefaultTableAttributesEvent;
 use craft\events\RegisterElementExportersEvent;
@@ -193,7 +193,7 @@ abstract class Element extends Component implements ElementInterface
     const EVENT_REGISTER_DEFAULT_TABLE_ATTRIBUTES = 'registerDefaultTableAttributes';
 
     /**
-     * @event PrepareElementQueryForTableAttributeEvent The event that is triggered when preparing an element query for an element index, for each
+     * @event ElementIndexTableAttributeEvent The event that is triggered when preparing an element query for an element index, for each
      * attribute present in the table.
      * 
      * Paired with [[EVENT_REGISTER_TABLE_ATTRIBUTES]] and [[EVENT_SET_TABLE_ATTRIBUTE_HTML]], this allows optimization of queries on element indexes.
@@ -842,7 +842,7 @@ abstract class Element extends Component implements ElementInterface
 
             // Give each attribute a chance to modify the criteria
             foreach ($variables['attributes'] as $attribute) {
-                $event = new PrepareElementQueryForTableAttributeEvent([
+                $event = new ElementIndexTableAttributeEvent([
                     'query' => $elementQuery,
                     'attribute' => $attribute[0],
                 ]);

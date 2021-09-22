@@ -18,7 +18,7 @@ use yii\base\Event;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.7.14
  */
-class PrepareElementQueryForTableAttributeEvent extends Event
+class ElementIndexTableAttributeEvent extends Event
 {
     /**
      * @var ElementQueryInterface The Element query being built
