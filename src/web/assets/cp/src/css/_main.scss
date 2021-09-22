@@ -4427,7 +4427,8 @@ ul.tree,
   --text-color: #{$white};
   --light-text-color: #{$grey100};
 
-  span.icon {
+  span.icon,
+  &:before {
     color: $menuOptionActiveColor;
   }
 }
