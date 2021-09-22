@@ -142,13 +142,12 @@ class Drafts extends Component
      */
     public function createDraft(
         ElementInterface $source,
-        int              $creatorId,
-        string           $name = null,
-        string           $notes = null,
-        array            $newAttributes = [],
-        bool             $provisional = false
-    ): ElementInterface
-    {
+        int $creatorId,
+        string $name = null,
+        string $notes = null,
+        array $newAttributes = [],
+        bool $provisional = false
+    ): ElementInterface {
         // Make sure the source isn't a draft or revision
         if ($source->getIsDraft() || $source->getIsRevision()) {
             throw new InvalidArgumentException('Cannot create a draft from another draft or revision.');
@@ -486,12 +485,11 @@ class Drafts extends Component
     public function insertDraftRow(
         ?string $name,
         ?string $notes = null,
-        int     $creatorId = null,
-        ?int    $sourceId = null,
-        bool    $trackChanges = false,
-        bool    $provisional = false
-    ): int
-    {
+        int $creatorId = null,
+        ?int $sourceId = null,
+        bool $trackChanges = false,
+        bool $provisional = false
+    ): int {
         Db::insert(Table::DRAFTS, [
             'sourceId' => $sourceId, // todo: remove this in v4
             'creatorId' => $creatorId,

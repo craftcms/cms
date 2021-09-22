@@ -96,6 +96,7 @@ class Asset extends Element
 
     /**
      * Validation scenario that should be used when the asset is only getting *moved*; not renamed.
+     *
      * @since 3.7.1
      */
     const SCENARIO_MOVE = 'move';
