@@ -319,7 +319,7 @@ abstract class BaseCondition extends Component implements ConditionInterface
             }
         }
 
-        $html .= Html::endTag('form');
+        $html .= Html::endTag($options['mainTag']);
 
         return $html;
     }
