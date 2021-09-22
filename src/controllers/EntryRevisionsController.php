@@ -298,7 +298,15 @@ class EntryRevisionsController extends BaseEntriesController
 
             $draft->setScenario(Element::SCENARIO_ESSENTIALS);
 
-            if ($draft->getIsUnpublishedDraft() && $this->request->getBodyParam('propagateAll')) {
+            // todo: stop checking for propagateAll in Craft 4
+            if (
+                $draft->getIsUnpublishedDraft() &&
+                (
+                    $this->request->getBodyParam('isFresh') ||
+                    $this->request->getBodyParam('propagateAll')
+                )
+            ) {
+                $draft->setIsFresh();
                 $draft->propagateAll = true;
             }
 
@@ -482,7 +490,15 @@ class EntryRevisionsController extends BaseEntriesController
             $draft->setScenario(Element::SCENARIO_LIVE);
         }
 
-        if ($draft->getIsUnpublishedDraft() && $this->request->getBodyParam('propagateAll')) {
+        // todo: stop checking for propagateAll in Craft 4
+        if (
+            $draft->getIsUnpublishedDraft() &&
+            (
+                $this->request->getBodyParam('isFresh') ||
+                $this->request->getBodyParam('propagateAll')
+            )
+        ) {
+            $draft->setIsFresh();
             $draft->propagateAll = true;
         }
 
