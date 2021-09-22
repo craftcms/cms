@@ -66,12 +66,12 @@ class Feeds extends Component
      * <h3>{{ feed.title }}</h3>
      *
      * {% for item in feed.items[0:10] %}
-     *     <article>
-     *         <h3><a href="{{ item.permalink }}">{{ item.title }}</a></h3>
-     *         <p class="author">{{ item.authors[0].name }}</p>
-     *         <p class="date">{{ item.date|date('short') }}</p>
-     *         {{ item.summary }}
-     *     </article>
+     *   <article>
+     *     <h3><a href="{{ item.permalink }}">{{ item.title }}</a></h3>
+     *     <p class="author">{{ item.authors[0].name }}</p>
+     *     <p class="date">{{ item.date|date('short') }}</p>
+     *     {{ item.summary }}
+     *   </article>
      * {% endfor %}
      * ```
      *
@@ -169,12 +169,12 @@ class Feeds extends Component
      * {% set items = craft.app.feeds.getFeedItems(feedUrl, 10) %}
      *
      * {% for item in items %}
-     *     <article>
-     *         <h3><a href="{{ item.permalink }}">{{ item.title }}</a></h3>
-     *         <p class="author">{{ item.authors[0].name }}</p>
-     *         <p class="date">{{ item.date|date('short') }}</p>
-     *         {{ item.summary }}
-     *     </article>
+     *   <article>
+     *     <h3><a href="{{ item.permalink }}">{{ item.title }}</a></h3>
+     *     <p class="author">{{ item.authors[0].name }}</p>
+     *     <p class="date">{{ item.date|date('short') }}</p>
+     *     {{ item.summary }}
+     *   </article>
      * {% endfor %}
      * ```
      *

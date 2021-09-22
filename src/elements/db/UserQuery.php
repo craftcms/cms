@@ -60,8 +60,8 @@ class UserQuery extends ElementQuery
      * ```twig
      * {# fetch all the admins #}
      * {% set admins = craft.users()
-     *     .admin()
-     *     .all()%}
+     *   .admin()
+     *   .all()%}
      *
      * {# fetch all the non-admins #}
      * {% set nonAdmins = craft.users()
@@ -90,8 +90,8 @@ class UserQuery extends ElementQuery
      * ```twig
      * {# fetch users with control panel access #}
      * {% set admins = craft.users()
-     *     .can('accessCp')
-     *     .all() %}
+     *   .can('accessCp')
+     *   .all() %}
      * ```
      * @used-by can()
      */
@@ -109,8 +109,8 @@ class UserQuery extends ElementQuery
      * ```twig
      * {# fetch the authors #}
      * {% set admins = craft.users()
-     *     .group('authors')
-     *     .all() %}
+     *   .group('authors')
+     *   .all() %}
      * ```
      * @used-by group()
      * @used-by groupId()
@@ -159,8 +159,8 @@ class UserQuery extends ElementQuery
      * ```twig
      * {# fetch users with their user groups #}
      * {% set users = craft.users()
-     *     .withGroups()
-     *     .all() %}
+     *   .withGroups()
+     *   .all() %}
      * ```
      * @used-by withGroups()
      * @since 3.6.0
@@ -200,8 +200,8 @@ class UserQuery extends ElementQuery
      * ```twig
      * {# Fetch admins #}
      * {% set {elements-var} = {twig-method}
-     *     .admin()
-     *     .all() %}
+     *   .admin()
+     *   .all() %}
      * ```
      *
      * ```php
@@ -229,8 +229,8 @@ class UserQuery extends ElementQuery
      * ```twig
      * {# Fetch users with photos #}
      * {% set {elements-var} = {twig-method}
-     *     .hasPhoto()
-     *     .all() %}
+     *   .hasPhoto()
+     *   .all() %}
      * ```
      *
      * ```php
@@ -260,8 +260,8 @@ class UserQuery extends ElementQuery
      * ```twig
      * {# Fetch users that can access the control panel #}
      * {% set {elements-var} = {twig-method}
-     *     .can('accessCp')
-     *     .all() %}
+     *   .can('accessCp')
+     *   .all() %}
      * ```
      *
      * ```php
@@ -299,8 +299,8 @@ class UserQuery extends ElementQuery
      * ```twig
      * {# Fetch users in the Foo user group #}
      * {% set {elements-var} = {twig-method}
-     *     .group('foo')
-     *     .all() %}
+     *   .group('foo')
+     *   .all() %}
      * ```
      *
      * ```php
@@ -348,8 +348,8 @@ class UserQuery extends ElementQuery
      * ```twig
      * {# Fetch users in a group with an ID of 1 #}
      * {% set {elements-var} = {twig-method}
-     *     .groupId(1)
-     *     .all() %}
+     *   .groupId(1)
+     *   .all() %}
      * ```
      *
      * ```php
@@ -385,8 +385,8 @@ class UserQuery extends ElementQuery
      * ```twig
      * {# Fetch users with a .co.uk domain on their email address #}
      * {% set {elements-var} = {twig-method}
-     *     .email('*.co.uk')
-     *     .all() %}
+     *   .email('*.co.uk')
+     *   .all() %}
      * ```
      *
      * ```php
@@ -424,8 +424,8 @@ class UserQuery extends ElementQuery
      *
      * {# Fetch that user #}
      * {% set {element-var} = {twig-method}
-     *     .username(requestedUsername|literal)
-     *     .one() %}
+     *   .username(requestedUsername|literal)
+     *   .one() %}
      * ```
      *
      * ```php
@@ -463,8 +463,8 @@ class UserQuery extends ElementQuery
      * ```twig
      * {# Fetch all the Jane's #}
      * {% set {elements-var} = {twig-method}
-     *     .firstName('Jane')
-     *     .all() %}
+     *   .firstName('Jane')
+     *   .all() %}
      * ```
      *
      * ```php
@@ -499,8 +499,8 @@ class UserQuery extends ElementQuery
      * ```twig
      * {# Fetch all the Doe's #}
      * {% set {elements-var} = {twig-method}
-     *     .lastName('Doe')
-     *     .all() %}
+     *   .lastName('Doe')
+     *   .all() %}
      * ```
      *
      * ```php
@@ -538,8 +538,8 @@ class UserQuery extends ElementQuery
      * {% set aWeekAgo = date('7 days ago')|atom %}
      *
      * {% set {elements-var} = {twig-method}
-     *     .lastLoginDate(">= #{aWeekAgo}")
-     *     .all() %}
+     *   .lastLoginDate(">= #{aWeekAgo}")
+     *   .all() %}
      * ```
      *
      * ```php
@@ -579,8 +579,8 @@ class UserQuery extends ElementQuery
      * ```twig
      * {# Fetch active and locked users #}
      * {% set {elements-var} = {twig-method}
-     *     .status(['active', 'locked'])
-     *     .all() %}
+     *   .status(['active', 'locked'])
+     *   .all() %}
      * ```
      *
      * ```php
@@ -618,8 +618,8 @@ class UserQuery extends ElementQuery
      * ```twig
      * {# fetch users with their user groups #}
      * {% set users = craft.users()
-     *     .withGroups()
-     *     .all() %}
+     *   .withGroups()
+     *   .all() %}
      * ```
      *
      * @param bool $value The property value (defaults to true)

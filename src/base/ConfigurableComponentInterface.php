@@ -63,7 +63,7 @@ interface ConfigurableComponentInterface extends ComponentInterface
      * ```html
      * <textarea id="foo" name="foo"></textarea>
      * <script type="text/javascript">
-     *     var textarea = document.getElementById('foo');
+     *   var textarea = document.getElementById('foo');
      * </script>
      * ```
      *
@@ -72,7 +72,7 @@ interface ConfigurableComponentInterface extends ComponentInterface
      * ```html
      * <textarea id="namespace-foo" name="namespace[foo]"></textarea>
      * <script type="text/javascript">
-     *     var textarea = document.getElementById('foo');
+     *   var textarea = document.getElementById('foo');
      * </script>
      * ```
      *
@@ -109,7 +109,7 @@ interface ConfigurableComponentInterface extends ComponentInterface
      * ```twig
      * <textarea id="{{ id }}" name="foo">{{ widget.foo }}</textarea>
      * <script type="text/javascript">
-     *     var textarea = document.getElementById('{{ namespacedId }}');
+     *   var textarea = document.getElementById('{{ namespacedId }}');
      * </script>
      * ```
      *

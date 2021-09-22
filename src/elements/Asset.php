@@ -909,7 +909,7 @@ class Asset extends Element
      * ```
      * ```twig{2}
      * {% if asset.isEditable %}
-     *     <a href="{{ asset.cpEditUrl }}">Edit</a>
+     *   <a href="{{ asset.cpEditUrl }}">Edit</a>
      * {% endif %}
      * ```
      * @since 3.4.0

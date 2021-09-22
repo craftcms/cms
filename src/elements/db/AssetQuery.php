@@ -77,8 +77,8 @@ class AssetQuery extends ElementQuery
      * ```twig
      * {# fetch assets in the Logos volume #}
      * {% set logos = craft.assets()
-     *     .volume('logos')
-     *     .all() %}
+     *   .volume('logos')
+     *   .all() %}
      * ```
      * @used-by volume()
      * @used-by volumeId()
@@ -139,8 +139,8 @@ class AssetQuery extends ElementQuery
      * ```twig
      * {# fetch only images #}
      * {% set logos = craft.assets()
-     *     .kind('image')
-     *     .all() %}
+     *   .kind('image')
+     *   .all() %}
      * ```
      * @used-by kind()
      */
@@ -159,9 +159,9 @@ class AssetQuery extends ElementQuery
      * ```twig{4}
      * {# fetch images that are at least 500 pixes wide #}
      * {% set logos = craft.assets()
-     *     .kind('image')
-     *     .width('>= 500')
-     *     .all() %}
+     *   .kind('image')
+     *   .width('>= 500')
+     *   .all() %}
      * ```
      * @used-by width()
      */
@@ -180,9 +180,9 @@ class AssetQuery extends ElementQuery
      * ```twig{4}
      * {# fetch images that are at least 500 pixes high #}
      * {% set logos = craft.assets()
-     *     .kind('image')
-     *     .height('>= 500')
-     *     .all() %}
+     *   .kind('image')
+     *   .height('>= 500')
+     *   .all() %}
      * ```
      * @used-by height()
      */
@@ -219,9 +219,9 @@ class AssetQuery extends ElementQuery
      * ```twig{4}
      * {# fetch images with their 'thumb' transforms preloaded #}
      * {% set logos = craft.assets()
-     *     .kind('image')
-     *     .withTransforms(['thumb'])
-     *     .all() %}
+     *   .kind('image')
+     *   .withTransforms(['thumb'])
+     *   .all() %}
      * ```
      * @used-by withTransforms()
      */
@@ -257,8 +257,8 @@ class AssetQuery extends ElementQuery
      * ```twig
      * {# Fetch assets in the Foo volume #}
      * {% set {elements-var} = {twig-method}
-     *     .volume('foo')
-     *     .all() %}
+     *   .volume('foo')
+     *   .all() %}
      * ```
      *
      * ```php
@@ -322,8 +322,8 @@ class AssetQuery extends ElementQuery
      * ```twig
      * {# Fetch assets in the volume with an ID of 1 #}
      * {% set {elements-var} = {twig-method}
-     *     .volumeId(1)
-     *     .all() %}
+     *   .volumeId(1)
+     *   .all() %}
      * ```
      *
      * ```php
@@ -374,8 +374,8 @@ class AssetQuery extends ElementQuery
      * ```twig
      * {# Fetch assets in the folder with an ID of 1 #}
      * {% set {elements-var} = {twig-method}
-     *     .folderId(1)
-     *     .all() %}
+     *   .folderId(1)
+     *   .all() %}
      * ```
      *
      * ```php
@@ -416,8 +416,8 @@ class AssetQuery extends ElementQuery
      * ```twig
      * {# Fetch assets uploaded by the user with an ID of 1 #}
      * {% set {elements-var} = {twig-method}
-     *     .uploader(1)
-     *     .all() %}
+     *   .uploader(1)
+     *   .all() %}
      * ```
      *
      * ```php
@@ -464,8 +464,8 @@ class AssetQuery extends ElementQuery
      * ```twig
      * {# Fetch all the hi-res images #}
      * {% set {elements-var} = {twig-method}
-     *     .filename('*@2x*')
-     *     .all() %}
+     *   .filename('*@2x*')
+     *   .all() %}
      * ```
      *
      * ```php
@@ -523,8 +523,8 @@ class AssetQuery extends ElementQuery
      * ```twig
      * {# Fetch all the images #}
      * {% set {elements-var} = {twig-method}
-     *     .kind('image')
-     *     .all() %}
+     *   .kind('image')
+     *   .all() %}
      * ```
      *
      * ```php
@@ -560,9 +560,9 @@ class AssetQuery extends ElementQuery
      * ```twig
      * {# Fetch XL images #}
      * {% set {elements-var} = {twig-method}
-     *     .kind('image')
-     *     .width('>= 1000')
-     *     .all() %}
+     *   .kind('image')
+     *   .width('>= 1000')
+     *   .all() %}
      * ```
      *
      * ```php
@@ -599,9 +599,9 @@ class AssetQuery extends ElementQuery
      * ```twig
      * {# Fetch XL images #}
      * {% set {elements-var} = {twig-method}
-     *     .kind('image')
-     *     .height('>= 1000')
-     *     .all() %}
+     *   .kind('image')
+     *   .height('>= 1000')
+     *   .all() %}
      * ```
      *
      * ```php
@@ -638,8 +638,8 @@ class AssetQuery extends ElementQuery
      * ```twig
      * {# Fetch assets that are smaller than 1KB #}
      * {% set {elements-var} = {twig-method}
-     *     .size('< 1000')
-     *     .all() %}
+     *   .size('< 1000')
+     *   .all() %}
      * ```
      *
      * ```php
@@ -677,8 +677,8 @@ class AssetQuery extends ElementQuery
      * {% set start = date('30 days ago')|atom %}
      *
      * {% set {elements-var} = {twig-method}
-     *     .dateModified(">= #{start}")
-     *     .all() %}
+     *   .dateModified(">= #{start}")
+     *   .all() %}
      * ```
      *
      * ```php
@@ -708,9 +708,9 @@ class AssetQuery extends ElementQuery
      * ```twig
      * {# Fetch assets in the folder with an ID of 1 (including its subfolders) #}
      * {% set {elements-var} = {twig-method}
-     *     .folderId(1)
-     *     .includeSubfolders()
-     *     .all() %}
+     *   .folderId(1)
+     *   .includeSubfolders()
+     *   .all() %}
      * ```
      *
      * ```php
@@ -767,9 +767,9 @@ class AssetQuery extends ElementQuery
      * ```twig
      * {# Fetch assets with the 'thumbnail' and 'hiResThumbnail' transform data preloaded #}
      * {% set {elements-var} = {twig-method}
-     *     .kind('image')
-     *     .withTransforms(['thumbnail', 'hiResThumbnail'])
-     *     .all() %}
+     *   .kind('image')
+     *   .withTransforms(['thumbnail', 'hiResThumbnail'])
+     *   .all() %}
      * ```
      *
      * ```php
