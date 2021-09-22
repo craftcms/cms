@@ -7,6 +7,7 @@ use Craft;
 /**
  * The BaseSelectValueConditionRule class provides a condition rule with a single select box.
  *
+ * @property array $optionValues
  * @property-read string[] $selectOptions
  * @property-read array $inputAttributes
  * @property-read string $inputHtml
@@ -16,6 +17,9 @@ use Craft;
  */
 abstract class BaseMultiSelectOperatorConditionRule extends BaseConditionRule
 {
+    /**
+     * @var string
+     */
     protected string $_id = 'multi-select';
 
     /**
@@ -24,20 +28,19 @@ abstract class BaseMultiSelectOperatorConditionRule extends BaseConditionRule
     private array $_optionValues = [];
 
     /**
-     * @param $value
+     * @return array
      */
-    public function setOptionValues($value): void
-    {
-        if (!is_array($value)) {
-            $value = [];
-        }
-
-        $this->_optionValues = $value;
-    }
-
-    public function getOptionValues()
+    public function getOptionValues(): array
     {
         return $this->_optionValues;
+    }
+
+    /**
+     * @param array $values
+     */
+    public function setOptionValues(array $values): void
+    {
+        $this->_optionValues = $values;
     }
 
     /**

@@ -19,7 +19,7 @@ abstract class BaseLightswitchConditionRule extends BaseConditionRule
     /**
      * @var bool
      */
-    public $value;
+    public bool $value = false;
 
     /**
      * Returns the input container attributes.
@@ -50,7 +50,7 @@ abstract class BaseLightswitchConditionRule extends BaseConditionRule
         $html .= Html::tag('div',
             Craft::$app->getView()->renderTemplate('_includes/forms/lightswitch', [
                 'small' => true,
-                'on' => (bool)$this->value,
+                'on' => $this->value,
                 'name' => 'value',
                 'id' => 'lightswitch'
             ])

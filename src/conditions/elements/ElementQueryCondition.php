@@ -14,7 +14,7 @@ use craft\conditions\ConditionRuleInterface;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.0.0
  */
-class ElementQueryCondition extends BaseQueryCondition implements ElementQueryConditionInterface
+class ElementQueryCondition extends BaseQueryCondition
 {
     /**
      * @inheritdoc
@@ -35,13 +35,5 @@ class ElementQueryCondition extends BaseQueryCondition implements ElementQueryCo
             StatusConditionRule::class,
             TrashedConditionRule::class,
         ];
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function validateConditionRule(ConditionRuleInterface $rule): bool
-    {
-        return parent::validateConditionRule($rule) && $rule instanceof ElementQueryConditionRuleInterface;
     }
 }

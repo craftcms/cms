@@ -13,8 +13,8 @@ use craft\base\ElementInterface;
 use craft\base\Field;
 use craft\behaviors\DraftBehavior;
 use craft\behaviors\RevisionBehavior;
-use craft\conditions\elements\ElementQueryConditionInterface;
 use craft\conditions\elements\entry\EntryQueryCondition;
+use craft\conditions\QueryConditionInterface;
 use craft\controllers\ElementIndexesController;
 use craft\db\Query;
 use craft\db\Table;
@@ -190,7 +190,7 @@ class Entry extends Element
      * @inheritdoc
      * @return EntryQueryCondition
      */
-    public static function createCondition(): ElementQueryConditionInterface
+    public static function createCondition(): QueryConditionInterface
     {
         return Craft::createObject(EntryQueryCondition::class);
     }

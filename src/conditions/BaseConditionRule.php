@@ -6,7 +6,6 @@ use craft\base\Component;
 use craft\helpers\StringHelper;
 
 /**
- *
  * @property ConditionInterface $condition
  * @property-read array $config
  * @property-read string|null $html

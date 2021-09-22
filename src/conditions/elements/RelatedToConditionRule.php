@@ -4,6 +4,7 @@ namespace craft\conditions\elements;
 
 use Craft;
 use craft\conditions\BaseConditionRule;
+use craft\conditions\QueryConditionRuleInterface;
 use craft\elements\db\ElementQuery;
 use craft\elements\Entry;
 use yii\db\QueryInterface;
@@ -14,7 +15,7 @@ use yii\db\QueryInterface;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.0.0
  */
-class RelatedToConditionRule extends BaseConditionRule implements ElementQueryConditionRuleInterface
+class RelatedToConditionRule extends BaseConditionRule implements QueryConditionRuleInterface
 {
     /**
      * @var array
@@ -76,17 +77,12 @@ class RelatedToConditionRule extends BaseConditionRule implements ElementQueryCo
      */
     public function getHtml(array $options = []): string
     {
-
-        $id = Craft::$app->getView()->namespaceInputId('relatedTo');
-
-        $html = Craft::$app->getView()->renderTemplate('_includes/forms/elementSelect', [
+        return Craft::$app->getView()->renderTemplate('_includes/forms/elementSelect', [
             'name' => 'elementIds',
             'elements' => $this->elementIds ? Entry::find()->id($this->elementIds)->all() : [],
             'elementType' => Entry::class,
             'single' => true
         ]);
-
-        return $html;
     }
 
     /**

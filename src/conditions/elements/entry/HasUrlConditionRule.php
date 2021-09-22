@@ -5,7 +5,7 @@ namespace craft\conditions\elements\entry;
 use Craft;
 use craft\conditions\BaseLightswitchConditionRule;
 use craft\conditions\ConditionInterface;
-use craft\conditions\elements\ElementQueryConditionRuleInterface;
+use craft\conditions\QueryConditionRuleInterface;
 use craft\elements\db\ElementQuery;
 use yii\db\QueryInterface;
 
@@ -15,7 +15,7 @@ use yii\db\QueryInterface;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.0.0
  */
-class HasUrlConditionRule extends BaseLightswitchConditionRule implements ElementQueryConditionRuleInterface
+class HasUrlConditionRule extends BaseLightswitchConditionRule implements QueryConditionRuleInterface
 {
     /**
      * @inheritdoc

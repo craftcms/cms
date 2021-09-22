@@ -4,6 +4,7 @@ namespace craft\conditions\elements;
 
 use Craft;
 use craft\conditions\BaseSelectOperatorConditionRule;
+use craft\conditions\QueryConditionRuleInterface;
 use craft\elements\db\ElementQuery;
 use craft\elements\Entry;
 use yii\db\QueryInterface;
@@ -14,7 +15,7 @@ use yii\db\QueryInterface;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.0.0
  */
-class StatusConditionRule extends BaseSelectOperatorConditionRule implements ElementQueryConditionRuleInterface
+class StatusConditionRule extends BaseSelectOperatorConditionRule implements QueryConditionRuleInterface
 {
     /**
      * @inheritdoc

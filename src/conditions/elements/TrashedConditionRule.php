@@ -4,6 +4,7 @@ namespace craft\conditions\elements;
 
 use Craft;
 use craft\conditions\BaseLightswitchConditionRule;
+use craft\conditions\QueryConditionRuleInterface;
 use craft\elements\db\ElementQuery;
 use yii\db\QueryInterface;
 
@@ -13,7 +14,7 @@ use yii\db\QueryInterface;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.0.0
  */
-class TrashedConditionRule extends BaseLightswitchConditionRule implements ElementQueryConditionRuleInterface
+class TrashedConditionRule extends BaseLightswitchConditionRule implements QueryConditionRuleInterface
 {
     /**
      * @inheritdoc
@@ -29,6 +30,6 @@ class TrashedConditionRule extends BaseLightswitchConditionRule implements Eleme
     public function modifyQuery(QueryInterface $query): void
     {
         /** @var ElementQuery $query */
-        $query->trashed((bool)$this->value);
+        $query->trashed($this->value);
     }
 }

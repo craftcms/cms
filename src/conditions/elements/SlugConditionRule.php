@@ -4,6 +4,7 @@ namespace craft\conditions\elements;
 
 use Craft;
 use craft\conditions\BaseTextOperatorConditionRule;
+use craft\conditions\QueryConditionRuleInterface;
 use craft\elements\db\ElementQueryInterface;
 use craft\helpers\Db;
 use yii\db\QueryInterface;
@@ -14,7 +15,7 @@ use yii\db\QueryInterface;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.0.0
  */
-class SlugConditionRule extends BaseTextOperatorConditionRule implements ElementQueryConditionRuleInterface
+class SlugConditionRule extends BaseTextOperatorConditionRule implements QueryConditionRuleInterface
 {
     /**
      * @inheritdoc

@@ -5,9 +5,8 @@ namespace craft\conditions\elements\entry;
 use Craft;
 use craft\conditions\BaseDateRangeConditionRule;
 use craft\conditions\ConditionInterface;
-use craft\conditions\elements\ElementQueryConditionRuleInterface;
-use craft\elements\db\ElementQuery;
-use craft\helpers\Db;
+use craft\conditions\QueryConditionRuleInterface;
+use craft\elements\db\EntryQuery;
 use yii\db\QueryInterface;
 
 /**
@@ -16,7 +15,7 @@ use yii\db\QueryInterface;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.0.0
  */
-class ExpiryDateConditionRule extends BaseDateRangeConditionRule implements ElementQueryConditionRuleInterface
+class ExpiryDateConditionRule extends BaseDateRangeConditionRule implements QueryConditionRuleInterface
 {
     /**
      * @inheritdoc
@@ -31,13 +30,16 @@ class ExpiryDateConditionRule extends BaseDateRangeConditionRule implements Elem
      */
     public function modifyQuery(QueryInterface $query): void
     {
-        /** @var ElementQuery $query */
-        if ($this->startDate) {
-            $query->subQuery->andWhere(Db::parseDateParam('entries.expiryDate', $this->startDate, '>='));
-        }
+        /** @var EntryQuery $query */
+        $startDate = $this->getStartDate();
+        $endDate = $this->getEndDate();
 
-        if ($this->endDate) {
-            $query->subQuery->andWhere(Db::parseDateParam('entries.expiryDate', $this->endDate, '<'));
+        if ($startDate || $endDate) {
+            $query->expiryDate(array_filter([
+                'and',
+                $startDate ? ">= $startDate" : null,
+                $endDate ? "< $endDate" : null,
+            ]));
         }
     }
 

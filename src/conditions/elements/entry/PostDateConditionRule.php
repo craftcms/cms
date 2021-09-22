@@ -5,7 +5,7 @@ namespace craft\conditions\elements\entry;
 use Craft;
 use craft\conditions\BaseDateRangeConditionRule;
 use craft\conditions\ConditionInterface;
-use craft\conditions\elements\ElementQueryConditionRuleInterface;
+use craft\conditions\QueryConditionRuleInterface;
 use craft\elements\db\ElementQuery;
 use yii\db\QueryInterface;
 
@@ -15,7 +15,7 @@ use yii\db\QueryInterface;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.0.0
  */
-class PostDateConditionRule extends BaseDateRangeConditionRule implements ElementQueryConditionRuleInterface
+class PostDateConditionRule extends BaseDateRangeConditionRule implements QueryConditionRuleInterface
 {
     /**
      * @inheritdoc

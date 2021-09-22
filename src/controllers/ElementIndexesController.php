@@ -12,13 +12,15 @@ use craft\base\ElementAction;
 use craft\base\ElementActionInterface;
 use craft\base\ElementExporterInterface;
 use craft\base\ElementInterface;
-use craft\conditions\elements\ElementQueryConditionInterface;
+use craft\conditions\BaseCondition;
+use craft\conditions\QueryConditionInterface;
 use craft\elements\actions\DeleteActionInterface;
 use craft\elements\actions\Restore;
 use craft\elements\db\ElementQuery;
 use craft\elements\db\ElementQueryInterface;
 use craft\elements\exporters\Raw;
 use craft\events\ElementActionEvent;
+use craft\events\RegisterConditionRuleTypesEvent;
 use craft\helpers\ElementHelper;
 use craft\services\ElementSources;
 use yii\base\InvalidValueException;
@@ -93,12 +95,15 @@ class ElementIndexesController extends BaseElementsController
         $this->context = $this->context();
         $this->sourceKey = $this->request->getParam('source') ?: null;
         $this->source = $this->source();
-        $this->viewState = $this->viewState();
-        $this->elementQuery = $this->elementQuery();
 
-        if ($this->includeActions() && isset($this->sourceKey)) {
-            $this->actions = $this->availableActions();
-            $this->exporters = $this->availableExporters();
+        if ($action->id !== 'filter-hud') {
+            $this->viewState = $this->viewState();
+            $this->elementQuery = $this->elementQuery();
+
+            if ($this->includeActions() && isset($this->sourceKey)) {
+                $this->actions = $this->availableActions();
+                $this->exporters = $this->availableExporters();
+            }
         }
 
         return true;
@@ -372,6 +377,37 @@ class ElementIndexesController extends BaseElementsController
     }
 
     /**
+     * Creates a filter HUD’s contents.
+     *
+     * @since 4.0.0
+     */
+    public function actionFilterHud(): Response
+    {
+        /** @var string|ElementInterface $elementType */
+        $elementType = $this->elementType();
+        $baseInputName = $this->request->getRequiredBodyParam('baseInputName');
+        $condition = $elementType::createCondition();
+        $condition->on(
+            BaseCondition::EVENT_REGISTER_CONDITION_RULE_TYPES,
+            function(RegisterConditionRuleTypesEvent $event) {
+                // todo: filter out params that are already covered by the criteria
+            }
+        );
+
+        $html = $condition->getBuilderHtml([
+            'mainTag' => 'div',
+            'baseInputName' => $baseInputName,
+        ]);
+
+        $view = Craft::$app->getView();
+        return $this->asJson([
+            'hudHtml' => $html,
+            'headHtml' => $view->getHeadHtml(),
+            'bodyHtml' => $view->getBodyHtml(),
+        ]);
+    }
+
+    /**
      * Identify whether index actions should be included in the element index
      *
      * @return bool
@@ -438,7 +474,7 @@ class ElementIndexesController extends BaseElementsController
                 }
                 break;
             case ElementSources::TYPE_CUSTOM:
-                /** @var ElementQueryConditionInterface $condition */
+                /** @var QueryConditionInterface $condition */
                 $condition = Craft::$app->getConditions()->createCondition($this->source['condition']);
                 $condition->modifyQuery($query);
         }

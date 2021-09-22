@@ -9,6 +9,8 @@ use craft\helpers\Html;
 /**
  * The BaseDateRangeConditionRule class provides a condition rule with two dates inputs for after and before dates.
  *
+ * @property string|null $startDate
+ * @property string|null $endDate
  * @property-read array $inputAttributes
  * @property-read string $inputHtml
  * @property-read string $settingsHtml
@@ -18,19 +20,27 @@ use craft\helpers\Html;
 abstract class BaseDateRangeConditionRule extends BaseConditionRule
 {
     /**
-     * @var bool
+     * @var string|null
      */
-    private $_startDate;
+    private ?string $_startDate = null;
 
     /**
-     * @var bool
+     * @var string|null
      */
-    private $_endDate;
+    private ?string $_endDate = null;
 
     /**
-     * @param $value
+     * @return string|null
      */
-    public function setStartDate($value)
+    public function getStartDate(): ?string
+    {
+        return $this->_startDate;
+    }
+
+    /**
+     * @param mixed $value
+     */
+    public function setStartDate($value): void
     {
         $this->_startDate = ($value ? DateTimeHelper::toIso8601($value) : null);
     }
@@ -38,25 +48,17 @@ abstract class BaseDateRangeConditionRule extends BaseConditionRule
     /**
      * @return string|null
      */
-    public function getStartDate()
-    {
-        return $this->_startDate;
-    }
-
-    /**
-     * @param $value
-     */
-    public function setEndDate($value)
-    {
-        $this->_endDate = ($value ? DateTimeHelper::toIso8601($value) : null);
-    }
-
-    /**
-     * @return string|null
-     */
-    public function getEndDate()
+    public function getEndDate(): ?string
     {
         return $this->_endDate;
+    }
+
+    /**
+     * @param mixed $value
+     */
+    public function setEndDate($value): void
+    {
+        $this->_endDate = ($value ? DateTimeHelper::toIso8601($value) : null);
     }
 
     /**
@@ -75,8 +77,8 @@ abstract class BaseDateRangeConditionRule extends BaseConditionRule
     public function getConfig(): array
     {
         return array_merge(parent::getConfig(), [
-            'startDate' => $this->startDate,
-            'endDate' => $this->endDate,
+            'startDate' => $this->getStartDate(),
+            'endDate' => $this->getEndDate(),
         ]);
     }
 

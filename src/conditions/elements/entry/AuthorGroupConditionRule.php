@@ -4,7 +4,7 @@ namespace craft\conditions\elements\entry;
 
 use Craft;
 use craft\conditions\BaseMultiSelectOperatorConditionRule;
-use craft\conditions\elements\ElementQueryConditionRuleInterface;
+use craft\conditions\QueryConditionRuleInterface;
 use craft\elements\db\EntryQuery;
 use craft\helpers\ArrayHelper;
 use yii\db\QueryInterface;
@@ -15,7 +15,7 @@ use yii\db\QueryInterface;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.0.0
  */
-class AuthorGroupConditionRule extends BaseMultiSelectOperatorConditionRule implements ElementQueryConditionRuleInterface
+class AuthorGroupConditionRule extends BaseMultiSelectOperatorConditionRule implements QueryConditionRuleInterface
 {
     protected string $_id = 'author-groups';
 

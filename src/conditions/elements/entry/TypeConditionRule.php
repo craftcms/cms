@@ -23,7 +23,7 @@ use yii\db\QueryInterface;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.0.0
  */
-class TypeConditionRule extends BaseConditionRule implements ElementQueryConditionRuleInterface
+class TypeConditionRule extends BaseConditionRule implements QueryConditionRuleInterface
 {
     /**
      * @inheritdoc
@@ -31,6 +31,14 @@ class TypeConditionRule extends BaseConditionRule implements ElementQueryConditi
     public static function displayName(): string
     {
         return Craft::t('app', 'Type');
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public static function queryParams(): array
+    {
+        return ['type', 'typeId'];
     }
 
     /**
@@ -157,7 +165,7 @@ class TypeConditionRule extends BaseConditionRule implements ElementQueryConditi
         $type = $sectionService->getEntryTypeById($typeId);
 
         /** @var EntryQuery $query */
-        $query->section($section)->type($type);
+        $query->type($type);
     }
 
     /**
