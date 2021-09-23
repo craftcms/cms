@@ -3272,9 +3272,9 @@ body.rtl #page-container { padding-right: 226px; }
 
 #crumbs.empty { display: none; }
 
-#crumbs a { color: #606d7b; -o-transition: color linear 100ms; transition: color linear 100ms; }
+#crumbs a, #crumbs button { color: #606d7b; -o-transition: color linear 100ms; transition: color linear 100ms; }
 
-#crumbs a:hover { color: #0B69A3; text-decoration: none; }
+#crumbs a:hover, #crumbs button:hover { color: #0B69A3; text-decoration: none; }
 
 #crumbs nav { margin: 0; }
 
