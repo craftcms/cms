@@ -7,6 +7,7 @@
 - Added `craft\base\ElementInterface::getIsFresh()`.
 - Added `craft\base\ElementInterface::setIsFresh()`.
 - Added `craft\events\ElementIndexTableAttributeEvent`.
+- Added the `fullPane` setting to Vue admin tables, which can be set to `false` if the table is not the only UI component in its content pane.
 
 ### Changed
 - Enhanced the visibility of global navigation badges.
