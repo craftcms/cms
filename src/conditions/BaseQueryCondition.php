@@ -22,12 +22,4 @@ abstract class BaseQueryCondition extends BaseCondition implements QueryConditio
             $conditionRule->modifyQuery($query);
         }
     }
-
-    /**
-     * @inheritdoc
-     */
-    public function validateConditionRule(ConditionRuleInterface $rule): bool
-    {
-        return $rule instanceof QueryConditionRuleInterface;
-    }
 }

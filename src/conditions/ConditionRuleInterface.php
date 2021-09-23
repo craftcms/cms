@@ -32,12 +32,4 @@ interface ConditionRuleInterface extends ComponentInterface
      * @return ConditionInterface
      */
     public function getCondition(): ConditionInterface;
-
-    /**
-     * Validates a given condition to ensure it can be used with this rule.
-     *
-     * @param ConditionInterface $condition
-     * @return bool
-     */
-    public function validateCondition(ConditionInterface $condition): bool;
 }

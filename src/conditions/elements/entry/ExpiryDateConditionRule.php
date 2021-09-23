@@ -42,12 +42,4 @@ class ExpiryDateConditionRule extends BaseDateRangeConditionRule implements Quer
             ]));
         }
     }
-
-    /**
-     * @inheritdoc
-     */
-    public function validateCondition(ConditionInterface $condition): bool
-    {
-        return parent::validateCondition($condition) && $condition instanceof EntryQueryCondition;
-    }
 }

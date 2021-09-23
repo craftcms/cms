@@ -31,12 +31,4 @@ interface ConditionInterface
      * @return string[]
      */
     public function getConditionRuleTypes(): array;
-
-    /**
-     * Validates a given rule to ensure it can be used with this condition.
-     *
-     * @param ConditionRuleInterface $rule
-     * @return bool
-     */
-    function validateConditionRule(ConditionRuleInterface $rule): bool;
 }

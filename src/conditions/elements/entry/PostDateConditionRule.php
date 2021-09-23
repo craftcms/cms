@@ -39,12 +39,4 @@ class PostDateConditionRule extends BaseDateRangeConditionRule implements QueryC
             $query->before($this->endDate);
         }
     }
-
-    /**
-     * @inheritdoc
-     */
-    public function validateCondition(ConditionInterface $condition): bool
-    {
-        return parent::validateCondition($condition) && $condition instanceof EntryQueryCondition;
-    }
 }

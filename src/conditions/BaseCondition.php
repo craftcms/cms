@@ -46,6 +46,11 @@ abstract class BaseCondition extends Component implements ConditionInterface
     private Collection $_conditionRules;
 
     /**
+     * @var array Rule types
+     */
+    private array $_conditionRuleTypes;
+
+    /**
      * @inheritdoc
      */
     public function init(): void
@@ -72,23 +77,53 @@ abstract class BaseCondition extends Component implements ConditionInterface
     }
 
     /**
-     * @inheritdoc
+     * Returns the available rule types for this condition.
+     *
+     * @return string[]
      */
     public function getConditionRuleTypes(): array
     {
-        $conditionRuleTypes = $this->conditionRuleTypes();
+        if (!isset($this->_conditionRuleTypes)) {
+            $conditionRuleTypes = $this->conditionRuleTypes();
 
-        // Give plugins a chance to modify them
-        $event = new RegisterConditionRuleTypesEvent([
-            'conditionRuleTypes' => $conditionRuleTypes,
-        ]);
+            // Give plugins a chance to modify them
+            $event = new RegisterConditionRuleTypesEvent([
+                'conditionRuleTypes' => $conditionRuleTypes,
+            ]);
 
-        $this->trigger(self::EVENT_REGISTER_CONDITION_RULE_TYPES, $event);
-        return $event->conditionRuleTypes;
+            $this->trigger(self::EVENT_REGISTER_CONDITION_RULE_TYPES, $event);
+            $this->_conditionRuleTypes = $event->conditionRuleTypes;
+        }
+
+        return $this->_conditionRuleTypes;
     }
 
     /**
-     * Returns the available rule types for this condition.
+     * Sets the available rule types
+     *
+     * @param string[] $conditionRuleTypes
+     */
+    public function setConditionRuleTypes(array $conditionRuleTypes = []): void
+    {
+        $this->_conditionRuleTypes = $conditionRuleTypes;
+    }
+
+    /**
+     * Sets the available rule types and returns self
+     *
+     * @param string[] $conditionRuleTypes
+     * @return self
+     * @see setConditionRuleTypes()
+     */
+    public function withConditionRuleTypes(array $conditionRuleTypes = []): self
+    {
+        $this->setConditionRuleTypes($conditionRuleTypes);
+
+        return $this;
+    }
+
+    /**
+     * Returns the rule types for this condition.
      *
      * Conditions should override this method instead of [[getConditionRuleTypes()]]
      * so [[EVENT_REGISTER_CONDITION_RULE_TYPES]] handlers can modify the class-defined rule types.
@@ -111,46 +146,36 @@ abstract class BaseCondition extends Component implements ConditionInterface
      * Sets the rules this condition should be configured with.
      *
      * @param ConditionRuleInterface[]|array[] $rules
-     * @throws InvalidArgumentException|InvalidConfigException if any of the rules don’t validate
+     * @throws InvalidArgumentException|InvalidConfigException if any of the rules are not selectable
      */
     public function setConditionRules(array $rules): void
     {
+        $allRules = $rules; //easier xdebug
         $this->_conditionRules = new Collection(array_map(function($rule) {
             if (is_array($rule)) {
                 $rule = Craft::$app->getConditions()->createConditionRule($rule);
             }
-            if (!$this->validateConditionRule($rule) || !$rule->validateCondition($this)) {
+            if (!$rule->isSelectable() || !in_array(get_class($rule), $this->getConditionRuleTypes())) {
                 throw new InvalidArgumentException('Invalid condition rule');
             }
             $rule->setCondition($this);
             return $rule;
-        }, $rules));
+        }, $allRules));
     }
 
     /**
      * Adds a rule to the condition.
      *
      * @param ConditionRuleInterface $rule
-     * @throws InvalidArgumentException if the rule doesn’t validate
+     * @throws InvalidArgumentException if the rule is not selectable
      */
     public function addConditionRule(ConditionRuleInterface $rule): void
     {
-        if (!$this->validateConditionRule($rule) || !$rule->validateCondition($this)) {
+        if (!$rule->isSelectable() || !in_array(get_class($rule), $this->getConditionRuleTypes())) {
             throw new InvalidArgumentException('Invalid condition rule');
         }
 
         $this->getConditionRules()->add($rule);
-    }
-
-    /**
-     * Validates a given rule to ensure it can be used with this condition.
-     *
-     * @param mixed $rule
-     * @return bool
-     */
-    public function validateConditionRule(ConditionRuleInterface $rule): bool
-    {
-        return $rule instanceof ConditionRuleInterface;
     }
 
     /**
@@ -180,25 +205,25 @@ abstract class BaseCondition extends Component implements ConditionInterface
 
         // Set defaults
         $options['mainTag'] = $options['mainTag'] ?? 'form';
+        $options['sortable'] = $options['sortable'] ?? true;
         $options['baseInputName'] = $options['baseInputName'] ?? 'condition[' . $this->uid . ']';
         $options['mainId'] = isset($options['mainId']) ? $view->namespaceInputId($options['mainId']) : $view->namespaceInputId($options['baseInputName']);
-
-        $optionsInputs = [];
-        foreach ($options as $key => $value) {
-            $optionsInputs['options[' . $key . ']'] = $value;
-        }
 
         // Main Condition tag, and Htmx inheritable options
         $html = Html::beginTag($options['mainTag'], [
             'id' => $options['mainId'],
-            'hx-target' => 'this', // replace self
-            'hx-swap' => 'outerHTML', // replace this tag with the response
+        ]);
+
+        $html .= Html::beginTag('div', [
+            'class' => 'condition-main',
+            'hx-target' => "#" . $options['mainId'], // replace self
             'hx-indicator' => '#indicator-' . $options['mainId'], // ID of the spinner
             'hx-include' => "#" . $options['mainId'], // In case we are in a non form container
-            'hx-vals' => Json::encode($optionsInputs), // We want this data sent outside of the namespaced input
+            'hx-vals' => ['options' => Json::encode($options), 'conditionRuleTypes' => Json::encode($this->getConditionRuleTypes())], // We want this data sent outside of the namespaced input
         ]);
 
         // Condition hidden inputs
+
         $html .= Html::hiddenInput($options['baseInputName'] . '[uid]', $this->uid);
         $html .= Html::hiddenInput($options['baseInputName'] . '[type]', get_class($this));
 
@@ -206,11 +231,13 @@ abstract class BaseCondition extends Component implements ConditionInterface
         $view->startJsBuffer();
 
         $allRulesHtml = '';
+        $ruleCount = 0;
         /** @var ConditionRuleInterface $rule */
         foreach ($this->getConditionRules() as $rule) {
+            $ruleCount++;
             $ruleHtml = Craft::$app->getView()->namespaceInputs(function() use ($rule, $options) {
 
-                $moveButton = Html::tag('a', '', ['class' => 'move icon draggable-handle']);
+                $moveButton = $options['sortable'] ? Html::tag('a', '', ['class' => 'move icon draggable-handle']) : '';
                 $ruleHtml = Html::tag('div', $moveButton, ['id' => 'rule-move', 'class' => 'rule-move']);
 
                 /** @var string|ConditionRuleInterface $ruleClass */
@@ -257,7 +284,7 @@ abstract class BaseCondition extends Component implements ConditionInterface
                     'id' => 'condition-rule',
                     'class' => 'condition-rule flex draggable'
                 ]);
-            }, $options['baseInputName'] . "[conditionRules][$rule->uid]");
+            }, $options['baseInputName'] . "[conditionRules][$ruleCount]");
 
             $allRulesHtml .= $ruleHtml;
         }
@@ -275,18 +302,17 @@ abstract class BaseCondition extends Component implements ConditionInterface
 
         $footerContent = '';
 
-        if (count($this->getConditionRuleTypes()) > 0) {
-            $addButtonAttr = [
-                'class' => 'btn add icon',
-                'hx-post' => UrlHelper::actionUrl('conditions/add-rule')
-            ];
-            $footerContent .= Html::tag('button', $this->getAddRuleLabel(), $addButtonAttr);
-        }
+        $disabled = (count($this->getConditionRuleTypes()) == 0) ? ' disabled' : '';
+        $addButtonAttr = [
+            'class' => 'btn add icon' . $disabled,
+            'hx-post' => UrlHelper::actionUrl('conditions/add-rule')
+        ];
+        $footerContent .= Html::tag('button', $this->getAddRuleLabel(), $addButtonAttr);
 
         // Main loading indicator spinner
         $footerContent .= Html::tag('div', '', [
+            'class' => 'htmx-indicator spinner',
             'id' => 'indicator-' . $options['mainId'],
-            'class' => 'htmx-indicator spinner'
         ]);
 
 
@@ -302,8 +328,8 @@ abstract class BaseCondition extends Component implements ConditionInterface
         }
 
         if (!$isHtmxRequest) {
-            $view->registerJs("Craft.initUiElements(htmx.find('#" . $options['mainId'] . "'));");
             $view->registerJs("htmx.process(htmx.find('#" . $options['mainId'] . "'));");
+            $view->registerJs("htmx.trigger(htmx.find('#" . $options['mainId'] . "'), 'htmx:load');");
         }
 
         // Add head and foot/body scripts to html returned so crafts htmx condition builder can insert them into the DOM
@@ -323,6 +349,7 @@ abstract class BaseCondition extends Component implements ConditionInterface
             }
         }
 
+        $html .= Html::endTag('div'); //condition-main
         $html .= Html::endTag($options['mainTag']);
 
         return $html;

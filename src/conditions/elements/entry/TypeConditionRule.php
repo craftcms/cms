@@ -5,6 +5,7 @@ namespace craft\conditions\elements\entry;
 use Craft;
 use craft\conditions\BaseConditionRule;
 use craft\conditions\elements\ElementQueryConditionRuleInterface;
+use craft\conditions\QueryConditionRuleInterface;
 use craft\db\Table;
 use craft\elements\db\EntryQuery;
 use craft\helpers\ArrayHelper;

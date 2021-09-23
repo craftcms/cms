@@ -37,12 +37,4 @@ class HasUrlConditionRule extends BaseLightswitchConditionRule implements QueryC
             $query->uri(':empty:');
         }
     }
-
-    /**
-     * @inheritdoc
-     */
-    public function validateCondition(ConditionInterface $condition): bool
-    {
-        return parent::validateCondition($condition) && $condition instanceof EntryQueryCondition;
-    }
 }

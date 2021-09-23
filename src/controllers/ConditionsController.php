@@ -9,6 +9,7 @@ namespace craft\controllers;
 
 use Craft;
 use craft\conditions\BaseCondition;
+use craft\helpers\Json;
 use craft\web\Controller;
 
 /**
@@ -43,16 +44,19 @@ class ConditionsController extends Controller
      */
     public function beforeAction($action): bool
     {
-        $this->_options = $this->request->getBodyParam('options', []);
+        $this->_options = Json::decodeIfJson($this->request->getBodyParam('options', []));
+        $conditionRuleTypes = Json::decodeIfJson($this->request->getBodyParam('conditionRuleTypes'));
 
-        $this->_options['isAjax'] = true;
+        // Make baseInputName into a param path
         $this->_options['baseInputName'] = $this->_options['baseInputName'] ?? 'condition';
-
-        $baseInputNamePath = str_replace('[', '.', $this->_options['baseInputName']);
-        $baseInputNamePath = str_replace(']', '', $baseInputNamePath);
+        $baseInputNamePath = str_replace(['[', ']'], ['.', ''], $this->_options['baseInputName']);
 
         $config = $this->request->getBodyParam($baseInputNamePath);
+
         $this->_condition = Craft::$app->getConditions()->createCondition($config);
+        if ($conditionRuleTypes !== null) {
+            $this->_condition->setConditionRuleTypes($conditionRuleTypes);
+        }
 
         if (!parent::beforeAction($action)) {
             return false;
@@ -75,10 +79,12 @@ class ConditionsController extends Controller
     public function actionAddRule(): string
     {
         $ruleType = collect($this->_condition->getConditionRuleTypes())->first();
-        $rule = Craft::$app->getConditions()->createConditionRule(['type' => $ruleType]);
-        $rule->setCondition($this->_condition);
+        if ($ruleType) {
+            $rule = Craft::$app->getConditions()->createConditionRule(['type' => $ruleType]);
+            $rule->setCondition($this->_condition);
 
-        $this->_condition->addConditionRule($rule);
+            $this->_condition->addConditionRule($rule);
+        }
 
         return $this->renderBuilderHtml();
     }

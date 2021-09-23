@@ -63,15 +63,7 @@ abstract class BaseConditionRule extends Component implements ConditionRuleInter
     {
         return $this->_condition;
     }
-
-    /**
-     * @inheritdoc
-     */
-    public function validateCondition(ConditionInterface $condition): bool
-    {
-        return $condition instanceof ConditionInterface;
-    }
-
+    
     /**
      * @inheritdoc
      */
