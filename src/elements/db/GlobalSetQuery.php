@@ -81,8 +81,8 @@ class GlobalSetQuery extends ElementQuery
      * ```twig
      * {# Fetch the global set with a handle of 'foo' #}
      * {% set {element-var} = {twig-method}
-     *     .handle('foo')
-     *     .one() %}
+     *   .handle('foo')
+     *   .one() %}
      * ```
      *
      * ```php

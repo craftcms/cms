@@ -88,8 +88,8 @@ class MatrixBlockQuery extends ElementQuery
      * ```twig
      * {# fetch the entry's text blocks #}
      * {% set blocks = entry.myMatrixField
-     *     .type('text')
-     *     .all() %}
+     *   .type('text')
+     *   .all() %}
      * ```
      * @used-by MatrixBlockQuery::type()
      * @used-by typeId()
@@ -128,8 +128,8 @@ class MatrixBlockQuery extends ElementQuery
      * ```twig
      * {# Fetch {elements} in the Foo field #}
      * {% set {elements-var} = {twig-method}
-     *     .field('foo')
-     *     .all() %}
+     *   .field('foo')
+     *   .all() %}
      * ```
      *
      * ```php
@@ -189,8 +189,8 @@ class MatrixBlockQuery extends ElementQuery
      * ```twig
      * {# Fetch Matrix blocks in the field with an ID of 1 #}
      * {% set {elements-var} = {twig-method}
-     *     .fieldId(1)
-     *     .all() %}
+     *   .fieldId(1)
+     *   .all() %}
      * ```
      *
      * ```php
@@ -227,8 +227,8 @@ class MatrixBlockQuery extends ElementQuery
      * ```twig
      * {# Fetch Matrix blocks created for an element with an ID of 1 #}
      * {% set {elements-var} = {twig-method}
-     *     .ownerId(1)
-     *     .all() %}
+     *   .ownerId(1)
+     *   .all() %}
      * ```
      *
      * ```php
@@ -256,8 +256,8 @@ class MatrixBlockQuery extends ElementQuery
      * ```twig
      * {# Fetch Matrix blocks created for this entry #}
      * {% set {elements-var} = {twig-method}
-     *     .owner(myEntry)
-     *     .all() %}
+     *   .owner(myEntry)
+     *   .all() %}
      * ```
      *
      * ```php
@@ -338,8 +338,8 @@ class MatrixBlockQuery extends ElementQuery
      * ```twig
      * {# Fetch Matrix blocks with a Foo block type #}
      * {% set {elements-var} = myEntry.myMatrixField
-     *     .type('foo')
-     *     .all() %}
+     *   .type('foo')
+     *   .all() %}
      * ```
      *
      * ```php
@@ -387,8 +387,8 @@ class MatrixBlockQuery extends ElementQuery
      * ```twig
      * {# Fetch Matrix blocks of the block type with an ID of 1 #}
      * {% set {elements-var} = myEntry.myMatrixField
-     *     .typeId(1)
-     *     .all() %}
+     *   .typeId(1)
+     *   .all() %}
      * ```
      *
      * ```php

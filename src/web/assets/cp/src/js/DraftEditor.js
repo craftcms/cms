@@ -773,7 +773,6 @@ Craft.DraftEditor = Garnish.Base.extend({
                     if (createdProvisionalDraft) {
                         this.$revisionLabel.append(
                             $('<span/>', {
-                                class: 'extralight',
                                 text: ` — ${Craft.t('app', 'Edited')}`,
                             })
                         );

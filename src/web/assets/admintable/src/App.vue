@@ -1,5 +1,5 @@
 <template>
-    <div :id="tableId" class="vue-admin-table" :class="{ 'vue-admin-table-padded': padded }">
+    <div :id="tableId" class="vue-admin-table" :class="{ 'vue-admin-table-padded': padded, 'tablepane': fullPane }">
         <div v-show="showToolbar" class="toolbar">
             <div class="flex flex-nowrap">
                 <div v-for="(action,index) in actions" :key="index">
@@ -52,7 +52,7 @@
             </div>
 
             <div class="tableview" :class="{ loading: isLoading, hidden: this.isEmpty }">
-                <div class="tablepane vue-admin-tablepane">
+                <div class="vue-admin-tablepane">
                     <vuetable
                             ref="vuetable"
                             :append-params="appendParams"
@@ -214,6 +214,10 @@
             fullPage: {
                 type: Boolean,
                 default: false,
+            },
+            fullPane: {
+                type: Boolean,
+                default: true,
             },
             itemLabels: {
                 type: Object,
