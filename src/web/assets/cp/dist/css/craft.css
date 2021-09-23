@@ -1610,6 +1610,19 @@ body.use-shapes .status.off, body.use-shapes .status.suspended, body.use-shapes 
 .status.white, .status.disabled { opacity: 1; }
 
 /* ----------------------------------------
+/*  Condition builders
+/* ----------------------------------------*/
+.condition .condition-rule { padding: 7px 7px 0; border: 1px solid rgba(51, 64, 77, 0.1); background-color: #f3f7fc; }
+
+.condition .condition-rule:first-child { border-top-left-radius: 5px; border-top-right-radius: 5px; }
+
+.condition .condition-rule:last-child { border-bottom-left-radius: 5px; border-bottom-right-radius: 5px; }
+
+.condition .condition-rule + .condition-rule { border-top-width: 0; }
+
+.condition + .condition-footer { margin-top: 7px; }
+
+/* ----------------------------------------
 /*  Progress bar
 /* ----------------------------------------*/
 .progressbar { border-radius: 6px; border: 2px solid #3f4d5a; padding: 2px; position: absolute; left: 20%; width: 60%; z-index: 1000; }

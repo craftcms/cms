@@ -3122,6 +3122,36 @@ ul.tree,
 }
 
 /* ----------------------------------------
+/*  Condition builders
+/* ----------------------------------------*/
+
+.condition {
+  .condition-rule {
+    padding: 7px 7px 0;
+    border: 1px solid $hairlineColor;
+    background-color: $grey050;
+
+    &:first-child {
+      border-top-left-radius: $largeBorderRadius;
+      border-top-right-radius: $largeBorderRadius;
+    }
+
+    &:last-child {
+      border-bottom-left-radius: $largeBorderRadius;
+      border-bottom-right-radius: $largeBorderRadius;
+    }
+
+    & + .condition-rule {
+      border-top-width: 0;
+    }
+  }
+
+  & + .condition-footer {
+    margin-top: 7px;
+  }
+}
+
+/* ----------------------------------------
 /*  Progress bar
 /* ----------------------------------------*/
 

@@ -198,13 +198,6 @@ abstract class BaseCondition extends Component implements ConditionInterface
             'hx-vals' => Json::encode($optionsInputs), // We want this data sent outside of the namespaced input
         ]);
 
-        // Main loading indicator spinner
-        $loadingAttributes = [
-            'id' => 'indicator-' . $options['mainId'],
-            'class' => 'htmx-indicator spinner'
-        ];
-        $html .= Html::tag('div', '', $loadingAttributes);
-
         // Condition hidden inputs
         $html .= Html::hiddenInput($options['baseInputName'] . '[uid]', $this->uid);
         $html .= Html::hiddenInput($options['baseInputName'] . '[type]', get_class($this));
@@ -274,20 +267,32 @@ abstract class BaseCondition extends Component implements ConditionInterface
         // Sortable rules div
         $html .= Html::tag('div', $allRulesHtml, [
                 'id' => 'condition-rules',
-                'class' => 'sortable',
+                'class' => 'condition sortable',
                 'hx-post' => UrlHelper::actionUrl('conditions/render'),
                 'hx-trigger' => 'end' // sortable library triggers this event
             ]
         );
+
+        $footerContent = '';
 
         if (count($this->getConditionRuleTypes()) > 0) {
             $addButtonAttr = [
                 'class' => 'btn add icon',
                 'hx-post' => UrlHelper::actionUrl('conditions/add-rule')
             ];
-            $addButton = Html::tag('button', $this->getAddRuleLabel(), $addButtonAttr);
-            $html .= Html::tag('div', $addButton, ['class' => 'rightalign']);
+            $footerContent .= Html::tag('button', $this->getAddRuleLabel(), $addButtonAttr);
         }
+
+        // Main loading indicator spinner
+        $footerContent .= Html::tag('div', '', [
+            'id' => 'indicator-' . $options['mainId'],
+            'class' => 'htmx-indicator spinner'
+        ]);
+
+
+        $html .= Html::tag('div', $footerContent, [
+            'class' => ['condition-footer', 'flex', 'flex-nowrap'],
+        ]);
 
         // Add inline script tag
         if ($isHtmxRequest && $rulesJs) {
