@@ -26,7 +26,7 @@ abstract class BaseLightswitchConditionRule extends BaseConditionRule
      *
      * @return array
      */
-    protected function getContainerAttributes(): array
+    protected function containerAttributes(): array
     {
         return [];
     }

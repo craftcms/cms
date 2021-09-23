@@ -66,7 +66,7 @@ abstract class BaseDateRangeConditionRule extends BaseConditionRule
      *
      * @return array
      */
-    protected function getContainerAttributes(): array
+    protected function containerAttributes(): array
     {
         return [];
     }

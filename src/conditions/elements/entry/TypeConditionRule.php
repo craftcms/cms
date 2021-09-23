@@ -109,7 +109,7 @@ class TypeConditionRule extends BaseConditionRule implements QueryConditionRuleI
      *
      * @return array
      */
-    protected function getInputAttributes(): array
+    protected function inputAttributes(): array
     {
         return [];
     }
@@ -123,7 +123,7 @@ class TypeConditionRule extends BaseConditionRule implements QueryConditionRuleI
             'name' => 'sectionUid',
             'value' => $this->sectionUid,
             'options' => $this->getSectionOptions(),
-            'inputAttributes' => array_merge($this->getInputAttributes(), [
+            'inputAttributes' => array_merge($this->inputAttributes(), [
                 'hx-post' => UrlHelper::actionUrl('conditions/render'), // Only the section re-renders the body
                 'hx-target' => 'closest .rule-body',
                 'hx-select' => '#' . Craft::$app->getView()->namespaceInputId('rule-body'),
@@ -137,7 +137,7 @@ class TypeConditionRule extends BaseConditionRule implements QueryConditionRuleI
             'name' => 'entryTypeUid',
             'value' => $this->entryTypeUid,
             'options' => $this->getEntryTypeOptions(),
-            'inputAttributes' => $this->getInputAttributes(),
+            'inputAttributes' => $this->inputAttributes(),
         ]);
 
         return $html;

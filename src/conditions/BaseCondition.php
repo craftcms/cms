@@ -18,11 +18,11 @@ use yii\base\InvalidConfigException;
 /**
  * Base condition class.
  *
+ * @property Collection $conditionRules
+ * @property string[] $conditionRuleTypes
  * @property-read string $addRuleLabel
  * @property-read array $config
  * @property-read string $html
- * @property-read string[] $conditionRuleTypes
- * @property Collection $conditionRules
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.0.0

@@ -38,7 +38,7 @@ abstract class BaseOperatorConditionRule extends BaseConditionRule
     /**
      * @return array
      */
-    protected function getOperators(): array
+    protected function operators(): array
     {
         return [
             '=' => Craft::t('app', 'equals'),
@@ -60,7 +60,7 @@ abstract class BaseOperatorConditionRule extends BaseConditionRule
             $html .= Html::tag('div', Craft::$app->getView()->renderTemplate('_includes/forms/select', [
                 'name' => 'operator',
                 'value' => $this->operator,
-                'options' => $this->getOperators()
+                'options' => $this->operators()
             ]));
         }
 

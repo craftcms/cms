@@ -63,11 +63,13 @@ abstract class BaseMultiSelectOperatorConditionRule extends BaseConditionRule
     /**
      * @return array
      */
-    protected function getInputAttributes(): array
+    protected function inputAttributes(): array
     {
         return [
             'id' => $this->_id,
-            'style' => 'display:none;' // Hide it before selectize does it's thing
+            'style' => [
+                'display' => 'none', // Hide it before selectize does its thing
+            ],
         ];
     }
 
@@ -84,7 +86,7 @@ abstract class BaseMultiSelectOperatorConditionRule extends BaseConditionRule
             'name' => 'optionValues',
             'values' => $this->_optionValues,
             'options' => $this->getSelectOptions(),
-            'inputAttributes' => $this->getInputAttributes(),
+            'inputAttributes' => $this->inputAttributes(),
         ]);
 
         $js = <<<JS

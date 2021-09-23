@@ -43,7 +43,7 @@ abstract class BaseSelectOperatorConditionRule extends BaseOperatorConditionRule
      *
      * @return array
      */
-    protected function getInputAttributes(): array
+    protected function inputAttributes(): array
     {
         return [];
     }
@@ -59,7 +59,7 @@ abstract class BaseSelectOperatorConditionRule extends BaseOperatorConditionRule
             'name' => 'optionValue',
             'value' => $this->optionValue,
             'options' => $this->getSelectOptions(),
-            'inputAttributes' => $this->getInputAttributes(),
+            'inputAttributes' => $this->inputAttributes(),
         ]);
 
         return $html;
