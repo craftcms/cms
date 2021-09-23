@@ -2176,6 +2176,8 @@ body.rtl .menu ul.padded li a[data-icon]:before, body.rtl .menu ul.padded li a.i
 
 .menu ul li a.sel { cursor: default; }
 
+.menu ul li a .shortcut { padding: 0 4px; border-radius: 4px; box-shadow: 0 0 0 1px rgba(81, 95, 108, 0.25), 0 1px 3px -1px rgba(81, 95, 108, 0.5); }
+
 body.ltr .menu ul li a .shortcut { float: right; }
 
 body.rtl .menu ul li a .shortcut { float: left; }

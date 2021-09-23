@@ -4375,6 +4375,9 @@ ul.tree,
         .shortcut {
           @include floatright;
           @include margin-left(14px);
+          padding: 0 4px;
+          border-radius: $mediumBorderRadius;
+          box-shadow: 0 0 0 1px transparentize($grey600, 0.75), 0 1px 3px -1px transparentize($grey600, 0.5);
         }
       }
     }
