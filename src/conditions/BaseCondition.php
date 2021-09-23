@@ -46,7 +46,9 @@ abstract class BaseCondition extends Component implements ConditionInterface
     private Collection $_conditionRules;
 
     /**
-     * @var array Rule types
+     * @var array The available rule types for this condition.
+     * @see getConditionRuleTypes()
+     * @see setConditionRuleTypes()
      */
     private array $_conditionRuleTypes;
 
@@ -77,9 +79,7 @@ abstract class BaseCondition extends Component implements ConditionInterface
     }
 
     /**
-     * Returns the available rule types for this condition.
-     *
-     * @return string[]
+     * @inheritdoc
      */
     public function getConditionRuleTypes(): array
     {
@@ -99,9 +99,7 @@ abstract class BaseCondition extends Component implements ConditionInterface
     }
 
     /**
-     * Sets the available rule types
-     *
-     * @param string[] $conditionRuleTypes
+     * @inheritdoc
      */
     public function setConditionRuleTypes(array $conditionRuleTypes = []): void
     {
@@ -133,9 +131,7 @@ abstract class BaseCondition extends Component implements ConditionInterface
     abstract protected function conditionRuleTypes(): array;
 
     /**
-     * Returns the rules this condition is configured with.
-     *
-     * @return Collection
+     * @inheritdoc
      */
     public function getConditionRules(): Collection
     {

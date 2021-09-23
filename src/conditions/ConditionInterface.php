@@ -2,6 +2,8 @@
 
 namespace craft\conditions;
 
+use Illuminate\Support\Collection;
+
 /**
  * ConditionInterface defines the common interface to be implemented by condition classes.
  *
@@ -31,4 +33,18 @@ interface ConditionInterface
      * @return string[]
      */
     public function getConditionRuleTypes(): array;
+
+    /**
+     * Sets the available rule types for this condition.
+     *
+     * @param string[] $conditionRuleTypes
+     */
+    public function setConditionRuleTypes(array $conditionRuleTypes = []): void;
+
+    /**
+     * Returns the rules this condition is configured with.
+     *
+     * @return Collection
+     */
+    public function getConditionRules(): Collection;
 }
