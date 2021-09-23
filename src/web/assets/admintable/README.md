@@ -26,7 +26,7 @@ The only markup that is required is an element to mount the table on.
 
 ## Javascript
 
-The table is initialised via javascript.
+The table is initialised via JavaScript.
 
 ```js
 new Craft.VueAdminTable({...options...});

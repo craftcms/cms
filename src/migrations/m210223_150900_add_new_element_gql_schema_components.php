@@ -31,7 +31,6 @@ class m210223_150900_add_new_element_gql_schema_components extends Migration
                 }
             }
         }
-
     }
 
     /**

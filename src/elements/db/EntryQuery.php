@@ -70,8 +70,8 @@ class EntryQuery extends ElementQuery
      * ```twig
      * {# fetch entries in the News section #}
      * {% set entries = craft.entries()
-     *     .section('news')
-     *     .all() %}
+     *   .section('news')
+     *   .all() %}
      * ```
      * @used-by section()
      * @used-by sectionId()
@@ -91,9 +91,9 @@ class EntryQuery extends ElementQuery
      * ```twig{4}
      * {# fetch entries in the News section #}
      * {% set entries = craft.entries()
-     *     .section('news')
-     *     .type('article')
-     *     .all() %}
+     *   .section('news')
+     *   .type('article')
+     *   .all() %}
      * ```
      * @used-by EntryQuery::type()
      * @used-by typeId()
@@ -118,8 +118,8 @@ class EntryQuery extends ElementQuery
      * ```twig
      * {# fetch entries authored by people in the Authors group #}
      * {% set entries = craft.entries()
-     *     .authorGroup('authors')
-     *     .all() %}
+     *   .authorGroup('authors')
+     *   .all() %}
      * ```
      * @used-by authorGroup()
      * @used-by authorGroupId()
@@ -138,8 +138,8 @@ class EntryQuery extends ElementQuery
      * ```twig
      * {# fetch entries written in 2018 #}
      * {% set entries = craft.entries()
-     *     .postDate(['and', '>= 2018-01-01', '< 2019-01-01'])
-     *     .all() %}
+     *   .postDate(['and', '>= 2018-01-01', '< 2019-01-01'])
+     *   .all() %}
      * ```
      * @used-by postDate()
      */
@@ -157,8 +157,8 @@ class EntryQuery extends ElementQuery
      * ```twig
      * {# fetch entries written before 4/4/2018 #}
      * {% set entries = craft.entries()
-     *     .before('2018-04-04')
-     *     .all() %}
+     *   .before('2018-04-04')
+     *   .all() %}
      * ```
      * @used-by before()
      */
@@ -176,8 +176,8 @@ class EntryQuery extends ElementQuery
      * ```twig
      * {# fetch entries written in the last 7 days #}
      * {% set entries = craft.entries()
-     *     .after(now|date_modify('-7 days'))
-     *     .all() %}
+     *   .after(now|date_modify('-7 days'))
+     *   .all() %}
      * ```
      * @used-by after()
      */
@@ -272,8 +272,8 @@ class EntryQuery extends ElementQuery
      * ```twig
      * {# Fetch entries in the Foo section #}
      * {% set {elements-var} = {twig-method}
-     *     .section('foo')
-     *     .all() %}
+     *   .section('foo')
+     *   .all() %}
      * ```
      *
      * ```php
@@ -331,8 +331,8 @@ class EntryQuery extends ElementQuery
      * ```twig
      * {# Fetch entries in the section with an ID of 1 #}
      * {% set {elements-var} = {twig-method}
-     *     .sectionId(1)
-     *     .all() %}
+     *   .sectionId(1)
+     *   .all() %}
      * ```
      *
      * ```php
@@ -370,9 +370,9 @@ class EntryQuery extends ElementQuery
      * ```twig
      * {# Fetch entries in the Foo section with a Bar entry type #}
      * {% set {elements-var} = {twig-method}
-     *     .section('foo')
-     *     .type('bar')
-     *     .all() %}
+     *   .section('foo')
+     *   .type('bar')
+     *   .all() %}
      * ```
      *
      * ```php
@@ -421,8 +421,8 @@ class EntryQuery extends ElementQuery
      * ```twig
      * {# Fetch entries of the entry type with an ID of 1 #}
      * {% set {elements-var} = {twig-method}
-     *     .typeId(1)
-     *     .all() %}
+     *   .typeId(1)
+     *   .all() %}
      * ```
      *
      * ```php
@@ -459,8 +459,8 @@ class EntryQuery extends ElementQuery
      * ```twig
      * {# Fetch entries with an author with an ID of 1 #}
      * {% set {elements-var} = {twig-method}
-     *     .authorId(1)
-     *     .all() %}
+     *   .authorId(1)
+     *   .all() %}
      * ```
      *
      * ```php
@@ -498,8 +498,8 @@ class EntryQuery extends ElementQuery
      * ```twig
      * {# Fetch entries with an author in the Foo user group #}
      * {% set {elements-var} = {twig-method}
-     *     .authorGroup('foo')
-     *     .all() %}
+     *   .authorGroup('foo')
+     *   .all() %}
      * ```
      *
      * ```php
@@ -547,8 +547,8 @@ class EntryQuery extends ElementQuery
      * ```twig
      * {# Fetch entries with an author in a group with an ID of 1 #}
      * {% set {elements-var} = {twig-method}
-     *     .authorGroupId(1)
-     *     .all() %}
+     *   .authorGroupId(1)
+     *   .all() %}
      * ```
      *
      * ```php
@@ -587,8 +587,8 @@ class EntryQuery extends ElementQuery
      * {% set end = date('first day of this month')|atom %}
      *
      * {% set {elements-var} = {twig-method}
-     *     .postDate(['and', ">= #{start}", "< #{end}"])
-     *     .all() %}
+     *   .postDate(['and', ">= #{start}", "< #{end}"])
+     *   .all() %}
      * ```
      *
      * ```php
@@ -628,8 +628,8 @@ class EntryQuery extends ElementQuery
      * {% set firstDayOfMonth = date('first day of this month') %}
      *
      * {% set {elements-var} = {twig-method}
-     *     .before(firstDayOfMonth)
-     *     .all() %}
+     *   .before(firstDayOfMonth)
+     *   .all() %}
      * ```
      *
      * ```php
@@ -668,8 +668,8 @@ class EntryQuery extends ElementQuery
      * {% set firstDayOfMonth = date('first day of this month') %}
      *
      * {% set {elements-var} = {twig-method}
-     *     .after(firstDayOfMonth)
-     *     .all() %}
+     *   .after(firstDayOfMonth)
+     *   .all() %}
      * ```
      *
      * ```php
@@ -711,8 +711,8 @@ class EntryQuery extends ElementQuery
      * {% set nextMonth = date('first day of next month')|atom %}
      *
      * {% set {elements-var} = {twig-method}
-     *     .expiryDate("< #{nextMonth}")
-     *     .all() %}
+     *   .expiryDate("< #{nextMonth}")
+     *   .all() %}
      * ```
      *
      * ```php
@@ -752,8 +752,8 @@ class EntryQuery extends ElementQuery
      * ```twig
      * {# Fetch disabled entries #}
      * {% set {elements-var} = {twig-method}
-     *     .status('disabled')
-     *     .all() %}
+     *   .status('disabled')
+     *   .all() %}
      * ```
      *
      * ```php
