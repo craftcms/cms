@@ -212,10 +212,15 @@ abstract class BaseCondition extends Component implements ConditionInterface
 
         $html .= Html::beginTag('div', [
             'class' => 'condition-main',
-            'hx-target' => "#" . $options['mainId'], // replace self
-            'hx-indicator' => '#indicator-' . $options['mainId'], // ID of the spinner
-            'hx-include' => "#" . $options['mainId'], // In case we are in a non form container
-            'hx-vals' => ['options' => Json::encode($options), 'conditionRuleTypes' => Json::encode($this->getConditionRuleTypes())], // We want this data sent outside of the namespaced input
+            'hx' => [
+                'target' => "#" . $options['mainId'], // replace self
+                'indicator' => '#indicator-' . $options['mainId'], // ID of the spinner
+                'include' => "#" . $options['mainId'], // In case we are in a non form container
+                'vals' => [
+                    'options' => Json::encode($options),
+                    'conditionRuleTypes' => Json::encode($this->getConditionRuleTypes()),
+                ], // We want this data sent outside of the namespaced input
+            ],
         ]);
 
         // Condition hidden inputs
@@ -255,7 +260,9 @@ abstract class BaseCondition extends Component implements ConditionInterface
                     'options' => $ruleTypeOptions,
                     'value' => $ruleClass,
                     'inputAttributes' => [
-                        'hx-post' => UrlHelper::actionUrl('conditions/render'),
+                        'hx' => [
+                            'post' => UrlHelper::actionUrl('conditions/render'),
+                        ],
                     ],
                 ]);
                 $switcherHtml .= Html::hiddenInput('uid', $rule->uid);
@@ -269,9 +276,11 @@ abstract class BaseCondition extends Component implements ConditionInterface
                 $deleteButtonAttr = [
                     'id' => 'delete',
                     'class' => 'delete icon',
-                    'hx-vals' => '{"uid": "' . $rule->uid . '"}',
-                    'hx-post' => UrlHelper::actionUrl('conditions/remove-rule'),
                     'title' => Craft::t('app', 'Delete'),
+                    'hx' => [
+                        'vals' => '{"uid": "' . $rule->uid . '"}',
+                        'post' => UrlHelper::actionUrl('conditions/remove-rule'),
+                    ],
                 ];
                 $deleteButton = Html::tag('a', '', $deleteButtonAttr);
                 $ruleHtml .= Html::tag('div', $deleteButton, ['id' => 'rule-actions', 'class' => 'rule-actions']);
@@ -291,8 +300,10 @@ abstract class BaseCondition extends Component implements ConditionInterface
         $html .= Html::tag('div', $allRulesHtml, [
                 'id' => 'condition-rules',
                 'class' => 'condition sortable',
-                'hx-post' => UrlHelper::actionUrl('conditions/render'),
-                'hx-trigger' => 'end' // sortable library triggers this event
+                'hx' => [
+                    'post' => UrlHelper::actionUrl('conditions/render'),
+                    'trigger' => 'end', // sortable library triggers this event
+                ],
             ]
         );
 
@@ -301,7 +312,9 @@ abstract class BaseCondition extends Component implements ConditionInterface
         $disabled = (count($this->getConditionRuleTypes()) == 0) ? ' disabled' : '';
         $addButtonAttr = [
             'class' => 'btn add icon' . $disabled,
-            'hx-post' => UrlHelper::actionUrl('conditions/add-rule')
+            'hx' => [
+                'post' => UrlHelper::actionUrl('conditions/add-rule'),
+            ],
         ];
         $footerContent .= Html::tag('button', $this->getAddRuleLabel(), $addButtonAttr);
 

@@ -23,6 +23,21 @@ use yii\base\InvalidConfigException;
 class Html extends \yii\helpers\Html
 {
     /**
+     * @var array List of tag attributes that should be specially handled when their values are of array type.
+     * In particular, if the value of the `data` attribute is `['name' => 'xyz', 'age' => 13]`, two attributes
+     * will be generated instead of one: `data-name="xyz" data-age="13"`.
+     * @since 4.0.0
+     */
+    public static $dataAttributes = [
+        'aria',
+        'data',
+        'data-hx',
+        'data-ng',
+        'hx',
+        'ng',
+    ];
+
+    /**
      * @var string[]
      * @see _sortedDataAttributes()
      */

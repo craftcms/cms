@@ -47,11 +47,13 @@ abstract class BaseTextOperatorConditionRule extends BaseOperatorConditionRule
         $html .= Html::tag('div',
             Craft::$app->getView()->renderTemplate('_includes/forms/text', [
                 'inputAttributes' => [
-                    'hx-post' => UrlHelper::actionUrl('conditions/render'),
-                    'hx-trigger' => 'keyup changed delay:750ms',
                     'name' => 'value',
                     'value' => $this->value,
                     'autocomplete' => false,
+                    'hx' => [
+                        'post' => UrlHelper::actionUrl('conditions/render'),
+                        'trigger' => 'keyup changed delay:750ms',
+                    ],
                 ]
             ])
         );
