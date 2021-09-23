@@ -4431,6 +4431,10 @@ ul.tree,
   &:before {
     color: $menuOptionActiveColor;
   }
+
+  &.error {
+    color: $menuOptionActiveColor !important;
+  }
 }
 
 .menu {

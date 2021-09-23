@@ -2212,6 +2212,8 @@ body.rtl .menubtn span.icon, body.rtl .menu span.icon { margin-left: 10px; }
 
 .menu ul li a:not(.sel):not(.disabled):hover span.icon, .menu ul li a:not(.sel):not(.disabled):hover:before, .menu:not(:hover) ul li a:not(.disabled).hover span.icon, .menu:not(:hover) ul li a:not(.disabled).hover:before { color: #fff; }
 
+.menu ul li a:not(.sel):not(.disabled):hover.error, .menu:not(:hover) ul li a:not(.disabled).hover.error { color: #fff !important; }
+
 body.ltr .menu hr.padded, body.ltr .menu h6.padded { margin-left: 10px; }
 
 body.rtl .menu hr.padded, body.rtl .menu h6.padded { margin-right: 10px; }
