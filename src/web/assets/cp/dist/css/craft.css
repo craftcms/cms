@@ -2269,17 +2269,17 @@ table.shadow-box thead:last-child tr:last-child th:first-child, table.shadow-box
 
 table.shadow-box thead:last-child tr:last-child th:last-child, table.shadow-box thead:last-child tr:last-child th:last-child.disabled:after, table.shadow-box thead:last-child tr:last-child td:last-child, table.shadow-box thead:last-child tr:last-child td:last-child.disabled:after, table.shadow-box tbody:last-child tr:last-child th:last-child, table.shadow-box tbody:last-child tr:last-child th:last-child.disabled:after, table.shadow-box tbody:last-child tr:last-child td:last-child, table.shadow-box tbody:last-child tr:last-child td:last-child.disabled:after, table.editable thead:last-child tr:last-child th:last-child, table.editable thead:last-child tr:last-child th:last-child.disabled:after, table.editable thead:last-child tr:last-child td:last-child, table.editable thead:last-child tr:last-child td:last-child.disabled:after, table.editable tbody:last-child tr:last-child th:last-child, table.editable tbody:last-child tr:last-child th:last-child.disabled:after, table.editable tbody:last-child tr:last-child td:last-child, table.editable tbody:last-child tr:last-child td:last-child.disabled:after { border-bottom-right-radius: 4px; }
 
-.text:not(.selectize-text), .passwordwrapper, .border-box, .matrix-configurator > .field > .input, .selectize-text > .selectize-control > .selectize-input, .multiselect > select, .selectize.multiselect .selectize-control.multi .selectize-input { border-radius: 3px; border: 1px solid rgba(96, 125, 159, 0.25); background-color: #fbfcfe; background-clip: padding-box; }
+.text:not(.selectize-text), .passwordwrapper, .border-box, .matrix-configurator > .field > .input, .selectize-text > .selectize-control > .selectize-input, .selectize.multiselect .selectize-control.multi .selectize-input, .multiselect > select { border-radius: 3px; border: 1px solid rgba(96, 125, 159, 0.25); background-color: #fbfcfe; background-clip: padding-box; }
 
-.text.focus, .passwordwrapper.focus, .border-box.focus, .selectize-text > .selectize-control > .selectize-input.focus { border-color: #127FBF; box-shadow: 0 0 0 2px rgba(18, 127, 191, 0.5); }
+.text.focus, .passwordwrapper.focus, .border-box.focus, .selectize-text > .selectize-control > .selectize-input.focus, .selectize.multiselect .selectize-control.multi .selectize-input.focus { border-color: #127FBF; box-shadow: 0 0 0 2px rgba(18, 127, 191, 0.5); }
 
-body:not(.reduce-focus-visibility) .text:focus, body:not(.reduce-focus-visibility) .passwordwrapper:focus, body:not(.reduce-focus-visibility) .border-box:focus, body:not(.reduce-focus-visibility) .selectize-text > .selectize-control > .selectize-input:focus { border-color: #127FBF; box-shadow: 0 0 0 2px rgba(18, 127, 191, 0.5); }
+body:not(.reduce-focus-visibility) .text:focus, body:not(.reduce-focus-visibility) .passwordwrapper:focus, body:not(.reduce-focus-visibility) .border-box:focus, body:not(.reduce-focus-visibility) .selectize-text > .selectize-control > .selectize-input:focus, body:not(.reduce-focus-visibility) .selectize.multiselect .selectize-control.multi .selectize-input:focus { border-color: #127FBF; box-shadow: 0 0 0 2px rgba(18, 127, 191, 0.5); }
 
-body.reduce-focus-visibility .text:focus-visible, body.reduce-focus-visibility .passwordwrapper:focus-visible, body.reduce-focus-visibility .border-box:focus-visible, body.reduce-focus-visibility .selectize-text > .selectize-control > .selectize-input:focus-visible { border-color: #127FBF; box-shadow: 0 0 0 2px rgba(18, 127, 191, 0.5); }
+body.reduce-focus-visibility .text:focus-visible, body.reduce-focus-visibility .passwordwrapper:focus-visible, body.reduce-focus-visibility .border-box:focus-visible, body.reduce-focus-visibility .selectize-text > .selectize-control > .selectize-input:focus-visible, body.reduce-focus-visibility .selectize.multiselect .selectize-control.multi .selectize-input:focus-visible { border-color: #127FBF; box-shadow: 0 0 0 2px rgba(18, 127, 191, 0.5); }
 
-input.text, textarea.text, .text > input, .text > textarea, table.editable textarea, .selectize-text > .selectize-control > .selectize-input { font-size: 14px; line-height: 20px; color: #3f4d5a; min-height: 3px; box-sizing: border-box; -webkit-appearance: none; appearance: none; }
+input.text, textarea.text, .text > input, .text > textarea, table.editable textarea, .selectize-text > .selectize-control > .selectize-input, .selectize.multiselect .selectize-control.multi .selectize-input { font-size: 14px; line-height: 20px; color: #3f4d5a; min-height: 3px; box-sizing: border-box; -webkit-appearance: none; appearance: none; }
 
-.selectize-text > .selectize-control > .selectize-input { line-height: 18px; }
+.selectize-text > .selectize-control > .selectize-input, .selectize.multiselect .selectize-control.multi .selectize-input { line-height: 18px; }
 
 textarea.text.fullwidth { display: block; }
 
@@ -2317,7 +2317,7 @@ body.rtl .multitext .multitextrow .text:not(:first-child) { margin-right: -1px; 
 
 .multitext .multitextrow .text.error { position: relative; z-index: 1; }
 
-.multitext .multitextrow .text:focus, .multitext .multitextrow .selectize-text > .selectize-control > .selectize-input.focus { position: relative; z-index: 2; }
+.multitext .multitextrow .text:focus, .multitext .multitextrow .selectize-text > .selectize-control > .selectize-input.focus, .multitext .multitextrow .selectize.multiselect .selectize-control.multi .selectize-input.focus { position: relative; z-index: 2; }
 
 .chars-left { position: relative; color: #606d7b; }
 
@@ -2489,7 +2489,7 @@ body.reduce-focus-visibility .multiselect > select:focus-visible { border-color:
 
 .multiselect > select option { padding: 1px 8px; }
 
-.text:not(.selectize-text), .selectize-text > .selectize-control > .selectize-input { padding: 6px 9px; }
+.text:not(.selectize-text), .selectize-text > .selectize-control > .selectize-input, .selectize.multiselect .selectize-control.multi .selectize-input { padding: 6px 9px; }
 
 .text { background-color: #fff; }
 
@@ -2640,7 +2640,7 @@ body.reduce-focus-visibility .select:not(.selectize) select:focus-visible { outl
 .select:not(.selectize).small select { padding-top: 4px !important; padding-bottom: 4px !important; font-size: 11px; }
 
 /* selectize reset */
-.selectize .selectize-control.single .selectize-input { border-color: inherit; box-shadow: none; background-color: transparent; }
+.selectize .selectize-control.single .selectize-input, .selectize .selectize-control.multi .selectize-input { display: block; border-color: inherit; box-shadow: none; background-color: transparent; }
 
 .selectize .selectize-control.single .selectize-input:after { display: none; }
 
