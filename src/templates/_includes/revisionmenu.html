@@ -75,7 +75,7 @@
                 {%- else %}
                     {{- 'Current'|t('app') }}
                     {%- if isProvisionalDraft -%}
-                        <span class="extralight"> — {{ 'Edited'|t('app') }}</span>
+                        <span> — {{ 'Edited'|t('app') }}</span>
                     {%- endif %}
                 {%- endif -%}
             </span>
@@ -134,7 +134,7 @@
                         href: cpEditUrl,
                     } %}
                         {{ 'Current'|t('app') }}
-                        <div class="extralight smalltext">
+                        <div class="smalltext">
                             {{ currentRevisionCreator ? 'Saved {timestamp} by {creator}'|t('app', {
                                 timestamp: currentRevisionEditTime|timestamp('short', withPreposition=true),
                                 creator: currentRevisionCreator.name,
@@ -168,7 +168,7 @@
                             href: url,
                         } %}
                             <div class="draft-name">{{ draft.draftName }}</div>
-                            <div class="draft-meta extralight smalltext">
+                            <div class="draft-meta smalltext">
                                 {{ creator ? 'Saved {timestamp} by {creator}'|t('app', {
                                     timestamp: draft.dateUpdated|timestamp('short', withPreposition=true),
                                     creator: creator.name,
@@ -197,7 +197,7 @@
                             href: url,
                         } %}
                             {{ revision.getRevisionLabel() }}
-                            <div class="extralight smalltext">
+                            <div class="smalltext">
                                 {{ creator ? 'Saved {timestamp} by {creator}'|t('app', {
                                     timestamp: revision.dateCreated|timestamp('short', withPreposition=true),
                                     creator: creator.name,

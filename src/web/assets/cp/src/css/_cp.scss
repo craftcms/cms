@@ -498,7 +498,8 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
     display: none;
   }
 
-  a {
+  a,
+  button {
     color: $lightTextColor;
     transition: color linear 100ms;
 

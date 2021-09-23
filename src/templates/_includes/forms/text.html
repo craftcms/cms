@@ -29,6 +29,7 @@
     max: max ?? false,
     aria: {
         describedby: instructionsId ?? false,
+        required: (required ?? false) ? 'true' : false,
     },
 }|merge(inputAttributes ?? [], recursive=true) %}
 
