@@ -4599,16 +4599,16 @@ table.editable {
 .border-box,
 .matrix-configurator > .field > .input,
 .selectize-text > .selectize-control > .selectize-input,
-.multiselect > select,
-.selectize.multiselect .selectize-control.multi .selectize-input {
+.selectize.multiselect .selectize-control.multi .selectize-input,
+.multiselect > select {
   @include input-styles;
 }
 
 .text,
 .passwordwrapper,
 .border-box,
-.selectize-text > .selectize-control > .selectize-input {
-
+.selectize-text > .selectize-control > .selectize-input,
+.selectize.multiselect .selectize-control.multi .selectize-input {
   &.focus {
     @include input-focused-styles;
   }
@@ -4631,7 +4631,8 @@ textarea.text,
 .text > input,
 .text > textarea,
 table.editable textarea,
-.selectize-text > .selectize-control > .selectize-input {
+.selectize-text > .selectize-control > .selectize-input,
+.selectize.multiselect .selectize-control.multi .selectize-input {
   font-size: 14px;
   line-height: 20px;
   color: $textColor;
@@ -4640,7 +4641,8 @@ table.editable textarea,
   appearance: none;
 }
 
-.selectize-text > .selectize-control > .selectize-input {
+.selectize-text > .selectize-control > .selectize-input,
+.selectize.multiselect .selectize-control.multi .selectize-input{
   line-height: 18px;
 }
 
@@ -4707,7 +4709,8 @@ textarea.text.fullwidth {
   }
 
   .text:focus,
-  .selectize-text > .selectize-control > .selectize-input.focus {
+  .selectize-text > .selectize-control > .selectize-input.focus,
+  .selectize.multiselect .selectize-control.multi .selectize-input.focus {
     position: relative;
     z-index: 2;
   }
@@ -5101,7 +5104,8 @@ body.reduce-focus-visibility {
 }
 
 .text:not(.selectize-text),
-.selectize-text > .selectize-control > .selectize-input {
+.selectize-text > .selectize-control > .selectize-input,
+.selectize.multiselect .selectize-control.multi .selectize-input {
   padding: 6px 9px;
 }
 
@@ -5392,7 +5396,9 @@ tr.indexingSession td.progress div.progressContainer  div.progressInfo {
 }
 
 /* selectize reset */
-.selectize .selectize-control.single .selectize-input {
+.selectize .selectize-control.single .selectize-input,
+.selectize .selectize-control.multi .selectize-input {
+  display: block;
   border-color: inherit;
   box-shadow: none;
   background-color: transparent;
