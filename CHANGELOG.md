@@ -11,6 +11,7 @@
 ### Changed
 - Enhanced the visibility of global navigation badges.
 - Enhanced the visibility of focused menu options.
+- The `migrate/all` command now includes plugins whose schema versions have changed, even if they don’t have any new migrations. ([#9860](https://github.com/craftcms/cms/issues/9860))
 
 ### Deprecated
 - Deprecated `craft\base\Element::getHasFreshContent()`. `getIsFresh()` should be used instead.
