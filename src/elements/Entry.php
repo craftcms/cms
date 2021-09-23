@@ -733,7 +733,7 @@ class Entry extends Element
      * ```
      * ```twig
      * {% if entry.expiryDate %}
-     *     {{ entry.expiryDate|date('short') }}
+     *   {{ entry.expiryDate|date('short') }}
      * {% endif %}
      * ```
      */
@@ -1110,10 +1110,10 @@ class Entry extends Element
      * ```
      * ```twig{1}
      * {% switch entry.type.handle %}
-     *     {% case 'article' %}
-     *         {% include "news/_article" %}
-     *     {% case 'link' %}
-     *         {% include "news/_link" %}
+     *   {% case 'article' %}
+     *     {% include "news/_article" %}
+     *   {% case 'link' %}
+     *     {% include "news/_link" %}
      * {% endswitch %}
      * ```
      *
@@ -1214,7 +1214,7 @@ class Entry extends Element
      * ```
      * ```twig{1}
      * {% if entry.isEditable %}
-     *     <a href="{{ entry.cpEditUrl }}">Edit</a>
+     *   <a href="{{ entry.cpEditUrl }}">Edit</a>
      * {% endif %}
      * ```
      */
@@ -1285,7 +1285,7 @@ class Entry extends Element
      * ```
      * ```twig{2}
      * {% if entry.isEditable %}
-     *     <a href="{{ entry.cpEditUrl }}">Edit</a>
+     *   <a href="{{ entry.cpEditUrl }}">Edit</a>
      * {% endif %}
      * ```
      */

@@ -57,8 +57,8 @@ class TagQuery extends ElementQuery
      * ```twig
      * {# fetch tags in the Topics group #}
      * {% set tags = craft.tags()
-     *     .group('topics')
-     *     .all() %}
+     *   .group('topics')
+     *   .all() %}
      * ```
      * @used-by group()
      * @used-by groupId()
@@ -95,8 +95,8 @@ class TagQuery extends ElementQuery
      * ```twig
      * {# Fetch tags in the Foo group #}
      * {% set {elements-var} = {twig-method}
-     *     .group('foo')
-     *     .all() %}
+     *   .group('foo')
+     *   .all() %}
      * ```
      *
      * ```php
@@ -144,8 +144,8 @@ class TagQuery extends ElementQuery
      * ```twig
      * {# Fetch tags in the group with an ID of 1 #}
      * {% set {elements-var} = {twig-method}
-     *     .groupId(1)
-     *     .all() %}
+     *   .groupId(1)
+     *   .all() %}
      * ```
      *
      * ```php

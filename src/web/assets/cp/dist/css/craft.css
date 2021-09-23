@@ -986,37 +986,37 @@ h2 + .actions { margin-top: -54px; }
 /* ----------------------------------------*/
 .tablepane { margin: -24px -24px -12px; overflow-x: auto; }
 
-body.ltr .tablepane table th:first-child, body.ltr .tablepane table td:first-child { padding-left: 24px; }
+body.ltr .tablepane table.data th:first-child, body.ltr .tablepane table.data td:first-child { padding-left: 24px; }
 
-body.rtl .tablepane table th:first-child, body.rtl .tablepane table td:first-child { padding-right: 24px; }
+body.rtl .tablepane table.data th:first-child, body.rtl .tablepane table.data td:first-child { padding-right: 24px; }
 
-body.ltr .tablepane table th:last-child, body.ltr .tablepane table td:last-child { padding-right: 24px; }
+body.ltr .tablepane table.data th:last-child, body.ltr .tablepane table.data td:last-child { padding-right: 24px; }
 
-body.rtl .tablepane table th:last-child, body.rtl .tablepane table td:last-child { padding-left: 24px; }
+body.rtl .tablepane table.data th:last-child, body.rtl .tablepane table.data td:last-child { padding-left: 24px; }
 
-body.ltr .tablepane table thead th, body.ltr .tablepane table thead td { border-bottom-left-radius: 0; }
+body.ltr .tablepane table.data thead th:first-child, body.ltr .tablepane table.data thead td:first-child { border-bottom-left-radius: 0; }
 
-body.rtl .tablepane table thead th, body.rtl .tablepane table thead td { border-bottom-right-radius: 0; }
+body.rtl .tablepane table.data thead th:first-child, body.rtl .tablepane table.data thead td:first-child { border-bottom-right-radius: 0; }
 
-body.ltr .tablepane table thead th, body.ltr .tablepane table thead td { border-bottom-right-radius: 0; }
+body.ltr .tablepane table.data thead th:last-child, body.ltr .tablepane table.data thead td:last-child { border-bottom-right-radius: 0; }
 
-body.rtl .tablepane table thead th, body.rtl .tablepane table thead td { border-bottom-left-radius: 0; }
+body.rtl .tablepane table.data thead th:last-child, body.rtl .tablepane table.data thead td:last-child { border-bottom-left-radius: 0; }
 
-body.ltr .tablepane table thead:first-child tr:first-child th:first-child, body.ltr .tablepane table thead:first-child tr:first-child td:first-child, body.ltr .tablepane table tbody:first-child tr:first-child th:first-child, body.ltr .tablepane table tbody:first-child tr:first-child td:first-child, body.ltr .tablepane table tfoot:first-child tr:first-child th:first-child, body.ltr .tablepane table tfoot:first-child tr:first-child td:first-child { border-top-left-radius: 5px; }
+body.ltr .tablepane table.data thead:first-child tr:first-child th:first-child, body.ltr .tablepane table.data thead:first-child tr:first-child td:first-child, body.ltr .tablepane table.data tbody:first-child tr:first-child th:first-child, body.ltr .tablepane table.data tbody:first-child tr:first-child td:first-child, body.ltr .tablepane table.data tfoot:first-child tr:first-child th:first-child, body.ltr .tablepane table.data tfoot:first-child tr:first-child td:first-child { border-top-left-radius: 5px; }
 
-body.rtl .tablepane table thead:first-child tr:first-child th:first-child, body.rtl .tablepane table thead:first-child tr:first-child td:first-child, body.rtl .tablepane table tbody:first-child tr:first-child th:first-child, body.rtl .tablepane table tbody:first-child tr:first-child td:first-child, body.rtl .tablepane table tfoot:first-child tr:first-child th:first-child, body.rtl .tablepane table tfoot:first-child tr:first-child td:first-child { border-top-right-radius: 5px; }
+body.rtl .tablepane table.data thead:first-child tr:first-child th:first-child, body.rtl .tablepane table.data thead:first-child tr:first-child td:first-child, body.rtl .tablepane table.data tbody:first-child tr:first-child th:first-child, body.rtl .tablepane table.data tbody:first-child tr:first-child td:first-child, body.rtl .tablepane table.data tfoot:first-child tr:first-child th:first-child, body.rtl .tablepane table.data tfoot:first-child tr:first-child td:first-child { border-top-right-radius: 5px; }
 
-body.ltr .tablepane table thead:first-child tr:first-child th:last-child, body.ltr .tablepane table thead:first-child tr:first-child td:last-child, body.ltr .tablepane table tbody:first-child tr:first-child th:last-child, body.ltr .tablepane table tbody:first-child tr:first-child td:last-child, body.ltr .tablepane table tfoot:first-child tr:first-child th:last-child, body.ltr .tablepane table tfoot:first-child tr:first-child td:last-child { border-top-right-radius: 5px; }
+body.ltr .tablepane table.data thead:first-child tr:first-child th:last-child, body.ltr .tablepane table.data thead:first-child tr:first-child td:last-child, body.ltr .tablepane table.data tbody:first-child tr:first-child th:last-child, body.ltr .tablepane table.data tbody:first-child tr:first-child td:last-child, body.ltr .tablepane table.data tfoot:first-child tr:first-child th:last-child, body.ltr .tablepane table.data tfoot:first-child tr:first-child td:last-child { border-top-right-radius: 5px; }
 
-body.rtl .tablepane table thead:first-child tr:first-child th:last-child, body.rtl .tablepane table thead:first-child tr:first-child td:last-child, body.rtl .tablepane table tbody:first-child tr:first-child th:last-child, body.rtl .tablepane table tbody:first-child tr:first-child td:last-child, body.rtl .tablepane table tfoot:first-child tr:first-child th:last-child, body.rtl .tablepane table tfoot:first-child tr:first-child td:last-child { border-top-left-radius: 5px; }
+body.rtl .tablepane table.data thead:first-child tr:first-child th:last-child, body.rtl .tablepane table.data thead:first-child tr:first-child td:last-child, body.rtl .tablepane table.data tbody:first-child tr:first-child th:last-child, body.rtl .tablepane table.data tbody:first-child tr:first-child td:last-child, body.rtl .tablepane table.data tfoot:first-child tr:first-child th:last-child, body.rtl .tablepane table.data tfoot:first-child tr:first-child td:last-child { border-top-left-radius: 5px; }
 
-body.ltr .tablepane table thead:last-child tr:last-child th:first-child, body.ltr .tablepane table thead:last-child tr:last-child td:first-child, body.ltr .tablepane table tbody:last-child tr:last-child th:first-child, body.ltr .tablepane table tbody:last-child tr:last-child td:first-child, body.ltr .tablepane table tfoot:last-child tr:last-child th:first-child, body.ltr .tablepane table tfoot:last-child tr:last-child td:first-child { border-bottom-left-radius: 5px; }
+body.ltr .tablepane table.data thead:last-child tr:last-child th:first-child, body.ltr .tablepane table.data thead:last-child tr:last-child td:first-child, body.ltr .tablepane table.data tbody:last-child tr:last-child th:first-child, body.ltr .tablepane table.data tbody:last-child tr:last-child td:first-child, body.ltr .tablepane table.data tfoot:last-child tr:last-child th:first-child, body.ltr .tablepane table.data tfoot:last-child tr:last-child td:first-child { border-bottom-left-radius: 5px; }
 
-body.rtl .tablepane table thead:last-child tr:last-child th:first-child, body.rtl .tablepane table thead:last-child tr:last-child td:first-child, body.rtl .tablepane table tbody:last-child tr:last-child th:first-child, body.rtl .tablepane table tbody:last-child tr:last-child td:first-child, body.rtl .tablepane table tfoot:last-child tr:last-child th:first-child, body.rtl .tablepane table tfoot:last-child tr:last-child td:first-child { border-bottom-right-radius: 5px; }
+body.rtl .tablepane table.data thead:last-child tr:last-child th:first-child, body.rtl .tablepane table.data thead:last-child tr:last-child td:first-child, body.rtl .tablepane table.data tbody:last-child tr:last-child th:first-child, body.rtl .tablepane table.data tbody:last-child tr:last-child td:first-child, body.rtl .tablepane table.data tfoot:last-child tr:last-child th:first-child, body.rtl .tablepane table.data tfoot:last-child tr:last-child td:first-child { border-bottom-right-radius: 5px; }
 
-body.ltr .tablepane table thead:last-child tr:last-child th:last-child, body.ltr .tablepane table thead:last-child tr:last-child td:last-child, body.ltr .tablepane table tbody:last-child tr:last-child th:last-child, body.ltr .tablepane table tbody:last-child tr:last-child td:last-child, body.ltr .tablepane table tfoot:last-child tr:last-child th:last-child, body.ltr .tablepane table tfoot:last-child tr:last-child td:last-child { border-bottom-right-radius: 5px; }
+body.ltr .tablepane table.data thead:last-child tr:last-child th:last-child, body.ltr .tablepane table.data thead:last-child tr:last-child td:last-child, body.ltr .tablepane table.data tbody:last-child tr:last-child th:last-child, body.ltr .tablepane table.data tbody:last-child tr:last-child td:last-child, body.ltr .tablepane table.data tfoot:last-child tr:last-child th:last-child, body.ltr .tablepane table.data tfoot:last-child tr:last-child td:last-child { border-bottom-right-radius: 5px; }
 
-body.rtl .tablepane table thead:last-child tr:last-child th:last-child, body.rtl .tablepane table thead:last-child tr:last-child td:last-child, body.rtl .tablepane table tbody:last-child tr:last-child th:last-child, body.rtl .tablepane table tbody:last-child tr:last-child td:last-child, body.rtl .tablepane table tfoot:last-child tr:last-child th:last-child, body.rtl .tablepane table tfoot:last-child tr:last-child td:last-child { border-bottom-left-radius: 5px; }
+body.rtl .tablepane table.data thead:last-child tr:last-child th:last-child, body.rtl .tablepane table.data thead:last-child tr:last-child td:last-child, body.rtl .tablepane table.data tbody:last-child tr:last-child th:last-child, body.rtl .tablepane table.data tbody:last-child tr:last-child td:last-child, body.rtl .tablepane table.data tfoot:last-child tr:last-child th:last-child, body.rtl .tablepane table.data tfoot:last-child tr:last-child td:last-child { border-bottom-left-radius: 5px; }
 
 table.fixed-layout { table-layout: fixed; }
 
@@ -2176,7 +2176,7 @@ body.rtl .menu ul.padded li a[data-icon]:before, body.rtl .menu ul.padded li a.i
 
 .menu ul li a.sel { cursor: default; }
 
-.menu ul li a .shortcut { color: #596673; }
+.menu ul li a .shortcut { padding: 0 4px; border-radius: 4px; box-shadow: 0 0 0 1px rgba(81, 95, 108, 0.25), 0 1px 3px -1px rgba(81, 95, 108, 0.5); }
 
 body.ltr .menu ul li a .shortcut { float: right; }
 
@@ -2212,7 +2212,9 @@ body.rtl .menubtn span.icon, body.rtl .menu span.icon { margin-left: 10px; }
 
 .menu ul li a:not(.sel):not(.disabled):hover, .menu:not(:hover) ul li a:not(.disabled).hover { color: #fff; background-color: #8b96a2; --text-color: #fff; --light-text-color: #e4edf6; }
 
-.menu ul li a:not(.sel):not(.disabled):hover span.icon, .menu:not(:hover) ul li a:not(.disabled).hover span.icon { color: #fff; }
+.menu ul li a:not(.sel):not(.disabled):hover span.icon, .menu ul li a:not(.sel):not(.disabled):hover:before, .menu:not(:hover) ul li a:not(.disabled).hover span.icon, .menu:not(:hover) ul li a:not(.disabled).hover:before { color: #fff; }
+
+.menu ul li a:not(.sel):not(.disabled):hover.error, .menu:not(:hover) ul li a:not(.disabled).hover.error { color: #fff !important; }
 
 body.ltr .menu hr.padded, body.ltr .menu h6.padded { margin-left: 10px; }
 
@@ -3281,9 +3283,9 @@ body.rtl #page-container { padding-right: 226px; }
 
 #crumbs.empty { display: none; }
 
-#crumbs a { color: #606d7b; -o-transition: color linear 100ms; transition: color linear 100ms; }
+#crumbs a, #crumbs button { color: #606d7b; -o-transition: color linear 100ms; transition: color linear 100ms; }
 
-#crumbs a:hover { color: #0B69A3; text-decoration: none; }
+#crumbs a:hover, #crumbs button:hover { color: #0B69A3; text-decoration: none; }
 
 #crumbs nav { margin: 0; }
 

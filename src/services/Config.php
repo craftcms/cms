@@ -44,7 +44,7 @@ class Config extends Component
      * ```
      * ```twig
      * {% if craft.app.config.env == 'production' %}
-     *     {% include "_includes/ga" %}
+     *   {% include "_includes/ga" %}
      * {% endif %}
      * ```
      */
@@ -152,7 +152,7 @@ class Config extends Component
      * ```
      * ```twig
      * <a href="{{ url(craft.app.config.general.logoutPath) }}">
-     *     Logout
+     *   Logout
      * </a>
      * ```
      *

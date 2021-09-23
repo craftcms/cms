@@ -1943,7 +1943,7 @@ h2 + .actions {
   margin: -24px -24px -12px;
   overflow-x: auto;
 
-  table {
+  table.data {
     th,
     td {
       &:first-child {
@@ -1957,8 +1957,13 @@ h2 + .actions {
     thead {
       th,
       td {
-        @include border-bottom-left-radius(0);
-        @include border-bottom-right-radius(0);
+        &:first-child {
+          @include border-bottom-left-radius(0);
+        }
+
+        &:last-child {
+          @include border-bottom-right-radius(0);
+        }
       }
     }
 
@@ -4375,7 +4380,9 @@ ul.tree,
         .shortcut {
           @include floatright;
           @include margin-left(14px);
-          color: $mediumTextColor;
+          padding: 0 4px;
+          border-radius: $mediumBorderRadius;
+          box-shadow: 0 0 0 1px transparentize($grey600, 0.75), 0 1px 3px -1px transparentize($grey600, 0.5);
         }
       }
     }
@@ -4428,8 +4435,13 @@ ul.tree,
   --text-color: #{$white};
   --light-text-color: #{$grey100};
 
-  span.icon {
+  span.icon,
+  &:before {
     color: $menuOptionActiveColor;
+  }
+
+  &.error {
+    color: $menuOptionActiveColor !important;
   }
 }
 

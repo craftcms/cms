@@ -113,8 +113,8 @@ class CategoryQuery extends ElementQuery
      * ```twig
      * {# Fetch categories in the Foo group #}
      * {% set {elements-var} = {twig-method}
-     *     .group('foo')
-     *     .all() %}
+     *   .group('foo')
+     *   .all() %}
      * ```
      *
      * ```php
@@ -163,8 +163,8 @@ class CategoryQuery extends ElementQuery
      * ```twig
      * {# Fetch categories in the group with an ID of 1 #}
      * {% set {elements-var} = {twig-method}
-     *     .groupId(1)
-     *     .all() %}
+     *   .groupId(1)
+     *   .all() %}
      * ```
      *
      * ```php
