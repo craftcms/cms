@@ -3151,7 +3151,7 @@ ul.tree,
     }
   }
 
-  & + .condition-footer {
+  &:not(:empty) + .condition-footer {
     margin-top: 7px;
   }
 }

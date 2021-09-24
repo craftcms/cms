@@ -1620,7 +1620,7 @@ body.use-shapes .status.off, body.use-shapes .status.suspended, body.use-shapes 
 
 .condition .condition-rule + .condition-rule { border-top-width: 0; }
 
-.condition + .condition-footer { margin-top: 7px; }
+.condition:not(:empty) + .condition-footer { margin-top: 7px; }
 
 /* ----------------------------------------
 /*  Progress bar
