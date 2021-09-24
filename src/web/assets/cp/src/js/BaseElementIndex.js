@@ -1090,6 +1090,11 @@ Craft.BaseElementIndex = Garnish.Base.extend({
 
         this.selectViewMode(viewMode);
 
+        // Filter HUD
+        // ----------------------------------------------------------------------
+
+        this.updateFilterBtn();
+
         this.onSelectSource();
 
         return true;
@@ -2086,6 +2091,14 @@ Craft.BaseElementIndex = Garnish.Base.extend({
             this.filterHuds[this.sourceKey].show();
         }
     },
+
+    updateFilterBtn: function() {
+        if (this.filterHuds[this.sourceKey] && this.filterHuds[this.sourceKey].hasRules()) {
+            this.$filterBtn.addClass('active');
+        } else {
+            this.$filterBtn.removeClass('active');
+        }
+    },
 }, {
     defaults: {
         context: 'index',
@@ -2185,12 +2198,9 @@ const FilterHud = Garnish.HUD.extend({
     onHide: function() {
         this.base();
 
-        // Remove .active from the button if there aren't any filters
-        if (!this.hasRules()) {
-            this.elementIndex.$filterBtn.removeClass('active');
-        }
+        this.elementIndex.updateFilterBtn();
 
-        // If something changed,
+        // If something changed, update the elements
         if (this.serialized !== (this.serialized = this.serialize())) {
             this.elementIndex.updateElements();
         }
