@@ -8,7 +8,7 @@
 namespace craft\controllers;
 
 use Craft;
-use craft\conditions\BaseCondition;
+use craft\conditions\ConditionInterface;
 use craft\helpers\Json;
 use craft\web\Controller;
 
@@ -18,8 +18,6 @@ use craft\web\Controller;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.0.0
- *
- * @property-read string|\craft\conditions\BaseCondition $builderHtml
  */
 class ConditionsController extends Controller
 {
@@ -35,9 +33,9 @@ class ConditionsController extends Controller
     protected $allowAnonymous = self::ALLOW_ANONYMOUS_LIVE;
 
     /**
-     * @var BaseCondition
+     * @var ConditionInterface
      */
-    private BaseCondition $_condition;
+    private ConditionInterface $_condition;
 
     /**
      * @inheritdoc

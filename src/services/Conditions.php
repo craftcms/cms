@@ -8,8 +8,8 @@
 namespace craft\services;
 
 use Craft;
-use craft\conditions\BaseCondition;
 use craft\conditions\BaseConditionRule;
+use craft\conditions\ConditionInterface;
 use craft\helpers\ArrayHelper;
 use yii\base\Component;
 use yii\base\InvalidArgumentException;
@@ -29,15 +29,15 @@ class Conditions extends Component
      * Creates a condition instance from its config.
      *
      * @param array $config
-     * @return BaseCondition
+     * @return ConditionInterface
      * @throws InvalidArgumentException|InvalidConfigException if `$config['type']` does not implement [[BaseCondition]]
      * @throws InvalidConfigException
      */
-    public function createCondition(array $config): BaseCondition
+    public function createCondition(array $config): ConditionInterface
     {
         $type = ArrayHelper::remove($config, 'type');
 
-        if (!$type || !is_subclass_of($type, BaseCondition::class)) {
+        if (!$type || !is_subclass_of($type, ConditionInterface::class)) {
             throw new InvalidArgumentException("Invalid condition class: $type");
         }
 
