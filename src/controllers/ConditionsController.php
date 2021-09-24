@@ -25,12 +25,7 @@ class ConditionsController extends Controller
     /**
      * @var array
      */
-    private $_options = [];
-
-    /**
-     * @inheritdoc
-     */
-    protected $allowAnonymous = self::ALLOW_ANONYMOUS_LIVE;
+    private array $_options = [];
 
     /**
      * @var ConditionInterface
@@ -56,11 +51,7 @@ class ConditionsController extends Controller
             $this->_condition->setConditionRuleTypes($conditionRuleTypes);
         }
 
-        if (!parent::beforeAction($action)) {
-            return false;
-        }
-
-        return true;
+        return parent::beforeAction($action);
     }
 
     /**
