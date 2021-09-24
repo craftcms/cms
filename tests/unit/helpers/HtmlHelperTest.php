@@ -163,9 +163,9 @@ class HtmlHelperTest extends Unit
      *
      * @param string $expected
      * @param string $name
-     * @param string $namespace
+     * @param string|null $namespace
      */
-    public function testNamespaceInputName(string $expected, string $name, string $namespace)
+    public function testNamespaceInputName(string $expected, string $name, ?string $namespace)
     {
         self::assertSame($expected, Html::namespaceInputName($name, $namespace));
     }
@@ -175,9 +175,9 @@ class HtmlHelperTest extends Unit
      *
      * @param string $expected
      * @param string $name
-     * @param string $namespace
+     * @param string|null $namespace
      */
-    public function testNamespaceId(string $expected, string $name, string $namespace)
+    public function testNamespaceId(string $expected, string $name, ?string $namespace)
     {
         self::assertSame($expected, Html::namespaceId($name, $namespace));
     }
@@ -397,6 +397,7 @@ class HtmlHelperTest extends Unit
         return [
             ['foo[bar]', 'bar', 'foo'],
             ['foo[bar][baz]', 'bar[baz]', 'foo'],
+            ['foo', 'foo', null],
         ];
     }
 
@@ -409,6 +410,7 @@ class HtmlHelperTest extends Unit
             ['foo-bar', 'bar', 'foo'],
             ['foo-bar-baz', 'bar[baz]', 'foo'],
             ['foo-bar-baz', 'baz', 'foo[bar]'],
+            ['foo-bar', 'foo[bar]', null],
         ];
     }
 
