@@ -2159,7 +2159,7 @@ const FilterHud = Garnish.HUD.extend({
                 elementType: this.elementIndex.elementType,
                 source: this.sourceKey,
                 baseInputName: id,
-                mainId: id,
+                id: id,
             },
         }).then(response => {
             this.loading = false;

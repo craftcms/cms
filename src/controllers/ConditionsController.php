@@ -111,6 +111,6 @@ class ConditionsController extends Controller
      */
     protected function renderBuilderHtml(): string
     {
-        return $this->_condition->getBuilderHtml($this->_options);
+        return $this->_condition->getBuilderInnerHtml($this->_options);
     }
 }

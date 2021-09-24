@@ -195,31 +195,48 @@ abstract class BaseCondition extends Component implements ConditionInterface
      */
     public function getBuilderHtml(array $options = []): string
     {
+        $tagName = ArrayHelper::remove($options, 'mainTag', 'form');
+        $options += [
+            'id' => 'condition' . mt_rand(),
+        ];
+
+        return Html::tag($tagName, $this->getBuilderInnerHtml($options), [
+            'id' => $options['id'],
+        ]);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getBuilderInnerHtml(array $options = []): string
+    {
         $isHtmxRequest = Craft::$app->getRequest()->getHeaders()->has('HX-Request');
         $view = Craft::$app->getView();
         $view->registerAssetBundle(ConditionBuilderAsset::class);
 
-        // Set defaults
-        $options['mainTag'] = $options['mainTag'] ?? 'form';
-        $options['sortable'] = $options['sortable'] ?? true;
-        $options['baseInputName'] = $options['baseInputName'] ?? 'condition[' . $this->uid . ']';
-        $options['mainId'] = isset($options['mainId']) ? $view->namespaceInputId($options['mainId']) : $view->namespaceInputId($options['baseInputName']);
+        $options += [
+            'sortable' => true,
+            'baseInputName' => "condition[$this->uid]",
+        ];
 
-        // Main Condition tag, and Htmx inheritable options
-        $html = Html::beginTag($options['mainTag'], [
-            'id' => $options['mainId'],
-        ]);
+        $namespacedId = $view->namespaceInputId($options['id']);
+        $namespacedInputName = $view->namespaceInputName($options['baseInputName']);
 
-        $html .= Html::beginTag('div', [
+        $namespacedOptions = [
+            'id' => $namespacedId,
+            'baseInputName' => $namespacedInputName,
+        ];
+
+        $html = Html::beginTag('div', [
             'class' => 'condition-main',
             'hx' => [
-                'target' => "#" . $options['mainId'], // replace self
-                'indicator' => '#indicator-' . $options['mainId'], // ID of the spinner
-                'include' => "#" . $options['mainId'], // In case we are in a non form container
+                'target' => "#$namespacedId", // replace self
+                'indicator' => "#$namespacedId-indicator", // ID of the spinner
+                'include' => "#$namespacedId", // In case we are in a non form container
                 'vals' => [
-                    'options' => Json::encode($options),
+                    'options' => Json::encode($namespacedOptions + $options),
                     'conditionRuleTypes' => Json::encode($this->getConditionRuleTypes()),
-                ], // We want this data sent outside of the namespaced input
+                ],
             ],
         ]);
 
@@ -321,7 +338,7 @@ abstract class BaseCondition extends Component implements ConditionInterface
         // Main loading indicator spinner
         $footerContent .= Html::tag('div', '', [
             'class' => 'htmx-indicator spinner',
-            'id' => 'indicator-' . $options['mainId'],
+            'id' => "{$options['id']}-indicator",
         ]);
 
 
@@ -337,8 +354,8 @@ abstract class BaseCondition extends Component implements ConditionInterface
         }
 
         if (!$isHtmxRequest) {
-            $view->registerJs("htmx.process(htmx.find('#" . $options['mainId'] . "'));");
-            $view->registerJs("htmx.trigger(htmx.find('#" . $options['mainId'] . "'), 'htmx:load');");
+            $view->registerJs("htmx.process(htmx.find('#$namespacedId'));");
+            $view->registerJs("htmx.trigger(htmx.find('#$namespacedId'), 'htmx:load');");
         }
 
         // Add head and foot/body scripts to html returned so crafts htmx condition builder can insert them into the DOM
@@ -359,7 +376,6 @@ abstract class BaseCondition extends Component implements ConditionInterface
         }
 
         $html .= Html::endTag('div'); //condition-main
-        $html .= Html::endTag($options['mainTag']);
 
         return $html;
     }

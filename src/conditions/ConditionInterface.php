@@ -13,12 +13,20 @@ use Illuminate\Support\Collection;
 interface ConditionInterface
 {
     /**
-     * Renders the HTML for the condition builder.
+     * Renders the HTML for the condition builder, including its outer container element.
      *
      * @param array $options The builder options
      * @return string
      */
     public function getBuilderHtml(array $options = []): string;
+
+    /**
+     * Renders the inner HTML for the condition builder, excluding its outer container element.
+     *
+     * @param array $options The builder options
+     * @return string
+     */
+    public function getBuilderInnerHtml(array $options = []): string;
 
     /**
      * Returns the config for this condition.

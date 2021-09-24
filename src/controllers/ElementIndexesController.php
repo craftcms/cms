@@ -385,7 +385,7 @@ class ElementIndexesController extends BaseElementsController
     {
         /** @var string|ElementInterface $elementType */
         $elementType = $this->elementType();
-        $baseInputName = $this->request->getRequiredBodyParam('baseInputName');
+        $id = $this->request->getRequiredBodyParam('id');
         $condition = $elementType::createCondition();
 
         // Filter out any condition rules that touch the same query params as the source criteria
@@ -412,7 +412,8 @@ class ElementIndexesController extends BaseElementsController
 
         $html = $condition->getBuilderHtml([
             'mainTag' => 'div',
-            'baseInputName' => $baseInputName,
+            'id' => $id,
+            'baseInputName' => 'condition',
         ]);
 
         $view = Craft::$app->getView();
@@ -518,7 +519,7 @@ class ElementIndexesController extends BaseElementsController
         if ($conditionStr) {
             parse_str($conditionStr, $conditionConfig);
             /** @var QueryConditionInterface $condition */
-            $condition = Craft::$app->getConditions()->createCondition(reset($conditionConfig));
+            $condition = Craft::$app->getConditions()->createCondition($conditionConfig['condition']);
             $condition->modifyQuery($query);
         }
 
