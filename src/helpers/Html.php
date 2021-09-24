@@ -566,12 +566,16 @@ class Html extends \yii\helpers\Html
      * Namespaces an input name.
      *
      * @param string $inputName The input name
-     * @param string $namespace The namespace
+     * @param string|null $namespace The namespace
      * @return string The namespaced input name
      * @since 3.5.0
      */
-    public static function namespaceInputName(string $inputName, string $namespace): string
+    public static function namespaceInputName(string $inputName, ?string $namespace): string
     {
+        if ($namespace === null) {
+            return $inputName;
+        }
+
         return preg_replace('/([^\'"\[\]]+)([^\'"]*)/', $namespace . '[$1]$2', $inputName);
     }
 
@@ -579,12 +583,16 @@ class Html extends \yii\helpers\Html
      * Namespaces an ID.
      *
      * @param string $id The ID
-     * @param string $namespace The namespace
+     * @param string|null $namespace The namespace
      * @return string The namespaced ID
      * @since 3.5.0
      */
-    public static function namespaceId(string $id, string $namespace): string
+    public static function namespaceId(string $id, ?string $namespace): string
     {
+        if ($namespace === null) {
+            return static::id($id);
+        }
+
         return static::id("$namespace-$id");
     }
 
