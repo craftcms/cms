@@ -216,15 +216,14 @@ abstract class BaseCondition extends Component implements ConditionInterface
 
         $options += [
             'sortable' => true,
-            'baseInputName' => "condition[$this->uid]",
         ];
 
-        $namespacedId = $view->namespaceInputId($options['id']);
-        $namespacedInputName = $view->namespaceInputName($options['baseInputName']);
+        $namespace = $view->getNamespace();
+        $namespacedId = Html::namespaceId($options['id'], $namespace);
 
         $namespacedOptions = [
+            'namespace' => $namespace,
             'id' => $namespacedId,
-            'baseInputName' => $namespacedInputName,
         ];
 
         $html = Html::beginTag('div', [
@@ -241,9 +240,8 @@ abstract class BaseCondition extends Component implements ConditionInterface
         ]);
 
         // Condition hidden inputs
-
-        $html .= Html::hiddenInput($options['baseInputName'] . '[uid]', $this->uid);
-        $html .= Html::hiddenInput($options['baseInputName'] . '[type]', get_class($this));
+        $html .= Html::hiddenInput('uid', $this->uid);
+        $html .= Html::hiddenInput('type', get_class($this));
 
         // Start rule js buffer
         $view->startJsBuffer();
@@ -253,8 +251,7 @@ abstract class BaseCondition extends Component implements ConditionInterface
         /** @var ConditionRuleInterface $rule */
         foreach ($this->getConditionRules() as $rule) {
             $ruleCount++;
-            $ruleHtml = Craft::$app->getView()->namespaceInputs(function() use ($rule, $options) {
-
+            $ruleHtml = $view->namespaceInputs(function() use ($rule, $options) {
                 $moveButton = $options['sortable'] ? Html::tag('a', '', ['class' => 'move icon draggable-handle']) : '';
                 $ruleHtml = Html::tag('div', $moveButton, ['id' => 'rule-move', 'class' => 'rule-move']);
 
@@ -306,7 +303,7 @@ abstract class BaseCondition extends Component implements ConditionInterface
                     'id' => 'condition-rule',
                     'class' => 'condition-rule flex draggable'
                 ]);
-            }, $options['baseInputName'] . "[conditionRules][$ruleCount]");
+            }, "conditionRules[$ruleCount]");
 
             $allRulesHtml .= $ruleHtml;
         }

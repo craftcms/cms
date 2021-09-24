@@ -73,10 +73,11 @@ class ElementIndexSettingsController extends BaseElementsController
             if ($source['type'] === ElementSources::TYPE_CUSTOM && isset($source['condition'])) {
                 $condition = $conditionsService->createCondition(ArrayHelper::remove($source, 'condition'));
                 $view->startJsBuffer();
-                $conditionBuilderHtml = $condition->getBuilderHtml([
-                    'mainTag' => 'div',
-                    'baseInputName' => "sources[{$source['key']}][condition]",
-                ]);
+                $conditionBuilderHtml = $view->namespaceInputs(function() use ($condition) {
+                    return $condition->getBuilderHtml([
+                        'mainTag' => 'div',
+                    ]);
+                }, "sources[{$source['key']}][condition]");
                 $conditionBuilderJs = $view->clearJsBuffer();
                 $source += compact('conditionBuilderHtml', 'conditionBuilderJs');
             }
@@ -91,10 +92,11 @@ class ElementIndexSettingsController extends BaseElementsController
         }
 
         $view->startJsBuffer();
-        $conditionBuilderHtml = $elementType::createCondition()->getBuilderHtml([
-            'mainTag' => 'div',
-            'baseInputName' => 'sources[SOURCE_KEY][condition]',
-        ]);
+        $conditionBuilderHtml = $view->namespaceInputs(function() use ($elementType) {
+            return $elementType::createCondition()->getBuilderHtml([
+                'mainTag' => 'div',
+            ]);
+        }, 'sources[SOURCE_KEY][condition]');
         $conditionBuilderJs = $view->clearJsBuffer();
 
         return $this->asJson([

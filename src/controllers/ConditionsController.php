@@ -9,6 +9,7 @@ namespace craft\controllers;
 
 use Craft;
 use craft\conditions\ConditionInterface;
+use craft\helpers\ArrayHelper;
 use craft\helpers\Json;
 use craft\web\Controller;
 
@@ -37,14 +38,17 @@ class ConditionsController extends Controller
      */
     public function beforeAction($action): bool
     {
-        $this->_options = Json::decodeIfJson($this->request->getBodyParam('options', []));
+        $this->_options = Json::decodeIfJson($this->request->getBodyParam('options')) ?? [];
         $conditionRuleTypes = Json::decodeIfJson($this->request->getBodyParam('conditionRuleTypes'));
 
-        // Make baseInputName into a param path
-        $this->_options['baseInputName'] = $this->_options['baseInputName'] ?? 'condition';
-        $baseInputNamePath = str_replace(['[', ']'], ['.', ''], $this->_options['baseInputName']);
-
-        $config = $this->request->getBodyParam($baseInputNamePath);
+        if (isset($this->_options['namespace'])) {
+            $baseInputNamePath = str_replace(['[', ']'], ['.', ''], $this->_options['namespace']);
+            $config = $this->request->getBodyParam($baseInputNamePath);
+        } else {
+            $config = $this->request->getBodyParams();
+            ArrayHelper::remove($config, 'options');
+            ArrayHelper::remove($config, 'conditionRuleTypes');
+        }
 
         $this->_condition = Craft::$app->getConditions()->createCondition($config);
         if ($conditionRuleTypes !== null) {
@@ -100,6 +104,8 @@ class ConditionsController extends Controller
      */
     protected function renderBuilderHtml(): string
     {
-        return $this->_condition->getBuilderInnerHtml($this->_options);
+        return Craft::$app->getView()->namespaceInputs(function() {
+            return $this->_condition->getBuilderInnerHtml($this->_options);
+        }, $this->_options['namespace'] ?? null);
     }
 }

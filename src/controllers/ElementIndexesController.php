@@ -413,7 +413,6 @@ class ElementIndexesController extends BaseElementsController
         $html = $condition->getBuilderHtml([
             'mainTag' => 'div',
             'id' => $id,
-            'baseInputName' => 'condition',
         ]);
 
         $view = Craft::$app->getView();
@@ -519,7 +518,7 @@ class ElementIndexesController extends BaseElementsController
         if ($conditionStr) {
             parse_str($conditionStr, $conditionConfig);
             /** @var QueryConditionInterface $condition */
-            $condition = Craft::$app->getConditions()->createCondition($conditionConfig['condition']);
+            $condition = Craft::$app->getConditions()->createCondition($conditionConfig);
             $condition->modifyQuery($query);
         }
 
