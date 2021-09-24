@@ -8,7 +8,6 @@ use craft\events\RegisterConditionRuleTypesEvent;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Html;
 use craft\helpers\Json;
-use craft\helpers\StringHelper;
 use craft\helpers\UrlHelper;
 use craft\web\assets\conditionbuilder\ConditionBuilderAsset;
 use Illuminate\Support\Collection;
@@ -36,11 +35,6 @@ abstract class BaseCondition extends Component implements ConditionInterface
     public const EVENT_REGISTER_CONDITION_RULE_TYPES = 'registerConditionRuleTypes';
 
     /**
-     * @var string
-     */
-    public string $uid;
-
-    /**
      * @var Collection|ConditionRuleInterface[]
      */
     private Collection $_conditionRules;
@@ -61,10 +55,6 @@ abstract class BaseCondition extends Component implements ConditionInterface
 
         if (!isset($this->_conditionRules)) {
             $this->setConditionRules([]);
-        }
-
-        if (!isset($this->uid)) {
-            $this->uid = StringHelper::UUID();
         }
     }
 
@@ -185,7 +175,6 @@ abstract class BaseCondition extends Component implements ConditionInterface
 
         return [
             'type' => get_class($this),
-            'uid' => $this->uid,
             'conditionRules' => array_values($conditionRules)
         ];
     }
@@ -239,8 +228,6 @@ abstract class BaseCondition extends Component implements ConditionInterface
             ],
         ]);
 
-        // Condition hidden inputs
-        $html .= Html::hiddenInput('uid', $this->uid);
         $html .= Html::hiddenInput('type', get_class($this));
 
         // Start rule js buffer
