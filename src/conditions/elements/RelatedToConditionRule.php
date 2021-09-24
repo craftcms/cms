@@ -31,6 +31,14 @@ class RelatedToConditionRule extends BaseConditionRule implements QueryCondition
     }
 
     /**
+     * @inheritdoc
+     */
+    public static function queryParams(): array
+    {
+        return ['relatedTo'];
+    }
+
+    /**
      * @param $value
      */
     public function setElementIds($value): void

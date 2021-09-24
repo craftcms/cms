@@ -32,7 +32,9 @@ Craft.BaseElementIndex = Garnish.Base.extend({
     $toolbar: null,
     toolbarOffset: null,
 
+    $searchContainer: null,
     $search: null,
+    $filterBtn: null,
     searching: false,
     searchText: null,
     trashed: false,
@@ -82,6 +84,8 @@ Craft.BaseElementIndex = Garnish.Base.extend({
     _ignoreFailedRequest: false,
     _cancelToken: null,
 
+    filterHuds: null,
+
     /**
      * Constructor
      */
@@ -115,10 +119,15 @@ Craft.BaseElementIndex = Garnish.Base.extend({
         this.$statusMenuContainer = this.$statusMenuBtn.parent();
         this.$siteMenuBtn = this.$container.find('.sitemenubtn:first');
         this.$sortMenuBtn = this.$toolbar.find('.sortmenubtn:first');
-        this.$search = this.$toolbar.find('.search:first input:first');
-        this.$clearSearchBtn = this.$toolbar.find('.search:first > .clear');
+
+        this.$searchContainer = this.$toolbar.find('.search:first')
+        this.$search = this.$searchContainer.children('input:first');
+        this.$filterBtn = this.$searchContainer.children('.filter-btn:first');
+        this.$clearSearchBtn = this.$searchContainer.children('.clear:first');
+
         this.$sidebar = this.$container.find('.sidebar:first');
         this.$customizeSourcesBtn = this.$sidebar.find('.customize-sources');
+
         this.$elements = this.$container.find('.elements:first');
         this.$countSpinner = this.$container.find('#count-spinner');
         this.$countContainer = this.$container.find('#count-container');
@@ -250,6 +259,10 @@ Craft.BaseElementIndex = Garnish.Base.extend({
         if (!Garnish.isMobileBrowser(true)) {
             this.$search.trigger('focus');
         }
+
+        // Filter HUDs
+        this.filterHuds = {};
+        this.addListener(this.$filterBtn, 'click', 'showFilterHud');
 
         // Initialize the sort menu
         // ---------------------------------------------------------------------
@@ -649,6 +662,10 @@ Craft.BaseElementIndex = Garnish.Base.extend({
                 this.instanceState.collapsedElementIds = [];
             }
             params.collapsedElementIds = this.instanceState.collapsedElementIds;
+        }
+
+        if (this.filterHuds[this.sourceKey] && this.filterHuds[this.sourceKey].serialized) {
+            params.condition = this.filterHuds[this.sourceKey].serialized;
         }
 
         // Give plugins a chance to hook in here
@@ -2060,7 +2077,15 @@ Craft.BaseElementIndex = Garnish.Base.extend({
 
             return $ul;
         }
-    }
+    },
+
+    showFilterHud: function() {
+        if (!this.filterHuds[this.sourceKey]) {
+            this.filterHuds[this.sourceKey] = new FilterHud(this, this.sourceKey);
+        } else {
+            this.filterHuds[this.sourceKey].show();
+        }
+    },
 }, {
     defaults: {
         context: 'index',
@@ -2092,3 +2117,90 @@ Craft.BaseElementIndex = Garnish.Base.extend({
         onAfterAction: $.noop
     }
 });
+
+const FilterHud = Garnish.HUD.extend({
+    elementIndex: null,
+    sourceKey: null,
+    loading: true,
+    serialized: null,
+
+    init: function(elementIndex, sourceKey) {
+        this.elementIndex = elementIndex;
+        this.sourceKey = sourceKey;
+
+        const $spinner = $('<div/>', {
+            class: 'spinner',
+        });
+
+        this.base(this.elementIndex.$filterBtn, $spinner, {
+            hudClass: 'hud element-filter-hud loading',
+        });
+
+        this.$tip.remove();
+        this.$tip = null;
+
+        const id = `element-filter-${Math.floor(Math.random() * 1000000000)}`;
+
+        Craft.sendActionRequest('POST', 'element-indexes/filter-hud', {
+            data: {
+                elementType: this.elementIndex.elementType,
+                source: this.sourceKey,
+                baseInputName: id,
+                mainId: id,
+            },
+        }).then(response => {
+            this.loading = false;
+            this.$hud.removeClass('loading');
+            $spinner.remove();
+
+            this.$main.append(response.data.hudHtml);
+            Craft.appendHeadHtml(response.data.headHtml);
+            Craft.appendFootHtml(response.data.bodyHtml);
+
+            htmx.on('htmx:afterRequest', function(ev) {
+                if (ev.detail.elt.id === id) {
+                    console.log('updated!');
+                }
+            });
+        }).catch(() => {
+            Craft.cp.displayError(Craft.t('app', 'A server error occurred.'));
+        });
+    },
+
+    updateSizeAndPositionInternal: function() {
+        const searchOffset = this.elementIndex.$searchContainer.offset();
+
+        this.$hud.css({
+            width: this.elementIndex.$searchContainer.outerWidth() - 2,
+            top: searchOffset.top + this.elementIndex.$searchContainer.outerHeight(),
+            left: searchOffset.left + 1,
+        });
+    },
+
+    onShow: function() {
+        this.elementIndex.$filterBtn.addClass('active');
+        this.base();
+    },
+
+    onHide: function() {
+        this.base();
+
+        // Remove .active from the button if there aren't any filters
+        if (!this.hasRules()) {
+            this.elementIndex.$filterBtn.removeClass('active');
+        }
+
+        // If something changed,
+        if (this.serialized !== (this.serialized = this.serialize())) {
+            this.elementIndex.updateElements();
+        }
+    },
+
+    hasRules: function() {
+        return this.$main.has('.condition-rule').length !== 0;
+    },
+
+    serialize: function() {
+        return this.hasRules() ? this.$body.serialize() : null;
+    }
+})

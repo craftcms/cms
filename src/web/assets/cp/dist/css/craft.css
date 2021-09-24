@@ -2108,6 +2108,9 @@ body.ltr .element-hud-form .buttons .spinner { right: -24px; }
 
 body.rtl .element-hud-form .buttons .spinner { left: -24px; }
 
+/* element filter HUD */
+.element-filter-hud.loading .body { padding: 50px; display: -webkit-flex; display: flex; -webkit-align-items: center; align-items: center; -webkit-justify-content: center; justify-content: center; }
+
 /* logout warning/login/elevated session modals */
 .logoutwarningmodalshade, .loginmodalshade { z-index: 101; }
 
@@ -2524,7 +2527,7 @@ body.ltr .texticon.icon .text { padding-left: 26px; }
 
 body.rtl .texticon.icon .text { padding-right: 26px; }
 
-.texticon .clear { position: absolute; top: 6px; color: #606d7b; cursor: pointer; }
+.texticon .clear { position: absolute; top: 5px; color: #606d7b; cursor: pointer; }
 
 body.ltr .texticon .clear { right: 9px; }
 
@@ -2533,6 +2536,36 @@ body.rtl .texticon .clear { left: 9px; }
 .texticon .clear:hover { color: #596673; }
 
 .texticon .clear:before { font-family: 'Craft'; speak: none; -webkit-font-feature-settings: "liga", "dlig"; -ms-font-feature-settings: "liga", "dlig"; -o-font-feature-settings: "liga", "dlig"; font-feature-settings: "liga", "dlig"; text-rendering: optimizeLegibility; font-weight: normal; font-variant: normal; text-transform: none; line-height: 1; direction: ltr; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; display: inline-block; text-align: center; font-style: normal; vertical-align: middle; word-wrap: normal !important; -webkit-user-select: none; user-select: none; opacity: 0.8; content: 'remove'; }
+
+body.ltr .texticon.has-filter-btn .text { padding-right: 26px; }
+
+body.rtl .texticon.has-filter-btn .text { padding-left: 26px; }
+
+.texticon.has-filter-btn .filter-btn { position: absolute; top: 4px; padding: 0 7px 4px; font-size: 14px; line-height: 22px; cursor: pointer; border-radius: 13px; }
+
+body.ltr .texticon.has-filter-btn .filter-btn { right: 4px; }
+
+body.rtl .texticon.has-filter-btn .filter-btn { left: 4px; }
+
+.texticon.has-filter-btn .filter-btn:before { font-family: 'Craft'; speak: none; -webkit-font-feature-settings: "liga", "dlig"; -ms-font-feature-settings: "liga", "dlig"; -o-font-feature-settings: "liga", "dlig"; font-feature-settings: "liga", "dlig"; text-rendering: optimizeLegibility; font-weight: normal; font-variant: normal; text-transform: none; line-height: 1; direction: ltr; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; display: inline-block; text-align: center; font-style: normal; vertical-align: middle; word-wrap: normal !important; -webkit-user-select: none; user-select: none; opacity: 0.8; content: 'sliders'; color: #596673; }
+
+.texticon.has-filter-btn .filter-btn:hover { background-color: #e4edf6; }
+
+.texticon.has-filter-btn .filter-btn:active, .texticon.has-filter-btn .filter-btn.active { background-color: #8b96a2; }
+
+.texticon.has-filter-btn .filter-btn:active:before, .texticon.has-filter-btn .filter-btn.active:before { color: #fff; }
+
+body.ltr .texticon.has-filter-btn .text { padding-left: 26px; }
+
+body.rtl .texticon.has-filter-btn .text { padding-right: 26px; }
+
+body.ltr .texticon.has-filter-btn .text.clearable { padding-right: 55px; }
+
+body.rtl .texticon.has-filter-btn .text.clearable { padding-left: 55px; }
+
+body.ltr .texticon.has-filter-btn .clear { right: 42px; }
+
+body.rtl .texticon.has-filter-btn .clear { left: 42px; }
 
 .texthint-container { position: relative; height: 0; }
 

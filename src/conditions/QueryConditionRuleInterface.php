@@ -18,6 +18,13 @@ use yii\db\QueryInterface;
 interface QueryConditionRuleInterface extends ConditionRuleInterface
 {
     /**
+     * Returns the query param names that this rule controls.
+     *
+     * @return string[]
+     */
+    public static function queryParams(): array;
+
+    /**
      * Modifies the given query with the condition rule.
      *
      * @param QueryInterface $query

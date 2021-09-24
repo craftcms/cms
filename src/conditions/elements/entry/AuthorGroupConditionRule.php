@@ -30,6 +30,14 @@ class AuthorGroupConditionRule extends BaseMultiSelectOperatorConditionRule impl
     /**
      * @inheritdoc
      */
+    public static function queryParams(): array
+    {
+        return ['authorGroup', 'authorGroupId'];
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function getSelectOptions(): array
     {
         $sections = Craft::$app->getUserGroups()->getAllGroups();

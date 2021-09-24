@@ -28,6 +28,14 @@ class HasUrlConditionRule extends BaseLightswitchConditionRule implements QueryC
     /**
      * @inheritdoc
      */
+    public static function queryParams(): array
+    {
+        return ['uri'];
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function modifyQuery(QueryInterface $query): void
     {
         /** @var ElementQuery $query */

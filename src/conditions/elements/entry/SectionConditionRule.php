@@ -28,6 +28,14 @@ class SectionConditionRule extends BaseSelectOperatorConditionRule implements Qu
     /**
      * @inheritdoc
      */
+    public static function queryParams(): array
+    {
+        return ['section', 'sectionId'];
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function getSelectOptions(): array
     {
         $sections = Craft::$app->getSections()->getAllSections();

@@ -28,6 +28,14 @@ class StatusConditionRule extends BaseSelectOperatorConditionRule implements Que
     /**
      * @inheritdoc
      */
+    public static function queryParams(): array
+    {
+        return ['status'];
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function getSelectOptions(): array
     {
         return Entry::statuses();

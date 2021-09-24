@@ -12,15 +12,15 @@ use craft\base\ElementAction;
 use craft\base\ElementActionInterface;
 use craft\base\ElementExporterInterface;
 use craft\base\ElementInterface;
-use craft\conditions\BaseCondition;
+use craft\conditions\ConditionRuleInterface;
 use craft\conditions\QueryConditionInterface;
+use craft\conditions\QueryConditionRuleInterface;
 use craft\elements\actions\DeleteActionInterface;
 use craft\elements\actions\Restore;
 use craft\elements\db\ElementQuery;
 use craft\elements\db\ElementQueryInterface;
 use craft\elements\exporters\Raw;
 use craft\events\ElementActionEvent;
-use craft\events\RegisterConditionRuleTypesEvent;
 use craft\helpers\ElementHelper;
 use craft\services\ElementSources;
 use yii\base\InvalidValueException;
@@ -387,12 +387,28 @@ class ElementIndexesController extends BaseElementsController
         $elementType = $this->elementType();
         $baseInputName = $this->request->getRequiredBodyParam('baseInputName');
         $condition = $elementType::createCondition();
-        $condition->on(
-            BaseCondition::EVENT_REGISTER_CONDITION_RULE_TYPES,
-            function(RegisterConditionRuleTypesEvent $event) {
-                // todo: filter out params that are already covered by the criteria
-            }
-        );
+
+        // Filter out any condition rules that touch the same query params as the source criteria
+        $source = $this->source();
+        if ($source['type'] === ElementSources::TYPE_NATIVE) {
+            $filterCallback = function(string $ruleType) use ($source) {
+                /** @var string|QueryConditionRuleInterface $ruleType */
+                foreach ($ruleType::queryParams() as $param) {
+                    if (isset($source['criteria'][$param])) {
+                        return false;
+                    }
+                }
+                return true;
+            };
+        } else {
+            /** @var QueryConditionInterface $sourceCondition */
+            $sourceCondition = Craft::$app->getConditions()->createCondition($source['condition']);
+            $sourceRuleTypes = $sourceCondition->getConditionRules()
+                ->map(fn(ConditionRuleInterface $rule) => get_class($rule))
+                ->all();
+            $filterCallback = fn($ruleType) => !in_array($ruleType, $sourceRuleTypes);
+        }
+        $condition->setConditionRuleTypes(array_filter($condition->getConditionRuleTypes(), $filterCallback));
 
         $html = $condition->getBuilderHtml([
             'mainTag' => 'div',
@@ -495,6 +511,15 @@ class ElementIndexesController extends BaseElementsController
                 }
             }
             Craft::configure($query, $criteria);
+        }
+
+        // Override with the custom filters
+        $conditionStr = $this->request->getBodyParam('condition');
+        if ($conditionStr) {
+            parse_str($conditionStr, $conditionConfig);
+            /** @var QueryConditionInterface $condition */
+            $condition = Craft::$app->getConditions()->createCondition(reset($conditionConfig));
+            $condition->modifyQuery($query);
         }
 
         // Exclude descendants of the collapsed element IDs

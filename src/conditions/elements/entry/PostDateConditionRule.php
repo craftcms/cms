@@ -28,6 +28,14 @@ class PostDateConditionRule extends BaseDateRangeConditionRule implements QueryC
     /**
      * @inheritdoc
      */
+    public static function queryParams(): array
+    {
+        return ['after', 'before'];
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function modifyQuery(QueryInterface $query): void
     {
         /** @var ElementQuery $query */

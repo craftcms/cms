@@ -4259,6 +4259,16 @@ ul.tree,
   }
 }
 
+/* element filter HUD */
+.element-filter-hud {
+  &.loading .body {
+    padding: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+}
+
 /* logout warning/login/elevated session modals */
 .logoutwarningmodalshade,
 .loginmodalshade {
@@ -5166,7 +5176,7 @@ body.reduce-focus-visibility {
 
   .clear {
     position: absolute;
-    top: 6px;
+    top: 5px;
     @include right(9px);
     color: $lightTextColor;
     cursor: pointer;
@@ -5178,6 +5188,54 @@ body.reduce-focus-visibility {
     &:before {
       @include icon;
       content: 'remove';
+    }
+  }
+
+  &.has-filter-btn {
+    .text {
+      @include padding-right(26px);
+    }
+
+    .filter-btn {
+      position: absolute;
+      top: 4px;
+      @include right(4px);
+      padding: 0 7px 4px;
+      font-size: 14px;
+      line-height: 22px;
+      cursor: pointer;
+      border-radius: 13px;
+
+      &:before {
+        @include icon;
+        content: 'sliders';
+        color: $mediumTextColor;
+      }
+
+      &:hover {
+        background-color: $grey100;
+      }
+
+      &:active,
+      &.active {
+        background-color: $grey350;
+
+        &:before {
+          color: $white;
+        }
+      }
+    }
+
+    .text {
+      @include padding-left(26px);
+
+      &.clearable {
+        @include padding-right(55px);
+      }
+    }
+
+    .clear {
+      @include right(42px);
     }
   }
 }

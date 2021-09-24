@@ -28,6 +28,14 @@ class Email extends BaseTextOperatorConditionRule implements QueryConditionRuleI
     /**
      * @inheritdoc
      */
+    public static function queryParams(): array
+    {
+        return ['email'];
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function modifyQuery(QueryInterface $query): void
     {
         /** @var UserQuery $query */
