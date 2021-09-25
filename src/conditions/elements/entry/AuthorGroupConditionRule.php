@@ -36,7 +36,7 @@ class AuthorGroupConditionRule extends BaseMultiSelectOperatorConditionRule impl
     /**
      * @inheritdoc
      */
-    public function getSelectOptions(): array
+    protected function options(): array
     {
         $sections = Craft::$app->getUserGroups()->getAllGroups();
         return ArrayHelper::map($sections, 'uid', 'name');
@@ -51,7 +51,7 @@ class AuthorGroupConditionRule extends BaseMultiSelectOperatorConditionRule impl
         $userGroupsService = Craft::$app->getUserGroups();
         $userGroups = array_filter(array_map(static function(string $uid) use ($userGroupsService) {
             return $userGroupsService->getGroupByUid($uid);
-        }, $this->_optionValues));
+        }, $this->getValues()));
 
         $query->authorGroup($userGroups);
     }

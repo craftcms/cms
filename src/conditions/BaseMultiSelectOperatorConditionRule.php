@@ -7,40 +7,35 @@ use craft\helpers\ArrayHelper;
 use craft\helpers\Cp;
 
 /**
- * The BaseSelectValueConditionRule class provides a condition rule with a single select box.
+ * The BaseMultiSelectOperatorConditionRule class provides a base implementation for condition rules with a multi-select input.
  *
- * @property array $optionValues
- * @property-read string[] $selectOptions
- * @property-read array $inputAttributes
- * @property-read string $inputHtml
- * @property-read string $settingsHtml
- *
+ * @property array $values
  * @since 4.0.0
  */
 abstract class BaseMultiSelectOperatorConditionRule extends BaseConditionRule
 {
     /**
-     * @var array
+     * @var string[]
      */
-    private array $_optionValues = [];
+    private array $_values = [];
 
     /**
-     * @return array
+     * @return string[]
      */
-    public function getOptionValues(): array
+    public function getValues(): array
     {
-        return $this->_optionValues;
+        return $this->_values;
     }
 
     /**
-     * @param array|string $values
+     * @param string|string[] $values
      */
-    public function setOptionValues($values): void
+    public function setValues($values): void
     {
         if ($values === '') {
-            $this->_optionValues = [];
+            $this->_values = [];
         } else {
-            $this->_optionValues = ArrayHelper::toArray($values);
+            $this->_values = ArrayHelper::toArray($values);
         }
     }
 
@@ -50,28 +45,18 @@ abstract class BaseMultiSelectOperatorConditionRule extends BaseConditionRule
     public function getConfig(): array
     {
         return array_merge(parent::getConfig(), [
-            'optionValues' => $this->_optionValues,
+            'values' => $this->_values,
         ]);
     }
 
     /**
-     * The selectable options in the select input
+     * Defines the selectable options.
      *
-     * @return array
+     * Options can be expressed as value/label pairs, or as arrays with `value` and `label` keys.
+     *
+     * @return string[]
      */
-    abstract public function getSelectOptions(): array;
-
-    /**
-     * @return array
-     */
-    protected function inputAttributes(): array
-    {
-        return [
-            'style' => [
-                'display' => 'none', // Hide it before selectize does its thing
-            ],
-        ];
-    }
+    abstract protected function options(): array;
 
     /**
      * @inheritdoc
@@ -84,9 +69,9 @@ abstract class BaseMultiSelectOperatorConditionRule extends BaseConditionRule
         $js = <<<JS
 $('#$namespacedId').selectize({
     plugins: ["remove_button"],
-    onDropdownClose: function(x) {
+    onDropdownClose: (x) => {
         htmx.trigger(htmx.find("#$namespacedId"), "change");
-    }
+    },
 });
 JS;
         Craft::$app->getView()->registerJs($js);
@@ -94,10 +79,14 @@ JS;
         return Cp::multiSelectHtml([
             'id' => $id,
             'class' => 'selectize fullwidth',
-            'name' => 'optionValues',
-            'values' => $this->_optionValues,
-            'options' => $this->getSelectOptions(),
-            'inputAttributes' => $this->inputAttributes(),
+            'name' => 'values',
+            'values' => $this->_values,
+            'options' => $this->options(),
+            'inputAttributes' => [
+                'style' => [
+                    'display' => 'none', // Hide it before selectize does its thing
+                ],
+            ],
         ]);
     }
 
@@ -107,7 +96,7 @@ JS;
     protected function defineRules(): array
     {
         return array_merge(parent::defineRules(), [
-            [['optionValues'], 'safe'],
+            [['values'], 'safe'],
         ]);
     }
 }
