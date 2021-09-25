@@ -3,6 +3,7 @@
 namespace craft\conditions;
 
 use Craft;
+use craft\helpers\ArrayHelper;
 use craft\helpers\Cp;
 
 /**
@@ -32,11 +33,15 @@ abstract class BaseMultiSelectOperatorConditionRule extends BaseConditionRule
     }
 
     /**
-     * @param array $values
+     * @param array|string $values
      */
-    public function setOptionValues(array $values): void
+    public function setOptionValues($values): void
     {
-        $this->_optionValues = $values;
+        if ($values === '') {
+            $this->_optionValues = [];
+        } else {
+            $this->_optionValues = ArrayHelper::toArray($values);
+        }
     }
 
     /**
