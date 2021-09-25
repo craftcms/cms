@@ -216,7 +216,7 @@ abstract class BaseCondition extends Component implements ConditionInterface
         ];
 
         $html = Html::beginTag('div', [
-            'class' => 'condition-main',
+            'class' => ['condition-main'],
             'hx' => [
                 'target' => "#$namespacedId", // replace self
                 'indicator' => "#$namespacedId-indicator", // ID of the spinner
@@ -239,8 +239,18 @@ abstract class BaseCondition extends Component implements ConditionInterface
         foreach ($this->getConditionRules() as $rule) {
             $ruleCount++;
             $ruleHtml = $view->namespaceInputs(function() use ($rule, $options) {
-                $moveButton = $options['sortable'] ? Html::tag('a', '', ['class' => 'move icon draggable-handle']) : '';
-                $ruleHtml = Html::tag('div', $moveButton, ['id' => 'rule-move', 'class' => 'rule-move']);
+                $ruleHtml = '';
+
+                if ($options['sortable']) {
+                    $ruleHtml .= Html::tag('div',
+                        Html::tag('a', '', [
+                            'class' => ['move', 'icon', 'draggable-handle'],
+                        ]),
+                        [
+                            'class' => ['rule-move'],
+                        ]
+                    );
+                }
 
                 /** @var string|ConditionRuleInterface $ruleClass */
                 $ruleClass = get_class($rule);
@@ -268,15 +278,20 @@ abstract class BaseCondition extends Component implements ConditionInterface
                 ]);
                 $switcherHtml .= Html::hiddenInput('uid', $rule->uid);
 
-                $ruleHtml .= Html::tag('div', $switcherHtml, ['id' => 'rule-switcher', 'class' => 'rule-switcher']);
+                $ruleHtml .= Html::tag('div', $switcherHtml, [
+                    'class' => ['rule-switcher'],
+                ]);
 
                 // Get rule input html
-                $ruleHtml .= Html::tag('div', $rule->getHtml($options), ['id' => 'rule-body', 'class' => 'rule-body flex-grow']);
+                $ruleHtml .= Html::tag('div', $rule->getHtml($options), [
+                    'id' => 'rule-body',
+                    'class' => ['rule-body', 'flex-grow'],
+                ]);
 
                 // Add delete button
                 $deleteButtonAttr = [
                     'id' => 'delete',
-                    'class' => 'delete icon',
+                    'class' => ['delete', 'icon'],
                     'title' => Craft::t('app', 'Delete'),
                     'hx' => [
                         'vals' => '{"uid": "' . $rule->uid . '"}',
@@ -284,11 +299,14 @@ abstract class BaseCondition extends Component implements ConditionInterface
                     ],
                 ];
                 $deleteButton = Html::tag('a', '', $deleteButtonAttr);
-                $ruleHtml .= Html::tag('div', $deleteButton, ['id' => 'rule-actions', 'class' => 'rule-actions']);
+                $ruleHtml .= Html::tag('div', $deleteButton, [
+                    'id' => 'rule-actions',
+                    'class' => ['rule-actions'],
+                ]);
 
                 return Html::tag('div', $ruleHtml, [
                     'id' => 'condition-rule',
-                    'class' => 'condition-rule flex draggable'
+                    'class' => ['condition-rule', 'flex', 'draggable'],
                 ]);
             }, "conditionRules[$ruleCount]");
 
@@ -300,7 +318,7 @@ abstract class BaseCondition extends Component implements ConditionInterface
         // Sortable rules div
         $html .= Html::tag('div', $allRulesHtml, [
                 'id' => 'condition-rules',
-                'class' => 'condition sortable',
+                'class' => ['condition', 'sortable'],
                 'hx' => [
                     'post' => UrlHelper::actionUrl('conditions/render'),
                     'trigger' => 'end', // sortable library triggers this event
@@ -310,18 +328,21 @@ abstract class BaseCondition extends Component implements ConditionInterface
 
         $footerContent = '';
 
-        $disabled = (count($this->getConditionRuleTypes()) == 0) ? ' disabled' : '';
-        $addButtonAttr = [
-            'class' => 'btn add icon' . $disabled,
+        $footerContent .= Html::tag('button', $this->getAddRuleLabel(), [
+            'class' => array_filter([
+                'btn',
+                'add',
+                'icon',
+                empty($this->getConditionRuleTypes()) ? 'disabled' : null,
+            ]),
             'hx' => [
                 'post' => UrlHelper::actionUrl('conditions/add-rule'),
             ],
-        ];
-        $footerContent .= Html::tag('button', $this->getAddRuleLabel(), $addButtonAttr);
+        ]);
 
         // Main loading indicator spinner
         $footerContent .= Html::tag('div', '', [
-            'class' => 'htmx-indicator spinner',
+            'class' => ['htmx-indicator', 'spinner'],
             'id' => "{$options['id']}-indicator",
         ]);
 
@@ -348,13 +369,13 @@ abstract class BaseCondition extends Component implements ConditionInterface
             if ($bodyHtml = $view->getBodyHtml()) {
                 $html .= html::tag('template', $bodyHtml, [
                     'id' => 'body-html',
-                    'class' => 'hx-body-html',
+                    'class' => ['hx-body-html'],
                 ]);
             }
             if ($headHtml = $view->getHeadHtml()) {
                 $html .= html::tag('template', $headHtml, [
                     'id' => 'head-html',
-                    'class' => 'hx-head-html'
+                    'class' => ['hx-head-html'],
                 ]);
             }
         }
