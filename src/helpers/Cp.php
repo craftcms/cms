@@ -654,6 +654,19 @@ class Cp
     }
 
     /**
+     * Renders a lightswitch input’s HTML.
+     *
+     * @param array $config
+     * @return string
+     * @throws InvalidArgumentException if `$config['siteId']` is invalid
+     * @since 4.0.0
+     */
+    public static function lightswitchHtml(array $config): string
+    {
+        return static::renderTemplate('_includes/forms/lightswitch', $config);
+    }
+
+    /**
      * Renders a lightswitch field’s HTML.
      *
      * @param array $config
@@ -702,6 +715,45 @@ class Cp
     }
 
     /**
+     * Renders a multi-select input.
+     *
+     * @param array $config
+     * @return string
+     * @since 4.0.0
+     */
+    public static function multiSelectHtml(array $config): string
+    {
+        return static::renderTemplate('_includes/forms/multiselect', $config);
+    }
+
+    /**
+     * Renders a multi-select field’s HTML.
+     *
+     * @param array $config
+     * @return string
+     * @throws InvalidArgumentException if `$config['siteId']` is invalid
+     * @since 4.0.0
+     */
+    public static function multiSelectFieldHtml(array $config): string
+    {
+        $config['id'] = $config['id'] ?? 'multiselect' . mt_rand();
+        return static::fieldHtml('template:_includes/forms/multiselect', $config);
+    }
+
+    /**
+     * Renders a text input’s HTML.
+     *
+     * @param array $config
+     * @return string
+     * @throws InvalidArgumentException if `$config['siteId']` is invalid
+     * @since 4.0.0
+     */
+    public static function textHtml(array $config): string
+    {
+        return static::renderTemplate('_includes/forms/text', $config);
+    }
+
+    /**
      * Renders a text field’s HTML.
      *
      * @param array $config
@@ -727,6 +779,60 @@ class Cp
     {
         $config['id'] = $config['id'] ?? 'textarea' . mt_rand();
         return static::fieldHtml('template:_includes/forms/textarea', $config);
+    }
+
+    /**
+     * Returns a date input’s HTML.
+     *
+     * @param array $config
+     * @return string
+     * @throws InvalidArgumentException if `$config['siteId']` is invalid
+     * @since 4.0.0
+     */
+    public static function dateHtml(array $config): string
+    {
+        return static::renderTemplate('_includes/forms/date', $config);
+    }
+
+    /**
+     * Returns a date field’s HTML.
+     *
+     * @param array $config
+     * @return string
+     * @throws InvalidArgumentException if `$config['siteId']` is invalid
+     * @since 4.0.0
+     */
+    public static function dateFieldHtml(array $config): string
+    {
+        $config['id'] = $config['id'] ?? 'date' . mt_rand();
+        return static::fieldHtml('template:_includes/forms/date', $config);
+    }
+
+    /**
+     * Returns a time input’s HTML.
+     *
+     * @param array $config
+     * @return string
+     * @throws InvalidArgumentException if `$config['siteId']` is invalid
+     * @since 4.0.0
+     */
+    public static function timeHtml(array $config): string
+    {
+        return static::renderTemplate('_includes/forms/time', $config);
+    }
+
+    /**
+     * Returns a date field’s HTML.
+     *
+     * @param array $config
+     * @return string
+     * @throws InvalidArgumentException if `$config['siteId']` is invalid
+     * @since 4.0.0
+     */
+    public static function timeFieldHtml(array $config): string
+    {
+        $config['id'] = $config['id'] ?? 'time' . mt_rand();
+        return static::fieldHtml('template:_includes/forms/time', $config);
     }
 
     /**
