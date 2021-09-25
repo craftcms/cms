@@ -6,7 +6,7 @@ const semanticColors = require('../pluginstore/semanticColors')(colors)
 module.exports = {
     prefix: 'tw-',
     corePlugins: {
-        preflight: false,
+        preflight: true,
     },
     // ...tailwindConf,
     purge: [

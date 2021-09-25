@@ -1,0 +1,6 @@
+// Tweak Tailwind’s reset to make it work with Craft
+
+img,
+svg {
+  @apply tw-inline;
+}

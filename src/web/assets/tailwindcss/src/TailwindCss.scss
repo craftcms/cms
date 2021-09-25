@@ -1,5 +1,7 @@
-// TODO figure out what we need from the reset/base
 @import "tailwindcss/base";
+
+@import "reset-override";
+
 @import "tailwindcss/components";
 
 @import "tailwindcss/utilities";
