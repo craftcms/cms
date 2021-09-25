@@ -391,24 +391,27 @@ class ElementIndexesController extends BaseElementsController
         // Filter out any condition rules that touch the same query params as the source criteria
         $source = $this->source();
         if ($source['type'] === ElementSources::TYPE_NATIVE) {
-            $filterCallback = function(string $ruleType) use ($source) {
-                /** @var string|QueryConditionRuleInterface $ruleType */
-                foreach ($ruleType::queryParams() as $param) {
-                    if (isset($source['criteria'][$param])) {
-                        return false;
-                    }
-                }
-                return true;
-            };
+            $params = $source['criteria'] ?? [];
         } else {
             /** @var QueryConditionInterface $sourceCondition */
             $sourceCondition = Craft::$app->getConditions()->createCondition($source['condition']);
-            $sourceRuleTypes = $sourceCondition->getConditionRules()
-                ->map(fn(ConditionRuleInterface $rule) => get_class($rule))
-                ->all();
-            $filterCallback = fn($ruleType) => !in_array($ruleType, $sourceRuleTypes);
+            $params = [];
+            foreach ($sourceCondition->getConditionRules() as $rule) {
+                /** @var QueryConditionRuleInterface $rule */
+                foreach ($rule::queryParams() as $param) {
+                    $params[$param] = true;
+                }
+            }
         }
-        $condition->setConditionRuleTypes(array_filter($condition->getConditionRuleTypes(), $filterCallback));
+        $condition->setConditionRuleTypes(array_filter($condition->getConditionRuleTypes(), function(string $rule) use ($params) {
+            /** @var string|QueryConditionRuleInterface $rule */
+            foreach ($rule::queryParams() as $param) {
+                if (isset($params[$param])) {
+                    return false;
+                }
+            }
+            return true;
+        }));
 
         $html = $condition->getBuilderHtml([
             'mainTag' => 'div',
