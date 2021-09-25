@@ -3141,18 +3141,24 @@ ul.tree,
       border-top-right-radius: $largeBorderRadius;
     }
 
-    &:last-child {
-      border-bottom-left-radius: $largeBorderRadius;
-      border-bottom-right-radius: $largeBorderRadius;
-    }
-
     & + .condition-rule {
       border-top-width: 0;
     }
   }
 
-  &:not(:empty) + .condition-footer {
-    margin-top: 7px;
+  &:not(:empty) + .condition-footer .btn.add {
+    border-top-width: 0;
+    border-top-left-radius: 0;
+    border-top-right-radius: 0;
+  }
+}
+
+.condition-footer {
+  .btn.add {
+    height: 48px;
+  }
+  .spinner {
+    @include margin-left(7px);
   }
 }
 

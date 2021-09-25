@@ -325,30 +325,29 @@ abstract class BaseCondition extends Component implements ConditionInterface
             ]
         );
 
-        $footerContent = '';
-
-        $footerContent .= Html::tag('button', $this->getAddRuleLabel(), [
-            'class' => array_filter([
-                'btn',
-                'add',
-                'icon',
-                empty($this->getConditionRuleTypes()) ? 'disabled' : null,
-            ]),
-            'hx' => [
-                'post' => UrlHelper::actionUrl('conditions/add-rule'),
-            ],
-        ]);
-
-        // Main loading indicator spinner
-        $footerContent .= Html::tag('div', '', [
-            'class' => ['htmx-indicator', 'spinner'],
-            'id' => "{$options['id']}-indicator",
-        ]);
-
-
-        $html .= Html::tag('div', $footerContent, [
-            'class' => ['condition-footer', 'flex', 'flex-nowrap'],
-        ]);
+        $html .= Html::tag('div',
+            Html::tag('button',
+                $this->getAddRuleLabel() .
+                Html::tag('div', '', [
+                    'class' => ['htmx-indicator', 'spinner'],
+                    'id' => "{$options['id']}-indicator",
+                ]), [
+                    'class' => array_filter([
+                        'btn',
+                        'add',
+                        'icon',
+                        'fullwidth',
+                        'dashed',
+                        empty($this->getConditionRuleTypes()) ? 'disabled' : null,
+                    ]),
+                    'hx' => [
+                        'post' => UrlHelper::actionUrl('conditions/add-rule'),
+                    ],
+                ]
+            ), [
+                'class' => ['condition-footer', 'flex', 'flex-nowrap'],
+            ]
+        );
 
         // Add inline script tag
         if ($isHtmxRequest && $rulesJs) {

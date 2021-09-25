@@ -1616,11 +1616,15 @@ body.use-shapes .status.off, body.use-shapes .status.suspended, body.use-shapes 
 
 .condition .condition-rule:first-child { border-top-left-radius: 5px; border-top-right-radius: 5px; }
 
-.condition .condition-rule:last-child { border-bottom-left-radius: 5px; border-bottom-right-radius: 5px; }
-
 .condition .condition-rule + .condition-rule { border-top-width: 0; }
 
-.condition:not(:empty) + .condition-footer { margin-top: 7px; }
+.condition:not(:empty) + .condition-footer .btn.add { border-top-width: 0; border-top-left-radius: 0; border-top-right-radius: 0; }
+
+.condition-footer .btn.add { height: 48px; }
+
+body.ltr .condition-footer .spinner { margin-left: 7px; }
+
+body.rtl .condition-footer .spinner { margin-right: 7px; }
 
 /* ----------------------------------------
 /*  Progress bar
