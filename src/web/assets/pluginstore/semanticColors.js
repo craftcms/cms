@@ -27,7 +27,7 @@ module.exports = function(colors) {
             'interactive-secondary': { light: colors['gray'][200], dark: colors['gray'][700] },
             'interactive-secondary-active': { light: colors['gray'][400], dark: colors['gray'][500] },
             'interactive-secondary-hover': { light: colors['gray'][300], dark: colors['gray'][600] },
-            'separator': { light: 'red', dark: 'red' },
+            'separator': { light: colors['gray'][300], dark: colors['gray'][700] },
         },
     }
 }
