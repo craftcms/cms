@@ -3,20 +3,31 @@
 namespace craft\conditions\elements;
 
 use Craft;
+use craft\base\BlockElementInterface;
+use craft\base\ElementInterface;
 use craft\conditions\BaseConditionRule;
 use craft\conditions\QueryConditionRuleInterface;
 use craft\elements\db\ElementQuery;
 use craft\elements\Entry;
+use craft\helpers\ArrayHelper;
+use craft\helpers\Cp;
+use craft\helpers\Html;
+use craft\helpers\UrlHelper;
 use yii\db\QueryInterface;
 
 /**
- * Element trashed condition rule.
+ * Relation condition rule.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.0.0
  */
 class RelatedToConditionRule extends BaseConditionRule implements QueryConditionRuleInterface
 {
+    /**
+     * @var string
+     */
+    public string $elementType = Entry::class;
+
     /**
      * @var array
      */
@@ -35,28 +46,27 @@ class RelatedToConditionRule extends BaseConditionRule implements QueryCondition
      */
     public static function queryParams(): array
     {
-        return ['relatedTo'];
+        return [];
     }
 
     /**
-     * @param $value
+     * @return array
      */
-    public function setElementIds($value): void
-    {
-        if (is_string($value) && !empty($value)) {
-            $value = [(int)$value];
-        }
-
-        if (!is_array($value)) {
-            $value = [];
-        }
-
-        $this->_elementIds = $value;
-    }
-
     public function getElementIds()
     {
         return $this->_elementIds;
+    }
+
+    /**
+     * @param string|int|int[] $value
+     */
+    public function setElementIds($value): void
+    {
+        if ($value === '') {
+            $this->_elementIds = [];
+        } else {
+            $this->_elementIds = array_map(fn($id) => (int)$id, ArrayHelper::toArray($value));
+        }
     }
 
     /**
@@ -64,9 +74,9 @@ class RelatedToConditionRule extends BaseConditionRule implements QueryCondition
      */
     public function modifyQuery(QueryInterface $query): void
     {
-        if (count($this->elementIds) > 0) {
+        if (!empty($this->_elementIds)) {
             /** @var ElementQuery $query */
-            $query->relatedTo($this->elementIds);
+            $query->andRelatedTo($this->_elementIds);
         }
     }
 
@@ -76,7 +86,7 @@ class RelatedToConditionRule extends BaseConditionRule implements QueryCondition
     public function getConfig(): array
     {
         return array_merge(parent::getConfig(), [
-            'elementIds' => $this->elementIds
+            'elementIds' => $this->_elementIds
         ]);
     }
 
@@ -85,12 +95,62 @@ class RelatedToConditionRule extends BaseConditionRule implements QueryCondition
      */
     public function getHtml(array $options = []): string
     {
-        return Craft::$app->getView()->renderTemplate('_includes/forms/elementSelect', [
-            'name' => 'elementIds',
-            'elements' => $this->elementIds ? Entry::find()->id($this->elementIds)->all() : [],
-            'elementType' => Entry::class,
-            'single' => true
-        ]);
+        return Html::tag('div',
+            Cp::selectHtml([
+                'name' => 'elementType',
+                'options' => $this->_elementTypeOptions(),
+                'value' => $this->elementType,
+                'inputAttributes' => [
+                    'hx' => [
+                        'post' => UrlHelper::actionUrl('conditions/render'),
+                    ],
+                ],
+            ]) .
+            Cp::elementSelectHtml([
+                'name' => 'elementIds',
+                'elements' => $this->_elements(),
+                'elementType' => $this->elementType,
+                'single' => true,
+            ]),
+            [
+                'class' => ['flex', 'flex-nowrap'],
+            ]
+        );
+    }
+
+    /**
+     * @return array
+     */
+    private function _elementTypeOptions(): array
+    {
+        $options = [];
+        foreach (Craft::$app->getElements()->getAllElementTypes() as $elementType) {
+            /** @var string|ElementInterface $elementType */
+            if (!is_subclass_of($elementType, BlockElementInterface::class)) {
+                $options[] = [
+                    'value' => $elementType,
+                    'label' => $elementType::displayName(),
+                ];
+            }
+        }
+        return $options;
+    }
+
+    /**
+     * @return ElementInterface[]
+     */
+    private function _elements(): array
+    {
+        if (empty($this->_elementIds)) {
+            return [];
+        }
+
+        /** @var string|ElementInterface $elementType */
+        $elementType = $this->elementType;
+        return $elementType::find()
+            ->id($this->_elementIds)
+            ->status(null)
+            ->all();
     }
 
     /**
@@ -99,7 +159,7 @@ class RelatedToConditionRule extends BaseConditionRule implements QueryCondition
     public function defineRules(): array
     {
         return array_merge(parent::defineRules(), [
-            [['elementIds'], 'safe'],
+            [['elementType', 'elementIds'], 'safe'],
         ]);
     }
 }
