@@ -17,8 +17,6 @@ use yii\db\QueryInterface;
  */
 class AuthorGroupConditionRule extends BaseMultiSelectOperatorConditionRule implements QueryConditionRuleInterface
 {
-    protected string $_id = 'author-groups';
-
     /**
      * @inheritdoc
      */

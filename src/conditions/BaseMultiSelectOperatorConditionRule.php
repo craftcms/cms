@@ -3,6 +3,7 @@
 namespace craft\conditions;
 
 use Craft;
+use craft\helpers\Cp;
 
 /**
  * The BaseSelectValueConditionRule class provides a condition rule with a single select box.
@@ -17,11 +18,6 @@ use Craft;
  */
 abstract class BaseMultiSelectOperatorConditionRule extends BaseConditionRule
 {
-    /**
-     * @var string
-     */
-    protected string $_id = 'multi-select';
-
     /**
      * @var array
      */
@@ -66,7 +62,6 @@ abstract class BaseMultiSelectOperatorConditionRule extends BaseConditionRule
     protected function inputAttributes(): array
     {
         return [
-            'id' => $this->_id,
             'style' => [
                 'display' => 'none', // Hide it before selectize does its thing
             ],
@@ -78,29 +73,27 @@ abstract class BaseMultiSelectOperatorConditionRule extends BaseConditionRule
      */
     public function getHtml(array $options = []): string
     {
+        $id = 'multiselect' . mt_rand();
+        $namespacedId = Craft::$app->getView()->namespaceInputId($id);
 
-        $id = Craft::$app->getView()->namespaceInputId($this->_id);
+        $js = <<<JS
+$('#$namespacedId').selectize({
+    plugins: ["remove_button"],
+    onDropdownClose: function(x) {
+        htmx.trigger(htmx.find("#$namespacedId"), "change");
+    }
+});
+JS;
+        Craft::$app->getView()->registerJs($js);
 
-        $html = Craft::$app->getView()->renderTemplate('_includes/forms/multiselect', [
+        return Cp::multiSelectHtml([
+            'id' => $id,
             'class' => 'selectize fullwidth',
             'name' => 'optionValues',
             'values' => $this->_optionValues,
             'options' => $this->getSelectOptions(),
             'inputAttributes' => $this->inputAttributes(),
         ]);
-
-        $js = <<<JS
-$('#$id').selectize({
-    plugins: ["remove_button"],
-    onDropdownClose: function(x) {
-        htmx.trigger(htmx.find("#$id"), "change");
-    }
-});
-JS;
-
-        Craft::$app->getView()->registerJs($js);
-
-        return $html;
     }
 
     /**

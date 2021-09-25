@@ -3,6 +3,7 @@
 namespace craft\conditions;
 
 use Craft;
+use craft\helpers\Cp;
 use craft\helpers\Html;
 
 /**
@@ -48,11 +49,10 @@ abstract class BaseLightswitchConditionRule extends BaseConditionRule
     {
         $html = Html::beginTag('div', ['class' => ['flex', 'flex-nowrap']]);
         $html .= Html::tag('div',
-            Craft::$app->getView()->renderTemplate('_includes/forms/lightswitch', [
+            Cp::lightswitchHtml([
                 'small' => true,
                 'on' => $this->value,
                 'name' => 'value',
-                'id' => 'lightswitch'
             ])
         );
         $html .= Html::endTag('div');

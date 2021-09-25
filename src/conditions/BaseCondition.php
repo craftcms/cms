@@ -6,6 +6,7 @@ use Craft;
 use craft\base\Component;
 use craft\events\RegisterConditionRuleTypesEvent;
 use craft\helpers\ArrayHelper;
+use craft\helpers\Cp;
 use craft\helpers\Html;
 use craft\helpers\Json;
 use craft\helpers\UrlHelper;
@@ -262,7 +263,7 @@ abstract class BaseCondition extends Component implements ConditionInterface
                 ArrayHelper::multisort($ruleTypeOptions, 'label');
 
                 // Add rule type selector and uid hidden field
-                $switcherHtml = Craft::$app->getView()->renderTemplate('_includes/forms/select', [
+                $switcherHtml = Cp::selectHtml([
                     'name' => 'type',
                     'options' => $ruleTypeOptions,
                     'value' => $ruleClass,

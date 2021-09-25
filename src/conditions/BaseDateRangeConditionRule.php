@@ -3,6 +3,7 @@
 namespace craft\conditions;
 
 use Craft;
+use craft\helpers\Cp;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Html;
 
@@ -88,20 +89,18 @@ abstract class BaseDateRangeConditionRule extends BaseConditionRule
     public function getHtml(array $options = []): string
     {
         $html = Html::beginTag('div', ['class' => ['flex', 'flex-nowrap']]);
-        $html .= Html::tag('div', Html::tag('p', Craft::t('app', 'After')));
+        $html .= Html::tag('div', Html::tag('p', Craft::t('app', 'From')));
         $html .= Html::tag('div',
-            Craft::$app->getView()->renderTemplate('_includes/forms/date', [
+            Cp::dateHtml([
                 'name' => 'startDate',
-                'id' => 'startDate',
-                'value' => $this->getStartDate()
+                'value' => $this->getStartDate(),
             ])
         );
-        $html .= Html::tag('div', Html::tag('p', Craft::t('app', 'Before')));
+        $html .= Html::tag('div', Html::tag('p', Craft::t('app', 'To')));
         $html .= Html::tag('div',
-            Craft::$app->getView()->renderTemplate('_includes/forms/date', [
+            Cp::dateHtml([
                 'name' => 'endDate',
-                'id' => 'endDate',
-                'value' => $this->getEndDate()
+                'value' => $this->getEndDate(),
             ])
         );
         $html .= Html::endTag('div');

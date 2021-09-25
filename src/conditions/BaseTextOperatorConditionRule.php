@@ -3,6 +3,7 @@
 namespace craft\conditions;
 
 use Craft;
+use craft\helpers\Cp;
 use craft\helpers\Html;
 use craft\helpers\UrlHelper;
 
@@ -42,24 +43,25 @@ abstract class BaseTextOperatorConditionRule extends BaseOperatorConditionRule
      */
     public function getHtml(array $options = []): string
     {
-        $html = Html::beginTag('div', ['class' => ['flex', 'flex-nowrap']]);
-        $html .= parent::getHtml($options);
-        $html .= Html::tag('div',
-            Craft::$app->getView()->renderTemplate('_includes/forms/text', [
-                'inputAttributes' => [
+        return
+            Html::beginTag('div', [
+                'class' => ['flex', 'flex-nowrap'],
+            ]) .
+            parent::getHtml($options) .
+            Html::tag('div',
+                Cp::textHtml([
                     'name' => 'value',
                     'value' => $this->value,
                     'autocomplete' => false,
-                    'hx' => [
-                        'post' => UrlHelper::actionUrl('conditions/render'),
-                        'trigger' => 'keyup changed delay:750ms',
-                    ],
-                ]
-            ])
-        );
-        $html .= Html::endTag('div');
-
-        return $html;
+                    'inputAttributes' => [
+                        'hx' => [
+                            'post' => UrlHelper::actionUrl('conditions/render'),
+                            'trigger' => 'keyup changed delay:750ms',
+                        ],
+                    ]
+                ])
+            ) .
+            Html::endTag('div');
     }
 
     /**

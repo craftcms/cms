@@ -3,6 +3,7 @@
 namespace craft\conditions;
 
 use Craft;
+use craft\helpers\Cp;
 
 /**
  * The BaseSelectValueConditionRule class provides a condition rule with a single select box.
@@ -53,16 +54,14 @@ abstract class BaseSelectOperatorConditionRule extends BaseOperatorConditionRule
      */
     public function getHtml(array $options = []): string
     {
-        $html = parent::getHtml($options);
-
-        $html .= Craft::$app->getView()->renderTemplate('_includes/forms/select', [
-            'name' => 'optionValue',
-            'value' => $this->optionValue,
-            'options' => $this->getSelectOptions(),
-            'inputAttributes' => $this->inputAttributes(),
-        ]);
-
-        return $html;
+        return
+            parent::getHtml($options) .
+            Cp::selectHtml([
+                'name' => 'optionValue',
+                'value' => $this->optionValue,
+                'options' => $this->getSelectOptions(),
+                'inputAttributes' => $this->inputAttributes(),
+            ]);
     }
 
     /**

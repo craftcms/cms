@@ -3,6 +3,7 @@
 namespace craft\conditions;
 
 use Craft;
+use craft\helpers\Cp;
 use craft\helpers\Html;
 
 /**
@@ -55,16 +56,17 @@ abstract class BaseOperatorConditionRule extends BaseConditionRule
      */
     public function getHtml(array $options = []): string
     {
-        $html = '';
-        if ($this->showOperator) {
-            $html .= Html::tag('div', Craft::$app->getView()->renderTemplate('_includes/forms/select', [
+        if (!$this->showOperator) {
+            return '';
+        }
+
+        return Html::tag('div',
+            Cp::selectHtml([
                 'name' => 'operator',
                 'value' => $this->operator,
                 'options' => $this->operators()
-            ]));
-        }
-
-        return $html;
+            ])
+        );
     }
 
     /**

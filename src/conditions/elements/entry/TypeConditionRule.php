@@ -9,6 +9,7 @@ use craft\conditions\QueryConditionRuleInterface;
 use craft\db\Table;
 use craft\elements\db\EntryQuery;
 use craft\helpers\ArrayHelper;
+use craft\helpers\Cp;
 use craft\helpers\Db;
 use craft\helpers\UrlHelper;
 use craft\models\Section;
@@ -17,10 +18,6 @@ use yii\db\QueryInterface;
 /**
  * Entry type condition rule.
  *
- * @property-read array $entryTypeOptions
- * @property-read array $sectionOptions
- * @property-read string $inputHtml
- * @property-read array $inputAttributes
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.0.0
  */
@@ -82,7 +79,7 @@ class TypeConditionRule extends BaseConditionRule implements QueryConditionRuleI
     /**
      * @return array
      */
-    public function getSectionOptions(): array
+    private function _sectionOptions(): array
     {
         return ArrayHelper::map($this->_sections, 'uid', 'name');
     }
@@ -90,7 +87,7 @@ class TypeConditionRule extends BaseConditionRule implements QueryConditionRuleI
     /**
      * @return array
      */
-    public function getEntryTypeOptions(): array
+    private function _entryTypeOptions(): array
     {
         $options = [];
         foreach ($this->_sections as $section) {
@@ -105,41 +102,30 @@ class TypeConditionRule extends BaseConditionRule implements QueryConditionRuleI
     }
 
     /**
-     * Returns the input attributes.
-     *
-     * @return array
-     */
-    protected function inputAttributes(): array
-    {
-        return [];
-    }
-
-    /**
      * @inheritdoc
      */
     public function getHtml(array $options = []): string
     {
-        $html = Craft::$app->getView()->renderTemplate('_includes/forms/select', [
+        $html = Cp::selectHtml([
             'name' => 'sectionUid',
             'value' => $this->sectionUid,
-            'options' => $this->getSectionOptions(),
-            'inputAttributes' => array_merge($this->inputAttributes(), [
+            'options' => $this->_sectionOptions(),
+            'inputAttributes' => [
                 'hx' => [
                     'post' => UrlHelper::actionUrl('conditions/render'), // Only the section re-renders the body
                     'target' => 'closest .rule-body',
                     'select' => '#' . Craft::$app->getView()->namespaceInputId('rule-body'),
                     'swap' => 'outerHTML',
                 ],
-            ])
+            ],
         ]);
 
         $this->_ensureEntryType();
 
-        $html .= Craft::$app->getView()->renderTemplate('_includes/forms/select', [
+        $html .= Cp::selectHtml([
             'name' => 'entryTypeUid',
             'value' => $this->entryTypeUid,
-            'options' => $this->getEntryTypeOptions(),
-            'inputAttributes' => $this->inputAttributes(),
+            'options' => $this->_entryTypeOptions(),
         ]);
 
         return $html;
@@ -152,8 +138,8 @@ class TypeConditionRule extends BaseConditionRule implements QueryConditionRuleI
      */
     private function _ensureEntryType(): void
     {
-        if (!$this->entryTypeUid || !ArrayHelper::keyExists($this->entryTypeUid, $this->getEntryTypeOptions())) {
-            $this->entryTypeUid = ArrayHelper::firstKey($this->getEntryTypeOptions());
+        if (!$this->entryTypeUid || !ArrayHelper::keyExists($this->entryTypeUid, $this->_entryTypeOptions())) {
+            $this->entryTypeUid = ArrayHelper::firstKey($this->_entryTypeOptions());
         }
     }
 
