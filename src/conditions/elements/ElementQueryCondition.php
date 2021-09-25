@@ -4,7 +4,6 @@ namespace craft\conditions\elements;
 
 use Craft;
 use craft\conditions\BaseQueryCondition;
-use craft\conditions\ConditionRuleInterface;
 
 /**
  * Base class for conditions designed for queries.
@@ -32,7 +31,6 @@ class ElementQueryCondition extends BaseQueryCondition
         return [
             RelatedToConditionRule::class,
             SlugConditionRule::class,
-            StatusConditionRule::class,
             TrashedConditionRule::class,
         ];
     }
