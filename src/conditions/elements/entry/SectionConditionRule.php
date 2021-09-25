@@ -28,7 +28,7 @@ class SectionConditionRule extends BaseSelectOperatorConditionRule implements Qu
     /**
      * @inheritdoc
      */
-    public static function queryParams(): array
+    public static function exclusiveQueryParams(): array
     {
         return ['section', 'sectionId'];
     }

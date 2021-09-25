@@ -30,7 +30,7 @@ class AuthorGroupConditionRule extends BaseMultiSelectOperatorConditionRule impl
     /**
      * @inheritdoc
      */
-    public static function queryParams(): array
+    public static function exclusiveQueryParams(): array
     {
         return ['authorGroup', 'authorGroupId'];
     }

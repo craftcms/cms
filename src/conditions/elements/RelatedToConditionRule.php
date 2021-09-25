@@ -44,7 +44,7 @@ class RelatedToConditionRule extends BaseConditionRule implements QueryCondition
     /**
      * @inheritdoc
      */
-    public static function queryParams(): array
+    public static function exclusiveQueryParams(): array
     {
         return [];
     }

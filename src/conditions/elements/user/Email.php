@@ -28,7 +28,7 @@ class Email extends BaseTextOperatorConditionRule implements QueryConditionRuleI
     /**
      * @inheritdoc
      */
-    public static function queryParams(): array
+    public static function exclusiveQueryParams(): array
     {
         return ['email'];
     }

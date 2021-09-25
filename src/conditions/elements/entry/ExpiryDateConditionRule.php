@@ -28,7 +28,7 @@ class ExpiryDateConditionRule extends BaseDateRangeConditionRule implements Quer
     /**
      * @inheritdoc
      */
-    public static function queryParams(): array
+    public static function exclusiveQueryParams(): array
     {
         return ['expiryDate'];
     }

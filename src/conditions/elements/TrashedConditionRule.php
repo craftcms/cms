@@ -27,7 +27,7 @@ class TrashedConditionRule extends BaseLightswitchConditionRule implements Query
     /**
      * @inheritdoc
      */
-    public static function queryParams(): array
+    public static function exclusiveQueryParams(): array
     {
         return ['trashed'];
     }

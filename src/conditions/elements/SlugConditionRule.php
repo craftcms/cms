@@ -28,7 +28,7 @@ class SlugConditionRule extends BaseTextOperatorConditionRule implements QueryCo
     /**
      * @inheritdoc
      */
-    public static function queryParams(): array
+    public static function exclusiveQueryParams(): array
     {
         return ['slug'];
     }

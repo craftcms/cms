@@ -398,14 +398,14 @@ class ElementIndexesController extends BaseElementsController
             $params = [];
             foreach ($sourceCondition->getConditionRules() as $rule) {
                 /** @var QueryConditionRuleInterface $rule */
-                foreach ($rule::queryParams() as $param) {
+                foreach ($rule::exclusiveQueryParams() as $param) {
                     $params[$param] = true;
                 }
             }
         }
         $condition->setConditionRuleTypes(array_filter($condition->getConditionRuleTypes(), function(string $rule) use ($params) {
             /** @var string|QueryConditionRuleInterface $rule */
-            foreach ($rule::queryParams() as $param) {
+            foreach ($rule::exclusiveQueryParams() as $param) {
                 if (isset($params[$param])) {
                     return false;
                 }
