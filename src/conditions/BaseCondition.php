@@ -212,7 +212,6 @@ abstract class BaseCondition extends Component implements ConditionInterface
 
         $namespacedOptions = [
             'namespace' => $namespace,
-            'id' => $namespacedId,
         ];
 
         $html = Html::beginTag('div', [
