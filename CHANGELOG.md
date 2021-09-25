@@ -34,7 +34,15 @@
 - Added `craft\fieldlayoutelements\BaseNativeField`, which replaces `craft\fieldlayoutelements\StandardField`.
 - Added `craft\fieldlayoutelements\TextField`, which replaces `craft\fieldlayoutelements\StandardTextField`.
 - Added `craft\helpers\Assets::downloadFile()`.
+- Added `craft\helpers\Cp::dateFieldHtml()`.
+- Added `craft\helpers\Cp::dateHtml()`.
 - Added `craft\helpers\Cp::elementSelectHtml()`.
+- Added `craft\helpers\Cp::lightswitchHtml()`.
+- Added `craft\helpers\Cp::multiSelectFieldHtml()`.
+- Added `craft\helpers\Cp::multiSelectHtml()`.
+- Added `craft\helpers\Cp::textHtml()`.
+- Added `craft\helpers\Cp::timeFieldHtml()`.
+- Added `craft\helpers\Cp::timeHtml()`.
 - Added `craft\helpers\Db::dropAllForeignKeysToTable()`.
 - Added `craft\helpers\Db::dropForeignKeyIfExists()`.
 - Added `craft\helpers\Db::dropIndexIfExists()`.
