@@ -750,6 +750,19 @@ class Cp
     }
 
     /**
+     * Renders an element select input’s HTML
+     *
+     * @param array $config
+     * @return string
+     * @throws InvalidArgumentException if `$config['siteId']` is invalid
+     * @since 4.0.0
+     */
+    public static function elementSelectHtml(array $config): string
+    {
+        return static::renderTemplate('_includes/forms/elementSelect', $config);
+    }
+
+    /**
      * Renders an element select field’s HTML.
      *
      * @param array $config

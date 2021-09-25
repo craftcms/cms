@@ -32,6 +32,7 @@
 - Added `craft\fieldlayoutelements\BaseNativeField`, which replaces `craft\fieldlayoutelements\StandardField`.
 - Added `craft\fieldlayoutelements\TextField`, which replaces `craft\fieldlayoutelements\StandardTextField`.
 - Added `craft\helpers\Assets::downloadFile()`.
+- Added `craft\helpers\Cp::elementSelectHtml()`.
 - Added `craft\helpers\Db::dropAllForeignKeysToTable()`.
 - Added `craft\helpers\Db::dropForeignKeyIfExists()`.
 - Added `craft\helpers\Db::dropIndexIfExists()`.
