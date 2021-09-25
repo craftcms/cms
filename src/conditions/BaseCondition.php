@@ -210,20 +210,17 @@ abstract class BaseCondition extends Component implements ConditionInterface
         $namespace = $view->getNamespace();
         $namespacedId = Html::namespaceId($options['id'], $namespace);
 
-        $namespacedOptions = [
-            'namespace' => $namespace,
-        ];
-
         $html = Html::beginTag('div', [
             'class' => ['condition-main'],
             'hx' => [
                 'target' => "#$namespacedId", // replace self
                 'indicator' => "#$namespacedId-indicator", // ID of the spinner
                 'include' => "#$namespacedId", // In case we are in a non form container
-                'vals' => [
-                    'options' => Json::encode($namespacedOptions + $options),
+                'vals' => array_filter([
+                    'namespace' => $namespace,
+                    'options' => Json::encode($options),
                     'conditionRuleTypes' => Json::encode($this->getConditionRuleTypes()),
-                ],
+                ]),
             ],
         ]);
 

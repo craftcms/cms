@@ -22,6 +22,10 @@ use craft\web\Controller;
  */
 class ConditionsController extends Controller
 {
+    /**
+     * @var string|null
+     */
+    private ?string $_namespace;
 
     /**
      * @var array
@@ -38,14 +42,16 @@ class ConditionsController extends Controller
      */
     public function beforeAction($action): bool
     {
+        $this->_namespace = $this->request->getBodyParam('namespace');
         $this->_options = Json::decodeIfJson($this->request->getBodyParam('options')) ?? [];
         $conditionRuleTypes = Json::decodeIfJson($this->request->getBodyParam('conditionRuleTypes'));
 
-        if (isset($this->_options['namespace'])) {
-            $baseInputNamePath = str_replace(['[', ']'], ['.', ''], $this->_options['namespace']);
+        if ($this->_namespace) {
+            $baseInputNamePath = str_replace(['[', ']'], ['.', ''], $this->_namespace);
             $config = $this->request->getBodyParam($baseInputNamePath);
         } else {
             $config = $this->request->getBodyParams();
+            ArrayHelper::remove($config, 'namespace');
             ArrayHelper::remove($config, 'options');
             ArrayHelper::remove($config, 'conditionRuleTypes');
             ArrayHelper::remove($config, 'uid');
@@ -107,6 +113,6 @@ class ConditionsController extends Controller
     {
         return Craft::$app->getView()->namespaceInputs(function() {
             return $this->_condition->getBuilderInnerHtml($this->_options);
-        }, $this->_options['namespace'] ?? null);
+        }, $this->_namespace);
     }
 }
