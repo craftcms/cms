@@ -21,7 +21,6 @@ use craft\elements\db\ElementQuery;
 use craft\elements\db\ElementQueryInterface;
 use craft\elements\db\MatrixBlockQuery;
 use craft\elements\MatrixBlock;
-use craft\elements\MatrixBlock as MatrixBlockElement;
 use craft\events\BlockTypesEvent;
 use craft\fieldlayoutelements\CustomField;
 use craft\gql\arguments\elements\MatrixBlock as MatrixBlockArguments;
@@ -32,7 +31,6 @@ use craft\helpers\ArrayHelper;
 use craft\helpers\Db;
 use craft\helpers\ElementHelper;
 use craft\helpers\Gql;
-use craft\helpers\Gql as GqlHelper;
 use craft\helpers\Html;
 use craft\helpers\Json;
 use craft\helpers\Queue;
@@ -884,13 +882,13 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
     {
         $typeArray = MatrixBlockTypeGenerator::generateTypes($this);
         $typeName = $this->handle . '_MatrixField';
-        $resolver = function(MatrixBlockElement $value) {
+        $resolver = function(MatrixBlock $value) {
             return $value->getGqlTypeName();
         };
 
         return [
             'name' => $this->handle,
-            'type' => Type::listOf(GqlHelper::getUnionType($typeName, $typeArray, $resolver)),
+            'type' => Type::listOf(Gql::getUnionType($typeName, $typeArray, $resolver)),
             'args' => MatrixBlockArguments::getArguments(),
             'resolve' => MatrixBlockResolver::class . '::resolve',
             'complexity' => Gql::eagerLoadComplexity(),

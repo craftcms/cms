@@ -66,7 +66,7 @@ class ElementRelationParamParser extends BaseObject
      */
     public static function normalizeRelatedToParam($relatedToParam): array
     {
-        // Ensure it's array
+        // Ensure it's an array
         if (!is_array($relatedToParam)) {
             $relatedToParam = is_string($relatedToParam) ? StringHelper::split($relatedToParam) : [$relatedToParam];
         }
