@@ -581,31 +581,42 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
     public function modifyElementsQuery(ElementQueryInterface $query, $value)
     {
         /** @var ElementQuery $query */
+        if ($value === null) {
+            return null;
+        }
+
+        $ns = $this->handle . '_' . StringHelper::randomString(5);
+        $existsQuery = (new Query())
+            ->from(["matrixblocks_$ns" => DbTable::MATRIXBLOCKS])
+            ->innerJoin(["elements_$ns" => DbTable::ELEMENTS], "[[elements_$ns.id]] = [[matrixblocks_$ns.id]]")
+            ->where("[[matrixblocks_$ns.ownerId]] = [[elements.id]]")
+            ->andWhere([
+                "matrixblocks_$ns.fieldId" => $this->id,
+                "elements_$ns.enabled" => true,
+                "elements_$ns.dateDeleted" => null,
+            ]);
+
         if ($value === 'not :empty:') {
             $value = ':notempty:';
         }
 
-        if ($value === ':notempty:' || $value === ':empty:') {
-            $ns = $this->handle . '_' . StringHelper::randomString(5);
-            $condition = [
-                'exists', (new Query())
-                    ->from(["matrixblocks_$ns" => DbTable::MATRIXBLOCKS])
-                    ->innerJoin(["elements_$ns" => DbTable::ELEMENTS], "[[elements_$ns.id]] = [[matrixblocks_$ns.id]]")
-                    ->where("[[matrixblocks_$ns.ownerId]] = [[elements.id]]")
-                    ->andWhere([
-                        "matrixblocks_$ns.fieldId" => $this->id,
-                        "elements_$ns.enabled" => true,
-                        "elements_$ns.dateDeleted" => null,
-                    ]),
-            ];
+        if ($value === ':empty:') {
+            $query->subQuery->andWhere(['not exists', $existsQuery]);
+        } else {
+            if ($value !== ':notempty:') {
+                $ids = $value;
+                if (!is_array($ids)) {
+                    $ids = is_string($ids) ? StringHelper::split($ids) : [$ids];
+                }
 
-            if ($value === ':notempty:') {
-                $query->subQuery->andWhere($condition);
-            } else {
-                $query->subQuery->andWhere(['not', $condition]);
+                $ids = array_map(function($id) {
+                    return $id instanceof MatrixBlock ? $id->id : (int)$id;
+                }, $ids);
+
+                $existsQuery->andWhere(["matrixblocks_$ns.id" => $ids]);
             }
-        } else if ($value !== null) {
-            return false;
+
+            $query->subQuery->andWhere(['exists', $existsQuery]);
         }
 
         return null;
