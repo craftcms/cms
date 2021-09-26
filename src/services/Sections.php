@@ -1011,7 +1011,7 @@ class Sections extends Component
      * ---
      *
      * ```php
-     * $entryTypes = Craft::$app->sections->getAllEntryTypes(1);
+     * $entryTypes = Craft::$app->sections->getAllEntryTypes();
      * ```
      *
      * @return EntryType[]
