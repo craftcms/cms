@@ -1953,46 +1953,6 @@ h2 + .actions {
         @include padding-right(24px);
       }
     }
-
-    thead {
-      th,
-      td {
-        &:first-child {
-          @include border-bottom-left-radius(0);
-        }
-
-        &:last-child {
-          @include border-bottom-right-radius(0);
-        }
-      }
-    }
-
-    thead,
-    tbody,
-    tfoot {
-      &:first-child tr:first-child {
-        th,
-        td {
-          &:first-child {
-            @include border-top-left-radius($largeBorderRadius);
-          }
-          &:last-child {
-            @include border-top-right-radius($largeBorderRadius);
-          }
-        }
-      }
-      &:last-child tr:last-child {
-        th,
-        td {
-          &:first-child {
-            @include border-bottom-left-radius($largeBorderRadius);
-          }
-          &:last-child {
-            @include border-bottom-right-radius($largeBorderRadius);
-          }
-        }
-      }
-    }
   }
 }
 
@@ -2058,6 +2018,22 @@ table {
       font-weight: bold;
     }
 
+    thead,
+    tbody,
+    tfoot {
+      &:first-child tr:first-child {
+        th,
+        td {
+          &:first-child {
+            @include border-top-left-radius($largeBorderRadius);
+          }
+          &:last-child {
+            @include border-top-right-radius($largeBorderRadius);
+          }
+        }
+      }
+    }
+
     thead {
       th,
       td {
@@ -2066,16 +2042,6 @@ table {
         width: auto;
         background-color: $grey050;
         cursor: default;
-
-        &:first-child {
-          @include border-top-left-radius($largeBorderRadius);
-          @include border-bottom-left-radius($largeBorderRadius);
-        }
-
-        &:last-child {
-          @include border-top-right-radius($largeBorderRadius);
-          @include border-bottom-right-radius($largeBorderRadius);
-        }
       }
 
       th {
