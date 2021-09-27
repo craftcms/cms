@@ -455,9 +455,18 @@ Craft.CustomizeSourcesModal.CustomSource = Craft.CustomizeSourcesModal.Source.ex
             value: this.sourceData.label,
         }).appendTo($container);
         this.$labelInput = $labelField.find('.text');
+        const defaultId = `condition${Math.floor(Math.random() * 1000000)}`;
 
-        const conditionBuilderHtml = this.sourceData.conditionBuilderHtml || this.modal.conditionBuilderHtml.replace(/\bSOURCE_KEY\b/g, this.sourceData.key);
-        const conditionBuilderJs = this.sourceData.conditionBuilderJs || this.modal.conditionBuilderJs.replace(/\bSOURCE_KEY\b/g, this.sourceData.key);
+        const swapPlaceholders = str => str
+          .replace(/__ID__/g, defaultId)
+          .replace(/__SOURCE_KEY__(?=-)/g, Craft.formatInputId(this.sourceData.key))
+          .replace(/__SOURCE_KEY__/g, this.sourceData.key);
+
+        const conditionBuilderHtml = this.sourceData.conditionBuilderHtml ||
+            swapPlaceholders(this.modal.conditionBuilderHtml);
+        const conditionBuilderJs = this.sourceData.conditionBuilderJs ||
+            swapPlaceholders(this.modal.conditionBuilderJs);
+
         Craft.ui.createField($('<div/>').append(conditionBuilderHtml), {
             id: 'criteria',
             label: Craft.t('app', '{type} Criteria', {

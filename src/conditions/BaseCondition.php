@@ -330,6 +330,7 @@ abstract class BaseCondition extends Component implements ConditionInterface
                     'class' => ['htmx-indicator', 'spinner'],
                     'id' => "{$options['id']}-indicator",
                 ]), [
+                    'type' => 'button',
                     'class' => array_filter([
                         'btn',
                         'add',

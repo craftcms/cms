@@ -94,9 +94,10 @@ class ElementIndexSettingsController extends BaseElementsController
         $view->startJsBuffer();
         $conditionBuilderHtml = $view->namespaceInputs(function() use ($elementType) {
             return $elementType::createCondition()->getBuilderHtml([
+                'id' => '__ID__',
                 'mainTag' => 'div',
             ]);
-        }, 'sources[SOURCE_KEY][condition]');
+        }, 'sources[__SOURCE_KEY__][condition]');
         $conditionBuilderJs = $view->clearJsBuffer();
 
         return $this->asJson([
