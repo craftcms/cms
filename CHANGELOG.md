@@ -28,6 +28,9 @@
 - Fixed a bug where duplicated entries that were created via an “Applying new propagation method” job weren’t getting positioned correctly based on the original entries’ structure. ([#9782](https://github.com/craftcms/cms/issues/9782))
 - Fixed a bug where unpublished drafts could disappear after clicking “Create entry” if the URI could not be made unique. ([#9873](https://github.com/craftcms/cms/issues/9873))
 
+### Security
+- Fixed a potential CSV injection vulnerability.
+
 ## 3.7.13 - 2021-09-14
 
 ### Added
