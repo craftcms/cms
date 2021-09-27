@@ -152,7 +152,7 @@ class CraftWebpackConfig {
                         }
                     }
                 },
-                minimize: false,
+                minimize: true,
                 minimizer: [
                     new TerserWebpackPlugin({
                         extractComments: false,

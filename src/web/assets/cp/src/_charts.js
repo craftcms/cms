@@ -1,3 +1,3 @@
 /* jshint esversion: 6 */
 // Import CSS
-import '../css/charts.scss';
+import '../../cp/src/css/charts.scss';
