@@ -313,9 +313,20 @@ class Drafts extends Component
 
                 // We still need to validate so the SlugValidator gets run
                 $draft->setScenario(Element::SCENARIO_ESSENTIALS);
+                $draft->validate();
+
+                // If there are any errors on the URI, re-validate as disabled
+                if ($draft->hasErrors('uri') && $draft->enabled) {
+                    $draft->enabled = false;
+                    $draft->validate();
+                }
+
+                if ($draft->hasErrors()) {
+                    throw new InvalidElementException($draft, 'Draft ' . $draft->id . ' could not be applied because it doesn\'t validate.');
+                }
 
                 try {
-                    $elementsService->saveElement($draft);
+                    $elementsService->saveElement($draft, false);
                     Db::delete(Table::DRAFTS, [
                         'id' => $draftId,
                     ]);

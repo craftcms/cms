@@ -376,7 +376,7 @@ $.extend(Craft,
          * @return string
          */
         formatInputId: function(inputName) {
-            return this.rtrim(inputName.replace(/[\[\]\\]+/g, '-'), '-');
+            return this.rtrim(inputName.replace(/[^\w]+/g, '-'), '-');
         },
 
         /**
