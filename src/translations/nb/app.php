@@ -99,7 +99,7 @@ return [
     'Apply YAML changes' => 'Ta i bruk YAML-endringer',
     'Apply changes in your project config YAML files to the loaded project config.' => 'Ta i bruk endringer i YAML-prosjektkonfigurasjonsfilene til den innlastede prosjektkonfigurasjonen.',
     'Apply changes only' => 'Ta kun endringer i bruk',
-    'Apply draft' => 'Apply draft',
+    'Apply draft' => 'Ta i bruk utkastet',
     'Apply new migrations' => 'Bruk nye overføringer',
     'Apply revision to {type}' => 'Apply revision to {type}',
     'Apply this to the {number} remaining conflicts?' => 'Gjøre dette med de {number} gjenstående konfliktene?',
