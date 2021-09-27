@@ -2,7 +2,6 @@ const _ = require('lodash')
 const index = require('tailwindcss/plugin')
 const colors = require('./colors/colors')
 const createSemanticTailwindColors = require('./utils/createSemanticTailwindColors')
-const createSemanticColors = require('./utils/createSemanticColors')
 
 module.exports = index.withOptions(
     // Plugin function
@@ -10,8 +9,16 @@ module.exports = index.withOptions(
         return function(options) {
             const { addBase, addUtilities, theme, variants, e } = options
 
-            // Colors
-            const semanticColors = createSemanticColors(colors, pluginOptions)
+            // Semantic Colors
+            if (!pluginOptions) {
+                return false
+            }
+
+            if (!pluginOptions.semanticColors) {
+                return false
+            }
+
+            const semanticColors = pluginOptions.semanticColors
 
             // Define CSS variables
             let baseStyleColors = {
@@ -94,7 +101,16 @@ module.exports = index.withOptions(
 
     // Config function
     function(pluginOptions = {}) {
-        const semanticColors = createSemanticColors(colors, pluginOptions)
+        if (!pluginOptions) {
+            return false
+        }
+
+        if (!pluginOptions.semanticColors) {
+            return false
+        }
+
+        const semanticColors = pluginOptions.semanticColors
+
         const semanticTailwindColors = createSemanticTailwindColors(semanticColors)
 
         const tailwindColorKeys = [
