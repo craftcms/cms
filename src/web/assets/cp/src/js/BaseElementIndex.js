@@ -2169,12 +2169,6 @@ const FilterHud = Garnish.HUD.extend({
             this.$main.append(response.data.hudHtml);
             Craft.appendHeadHtml(response.data.headHtml);
             Craft.appendFootHtml(response.data.bodyHtml);
-
-            htmx.on('htmx:afterRequest', function(ev) {
-                if (ev.detail.elt.id === id) {
-                    console.log('updated!');
-                }
-            });
         }).catch(() => {
             Craft.cp.displayError(Craft.t('app', 'A server error occurred.'));
         });
