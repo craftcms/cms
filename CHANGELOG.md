@@ -27,6 +27,7 @@
 - Fixed a bug where `craft\web\Response::redirect()` no longer supported passing an array to the `$url` argument. ([#9857](https://github.com/craftcms/cms/issues/9857))
 - Fixed a bug where duplicated entries that were created via an “Applying new propagation method” job weren’t getting positioned correctly based on the original entries’ structure. ([#9782](https://github.com/craftcms/cms/issues/9782))
 - Fixed a bug where unpublished drafts could disappear after clicking “Create entry” if the URI could not be made unique. ([#9873](https://github.com/craftcms/cms/issues/9873))
+- Fixed a bug where `relatedTo*` arguments would cause an error in some cases when using GraphQL API.
 
 ### Security
 - Fixed a potential CSV injection vulnerability.
