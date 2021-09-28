@@ -318,6 +318,8 @@
 - Removed `craft\events\GetAssetThumbUrlEvent::$size`. `$width` and `$height` can be used instead.
 - Removed `craft\events\GlobalSetContentEvent`.
 - Removed `craft\events\RegisterGqlPermissionsEvent`.
+- Removed `craft\events\SearchEvent::getElementIds()`.
+- Removed `craft\events\SearchEvent::setElementIds()`.
 - Removed `craft\feeds\Feeds`.
 - Removed `craft\feeds\GuzzleClient`.
 - Removed `craft\fields\BaseOptionsField::optionLabel()`.
@@ -385,6 +387,7 @@
 - Removed `craft\services\ProjectConfig::CONFIG_ALL_KEY`.
 - Removed `craft\services\ProjectConfig::CONFIG_KEY`.
 - Removed `craft\services\Routes::getDbRoutes()`. `getProjectConfigRoutes()` can be used instead.
+- Removed `craft\services\Search::filterElementIdsByQuery()`. `searchElements()` can be used instead.
 - Removed `craft\services\Search::indexElementFields()`. `indexElementAttributes()` can be used instead.
 - Removed `craft\services\Sections::isSectionTemplateValid()`.
 - Removed `craft\services\Security::getValidationKey()`. `craft\config\GeneralConfig::$securityKey` can be used instead.

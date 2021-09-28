@@ -21,10 +21,10 @@ use yii\base\Event as BaseEvent;
 class SearchEvent extends BaseEvent
 {
     /**
-     * @var ElementQuery|null The element query being executed.
+     * @var ElementQuery The element query being executed.
      * @since 3.7.14
      */
-    public $elementQuery;
+    public ElementQuery $elementQuery;
 
     /**
      * @var SearchQuery The search query
@@ -41,36 +41,4 @@ class SearchEvent extends BaseEvent
      * @since 3.6.0
      */
     public ?array $results = null;
-
-    /**
-     * @see getElementIds()
-     * @see setElementIds()
-     */
-    private $_elementIds;
-
-    /**
-     * For [[\craft\services\Search::EVENT_BEFORE_SEARCH]], this will be the list of element IDs to filter
-     * with the search query.
-     *
-     * For [[\craft\services\Search::EVENT_AFTER_SEARCH]], this will be the resulting list of element IDs that
-     * match the search query.
-     *
-     * @return int[]|null
-     */
-    public function getElementIds(): ?array
-    {
-        if ($this->_elementIds === null && $this->elementQuery !== null) {
-            $this->_elementIds = $this->elementQuery->ids();
-        }
-        return $this->_elementIds;
-    }
-
-    /**
-     * @param int[]|null $elementIds
-     * @since 3.7.14
-     */
-    public function setElementIds(?array $elementIds): void
-    {
-        $this->_elementIds = $elementIds;
-    }
 }

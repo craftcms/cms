@@ -179,30 +179,6 @@ class Search extends Component
     }
 
     /**
-     * Filters a list of element IDs by a given search query.
-     *
-     * @param int[] $elementIds The list of element IDs to filter by the search query.
-     * @param string|array|SearchQuery $searchQuery The search query (either a string or a SearchQuery instance)
-     * @param bool $scoreResults Whether to order the results based on how closely they match the query. (No longer checked.)
-     * @param int|int[]|null $siteId The site ID(s) to filter by.
-     * @param bool $returnScores Whether the search scores should be included in the results. If true, results will be returned as `element ID => score`.
-     * @param FieldInterface[]|null $customFields The custom fields involved in the query.
-     * @return array The filtered list of element IDs.
-     * @deprecated in 3.7.14. Use [[searchElements()]] instead.
-     */
-    public function filterElementIdsByQuery(
-        array $elementIds,
-        $searchQuery,
-        bool $scoreResults = true,
-        $siteId = null,
-        bool $returnScores = false,
-        ?array $customFields = null
-    ): array {
-        $scoredResults = $this->_searchElements(null, $elementIds, $searchQuery, $siteId, $customFields);
-        return $returnScores ? $scoredResults : array_keys($scoredResults);
-    }
-
-    /**
      * Searches for elements that match the given element query.
      *
      * @param ElementQuery $elementQuery The element query being executed
@@ -211,49 +187,27 @@ class Search extends Component
      */
     public function searchElements(ElementQuery $elementQuery): array
     {
-        return $this->_searchElements($elementQuery, null, $elementQuery->search, $elementQuery->siteId, $elementQuery->customFields);
-    }
-
-    /**
-     * Filters a list of element IDs by a given search query.
-     *
-     * @param ElementQuery|null $elementQuery
-     * @param int[]|null $elementIds
-     * @param string|array|SearchQuery $searchQuery
-     * @param int|int[]|null $siteId
-     * @param FieldInterface[]|null $customFields
-     * @return array
-     */
-    private function _searchElements(
-        ?ElementQuery $elementQuery,
-        ?array $elementIds,
-        $searchQuery,
-        $siteId,
-        ?array $customFields
-    ): array {
-        if ($elementQuery !== null) {
-            $elementQuery = (clone $elementQuery)
-                ->search(null)
-                ->offset(null)
-                ->limit(null);
-        }
-
+        $searchQuery = $elementQuery->search;
         if (is_string($searchQuery)) {
             $searchQuery = new SearchQuery($searchQuery, Craft::$app->getConfig()->getGeneral()->defaultSearchTermOptions);
         } else if (is_array($searchQuery)) {
-            $options = $searchQuery;
-            $searchQuery = $options['query'];
-            unset($options['query']);
+            $options = array_merge($searchQuery);
+            $searchQuery = ArrayHelper::remove($options, 'query');
             $options = array_merge(Craft::$app->getConfig()->getGeneral()->defaultSearchTermOptions, $options);
             $searchQuery = new SearchQuery($searchQuery, $options);
         }
+
+        $elementQuery = (clone $elementQuery)
+            ->search(null)
+            ->offset(null)
+            ->limit(null);
 
         // Fire a 'beforeSearch' event
         if ($this->hasEventHandlers(self::EVENT_BEFORE_SEARCH)) {
             $this->trigger(self::EVENT_BEFORE_SEARCH, new SearchEvent([
                 'elementQuery' => $elementQuery,
                 'query' => $searchQuery,
-                'siteId' => $siteId,
+                'siteId' => $elementQuery->siteId,
             ]));
         }
 
@@ -270,12 +224,14 @@ class Search extends Component
             }
         }
 
-        if ($customFields !== null) {
-            $customFields = new MemoizableArray($customFields);
+        if ($elementQuery->customFields !== null) {
+            $customFields = new MemoizableArray($elementQuery->customFields);
+        } else {
+            $customFields = null;
         }
 
         // Get where clause from tokens, bail out if no valid query is there
-        $where = $this->_getWhereClause($siteId, $customFields);
+        $where = $this->_getWhereClause($elementQuery->siteId, $customFields);
 
         if (empty($where)) {
             return [];
@@ -283,20 +239,14 @@ class Search extends Component
 
         $query = (new Query())
             ->from([Table::SEARCHINDEX])
-            ->where(new Expression($where));
+            ->where(new Expression($where))
+            ->andWhere([
+                'elementId' => $elementQuery->select(['elements.id']),
+            ])
+            ->cache(true, new ElementQueryTagDependency($elementQuery));;
 
-        if ($siteId !== null) {
-            $query->andWhere(['siteId' => $siteId]);
-        }
-
-        if ($elementQuery !== null) {
-            $query
-                ->andWhere([
-                    'elementId' => $elementQuery->select(['elements.id']),
-                ])
-                ->cache(true, new ElementQueryTagDependency($elementQuery));
-        } else if (!empty($elementIds)) {
-            $query->andWhere(['elementId' => $elementIds]);
+        if ($elementQuery->siteId !== null) {
+            $query->andWhere(['siteId' => $elementQuery->siteId]);
         }
 
         // Execute the sql
@@ -308,7 +258,7 @@ class Search extends Component
         // Loop through results and calculate score per element
         foreach ($results as $row) {
             $elementId = $row['elementId'];
-            $score = $this->_scoreRow($row, $siteId);
+            $score = $this->_scoreRow($row, $elementQuery->siteId);
 
             if (!isset($scoresByElementId[$elementId])) {
                 $scoresByElementId[$elementId] = $score;
@@ -323,9 +273,8 @@ class Search extends Component
         if ($this->hasEventHandlers(self::EVENT_AFTER_SEARCH)) {
             $this->trigger(self::EVENT_AFTER_SEARCH, new SearchEvent([
                 'elementQuery' => $elementQuery,
-                'elementIds' => array_keys($scoresByElementId),
                 'query' => $searchQuery,
-                'siteId' => $siteId,
+                'siteId' => $elementQuery->siteId,
                 'results' => $results,
             ]));
         }
