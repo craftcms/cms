@@ -88,6 +88,7 @@
 - All control panel templates end in `.twig` now. ([#9743](https://github.com/craftcms/cms/pull/9743))
 - The `users/save-user` action no longer includes a `unverifiedEmail` key in failure responses.
 - When using GraphQL to mutate entries, the `enabled` status is now affected on a per-site basis when specifying both the `enabled` and `siteId` parameters. ([#9771](https://github.com/craftcms/cms/issues/9771))
+- The `searchScore` field is now an integer for elements when using the GraphQL API.
 - Plugins’ `$changelogUrl` properties must now have a `?string` type declaration.
 - Plugins’ `$description` properties must now have a `?string` type declaration.
 - Plugins’ `$developer` properties must now have a `?string` type declaration.
