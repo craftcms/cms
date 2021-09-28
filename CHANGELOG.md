@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 3.x
 
-## Unreleased
+## 3.7.14 - 2021-09-28
 
 ### Added
 - Added `craft\base\Element::EVENT_PREP_QUERY_FOR_TABLE_ATTRIBUTE`. ([#9862](https://github.com/craftcms/cms/pull/9862))
