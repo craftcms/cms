@@ -13,6 +13,9 @@ import '../../cp/src/js/BaseElementSelectInput.js';
 import '../../cp/src/js/BaseElementSelectorModal.js';
 import '../../cp/src/js/BaseInputGenerator.js';
 
+// Tabs
+import '../../cp/src/js/Tabs.js';
+
 // Finally load the remaining files
 import '../../cp/src/js/AdminTable.js';
 import '../../cp/src/js/AssetEditor.js';
