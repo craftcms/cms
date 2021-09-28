@@ -20,17 +20,17 @@ abstract class BaseEventTagVisitor implements NodeVisitorInterface
     /**
      * @var bool Whether the head() tag has been found/added
      */
-    protected static $foundHead = false;
+    protected static bool $foundHead = false;
 
     /**
      * @var bool Whether the beginBody() tag has been found/added
      */
-    protected static $foundBeginBody = false;
+    protected static bool $foundBeginBody = false;
 
     /**
      * @var bool Whether the endBody() tag has been found/added
      */
-    protected static $foundEndBody = false;
+    protected static bool $foundEndBody = false;
 
     /**
      * Returns whether all event tags have been found/added.

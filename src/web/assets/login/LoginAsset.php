@@ -9,9 +9,9 @@ namespace craft\web\assets\login;
 
 use Craft;
 use craft\validators\UserPasswordValidator;
-use craft\web\AssetBundle;
 use craft\web\assets\cp\CpAsset;
 use craft\web\View;
+use yii\web\AssetBundle;
 
 /**
  * Asset bundle for the Login page
@@ -47,7 +47,7 @@ class LoginAsset extends AssetBundle
     /**
      * @inheritdoc
      */
-    public function registerAssetFiles($view)
+    public function registerAssetFiles($view): void
     {
         parent::registerAssetFiles($view);
 

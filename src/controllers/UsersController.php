@@ -126,7 +126,7 @@ class UsersController extends Controller
     /**
      * @inheritdoc
      */
-    public function beforeAction($action)
+    public function beforeAction($action): bool
     {
         // Don't enable CSRF validation for login requests if the user is already logged-in.
         // (Guards against double-clicking a Login button.)
@@ -143,7 +143,7 @@ class UsersController extends Controller
      * @return Response|null
      * @throws BadRequestHttpException
      */
-    public function actionLogin()
+    public function actionLogin(): ?Response
     {
         $userSession = Craft::$app->getUser();
         if (!$userSession->getIsGuest()) {
@@ -197,7 +197,7 @@ class UsersController extends Controller
      * @throws BadRequestHttpException
      * @throws ForbiddenHttpException
      */
-    public function actionImpersonate()
+    public function actionImpersonate(): ?Response
     {
         $this->requirePostRequest();
 
@@ -277,7 +277,7 @@ class UsersController extends Controller
      * @throws ForbiddenHttpException
      * @since 3.6.0
      */
-    public function actionImpersonateWithToken(int $userId, int $prevUserId)
+    public function actionImpersonateWithToken(int $userId, int $prevUserId): ?Response
     {
         $this->requireToken();
 
@@ -308,18 +308,6 @@ class UsersController extends Controller
         if (!Craft::$app->getUsers()->canImpersonate(Craft::$app->getUser()->getIdentity(), $user)) {
             throw new ForbiddenHttpException('You do not have sufficient permissions to impersonate this user');
         }
-    }
-
-    /**
-     * Returns how many seconds are left in the current user session.
-     *
-     * @return Response
-     * @deprecated in 3.4.0. Use [[actionSessionInfo()]] instead.
-     */
-    public function actionGetRemainingSessionTime(): Response
-    {
-        Craft::$app->getDeprecator()->log(__METHOD__, 'The `users/get-remaining-session-time` action is deprecated. Use `users/session-info` instead.');
-        return $this->runAction('session-info');
     }
 
     /**
@@ -372,9 +360,9 @@ class UsersController extends Controller
     /**
      * Starts an elevated user session.
      *
-     * return Response
+     * @return Response
      */
-    public function actionStartElevatedSession()
+    public function actionStartElevatedSession(): Response
     {
         $password = $this->request->getBodyParam('currentPassword') ?? $this->request->getBodyParam('password');
 
@@ -432,7 +420,7 @@ class UsersController extends Controller
      * @return Response|null
      * @throws NotFoundHttpException if the requested user cannot be found
      */
-    public function actionSendPasswordResetEmail()
+    public function actionSendPasswordResetEmail(): ?Response
     {
         $this->requirePostRequest();
         $errors = [];
@@ -467,7 +455,7 @@ class UsersController extends Controller
 
             $user = Craft::$app->getUsers()->getUserByUsernameOrEmail($loginName);
 
-            if (!$user) {
+            if (!$user || !$user->getIsCredentialed()) {
                 $errors[] = Craft::t('app', 'Invalid username or email.');
             }
         }
@@ -500,7 +488,7 @@ class UsersController extends Controller
      * @return Response
      * @throws BadRequestHttpException if the existing password submitted with the request is invalid
      */
-    public function actionGetPasswordResetUrl()
+    public function actionGetPasswordResetUrl(): Response
     {
         $this->requirePermission('administrateUsers');
 
@@ -695,7 +683,7 @@ class UsersController extends Controller
      * @throws NotFoundHttpException if the requested user cannot be found
      * @throws BadRequestHttpException if there’s a mismatch between|null $userId and|null $user
      */
-    public function actionEditUser($userId = null, User $user = null, array $errors = null): Response
+    public function actionEditUser($userId = null, ?User $user = null, ?array $errors = null): Response
     {
         if (!empty($errors)) {
             $this->setFailFlash(reset($errors));
@@ -713,7 +701,7 @@ class UsersController extends Controller
                 $user = User::find()
                     ->addSelect(['users.password', 'users.passwordResetRequired'])
                     ->id($userId === 'current' ? $userSession->getId() : $userId)
-                    ->anyStatus()
+                    ->status(null)
                     ->one();
             } else if ($edition === Craft::Pro) {
                 // Registering a new user
@@ -741,6 +729,10 @@ class UsersController extends Controller
         }
 
         $currentUser = $userSession->getIdentity();
+        $canAdministrateUsers = $currentUser->can('administrateUsers');
+        $canModerateUsers = $currentUser->can('moderateUsers');
+
+        $name = trim($user->getName());
 
         // Determine which actions should be available
         // ---------------------------------------------------------------------
@@ -753,29 +745,33 @@ class UsersController extends Controller
 
         if ($edition === Craft::Pro && !$isNewUser) {
             switch ($user->getStatus()) {
+                case User::STATUS_INACTIVE:
                 case User::STATUS_PENDING:
-                    $statusLabel = Craft::t('app', 'Pending');
-                    $statusActions[] = [
-                        'action' => 'users/send-activation-email',
-                        'label' => Craft::t('app', 'Send activation email'),
-                    ];
-                    if ($userSession->checkPermission('administrateUsers')) {
-                        // Only need to show the "Copy activation URL" option if they don't have a password
-                        if (!$user->password) {
+                    $statusLabel = $user->pending ? Craft::t('app', 'Pending') : Craft::t('app', 'Inactive');
+                    // Only provide activation actions if they have an email address
+                    if ($user->email) {
+                        $statusActions[] = [
+                            'action' => 'users/send-activation-email',
+                            'label' => Craft::t('app', 'Send activation email'),
+                        ];
+                        if ($canAdministrateUsers) {
+                            // Only need to show the "Copy activation URL" option if they don't have a password
+                            if (!$user->password) {
+                                $statusActions[] = [
+                                    'id' => 'copy-passwordreset-url',
+                                    'label' => Craft::t('app', 'Copy activation URL'),
+                                ];
+                            }
                             $statusActions[] = [
-                                'id' => 'copy-passwordreset-url',
-                                'label' => Craft::t('app', 'Copy activation URL'),
+                                'action' => 'users/activate-user',
+                                'label' => Craft::t('app', 'Activate account'),
                             ];
                         }
-                        $statusActions[] = [
-                            'action' => 'users/activate-user',
-                            'label' => Craft::t('app', 'Activate account'),
-                        ];
                     }
                     break;
                 case User::STATUS_SUSPENDED:
                     $statusLabel = Craft::t('app', 'Suspended');
-                    if ($userSession->checkPermission('moderateUsers')) {
+                    if ($canModerateUsers) {
                         $statusActions[] = [
                             'action' => 'users/unsuspend-user',
                             'label' => Craft::t('app', 'Unsuspend'),
@@ -788,7 +784,7 @@ class UsersController extends Controller
                         if (
                             !$isCurrentUser &&
                             ($currentUser->admin || !$user->admin) &&
-                            $userSession->checkPermission('moderateUsers') &&
+                            $canModerateUsers &&
                             (
                                 ($previousUserId = Session::get(User::IMPERSONATE_KEY)) === null ||
                                 $user->id != $previousUserId
@@ -808,7 +804,7 @@ class UsersController extends Controller
                             'action' => 'users/send-password-reset-email',
                             'label' => Craft::t('app', 'Send password reset email'),
                         ];
-                        if ($userSession->checkPermission('administrateUsers')) {
+                        if ($canAdministrateUsers) {
                             $statusActions[] = [
                                 'id' => 'copy-passwordreset-url',
                                 'label' => Craft::t('app', 'Copy password reset URL'),
@@ -822,7 +818,9 @@ class UsersController extends Controller
                 if (Craft::$app->getUsers()->canImpersonate($currentUser, $user)) {
                     $sessionActions[] = [
                         'action' => 'users/impersonate',
-                        'label' => Craft::t('app', 'Login as {user}', ['user' => $user->getName()]),
+                        'label' => $name
+                            ? Craft::t('app', 'Login as {user}', ['user' => $user->getName()])
+                            : Craft::t('app', 'Login as user'),
                     ];
                     $sessionActions[] = [
                         'id' => 'copy-impersonation-url',
@@ -830,7 +828,7 @@ class UsersController extends Controller
                     ];
                 }
 
-                if ($userSession->checkPermission('moderateUsers') && $user->getStatus() != User::STATUS_SUSPENDED) {
+                if ($canModerateUsers && $user->active && !$user->suspended) {
                     $destructiveActions[] = [
                         'action' => 'users/suspend-user',
                         'label' => Craft::t('app', 'Suspend'),
@@ -838,10 +836,17 @@ class UsersController extends Controller
                 }
             }
 
-            if ($isCurrentUser || $userSession->checkPermission('deleteUsers')) {
-                // Even if they have delete user permissions, we don't want a non-admin
-                // to be able to delete an admin.
-                if (($currentUser && $currentUser->admin) || !$user->admin) {
+            // Destructive actions that should only be performed on non-admins, unless the current user is also an admin
+            if (!$user->admin || $currentUser->admin) {
+                if (($isCurrentUser || $canAdministrateUsers) && ($user->active || $user->pending)) {
+                    $destructiveActions[] = [
+                        'action' => 'users/deactivate-user',
+                        'label' => Craft::t('app', 'Deactivate…'),
+                        'confirm' => Craft::t('app', 'Deactivating a user revokes their ability to sign in. Are you sure you want to continue?'),
+                    ];
+                }
+
+                if ($isCurrentUser || $userSession->checkPermission('deleteUsers')) {
                     $destructiveActions[] = [
                         'id' => 'delete-btn',
                         'label' => Craft::t('app', 'Delete…'),
@@ -864,7 +869,10 @@ class UsersController extends Controller
             $event->statusActions,
             $event->miscActions,
             $event->sessionActions,
-            $event->destructiveActions,
+            array_map(function(array $action): array {
+                $action['destructive'] = true;
+                return $action;
+            }, $event->destructiveActions),
         ]);
 
         // Set the appropriate page title
@@ -873,13 +881,13 @@ class UsersController extends Controller
         if (!$isNewUser) {
             if ($isCurrentUser) {
                 $title = Craft::t('app', 'My Account');
-            } else if ($name = trim($user->getName())) {
+            } else if ($name) {
                 $title = Craft::t('app', '{user}’s Account', ['user' => $name]);
             } else {
                 $title = Craft::t('app', 'Edit User');
             }
         } else {
-            $title = Craft::t('app', 'Register a new user');
+            $title = Craft::t('app', 'Create a new user');
         }
 
         // Prep the form tabs & content
@@ -887,6 +895,7 @@ class UsersController extends Controller
 
         $form = $user->getFieldLayout()->createForm($user, false, [
             'tabIdPrefix' => 'profile',
+            'registerDeltas' => true,
         ]);
         $selectedTab = 'account';
 
@@ -1047,7 +1056,7 @@ class UsersController extends Controller
      * @throws BadRequestHttpException if attempting to create a client account, and one already exists
      * @throws ForbiddenHttpException if attempting public registration but public registration is not allowed
      */
-    public function actionSaveUser()
+    public function actionSaveUser(): ?Response
     {
         $this->requirePostRequest();
 
@@ -1057,6 +1066,7 @@ class UsersController extends Controller
         $generalConfig = Craft::$app->getConfig()->getGeneral();
         $userSettings = Craft::$app->getProjectConfig()->get('users') ?? [];
         $requireEmailVerification = $userSettings['requireEmailVerification'] ?? true;
+        $deactivateByDefault = $userSettings['deactivateByDefault'] ?? false;
         $userVariable = $this->request->getValidatedBodyParam('userVariable') ?? 'user';
         $returnCsrfToken = false;
 
@@ -1071,7 +1081,7 @@ class UsersController extends Controller
         if ($userId) {
             $user = User::find()
                 ->id($userId)
-                ->anyStatus()
+                ->status(null)
                 ->addSelect(['users.password', 'users.passwordResetRequired'])
                 ->one();
 
@@ -1103,10 +1113,6 @@ class UsersController extends Controller
             }
 
             $user = new User();
-
-            if ($isPublicRegistration && ($userSettings['suspendByDefault'] ?? false)) {
-                $user->suspended = true;
-            }
         }
 
         $isCurrentUser = $user->getIsCurrent();
@@ -1133,24 +1139,29 @@ class UsersController extends Controller
             if ($newEmail) {
                 // Should we be sending a verification email now?
                 // Even if verification isn't required, send one out on account creation if we don't have a password yet
-                $sendVerificationEmail = (
-                    (
-                        $requireEmailVerification && (
-                            $isPublicRegistration ||
-                            ($isCurrentUser && !$canAdministrateUsers) ||
-                            $this->request->getBodyParam('sendVerificationEmail')
+                $sendVerificationEmail = (!$isPublicRegistration || !$deactivateByDefault) && (
+                        (
+                            $requireEmailVerification && (
+                                $isPublicRegistration ||
+                                ($isCurrentUser && !$canAdministrateUsers) ||
+                                $this->request->getBodyParam('sendVerificationEmail')
+                            )
+                        ) ||
+                        (
+                            !$requireEmailVerification && $isNewUser && (
+                                ($isPublicRegistration && $generalConfig->deferPublicRegistrationPassword) ||
+                                $this->request->getBodyParam('sendVerificationEmail')
+                            )
                         )
-                    ) ||
-                    (
-                        !$requireEmailVerification && $isNewUser && (
-                            ($isPublicRegistration && $generalConfig->deferPublicRegistrationPassword) ||
-                            $this->request->getBodyParam('sendVerificationEmail')
-                        )
-                    )
-                );
+                    );
 
                 if ($sendVerificationEmail) {
                     $user->unverifiedEmail = $newEmail;
+
+                    // Mark them as pending
+                    if (!$user->active) {
+                        $user->pending = true;
+                    }
                 } else {
                     // Clear out the unverified email if there is one,
                     // so it doesn't overwrite the new email later on
@@ -1200,12 +1211,6 @@ class UsersController extends Controller
         $user->firstName = $this->request->getBodyParam('firstName', $user->firstName);
         $user->lastName = $this->request->getBodyParam('lastName', $user->lastName);
 
-        // New users should always be initially saved in a pending state,
-        // even if an admin is doing this and opted to not send the verification email
-        if ($isNewUser) {
-            $user->pending = true;
-        }
-
         // There are some things only admins can change
         if ($currentUser && $currentUser->admin) {
             $user->passwordResetRequired = (bool)$this->request->getBodyParam('passwordResetRequired', $user->passwordResetRequired);
@@ -1253,9 +1258,9 @@ class UsersController extends Controller
             }
 
             // Copy any 'unverifiedEmail' errors to 'email'
-            // todo: clear out the 'unverifiedEmail' errors in Craft 4
             if (!$user->hasErrors('email')) {
                 $user->addErrors(['email' => $user->getErrors('unverifiedEmail')]);
+                $user->clearErrors('unverifiedEmail');
             }
 
             if ($this->request->getAcceptsJson()) {
@@ -1311,6 +1316,10 @@ class UsersController extends Controller
         }
 
         // Is this the current user, and did their username just change?
+        // todo: remove comment when WI-51866 is fixed
+        /** @noinspection PhpUndefinedVariableInspection */
+        // todo: remove comment when phpstan#5401 is fixed
+        /** @phpstan-ignore-next-line */
         if ($isCurrentUser && $user->username !== $oldUsername) {
             // Update the username cookie
             $userSession->sendUsernameCookie($user);
@@ -1346,7 +1355,7 @@ class UsersController extends Controller
         }
 
         // Do we need to send a verification email out?
-        if ($sendVerificationEmail && !$user->suspended) {
+        if ($sendVerificationEmail) {
             // Temporarily set the unverified email on the User so the verification email goes to the
             // right place
             $originalEmail = $user->email;
@@ -1406,7 +1415,7 @@ class UsersController extends Controller
      * @return Response|null
      * @throws BadRequestHttpException if the uploaded file is not an image
      */
-    public function actionUploadUserPhoto()
+    public function actionUploadUserPhoto(): ?Response
     {
         $this->requireAcceptsJson();
 
@@ -1493,7 +1502,7 @@ class UsersController extends Controller
 
         $user = User::find()
             ->id($userId)
-            ->anyStatus()
+            ->status(null)
             ->addSelect(['users.password'])
             ->one();
 
@@ -1566,7 +1575,7 @@ class UsersController extends Controller
      * @return Response|null
      * @throws ForbiddenHttpException if a non-admin is attempting to suspend an admin
      */
-    public function actionSuspendUser()
+    public function actionSuspendUser(): ?Response
     {
         $this->requirePostRequest();
         $this->requirePermission('moderateUsers');
@@ -1618,7 +1627,7 @@ class UsersController extends Controller
                 ->authorId($userIds)
                 ->siteId('*')
                 ->unique()
-                ->anyStatus()
+                ->status(null)
                 ->count();
 
             if ($entryCount) {
@@ -1639,11 +1648,47 @@ class UsersController extends Controller
     }
 
     /**
+     * Deactivates a user.
+     *
+     * @return Response|null
+     * @since 4.0.0
+     */
+    public function actionDeactivateUser(): ?Response
+    {
+        $this->requirePostRequest();
+
+        $userId = $this->request->getRequiredBodyParam('userId');
+        $user = Craft::$app->getUsers()->getUserById($userId);
+
+        if (!$user) {
+            $this->_noUserExists();
+        }
+
+        if (!$user->getIsCurrent()) {
+            $this->requirePermission('administrateUsers');
+
+            // Even if you have administrateUsers permissions, only and admin should be able to deactivate another admin.
+            if ($user->admin) {
+                $this->requireAdmin(false);
+            }
+        }
+
+        // Deactivate the user
+        if (Craft::$app->getUsers()->deactivateUser($user)) {
+            $this->setSuccessFlash(Craft::t('app', 'Successfully deactivated the user.'));
+        } else {
+            $this->setFailFlash(Craft::t('app', 'There was a problem deactivating the user.'));
+        }
+
+        return $this->redirectToPostedUrl();
+    }
+
+    /**
      * Deletes a user.
      *
      * @return Response|null
      */
-    public function actionDeleteUser()
+    public function actionDeleteUser(): ?Response
     {
         $this->requirePostRequest();
 
@@ -1698,7 +1743,7 @@ class UsersController extends Controller
      * @return Response|null
      * @throws ForbiddenHttpException if a non-admin is attempting to unsuspend an admin
      */
-    public function actionUnsuspendUser()
+    public function actionUnsuspendUser(): ?Response
     {
         $this->requirePostRequest();
         $this->requirePermission('moderateUsers');
@@ -1731,7 +1776,7 @@ class UsersController extends Controller
      *
      * @return Response|null
      */
-    public function actionSaveFieldLayout()
+    public function actionSaveFieldLayout(): ?Response
     {
         $this->requirePostRequest();
         $this->requireAdmin();
@@ -1782,7 +1827,7 @@ class UsersController extends Controller
      * @return Response|null
      * @throws ServiceUnavailableHttpException
      */
-    private function _handleLoginFailure(string $authError = null, User $user = null)
+    private function _handleLoginFailure(?string $authError, ?User $user = null): ?Response
     {
         // Delay randomly between 0 and 1.5 seconds.
         usleep(random_int(0, 1500000));
@@ -1862,7 +1907,13 @@ class UsersController extends Controller
                 Craft::$app->getUrlManager()->setRouteParams([
                     'variables' => $variables,
                 ]);
-                Craft::$app->getRequest()->checkIfActionRequest(true, true, false);
+
+                // Avoid re-routing to the same action again
+                $this->request->checkIfActionRequest(true, true, false);
+                if ($this->request->getActionSegments() === ['users', 'set-password']) {
+                    $this->request->setIsActionRequest(false);
+                }
+
                 return Craft::$app->handleRequest($this->request, true);
             } catch (NotFoundHttpException $e) {
                 // Just go with the CP template
@@ -1876,11 +1927,11 @@ class UsersController extends Controller
     /**
      * Throws a "no user exists" exception
      *
-     * @throws NotFoundHttpException
+     * @throws BadRequestHttpException
      */
-    private function _noUserExists()
+    private function _noUserExists(): void
     {
-        throw new NotFoundHttpException('User not found');
+        throw new BadRequestHttpException('User not found');
     }
 
     /**
@@ -1922,10 +1973,9 @@ class UsersController extends Controller
 
     /**
      * @param User $user
-     * @return void
      * @throws \Throwable if reasons
      */
-    private function _processUserPhoto(User $user)
+    private function _processUserPhoto(User $user): void
     {
         // Delete their photo?
         $users = Craft::$app->getUsers();
@@ -1993,7 +2043,7 @@ class UsersController extends Controller
      * @param User $currentUser
      * @throws ForbiddenHttpException if the user account doesn't have permission to assign the attempted permissions
      */
-    private function _saveUserPermissions(User $user, User $currentUser)
+    private function _saveUserPermissions(User $user, User $currentUser): void
     {
         if (!$currentUser->can('assignUserPermissions')) {
             return;
@@ -2043,7 +2093,7 @@ class UsersController extends Controller
      * @param User $currentUser
      * @throws ForbiddenHttpException if the user account doesn't have permission to assign the attempted groups
      */
-    private function _saveUserGroups(User $user, User $currentUser)
+    private function _saveUserGroups(User $user, User $currentUser): void
     {
         if (!$currentUser->can('assignUserGroups')) {
             return;
@@ -2103,7 +2153,7 @@ class UsersController extends Controller
         /** @var User|null $user */
         $user = User::find()
             ->uid($uid)
-            ->anyStatus()
+            ->status(null)
             ->addSelect(['users.password'])
             ->one();
 
@@ -2140,11 +2190,11 @@ class UsersController extends Controller
     }
 
     /**
-     * @param User|null
+     * @param User|null $user
      * @return Response
      * @throws HttpException if the verification code is invalid
      */
-    private function _processInvalidToken(User $user = null): Response
+    private function _processInvalidToken(?User $user = null): Response
     {
         $this->trigger(self::EVENT_INVALID_USER_TOKEN, new InvalidUserTokenEvent([
             'user' => $user,
@@ -2179,7 +2229,7 @@ class UsersController extends Controller
      * @param User $user The user that was just activated
      * @return Response|null
      */
-    private function _onAfterActivateUser(User $user)
+    private function _onAfterActivateUser(User $user): ?Response
     {
         $this->_maybeLoginUserAfterAccountActivation($user);
 
@@ -2211,7 +2261,7 @@ class UsersController extends Controller
      * @param User $user The user to redirect
      * @return Response|null
      */
-    private function _redirectUserToCp(User $user)
+    private function _redirectUserToCp(User $user): ?Response
     {
         // Can they access the CP?
         if ($user->can('accessCp')) {
@@ -2254,7 +2304,7 @@ class UsersController extends Controller
      * @param string|null $loginName
      * @return Response|null
      */
-    private function _handleSendPasswordResetError(array $errors, string $loginName = null)
+    private function _handleSendPasswordResetError(array $errors, ?string $loginName = null): ?Response
     {
         if ($this->request->getAcceptsJson()) {
             /** @noinspection CallableParameterUseCaseInTypeContextInspection */

@@ -38,7 +38,7 @@ class SystemSettingsController extends Controller
     /**
      * @inheritdoc
      */
-    public function beforeAction($action)
+    public function beforeAction($action): bool
     {
         // All system setting actions require an admin
         $this->requireAdmin();
@@ -56,7 +56,7 @@ class SystemSettingsController extends Controller
         $this->getView()->registerAssetBundle(GeneralSettingsAsset::class);
 
         return $this->renderTemplate('settings/general/_index', [
-            'system' => Craft::$app->getProjectConfig()->get('system'),
+            'system' => Craft::$app->getProjectConfig()->get('system') ?? [],
         ]);
     }
 
@@ -65,7 +65,7 @@ class SystemSettingsController extends Controller
      *
      * @return Response|null
      */
-    public function actionSaveGeneralSettings()
+    public function actionSaveGeneralSettings(): ?Response
     {
         $this->requirePostRequest();
 
@@ -89,7 +89,7 @@ class SystemSettingsController extends Controller
      * @return Response
      * @throws Exception if a plugin returns an invalid mail transport type
      */
-    public function actionEditEmailSettings(MailSettings $settings = null, TransportAdapterInterface $adapter = null): Response
+    public function actionEditEmailSettings(?MailSettings $settings = null, ?TransportAdapterInterface $adapter = null): Response
     {
         if ($settings === null) {
             $settings = App::mailSettings();
@@ -155,7 +155,7 @@ class SystemSettingsController extends Controller
      *
      * @return Response|null
      */
-    public function actionSaveEmailSettings()
+    public function actionSaveEmailSettings(): ?Response
     {
         $this->requirePostRequest();
 
@@ -187,7 +187,7 @@ class SystemSettingsController extends Controller
     /**
      * Tests the email settings.
      */
-    public function actionTestEmailSettings()
+    public function actionTestEmailSettings(): void
     {
         $this->requirePostRequest();
 
@@ -232,7 +232,7 @@ class SystemSettingsController extends Controller
      * @return Response
      * @throws NotFoundHttpException if the requested global set cannot be found
      */
-    public function actionEditGlobalSet(int $globalSetId = null, GlobalSet $globalSet = null): Response
+    public function actionEditGlobalSet(?int $globalSetId = null, ?GlobalSet $globalSet = null): Response
     {
         if ($globalSet === null) {
             if ($globalSetId !== null) {

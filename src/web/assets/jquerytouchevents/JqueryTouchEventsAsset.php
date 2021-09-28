@@ -7,7 +7,7 @@
 
 namespace craft\web\assets\jquerytouchevents;
 
-use craft\web\AssetBundle;
+use yii\web\AssetBundle;
 
 /**
  * JqueryTouchEvents asset bundle.

@@ -7,26 +7,26 @@
 
 namespace craft\records;
 
-use Craft;
+use craft\db\ActiveQuery;
 use craft\db\ActiveRecord;
 use craft\db\Table;
-use yii\db\ActiveQuery;
 use yii\db\ActiveQueryInterface;
 
 /**
  * Class User record.
  *
  * @property int $id ID
- * @property string $username Username
  * @property int $photoId Photo ID
+ * @property bool $active Active
+ * @property bool $pending Pending
+ * @property bool $locked Locked
+ * @property bool $suspended Suspended
+ * @property bool $admin Admin
+ * @property string $username Username
  * @property string $firstName First name
  * @property string $lastName Last name
  * @property string $email Email
  * @property string $password Password
- * @property bool $admin Admin
- * @property bool $locked Locked
- * @property bool $suspended Suspended
- * @property bool $pending Pending
  * @property \DateTime $lastLoginDate Last login date
  * @property string $lastLoginAttemptIp Last login attempt IP
  * @property \DateTime $invalidLoginWindowStart Invalid login window start
@@ -59,7 +59,7 @@ class User extends ActiveRecord
     /**
      * @return ActiveQuery
      */
-    public static function find()
+    public static function find(): ActiveQuery
     {
         return parent::find()
             ->innerJoinWith(['element element'])

@@ -11,8 +11,10 @@ use Craft;
 use craft\base\ElementInterface;
 use craft\base\Field;
 use craft\base\PreviewableFieldInterface;
+use craft\helpers\App;
 use craft\helpers\Cp;
 use craft\helpers\Html;
+use craft\helpers\StringHelper;
 use yii\db\Schema;
 
 /**
@@ -42,7 +44,18 @@ class Email extends Field implements PreviewableFieldInterface
     /**
      * @var string|null The input’s placeholder text
      */
-    public $placeholder;
+    public ?string $placeholder = null;
+
+    /**
+     * @inheritdoc
+     */
+    public function __construct($config = [])
+    {
+        if (($config['placeholder'] ?? null) === '') {
+            unset($config['placeholder']);
+        }
+        parent::__construct($config);
+    }
 
     /**
      * @inheritdoc
@@ -55,7 +68,7 @@ class Email extends Field implements PreviewableFieldInterface
     /**
      * @inheritdoc
      */
-    public function getSettingsHtml()
+    public function getSettingsHtml(): ?string
     {
         return Cp::textFieldHtml([
             'label' => Craft::t('app', 'Placeholder Text'),
@@ -70,7 +83,23 @@ class Email extends Field implements PreviewableFieldInterface
     /**
      * @inheritdoc
      */
-    protected function inputHtml($value, ElementInterface $element = null): string
+    public function normalizeValue($value, ElementInterface $element = null)
+    {
+        return $value !== '' ? $value : null;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function serializeValue($value, ElementInterface $element = null)
+    {
+        return $value !== null ? StringHelper::idnToUtf8Email($value) : null;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    protected function inputHtml($value, ?ElementInterface $element = null): string
     {
         $id = Html::id($this->handle);
         return Craft::$app->getView()->renderTemplate('_includes/forms/text', [
@@ -91,7 +120,7 @@ class Email extends Field implements PreviewableFieldInterface
     {
         return [
             ['trim'],
-            ['email'],
+            ['email', 'enableIDN' => App::supportsIdn(), 'enableLocalIDN' => false],
         ];
     }
 

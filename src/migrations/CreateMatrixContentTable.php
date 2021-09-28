@@ -21,12 +21,12 @@ class CreateMatrixContentTable extends Migration
     /**
      * @var string|null The table name
      */
-    public $tableName;
+    public ?string $tableName = null;
 
     /**
      * @inheritdoc
      */
-    public function safeUp()
+    public function safeUp(): bool
     {
         $this->createTable($this->tableName, [
             'id' => $this->primaryKey(),
@@ -39,12 +39,14 @@ class CreateMatrixContentTable extends Migration
 
         $this->createIndex(null, $this->tableName, ['elementId', 'siteId'], true);
         $this->addForeignKeys();
+
+        return true;
     }
 
     /**
      * Adds the foreign keys.
      */
-    public function addForeignKeys()
+    public function addForeignKeys(): void
     {
         $this->addForeignKey(null, $this->tableName, ['elementId'], Table::ELEMENTS, ['id'], 'CASCADE', null);
         $this->addForeignKey(null, $this->tableName, ['siteId'], Table::SITES, ['id'], 'CASCADE', 'CASCADE');
@@ -53,7 +55,7 @@ class CreateMatrixContentTable extends Migration
     /**
      * @inheritdoc
      */
-    public function safeDown()
+    public function safeDown(): bool
     {
         return false;
     }

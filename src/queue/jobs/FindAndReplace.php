@@ -12,6 +12,8 @@ use craft\base\FieldInterface;
 use craft\db\Table;
 use craft\fields\Matrix;
 use craft\helpers\Db;
+use craft\helpers\ElementHelper;
+use craft\i18n\Translation;
 use craft\queue\BaseJob;
 use yii\base\Exception;
 
@@ -26,23 +28,23 @@ class FindAndReplace extends BaseJob
     /**
      * @var string|null The search text
      */
-    public $find;
+    public ?string $find = null;
 
     /**
      * @var string|null The replacement text
      */
-    public $replace;
+    public ?string $replace = null;
 
     /**
-     * @var
+     * @var array
      */
-    private $_textColumns;
+    private array $_textColumns;
 
     /**
      * @inheritdoc
      * @throws Exception
      */
-    public function execute($queue)
+    public function execute($queue): void
     {
         // Find all the textual field columns
         $this->_textColumns = [
@@ -69,9 +71,9 @@ class FindAndReplace extends BaseJob
     /**
      * @inheritdoc
      */
-    protected function defaultDescription(): string
+    protected function defaultDescription(): ?string
     {
-        return Craft::t('app', 'Replacing “{find}” with “{replace}”', [
+        return Translation::prep('app', 'Replacing “{find}” with “{replace}”', [
             'find' => $this->find,
             'replace' => $this->replace,
         ]);
@@ -84,33 +86,24 @@ class FindAndReplace extends BaseJob
      * @param string $table
      * @param string $fieldColumnPrefix
      */
-    private function _checkField(FieldInterface $field, string $table, string $fieldColumnPrefix)
+    private function _checkField(FieldInterface $field, string $table, string $fieldColumnPrefix): void
     {
         if (!$field::hasContentColumn()) {
             return;
         }
 
         $columnType = $field->getContentColumnType();
+
         if (is_array($columnType)) {
-            $columnType = reset($columnType);
-        }
-
-        if (!preg_match('/^\w+/', $columnType, $matches)) {
-            return;
-        }
-
-        $columnType = strtolower($matches[0]);
-
-        if (in_array($columnType, [
-            'tinytext',
-            'mediumtext',
-            'longtext',
-            'text',
-            'varchar',
-            'string',
-            'char',
-        ], true)) {
-            $this->_textColumns[] = [$table, $fieldColumnPrefix . $field->handle];
+            foreach (array_keys($columnType) as $i => $key) {
+                if (Db::isTextualColumnType($columnType[$key])) {
+                    $column = ElementHelper::fieldColumn($fieldColumnPrefix, $field->handle, $field->columnSuffix, $i !== 0 ? $key : null);
+                    $this->_textColumns[] = [$table, $column];
+                }
+            }
+        } else if (Db::isTextualColumnType($columnType)) {
+            $column = ElementHelper::fieldColumn($fieldColumnPrefix, $field->handle, $field->columnSuffix);
+            $this->_textColumns[] = [$table, $column];
         }
     }
 
@@ -120,7 +113,7 @@ class FindAndReplace extends BaseJob
      * @param Matrix $matrixField
      * @throws Exception if the content table can't be determined
      */
-    private function _checkMatrixField(Matrix $matrixField)
+    private function _checkMatrixField(Matrix $matrixField): void
     {
         $blockTypes = Craft::$app->getMatrix()->getBlockTypesByFieldId($matrixField->id);
 

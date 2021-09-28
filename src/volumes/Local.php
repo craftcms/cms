@@ -1,5 +1,5 @@
 <?php
-declare(strict_types=1);
+declare(strict_types = 1);
 
 namespace craft\volumes;
 
@@ -72,13 +72,25 @@ class Local extends Volume implements LocalVolumeInterface
     /**
      * @inheritdoc
      */
-    public function init()
+    public function __construct($config = [])
+    {
+        // Config normalization
+        if (isset($config['path'])) {
+            $config['path'] = trim(str_replace('\\', '/', $config['path']), '/');
+            if ($config['path'] === '') {
+                unset($config['path']);
+            }
+        }
+
+        parent::__construct($config);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function init(): void
     {
         parent::init();
-
-        if ($this->path !== null) {
-            $this->path = str_replace('\\', '/', $this->path);
-        }
 
         $generalConfig = Craft::$app->getConfig()->getGeneral();
 
@@ -104,7 +116,7 @@ class Local extends Volume implements LocalVolumeInterface
     /**
      * @inheritdoc
      */
-    public function getSettingsHtml()
+    public function getSettingsHtml(): ?string
     {
         return Craft::$app->getView()->renderTemplate('_components/volumes/Local/settings',
             [
@@ -116,7 +128,7 @@ class Local extends Volume implements LocalVolumeInterface
      * @inheritdoc
      * @since 3.4.0
      */
-    public function afterSave(bool $isNew)
+    public function afterSave(bool $isNew): void
     {
         // If the folder doesn't exist yet, create it with a .gitignore file
         $path = $this->getRootPath();

@@ -199,7 +199,7 @@ class AssetIndexer extends Component
      * @return AssetIndexingSession
      * @since 4.0.0
      */
-    public function createIndexingSession(array $volumeList, bool $cacheRemoteImages = true, $isCli = false): AssetIndexingSession
+    public function createIndexingSession(array $volumeList, bool $cacheRemoteImages = true, bool $isCli = false): AssetIndexingSession
     {
         $indexedVolumes = [];
 
@@ -633,7 +633,7 @@ class AssetIndexer extends Component
             $asset->setVolumeId($volume->id);
             $asset->folderId = $folderId;
             $asset->folderPath = $folder->path;
-            $asset->filename = $filename;
+            $asset->setFilename($filename);
             $asset->kind = AssetsHelper::getFileKindByExtension($filename);
         }
 

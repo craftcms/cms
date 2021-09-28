@@ -37,7 +37,7 @@ class ElementsController extends BaseElementsController
     /**
      * @inheritdoc
      */
-    public function beforeAction($action)
+    public function beforeAction($action): bool
     {
         if (!parent::beforeAction($action)) {
             return false;
@@ -216,7 +216,7 @@ class ElementsController extends BaseElementsController
             $categories = Category::find()
                 ->id($categoryIds)
                 ->siteId($this->request->getParam('siteId'))
-                ->anyStatus()
+                ->status(null)
                 ->all();
 
             // Fill in the gaps
@@ -372,7 +372,7 @@ class ElementsController extends BaseElementsController
      * @return ElementInterface
      * @throws BadRequestHttpException
      */
-    private function _getEditorElementInternal(int $elementId = null, string $elementType, int $siteId, array $attributes): ElementInterface
+    private function _getEditorElementInternal(?int $elementId, string $elementType, int $siteId, array $attributes): ElementInterface
     {
         if ($elementId !== null) {
             $element = Craft::$app->getElements()->getElementById($elementId, $elementType, $siteId);
@@ -421,6 +421,7 @@ class ElementsController extends BaseElementsController
                 $form = $fieldLayout->createForm($element, false, [
                     'namespace' => $namespace,
                     'tabIdPrefix' => "$namespace-tab",
+                    'registerDeltas' => true,
                 ]);
                 $editorHtml = $form->render();
 
@@ -430,6 +431,8 @@ class ElementsController extends BaseElementsController
                     ]);
                 }
             } else {
+                $isDeltaRegistrationActive = $view->getIsDeltaRegistrationActive();
+                $view->setIsDeltaRegistrationActive(true);
                 $editorHtml = preg_replace_callback('/<!-- FIELD LAYOUT -->/', function() use ($element, $view, $namespace) {
                     return $view->namespaceInputs(function() use ($element) {
                         $fieldLayout = $element->getFieldLayout();
@@ -450,6 +453,7 @@ class ElementsController extends BaseElementsController
                         return implode("\n", $fields);
                     }, $namespace);
                 }, $editorHtml, 1);
+                $view->setIsDeltaRegistrationActive($isDeltaRegistrationActive);
             }
         } else {
             $editorHtml = preg_replace('<!-- FIELD LAYOUT -->', '', $editorHtml, 1);

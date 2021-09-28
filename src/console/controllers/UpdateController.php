@@ -44,22 +44,22 @@ class UpdateController extends Controller
     /**
      * @var bool Force the update if allowUpdates is disabled
      */
-    public $force = false;
+    public bool $force = false;
 
     /**
      * @var bool|null Backup the database before updating
      */
-    public $backup;
+    public ?bool $backup = null;
 
     /**
      * @var bool Run new database migrations after completing the update
      */
-    public $migrate = true;
+    public bool $migrate = true;
 
     /**
      * @inheritdoc
      */
-    public function options($actionID)
+    public function options($actionID): array
     {
         $options = parent::options($actionID);
 
@@ -75,7 +75,7 @@ class UpdateController extends Controller
     /**
      * @inheritdoc
      */
-    public function optionAliases()
+    public function optionAliases(): array
     {
         $aliases = parent::optionAliases();
         $aliases['f'] = 'force';
@@ -134,13 +134,13 @@ class UpdateController extends Controller
     /**
      * Updates Craft and/or plugins.
      *
-     * @param string $handle
+     * @param string|null $handle
      * The update handle (`all`, `craft`, or a plugin handle). You can pass
      * multiple handles separated by spaces, and you can update to a specific
      * version using the syntax `<handle>:<version>`.
      * @return int
      */
-    public function actionUpdate(string $handle = null): int
+    public function actionUpdate(?string $handle = null): int
     {
         $handles = array_filter(func_get_args());
 
@@ -334,7 +334,7 @@ class UpdateController extends Controller
      * @param string $oldPackageName
      * @param Update $update
      */
-    private function _updateRequirements(array &$requirements, array &$info, string $handle, string $from, string $to = null, string $oldPackageName, Update $update)
+    private function _updateRequirements(array &$requirements, array &$info, string $handle, string $from, ?string $to, string $oldPackageName, Update $update): void
     {
         if ($update->status === Update::STATUS_EXPIRED) {
             $this->stdout("Skipping {$handle} because its license has expired." . PHP_EOL, Console::FG_GREY);
@@ -460,7 +460,7 @@ class UpdateController extends Controller
     /**
      * Reverts Composer changes.
      */
-    private function _revertComposerChanges()
+    private function _revertComposerChanges(): void
     {
         // See if we have composer.json and composer.lock backups
         $backupsDir = Craft::$app->getPath()->getComposerBackupsPath();
@@ -529,7 +529,7 @@ class UpdateController extends Controller
      * @param string $status
      * @param string|null $phpConstraint
      */
-    private function _outputUpdate(string $handle, string $from, string $to, bool $critical, string $status, string $phpConstraint = null)
+    private function _outputUpdate(string $handle, string $from, string $to, bool $critical, string $status, ?string $phpConstraint = null): void
     {
         $expired = $status === Update::STATUS_EXPIRED;
         $grey = $expired ? Console::FG_GREY : null;
@@ -562,7 +562,7 @@ class UpdateController extends Controller
      *
      * @return int|null
      */
-    private function _checkCraftLicense()
+    private function _checkCraftLicense(): ?int
     {
         if (!App::licenseKey()) {
             if (defined('CRAFT_LICENSE_KEY')) {
@@ -576,7 +576,7 @@ class UpdateController extends Controller
 
             if (!$user) {
                 $email = $this->prompt('Enter your email address to request a new license key:', [
-                    'validator' => function(string $input, string &$error = null) {
+                    'validator' => function(string $input, ?string &$error = null) {
                         return (new EmailValidator())->validate($input, $error);
                     },
                 ]);

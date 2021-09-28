@@ -49,7 +49,7 @@ class EntryRevisionsController extends BaseEntriesController
      * @throws BadRequestHttpException
      * @throws ForbiddenHttpException
      */
-    public function actionCreateDraft(string $section, string $site = null): Response
+    public function actionCreateDraft(string $section, ?string $site = null): Response
     {
         $sectionHandle = $section;
         $section = Craft::$app->getSections()->getSectionByHandle($sectionHandle);
@@ -199,7 +199,7 @@ class EntryRevisionsController extends BaseEntriesController
      * @throws NotFoundHttpException if the requested entry draft cannot be found
      * @throws ForbiddenHttpException
      */
-    public function actionSaveDraft()
+    public function actionSaveDraft(): ?Response
     {
         $this->requirePostRequest();
 
@@ -246,7 +246,7 @@ class EntryRevisionsController extends BaseEntriesController
                     ->draftId($draftId)
                     ->provisionalDrafts($provisional)
                     ->siteId($siteId)
-                    ->anyStatus()
+                    ->status(null)
                     ->one();
                 if (!$draft) {
                     throw new NotFoundHttpException('Entry draft not found');
@@ -257,13 +257,29 @@ class EntryRevisionsController extends BaseEntriesController
                 $entry = Entry::find()
                     ->id($entryId)
                     ->siteId($siteId)
-                    ->anyStatus()
+                    ->status(null)
                     ->one();
                 if (!$entry) {
                     throw new NotFoundHttpException('Entry not found');
                 }
                 $this->enforceSitePermission($entry->getSite());
                 $this->enforceEditEntryPermissions($entry);
+
+                if ($provisional) {
+                    // Make sure a provisional draft doesn't already exist for this entry/user combo
+                    $userId = Craft::$app->getUser()->getId();
+                    $provisionalExists = Entry::find()
+                        ->provisionalDrafts()
+                        ->draftOf($entryId)
+                        ->draftCreator($userId)
+                        ->site('*')
+                        ->anyStatus()
+                        ->exists();
+
+                    if ($provisionalExists) {
+                        throw new BadRequestHttpException("A provisional draft already exists for entry/user $entryId/$userId.");
+                    }
+                }
 
                 // Create the draft in a transaction so we can undo it if something goes wrong
                 $transaction = Craft::$app->getDb()->beginTransaction();
@@ -282,7 +298,8 @@ class EntryRevisionsController extends BaseEntriesController
 
             $draft->setScenario(Element::SCENARIO_ESSENTIALS);
 
-            if ($draft->getIsUnpublishedDraft() && $this->request->getBodyParam('propagateAll')) {
+            if ($draft->getIsUnpublishedDraft() && $this->request->getBodyParam('isFresh')) {
+                $draft->setIsFresh();
                 $draft->propagateAll = true;
             }
 
@@ -346,6 +363,7 @@ class EntryRevisionsController extends BaseEntriesController
         $this->requirePostRequest();
 
         $draftId = $this->request->getBodyParam('draftId');
+        $siteId = $this->request->getBodyParam('siteId');
         $provisional = (bool)($this->request->getBodyParam('provisional') ?? false);
 
         /** @var Entry|DraftBehavior $draft */
@@ -353,7 +371,9 @@ class EntryRevisionsController extends BaseEntriesController
             ->draftId($draftId)
             ->provisionalDrafts($provisional)
             ->siteId('*')
-            ->anyStatus()
+            ->preferSites([$siteId])
+            ->unique()
+            ->status(null)
             ->one();
 
         if (!$draft) {
@@ -387,7 +407,7 @@ class EntryRevisionsController extends BaseEntriesController
      * @throws ServerErrorHttpException if the entry draft is missing its entry
      * @throws ForbiddenHttpException if the user doesn't have the necessary permissions
      */
-    public function actionPublishDraft()
+    public function actionPublishDraft(): ?Response
     {
         $this->requirePostRequest();
 
@@ -410,7 +430,7 @@ class EntryRevisionsController extends BaseEntriesController
             ->provisionalDrafts($provisional)
             ->siteId($siteId)
             ->structureId($structureId)
-            ->anyStatus()
+            ->status(null)
             ->one();
 
         if (!$draft) {
@@ -463,7 +483,8 @@ class EntryRevisionsController extends BaseEntriesController
             $draft->setScenario(Element::SCENARIO_LIVE);
         }
 
-        if ($draft->getIsUnpublishedDraft() && $this->request->getBodyParam('propagateAll')) {
+        if ($draft->getIsUnpublishedDraft() && $this->request->getBodyParam('isFresh')) {
+            $draft->setIsFresh();
             $draft->propagateAll = true;
         }
 
@@ -472,12 +493,12 @@ class EntryRevisionsController extends BaseEntriesController
                 throw new InvalidElementException($draft);
             }
 
-            // Publish the draft (finally!)
-            $newEntry = Craft::$app->getDrafts()->publishDraft($draft);
+            // Apply the draft (finally!)
+            $newEntry = Craft::$app->getDrafts()->applyDraft($draft);
         } catch (InvalidElementException $e) {
             if ($draft->getIsUnpublishedDraft()) {
                 $this->setFailFlash(Craft::t('app', 'Couldn’t create entry.'));
-            } else if ($draft->getIsProvisionalDraft()) {
+            } else if ($draft->isProvisionalDraft) {
                 $this->setFailFlash(Craft::t('app', 'Couldn’t save entry.'));
             } else {
                 $this->setFailFlash(Craft::t('app', 'Couldn’t apply draft.'));
@@ -498,7 +519,7 @@ class EntryRevisionsController extends BaseEntriesController
 
         if ($draft->getIsUnpublishedDraft()) {
             $this->setSuccessFlash(Craft::t('app', 'Entry created.'));
-        } else if ($draft->getIsProvisionalDraft()) {
+        } else if ($draft->isProvisionalDraft) {
             $this->setSuccessFlash(Craft::t('app', 'Entry saved.'));
         } else {
             $this->setSuccessFlash(Craft::t('app', 'Draft applied.'));
@@ -515,7 +536,7 @@ class EntryRevisionsController extends BaseEntriesController
      * @throws ServerErrorHttpException if the entry version is missing its entry
      * @throws ForbiddenHttpException
      */
-    public function actionRevertEntryToVersion()
+    public function actionRevertEntryToVersion(): ?Response
     {
         $this->requirePostRequest();
 
@@ -524,7 +545,7 @@ class EntryRevisionsController extends BaseEntriesController
             ->revisionId($revisionId)
             ->siteId('*')
             ->unique()
-            ->anyStatus()
+            ->status(null)
             ->one();
 
         if (!$revision) {
@@ -555,7 +576,7 @@ class EntryRevisionsController extends BaseEntriesController
         // Revert to the version
         Craft::$app->getRevisions()->revertToRevision($revision, $userId);
         $this->setSuccessFlash(Craft::t('app', 'Entry reverted to past revision.'));
-        return $this->redirectToPostedUrl($revision);
+        return $this->redirectToPostedUrl($entry);
     }
 
     /**
@@ -563,7 +584,7 @@ class EntryRevisionsController extends BaseEntriesController
      *
      * @param Entry $draft
      */
-    private function _setDraftAttributesFromPost(Entry $draft)
+    private function _setDraftAttributesFromPost(Entry $draft): void
     {
         /** @var Entry|DraftBehavior $draft */
         $draft->typeId = $this->request->getBodyParam('typeId');
@@ -588,7 +609,7 @@ class EntryRevisionsController extends BaseEntriesController
             $draft->enabled = (bool)$this->request->getBodyParam('enabled', $draft->enabled);
         }
         $draft->setEnabledForSite($enabledForSite ?? $draft->getEnabledForSite());
-        $draft->title = $this->request->getBodyParam('title');
+        $draft->title = $this->request->getBodyParam('title') ?? $draft->title;
 
         if (!$draft->typeId) {
             // Default to the section's first entry type

@@ -10,6 +10,7 @@ namespace craft\console\controllers;
 use Craft;
 use craft\console\Controller;
 use craft\elements\User;
+use craft\errors\MigrationException;
 use craft\helpers\Console;
 use craft\helpers\Install as InstallHelper;
 use craft\migrations\Install;
@@ -28,32 +29,32 @@ class InstallController extends Controller
     /**
      * @var string|null The default email address for the first user to create during install
      */
-    public $email;
+    public ?string $email = null;
 
     /**
      * @var string|null The default username for the first user to create during install
      */
-    public $username;
+    public ?string $username = null;
 
     /**
      * @var string|null The default password for the first user to create during install
      */
-    public $password;
+    public ?string $password = null;
 
     /**
      * @var string|null The default site name for the first site to create during install
      */
-    public $siteName;
+    public ?string $siteName = null;
 
     /**
      * @var string|null The default site url for the first site to create during install
      */
-    public $siteUrl;
+    public ?string $siteUrl = null;
 
     /**
      * @var string|null The default langcode for the first site to create during install
      */
-    public $language;
+    public ?string $language = null;
 
     /** @inheritdoc */
     public $defaultAction = 'craft';
@@ -61,7 +62,7 @@ class InstallController extends Controller
     /**
      * @inheritdoc
      */
-    public function options($actionID)
+    public function options($actionID): array
     {
         $options = parent::options($actionID);
 
@@ -156,7 +157,7 @@ class InstallController extends Controller
 
         // Try to save the site URL to a PRIMARY_SITE_URL environment variable
         // if it's not already set to an alias or environment variable
-        if ($site->baseUrl[0] !== '@' && $site->baseUrl[0] !== '$') {
+        if (!in_array($site->getBaseUrl(false)[0], ['@', '$'])) {
             try {
                 $configService->setDotEnvVar('PRIMARY_SITE_URL', $site->baseUrl);
                 $site->baseUrl = '$PRIMARY_SITE_URL';
@@ -176,10 +177,11 @@ class InstallController extends Controller
         $this->stdout('*** installing Craft' . PHP_EOL, Console::FG_YELLOW);
         $start = microtime(true);
         $migrator = Craft::$app->getMigrator();
-        $result = $migrator->migrateUp($migration);
 
-        if ($result === false) {
-            $this->stderr('*** failed to install Craft' . PHP_EOL . PHP_EOL, Console::FG_RED);
+        try {
+            $migrator->migrateUp($migration);
+        } catch (MigrationException $e) {
+            $this->stderr('*** failed to install Craft: ' . $e->getMessage() . PHP_EOL . PHP_EOL, Console::FG_RED);
             return ExitCode::UNSPECIFIED_ERROR;
         }
 
@@ -206,6 +208,6 @@ class InstallController extends Controller
     public function actionPlugin(string $handle): int
     {
         Console::outputWarning("The install/plugin command is deprecated.\nRunning plugin/install instead...");
-        return Craft::$app->runAction('plugin/install', [$handle]);
+        return $this->run('plugin/install', [$handle]);
     }
 }

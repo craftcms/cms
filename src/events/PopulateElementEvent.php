@@ -16,7 +16,7 @@ namespace craft\events;
 class PopulateElementEvent extends ElementEvent
 {
     /**
-     * @var array|null The element query’s result for this element.
+     * @var array The element query’s result for this element.
      */
-    public $row;
+    public array $row;
 }

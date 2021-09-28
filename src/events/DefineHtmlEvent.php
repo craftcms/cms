@@ -20,5 +20,5 @@ class DefineHtmlEvent extends Event
     /**
      * @var string The UI component’s HTML
      */
-    public $html = '';
+    public string $html = '';
 }

@@ -8,7 +8,7 @@
 namespace craft\gql\resolvers\mutations;
 
 use Craft;
-use craft\base\Element;
+use craft\base\ElementInterface;
 use craft\base\Volume;
 use craft\db\Table;
 use craft\elements\Asset as AssetElement;
@@ -32,7 +32,7 @@ use yii\base\InvalidArgumentException;
 class Asset extends ElementMutationResolver
 {
     /** @inheritdoc */
-    protected $immutableAttributes = ['id', 'uid', 'volumeId', 'folderId'];
+    protected array $immutableAttributes = ['id', 'uid', 'volumeId', 'folderId'];
 
     /**
      * Save an asset using the passed arguments.
@@ -41,10 +41,10 @@ class Asset extends ElementMutationResolver
      * @param array $arguments
      * @param $context
      * @param ResolveInfo $resolveInfo
-     * @return mixed
+     * @return AssetElement
      * @throws \Throwable if reasons.
      */
-    public function saveAsset($source, array $arguments, $context, ResolveInfo $resolveInfo)
+    public function saveAsset($source, array $arguments, $context, ResolveInfo $resolveInfo): AssetElement
     {
         /** @var Volume $volume */
         $volume = $this->getResolutionData('volume');
@@ -99,9 +99,10 @@ class Asset extends ElementMutationResolver
 
         $asset->setVolumeId($volume->id);
 
-        $asset = $this->populateElementWithData($asset, $arguments);
+        $asset = $this->populateElementWithData($asset, $arguments, $resolveInfo);
         $asset = $this->saveElement($asset);
 
+        /** @noinspection PhpIncompatibleReturnTypeInspection */
         return $elementService->getElementById($asset->id, AssetElement::class);
     }
 
@@ -112,10 +113,9 @@ class Asset extends ElementMutationResolver
      * @param array $arguments
      * @param $context
      * @param ResolveInfo $resolveInfo
-     * @return mixed
      * @throws \Throwable if reasons.
      */
-    public function deleteAsset($source, array $arguments, $context, ResolveInfo $resolveInfo)
+    public function deleteAsset($source, array $arguments, $context, ResolveInfo $resolveInfo): void
     {
         $assetId = $arguments['id'];
 
@@ -124,39 +124,37 @@ class Asset extends ElementMutationResolver
         $asset = $elementService->getElementById($assetId, AssetElement::class);
 
         if (!$asset) {
-            return true;
+            return;
         }
 
         $volumeUid = Db::uidById(Table::VOLUMES, $asset->getVolumeId());
         $this->requireSchemaAction('volumes.' . $volumeUid, 'delete');
 
         $elementService->deleteElementById($assetId);
-
-        return true;
     }
 
     /**
-     * @inheritDoc
+     * @inheritdoc
      */
-    protected function populateElementWithData(Element $asset, array $arguments): Element
+    protected function populateElementWithData(ElementInterface $element, array $arguments, ?ResolveInfo $resolveInfo = null): ElementInterface
     {
         if (!empty($arguments['_file'])) {
             $fileInformation = $arguments['_file'];
             unset($arguments['_file']);
         }
 
-        /** @var AssetElement $asset */
-        $asset = parent::populateElementWithData($asset, $arguments);
+        /** @var AssetElement $element */
+        $element = parent::populateElementWithData($element, $arguments, $resolveInfo);
 
-        if (!empty($fileInformation) && $this->handleUpload($asset, $fileInformation)) {
-            if ($asset->id) {
-                $asset->setScenario(AssetElement::SCENARIO_REPLACE);
+        if (!empty($fileInformation) && $this->handleUpload($element, $fileInformation)) {
+            if ($element->id) {
+                $element->setScenario(AssetElement::SCENARIO_REPLACE);
             } else {
-                $asset->setScenario(AssetElement::SCENARIO_CREATE);
+                $element->setScenario(AssetElement::SCENARIO_CREATE);
             }
         }
 
-        return $asset;
+        return $element;
     }
 
     /**
@@ -164,7 +162,7 @@ class Asset extends ElementMutationResolver
      *
      * @param AssetElement $asset
      * @param array $fileInformation
-     * @return boolean
+     * @return bool
      * @throws \yii\base\Exception
      */
     protected function handleUpload(AssetElement $asset, array $fileInformation): bool
@@ -227,7 +225,7 @@ class Asset extends ElementMutationResolver
         }
 
         $asset->tempFilePath = $tempPath;
-        $asset->filename = $filename;
+        $asset->setFilename($filename);
         $asset->avoidFilenameConflicts = true;
 
         return true;

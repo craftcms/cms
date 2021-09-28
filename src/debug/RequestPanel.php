@@ -18,9 +18,9 @@ use Craft;
 class RequestPanel extends \yii\debug\panels\RequestPanel
 {
     /**
-     *
+     * @inheritdoc
      */
-    public function save()
+    public function save(): array
     {
         $data = parent::save();
         $data = Craft::$app->getSecurity()->redactIfSensitive('', $data);

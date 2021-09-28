@@ -21,13 +21,13 @@ class Module extends \yii\debug\Module
     /**
      * @inheritdoc
      */
-    public function renderToolbar($event)
+    public function renderToolbar($event): void
     {
         if (!$this->checkAccess() || Craft::$app->getRequest()->getIsAjax()) {
             return;
         }
 
-        /** @var $view View */
+        /** @var View $view */
         $view = $event->sender;
         echo $this->getToolbarHtml();
 

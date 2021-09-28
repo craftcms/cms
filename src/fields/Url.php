@@ -62,25 +62,31 @@ class Url extends Field implements PreviewableFieldInterface
      * @var string[] Allowed URL types
      * @since 3.6.0
      */
-    public $types = [
+    public array $types = [
         self::TYPE_URL,
     ];
 
     /**
-     * @var string|null The input’s placeholder text
-     * @deprecated in 3.6.0
-     */
-    public $placeholder;
-
-    /**
      * @var int The maximum length (in bytes) the field can hold
      */
-    public $maxLength = 255;
+    public int $maxLength = 255;
 
     /**
      * @inheritdoc
      */
-    public function fields()
+    public function __construct($config = [])
+    {
+        if (array_key_exists('placeholder', $config)) {
+            unset($config['placeholder']);
+        }
+
+        parent::__construct($config);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function fields(): array
     {
         $fields = parent::fields();
         unset($fields['placeholder']);
@@ -110,7 +116,7 @@ class Url extends Field implements PreviewableFieldInterface
     /**
      * @inheritdoc
      */
-    public function getSettingsHtml()
+    public function getSettingsHtml(): ?string
     {
         return
             Cp::checkboxSelectFieldHtml([
@@ -141,7 +147,7 @@ class Url extends Field implements PreviewableFieldInterface
     /**
      * @inheritdoc
      */
-    public function normalizeValue($value, ElementInterface $element = null)
+    public function normalizeValue($value, ?ElementInterface $element = null)
     {
         if (is_array($value) && isset($value['value'])) {
             $type = $value['type'] ?? self::TYPE_URL;
@@ -185,7 +191,7 @@ class Url extends Field implements PreviewableFieldInterface
     /**
      * @inheritdoc
      */
-    protected function inputHtml($value, ElementInterface $element = null): string
+    protected function inputHtml($value, ?ElementInterface $element = null): string
     {
         if (is_string($value)) {
             $valueType = $this->_urlType($value);

@@ -35,10 +35,6 @@ abstract class BaseUpdaterController extends Controller
     const ACTION_RECHECK_COMPOSER = 'recheck-composer';
     const ACTION_COMPOSER_INSTALL = 'composer-install';
     const ACTION_COMPOSER_REMOVE = 'composer-remove';
-    /**
-     * @deprecated
-     */
-    const ACTION_COMPOSER_OPTIMIZE = 'composer-optimize';
     const ACTION_FINISH = 'finish';
 
     /**
@@ -49,14 +45,14 @@ abstract class BaseUpdaterController extends Controller
     /**
      * @var array The data associated with the current update
      */
-    protected $data = [];
+    protected array $data = [];
 
     /**
      * @inheritdoc
      * @throws NotFoundHttpException if it's not a control panel request
      * @throws BadRequestHttpException if there's invalid data in the request
      */
-    public function beforeAction($action)
+    public function beforeAction($action): bool
     {
         // This controller is only available to the CP
         if (!$this->request->getIsCpRequest()) {
@@ -74,6 +70,7 @@ abstract class BaseUpdaterController extends Controller
                 throw new BadRequestHttpException();
             }
 
+            /** @noinspection PhpFieldAssignmentTypeMismatchInspection */
             $this->data = Json::decode($data);
         }
 
@@ -139,7 +136,7 @@ abstract class BaseUpdaterController extends Controller
                 return $this->send([
                     'error' => $error,
                     'options' => [
-                        ['label' => Craft::t('app', 'Learn how'), 'url' => 'https://craftcms.com/guides/php-ini'],
+                        ['label' => Craft::t('app', 'Learn how'), 'url' => 'https://craftcms.com/knowledge-base/php-ini'],
                         $this->actionOption(Craft::t('app', 'Check again'), self::ACTION_PRECHECK),
                         $this->actionOption(Craft::t('app', 'Continue anyway'), $postState['nextAction'], $postState),
                     ],
@@ -213,37 +210,6 @@ abstract class BaseUpdaterController extends Controller
     }
 
     /**
-     * Optimizes the Composer autoloader.
-     *
-     * @return Response
-     * @deprecated
-     */
-    public function actionComposerOptimize(): Response
-    {
-        $io = new BufferIO();
-
-        try {
-            Craft::$app->getComposer()->optimize($io);
-            Craft::info("Optimized the Composer autoloader.\nOutput: " . $io->getOutput(), __METHOD__);
-        } catch (\Throwable $e) {
-            Craft::error('Error optimizing the Composer autoloader: ' . $e->getMessage() . "\nOutput: " . $io->getOutput(), __METHOD__);
-            Craft::$app->getErrorHandler()->logException($e);
-            $continueOption = $this->postComposerInstallState();
-            $continueOption['label'] = Craft::t('app', 'Continue');
-            return $this->send([
-                'error' => Craft::t('app', 'Composer was unable to optimize the autoloader.'),
-                'errorDetails' => $this->_composerErrorDetails($e, $io->getOutput()),
-                'options' => [
-                    $this->actionOption(Craft::t('app', 'Try again'), self::ACTION_COMPOSER_OPTIMIZE),
-                    $continueOption,
-                ],
-            ]);
-        }
-
-        return $this->send($this->postComposerInstallState());
-    }
-
-    /**
      * Finishes the update process.
      *
      * @return Response
@@ -276,9 +242,10 @@ abstract class BaseUpdaterController extends Controller
     /**
      * Returns the initial state for the updater JS.
      *
+     * @param bool $force Whether to go through with the update even if Maintenance Mode is enabled
      * @return array
      */
-    abstract protected function initialState(): array;
+    abstract protected function initialState(bool $force = false): array;
 
     /**
      * Returns the real initial state for the updater JS.
@@ -322,7 +289,7 @@ abstract class BaseUpdaterController extends Controller
      *
      * @return bool Whether composer.json can be found
      */
-    protected function ensureComposerJson()
+    protected function ensureComposerJson(): bool
     {
         try {
             Craft::$app->getComposer()->getJsonPath();
@@ -405,7 +372,7 @@ abstract class BaseUpdaterController extends Controller
         $state['options'] = [
             [
                 'label' => Craft::t('app', 'Troubleshoot'),
-                'url' => 'https://craftcms.com/guides/failed-updates',
+                'url' => 'https://craftcms.com/knowledge-base/failed-updates',
             ],
             [
                 'label' => Craft::t('app', 'Send for help'),
@@ -503,7 +470,7 @@ abstract class BaseUpdaterController extends Controller
      * @param string|null $restoreAction
      * @return Response|null
      */
-    protected function runMigrations(array $handles, string $restoreAction = null)
+    protected function runMigrations(array $handles, ?string $restoreAction = null): ?Response
     {
         try {
             Craft::$app->getUpdates()->runMigrations($handles);
@@ -542,7 +509,7 @@ abstract class BaseUpdaterController extends Controller
 
             $options[] = [
                 'label' => Craft::t('app', 'Troubleshoot'),
-                'url' => 'https://craftcms.com/guides/failed-updates',
+                'url' => 'https://craftcms.com/knowledge-base/failed-updates',
             ];
 
             if ($ownerHandle !== 'craft' && ($plugin = Craft::$app->getPlugins()->getPlugin($ownerHandle)) !== null) {
@@ -577,7 +544,7 @@ abstract class BaseUpdaterController extends Controller
      * @param string|null $edition
      * @return array Array with installation results
      */
-    protected function installPlugin(string $handle, string $edition = null): array
+    protected function installPlugin(string $handle, ?string $edition = null): array
     {
         // Prevent the plugin from sending any headers, etc.
         $response = $this->response;

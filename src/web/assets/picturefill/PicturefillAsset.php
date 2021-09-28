@@ -7,7 +7,7 @@
 
 namespace craft\web\assets\picturefill;
 
-use craft\web\AssetBundle;
+use yii\web\AssetBundle;
 
 /**
  * Picturefill asset bundle.

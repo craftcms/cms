@@ -149,7 +149,7 @@ class ConfigSyncController extends BaseUpdaterController
     /**
      * @inheritdoc
      */
-    protected function initialState(): array
+    protected function initialState(bool $force = false): array
     {
         $projectConfig = Craft::$app->getProjectConfig();
 

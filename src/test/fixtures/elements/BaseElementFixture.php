@@ -43,7 +43,7 @@ abstract class BaseElementFixture extends DbFixture
     /**
      * @inheritdoc
      */
-    public function init()
+    public function init(): void
     {
         parent::init();
 
@@ -55,7 +55,7 @@ abstract class BaseElementFixture extends DbFixture
     /**
      * @inheritdoc
      */
-    public function load()
+    public function load(): void
     {
         foreach ($this->loadData($this->dataFile) as $key => $data) {
             $element = $this->createElement();
@@ -97,7 +97,7 @@ abstract class BaseElementFixture extends DbFixture
     /**
      * @inheritdoc
      */
-    public function unload()
+    public function unload(): void
     {
         $this->checkIntegrity(true);
 

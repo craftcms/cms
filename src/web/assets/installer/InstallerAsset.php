@@ -8,8 +8,8 @@
 namespace craft\web\assets\installer;
 
 use craft\helpers\Json;
-use craft\web\AssetBundle;
 use craft\web\assets\cp\CpAsset;
+use yii\web\AssetBundle;
 
 /**
  * Asset bundle for the Installer
@@ -45,7 +45,7 @@ class InstallerAsset extends AssetBundle
     /**
      * @inheritdoc
      */
-    public function registerAssetFiles($view)
+    public function registerAssetFiles($view): void
     {
         parent::registerAssetFiles($view);
 

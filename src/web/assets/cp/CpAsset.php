@@ -18,7 +18,6 @@ use craft\helpers\UrlHelper;
 use craft\i18n\Locale;
 use craft\models\Section;
 use craft\services\Sites;
-use craft\web\AssetBundle;
 use craft\web\assets\axios\AxiosAsset;
 use craft\web\assets\d3\D3Asset;
 use craft\web\assets\datepickeri18n\DatepickerI18nAsset;
@@ -37,6 +36,7 @@ use craft\web\assets\velocity\VelocityAsset;
 use craft\web\assets\vue\VueAsset;
 use craft\web\assets\xregexp\XregexpAsset;
 use craft\web\View;
+use yii\web\AssetBundle;
 use yii\web\JqueryAsset;
 
 /**
@@ -91,7 +91,7 @@ class CpAsset extends AssetBundle
     /**
      * @inheritdoc
      */
-    public function registerAssetFiles($view)
+    public function registerAssetFiles($view): void
     {
         parent::registerAssetFiles($view);
 
@@ -107,7 +107,10 @@ JS;
         $view->registerJs($js, View::POS_HEAD);
     }
 
-    private function _registerTranslations(View $view)
+    /**
+     * @param View $view
+     */
+    private function _registerTranslations(View $view): void
     {
         $view->registerTranslations('app', [
             '(blank)',
@@ -328,7 +331,7 @@ JS;
             'allowAdminChanges' => $generalConfig->allowAdminChanges,
             'allowUpdates' => $generalConfig->allowUpdates,
             'allowUppercaseInSlug' => (bool)$generalConfig->allowUppercaseInSlug,
-            'announcements' => $upToDate ? $this->_announcements() : [],
+            'announcements' => $upToDate ? Craft::$app->getAnnouncements()->get() : [],
             'apiParams' => Craft::$app->apiParams,
             'asciiCharMap' => StringHelper::asciiCharMap(true, Craft::$app->language),
             'autosaveDrafts' => (bool)$generalConfig->autosaveDrafts,
@@ -348,6 +351,7 @@ JS;
             'elementTypeNames' => $elementTypeNames,
             'fileKinds' => Assets::getFileKinds(),
             'handleCasing' => $generalConfig->handleCasing,
+            'httpProxy' => $this->_httpProxy($generalConfig),
             'initialDeltaValues' => $view->getInitialDeltaValues(),
             'isImagick' => Craft::$app->getImages()->getIsImagick(),
             'isMultiSite' => Craft::$app->getIsMultiSite(),
@@ -383,7 +387,6 @@ JS;
             'timezone' => Craft::$app->getTimeZone(),
             'tokenParam' => $generalConfig->tokenParam,
             'translations' => ['' => ''], // force encode as JS object
-            'useCompressedJs' => (bool)$generalConfig->useCompressedJs,
             'usePathInfo' => (bool)$generalConfig->usePathInfo,
             'username' => $currentUser->username ?? null,
         ];
@@ -396,12 +399,7 @@ JS;
         return $data;
     }
 
-    private function _announcements(): array
-    {
-        return Craft::$app->getAnnouncements()->get();
-    }
-
-    private function _datepickerOptions(Locale $formattingLocale, Locale $locale, User $currentUser = null, GeneralConfig $generalConfig): array
+    private function _datepickerOptions(Locale $formattingLocale, Locale $locale, ?User $currentUser, GeneralConfig $generalConfig): array
     {
         return [
             'constrainInput' => false,
@@ -442,6 +440,29 @@ JS;
         }
 
         return $groups;
+    }
+
+    /**
+     * @param $generalConfig GeneralConfig
+     * @return array|null
+     */
+    private function _httpProxy(GeneralConfig $generalConfig): ?array
+    {
+        if (!$generalConfig->httpProxy) {
+            return null;
+        }
+
+        $parsed = parse_url($generalConfig->httpProxy);
+
+        return array_filter([
+            'host' => $parsed['host'],
+            'port' => $parsed['port'] ?? strtolower($parsed['scheme']) === 'http' ? 80 : 443,
+            'auth' => array_filter([
+                'username' => $parsed['user'] ?? null,
+                'password' => $parsed['pass'] ?? null,
+            ]),
+            'protocol' => $parsed['scheme'],
+        ]);
     }
 
     /**

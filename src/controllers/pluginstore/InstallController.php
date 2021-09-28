@@ -29,12 +29,12 @@ class InstallController extends BaseUpdaterController
     /**
      * @var string|null
      */
-    private $_pluginRedirect;
+    private ?string $_pluginRedirect = null;
 
     /**
      * @inheritdoc
      */
-    public function beforeAction($action)
+    public function beforeAction($action): bool
     {
         if (!parent::beforeAction($action)) {
             return false;
@@ -77,7 +77,7 @@ class InstallController extends BaseUpdaterController
                     $this->actionOption(Craft::t('app', 'Remove it'), self::ACTION_COMPOSER_REMOVE),
                     [
                         'label' => Craft::t('app', 'Troubleshoot'),
-                        'url' => 'https://craftcms.com/guides/failed-updates',
+                        'url' => 'https://craftcms.com/knowledge-base/failed-updates',
                     ],
                 ],
             ]);
@@ -176,7 +176,7 @@ class InstallController extends BaseUpdaterController
     /**
      * @inheritdoc
      */
-    protected function initialState(): array
+    protected function initialState(bool $force = false): array
     {
         // Make sure we can find composer.json
         if (!$this->ensureComposerJson()) {

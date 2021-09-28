@@ -1,5 +1,5 @@
 <?php
-declare(strict_types=1);
+declare(strict_types = 1);
 /**
  * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
@@ -27,7 +27,7 @@ trait VolumeTrait
     public ?string $handle = null;
 
     /**
-     * @var bool|null Whether the volume has a public URL
+     * @var bool Whether the volume has a public URL
      */
     public bool $hasUrls = false;
 

@@ -29,14 +29,9 @@ use yii\db\ActiveQueryInterface;
 class MatrixBlockType extends ActiveRecord
 {
     /**
-     * @var bool Whether the Name and Handle attributes should validated to ensure they’re unique.
-     */
-    public $validateUniques = true;
-
-    /**
      * @inheritdoc
      */
-    public function rules()
+    public function rules(): array
     {
         return [
             [['name'], 'unique', 'targetAttribute' => ['name', 'fieldId']],
@@ -54,6 +49,7 @@ class MatrixBlockType extends ActiveRecord
                     'title',
                 ],
             ],
+            [['handle'], 'string', 'max' => 47],
         ];
     }
 

@@ -26,7 +26,7 @@ class PluginsController extends Controller
     /**
      * @inheritdoc
      */
-    public function beforeAction($action)
+    public function beforeAction($action): bool
     {
         // All plugin actions require an admin
         $this->requireAdmin();
@@ -102,7 +102,7 @@ class PluginsController extends Controller
      * @return mixed
      * @throws NotFoundHttpException if the requested plugin cannot be found
      */
-    public function actionEditPluginSettings(string $handle, PluginInterface $plugin = null)
+    public function actionEditPluginSettings(string $handle, ?PluginInterface $plugin = null)
     {
         if (
             $plugin === null &&
@@ -158,7 +158,7 @@ class PluginsController extends Controller
      * @return Response|null
      * @throws NotFoundHttpException if the requested plugin cannot be found
      */
-    public function actionSavePluginSettings()
+    public function actionSavePluginSettings(): ?Response
     {
         $this->requirePostRequest();
         $pluginHandle = $this->request->getRequiredBodyParam('pluginHandle');

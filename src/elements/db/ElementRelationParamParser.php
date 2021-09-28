@@ -33,27 +33,27 @@ class ElementRelationParamParser extends BaseObject
     /**
      * @var int
      */
-    private static $_relateSourceMatrixBlocksCount = 0;
+    private static int $_relateSourceMatrixBlocksCount = 0;
 
     /**
      * @var int
      */
-    private static $_relateTargetMatrixBlocksCount = 0;
+    private static int $_relateTargetMatrixBlocksCount = 0;
 
     /**
      * @var int
      */
-    private static $_relateSourcesCount = 0;
+    private static int $_relateSourcesCount = 0;
 
     /**
      * @var int
      */
-    private static $_relateTargetsCount = 0;
+    private static int $_relateTargetsCount = 0;
 
     /**
      * @var FieldInterface[]|null The custom fields that are game for the query.
      */
-    public $fields;
+    public ?array $fields = null;
 
     /**
      * Normalizes a `relatedTo` param for [[parse()]].
@@ -480,10 +480,10 @@ class ElementRelationParamParser extends BaseObject
      * Returns a field model based on its handle or ID.
      *
      * @param mixed $field
-     * @param array|null &$fieldHandleParts
+     * @param array|null $fieldHandleParts
      * @return FieldInterface|null
      */
-    private function _getField($field, array &$fieldHandleParts = null)
+    private function _getField($field, ?array &$fieldHandleParts = null): ?FieldInterface
     {
         if (is_numeric($field)) {
             $fieldHandleParts = null;

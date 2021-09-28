@@ -11,8 +11,8 @@ use Craft;
 use craft\helpers\ChartHelper;
 use craft\helpers\Json;
 use craft\i18n\Locale;
-use craft\web\AssetBundle;
 use craft\web\View;
+use yii\web\AssetBundle;
 
 /**
  * D3 asset bundle.
@@ -27,7 +27,7 @@ class D3Asset extends AssetBundle
     /**
      * @var array The default language format files to use
      */
-    private $_defaultLanguages = [
+    private array $_defaultLanguages = [
         'ar' => 'ar-SA',
         'de' => 'de-DE',
         'en' => 'en-US',
@@ -38,14 +38,21 @@ class D3Asset extends AssetBundle
     /**
      * @inheritdoc
      */
-    public $js = [
-        'd3.js',
-    ];
+    public function init(): void
+    {
+        $this->sourcePath = '@lib/d3';
+
+        $this->js = [
+            'd3.js',
+        ];
+
+        parent::init();
+    }
 
     /**
      * @inheritdoc
      */
-    public function registerAssetFiles($view)
+    public function registerAssetFiles($view): void
     {
         parent::registerAssetFiles($view);
 
@@ -128,7 +135,7 @@ class D3Asset extends AssetBundle
      * @param string $file
      * @return string|null
      */
-    private function _def(string $dir, string $file)
+    private function _def(string $dir, string $file): ?string
     {
         $path = $dir . DIRECTORY_SEPARATOR . $file . '.json';
         return file_exists($path) ? file_get_contents($path) : null;

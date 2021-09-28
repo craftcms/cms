@@ -7,6 +7,7 @@
 
 namespace craft\errors;
 
+use Throwable;
 use yii\base\Exception;
 
 /**
@@ -18,9 +19,9 @@ use yii\base\Exception;
 class InvalidSubpathException extends Exception
 {
     /**
-     * @var string|null The invalid subpath
+     * @var string The invalid subpath
      */
-    public $subpath;
+    public string $subpath;
 
     /**
      * Constructor.
@@ -28,9 +29,9 @@ class InvalidSubpathException extends Exception
      * @param string $subpath The invalid subpath
      * @param string|null $message The error message
      * @param int $code The error code
-     * @param \Throwable $previous The previous exception
+     * @param Throwable|null $previous The previous exception
      */
-    public function __construct(string $subpath, string $message = null, int $code = 0, \Throwable $previous = null)
+    public function __construct(string $subpath, ?string $message = null, int $code = 0, ?Throwable $previous = null)
     {
         $this->subpath = $subpath;
 
@@ -44,7 +45,7 @@ class InvalidSubpathException extends Exception
     /**
      * @return string the user-friendly name of this exception
      */
-    public function getName()
+    public function getName(): string
     {
         return 'Invalid subpath';
     }

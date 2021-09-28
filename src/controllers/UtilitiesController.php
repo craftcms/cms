@@ -73,7 +73,7 @@ class UtilitiesController extends Controller
             throw new NotFoundHttpException('Invalid utility ID: ' . $id);
         }
 
-        /** @var UtilityInterface $class */
+        /** @var string|UtilityInterface $class */
         if ($utilitiesService->checkAuthorization($class) === false) {
             throw new ForbiddenHttpException('User not permitted to access the "' . $class::displayName() . '".');
         }
@@ -245,7 +245,7 @@ class UtilitiesController extends Controller
 
                 /** @var Asset[] $assets */
                 $assets = Asset::find()
-                    ->anyStatus()
+                    ->status(null)
                     ->id($params['deleteAsset'])
                     ->all();
 
@@ -336,7 +336,7 @@ class UtilitiesController extends Controller
      * @throws ForbiddenHttpException if the user doesn't have access to the DB Backup utility
      * @throws Exception if the backup could not be created
      */
-    public function actionDbBackupPerformAction()
+    public function actionDbBackupPerformAction(): ?Response
     {
         $this->requirePermission('utility:db-backup');
 
@@ -393,7 +393,7 @@ class UtilitiesController extends Controller
      * @return Response
      * @throws ForbiddenHttpException if the user doesn't have access to the Migrations utility
      */
-    public function actionApplyNewMigrations()
+    public function actionApplyNewMigrations(): Response
     {
         $this->requirePermission('utility:migrations');
 
@@ -414,7 +414,7 @@ class UtilitiesController extends Controller
      *
      * @return array
      */
-    private function _utilityInfo()
+    private function _utilityInfo(): array
     {
         $info = [];
 
@@ -468,7 +468,7 @@ class UtilitiesController extends Controller
     private function _getDefaultUtilityIconSvg(string $class): string
     {
         /** @var UtilityInterface $class */
-        return $this->getView()->renderTemplate('_includes/defaulticon.svg', [
+        return $this->getView()->renderTemplate('_includes/defaulticon.svg.twig', [
             'label' => $class::displayName(),
         ]);
     }

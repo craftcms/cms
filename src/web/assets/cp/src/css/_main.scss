@@ -42,6 +42,12 @@
 /*  Basic stuff
 /* ----------------------------------------*/
 
+:root {
+  --text-color: #{$textColor};
+  --light-text-color: #{$lightTextColor};
+  --hairline-color: #{$hairlineColor};
+}
+
 body, html {
   background-color: $grey100;
 }
@@ -82,6 +88,10 @@ body, input, select, textarea {
 
 .draghelper {
   box-sizing: border-box;
+}
+
+img {
+  max-width: 100%;
 }
 
 .text,
@@ -211,40 +221,40 @@ body.rtl [data-icon-after=structure]:after {
 }
 
 /* headings */
-h1 {
+h1, .h1 {
   margin-bottom: 24px;
   font-size: 18px;
   font-weight: bold;
   line-height: 1.2;
 }
 
-h2 {
+h2, .h2 {
   margin: 14px 0;
   font-size: 16px;
   font-weight: bold;
   line-height: 20px;
 }
 
-h3 {
+h3, .h3 {
   margin: 14px 0;
   font-weight: bold;
   line-height: 1.2;
 }
 
-h4 {
+h4, .h4 {
   margin: 14px 0;
   font-weight: bold;
   line-height: 1.2;
   color: $mediumTextColor;
 }
 
-h5 {
+h5, .h5 {
   margin: 14px 0 3px;
   line-height: 1.2;
   color: $mediumTextColor;
 }
 
-h6 {
+h6, .h6 {
   @include h6-styles;
 }
 
@@ -314,6 +324,11 @@ code,
   &.smalltext {
     font-size: 0.8em !important;
   }
+}
+
+pre code {
+  display: block;
+  overflow-x: auto;
 }
 
 /* links */
@@ -454,6 +469,18 @@ li.sel a {
 
   .extralight {
     margin-top: 2px;
+  }
+}
+
+.revision-status-hud {
+  max-width: 400px;
+
+  .http-error {
+    border-radius: $mediumBorderRadius;
+    border: 1px solid $hairlineColor;
+    color: $lightTextColor;
+    background-color: $grey050;
+    padding: 7px 14px;
   }
 }
 
@@ -1916,7 +1943,7 @@ h2 + .actions {
   margin: -24px -24px -12px;
   overflow-x: auto;
 
-  table {
+  table.data {
     th,
     td {
       &:first-child {
@@ -1930,8 +1957,13 @@ h2 + .actions {
     thead {
       th,
       td {
-        @include border-bottom-left-radius(0);
-        @include border-bottom-right-radius(0);
+        &:first-child {
+          @include border-bottom-left-radius(0);
+        }
+
+        &:last-child {
+          @include border-bottom-right-radius(0);
+        }
       }
     }
 
@@ -2100,6 +2132,11 @@ table {
             td {
               background-color: $grey050;
             }
+          }
+
+          &:focus {
+            position: relative;
+            z-index: 1;
           }
 
           &.sel {
@@ -2818,6 +2855,7 @@ table.editable {
         padding: 4px 10px;
 
         &.focus {
+          position: relative;
           box-shadow: inset 0 0 0 1px $hairlineColor;
         }
 
@@ -3017,7 +3055,7 @@ ul.tree,
 }
 
 .status:not(.on):not(.live):not(.active):not(.enabled):not(.pending):not(.off):not(.suspended):not(.expired):not(.yellow):not(.orange):not(.red):not(.pink):not(.purple):not(.blue):not(.green):not(.turquoise):not(.light):not(.grey):not(.black) {
-  border-color: transparentize($inputColor, 0.2);
+  border-color: var(--light-text-color);
 }
 
 .green,
@@ -4342,7 +4380,9 @@ ul.tree,
         .shortcut {
           @include floatright;
           @include margin-left(14px);
-          color: $mediumTextColor;
+          padding: 0 4px;
+          border-radius: $mediumBorderRadius;
+          box-shadow: 0 0 0 1px transparentize($grey600, 0.75), 0 1px 3px -1px transparentize($grey600, 0.5);
         }
       }
     }
@@ -4389,10 +4429,20 @@ ul.tree,
 }
 
 .menu ul li a:not(.sel):not(.disabled):hover,
-.menu ul li a:not(.sel):not(.disabled):hover .light,
-.menu:not(:hover) ul li a:not(.disabled).hover,
-.menu:not(:hover) ul li a:not(.sel):not(.disabled).hover .light {
+.menu:not(:hover) ul li a:not(.disabled).hover {
   @include menu-option-active-styles;
+
+  --text-color: #{$white};
+  --light-text-color: #{$grey100};
+
+  span.icon,
+  &:before {
+    color: $menuOptionActiveColor;
+  }
+
+  &.error {
+    color: $menuOptionActiveColor !important;
+  }
 }
 
 .menu {
@@ -4514,16 +4564,16 @@ table.editable {
 .border-box,
 .matrix-configurator > .field > .input,
 .selectize-text > .selectize-control > .selectize-input,
-.multiselect > select,
-.selectize.multiselect .selectize-control.multi .selectize-input {
+.selectize.multiselect .selectize-control.multi .selectize-input,
+.multiselect > select {
   @include input-styles;
 }
 
 .text,
 .passwordwrapper,
 .border-box,
-.selectize-text > .selectize-control > .selectize-input {
-
+.selectize-text > .selectize-control > .selectize-input,
+.selectize.multiselect .selectize-control.multi .selectize-input {
   &.focus {
     @include input-focused-styles;
   }
@@ -4546,7 +4596,8 @@ textarea.text,
 .text > input,
 .text > textarea,
 table.editable textarea,
-.selectize-text > .selectize-control > .selectize-input {
+.selectize-text > .selectize-control > .selectize-input,
+.selectize.multiselect .selectize-control.multi .selectize-input {
   font-size: 14px;
   line-height: 20px;
   color: $textColor;
@@ -4555,7 +4606,8 @@ table.editable textarea,
   appearance: none;
 }
 
-.selectize-text > .selectize-control > .selectize-input {
+.selectize-text > .selectize-control > .selectize-input,
+.selectize.multiselect .selectize-control.multi .selectize-input{
   line-height: 18px;
 }
 
@@ -4622,7 +4674,8 @@ textarea.text.fullwidth {
   }
 
   .text:focus,
-  .selectize-text > .selectize-control > .selectize-input.focus {
+  .selectize-text > .selectize-control > .selectize-input.focus,
+  .selectize.multiselect .selectize-control.multi .selectize-input.focus {
     position: relative;
     z-index: 2;
   }
@@ -4651,17 +4704,16 @@ fieldset {
 }
 
 .field {
+  min-inline-size: initial;
+
   & > .status-badge {
     position: absolute;
     top: 0;
-    @include left(-26px);
+    @include left(-25px);
     width: 2px;
     height: 100%;
     content: '';
     cursor: help;
-    border: solid transparent;
-    border-width: 0 2px;
-    background-clip: content-box;
 
     &.modified {
       background-color: $blue600;
@@ -4886,6 +4938,13 @@ body.reduce-focus-visibility {
   }
 }
 
+.monaco-mouse-cursor-text {
+  &:focus,
+  &:focus-visible {
+    box-shadow: none !important;
+  }
+}
+
 fieldset {
   .checkboxfield {
     margin: 5px 0;
@@ -5010,7 +5069,8 @@ body.reduce-focus-visibility {
 }
 
 .text:not(.selectize-text),
-.selectize-text > .selectize-control > .selectize-input {
+.selectize-text > .selectize-control > .selectize-input,
+.selectize.multiselect .selectize-control.multi .selectize-input {
   padding: 6px 9px;
 }
 
@@ -5301,7 +5361,9 @@ tr.indexingSession td.progress div.progressContainer  div.progressInfo {
 }
 
 /* selectize reset */
-.selectize .selectize-control.single .selectize-input {
+.selectize .selectize-control.single .selectize-input,
+.selectize .selectize-control.multi .selectize-input {
+  display: block;
   border-color: inherit;
   box-shadow: none;
   background-color: transparent;
@@ -5632,12 +5694,12 @@ ul.errors li {
   @include sans-serif-font;
   font-size: 1em !important;
 
-  .autosuggest__results-before {
+  .autosuggest__results_title {
     @include h6-styles;
     margin-top: 14px !important;
   }
 
-  .autosuggest__results-item {
+  .autosuggest__results_item {
     @include menu-option-styles;
 
     &:hover,
@@ -5967,10 +6029,16 @@ $titlebarBorderRadius: $largeBorderRadius - 1;
   &:not(.static) {
     & > .fields {
       padding-top: 14px;
+    }
+  }
 
-      & > .flex-fields > .field > .status-badge {
-        @include left(-17px);
-      }
+  & > .fields > .flex-fields > .field {
+    &:before {
+      display: none;
+    }
+
+    & > .status-badge {
+      @include left(-15px);
     }
   }
 

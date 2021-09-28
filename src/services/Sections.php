@@ -26,6 +26,7 @@ use craft\helpers\Json;
 use craft\helpers\ProjectConfig as ProjectConfigHelper;
 use craft\helpers\Queue;
 use craft\helpers\StringHelper;
+use craft\i18n\Translation;
 use craft\models\EntryType;
 use craft\models\FieldLayout;
 use craft\models\Section;
@@ -37,7 +38,6 @@ use craft\queue\jobs\ResaveElements;
 use craft\records\EntryType as EntryTypeRecord;
 use craft\records\Section as SectionRecord;
 use craft\records\Section_SiteSettings as Section_SiteSettingsRecord;
-use craft\web\View;
 use yii\base\Component;
 use yii\base\Exception;
 
@@ -120,18 +120,19 @@ class Sections extends Component
      *
      * @since 3.1.21
      */
-    public $autoResaveEntries = true;
+    public bool $autoResaveEntries = true;
 
     /**
-     * @var MemoizableArray|null
+     * @var MemoizableArray<Section>|null
      * @see _sections()
      */
-    private $_sections;
+    private ?MemoizableArray $_sections = null;
 
     /**
-     * @var
+     * @var MemoizableArray<EntryType>|null
+     * @see _entryTypes()
      */
-    private $_entryTypesById;
+    private ?MemoizableArray $_entryTypes = null;
 
     /**
      * Serializer
@@ -189,11 +190,11 @@ class Sections extends Component
     /**
      * Returns a memoizable array of all sections.
      *
-     * @return MemoizableArray
+     * @return MemoizableArray<Section>
      */
     private function _sections(): MemoizableArray
     {
-        if ($this->_sections === null) {
+        if (!isset($this->_sections)) {
             $sections = [];
             foreach ($this->_createSectionQuery()->all() as $result) {
                 if (!empty($result['previewTargets'])) {
@@ -329,7 +330,7 @@ class Sections extends Component
      * @param int $sectionId
      * @return Section|null
      */
-    public function getSectionById(int $sectionId)
+    public function getSectionById(int $sectionId): ?Section
     {
         return $this->_sections()->firstWhere('id', $sectionId);
     }
@@ -350,7 +351,7 @@ class Sections extends Component
      * @return Section|null
      * @since 3.1.0
      */
-    public function getSectionByUid(string $uid)
+    public function getSectionByUid(string $uid): ?Section
     {
         return $this->_sections()->firstWhere('uid', $uid, true);
     }
@@ -370,7 +371,7 @@ class Sections extends Component
      * @param string $sectionHandle
      * @return Section|null
      */
-    public function getSectionByHandle(string $sectionHandle)
+    public function getSectionByHandle(string $sectionHandle): ?Section
     {
         return $this->_sections()->firstWhere('handle', $sectionHandle, true);
     }
@@ -561,7 +562,7 @@ class Sections extends Component
      *
      * @param ConfigEvent $event
      */
-    public function handleChangedSection(ConfigEvent $event)
+    public function handleChangedSection(ConfigEvent $event): void
     {
         ProjectConfigHelper::ensureAllSitesProcessed();
         ProjectConfigHelper::ensureAllFieldsProcessed();
@@ -599,11 +600,14 @@ class Sections extends Component
                 $structure->maxLevels = $data['structure']['maxLevels'];
                 Craft::$app->getStructures()->saveStructure($structure);
                 $sectionRecord->structureId = $structure->id;
-            } else if (!$isNewSection && $sectionRecord->structureId) {
-                // Delete the old one
-                Craft::$app->getStructures()->deleteStructureById($sectionRecord->structureId);
+            } else {
                 $sectionRecord->structureId = null;
                 $isNewStructure = false;
+
+                if ($sectionRecord->structureId) {
+                    // Delete the old one
+                    Craft::$app->getStructures()->deleteStructureById($sectionRecord->structureId);
+                }
             }
 
             $resaveEntries = (
@@ -674,7 +678,6 @@ class Sections extends Component
                 // rows
                 $affectedSiteUids = array_keys($siteSettingData);
 
-                /** @noinspection PhpUndefinedVariableInspection */
                 foreach ($allOldSiteSettingsRecords as $siteId => $siteSettingsRecord) {
                     $siteUid = array_search($siteId, $siteIdMap, false);
                     if (!in_array($siteUid, $affectedSiteUids, false)) {
@@ -703,7 +706,7 @@ class Sections extends Component
                 // If the propagation method just changed, we definitely need to update entries for that
                 if ($propagationMethodChanged) {
                     Queue::push(new ApplyNewPropagationMethod([
-                        'description' => Craft::t('app', 'Applying new propagation method to {section} entries', [
+                        'description' => Translation::prep('app', 'Applying new propagation method to {section} entries', [
                             'section' => $sectionRecord->name,
                         ]),
                         'elementType' => Entry::class,
@@ -714,7 +717,7 @@ class Sections extends Component
                     ]));
                 } else if ($this->autoResaveEntries) {
                     Queue::push(new ResaveElements([
-                        'description' => Craft::t('app', 'Resaving {section} entries', [
+                        'description' => Translation::prep('app', 'Resaving {section} entries', [
                             'section' => $sectionRecord->name,
                         ]),
                         'elementType' => Entry::class,
@@ -825,7 +828,7 @@ class Sections extends Component
      *
      * @param ConfigEvent $event
      */
-    public function handleDeletedSection(ConfigEvent $event)
+    public function handleDeletedSection(ConfigEvent $event): void
     {
         $uid = $event->tokenMatches[0];
         $sectionRecord = $this->_getSectionRecord($uid);
@@ -849,7 +852,7 @@ class Sections extends Component
             // All entries *should* be deleted by now via their entry types, but loop through all the sites in case
             // there are any lingering entries from unsupported sites
             $entryQuery = Entry::find()
-                ->anyStatus()
+                ->status(null)
                 ->sectionId($sectionRecord->id);
             $elementsService = Craft::$app->getElements();
             foreach (Craft::$app->getSites()->getAllSiteIds() as $siteId) {
@@ -893,7 +896,7 @@ class Sections extends Component
      *
      * @param DeleteSiteEvent $event
      */
-    public function pruneDeletedSite(DeleteSiteEvent $event)
+    public function pruneDeletedSite(DeleteSiteEvent $event): void
     {
         $siteUid = $event->site->uid;
 
@@ -914,7 +917,7 @@ class Sections extends Component
      * @param FieldEvent $event
      * @since 3.1.20
      */
-    public function pruneDeletedField(FieldEvent $event)
+    public function pruneDeletedField(FieldEvent $event): void
     {
         $field = $event->field;
         $fieldUid = $field->uid;
@@ -949,26 +952,6 @@ class Sections extends Component
         $projectConfig->muteEvents = false;
     }
 
-    /**
-     * Returns whether a section’s entries have URLs for the given site ID, and if the section’s template path is valid.
-     *
-     * @param Section $section
-     * @param int $siteId
-     * @return bool
-     * @deprecated in 3.3.0
-     */
-    public function isSectionTemplateValid(Section $section, int $siteId): bool
-    {
-        $sectionSiteSettings = $section->getSiteSettings();
-
-        if (!isset($sectionSiteSettings[$siteId]) || !$sectionSiteSettings[$siteId]->hasUrls) {
-            return false;
-        }
-
-        $template = (string)$sectionSiteSettings[$siteId]->template;
-        return Craft::$app->getView()->doesTemplateExist($template, View::TEMPLATE_MODE_SITE);
-    }
-
     // Entry Types
     // -------------------------------------------------------------------------
 
@@ -986,16 +969,28 @@ class Sections extends Component
      */
     public function getEntryTypesBySectionId(int $sectionId): array
     {
-        $results = $this->_createEntryTypeQuery()
-            ->andWhere(['sectionId' => $sectionId])
-            ->orderBy(['sortOrder' => SORT_ASC])
-            ->all();
+        /** @var EntryType[] $entryTypes */
+        $entryTypes = $this->_entryTypes()->where('sectionId', $sectionId)->all();
+        ArrayHelper::multisort($entryTypes, 'sortOrder', SORT_ASC, SORT_NUMERIC);
+        return $entryTypes;
+    }
 
-        foreach ($results as $key => $result) {
-            $results[$key] = new EntryType($result);
+    /**
+     * Returns a memoizable array of all entry types.
+     *
+     * @return MemoizableArray<EntryType>
+     */
+    private function _entryTypes(): MemoizableArray
+    {
+        if (!isset($this->_entryTypes)) {
+            $entryTypes = [];
+            foreach ($this->_createEntryTypeQuery()->all() as $result) {
+                $entryTypes[] = new EntryType($result);
+            }
+            $this->_entryTypes = new MemoizableArray($entryTypes);
         }
 
-        return $results;
+        return $this->_entryTypes;
     }
 
     /**
@@ -1012,14 +1007,7 @@ class Sections extends Component
      */
     public function getAllEntryTypes(): array
     {
-        $results = $this->_createEntryTypeQuery()
-            ->all();
-
-        foreach ($results as $key => $result) {
-            $results[$key] = new EntryType($result);
-        }
-
-        return $results;
+        return $this->_entryTypes()->all();
     }
 
     /**
@@ -1034,21 +1022,9 @@ class Sections extends Component
      * @param int $entryTypeId
      * @return EntryType|null
      */
-    public function getEntryTypeById(int $entryTypeId)
+    public function getEntryTypeById(int $entryTypeId): ?EntryType
     {
-        if (!$entryTypeId) {
-            return null;
-        }
-
-        if ($this->_entryTypesById !== null && array_key_exists($entryTypeId, $this->_entryTypesById)) {
-            return $this->_entryTypesById[$entryTypeId];
-        }
-
-        $result = $this->_createEntryTypeQuery()
-            ->andWhere(['id' => $entryTypeId])
-            ->one();
-
-        return $this->_entryTypesById[$entryTypeId] = $result ? new EntryType($result) : null;
+        return $this->_entryTypes()->firstWhere('id', $entryTypeId);
     }
 
     /**
@@ -1065,15 +1041,7 @@ class Sections extends Component
      */
     public function getEntryTypesByHandle(string $entryTypeHandle): array
     {
-        $results = $this->_createEntryTypeQuery()
-            ->andWhere(['handle' => $entryTypeHandle])
-            ->all();
-
-        foreach ($results as $key => $result) {
-            $results[$key] = new EntryType($result);
-        }
-
-        return $results;
+        return $this->_entryTypes()->where('handle', $entryTypeHandle, true)->all();
     }
 
     /**
@@ -1131,7 +1099,7 @@ class Sections extends Component
      *
      * @param ConfigEvent $event
      */
-    public function handleChangedEntryType(ConfigEvent $event)
+    public function handleChangedEntryType(ConfigEvent $event): void
     {
         $entryTypeUid = $event->tokenMatches[0];
         $data = $event->newValue;
@@ -1198,7 +1166,7 @@ class Sections extends Component
         }
 
         // Clear caches
-        unset($this->_entryTypesById[$entryTypeRecord->id]);
+        $this->_entryTypes = null;
 
         if ($wasTrashed) {
             // Restore the entries that were deleted with the entry type
@@ -1207,7 +1175,7 @@ class Sections extends Component
                 ->draftOf(false)
                 ->sectionId($entryTypeRecord->sectionId)
                 ->typeId($entryTypeRecord->id)
-                ->anyStatus()
+                ->status(null)
                 ->trashed()
                 ->siteId('*')
                 ->unique()
@@ -1225,7 +1193,7 @@ class Sections extends Component
         } else if (!$isNewEntryType && $resaveEntries && $this->autoResaveEntries) {
             // Re-save the entries of this type
             Queue::push(new ResaveElements([
-                'description' => Craft::t('app', 'Resaving {type} entries', [
+                'description' => Translation::prep('app', 'Resaving {type} entries', [
                     'type' => ($section->type !== Section::TYPE_SINGLE ? $section->name . ' - ' : '') . $entryType->name,
                 ]),
                 'elementType' => Entry::class,
@@ -1338,7 +1306,7 @@ class Sections extends Component
      *
      * @param ConfigEvent $event
      */
-    public function handleDeletedEntryType(ConfigEvent $event)
+    public function handleDeletedEntryType(ConfigEvent $event): void
     {
         $uid = $event->tokenMatches[0];
         $entryTypeRecord = $this->_getEntryTypeRecord($uid);
@@ -1365,7 +1333,7 @@ class Sections extends Component
             $entryQuery = Entry::find()
                 ->drafts(null)
                 ->draftOf(false)
-                ->anyStatus()
+                ->status(null)
                 ->typeId($entryTypeRecord->id);
 
             $elementsService = Craft::$app->getElements();
@@ -1394,7 +1362,7 @@ class Sections extends Component
         }
 
         // Clear caches
-        unset($this->_entryTypesById[$entryType->id]);
+        $this->_entryTypes = null;
 
         // Fire an 'afterDeleteEntryType' event
         if ($this->hasEventHandlers(self::EVENT_AFTER_DELETE_ENTRY_TYPE)) {
@@ -1447,7 +1415,7 @@ class Sections extends Component
      * @throws Exception if reasons
      * @see saveSection()
      */
-    private function _ensureSingleEntry(Section $section, array $siteSettings = null): Entry
+    private function _ensureSingleEntry(Section $section, ?array $siteSettings = null): Entry
     {
         // Get the section's supported sites
         // ---------------------------------------------------------------------
@@ -1484,7 +1452,7 @@ class Sections extends Component
         $entry = Entry::find()
             ->typeId($entryTypeIds)
             ->siteId($siteIds)
-            ->anyStatus()
+            ->status(null)
             ->one();
 
         // Otherwise create a new one
@@ -1525,7 +1493,7 @@ class Sections extends Component
             ->siteId('*')
             ->unique()
             ->id(['not', $entry->id])
-            ->anyStatus();
+            ->status(null);
 
         foreach (Db::each($otherEntriesQuery) as $entry) {
             $elementsService->deleteElement($entry, true);
@@ -1541,14 +1509,14 @@ class Sections extends Component
      * @throws Exception if reasons
      * @see saveSection()
      */
-    private function _populateNewStructure(SectionRecord $sectionRecord)
+    private function _populateNewStructure(SectionRecord $sectionRecord): void
     {
         // Add all of the entries to the structure
         $query = Entry::find()
             ->sectionId($sectionRecord->id)
             ->siteId('*')
             ->unique()
-            ->anyStatus()
+            ->status(null)
             ->orderBy(['elements.id' => SORT_ASC])
             ->withStructure(false);
 
@@ -1563,7 +1531,7 @@ class Sections extends Component
     /**
      * @return Query
      */
-    private function _createEntryTypeQuery()
+    private function _createEntryTypeQuery(): Query
     {
         return (new Query())
             ->select([
@@ -1594,6 +1562,7 @@ class Sections extends Component
     {
         $query = $withTrashed ? SectionRecord::findWithTrashed() : SectionRecord::find();
         $query->andWhere(['uid' => $uid]);
+        /** @noinspection PhpIncompatibleReturnTypeInspection */
         return $query->one() ?? new SectionRecord();
     }
 
@@ -1608,6 +1577,7 @@ class Sections extends Component
     {
         $query = $withTrashed ? EntryTypeRecord::findWithTrashed() : EntryTypeRecord::find();
         $query->andWhere(['uid' => $uid]);
+        /** @noinspection PhpIncompatibleReturnTypeInspection */
         return $query->one() ?? new EntryTypeRecord();
     }
 }

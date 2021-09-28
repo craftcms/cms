@@ -30,7 +30,7 @@ class Tokens extends Component
     /**
      * @var bool
      */
-    private $_deletedExpiredTokens = false;
+    private bool $_deletedExpiredTokens = false;
 
     /**
      * Creates a new token and returns it.

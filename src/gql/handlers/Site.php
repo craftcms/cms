@@ -17,10 +17,10 @@ use craft\gql\base\ArgumentHandler;
  */
 class Site extends ArgumentHandler
 {
-    protected $argumentName = 'site';
+    protected string $argumentName = 'site';
 
     /**
-     * @inheritDoc
+     * @inheritdoc
      */
     protected function handleArgument($argumentValue)
     {

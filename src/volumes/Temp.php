@@ -1,5 +1,5 @@
 <?php
-declare(strict_types=1);
+declare(strict_types = 1);
 
 namespace craft\volumes;
 
@@ -34,25 +34,23 @@ class Temp extends Local
     /**
      * @inheritdoc
      */
-    public function init()
+    public function __construct($config = [])
     {
-        parent::init();
-
-        if ($this->path !== null) {
-            $this->path = rtrim($this->path, '/');
-        } else {
-            $this->path = Craft::$app->getPath()->getTempAssetUploadsPath();
+        // Config normalization
+        if (!isset($config['path'])) {
+            $config['path'] = Craft::$app->getPath()->getTempAssetUploadsPath();
+        }
+        if (!isset($config['name'])) {
+            $config['name'] = Craft::t('app', 'Temporary source');
         }
 
-        if ($this->name === null) {
-            $this->name = Craft::t('app', 'Temporary source');
-        }
+        parent::__construct($config);
     }
 
     /**
      * @inheritdoc
      */
-    public function getSettingsHtml()
+    public function getSettingsHtml(): ?string
     {
         return null;
     }

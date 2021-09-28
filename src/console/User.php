@@ -54,9 +54,10 @@ class User extends Component
     /**
      * Returns the current identity object.
      *
-     * @return UserElement|IdentityInterface|false|null
+     * @param bool $autoRenew
+     * @return UserElement|null
      */
-    public function getIdentity()
+    public function getIdentity(bool $autoRenew = true)
     {
         return $this->_identity ?: null;
     }
@@ -68,7 +69,7 @@ class User extends Component
      * means the current user will be a guest without any associated identity.
      * @throws InvalidValueException If `$identity` object does not implement [[IdentityInterface]].
      */
-    public function setIdentity(IdentityInterface $identity = null)
+    public function setIdentity(?IdentityInterface $identity = null): void
     {
         if ($identity instanceof IdentityInterface) {
             $this->_identity = $identity;
@@ -95,7 +96,7 @@ class User extends Component
      * @return int|null
      * @see getIdentity()
      */
-    public function getId()
+    public function getId(): ?int
     {
         $identity = $this->getIdentity();
 

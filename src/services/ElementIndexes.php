@@ -9,7 +9,6 @@ namespace craft\services;
 
 use Craft;
 use craft\base\ElementInterface;
-use craft\base\FieldInterface;
 use craft\base\PreviewableFieldInterface;
 use craft\base\SortableFieldInterface;
 use craft\db\Query;
@@ -42,7 +41,10 @@ class ElementIndexes extends Component
      */
     const EVENT_DEFINE_SOURCE_SORT_OPTIONS = 'defineSourceSortOptions';
 
-    private $_indexSettings;
+    /**
+     * @var array
+     */
+    private array $_indexSettings = [];
 
     /**
      * Returns the element index settings for a given element type.
@@ -50,9 +52,9 @@ class ElementIndexes extends Component
      * @param string $elementType The element type class
      * @return array|null
      */
-    public function getSettings(string $elementType)
+    public function getSettings(string $elementType): ?array
     {
-        if ($this->_indexSettings === null || !array_key_exists($elementType, $this->_indexSettings)) {
+        if (!array_key_exists($elementType, $this->_indexSettings)) {
             $result = (new Query())
                 ->select(['settings'])
                 ->from([Table::ELEMENTINDEXSETTINGS])
@@ -131,8 +133,6 @@ class ElementIndexes extends Component
             foreach ($settings['sources'] as $key => &$source) {
                 if (!isset($indexedBaseSources[$key])) {
                     unset($settings['sources'][$key]);
-                } else if (empty($source['headerColHeading'])) {
-                    unset($source['headerColHeading']);
                 }
             }
             unset($source);
@@ -140,7 +140,6 @@ class ElementIndexes extends Component
 
         $success = (bool)Db::upsert(Table::ELEMENTINDEXSETTINGS, [
             'type' => $elementType,
-        ], [
             'settings' => $settings,
         ]);
 
@@ -250,33 +249,16 @@ class ElementIndexes extends Component
             $this->getSourceTableAttributes($elementType, $sourceKey)
         );
 
-        // Get the source settings
-        $settings = $this->getSettings($elementType);
+        $attributeKeys = $this->getSettings($elementType)['sources'][$sourceKey]['tableAttributes']
+            ?? $elementType::defaultTableAttributes($sourceKey);
 
-        $attributes = [];
+        $attributes = [
+            // Start with the element type’s display name
+            ['title', ['label' => $elementType::displayName()]],
+        ];
 
-        // Start with the first available attribute, no matter what
-        $firstKey = null;
-        foreach ($availableAttributes as $key => $attributeInfo) {
-            $firstKey = $key;
-            if (isset($settings['sources'][$sourceKey]['headerColHeading'])) {
-                $attributeInfo['defaultLabel'] = $attributeInfo['label'];
-                $attributeInfo['label'] = $settings['sources'][$sourceKey]['headerColHeading'];
-            }
-            $attributes[] = [$key, $attributeInfo];
-            break;
-        }
-
-        // Is there a custom attributes list?
-        if (isset($settings['sources'][$sourceKey]['tableAttributes'])) {
-            $attributeKeys = $settings['sources'][$sourceKey]['tableAttributes'];
-        } else {
-            $attributeKeys = $elementType::defaultTableAttributes($sourceKey);
-        }
-
-        // Assemble the remainder of the list
         foreach ($attributeKeys as $key) {
-            if ($key != $firstKey && isset($availableAttributes[$key])) {
+            if (isset($availableAttributes[$key])) {
                 $attributes[] = [$key, $availableAttributes[$key]];
             }
         }
@@ -288,7 +270,7 @@ class ElementIndexes extends Component
      * @var array
      * @see getFieldLayoutsForSource()
      */
-    private $_fieldLayouts;
+    private array $_fieldLayouts;
 
     /**
      * Returns all the field layouts available for the given element source.
@@ -377,28 +359,6 @@ class ElementIndexes extends Component
 
         $this->trigger(self::EVENT_DEFINE_SOURCE_TABLE_ATTRIBUTES, $event);
         return $event->attributes;
-    }
-
-    /**
-     * Returns the fields that are available to be shown as table attributes.
-     *
-     * @param string $elementType The element type class
-     * @return FieldInterface[]
-     * @deprecated in 3.5.0. Use [[getSourceTableAttributes()]] instead.
-     */
-    public function getAvailableTableFields(string $elementType): array
-    {
-        /** @var string|ElementInterface $elementType */
-        $fields = Craft::$app->getFields()->getFieldsByElementType($elementType);
-        $availableFields = [];
-
-        foreach ($fields as $field) {
-            if ($field instanceof PreviewableFieldInterface) {
-                $availableFields[] = $field;
-            }
-        }
-
-        return $availableFields;
     }
 
     /**

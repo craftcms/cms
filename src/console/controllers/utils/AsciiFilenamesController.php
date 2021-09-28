@@ -67,7 +67,7 @@ EOD;
                 break;
             }
 
-            $this->stdout("    - {$asset->filename}" . PHP_EOL);
+            $this->stdout("    - {$asset->getFilename()}" . PHP_EOL);
         }
 
         $this->stdout(PHP_EOL);
@@ -81,10 +81,10 @@ EOD;
         $failCount = 0;
 
         foreach ($assets as $asset) {
-            $asset->newFilename = FileHelper::sanitizeFilename($asset->filename, [
+            $asset->newFilename = FileHelper::sanitizeFilename($asset->getFilename(), [
                 'asciiOnly' => true,
             ]);
-            $this->stdout("    - Renaming {$asset->filename} to {$asset->newFilename} ... ");
+            $this->stdout("    - Renaming {$asset->getFilename()} to {$asset->newFilename} ... ");
             try {
                 if (!Craft::$app->getElements()->saveElement($asset)) {
                     throw new InvalidElementException($asset, implode(', ', $asset->getFirstErrors()));

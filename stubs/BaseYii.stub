@@ -1,0 +1,19 @@
+<?php
+
+namespace yii;
+
+class BaseYii
+{
+    /**
+     * @var \craft\web\Application|\craft\console\Application
+     */
+    public static $app;
+}
+
+namespace craft\console;
+
+class Application {}
+
+namespace craft\web;
+
+class Application {}

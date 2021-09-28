@@ -31,7 +31,7 @@ class AssetIndexesController extends Controller
     /**
      * @inheritdoc
      */
-    public function beforeAction($action)
+    public function beforeAction($action): bool
     {
         // No permission no bueno
         $this->requirePermission('utility:asset-indexes');
@@ -201,7 +201,7 @@ class AssetIndexesController extends Controller
         if (!empty($deleteFiles)) {
             Craft::$app->getAssetTransforms()->deleteTransformIndexDataByAssetIds($deleteFiles);
             $assets = Asset::find()
-                ->anyStatus()
+                ->status(null)
                 ->id($deleteFiles)
                 ->all();
 

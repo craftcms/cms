@@ -2,7 +2,6 @@
 
 namespace craft\migrations;
 
-use Craft;
 use craft\db\Migration;
 use craft\db\Table;
 
@@ -14,7 +13,7 @@ class m210624_235115_json_columns extends Migration
     /**
      * @inheritdoc
      */
-    public function safeUp()
+    public function safeUp(): bool
     {
         // Ensure there are no active tokens (which could have contained invalid JSON)
         $this->truncateTable(Table::TOKENS);
@@ -29,12 +28,14 @@ class m210624_235115_json_columns extends Migration
         $this->convertColumnToJson(Table::USERPREFERENCES, 'preferences');
         $this->convertColumnToJson(Table::VOLUMES, 'settings');
         $this->convertColumnToJson(Table::WIDGETS, 'settings');
+
+        return true;
     }
 
     /**
      * @inheritdoc
      */
-    public function safeDown()
+    public function safeDown(): bool
     {
         echo "m210624_235115_json_columns cannot be reverted.\n";
         return false;

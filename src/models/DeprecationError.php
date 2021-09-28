@@ -23,47 +23,47 @@ class DeprecationError extends Model
     /**
      * @var int|null ID
      */
-    public $id;
+    public ?int $id = null;
 
     /**
      * @var string|null Key
      */
-    public $key;
+    public ?string $key = null;
 
     /**
      * @var string|null Fingerprint
      */
-    public $fingerprint;
+    public ?string $fingerprint = null;
 
     /**
      * @var DateTime|null Last occurrence
      */
-    public $lastOccurrence;
+    public ?DateTime $lastOccurrence = null;
 
     /**
      * @var string|null File
      */
-    public $file;
+    public ?string $file = null;
 
     /**
      * @var int|null Line
      */
-    public $line;
+    public ?int $line = null;
 
     /**
      * @var string|null Message
      */
-    public $message;
+    public ?string $message = null;
 
     /**
      * @var array|null Traces
      */
-    public $traces;
+    public ?array $traces = null;
 
     /**
      * @inheritdoc
      */
-    public function init()
+    public function init(): void
     {
         parent::init();
 

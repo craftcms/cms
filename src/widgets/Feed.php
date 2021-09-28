@@ -31,7 +31,7 @@ class Feed extends Widget
     /**
      * @inheritdoc
      */
-    public static function icon()
+    public static function icon(): ?string
     {
         return Craft::getAlias('@appicons/feed.svg');
     }
@@ -39,28 +39,31 @@ class Feed extends Widget
     /**
      * @var string|null The feed URL
      */
-    public $url;
+    public ?string $url = null;
 
     /**
      * @var string|null The feed title
      */
-    public $title;
+    public ?string $title = null;
 
     /**
      * @var int The maximum number of feed items to display
      */
-    public $limit;
+    public int $limit = 5;
 
     /**
      * @inheritdoc
      */
-    public function init()
+    public function __construct($config = [])
     {
-        parent::init();
-
-        if (!$this->limit) {
-            $this->limit = 5;
+        // Config normalization
+        foreach (['url', 'title', 'limit'] as $name) {
+            if (($config[$name] ?? null) === '') {
+                unset($config[$name]);
+            }
         }
+
+        parent::__construct($config);
     }
 
     /**
@@ -78,7 +81,7 @@ class Feed extends Widget
     /**
      * @inheritdoc
      */
-    public function getSettingsHtml()
+    public function getSettingsHtml(): ?string
     {
         return Craft::$app->getView()->renderTemplate('_components/widgets/Feed/settings',
             [
@@ -89,7 +92,7 @@ class Feed extends Widget
     /**
      * @inheritdoc
      */
-    public function getTitle(): string
+    public function getTitle(): ?string
     {
         return $this->title;
     }
@@ -97,7 +100,7 @@ class Feed extends Widget
     /**
      * @inheritdoc
      */
-    public function getBodyHtml()
+    public function getBodyHtml(): ?string
     {
         // See if it's already cached
         $data = Craft::$app->getCache()->get("feed:$this->url");

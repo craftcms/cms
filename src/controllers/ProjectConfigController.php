@@ -27,9 +27,9 @@ use ZipArchive;
 class ProjectConfigController extends Controller
 {
     /**
-     * @inheritDoc
+     * @inheritdoc
      */
-    public function beforeAction($action)
+    public function beforeAction($action): bool
     {
         if (!parent::beforeAction($action)) {
             return false;

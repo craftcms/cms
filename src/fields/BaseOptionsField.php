@@ -33,32 +33,32 @@ use yii\db\Schema;
 abstract class BaseOptionsField extends Field implements PreviewableFieldInterface
 {
     /**
-     * @var array|null The available options
+     * @var array The available options
      */
-    public $options;
+    public array $options;
 
     /**
      * @var bool Whether the field should support multiple selections
      */
-    protected $multi = false;
+    protected bool $multi = false;
 
     /**
      * @var bool Whether the field should support optgroups
      */
-    protected $optgroups = false;
+    protected bool $optgroups = false;
 
     /**
      * @inheritdoc
      */
-    public function init()
+    public function __construct($config = [])
     {
-        parent::init();
+        // Not possible to override multi or optgroups
+        unset($config['multi'], $config['optgroups']);
 
         // Normalize the options
         $options = [];
-
-        if (is_array($this->options)) {
-            foreach ($this->options as $key => $option) {
+        if (isset($config['options']) && is_array($config['options'])) {
+            foreach ($config['options'] as $key => $option) {
                 // Old school?
                 if (!is_array($option)) {
                     $options[] = [
@@ -77,8 +77,9 @@ abstract class BaseOptionsField extends Field implements PreviewableFieldInterfa
                 }
             }
         }
+        $config['options'] = $options;
 
-        $this->options = $options;
+        parent::__construct($config);
     }
 
     /**
@@ -107,7 +108,7 @@ abstract class BaseOptionsField extends Field implements PreviewableFieldInterfa
      *
      * @since 3.3.5
      */
-    public function validateOptions()
+    public function validateOptions(): void
     {
         $labels = [];
         $values = [];
@@ -175,7 +176,7 @@ abstract class BaseOptionsField extends Field implements PreviewableFieldInterfa
     /**
      * @inheritdoc
      */
-    public function getSettingsHtml()
+    public function getSettingsHtml(): ?string
     {
         if (empty($this->options)) {
             // Give it a default row
@@ -232,7 +233,7 @@ abstract class BaseOptionsField extends Field implements PreviewableFieldInterfa
     /**
      * @inheritdoc
      */
-    public function normalizeValue($value, ElementInterface $element = null)
+    public function normalizeValue($value, ?ElementInterface $element = null)
     {
         if ($value instanceof MultiOptionsFieldData || $value instanceof SingleOptionFieldData) {
             return $value;
@@ -295,7 +296,7 @@ abstract class BaseOptionsField extends Field implements PreviewableFieldInterfa
     /**
      * @inheritdoc
      */
-    public function serializeValue($value, ElementInterface $element = null)
+    public function serializeValue($value, ?ElementInterface $element = null)
     {
         if ($value instanceof MultiOptionsFieldData) {
             $serialized = [];
@@ -311,9 +312,33 @@ abstract class BaseOptionsField extends Field implements PreviewableFieldInterfa
 
     /**
      * @inheritdoc
+     */
+    protected function searchKeywords($value, ElementInterface $element): string
+    {
+        $keywords = [];
+
+        if ($this->multi) {
+            /** @var MultiOptionsFieldData|OptionData[] $value */
+            foreach ($value as $option) {
+                $keywords[] = $option->value;
+                $keywords[] = $option->label;
+            }
+        } else {
+            /** @var SingleOptionFieldData $value */
+            if ($value->value !== null) {
+                $keywords[] = $value->value;
+                $keywords[] = $value->label;
+            }
+        }
+
+        return implode(' ', $keywords);
+    }
+
+    /**
+     * @inheritdoc
      * @since 3.4.6
      */
-    public function modifyElementsQuery(ElementQueryInterface $query, $value)
+    public function modifyElementsQuery(ElementQueryInterface $query, $value): void
     {
         // foo => *"foo"*
         if ($this->multi) {
@@ -330,7 +355,7 @@ abstract class BaseOptionsField extends Field implements PreviewableFieldInterfa
             }
         }
 
-        return parent::modifyElementsQuery($query, $value);
+        parent::modifyElementsQuery($query, $value);
     }
 
     /**
@@ -490,24 +515,6 @@ abstract class BaseOptionsField extends Field implements PreviewableFieldInterfa
         }
 
         return $translatedOptions;
-    }
-
-    /**
-     * Returns an option's label by its value.
-     *
-     * @param string|null $value
-     * @return string|null
-     * @deprecated in 3.4.24
-     */
-    protected function optionLabel(string $value = null)
-    {
-        foreach ($this->options() as $option) {
-            if (!isset($option['optgroup']) && (string)$option['value'] === $value) {
-                return $option['label'];
-            }
-        }
-
-        return $value;
     }
 
     /**

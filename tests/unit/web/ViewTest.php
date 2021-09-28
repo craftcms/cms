@@ -466,6 +466,8 @@ TWIG;
             ["{% verbatim %}\n{foo}\n{% endverbatim %}", "{% verbatim %}\n{foo}\n{% endverbatim %}"],
             ["{%- verbatim -%}\n{foo}\n{%- endverbatim -%}", "{%- verbatim -%}\n{foo}\n{%- endverbatim -%}"],
             ['{{ clone(productCategory).level(1).one().slug|raw }}', '{clone(productCategory).level(1).one().slug}'],
+            ['{{ #{foo} }}', '{{ #{foo} }}'],
+            ['{% set string = "test #{foo} 5" %}{{string}}', '{% set string = "test #{foo} 5" %}{{string}}'],
         ];
     }
 
@@ -484,9 +486,9 @@ TWIG;
             ['@craftunittemplates/testSite3/index.twig', 'testSite3/'],
 
             // Cp Paths
-            ['@craft/templates/index.html', '', View::TEMPLATE_MODE_CP],
-            ['@craft/templates/index.html', 'index', View::TEMPLATE_MODE_CP],
-            ['@craft/templates/entries/index.html', 'entries', View::TEMPLATE_MODE_CP],
+            ['@craft/templates/index.twig', '', View::TEMPLATE_MODE_CP],
+            ['@craft/templates/index.twig', 'index', View::TEMPLATE_MODE_CP],
+            ['@craft/templates/entries/index.twig', 'entries', View::TEMPLATE_MODE_CP],
         ];
     }
 

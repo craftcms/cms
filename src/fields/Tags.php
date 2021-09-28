@@ -68,22 +68,22 @@ class Tags extends BaseRelationField
     /**
      * @inheritdoc
      */
-    public $allowMultipleSources = false;
+    public bool $allowMultipleSources = false;
 
     /**
      * @inheritdoc
      */
-    public $allowLimit = false;
+    public bool $allowLimit = false;
 
     /**
-     * @var
+     * @var int|false|null
      */
     private $_tagGroupId;
 
     /**
      * @inheritdoc
      */
-    protected function inputHtml($value, ElementInterface $element = null): string
+    protected function inputHtml($value, ?ElementInterface $element = null): string
     {
         if ($element !== null && $element->hasEagerLoadedElements($this->handle)) {
             $value = $element->getEagerLoadedElements($this->handle);
@@ -91,7 +91,7 @@ class Tags extends BaseRelationField
 
         if ($value instanceof ElementQueryInterface) {
             $value = $value
-                ->anyStatus()
+                ->status(null)
                 ->all();
         } else if (!is_array($value)) {
             $value = [];
@@ -143,13 +143,13 @@ class Tags extends BaseRelationField
      * @inheritdoc
      * @since 3.3.0
      */
-    public function getEagerLoadingGqlConditions()
+    public function getEagerLoadingGqlConditions(): ?array
     {
         $allowedEntities = Gql::extractAllowedEntitiesFromSchema();
         $allowedTagGroupUids = $allowedEntities['taggroups'] ?? [];
 
         if (empty($allowedTagGroupUids)) {
-            return false;
+            return null;
         }
 
         $tagGroupIds = Db::idsByUids(DbTable::TAGGROUPS, $allowedTagGroupUids);
@@ -162,7 +162,7 @@ class Tags extends BaseRelationField
      *
      * @return TagGroup|null
      */
-    private function _getTagGroup()
+    private function _getTagGroup(): ?TagGroup
     {
         $tagGroupId = $this->_getTagGroupId();
 
@@ -180,7 +180,7 @@ class Tags extends BaseRelationField
      */
     private function _getTagGroupId()
     {
-        if ($this->_tagGroupId !== null) {
+        if (isset($this->_tagGroupId)) {
             return $this->_tagGroupId;
         }
 

@@ -13,6 +13,7 @@ use craft\records\AssetTransform as AssetTransformRecord;
 use craft\validators\DateTimeValidator;
 use craft\validators\HandleValidator;
 use craft\validators\UniqueValidator;
+use DateTime;
 
 /**
  * The AssetTransform model class.
@@ -26,67 +27,67 @@ class AssetTransform extends Model
     /**
      * @var int|null ID
      */
-    public $id;
+    public ?int $id = null;
 
     /**
      * @var string|null Name
      */
-    public $name;
+    public ?string $name = null;
 
     /**
      * @var string|null Handle
      */
-    public $handle;
+    public ?string $handle = null;
 
     /**
      * @var int|null Width
      */
-    public $width;
+    public ?int $width = null;
 
     /**
      * @var int|null Height
      */
-    public $height;
+    public ?int $height = null;
 
     /**
      * @var string|null Format
      */
-    public $format;
+    public ?string $format = null;
 
     /**
-     * @var \DateTime|null Dimension change time
+     * @var DateTime|null Dimension change time
      */
-    public $dimensionChangeTime;
+    public ?DateTime $dimensionChangeTime = null;
 
     /**
      * @var string Mode
      */
-    public $mode = 'crop';
+    public string $mode = 'crop';
 
     /**
      * @var string Position
      */
-    public $position = 'center-center';
+    public string $position = 'center-center';
 
     /**
      * @var string Position
      */
-    public $interlace = 'none';
+    public string $interlace = 'none';
 
     /**
      * @var int|null Quality
      */
-    public $quality;
+    public ?int $quality = null;
 
     /**
      * @var string|null UID
      */
-    public $uid;
+    public ?string $uid = null;
 
     /**
      * @inheritdoc
      */
-    public function attributeLabels()
+    public function attributeLabels(): array
     {
         return [
             'handle' => Craft::t('app', 'Handle'),

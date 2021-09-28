@@ -55,7 +55,7 @@ abstract class BaseEntriesController extends Controller
      * @throws ForbiddenHttpException
      * @since 3.5.0
      */
-    protected function enforceSitePermission(Site $site)
+    protected function enforceSitePermission(Site $site): void
     {
         if (Craft::$app->getIsMultiSite()) {
             $this->requirePermission('editSite:' . $site->uid);
@@ -69,7 +69,7 @@ abstract class BaseEntriesController extends Controller
      * @param bool $duplicate
      * @throws ForbiddenHttpException
      */
-    protected function enforceEditEntryPermissions(Entry $entry, bool $duplicate = false)
+    protected function enforceEditEntryPermissions(Entry $entry, bool $duplicate = false): void
     {
         $permissionSuffix = ':' . $entry->getSection()->uid;
 
@@ -110,17 +110,9 @@ abstract class BaseEntriesController extends Controller
      * @throws ForbiddenHttpException
      * @since 3.6.0
      */
-    protected function enforceDeleteEntryPermissions(Entry $entry)
+    protected function enforceDeleteEntryPermissions(Entry $entry): void
     {
-        $currentUser = Craft::$app->getUser()->getIdentity();
-        $section = $entry->getSection();
-
-        if ($entry->getIsDraft()) {
-            /** @var Entry|DraftBehavior $entry */
-            if (!$entry->creatorId || $entry->creatorId != $currentUser->id) {
-                $this->requirePermission("deletePeerEntryDrafts:$section->uid");
-            }
-        } else if (!$entry->getIsDeletable()) {
+        if (!$entry->getIsDeletable()) {
             throw new ForbiddenHttpException('User is not permitted to perform this action');
         }
     }

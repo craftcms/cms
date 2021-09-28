@@ -23,7 +23,7 @@ class TemplateLoader implements LoaderInterface
     /**
      * @var View|null
      */
-    protected $view;
+    protected ?View $view = null;
 
     /**
      * Constructor
@@ -38,7 +38,7 @@ class TemplateLoader implements LoaderInterface
     /**
      * @inheritdoc
      */
-    public function exists(string $name)
+    public function exists(string $name): bool
     {
         return $this->view->doesTemplateExist($name);
     }
@@ -82,7 +82,7 @@ class TemplateLoader implements LoaderInterface
         // If this is a CP request and a DB update is needed, force a recompile.
         $request = Craft::$app->getRequest();
 
-        if ($request->getIsCpRequest() && Craft::$app->getUpdates()->getIsCraftDbMigrationNeeded()) {
+        if ($request->getIsCpRequest() && Craft::$app->getUpdates()->getIsCraftUpdatePending()) {
             return false;
         }
 

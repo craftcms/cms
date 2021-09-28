@@ -22,7 +22,6 @@ use craft\models\Update;
 use craft\models\Updates;
 use craft\web\Controller;
 use craft\web\ServiceUnavailableHttpException;
-use Http\Client\Common\Exception\ServerErrorException;
 use yii\base\InvalidConfigException;
 use yii\web\BadRequestHttpException;
 use yii\web\ForbiddenHttpException;
@@ -43,7 +42,7 @@ class AppController extends Controller
     /**
      * @inheritdoc
      */
-    public $allowAnonymous = [
+    protected $allowAnonymous = [
         'migrate' => self::ALLOW_ANONYMOUS_LIVE | self::ALLOW_ANONYMOUS_OFFLINE,
         'broken-image' => self::ALLOW_ANONYMOUS_LIVE | self::ALLOW_ANONYMOUS_OFFLINE,
         'health-check' => self::ALLOW_ANONYMOUS_LIVE,
@@ -52,7 +51,7 @@ class AppController extends Controller
     /**
      * @inheritdoc
      */
-    public function beforeAction($action)
+    public function beforeAction($action): bool
     {
         if ($action->id === 'migrate') {
             $this->enableCsrfValidation = false;
@@ -94,7 +93,7 @@ class AppController extends Controller
      * @throws BadRequestHttpException
      * @since 3.3.16
      */
-    public function actionProcessApiResponseHeaders()
+    public function actionProcessApiResponseHeaders(): Response
     {
         $this->requireCpRequest();
         $headers = $this->request->getRequiredBodyParam('headers');
@@ -208,9 +207,10 @@ class AppController extends Controller
      * downtime after a deployment.
      *
      * @param bool $applyProjectConfigChanges
-     * @throws ServerErrorException if something went wrong
+     * @return Response
+     * @throws ServerErrorHttpException
      */
-    public function actionMigrate(bool $applyProjectConfigChanges = false)
+    public function actionMigrate(bool $applyProjectConfigChanges = false): Response
     {
         $this->requirePostRequest();
 
@@ -532,7 +532,7 @@ class AppController extends Controller
      * @param array|null $pluginLicenses
      * @return array
      */
-    private function _pluginLicenseInfo(array $pluginLicenses = null): array
+    private function _pluginLicenseInfo(?array $pluginLicenses = null): array
     {
         $result = [];
 

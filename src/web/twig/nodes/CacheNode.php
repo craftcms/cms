@@ -23,12 +23,12 @@ class CacheNode extends Node
     /**
      * @var int
      */
-    private static $_cacheCount = 1;
+    private static int $_cacheCount = 1;
 
     /**
      * @inheritdoc
      */
-    public function compile(Compiler $compiler)
+    public function compile(Compiler $compiler): void
     {
         $n = self::$_cacheCount++;
 

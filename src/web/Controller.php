@@ -11,7 +11,6 @@ use Craft;
 use craft\helpers\FileHelper;
 use craft\helpers\Json;
 use craft\helpers\StringHelper;
-use craft\helpers\UrlHelper;
 use craft\web\assets\iframeresizer\ContentWindowAsset;
 use GuzzleHttp\Exception\ClientException;
 use yii\base\Action;
@@ -66,7 +65,7 @@ abstract class Controller extends \yii\web\Controller
      * @inheritdoc
      * @throws InvalidConfigException if [[$allowAnonymous]] is set to an invalid value
      */
-    public function init()
+    public function init(): void
     {
         // Normalize $allowAnonymous
         if (is_bool($this->allowAnonymous)) {
@@ -106,7 +105,7 @@ abstract class Controller extends \yii\web\Controller
      * If you override this method, your code should look like the following:
      *
      * ```php
-     * public function beforeAction($action)
+     * public function beforeAction($action): bool
      * {
      *     // your custom code here, if you want the code to run before action filters,
      *     // which are triggered on the [[EVENT_BEFORE_ACTION]] event, e.g. PageCache or AccessControl
@@ -128,7 +127,7 @@ abstract class Controller extends \yii\web\Controller
      * @throws ServiceUnavailableHttpException if the system is offline and the user isn't allowed to access it
      * @throws UnauthorizedHttpException
      */
-    public function beforeAction($action)
+    public function beforeAction($action): bool
     {
         // Don't enable CSRF validation for Live Preview requests
         if ($this->request->getIsLivePreview()) {
@@ -237,11 +236,11 @@ abstract class Controller extends \yii\web\Controller
      *
      * @param string $template The name of the template to load
      * @param array $variables The variables that should be available to the template
-     * @param string $templateMode The template mode to use
+     * @param string|null $templateMode The template mode to use
      * @return YiiResponse
      * @throws InvalidArgumentException if the view file does not exist.
      */
-    public function renderTemplate(string $template, array $variables = [], string $templateMode = null): YiiResponse
+    public function renderTemplate(string $template, array $variables = [], ?string $templateMode = null): YiiResponse
     {
         $view = $this->getView();
 
@@ -257,7 +256,10 @@ abstract class Controller extends \yii\web\Controller
         $this->response->data = $view->renderPageTemplate($template, $variables, $templateMode);
 
         $headers = $this->response->getHeaders();
-        $headers->setDefault('content-length', strlen($this->response->data));
+
+        if (Craft::$app->getConfig()->getGeneral()->sendContentLengthHeader) {
+            $headers->setDefault('content-length', strlen($this->response->data));
+        }
 
         // Set the MIME type for the request based on the matched template's file extension (unless the
         // Content-Type header was already set, perhaps by the template via the {% header %} tag)
@@ -273,7 +275,7 @@ abstract class Controller extends \yii\web\Controller
     /**
      * Redirects the user to the login template if they're not logged in.
      */
-    public function requireLogin()
+    public function requireLogin(): void
     {
         $userSession = Craft::$app->getUser();
 
@@ -288,7 +290,7 @@ abstract class Controller extends \yii\web\Controller
      *
      * @since 3.4.0
      */
-    public function requireGuest()
+    public function requireGuest(): void
     {
         $userSession = Craft::$app->getUser();
 
@@ -305,7 +307,7 @@ abstract class Controller extends \yii\web\Controller
      * config setting must also be enabled.
      * @throws ForbiddenHttpException if the current user is not an admin
      */
-    public function requireAdmin(bool $requireAdminChanges = true)
+    public function requireAdmin(bool $requireAdminChanges = true): void
     {
         // First make sure someone's actually logged in
         $this->requireLogin();
@@ -327,7 +329,7 @@ abstract class Controller extends \yii\web\Controller
      * @param string $permissionName The name of the permission.
      * @throws ForbiddenHttpException if the current user doesn’t have the required permission
      */
-    public function requirePermission(string $permissionName)
+    public function requirePermission(string $permissionName): void
     {
         if (!Craft::$app->getUser()->checkPermission($permissionName)) {
             throw new ForbiddenHttpException('User is not permitted to perform this action');
@@ -340,7 +342,7 @@ abstract class Controller extends \yii\web\Controller
      * @param string $action The name of the action to check.
      * @throws ForbiddenHttpException if the current user is not authorized
      */
-    public function requireAuthorization(string $action)
+    public function requireAuthorization(string $action): void
     {
         if (!Craft::$app->getSession()->checkAuthorization($action)) {
             throw new ForbiddenHttpException('User is not authorized to perform this action');
@@ -352,7 +354,7 @@ abstract class Controller extends \yii\web\Controller
      *
      * @throws ForbiddenHttpException if the current user does not have an elevated session
      */
-    public function requireElevatedSession()
+    public function requireElevatedSession(): void
     {
         if (!Craft::$app->getUser()->getHasElevatedSession()) {
             throw new ForbiddenHttpException(Craft::t('app', 'This action may only be performed with an elevated session.'));
@@ -364,7 +366,7 @@ abstract class Controller extends \yii\web\Controller
      *
      * @throws BadRequestHttpException if the request is not a post request
      */
-    public function requirePostRequest()
+    public function requirePostRequest(): void
     {
         if (!$this->request->getIsPost()) {
             throw new BadRequestHttpException('Post request required');
@@ -376,7 +378,7 @@ abstract class Controller extends \yii\web\Controller
      *
      * @throws BadRequestHttpException if the request doesn't accept JSON
      */
-    public function requireAcceptsJson()
+    public function requireAcceptsJson(): void
     {
         if (!$this->request->getAcceptsJson() && !$this->request->getIsOptions()) {
             throw new BadRequestHttpException('Request must accept JSON in response');
@@ -389,7 +391,7 @@ abstract class Controller extends \yii\web\Controller
      * @throws BadRequestHttpException if the request does not have a valid Craft token
      * @see Request::getToken()
      */
-    public function requireToken()
+    public function requireToken(): void
     {
         if (!$this->request->getHadToken()) {
             throw new BadRequestHttpException('Valid token required');
@@ -402,7 +404,7 @@ abstract class Controller extends \yii\web\Controller
      * @throws BadRequestHttpException if this is not a control panel request
      * @since 3.1.0
      */
-    public function requireCpRequest()
+    public function requireCpRequest(): void
     {
         if (!$this->request->getIsCpRequest()) {
             throw new BadRequestHttpException('Request must be a control panel request');
@@ -415,7 +417,7 @@ abstract class Controller extends \yii\web\Controller
      * @throws BadRequestHttpException if the request is not a site request
      * @since 3.1.0
      */
-    public function requireSiteRequest()
+    public function requireSiteRequest(): void
     {
         if (!$this->request->getIsSiteRequest()) {
             throw new BadRequestHttpException('Request must be a site request');
@@ -430,7 +432,7 @@ abstract class Controller extends \yii\web\Controller
      * @param string|null $default
      * @since 3.5.0
      */
-    public function setSuccessFlash(string $default = null)
+    public function setSuccessFlash(?string $default = null): void
     {
         $message = $this->request->getValidatedBodyParam('successMessage') ?? $default;
         if ($message !== null) {
@@ -446,7 +448,7 @@ abstract class Controller extends \yii\web\Controller
      * @param string|null $default
      * @since 3.5.0
      */
-    public function setFailFlash(string $default = null)
+    public function setFailFlash(?string $default = null): void
     {
         $message = $this->request->getValidatedBodyParam('failMessage') ?? $default;
         if ($message !== null) {
@@ -463,7 +465,7 @@ abstract class Controller extends \yii\web\Controller
      * @return YiiResponse
      * @throws BadRequestHttpException if the redirect param was tampered with
      */
-    public function redirectToPostedUrl($object = null, string $default = null): YiiResponse
+    public function redirectToPostedUrl($object = null, ?string $default = null): YiiResponse
     {
         $url = $this->request->getValidatedBodyParam('redirect');
 
@@ -530,9 +532,6 @@ abstract class Controller extends \yii\web\Controller
      */
     public function redirect($url, $statusCode = 302): YiiResponse
     {
-        if (is_string($url)) {
-            $url = UrlHelper::url($url);
-        }
 
         if ($url !== null) {
             return $this->response->redirect($url, $statusCode);

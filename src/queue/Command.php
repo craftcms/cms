@@ -12,7 +12,7 @@ use yii\console\ExitCode;
 use yii\db\Exception as YiiDbException;
 
 /**
- * Manages the queue
+ * Manages the queue.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @author Roman Zhuravlev <zhuravljov@gmail.com>
@@ -40,7 +40,7 @@ class Command extends \yii\queue\cli\Command
     /**
      * @inheritdoc
      */
-    protected function isWorkerAction($actionID)
+    protected function isWorkerAction($actionID): bool
     {
         return in_array($actionID, ['run', 'listen'], true);
     }
@@ -48,7 +48,7 @@ class Command extends \yii\queue\cli\Command
     /**
      * @inheritdoc
      */
-    public function beforeAction($action)
+    public function beforeAction($action): bool
     {
         if (!parent::beforeAction($action)) {
             return false;
@@ -60,7 +60,7 @@ class Command extends \yii\queue\cli\Command
     /**
      * @inheritdoc
      */
-    public function actions()
+    public function actions(): array
     {
         return [
             'info' => InfoAction::class,
@@ -78,9 +78,9 @@ class Command extends \yii\queue\cli\Command
     }
 
     /**
-     * Listens for new jobs added to the queue and runs them
+     * Listens for new jobs added to the queue and runs them.
      *
-     * @param int $timeout The number of seconds to wait between cycles
+     * @param int $timeout The number of seconds to wait between cycles.
      * @return int
      */
     public function actionListen(int $timeout = 3): int
@@ -91,7 +91,7 @@ class Command extends \yii\queue\cli\Command
     /**
      * Re-adds a failed job(s) to the queue.
      *
-     * @param int|string $job The job ID that should be retried, or pass `all` to retry all failed jobs
+     * @param int|string $job The job ID that should be retried, or `all` to retry all failed jobs.
      * @return int
      * @since 3.1.21
      */
@@ -117,12 +117,18 @@ class Command extends \yii\queue\cli\Command
     /**
      * Releases job(s) from the queue.
      *
+     * Example:
+     *
+     * ```
+     * php craft queue/release all
+     * ```
+     *
      * @param string $job The job ID to release. Pass `all` to release all jobs.
      * @return int
      * @throws YiiDbException
      * @since 3.4.0
      */
-    public function actionRelease($job): int
+    public function actionRelease(string $job): int
     {
         if (strtolower($job) === 'all') {
             $this->stdout('Releasing all queue jobs ... ');

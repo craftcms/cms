@@ -44,7 +44,20 @@ class Color extends Field implements PreviewableFieldInterface
     /**
      * @var string|null The default color hex
      */
-    public $defaultColor;
+    public ?string $defaultColor = null;
+
+    /**
+     * @inheritdoc
+     */
+    public function __construct($config = [])
+    {
+        // Config normalization
+        if (($config['defaultColor'] ?? null) === '') {
+            unset($config['defaultColor']);
+        }
+
+        parent::__construct($config);
+    }
 
     /**
      * @inheritdoc
@@ -55,7 +68,7 @@ class Color extends Field implements PreviewableFieldInterface
     }
 
     /** @inheritdoc */
-    public function getSettingsHtml()
+    public function getSettingsHtml(): ?string
     {
         return Cp::colorFieldHtml([
             'label' => Craft::t('app', 'Default Color'),
@@ -87,7 +100,7 @@ class Color extends Field implements PreviewableFieldInterface
     /**
      * @inheritdoc
      */
-    public function normalizeValue($value, ElementInterface $element = null)
+    public function normalizeValue($value, ?ElementInterface $element = null)
     {
         if ($value instanceof ColorData) {
             return $value;
@@ -121,7 +134,7 @@ class Color extends Field implements PreviewableFieldInterface
     /**
      * @inheritdoc
      */
-    protected function inputHtml($value, ElementInterface $element = null): string
+    protected function inputHtml($value, ?ElementInterface $element = null): string
     {
         /** @var ColorData|null $value */
         $id = Html::id($this->handle);

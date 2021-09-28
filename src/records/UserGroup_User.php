@@ -27,7 +27,7 @@ class UserGroup_User extends ActiveRecord
     /**
      * @inheritdoc
      */
-    public function rules()
+    public function rules(): array
     {
         return [
             [['groupId'], 'unique', 'targetAttribute' => ['groupId', 'userId']],

@@ -35,7 +35,7 @@ class DbConfig extends BaseObject
     /**
      * @var array An array of key => value pairs of PDO attributes to pass into the PDO constructor.
      *
-     * For example, when using the [MySQL PDO driver](http://php.net/manual/en/ref.pdo-mysql.php), if you wanted to enable a SSL database connection
+     * For example, when using the [MySQL PDO driver](https://php.net/manual/en/ref.pdo-mysql.php), if you wanted to enable a SSL database connection
      * (assuming [SSL is enabled in MySQL](https://dev.mysql.com/doc/refman/5.5/en/using-secure-connections.html) and `'user'` can connect via SSL,
      * you’d set these:
      *
@@ -47,7 +47,7 @@ class DbConfig extends BaseObject
      * ],
      * ```
      */
-    public $attributes = [];
+    public array $attributes = [];
 
     /**
      * @var string The charset to use when creating tables.
@@ -60,7 +60,7 @@ class DbConfig extends BaseObject
      * ```
      * :::
      */
-    public $charset = 'utf8';
+    public string $charset = 'utf8';
 
     /**
      * @var string|null The collation to use when creating tables.
@@ -82,10 +82,10 @@ class DbConfig extends BaseObject
      *
      * @since 3.6.4
      */
-    public $collation;
+    public ?string $collation = null;
 
     /**
-     * @var string The Data Source Name (“DSN”) that tells Craft how to connect to the database.
+     * @var string|null The Data Source Name (“DSN”) that tells Craft how to connect to the database.
      *
      * DSNs should begin with a driver prefix (`mysql:` or `pgsql:`), followed by driver-specific parameters.
      * For example, `mysql:host=127.0.0.1;port=3306;dbname=acme_corp`.
@@ -93,29 +93,41 @@ class DbConfig extends BaseObject
      * - MySQL parameters: <https://php.net/manual/en/ref.pdo-mysql.connection.php>
      * - PostgreSQL parameters: <https://php.net/manual/en/ref.pdo-pgsql.connection.php>
      */
-    public $dsn;
+    public ?string $dsn = null;
 
     /**
      * @var string The database password to connect with.
      */
-    public $password = '';
+    public string $password = '';
 
     /**
-     * @var string The schema that Postgres is configured to use by default (PostgreSQL only).
+     * @var string|null The schema that Postgres is configured to use by default (PostgreSQL only).
      * @see https://www.postgresql.org/docs/8.2/static/ddl-schemas.html
      */
-    public $schema = 'public';
+    public ?string $schema = 'public';
 
     /**
      * @var string If you’re sharing Craft installs in a single database (MySQL) or a single database and using a shared schema (PostgreSQL),
      * you can set a table prefix here to avoid per-install table naming conflicts. This can be no more than 5 characters, and must be all lowercase.
      */
-    public $tablePrefix = '';
+    public string $tablePrefix = '';
 
     /**
      * @var string The database username to connect with.
      */
-    public $user = 'root';
+    public string $user = 'root';
+
+    /**
+     * @var bool Whether batched queries should be executed on a separate, unbuffered database connection.
+     *
+     * This setting only applies to MySQL. It can be enabled when working with high volume content, to prevent
+     * PHP from running out of memory when querying too much data at once. (See
+     * <https://www.yiiframework.com/doc/guide/2.0/en/db-query-builder#batch-query-mysql> for an explanation
+     * of MySQL’s batch query limitations.)
+     *
+     * @since 3.7.0
+     */
+    public bool $useUnbufferedConnections = false;
 
     // Deprecated Properties
     // -------------------------------------------------------------------------
@@ -125,20 +137,20 @@ class DbConfig extends BaseObject
      *
      * If this is set, the values for [[driver]], [[user]], [[database]], [[server]], [[port]], and [[database]] will be extracted from it.
      */
-    public $url;
+    public ?string $url = null;
 
     /**
      * @var string The database driver to use. Either 'mysql' for MySQL or 'pgsql' for PostgreSQL.
      */
-    public $driver;
+    public string $driver;
 
     /**
      * @var string The database server name or IP address. Usually `localhost` or `127.0.0.1`.
      */
-    public $server;
+    public string $server;
 
     /**
-     * @var int The database server port. Defaults to 3306 for MySQL and 5432 for PostgreSQL.
+     * @var int|string The database server port. Defaults to 3306 for MySQL and 5432 for PostgreSQL.
      */
     public $port;
 
@@ -146,18 +158,18 @@ class DbConfig extends BaseObject
      * @var string|null MySQL only. If this is set, the CLI connection string (used for yiic) will connect to the Unix socket instead of
      * the server and port. If this is specified, then `server` and `port` settings are ignored.
      */
-    public $unixSocket;
+    public ?string $unixSocket = null;
 
     /**
      * @var string The name of the database to select.
      */
-    public $database;
+    public string $database;
 
     /**
      * @inheritdoc
      * @throws InvalidConfigException
      */
-    public function init()
+    public function init(): void
     {
         // If $url was set, parse it to set other properties
         if ($this->url) {
@@ -173,7 +185,7 @@ class DbConfig extends BaseObject
         }
 
         // If we don't have a DSN yet, create one from the deprecated settings
-        if ($this->dsn === null) {
+        if (!isset($this->dsn)) {
             $this->_updateDsn();
         }
     }
@@ -181,20 +193,9 @@ class DbConfig extends BaseObject
     /**
      * Updates the DSN string based on the config setting values.
      *
-     * @throws InvalidConfigException if [[driver]] isn’t set to `mysql` or `pgsql`.
-     * @deprecated in 3.4.0.
-     */
-    public function updateDsn()
-    {
-        $this->_updateDsn();
-    }
-
-    /**
-     * Updates the DSN string based on the config setting values.
-     *
      * @throws InvalidConfigException
      */
-    private function _updateDsn()
+    private function _updateDsn(): void
     {
         if (!$this->driver) {
             $this->driver = Connection::DRIVER_MYSQL;
@@ -211,7 +212,7 @@ class DbConfig extends BaseObject
         }
 
         $this->server = strtolower($this->server ?? '');
-        if ($this->port === null || $this->port === '') {
+        if (!isset($this->port) || $this->port === '') {
             switch ($this->driver) {
                 case Connection::DRIVER_MYSQL:
                     $this->port = 3306;

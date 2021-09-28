@@ -51,13 +51,6 @@ class CraftVariable extends ServiceLocator
     const EVENT_DEFINE_BEHAVIORS = 'defineBehaviors';
 
     /**
-     * @event DefineComponentsEvent The event that is triggered when defining the Service Locator components.
-     * @see __construct()
-     * @deprecated in 3.0.0-beta.23
-     */
-    const EVENT_DEFINE_COMPONENTS = 'defineComponents';
-
-    /**
      * @var \craft\web\Application|\craft\console\Application|null The Craft application class
      */
     public $app;
@@ -88,7 +81,7 @@ class CraftVariable extends ServiceLocator
     /**
      * @inheritdoc
      */
-    public function init()
+    public function init(): void
     {
         parent::init();
 
@@ -116,7 +109,7 @@ class CraftVariable extends ServiceLocator
     /**
      * @inheritdoc
      */
-    public function behaviors()
+    public function behaviors(): array
     {
         // Fire a 'defineBehaviors' event
         $event = new DefineBehaviorsEvent();
@@ -130,7 +123,7 @@ class CraftVariable extends ServiceLocator
     /**
      * @inheritdoc
      */
-    public function canGetProperty($name, $checkVars = true, $checkBehaviors = true)
+    public function canGetProperty($name, $checkVars = true, $checkBehaviors = true): bool
     {
         // Check the services
         if ($this->has($name)) {
@@ -138,30 +131,6 @@ class CraftVariable extends ServiceLocator
         }
 
         return parent::canGetProperty($name, $checkVars, $checkBehaviors);
-    }
-
-    /**
-     * Gets the current language in use.
-     *
-     * @return string
-     * @deprecated in 3.0.0
-     */
-    public function locale(): string
-    {
-        Craft::$app->getDeprecator()->log('craft.locale()', '`craft.locale()` has been deprecated. Use `craft.app.language` instead.');
-        return Craft::$app->language;
-    }
-
-    /**
-     * Returns whether this site has multiple locales.
-     *
-     * @return bool
-     * @deprecated in 3.0.0. Use craft.app.isMultiSite instead
-     */
-    public function isLocalized(): bool
-    {
-        Craft::$app->getDeprecator()->log('craft.isLocalized', '`craft.isLocalized` has been deprecated. Use `craft.app.isMultiSite` instead.');
-        return Craft::$app->getIsMultiSite();
     }
 
     // Queries

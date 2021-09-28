@@ -27,33 +27,33 @@ class ProjectConfigController extends Controller
     /**
      * @var bool Whether every entry change should be force-applied.
      */
-    public $force = false;
+    public bool $force = false;
 
     /**
      * @var bool Whether to treat the loaded project config as the source of truth, instead of the YAML files.
      * @since 3.5.13
      */
-    public $invert = false;
+    public bool $invert = false;
 
     /**
      * @var int Counter of the total paths that have been processed.
      */
-    private $_pathCount = 0;
+    private int $_pathCount = 0;
 
     /**
      * @var array The config paths that are currently being processed.
      */
-    private $_processingPaths;
+    private array $_processingPaths;
 
     /**
      * @var array The config paths that have finished being processed.
      */
-    private $_completedPaths = [];
+    private array $_completedPaths = [];
 
     /**
      * @inheritdoc
      */
-    public function options($actionID)
+    public function options($actionID): array
     {
         $options = parent::options($actionID);
 
@@ -63,7 +63,7 @@ class ProjectConfigController extends Controller
                 $options[] = 'force';
                 break;
             case 'diff':
-                $options[] = 'reverse';
+                $options[] = 'invert';
         }
 
         return $options;
@@ -117,7 +117,7 @@ class ProjectConfigController extends Controller
     {
         $updatesService = Craft::$app->getUpdates();
 
-        if ($updatesService->getIsCraftDbMigrationNeeded() || $updatesService->getIsPluginDbUpdateNeeded()) {
+        if ($updatesService->getIsCraftUpdatePending() || $updatesService->getIsPluginUpdatePending()) {
             $this->stderr('Craft has pending migrations. Please run `craft migrate/all` first.' . PHP_EOL, Console::FG_RED);
             return ExitCode::UNSPECIFIED_ERROR;
         }
@@ -189,7 +189,6 @@ class ProjectConfigController extends Controller
      * Called when a project config item has started getting processed.
      *
      * @param ConfigEvent $event
-     * @return void
      * @since 3.6.10
      */
     public function onStartProcessingItem(ConfigEvent $event): void
@@ -217,7 +216,6 @@ class ProjectConfigController extends Controller
      * Called when a project config item has finished getting processed.
      *
      * @param ConfigEvent $event
-     * @return void
      * @since 3.6.10
      */
     public function onFinishProcessingItem(ConfigEvent $event): void
@@ -310,7 +308,7 @@ class ProjectConfigController extends Controller
      *
      * @param string[] $handles
      */
-    private function _uninstallPlugins(array $handles)
+    private function _uninstallPlugins(array $handles): void
     {
         $pluginsService = Craft::$app->getPlugins();
 

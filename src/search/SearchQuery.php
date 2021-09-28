@@ -20,17 +20,17 @@ class SearchQuery
     /**
      * @var string
      */
-    private $_query;
+    private string $_query;
 
     /**
      * @var array
      */
-    private $_termOptions;
+    private array $_termOptions;
 
     /**
-     * @var SearchQueryTerm[]|SearchQueryTermGroup
+     * @var SearchQueryTerm[]|SearchQueryTermGroup[]
      */
-    private $_tokens;
+    private array $_tokens = [];
 
     /**
      * Constructor
@@ -42,14 +42,13 @@ class SearchQuery
     {
         $this->_query = $query;
         $this->_termOptions = $termOptions;
-        $this->_tokens = [];
         $this->_parse();
     }
 
     /**
      * Returns the tokens.
      *
-     * @return array
+     * @return SearchQueryTerm[]|SearchQueryTermGroup[]
      */
     public function getTokens(): array
     {
@@ -69,7 +68,7 @@ class SearchQuery
     /**
      * Parses the query into an array of tokens.
      */
-    private function _parse()
+    private function _parse(): void
     {
         for ($token = strtok($this->_query, ' '); $token !== false; $token = strtok(' ')) {
             $appendToPrevious = false;
@@ -148,6 +147,7 @@ class SearchQuery
 
             if ($appendToPrevious) {
                 /** @noinspection PhpUndefinedVariableInspection */
+                /** @phpstan-ignore-next-line */
                 $previousToken->terms[] = $term;
             } else {
                 $this->_tokens[] = $term;

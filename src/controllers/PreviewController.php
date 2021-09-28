@@ -25,14 +25,14 @@ class PreviewController extends Controller
     /**
      * @inheritdoc
      */
-    public $allowAnonymous = [
+    protected $allowAnonymous = [
         'preview' => self::ALLOW_ANONYMOUS_LIVE | self::ALLOW_ANONYMOUS_OFFLINE,
     ];
 
     /**
      * @inheritdoc
      */
-    public function beforeAction($action)
+    public function beforeAction($action): bool
     {
         // Don't require CSRF validation for POSTed preview requests
         if ($action->id === 'preview') {
@@ -101,11 +101,11 @@ class PreviewController extends Controller
      */
     public function actionPreview(
         string $elementType,
-        int $sourceId,
-        int $siteId,
-        ?int $draftId = null,
-        ?int $revisionId = null,
-        bool $provisional = false
+        int    $sourceId,
+        int    $siteId,
+        ?int   $draftId = null,
+        ?int   $revisionId = null,
+        bool   $provisional = false
     ): Response
     {
         // Make sure a token was used to get here
@@ -114,7 +114,7 @@ class PreviewController extends Controller
         /** @var ElementInterface $elementType */
         $query = $elementType::find()
             ->siteId($siteId)
-            ->anyStatus();
+            ->status(null);
 
         if ($draftId) {
             $query

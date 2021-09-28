@@ -25,6 +25,7 @@ use craft\elements\db\ElementQueryInterface;
 use craft\helpers\Db;
 use craft\helpers\UrlHelper;
 use craft\models\CategoryGroup;
+use craft\models\FieldLayout;
 use craft\records\Category as CategoryRecord;
 use craft\services\Structures;
 use yii\base\Exception;
@@ -74,7 +75,7 @@ class Category extends Element
     /**
      * @inheritdoc
      */
-    public static function refHandle()
+    public static function refHandle(): ?string
     {
         return 'category';
     }
@@ -161,7 +162,7 @@ class Category extends Element
     /**
      * @inheritdoc
      */
-    protected static function defineSources(string $context = null): array
+    protected static function defineSources(?string $context = null): array
     {
         $sources = [];
 
@@ -204,7 +205,7 @@ class Category extends Element
     /**
      * @inheritdoc
      */
-    protected static function defineActions(string $source = null): array
+    protected static function defineActions(string $source): array
     {
         // Get the selected site
         $controller = Craft::$app->controller;
@@ -331,7 +332,6 @@ class Category extends Element
     protected static function defineTableAttributes(): array
     {
         return [
-            'title' => ['label' => Craft::t('app', 'Category')],
             'slug' => ['label' => Craft::t('app', 'Slug')],
             'uri' => ['label' => Craft::t('app', 'URI')],
             'link' => ['label' => Craft::t('app', 'Link'), 'icon' => 'world'],
@@ -355,7 +355,7 @@ class Category extends Element
     /**
      * @var int|null Group ID
      */
-    public $groupId;
+    public ?int $groupId = null;
 
     /**
      * @var int|false|null New parent ID
@@ -366,18 +366,18 @@ class Category extends Element
      * @var bool Whether the category was deleted along with its group
      * @see beforeDelete()
      */
-    public $deletedWithGroup = false;
+    public bool $deletedWithGroup = false;
 
     /**
      * @var bool|null
      * @see _hasNewParent()
      */
-    private $_hasNewParent;
+    private ?bool $_hasNewParent = null;
 
     /**
      * @inheritdoc
      */
-    public function extraFields()
+    public function extraFields(): array
     {
         $names = parent::extraFields();
         $names[] = 'group';
@@ -408,7 +408,7 @@ class Category extends Element
     /**
      * @inheritdoc
      */
-    public function getUriFormat()
+    public function getUriFormat(): ?string
     {
         $categoryGroupSiteSettings = $this->getGroup()->getSiteSettings();
 
@@ -453,23 +453,38 @@ class Category extends Element
     /**
      * @inheritdoc
      */
-    protected function cpEditUrl(): ?string
+    protected function isDeletable(): bool
     {
         $group = $this->getGroup();
-
-        $url = UrlHelper::cpUrl('categories/' . $group->handle . '/' . $this->id . ($this->slug ? '-' . $this->slug : ''));
-
-        if (Craft::$app->getIsMultiSite()) {
-            $url .= '/' . $this->getSite()->handle;
-        }
-
-        return $url;
+        return Craft::$app->getUser()->checkPermission("editCategories:$group->uid");
     }
 
     /**
      * @inheritdoc
      */
-    public function getFieldLayout()
+    protected function cpEditUrl(): ?string
+    {
+        $group = $this->getGroup();
+        $path = "categories/$group->handle";
+
+        if ($this->id) {
+            $path .= "/$this->id" . ($this->slug ? "-$this->slug" : '');
+        } else {
+            $path .= '/new';
+        }
+
+        $params = [];
+        if (Craft::$app->getIsMultiSite()) {
+            $params['site'] = $this->getSite()->handle;
+        }
+
+        return UrlHelper::cpUrl($path, $params);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getFieldLayout(): ?FieldLayout
     {
         return parent::getFieldLayout() ?? $this->getGroup()->getFieldLayout();
     }
@@ -493,7 +508,7 @@ class Category extends Element
      */
     public function getGroup(): CategoryGroup
     {
-        if ($this->groupId === null) {
+        if (!isset($this->groupId)) {
             throw new InvalidConfigException('Category is missing its group ID');
         }
 
@@ -551,7 +566,7 @@ class Category extends Element
      * @inheritdoc
      * @throws Exception if reasons
      */
-    public function afterSave(bool $isNew)
+    public function afterSave(bool $isNew): void
     {
         if (!$this->propagating) {
             $group = $this->getGroup();
@@ -616,7 +631,7 @@ class Category extends Element
         if ($this->structureId) {
             // Remember the parent ID, in case the entry needs to be restored later
             $parentId = $this->getAncestors(1)
-                ->anyStatus()
+                ->status(null)
                 ->select(['elements.id'])
                 ->scalar();
             if ($parentId) {
@@ -634,7 +649,7 @@ class Category extends Element
     /**
      * @inheritdoc
      */
-    public function afterRestore()
+    public function afterRestore(): void
     {
         $structureId = $this->getGroup()->structureId;
 
@@ -657,7 +672,7 @@ class Category extends Element
     /**
      * @inheritdoc
      */
-    public function afterMoveInStructure(int $structureId)
+    public function afterMoveInStructure(int $structureId): void
     {
         // Was the category moved within its group's structure?
         if ($this->getGroup()->structureId == $structureId) {
@@ -668,7 +683,7 @@ class Category extends Element
             $newRelationValues = [];
 
             $ancestorIds = $this->getAncestors()
-                ->anyStatus()
+                ->status(null)
                 ->ids();
 
             $sources = (new Query())
@@ -718,7 +733,7 @@ class Category extends Element
      */
     private function _hasNewParent(): bool
     {
-        if ($this->_hasNewParent !== null) {
+        if (isset($this->_hasNewParent)) {
             return $this->_hasNewParent;
         }
 
@@ -733,12 +748,12 @@ class Category extends Element
     private function _checkForNewParent(): bool
     {
         // Is it a brand new category?
-        if ($this->id === null) {
+        if (!isset($this->id)) {
             return true;
         }
 
         // Was a new parent ID actually submitted?
-        if ($this->newParentId === null) {
+        if (!isset($this->newParentId)) {
             return false;
         }
 
@@ -757,7 +772,7 @@ class Category extends Element
         $oldParentQuery->ancestorOf($this);
         $oldParentQuery->ancestorDist(1);
         $oldParentQuery->siteId($this->siteId);
-        $oldParentQuery->anyStatus();
+        $oldParentQuery->status(null);
         $oldParentQuery->select('elements.id');
         $oldParentId = $oldParentQuery->scalar();
 

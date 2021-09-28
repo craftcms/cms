@@ -66,7 +66,8 @@ class ResolveCategoryMutationsTest extends TestCase
             'saveElement' => function($element) use ($categoryId) {
                 $element->id = $element->id ?? $categoryId;
                 return $element;
-            }
+            },
+            'recursivelyNormalizeArgumentValues' => function ($resolveInfo, $values) { return $values; }
         ]);
 
         $resolver->saveCategory(null, $arguments, null, $this->make(ResolveInfo::class));

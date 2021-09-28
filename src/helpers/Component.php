@@ -108,6 +108,7 @@ class Component
 
         // Instantiate and return
         $config['class'] = $class;
+        /** @noinspection PhpIncompatibleReturnTypeInspection */
         return Craft::createObject($config);
     }
 
@@ -141,7 +142,7 @@ class Component
      * @return string
      * @since 3.5.0
      */
-    public static function iconSvg(?string $icon = null, string $label): string
+    public static function iconSvg(?string $icon, string $label): string
     {
         if ($icon === null) {
             return self::_defaultIconSvg($label);
@@ -174,7 +175,7 @@ class Component
      */
     private static function _defaultIconSvg(string $label): string
     {
-        return Craft::$app->getView()->renderTemplate('_includes/defaulticon.svg', [
+        return Craft::$app->getView()->renderTemplate('_includes/defaulticon.svg.twig', [
             'label' => $label,
         ]);
     }

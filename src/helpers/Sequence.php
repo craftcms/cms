@@ -25,7 +25,7 @@ class Sequence
      *
      * @param string $name The sequence name.
      * @param int|null $length The minimum string length that should be returned. (Numbers that are too short will be left-padded with `0`s.)
-     * @return integer|string
+     * @return int|string
      * @since 3.0.32
      */
     public static function current(string $name, ?int $length = null)
@@ -39,7 +39,7 @@ class Sequence
      *
      * @param string $name The sequence name.
      * @param int|null $length The minimum string length that should be returned. (Numbers that are too short will be left-padded with `0`s.)
-     * @return integer|string
+     * @return int|string
      * @throws Exception if a lock could not be acquired for the sequence
      * @throws \Throwable if reasons
      */
@@ -96,7 +96,7 @@ class Sequence
      *
      * @param int $num
      * @param int|null $length
-     * @return integer|string
+     * @return int|string
      */
     private static function _format(int $num, ?int $length = null)
     {

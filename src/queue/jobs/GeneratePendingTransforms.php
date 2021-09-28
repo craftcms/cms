@@ -8,6 +8,7 @@
 namespace craft\queue\jobs;
 
 use Craft;
+use craft\i18n\Translation;
 use craft\queue\BaseJob;
 
 /**
@@ -21,7 +22,7 @@ class GeneratePendingTransforms extends BaseJob
     /**
      * @inheritdoc
      */
-    public function execute($queue)
+    public function execute($queue): void
     {
         // Get all of the pending transform index IDs
         $indexIds = Craft::$app->getAssetTransforms()->getPendingTransformIndexIds();
@@ -31,7 +32,7 @@ class GeneratePendingTransforms extends BaseJob
 
         foreach ($indexIds as $i => $id) {
             if ($index = $assetTransformsService->getTransformIndexModelById($id)) {
-                $this->setProgress($queue, $i / $totalIndexes, Craft::t('app', '{step, number} of {total, number}', [
+                $this->setProgress($queue, $i / $totalIndexes, Translation::prep('app', '{step, number} of {total, number}', [
                     'step' => $i + 1,
                     'total' => $totalIndexes,
                 ]));
@@ -48,8 +49,8 @@ class GeneratePendingTransforms extends BaseJob
     /**
      * @inheritdoc
      */
-    protected function defaultDescription(): string
+    protected function defaultDescription(): ?string
     {
-        return Craft::t('app', 'Generating pending image transforms');
+        return Translation::prep('app', 'Generating pending image transforms');
     }
 }

@@ -10,7 +10,6 @@ namespace craft\web\twig\tokenparsers;
 use craft\web\twig\nodes\SwitchNode;
 use Twig\Error\SyntaxError;
 use Twig\Node\Node;
-use Twig\Parser;
 use Twig\Token;
 use Twig\TokenParser\AbstractTokenParser;
 
@@ -26,7 +25,7 @@ class SwitchTokenParser extends AbstractTokenParser
     /**
      * @inheritdoc
      */
-    public function getTag()
+    public function getTag(): string
     {
         return 'switch';
     }
@@ -34,10 +33,9 @@ class SwitchTokenParser extends AbstractTokenParser
     /**
      * @inheritdoc
      */
-    public function parse(Token $token)
+    public function parse(Token $token): SwitchNode
     {
         $lineno = $token->getLine();
-        /** @var Parser $parser */
         $parser = $this->parser;
         $stream = $parser->getStream();
 

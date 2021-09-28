@@ -250,8 +250,7 @@ class Cp
         bool $showLabel = true,
         bool $showDraftName = true,
         bool $single = false
-    ): string
-    {
+    ): string {
         $isDraft = $element->getIsDraft();
         $isRevision = !$isDraft && $element->getIsRevision();
         $label = $element->getUiLabel();
@@ -290,60 +289,55 @@ class Cp
             $imgHtml = '';
         }
 
-        $htmlAttributes = array_merge(
-            $element->getHtmlAttributes($context),
+        $attributes = ArrayHelper::merge(
+            Html::normalizeTagAttributes($element->getHtmlAttributes($context)),
             [
-                'class' => 'element ' . $size,
-                'data-type' => get_class($element),
-                'data-id' => $element->id,
-                'data-site-id' => $element->siteId,
-                'data-status' => $element->getStatus(),
-                'data-label' => (string)$element,
-                'data-url' => $element->getUrl(),
-                'data-level' => $element->level,
+                'class' => ['element', $size],
                 'title' => $label . (Craft::$app->getIsMultiSite() ? ' – ' . Craft::t('site', $element->getSite()->getName()) : ''),
-            ]);
+                'data' => [
+                    'type' => get_class($element),
+                    'id' => $element->id,
+                    'site-id' => $element->siteId,
+                    'status' => $element->getStatus(),
+                    'label' => (string)$element,
+                    'url' => $element->getUrl(),
+                    'level' => $element->level,
+                ],
+            ]
+        );
 
         if ($context === 'field') {
-            $htmlAttributes['class'] .= ' removable';
+            $attributes['class'][] = 'removable';
         }
 
         if ($element->hasErrors()) {
-            $htmlAttributes['class'] .= ' error';
+            $attributes['class'][] = 'error';
         }
 
         if ($showStatus) {
-            $htmlAttributes['class'] .= ' hasstatus';
+            $attributes['class'][] = 'hasstatus';
         }
 
         if ($thumbUrl !== null) {
-            $htmlAttributes['class'] .= ' hasthumb';
-        }
-
-        $html = '<div';
-
-        // todo: swap this with Html::renderTagAttributse in 4.0
-        // (that will cause a couple breaking changes since `null` means "don't show" and `true` means "no value".)
-        foreach ($htmlAttributes as $attribute => $value) {
-            $html .= ' ' . $attribute . ($value !== null ? '="' . Html::encode($value) . '"' : '');
+            $attributes['class'][] = 'hasthumb';
         }
 
         if (ElementHelper::isElementEditable($element)) {
-            $html .= ' data-editable';
+            $attributes['data']['editable'] = true;
         }
 
         if ($context === 'index' && $element->getIsDeletable()) {
-            $html .= ' data-deletable';
+            $attributes['data']['deletable'] = true;
         }
 
         if ($element->trashed) {
-            $html .= ' data-trashed';
+            $attributes['data']['trashed'] = true;
         }
 
-        $html .= '>';
+        $innerHtml = '';
 
         if ($context === 'field' && $inputName !== null) {
-            $html .= Html::hiddenInput($inputName . ($single ? '' : '[]'), $element->id) .
+            $innerHtml .= Html::hiddenInput($inputName . ($single ? '' : '[]'), $element->id) .
                 Html::tag('a', '', [
                     'class' => ['delete', 'icon'],
                     'title' => Craft::t('app', 'Remove'),
@@ -352,7 +346,7 @@ class Cp
 
         if ($showStatus) {
             if ($isDraft) {
-                $html .= Html::tag('span', '', [
+                $innerHtml .= Html::tag('span', '', [
                     'class' => ['icon'],
                     'aria' => [
                         'hidden' => 'true',
@@ -363,7 +357,7 @@ class Cp
                 ]);
             } else {
                 $status = !$isRevision ? $element->getStatus() : null;
-                $html .= Html::tag('span', '', [
+                $innerHtml .= Html::tag('span', '', [
                     'class' => array_filter([
                         'status',
                         $status,
@@ -373,11 +367,11 @@ class Cp
             }
         }
 
-        $html .= $imgHtml;
+        $innerHtml .= $imgHtml;
 
         if ($showLabel) {
-            $html .= '<div class="label">';
-            $html .= '<span class="title">';
+            $innerHtml .= '<div class="label">';
+            $innerHtml .= '<span class="title">';
 
             $encodedLabel = Html::encode($label);
 
@@ -394,17 +388,15 @@ class Cp
                 !$element->trashed &&
                 ($cpEditUrl = $element->getCpEditUrl())
             ) {
-                $html .= Html::a($encodedLabel, $cpEditUrl);
+                $innerHtml .= Html::a($encodedLabel, $cpEditUrl);
             } else {
-                $html .= $encodedLabel;
+                $innerHtml .= $encodedLabel;
             }
 
-            $html .= '</span></div>';
+            $innerHtml .= '</span></div>';
         }
 
-        $html .= '</div>';
-
-        return $html;
+        return Html::tag('div', $innerHtml, $attributes);
     }
 
     /**
@@ -426,8 +418,7 @@ class Cp
         bool $showThumb = true,
         bool $showLabel = true,
         bool $showDraftName = true
-    ): string
-    {
+    ): string {
         if (empty($elements)) {
             return '';
         }
@@ -663,6 +654,19 @@ class Cp
     }
 
     /**
+     * Renders a lightswitch input’s HTML.
+     *
+     * @param array $config
+     * @return string
+     * @throws InvalidArgumentException if `$config['siteId']` is invalid
+     * @since 4.0.0
+     */
+    public static function lightswitchHtml(array $config): string
+    {
+        return static::renderTemplate('_includes/forms/lightswitch', $config);
+    }
+
+    /**
      * Renders a lightswitch field’s HTML.
      *
      * @param array $config
@@ -711,6 +715,45 @@ class Cp
     }
 
     /**
+     * Renders a multi-select input.
+     *
+     * @param array $config
+     * @return string
+     * @since 4.0.0
+     */
+    public static function multiSelectHtml(array $config): string
+    {
+        return static::renderTemplate('_includes/forms/multiselect', $config);
+    }
+
+    /**
+     * Renders a multi-select field’s HTML.
+     *
+     * @param array $config
+     * @return string
+     * @throws InvalidArgumentException if `$config['siteId']` is invalid
+     * @since 4.0.0
+     */
+    public static function multiSelectFieldHtml(array $config): string
+    {
+        $config['id'] = $config['id'] ?? 'multiselect' . mt_rand();
+        return static::fieldHtml('template:_includes/forms/multiselect', $config);
+    }
+
+    /**
+     * Renders a text input’s HTML.
+     *
+     * @param array $config
+     * @return string
+     * @throws InvalidArgumentException if `$config['siteId']` is invalid
+     * @since 4.0.0
+     */
+    public static function textHtml(array $config): string
+    {
+        return static::renderTemplate('_includes/forms/text', $config);
+    }
+
+    /**
      * Renders a text field’s HTML.
      *
      * @param array $config
@@ -739,6 +782,60 @@ class Cp
     }
 
     /**
+     * Returns a date input’s HTML.
+     *
+     * @param array $config
+     * @return string
+     * @throws InvalidArgumentException if `$config['siteId']` is invalid
+     * @since 4.0.0
+     */
+    public static function dateHtml(array $config): string
+    {
+        return static::renderTemplate('_includes/forms/date', $config);
+    }
+
+    /**
+     * Returns a date field’s HTML.
+     *
+     * @param array $config
+     * @return string
+     * @throws InvalidArgumentException if `$config['siteId']` is invalid
+     * @since 4.0.0
+     */
+    public static function dateFieldHtml(array $config): string
+    {
+        $config['id'] = $config['id'] ?? 'date' . mt_rand();
+        return static::fieldHtml('template:_includes/forms/date', $config);
+    }
+
+    /**
+     * Returns a time input’s HTML.
+     *
+     * @param array $config
+     * @return string
+     * @throws InvalidArgumentException if `$config['siteId']` is invalid
+     * @since 4.0.0
+     */
+    public static function timeHtml(array $config): string
+    {
+        return static::renderTemplate('_includes/forms/time', $config);
+    }
+
+    /**
+     * Returns a date field’s HTML.
+     *
+     * @param array $config
+     * @return string
+     * @throws InvalidArgumentException if `$config['siteId']` is invalid
+     * @since 4.0.0
+     */
+    public static function timeFieldHtml(array $config): string
+    {
+        $config['id'] = $config['id'] ?? 'time' . mt_rand();
+        return static::fieldHtml('template:_includes/forms/time', $config);
+    }
+
+    /**
      * Renders a date + time field’s HTML.
      *
      * @param array $config
@@ -756,6 +853,19 @@ class Cp
             ['class' => 'datetimewrapper']
         );
         return static::fieldHtml($input, $config);
+    }
+
+    /**
+     * Renders an element select input’s HTML
+     *
+     * @param array $config
+     * @return string
+     * @throws InvalidArgumentException if `$config['siteId']` is invalid
+     * @since 4.0.0
+     */
+    public static function elementSelectHtml(array $config): string
+    {
+        return static::renderTemplate('_includes/forms/elementSelect', $config);
     }
 
     /**
@@ -854,7 +964,7 @@ class Cp
         $title = trim((string)$element->title);
 
         if ($title === '') {
-            if ($element->getIsUnpublishedDraft()) {
+            if (!$element->id || $element->getIsUnpublishedDraft()) {
                 $title = Craft::t('app', 'Create a new {type}', [
                     'type' => $element::lowerDisplayName(),
                 ]);
@@ -869,7 +979,7 @@ class Cp
 
         if ($element->getIsDraft()) {
             /** @var ElementInterface|DraftBehavior $element */
-            if ($element->getIsProvisionalDraft()) {
+            if ($element->isProvisionalDraft) {
                 $docTitle .= ' — ' . Craft::t('app', 'Edited');
             } else {
                 $docTitle .= " ($element->draftName)";

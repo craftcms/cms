@@ -7,9 +7,15 @@
 }
 
 $sidebarWidth: 226px;
+$sidebarZIndex: 100;
 $detailsWidth: 350px;
 $minFullUiWidth: 1200px;
+$minXlUiWidth: 1536px;
 $minHorizontalUiWidth: $minFullUiWidth - $sidebarWidth;
+
+// Colors
+$badgeBackgroundColor: $grey200;
+$badgeColor: $grey800;
 
 html {
   -webkit-text-size-adjust: 100%;
@@ -27,6 +33,23 @@ body {
   &:not(.reduce-focus-visibility) :focus,
   &.reduce-focus-visibility :focus-visible {
     box-shadow: $darkFocusRing;
+  }
+}
+
+.skip-link {
+  position: absolute;
+  left: -10000px;
+  top: auto;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  z-index: $sidebarZIndex + 1;
+
+  &:focus {
+    left: 0;
+    width: auto;
+    height: auto;
+    background-color: $grey100 !important;
   }
 }
 
@@ -52,7 +75,7 @@ $sidebarLinkSecondaryColor: $grey200;
 
 #global-sidebar {
   position: fixed;
-  z-index: 100;
+  z-index: $sidebarZIndex;
   display: flex;
   flex-direction: column;
   height: 100vh;
@@ -163,7 +186,8 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
 }
 
 #system-name {
-  h2 {
+  h2,
+  .h2 {
     margin: 0;
     width: 100%;
     overflow: hidden;
@@ -290,8 +314,8 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
 
       .badge {
         @include margin-right(0);
-        background-color: transparentize($white, 0.5);
-        color: $grey800;
+        background-color: $badgeBackgroundColor;
+        color: $badgeColor;
       }
     }
 
@@ -474,7 +498,8 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
     display: none;
   }
 
-  a {
+  a,
+  button {
     color: $lightTextColor;
     transition: color linear 100ms;
 
@@ -553,11 +578,23 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
       margin-top: 20px;
     }
 
-    .timestamp {
+    .announcement-label-container {
       margin-top: -3px;
-      font-size: 12px;
-      color: $lightTextColor;
+      display: flex;
+      align-items: center;
       margin-bottom: 3px;
+
+      .announcement-icon svg {
+        display: block;
+        width: 15px;
+        height: 15px;
+      }
+
+      .announcement-label {
+        margin-left: 5px;
+        font-size: 12px;
+        color: $lightTextColor;
+      }
     }
 
     h2 {
@@ -960,7 +997,7 @@ $toolbarIconColor: darken($inputColor, 10%);
     &.read-only {
       padding-top: 8px;
       padding-bottom: 8px;
-      color: $lightTextColor;
+      color: $mediumTextColor;
       background-color: transparent;
     }
 
@@ -1405,13 +1442,13 @@ $toolbarIconColor: darken($inputColor, 10%);
   display: flex;
   flex-wrap: wrap;
   align-content: flex-start;
-  margin: 0 -14px -24px 0;
-  width: calc(100% + 14px);
+  margin: 0 -24px -24px;
+  width: calc(100% + 48px);
 
   & > h2 {
-    margin: 0 -10px 24px -24px !important;
-    padding: 0 10px 0 24px;
-    width: calc(100% + 34px);
+    margin: 0 0 24px !important;
+    padding: 0 24px;
+    width: 100%;
 
     &:not(:first-child) {
       padding-top: 24px;
@@ -1420,34 +1457,47 @@ $toolbarIconColor: darken($inputColor, 10%);
   }
 
   & > hr {
-    margin: 0 -10px 24px -24px;
-    width: calc(100% + 34px);
+    margin: 0 0 24px;
+    width: calc(100% + 48px);
   }
 
   & > :not(h2):not(hr) {
     &, &:last-child {
-      margin: 0 14px 24px 0 !important;
-      width: calc(100% - 14px);
+      position: relative;
+      margin: 0 24px 24px !important;
+      width: calc(100% - 48px);
+      box-sizing: border-box;
 
-      // 4 cols for >= 1200
-      @media only screen and (min-width: $minFullUiWidth + $sidebarWidth) {
+      // 4 cols for >= 1536px
+      @media only screen and (min-width: $minXlUiWidth) {
         &.width-25 {
-          width: calc(25% - 14px);
+          width: calc(25% - 48px);
         }
         &.width-50 {
-          width: calc(50% - 14px);
+          width: calc(50% - 48px);
         }
         &.width-75 {
-          width: calc(75% - 14px);
+          width: calc(75% - 48px);
         }
       }
 
-      // 2 cols fol 712 - 1200
-      @media only screen and (min-width: 500px) and (max-width: $minFullUiWidth + $sidebarWidth - 1px) {
+      // 2 cols fol 712 - 1536px
+      @media only screen and (min-width: 500px) and (max-width: $minXlUiWidth - 1px) {
         &.width-25,
         &.width-50 {
-          width: calc(50% - 14px);
+          width: calc(50% - 48px);
         }
+      }
+
+      &:before {
+        position: absolute;
+        top: 0;
+        @include left(-25px);
+        width: 1px;
+        height: 100%;
+        content: '';
+        // same BG color as the hairline around the content pane’s 1px shadow
+        background-color: transparentize($grey200, 0.5);
       }
     }
   }

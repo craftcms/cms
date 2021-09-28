@@ -21,29 +21,22 @@ class StringValidator extends \yii\validators\StringValidator
     /**
      * @var bool whether the string should be checked for 4+ byte characters (like emoji)
      */
-    public $disallowMb4 = false;
+    public bool $disallowMb4 = false;
 
     /**
      * @var string user-defined error message used when the value contains 4+ byte characters
      * (like emoji) and the database doesn’t support it.
      */
-    public $containsMb4;
-
-    /**
-     * @var bool whether the string should be trimmed of whitespace
-     * @since 3.0.18
-     * @deprecated in 3.0.32. Use Yii’s `'trim'` validator instead.
-     */
-    public $trim = false;
+    public string $containsMb4;
 
     /**
      * @inheritdoc
      */
-    public function init()
+    public function init(): void
     {
         parent::init();
 
-        if ($this->containsMb4 === null) {
+        if (!isset($this->containsMb4)) {
             $this->containsMb4 = Craft::t('app', '{attribute} cannot contain emoji.');
         }
     }
@@ -51,13 +44,9 @@ class StringValidator extends \yii\validators\StringValidator
     /**
      * @inheritdoc
      */
-    public function validateAttribute($model, $attribute)
+    public function validateAttribute($model, $attribute): void
     {
         $value = $model->$attribute;
-
-        if (is_string($value) && $this->trim) {
-            $model->$attribute = $value = trim($value);
-        }
 
         parent::validateAttribute($model, $attribute);
 
@@ -69,7 +58,7 @@ class StringValidator extends \yii\validators\StringValidator
     /**
      * @inheritdoc
      */
-    public function validateValue($value)
+    public function validateValue($value): ?array
     {
         if (!empty($result = parent::validateValue($value))) {
             return $result;

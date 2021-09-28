@@ -54,11 +54,11 @@ abstract class BaseContentFixture extends DbFixture
     /**
      * @inheritdoc
      */
-    public function init()
+    public function init(): void
     {
         parent::init();
 
-        if ($this->elementType === null || !is_subclass_of($this->elementType, ElementInterface::class)) {
+        if (!isset($this->elementType) || !is_subclass_of($this->elementType, ElementInterface::class)) {
             throw new InvalidConfigException('$elementType must set to a valid element class name');
         }
     }
@@ -66,7 +66,7 @@ abstract class BaseContentFixture extends DbFixture
     /**
      * @inheritdoc
      */
-    public function load()
+    public function load(): void
     {
         foreach ($this->loadData($this->dataFile) as $key => $data) {
             $element = $this->findElement($data);
@@ -91,7 +91,7 @@ abstract class BaseContentFixture extends DbFixture
     /**
      * @inheritdoc
      */
-    public function unload()
+    public function unload(): void
     {
         $this->_elements = [];
     }

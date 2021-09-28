@@ -22,6 +22,7 @@ use yii\base\InvalidConfigException;
 use yii\console\controllers\BaseMigrateController;
 use yii\console\Exception;
 use yii\console\ExitCode;
+use yii\db\MigrationInterface;
 use yii\helpers\Console;
 
 /**
@@ -81,44 +82,44 @@ class MigrateController extends BaseMigrateController
     const EVENT_REGISTER_MIGRATOR = 'registerMigrator';
 
     /**
-     * @var string The migration track to work with (e.g. `craft`, `content`, `plugin:commerce`, etc.)
+     * @var string|null The migration track to work with (e.g. `craft`, `content`, `plugin:commerce`, etc.)
      *
-     * If --plugin is passed, this will automatically be set to the plugin’s track. Otherwise defaults to 'content'.
+     * Defaults to `content`, or automatically set to the plugin’s track when `--plugin` is passed.
      * @since 3.5.0
      */
-    public $track = MigrationManager::TRACK_CONTENT;
+    public ?string $track = MigrationManager::TRACK_CONTENT;
 
     /**
      * @var string|null DEPRECATED. Use `--track` instead.
      * @deprecated in 3.5.0. Use [[track]] instead.
      */
-    public $type;
+    public ?string $type = null;
 
     /**
-     * @var string|PluginInterface|null The handle of the plugin to use during migration operations, or the plugin itself
+     * @var string|PluginInterface|null The handle of the plugin to use during migration operations, or the plugin itself.
      */
     public $plugin;
 
     /**
      * @var bool Exclude pending content migrations.
      */
-    public $noContent = false;
+    public bool $noContent = false;
 
     /**
      * @var bool Skip backing up the database.
      * @since 3.4.3
      */
-    public $noBackup = false;
+    public bool $noBackup = false;
 
     /**
      * @var MigrationManager[] Migration managers that will be used in this request
      */
-    private $_migrators;
+    private array $_migrators;
 
     /**
      * @inheritdoc
      */
-    public function init()
+    public function init(): void
     {
         parent::init();
         $this->checkTty();
@@ -138,7 +139,7 @@ class MigrateController extends BaseMigrateController
      * @param string $actionID the action id of the current request
      * @return string[] the names of the options valid for the action
      */
-    public function options($actionID)
+    public function options($actionID): array
     {
         $options = parent::options($actionID);
 
@@ -162,7 +163,7 @@ class MigrateController extends BaseMigrateController
     /**
      * @inheritdoc
      */
-    public function optionAliases()
+    public function optionAliases(): array
     {
         $aliases = parent::optionAliases();
         $aliases['t'] = 'type';
@@ -174,7 +175,7 @@ class MigrateController extends BaseMigrateController
     /**
      * @inheritdoc
      */
-    public function beforeAction($action)
+    public function beforeAction($action): bool
     {
         // Make sure this isn't a root user
         if (!$this->checkRootUser()) {
@@ -254,16 +255,17 @@ class MigrateController extends BaseMigrateController
      * craft migrate/create create_news_section
      * ```
      *
-     * By default the migration will be created within the project's migrations/
-     * folder (as a "content migration").
-     * Use `--plugin=<plugin-handle>` to create a new plugin migration.
+     * By default, the migration is created in the project’s `migrations/`
+     * folder (as a “content migration”).\
+     * Use `--plugin=<plugin-handle>` to create a new plugin migration.\
      * Use `--type=app` to create a new Craft CMS app migration.
      *
      * @param string $name the name of the new migration. This should only contain
      * letters, digits, and underscores.
+     * @return int
      * @throws Exception if the name argument is invalid.
      */
-    public function actionCreate($name)
+    public function actionCreate($name): int
     {
         if (!preg_match('/^\w+$/', $name)) {
             throw new Exception('The migration name should contain letters, digits and/or underscore characters only.');
@@ -293,6 +295,8 @@ class MigrateController extends BaseMigrateController
             FileHelper::writeToFile($file, $content);
             $this->stdout('New migration created successfully.' . PHP_EOL, Console::FG_GREEN);
         }
+
+        return ExitCode::OK;
     }
 
     /**
@@ -303,38 +307,47 @@ class MigrateController extends BaseMigrateController
      */
     public function actionAll(): int
     {
+        if ($this->noContent) {
+            $this->stdout("Checking for pending Craft and plugin migrations ...\n");
+        } else {
+            $this->stdout("Checking for pending migrations ...\n");
+        }
+
+        $migrationsByTrack = [];
         $updatesService = Craft::$app->getUpdates();
 
-        // Get the handles in need of an update
-        $handles = $updatesService->getPendingMigrationHandles(!$this->noContent);
+        $craftMigrations = Craft::$app->getMigrator()->getNewMigrations();
+        if (!empty($craftMigrations) || $updatesService->getIsCraftDbMigrationNeeded()) {
+            $migrationsByTrack[MigrationManager::TRACK_CRAFT] = $craftMigrations;
+        }
 
-        if (empty($handles)) {
+        $pluginsService = Craft::$app->getPlugins();
+        $plugins = $pluginsService->getAllPlugins();
+        foreach ($plugins as $plugin) {
+            $pluginMigrations = $plugin->getMigrator()->getNewMigrations();
+            if (!empty($pluginMigrations) || $pluginsService->doesPluginRequireDatabaseUpdate($plugin)) {
+                $migrationsByTrack["plugin:$plugin->id"] = $pluginMigrations;
+            }
+        }
+
+        if (!$this->noContent) {
+            $contentMigrations = Craft::$app->getContentMigrator()->getNewMigrations();
+            if (!empty($contentMigrations)) {
+                $migrationsByTrack[MigrationManager::TRACK_CONTENT] = $contentMigrations;
+            }
+        }
+
+        if (empty($migrationsByTrack)) {
             $this->stdout('No new migrations found. Your system is up to date.' . PHP_EOL, Console::FG_GREEN);
             return ExitCode::OK;
         }
 
-        $migrationsByTrack = [];
         $total = 0;
 
-        foreach ($handles as $handle) {
-            if (in_array($handle, [MigrationManager::TRACK_CRAFT, MigrationManager::TRACK_CONTENT], true)) {
-                $track = $handle;
-            } else {
-                $track = "plugin:$handle";
-            }
-
-            try {
-                $migrations = $migrationsByTrack[$track] = $this->getMigrator($track)->getNewMigrations();
-            } catch (InvalidPluginException | InvalidConfigException $e) {
-                continue;
-            }
-
+        foreach ($migrationsByTrack as $track => $migrations) {
             $n = count($migrations);
-            if ($n === 0) {
-                continue;
-            }
 
-            switch ($handle) {
+            switch ($track) {
                 case MigrationManager::TRACK_CRAFT:
                     $which = 'Craft';
                     break;
@@ -342,7 +355,7 @@ class MigrateController extends BaseMigrateController
                     $which = 'content';
                     break;
                 default:
-                    $which = $this->_plugin($handle)->name;
+                    $which = $plugins[substr($track, 7)]->name;
             }
 
             $this->stdout("Total $n new $which " . ($n === 1 ? 'migration' : 'migrations') . ' to be applied:' . PHP_EOL, Console::FG_YELLOW);
@@ -354,19 +367,17 @@ class MigrateController extends BaseMigrateController
             $total += $n;
         }
 
-        if ($total && !$this->confirm('Apply the above ' . ($total === 1 ? 'migration' : 'migrations') . '?')) {
+        if (!$this->confirm('Apply the above ' . ($total === 1 ? 'migration' : 'migrations') . '?')) {
             return ExitCode::OK;
         }
 
-        if ($total) {
-            // Enable maintenance mode
-            Craft::$app->enableMaintenanceMode();
+        // Enable maintenance mode
+        Craft::$app->enableMaintenanceMode();
 
-            // Backup the DB
-            if (!$this->noBackup && !$this->backup()) {
-                Craft::$app->disableMaintenanceMode();
-                return ExitCode::UNSPECIFIED_ERROR;
-            }
+        // Backup the DB
+        if (!$this->noBackup && !$this->backup()) {
+            Craft::$app->disableMaintenanceMode();
+            return ExitCode::UNSPECIFIED_ERROR;
         }
 
         $applied = 0;
@@ -387,8 +398,8 @@ class MigrateController extends BaseMigrateController
             // Update version info
             if ($track === MigrationManager::TRACK_CRAFT) {
                 Craft::$app->getUpdates()->updateCraftVersionInfo();
-            } else if (preg_match('/^plugin:([\w\-]+)$/', $track, $match)) {
-                Craft::$app->getUpdates()->setNewPluginInfo($this->_plugin($match[1]));
+            } else if ($track !== MigrationManager::TRACK_CONTENT) {
+                Craft::$app->getPlugins()->updatePluginVersionInfo($plugins[substr($track, 7)]);
             }
         }
 
@@ -414,8 +425,21 @@ class MigrateController extends BaseMigrateController
      *
      * @return int the status of the action execution. 0 means normal, other values mean abnormal.
      */
-    public function actionUp($limit = 0)
+    public function actionUp($limit = 0): int
     {
+        switch ($this->track) {
+            case MigrationManager::TRACK_CRAFT:
+                $this->stdout("Checking for pending Craft migrations ...\n");
+                break;
+            case MigrationManager::TRACK_CONTENT:
+                $this->stdout("Checking for pending content migrations ...\n");
+                break;
+            default:
+                if ($this->plugin instanceof PluginInterface) {
+                    $this->stdout("Checking for pending {$this->plugin->name} migrations ...\n");
+                }
+        }
+
         $res = parent::actionUp($limit) ?? ExitCode::OK;
 
         if ($res === ExitCode::OK && empty($this->getNewMigrations())) {
@@ -423,7 +447,7 @@ class MigrateController extends BaseMigrateController
             if ($this->track === MigrationManager::TRACK_CRAFT) {
                 Craft::$app->getUpdates()->updateCraftVersionInfo();
             } else if ($this->plugin) {
-                Craft::$app->getUpdates()->setNewPluginInfo($this->plugin);
+                Craft::$app->getPlugins()->updatePluginVersionInfo($this->plugin);
             }
 
             $this->_clearCompiledTemplates();
@@ -451,7 +475,7 @@ class MigrateController extends BaseMigrateController
     /**
      * Clears all compiled templates.
      */
-    private function _clearCompiledTemplates()
+    private function _clearCompiledTemplates(): void
     {
         try {
             FileHelper::clearDirectory(Craft::$app->getPath()->getCompiledTemplatesPath(false));
@@ -508,7 +532,7 @@ class MigrateController extends BaseMigrateController
     /**
      * @inheritdoc
      */
-    protected function createMigration($class)
+    protected function createMigration($class): MigrationInterface
     {
         return $this->getMigrator()->createMigration($class);
     }
@@ -516,7 +540,7 @@ class MigrateController extends BaseMigrateController
     /**
      * @inheritdoc
      */
-    protected function getNewMigrations()
+    protected function getNewMigrations(): array
     {
         return $this->getMigrator()->getNewMigrations();
     }
@@ -524,7 +548,7 @@ class MigrateController extends BaseMigrateController
     /**
      * @inheritdoc
      */
-    protected function getMigrationHistory($limit)
+    protected function getMigrationHistory($limit): array
     {
         $history = $this->getMigrator()->getMigrationHistory((int)$limit);
 
@@ -537,7 +561,7 @@ class MigrateController extends BaseMigrateController
     /**
      * @inheritdoc
      */
-    protected function addMigrationHistory($version)
+    protected function addMigrationHistory($version): void
     {
         $this->getMigrator()->addMigrationHistory($version);
     }
@@ -545,7 +569,7 @@ class MigrateController extends BaseMigrateController
     /**
      * @inheritdoc
      */
-    protected function removeMigrationHistory($version)
+    protected function removeMigrationHistory($version): void
     {
         $this->getMigrator()->removeMigrationHistory($version);
     }
@@ -553,8 +577,19 @@ class MigrateController extends BaseMigrateController
     /**
      * @inheritdoc
      */
-    protected function truncateDatabase()
+    protected function truncateDatabase(): void
     {
         $this->getMigrator()->truncateHistory();
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function stdout($string)
+    {
+        if (strpos($string, 'Yii Migration Tool') === 0) {
+            return false;
+        }
+        return parent::stdout(...func_get_args());
     }
 }

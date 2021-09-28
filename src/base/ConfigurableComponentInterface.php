@@ -63,7 +63,7 @@ interface ConfigurableComponentInterface extends ComponentInterface
      * ```html
      * <textarea id="foo" name="foo"></textarea>
      * <script type="text/javascript">
-     *     var textarea = document.getElementById('foo');
+     *   var textarea = document.getElementById('foo');
      * </script>
      * ```
      *
@@ -72,7 +72,7 @@ interface ConfigurableComponentInterface extends ComponentInterface
      * ```html
      * <textarea id="namespace-foo" name="namespace[foo]"></textarea>
      * <script type="text/javascript">
-     *     var textarea = document.getElementById('foo');
+     *   var textarea = document.getElementById('foo');
      * </script>
      * ```
      *
@@ -90,7 +90,7 @@ interface ConfigurableComponentInterface extends ComponentInterface
      * So here’s what a getSettingsHtml() method that includes field-targeting JavaScript code might look like:
      *
      * ```php
-     * public function getSettingsHtml()
+     * public function getSettingsHtml(): ?string
      * {
      *     // Figure out what the ID is going to be namespaced into
      *     $id = 'foo';
@@ -109,7 +109,7 @@ interface ConfigurableComponentInterface extends ComponentInterface
      * ```twig
      * <textarea id="{{ id }}" name="foo">{{ widget.foo }}</textarea>
      * <script type="text/javascript">
-     *     var textarea = document.getElementById('{{ namespacedId }}');
+     *   var textarea = document.getElementById('{{ namespacedId }}');
      * </script>
      * ```
      *
@@ -118,5 +118,5 @@ interface ConfigurableComponentInterface extends ComponentInterface
      *
      * @return string|null
      */
-    public function getSettingsHtml();
+    public function getSettingsHtml(): ?string;
 }

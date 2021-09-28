@@ -19,12 +19,12 @@ use yii\base\Event;
 class TagGroupEvent extends Event
 {
     /**
-     * @var TagGroup|null The tag group model associated with the event.
+     * @var TagGroup The tag group model associated with the event.
      */
-    public $tagGroup;
+    public TagGroup $tagGroup;
 
     /**
      * @var bool Whether the tag group is brand new
      */
-    public $isNew = false;
+    public bool $isNew = false;
 }

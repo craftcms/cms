@@ -81,7 +81,7 @@ class ElementHelperTest extends Unit
         $general = Craft::$app->getConfig()->getGeneral();
         $general->allowUppercaseInSlug = false;
 
-        self::assertSame('word' . $general->slugWordSeparator . 'word', ElementHelper::createSlug('word WORD'));
+        self::assertSame('word' . $general->slugWordSeparator . 'word', ElementHelper::normalizeSlug('word WORD'));
     }
 
     /**
@@ -124,7 +124,7 @@ class ElementHelperTest extends Unit
         }
 
         $example = new ExampleElement($config);
-        self::assertNull(ElementHelper::setUniqueUri($example));
+        ElementHelper::setUniqueUri($example);
 
         foreach ($expected as $key => $res) {
             self::assertSame($res, $example->$key);

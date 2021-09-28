@@ -55,7 +55,7 @@ class ResolveGlobalSetMutationTest extends TestCase
         ]);
 
         $this->tester->mockCraftMethods('globals', [
-            'getSetById' => Expected::once()
+            'getSetById' => Expected::once(new GlobalSet())
         ]);
 
         $resolver->saveGlobalSet(null, $arguments, null, $this->make(ResolveInfo::class));

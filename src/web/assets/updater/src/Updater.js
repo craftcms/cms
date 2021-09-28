@@ -151,7 +151,7 @@ import '../../updater/src/Updater.scss';
                 options: [
                     {
                         label: Craft.t('app', 'Troubleshoot'),
-                        url: 'https://craftcms.com/guides/failed-updates'
+                        url: 'https://craftcms.com/knowledge-base/failed-updates'
                     }, {
                         label: Craft.t('app', 'Send for help'),
                         email: 'support@craftcms.com'

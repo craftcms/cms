@@ -29,8 +29,8 @@ use craft\errors\VolumeObjectExistsException;
 use craft\errors\VolumeObjectNotFoundException;
 use craft\events\AssetPreviewEvent;
 use craft\events\AssetThumbEvent;
-use craft\events\GetAssetThumbUrlEvent;
-use craft\events\GetAssetUrlEvent;
+use craft\events\DefineAssetThumbUrlEvent;
+use craft\events\DefineAssetUrlEvent;
 use craft\events\ReplaceAssetEvent;
 use craft\helpers\Assets as AssetsHelper;
 use craft\helpers\DateTimeHelper;
@@ -76,20 +76,25 @@ class Assets extends Component
     public const EVENT_AFTER_REPLACE_ASSET = 'afterReplaceFile';
 
     /**
-     * @event GetAssetUrlEvent The event that is triggered when a transform is being generated for an Asset.
+     * @event DefineAssetUrlEvent The event that is triggered when a transform is being generated for an asset.
+     * @see getAssetUrl()
+     * @since 4.0.0
      */
-    public const EVENT_GET_ASSET_URL = 'getAssetUrl';
+    public const EVENT_DEFINE_ASSET_URL = 'defineAssetUrl';
 
     /**
-     * @event GetAssetThumbUrlEvent The event that is triggered when a thumbnail is being generated for an Asset.
-     * @todo rename to GET_THUMB_URL in Craft 4
+     * @event DefineAssetThumbUrlEvent The event that is triggered when a thumbnail is being generated for an asset.
+     * @see getThumbUrl()
+     * @since 4.0.0
      */
-    public const EVENT_GET_ASSET_THUMB_URL = 'getAssetThumbUrl';
+    public const EVENT_DEFINE_THUMB_URL = 'defineThumbUrl';
 
     /**
      * @event AssetThumbEvent The event that is triggered when a thumbnail path is requested.
+     * @see getThumbPath()
+     * @since 4.0.0
      */
-    public const EVENT_GET_THUMB_PATH = 'getThumbPath';
+    public const EVENT_DEFINE_THUMB_PATH = 'defineThumbPath';
 
     /**
      * @event AssetPreviewEvent The event that is triggered when determining the preview handler for an asset.
@@ -119,7 +124,7 @@ class Assets extends Component
      * @param int|null $siteId
      * @return Asset|null
      */
-    public function getAssetById(int $assetId, int $siteId = null): ?Asset
+    public function getAssetById(int $assetId, ?int $siteId = null): ?Asset
     {
         /* @noinspection PhpIncompatibleReturnTypeInspection */
         return Craft::$app->getElements()->getElementById($assetId, Asset::class, $siteId);
@@ -193,10 +198,15 @@ class Assets extends Component
      */
     public function moveAsset(Asset $asset, VolumeFolder $folder, string $filename = ''): bool
     {
-        // Set the new combined target location, and save it
-        $asset->newFilename = $filename;
         $asset->newFolderId = $folder->id;
-        $asset->setScenario(Asset::SCENARIO_FILEOPS);
+
+        // If the filename hasn’t changed, then we can use the `move` scenario
+        if ($filename === '' || $filename === $asset->getFilename()) {
+            $asset->setScenario(Asset::SCENARIO_MOVE);
+        } else {
+            $asset->newFilename = $filename;
+            $asset->setScenario(Asset::SCENARIO_FILEOPS);
+        }
 
         return Craft::$app->getElements()->saveElement($asset);
     }
@@ -252,14 +262,13 @@ class Assets extends Component
         $folder = $this->getFolderById($folderId);
 
         if (!$folder) {
-            throw new AssetOperationException(Craft::t('app',
-                'No folder exists with the ID “{id}”',
-                ['id' => $folderId]));
+            throw new AssetOperationException(Craft::t('app', 'No folder exists with the ID “{id}”', [
+                'id' => $folderId,
+            ]));
         }
 
         if (!$folder->parentId) {
-            throw new AssetOperationException(Craft::t('app',
-                'It’s not possible to rename the top folder of a Volume.'));
+            throw new AssetOperationException(Craft::t('app', 'It’s not possible to rename the top folder of a Volume.'));
         }
 
         $conflictingFolder = $this->findFolder([
@@ -268,9 +277,9 @@ class Assets extends Component
         ]);
 
         if ($conflictingFolder) {
-            throw new VolumeObjectExistsException(Craft::t('app',
-                'A folder with the name “{folderName}” already exists in the folder.',
-                ['folderName' => $folder->name]));
+            throw new VolumeObjectExistsException(Craft::t('app', 'A folder with the name “{folderName}” already exists in the folder.', [
+                'folderName' => $folder->name,
+            ]));
         }
 
         $parentFolderPath = dirname($folder->path);
@@ -402,7 +411,7 @@ class Assets extends Component
      */
     public function getFolderById(int $folderId): ?VolumeFolder
     {
-        if ($this->_foldersById !== null && array_key_exists($folderId, $this->_foldersById)) {
+        if (isset($this->_foldersById) && array_key_exists($folderId, $this->_foldersById)) {
             return $this->_foldersById[$folderId];
         }
 
@@ -425,7 +434,7 @@ class Assets extends Component
      */
     public function getFolderByUid(string $folderUid): ?VolumeFolder
     {
-        if ($this->_foldersByUid !== null && array_key_exists($folderUid, $this->_foldersByUid)) {
+        if (isset($this->_foldersByUid) && array_key_exists($folderUid, $this->_foldersByUid)) {
             return $this->_foldersByUid[$folderUid];
         }
 
@@ -489,7 +498,6 @@ class Assets extends Component
      */
     public function getAllDescendantFolders(VolumeFolder $parentFolder, string $orderBy = 'path'): array
     {
-        /** @var $query Query */
         $query = $this->_createFolderQuery()
             ->where([
                 'and',
@@ -584,21 +592,21 @@ class Assets extends Component
      * @throws VolumeException
      * @throws AssetTransformException
      */
-    public function getAssetUrl(Asset $asset, $transform = null, bool $generateNow = null): ?string
+    public function getAssetUrl(Asset $asset, $transform = null, ?bool $generateNow = null): ?string
     {
         // Maybe a plugin wants to do something here
-        $event = new GetAssetUrlEvent([
+        $event = new DefineAssetUrlEvent([
             'transform' => $transform,
             'asset' => $asset,
         ]);
-        $this->trigger(self::EVENT_GET_ASSET_URL, $event);
+        $this->trigger(self::EVENT_DEFINE_ASSET_URL, $event);
 
         // If a plugin set the url, we'll just use that.
         if ($event->url !== null) {
             return $event->url;
         }
 
-        if ($transform === null || !Image::canManipulateAsImage(pathinfo($asset->filename, PATHINFO_EXTENSION))) {
+        if ($transform === null || !Image::canManipulateAsImage(pathinfo($asset->getFilename(), PATHINFO_EXTENSION))) {
             $volume = $asset->getVolume();
 
             return AssetsHelper::generateUrl($volume, $asset);
@@ -653,23 +661,21 @@ class Assets extends Component
      * @param bool $generate whether to generate a thumb in none exists yet
      * @return string
      */
-    public function getThumbUrl(Asset $asset, int $width, int $height = null, bool $generate = false): string
+    public function getThumbUrl(Asset $asset, int $width, ?int $height = null, bool $generate = false): string
     {
         if ($height === null) {
             $height = $width;
         }
 
         // Maybe a plugin wants to do something here
-        // todo: remove the `size` key in 4.0
-        if ($this->hasEventHandlers(self::EVENT_GET_ASSET_THUMB_URL)) {
-            $event = new GetAssetThumbUrlEvent([
+        if ($this->hasEventHandlers(self::EVENT_DEFINE_THUMB_URL)) {
+            $event = new DefineAssetThumbUrlEvent([
                 'asset' => $asset,
                 'width' => $width,
                 'height' => $height,
-                'size' => max($width, $height),
                 'generate' => $generate,
             ]);
-            $this->trigger(self::EVENT_GET_ASSET_THUMB_URL, $event);
+            $this->trigger(self::EVENT_DEFINE_THUMB_URL, $event);
 
             // If a plugin set the url, we'll just use that.
             if ($event->url !== null) {
@@ -700,7 +706,7 @@ class Assets extends Component
      * @throws VolumeObjectNotFoundException
      * @see getThumbUrl()
      */
-    public function getThumbPath(Asset $asset, int $width, int $height = null, bool $generate = true, bool $fallbackToIcon = true)
+    public function getThumbPath(Asset $asset, int $width, ?int $height = null, bool $generate = true, bool $fallbackToIcon = true)
     {
         // Maybe a plugin wants to do something here
         $event = new AssetThumbEvent([
@@ -709,7 +715,7 @@ class Assets extends Component
             'height' => $height,
             'generate' => $generate,
         ]);
-        $this->trigger(self::EVENT_GET_THUMB_PATH, $event);
+        $this->trigger(self::EVENT_DEFINE_THUMB_PATH, $event);
 
         // If a plugin set the url, we'll just use that.
         if ($event->path !== null) {
@@ -974,18 +980,6 @@ class Assets extends Component
     }
 
     /**
-     * Return the current user's temporary upload folder.
-     *
-     * @return VolumeFolder
-     * @throws VolumeException
-     * @deprecated in 3.2.0. Use [[getUserTemporaryUploadFolder()]] instead.
-     */
-    public function getCurrentUserTemporaryUploadFolder(): VolumeFolder
-    {
-        return $this->getUserTemporaryUploadFolder();
-    }
-
-    /**
      * Returns the given user's temporary upload folder.
      *
      * If no user is provided, the currently-logged in user will be used (if there is one), or a folder named after
@@ -995,7 +989,7 @@ class Assets extends Component
      * @return VolumeFolder
      * @throws VolumeException If no correct volume provided.
      */
-    public function getUserTemporaryUploadFolder(User $user = null): VolumeFolder
+    public function getUserTemporaryUploadFolder(?User $user = null): VolumeFolder
     {
         if ($user === null) {
             // Default to the logged-in user, if there is one
@@ -1004,6 +998,9 @@ class Assets extends Component
 
         if ($user) {
             $folderName = 'user_' . $user->id;
+        } else if (Craft::$app->getRequest()->getIsConsoleRequest()) {
+            // For console requests, just make up a folder name.
+            $folderName = 'temp_' . sha1(time());
         } else {
             // A little obfuscation never hurt anyone
             $folderName = 'user_' . sha1(Craft::$app->getSession()->id);
@@ -1063,7 +1060,7 @@ class Assets extends Component
      * @return AssetPreviewHandlerInterface|null
      * @since 3.4.0
      */
-    public function getAssetPreviewHandler(Asset $asset)
+    public function getAssetPreviewHandler(Asset $asset): ?AssetPreviewHandlerInterface
     {
         // Give plugins a chance to register their own preview handlers
         if ($this->hasEventHandlers(self::EVENT_REGISTER_PREVIEW_HANDLER)) {
@@ -1143,15 +1140,15 @@ class Assets extends Component
     private function _applyFolderConditions(Query $query, FolderCriteria $criteria): void
     {
         if ($criteria->id) {
-            $query->andWhere(Db::parseParam('id', $criteria->id));
+            $query->andWhere(Db::parseNumericParam('id', $criteria->id));
         }
 
         if ($criteria->volumeId) {
-            $query->andWhere(Db::parseParam('volumeId', $criteria->volumeId));
+            $query->andWhere(Db::parseNumericParam('volumeId', $criteria->volumeId));
         }
 
         if ($criteria->parentId) {
-            $query->andWhere(Db::parseParam('parentId', $criteria->parentId));
+            $query->andWhere(Db::parseNumericParam('parentId', $criteria->parentId));
         }
 
         if ($criteria->name) {

@@ -225,7 +225,7 @@ class Locale extends BaseObject
     /**
      * @var array The languages that use RTL orientation.
      */
-    private static $_rtlLanguages = ['ar', 'he', 'ur', 'fa'];
+    private static array $_rtlLanguages = ['ar', 'he', 'ur', 'fa'];
 
     /**
      * @var string|null The locale ID.
@@ -233,14 +233,14 @@ class Locale extends BaseObject
     public $id;
 
     /**
-     * @var array|null The configured locale data, used if the [PHP intl extension](http://php.net/manual/en/book.intl.php) isn’t loaded.
+     * @var array|null The configured locale data, used if the [PHP intl extension](https://php.net/manual/en/book.intl.php) isn’t loaded.
      */
-    private $_data;
+    private ?array $_data = null;
 
     /**
      * @var Formatter|null The locale's formatter.
      */
-    private $_formatter;
+    private ?Formatter $_formatter = null;
 
     /**
      * Constructor.
@@ -260,11 +260,11 @@ class Locale extends BaseObject
         if (!Craft::$app->getI18n()->getIsIntlLoaded()) {
             $this->_data = Localization::localeData($this->id);
 
-            if ($this->_data === null && ($languageId = $this->getLanguageID()) !== $this->id) {
+            if (!isset($this->_data) && ($languageId = $this->getLanguageID()) !== $this->id) {
                 $this->_data = Localization::localeData($languageId);
             }
 
-            if ($this->_data === null) {
+            if (!isset($this->_data)) {
                 $this->_data = Localization::localeData('en-US');
             }
         }
@@ -303,7 +303,7 @@ class Locale extends BaseObject
      *
      * @return string|null The locale’s script ID, if it has one.
      */
-    public function getScriptID()
+    public function getScriptID(): ?string
     {
         // Find sub tags
         if (strpos($this->id, '-') !== false) {
@@ -325,7 +325,7 @@ class Locale extends BaseObject
      *
      * @return string|null The locale’s territory ID, if it has one.
      */
-    public function getTerritoryID()
+    public function getTerritoryID(): ?string
     {
         // Find sub tags
         if (strpos($this->id, '-') !== false) {
@@ -350,7 +350,7 @@ class Locale extends BaseObject
      * @param string|null $inLocale
      * @return string
      */
-    public function getDisplayName(string $inLocale = null): string
+    public function getDisplayName(?string $inLocale = null): string
     {
         // If no target locale is specified, default to this locale
         if ($inLocale === null) {
@@ -411,7 +411,7 @@ class Locale extends BaseObject
      */
     public function getFormatter(): Formatter
     {
-        if ($this->_formatter === null) {
+        if (!isset($this->_formatter)) {
             $config = [
                 'class' => Formatter::class,
                 'locale' => $this->id,
@@ -453,6 +453,7 @@ class Locale extends BaseObject
                 $config['currencyCode'] = $this->getNumberSymbol(self::SYMBOL_INTL_CURRENCY);
             }
 
+            /** @noinspection PhpFieldAssignmentTypeMismatchInspection */
             $this->_formatter = Craft::createObject($config);
         }
 
@@ -469,7 +470,7 @@ class Locale extends BaseObject
      * @param string $format The format type that should be returned. Values: Locale::FORMAT_ICU (default), ::FORMAT_PHP, ::FORMAT_JUI
      * @return string The localized ICU date format.
      */
-    public function getDateFormat(string $length = null, string $format = self::FORMAT_ICU): string
+    public function getDateFormat(?string $length = null, string $format = self::FORMAT_ICU): string
     {
         return $this->_getDateTimeFormat($length, true, false, $format);
     }
@@ -481,7 +482,7 @@ class Locale extends BaseObject
      * @param string $format The format type that should be returned. Values: Locale::FORMAT_ICU (default), ::FORMAT_PHP, ::FORMAT_JUI
      * @return string The localized ICU time format.
      */
-    public function getTimeFormat(string $length = null, string $format = self::FORMAT_ICU): string
+    public function getTimeFormat(?string $length = null, string $format = self::FORMAT_ICU): string
     {
         return $this->_getDateTimeFormat($length, false, true, $format);
     }
@@ -493,7 +494,7 @@ class Locale extends BaseObject
      * @param string $format The format type that should be returned. Values: Locale::FORMAT_ICU (default), ::FORMAT_PHP, ::FORMAT_JUI
      * @return string The localized ICU date + time format.
      */
-    public function getDateTimeFormat(string $length = null, string $format = self::FORMAT_ICU): string
+    public function getDateTimeFormat(?string $length = null, string $format = self::FORMAT_ICU): string
     {
         return $this->_getDateTimeFormat($length, true, true, $format);
     }
@@ -518,7 +519,6 @@ class Locale extends BaseObject
      * ```
      *
      * @param array $formats
-     * @return void
      * @since 3.6.0
      */
     public function setDateTimeFormats(array $formats): void
@@ -534,7 +534,7 @@ class Locale extends BaseObject
      * @param bool $standAlone Whether to return the "stand alone" month name.
      * @return string The localized month name.
      */
-    public function getMonthName(int $month, string $length = null, bool $standAlone = true): string
+    public function getMonthName(int $month, ?string $length = null, bool $standAlone = true): string
     {
         if ($length === null) {
             $length = self::LENGTH_FULL;
@@ -582,7 +582,7 @@ class Locale extends BaseObject
      * @param bool $standAlone Whether to return the "stand alone" month names.
      * @return array The localized month names.
      */
-    public function getMonthNames(string $length = null, bool $standAlone = true): array
+    public function getMonthNames(?string $length = null, bool $standAlone = true): array
     {
         $monthNames = [];
 
@@ -601,7 +601,7 @@ class Locale extends BaseObject
      * @param bool $standAlone Whether to return the "stand alone" day of the week name.
      * @return string The localized day of the week name.
      */
-    public function getWeekDayName(int $day, string $length = null, bool $standAlone = true): string
+    public function getWeekDayName(int $day, ?string $length = null, bool $standAlone = true): string
     {
         if ($length === null) {
             $length = self::LENGTH_FULL;
@@ -664,7 +664,7 @@ class Locale extends BaseObject
      * @param bool $standAlone Whether to return the "stand alone" day of the week names.
      * @return array The localized day of the week names.
      */
-    public function getWeekDayNames(string $length = null, bool $standAlone = true): array
+    public function getWeekDayNames(?string $length = null, bool $standAlone = true): array
     {
         $weekDayNames = [];
 
@@ -712,7 +712,7 @@ class Locale extends BaseObject
      * @param int $attribute The attribute to return. Values: Locale::
      * @return string|null The attribute.
      */
-    public function getTextAttribute(int $attribute)
+    public function getTextAttribute(int $attribute): ?string
     {
         if (Craft::$app->getI18n()->getIsIntlLoaded()) {
             $formatter = new NumberFormatter($this->id, NumberFormatter::DECIMAL);
@@ -749,7 +749,7 @@ class Locale extends BaseObject
      * Accepted values: Locale::STYLE_DECIMAL, ::STYLE_CURRENCY, ::STYLE_PERCENT, ::STYLE_SCIENTIFIC
      * @return string|null The pattern
      */
-    public function getNumberPattern(int $style)
+    public function getNumberPattern(int $style): ?string
     {
         if (Craft::$app->getI18n()->getIsIntlLoaded()) {
             $formatter = new NumberFormatter($this->id, $style);
@@ -781,7 +781,7 @@ class Locale extends BaseObject
      * ::SYMBOL_INFINITY, ::SYMBOL_NAN, ::SYMBOL_SIGNIFICANT_DIGIT, ::SYMBOL_MONETARY_GROUPING_SEPARATOR
      * @return string|null The symbol.
      */
-    public function getNumberSymbol(int $symbol)
+    public function getNumberSymbol(int $symbol): ?string
     {
         if (Craft::$app->getI18n()->getIsIntlLoaded()) {
             $formatter = new NumberFormatter($this->id, NumberFormatter::DECIMAL);
@@ -852,54 +852,6 @@ class Locale extends BaseObject
         return $currency;
     }
 
-    // Deprecated Methods
-    // -------------------------------------------------------------------------
-
-    /**
-     * Returns the locale ID.
-     *
-     * @return string
-     * @deprecated in 3.0.0. Use id instead.
-     */
-    public function getId(): string
-    {
-        Craft::$app->getDeprecator()->log('Locale::getId()', '`Locale::getId()` has been deprecated. Use the `id` property instead.');
-
-        return $this->id;
-    }
-
-    /**
-     * Returns the locale name in a given language.
-     *
-     * @param string|null $targetLocaleId
-     * @return string|null
-     * @deprecated in 3.0.0. Use getDisplayName() instead.
-     */
-    public function getName(string $targetLocaleId = null)
-    {
-        Craft::$app->getDeprecator()->log('Locale::getName()', '`Locale::getName()` has been deprecated. Use `getDisplayName()` instead.');
-
-        // In Craft 2, getName() with no $targetLocaleId would default to the active language
-        if ($targetLocaleId === null) {
-            $targetLocaleId = Craft::$app->language;
-        }
-
-        return $this->getDisplayName($targetLocaleId);
-    }
-
-    /**
-     * Returns the locale name in its own language.
-     *
-     * @return string|false
-     * @deprecated in 3.0.0. Use getDisplayName() instead.
-     */
-    public function getNativeName()
-    {
-        Craft::$app->getDeprecator()->log('Locale::getNativeName()', '`Locale::getNativeName()` has been deprecated. Use `getDisplayName()` instead.');
-
-        return $this->getDisplayName();
-    }
-
     /**
      * Returns a localized date/time format.
      *
@@ -936,7 +888,7 @@ class Locale extends BaseObject
      * @return string|null The ICU date/time format
      * @throws Exception if $length is invalid
      */
-    private function _getDateTimeIcuFormat(string $length, bool $withDate, bool $withTime)
+    private function _getDateTimeIcuFormat(string $length, bool $withDate, bool $withTime): ?string
     {
         if ($length === null) {
             $length = self::LENGTH_MEDIUM;

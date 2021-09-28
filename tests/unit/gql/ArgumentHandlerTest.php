@@ -83,7 +83,7 @@ class ArgumentHandlerTest extends Unit
             $event->handlers['initial'] = $handler;
         });
 
-        $result = $gql->executeQuery(new GqlSchema(), "{integrationQuery ($argumentString)}");
+        $result = $gql->executeQuery(new GqlSchema(['id' => 1]), "{integrationQuery ($argumentString)}");
         $this->assertEquals($expectedResult, json_decode($result['data']['integrationQuery'], true));
     }
 

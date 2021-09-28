@@ -36,42 +36,42 @@ class SetupController extends Controller
     /**
      * @var string|null The database driver to use. Either 'mysql' for MySQL or 'pgsql' for PostgreSQL.
      */
-    public $driver;
+    public ?string $driver = null;
     /**
      * @var string|null The database server name or IP address. Usually 'localhost' or '127.0.0.1'.
      */
-    public $server;
+    public ?string $server = null;
     /**
      * @var int|null The database server port. Defaults to 3306 for MySQL and 5432 for PostgreSQL.
      */
-    public $port = 0;
+    public ?int $port = 0;
     /**
      * @var string|null The database username to connect with.
      */
-    public $user = 'root';
+    public ?string $user = 'root';
     /**
      * @var string|null The database password to connect with.
      */
-    public $password;
+    public ?string $password = null;
     /**
      * @var string|null The name of the database to select.
      */
-    public $database;
+    public ?string $database = null;
     /**
      * @var string|null The database schema to use (PostgreSQL only).
      * @see https://www.postgresql.org/docs/8.2/static/ddl-schemas.html
      */
-    public $schema;
+    public ?string $schema = null;
     /**
      * @var string|null The table prefix to add to all database tables. This can
      * be no more than 5 characters, and must be all lowercase.
      */
-    public $tablePrefix;
+    public ?string $tablePrefix = null;
 
     /**
      * @inheritdoc
      */
-    public function options($actionID)
+    public function options($actionID): array
     {
         $options = parent::options($actionID);
 
@@ -124,11 +124,11 @@ class SetupController extends Controller
         }
 
         $this->stdout(PHP_EOL);
-        return $this->module->runAction('install');
+        return $this->run('install/craft');
     }
 
     /**
-     * Called from the post-create-project-cmd Composer hook.
+     * Called from the `post-create-project-cmd` Composer hook.
      *
      * @return int
      */
@@ -171,7 +171,7 @@ EOD;
     }
 
     /**
-     * Generates a new application ID and saves it in the .env file.
+     * Generates a new application ID and saves it in the `.env` file.
      *
      * @return int
      * @since 3.4.25
@@ -188,7 +188,7 @@ EOD;
     }
 
     /**
-     * Generates a new security key and saves it in the .env file.
+     * Generates a new security key and saves it in the `.env` file.
      *
      * @return int
      */
@@ -206,14 +206,13 @@ EOD;
     }
 
     /**
-     * Stores new DB connection settings to the .env file.
+     * Stores new DB connection settings to the `.env` file.
      *
      * @return int
      */
     public function actionDbCreds(): int
     {
         $badUserCredentials = false;
-        $isNitro = App::isNitro();
 
         top:
 
@@ -231,15 +230,11 @@ EOD;
         }
 
         // server
-        if ($isNitro) {
-            $this->server = '127.0.0.1';
-        } else {
-            $this->server = $this->prompt('Database server name or IP address:', [
-                'required' => true,
-                'default' => $this->server ?: '127.0.0.1',
-            ]);
-            $this->server = strtolower($this->server);
-        }
+        $this->server = $this->prompt('Database server name or IP address:', [
+            'required' => true,
+            'default' => $this->server ?: '127.0.0.1',
+        ]);
+        $this->server = strtolower($this->server);
 
         // port
         $this->port = (int)$this->prompt('Database port:', [
@@ -253,18 +248,13 @@ EOD;
         userCredentials:
 
         // user & password
-        if ($isNitro) {
-            $this->user = 'nitro';
-            $this->password = 'nitro';
-        } else {
-            $this->user = $this->prompt('Database username:', [
-                'default' => $this->user ?: null,
-            ]);
+        $this->user = $this->prompt('Database username:', [
+            'default' => $this->user ?: null,
+        ]);
 
-            if ($this->interactive) {
-                $this->stdout('Database password: ');
-                $this->password = CliPrompt::hiddenPrompt(true);
-            }
+        if ($this->interactive) {
+            $this->stdout('Database password: ');
+            $this->password = CliPrompt::hiddenPrompt(true);
         }
 
         if ($badUserCredentials) {
@@ -310,22 +300,32 @@ EOD;
         // Test the DB connection
         $this->stdout('Testing database credentials ... ', Console::FG_YELLOW);
 
-        try {
-            $dbConfig = Craft::$app->getConfig()->getDb();
-        } catch (InvalidConfigException $e) {
-            $dbConfig = new DbConfig();
-        }
-
         test:
 
+        /** @phpstan-ignore-next-line */
+        if (!isset($dbConfig)) {
+            try {
+                $dbConfig = Craft::$app->getConfig()->getDb();
+            } catch (InvalidConfigException $e) {
+                $dbConfig = new DbConfig();
+            }
+        }
+
+        /** @noinspection PhpFieldAssignmentTypeMismatchInspection */
         $dbConfig->driver = $this->driver;
+        /** @noinspection PhpFieldAssignmentTypeMismatchInspection */
         $dbConfig->server = $this->server;
         $dbConfig->port = $this->port;
+        /** @noinspection PhpFieldAssignmentTypeMismatchInspection */
         $dbConfig->database = $this->database;
         $dbConfig->dsn = "{$this->driver}:host={$this->server};port={$this->port};dbname={$this->database};";
+        /** @noinspection PhpFieldAssignmentTypeMismatchInspection */
         $dbConfig->user = $this->user;
+        /** @noinspection PhpFieldAssignmentTypeMismatchInspection */
         $dbConfig->password = $this->password;
+        /** @noinspection PhpFieldAssignmentTypeMismatchInspection */
         $dbConfig->schema = $this->schema;
+        /** @noinspection PhpFieldAssignmentTypeMismatchInspection */
         $dbConfig->tablePrefix = $this->tablePrefix;
 
         $db = Craft::$app->getDb();
@@ -475,7 +475,7 @@ EOD;
      *
      * @param string $command
      */
-    private function _outputCommand(string $command)
+    private function _outputCommand(string $command): void
     {
         $script = FileHelper::normalizePath($this->request->getScriptFile());
         if (!Platform::isWindows() && ($home = App::env('HOME')) !== false) {
@@ -488,7 +488,7 @@ EOD;
     }
 
     /**
-     * Sets an environment variable value in the project's .env file.
+     * Sets an environment variable value in the project’s `.env` file.
      *
      * @param $name
      * @param $value

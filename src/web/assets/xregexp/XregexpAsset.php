@@ -7,7 +7,7 @@
 
 namespace craft\web\assets\xregexp;
 
-use craft\web\AssetBundle;
+use yii\web\AssetBundle;
 
 /**
  * Xregexp asset bundle.

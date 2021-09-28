@@ -8,7 +8,6 @@
 namespace craft\events;
 
 use craft\base\ElementInterface;
-use yii\base\Event;
 
 /**
  * Element event class.
@@ -16,15 +15,15 @@ use yii\base\Event;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
-class ElementEvent extends Event
+class ElementEvent extends CancelableEvent
 {
     /**
-     * @var ElementInterface|null The element model associated with the event.
+     * @var ElementInterface The element model associated with the event.
      */
-    public $element;
+    public ElementInterface $element;
 
     /**
      * @var bool Whether the element is brand new
      */
-    public $isNew = false;
+    public bool $isNew = false;
 }

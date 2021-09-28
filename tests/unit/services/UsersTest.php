@@ -582,6 +582,7 @@ class UsersTest extends TestCase
 
         $this->lockedUser = new User(
             [
+                'active' => true,
                 'firstName' => 'locked',
                 'lastName' => 'user',
                 'username' => 'lockedUser',
@@ -594,6 +595,7 @@ class UsersTest extends TestCase
 
         $this->activeUser = new User(
             [
+                'active' => true,
                 'firstName' => 'active',
                 'lastName' => 'user',
                 'username' => 'activeUser',
@@ -603,6 +605,7 @@ class UsersTest extends TestCase
 
         $this->suspendedUser = new User(
             [
+                'active' => true,
                 'firstName' => 'suspended',
                 'lastName' => 'user',
                 'username' => 'suspendedUser',

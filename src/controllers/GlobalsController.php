@@ -35,7 +35,7 @@ class GlobalsController extends Controller
      * @return Response
      * @throws ForbiddenHttpException if the user isn't authorized to edit any global sets
      */
-    public function actionIndex()
+    public function actionIndex(): Response
     {
         $editableSets = Craft::$app->getGlobals()->getEditableSets();
 
@@ -53,7 +53,7 @@ class GlobalsController extends Controller
      * @throws NotFoundHttpException if the requested global set cannot be found
      * @throws BadRequestHttpException
      */
-    public function actionSaveSet()
+    public function actionSaveSet(): ?Response
     {
         $this->requirePostRequest();
         $this->requireAdmin();
@@ -139,7 +139,7 @@ class GlobalsController extends Controller
      * @throws ForbiddenHttpException if the user is not permitted to edit the global set
      * @throws NotFoundHttpException if the requested site handle is invalid
      */
-    public function actionEditContent(string $globalSetHandle, string $siteHandle = null, GlobalSet $globalSet = null): Response
+    public function actionEditContent(string $globalSetHandle, ?string $siteHandle = null, ?GlobalSet $globalSet = null): Response
     {
         if (Craft::$app->getIsMultiSite()) {
             // Get the sites the user is allowed to edit
@@ -221,7 +221,9 @@ class GlobalsController extends Controller
         }
 
         // Prep the form tabs & content
-        $form = $globalSet->getFieldLayout()->createForm($globalSet);
+        $form = $globalSet->getFieldLayout()->createForm($globalSet, false, [
+            'registerDeltas' => true,
+        ]);
 
         // Render the template!
         return $this->renderTemplate('globals/_edit', [
@@ -239,7 +241,7 @@ class GlobalsController extends Controller
      * @return Response|null
      * @throws NotFoundHttpException if the requested global set cannot be found
      */
-    public function actionSaveContent()
+    public function actionSaveContent(): ?Response
     {
         $this->requirePostRequest();
 

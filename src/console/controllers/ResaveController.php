@@ -37,19 +37,19 @@ class ResaveController extends Controller
      * @var bool Whether the elements should be resaved via a queue job.
      * @since 3.7.0
      */
-    public $queue = false;
+    public bool $queue = false;
 
     /**
      * @var bool Whether to resave element drafts.
      * @since 3.6.5
      */
-    public $drafts = false;
+    public bool $drafts = false;
 
     /**
      * @var bool Whether to resave provisional element drafts.
      * @since 3.7.0
      */
-    public $provisionalDrafts = false;
+    public bool $provisionalDrafts = false;
 
     /**
      * @var int|string The ID(s) of the elements to resave.
@@ -57,70 +57,70 @@ class ResaveController extends Controller
     public $elementId;
 
     /**
-     * @var string The UUID(s) of the elements to resave.
+     * @var string|null The UUID(s) of the elements to resave.
      */
-    public $uid;
+    public ?string $uid = null;
 
     /**
      * @var string|null The site handle to save elements from.
      */
-    public $site;
+    public ?string $site = null;
 
     /**
      * @var string The status(es) of elements to resave. Can be set to multiple comma-separated statuses.
      */
-    public $status = 'any';
+    public string $status = 'any';
 
     /**
      * @var int|null The number of elements to skip.
      */
-    public $offset;
+    public ?int $offset = null;
 
     /**
      * @var int|null The number of elements to resave.
      */
-    public $limit;
+    public ?int $limit = null;
 
     /**
      * @var bool Whether to save the elements across all their enabled sites.
      */
-    public $propagate = true;
+    public bool $propagate = true;
 
     /**
      * @var bool Whether to update the search indexes for the resaved elements.
      */
-    public $updateSearchIndex = false;
+    public bool $updateSearchIndex = false;
 
     /**
      * @var string|null The group handle(s) to save categories/tags/users from. Can be set to multiple comma-separated groups.
      */
-    public $group;
+    public ?string $group = null;
 
     /**
      * @var string|null The section handle(s) to save entries from. Can be set to multiple comma-separated sections.
      */
-    public $section;
+    public ?string $section = null;
 
     /**
      * @var string|null The type handle(s) of the elements to resave.
      * @since 3.1.16
      */
-    public $type;
+    public ?string $type = null;
 
     /**
      * @var string|null The volume handle(s) to save assets from. Can be set to multiple comma-separated volumes.
      */
-    public $volume;
+    public ?string $volume = null;
 
     /**
      * @var string|null The field handle to save Matrix blocks for.
      */
-    public $field;
+    public ?string $field = null;
 
     /**
      * @inheritdoc
      */
-    public function options($actionID)
+    public function options($actionID): array
     {
         $options = parent::options($actionID);
         $options[] = 'queue';
@@ -165,7 +165,7 @@ class ResaveController extends Controller
     public function actionAssets(): int
     {
         $criteria = [];
-        if ($this->volume !== null) {
+        if (isset($this->volume)) {
             $criteria['volume'] = explode(',', $this->volume);
         }
         return $this->resaveElements(Asset::class, $criteria);
@@ -179,7 +179,7 @@ class ResaveController extends Controller
     public function actionCategories(): int
     {
         $criteria = [];
-        if ($this->group !== null) {
+        if (isset($this->group)) {
             $criteria['group'] = explode(',', $this->group);
         }
         return $this->resaveElements(Category::class, $criteria);
@@ -193,10 +193,10 @@ class ResaveController extends Controller
     public function actionEntries(): int
     {
         $criteria = [];
-        if ($this->section !== null) {
+        if (isset($this->section)) {
             $criteria['section'] = explode(',', $this->section);
         }
-        if ($this->type !== null) {
+        if (isset($this->type)) {
             $criteria['type'] = explode(',', $this->type);
         }
         return $this->resaveElements(Entry::class, $criteria);
@@ -213,10 +213,10 @@ class ResaveController extends Controller
     public function actionMatrixBlocks(): int
     {
         $criteria = [];
-        if ($this->field !== null) {
+        if (isset($this->field)) {
             $criteria['field'] = explode(',', $this->field);
         }
-        if ($this->type !== null) {
+        if (isset($this->type)) {
             $criteria['type'] = explode(',', $this->type);
         }
         return $this->resaveElements(MatrixBlock::class, $criteria);
@@ -230,7 +230,7 @@ class ResaveController extends Controller
     public function actionTags(): int
     {
         $criteria = [];
-        if ($this->group !== null) {
+        if (isset($this->group)) {
             $criteria['group'] = explode(',', $this->group);
         }
         return $this->resaveElements(Tag::class, $criteria);
@@ -244,20 +244,21 @@ class ResaveController extends Controller
     public function actionUsers(): int
     {
         $criteria = [];
-        if ($this->group !== null) {
+        if (isset($this->group)) {
             $criteria['group'] = explode(',', $this->group);
         }
         return $this->resaveElements(User::class, $criteria);
     }
 
     /**
-     * @param string|ElementInterface $elementType The element type that should be resaved
+     * @param string $elementType The element type that should be resaved
      * @param array $criteria The element criteria that determines which elements should be resaved
      * @return int
      * @since 3.7.0
      */
     public function resaveElements(string $elementType, array $criteria = []): int
     {
+        /** @var string|ElementInterface $elementType */
         $criteria += $this->_baseCriteria();
 
         if ($this->queue) {
@@ -304,7 +305,8 @@ class ResaveController extends Controller
         }
 
         if ($this->provisionalDrafts) {
-            $query->provisionalDrafts();
+            $criteria['drafts'] = true;
+            $criteria['provisionalDrafts'] = true;
         }
 
         if ($this->elementId) {
@@ -325,11 +327,11 @@ class ResaveController extends Controller
             $criteria['status'] = explode(',', $this->status);
         }
 
-        if ($this->offset !== null) {
+        if (isset($this->offset)) {
             $criteria['offset'] = $this->offset;
         }
 
-        if ($this->limit !== null) {
+        if (isset($this->limit)) {
             $criteria['limit'] = $this->limit;
         }
 
@@ -337,7 +339,7 @@ class ResaveController extends Controller
     }
 
     /**
-     * Resave elemetns
+     * Resave elements
      */
     private function _resaveElements(ElementQueryInterface $query): int
     {

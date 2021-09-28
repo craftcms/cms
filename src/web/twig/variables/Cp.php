@@ -122,7 +122,7 @@ class Cp extends Component
      *
      * @return string
      */
-    public function craftIdAccountUrl()
+    public function craftIdAccountUrl(): string
     {
         return Craft::$app->getPluginStore()->craftIdEndpoint . '/account';
     }
@@ -574,7 +574,7 @@ class Cp extends Component
      * @return array|null
      * @since 3.1.9
      */
-    public function getAsciiCharMap(string $language)
+    public function getAsciiCharMap(string $language): ?array
     {
         if ($language === Craft::$app->language) {
             return null;
@@ -600,6 +600,7 @@ class Cp extends Component
 
         $directory = new \RecursiveDirectoryIterator($root);
 
+        /** @noinspection PhpParamsInspection */
         $filter = new \RecursiveCallbackFilterIterator($directory, function($current) {
             // Skip hidden files and directories, as well as node_modules/ folders
             if ($current->getFilename()[0] === '.' || $current->getFilename() === 'node_modules') {
@@ -636,13 +637,6 @@ class Cp extends Component
 
         foreach ($files as $file) {
             $template = substr($file->getRealPath(), $rootLength + 1);
-
-            // Can we chop off the extension?
-            $extension = $file->getExtension();
-            if (in_array($extension, $config->defaultTemplateExtensions, true)) {
-                $template = substr($template, 0, strlen($template) - (strlen($extension) + 1));
-            }
-
             $hint = null;
 
             // Is it in a site template directory?

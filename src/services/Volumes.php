@@ -102,15 +102,15 @@ class Volumes extends Component
     public const CONFIG_VOLUME_KEY = 'volumes';
 
     /**
-     * @var MemoizableArray|null
+     * @var MemoizableArray<VolumeInterface>|null
      * @see _volumes()
      */
-    private $_volumes;
+    private ?MemoizableArray $_volumes = null;
 
     /**
      * @var array|null Volume setting overrides
      */
-    private $_overrides;
+    private ?array $_overrides = null;
 
     /**
      * Serializer
@@ -227,11 +227,11 @@ class Volumes extends Component
     /**
      * Returns a memoizable array of all volumes.
      *
-     * @return MemoizableArray
+     * @return MemoizableArray<VolumeInterface>
      */
     private function _volumes(): MemoizableArray
     {
-        if ($this->_volumes === null) {
+        if (!isset($this->_volumes)) {
             $volumes = [];
             foreach ($this->_createVolumeQuery()->all() as $result) {
                 $volumes[] = $this->createVolume($result);
@@ -516,28 +516,6 @@ class Volumes extends Component
     }
 
     /**
-     * Returns any custom volume config values.
-     *
-     * @param string $handle The volume handle
-     * @return array|null
-     * @deprecated in 3.5.8. [Environment variables](https://craftcms.com/docs/3.x/config/#environmental-configuration) or [dependency injection](https://craftcms.com/knowledge-base/using-local-volumes-for-development)
-     * should be used instead.
-     */
-    public function getVolumeOverrides(string $handle): ?array
-    {
-        if ($this->_overrides === null) {
-            $this->_overrides = Craft::$app->getConfig()->getConfigFromFile('volumes');
-            if (!empty($this->_overrides)) {
-                Craft::$app->getDeprecator()->log('volumes.php', 'Support for overriding volume configs in `config/volumes.php` has been ' .
-                    'deprecated. [Environment variables](https://craftcms.com/docs/3.x/config/#environmental-configuration) or ' .
-                    '[dependency injection](https://craftcms.com/knowledge-base/using-local-volumes-for-development) should be used instead.');
-            }
-        }
-
-        return $this->_overrides[$handle] ?? null;
-    }
-
-    /**
      * Creates an asset volume with a given config.
      *
      * @param mixed $config The asset volume’s class name, or its config, with a `type` value and optionally a `settings` value
@@ -552,15 +530,6 @@ class Volumes extends Component
         // JSON-decode the settings now so we don't have to do it twice in the event we need to remove the `path`
         if (isset($config['settings']) && is_string($config['settings'])) {
             $config['settings'] = Json::decode($config['settings']);
-        }
-
-        // Are they overriding any settings?
-        if (!empty($config['handle']) && ($override = $this->getVolumeOverrides($config['handle'])) !== null) {
-            // Save a reference to the original config in case the volume type is missing
-            $originalConfig = $config;
-
-            // Merge in the DB settings first, then the config file overrides
-            $config = array_merge(ComponentHelper::mergeSettings($config), $override);
         }
 
         try {
@@ -688,7 +657,7 @@ class Volumes extends Component
 
             // Delete the assets
             $assets = Asset::find()
-                ->anyStatus()
+                ->status(null)
                 ->volumeId($volumeRecord->id)
                 ->all();
             $elementsService = Craft::$app->getElements();

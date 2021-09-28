@@ -46,108 +46,25 @@ class Content extends Component
     /**
      * @var string
      */
-    public $contentTable = Table::CONTENT;
+    public string $contentTable = Table::CONTENT;
+
+    /**
+     * @var string|null
+     */
+    public ?string $fieldColumnPrefix = 'field_';
 
     /**
      * @var string
      */
-    public $fieldColumnPrefix = 'field_';
-
-    /**
-     * @var string
-     */
-    public $fieldContext = 'global';
+    public string $fieldContext = 'global';
 
     /**
      * @inheritdoc
      */
-    public function init()
+    public function init(): void
     {
         parent::init();
         $this->db = Instance::ensure($this->db, Connection::class);
-    }
-
-    /**
-     * Returns the content row for a given element, with field column prefixes removed from the keys.
-     *
-     * @param ElementInterface $element The element whose content we're looking for.
-     * @return array|null The element's content row values, or null if the row could not be found
-     * @deprecated in 3.7.0
-     */
-    public function getContentRow(ElementInterface $element)
-    {
-        if (!$element->id || !$element->siteId) {
-            return null;
-        }
-
-        $originalContentTable = $this->contentTable;
-        $originalFieldColumnPrefix = $this->fieldColumnPrefix;
-        $originalFieldContext = $this->fieldContext;
-
-        $this->contentTable = $element->getContentTable();
-        $this->fieldColumnPrefix = $element->getFieldColumnPrefix();
-        $this->fieldContext = $element->getFieldContext();
-
-        $row = (new Query())
-            ->from([$this->contentTable])
-            ->where([
-                'elementId' => $element->id,
-                'siteId' => $element->siteId,
-            ])
-            ->one();
-
-        if ($row) {
-            $row = $this->_removeColumnPrefixesFromRow($row);
-        }
-
-        $this->contentTable = $originalContentTable;
-        $this->fieldColumnPrefix = $originalFieldColumnPrefix;
-        $this->fieldContext = $originalFieldContext;
-
-        return $row;
-    }
-
-    /**
-     * Populates a given element with its custom field values.
-     *
-     * @param ElementInterface $element The element for which we should create a new content model.
-     * @deprecated in 3.7.0
-     */
-    public function populateElementContent(ElementInterface $element)
-    {
-        // Make sure the element has content
-        if (!$element->hasContent()) {
-            return;
-        }
-
-        if ($row = $this->getContentRow($element)) {
-            $element->contentId = $row['id'];
-
-            if ($element->hasTitles() && isset($row['title'])) {
-                $element->title = $row['title'];
-            }
-
-            $fieldLayout = $element->getFieldLayout();
-
-            if ($fieldLayout) {
-                foreach ($fieldLayout->getFields() as $field) {
-                    if ($field::hasContentColumn()) {
-                        $type = $field->getContentColumnType();
-                        if (is_array($type)) {
-                            $value = [];
-                            foreach (array_keys($type) as $i => $key) {
-                                $column = ElementHelper::fieldColumn('', $field->handle, $field->columnSuffix, $i !== 0 ? $key : null);
-                                $value[$key] = $row[$column];
-                            }
-                            $element->setFieldValue($field->handle, $value);
-                        } else {
-                            $column = ElementHelper::fieldColumn('', $field->handle, $field->columnSuffix);
-                            $element->setFieldValue($field->handle, $row[$column]);
-                        }
-                    }
-                }
-            }
-        }
     }
 
     /**

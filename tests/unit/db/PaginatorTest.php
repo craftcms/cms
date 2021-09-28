@@ -130,16 +130,6 @@ class PaginatorTest extends Unit
     /**
      *
      */
-    public function testGetPageResultsNoPageSize()
-    {
-        $this->setPaginator([], ['pageSize' => null], 10);
-        self::assertSame([], $this->paginator->getPageResults());
-        $this->resetPaginator();
-    }
-
-    /**
-     *
-     */
     public function testGetPageOffset()
     {
         $this->setPaginator([], [], 10);

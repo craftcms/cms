@@ -18,18 +18,18 @@ class TemplateEvent extends CancelableEvent
     /**
      * @var string The name of the template being rendered
      */
-    public $template;
+    public string $template;
 
     /**
      * @var array The variables to be passed to the template
      */
-    public $variables;
+    public array $variables;
 
     /**
      * @var string The template mode to be used
      * @since 3.4.0
      */
-    public $templateMode;
+    public string $templateMode;
 
     /**
      * @var string The rendering result of [[\craft\web\View::renderTemplate()]].
@@ -38,5 +38,5 @@ class TemplateEvent extends CancelableEvent
      * returned by [[\craft\web\View::renderTemplate()]]. This property is only used
      * by [[\craft\web\View::EVENT_AFTER_RENDER_TEMPLATE]] event.
      */
-    public $output;
+    public string $output;
 }

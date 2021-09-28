@@ -30,32 +30,32 @@ class TagGroup extends Model
     /**
      * @var int|null ID
      */
-    public $id;
+    public ?int $id = null;
 
     /**
      * @var string|null Name
      */
-    public $name;
+    public ?string $name = null;
 
     /**
      * @var string|null Handle
      */
-    public $handle;
+    public ?string $handle = null;
 
     /**
      * @var int|null Field layout ID
      */
-    public $fieldLayoutId;
+    public ?int $fieldLayoutId = null;
 
     /**
-     * @var int|null Field layout ID
+     * @var string|null Field layout ID
      */
-    public $uid;
+    public ?string $uid = null;
 
     /**
      * @inheritdoc
      */
-    public function behaviors()
+    public function behaviors(): array
     {
         $behaviors = parent::behaviors();
         $behaviors['fieldLayout'] = [
@@ -68,7 +68,7 @@ class TagGroup extends Model
     /**
      * @inheritdoc
      */
-    public function attributeLabels()
+    public function attributeLabels(): array
     {
         return [
             'handle' => Craft::t('app', 'Handle'),
@@ -94,7 +94,6 @@ class TagGroup extends Model
     /**
      * Validates the field layout.
      *
-     * @return void
      * @since 3.7.0
      */
     public function validateFieldLayout(): void

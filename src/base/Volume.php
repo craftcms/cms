@@ -76,11 +76,12 @@ abstract class Volume extends SavableComponent implements VolumeInterface
             ['handle'],
             HandleValidator::class,
             'reservedWords' => [
-                'id',
                 'dateCreated',
                 'dateUpdated',
-                'uid',
+                'edit',
+                'id',
                 'title',
+                'uid',
             ],
         ];
         $rules[] = [['fieldLayout'], 'validateFieldLayout'];
@@ -96,7 +97,6 @@ abstract class Volume extends SavableComponent implements VolumeInterface
     /**
      * Validates the field layout.
      *
-     * @return void
      * @since 3.7.0
      */
     public function validateFieldLayout(): void
@@ -126,10 +126,10 @@ abstract class Volume extends SavableComponent implements VolumeInterface
     /**
      * @inheritdoc
      */
-    public function getRootUrl()
+    public function getRootUrl(): ?string
     {
         if (!$this->hasUrls) {
-            return false;
+            return null;
         }
 
         return rtrim(Craft::parseEnv($this->url), '/') . '/';
@@ -144,7 +144,7 @@ abstract class Volume extends SavableComponent implements VolumeInterface
     }
 
     /**
-     * @inheritDoc
+     * @inheritdoc
      */
     public function createFileByStream(string $path, $stream, array $config): void
     {
@@ -152,7 +152,7 @@ abstract class Volume extends SavableComponent implements VolumeInterface
     }
 
     /**
-     * @inheritDoc
+     * @inheritdoc
      */
     public function updateFileByStream(string $path, $stream, array $config): void
     {

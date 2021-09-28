@@ -9,7 +9,6 @@ namespace craft\web\twig\tokenparsers;
 
 use craft\web\twig\nodes\PaginateNode;
 use Twig\Node\Expression\AssignNameExpression;
-use Twig\Parser;
 use Twig\Token;
 use Twig\TokenParser\AbstractTokenParser;
 
@@ -24,10 +23,9 @@ class PaginateTokenParser extends AbstractTokenParser
     /**
      * @inheritdoc
      */
-    public function parse(Token $token)
+    public function parse(Token $token): PaginateNode
     {
         $lineno = $token->getLine();
-        /** @var Parser $parser */
         $parser = $this->parser;
         $stream = $parser->getStream();
 
@@ -55,7 +53,7 @@ class PaginateTokenParser extends AbstractTokenParser
     /**
      * @inheritdoc
      */
-    public function getTag()
+    public function getTag(): string
     {
         return 'paginate';
     }

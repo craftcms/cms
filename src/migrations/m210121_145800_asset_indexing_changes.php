@@ -13,7 +13,7 @@ class m210121_145800_asset_indexing_changes extends Migration
     /**
      * @inheritdoc
      */
-    public function safeUp()
+    public function safeUp(): bool
     {
         $this->truncateTable(Table::ASSETINDEXDATA);
         $this->dropColumn(Table::ASSETINDEXDATA, 'sessionId');
@@ -36,12 +36,14 @@ class m210121_145800_asset_indexing_changes extends Migration
         ]);
 
         $this->addForeignKey(null, Table::ASSETINDEXDATA, ['sessionId'], Table::ASSETINDEXINGSESSIONS, ['id'], 'CASCADE', null);
+
+        return true;
     }
 
     /**
      * @inheritdoc
      */
-    public function safeDown()
+    public function safeDown(): bool
     {
         echo "m210121_145800_asset_indexing_changes cannot be reverted.\n";
         return false;

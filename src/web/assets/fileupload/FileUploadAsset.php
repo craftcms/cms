@@ -7,9 +7,8 @@
 
 namespace craft\web\assets\fileupload;
 
-use craft\web\AssetBundle;
 use craft\web\assets\jqueryui\JqueryUiAsset;
-use yii\web\JqueryAsset;
+use yii\web\AssetBundle;
 
 /**
  * File Upload asset bundle.
@@ -32,7 +31,6 @@ class FileUploadAsset extends AssetBundle
      * @inheritdoc
      */
     public $depends = [
-        JqueryAsset::class,
         JqueryUiAsset::class,
     ];
 }

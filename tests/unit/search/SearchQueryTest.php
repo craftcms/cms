@@ -32,7 +32,7 @@ class SearchQueryTest extends Unit
         'subLeft' => false,
         'subRight' => true,
         'attribute' => null,
-        'phrase' => null
+        'phrase' => false,
     ];
 
     /**
@@ -137,8 +137,8 @@ class SearchQueryTest extends Unit
             'exact' => true,
             'subLeft' => true,
             'subRight' => true,
-            'attribute' => [],
-            'phrase' => [],
+            'attribute' => null,
+            'phrase' => false,
         ]);
 
         $this->ensureIdenticalSearchTermObjects($search->getTokens()[0], new SearchQueryTerm([
@@ -146,9 +146,9 @@ class SearchQueryTest extends Unit
             'exact' => true,
             'subLeft' => true,
             'subRight' => true,
-            'attribute' => [],
+            'attribute' => null,
             'term' => 'search',
-            'phrase' => [],
+            'phrase' => false,
         ]));
     }
 
@@ -169,7 +169,7 @@ class SearchQueryTest extends Unit
             'subRight' => true,
             'attribute' => null,
             'term' => $search->getQuery(),
-            'phrase' => null
+            'phrase' => false,
         ]);
 
         $tokens = $search->getTokens()[0];

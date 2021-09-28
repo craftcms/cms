@@ -30,7 +30,7 @@ use yii\web\IdentityInterface;
  *
  * @property bool $hasElevatedSession Whether the user currently has an elevated session
  * @property UserElement|null $identity The logged-in user.
- * @method UserElement|null getIdentity($autoRenew = true) Returns the logged-in user.
+ * @method UserElement|null getIdentity(bool $autoRenew = true) Returns the logged-in user.
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
@@ -40,23 +40,23 @@ class User extends \yii\web\User
      * @var string The session variable name used to store the duration of the authenticated state.
      * @since 3.6.8
      */
-    public $authDurationParam = '__duration';
+    public string $authDurationParam = '__duration';
 
     /**
      * @var string the session variable name used to store the user session token.
      */
-    public $tokenParam = '__token';
+    public string $tokenParam = '__token';
 
     /**
      * @var array The configuration of the username cookie.
      * @see Cookie
      */
-    public $usernameCookie;
+    public array $usernameCookie;
 
     /**
      * @var string The session variable name used to store the value of the expiration timestamp of the elevated session state.
      */
-    public $elevatedSessionTimeoutParam = '__elevated_timeout';
+    public string $elevatedSessionTimeoutParam = '__elevated_timeout';
 
     // Authentication
     // -------------------------------------------------------------------------
@@ -91,7 +91,7 @@ class User extends \yii\web\User
      * @param UserElement $user
      * @see afterLogin()
      */
-    public function sendUsernameCookie(UserElement $user)
+    public function sendUsernameCookie(UserElement $user): void
     {
         $generalConfig = Craft::$app->getConfig()->getGeneral();
 
@@ -109,7 +109,7 @@ class User extends \yii\web\User
     /**
      * @inheritdoc
      */
-    public function getReturnUrl($defaultUrl = null)
+    public function getReturnUrl($defaultUrl = null): string
     {
         // Set the default based on the config, if it's not specified
         if ($defaultUrl === null) {
@@ -136,7 +136,7 @@ class User extends \yii\web\User
      *
      * @see getReturnUrl()
      */
-    public function removeReturnUrl()
+    public function removeReturnUrl(): void
     {
         SessionHelper::remove($this->returnUrlParam);
     }
@@ -162,21 +162,21 @@ class User extends \yii\web\User
      * ```
      * ```twig{5}
      * <form method="post" action="" accept-charset="UTF-8">
-     *     {{ csrfInput() }}
-     *     {{ actionInput('users/login') }}
+     *   {{ csrfInput() }}
+     *   {{ actionInput('users/login') }}
      *
-     *     {% set username = craft.app.user.rememberedUsername %}
-     *     <input type="text" name="loginName" value="{{ username }}">
+     *   {% set username = craft.app.user.rememberedUsername %}
+     *   <input type="text" name="loginName" value="{{ username }}">
      *
-     *     <input type="password" name="password">
+     *   <input type="password" name="password">
      *
-     *     <input type="submit" value="Login">
+     *   <input type="submit" value="Login">
      * </form>
      * ```
      *
      * @return string|null
      */
-    public function getRememberedUsername()
+    public function getRememberedUsername(): ?string
     {
         return Craft::$app->getRequest()->getCookies()->getValue($this->usernameCookie['name']);
     }
@@ -191,17 +191,17 @@ class User extends \yii\web\User
      * ```
      * ```twig
      * {% if craft.app.user.isGuest %}
-     *     <a href="{{ url(craft.app.config.general.getLoginPath()) }}">
-     *         Login
-     *     </a>
+     *   <a href="{{ url(craft.app.config.general.getLoginPath()) }}">
+     *     Login
+     *   </a>
      * {% else %}
-     *     <a href="{{ url(craft.app.config.general.getLogoutPath()) }}">
-     *         Logout
-     *     </a>
+     *   <a href="{{ url(craft.app.config.general.getLogoutPath()) }}">
+     *     Logout
+     *   </a>
      * {% endif %}
      * ```
      */
-    public function getIsGuest()
+    public function getIsGuest(): bool
     {
         return parent::getIsGuest();
     }
@@ -213,7 +213,7 @@ class User extends \yii\web\User
      * @throws ForbiddenHttpException if the request doesn’t accept a redirect response
      * @since 3.4.0
      */
-    public function guestRequired()
+    public function guestRequired(): Response
     {
         if (!$this->checkRedirectAcceptable()) {
             throw new ForbiddenHttpException(Craft::t('app', 'Guest Required'));
@@ -230,7 +230,7 @@ class User extends \yii\web\User
     {
         // Are they logged in?
         if (!$this->getIsGuest()) {
-            if ($this->authTimeout === null) {
+            if (!isset($this->authTimeout)) {
                 // The session duration must have been empty (expire when the HTTP session ends)
                 return -1;
             }
@@ -277,7 +277,7 @@ class User extends \yii\web\User
     /**
      * Returns how many seconds are left in the current elevated user session.
      *
-     * @return int|bool The number of seconds left in the current elevated user session
+     * @return int|false The number of seconds left in the current elevated user session
      * or false if it has been disabled.
      */
     public function getElevatedSessionTimeout()
@@ -371,31 +371,10 @@ class User extends \yii\web\User
         return true;
     }
 
-    // Misc
-    // -------------------------------------------------------------------------
-
-    /**
-     * Saves the logged-in user’s Debug toolbar preferences to the session.
-     *
-     * @deprecated in 3.5.0
-     */
-    public function saveDebugPreferencesToSession()
-    {
-    }
-
-    /**
-     * Removes the debug preferences from the session.
-     *
-     * @deprecated in 3.5.0
-     */
-    public function destroyDebugPreferencesInSession()
-    {
-    }
-
     /**
      * @inheritdoc
      */
-    public function login(IdentityInterface $identity, $duration = 0)
+    public function login(IdentityInterface $identity, $duration = 0): bool
     {
         $authTimeout = $this->authTimeout;
         if ($duration > 0) {
@@ -410,7 +389,7 @@ class User extends \yii\web\User
     /**
      * @inheritdoc
      */
-    protected function beforeLogin($identity, $cookieBased, $duration)
+    protected function beforeLogin($identity, $cookieBased, $duration): bool
     {
         // Only allow the login if the request meets our user agent and IP requirements
         if (!$this->_validateUserAgentAndIp()) {
@@ -423,7 +402,7 @@ class User extends \yii\web\User
     /**
      * @inheritdoc
      */
-    protected function afterLogin($identity, $cookieBased, $duration)
+    protected function afterLogin($identity, $cookieBased, $duration): void
     {
         /** @var UserElement $identity */
 
@@ -454,7 +433,7 @@ class User extends \yii\web\User
     /**
      * @inheritdoc
      */
-    public function switchIdentity($identity, $duration = 0)
+    public function switchIdentity($identity, $duration = 0): void
     {
         if ($this->enableSession) {
             SessionHelper::remove($this->tokenParam);
@@ -475,7 +454,7 @@ class User extends \yii\web\User
      * @param int $userId
      * @since 3.1.1
      */
-    public function generateToken(int $userId)
+    public function generateToken(int $userId): void
     {
         $token = Craft::$app->getSecurity()->generateRandomString(100);
 
@@ -490,7 +469,7 @@ class User extends \yii\web\User
     /**
      * @inheritdoc
      */
-    protected function renewAuthStatus()
+    protected function renewAuthStatus(): void
     {
         // Only renew if the request meets our user agent and IP requirements
         if (!Craft::$app->getIsInstalled() || !$this->_validateUserAgentAndIp()) {
@@ -501,7 +480,7 @@ class User extends \yii\web\User
         $extendSession = !Craft::$app->getRequest()->getParam('dontExtendSession');
 
         // Prevent the user session from getting extended?
-        if ($this->authTimeout !== null && !$extendSession) {
+        if (isset($this->authTimeout) && !$extendSession) {
             $this->absoluteAuthTimeout = $this->authTimeout;
             $this->authTimeout = null;
             $absoluteAuthTimeoutParam = $this->absoluteAuthTimeoutParam;
@@ -527,8 +506,9 @@ class User extends \yii\web\User
     /**
      * @inheritdoc
      */
-    protected function beforeLogout($identity)
+    protected function beforeLogout($identity): bool
     {
+        /** @var UserElement $identity */
         if (!parent::beforeLogout($identity)) {
             return false;
         }
@@ -552,7 +532,7 @@ class User extends \yii\web\User
     /**
      * @inheritdoc
      */
-    protected function afterLogout($identity)
+    protected function afterLogout($identity): void
     {
         /** @var UserElement $identity */
         // Delete the impersonation session, if there is one
@@ -589,10 +569,10 @@ class User extends \yii\web\User
     }
 
     /**
-     * @param string $authError
-     * @param UserElement $user
+     * @param string|null $authError
+     * @param UserElement|null $user
      */
-    private function _handleLoginFailure(string $authError = null, UserElement $user = null)
+    private function _handleLoginFailure(?string $authError, ?UserElement $user = null): void
     {
         $message = UserHelper::getLoginFailureMessage($authError, $user);
 

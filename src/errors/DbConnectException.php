@@ -20,7 +20,7 @@ class DbConnectException extends UserException
     /**
      * @inheritdoc
      */
-    public function getName()
+    public function getName(): string
     {
         return 'Database Connection Error';
     }

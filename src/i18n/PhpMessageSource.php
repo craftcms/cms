@@ -21,12 +21,12 @@ class PhpMessageSource extends \yii\i18n\PhpMessageSource
     /**
      * @var bool Whether the messages can be overridden by translations in the site’s translations folder
      */
-    public $allowOverrides = false;
+    public bool $allowOverrides = false;
 
     /**
      * @inheritdoc
      */
-    protected function loadMessages($category, $language)
+    protected function loadMessages($category, $language): array
     {
         $messages = parent::loadMessages($category, $language);
 
@@ -41,7 +41,7 @@ class PhpMessageSource extends \yii\i18n\PhpMessageSource
     /**
      * @inheritdoc
      */
-    protected function loadMessagesFromFile($messageFile)
+    protected function loadMessagesFromFile($messageFile): ?array
     {
         $messages = parent::loadMessagesFromFile($messageFile);
 
@@ -58,10 +58,10 @@ class PhpMessageSource extends \yii\i18n\PhpMessageSource
      *
      * @param string $category
      * @param string $language
-     * @return array|null
+     * @return array
      * @throws Exception
      */
-    private function _loadOverrideMessages(string $category, string $language)
+    private function _loadOverrideMessages(string $category, string $language): array
     {
         // Save the current base path to restore later.
         $oldBasePath = $this->basePath;

@@ -319,6 +319,13 @@ Craft.BaseElementIndex = Garnish.Base.extend({
         return this.sourceSelect.$items;
     },
 
+    getSite: function() {
+        if (!this.siteId) {
+            return undefined;
+        }
+        return Craft.sites.find(s => s.id == this.siteId);
+    },
+
     initSources: function() {
         var $sources = this._getSourcesInList(this.getSourceContainer());
 
@@ -338,7 +345,10 @@ Craft.BaseElementIndex = Garnish.Base.extend({
         }
 
         this.sourcesByKey = {};
-        this._initSources($sources);
+
+        for (let i = 0; i < $sources.length; i++) {
+            this.initSource($($sources[i]));
+        }
 
         return true;
     },
@@ -370,8 +380,10 @@ Craft.BaseElementIndex = Garnish.Base.extend({
         this.setIndexBusy();
 
         Craft.sendActionRequest('POST', this.settings.refreshSourcesAction, {
-            context: this.settings.context,
-            elementType: this.elementType,
+            data: {
+                context: this.settings.context,
+                elementType: this.elementType,
+            }
         }).then((response) => {
             this.setIndexAvailable();
             this.getSourceContainer().replaceWith(response.data.html);
@@ -767,6 +779,10 @@ Craft.BaseElementIndex = Garnish.Base.extend({
                     // Update the count text too
                     this._resetCount();
                     this._updateView(viewParams, response.data);
+
+                    if (typeof response.data.badgeCounts !== 'undefined') {
+                        this._updateBadgeCounts(response.data.badgeCounts);
+                    }
 
                     if (response.data.message) {
                         Craft.cp.displayNotice(response.data.message);
@@ -1555,18 +1571,6 @@ Craft.BaseElementIndex = Garnish.Base.extend({
         return $source.siblings('.toggle');
     },
 
-    _initSources: function($sources) {
-        for (var i = 0; i < $sources.length; i++) {
-            this.initSource($($sources[i]));
-        }
-    },
-
-    _deinitSources: function($sources) {
-        for (var i = 0; i < $sources.length; i++) {
-            this.deinitSource($($sources[i]));
-        }
-    },
-
     _toggleSource: function($source) {
         if ($source.parent('li').hasClass('expanded')) {
             this._collapseSource($source);
@@ -1583,7 +1587,12 @@ Craft.BaseElementIndex = Garnish.Base.extend({
         $source.parent('li').addClass('expanded');
 
         var $childSources = this._getChildSources($source);
-        this._initSources($childSources);
+        for (let i = 0; i < $childSources.length; i++) {
+            this.initSource($($childSources[i]));
+            if (this.$visibleSources) {
+                this.$visibleSources = this.$visibleSources.add($childSources[i]);
+            }
+        }
 
         var key = $source.data('key');
         if (this.instanceState.expandedSources.indexOf(key) === -1) {
@@ -1600,7 +1609,10 @@ Craft.BaseElementIndex = Garnish.Base.extend({
         $source.parent('li').removeClass('expanded');
 
         var $childSources = this._getChildSources($source);
-        this._deinitSources($childSources);
+        for (let i = 0; i < $childSources.length; i++) {
+            this.deinitSource($($childSources[i]));
+            this.$visibleSources = this.$visibleSources.not($childSources[i]);
+        }
 
         var i = this.instanceState.expandedSources.indexOf($source.data('key'));
         if (i !== -1) {
@@ -1795,6 +1807,25 @@ Craft.BaseElementIndex = Garnish.Base.extend({
         // -------------------------------------------------------------
 
         this.onUpdateElements();
+    },
+
+    _updateBadgeCounts: function(badgeCounts) {
+        for (let sourceKey in badgeCounts) {
+            if (badgeCounts.hasOwnProperty(sourceKey)) {
+                const $source = this.getSourceByKey(sourceKey);
+                if ($source) {
+                    let $badge = $source.children('.badge');
+                    if (badgeCounts[sourceKey] !== null) {
+                        if (!$badge.length) {
+                            $badge = $('<span class="badge"/>').appendTo($source);
+                        }
+                        $badge.text(badgeCounts[sourceKey]);
+                    } else if ($badge) {
+                        $badge.remove();
+                    }
+                }
+            }
+        }
     },
 
     _countResults: function() {

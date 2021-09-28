@@ -77,7 +77,7 @@ trait PrimaryReplicaTrait
      * @param bool $value
      * @internal
      */
-    public function setEnableReplicas(bool $value)
+    public function setEnableReplicas(bool $value): void
     {
         $this->enableSlaves = $value;
     }
@@ -99,7 +99,7 @@ trait PrimaryReplicaTrait
      * @param array $value
      * @internal
      */
-    public function setReplicas(array $value)
+    public function setReplicas(array $value): void
     {
         $this->slaves = $value;
     }
@@ -121,7 +121,7 @@ trait PrimaryReplicaTrait
      * @param array $value
      * @internal
      */
-    public function setReplicaConfig(array $value)
+    public function setReplicaConfig(array $value): void
     {
         $this->slaveConfig = $value;
     }
@@ -143,7 +143,7 @@ trait PrimaryReplicaTrait
      * @param array $value
      * @internal
      */
-    public function setPrimaries(array $value)
+    public function setPrimaries(array $value): void
     {
         $this->masters = $value;
     }
@@ -165,7 +165,7 @@ trait PrimaryReplicaTrait
      * @param array $value
      * @internal
      */
-    public function setPrimaryConfig(array $value)
+    public function setPrimaryConfig(array $value): void
     {
         $this->masterConfig = $value;
     }
@@ -187,7 +187,7 @@ trait PrimaryReplicaTrait
      * @param bool $value
      * @internal
      */
-    public function setShufflePrimaries(bool $value)
+    public function setShufflePrimaries(bool $value): void
     {
         $this->shuffleMasters = $value;
     }
@@ -201,7 +201,7 @@ trait PrimaryReplicaTrait
      * @return PDO|null the PDO instance for the currently active replica connection. `null` is returned if no
      * replica connections are available and `$fallbackToPrimary` is false.
      */
-    public function getReplicaPdo(bool $fallbackToPrimary = true)
+    public function getReplicaPdo(bool $fallbackToPrimary = true): ?PDO
     {
         return $this->getSlavePdo($fallbackToPrimary);
     }
@@ -227,7 +227,7 @@ trait PrimaryReplicaTrait
      * @return Connection|null the currently active replica connection. `null` is returned if no replica connections
      * are available and `$fallbackToPrimary` is false.
      */
-    public function getReplica($fallbackToPrimary = true)
+    public function getReplica(bool $fallbackToPrimary = true): ?Connection
     {
         return $this->getSlave($fallbackToPrimary);
     }
@@ -239,7 +239,7 @@ trait PrimaryReplicaTrait
      * @return Connection|null the currently active primary connection. `null` is returned if no primary connection
      * is available.
      */
-    public function getPrimary()
+    public function getPrimary(): ?Connection
     {
         return $this->getMaster();
     }

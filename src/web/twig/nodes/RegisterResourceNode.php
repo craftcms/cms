@@ -24,7 +24,7 @@ class RegisterResourceNode extends Node implements NodeCaptureInterface
     /**
      * @inheritdoc
      */
-    public function compile(Compiler $compiler)
+    public function compile(Compiler $compiler): void
     {
         $method = $this->getAttribute('method');
         $position = $this->getAttribute('position');
@@ -47,14 +47,11 @@ class RegisterResourceNode extends Node implements NodeCaptureInterface
         }
 
         if ($position === null && $this->getAttribute('allowPosition')) {
-            if ($this->getAttribute('first')) {
-                // TODO: Remove this in Craft 4, along with the deprecated `first` param
-                $position = 'head';
-            } else {
-                // Default to endBody
-                $position = 'endBody';
-            }
+            // Default to endBody
+            $position = 'endBody';
         }
+
+        $positionPhp = null;
 
         if ($position !== null) {
             // Figure out what the position's PHP value is
@@ -99,13 +96,11 @@ class RegisterResourceNode extends Node implements NodeCaptureInterface
                 if ($positionOption) {
                     // Do we have to merge the position with other options?
                     if ($options !== null) {
-                        /** @noinspection PhpUndefinedVariableInspection */
                         $compiler
                             ->raw('array_merge(')
                             ->subcompile($options)
                             ->raw(", ['position' => $positionPhp])");
                     } else {
-                        /** @noinspection PhpUndefinedVariableInspection */
                         $compiler
                             ->raw("['position' => $positionPhp]");
                     }

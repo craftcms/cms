@@ -15,9 +15,9 @@ use craft\errors\UploadFailedException;
 use craft\errors\VolumeException;
 use craft\fields\Assets as AssetsField;
 use craft\helpers\App;
+use craft\helpers\ArrayHelper;
 use craft\helpers\Assets;
 use craft\helpers\Db;
-use craft\helpers\Html;
 use craft\helpers\Image;
 use craft\helpers\StringHelper;
 use craft\helpers\UrlHelper;
@@ -26,7 +26,9 @@ use craft\image\Raster;
 use craft\models\VolumeFolder;
 use craft\web\Controller;
 use craft\web\UploadedFile;
+use Throwable;
 use yii\base\Exception;
+use yii\base\InvalidConfigException;
 use yii\base\NotSupportedException;
 use yii\web\BadRequestHttpException;
 use yii\web\ForbiddenHttpException;
@@ -67,7 +69,7 @@ class AssetsController extends Controller
      * @throws \craft\errors\SiteNotFoundException
      * @since 3.4.0
      */
-    public function actionEditAsset(int $assetId, Asset $asset = null, string $site = null): Response
+    public function actionEditAsset(int $assetId, ?Asset $asset = null, ?string $site = null): Response
     {
         $sitesService = Craft::$app->getSites();
         $editableSiteIds = $sitesService->getEditableSiteIds();
@@ -100,7 +102,9 @@ class AssetsController extends Controller
         $this->requireVolumePermissionByAsset('viewVolume', $asset);
         $this->requirePeerVolumePermissionByAsset('viewPeerFilesInVolume', $asset);
 
+
         $volume = $asset->getVolume();
+        $uri = "assets/$volume->handle";
 
         $crumbs = [
             [
@@ -109,9 +113,18 @@ class AssetsController extends Controller
             ],
             [
                 'label' => Craft::t('site', $volume->name),
-                'url' => UrlHelper::url("assets/{$volume->handle}"),
+                'url' => UrlHelper::url($uri),
             ],
         ];
+
+        $subfolders = ArrayHelper::filterEmptyStringsFromArray(explode('/', $asset->folderPath));
+        foreach ($subfolders as $subfolder) {
+            $uri .= "/$subfolder";
+            $crumbs[] = [
+                'label' => $subfolder,
+                'url' => UrlHelper::url($uri),
+            ];
+        }
 
         // See if the user is allowed to replace the file
         $userSession = Craft::$app->getUser();
@@ -139,7 +152,6 @@ class AssetsController extends Controller
             'element' => $asset,
             'volume' => $volume,
             'assetUrl' => $assetUrl,
-            'title' => trim($asset->title) ?: Craft::t('app', 'Edit Asset'),
             'crumbs' => $crumbs,
             'previewHtml' => $asset->getPreviewHtml(),
             'formattedSize' => $asset->getFormattedSize(0),
@@ -185,7 +197,7 @@ class AssetsController extends Controller
      * @throws ForbiddenHttpException
      * @throws InvalidConfigException
      * @throws VolumeException
-     * @throws \Throwable
+     * @throws Throwable
      * @throws \craft\errors\DeprecationException
      * @throws \craft\errors\ElementNotFoundException
      * @throws \yii\base\InvalidRouteException
@@ -321,7 +333,7 @@ class AssetsController extends Controller
 
             $asset = new Asset();
             $asset->tempFilePath = $tempPath;
-            $asset->filename = $filename;
+            $asset->setFilename($filename);
             $asset->newFolderId = $folder->id;
             $asset->setVolumeId($folder->volumeId);
             $asset->uploaderId = Craft::$app->getUser()->getId();
@@ -351,10 +363,10 @@ class AssetsController extends Controller
 
             return $this->asJson([
                 'success' => true,
-                'filename' => $asset->filename,
+                'filename' => $asset->getFilename(),
                 'assetId' => $asset->id,
             ]);
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             Craft::error('An error occurred when saving an asset: ' . $e->getMessage(), __METHOD__);
             Craft::$app->getErrorHandler()->logException($e);
             return $this->asErrorJson($e->getMessage());
@@ -432,7 +444,7 @@ class AssetsController extends Controller
                 // If we have an actual asset for which to replace the file, just do it.
                 if (!empty($assetToReplace)) {
                     $tempPath = $sourceAsset->getCopyOfFile();
-                    $assets->replaceAssetFile($assetToReplace, $tempPath, $assetToReplace->filename);
+                    $assets->replaceAssetFile($assetToReplace, $tempPath, $assetToReplace->getFilename());
                     Craft::$app->getElements()->deleteElement($sourceAsset);
                 } else {
                     // If all we have is the filename, then make sure that the destination is empty and go for it.
@@ -444,7 +456,7 @@ class AssetsController extends Controller
                     $assetId = $sourceAsset->id;
                 }
             }
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             Craft::error('An error occurred when replacing an asset: ' . $e->getMessage(), __METHOD__);
             Craft::$app->getErrorHandler()->logException($e);
             return $this->asErrorJson($e->getMessage());
@@ -455,7 +467,7 @@ class AssetsController extends Controller
         return $this->asJson([
             'success' => true,
             'assetId' => $assetId,
-            'filename' => $resultingAsset->filename,
+            'filename' => $resultingAsset->getFilename(),
             'formattedSize' => $resultingAsset->getFormattedSize(0),
             'formattedSizeInBytes' => $resultingAsset->getFormattedSizeInBytes(false),
             'formattedDateUpdated' => Craft::$app->getFormatter()->asDatetime($resultingAsset->dateUpdated, Formatter::FORMAT_WIDTH_SHORT),
@@ -515,7 +527,7 @@ class AssetsController extends Controller
      * @throws ForbiddenHttpException
      * @throws InvalidConfigException
      * @throws VolumeException
-     * @throws \Throwable
+     * @throws Throwable
      */
     public function actionDeleteFolder(): Response
     {
@@ -546,7 +558,7 @@ class AssetsController extends Controller
      * @return Response|null
      * @throws BadRequestHttpException if the folder cannot be found
      * @throws ForbiddenHttpException
-     * @throws \Throwable
+     * @throws Throwable
      */
     public function actionDeleteAsset(): ?Response
     {
@@ -565,7 +577,7 @@ class AssetsController extends Controller
 
         try {
             $success = Craft::$app->getElements()->deleteElement($asset);
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             if ($this->request->getAcceptsJson()) {
                 return $this->asErrorJson($e->getMessage());
             }
@@ -640,7 +652,7 @@ class AssetsController extends Controller
      * @throws ForbiddenHttpException
      * @throws InvalidConfigException
      * @throws VolumeException
-     * @throws \Throwable
+     * @throws Throwable
      * @throws \craft\errors\ElementNotFoundException
      */
     public function actionMoveAsset(): Response
@@ -666,7 +678,7 @@ class AssetsController extends Controller
         }
 
         // Get the target filename
-        $filename = $this->request->getBodyParam('filename', $asset->filename);
+        $filename = $this->request->getBodyParam('filename') ?? $asset->getFilename();
 
         // Check if it's possible to delete objects in source Volume and save Assets in target Volume.
         $this->requireVolumePermissionByFolder('saveAssetInVolume', $folder);
@@ -679,7 +691,7 @@ class AssetsController extends Controller
             $conflictingAsset = Asset::find()
                 ->select(['elements.id'])
                 ->folderId($folderId)
-                ->filename(Db::escapeParam($asset->filename))
+                ->filename(Db::escapeParam($asset->getFilename()))
                 ->one();
 
             // If there's an Asset conflicting, then merge and replace file.
@@ -687,7 +699,7 @@ class AssetsController extends Controller
                 Craft::$app->getElements()->mergeElementsByIds($conflictingAsset->id, $asset->id);
             } else {
                 $volume = $folder->getVolume();
-                $volume->deleteFile(rtrim($folder->path, '/') . '/' . $asset->filename);
+                $volume->deleteFile(rtrim($folder->path, '/') . '/' . $asset->getFilename());
             }
         }
 
@@ -716,7 +728,7 @@ class AssetsController extends Controller
      * @throws ForbiddenHttpException
      * @throws InvalidConfigException
      * @throws VolumeException
-     * @throws \Throwable
+     * @throws Throwable
      */
     public function actionMoveFolder(): Response
     {
@@ -890,7 +902,7 @@ class AssetsController extends Controller
      *
      * @return Response
      * @throws BadRequestHttpException if some parameters are missing.
-     * @throws \Throwable if something went wrong saving the Asset.
+     * @throws Throwable if something went wrong saving the Asset.
      */
     public function actionSaveImage(): Response
     {
@@ -955,7 +967,7 @@ class AssetsController extends Controller
             if (strtolower($asset->getExtension()) === 'svg') {
                 unlink($imageCopy);
                 $imageCopy = preg_replace('/(svg)$/i', 'png', $imageCopy);
-                $asset->filename = preg_replace('/(svg)$/i', 'png', $asset->filename);
+                $asset->setFilename(preg_replace('/(svg)$/i', 'png', $asset->getFilename()));
             }
 
             [$originalImageWidth, $originalImageHeight] = $imageSize;
@@ -1027,7 +1039,7 @@ class AssetsController extends Controller
 
                 // Only replace file if it changed, otherwise just save changed focal points
                 if ($imageChanged) {
-                    $assets->replaceAssetFile($asset, $imageCopy, $asset->filename);
+                    $assets->replaceAssetFile($asset, $imageCopy, $asset->getFilename());
                 } else if ($focalChanged) {
                     Craft::$app->getElements()->saveElement($asset);
                 }
@@ -1037,7 +1049,7 @@ class AssetsController extends Controller
                 $newAsset->setScenario(Asset::SCENARIO_CREATE);
 
                 $newAsset->tempFilePath = $imageCopy;
-                $newAsset->filename = $asset->filename;
+                $newAsset->setFilename($asset->getFilename());
                 $newAsset->newFolderId = $folder->id;
                 $newAsset->setVolumeId($folder->volumeId);
                 $newAsset->setFocalPoint($focal);
@@ -1045,7 +1057,7 @@ class AssetsController extends Controller
                 // Don't validate required custom fields
                 Craft::$app->getElements()->saveElement($newAsset);
             }
-        } catch (\Throwable $exception) {
+        } catch (Throwable $exception) {
             return $this->asErrorJson($exception->getMessage());
         }
 
@@ -1086,7 +1098,7 @@ class AssetsController extends Controller
         if (count($assets) === 1) {
             $asset = reset($assets);
             return $this->response
-                ->sendStreamAsFile($asset->getStream(), $asset->filename, [
+                ->sendStreamAsFile($asset->getStream(), $asset->getFilename(), [
                     'fileSize' => $asset->size,
                     'mimeType' => $asset->getMimeType(),
                 ]);
@@ -1114,22 +1126,6 @@ class AssetsController extends Controller
     }
 
     /**
-     * Generates a thumbnail.
-     *
-     * @param string $uid The asset's UID
-     * @param int $width The thumbnail width
-     * @param int $height The thumbnail height
-     * @return Response
-     * @throws \craft\errors\DeprecationException
-     * @deprecated in 3.0.13. Use [[actionThumb()]] instead.
-     */
-    public function actionGenerateThumb(string $uid, int $width, int $height): Response
-    {
-        Craft::$app->getDeprecator()->log(__METHOD__, 'The `assets/generate-thumb` action has been deprecated. Use `assets/thumb` instead.');
-        return $this->actionThumb($uid, $width, $height);
-    }
-
-    /**
      * Returns an asset’s thumbnail.
      *
      * @param string $uid The asset's UID
@@ -1150,7 +1146,7 @@ class AssetsController extends Controller
 
         try {
             $path = Craft::$app->getAssets()->getThumbPath($asset, $width, $height, true);
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             Craft::$app->getErrorHandler()->logException($e);
             return $this->asBrokenImage($e);
         }
@@ -1172,7 +1168,7 @@ class AssetsController extends Controller
      * @throws ServerErrorHttpException if the transform can't be generated
      * @throws \craft\errors\AssetTransformException
      */
-    public function actionGenerateTransform(int $transformId = null): Response
+    public function actionGenerateTransform(?int $transformId = null): Response
     {
         // If transform Id was not passed in, see if file id and handle were.
         $assetTransforms = Craft::$app->getAssetTransforms();
@@ -1253,11 +1249,11 @@ class AssetsController extends Controller
     /**
      * Sends a broken image response based on a given exception.
      *
-     * @param \Throwable|null $e The exception that was thrown
+     * @param Throwable|null $e The exception that was thrown
      * @return Response
      * @since 3.4.8
      */
-    protected function asBrokenImage(\Throwable $e = null): Response
+    protected function asBrokenImage(?Throwable $e = null): Response
     {
         $statusCode = $e instanceof HttpException && $e->statusCode ? $e->statusCode : 500;
         return $this->response

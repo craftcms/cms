@@ -19,6 +19,9 @@ use GraphQL\Type\Definition\Type;
  */
 class File extends InputObjectType
 {
+    /**
+     * @return mixed
+     */
     public static function getType()
     {
         $typeName = 'FileInput';

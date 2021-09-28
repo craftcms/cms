@@ -14,15 +14,18 @@ use craft\base\PreviewableFieldInterface;
 use craft\base\SortableFieldInterface;
 use craft\elements\db\ElementQuery;
 use craft\elements\db\ElementQueryInterface;
+use craft\gql\directives\FormatDateTime;
 use craft\gql\types\DateTime as DateTimeType;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
 use craft\helpers\ElementHelper;
+use craft\helpers\Gql;
 use craft\helpers\Html;
 use craft\i18n\Locale;
 use craft\validators\DateTimeValidator;
 use DateTime;
 use DateTimeZone;
+use GraphQL\Type\Definition\ResolveInfo;
 use yii\db\Schema;
 
 /**
@@ -52,36 +55,36 @@ class Date extends Field implements PreviewableFieldInterface, SortableFieldInte
     /**
      * @var bool Whether a datepicker should be shown as part of the input
      */
-    public $showDate = true;
+    public bool $showDate = true;
 
     /**
      * @var bool Whether a timepicker should be shown as part of the input
      */
-    public $showTime = false;
+    public bool $showTime = false;
 
     /**
      * @var bool Whether the selected time zone should be stored with the field data. Otherwise the system
      * time zone will always be used.
      * @since 3.7.0
      */
-    public $showTimeZone = false;
+    public bool $showTimeZone = false;
 
     /**
      * @var DateTime|null The minimum allowed date
      * @since 3.5.0
      */
-    public $min;
+    public ?DateTime $min = null;
 
     /**
      * @var DateTime|null The maximum allowed date
      * @since 3.5.0
      */
-    public $max;
+    public ?DateTime $max = null;
 
     /**
      * @var int The number of minutes that the timepicker options should increment by
      */
-    public $minuteIncrement = 30;
+    public int $minuteIncrement = 30;
 
     /**
      * @inheritdoc
@@ -133,7 +136,7 @@ class Date extends Field implements PreviewableFieldInterface, SortableFieldInte
     /**
      * @inheritdoc
      */
-    public function init()
+    public function init(): void
     {
         parent::init();
 
@@ -150,7 +153,7 @@ class Date extends Field implements PreviewableFieldInterface, SortableFieldInte
     /**
      * @inheritdoc
      */
-    public function attributeLabels()
+    public function attributeLabels(): array
     {
         return [
             'min' => Craft::t('app', 'Min Date'),
@@ -188,7 +191,7 @@ class Date extends Field implements PreviewableFieldInterface, SortableFieldInte
     /**
      * @inheritdoc
      */
-    public function getSettingsHtml()
+    public function getSettingsHtml(): ?string
     {
         if ($this->showDate && !$this->showTime) {
             $dateTimeValue = 'showDate';
@@ -232,7 +235,7 @@ class Date extends Field implements PreviewableFieldInterface, SortableFieldInte
     /**
      * @inheritdoc
      */
-    protected function inputHtml($value, ElementInterface $element = null): string
+    protected function inputHtml($value, ?ElementInterface $element = null): string
     {
         /** @var DateTime|null $value */
         $id = Html::id($this->handle);
@@ -320,7 +323,7 @@ class Date extends Field implements PreviewableFieldInterface, SortableFieldInte
     /**
      * @inheritdoc
      */
-    public function normalizeValue($value, ElementInterface $element = null)
+    public function normalizeValue($value, ?ElementInterface $element = null)
     {
         if ($value instanceof DateTime) {
             return $value;
@@ -332,7 +335,10 @@ class Date extends Field implements PreviewableFieldInterface, SortableFieldInte
             $value = $value['date'];
         }
 
-        if (!$value || (is_array($value) && empty($value['date']))) {
+        if (
+            !$value ||
+            (is_array($value) && empty($value['date']) && empty($value['time']) && empty($value['datetime']))
+        ) {
             return null;
         }
 
@@ -352,7 +358,7 @@ class Date extends Field implements PreviewableFieldInterface, SortableFieldInte
     /**
      * @inheritdoc
      */
-    public function serializeValue($value, ElementInterface $element = null)
+    public function serializeValue($value, ?ElementInterface $element = null)
     {
         if (!$value) {
             return null;
@@ -372,7 +378,7 @@ class Date extends Field implements PreviewableFieldInterface, SortableFieldInte
     /**
      * @inheritdoc
      */
-    public function modifyElementsQuery(ElementQueryInterface $query, $value)
+    public function modifyElementsQuery(ElementQueryInterface $query, $value): void
     {
         /** @var ElementQuery $query */
         if ($value !== null) {
@@ -386,7 +392,21 @@ class Date extends Field implements PreviewableFieldInterface, SortableFieldInte
      */
     public function getContentGqlType()
     {
-        return DateTimeType::getType();
+        return [
+            'name' => $this->handle,
+            'type' => DateTimeType::getType(),
+            'resolve' => function($source, array $arguments, $context, ResolveInfo $resolveInfo) {
+                $fieldName = Gql::getFieldNameWithAlias($resolveInfo, $source, $context);
+                $value = $source->getFieldValue($fieldName);
+
+                // Set the timezone, unless it has been already set by the field itself.
+                if (!$this->showTimeZone && $value instanceof DateTime) {
+                    $value->setTimeZone(new DateTimeZone(FormatDateTime::defaultTimezone()));
+                }
+
+                return Gql::applyDirectives($source, $resolveInfo, $value);
+            },
+        ];
     }
 
     /**

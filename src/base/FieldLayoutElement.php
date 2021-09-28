@@ -25,12 +25,12 @@ abstract class FieldLayoutElement extends BaseObject implements FieldLayoutEleme
     /**
      * @var int The width (%) of the field
      */
-    public $width = 100;
+    public int $width = 100;
 
     /**
      * @inheritdoc
      */
-    public function fields()
+    public function fields(): array
     {
         $fields = $this->baseFields();
         if (!$this->hasCustomWidth()) {
@@ -50,7 +50,7 @@ abstract class FieldLayoutElement extends BaseObject implements FieldLayoutEleme
     /**
      * @inheritdoc
      */
-    public function settingsHtml()
+    public function settingsHtml(): ?string
     {
         return null;
     }
@@ -62,7 +62,7 @@ abstract class FieldLayoutElement extends BaseObject implements FieldLayoutEleme
      * @param bool $static Whether the form should be static (non-interactive)
      * @return array
      */
-    protected function containerAttributes(ElementInterface $element = null, bool $static = false): array
+    protected function containerAttributes(?ElementInterface $element = null, bool $static = false): array
     {
         $attributes = [];
         if ($this->hasCustomWidth()) {

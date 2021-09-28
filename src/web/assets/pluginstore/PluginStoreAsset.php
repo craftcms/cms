@@ -19,7 +19,7 @@ class PluginStoreAsset extends HotReloadAssetBundle
     /**
      * @inheritdoc
      */
-    public function init()
+    public function init(): void
     {
         $this->sourcePath = __DIR__ . '/dist/';
 

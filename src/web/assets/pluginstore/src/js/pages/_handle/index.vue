@@ -270,7 +270,7 @@ c-2-26.8-24.8-53.5-42-72.5S0,169.8,0,144C0,76,64.8,32,128,32S256,76,256,144z"/>
 
 <style lang="scss">
     @import "../../../sass/variables";
-    @import "../../../../../../../../node_modules/craftcms-sass/mixins";
+    @import "../../../../../../../../packages/craftcms-sass/mixins";
 
     .plugin-icon {
         @apply tw-relative;

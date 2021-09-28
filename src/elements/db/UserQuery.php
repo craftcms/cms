@@ -22,7 +22,7 @@ use yii\db\Connection;
  * @property string|string[]|UserGroup $group The handle(s) of the tag group(s) that resulting users must belong to.
  * @method User[]|array all($db = null)
  * @method User|array|null one($db = null)
- * @method User|array|null nth(int $n, Connection $db = null)
+ * @method User|array|null nth(int $n, ?Connection $db = null)
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  * @doc-path users.md
@@ -38,7 +38,7 @@ class UserQuery extends ElementQuery
     /**
      * @inheritdoc
      */
-    protected $defaultOrderBy = ['users.username' => SORT_ASC];
+    protected array $defaultOrderBy = ['users.username' => SORT_ASC];
 
     // General parameters
     // -------------------------------------------------------------------------
@@ -60,8 +60,8 @@ class UserQuery extends ElementQuery
      * ```twig
      * {# fetch all the admins #}
      * {% set admins = craft.users()
-     *     .admin()
-     *     .all()%}
+     *   .admin()
+     *   .all()%}
      *
      * {# fetch all the non-admins #}
      * {% set nonAdmins = craft.users()
@@ -70,13 +70,13 @@ class UserQuery extends ElementQuery
      * ```
      * @used-by admin()
      */
-    public $admin;
+    public ?bool $admin = null;
 
     /**
      * @var bool|null Whether to only return users that have (or don’t have) user photos.
      * @used-by hasPhoto()
      */
-    public $hasPhoto;
+    public ?bool $hasPhoto = null;
 
     /**
      * @var string|int|false|null The permission that the resulting users must have.
@@ -90,8 +90,8 @@ class UserQuery extends ElementQuery
      * ```twig
      * {# fetch users with control panel access #}
      * {% set admins = craft.users()
-     *     .can('accessCp')
-     *     .all() %}
+     *   .can('accessCp')
+     *   .all() %}
      * ```
      * @used-by can()
      */
@@ -109,8 +109,8 @@ class UserQuery extends ElementQuery
      * ```twig
      * {# fetch the authors #}
      * {% set admins = craft.users()
-     *     .group('authors')
-     *     .all() %}
+     *   .group('authors')
+     *   .all() %}
      * ```
      * @used-by group()
      * @used-by groupId()
@@ -159,26 +159,13 @@ class UserQuery extends ElementQuery
      * ```twig
      * {# fetch users with their user groups #}
      * {% set users = craft.users()
-     *     .withGroups()
-     *     .all() %}
+     *   .withGroups()
+     *   .all() %}
      * ```
      * @used-by withGroups()
      * @since 3.6.0
      */
-    public $withGroups = false;
-
-    /**
-     * @inheritdoc
-     */
-    public function __construct($elementType, array $config = [])
-    {
-        // Default status
-        if (!isset($config['status'])) {
-            $config['status'] = [User::STATUS_ACTIVE];
-        }
-
-        parent::__construct($elementType, $config);
-    }
+    public bool $withGroups = false;
 
     /**
      * @inheritdoc
@@ -200,8 +187,8 @@ class UserQuery extends ElementQuery
      * ```twig
      * {# Fetch admins #}
      * {% set {elements-var} = {twig-method}
-     *     .admin()
-     *     .all() %}
+     *   .admin()
+     *   .all() %}
      * ```
      *
      * ```php
@@ -212,10 +199,10 @@ class UserQuery extends ElementQuery
      * ```
      *
      * @param bool $value The property value (defaults to true)
-     * @return static self reference
+     * @return self self reference
      * @uses $admin
      */
-    public function admin(bool $value = true)
+    public function admin(bool $value = true): self
     {
         $this->admin = $value;
         return $this;
@@ -229,8 +216,8 @@ class UserQuery extends ElementQuery
      * ```twig
      * {# Fetch users with photos #}
      * {% set {elements-var} = {twig-method}
-     *     .hasPhoto()
-     *     .all() %}
+     *   .hasPhoto()
+     *   .all() %}
      * ```
      *
      * ```php
@@ -241,10 +228,10 @@ class UserQuery extends ElementQuery
      * ```
      *
      * @param bool $value The property value (defaults to true)
-     * @return static self reference
+     * @return self self reference
      * @uses $hasPhoto
      */
-    public function hasPhoto(bool $value = true)
+    public function hasPhoto(bool $value = true): self
     {
         $this->hasPhoto = $value;
         return $this;
@@ -260,8 +247,8 @@ class UserQuery extends ElementQuery
      * ```twig
      * {# Fetch users that can access the control panel #}
      * {% set {elements-var} = {twig-method}
-     *     .can('accessCp')
-     *     .all() %}
+     *   .can('accessCp')
+     *   .all() %}
      * ```
      *
      * ```php
@@ -272,10 +259,10 @@ class UserQuery extends ElementQuery
      * ```
      *
      * @param string|int|null $value The property value
-     * @return static self reference
+     * @return self self reference
      * @uses $can
      */
-    public function can($value)
+    public function can($value): self
     {
         $this->can = $value;
         return $this;
@@ -299,8 +286,8 @@ class UserQuery extends ElementQuery
      * ```twig
      * {# Fetch users in the Foo user group #}
      * {% set {elements-var} = {twig-method}
-     *     .group('foo')
-     *     .all() %}
+     *   .group('foo')
+     *   .all() %}
      * ```
      *
      * ```php
@@ -311,10 +298,10 @@ class UserQuery extends ElementQuery
      * ```
      *
      * @param string|string[]|UserGroup|null $value The property value
-     * @return static self reference
+     * @return self self reference
      * @uses $groupId
      */
-    public function group($value)
+    public function group($value): self
     {
         if ($value instanceof UserGroup) {
             $this->groupId = $value->id;
@@ -348,8 +335,8 @@ class UserQuery extends ElementQuery
      * ```twig
      * {# Fetch users in a group with an ID of 1 #}
      * {% set {elements-var} = {twig-method}
-     *     .groupId(1)
-     *     .all() %}
+     *   .groupId(1)
+     *   .all() %}
      * ```
      *
      * ```php
@@ -360,10 +347,10 @@ class UserQuery extends ElementQuery
      * ```
      *
      * @param int|int[]|null $value The property value
-     * @return static self reference
+     * @return self self reference
      * @uses $groupId
      */
-    public function groupId($value)
+    public function groupId($value): self
     {
         $this->groupId = $value;
         return $this;
@@ -385,8 +372,8 @@ class UserQuery extends ElementQuery
      * ```twig
      * {# Fetch users with a .co.uk domain on their email address #}
      * {% set {elements-var} = {twig-method}
-     *     .email('*.co.uk')
-     *     .all() %}
+     *   .email('*.co.uk')
+     *   .all() %}
      * ```
      *
      * ```php
@@ -397,10 +384,10 @@ class UserQuery extends ElementQuery
      * ```
      *
      * @param string|string[]|null $value The property value
-     * @return static self reference
+     * @return self self reference
      * @uses $email
      */
-    public function email($value)
+    public function email($value): self
     {
         $this->email = $value;
         return $this;
@@ -424,8 +411,8 @@ class UserQuery extends ElementQuery
      *
      * {# Fetch that user #}
      * {% set {element-var} = {twig-method}
-     *     .username(requestedUsername|literal)
-     *     .one() %}
+     *   .username(requestedUsername|literal)
+     *   .one() %}
      * ```
      *
      * ```php
@@ -439,10 +426,10 @@ class UserQuery extends ElementQuery
      * ```
      *
      * @param string|string[]|null $value The property value
-     * @return static self reference
+     * @return self self reference
      * @uses $username
      */
-    public function username($value)
+    public function username($value): self
     {
         $this->username = $value;
         return $this;
@@ -463,8 +450,8 @@ class UserQuery extends ElementQuery
      * ```twig
      * {# Fetch all the Jane's #}
      * {% set {elements-var} = {twig-method}
-     *     .firstName('Jane')
-     *     .all() %}
+     *   .firstName('Jane')
+     *   .all() %}
      * ```
      *
      * ```php
@@ -475,10 +462,10 @@ class UserQuery extends ElementQuery
      * ```
      *
      * @param string|string[]|null $value The property value
-     * @return static self reference
+     * @return self self reference
      * @uses $firstName
      */
-    public function firstName($value)
+    public function firstName($value): self
     {
         $this->firstName = $value;
         return $this;
@@ -499,8 +486,8 @@ class UserQuery extends ElementQuery
      * ```twig
      * {# Fetch all the Doe's #}
      * {% set {elements-var} = {twig-method}
-     *     .lastName('Doe')
-     *     .all() %}
+     *   .lastName('Doe')
+     *   .all() %}
      * ```
      *
      * ```php
@@ -511,10 +498,10 @@ class UserQuery extends ElementQuery
      * ```
      *
      * @param string|string[]|null $value The property value
-     * @return static self reference
+     * @return self self reference
      * @uses $lastName
      */
-    public function lastName($value)
+    public function lastName($value): self
     {
         $this->lastName = $value;
         return $this;
@@ -538,8 +525,8 @@ class UserQuery extends ElementQuery
      * {% set aWeekAgo = date('7 days ago')|atom %}
      *
      * {% set {elements-var} = {twig-method}
-     *     .lastLoginDate(">= #{aWeekAgo}")
-     *     .all() %}
+     *   .lastLoginDate(">= #{aWeekAgo}")
+     *   .all() %}
      * ```
      *
      * ```php
@@ -552,10 +539,10 @@ class UserQuery extends ElementQuery
      * ```
      *
      * @param mixed $value The property value
-     * @return static self reference
+     * @return self self reference
      * @uses $lastLoginDate
      */
-    public function lastLoginDate($value)
+    public function lastLoginDate($value): self
     {
         $this->lastLoginDate = $value;
         return $this;
@@ -579,8 +566,8 @@ class UserQuery extends ElementQuery
      * ```twig
      * {# Fetch active and locked users #}
      * {% set {elements-var} = {twig-method}
-     *     .status(['active', 'locked'])
-     *     .all() %}
+     *   .status(['active', 'locked'])
+     *   .all() %}
      * ```
      *
      * ```php
@@ -590,7 +577,7 @@ class UserQuery extends ElementQuery
      *     ->all();
      * ```
      */
-    public function status($value)
+    public function status($value): self
     {
         return parent::status($value);
     }
@@ -618,16 +605,16 @@ class UserQuery extends ElementQuery
      * ```twig
      * {# fetch users with their user groups #}
      * {% set users = craft.users()
-     *     .withGroups()
-     *     .all() %}
+     *   .withGroups()
+     *   .all() %}
      * ```
      *
      * @param bool $value The property value (defaults to true)
-     * @return static self reference
+     * @return self self reference
      * @uses $withGroups
      * @since 3.6.0
      */
-    public function withGroups(bool $value = true)
+    public function withGroups(bool $value = true): self
     {
         $this->withGroups = true;
         return $this;
@@ -646,20 +633,25 @@ class UserQuery extends ElementQuery
         $this->joinElementTable('users');
 
         $this->query->select([
-            'users.username',
             'users.photoId',
+            'users.pending',
+            'users.locked',
+            'users.suspended',
+            'users.admin',
+            'users.username',
             'users.firstName',
             'users.lastName',
             'users.email',
             'users.unverifiedEmail',
-            'users.admin',
-            'users.locked',
-            'users.pending',
-            'users.suspended',
             'users.lastLoginDate',
             'users.lockoutDate',
             'users.hasDashboard',
         ]);
+
+        // todo: cleanup after next breakpoint
+        if (Craft::$app->getDb()->columnExists(Table::USERS, 'active')) {
+            $this->query->addSelect(['users.active']);
+        }
 
         if (is_bool($this->admin)) {
             $this->subQuery->andWhere(['users.admin' => $this->admin]);
@@ -683,7 +675,7 @@ class UserQuery extends ElementQuery
                 'exists', (new Query())
                     ->from(['ugu' => Table::USERGROUPS_USERS])
                     ->where('[[elements.id]] = [[ugu.userId]]')
-                    ->andWhere(Db::parseParam('groupId', $this->groupId)),
+                    ->andWhere(Db::parseNumericParam('groupId', $this->groupId)),
             ]);
         }
 
@@ -716,19 +708,21 @@ class UserQuery extends ElementQuery
     protected function statusCondition(string $status)
     {
         switch ($status) {
+            case User::STATUS_INACTIVE:
+                return [
+                    'users.active' => false,
+                    'users.pending' => false,
+                ];
             case User::STATUS_ACTIVE:
                 return [
-                    'users.suspended' => false,
-                    'users.pending' => false,
+                    'users.active' => true,
                 ];
             case User::STATUS_PENDING:
                 return [
-                    'users.suspended' => false,
                     'users.pending' => true,
                 ];
             case User::STATUS_LOCKED:
                 return [
-                    'users.suspended' => false,
                     'users.locked' => true,
                 ];
             case User::STATUS_SUSPENDED:
@@ -745,7 +739,7 @@ class UserQuery extends ElementQuery
      *
      * @throws QueryAbortedException
      */
-    private function _applyCanParam()
+    private function _applyCanParam(): void
     {
         if ($this->can !== false && empty($this->can)) {
             return;

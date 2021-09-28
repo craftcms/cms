@@ -7,7 +7,7 @@
 
 namespace craft\web\assets\jquerypayment;
 
-use craft\web\AssetBundle;
+use yii\web\AssetBundle;
 
 /**
  * JqueryPayment asset bundle.

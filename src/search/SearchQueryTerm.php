@@ -21,35 +21,35 @@ class SearchQueryTerm extends BaseObject
     /**
      * @var bool
      */
-    public $exclude = false;
+    public bool $exclude = false;
 
     /**
      * @var bool
      */
-    public $exact = false;
+    public bool $exact = false;
 
     /**
      * @var bool
      */
-    public $subLeft = false;
+    public bool $subLeft = false;
 
     /**
      * @var bool
      */
-    public $subRight = true;
+    public bool $subRight = true;
 
     /**
-     * @var null
+     * @var string|null
      */
-    public $attribute;
+    public ?string $attribute = null;
 
     /**
-     * @var null
+     * @var string
      */
-    public $term;
+    public string $term;
 
     /**
-     * @var bool|null
+     * @var bool
      */
-    public $phrase;
+    public bool $phrase = false;
 }

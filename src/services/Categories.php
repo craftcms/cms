@@ -70,10 +70,10 @@ class Categories extends Component
     const CONFIG_CATEGORYROUP_KEY = 'categoryGroups';
 
     /**
-     * @var MemoizableArray|null
+     * @var MemoizableArray<CategoryGroup>|null
      * @see _groups()
      */
-    private $_groups;
+    private ?MemoizableArray $_groups = null;
 
     /**
      * Serializer
@@ -111,11 +111,11 @@ class Categories extends Component
     /**
      * Returns a memoizable array of all category groups.
      *
-     * @return MemoizableArray
+     * @return MemoizableArray<CategoryGroup>
      */
     private function _groups(): MemoizableArray
     {
-        if ($this->_groups === null) {
+        if (!isset($this->_groups)) {
             $groups = [];
 
             /** @var CategoryGroupRecord[] $groupRecords */
@@ -177,7 +177,7 @@ class Categories extends Component
      * @param int $groupId
      * @return CategoryGroup|null
      */
-    public function getGroupById(int $groupId)
+    public function getGroupById(int $groupId): ?CategoryGroup
     {
         return $this->_groups()->firstWhere('id', $groupId);
     }
@@ -189,7 +189,7 @@ class Categories extends Component
      * @return CategoryGroup|null
      * @since 3.1.0
      */
-    public function getGroupByUid(string $uid)
+    public function getGroupByUid(string $uid): ?CategoryGroup
     {
         return $this->_groups()->firstWhere('uid', $uid, true);
     }
@@ -200,7 +200,7 @@ class Categories extends Component
      * @param string $groupHandle
      * @return CategoryGroup|null
      */
-    public function getGroupByHandle(string $groupHandle)
+    public function getGroupByHandle(string $groupHandle): ?CategoryGroup
     {
         return $this->_groups()->firstWhere('handle', $groupHandle, true);
     }
@@ -291,7 +291,7 @@ class Categories extends Component
      *
      * @param ConfigEvent $event
      */
-    public function handleChangedCategoryGroup(ConfigEvent $event)
+    public function handleChangedCategoryGroup(ConfigEvent $event): void
     {
         $categoryGroupUid = $event->tokenMatches[0];
         $data = $event->newValue;
@@ -402,7 +402,8 @@ class Categories extends Component
                 // site rows
                 $affectedSiteUids = array_keys($siteData);
 
-                /** @noinspection PhpUndefinedVariableInspection */
+                // todo: remove comment when phpstan#5401 is fixed
+                /** @phpstan-ignore-next-line */
                 foreach ($allOldSiteSettingsRecords as $siteId => $siteSettingsRecord) {
                     $siteUid = array_search($siteId, $siteIdMap, false);
                     if (!in_array($siteUid, $affectedSiteUids, false)) {
@@ -418,7 +419,7 @@ class Categories extends Component
                 // Get all of the category IDs in this group
                 $categoryIds = Category::find()
                     ->groupId($groupRecord->id)
-                    ->anyStatus()
+                    ->status(null)
                     ->ids();
 
                 // Are there any sites left?
@@ -441,7 +442,7 @@ class Categories extends Component
                                 $category = Category::find()
                                     ->id($categoryId)
                                     ->siteId($siteId)
-                                    ->anyStatus()
+                                    ->status(null)
                                     ->one();
 
                                 if ($category) {
@@ -550,7 +551,7 @@ class Categories extends Component
      *
      * @param ConfigEvent $event
      */
-    public function handleDeletedCategoryGroup(ConfigEvent $event)
+    public function handleDeletedCategoryGroup(ConfigEvent $event): void
     {
         $uid = $event->tokenMatches[0];
         $categoryGroupRecord = $this->_getCategoryGroupRecord($uid);
@@ -573,7 +574,7 @@ class Categories extends Component
         try {
             // Delete the categories
             $categories = Category::find()
-                ->anyStatus()
+                ->status(null)
                 ->groupId($categoryGroupRecord->id)
                 ->all();
             $elementsService = Craft::$app->getElements();
@@ -621,7 +622,7 @@ class Categories extends Component
      *
      * @param FieldEvent $event
      */
-    public function pruneDeletedField(FieldEvent $event)
+    public function pruneDeletedField(FieldEvent $event): void
     {
         $field = $event->field;
         $fieldUid = $field->uid;
@@ -661,7 +662,7 @@ class Categories extends Component
      *
      * @param DeleteSiteEvent $event
      */
-    public function pruneDeletedSite(DeleteSiteEvent $event)
+    public function pruneDeletedSite(DeleteSiteEvent $event): void
     {
         $siteUid = $event->site->uid;
 
@@ -686,7 +687,7 @@ class Categories extends Component
      * @param int|null $siteId
      * @return Category|null
      */
-    public function getCategoryById(int $categoryId, int $siteId = null)
+    public function getCategoryById(int $categoryId, ?int $siteId = null): ?Category
     {
         if (!$categoryId) {
             return null;
@@ -717,7 +718,7 @@ class Categories extends Component
      * @param Category[] $categories
      * @deprecated in 3.6.0. Use [[\craft\services\Structures::fillGapsInElements()]] instead.
      */
-    public function fillGapsInCategories(array &$categories)
+    public function fillGapsInCategories(array &$categories): void
     {
         Craft::$app->getStructures()->fillGapsInElements($categories);
     }
@@ -729,7 +730,7 @@ class Categories extends Component
      * @param int $branchLimit
      * @deprecated in 3.6.0. Use [[\craft\services\Structures::applyBranchLimitToElements()]] instead.
      */
-    public function applyBranchLimitToCategories(array &$categories, int $branchLimit)
+    public function applyBranchLimitToCategories(array &$categories, int $branchLimit): void
     {
         Craft::$app->getStructures()->applyBranchLimitToElements($categories, $branchLimit);
     }
@@ -740,7 +741,7 @@ class Categories extends Component
      * @param CategoryGroupRecord|null $groupRecord
      * @return CategoryGroup|null
      */
-    private function _createCategoryGroupFromRecord(CategoryGroupRecord $groupRecord = null)
+    private function _createCategoryGroupFromRecord(?CategoryGroupRecord $groupRecord = null): ?CategoryGroup
     {
         if (!$groupRecord) {
             return null;
@@ -774,6 +775,7 @@ class Categories extends Component
     {
         $query = $withTrashed ? CategoryGroupRecord::findWithTrashed() : CategoryGroupRecord::find();
         $query->andWhere(['uid' => $uid]);
+        /** @noinspection PhpIncompatibleReturnTypeInspection */
         return $query->one() ?? new CategoryGroupRecord();
     }
 }

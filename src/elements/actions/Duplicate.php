@@ -23,12 +23,12 @@ class Duplicate extends ElementAction
     /**
      * @var bool Whether to also duplicate the selected elements’ descendants
      */
-    public $deep = false;
+    public bool $deep = false;
 
     /**
      * @var string|null The message that should be shown after the elements get deleted
      */
-    public $successMessage;
+    public ?string $successMessage = null;
 
     /**
      * @inheritdoc
@@ -77,7 +77,7 @@ class Duplicate extends ElementAction
      * @param int $failCount
      * @param ElementInterface|null $newParent
      */
-    private function _duplicateElements(array $elements, int &$successCount, int &$failCount, array &$duplicatedElementIds = [], ElementInterface $newParent = null)
+    private function _duplicateElements(array $elements, int &$successCount, int &$failCount, array &$duplicatedElementIds = [], ?ElementInterface $newParent = null): void
     {
         $elementsService = Craft::$app->getElements();
         $structuresService = Craft::$app->getStructures();
@@ -115,7 +115,7 @@ class Duplicate extends ElementAction
             }
 
             if ($this->deep) {
-                $children = $element->getChildren()->anyStatus()->all();
+                $children = $element->getChildren()->status(null)->all();
                 $this->_duplicateElements($children, $successCount, $failCount, $duplicatedElementIds, $duplicate);
             }
         }

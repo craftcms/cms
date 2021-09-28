@@ -7,7 +7,6 @@
 
 namespace craft\console\controllers;
 
-use Craft;
 use craft\console\Controller;
 use craft\helpers\Console;
 
@@ -29,18 +28,18 @@ class BackupController extends Controller
      * @var bool Whether the backup should be saved as a zip file.
      * @since 3.5.0
      */
-    public $zip = false;
+    public bool $zip = false;
 
     /**
      * @var bool Whether to overwrite an existing backup file, if a specific file path is given.
      * @since 3.5.0
      */
-    public $overwrite = false;
+    public bool $overwrite = false;
 
     /**
      * @inheritdoc
      */
-    public function options($actionID)
+    public function options($actionID): array
     {
         $options = parent::options($actionID);
         $options[] = 'zip';
@@ -51,13 +50,13 @@ class BackupController extends Controller
     /**
      * DEPRECATED. Use `db/backup` instead.
      *
+     * @param string|null $path
      * @return int
      */
-    public function actionDb(string $path = null): int
+    public function actionDb(?string $path = null): int
     {
-
         Console::outputWarning("The backup command is deprecated.\nRunning db/backup instead...");
-        return Craft::$app->runAction('db/backup', func_get_args() + [
+        return $this->run('db/backup', func_get_args() + [
                 'zip' => $this->zip,
                 'overwrite' => $this->overwrite,
             ]);

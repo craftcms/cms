@@ -7,7 +7,7 @@
 
 namespace craft\web\assets\timepicker;
 
-use craft\web\AssetBundle;
+use yii\web\AssetBundle;
 use yii\web\JqueryAsset;
 
 /**

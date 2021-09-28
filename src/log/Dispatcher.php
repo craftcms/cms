@@ -29,9 +29,9 @@ class Dispatcher extends \yii\log\Dispatcher
     /**
      * @inheritdoc
      */
-    public function init()
+    public function init(): void
     {
-        $this->targets = array_merge($this->targets, App::defaultLogTargets());
         parent::init();
+        $this->targets = array_merge($this->targets, App::defaultLogTargets());
     }
 }

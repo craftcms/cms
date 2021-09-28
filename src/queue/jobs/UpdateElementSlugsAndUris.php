@@ -13,6 +13,7 @@ use craft\elements\db\ElementQuery;
 use craft\elements\db\ElementQueryInterface;
 use craft\errors\OperationAbortedException;
 use craft\helpers\Db;
+use craft\i18n\Translation;
 use craft\queue\BaseJob;
 use craft\queue\QueueInterface;
 use yii\queue\Queue;
@@ -38,32 +39,32 @@ class UpdateElementSlugsAndUris extends BaseJob
     /**
      * @var int|null The site ID of the elements to update.
      */
-    public $siteId;
+    public ?int $siteId = null;
 
     /**
      * @var bool Whether the elements’ other sites should be updated as well.
      */
-    public $updateOtherSites = true;
+    public bool $updateOtherSites = true;
 
     /**
      * @var bool Whether the elements’ descendants should be updated as well.
      */
-    public $updateDescendants = true;
+    public bool $updateDescendants = true;
 
     /**
      * @var int The total number of elements we are dealing with.
      */
-    private $_totalToProcess;
+    private int $_totalToProcess;
 
     /**
      * @var int The number of elements we've dealt with so far
      */
-    private $_totalProcessed;
+    private int $_totalProcessed;
 
     /**
      * @inheritdoc
      */
-    public function execute($queue)
+    public function execute($queue): void
     {
         $this->_totalToProcess = 0;
         $this->_totalProcessed = 0;
@@ -77,9 +78,9 @@ class UpdateElementSlugsAndUris extends BaseJob
     /**
      * @inheritdoc
      */
-    protected function defaultDescription(): string
+    protected function defaultDescription(): ?string
     {
-        return Craft::t('app', 'Updating element slugs and URIs');
+        return Translation::prep('app', 'Updating element slugs and URIs');
     }
 
     /**
@@ -93,7 +94,7 @@ class UpdateElementSlugsAndUris extends BaseJob
 
         return $class::find()
             ->siteId($this->siteId)
-            ->anyStatus();
+            ->status(null);
     }
 
     /**
@@ -102,7 +103,7 @@ class UpdateElementSlugsAndUris extends BaseJob
      * @param Queue|QueueInterface $queue
      * @param ElementQuery|ElementQueryInterface $query
      */
-    private function _processElements($queue, $query)
+    private function _processElements($queue, $query): void
     {
         $this->_totalToProcess += $query->count();
         $elementsService = Craft::$app->getElements();

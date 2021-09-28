@@ -63,7 +63,11 @@ class ExtensionTest extends Unit
     {
         // We want web for this part.
         Craft::$app->getRequest()->setIsConsoleRequest(false);
-        $user = new User(['firstName' => 'John', 'lastName' => 'Smith']);
+        $user = new User([
+            'active' => true,
+            'firstName' => 'John',
+            'lastName' => 'Smith',
+        ]);
         Craft::$app->getUser()->setIdentity($user);
         Craft::$app->getRequest()->setRawBody('This is a raw body');
 
@@ -945,17 +949,6 @@ class ExtensionTest extends Unit
         $this->testRenderResult(
             'invalid',
             '{{ plugin("no-a-real-plugin") is same as(null) ? "invalid" }}'
-        );
-    }
-
-    /**
-     * @deprecated
-     */
-    public function testRoundFunction()
-    {
-        $this->testRenderResult(
-            '5',
-            '{{ round(4.8) }}'
         );
     }
 

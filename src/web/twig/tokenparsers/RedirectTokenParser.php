@@ -9,7 +9,6 @@ namespace craft\web\twig\tokenparsers;
 
 use craft\web\twig\nodes\RedirectNode;
 use Twig\Node\Expression\ConstantExpression;
-use Twig\Parser;
 use Twig\Token;
 use Twig\TokenParser\AbstractTokenParser;
 
@@ -24,10 +23,9 @@ class RedirectTokenParser extends AbstractTokenParser
     /**
      * @inheritdoc
      */
-    public function parse(Token $token)
+    public function parse(Token $token): RedirectNode
     {
         $lineno = $token->getLine();
-        /** @var Parser $parser */
         $parser = $this->parser;
         $stream = $parser->getStream();
 
@@ -56,7 +54,7 @@ class RedirectTokenParser extends AbstractTokenParser
     /**
      * @inheritdoc
      */
-    public function getTag()
+    public function getTag(): string
     {
         return 'redirect';
     }
