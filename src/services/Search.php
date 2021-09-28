@@ -11,8 +11,10 @@ use Craft;
 use craft\base\ElementInterface;
 use craft\base\FieldInterface;
 use craft\base\MemoizableArray;
+use craft\cache\ElementQueryTagDependency;
 use craft\db\Query;
 use craft\db\Table;
+use craft\elements\db\ElementQuery;
 use craft\errors\SiteNotFoundException;
 use craft\events\SearchEvent;
 use craft\helpers\ArrayHelper;
@@ -24,6 +26,7 @@ use craft\search\SearchQuery;
 use craft\search\SearchQueryTerm;
 use craft\search\SearchQueryTermGroup;
 use yii\base\Component;
+use yii\db\Expression;
 use yii\db\Schema;
 
 /**
@@ -176,40 +179,35 @@ class Search extends Component
     }
 
     /**
-     * Filters a list of element IDs by a given search query.
+     * Searches for elements that match the given element query.
      *
-     * @param int[] $elementIds The list of element IDs to filter by the search query.
-     * @param string|array|SearchQuery $query The search query (either a string or a SearchQuery instance)
-     * @param bool $scoreResults Whether to order the results based on how closely they match the query.
-     * @param int|int[]|null $siteId The site ID(s) to filter by.
-     * @param bool $returnScores Whether the search scores should be included in the results. If true, results will be returned as `element ID => score`.
-     * @param FieldInterface[]|null $customFields The custom fields involved in the query.
+     * @param ElementQuery $elementQuery The element query being executed
      * @return array The filtered list of element IDs.
+     * @since 3.7.14
      */
-    public function filterElementIdsByQuery(
-        array $elementIds,
-        $query,
-        bool $scoreResults = true,
-        $siteId = null,
-        bool $returnScores = false,
-        ?array $customFields = null
-    ): array {
-        if (is_string($query)) {
-            $query = new SearchQuery($query, Craft::$app->getConfig()->getGeneral()->defaultSearchTermOptions);
-        } else if (is_array($query)) {
-            $options = $query;
-            $query = $options['query'];
-            unset($options['query']);
+    public function searchElements(ElementQuery $elementQuery): array
+    {
+        $searchQuery = $elementQuery->search;
+        if (is_string($searchQuery)) {
+            $searchQuery = new SearchQuery($searchQuery, Craft::$app->getConfig()->getGeneral()->defaultSearchTermOptions);
+        } else if (is_array($searchQuery)) {
+            $options = array_merge($searchQuery);
+            $searchQuery = ArrayHelper::remove($options, 'query');
             $options = array_merge(Craft::$app->getConfig()->getGeneral()->defaultSearchTermOptions, $options);
-            $query = new SearchQuery($query, $options);
+            $searchQuery = new SearchQuery($searchQuery, $options);
         }
+
+        $elementQuery = (clone $elementQuery)
+            ->search(null)
+            ->offset(null)
+            ->limit(null);
 
         // Fire a 'beforeSearch' event
         if ($this->hasEventHandlers(self::EVENT_BEFORE_SEARCH)) {
             $this->trigger(self::EVENT_BEFORE_SEARCH, new SearchEvent([
-                'elementIds' => $elementIds,
-                'query' => $query,
-                'siteId' => $siteId,
+                'elementQuery' => $elementQuery,
+                'query' => $searchQuery,
+                'siteId' => $elementQuery->siteId,
             ]));
         }
 
@@ -218,7 +216,7 @@ class Search extends Component
         $this->_groups = [];
 
         // Set Terms and Groups based on tokens
-        foreach ($query->getTokens() as $obj) {
+        foreach ($searchQuery->getTokens() as $obj) {
             if ($obj instanceof SearchQueryTermGroup) {
                 $this->_groups[] = $obj->terms;
             } else {
@@ -226,101 +224,62 @@ class Search extends Component
             }
         }
 
-        if ($customFields !== null) {
-            $customFields = new MemoizableArray($customFields);
+        if ($elementQuery->customFields !== null) {
+            $customFields = new MemoizableArray($elementQuery->customFields);
+        } else {
+            $customFields = null;
         }
 
         // Get where clause from tokens, bail out if no valid query is there
-        $where = $this->_getWhereClause($siteId, $customFields);
+        $where = $this->_getWhereClause($elementQuery->siteId, $customFields);
 
-        if ($where === false || empty($where)) {
+        if (empty($where)) {
             return [];
         }
 
-        $db = Craft::$app->getDb();
+        $query = (new Query())
+            ->from([Table::SEARCHINDEX])
+            ->where(new Expression($where))
+            ->andWhere([
+                'elementId' => $elementQuery->select(['elements.id']),
+            ])
+            ->cache(true, new ElementQueryTagDependency($elementQuery));;
 
-        if ($siteId !== null) {
-            if (is_array($siteId)) {
-                $where .= sprintf(' AND %s IN (%s)',
-                    $db->quoteColumnName('siteId'),
-                    implode(',', $siteId)
-                );
-            } else {
-                $where .= sprintf(' AND %s = %s', $db->quoteColumnName('siteId'), $db->quoteValue($siteId));
-            }
-        }
-
-        // Begin creating SQL
-        $sql = sprintf('SELECT * FROM %s WHERE %s', $db->quoteTableName(Table::SEARCHINDEX), $where);
-
-        // Append elementIds to QSL
-        if (!empty($elementIds)) {
-            $sql .= sprintf(' AND %s IN (%s)',
-                $db->quoteColumnName('elementId'),
-                implode(',', $elementIds)
-            );
+        if ($elementQuery->siteId !== null) {
+            $query->andWhere(['siteId' => $elementQuery->siteId]);
         }
 
         // Execute the sql
-        $results = $db->createCommand($sql)->queryAll();
+        $results = $query->all();
 
-        // Are we scoring the results?
-        if ($scoreResults) {
-            $scoresByElementId = [];
+        // Score the results
+        $scoresByElementId = [];
 
-            // Loop through results and calculate score per element
-            foreach ($results as $row) {
-                $elementId = $row['elementId'];
-                $score = $this->_scoreRow($row, $siteId);
-
-                if (!isset($scoresByElementId[$elementId])) {
-                    $scoresByElementId[$elementId] = $score;
-                } else {
-                    $scoresByElementId[$elementId] += $score;
-                }
-            }
-
-            // Sort found elementIds by score
-            arsort($scoresByElementId);
-
-            // Fire an 'afterSearch' event
-            if ($this->hasEventHandlers(self::EVENT_AFTER_SEARCH)) {
-                $this->trigger(self::EVENT_AFTER_SEARCH, new SearchEvent([
-                    'elementIds' => array_keys($scoresByElementId),
-                    'query' => $query,
-                    'siteId' => $siteId,
-                    'results' => $results,
-                ]));
-            }
-
-            if ($returnScores) {
-                return $scoresByElementId;
-            }
-
-            // Just return the ordered element IDs
-            return array_keys($scoresByElementId);
-        }
-
-        // Don't apply score, just return the IDs
-        $elementIds = [];
-
+        // Loop through results and calculate score per element
         foreach ($results as $row) {
-            $elementIds[] = $row['elementId'];
+            $elementId = $row['elementId'];
+            $score = $this->_scoreRow($row, $elementQuery->siteId);
+
+            if (!isset($scoresByElementId[$elementId])) {
+                $scoresByElementId[$elementId] = $score;
+            } else {
+                $scoresByElementId[$elementId] += $score;
+            }
         }
 
-        $elementIds = array_unique($elementIds);
+        arsort($scoresByElementId);
 
         // Fire an 'afterSearch' event
         if ($this->hasEventHandlers(self::EVENT_AFTER_SEARCH)) {
             $this->trigger(self::EVENT_AFTER_SEARCH, new SearchEvent([
-                'elementIds' => $elementIds,
-                'query' => $query,
-                'siteId' => $siteId,
+                'elementQuery' => $elementQuery,
+                'query' => $searchQuery,
+                'siteId' => $elementQuery->siteId,
                 'results' => $results,
             ]));
         }
 
-        return $elementIds;
+        return $scoresByElementId;
     }
 
     /**

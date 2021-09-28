@@ -115,7 +115,7 @@ class Element extends InterfaceType
             ],
             'searchScore' => [
                 'name' => 'searchScore',
-                'type' => Type::string(),
+                'type' => Type::int(),
                 'description' => 'The element’s search score, if the `search` parameter was used when querying for the element.',
             ],
             'trashed' => [

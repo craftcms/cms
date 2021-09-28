@@ -7,23 +7,24 @@
 
 namespace craft\events;
 
+use craft\elements\db\ElementQuery;
 use craft\search\SearchQuery;
 use yii\base\Event as BaseEvent;
 
 /**
  * SearchEvent class.
  *
+ * @property int[]|null $elementIds
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
 class SearchEvent extends BaseEvent
 {
     /**
-     * @var int[] The list of element IDs to filter by the search query, or the
-     * filtered list of element IDs, depending on if this is a beforeSearch or
-     * `afterSearch` event
+     * @var ElementQuery The element query being executed.
+     * @since 3.7.14
      */
-    public $elementIds = true;
+    public ElementQuery $elementQuery;
 
     /**
      * @var SearchQuery The search query
