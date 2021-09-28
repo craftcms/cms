@@ -53,7 +53,7 @@ class Duplicate extends ElementAction
         $successCount = 0;
         $failCount = 0;
 
-        $this->_duplicateElements($elements, $successCount, $failCount);
+        $this->_duplicateElements($query, $elements, $successCount, $failCount);
 
         // Did all of them fail?
         if ($successCount === 0) {
@@ -71,13 +71,14 @@ class Duplicate extends ElementAction
     }
 
     /**
+     * @param ElementQueryInterface $query
      * @param ElementInterface[] $elements
      * @param int[] $duplicatedElementIds
      * @param int $successCount
      * @param int $failCount
      * @param ElementInterface|null $newParent
      */
-    private function _duplicateElements(array $elements, int &$successCount, int &$failCount, array &$duplicatedElementIds = [], ?ElementInterface $newParent = null): void
+    private function _duplicateElements(ElementQueryInterface $query, array $elements, int &$successCount, int &$failCount, array &$duplicatedElementIds = [], ?ElementInterface $newParent = null): void
     {
         $elementsService = Craft::$app->getElements();
         $structuresService = Craft::$app->getStructures();
@@ -115,8 +116,16 @@ class Duplicate extends ElementAction
             }
 
             if ($this->deep) {
-                $children = $element->getChildren()->status(null)->all();
-                $this->_duplicateElements($children, $successCount, $failCount, $duplicatedElementIds, $duplicate);
+                // Don't use $element->children() here in case its lft/rgt values have changed
+                $childQuery = (clone $query);
+                $children = $childQuery
+                    ->id(null)
+                    ->descendantOf($element->id)
+                    ->descendantDist(1)
+                    ->status(null)
+                    ->all();
+
+                $this->_duplicateElements($query, $children, $successCount, $failCount, $duplicatedElementIds, $duplicate);
             }
         }
     }

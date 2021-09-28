@@ -162,7 +162,9 @@ class AppHelperTest extends TestCase
         $generalConfig = Craft::$app->getConfig()->getGeneral();
         $generalConfig->phpMaxMemoryLimit = '512M';
 
-        ini_set('memory_limit', '256M');
+        if (@ini_set('memory_limit', '256M') === false) {
+            $this->markTestSkipped('Unable to set memory_limit');
+        }
 
         App::maxPowerCaptain();
 

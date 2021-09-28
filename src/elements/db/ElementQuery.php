@@ -15,6 +15,7 @@ use craft\base\FieldInterface;
 use craft\behaviors\CustomFieldBehavior;
 use craft\behaviors\DraftBehavior;
 use craft\behaviors\RevisionBehavior;
+use craft\cache\ElementQueryTagDependency;
 use craft\db\FixedOrderExpression;
 use craft\db\Query;
 use craft\db\QueryAbortedException;
@@ -458,6 +459,12 @@ class ElementQuery extends Query implements ElementQueryInterface
      * @var array|null
      */
     private ?array $_searchScores = null;
+
+    /**
+     * @var string[]|null
+     * @see getCacheTags()
+     */
+    private $_cacheTags;
 
     /**
      * Constructor
@@ -1256,6 +1263,18 @@ class ElementQuery extends Query implements ElementQueryInterface
 
     /**
      * @inheritdoc
+     */
+    public function cache($duration = true, $dependency = null)
+    {
+        if ($dependency === null) {
+            $dependency = new ElementQueryTagDependency($this);
+        }
+
+        return parent::cache($duration, $dependency);
+    }
+
+    /**
+     * @inheritdoc
      * @throws QueryAbortedException if it can be determined that there won’t be any results
      */
     public function prepare($builder): Query
@@ -1283,6 +1302,9 @@ class ElementQuery extends Query implements ElementQueryInterface
             }
             throw new QueryAbortedException($e->getMessage(), 0, $e);
         }
+
+        // Clear out the previous cache tags
+        $this->_cacheTags = null;
 
         // Normalize the orderBy param in case it was set directly
         if (!empty($this->orderBy)) {
@@ -1396,6 +1418,11 @@ class ElementQuery extends Query implements ElementQueryInterface
         }
 
         $this->_applyUniqueParam($builder->db);
+
+        // Pass along the cache info
+        if ($this->queryCacheDuration !== null) {
+            $this->query->cache($this->queryCacheDuration, $this->queryCacheDependency);
+        }
 
         // Pass the query back
         return $this->query;
@@ -1862,7 +1889,19 @@ class ElementQuery extends Query implements ElementQueryInterface
 
         $elementsService = Craft::$app->getElements();
         if ($elementsService->getIsCollectingCacheTags()) {
-            $cacheTags = [
+            $elementsService->collectCacheTags($this->getCacheTags());
+        }
+
+        return true;
+    }
+
+    /**
+     * @return string[]
+     */
+    public function getCacheTags(): array
+    {
+        if ($this->_cacheTags === null) {
+            $this->_cacheTags = [
                 'element',
                 "element::$this->elementType",
             ];
@@ -1879,13 +1918,11 @@ class ElementQuery extends Query implements ElementQueryInterface
             }
 
             foreach ($queryTags as $tag) {
-                $cacheTags[] = "element::$this->elementType::$tag";
+                $this->_cacheTags[] = "element::$this->elementType::$tag";
             }
-
-            $elementsService->collectCacheTags($cacheTags);
         }
 
-        return true;
+        return $this->_cacheTags;
     }
 
     /**
@@ -2499,22 +2536,7 @@ class ElementQuery extends Query implements ElementQueryInterface
         $this->_searchScores = null;
 
         if ($this->search) {
-            // Get the element IDs
-            $elementIdsQuery = clone $this;
-            $elementIds = $elementIdsQuery
-                ->search(null)
-                ->offset(null)
-                ->limit(null)
-                ->ids();
-
-            $searchResults = Craft::$app->getSearch()->filterElementIdsByQuery(
-                $elementIds,
-                $this->search,
-                true,
-                $this->siteId,
-                true,
-                $this->customFields
-            );
+            $searchResults = Craft::$app->getSearch()->searchElements($this);
 
             // No results?
             if (empty($searchResults)) {

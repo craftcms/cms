@@ -551,7 +551,7 @@ class View extends \yii\web\View
                     if (is_int($field)) {
                         $field = $definition;
                     }
-                    if (strpos($template, $field) !== false) {
+                    if (preg_match('/\b' . preg_quote($field, '/') . '\b/', $template)) {
                         $extra[] = $field;
                     }
                 }
