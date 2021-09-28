@@ -40,7 +40,7 @@ class D3Asset extends AssetBundle
      */
     public function init(): void
     {
-        $this->sourcePath = '@lib/d3';
+        $this->sourcePath = __DIR__ .'/dist';
 
         $this->js = [
             'd3.js',
