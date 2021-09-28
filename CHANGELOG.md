@@ -38,6 +38,7 @@
 - Fixed a bug where duplicated entries that were created via an “Applying new propagation method” job weren’t getting positioned correctly based on the original entries’ structure. ([#9782](https://github.com/craftcms/cms/issues/9782))
 - Fixed a bug where unpublished drafts could disappear after clicking “Create entry” if the URI could not be made unique. ([#9873](https://github.com/craftcms/cms/issues/9873))
 - Fixed an error that could occur when processing `relatedTo*` GraphQL arguments in some cases.
+- Fixed an error that could occur when an entry’s Title Format referenced a custom field with `author` in its handle. ([#9891](https://github.com/craftcms/cms/issues/9891))
 
 ### Security
 - Fixed a potential CSV injection vulnerability.
