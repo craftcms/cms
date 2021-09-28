@@ -306,9 +306,10 @@ class Application extends \yii\web\Application
 
         // Override where Yii should find its asset deps
         $libPath = Craft::getAlias('@lib');
-        Craft::setAlias('@bower/jquery/dist', $libPath . '/jquery');
-        Craft::setAlias('@bower/inputmask/dist', $libPath . '/inputmask');
-        Craft::setAlias('@bower/punycode', $libPath . '/punycode');
+        $assetsPath = Craft::getAlias('@craft');
+        Craft::setAlias('@bower/jquery/dist', $assetsPath . '/web/assets/jquery/dist');
+        Craft::setAlias('@bower/inputmask/dist', $assetsPath . '/web/assets/inputmask/dist');
+        Craft::setAlias('@bower/punycode', $assetsPath . '/web/assets/punycode/dist');
         Craft::setAlias('@bower/yii2-pjax', $libPath . '/yii2-pjax');
     }
 
