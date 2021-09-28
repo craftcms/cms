@@ -6,8 +6,8 @@ const CopyWebpackPlugin = require('copy-webpack-plugin');
 module.exports = new CraftWebpackConfig({
     config: {
         entry: {
-            'Craft': './js/_entry.js',
-            'charts': './js/_charts.js'
+            'Craft': './_entry.js',
+            'charts': './_charts.js'
         },
         output: { filename: 'js/[name].min.js' },
         plugins: [
