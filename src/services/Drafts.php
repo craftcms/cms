@@ -142,13 +142,12 @@ class Drafts extends Component
      */
     public function createDraft(
         ElementInterface $source,
-        int              $creatorId,
-        string           $name = null,
-        string           $notes = null,
-        array            $newAttributes = [],
-        bool             $provisional = false
-    ): ElementInterface
-    {
+        int $creatorId,
+        string $name = null,
+        string $notes = null,
+        array $newAttributes = [],
+        bool $provisional = false
+    ): ElementInterface {
         // Make sure the source isn't a draft or revision
         if ($source->getIsDraft() || $source->getIsRevision()) {
             throw new InvalidArgumentException('Cannot create a draft from another draft or revision.');
@@ -359,9 +358,20 @@ class Drafts extends Component
 
                 // We still need to validate so the SlugValidator gets run
                 $draft->setScenario(Element::SCENARIO_ESSENTIALS);
+                $draft->validate();
+
+                // If there are any errors on the URI, re-validate as disabled
+                if ($draft->hasErrors('uri') && $draft->enabled) {
+                    $draft->enabled = false;
+                    $draft->validate();
+                }
+
+                if ($draft->hasErrors()) {
+                    throw new InvalidElementException($draft, 'Draft ' . $draft->id . ' could not be applied because it doesn\'t validate.');
+                }
 
                 try {
-                    $elementsService->saveElement($draft);
+                    $elementsService->saveElement($draft, false);
                     Db::delete(Table::DRAFTS, [
                         'id' => $draftId,
                     ]);
@@ -486,12 +496,11 @@ class Drafts extends Component
     public function insertDraftRow(
         ?string $name,
         ?string $notes = null,
-        int     $creatorId = null,
-        ?int    $sourceId = null,
-        bool    $trackChanges = false,
-        bool    $provisional = false
-    ): int
-    {
+        int $creatorId = null,
+        ?int $sourceId = null,
+        bool $trackChanges = false,
+        bool $provisional = false
+    ): int {
         Db::insert(Table::DRAFTS, [
             'sourceId' => $sourceId, // todo: remove this in v4
             'creatorId' => $creatorId,

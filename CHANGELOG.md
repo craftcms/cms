@@ -1,5 +1,48 @@
 # Release Notes for Craft CMS 3.x
 
+## 3.7.14 - 2021-09-28
+
+### Added
+- Added `craft\base\Element::EVENT_PREP_QUERY_FOR_TABLE_ATTRIBUTE`. ([#9862](https://github.com/craftcms/cms/pull/9862))
+- Added `craft\base\ElementInterface::getIsFresh()`.
+- Added `craft\base\ElementInterface::setIsFresh()`.
+- Added `craft\cache\ElementQueryTagDependency`.
+- Added `craft\elements\db\ElementQuery::getCacheTags()`.
+- Added `craft\events\ElementIndexTableAttributeEvent`.
+- Added `craft\events\SearchEvent::$elementQuery`.
+- Added `craft\events\SearchEvent::getElementIds()`.
+- Added `craft\events\SearchEvent::setElementIds()`.
+- Added `craft\services\Search::searchElements()`.
+- Added the `fullPane` setting to Vue admin tables, which can be set to `false` if the table is not the only UI component in its content pane.
+
+### Changed
+- Enhanced the visibility of global navigation badges.
+- Enhanced the visibility of focused menu options.
+- Improved the performance of element query `search` params. ([#9867](https://github.com/craftcms/cms/issues/9867))
+- Element queries’ `cache()` methods now create a cache dependency based on the element queries’ cache tags by default.
+- Element index queries are now cached.
+- The `migrate/all` command now includes plugins whose schema versions have changed, even if they don’t have any new migrations. ([#9860](https://github.com/craftcms/cms/issues/9860))
+- It’s now possible to pass an array of Matrix block IDs into a Matrix field’s element query param. ([#9875](https://github.com/craftcms/cms/issues/9875))
+
+### Deprecated
+- Deprecated `craft\base\Element::getHasFreshContent()`. `getIsFresh()` should be used instead.
+- Deprecated `craft\services\Search::filterElementIdsByQuery()`.
+
+### Fixed
+- Fixed the control panel heading order for more intuitive navigation by screen reader users.
+- Fixed an uncaught error that could occur when saving a draft. ([#9841](https://github.com/craftcms/cms/issues/9841))
+- Fixed an error that occurred when mutating an entry via GraphQL, if it belonged to any disabled sites. ([#9842](https://github.com/craftcms/cms/issues/9842))
+- Fixed a bug where some field types wouldn’t use their configured default values on new entries, fields that weren’t included in the primary entry type. ([#9852](https://github.com/craftcms/cms/issues/9852))
+- Fixed a bug where some action menus didn’t have a label for screen readers.
+- Fixed a bug where `craft\web\Response::redirect()` no longer supported passing an array to the `$url` argument. ([#9857](https://github.com/craftcms/cms/issues/9857))
+- Fixed a bug where duplicated entries that were created via an “Applying new propagation method” job weren’t getting positioned correctly based on the original entries’ structure. ([#9782](https://github.com/craftcms/cms/issues/9782))
+- Fixed a bug where unpublished drafts could disappear after clicking “Create entry” if the URI could not be made unique. ([#9873](https://github.com/craftcms/cms/issues/9873))
+- Fixed an error that could occur when processing `relatedTo*` GraphQL arguments in some cases.
+- Fixed an error that could occur when an entry’s Title Format referenced a custom field with `author` in its handle. ([#9891](https://github.com/craftcms/cms/issues/9891))
+
+### Security
+- Fixed a potential CSV injection vulnerability.
+
 ## 3.7.13 - 2021-09-14
 
 ### Added

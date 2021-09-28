@@ -1251,6 +1251,7 @@ return [
     'Site' => 'Website',
     'Sites' => 'Websites',
     'Size' => 'Grootte',
+    'Skip to content' => 'Doorgaan naar inhoud',
     'Skipped files' => 'Overgeslagen bestanden',
     'Slug' => 'Slug',
     'Some categories restored.' => 'Sommige categorieën hersteld.',

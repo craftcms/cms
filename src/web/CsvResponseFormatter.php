@@ -83,10 +83,18 @@ class CsvResponseFormatter extends Component implements ResponseFormatterInterfa
             fputcsv($fp, $headers, ',');
         }
 
+        $suspectCharacters = ['=', '-', '+', '@'];
+
         foreach ($data as $row) {
             foreach ($row as &$field) {
                 if (is_scalar($field)) {
                     $field = (string)$field;
+
+                    // Guard against CSV injection attacks
+                    // https://github.com/thephpleague/csv/issues/268
+                    if ($field && $field !== '' && in_array($field[0], $suspectCharacters)) {
+                        $field = "\t$field";
+                    }
                 } else {
                     $field = Json::encode($field);
                 }

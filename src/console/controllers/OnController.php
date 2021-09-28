@@ -29,6 +29,7 @@ class OnController extends Controller
      * $ php craft on
      * The system is now online.
      * ```
+     *
      * @return int
      */
     public function actionIndex(): int

@@ -1328,11 +1328,20 @@ interface ElementInterface extends ComponentInterface
     public function setEagerLoadedElementCount(string $handle, int $count);
 
     /**
-     * Returns whether the element’s content is "fresh" (unsaved and without validation errors).
+     * Returns whether the element is "fresh" (not yet explicitly saved, and without validation errors).
      *
-     * @return bool Whether the element’s content is fresh
+     * @return bool
+     * @since 3.7.14
      */
-    public function getHasFreshContent(): bool;
+    public function getIsFresh(): bool;
+
+    /**
+     * Sets whether the element is "fresh" (not yet explicitly saved, and without validation errors).
+     *
+     * @param bool $isFresh
+     * @since 3.7.14
+     */
+    public function setIsFresh(bool $isFresh = true): void;
 
     /**
      * Sets the revision creator ID to be saved.

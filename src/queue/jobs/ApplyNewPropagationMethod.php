@@ -100,14 +100,16 @@ class ApplyNewPropagationMethod extends BaseJob
                     ->indexBy('siteId')
                     ->all();
 
-                if (!empty($otherSiteElements)) {
-                    // Remove their URIs so the duplicated elements can retain them w/out needing to increment them
-                    Db::update(Table::ELEMENTS_SITES, [
-                        'uri' => null,
-                    ], [
-                        'id' => ArrayHelper::getColumn($otherSiteElements, 'siteSettingsId'),
-                    ], [], false);
+                if (empty($otherSiteElements)) {
+                    return;
                 }
+
+                // Remove their URIs so the duplicated elements can retain them w/out needing to increment them
+                Db::update(Table::ELEMENTS_SITES, [
+                    'uri' => null,
+                ], [
+                    'id' => ArrayHelper::getColumn($otherSiteElements, 'siteSettingsId'),
+                ], [], false);
 
                 // Duplicate those elements so their content can live on
                 while (!empty($otherSiteElements)) {
@@ -133,8 +135,9 @@ class ApplyNewPropagationMethod extends BaseJob
                             $structuresService->moveAfter($element->structureId, $newElement, $element, Structures::MODE_INSERT);
                         } else {
                             // Append the clone to the source's parent
-                            $parentId = $element
-                                ->getAncestors(1)
+                            $parentId = $elementType::find()
+                                ->ancestorOf($element->id)
+                                ->ancestorDist(1)
                                 ->select(['elements.id'])
                                 ->siteId('*')
                                 ->unique()

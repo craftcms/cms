@@ -39,7 +39,7 @@ var columns = [
 ];
 
 new Craft.VueAdminTable({
-    padded: true,
+    fullPane: false,
     columns: columns,
     container: '#entrytypes-vue-admin-table',
     deleteAction: '{{ section.type != 'single' ? 'sections/delete-entry-type' : '' }}',

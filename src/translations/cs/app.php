@@ -1251,6 +1251,7 @@ return [
     'Site' => 'Web',
     'Sites' => 'Weby',
     'Size' => 'Velikost',
+    'Skip to content' => 'Skip to content',
     'Skipped files' => 'Přeskočené soubory',
     'Slug' => 'Slug',
     'Some categories restored.' => 'Některé kategorie obnoveny.',

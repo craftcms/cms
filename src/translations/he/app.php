@@ -1251,6 +1251,7 @@ return [
     'Site' => 'אתר',
     'Sites' => 'אתרים',
     'Size' => 'גודל',
+    'Skip to content' => 'Skip to content',
     'Skipped files' => 'קבצים שהמערכת דילגה עליהם',
     'Slug' => 'סלאג',
     'Some categories restored.' => 'חלק מהקטגוריות שוחזרו.',

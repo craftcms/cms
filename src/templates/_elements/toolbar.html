@@ -22,10 +22,12 @@
     {% set showSiteMenu = elementInstance.isLocalized() %}
 {% endif %}
 {% set sortOptions = elementInstance.sortOptions() %}
+{% set idPrefix = "elementtoolbar#{random()}-" %}
 
 {% if showStatusMenu or context == 'index' %}
     <div>
-        <button type="button" class="btn menubtn statusmenubtn"><span class="status"></span>{{ "All"|t('app') }}</button>
+        <label id="{{ idPrefix }}status-label" class="visually-hidden">{{ "Status"|t('app') }}</label>
+        <button id="{{ idPrefix }}status-button" aria-labelledby="{{ idPrefix }}status-label {{ idPrefix }}status-button" type="button" class="btn menubtn statusmenubtn"><span class="status"></span>{{ "All"|t('app') }}</button>
         <div class="menu">
             <ul class="padded">
                 <li><a data-status="" class="sel"><span class="status"></span>{{ "All"|t('app') }}</a></li>
@@ -64,7 +66,8 @@
     <div class="clear hidden" title="{{ 'Clear'|t('app') }}" aria-label="{{ 'Clear'|t('app') }}"></div>
 </div>
 <div>
-    <button type="button" class="btn menubtn sortmenubtn"{% if sortOptions %} title="{{ 'Sort by {attribute}'|t('app', { attribute: sortOptionLabel(sortOptions|first) }) }}"{% endif %} data-icon="asc">{{ sortOptions ? sortOptionLabel(sortOptions|first) }}</button>
+    <label id="{{ idPrefix }}sort-by-label" class="visually-hidden">{{ 'Sort by'|t('app') }}</label>
+    <button id="{{ idPrefix }}sort-by-btn" aria-labelledby="{{ idPrefix }}sort-by-label {{ idPrefix }}sort-by-btn" type="button" class="btn menubtn sortmenubtn" {% if sortOptions %} title="{{ 'Sort by {attribute}'|t('app', { attribute: sortOptionLabel(sortOptions|first) }) }}"{% endif %} data-icon="asc">{{ sortOptions ? sortOptionLabel(sortOptions|first) }}</button>
     <div class="menu">
         <ul class="padded sort-attributes">
             {% for key, sortOption in sortOptions %}
