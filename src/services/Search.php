@@ -11,6 +11,7 @@ use Craft;
 use craft\base\ElementInterface;
 use craft\base\FieldInterface;
 use craft\base\MemoizableArray;
+use craft\cache\ElementQueryTagDependency;
 use craft\db\Query;
 use craft\db\Table;
 use craft\elements\db\ElementQuery;
@@ -314,9 +315,11 @@ class Search extends Component
         }
 
         if ($elementQuery !== null) {
-            $query->andWhere([
-                'elementId' => $elementQuery->select(['elements.id']),
-            ]);
+            $query
+                ->andWhere([
+                    'elementId' => $elementQuery->select(['elements.id']),
+                ])
+                ->cache(true, new ElementQueryTagDependency($elementQuery));
         } else if (!empty($elementIds)) {
             $query->andWhere(['elementId' => $elementIds]);
         }

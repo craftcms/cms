@@ -6,6 +6,8 @@
 - Added `craft\base\Element::EVENT_PREP_QUERY_FOR_TABLE_ATTRIBUTE`. ([#9862](https://github.com/craftcms/cms/pull/9862))
 - Added `craft\base\ElementInterface::getIsFresh()`.
 - Added `craft\base\ElementInterface::setIsFresh()`.
+- Added `craft\cache\ElementQueryTagDependency`.
+- Added `craft\elements\db\ElementQuery::getCacheTags()`.
 - Added `craft\events\ElementIndexTableAttributeEvent`.
 - Added `craft\events\SearchEvent::$elementQuery`.
 - Added `craft\events\SearchEvent::getElementIds()`.
@@ -17,6 +19,8 @@
 - Enhanced the visibility of global navigation badges.
 - Enhanced the visibility of focused menu options.
 - Improved the performance of element query `search` params. ([#9867](https://github.com/craftcms/cms/issues/9867))
+- Element queries’ `cache()` methods now create a cache dependency based on the element queries’ cache tags by default.
+- Element index queries are now cached.
 - The `migrate/all` command now includes plugins whose schema versions have changed, even if they don’t have any new migrations. ([#9860](https://github.com/craftcms/cms/issues/9860))
 - It’s now possible to pass an array of Matrix block IDs into a Matrix field’s element query param. ([#9875](https://github.com/craftcms/cms/issues/9875))
 
