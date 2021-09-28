@@ -203,7 +203,7 @@ class Search extends Component
      * Filters a list of element IDs by a given search query.
      *
      * @param int[] $elementIds The list of element IDs to filter by the search query.
-     * @param string|array|SearchQuery $query The search query (either a string or a SearchQuery instance)
+     * @param string|array|SearchQuery $searchQuery The search query (either a string or a SearchQuery instance)
      * @param bool $scoreResults Whether to order the results based on how closely they match the query.
      * @param int|int[]|null $siteId The site ID(s) to filter by.
      * @param bool $returnScores Whether the search scores should be included in the results. If true, results will be returned as `element ID => score`.
@@ -212,33 +212,33 @@ class Search extends Component
      */
     public function filterElementIdsByQuery(
         array $elementIds,
-        $query,
+        $searchQuery,
         bool $scoreResults = true,
         $siteId = null,
         bool $returnScores = false,
         ?array $customFields = null
     ): array {
-        if (is_string($query)) {
-            $query = new SearchQuery($query, Craft::$app->getConfig()->getGeneral()->defaultSearchTermOptions);
-        } else if (is_array($query)) {
-            $options = $query;
-            $query = $options['query'];
+        if (is_string($searchQuery)) {
+            $searchQuery = new SearchQuery($searchQuery, Craft::$app->getConfig()->getGeneral()->defaultSearchTermOptions);
+        } else if (is_array($searchQuery)) {
+            $options = $searchQuery;
+            $searchQuery = $options['query'];
             unset($options['query']);
             $options = array_merge(Craft::$app->getConfig()->getGeneral()->defaultSearchTermOptions, $options);
-            $query = new SearchQuery($query, $options);
+            $searchQuery = new SearchQuery($searchQuery, $options);
         }
 
         // Fire a 'beforeSearch' event
         if ($this->hasEventHandlers(self::EVENT_BEFORE_SEARCH)) {
             $this->trigger(self::EVENT_BEFORE_SEARCH, new SearchEvent([
                 'elementIds' => $elementIds,
-                'query' => $query,
+                'query' => $searchQuery,
                 'siteId' => $siteId,
             ]));
         }
 
         // Get tokens for query
-        $this->_tokens = $query->getTokens();
+        $this->_tokens = $searchQuery->getTokens();
         $this->_terms = [];
         $this->_groups = [];
 
@@ -312,7 +312,7 @@ class Search extends Component
             if ($this->hasEventHandlers(self::EVENT_AFTER_SEARCH)) {
                 $this->trigger(self::EVENT_AFTER_SEARCH, new SearchEvent([
                     'elementIds' => array_keys($scoresByElementId),
-                    'query' => $query,
+                    'query' => $searchQuery,
                     'siteId' => $siteId,
                     'results' => $results,
                 ]));
@@ -339,7 +339,7 @@ class Search extends Component
         if ($this->hasEventHandlers(self::EVENT_AFTER_SEARCH)) {
             $this->trigger(self::EVENT_AFTER_SEARCH, new SearchEvent([
                 'elementIds' => $elementIds,
-                'query' => $query,
+                'query' => $searchQuery,
                 'siteId' => $siteId,
                 'results' => $results,
             ]));
