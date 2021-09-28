@@ -2765,22 +2765,7 @@ class ElementQuery extends Query implements ElementQueryInterface
         $this->_searchScores = null;
 
         if ($this->search) {
-            // Get the element IDs
-            $elementIdsQuery = clone $this;
-            $elementIds = $elementIdsQuery
-                ->search(null)
-                ->offset(null)
-                ->limit(null)
-                ->ids();
-
-            $searchResults = Craft::$app->getSearch()->filterElementIdsByQuery(
-                $elementIds,
-                $this->search,
-                true,
-                $this->siteId,
-                true,
-                $this->customFields
-            );
+            $searchResults = Craft::$app->getSearch()->searchElements($this);
 
             // No results?
             if (empty($searchResults)) {

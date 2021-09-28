@@ -7,16 +7,22 @@
 - Added `craft\base\ElementInterface::getIsFresh()`.
 - Added `craft\base\ElementInterface::setIsFresh()`.
 - Added `craft\events\ElementIndexTableAttributeEvent`.
+- Added `craft\events\SearchEvent::$elementQuery`.
+- Added `craft\events\SearchEvent::getElementIds()`.
+- Added `craft\events\SearchEvent::setElementIds()`.
+- Added `craft\services\Search::searchElements()`.
 - Added the `fullPane` setting to Vue admin tables, which can be set to `false` if the table is not the only UI component in its content pane.
 
 ### Changed
 - Enhanced the visibility of global navigation badges.
 - Enhanced the visibility of focused menu options.
+- Improved the performance of element query `search` params. ([#9867](https://github.com/craftcms/cms/issues/9867))
 - The `migrate/all` command now includes plugins whose schema versions have changed, even if they don’t have any new migrations. ([#9860](https://github.com/craftcms/cms/issues/9860))
 - It’s now possible to pass an array of Matrix block IDs into a Matrix field’s element query param. ([#9875](https://github.com/craftcms/cms/issues/9875))
 
 ### Deprecated
 - Deprecated `craft\base\Element::getHasFreshContent()`. `getIsFresh()` should be used instead.
+- Deprecated `craft\services\Search::filterElementIdsByQuery()`.
 
 ### Fixed
 - Fixed the control panel heading order for more intuitive navigation by screen reader users.

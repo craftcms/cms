@@ -56,18 +56,17 @@ class SearchTest extends Unit
      * @param $usernameOrEmailsForResult
      * @param $usernameOrEmailsForQuery
      * @param $query
-     * @param bool $scoreResults
      * @param null $siteId
      * @param bool $returnScores
      */
-    public function testFilterElementIdsByQuery($usernameOrEmailsForResult, $usernameOrEmailsForQuery, $query, $scoreResults = true, $siteId = null, $returnScores = false)
+    public function testFilterElementIdsByQuery($usernameOrEmailsForResult, $usernameOrEmailsForQuery, $query, $siteId = null, $returnScores = false)
     {
         // Repackage the dataProvider data into something that can be used by the filter function
         $result = $this->_usernameEmailArrayToIdList($usernameOrEmailsForResult);
         $forQuery = $this->_usernameEmailArrayToIdList($usernameOrEmailsForQuery);
 
         // Filter them
-        $filtered = $this->search->filterElementIdsByQuery($forQuery, $query, $scoreResults, $siteId, $returnScores);
+        $filtered = $this->search->filterElementIdsByQuery($forQuery, $query, true, $siteId, $returnScores);
 
         sort($result, SORT_NUMERIC);
         sort($filtered, SORT_NUMERIC);
@@ -123,21 +122,21 @@ class SearchTest extends Unit
     public function filterElementIdByQueryDataProvider(): array
     {
         return [
-            [['user1'], ['user1', 'user2', 'user3', 'user4'], 'user1@crafttest.com', true, 1, false],
+            [['user1'], ['user1', 'user2', 'user3', 'user4'], 'user1@crafttest.com', 1, false],
 
-            [['user4', 'user1', 'user2', 'user3'], ['user1', 'user2', 'user3', 'user4'], 'user', true, 1, false],
-            [['user4', 'user1', 'user2', 'user3'], [], 'user', true, 1, false],
-            [['user1', 'user2', 'user3'], ['user1', 'user2', 'user3'], 'user', true, 1, false],
-            [['user4'], ['user1', 'user2', 'user3', 'user4'], 'user someemail', true, 1, false],
-            [[], ['user1', 'user2', 'user3'], 'user someemail', true, 1, false],
+            [['user4', 'user1', 'user2', 'user3'], ['user1', 'user2', 'user3', 'user4'], 'user', 1, false],
+            [['user4', 'user1', 'user2', 'user3'], [], 'user', 1, false],
+            [['user1', 'user2', 'user3'], ['user1', 'user2', 'user3'], 'user', 1, false],
+            [['user4'], ['user1', 'user2', 'user3', 'user4'], 'user someemail', 1, false],
+            [[], ['user1', 'user2', 'user3'], 'user someemail', 1, false],
 
             // This should work. If you want an empty slug you should try: -slug:*
-            [[], ['user1', 'user2', 'user3', 'user4'], 'slug:', true, 1, false],
-            [[], ['user1', 'user2', 'user3', 'user4'], 'slug:""', true, 1, false],
+            [[], ['user1', 'user2', 'user3', 'user4'], 'slug:', 1, false],
+            [[], ['user1', 'user2', 'user3', 'user4'], 'slug:""', 1, false],
 
             // User4 goes first as it has both user and someemail keywords
-            [['user4', 'user1', 'user2', 'user3'], ['user1', 'user2', 'user3', 'user4'], 'user OR someemail', true, 1, false],
-            [['user4', 'user1'], ['user1', 'user2', 'user3', 'user4'], 'someemail OR -firstname:*', true, 1, false],
+            [['user4', 'user1', 'user2', 'user3'], ['user1', 'user2', 'user3', 'user4'], 'user OR someemail', 1, false],
+            [['user4', 'user1'], ['user1', 'user2', 'user3', 'user4'], 'someemail OR -firstname:*', 1, false],
         ];
     }
 
