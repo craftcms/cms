@@ -504,7 +504,7 @@ class Assets extends Component
      */
     public function getAllDescendantFolders(VolumeFolder $parentFolder, string $orderBy = 'path'): array
     {
-        /** @var Query $query */ 
+        /** @var Query $query */
         $query = $this->_createFolderQuery()
             ->where([
                 'and',

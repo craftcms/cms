@@ -24,6 +24,7 @@ use craft\events\DefineEagerLoadingMapEvent;
 use craft\events\DefineHtmlEvent;
 use craft\events\DefineMetadataEvent;
 use craft\events\DefineValueEvent;
+use craft\events\ElementIndexTableAttributeEvent;
 use craft\events\ElementStructureEvent;
 use craft\events\ModelEvent;
 use craft\events\RegisterElementActionsEvent;
@@ -190,6 +191,65 @@ abstract class Element extends Component implements ElementInterface
      * @event RegisterElementTableAttributesEvent The event that is triggered when registering the table attributes for the element type.
      */
     const EVENT_REGISTER_DEFAULT_TABLE_ATTRIBUTES = 'registerDefaultTableAttributes';
+
+    /**
+     * @event ElementIndexTableAttributeEvent The event that is triggered when preparing an element query for an element index, for each
+     * attribute present in the table.
+     *
+     * Paired with [[EVENT_REGISTER_TABLE_ATTRIBUTES]] and [[EVENT_SET_TABLE_ATTRIBUTE_HTML]], this allows optimization of queries on element indexes.
+     *
+     * ```php
+     * use craft\base\Element;
+     * use craft\elements\Entry;
+     * use craft\events\PrepareElementQueryForTableAttributeEvent;
+     * use craft\events\RegisterElementTableAttributesEvent;
+     * use craft\events\SetElementTableAttributeHtmlEvent;
+     * use craft\helpers\Cp;
+     * use yii\base\Event;
+     *
+     * Event::on(
+     *     Entry::class,
+     *     Element::EVENT_REGISTER_TABLE_ATTRIBUTES,
+     *     function(RegisterElementTableAttributesEvent $e) {
+     *         $e->attributes[] = 'authorExpertise';
+     *     }
+     * );
+     *
+     * Event::on(
+     *     Entry::class,
+     *     Element::EVENT_PREP_QUERY_FOR_TABLE_ATTRIBUTE,
+     *     function(PrepareElementQueryForTableAttributeEvent $e) {
+     *         $query = $e->query;
+     *         $attr = $e->attribute;
+     *
+     *         if ($attr === 'authorExpertise') {
+     *             $query->andWith(['author.areasOfExpertiseCategoryField']);
+     *         }
+     *     }
+     * );
+     *
+     * Event::on(
+     *     Entry::class,
+     *     Element::EVENT_SET_TABLE_ATTRIBUTE_HTML,
+     *     function(SetElementTableAttributeHtmlEvent $e) {
+     *         $attribute = $e->attribute;
+     *
+     *         if ($attribute !== 'authorExpertise') {
+     *             return;
+     *         }
+     *
+     *         // The field data is eager-loaded!
+     *         $author = $e->sender->getAuthor();
+     *         $categories = $author->areasOfExpertiseCategoryField;
+     *
+     *         $e->html = Cp::elementPreviewHtml($categories);
+     *     }
+     * );
+     * ```
+     *
+     * @since 3.7.14
+     */
+    const EVENT_PREP_QUERY_FOR_TABLE_ATTRIBUTE = 'prepQueryForTableAttribute';
 
     /**
      * @event DefineEagerLoadingMapEvent The event that is triggered when defining an eager-loading map.
@@ -782,7 +842,16 @@ abstract class Element extends Component implements ElementInterface
 
             // Give each attribute a chance to modify the criteria
             foreach ($variables['attributes'] as $attribute) {
-                static::prepElementQueryForTableAttribute($elementQuery, $attribute[0]);
+                $event = new ElementIndexTableAttributeEvent([
+                    'query' => $elementQuery,
+                    'attribute' => $attribute[0],
+                ]);
+
+                Event::trigger(static::class, self::EVENT_PREP_QUERY_FOR_TABLE_ATTRIBUTE, $event);
+
+                if (!$event->handled) {
+                    static::prepElementQueryForTableAttribute($elementQuery, $attribute[0]);
+                }
             }
         }
 
@@ -1586,6 +1655,13 @@ abstract class Element extends Component implements ElementInterface
      * @see setUiLabel()
      */
     private $_uiLabel;
+
+    /**
+     * @var bool|null
+     * @see getIsFresh()
+     * @see setIsFresh()
+     */
+    private $_isFresh;
 
     /**
      * @inheritdoc
@@ -3554,9 +3630,40 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @inheritdoc
      */
+    public function getIsFresh(): bool
+    {
+        if ($this->hasErrors()) {
+            return false;
+        }
+
+        if ($this->contentId === null) {
+            return true;
+        }
+
+        if ($this->_isFresh !== null) {
+            return $this->_isFresh;
+        }
+
+        return false;
+    }
+
+    /**
+     * Returns whether the element is "fresh" (not yet explicitly saved, and without validation errors).
+     *
+     * @return bool
+     * @deprecated in 3.7.14. [[getIsFresh()]] should be used instead.
+     */
     public function getHasFreshContent(): bool
     {
-        return ($this->contentId === null && !$this->hasErrors());
+        return $this->getIsFresh();
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function setIsFresh(bool $isFresh = true): void
+    {
+        $this->_isFresh = $isFresh;
     }
 
     /**

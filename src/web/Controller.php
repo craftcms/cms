@@ -11,7 +11,6 @@ use Craft;
 use craft\helpers\FileHelper;
 use craft\helpers\Json;
 use craft\helpers\StringHelper;
-use craft\helpers\UrlHelper;
 use craft\web\assets\iframeresizer\ContentWindowAsset;
 use GuzzleHttp\Exception\ClientException;
 use yii\base\Action;
@@ -533,9 +532,6 @@ abstract class Controller extends \yii\web\Controller
      */
     public function redirect($url, $statusCode = 302): YiiResponse
     {
-        if (is_string($url)) {
-            $url = UrlHelper::url($url);
-        }
 
         if ($url !== null) {
             return $this->response->redirect($url, $statusCode);

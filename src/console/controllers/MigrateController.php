@@ -309,26 +309,27 @@ class MigrateController extends BaseMigrateController
             $this->stdout("Checking for pending migrations ...\n");
         }
 
-        /** @var MigrationManager[] $migrators */
-        $migrators = [
-            MigrationManager::TRACK_CRAFT => Craft::$app->getMigrator(),
-        ];
+        $migrationsByTrack = [];
+        $updatesService = Craft::$app->getUpdates();
 
-        $plugins = Craft::$app->getPlugins()->getAllPlugins();
+        $craftMigrations = Craft::$app->getMigrator()->getNewMigrations();
+        if (!empty($craftMigrations) || $updatesService->getIsCraftDbMigrationNeeded()) {
+            $migrationsByTrack[MigrationManager::TRACK_CRAFT] = $craftMigrations;
+        }
+
+        $pluginsService = Craft::$app->getPlugins();
+        $plugins = $pluginsService->getAllPlugins();
         foreach ($plugins as $plugin) {
-            $migrators["plugin:$plugin->id"] = $plugin->getMigrator();
+            $pluginMigrations = $plugin->getMigrator()->getNewMigrations();
+            if (!empty($pluginMigrations) || $pluginsService->doesPluginRequireDatabaseUpdate($plugin)) {
+                $migrationsByTrack["plugin:$plugin->id"] = $pluginMigrations;
+            }
         }
 
         if (!$this->noContent) {
-            $migrators[MigrationManager::TRACK_CONTENT] = Craft::$app->getContentMigrator();
-        }
-
-        $migrationsByTrack = [];
-
-        foreach ($migrators as $track => $migrator) {
-            $migrations = $migrator->getNewMigrations();
-            if (!empty($migrations)) {
-                $migrationsByTrack[$track] = $migrations;
+            $contentMigrations = Craft::$app->getContentMigrator()->getNewMigrations();
+            if (!empty($contentMigrations)) {
+                $migrationsByTrack[MigrationManager::TRACK_CONTENT] = $contentMigrations;
             }
         }
 

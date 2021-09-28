@@ -129,9 +129,10 @@ class Sections extends Component
     private $_sections;
 
     /**
-     * @var
+     * @var MemoizableArray<EntryType>|null
+     * @see _entryTypes()
      */
-    private $_entryTypesById;
+    private $_entryTypes;
 
     /**
      * Serializer
@@ -993,16 +994,28 @@ class Sections extends Component
      */
     public function getEntryTypesBySectionId(int $sectionId): array
     {
-        $results = $this->_createEntryTypeQuery()
-            ->andWhere(['sectionId' => $sectionId])
-            ->orderBy(['sortOrder' => SORT_ASC])
-            ->all();
+        /** @var EntryType[] $entryTypes */
+        $entryTypes = $this->_entryTypes()->where('sectionId', $sectionId)->all();
+        ArrayHelper::multisort($entryTypes, 'sortOrder', SORT_ASC, SORT_NUMERIC);
+        return $entryTypes;
+    }
 
-        foreach ($results as $key => $result) {
-            $results[$key] = new EntryType($result);
+    /**
+     * Returns a memoizable array of all entry types.
+     *
+     * @return MemoizableArray<EntryType>
+     */
+    private function _entryTypes(): MemoizableArray
+    {
+        if ($this->_entryTypes === null) {
+            $entryTypes = [];
+            foreach ($this->_createEntryTypeQuery()->all() as $result) {
+                $entryTypes[] = new EntryType($result);
+            }
+            $this->_entryTypes = new MemoizableArray($entryTypes);
         }
 
-        return $results;
+        return $this->_entryTypes;
     }
 
     /**
@@ -1011,7 +1024,7 @@ class Sections extends Component
      * ---
      *
      * ```php
-     * $entryTypes = Craft::$app->sections->getAllEntryTypes(1);
+     * $entryTypes = Craft::$app->sections->getAllEntryTypes();
      * ```
      *
      * @return EntryType[]
@@ -1019,14 +1032,7 @@ class Sections extends Component
      */
     public function getAllEntryTypes(): array
     {
-        $results = $this->_createEntryTypeQuery()
-            ->all();
-
-        foreach ($results as $key => $result) {
-            $results[$key] = new EntryType($result);
-        }
-
-        return $results;
+        return $this->_entryTypes()->all();
     }
 
     /**
@@ -1043,19 +1049,7 @@ class Sections extends Component
      */
     public function getEntryTypeById(int $entryTypeId)
     {
-        if (!$entryTypeId) {
-            return null;
-        }
-
-        if ($this->_entryTypesById !== null && array_key_exists($entryTypeId, $this->_entryTypesById)) {
-            return $this->_entryTypesById[$entryTypeId];
-        }
-
-        $result = $this->_createEntryTypeQuery()
-            ->andWhere(['id' => $entryTypeId])
-            ->one();
-
-        return $this->_entryTypesById[$entryTypeId] = $result ? new EntryType($result) : null;
+        return $this->_entryTypes()->firstWhere('id', $entryTypeId);
     }
 
     /**
@@ -1072,15 +1066,7 @@ class Sections extends Component
      */
     public function getEntryTypesByHandle(string $entryTypeHandle): array
     {
-        $results = $this->_createEntryTypeQuery()
-            ->andWhere(['handle' => $entryTypeHandle])
-            ->all();
-
-        foreach ($results as $key => $result) {
-            $results[$key] = new EntryType($result);
-        }
-
-        return $results;
+        return $this->_entryTypes()->where('handle', $entryTypeHandle, true)->all();
     }
 
     /**
@@ -1205,7 +1191,7 @@ class Sections extends Component
         }
 
         // Clear caches
-        unset($this->_entryTypesById[$entryTypeRecord->id]);
+        $this->_entryTypes = null;
 
         if ($wasTrashed) {
             // Restore the entries that were deleted with the entry type
@@ -1401,7 +1387,7 @@ class Sections extends Component
         }
 
         // Clear caches
-        unset($this->_entryTypesById[$entryType->id]);
+        $this->_entryTypes = null;
 
         // Fire an 'afterDeleteEntryType' event
         if ($this->hasEventHandlers(self::EVENT_AFTER_DELETE_ENTRY_TYPE)) {

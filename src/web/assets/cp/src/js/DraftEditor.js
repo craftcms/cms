@@ -670,7 +670,10 @@ Craft.DraftEditor = Garnish.Base.extend({
         const data = this.serializeForm(true);
         if (force || data !== (this.lastSerializedValue || Craft.cp.$primaryForm.data('initialSerializedValue'))) {
             const provisional = (!this.settings.draftId || this.settings.isProvisionalDraft) && !this.settings.revisionId;
-            this.saveDraft(data, provisional);
+            this.saveDraft(data, provisional)
+              .catch(e => {
+                  console.warn('Couldn’t save draft:', e);
+              });
         }
     },
 
@@ -694,7 +697,7 @@ Craft.DraftEditor = Garnish.Base.extend({
         return new Promise((resolve, reject) => {
             // Ignore if we're already submitting the main form
             if (this.submittingForm) {
-                reject();
+                reject('Form already being submitted.');
                 return;
             }
 
@@ -748,7 +751,7 @@ Craft.DraftEditor = Garnish.Base.extend({
                 if (response.data.errors) {
                     this.errors = response.data.errors;
                     this._showFailStatus();
-                    reject();
+                    reject(response.data.errors);
                 }
 
                 const createdProvisionalDraft = !this.settings.draftId;
@@ -770,7 +773,6 @@ Craft.DraftEditor = Garnish.Base.extend({
                     if (createdProvisionalDraft) {
                         this.$revisionLabel.append(
                             $('<span/>', {
-                                class: 'extralight',
                                 text: ` — ${Craft.t('app', 'Edited')}`,
                             })
                         );
