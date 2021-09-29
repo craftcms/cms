@@ -90,10 +90,12 @@ module.exports = index.withOptions(
                     'body.high-contrast, body.theme-dark.high-contrast': baseStyleColors.highContrast,
                     'body.theme-dark.high-contrast': baseStyleColors.darkHighContrast,
 
-/*                    "[type='text']:focus, [type='email']:focus, [type='url']:focus, [type='password']:focus, [type='number']:focus, [type='date']:focus, [type='datetime-local']:focus, [type='month']:focus, [type='search']:focus, [type='tel']:focus, [type='time']:focus, [type='week']:focus, [multiple]:focus, textarea:focus, select:focus": {
+                    /*
+                    "[type='text']:focus, [type='email']:focus, [type='url']:focus, [type='password']:focus, [type='number']:focus, [type='date']:focus, [type='datetime-local']:focus, [type='month']:focus, [type='search']:focus, [type='tel']:focus, [type='time']:focus, [type='week']:focus, [multiple]:focus, textarea:focus, select:focus": {
                         'borderColor':theme('colors.orange.700'),
                         '--tw-ring-color':theme('colors.orange.700'),
-                    }*/
+                    }
+                    */
                 })
             }
         }
@@ -139,11 +141,13 @@ module.exports = index.withOptions(
                     return {
                         ...theme('colors'),
                         ...semanticTailwindColors[tailwindColorKey],
+
+                        // Set the default border color
                         DEFAULT: semanticTailwindColors.borderColor.separator
                     }
                 }
 
-                // Doesn't work with semantic colors
+                // `ringColor` doesn't work with semantic colors
                 // if (tailwindColorKey === 'ringColor') {
                 //     return {
                 //         ...theme('colors'),
@@ -202,7 +206,7 @@ module.exports = index.withOptions(
                     outline: '0 0 0 3px red',
                     none: 'none',
                 },
-                //
+
                 // ringColor: (theme) => ({
                 //     DEFAULT: theme('colors.green.500', '#41bd00'),
                 //     ...theme('colors'),
