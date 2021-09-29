@@ -47,13 +47,16 @@
 {% set isCurrent = not isDraft and not isRevision %}
 {% set isLikeCurrent = isCurrent or isProvisionalDraft or isUnpublishedDraft %}
 
-{% set allSites = craft.app.isMultiSite ? element.getSupportedSites() : [element.siteId] %}
+{% set allSites = craft.app.isMultiSite
+    ? element.getSupportedSites()|map(s => s is array ? s : {siteId: s})
+    : [{siteId: element.siteId}] %}
+{% set allSiteIds = allSites|column('siteId') %}
 {% set allEditableSiteIds = craft.app.sites.getEditableSiteIds() %}
-{% set propSiteIds = allSites|filter(s => s.propagate ?? true)|column(s => s.siteId ?? s) %}
+{% set propSiteIds = allSites|filter(s => s.propagate ?? true)|column('siteId') %}
 {% set propEditableSiteIds = propSiteIds|intersect(allEditableSiteIds) %}
 {% set isMultiSiteElement = craft.app.isMultiSite and allSites|length > 1 %}
-{% set addlEditableSiteIds = allSites|column(s => s.siteId ?? s)|diff(propSiteIds)|intersect(allEditableSiteIds) %}
-{% set canEditMultipleSites = isMultiSiteElement and (propEditableSiteIds|length > 1 or addlEditableSiteIds|length) %}
+{% set addlEditableSites = allSites|filter(s => not (s.propagate ?? true) and s.siteId in allEditableSiteIds) %}
+{% set canEditMultipleSites = isMultiSiteElement and (propEditableSiteIds|length > 1 or addlEditableSites|length) %}
 
 {# See if this is a new site that isn’t supported by the source element yet #}
 {% if isUnpublishedDraft %}
@@ -539,7 +542,7 @@
     isLive: isCurrent and element.enabled and element.getEnabledForSite() and element.getRoute(),
     isProvisionalDraft: isProvisionalDraft,
     siteStatuses: siteStatuses,
-    addlSiteIds: addlEditableSiteIds|values,
+    addlSites: addlEditableSites|values,
     cpEditUrl: element.cpEditUrl,
     draftId: element.draftId,
     revisionId: element.revisionId,
