@@ -1641,7 +1641,7 @@ return [
     'Whether to show files that the user doesn’t have permission to view, per the “View files uploaded by other users” permission.' => '"Diğer kullanıcılar tarafından yüklenen dosyaları görüntüleme" iznine göre, kullanıcının görüntüleme izninin olmadığı dosyaların gösterilip gösterilmeyeceğini belirtir.',
     'Whether to show volumes that the user doesn’t have permission to view.' => 'Kullanıcının görüntüleme izinlerine sahip olmadığı birimlerin gösterilip gösterilmeyeceğini belirtir.',
     'Whether validation errors on the related {type} should prevent the source element from being saved.' => '{type} ile ilgili hataları doğrulamak, kaynak elemanın kaydedilmesini engellemelidir.',
-    'Whether {type} should be allowed to relate themselves.' => '{type} öğesinin kendisi ile bağlantı kurmasına izin verilip verilmeyeceğini belirtir.',
+    'Whether {type} elements should be allowed to relate to themselves.' => 'Whether {type} elements should be allowed to relate to themselves.',
     'Which fields should be visible in the widget?' => 'Bu bileşende hangi alanlar gözükmeli?',
     'Which group should this field be displayed in?' => 'Bu alan hangi grupta gözükmeli?',
     'Which group should this site belong to?' => 'Bu site hangi gruba dahil olacak?',
