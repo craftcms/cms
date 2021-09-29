@@ -10,6 +10,7 @@ namespace craftunit\gql\mutations;
 use Codeception\Stub\Expected;
 use Craft;
 use craft\base\Element;
+use craft\elements\db\EntryQuery;
 use craft\elements\Entry;
 use craft\fields\Matrix;
 use craft\fields\Number;
@@ -20,6 +21,7 @@ use craft\gql\GqlEntityRegistry;
 use craft\gql\resolvers\mutations\Entry as EntryMutationResolver;
 use craft\helpers\StringHelper;
 use craft\models\GqlSchema;
+use craft\models\Section;
 use craft\services\Elements;
 use craft\test\mockclasses\elements\MockElementQuery;
 use craft\test\TestCase;
@@ -305,7 +307,10 @@ class GeneralMutationResolverTest extends TestCase
             'performStructureOperations' => true,
             'argumentTypeDefsByName' => [
                 'parentField' => $parentObjectType
-            ]
+            ],
+            'identifyEntry' => $this->make(EntryQuery::class, [
+                'one' => $entry
+            ])
         ]);
 
         // Finish setting up for the test
