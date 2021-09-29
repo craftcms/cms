@@ -51,7 +51,7 @@ class SearchTest extends Unit
     }
 
     /**
-     * @dataProvider filterElementIdByQueryDataProvider
+     * @dataProvider searchElementsDataProvider
      *
      * @param $usernameOrEmailsForResult
      * @param $usernameOrEmailsForQuery
@@ -68,28 +68,6 @@ class SearchTest extends Unit
 
         // Filter them
         $filtered = array_keys($this->search->searchElements($elementQuery));
-
-        sort($result, SORT_NUMERIC);
-        sort($filtered, SORT_NUMERIC);
-
-        self::assertSame($result, $filtered);
-    }
-
-    /**
-     * @dataProvider filterElementIdByQueryDataProvider
-     *
-     * @param $usernameOrEmailsForResult
-     * @param $usernameOrEmailsForQuery
-     * @param $searchQuery
-     */
-    public function testFilterElementIdsByQuery($usernameOrEmailsForResult, $usernameOrEmailsForQuery, $searchQuery)
-    {
-        // Repackage the dataProvider data into something that can be used by the filter function
-        $result = $this->_usernameEmailArrayToIdList($usernameOrEmailsForResult);
-        $elementIds = $this->_usernameEmailArrayToIdList($usernameOrEmailsForQuery);
-
-        // Filter them
-        $filtered = $this->search->filterElementIdsByQuery($elementIds, $searchQuery, true, 1, false);
 
         sort($result, SORT_NUMERIC);
         sort($filtered, SORT_NUMERIC);
@@ -143,7 +121,7 @@ class SearchTest extends Unit
      *
      * @return array
      */
-    public function filterElementIdByQueryDataProvider(): array
+    public function searchElementsDataProvider(): array
     {
         return [
             [['user1'], ['user1', 'user2', 'user3', 'user4'], 'user1@crafttest.com'],
