@@ -1641,7 +1641,7 @@ return [
     'Whether to show files that the user doesn’t have permission to view, per the “View files uploaded by other users” permission.' => 'Či sa majú zobrazovať súbory, pre ktoré používateľ nemá oprávnenie na prezeranie podľa oprávnenia „Prezerať súbory uložené inými používateľmi”.',
     'Whether to show volumes that the user doesn’t have permission to view.' => 'Určuje, či sa majú zobrazovať zväzky, pre ktoré používateľ nemá oprávnenie na prezeranie.',
     'Whether validation errors on the related {type} should prevent the source element from being saved.' => 'Či má prípadná chyba overenia príslušného {type} zamedziť uloženiu zdrojového prvku.',
-    'Whether {type} should be allowed to relate themselves.' => 'Či {type} majú mať povolené sa navzájom prepájať.',
+    'Whether {type} elements should be allowed to relate to themselves.' => 'Whether {type} elements should be allowed to relate to themselves.',
     'Which fields should be visible in the widget?' => 'Ktoré polia majú byť vo widgete viditeľné?',
     'Which group should this field be displayed in?' => 'V ktorej skupine by sa malo toto pole zobraziť?',
     'Which group should this site belong to?' => 'Do ktorej skupiny má patriť tento web?',
