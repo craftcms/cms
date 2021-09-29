@@ -8,6 +8,7 @@
 namespace craft\gql\resolvers\mutations;
 
 use Craft;
+use craft\base\Element;
 use craft\db\Table;
 use craft\elements\db\EntryQuery;
 use craft\elements\Entry as EntryElement;
@@ -46,8 +47,12 @@ class Entry extends ElementMutationResolver
     {
         $entry = $this->getEntryElement($arguments);
 
-        $entry = $this->populateElementWithData($entry, $arguments, $resolveInfo);
+        // TODO refactor saving draft to its own method in 4.0
+        if (array_key_exists('draftId', $arguments)) {
+            $entry->setScenario(Element::SCENARIO_ESSENTIALS);
+        }
 
+        $entry = $this->populateElementWithData($entry, $arguments, $resolveInfo);
         $entry = $this->saveElement($entry);
         $this->performStructureOperations($entry, $arguments);
 
