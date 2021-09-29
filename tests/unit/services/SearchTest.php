@@ -75,19 +75,6 @@ class SearchTest extends Unit
         self::assertSame($result, $filtered);
     }
 
-    /**
-     *
-     */
-    public function testElementQueryReturnsInt()
-    {
-        $result = $this->_usernameEmailArrayToIdList(['user1', 'user2', 'user3'], true);
-        $forQuery = $this->_usernameEmailArrayToIdList(['user1', 'user2', 'user3'], false);
-
-        $filtered = $this->search->filterElementIdsByQuery($forQuery, 'user');
-
-        self::assertSame($result, $filtered);
-    }
-
     /*
      * Creates a new User(); and runs indexElementAttributes on it to see how its property values are stored in the database.
      *
