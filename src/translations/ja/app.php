@@ -1635,7 +1635,7 @@ return [
     'Whether to show files that the user doesn’t have permission to view, per the “View files uploaded by other users” permission.' => '「他のユーザーがアップロードしたファイルを表示」権限に従ってユーザーが表示権限を持たないファイルを表示するかどうか。',
     'Whether to show volumes that the user doesn’t have permission to view.' => 'ユーザーが表示権限を持たないボリュームを表示するかどうか。',
     'Whether validation errors on the related {type} should prevent the source element from being saved.' => '関連{type}の検証エラーがソースエレメントの保存を妨げるかどうか。',
-    'Whether {type} should be allowed to relate themselves.' => '{type} が自身を関連付けることを許可するかどうか。',
+    'Whether {type} elements should be allowed to relate to themselves.' => '{type} が自身を関連付けることを許可するかどうか。',
     'Which fields should be visible in the widget?' => 'ウィジェットに何のフィールドが見えますか？',
     'Which group should this field be displayed in?' => 'このフィールドはどのグループに表示しますか？',
     'Which group should this site belong to?' => 'このサイトはどのグループに所属しますか？',

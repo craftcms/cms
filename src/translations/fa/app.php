@@ -1635,7 +1635,7 @@ return [
     'Whether to show files that the user doesn’t have permission to view, per the “View files uploaded by other users” permission.' => 'گزینه نمایش فایل‌هایی که کاربران بنا بر مجوز «مشاهده فایل‌های بارگذاری‌شده به وسیله کاربران» مجاز به مشاهده نیستند.',
     'Whether to show volumes that the user doesn’t have permission to view.' => 'گزینه نمایش مخزن‌هایی که کاربران مجوز مشاهده آن را ندارند.',
     'Whether validation errors on the related {type} should prevent the source element from being saved.' => 'که آیا خطاهای اعتبارسنجی روی {type}ی مرتبط باید از ذخیره مؤلفه منبع جلوگیری نماید.',
-    'Whether {type} should be allowed to relate themselves.' => 'آیا {type} باید اجازه ارتباط با خودش را داشته باشد.',
+    'Whether {type} elements should be allowed to relate to themselves.' => 'آیا {type} باید اجازه ارتباط با خودش را داشته باشد.',
     'Which fields should be visible in the widget?' => 'کدامیک از فیلدها باید در ویجت قابل مشاهده باشند؟',
     'Which group should this field be displayed in?' => 'این فیلد در کدام گروه باید نمایش داده شود؟',
     'Which group should this site belong to?' => 'این سایت متعلق به کدام گروه است؟',

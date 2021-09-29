@@ -1635,7 +1635,7 @@ return [
     'Whether to show files that the user doesn’t have permission to view, per the “View files uploaded by other users” permission.' => 'Ob die Dateien angezeigt werden, auf die der Benutzer keinen Zugriff hat, per «Von anderen Benutzern hochgeladene Dateien anzeigen» Berechtigung.',
     'Whether to show volumes that the user doesn’t have permission to view.' => 'Ob die Volumen angezeigt werden sollen, die der Benutzer nicht berechtigt ist, anzusehen.',
     'Whether validation errors on the related {type} should prevent the source element from being saved.' => 'Ob Validierungsfehler auf dem zugehörigen {type} verhindern sollen, dass das Quellelement gespeichert wird.',
-    'Whether {type} should be allowed to relate themselves.' => 'Ob es {type} erlaubt sein sollte, sich selbst zu beziehen.',
+    'Whether {type} elements should be allowed to relate to themselves.' => 'Ob es {type} erlaubt sein sollte, sich selbst zu beziehen.',
     'Which fields should be visible in the widget?' => 'Welche Felder sollen im Widget sichtbar sein?',
     'Which group should this field be displayed in?' => 'In welcher Gruppe soll dieses Feld angezeigt werden?',
     'Which group should this site belong to?' => 'Zu welcher Gruppe soll diese Website gehören?',
