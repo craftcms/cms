@@ -1641,7 +1641,7 @@ return [
     'Whether to show files that the user doesn’t have permission to view, per the “View files uploaded by other users” permission.' => 'ما إذا كان سيتم عرض الملفات التي لا يملك المستخدم إذنًا بعرضها، وفقًا لإذن "عرض الملفات التي تم تحميلها بواسطة مستخدمين آخرين".',
     'Whether to show volumes that the user doesn’t have permission to view.' => 'ما إذا كان سيتم عرض وحدات التخزين التي لا يملك المستخدم إذنًا بعرضها.',
     'Whether validation errors on the related {type} should prevent the source element from being saved.' => 'ما إذا كانت أخطاء التحقق من الصحة في {type} ذات الصلة يجب أن تمنع حفظ عنصر المصدر.',
-    'Whether {type} should be allowed to relate themselves.' => 'ما إذا كان يجب السماح لـ {type} بالربط الذاتي.',
+    'Whether {type} elements should be allowed to relate to themselves.' => 'Whether {type} elements should be allowed to relate to themselves.',
     'Which fields should be visible in the widget?' => 'ما الحقول التي يجب عرضها في عنصر الواجهة؟',
     'Which group should this field be displayed in?' => 'ما المجموعة التي يجب عرض هذا الحقل فيها؟',
     'Which group should this site belong to?' => 'ما المجموعة التي يجب أن ينتمي إليها هذا الموقع؟',
