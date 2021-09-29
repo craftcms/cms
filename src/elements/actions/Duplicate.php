@@ -117,9 +117,8 @@ class Duplicate extends ElementAction
 
             if ($this->deep) {
                 // Don't use $element->children() here in case its lft/rgt values have changed
-                $childQuery = (clone $query);
-                $children = $childQuery
-                    ->id(null)
+                $children = $element::find()
+                    ->siteId($element->siteId)
                     ->descendantOf($element->id)
                     ->descendantDist(1)
                     ->anyStatus()
