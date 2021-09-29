@@ -2,8 +2,12 @@
 
 ## Unreleased
 
+### Added
+- Added the `provisional` argument to GraphQL API save draft mutations.
+
 ### Fixed
 - Fixed a bug where the “Duplicate (with descendants)” element action would only partially duplicate multi-level structures. ([#9889](https://github.com/craftcms/cms/issues/9889))
+- Fixed a bug where it was impossible to edit a provisional draft using the GraphQL API. ([#9892](https://github.com/craftcms/cms/issues/9892))
 
 ## 3.7.14 - 2021-09-28
 
