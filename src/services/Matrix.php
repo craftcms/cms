@@ -953,6 +953,7 @@ class Matrix extends Component
             ->ignorePlaceholders()
             ->indexBy('siteId')
             ->all();
+        $localizedOwners[$owner->siteId] = $owner;
 
         // Get the canonical owner across all sites
         $canonicalOwners = $owner::find()
