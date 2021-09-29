@@ -1641,7 +1641,7 @@ return [
     'Whether to show files that the user doesn’t have permission to view, per the “View files uploaded by other users” permission.' => 'Megjelenjenek-e a fájlok, amelyek megjelenítésére a felhasználónak nincs jogosultsága a „Más felhasználók által feltöltött fájlok megtekintése” jogosultság értelmében.',
     'Whether to show volumes that the user doesn’t have permission to view.' => 'Megjelenjenek-e a kötetek, amelyek megjelenítésére a felhasználónak nincs jogosultsága.',
     'Whether validation errors on the related {type} should prevent the source element from being saved.' => 'Akadályozzák-e meg a kapcsolódó {type} ellenőrzési hibái a forráselem mentését.',
-    'Whether {type} should be allowed to relate themselves.' => 'Meghatározza, hogy egy {type} kapcsolódhat-e önmagához.',
+    'Whether {type} elements should be allowed to relate to themselves.' => 'Whether {type} elements should be allowed to relate to themselves.',
     'Which fields should be visible in the widget?' => 'Milyen mezők legyenek láthatók a minialkalmazásban?',
     'Which group should this field be displayed in?' => 'Melyik csoportban jelenjen meg ez a mező?',
     'Which group should this site belong to?' => 'Melyik csoporthoz tartozzon ez a webhely?',
