@@ -4,6 +4,14 @@
 
 ### Added
 - Added the `provisional` argument for draft mutations via GraphQL.
+- Added the `is array` Twig test.
+- Added the `is callable` Twig test.
+- Added the `is float` Twig test.
+- Added the `is integer` Twig test.
+- Added the `is numeric` Twig test.
+- Added the `is resource` Twig test.
+- Added the `is scalar` Twig test.
+- Added the `is string` Twig test.
 
 ### Fixed
 - Fixed a bug where the “Duplicate (with descendants)” element action would only partially duplicate multi-level structures. ([#9889](https://github.com/craftcms/cms/issues/9889))
