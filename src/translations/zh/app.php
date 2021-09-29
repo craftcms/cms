@@ -1641,7 +1641,7 @@ return [
     'Whether to show files that the user doesn’t have permission to view, per the “View files uploaded by other users” permission.' => '是否显示按照“查看其他用户上传的文件”权限该用户无权查看的文件。',
     'Whether to show volumes that the user doesn’t have permission to view.' => '是否显示该用户没有权限查看的存储卷。',
     'Whether validation errors on the related {type} should prevent the source element from being saved.' => '相关{type}的验证错误是否应阻止源元素被保存。',
-    'Whether {type} should be allowed to relate themselves.' => '是否应允许{type}自我关联。',
+    'Whether {type} elements should be allowed to relate to themselves.' => 'Whether {type} elements should be allowed to relate to themselves.',
     'Which fields should be visible in the widget?' => '哪些字段应在小部件中可见？',
     'Which group should this field be displayed in?' => '哪些群组中应显示该字段？',
     'Which group should this site belong to?' => '该站点应属于哪个组？',

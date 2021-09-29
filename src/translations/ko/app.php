@@ -1641,7 +1641,7 @@ return [
     'Whether to show files that the user doesn’t have permission to view, per the “View files uploaded by other users” permission.' => '"다른 사용자가 업로드한 파일 보기" 권한에 따라, 사용자에게 보기 권한이 없는 파일을 표시할지 여부입니다.',
     'Whether to show volumes that the user doesn’t have permission to view.' => '사용자에게 보기 권한이 없는 볼륨을 표시할지 여부입니다.',
     'Whether validation errors on the related {type} should prevent the source element from being saved.' => '관련 {type}의 유효화 오류가 소스 요소의 저장을 방해해야 하는지 확인합니다.',
-    'Whether {type} should be allowed to relate themselves.' => '해당 항목을 관련시키는 데 {type}을(를) 허용해야 하는지 여부입니다.',
+    'Whether {type} elements should be allowed to relate to themselves.' => 'Whether {type} elements should be allowed to relate to themselves.',
     'Which fields should be visible in the widget?' => '위젯에서 어느 필드가 보여야 하나요?',
     'Which group should this field be displayed in?' => '어느 그룹 안에 이 필드가 표시되어야 하나요?',
     'Which group should this site belong to?' => '이 사이트가 속해야 하는 그룹은 어떤 그룹인가요?',
