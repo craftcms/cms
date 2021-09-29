@@ -1635,7 +1635,7 @@ return [
     'Whether to show files that the user doesn’t have permission to view, per the “View files uploaded by other users” permission.' => 'Om filer som användaren inte har behörighet att se ska visas enligt behörigheten "Visa filer som laddats upp av andra användare".',
     'Whether to show volumes that the user doesn’t have permission to view.' => 'Om volymer som användaren inte har behörighet att se ska visas.',
     'Whether validation errors on the related {type} should prevent the source element from being saved.' => 'Om valideringsfel för den relaterade {type} ska förhindra att källelementet blir sparat.',
-    'Whether {type} should be allowed to relate themselves.' => 'Om {type} ska tillåtas att relatera till sig själv.',
+    'Whether {type} elements should be allowed to relate to themselves.' => 'Om {type} ska tillåtas att relatera till sig själv.',
     'Which fields should be visible in the widget?' => 'Vilka fält ska synas i widgeten?',
     'Which group should this field be displayed in?' => 'I vilken grupp ska detta fält visas?',
     'Which group should this site belong to?' => 'Vilken grupp ska denna webbplats tillhöra?',

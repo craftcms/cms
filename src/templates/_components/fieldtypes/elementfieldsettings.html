@@ -80,8 +80,8 @@
         <div id="advanced" class="hidden">
 
             {{ forms.checkboxField({
-                label: 'Allow self relations'|t('app', { type: pluralElementType }),
-                instructions: 'Whether {type} should be allowed to relate themselves.'|t('app', { type: pluralElementType }),
+                label: 'Allow self relations'|t('app'),
+                instructions: 'Whether {type} elements should be allowed to relate to themselves.'|t('app', { type: elementType }),
                 id: 'allow-self-relations',
                 name: 'allowSelfRelations',
                 checked: field.allowSelfRelations,
@@ -95,7 +95,7 @@
 
                 {% block localizeRelationsField %}
                     {{ forms.checkboxField({
-                        label: "Manage relations on a per-site basis"|t('app'),
+                        label: 'Manage relations on a per-site basis'|t('app'),
                         id: 'localize-relations',
                         name: 'localizeRelations',
                         checked: field.localizeRelations
