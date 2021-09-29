@@ -9,6 +9,7 @@
 - Fixed a bug where the “Duplicate (with descendants)” element action would only partially duplicate multi-level structures. ([#9889](https://github.com/craftcms/cms/issues/9889))
 - Fixed a bug where it wasn’t possible to mutate a provisional draft via GraphQL. ([#9892](https://github.com/craftcms/cms/issues/9892))
 - Fixed a bug where it wasn’t possible to mutate a draft via GraphQL without passing all required custom fields. ([#9893](https://github.com/craftcms/cms/issues/9893))
+- Fixed an error that could occur when merging upstream changes into a draft, if the canonical entry had been enabled for a new site and contained new Matrix blocks. ([#9895](https://github.com/craftcms/cms/issues/9895))
 
 ## 3.7.14 - 2021-09-28
 
