@@ -13,6 +13,9 @@
 - Added the `is scalar` Twig test.
 - Added the `is string` Twig test.
 
+### Deprecated
+- Deprecated `craft\helpers\UrlHelper::baseRequestUrl()`. `Craft::getAlias('@web')` should be used instead.
+
 ### Fixed
 - Fixed a bug where the “Duplicate (with descendants)” element action would only partially duplicate multi-level structures. ([#9889](https://github.com/craftcms/cms/issues/9889))
 - Fixed a bug where it wasn’t possible to mutate a provisional draft via GraphQL. ([#9892](https://github.com/craftcms/cms/issues/9892))
@@ -20,6 +23,9 @@
 - Fixed an error that could occur when merging upstream changes into a draft, if the canonical entry had been enabled for a new site and contained new Matrix blocks. ([#9895](https://github.com/craftcms/cms/issues/9895))
 - Fixed a bug where sections’ Default Status settings weren’t being respected when adding a new site to an entry. ([#9896](https://github.com/craftcms/cms/issues/9896))
 - Fixed a bug where the `utils/repair/section-structure` command was removing provisional drafts from the structure. ([#9868](https://github.com/craftcms/cms/issues/9868))
+
+### Security
+- Generated front-end URLs now begin with the `@web` alias value if the current site doesn’t have a base URL.
 
 ## 3.7.14 - 2021-09-28
 
