@@ -1216,6 +1216,7 @@ class ProjectConfig extends Component
         $config = $this->get();
         $config[self::PATH_CATEGORY_GROUPS] = $this->_getCategoryGroupData();
         $config[self::PATH_DATE_MODIFIED] = DateTimeHelper::currentTimeStamp();
+        $config[self::PATH_ELEMENT_SOURCES] = $this->_getElementSourceData($config[self::PATH_ELEMENT_SOURCES] ?? []);
         $config[self::PATH_ENTRY_TYPES] = $this->_getEntryTypeData();
         $config[self::PATH_FIELDS] = $this->_getFieldData();
         $config[self::PATH_FIELD_GROUPS] = $this->_getFieldGroupData();
@@ -1943,6 +1944,25 @@ class ProjectConfig extends Component
             $data[$section->uid] = $section->getConfig();
         }
         return $data;
+    }
+
+    /**
+     * Returns element source data.
+     *
+     * @param array $sourceConfigs
+     * @return array
+     */
+    private function _getElementSourceData(array $sourceConfigs): array
+    {
+        $conditionsService = Craft::$app->getConditions();
+        foreach ($sourceConfigs as &$elementTypeConfigs) {
+            foreach ($elementTypeConfigs as &$config) {
+                if ($config['type'] === ElementSources::TYPE_CUSTOM && isset($config['condition'])) {
+                    $config['condition'] = $conditionsService->createCondition($config['condition'])->getConfig();
+                }
+            }
+        }
+        return $sourceConfigs;
     }
 
     /**
