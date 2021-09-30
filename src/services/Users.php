@@ -273,7 +273,7 @@ class Users extends Component
             $userRecord = $this->_getUserRecordById($user->id);
             $user->verificationCode = $userRecord->verificationCode;
             $user->verificationCodeIssuedDate = $userRecord->verificationCodeIssuedDate
-                ? new \DateTime($userRecord->verificationCodeIssuedDate, new DateTimeZone('UTC'))
+                ? new DateTime($userRecord->verificationCodeIssuedDate, new DateTimeZone('UTC'))
                 : null;
 
             if (!$user->verificationCode || !$user->verificationCodeIssuedDate) {
@@ -1003,7 +1003,7 @@ class Users extends Component
                 [
                     'or',
                     ['expiryDate' => null],
-                    ['>', 'expiryDate', Db::prepareDateForDb(new \DateTime())],
+                    ['>', 'expiryDate', Db::prepareDateForDb(new DateTime())],
                 ],
             ])
             ->exists();

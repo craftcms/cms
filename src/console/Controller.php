@@ -315,14 +315,14 @@ class Controller extends YiiController
 
     /**
      * @param Action $action
-     * @return \ReflectionMethod
+     * @return ReflectionMethod
      */
     protected function getActionMethodReflection($action): ReflectionMethod
     {
         if ($action instanceof CallableAction) {
             if (!isset($this->_reflections[$action->id])) {
                 if (is_array($action->callable)) {
-                    $this->_reflections[$action->id] = new \ReflectionMethod($action->callable[0], $action->callable[1]);
+                    $this->_reflections[$action->id] = new ReflectionMethod($action->callable[0], $action->callable[1]);
                 } else {
                     $this->_reflections[$action->id] = new ReflectionFunction($action->callable);
                 }

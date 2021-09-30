@@ -12,6 +12,7 @@ use Craft;
 use craft\base\Serializable;
 use craft\db\Connection;
 use craft\db\mysql\Schema as MysqlSchema;
+use craft\db\pgsql\Schema as PgsqlSchema;
 use craft\db\Query;
 use DateTime;
 use DateTimeZone;
@@ -22,6 +23,7 @@ use yii\base\InvalidArgumentException;
 use yii\base\NotSupportedException;
 use yii\db\BatchQueryResult;
 use yii\db\Exception as DbException;
+use yii\db\pgsql\Schema as YiiPgqslSchema;
 use yii\db\Query as YiiQuery;
 use yii\db\Schema;
 
@@ -126,7 +128,7 @@ class Db
 
         // If this isn’t a JSON column and the value is an object or array, JSON-encode it
         if (
-            !in_array($columnType, [Schema::TYPE_JSON, \yii\db\pgsql\Schema::TYPE_JSONB]) &&
+            !in_array($columnType, [Schema::TYPE_JSON, YiiPgqslSchema::TYPE_JSONB]) &&
             (is_object($value) || is_array($value))
         ) {
             return Json::encode($value);
@@ -723,7 +725,7 @@ class Db
             $db = self::db();
         }
 
-        /** @var \craft\db\mysql\Schema|\craft\db\pgsql\Schema $schema */
+        /** @var MysqlSchema|PgsqlSchema $schema */
         $schema = $db->getSchema();
 
         return isset($schema->typeMap[$type]);

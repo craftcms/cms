@@ -44,11 +44,11 @@ use yii\base\UnknownPropertyException;
  * @property-read string[] $allVolumeTypes
  * @property-read int $totalVolumes
  * @property-read array $viewableVolumeIds
- * @property-read \craft\base\VolumeInterface[] $allVolumes
+ * @property-read VolumeInterface[] $allVolumes
  * @property-read int[] $publicVolumeIds
  * @property-read int $totalViewableVolumes
- * @property-read \craft\base\VolumeInterface[] $publicVolumes
- * @property-read \craft\base\VolumeInterface[] $viewableVolumes
+ * @property-read VolumeInterface[] $publicVolumes
+ * @property-read VolumeInterface[] $viewableVolumes
  */
 class Volumes extends Component
 {

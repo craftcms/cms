@@ -80,7 +80,7 @@ class LivePreviewController extends Controller
      * @param string $previewAction
      * @param int $userId
      * @return mixed
-     * @throws \yii\web\BadRequestHttpException
+     * @throws BadRequestHttpException
      * @throws InvalidRouteException
      * @throws ServerErrorHttpException
      * @throws Exception

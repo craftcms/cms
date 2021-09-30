@@ -2563,7 +2563,7 @@ class Elements extends Component
                     $elementRecord->markAttributeDirty('dateUpdated');
                 } else {
                     // Force a new dateUpdated value
-                    $elementRecord->dateUpdated = Db::prepareValueForDb(new \DateTime());
+                    $elementRecord->dateUpdated = Db::prepareValueForDb(new DateTime());
                 }
 
                 // Update our list of dirty attributes
@@ -2749,7 +2749,7 @@ class Elements extends Component
         // Update the changed attributes & fields
         if ($trackChanges) {
             $userId = Craft::$app->getUser()->getId();
-            $timestamp = Db::prepareDateForDb(new \DateTime());
+            $timestamp = Db::prepareDateForDb(new DateTime());
 
             foreach ($element->getDirtyAttributes() as $attributeName) {
                 Db::upsert(Table::CHANGEDATTRIBUTES, [
@@ -2897,7 +2897,7 @@ class Elements extends Component
     private function _cascadeDeleteDraftsAndRevisions(int $canonicalId, bool $delete = true): void
     {
         $params = [
-            'dateDeleted' => $delete ? Db::prepareDateForDb(new \DateTime()) : null,
+            'dateDeleted' => $delete ? Db::prepareDateForDb(new DateTime()) : null,
             'canonicalId' => $canonicalId,
         ];
 

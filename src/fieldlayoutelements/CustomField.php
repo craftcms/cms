@@ -105,7 +105,7 @@ class CustomField extends BaseField
      */
     public function setFieldUid(string $uid): void
     {
-        if (($field = \Craft::$app->getFields()->getFieldByUid($uid)) === null) {
+        if (($field = Craft::$app->getFields()->getFieldByUid($uid)) === null) {
             throw new InvalidArgumentException("Invalid field UID: $uid");
         }
         $this->_field = $field;

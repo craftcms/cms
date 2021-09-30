@@ -589,7 +589,7 @@ class Asset extends Element
     public ?bool $keptFile = null;
 
     /**
-     * @var \DateTime|null Date modified
+     * @var DateTime|null Date modified
      */
     public ?DateTime $dateModified = null;
 

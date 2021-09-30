@@ -792,7 +792,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
      */
     public function dateFilter(TwigEnvironment $env, $date, ?string $format = null, $timezone = null, ?string $locale = null): string
     {
-        if ($date instanceof \DateInterval) {
+        if ($date instanceof DateInterval) {
             return twig_date_format_filter($env, $date, $format, $timezone);
         }
 
@@ -845,7 +845,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
      */
     public function atomFilter(TwigEnvironment $env, $date, $timezone = null): string
     {
-        return twig_date_format_filter($env, $date, \DateTime::ATOM, $timezone);
+        return twig_date_format_filter($env, $date, DateTime::ATOM, $timezone);
     }
 
     /**
@@ -876,7 +876,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
      */
     public function rssFilter(TwigEnvironment $env, $date, $timezone = null): string
     {
-        return twig_date_format_filter($env, $date, \DateTime::RSS, $timezone);
+        return twig_date_format_filter($env, $date, DateTime::RSS, $timezone);
     }
 
     /**
@@ -954,7 +954,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
      * Filters an array.
      *
      * @param TwigEnvironment $env
-     * @param array|\Traversable $arr
+     * @param array|Traversable $arr
      * @param callable|null $arrow
      * @return array
      */
@@ -983,7 +983,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
     /**
      * Groups an array by a the results of an arrow function, or value of a property.
      *
-     * @param array|\Traversable $arr
+     * @param array|Traversable $arr
      * @param callable|string $arrow The arrow function or property name that determines the group the item should be grouped in
      * @return array[] The grouped items
      * @throws RuntimeError if $arr is not of type array or Traversable
@@ -995,7 +995,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
             $arr = $arr->all();
         }
 
-        if (!is_array($arr) && !$arr instanceof \Traversable) {
+        if (!is_array($arr) && !$arr instanceof Traversable) {
             throw new RuntimeError('Values passed to the |group filter must be of type array or Traversable.');
         }
 
@@ -1030,7 +1030,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
      */
     public function httpdateFilter(TwigEnvironment $env, $date, $timezone = null): string
     {
-        return twig_date_format_filter($env, $date, \DateTime::RFC7231, $timezone);
+        return twig_date_format_filter($env, $date, DateTime::RFC7231, $timezone);
     }
 
 
@@ -1100,8 +1100,8 @@ class Extension extends AbstractExtension implements GlobalsInterface
     /**
      * Merges an array with another one.
      *
-     * @param array|\Traversable $arr1 An array
-     * @param array|\Traversable $arr2 An array
+     * @param array|Traversable $arr1 An array
+     * @param array|Traversable $arr2 An array
      * @param bool $recursive Whether the arrays should be merged recursively using [[\yii\helpers\BaseArrayHelper::merge()]]
      * @return array The merged array
      * @since 3.4.0
@@ -1226,9 +1226,9 @@ class Extension extends AbstractExtension implements GlobalsInterface
      * Converts an input to a [[\DateTime]] instance.
      *
      * @param TwigEnvironment $env
-     * @param \DateTimeInterface|string|array|null $date A date, or null to use the current time
-     * @param \DateTimeZone|string|false|null $timezone The target timezone, `null` to use the default, `false` to leave unchanged
-     * @return \DateTimeInterface
+     * @param DateTimeInterface|string|array|null $date A date, or null to use the current time
+     * @param DateTimeZone|string|false|null $timezone The target timezone, `null` to use the default, `false` to leave unchanged
+     * @return DateTimeInterface
      */
     public function dateFunction(TwigEnvironment $env, $date = null, $timezone = null): DateTimeInterface
     {
@@ -1479,7 +1479,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
             'loginUrl' => UrlHelper::siteUrl($generalConfig->getLoginPath()),
             'logoutUrl' => UrlHelper::siteUrl($generalConfig->getLogoutPath()),
             'setPasswordUrl' => $setPasswordRequestPath !== null ? UrlHelper::siteUrl($setPasswordRequestPath) : null,
-            'now' => new DateTime(null, new \DateTimeZone(Craft::$app->getTimeZone())),
+            'now' => new DateTime(null, new DateTimeZone(Craft::$app->getTimeZone())),
         ];
     }
 }
