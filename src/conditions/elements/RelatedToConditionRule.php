@@ -86,7 +86,8 @@ class RelatedToConditionRule extends BaseConditionRule implements QueryCondition
     public function getConfig(): array
     {
         return array_merge(parent::getConfig(), [
-            'elementIds' => $this->_elementIds
+            'elementType' => $this->elementType,
+            'elementIds' => $this->_elementIds,
         ]);
     }
 
