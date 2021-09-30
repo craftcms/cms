@@ -25,7 +25,6 @@ use craft\models\CategoryGroup;
 use craft\models\Info;
 use craft\models\Section;
 use craft\models\Site;
-use craft\services\Plugins;
 use craft\services\ProjectConfig;
 use craft\web\Response;
 use yii\base\InvalidConfigException;
@@ -1071,7 +1070,7 @@ class Install extends Migration
 
         if ($this->applyProjectConfigYaml && $projectConfig->getDoesYamlExist()) {
             try {
-                $expectedSchemaVersion = (string)$projectConfig->get(ProjectConfig::CONFIG_SCHEMA_VERSION_KEY, true);
+                $expectedSchemaVersion = (string)$projectConfig->get(ProjectConfig::PATH_SCHEMA_VERSION, true);
                 $craftSchemaVersion = (string)Craft::$app->schemaVersion;
 
                 // Compare existing Craft schema version with the one that is being applied.
@@ -1162,13 +1161,13 @@ class Install extends Migration
     {
         $projectConfig = Craft::$app->getProjectConfig();
         $pluginsService = Craft::$app->getPlugins();
-        $pluginConfigs = $projectConfig->get(Plugins::CONFIG_PLUGINS_KEY, true) ?? [];
+        $pluginConfigs = $projectConfig->get(ProjectConfig::PATH_PLUGINS, true) ?? [];
 
         // Make sure that all to-be-installed plugins actually exist,
         // and that they have the same schema as project.yaml
         foreach ($pluginConfigs as $handle => $config) {
             $plugin = $pluginsService->createPlugin($handle);
-            $expectedSchemaVersion = $projectConfig->get(Plugins::CONFIG_PLUGINS_KEY . '.' . $handle . '.schemaVersion', true);
+            $expectedSchemaVersion = $projectConfig->get(ProjectConfig::PATH_PLUGINS . '.' . $handle . '.schemaVersion', true);
 
             if ($plugin->schemaVersion && $expectedSchemaVersion && $plugin->schemaVersion != $expectedSchemaVersion) {
                 throw new InvalidPluginException($handle, "{$handle} is installed at the wrong schema version ({$plugin->schemaVersion}, but project.yaml lists {$expectedSchemaVersion}).");

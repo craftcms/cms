@@ -40,9 +40,6 @@ use yii\web\ServerErrorHttpException;
  */
 class ProjectConfig extends Component
 {
-    // Cache settings
-    // -------------------------------------------------------------------------
-
     /**
      * The cache key that is used to store the modified time of the project config files, at the time they were last applied.
      */
@@ -85,30 +82,34 @@ class ProjectConfig extends Component
      */
     const CONFIG_DELTA_FILENAME = 'delta.yaml';
     /**
-     * The project config key that Craft system info is stored at.
-     *
-     * @since 3.5.8
-     */
-    const CONFIG_SYSTEM = 'system';
-    /**
-     * The project config key that the Craft schema version is stored at.
-     */
-    const CONFIG_SCHEMA_VERSION_KEY = self::CONFIG_SYSTEM . '.schemaVersion';
-    /**
      * The array key to use for signaling ordered-to-associative array conversion.
-     *
-     * @since 3.4.0
      */
-    const CONFIG_ASSOC_KEY = '__assoc__';
-    /**
-     * @since 3.4.0
-     * @deprecated in 3.5.0
-     */
-    const CONFIG_ALL_KEY = '__all__';
-    /**
-     * The project config key that Craft uses to store project config names.
-     */
-    const CONFIG_NAMES_KEY = 'meta.__names__';
+    public const ASSOC_KEY = '__assoc__';
+
+    public const PATH_CATEGORY_GROUPS = 'categoryGroups';
+    public const PATH_DATE_MODIFIED = 'dateModified';
+    public const PATH_ENTRY_TYPES = 'entryTypes';
+    public const PATH_FIELDS = 'fields';
+    public const PATH_FIELD_GROUPS = 'fieldGroups';
+    public const PATH_GLOBAL_SETS = 'globalSets';
+    public const PATH_GRAPHQL = 'graphql';
+    public const PATH_GRAPHQL_PUBLIC_TOKEN = self::PATH_GRAPHQL . '.' . 'publicToken';
+    public const PATH_GRAPHQL_SCHEMAS = self::PATH_GRAPHQL . '.' . 'schemas';
+    public const PATH_IMAGE_TRANSFORMS = 'imageTransforms';
+    public const PATH_MATRIX_BLOCK_TYPES = 'matrixBlockTypes';
+    public const PATH_META_NAMES = 'meta.__names__';
+    public const PATH_PLUGINS = 'plugins';
+    public const PATH_ROUTES = 'routes';
+    public const PATH_SCHEMA_VERSION = self::PATH_SYSTEM . '.schemaVersion';
+    public const PATH_SECTIONS = 'sections';
+    public const PATH_SITES = 'sites';
+    public const PATH_SITE_GROUPS = 'siteGroups';
+    public const PATH_SYSTEM = 'system';
+    public const PATH_TAG_GROUPS = 'tagGroups';
+    public const PATH_USERS = 'users';
+    public const PATH_USER_FIELD_LAYOUTS = self::PATH_USERS . '.' . 'fieldLayouts';
+    public const PATH_USER_GROUPS = self::PATH_USERS . '.groups';
+    public const PATH_VOLUMES = 'volumes';
 
     // Regexp patterns
     // -------------------------------------------------------------------------
@@ -490,7 +491,7 @@ class ProjectConfig extends Component
 
             if ($updateTimestamp && !$this->_timestampUpdated) {
                 $this->_timestampUpdated = true;
-                $this->set('dateModified', DateTimeHelper::currentTimeStamp(), 'Update timestamp for project config');
+                $this->set(self::PATH_DATE_MODIFIED, DateTimeHelper::currentTimeStamp(), 'Update timestamp for project config');
             }
 
             $valueChanged = true;
@@ -968,7 +969,7 @@ class ProjectConfig extends Component
      */
     public function getAreConfigSchemaVersionsCompatible(array &$issues = []): bool
     {
-        $incomingSchema = (string)$this->get(self::CONFIG_SCHEMA_VERSION_KEY, true);
+        $incomingSchema = (string)$this->get(self::PATH_SCHEMA_VERSION, true);
         $existingSchema = (string)Craft::$app->schemaVersion;
 
         // Compare existing Craft schema version with the one that is being applied.
@@ -983,7 +984,7 @@ class ProjectConfig extends Component
         $plugins = Craft::$app->getPlugins()->getAllPlugins();
 
         foreach ($plugins as $plugin) {
-            $incomingSchema = (string)$this->get(Plugins::CONFIG_PLUGINS_KEY . '.' . $plugin->handle . '.schemaVersion', true);
+            $incomingSchema = (string)$this->get(self::PATH_PLUGINS . '.' . $plugin->handle . '.schemaVersion', true);
             $existingSchema = (string)$plugin->schemaVersion;
 
             // Compare existing plugin schema version with the one that is being applied.
@@ -1210,23 +1211,23 @@ class ProjectConfig extends Component
         $this->reset();
 
         $config = $this->get();
-        $config['dateModified'] = DateTimeHelper::currentTimeStamp();
-        $config[self::CONFIG_SYSTEM] = $this->_systemConfig($config[self::CONFIG_SYSTEM] ?? []);
-        $config[Sites::CONFIG_SITEGROUP_KEY] = $this->_getSiteGroupData();
-        $config[Sites::CONFIG_SITES_KEY] = $this->_getSiteData();
-        $config[Sections::CONFIG_SECTIONS_KEY] = $this->_getSectionData();
-        $config[Sections::CONFIG_ENTRYTYPES_KEY] = $this->_getEntryTypeData();
-        $config[Fields::CONFIG_FIELDGROUP_KEY] = $this->_getFieldGroupData();
-        $config[Fields::CONFIG_FIELDS_KEY] = $this->_getFieldData();
-        $config[Matrix::CONFIG_BLOCKTYPE_KEY] = $this->_getMatrixBlockTypeData();
-        $config[Volumes::CONFIG_VOLUME_KEY] = $this->_getVolumeData();
-        $config[Categories::CONFIG_CATEGORYROUP_KEY] = $this->_getCategoryGroupData();
-        $config[Tags::CONFIG_TAGGROUP_KEY] = $this->_getTagGroupData();
-        $config[Users::CONFIG_USERS_KEY] = $this->_getUserData($config[Users::CONFIG_USERS_KEY] ?? []);
-        $config[Globals::CONFIG_GLOBALSETS_KEY] = $this->_getGlobalSetData();
-        $config[Plugins::CONFIG_PLUGINS_KEY] = $this->_getPluginData($config[Plugins::CONFIG_PLUGINS_KEY] ?? []);
-        $config[AssetTransforms::CONFIG_TRANSFORM_KEY] = $this->_getTransformData();
-        $config[Gql::CONFIG_GQL_KEY] = $this->_getGqlData();
+        $config[self::PATH_CATEGORY_GROUPS] = $this->_getCategoryGroupData();
+        $config[self::PATH_DATE_MODIFIED] = DateTimeHelper::currentTimeStamp();
+        $config[self::PATH_ENTRY_TYPES] = $this->_getEntryTypeData();
+        $config[self::PATH_FIELDS] = $this->_getFieldData();
+        $config[self::PATH_FIELD_GROUPS] = $this->_getFieldGroupData();
+        $config[self::PATH_GLOBAL_SETS] = $this->_getGlobalSetData();
+        $config[self::PATH_GRAPHQL] = $this->_getGqlData();
+        $config[self::PATH_IMAGE_TRANSFORMS] = $this->_getTransformData();
+        $config[self::PATH_MATRIX_BLOCK_TYPES] = $this->_getMatrixBlockTypeData();
+        $config[self::PATH_PLUGINS] = $this->_getPluginData($config[self::PATH_PLUGINS] ?? []);
+        $config[self::PATH_SECTIONS] = $this->_getSectionData();
+        $config[self::PATH_SITES] = $this->_getSiteData();
+        $config[self::PATH_SITE_GROUPS] = $this->_getSiteGroupData();
+        $config[self::PATH_SYSTEM] = $this->_systemConfig($config[self::PATH_SYSTEM] ?? []);
+        $config[self::PATH_TAG_GROUPS] = $this->_getTagGroupData();
+        $config[self::PATH_USERS] = $this->_getUserData($config[self::PATH_USERS] ?? []);
+        $config[self::PATH_VOLUMES] = $this->_getVolumeData();
 
         // Fire a 'rebuild' event
         $event = new RebuildConfigEvent([
@@ -1686,7 +1687,7 @@ class ProjectConfig extends Component
                 'except' => ['.*', '.*/'],
             ]);
 
-            $projectConfigNames = $this->get(self::CONFIG_NAMES_KEY);
+            $projectConfigNames = $this->get(self::PATH_META_NAMES);
 
             $uids = [];
             $replacements = [];
@@ -1736,7 +1737,7 @@ class ProjectConfig extends Component
     private function _discardProjectConfigNames(): void
     {
         $this->_projectConfigNameChanges = [];
-        $this->set(self::CONFIG_NAMES_KEY, []);
+        $this->set(self::PATH_META_NAMES, []);
     }
 
     /**
@@ -1748,7 +1749,7 @@ class ProjectConfig extends Component
     {
         if (!empty($this->_projectConfigNameChanges) && !$this->readOnly) {
             foreach ($this->_projectConfigNameChanges as $uid => $name) {
-                $this->set(self::CONFIG_NAMES_KEY . '.' . $uid, $name);
+                $this->set(self::PATH_META_NAMES . '.' . $uid, $name);
             }
 
             $this->_projectConfigNameChanges = [];

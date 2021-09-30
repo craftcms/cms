@@ -44,8 +44,6 @@ class Globals extends Component
      */
     const EVENT_AFTER_SAVE_GLOBAL_SET = 'afterSaveGlobalSet';
 
-    const CONFIG_GLOBALSETS_KEY = 'globalSets';
-
     /**
      * @var MemoizableArray<GlobalSet>[]|null
      * @see _allSets()
@@ -303,7 +301,7 @@ class Globals extends Component
             $globalSet->uid = Db::uidById(Table::GLOBALSETS, $globalSet->id);
         }
 
-        $configPath = self::CONFIG_GLOBALSETS_KEY . '.' . $globalSet->uid;
+        $configPath = ProjectConfig::PATH_GLOBAL_SETS . '.' . $globalSet->uid;
         $configData = $globalSet->getConfig();
         Craft::$app->getProjectConfig()->set($configPath, $configData, "Save global set “{$globalSet->handle}”");
 
@@ -428,7 +426,7 @@ class Globals extends Component
         foreach ($setIds as $i => $setId) {
             if (!empty($uidsByIds[$setId])) {
                 $setUid = $uidsByIds[$setId];
-                $projectConfig->set(self::CONFIG_GLOBALSETS_KEY . ".$setUid.sortOrder", $i + 1, 'Reorder global sets');
+                $projectConfig->set(ProjectConfig::PATH_GLOBAL_SETS . ".$setUid.sortOrder", $i + 1, 'Reorder global sets');
             }
         }
 
@@ -466,7 +464,7 @@ class Globals extends Component
      */
     public function deleteSet(GlobalSet $globalSet): void
     {
-        Craft::$app->getProjectConfig()->remove(self::CONFIG_GLOBALSETS_KEY . '.' . $globalSet->uid, "Delete the “{$globalSet->handle}” global set");
+        Craft::$app->getProjectConfig()->remove(ProjectConfig::PATH_GLOBAL_SETS . '.' . $globalSet->uid, "Delete the “{$globalSet->handle}” global set");
     }
 
     /**
@@ -520,7 +518,7 @@ class Globals extends Component
         $fieldUid = $field->uid;
 
         $projectConfig = Craft::$app->getProjectConfig();
-        $globalSets = $projectConfig->get(self::CONFIG_GLOBALSETS_KEY);
+        $globalSets = $projectConfig->get(ProjectConfig::PATH_GLOBAL_SETS);
 
         // Engage stealth mode
         $projectConfig->muteEvents = true;
@@ -532,7 +530,7 @@ class Globals extends Component
                     foreach ($globalSet['fieldLayouts'] as $layoutUid => $layout) {
                         if (!empty($layout['tabs'])) {
                             foreach ($layout['tabs'] as $tabUid => $tab) {
-                                $projectConfig->remove(self::CONFIG_GLOBALSETS_KEY . '.' . $globalSetUid . '.fieldLayouts.' . $layoutUid . '.tabs.' . $tabUid . '.fields.' . $fieldUid, 'Prune deleted field');
+                                $projectConfig->remove(ProjectConfig::PATH_GLOBAL_SETS . '.' . $globalSetUid . '.fieldLayouts.' . $layoutUid . '.tabs.' . $tabUid . '.fields.' . $fieldUid, 'Prune deleted field');
                             }
                         }
                     }

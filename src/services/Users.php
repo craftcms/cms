@@ -152,16 +152,6 @@ class Users extends Component
     const EVENT_AFTER_ASSIGN_USER_TO_DEFAULT_GROUP = 'afterAssignUserToDefaultGroup';
 
     /**
-     * @since 3.5.0
-     */
-    const CONFIG_USERS_KEY = 'users';
-
-    /**
-     * @since 3.1.0
-     */
-    const CONFIG_USERLAYOUT_KEY = self::CONFIG_USERS_KEY . '.' . 'fieldLayouts';
-
-    /**
      * Returns a user by an email address, creating one if non already exists.
      *
      * @param string $email
@@ -1240,7 +1230,7 @@ class Users extends Component
         }
 
         $parsed = true;
-        $data = Craft::$app->getProjectConfig()->get(self::CONFIG_USERLAYOUT_KEY, true);
+        $data = Craft::$app->getProjectConfig()->get(ProjectConfig::PATH_USER_FIELD_LAYOUTS, true);
 
         $fieldsService = Craft::$app->getFields();
 
@@ -1281,7 +1271,7 @@ class Users extends Component
         $fieldLayoutConfig = $layout->getConfig();
         $uid = StringHelper::UUID();
 
-        $projectConfig->set(self::CONFIG_USERLAYOUT_KEY, [$uid => $fieldLayoutConfig], "Save the user field layout");
+        $projectConfig->set(ProjectConfig::PATH_USER_FIELD_LAYOUTS, [$uid => $fieldLayoutConfig], "Save the user field layout");
         return true;
     }
 
@@ -1335,7 +1325,7 @@ class Users extends Component
         $fieldUid = $field->uid;
 
         $projectConfig = Craft::$app->getProjectConfig();
-        $fieldLayouts = $projectConfig->get(self::CONFIG_USERLAYOUT_KEY);
+        $fieldLayouts = $projectConfig->get(ProjectConfig::PATH_USER_FIELD_LAYOUTS);
 
         // Engage stealth mode
         $projectConfig->muteEvents = true;
@@ -1345,7 +1335,7 @@ class Users extends Component
             foreach ($fieldLayouts as $layoutUid => $layout) {
                 if (!empty($layout['tabs'])) {
                     foreach ($layout['tabs'] as $tabUid => $tab) {
-                        $projectConfig->remove(self::CONFIG_USERLAYOUT_KEY . '.' . $layoutUid . '.tabs.' . $tabUid . '.fields.' . $fieldUid, 'Prune deleted field');
+                        $projectConfig->remove(ProjectConfig::PATH_USER_FIELD_LAYOUTS . '.' . $layoutUid . '.tabs.' . $tabUid . '.fields.' . $fieldUid, 'Prune deleted field');
                     }
                 }
             }

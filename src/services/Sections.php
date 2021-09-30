@@ -102,10 +102,6 @@ class Sections extends Component
      */
     const EVENT_AFTER_DELETE_ENTRY_TYPE = 'afterDeleteEntryType';
 
-    const CONFIG_SECTIONS_KEY = 'sections';
-
-    const CONFIG_ENTRYTYPES_KEY = 'entryTypes';
-
     /**
      * @var bool Whether entries should be resaved after a section or entry type has been updated.
      *
@@ -480,7 +476,7 @@ class Sections extends Component
             // Save the section config
             // -----------------------------------------------------------------
 
-            $configPath = self::CONFIG_SECTIONS_KEY . '.' . $section->uid;
+            $configPath = ProjectConfig::PATH_SECTIONS . '.' . $section->uid;
             $configData = $section->getConfig();
             Craft::$app->getProjectConfig()->set($configPath, $configData, "Save section “{$section->handle}”");
 
@@ -819,7 +815,7 @@ class Sections extends Component
         }
 
         // Remove the section from the project config
-        Craft::$app->getProjectConfig()->remove(self::CONFIG_SECTIONS_KEY . '.' . $section->uid, "Delete the “{$section->handle}” section");
+        Craft::$app->getProjectConfig()->remove(ProjectConfig::PATH_SECTIONS . '.' . $section->uid, "Delete the “{$section->handle}” section");
         return true;
     }
 
@@ -901,12 +897,12 @@ class Sections extends Component
         $siteUid = $event->site->uid;
 
         $projectConfig = Craft::$app->getProjectConfig();
-        $sections = $projectConfig->get(self::CONFIG_SECTIONS_KEY);
+        $sections = $projectConfig->get(ProjectConfig::PATH_SECTIONS);
 
         // Loop through the sections and prune the UID from field layouts.
         if (is_array($sections)) {
             foreach ($sections as $sectionUid => $sectionGroup) {
-                $projectConfig->remove(self::CONFIG_SECTIONS_KEY . '.' . $sectionUid . '.siteSettings.' . $siteUid, 'Remove section settings that belong to a site being deleted');
+                $projectConfig->remove(ProjectConfig::PATH_SECTIONS . '.' . $sectionUid . '.siteSettings.' . $siteUid, 'Remove section settings that belong to a site being deleted');
             }
         }
     }
@@ -923,7 +919,7 @@ class Sections extends Component
         $fieldUid = $field->uid;
 
         $projectConfig = Craft::$app->getProjectConfig();
-        $entryTypes = $projectConfig->get(self::CONFIG_ENTRYTYPES_KEY);
+        $entryTypes = $projectConfig->get(ProjectConfig::PATH_ENTRY_TYPES);
 
         // Engage stealth mode
         $projectConfig->muteEvents = true;
@@ -935,7 +931,7 @@ class Sections extends Component
                     foreach ($entryType['fieldLayouts'] as $layoutUid => $layout) {
                         if (!empty($layout['tabs'])) {
                             foreach ($layout['tabs'] as $tabUid => $tab) {
-                                $projectConfig->remove(self::CONFIG_ENTRYTYPES_KEY . '.' . $entryTypeUid . '.fieldLayouts.' . $layoutUid . '.tabs.' . $tabUid . '.fields.' . $fieldUid, 'Prune deleted field');
+                                $projectConfig->remove(ProjectConfig::PATH_ENTRY_TYPES . '.' . $entryTypeUid . '.fieldLayouts.' . $layoutUid . '.tabs.' . $tabUid . '.fields.' . $fieldUid, 'Prune deleted field');
                             }
                         }
                     }
@@ -1083,7 +1079,7 @@ class Sections extends Component
             $entryType->sortOrder = $maxSortOrder ? $maxSortOrder + 1 : 1;
         }
 
-        $configPath = self::CONFIG_ENTRYTYPES_KEY . '.' . $entryType->uid;
+        $configPath = ProjectConfig::PATH_ENTRY_TYPES . '.' . $entryType->uid;
         $configData = $entryType->getConfig();
         Craft::$app->getProjectConfig()->set($configPath, $configData, "Save entry type “{$entryType->handle}”");
 
@@ -1243,7 +1239,7 @@ class Sections extends Component
                     $sectionRecord = SectionRecord::findOne($entryTypeRecord->sectionId);
                 }
 
-                $configPath = self::CONFIG_ENTRYTYPES_KEY . '.' . $entryTypeUid . '.sortOrder';
+                $configPath = ProjectConfig::PATH_ENTRY_TYPES . '.' . $entryTypeUid . '.sortOrder';
                 $projectConfig->set($configPath, $entryTypeOrder + 1, 'Reorder entry types');
             }
         }
@@ -1297,7 +1293,7 @@ class Sections extends Component
             ]));
         }
 
-        Craft::$app->getProjectConfig()->remove(self::CONFIG_ENTRYTYPES_KEY . '.' . $entryType->uid, "Delete the “{$entryType->handle}” entry type");
+        Craft::$app->getProjectConfig()->remove(ProjectConfig::PATH_ENTRY_TYPES . '.' . $entryType->uid, "Delete the “{$entryType->handle}” entry type");
         return true;
     }
 
@@ -1421,7 +1417,7 @@ class Sections extends Component
         // ---------------------------------------------------------------------
 
         if ($siteSettings === null) {
-            $siteSettings = Craft::$app->getProjectConfig()->get(self::CONFIG_SECTIONS_KEY . '.' . $section->uid . '.siteSettings');
+            $siteSettings = Craft::$app->getProjectConfig()->get(ProjectConfig::PATH_SECTIONS . '.' . $section->uid . '.siteSettings');
         }
 
         if (empty($siteSettings)) {

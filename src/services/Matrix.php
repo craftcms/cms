@@ -64,8 +64,6 @@ class Matrix extends Component
      */
     private array $_uniqueBlockTypeAndFieldHandles = [];
 
-    const CONFIG_BLOCKTYPE_KEY = 'matrixBlockTypes';
-
 
     /**
      * Returns the block types for a given Matrix field.
@@ -213,7 +211,7 @@ class Matrix extends Component
         }
 
         $isNewBlockType = $blockType->getIsNew();
-        $configPath = self::CONFIG_BLOCKTYPE_KEY . '.' . $blockType->uid;
+        $configPath = ProjectConfig::PATH_MATRIX_BLOCK_TYPES . '.' . $blockType->uid;
         $configData = $blockType->getConfig();
         $field = $blockType->getField();
 
@@ -347,7 +345,7 @@ class Matrix extends Component
      */
     public function deleteBlockType(MatrixBlockType $blockType): bool
     {
-        Craft::$app->getProjectConfig()->remove(self::CONFIG_BLOCKTYPE_KEY . '.' . $blockType->uid, "Delete matrix block type “{$blockType->handle}” for parent field “{$blockType->getField()->handle}”");
+        Craft::$app->getProjectConfig()->remove(ProjectConfig::PATH_MATRIX_BLOCK_TYPES . '.' . $blockType->uid, "Delete matrix block type “{$blockType->handle}” for parent field “{$blockType->getField()->handle}”");
         return true;
     }
 

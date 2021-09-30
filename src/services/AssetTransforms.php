@@ -91,8 +91,6 @@ class AssetTransforms extends Component
      */
     const EVENT_AFTER_DELETE_TRANSFORMS = 'afterDeleteTransforms';
 
-    const CONFIG_TRANSFORM_KEY = 'imageTransforms';
-
     /**
      * @var Connection|array|string The database connection to use
      * @since 3.5.4
@@ -248,7 +246,7 @@ class AssetTransforms extends Component
             'width' => (int)$transform->width ?: null,
         ];
 
-        $configPath = self::CONFIG_TRANSFORM_KEY . '.' . $transform->uid;
+        $configPath = ProjectConfig::PATH_IMAGE_TRANSFORMS . '.' . $transform->uid;
         $projectConfig->set($configPath, $configData, "Saving transform “{$transform->handle}”");
 
         if ($isNewTransform) {
@@ -371,7 +369,7 @@ class AssetTransforms extends Component
             ]));
         }
 
-        Craft::$app->getProjectConfig()->remove(self::CONFIG_TRANSFORM_KEY . '.' . $transform->uid, "Delete transform “{$transform->handle}”");
+        Craft::$app->getProjectConfig()->remove(ProjectConfig::PATH_IMAGE_TRANSFORMS . '.' . $transform->uid, "Delete transform “{$transform->handle}”");
         return true;
     }
 

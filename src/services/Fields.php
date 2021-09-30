@@ -169,9 +169,6 @@ class Fields extends Component
      */
     const EVENT_AFTER_DELETE_FIELD_LAYOUT = 'afterDeleteFieldLayout';
 
-    const CONFIG_FIELDGROUP_KEY = 'fieldGroups';
-    const CONFIG_FIELDS_KEY = 'fields';
-
     /**
      * @var string|null
      */
@@ -298,7 +295,7 @@ class Fields extends Component
             $group->uid = StringHelper::UUID();
         }
 
-        $configPath = self::CONFIG_FIELDGROUP_KEY . '.' . $group->uid;
+        $configPath = ProjectConfig::PATH_FIELD_GROUPS . '.' . $group->uid;
         $configData = $group->getConfig();
         Craft::$app->getProjectConfig()->set($configPath, $configData, "Save field group “{$group->name}”");
 
@@ -435,7 +432,7 @@ class Fields extends Component
             $this->deleteField($field);
         }
 
-        Craft::$app->getProjectConfig()->remove(self::CONFIG_FIELDGROUP_KEY . '.' . $group->uid, "Delete the “{$group->name}” field group");
+        Craft::$app->getProjectConfig()->remove(ProjectConfig::PATH_FIELD_GROUPS . '.' . $group->uid, "Delete the “{$group->name}” field group");
         return true;
     }
 
@@ -815,7 +812,7 @@ class Fields extends Component
 
         // Only store field data in the project config for global context
         if ($field->context === 'global') {
-            $configPath = self::CONFIG_FIELDS_KEY . '.' . $field->uid;
+            $configPath = ProjectConfig::PATH_FIELDS . '.' . $field->uid;
             Craft::$app->getProjectConfig()->set($configPath, $configData, "Save field “{$field->handle}”");
         } else {
             // Otherwise just save it to the DB
@@ -916,7 +913,7 @@ class Fields extends Component
         }
 
         if ($field->context === 'global') {
-            Craft::$app->getProjectConfig()->remove(self::CONFIG_FIELDS_KEY . '.' . $field->uid, "Delete the “{$field->handle}” field");
+            Craft::$app->getProjectConfig()->remove(ProjectConfig::PATH_FIELDS . '.' . $field->uid, "Delete the “{$field->handle}” field");
         } else {
             $this->applyFieldDelete($field->uid);
         }
@@ -1644,7 +1641,7 @@ class Fields extends Component
 
         // Ensure we have the field group in the place first
         if ($groupUid) {
-            Craft::$app->getProjectConfig()->processConfigChanges(self::CONFIG_FIELDGROUP_KEY . '.' . $groupUid);
+            Craft::$app->getProjectConfig()->processConfigChanges(ProjectConfig::PATH_FIELD_GROUPS . '.' . $groupUid);
         }
 
         $db = Craft::$app->getDb();

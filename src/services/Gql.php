@@ -264,21 +264,6 @@ class Gql extends Component
     const CACHE_TAG = 'graphql';
 
     /**
-     * @since 3.5.0
-     */
-    const CONFIG_GQL_KEY = 'graphql';
-
-    /**
-     * @since 3.4.0
-     */
-    const CONFIG_GQL_SCHEMAS_KEY = self::CONFIG_GQL_KEY . '.' . 'schemas';
-
-    /**
-     * @since 3.5.0
-     */
-    const CONFIG_GQL_PUBLIC_TOKEN_KEY = self::CONFIG_GQL_KEY . '.' . 'publicToken';
-
-    /**
      * The field name to use when fetching count of related elements
      *
      * @since 3.4.0
@@ -894,7 +879,7 @@ class Gql extends Component
                 'enabled' => (bool)$token->enabled,
             ];
 
-            Craft::$app->getProjectConfig()->set(self::CONFIG_GQL_PUBLIC_TOKEN_KEY, $data);
+            Craft::$app->getProjectConfig()->set(ProjectConfig::PATH_GRAPHQL_PUBLIC_TOKEN, $data);
 
             return true;
         }
@@ -984,7 +969,7 @@ class Gql extends Component
             $schema->uid = Db::uidById(Table::GQLSCHEMAS, $schema->id);
         }
 
-        $configPath = self::CONFIG_GQL_SCHEMAS_KEY . '.' . $schema->uid;
+        $configPath = ProjectConfig::PATH_GRAPHQL_SCHEMAS . '.' . $schema->uid;
         $configData = $schema->getConfig();
         Craft::$app->getProjectConfig()->set($configPath, $configData, "Save GraphQL schema “{$schema->name}”");
 
@@ -1074,7 +1059,7 @@ class Gql extends Component
      */
     public function deleteSchema(GqlSchema $schema): bool
     {
-        Craft::$app->getProjectConfig()->remove(self::CONFIG_GQL_SCHEMAS_KEY . '.' . $schema->uid, "Delete the “{$schema->name}” GraphQL schema");
+        Craft::$app->getProjectConfig()->remove(ProjectConfig::PATH_GRAPHQL_SCHEMAS . '.' . $schema->uid, "Delete the “{$schema->name}” GraphQL schema");
         return true;
     }
 

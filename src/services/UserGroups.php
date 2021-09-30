@@ -56,8 +56,6 @@ class UserGroups extends Component
      */
     const EVENT_AFTER_DELETE_USER_GROUP = 'afterDeleteUserGroup';
 
-    const CONFIG_USERPGROUPS_KEY = 'users.groups';
-
     /**
      * Returns all user groups.
      *
@@ -266,7 +264,7 @@ class UserGroups extends Component
             $group->uid = Db::uidById(Table::USERGROUPS, $group->id);
         }
 
-        $configPath = self::CONFIG_USERPGROUPS_KEY . '.' . $group->uid;
+        $configPath = ProjectConfig::PATH_USER_GROUPS . '.' . $group->uid;
         $configData = $group->getConfig(false);
         $projectConfig->set($configPath, $configData, "Save user group “{$group->handle}”");
 
@@ -388,7 +386,7 @@ class UserGroups extends Component
             ]));
         }
 
-        Craft::$app->getProjectConfig()->remove(self::CONFIG_USERPGROUPS_KEY . '.' . $group->uid, "Delete the “{$group->handle}” user group");
+        Craft::$app->getProjectConfig()->remove(ProjectConfig::PATH_USER_GROUPS . '.' . $group->uid, "Delete the “{$group->handle}” user group");
         return true;
     }
 

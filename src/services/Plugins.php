@@ -95,8 +95,6 @@ class Plugins extends Component
      */
     const EVENT_AFTER_SAVE_PLUGIN_SETTINGS = 'afterSavePluginSettings';
 
-    const CONFIG_PLUGINS_KEY = 'plugins';
-
     /**
      * @var array[] Custom plugin configurations.
      * @since 3.4.0
@@ -393,7 +391,7 @@ class Plugins extends Component
         }
 
         // Enable the plugin in the project config
-        Craft::$app->getProjectConfig()->set(self::CONFIG_PLUGINS_KEY . '.' . $handle . '.enabled', true, "Enable plugin “{$handle}”");
+        Craft::$app->getProjectConfig()->set(ProjectConfig::PATH_PLUGINS . '.' . $handle . '.enabled', true, "Enable plugin “{$handle}”");
 
         $this->_enabledPluginInfo[$handle] = $info;
         $this->_registerPlugin($plugin);
@@ -438,7 +436,7 @@ class Plugins extends Component
         }
 
         // Disable the plugin in the project config
-        Craft::$app->getProjectConfig()->set(self::CONFIG_PLUGINS_KEY . '.' . $handle . '.enabled', false, "Disable plugin “{$handle}”");
+        Craft::$app->getProjectConfig()->set(ProjectConfig::PATH_PLUGINS . '.' . $handle . '.enabled', false, "Disable plugin “{$handle}”");
 
         unset($this->_enabledPluginInfo[$handle]);
         $this->_unregisterPlugin($plugin);
@@ -476,7 +474,7 @@ class Plugins extends Component
         $readOnly = $projectConfig->readOnly;
         $projectConfig->readOnly = false;
 
-        $configKey = self::CONFIG_PLUGINS_KEY . '.' . $handle;
+        $configKey = ProjectConfig::PATH_PLUGINS . '.' . $handle;
 
         $plugin = $this->createPlugin($handle);
 
@@ -643,8 +641,8 @@ class Plugins extends Component
         }
 
         // Remove the plugin from the project config
-        if ($projectConfig->get(self::CONFIG_PLUGINS_KEY . '.' . $handle, true)) {
-            $projectConfig->remove(self::CONFIG_PLUGINS_KEY . '.' . $handle, "Uninstall the “{$handle}” plugin");
+        if ($projectConfig->get(ProjectConfig::PATH_PLUGINS . '.' . $handle, true)) {
+            $projectConfig->remove(ProjectConfig::PATH_PLUGINS . '.' . $handle, "Uninstall the “{$handle}” plugin");
         }
 
         if ($plugin) {
@@ -686,7 +684,7 @@ class Plugins extends Component
         }
 
         // Update the project config
-        Craft::$app->getProjectConfig()->set(self::CONFIG_PLUGINS_KEY . '.' . $handle . '.edition', $edition, "Switch edition for plugin “{$handle}”");
+        Craft::$app->getProjectConfig()->set(ProjectConfig::PATH_PLUGINS . '.' . $handle . '.edition', $edition, "Switch edition for plugin “{$handle}”");
 
         if (isset($this->_enabledPluginInfo[$handle])) {
             $this->_enabledPluginInfo[$handle]['edition'] = $edition;
@@ -732,7 +730,7 @@ class Plugins extends Component
         // Update the plugin's settings in the project config
         $pluginSettings = $plugin->getSettings();
         $pluginSettings = $pluginSettings ? ProjectConfigHelper::packAssociativeArrays($pluginSettings->toArray()) : [];
-        Craft::$app->getProjectConfig()->set(self::CONFIG_PLUGINS_KEY . '.' . $plugin->handle . '.settings', $pluginSettings, "Change settings for plugin “{$plugin->handle}”");
+        Craft::$app->getProjectConfig()->set(ProjectConfig::PATH_PLUGINS . '.' . $plugin->handle . '.settings', $pluginSettings, "Change settings for plugin “{$plugin->handle}”");
 
         $plugin->afterSaveSettings();
 
@@ -890,7 +888,7 @@ class Plugins extends Component
         // Only update the schema version if it's changed from what's in the file,
         // so we don't accidentally overwrite other pending changes
         $projectConfig = Craft::$app->getProjectConfig();
-        $key = self::CONFIG_PLUGINS_KEY . ".$plugin->id.schemaVersion";
+        $key = ProjectConfig::PATH_PLUGINS . ".$plugin->id.schemaVersion";
 
         if ($projectConfig->get($key, true) !== $plugin->schemaVersion) {
             Craft::$app->getProjectConfig()->set($key, $plugin->schemaVersion, "Update plugin schema version for “{$plugin->handle}”");
@@ -1204,7 +1202,7 @@ class Plugins extends Component
         $normalizedLicenseKey = $this->normalizePluginLicenseKey($licenseKey);
 
         // Set the plugin's license key in the project config
-        Craft::$app->getProjectConfig()->set(self::CONFIG_PLUGINS_KEY . '.' . $handle . '.licenseKey', $normalizedLicenseKey, "Set license key for plugin “{$handle}”");
+        Craft::$app->getProjectConfig()->set(ProjectConfig::PATH_PLUGINS . '.' . $handle . '.licenseKey', $normalizedLicenseKey, "Set license key for plugin “{$handle}”");
 
         // Update our cache of it
         if (isset($this->_enabledPluginInfo[$handle])) {
@@ -1410,7 +1408,7 @@ class Plugins extends Component
     private function _getPluginConfigData(string $handle): array
     {
         $projectConfig = Craft::$app->getProjectConfig();
-        $configKey = self::CONFIG_PLUGINS_KEY . '.' . $handle;
+        $configKey = ProjectConfig::PATH_PLUGINS . '.' . $handle;
         $data = $projectConfig->get($configKey) ?? $projectConfig->get($configKey, true);
 
         if (!empty($data['settings'])) {

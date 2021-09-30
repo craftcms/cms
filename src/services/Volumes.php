@@ -99,8 +99,6 @@ class Volumes extends Component
      */
     public const EVENT_AFTER_DELETE_VOLUME = 'afterDeleteVolume';
 
-    public const CONFIG_VOLUME_KEY = 'volumes';
-
     /**
      * @var MemoizableArray<VolumeInterface>|null
      * @see _volumes()
@@ -377,7 +375,7 @@ class Volumes extends Component
             $volume->uid = Db::uidById(Table::VOLUMES, $volume->id);
         }
 
-        $configPath = self::CONFIG_VOLUME_KEY . '.' . $volume->uid;
+        $configPath = ProjectConfig::PATH_VOLUMES . '.' . $volume->uid;
         $configData = $this->createVolumeConfig($volume);
         Craft::$app->getProjectConfig()->set($configPath, $configData, "Save the “{$volume->handle}” volume");
 
@@ -508,7 +506,7 @@ class Volumes extends Component
         foreach ($volumeIds as $volumeOrder => $volumeId) {
             if (!empty($uidsByIds[$volumeId])) {
                 $volumeUid = $uidsByIds[$volumeId];
-                $projectConfig->set(self::CONFIG_VOLUME_KEY . '.' . $volumeUid . '.sortOrder', $volumeOrder + 1, "Reorder volumes");
+                $projectConfig->set(ProjectConfig::PATH_VOLUMES . '.' . $volumeUid . '.sortOrder', $volumeOrder + 1, "Reorder volumes");
             }
         }
 
@@ -622,7 +620,7 @@ class Volumes extends Component
             return false;
         }
 
-        Craft::$app->getProjectConfig()->remove(self::CONFIG_VOLUME_KEY . '.' . $volume->uid, "Delete the “{$volume->handle}” volume");
+        Craft::$app->getProjectConfig()->remove(ProjectConfig::PATH_VOLUMES . '.' . $volume->uid, "Delete the “{$volume->handle}” volume");
         return true;
     }
 
@@ -711,7 +709,7 @@ class Volumes extends Component
         $fieldUid = $field->uid;
 
         $projectConfig = Craft::$app->getProjectConfig();
-        $volumes = $projectConfig->get(self::CONFIG_VOLUME_KEY);
+        $volumes = $projectConfig->get(ProjectConfig::PATH_VOLUMES);
 
         // Engage stealth mode
         $projectConfig->muteEvents = true;
@@ -723,7 +721,7 @@ class Volumes extends Component
                     foreach ($volume['fieldLayouts'] as $layoutUid => $layout) {
                         if (!empty($layout['tabs'])) {
                             foreach ($layout['tabs'] as $tabUid => $tab) {
-                                $projectConfig->remove(self::CONFIG_VOLUME_KEY . '.' . $volumeUid . '.fieldLayouts.' . $layoutUid . '.tabs.' . $tabUid . '.fields.' . $fieldUid, 'Prune deleted field');
+                                $projectConfig->remove(ProjectConfig::PATH_VOLUMES . '.' . $volumeUid . '.fieldLayouts.' . $layoutUid . '.tabs.' . $tabUid . '.fields.' . $fieldUid, 'Prune deleted field');
                             }
                         }
                     }

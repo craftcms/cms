@@ -59,8 +59,6 @@ class Tags extends Component
      */
     const EVENT_AFTER_DELETE_GROUP = 'afterDeleteGroup';
 
-    const CONFIG_TAGGROUP_KEY = 'tagGroups';
-
     /**
      * @var MemoizableArray<TagGroup>|null
      * @see _tagGroups()
@@ -207,7 +205,7 @@ class Tags extends Component
             $tagGroup->uid = Db::uidById(Table::TAGGROUPS, $tagGroup->id);
         }
 
-        $configPath = self::CONFIG_TAGGROUP_KEY . '.' . $tagGroup->uid;
+        $configPath = ProjectConfig::PATH_TAG_GROUPS . '.' . $tagGroup->uid;
         $configData = $tagGroup->getConfig();
         Craft::$app->getProjectConfig()->set($configPath, $configData, "Save the “{$tagGroup->handle}” tag group");
 
@@ -335,7 +333,7 @@ class Tags extends Component
             ]));
         }
 
-        Craft::$app->getProjectConfig()->remove(self::CONFIG_TAGGROUP_KEY . '.' . $tagGroup->uid, "Delete the “{$tagGroup->handle}” tag group");
+        Craft::$app->getProjectConfig()->remove(ProjectConfig::PATH_TAG_GROUPS . '.' . $tagGroup->uid, "Delete the “{$tagGroup->handle}” tag group");
         return true;
     }
 
@@ -418,7 +416,7 @@ class Tags extends Component
         $fieldUid = $field->uid;
 
         $projectConfig = Craft::$app->getProjectConfig();
-        $tagGroups = $projectConfig->get(self::CONFIG_TAGGROUP_KEY);
+        $tagGroups = $projectConfig->get(ProjectConfig::PATH_TAG_GROUPS);
 
         // Engage stealth mode
         $projectConfig->muteEvents = true;
@@ -430,7 +428,7 @@ class Tags extends Component
                     foreach ($tagGroup['fieldLayouts'] as $layoutUid => $layout) {
                         if (!empty($layout['tabs'])) {
                             foreach ($layout['tabs'] as $tabUid => $tab) {
-                                $projectConfig->remove(self::CONFIG_TAGGROUP_KEY . '.' . $tagGroupUid . '.fieldLayouts.' . $layoutUid . '.tabs.' . $tabUid . '.fields.' . $fieldUid, 'Prune deleted field');
+                                $projectConfig->remove(ProjectConfig::PATH_TAG_GROUPS . '.' . $tagGroupUid . '.fieldLayouts.' . $layoutUid . '.tabs.' . $tabUid . '.fields.' . $fieldUid, 'Prune deleted field');
                             }
                         }
                     }

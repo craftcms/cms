@@ -10,7 +10,7 @@ namespace craft\controllers;
 use Craft;
 use craft\errors\InvalidPluginException;
 use craft\helpers\ArrayHelper;
-use craft\services\Plugins;
+use craft\services\ProjectConfig;
 use yii\base\NotSupportedException;
 use yii\web\Response;
 
@@ -133,8 +133,8 @@ class ConfigSyncController extends BaseUpdaterController
 
         // Any plugins need to be installed/uninstalled?
         $projectConfig = Craft::$app->getProjectConfig();
-        $loadedConfigPlugins = array_keys($projectConfig->get(Plugins::CONFIG_PLUGINS_KEY) ?? []);
-        $yamlPlugins = array_keys($projectConfig->get(Plugins::CONFIG_PLUGINS_KEY, true) ?? []);
+        $loadedConfigPlugins = array_keys($projectConfig->get(ProjectConfig::PATH_PLUGINS) ?? []);
+        $yamlPlugins = array_keys($projectConfig->get(ProjectConfig::PATH_PLUGINS, true) ?? []);
         $data['installPlugins'] = array_diff($yamlPlugins, $loadedConfigPlugins);
         $data['uninstallPlugins'] = array_diff($loadedConfigPlugins, $yamlPlugins);
 
@@ -180,7 +180,7 @@ class ConfigSyncController extends BaseUpdaterController
 
                 if (!$plugin) {
                     $missingPlugins[] = "`$handle`";
-                } else if ($plugin->schemaVersion != $projectConfig->get(Plugins::CONFIG_PLUGINS_KEY . '.' . $handle . '.schemaVersion', true)) {
+                } else if ($plugin->schemaVersion != $projectConfig->get(ProjectConfig::PATH_PLUGINS . '.' . $handle . '.schemaVersion', true)) {
                     $incompatibilities[] = $plugin->name;
                 }
             }

@@ -67,8 +67,6 @@ class Categories extends Component
      */
     const EVENT_AFTER_DELETE_GROUP = 'afterDeleteGroup';
 
-    const CONFIG_CATEGORYROUP_KEY = 'categoryGroups';
-
     /**
      * @var MemoizableArray<CategoryGroup>|null
      * @see _groups()
@@ -275,7 +273,7 @@ class Categories extends Component
             }
         }
 
-        $configPath = self::CONFIG_CATEGORYROUP_KEY . '.' . $group->uid;
+        $configPath = ProjectConfig::PATH_CATEGORY_GROUPS . '.' . $group->uid;
         $configData = $group->getConfig();
         Craft::$app->getProjectConfig()->set($configPath, $configData, "Save category group “{$group->handle}”");
 
@@ -523,7 +521,7 @@ class Categories extends Component
             ]));
         }
 
-        Craft::$app->getProjectConfig()->remove(self::CONFIG_CATEGORYROUP_KEY . '.' . $group->uid, "Delete category group “{$group->handle}”");
+        Craft::$app->getProjectConfig()->remove(ProjectConfig::PATH_CATEGORY_GROUPS . '.' . $group->uid, "Delete category group “{$group->handle}”");
         return true;
     }
 
@@ -628,7 +626,7 @@ class Categories extends Component
         $fieldUid = $field->uid;
 
         $projectConfig = Craft::$app->getProjectConfig();
-        $categoryGroups = $projectConfig->get(self::CONFIG_CATEGORYROUP_KEY);
+        $categoryGroups = $projectConfig->get(ProjectConfig::PATH_CATEGORY_GROUPS);
 
         // Engage stealth mode
         $projectConfig->muteEvents = true;
@@ -640,7 +638,7 @@ class Categories extends Component
                     foreach ($categoryGroup['fieldLayouts'] as $layoutUid => $layout) {
                         if (!empty($layout['tabs'])) {
                             foreach ($layout['tabs'] as $tabUid => $tab) {
-                                $projectConfig->remove(self::CONFIG_CATEGORYROUP_KEY . '.' . $categoryGroupUid . '.fieldLayouts.' . $layoutUid . '.tabs.' . $tabUid . '.fields.' . $fieldUid, 'Prune deleted field');
+                                $projectConfig->remove(ProjectConfig::PATH_CATEGORY_GROUPS . '.' . $categoryGroupUid . '.fieldLayouts.' . $layoutUid . '.tabs.' . $tabUid . '.fields.' . $fieldUid, 'Prune deleted field');
                             }
                         }
                     }
@@ -667,12 +665,12 @@ class Categories extends Component
         $siteUid = $event->site->uid;
 
         $projectConfig = Craft::$app->getProjectConfig();
-        $categoryGroups = $projectConfig->get(self::CONFIG_CATEGORYROUP_KEY);
+        $categoryGroups = $projectConfig->get(ProjectConfig::PATH_CATEGORY_GROUPS);
 
         // Loop through the category groups and prune the UID from field layouts.
         if (is_array($categoryGroups)) {
             foreach ($categoryGroups as $categoryGroupUid => $categoryGroup) {
-                $projectConfig->remove(self::CONFIG_CATEGORYROUP_KEY . '.' . $categoryGroupUid . '.siteSettings.' . $siteUid, 'Prune deleted site settings');
+                $projectConfig->remove(ProjectConfig::PATH_CATEGORY_GROUPS . '.' . $categoryGroupUid . '.siteSettings.' . $siteUid, 'Prune deleted site settings');
             }
         }
     }

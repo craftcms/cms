@@ -122,9 +122,6 @@ class Sites extends Component
      */
     const EVENT_AFTER_DELETE_SITE = 'afterDeleteSite';
 
-    const CONFIG_SITEGROUP_KEY = 'siteGroups';
-    const CONFIG_SITES_KEY = 'sites';
-
     /**
      * @var MemoizableArray<SiteGroup>|null
      * @see _groups()
@@ -267,7 +264,7 @@ class Sites extends Component
             $group->uid = Db::uidById(Table::SITEGROUPS, $group->id);
         }
 
-        $configPath = self::CONFIG_SITEGROUP_KEY . '.' . $group->uid;
+        $configPath = ProjectConfig::PATH_SITE_GROUPS . '.' . $group->uid;
         $configData = $group->getConfig();
         Craft::$app->getProjectConfig()->set($configPath, $configData, "Save the “{$group->getName(false)}” site group");
 
@@ -399,7 +396,7 @@ class Sites extends Component
             ]));
         }
 
-        Craft::$app->getProjectConfig()->remove(self::CONFIG_SITEGROUP_KEY . '.' . $group->uid, "Delete the “{$group->getName(false)}” site group");
+        Craft::$app->getProjectConfig()->remove(ProjectConfig::PATH_SITE_GROUPS . '.' . $group->uid, "Delete the “{$group->getName(false)}” site group");
         return true;
     }
 
@@ -679,7 +676,7 @@ class Sites extends Component
 
         $projectConfigService = Craft::$app->getProjectConfig();
         $projectConfigService->set(
-            self::CONFIG_SITES_KEY . ".$site->uid",
+            ProjectConfig::PATH_SITES . ".$site->uid",
             $site->getConfig(),
             "Save the “{$site->handle}” site"
         );
@@ -692,7 +689,7 @@ class Sites extends Component
         // If this just became the new primary site, update the old primary site's config
         if ($site->primary && $primarySite && $site->id != $primarySite->id) {
             $projectConfigService->set(
-                self::CONFIG_SITES_KEY . ".$primarySite->uid.primary",
+                ProjectConfig::PATH_SITES . ".$primarySite->uid.primary",
                 false,
                 "Set the “{$primarySite->handle}” site not be primary"
             );
@@ -715,7 +712,7 @@ class Sites extends Component
 
         // Ensure we have the site group in place first
         $projectConfig = Craft::$app->getProjectConfig();
-        $projectConfig->processConfigChanges(self::CONFIG_SITEGROUP_KEY . '.' . $groupUid);
+        $projectConfig->processConfigChanges(ProjectConfig::PATH_SITE_GROUPS . '.' . $groupUid);
 
         try {
             $oldPrimarySiteId = $this->getPrimarySite()->id;
@@ -777,12 +774,12 @@ class Sites extends Component
 
         if ($isNewSite && $oldPrimarySiteId) {
             $oldPrimarySiteUid = Db::uidById(Table::SITES, $oldPrimarySiteId);
-            $existingCategorySettings = $projectConfig->get(Categories::CONFIG_CATEGORYROUP_KEY);
+            $existingCategorySettings = $projectConfig->get(ProjectConfig::PATH_CATEGORY_GROUPS);
 
             if (!$projectConfig->getIsApplyingYamlChanges() && is_array($existingCategorySettings)) {
                 foreach ($existingCategorySettings as $categoryUid => $settings) {
                     $primarySiteSettings = $settings['siteSettings'][$oldPrimarySiteUid];
-                    $projectConfig->set(Categories::CONFIG_CATEGORYROUP_KEY . '.' . $categoryUid . '.siteSettings.' . $site->uid, $primarySiteSettings, 'Copy site settings for category groups');
+                    $projectConfig->set(ProjectConfig::PATH_CATEGORY_GROUPS . '.' . $categoryUid . '.siteSettings.' . $site->uid, $primarySiteSettings, 'Copy site settings for category groups');
                 }
             }
 
@@ -844,7 +841,7 @@ class Sites extends Component
         foreach ($siteIds as $sortOrder => $siteId) {
             if (!empty($uidsByIds[$siteId])) {
                 $siteUid = $uidsByIds[$siteId];
-                $projectConfig->set(self::CONFIG_SITES_KEY . '.' . $siteUid . '.sortOrder', $sortOrder + 1, 'Reorder sites');
+                $projectConfig->set(ProjectConfig::PATH_SITES . '.' . $siteUid . '.sortOrder', $sortOrder + 1, 'Reorder sites');
             }
         }
 
@@ -941,10 +938,10 @@ class Sites extends Component
                 // Update the project config too
                 $muteEvents = $projectConfig->muteEvents;
                 $projectConfig->muteEvents = true;
-                foreach ($projectConfig->get(Sections::CONFIG_SECTIONS_KEY) as $sectionUid => $sectionConfig) {
+                foreach ($projectConfig->get(ProjectConfig::PATH_SECTIONS) as $sectionUid => $sectionConfig) {
                     if (count($sectionConfig['siteSettings']) === 1 && isset($sectionConfig['siteSettings'][$site->uid])) {
                         $sectionConfig['siteSettings'][$transferContentToSite->uid] = ArrayHelper::remove($sectionConfig['siteSettings'], $site->uid);
-                        $projectConfig->set(Sections::CONFIG_SECTIONS_KEY . '.' . $sectionUid, $sectionConfig, 'Prune site settings');
+                        $projectConfig->set(ProjectConfig::PATH_SECTIONS . '.' . $sectionUid, $sectionConfig, 'Prune site settings');
                     }
                 }
                 $projectConfig->muteEvents = $muteEvents;
@@ -1033,7 +1030,7 @@ class Sites extends Component
             }
         }
 
-        $projectConfig->remove(self::CONFIG_SITES_KEY . '.' . $site->uid, "Delete the “{$site->handle}” site");
+        $projectConfig->remove(ProjectConfig::PATH_SITES . '.' . $site->uid, "Delete the “{$site->handle}” site");
         return true;
     }
 

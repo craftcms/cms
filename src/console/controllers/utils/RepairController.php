@@ -272,13 +272,13 @@ class RepairController extends Controller
     {
         if (is_array($value)) {
             // Is this a packed array?
-            if (isset($value[ProjectConfig::CONFIG_ASSOC_KEY])) {
+            if (isset($value[ProjectConfig::ASSOC_KEY])) {
                 $double = false;
                 while (
-                    isset($value[ProjectConfig::CONFIG_ASSOC_KEY][0][0]) &&
-                    $value[ProjectConfig::CONFIG_ASSOC_KEY][0][0] === ProjectConfig::CONFIG_ASSOC_KEY
+                    isset($value[ProjectConfig::ASSOC_KEY][0][0]) &&
+                    $value[ProjectConfig::ASSOC_KEY][0][0] === ProjectConfig::ASSOC_KEY
                 ) {
-                    $value[ProjectConfig::CONFIG_ASSOC_KEY] = $value[ProjectConfig::CONFIG_ASSOC_KEY][0][1] ?? [];
+                    $value[ProjectConfig::ASSOC_KEY] = $value[ProjectConfig::ASSOC_KEY][0][1] ?? [];
                     $double = true;
                 }
 
