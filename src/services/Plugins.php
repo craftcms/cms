@@ -23,6 +23,10 @@ use craft\helpers\Db;
 use craft\helpers\FileHelper;
 use craft\helpers\ProjectConfig as ProjectConfigHelper;
 use craft\helpers\StringHelper;
+use DateTime;
+use ReflectionClass;
+use ReflectionException;
+use Throwable;
 use yii\base\Component;
 use yii\base\InvalidArgumentException;
 use yii\helpers\Inflector;
@@ -334,8 +338,8 @@ class Plugins extends Component
         // Figure out the path to the folder that contains this class
         try {
             // Add a trailing slash so we don't get false positives
-            $classPath = FileHelper::normalizePath(dirname((new \ReflectionClass($class))->getFileName())) . DIRECTORY_SEPARATOR;
-        } catch (\ReflectionException $e) {
+            $classPath = FileHelper::normalizePath(dirname((new ReflectionClass($class))->getFileName())) . DIRECTORY_SEPARATOR;
+        } catch (ReflectionException $e) {
             return $this->_classPluginHandles[$class] = null;
         }
 
@@ -458,7 +462,7 @@ class Plugins extends Component
      * @param string|null $edition The plugin’s edition
      * @return bool Whether the plugin was installed successfully.
      * @throws InvalidPluginException if the plugin doesn’t exist
-     * @throws \Throwable if reasons
+     * @throws Throwable if reasons
      */
     public function installPlugin(string $handle, ?string $edition = null): bool
     {
@@ -507,7 +511,7 @@ class Plugins extends Component
                 'handle' => $handle,
                 'version' => $plugin->getVersion(),
                 'schemaVersion' => $plugin->schemaVersion,
-                'installDate' => Db::prepareDateForDb(new \DateTime()),
+                'installDate' => Db::prepareDateForDb(new DateTime()),
             ];
 
             // Make sure the plugin doesn't have a row in the `plugins` or `migrations` tables first, just in case
@@ -526,7 +530,7 @@ class Plugins extends Component
             $this->_setPluginMigrator($plugin);
             $plugin->install();
             $transaction->commit();
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $transaction->rollBack();
 
             if ($db->getIsMysql()) {
@@ -573,7 +577,7 @@ class Plugins extends Component
      * `uninstall()` method returns `false`, or its files aren’t present
      * @return bool Whether the plugin was uninstalled successfully
      * @throws InvalidPluginException if the plugin doesn’t exist
-     * @throws \Throwable if reasons
+     * @throws Throwable if reasons
      */
     public function uninstallPlugin(string $handle, bool $force = false): bool
     {
@@ -615,7 +619,7 @@ class Plugins extends Component
             if ($plugin && $enabled) {
                 try {
                     $plugin->uninstall();
-                } catch (\Throwable $e) {
+                } catch (Throwable $e) {
                     if (!$force) {
                         throw $e;
                     }
@@ -635,7 +639,7 @@ class Plugins extends Component
             ]);
 
             $transaction->commit();
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $transaction->rollBack();
             throw $e;
         }
@@ -670,7 +674,7 @@ class Plugins extends Component
      * @param string $edition The plugin’s edition
      * @throws InvalidPluginException if the plugin doesn’t exist
      * @throws InvalidArgumentException if $edition is invalid
-     * @throws \Throwable if reasons
+     * @throws Throwable if reasons
      */
     public function switchEdition(string $handle, string $edition): void
     {
@@ -1353,7 +1357,7 @@ class Plugins extends Component
      */
     private function _setPluginMigrator(PluginInterface $plugin): void
     {
-        $ref = new \ReflectionClass($plugin);
+        $ref = new ReflectionClass($plugin);
         $ns = $ref->getNamespaceName();
         $plugin->set('migrator', [
             'class' => MigrationManager::class,

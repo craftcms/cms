@@ -35,6 +35,8 @@ use craft\models\FieldLayout;
 use craft\records\User as UserRecord;
 use craft\web\Request;
 use DateTime;
+use DateTimeZone;
+use Throwable;
 use yii\base\Component;
 use yii\base\Exception;
 use yii\base\InvalidArgumentException;
@@ -271,7 +273,7 @@ class Users extends Component
             $userRecord = $this->_getUserRecordById($user->id);
             $user->verificationCode = $userRecord->verificationCode;
             $user->verificationCodeIssuedDate = $userRecord->verificationCodeIssuedDate
-                ? new \DateTime($userRecord->verificationCodeIssuedDate, new \DateTimeZone('UTC'))
+                ? new \DateTime($userRecord->verificationCodeIssuedDate, new DateTimeZone('UTC'))
                 : null;
 
             if (!$user->verificationCode || !$user->verificationCodeIssuedDate) {
@@ -545,7 +547,7 @@ class Users extends Component
         if ($subpath !== '') {
             try {
                 $subpath = Craft::$app->getView()->renderObjectTemplate($subpath, $user);
-            } catch (\Throwable $e) {
+            } catch (Throwable $e) {
                 throw new InvalidSubpathException($subpath);
             }
         }
@@ -658,7 +660,7 @@ class Users extends Component
      *
      * @param User $user The user.
      * @return bool Whether the user was activated successfully.
-     * @throws \Throwable if reasons
+     * @throws Throwable if reasons
      */
     public function activateUser(User $user): bool
     {
@@ -701,7 +703,7 @@ class Users extends Component
             $this->verifyEmailForUser($user);
 
             $transaction->commit();
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $transaction->rollBack();
             throw $e;
         }
@@ -721,7 +723,7 @@ class Users extends Component
      *
      * @param User $user The user.
      * @return bool Whether the user was deactivated successfully.
-     * @throws \Throwable if reasons
+     * @throws Throwable if reasons
      * @since 4.0.0
      */
     public function deactivateUser(User $user): bool
@@ -762,7 +764,7 @@ class Users extends Component
             $user->lockoutDate = null;
 
             $transaction->commit();
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $transaction->rollBack();
             throw $e;
         }
@@ -817,7 +819,7 @@ class Users extends Component
      *
      * @param User $user The user.
      * @return bool Whether the user was unlocked successfully.
-     * @throws \Throwable if reasons
+     * @throws Throwable if reasons
      */
     public function unlockUser(User $user): bool
     {
@@ -841,7 +843,7 @@ class Users extends Component
             $userRecord->save();
 
             $transaction->commit();
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $transaction->rollBack();
             throw $e;
         }
@@ -866,7 +868,7 @@ class Users extends Component
      *
      * @param User $user The user.
      * @return bool Whether the user was suspended successfully.
-     * @throws \Throwable if reasons
+     * @throws Throwable if reasons
      */
     public function suspendUser(User $user): bool
     {
@@ -888,7 +890,7 @@ class Users extends Component
             $userRecord->save();
 
             $transaction->commit();
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $transaction->rollBack();
             throw $e;
         }
@@ -908,7 +910,7 @@ class Users extends Component
      *
      * @param User $user The user.
      * @return bool Whether the user was unsuspended successfully.
-     * @throws \Throwable if reasons
+     * @throws Throwable if reasons
      */
     public function unsuspendUser(User $user): bool
     {
@@ -930,7 +932,7 @@ class Users extends Component
             $userRecord->save();
 
             $transaction->commit();
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $transaction->rollBack();
 
             throw $e;
@@ -1151,7 +1153,7 @@ class Users extends Component
             }
 
             $transaction->commit();
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $transaction->rollBack();
             throw $e;
         }

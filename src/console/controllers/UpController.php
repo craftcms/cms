@@ -12,6 +12,7 @@ use craft\console\Controller;
 use craft\db\MigrationManager;
 use craft\errors\OperationAbortedException;
 use craft\helpers\Console;
+use Throwable;
 use yii\console\ExitCode;
 
 /**
@@ -72,7 +73,7 @@ class UpController extends Controller
                 throw new OperationAbortedException();
             }
             $this->stdout("\n");
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             if (!$e instanceof OperationAbortedException) {
                 throw $e;
             }

@@ -7,6 +7,7 @@
 
 namespace craft\base;
 
+use Closure;
 use craft\events\DefineBehaviorsEvent;
 use craft\events\DefineFieldsEvent;
 use craft\events\DefineRulesEvent;
@@ -119,7 +120,7 @@ abstract class Model extends \yii\base\Model
      */
     private function _normalizeRule(&$rule): void
     {
-        if (is_array($rule) && isset($rule[1]) && $rule[1] instanceof \Closure) {
+        if (is_array($rule) && isset($rule[1]) && $rule[1] instanceof Closure) {
             // Wrap the closure in another one, so InlineValidator doesn’t bind it to the model
             $method = $rule[1];
             $rule[1] = function($attribute, $params, $validator, $current) use ($method) {

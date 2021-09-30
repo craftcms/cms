@@ -16,6 +16,7 @@ use craft\helpers\Db;
 use craft\helpers\FileHelper;
 use craft\helpers\StringHelper;
 use mikehaertl\shellcommand\Command as ShellCommand;
+use PDOException;
 use yii\base\ErrorException;
 use yii\base\NotSupportedException;
 use yii\db\Exception;
@@ -342,7 +343,7 @@ SQL;
             }
         } catch (\Exception $e) {
             $previous = $e->getPrevious();
-            if (!$previous instanceof \PDOException || strpos($previous->getMessage(), 'SQLSTATE[42S02') === false) {
+            if (!$previous instanceof PDOException || strpos($previous->getMessage(), 'SQLSTATE[42S02') === false) {
                 throw $e;
             }
 

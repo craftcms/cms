@@ -18,6 +18,7 @@ use craft\helpers\StringHelper;
 use craft\models\EntryType;
 use craft\models\Section;
 use craft\models\UserGroup;
+use DateTime;
 use Illuminate\Support\Collection;
 use yii\base\InvalidConfigException;
 use yii\db\Connection;
@@ -147,7 +148,7 @@ class EntryQuery extends ElementQuery
     public $postDate;
 
     /**
-     * @var string|array|\DateTime The maximum Post Date that resulting entries can have.
+     * @var string|array|DateTime The maximum Post Date that resulting entries can have.
      * ---
      * ```php
      * // fetch entries written before 4/4/2018
@@ -166,7 +167,7 @@ class EntryQuery extends ElementQuery
     public $before;
 
     /**
-     * @var string|array|\DateTime The minimum Post Date that resulting entries can have.
+     * @var string|array|DateTime The minimum Post Date that resulting entries can have.
      * ---
      * ```php
      * // fetch entries written in the last 7 days
@@ -654,7 +655,7 @@ class EntryQuery extends ElementQuery
      *     ->all();
      * ```
      *
-     * @param string|\DateTime $value The property value
+     * @param string|DateTime $value The property value
      * @return self self reference
      * @uses $before
      */
@@ -694,7 +695,7 @@ class EntryQuery extends ElementQuery
      *     ->all();
      * ```
      *
-     * @param string|\DateTime $value The property value
+     * @param string|DateTime $value The property value
      * @return self self reference
      * @uses $after
      */
@@ -847,7 +848,7 @@ class EntryQuery extends ElementQuery
      */
     protected function statusCondition(string $status)
     {
-        $currentTimeDb = Db::prepareDateForDb(new \DateTime());
+        $currentTimeDb = Db::prepareDateForDb(new DateTime());
 
         switch ($status) {
             case Entry::STATUS_LIVE:

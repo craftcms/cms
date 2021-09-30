@@ -40,6 +40,7 @@ use craft\validators\UsernameValidator;
 use craft\validators\UserPasswordValidator;
 use DateInterval;
 use DateTime;
+use Throwable;
 use yii\base\ErrorHandler;
 use yii\base\Exception;
 use yii\base\InvalidArgumentException;
@@ -713,7 +714,7 @@ class User extends Element implements IdentityInterface
             if (($name = $this->getName()) !== '') {
                 return $name;
             }
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             ErrorHandler::convertExceptionToError($e);
         }
 
@@ -1707,7 +1708,7 @@ class User extends Element implements IdentityInterface
             }
 
             $transaction->commit();
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $transaction->rollBack();
             throw $e;
         }

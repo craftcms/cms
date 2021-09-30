@@ -10,6 +10,7 @@ namespace craft\records;
 use craft\db\ActiveQuery;
 use craft\db\ActiveRecord;
 use craft\db\Table;
+use DateTime;
 use yii\db\ActiveQueryInterface;
 
 /**
@@ -27,18 +28,18 @@ use yii\db\ActiveQueryInterface;
  * @property string $lastName Last name
  * @property string $email Email
  * @property string $password Password
- * @property \DateTime $lastLoginDate Last login date
+ * @property DateTime $lastLoginDate Last login date
  * @property string $lastLoginAttemptIp Last login attempt IP
- * @property \DateTime $invalidLoginWindowStart Invalid login window start
+ * @property DateTime $invalidLoginWindowStart Invalid login window start
  * @property int $invalidLoginCount Invalid login count
- * @property \DateTime $lastInvalidLoginDate Last invalid login date
- * @property \DateTime $lockoutDate Lockout date
+ * @property DateTime $lastInvalidLoginDate Last invalid login date
+ * @property DateTime $lockoutDate Lockout date
  * @property bool $hasDashboard Whether the user has a dashboard
  * @property string $verificationCode Verification code
- * @property \DateTime $verificationCodeIssuedDate Verification code issued date
+ * @property DateTime $verificationCodeIssuedDate Verification code issued date
  * @property string $unverifiedEmail Unverified email
  * @property bool $passwordResetRequired Password reset required
- * @property \DateTime $lastPasswordChangeDate Last password change date
+ * @property DateTime $lastPasswordChangeDate Last password change date
  * @property Element $element Element
  * @property Session[] $sessions Sessions
  * @property UserGroup[] $groups User groups

@@ -12,6 +12,7 @@ use craft\console\Controller;
 use craft\elements\User;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Console;
+use Throwable;
 use yii\console\ExitCode;
 
 /**
@@ -219,7 +220,7 @@ class UsersController extends Controller
         // Most likely an invalid group ID will throw…
         try {
             Craft::$app->getUsers()->assignUserToGroups($user->id, $groupIds);
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $this->stderr('failed: Couldn’t assign user to specified groups.' . PHP_EOL, Console::FG_RED);
             return ExitCode::UNSPECIFIED_ERROR;
         }

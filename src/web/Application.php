@@ -21,8 +21,13 @@ use craft\helpers\FileHelper;
 use craft\helpers\Path;
 use craft\helpers\UrlHelper;
 use craft\queue\QueueLogBehavior;
+use IntlDateFormatter;
+use IntlException;
+use Throwable;
 use yii\base\Component;
 use yii\base\ErrorException;
+use yii\base\Exception;
+use yii\base\ExitException;
 use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
 use yii\base\InvalidRouteException;
@@ -121,8 +126,8 @@ class Application extends \yii\web\Application
             // Make sure that ICU supports this timezone
             try {
                 /** @noinspection PhpExpressionResultUnusedInspection */
-                new \IntlDateFormatter($this->language, \IntlDateFormatter::NONE, \IntlDateFormatter::NONE);
-            } catch (\IntlException $e) {
+                new IntlDateFormatter($this->language, IntlDateFormatter::NONE, IntlDateFormatter::NONE);
+            } catch (IntlException $e) {
                 Craft::warning("Time zone \"{$value}\" does not appear to be supported by ICU: " . intl_get_error_message());
                 parent::setTimeZone('UTC');
             }
@@ -136,7 +141,7 @@ class Application extends \yii\web\Application
      * @param bool $skipSpecialHandling Whether to skip the special case request handling stuff and go straight to
      * the normal routing logic
      * @return Response the resulting response
-     * @throws \Throwable if reasons
+     * @throws Throwable if reasons
      */
     public function handleRequest($request, bool $skipSpecialHandling = false): Response
     {
@@ -261,7 +266,7 @@ class Application extends \yii\web\Application
         // If we're still here, finally let Yii do it's thing.
         try {
             return parent::handleRequest($request);
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $this->_unregisterDebugModule();
             throw $e;
         }
@@ -334,7 +339,7 @@ class Application extends \yii\web\Application
      *
      * @throws ErrorException
      * @throws InvalidConfigException
-     * @throws \yii\base\Exception
+     * @throws Exception
      */
     protected function ensureResourcePathExists(): void
     {
@@ -512,7 +517,7 @@ class Application extends \yii\web\Application
      * @return null|Response
      * @throws NotFoundHttpException
      * @throws ServiceUnavailableHttpException
-     * @throws \yii\base\ExitException
+     * @throws ExitException
      */
     private function _processInstallRequest(Request $request): ?Response
     {
@@ -569,7 +574,7 @@ class Application extends \yii\web\Application
      *
      * @param Request $request
      * @return Response|null
-     * @throws \Throwable if reasons
+     * @throws Throwable if reasons
      */
     private function _processActionRequest(Request $request): ?Response
     {
@@ -580,7 +585,7 @@ class Application extends \yii\web\Application
                 Craft::debug("Route requested: '$route'", __METHOD__);
                 $this->requestedRoute = $route;
                 return $this->runAction($route, $_GET);
-            } catch (\Throwable $e) {
+            } catch (Throwable $e) {
                 $this->_unregisterDebugModule();
                 if ($e instanceof InvalidRouteException) {
                     throw new NotFoundHttpException(Craft::t('yii', 'Page not found.'), $e->getCode(), $e);

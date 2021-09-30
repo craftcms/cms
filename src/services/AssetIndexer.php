@@ -25,7 +25,9 @@ use craft\models\AssetIndexingSession;
 use craft\models\VolumeFolder;
 use craft\models\VolumeListing;
 use craft\records\AssetIndexingSession as AssetIndexingSessionRecord;
+use DateTime;
 use Generator;
+use Throwable;
 use yii\base\Component;
 use yii\base\Exception;
 use yii\base\InvalidConfigException;
@@ -178,7 +180,7 @@ class AssetIndexer extends Component
      * Stop an indexing session.
      *
      * @param AssetIndexingSession $session the indexing session to stop.
-     * @throws \Throwable
+     * @throws Throwable
      * @since 4.0.0
      */
     public function stopIndexingSession(AssetIndexingSession $session): void
@@ -268,7 +270,7 @@ class AssetIndexer extends Component
                 $sessionId,
                 $volumeListing->getUri(),
                 $volumeListing->getFileSize(),
-                !$volumeListing->getIsDir() ? Db::prepareDateForDb(new \DateTime('@' . $volumeListing->getDateModified())) : null,
+                !$volumeListing->getIsDir() ? Db::prepareDateForDb(new DateTime('@' . $volumeListing->getDateModified())) : null,
                 $volumeListing->getIsDir(),
                 false,
                 false,
@@ -697,7 +699,7 @@ class AssetIndexer extends Component
                 $asset->dateModified = $timeModified;
                 Craft::$app->getElements()->saveElement($asset);
             }
-        } catch (\Throwable $exception) {
+        } catch (Throwable $exception) {
             // Log an exception and pretend we're cool
             Craft::warning($exception->getMessage());
         }

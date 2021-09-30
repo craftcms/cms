@@ -12,6 +12,7 @@ use craft\gql\base\Directive;
 use craft\gql\GqlEntityRegistry;
 use craft\helpers\StringHelper;
 use craft\i18n\Locale;
+use DateTime;
 use GraphQL\Language\DirectiveLocation;
 use GraphQL\Type\Definition\Directive as GqlDirective;
 use GraphQL\Type\Definition\FieldArgument;
@@ -79,8 +80,8 @@ class FormatDateTime extends Directive
      */
     public static function apply($source, $value, array $arguments, ResolveInfo $resolveInfo)
     {
-        if ($value instanceof \DateTime) {
-            /** @var \DateTime $value */
+        if ($value instanceof DateTime) {
+            /** @var DateTime $value */
             $format = $arguments['format'] ?? self::DEFAULT_FORMAT;
 
             // Is this a custom PHP date format?

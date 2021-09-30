@@ -15,7 +15,9 @@ use craft\helpers\Template;
 use craft\web\Controller;
 use craft\web\View;
 use ErrorException;
+use RequirementsChecker;
 use yii\base\UserException;
+use yii\web\ErrorHandler;
 use yii\web\ForbiddenHttpException;
 use yii\web\HttpException;
 use yii\web\NotFoundHttpException;
@@ -133,7 +135,7 @@ class TemplatesController extends Controller
     public function actionRequirementsCheck(): ?Response
     {
         // Run the requirements checker
-        $reqCheck = new \RequirementsChecker();
+        $reqCheck = new RequirementsChecker();
         $dbConfig = Craft::$app->getConfig()->getDb();
         $reqCheck->dsn = $dbConfig->dsn;
         $reqCheck->dbDriver = $dbConfig->dsn ? Db::parseDsn($dbConfig->dsn, 'driver') : Connection::DRIVER_MYSQL;
@@ -174,7 +176,7 @@ class TemplatesController extends Controller
      */
     public function actionRenderError(): Response
     {
-        /** @var \yii\web\ErrorHandler $errorHandler */
+        /** @var ErrorHandler $errorHandler */
         $errorHandler = Craft::$app->getErrorHandler();
         $exception = $errorHandler->exception;
 

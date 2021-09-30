@@ -16,6 +16,7 @@ use craft\events\MoveElementEvent;
 use craft\models\Structure;
 use craft\records\Structure as StructureRecord;
 use craft\records\StructureElement;
+use Throwable;
 use yii\base\Component;
 use yii\base\Exception;
 
@@ -453,7 +454,7 @@ class Structures extends Component
      * @param string $action
      * @param string $mode
      * @return bool Whether it was done
-     * @throws \Throwable if reasons
+     * @throws Throwable if reasons
      */
     private function _doIt(int $structureId, ElementInterface $element, StructureElement $targetElementRecord, string $action, string $mode): bool
     {
@@ -528,7 +529,7 @@ class Structures extends Component
             $element->afterMoveInStructure($structureId);
 
             $transaction->commit();
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $transaction->rollBack();
             $mutex->release($lockName);
             throw $e;

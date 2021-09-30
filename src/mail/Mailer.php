@@ -13,6 +13,7 @@ use craft\helpers\App;
 use craft\helpers\Template;
 use craft\web\View;
 use Swift_TransportException;
+use Throwable;
 use yii\base\InvalidConfigException;
 use yii\helpers\Markdown;
 use yii\mail\MailEvent;
@@ -144,7 +145,7 @@ class Mailer extends \yii\swiftmailer\Mailer
                 $message->setHtmlBody($view->renderTemplate($template, array_merge($variables, [
                     'body' => Template::raw(Markdown::process($body)),
                 ]), $templateMode));
-            } catch (\Throwable $e) {
+            } catch (Throwable $e) {
                 // Just log it and don't worry about the HTML body
                 Craft::warning('Error rendering email template: ' . $e->getMessage(), __METHOD__);
                 Craft::$app->getErrorHandler()->logException($e);

@@ -20,6 +20,7 @@ use craft\models\Section;
 use craft\records\StructureElement;
 use craft\services\ProjectConfig;
 use craft\services\Structures;
+use Throwable;
 use yii\console\ExitCode;
 use yii\db\Expression;
 
@@ -230,7 +231,7 @@ class RepairController extends Controller
             if (isset($transaction)) {
                 $transaction->commit();
             }
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             if (isset($transaction)) {
                 $transaction->rollBack();
             }

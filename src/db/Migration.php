@@ -8,6 +8,8 @@
 namespace craft\db;
 
 use craft\helpers\Db;
+use Exception;
+use Throwable;
 use yii\db\ColumnSchemaBuilder;
 
 /**
@@ -38,7 +40,7 @@ abstract class Migration extends \yii\db\Migration
      * @inheritdoc
      * @param bool $throwExceptions Whether exceptions should be thrown
      * @return bool Whether the operation was successful
-     * @throws \Throwable
+     * @throws Throwable
      */
     public function up(bool $throwExceptions = false): bool
     {
@@ -50,7 +52,7 @@ abstract class Migration extends \yii\db\Migration
                 return false;
             }
             $transaction->commit();
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $this->_printException($e);
             $transaction->rollBack();
             if ($throwExceptions) {
@@ -71,7 +73,7 @@ abstract class Migration extends \yii\db\Migration
      * @inheritdoc
      * @param bool $throwExceptions Whether exceptions should be thrown
      * @return bool Whether the operation was successful
-     * @throws \Throwable
+     * @throws Throwable
      */
     public function down(bool $throwExceptions = false): bool
     {
@@ -83,7 +85,7 @@ abstract class Migration extends \yii\db\Migration
                 return false;
             }
             $transaction->commit();
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $this->_printException($e);
             $transaction->rollBack();
             if ($throwExceptions) {
@@ -494,7 +496,7 @@ abstract class Migration extends \yii\db\Migration
     }
 
     /**
-     * @param \Throwable|\Exception $e
+     * @param Throwable|Exception $e
      */
     private function _printException($e): void
     {

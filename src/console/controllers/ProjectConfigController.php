@@ -13,6 +13,7 @@ use craft\events\ConfigEvent;
 use craft\helpers\Console;
 use craft\helpers\ProjectConfig;
 use craft\services\ProjectConfig as ProjectConfigService;
+use Throwable;
 use yii\console\ExitCode;
 
 /**
@@ -173,7 +174,7 @@ class ProjectConfigController extends Controller
                 $projectConfig->applyYamlChanges();
 
                 $projectConfig->forceUpdate = $forceUpdate;
-            } catch (\Throwable $e) {
+            } catch (Throwable $e) {
                 $this->stderr("\nerror: " . $e->getMessage() . PHP_EOL, Console::FG_RED);
                 Craft::$app->getErrorHandler()->logException($e);
                 return ExitCode::UNSPECIFIED_ERROR;
@@ -279,7 +280,7 @@ class ProjectConfigController extends Controller
 
         try {
             $projectConfig->rebuild();
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $this->stderr('error: ' . $e->getMessage() . PHP_EOL, Console::FG_RED);
             Craft::$app->getErrorHandler()->logException($e);
             return ExitCode::UNSPECIFIED_ERROR;
@@ -345,7 +346,7 @@ class ProjectConfigController extends Controller
                 $pluginsService->installPlugin($handle);
                 ob_end_clean();
                 $this->stdout('done' . PHP_EOL, Console::FG_GREEN);
-            } catch (\Throwable $e) {
+            } catch (Throwable $e) {
                 ob_end_clean();
                 $this->stdout('error: ' . $e->getMessage() . PHP_EOL, Console::FG_RED);
                 Craft::$app->getErrorHandler()->logException($e);

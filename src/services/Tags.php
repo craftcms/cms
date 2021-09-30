@@ -22,6 +22,7 @@ use craft\helpers\StringHelper;
 use craft\models\FieldLayout;
 use craft\models\TagGroup;
 use craft\records\TagGroup as TagGroupRecord;
+use Throwable;
 use yii\base\Component;
 
 /**
@@ -180,7 +181,7 @@ class Tags extends Component
      * @param bool $runValidation Whether the tag group should be validated
      * @return bool Whether the tag group was saved successfully
      * @throws TagGroupNotFoundException if $tagGroup->id is invalid
-     * @throws \Throwable if reasons
+     * @throws Throwable if reasons
      */
     public function saveTagGroup(TagGroup $tagGroup, bool $runValidation = true): bool
     {
@@ -260,7 +261,7 @@ class Tags extends Component
             }
 
             $transaction->commit();
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $transaction->rollBack();
             throw $e;
         }
@@ -295,7 +296,7 @@ class Tags extends Component
      *
      * @param int $groupId The tag group's ID
      * @return bool Whether the tag group was deleted successfully
-     * @throws \Throwable if reasons
+     * @throws Throwable if reasons
      * @since 3.0.12
      */
     public function deleteTagGroupById(int $groupId): bool
@@ -318,7 +319,7 @@ class Tags extends Component
      *
      * @param TagGroup $tagGroup The tag group
      * @return bool Whether the tag group was deleted successfully
-     * @throws \Throwable if reasons
+     * @throws Throwable if reasons
      */
     public function deleteTagGroup(TagGroup $tagGroup): bool
     {
@@ -386,7 +387,7 @@ class Tags extends Component
                 ->execute();
 
             $transaction->commit();
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $transaction->rollBack();
             throw $e;
         }

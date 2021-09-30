@@ -14,6 +14,7 @@ use craft\helpers\Console;
 use craft\helpers\Gql;
 use craft\models\GqlSchema;
 use GraphQL\Utils\SchemaPrinter;
+use yii\base\Exception;
 use yii\base\InvalidArgumentException;
 use yii\console\ExitCode;
 use yii\helpers\Inflector;
@@ -101,7 +102,7 @@ class GraphqlController extends Controller
     /**
      * @return GqlSchema|null
      * @throws BadRequestHttpException
-     * @throws \yii\base\Exception
+     * @throws Exception
      */
     protected function getGqlSchema(): ?GqlSchema
     {

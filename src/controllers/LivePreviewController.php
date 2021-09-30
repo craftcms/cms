@@ -10,6 +10,8 @@ namespace craft\controllers;
 use Craft;
 use craft\elements\User;
 use craft\web\Controller;
+use yii\base\InvalidRouteException;
+use yii\console\Exception;
 use yii\web\BadRequestHttpException;
 use yii\web\Response;
 use yii\web\ServerErrorHttpException;
@@ -79,9 +81,9 @@ class LivePreviewController extends Controller
      * @param int $userId
      * @return mixed
      * @throws \yii\web\BadRequestHttpException
-     * @throws \yii\base\InvalidRouteException
+     * @throws InvalidRouteException
      * @throws ServerErrorHttpException
-     * @throws \yii\console\Exception
+     * @throws Exception
      */
     public function actionPreview(string $previewAction, int $userId)
     {

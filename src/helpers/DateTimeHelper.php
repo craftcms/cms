@@ -13,6 +13,8 @@ use DateInterval;
 use DateTime;
 use DateTimeImmutable;
 use DateTimeZone;
+use Exception;
+use Throwable;
 use yii\base\ErrorException;
 use yii\base\InvalidArgumentException;
 
@@ -80,7 +82,7 @@ class DateTimeHelper
      * the timezone was not specified. If this is `false`, UTC will be assumed.
      * @param bool $setToSystemTimeZone Whether to set the resulting DateTime object to the system timezone.
      * @return DateTime|false The DateTime object, or `false` if $object could not be converted to one
-     * @throws \Exception
+     * @throws Exception
      */
     public static function toDateTime($value, bool $assumeSystemTimeZone = false, bool $setToSystemTimeZone = true)
     {
@@ -439,7 +441,7 @@ class DateTimeHelper
 
         try {
             $earliestTimestamp = $now->modify("-$timeInterval")->getTimestamp();
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             throw new InvalidArgumentException("Invalid time interval: $timeInterval", 0, $e);
         }
 

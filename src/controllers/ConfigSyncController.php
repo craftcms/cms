@@ -11,6 +11,7 @@ use Craft;
 use craft\errors\InvalidPluginException;
 use craft\helpers\ArrayHelper;
 use craft\services\ProjectConfig;
+use Throwable;
 use yii\base\NotSupportedException;
 use yii\web\Response;
 
@@ -43,7 +44,7 @@ class ConfigSyncController extends BaseUpdaterController
      * Applies changes in `project.yaml` to the project config.
      *
      * @return Response
-     * @throws \Throwable
+     * @throws Throwable
      */
     public function actionApplyYamlChanges(): Response
     {
@@ -61,7 +62,7 @@ class ConfigSyncController extends BaseUpdaterController
      * Regenerates `project.yaml` based on the loaded project config.
      *
      * @return Response
-     * @throws \Throwable
+     * @throws Throwable
      */
     public function actionRegenerateYaml(): Response
     {

@@ -21,6 +21,7 @@ use craft\utilities\ClearCaches;
 use craft\utilities\Updates;
 use craft\web\assets\utilities\UtilitiesAsset;
 use craft\web\Controller;
+use Throwable;
 use yii\base\Exception;
 use yii\base\InvalidArgumentException;
 use yii\caching\TagDependency;
@@ -290,7 +291,7 @@ class UtilitiesController extends Controller
                     FileHelper::clearDirectory($action);
                 } catch (InvalidArgumentException $e) {
                     // the directory doesn't exist
-                } catch (\Throwable $e) {
+                } catch (Throwable $e) {
                     Craft::warning("Could not clear the directory {$action}: " . $e->getMessage(), __METHOD__);
                 }
             } else if (isset($cacheOption['params'])) {
@@ -342,7 +343,7 @@ class UtilitiesController extends Controller
 
         try {
             $backupPath = Craft::$app->getDb()->backup();
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             throw new Exception('Could not create backup: ' . $e->getMessage());
         }
 

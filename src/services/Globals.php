@@ -23,6 +23,7 @@ use craft\helpers\ProjectConfig as ProjectConfigHelper;
 use craft\helpers\StringHelper;
 use craft\models\FieldLayout;
 use craft\records\GlobalSet as GlobalSetRecord;
+use Throwable;
 use yii\base\Component;
 
 /**
@@ -271,7 +272,7 @@ class Globals extends Component
      * @param bool $runValidation Whether the global set should be validated
      * @return bool
      * @throws GlobalSetNotFoundException if $globalSet->id is invalid
-     * @throws \Throwable if reasons
+     * @throws Throwable if reasons
      */
     public function saveSet(GlobalSet $globalSet, bool $runValidation = true): bool
     {
@@ -388,7 +389,7 @@ class Globals extends Component
             $globalSetRecord->save(false);
 
             $transaction->commit();
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $transaction->rollBack();
             throw $e;
         }
@@ -414,7 +415,7 @@ class Globals extends Component
      *
      * @param array $setIds
      * @return bool
-     * @throws \Throwable
+     * @throws Throwable
      * @since 3.7.0
      */
     public function reorderSets(array $setIds): bool
@@ -438,7 +439,7 @@ class Globals extends Component
      *
      * @param int $globalSetId
      * @return bool Whether the global set was deleted successfully
-     * @throws \Throwable if reasons
+     * @throws Throwable if reasons
      */
     public function deleteGlobalSetById(int $globalSetId): bool
     {
@@ -498,7 +499,7 @@ class Globals extends Component
             Craft::$app->getElements()->deleteElementById($globalSetRecord->id);
 
             $transaction->commit();
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $transaction->rollBack();
             throw $e;
         }

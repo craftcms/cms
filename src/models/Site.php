@@ -16,6 +16,7 @@ use craft\validators\HandleValidator;
 use craft\validators\LanguageValidator;
 use craft\validators\UniqueValidator;
 use craft\validators\UrlValidator;
+use DateTime;
 use yii\base\InvalidConfigException;
 
 /**
@@ -75,14 +76,14 @@ class Site extends Model
     public ?string $uid = null;
 
     /**
-     * @var \DateTime Date created
+     * @var DateTime Date created
      */
-    public \DateTime $dateCreated;
+    public DateTime $dateCreated;
 
     /**
-     * @var \DateTime Date updated
+     * @var DateTime Date updated
      */
-    public \DateTime $dateUpdated;
+    public DateTime $dateUpdated;
 
     /**
      * @var string|null Base URL

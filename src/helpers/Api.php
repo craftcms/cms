@@ -12,6 +12,7 @@ use Craft;
 use craft\enums\LicenseKeyStatus;
 use craft\errors\InvalidLicenseKeyException;
 use craft\errors\InvalidPluginException;
+use ErrorException;
 
 /**
  * Craftnet API helper.
@@ -211,7 +212,7 @@ abstract class Api
 
             try {
                 FileHelper::writeToFile($path, chunk_split($license, 50));
-            } catch (\ErrorException $err) {
+            } catch (ErrorException $err) {
                 // log and keep going
                 Craft::error("Could not write new license key to {$path}: {$err->getMessage()}\nLicense key: {$license}", __METHOD__);
                 Craft::$app->getErrorHandler()->logException($err);

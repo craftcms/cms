@@ -29,6 +29,7 @@ use craft\models\Structure;
 use craft\records\CategoryGroup as CategoryGroupRecord;
 use craft\records\CategoryGroup_SiteSettings as CategoryGroup_SiteSettingsRecord;
 use craft\web\View;
+use Throwable;
 use yii\base\Component;
 use yii\base\Exception;
 
@@ -237,7 +238,7 @@ class Categories extends Component
      * @param bool $runValidation Whether the category group should be validated
      * @return bool Whether the category group was saved successfully
      * @throws CategoryGroupNotFoundException if $group has an invalid ID
-     * @throws \Throwable if reasons
+     * @throws Throwable if reasons
      */
     public function saveGroup(CategoryGroup $group, bool $runValidation = true): bool
     {
@@ -453,7 +454,7 @@ class Categories extends Component
             }
 
             $transaction->commit();
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $transaction->rollBack();
             throw $e;
         }
@@ -488,7 +489,7 @@ class Categories extends Component
      *
      * @param int $groupId The category group's ID
      * @return bool Whether the category group was deleted successfully
-     * @throws \Throwable if reasons
+     * @throws Throwable if reasons
      * @since 3.0.12
      */
     public function deleteGroupById(int $groupId): bool
@@ -596,7 +597,7 @@ class Categories extends Component
                 ->execute();
 
             $transaction->commit();
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $transaction->rollBack();
             throw $e;
         }

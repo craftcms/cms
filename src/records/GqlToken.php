@@ -9,6 +9,7 @@ namespace craft\records;
 
 use craft\db\ActiveRecord;
 use craft\db\Table;
+use DateTime;
 use yii\db\ActiveQueryInterface;
 
 /**
@@ -19,8 +20,8 @@ use yii\db\ActiveQueryInterface;
  * @property string $name Token name
  * @property string $accessToken The access token
  * @property bool $enabled whether the token is enabled
- * @property \DateTime $expiryDate Expiration Date
- * @property \DateTime $lastUsed When the schema was last used
+ * @property DateTime $expiryDate Expiration Date
+ * @property DateTime $lastUsed When the schema was last used
  * @property GqlSchema $scope Scope
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.4.0

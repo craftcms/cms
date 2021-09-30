@@ -11,6 +11,7 @@ use Craft;
 use craft\base\ElementAction;
 use craft\base\ElementInterface;
 use craft\elements\db\ElementQueryInterface;
+use Throwable;
 
 /**
  * Duplicate represents a Duplicate element action.
@@ -98,7 +99,7 @@ class Duplicate extends ElementAction
 
             try {
                 $duplicate = $elementsService->duplicateElement($element, $newAttributes);
-            } catch (\Throwable $e) {
+            } catch (Throwable $e) {
                 // Validation error
                 $failCount++;
                 continue;

@@ -12,6 +12,7 @@ use Craft;
 use craft\db\Connection;
 use craft\db\Migration;
 use craft\db\MigrationManager;
+use craft\errors\MigrationException;
 use craft\feeds\Feeds;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Db;
@@ -177,7 +178,7 @@ class TestSetup
      *
      * @return bool
      * @throws InvalidConfigException
-     * @throws \craft\errors\MigrationException
+     * @throws MigrationException
      */
     public static function validateAndApplyMigration(string $class, array $params, bool $ignorePreviousMigrations = false): bool
     {

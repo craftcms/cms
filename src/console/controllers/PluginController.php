@@ -10,6 +10,7 @@ namespace craft\console\controllers;
 use Craft;
 use craft\console\Controller;
 use craft\helpers\Console;
+use Throwable;
 use yii\console\ExitCode;
 
 /**
@@ -64,7 +65,7 @@ class PluginController extends Controller
 
         try {
             Craft::$app->plugins->installPlugin($handle);
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $this->stderr("*** failed to install {$handle}: {$e->getMessage()}" . PHP_EOL . PHP_EOL, Console::FG_RED);
             return ExitCode::UNSPECIFIED_ERROR;
         }
@@ -87,7 +88,7 @@ class PluginController extends Controller
 
         try {
             Craft::$app->plugins->uninstallPlugin($handle, $this->force);
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $this->stderr("*** failed to uninstall {$handle}: {$e->getMessage()}" . PHP_EOL, Console::FG_RED);
             if (!$this->force) {
                 $this->stderr('Try again with --force.' . PHP_EOL);
@@ -114,7 +115,7 @@ class PluginController extends Controller
 
         try {
             Craft::$app->plugins->enablePlugin($handle);
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $this->stderr("*** failed to enable {$handle}: {$e->getMessage()}" . PHP_EOL . PHP_EOL, Console::FG_RED);
             return ExitCode::UNSPECIFIED_ERROR;
         }
@@ -137,7 +138,7 @@ class PluginController extends Controller
 
         try {
             Craft::$app->plugins->disablePlugin($handle);
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $this->stderr("*** failed to disable {$handle}: {$e->getMessage()}" . PHP_EOL . PHP_EOL, Console::FG_RED);
             return ExitCode::UNSPECIFIED_ERROR;
         }

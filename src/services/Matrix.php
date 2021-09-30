@@ -27,6 +27,7 @@ use craft\models\Site;
 use craft\records\MatrixBlockType as MatrixBlockTypeRecord;
 use craft\web\assets\matrix\MatrixAsset;
 use craft\web\View;
+use Throwable;
 use yii\base\Component;
 use yii\base\Exception;
 
@@ -202,7 +203,7 @@ class Matrix extends Component
      * Defaults to `true`.
      * @return bool
      * @throws Exception if an error occurs when saving the block type
-     * @throws \Throwable if reasons
+     * @throws Throwable if reasons
      */
     public function saveBlockType(MatrixBlockType $blockType, bool $runValidation = true): bool
     {
@@ -315,7 +316,7 @@ class Matrix extends Component
             }
 
             $transaction->commit();
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $transaction->rollBack();
             throw $e;
         }
@@ -353,7 +354,7 @@ class Matrix extends Component
      * Handle block type change
      *
      * @param ConfigEvent $event
-     * @throws \Throwable if reasons
+     * @throws Throwable if reasons
      */
     public function handleDeletedBlockType(ConfigEvent $event): void
     {
@@ -431,7 +432,7 @@ class Matrix extends Component
             }
 
             $transaction->commit();
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $transaction->rollBack();
             throw $e;
         }
@@ -500,7 +501,7 @@ class Matrix extends Component
      * @param MatrixField $matrixField The Matrix field
      * @param bool $validate Whether the settings should be validated before being saved.
      * @return bool Whether the settings saved successfully.
-     * @throws \Throwable if reasons
+     * @throws Throwable if reasons
      */
     public function saveSettings(MatrixField $matrixField, bool $validate = true): bool
     {
@@ -562,7 +563,7 @@ class Matrix extends Component
             }
 
             $transaction->commit();
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $transaction->rollBack();
             throw $e;
         }
@@ -581,7 +582,7 @@ class Matrix extends Component
      *
      * @param MatrixField $matrixField The Matrix field.
      * @return bool Whether the field was deleted successfully.
-     * @throws \Throwable
+     * @throws Throwable
      */
     public function deleteMatrixField(MatrixField $matrixField): bool
     {
@@ -611,7 +612,7 @@ class Matrix extends Component
             $transaction->commit();
 
             return true;
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $transaction->rollBack();
 
             throw $e;
@@ -655,7 +656,7 @@ class Matrix extends Component
      *
      * @param MatrixField $field The Matrix field
      * @param ElementInterface $owner The element the field is associated with
-     * @throws \Throwable if reasons
+     * @throws Throwable if reasons
      */
     public function saveField(MatrixField $field, ElementInterface $owner): void
     {
@@ -777,7 +778,7 @@ class Matrix extends Component
             }
 
             $transaction->commit();
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $transaction->rollBack();
             throw $e;
         }
@@ -799,7 +800,7 @@ class Matrix extends Component
      * @param ElementInterface $source The source element blocks should be duplicated from
      * @param ElementInterface $target The target element blocks should be duplicated to
      * @param bool $checkOtherSites Whether to duplicate blocks for the source element's other supported sites
-     * @throws \Throwable if reasons
+     * @throws Throwable if reasons
      * @since 3.2.0
      */
     public function duplicateBlocks(MatrixField $field, ElementInterface $source, ElementInterface $target, bool $checkOtherSites = false): void
@@ -847,7 +848,7 @@ class Matrix extends Component
             $this->_deleteOtherBlocks($field, $target, $newBlockIds);
 
             $transaction->commit();
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $transaction->rollBack();
             throw $e;
         }

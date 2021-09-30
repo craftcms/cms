@@ -8,6 +8,7 @@
 namespace craft\web\twig\variables;
 
 use Craft;
+use craft\errors\WrongEditionException;
 use craft\helpers\Image as ImageHelper;
 use yii\base\Exception;
 
@@ -30,7 +31,7 @@ class Rebrand
     private array $_imageVariables = [];
 
     /**
-     * @throws \craft\errors\WrongEditionException
+     * @throws WrongEditionException
      */
     public function __construct()
     {

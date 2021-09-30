@@ -22,6 +22,7 @@ use craft\models\Updates;
 use craft\models\Updates as UpdatesModel;
 use Symfony\Component\Process\Exception\ProcessFailedException;
 use Symfony\Component\Process\Process;
+use Throwable;
 use yii\base\InvalidConfigException;
 use yii\console\ExitCode;
 use yii\validators\EmailValidator;
@@ -199,7 +200,7 @@ class UpdateController extends Controller
 
         try {
             Craft::$app->getComposer()->install(null, $io);
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             Craft::$app->getErrorHandler()->logException($e);
             $this->stderr('error: ' . $e->getMessage() . PHP_EOL . PHP_EOL, Console::FG_RED);
             $this->stdout('Output:' . PHP_EOL . PHP_EOL . $io->getOutput() . PHP_EOL . PHP_EOL);
@@ -380,7 +381,7 @@ class UpdateController extends Controller
 
         try {
             $composerService->install($requirements, $io);
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             Craft::$app->getErrorHandler()->logException($e);
             $this->stderr('error: ' . $e->getMessage() . PHP_EOL . PHP_EOL, Console::FG_RED);
             $this->stdout('Output:' . PHP_EOL . PHP_EOL . $io->getOutput() . PHP_EOL . PHP_EOL);
@@ -447,7 +448,7 @@ class UpdateController extends Controller
 
         try {
             Craft::$app->getDb()->restore($this->backupPath);
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $this->stdout('error: ' . $e->getMessage() . PHP_EOL, Console::FG_RED);
             $this->stdout('You can manually restore the backup file located at ' . $this->backupPath . PHP_EOL);
             return false;

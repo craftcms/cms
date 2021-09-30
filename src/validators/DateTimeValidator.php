@@ -10,6 +10,7 @@ namespace craft\validators;
 use Craft;
 use craft\helpers\DateTimeHelper;
 use craft\i18n\Locale;
+use DateTime;
 use yii\base\InvalidConfigException;
 use yii\validators\Validator;
 
@@ -77,7 +78,7 @@ class DateTimeValidator extends Validator
     public function validateAttribute($model, $attribute): void
     {
         $value = $model->$attribute;
-        if ($normalized = (!$value instanceof \DateTime)) {
+        if ($normalized = (!$value instanceof DateTime)) {
             $value = DateTimeHelper::toDateTime($value);
         }
 

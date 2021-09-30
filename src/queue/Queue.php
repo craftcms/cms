@@ -16,6 +16,7 @@ use craft\helpers\Json;
 use craft\helpers\StringHelper;
 use craft\helpers\UrlHelper;
 use craft\i18n\Translation;
+use DateTime;
 use yii\base\Exception;
 use yii\base\InvalidArgumentException;
 use yii\db\Expression;
@@ -489,7 +490,7 @@ class Queue extends \yii\queue\cli\Queue implements QueueInterface
                 }
                 Db::update($this->tableName, [
                     'fail' => true,
-                    'dateFailed' => Db::prepareDateForDb(new \DateTime()),
+                    'dateFailed' => Db::prepareDateForDb(new DateTime()),
                     'error' => $event->error ? $this->_truncateErrorMessage($event->error->getMessage()) : null,
                 ], [
                     'id' => $event->id,
@@ -600,7 +601,7 @@ EOD;
             });
 
             if (is_array($payload)) {
-                $payload['dateReserved'] = new \DateTime();
+                $payload['dateReserved'] = new DateTime();
                 $payload['timeUpdated'] = $payload['dateReserved']->getTimestamp();
                 $payload['attempt'] = (int)$payload['attempt'] + 1;
                 Db::update($this->tableName, [

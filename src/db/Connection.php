@@ -21,6 +21,7 @@ use craft\helpers\Db;
 use craft\helpers\FileHelper;
 use craft\helpers\StringHelper;
 use mikehaertl\shellcommand\Command as ShellCommand;
+use Throwable;
 use yii\base\Exception;
 use yii\base\InvalidArgumentException;
 use yii\base\NotSupportedException;
@@ -118,7 +119,7 @@ class Connection extends \yii\db\Connection
     /**
      * @inheritdoc
      * @throws DbConnectException if there are any issues
-     * @throws \Throwable
+     * @throws Throwable
      */
     public function open(): void
     {
@@ -145,7 +146,7 @@ class Connection extends \yii\db\Connection
 
             Craft::error($e->getMessage(), __METHOD__);
             throw new DbConnectException('Craft CMS can’t connect to the database with the credentials in config/db.php.', 0, $e);
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             Craft::error($e->getMessage(), __METHOD__);
             throw new DbConnectException('Craft CMS can’t connect to the database with the credentials in config/db.php.', 0, $e);
         }

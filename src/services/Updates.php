@@ -14,6 +14,7 @@ use craft\errors\MigrateException;
 use craft\helpers\ArrayHelper;
 use craft\helpers\FileHelper;
 use craft\models\Updates as UpdatesModel;
+use Throwable;
 use yii\base\Component;
 use yii\base\ErrorException;
 use yii\base\InvalidArgumentException;
@@ -104,7 +105,7 @@ class Updates extends Component
 
         try {
             $updateData = Craft::$app->getApi()->getUpdates();
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             Craft::warning("Couldn't get updates: {$e->getMessage()}", __METHOD__);
             $updateData = [];
         }
@@ -253,7 +254,7 @@ class Updates extends Component
             }
 
             $transaction->commit();
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $transaction->rollBack();
             throw new MigrateException($name, $handle, null, 0, $e);
         }

@@ -59,6 +59,7 @@ use craft\records\FieldGroup as FieldGroupRecord;
 use craft\records\FieldLayout as FieldLayoutRecord;
 use craft\records\FieldLayoutField as FieldLayoutFieldRecord;
 use craft\records\FieldLayoutTab as FieldLayoutTabRecord;
+use Throwable;
 use yii\base\Component;
 use yii\base\Exception;
 use yii\base\InvalidArgumentException;
@@ -784,7 +785,7 @@ class Fields extends Component
      * @param FieldInterface $field The Field to be saved
      * @param bool $runValidation Whether the field should be validated
      * @return bool Whether the field was saved successfully
-     * @throws \Throwable if reasons
+     * @throws Throwable if reasons
      */
     public function saveField(FieldInterface $field, bool $runValidation = true): bool
     {
@@ -861,7 +862,7 @@ class Fields extends Component
      * Handle field changes.
      *
      * @param ConfigEvent $event
-     * @throws \Throwable
+     * @throws Throwable
      */
     public function handleChangedField(ConfigEvent $event): void
     {
@@ -897,7 +898,7 @@ class Fields extends Component
      *
      * @param FieldInterface $field The field
      * @return bool Whether the field was deleted successfully
-     * @throws \Throwable if reasons
+     * @throws Throwable if reasons
      */
     public function deleteField(FieldInterface $field): bool
     {
@@ -936,7 +937,7 @@ class Fields extends Component
      * Applies a field delete to the database.
      *
      * @param string $fieldUid
-     * @throws \Throwable if database error
+     * @throws Throwable if database error
      * @since 3.1.0
      */
     public function applyFieldDelete(string $fieldUid): void
@@ -972,7 +973,7 @@ class Fields extends Component
             $field->afterDelete();
 
             $transaction->commit();
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $transaction->rollBack();
             throw $e;
         }
@@ -1716,7 +1717,7 @@ class Fields extends Component
             $fieldRecord->save(false);
 
             $transaction->commit();
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $transaction->rollBack();
 
             throw $e;
@@ -1935,7 +1936,7 @@ class Fields extends Component
 
         if (is_numeric($criteria)) {
             $query->where(['id' => $criteria]);
-        } else if (\is_string($criteria)) {
+        } else if (is_string($criteria)) {
             $query->where(['uid' => $criteria]);
         }
 

@@ -10,6 +10,7 @@ namespace craft\console\actions;
 use Craft;
 use craft\console\controllers\ClearCachesController;
 use craft\helpers\FileHelper;
+use Throwable;
 use yii\base\Action;
 use yii\base\InvalidArgumentException;
 use yii\console\ExitCode;
@@ -53,7 +54,7 @@ class ClearCacheAction extends Action
                 FileHelper::clearDirectory($this->action);
             } catch (InvalidArgumentException $e) {
                 // the directory doesn't exist
-            } catch (\Throwable $e) {
+            } catch (Throwable $e) {
                 $error = "Could not clear the directory {$this->label}: " . $e->getMessage();
                 $this->controller->stderr($error . PHP_EOL, Console::FG_RED);
                 Craft::warning($error, __METHOD__);
@@ -61,7 +62,7 @@ class ClearCacheAction extends Action
         } else if (isset($this->params)) {
             try {
                 call_user_func_array($this->action, $this->params);
-            } catch (\Throwable $e) {
+            } catch (Throwable $e) {
                 $error = "Error clearing cache {$this->label}: " . $e->getMessage();
                 $this->controller->stderr($error . PHP_EOL, Console::FG_RED);
                 Craft::warning($error, __METHOD__);
@@ -70,7 +71,7 @@ class ClearCacheAction extends Action
             try {
                 $action = $this->action;
                 $action();
-            } catch (\Throwable $e) {
+            } catch (Throwable $e) {
                 $error = "Error clearing cache {$this->label}: " . $e->getMessage();
                 $this->controller->stderr($error . PHP_EOL, Console::FG_RED);
                 Craft::warning($error, __METHOD__);

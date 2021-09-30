@@ -26,6 +26,8 @@ use craft\models\GqlSchema;
 use craft\records\Field as FieldRecord;
 use craft\validators\HandleValidator;
 use craft\validators\UniqueValidator;
+use DateTime;
+use Exception;
 use GraphQL\Type\Definition\Type;
 use yii\base\Arrayable;
 use yii\base\ErrorHandler;
@@ -185,7 +187,7 @@ abstract class Field extends SavableComponent implements FieldInterface
     {
         try {
             return Craft::t('site', $this->name) ?: static::class;
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             ErrorHandler::convertExceptionToError($e);
         }
     }
@@ -565,7 +567,7 @@ abstract class Field extends SavableComponent implements FieldInterface
         }
 
         // Only DateTime objects and ISO-8601 strings should automatically be detected as dates
-        if ($value instanceof \DateTime || DateTimeHelper::isIso8601($value)) {
+        if ($value instanceof DateTime || DateTimeHelper::isIso8601($value)) {
             return Db::prepareDateForDb($value);
         }
 

@@ -13,7 +13,10 @@ use craft\base\Serializable;
 use craft\db\Connection;
 use craft\db\mysql\Schema as MysqlSchema;
 use craft\db\Query;
+use DateTime;
+use DateTimeZone;
 use PDO;
+use Throwable;
 use yii\base\Exception;
 use yii\base\InvalidArgumentException;
 use yii\base\NotSupportedException;
@@ -117,7 +120,7 @@ class Db
         }
 
         // Only DateTime objects and ISO-8601 strings should automatically be detected as dates
-        if ($value instanceof \DateTime || DateTimeHelper::isIso8601($value)) {
+        if ($value instanceof DateTime || DateTimeHelper::isIso8601($value)) {
             return static::prepareDateForDb($value);
         }
 
@@ -147,7 +150,7 @@ class Db
         }
 
         $date = clone $date;
-        $date->setTimezone(new \DateTimeZone('UTC'));
+        $date->setTimezone(new DateTimeZone('UTC'));
         return $date->format('Y-m-d H:i:s');
     }
 
@@ -604,7 +607,7 @@ class Db
      * [[\yii\db\QueryInterface::where()]]-compatible condition.
      *
      * @param string $column The database column that the param is targeting.
-     * @param string|array|\DateTime $value The param value
+     * @param string|array|DateTime $value The param value
      * @param string $defaultOperator The default operator to apply to the values
      * (can be `not`, `!=`, `<=`, `>=`, `<`, `>`, or `=`)
      * @return mixed
@@ -1039,7 +1042,7 @@ class Db
                     ->renameSequence("{$rawOldName}_id_seq", "{$rawNewName}_id_seq")
                     ->execute();
                 $transaction->commit();
-            } catch (\Throwable $e) {
+            } catch (Throwable $e) {
                 // Silently fail. The sequence probably doesn't exist
                 $transaction->rollBack();
             }
@@ -1305,7 +1308,7 @@ class Db
             return [];
         }
 
-        if ($value instanceof \DateTime) {
+        if ($value instanceof DateTime) {
             return [$value];
         }
 

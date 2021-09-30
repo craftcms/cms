@@ -38,6 +38,7 @@ use craft\queue\jobs\ResaveElements;
 use craft\records\EntryType as EntryTypeRecord;
 use craft\records\Section as SectionRecord;
 use craft\records\Section_SiteSettings as Section_SiteSettingsRecord;
+use Throwable;
 use yii\base\Component;
 use yii\base\Exception;
 
@@ -434,7 +435,7 @@ class Sections extends Component
      * @param bool $runValidation Whether the section should be validated
      * @return bool
      * @throws SectionNotFoundException if $section->id is invalid
-     * @throws \Throwable if reasons
+     * @throws Throwable if reasons
      */
     public function saveSection(Section $section, bool $runValidation = true): bool
     {
@@ -545,7 +546,7 @@ class Sections extends Component
             }
 
             $transaction->commit();
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $transaction->rollBack();
             throw $e;
         }
@@ -729,7 +730,7 @@ class Sections extends Component
             }
 
             $transaction->commit();
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $transaction->rollBack();
             throw $e;
         }
@@ -773,7 +774,7 @@ class Sections extends Component
      *
      * @param int $sectionId
      * @return bool Whether the section was deleted successfully
-     * @throws \Throwable if reasons
+     * @throws Throwable if reasons
      */
     public function deleteSectionById(int $sectionId): bool
     {
@@ -797,7 +798,7 @@ class Sections extends Component
      *
      * @param Section $section
      * @return bool Whether the section was deleted successfully
-     * @throws \Throwable if reasons
+     * @throws Throwable if reasons
      */
     public function deleteSection(Section $section): bool
     {
@@ -868,7 +869,7 @@ class Sections extends Component
                 ->execute();
 
             $transaction->commit();
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $transaction->rollBack();
             throw $e;
         }
@@ -1047,7 +1048,7 @@ class Sections extends Component
      * @param bool $runValidation Whether the entry type should be validated
      * @return bool Whether the entry type was saved successfully
      * @throws EntryTypeNotFoundException if $entryType->id is invalid
-     * @throws \Throwable if reasons
+     * @throws Throwable if reasons
      */
     public function saveEntryType(EntryType $entryType, bool $runValidation = true): bool
     {
@@ -1156,7 +1157,7 @@ class Sections extends Component
             }
 
             $transaction->commit();
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $transaction->rollBack();
             throw $e;
         }
@@ -1220,7 +1221,7 @@ class Sections extends Component
      *
      * @param array $entryTypeIds
      * @return bool Whether the entry types were reordered successfully
-     * @throws \Throwable if reasons
+     * @throws Throwable if reasons
      */
     public function reorderEntryTypes(array $entryTypeIds): bool
     {
@@ -1258,7 +1259,7 @@ class Sections extends Component
      *
      * @param int $entryTypeId
      * @return bool Whether the entry type was deleted successfully
-     * @throws \Throwable if reasons
+     * @throws Throwable if reasons
      */
     public function deleteEntryTypeById(int $entryTypeId): bool
     {
@@ -1282,7 +1283,7 @@ class Sections extends Component
      *
      * @param EntryType $entryType
      * @return bool Whether the entry type was deleted successfully
-     * @throws \Throwable if reasons
+     * @throws Throwable if reasons
      */
     public function deleteEntryType(EntryType $entryType): bool
     {
@@ -1352,7 +1353,7 @@ class Sections extends Component
                 ->execute();
 
             $transaction->commit();
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $transaction->rollBack();
             throw $e;
         }

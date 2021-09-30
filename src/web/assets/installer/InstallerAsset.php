@@ -7,6 +7,7 @@
 
 namespace craft\web\assets\installer;
 
+use Craft;
 use craft\helpers\Json;
 use craft\web\assets\cp\CpAsset;
 use yii\web\AssetBundle;
@@ -49,7 +50,7 @@ class InstallerAsset extends AssetBundle
     {
         parent::registerAssetFiles($view);
 
-        $redirect = Json::encode(\Craft::$app->getConfig()->getGeneral()->postCpLoginRedirect);
+        $redirect = Json::encode(Craft::$app->getConfig()->getGeneral()->postCpLoginRedirect);
         $view->registerJs("window.postCpLoginRedirect = $redirect;");
     }
 }

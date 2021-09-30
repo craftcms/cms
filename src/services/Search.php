@@ -25,6 +25,7 @@ use craft\models\Site;
 use craft\search\SearchQuery;
 use craft\search\SearchQueryTerm;
 use craft\search\SearchQueryTermGroup;
+use Throwable;
 use yii\base\Component;
 use yii\db\Expression;
 use yii\db\Schema;
@@ -496,7 +497,7 @@ SQL;
      * @param int|int[]|null $siteId
      * @param MemoizableArray<FieldInterface>|null $customFields
      * @return string|false
-     * @throws \Throwable
+     * @throws Throwable
      */
     private function _processTokens(array $tokens, bool $inclusive, $siteId, ?MemoizableArray $customFields)
     {
@@ -558,7 +559,7 @@ SQL;
      * @param int|int[]|null $siteId
      * @param MemoizableArray<FieldInterface>|null $customFields
      * @return array
-     * @throws \Throwable
+     * @throws Throwable
      */
     private function _getSqlFromTerm(SearchQueryTerm $term, $siteId, ?MemoizableArray $customFields): array
     {
@@ -735,7 +736,7 @@ SQL;
      * @param bool $bool Use In Boolean Mode or not
      * @param string $glue If multiple values are passed in as an array, the operator to combine them (AND or OR)
      * @return string
-     * @throws \Throwable
+     * @throws Throwable
      */
     private function _sqlFullText($val, bool $bool = true, string $glue = ' AND '): string
     {

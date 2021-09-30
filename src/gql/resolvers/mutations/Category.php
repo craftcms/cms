@@ -16,6 +16,7 @@ use craft\helpers\Db;
 use craft\models\CategoryGroup;
 use GraphQL\Error\Error;
 use GraphQL\Type\Definition\ResolveInfo;
+use Throwable;
 
 /**
  * Class Categoy
@@ -38,7 +39,7 @@ class Category extends ElementMutationResolver
      * @param $context
      * @param ResolveInfo $resolveInfo
      * @return CategoryElement
-     * @throws \Throwable if reasons.
+     * @throws Throwable if reasons.
      */
     public function saveCategory($source, array $arguments, $context, ResolveInfo $resolveInfo): CategoryElement
     {
@@ -84,7 +85,7 @@ class Category extends ElementMutationResolver
      * @param array $arguments
      * @param $context
      * @param ResolveInfo $resolveInfo
-     * @throws \Throwable if reasons.
+     * @throws Throwable if reasons.
      */
     public function deleteCategory($source, array $arguments, $context, ResolveInfo $resolveInfo): void
     {

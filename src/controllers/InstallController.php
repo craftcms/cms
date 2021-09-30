@@ -21,6 +21,8 @@ use craft\migrations\Install;
 use craft\models\Site;
 use craft\web\assets\installer\InstallerAsset;
 use craft\web\Controller;
+use PDOException;
+use Throwable;
 use yii\base\Exception;
 use yii\web\BadRequestHttpException;
 use yii\web\Response;
@@ -59,7 +61,7 @@ class InstallController extends Controller
      * Index action.
      *
      * @return Response The requirements check response if the server doesn’t meet Craft’s requirements, or the rendering result
-     * @throws \Throwable if it's an Ajax request and the server doesn’t meet Craft’s requirements
+     * @throws Throwable if it's an Ajax request and the server doesn’t meet Craft’s requirements
      * @throws DbConnectException if a .env file can't be found and the current DB credentials are invalid
      */
     public function actionIndex(): Response
@@ -147,7 +149,7 @@ class InstallController extends Controller
             try {
                 $db->open();
             } catch (DbConnectException $e) {
-                /** @var \PDOException $pdoException */
+                /** @var PDOException $pdoException */
                 $pdoException = $e->getPrevious()->getPrevious();
                 switch ($pdoException->getCode()) {
                     case 1045:

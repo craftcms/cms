@@ -13,6 +13,7 @@ use craft\errors\ImageException;
 use craft\helpers\App;
 use craft\helpers\FileHelper;
 use craft\helpers\Image as ImageHelper;
+use Imagick;
 use Imagine\Exception\NotSupportedException;
 use Imagine\Exception\RuntimeException;
 use Imagine\Gd\Imagine as GdImagine;
@@ -25,6 +26,7 @@ use Imagine\Image\Metadata\ExifMetadataReader;
 use Imagine\Image\Palette\RGB;
 use Imagine\Image\Point;
 use Imagine\Imagick\Imagine as ImagickImagine;
+use Throwable;
 use yii\base\ErrorException;
 
 /**
@@ -165,7 +167,7 @@ class Raster extends Image
 
         try {
             $this->_image = $this->_instance->open($path);
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             throw new ImageException(Craft::t('app', 'The file “{path}” does not appear to be an image.', ['path' => $path]), 0, $e);
         }
 
@@ -174,10 +176,10 @@ class Raster extends Image
             !Craft::$app->getImages()->getIsGd()
             && !Craft::$app->getConfig()->getGeneral()->preserveCmykColorspace
             && method_exists($this->_image->getImagick(), 'getImageColorspace')
-            && $this->_image->getImagick()->getImageColorspace() === \Imagick::COLORSPACE_CMYK
+            && $this->_image->getImagick()->getImageColorspace() === Imagick::COLORSPACE_CMYK
             && method_exists($this->_image->getImagick(), 'transformImageColorspace')
         ) {
-            $this->_image->getImagick()->transformImageColorspace(\Imagick::COLORSPACE_SRGB);
+            $this->_image->getImagick()->transformImageColorspace(Imagick::COLORSPACE_SRGB);
             $this->_image->save();
 
             /** @noinspection PhpIncompatibleReturnTypeInspection */
@@ -524,7 +526,7 @@ class Raster extends Image
      */
     public function getIsTransparent(): bool
     {
-        if (Craft::$app->getImages()->getIsImagick() && method_exists(\Imagick::class, 'getImageAlphaChannel')) {
+        if (Craft::$app->getImages()->getIsImagick() && method_exists(Imagick::class, 'getImageAlphaChannel')) {
             return $this->_image->getImagick()->getImageAlphaChannel();
         }
 

@@ -33,6 +33,7 @@ use craft\helpers\StringHelper;
 use craft\queue\jobs\LocalizeRelations;
 use craft\services\Elements;
 use craft\validators\ArrayValidator;
+use DateTime;
 use GraphQL\Type\Definition\Type;
 use Illuminate\Support\Collection;
 use yii\base\Event;
@@ -758,7 +759,7 @@ JS;
                 $siteIds = ArrayHelper::withoutValue($siteIds, $element->siteId);
                 if (!empty($siteIds)) {
                     $userId = Craft::$app->getUser()->getId();
-                    $timestamp = Db::prepareDateForDb(new \DateTime());
+                    $timestamp = Db::prepareDateForDb(new DateTime());
 
                     foreach ($siteIds as $siteId) {
                         Db::upsert(DbTable::CHANGEDFIELDS, [

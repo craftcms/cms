@@ -9,6 +9,8 @@ namespace craft\base;
 
 use craft\events\DefineValueEvent;
 use craft\helpers\DateTimeHelper;
+use ReflectionClass;
+use ReflectionProperty;
 
 /**
  * Component is the base class for classes representing Craft components that are configurable.
@@ -30,10 +32,10 @@ abstract class ConfigurableComponent extends Component implements ConfigurableCo
     public function settingsAttributes(): array
     {
         // By default, include all public, non-static properties that were not defined in an abstract class
-        $class = new \ReflectionClass($this);
+        $class = new ReflectionClass($this);
         $names = [];
 
-        foreach ($class->getProperties(\ReflectionProperty::IS_PUBLIC) as $property) {
+        foreach ($class->getProperties(ReflectionProperty::IS_PUBLIC) as $property) {
             if (!$property->isStatic() && !$property->getDeclaringClass()->isAbstract()) {
                 $names[] = $property->getName();
             }

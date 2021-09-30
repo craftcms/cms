@@ -27,6 +27,7 @@ use craft\models\Section;
 use craft\models\Site;
 use craft\services\ProjectConfig;
 use craft\web\Response;
+use Throwable;
 use yii\base\InvalidConfigException;
 
 /**
@@ -1083,7 +1084,7 @@ class Install extends Migration
 
                 $this->_installPlugins();
                 $applyExistingProjectConfig = true;
-            } catch (\Throwable $e) {
+            } catch (Throwable $e) {
                 echo "    > can't apply existing project config: {$e->getMessage()}\n";
                 Craft::$app->getErrorHandler()->logException($e);
 
@@ -1155,7 +1156,7 @@ class Install extends Migration
     /**
      * Attempts to install any plugins listed in project.yaml.
      *
-     * @throws \Throwable if reasons
+     * @throws Throwable if reasons
      */
     private function _installPlugins(): void
     {

@@ -10,6 +10,7 @@ namespace craft\helpers;
 use Craft;
 use craft\image\SvgAllowedAttributes;
 use enshrined\svgSanitize\Sanitizer;
+use Throwable;
 use yii\base\Exception;
 use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
@@ -810,7 +811,7 @@ class Html extends \yii\helpers\Html
         if ($mimeType === null) {
             try {
                 $mimeType = FileHelper::getMimeType($file);
-            } catch (\Throwable $e) {
+            } catch (Throwable $e) {
                 Craft::warning("Unable to determine the MIME type for $file: " . $e->getMessage());
                 Craft::$app->getErrorHandler()->logException($e);
             }

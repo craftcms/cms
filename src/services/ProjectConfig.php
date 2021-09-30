@@ -22,10 +22,12 @@ use craft\helpers\Json;
 use craft\helpers\ProjectConfig as ProjectConfigHelper;
 use craft\helpers\StringHelper;
 use Symfony\Component\Yaml\Yaml;
+use Throwable;
 use yii\base\Application;
 use yii\base\Component;
 use yii\base\ErrorException;
 use yii\base\Exception;
+use yii\base\InvalidConfigException;
 use yii\base\NotSupportedException;
 use yii\caching\ExpressionDependency;
 use yii\web\ServerErrorHttpException;
@@ -464,7 +466,7 @@ class ProjectConfig extends Component
      * @throws Exception
      * @throws NotSupportedException if the service is set to read-only mode
      * @throws ServerErrorHttpException
-     * @throws \yii\base\InvalidConfigException
+     * @throws InvalidConfigException
      */
     public function set(string $path, $value, ?string $message = null, bool $updateTimestamp = true, bool $rebuilding = false): void
     {
@@ -473,7 +475,7 @@ class ProjectConfig extends Component
             $this->_appliedConfig = $this->_getLoadedConfig();
         }
 
-        if (\is_array($value)) {
+        if (is_array($value)) {
             $value = ProjectConfigHelper::cleanupConfig($value);
         }
 
@@ -1203,7 +1205,7 @@ class ProjectConfig extends Component
     /**
      * Rebuilds the project config from the current state in the database.
      *
-     * @throws \Throwable if reasons
+     * @throws Throwable if reasons
      * @since 3.1.20
      */
     public function rebuild(): void
@@ -1711,7 +1713,7 @@ class ProjectConfig extends Component
 
                 FileHelper::writeToFile($filePath, $yamlContent);
             }
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             Craft::$app->getCache()->set(self::FILE_ISSUES_CACHE_KEY, true, self::CACHE_DURATION);
             if (isset($basePath)) {
                 // Try to delete everything (again?) so Craft doesn't apply half-baked project config data
@@ -1719,7 +1721,7 @@ class ProjectConfig extends Component
                     FileHelper::clearDirectory($basePath, [
                         'except' => ['.*', '.*/'],
                     ]);
-                } catch (\Throwable $e) {
+                } catch (Throwable $e) {
                     // oh well
                 }
             }

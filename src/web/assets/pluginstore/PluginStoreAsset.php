@@ -12,6 +12,8 @@ use craft\helpers\Json;
 use craft\helpers\UrlHelper;
 use craft\web\assets\cp\CpAsset;
 use craft\web\assets\vue\VueAsset;
+use Throwable;
+use yii\base\Exception;
 use yii\caching\TagDependency;
 use yii\web\AssetBundle;
 use yii\web\NotFoundHttpException;
@@ -88,7 +90,7 @@ class PluginStoreAsset extends AssetBundle
      *
      * @return null|string
      * @throws NotFoundHttpException
-     * @throws \yii\base\Exception
+     * @throws Exception
      */
     private function getModule(array $config, string $moduleName, string $type = 'modern', bool $soft = true): ?string
     {
@@ -118,7 +120,7 @@ class PluginStoreAsset extends AssetBundle
      *
      * @return null|string
      * @throws NotFoundHttpException
-     * @throws \yii\base\Exception
+     * @throws Exception
      */
     private function getModuleEntry(array $config, string $moduleName, string $type = 'modern', bool $soft = false): ?string
     {
@@ -149,7 +151,7 @@ class PluginStoreAsset extends AssetBundle
      * @param string $type
      *
      * @return array|null
-     * @throws \yii\base\Exception
+     * @throws Exception
      */
     private function getManifestFile(array $config, string $type = 'modern'): ?array
     {
@@ -173,7 +175,7 @@ class PluginStoreAsset extends AssetBundle
             if (!UrlHelper::isAbsoluteUrl($path) && !is_file($path)) {
                 try {
                     $path = UrlHelper::siteUrl($path);
-                } catch (\Throwable $e) {
+                } catch (Throwable $e) {
                     Craft::error($e->getMessage(), __METHOD__);
                 }
             }
@@ -264,7 +266,7 @@ class PluginStoreAsset extends AssetBundle
      */
     private static function combinePaths(string ...$paths): string
     {
-        $last_key = \count($paths) - 1;
+        $last_key = count($paths) - 1;
         array_walk($paths, function(&$val, $key) use ($last_key) {
             switch ($key) {
                 case 0:

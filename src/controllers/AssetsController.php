@@ -11,6 +11,10 @@ use Craft;
 use craft\base\Element;
 use craft\elements\Asset;
 use craft\errors\AssetException;
+use craft\errors\AssetTransformException;
+use craft\errors\DeprecationException;
+use craft\errors\ElementNotFoundException;
+use craft\errors\SiteNotFoundException;
 use craft\errors\UploadFailedException;
 use craft\errors\VolumeException;
 use craft\fields\Assets as AssetsField;
@@ -27,13 +31,18 @@ use craft\models\VolumeFolder;
 use craft\web\Controller;
 use craft\web\UploadedFile;
 use Throwable;
+use Twig\Error\LoaderError;
+use Twig\Error\RuntimeError;
+use Twig\Error\SyntaxError;
 use yii\base\Exception;
 use yii\base\InvalidConfigException;
+use yii\base\InvalidRouteException;
 use yii\base\NotSupportedException;
 use yii\web\BadRequestHttpException;
 use yii\web\ForbiddenHttpException;
 use yii\web\HttpException;
 use yii\web\NotFoundHttpException;
+use yii\web\RangeNotSatisfiableHttpException;
 use yii\web\Response;
 use yii\web\ServerErrorHttpException;
 use ZipArchive;
@@ -66,7 +75,7 @@ class AssetsController extends Controller
      * @throws BadRequestHttpException if `$assetId` is invalid
      * @throws ForbiddenHttpException if the user isn't permitted to edit the asset
      * @throws InvalidConfigException
-     * @throws \craft\errors\SiteNotFoundException
+     * @throws SiteNotFoundException
      * @since 3.4.0
      */
     public function actionEditAsset(int $assetId, ?Asset $asset = null, ?string $site = null): Response
@@ -198,9 +207,9 @@ class AssetsController extends Controller
      * @throws InvalidConfigException
      * @throws VolumeException
      * @throws Throwable
-     * @throws \craft\errors\DeprecationException
-     * @throws \craft\errors\ElementNotFoundException
-     * @throws \yii\base\InvalidRouteException
+     * @throws DeprecationException
+     * @throws ElementNotFoundException
+     * @throws InvalidRouteException
      * @since 3.4.0
      */
     public function actionSaveAsset(): ?Response
@@ -653,7 +662,7 @@ class AssetsController extends Controller
      * @throws InvalidConfigException
      * @throws VolumeException
      * @throws Throwable
-     * @throws \craft\errors\ElementNotFoundException
+     * @throws ElementNotFoundException
      */
     public function actionMoveAsset(): Response
     {
@@ -856,9 +865,9 @@ class AssetsController extends Controller
      * @return Response
      * @throws BadRequestHttpException if the Asset is missing.
      * @throws Exception
-     * @throws \Twig\Error\LoaderError
-     * @throws \Twig\Error\RuntimeError
-     * @throws \Twig\Error\SyntaxError
+     * @throws LoaderError
+     * @throws RuntimeError
+     * @throws SyntaxError
      */
     public function actionImageEditor(): Response
     {
@@ -1074,7 +1083,7 @@ class AssetsController extends Controller
      * @throws ForbiddenHttpException
      * @throws InvalidConfigException
      * @throws VolumeException
-     * @throws \yii\web\RangeNotSatisfiableHttpException
+     * @throws RangeNotSatisfiableHttpException
      */
     public function actionDownloadAsset(): Response
     {
@@ -1166,7 +1175,7 @@ class AssetsController extends Controller
      * @throws BadRequestHttpException
      * @throws NotFoundHttpException if the transform can't be found
      * @throws ServerErrorHttpException if the transform can't be generated
-     * @throws \craft\errors\AssetTransformException
+     * @throws AssetTransformException
      */
     public function actionGenerateTransform(?int $transformId = null): Response
     {

@@ -10,6 +10,7 @@ namespace craft\queue\jobs;
 use Craft;
 use craft\i18n\Translation;
 use craft\queue\BaseJob;
+use Throwable;
 
 /**
  * GeneratePendingTransforms job
@@ -40,7 +41,7 @@ class GeneratePendingTransforms extends BaseJob
                 // Don't let an exception stop us from processing the rest
                 try {
                     $assetTransformsService->ensureTransformUrlByIndexModel($index);
-                } catch (\Throwable $e) {
+                } catch (Throwable $e) {
                 }
             }
         }

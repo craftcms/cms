@@ -9,6 +9,7 @@ namespace craft\mail\transportadapters;
 
 use Craft;
 use craft\behaviors\EnvAttributeParserBehavior;
+use Swift_SmtpTransport;
 
 /**
  * Smtp implements a Gmail transport adapter into Craft’s mailer.
@@ -112,7 +113,7 @@ class Gmail extends BaseTransportAdapter
     public function defineTransport()
     {
         return [
-            'class' => \Swift_SmtpTransport::class,
+            'class' => Swift_SmtpTransport::class,
             'host' => 'smtp.gmail.com',
             'port' => 465,
             'encryption' => 'ssl',

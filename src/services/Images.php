@@ -18,6 +18,7 @@ use craft\image\Svg;
 use craft\image\SvgAllowedAttributes;
 use enshrined\svgSanitize\Sanitizer;
 use Imagine\Imagick\Imagick;
+use Throwable;
 use yii\base\Component;
 use yii\base\Exception;
 
@@ -102,7 +103,7 @@ class Images extends Component
         $version = App::extensionVersion('imagick');
         try {
             $version .= ' (ImageMagick ' . $this->getImageMagickApiVersion() . ')';
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
         }
         return $version;
     }
@@ -312,7 +313,7 @@ class Images extends Component
             }
 
             $cleanedByStripping = $this->stripOrientationFromExifData($filePath);
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             Craft::error('Tried to rotate or strip EXIF data from image and failed: ' . $e->getMessage(), __METHOD__);
         }
 

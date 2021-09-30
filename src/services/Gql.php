@@ -78,6 +78,7 @@ use GraphQL\Validator\Rules\FieldsOnCorrectType;
 use GraphQL\Validator\Rules\KnownTypeNames;
 use GraphQL\Validator\Rules\QueryComplexity;
 use GraphQL\Validator\Rules\QueryDepth;
+use Throwable;
 use yii\base\Component;
 use yii\base\Exception;
 use yii\base\InvalidArgumentException;
@@ -400,7 +401,7 @@ class Gql extends Component
             try {
                 $this->_schemaDef = new Schema($schemaConfig);
                 $this->_schemaDef->getTypeMap();
-            } catch (\Throwable $exception) {
+            } catch (Throwable $exception) {
                 throw new GqlException('Failed to validate the GQL Schema - ' . $exception->getMessage());
             }
         }
@@ -1024,7 +1025,7 @@ class Gql extends Component
             }
 
             $transaction->commit();
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $transaction->rollBack();
             throw $e;
         }
@@ -1089,7 +1090,7 @@ class Gql extends Component
             ]);
 
             $transaction->commit();
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $transaction->rollBack();
             throw $e;
         }
@@ -1257,7 +1258,7 @@ class Gql extends Component
                 '::' . serialize($context) .
                 '::' . serialize($variables) .
                 ($operationName ? "::$operationName" : '');
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             Craft::$app->getErrorHandler()->logException($e);
             $cacheKey = null;
         }

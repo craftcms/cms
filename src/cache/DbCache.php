@@ -10,6 +10,8 @@ namespace craft\cache;
 use Craft;
 use craft\db\Connection;
 use craft\helpers\Db;
+use Exception;
+use PDO;
 use yii\caching\DbCache as YiiDbCache;
 use yii\db\PdoValue;
 
@@ -32,12 +34,12 @@ class DbCache extends YiiDbCache
                 Db::upsert($this->cacheTable, [
                     'id' => $key,
                     'expire' => $duration > 0 ? $duration + time() : 0,
-                    'data' => new PdoValue($value, \PDO::PARAM_LOB),
+                    'data' => new PdoValue($value, PDO::PARAM_LOB),
                 ], true, [], false, $db);
             });
             $this->gc();
             return true;
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             Craft::warning("Unable to update or insert cache data: {$e->getMessage()}", __METHOD__);
             return false;
         }
@@ -55,11 +57,11 @@ class DbCache extends YiiDbCache
                 Db::insert($this->cacheTable, [
                     'id' => $key,
                     'expire' => $duration > 0 ? $duration + time() : 0,
-                    'data' => new PdoValue($value, \PDO::PARAM_LOB),
+                    'data' => new PdoValue($value, PDO::PARAM_LOB),
                 ], false, $db);
             });
             return true;
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             Craft::warning("Unable to insert cache data: {$e->getMessage()}", __METHOD__);
             return false;
         }

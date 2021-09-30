@@ -30,6 +30,7 @@ use craft\helpers\ElementHelper;
 use craft\helpers\StringHelper;
 use craft\models\Site;
 use craft\search\SearchQuery;
+use ReflectionClass;
 use ReflectionProperty;
 use yii\base\ArrayableTrait;
 use yii\base\Exception;
@@ -1638,7 +1639,7 @@ class ElementQuery extends Query implements ElementQueryInterface
         $names = [];
 
         // By default, include all public, non-static properties that were defined by a sub class, and certain ones in this class
-        foreach ((new \ReflectionClass($this))->getProperties(ReflectionProperty::IS_PUBLIC) as $property) {
+        foreach ((new ReflectionClass($this))->getProperties(ReflectionProperty::IS_PUBLIC) as $property) {
             if (!$property->isStatic()) {
                 $dec = $property->getDeclaringClass();
                 if (
@@ -1653,7 +1654,7 @@ class ElementQuery extends Query implements ElementQueryInterface
         // Add custom field properties
         /** @var CustomFieldBehavior $behavior */
         $behavior = $this->getBehavior('customFields');
-        foreach ((new \ReflectionClass($behavior))->getProperties(ReflectionProperty::IS_PUBLIC) as $property) {
+        foreach ((new ReflectionClass($behavior))->getProperties(ReflectionProperty::IS_PUBLIC) as $property) {
             if (
                 !$property->isStatic() &&
                 !in_array($property->getName(), [

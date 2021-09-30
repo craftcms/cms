@@ -9,6 +9,7 @@ namespace craft\web;
 
 use Craft;
 use craft\helpers\UrlHelper;
+use Throwable;
 use yii\web\Cookie;
 use yii\web\CookieCollection;
 use yii\web\HttpException;
@@ -207,7 +208,7 @@ class Response extends \yii\web\Response
      * mod_deflate or mod_gzip is installed, or if this is a Win32 server.
      *
      * @see http://stackoverflow.com/a/141026
-     * @throws \Throwable An exception will be thrown if content has already been output.
+     * @throws Throwable An exception will be thrown if content has already been output.
      */
     public function sendAndClose(): void
     {

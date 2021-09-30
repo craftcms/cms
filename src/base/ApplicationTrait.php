@@ -87,6 +87,7 @@ use craft\web\AssetManager;
 use craft\web\Request as WebRequest;
 use craft\web\Response as WebResponse;
 use craft\web\View;
+use Yii;
 use yii\base\Application;
 use yii\base\ErrorHandler;
 use yii\base\Event;
@@ -780,7 +781,7 @@ trait ApplicationTrait
      */
     public function getYiiVersion(): string
     {
-        return \Yii::getVersion();
+        return Yii::getVersion();
     }
 
     /**

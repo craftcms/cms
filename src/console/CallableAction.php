@@ -8,6 +8,8 @@
 namespace craft\console;
 
 use Craft;
+use ReflectionFunction;
+use ReflectionMethod;
 use yii\base\Action;
 use yii\console\Exception;
 
@@ -51,9 +53,9 @@ class CallableAction extends Action
     private function _bindActionParams(array $params): array
     {
         if (is_array($this->callable)) {
-            $method = new \ReflectionMethod($this->callable[0], $this->callable[1]);
+            $method = new ReflectionMethod($this->callable[0], $this->callable[1]);
         } else {
-            $method = new \ReflectionFunction($this->callable);
+            $method = new ReflectionFunction($this->callable);
         }
 
         $args = array_values($params);

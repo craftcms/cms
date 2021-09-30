@@ -22,6 +22,7 @@ use yii\base\InvalidConfigException;
 use yii\base\UnknownMethodException;
 use yii\db\Query;
 use yii\db\QueryInterface;
+use function twig_get_attribute;
 
 /**
  * Class Template
@@ -97,7 +98,7 @@ class Template
         }
 
         try {
-            return \twig_get_attribute($env, $source, $object, $item, $arguments, $type, $isDefinedTest, $ignoreStrictCheck);
+            return twig_get_attribute($env, $source, $object, $item, $arguments, $type, $isDefinedTest, $ignoreStrictCheck);
         } catch (UnknownMethodException $e) {
             // Copy twig_get_attribute()'s BadMethodCallException handling
             if ($ignoreStrictCheck || !$env->isStrictVariables()) {

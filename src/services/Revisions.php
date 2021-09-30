@@ -18,6 +18,7 @@ use craft\helpers\ArrayHelper;
 use craft\helpers\Db;
 use craft\helpers\Queue;
 use craft\queue\jobs\PruneRevisions;
+use Throwable;
 use yii\base\Component;
 use yii\base\InvalidArgumentException;
 use yii\db\Exception;
@@ -62,7 +63,7 @@ class Revisions extends Component
      * @param array $newAttributes any attributes to apply to the draft
      * @param bool $force Whether to force a new revision even if the element doesn't appear to have changed since the last revision
      * @return ElementInterface The new revision
-     * @throws \Throwable
+     * @throws Throwable
      */
     public function createRevision(ElementInterface $canonical, ?int $creatorId = null, ?string $notes = null, array $newAttributes = [], bool $force = false): ElementInterface
     {
@@ -167,7 +168,7 @@ class Revisions extends Component
             $revision = $elementsService->duplicateElement($canonical, $newAttributes);
 
             $transaction->commit();
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $transaction->rollBack();
             $mutex->release($lockKey);
             throw $e;
@@ -205,7 +206,7 @@ class Revisions extends Component
      * @param int $creatorId The user ID that the new revision should be attributed to
      * @return ElementInterface The new source element
      * @throws InvalidElementException
-     * @throws \Throwable
+     * @throws Throwable
      */
     public function revertToRevision(ElementInterface $revision, int $creatorId): ElementInterface
     {

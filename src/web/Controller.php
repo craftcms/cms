@@ -13,6 +13,7 @@ use craft\helpers\Json;
 use craft\helpers\StringHelper;
 use craft\web\assets\iframeresizer\ContentWindowAsset;
 use GuzzleHttp\Exception\ClientException;
+use Throwable;
 use yii\base\Action;
 use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
@@ -187,7 +188,7 @@ abstract class Controller extends \yii\web\Controller
     {
         try {
             return parent::runAction($id, $params);
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             if ($this->request->getAcceptsJson()) {
                 Craft::$app->getErrorHandler()->logException($e);
                 if (!YII_DEBUG && !$e instanceof UserException) {

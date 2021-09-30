@@ -38,6 +38,7 @@ use craft\web\ServiceUnavailableHttpException;
 use craft\web\UploadedFile;
 use craft\web\View;
 use DateTime;
+use Throwable;
 use yii\base\InvalidArgumentException;
 use yii\web\BadRequestHttpException;
 use yii\web\ForbiddenHttpException;
@@ -1445,7 +1446,7 @@ class UsersController extends Controller
             return $this->asJson([
                 'html' => $this->_renderPhotoTemplate($user),
             ]);
-        } catch (\Throwable $exception) {
+        } catch (Throwable $exception) {
             if (isset($fileLocation)) {
                 FileHelper::unlink($fileLocation);
             }
@@ -1973,7 +1974,7 @@ class UsersController extends Controller
 
     /**
      * @param User $user
-     * @throws \Throwable if reasons
+     * @throws Throwable if reasons
      */
     private function _processUserPhoto(User $user): void
     {
@@ -2026,7 +2027,7 @@ class UsersController extends Controller
         if ($newPhoto) {
             try {
                 $users->saveUserPhoto($fileLocation, $user, $filename);
-            } catch (\Throwable $e) {
+            } catch (Throwable $e) {
                 if (file_exists($fileLocation)) {
                     FileHelper::unlink($fileLocation);
                 }

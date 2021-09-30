@@ -12,6 +12,8 @@ use Composer\Semver\Comparator;
 use Composer\Semver\VersionParser;
 use Craft;
 use craft\errors\InvalidPluginException;
+use RequirementsChecker;
+use Throwable;
 use yii\web\BadRequestHttpException;
 use yii\web\Response;
 
@@ -69,7 +71,7 @@ class UpdaterController extends BaseUpdaterController
     {
         try {
             $this->data['dbBackupPath'] = Craft::$app->getDb()->backup();
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             Craft::error('Error backing up the database: ' . $e->getMessage(), __METHOD__);
             if (!empty($this->data['install'])) {
                 $firstAction = $this->actionOption(Craft::t('app', 'Revert the update'), self::ACTION_REVERT);
@@ -101,7 +103,7 @@ class UpdaterController extends BaseUpdaterController
     {
         try {
             Craft::$app->getDb()->restore($this->data['dbBackupPath']);
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             Craft::error('Error restoring up the database: ' . $e->getMessage(), __METHOD__);
             return $this->send([
                 'error' => Craft::t('app', 'Couldn’t restore the database. How would you like to proceed?'),
@@ -135,7 +137,7 @@ class UpdaterController extends BaseUpdaterController
             Craft::$app->getComposer()->install($this->data['current'], $io);
             Craft::info("Reverted Composer requirements.\nOutput: " . $io->getOutput(), __METHOD__);
             $this->data['reverted'] = true;
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             Craft::error('Error reverting Composer requirements: ' . $e->getMessage() . "\nOutput: " . $io->getOutput(), __METHOD__);
             return $this->sendComposerError(Craft::t('app', 'Composer was unable to revert the updates.'), $e, $io->getOutput());
         }
@@ -150,7 +152,7 @@ class UpdaterController extends BaseUpdaterController
      */
     public function actionServerCheck(): Response
     {
-        $reqCheck = new \RequirementsChecker();
+        $reqCheck = new RequirementsChecker();
         $reqCheck->checkCraft();
 
         $errors = [];

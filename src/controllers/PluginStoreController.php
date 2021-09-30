@@ -8,6 +8,8 @@
 namespace craft\controllers;
 
 use Craft;
+use craft\errors\InvalidLicenseKeyException;
+use craft\errors\InvalidPluginException;
 use craft\helpers\App;
 use craft\helpers\Json;
 use craft\helpers\Session;
@@ -17,6 +19,8 @@ use craft\web\assets\pluginstoreoauth\PluginStoreOauthAsset;
 use craft\web\Controller;
 use craft\web\View;
 use craftcms\oauth2\client\provider\CraftId;
+use Exception;
+use yii\base\InvalidConfigException;
 use yii\web\BadRequestHttpException;
 use yii\web\Response;
 
@@ -46,7 +50,7 @@ class PluginStoreController extends Controller
      *
      * @return Response
      * @throws \yii\base\Exception
-     * @throws \yii\base\InvalidConfigException
+     * @throws InvalidConfigException
      */
     public function actionIndex(): Response
     {
@@ -128,7 +132,7 @@ class PluginStoreController extends Controller
             $options = ['query' => ['accessToken' => $token->accessToken]];
             $client->request('GET', $url, $options);
             $this->setSuccessFlash(Craft::t('app', 'Disconnected from id.craftcms.com.'));
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             Craft::error('Couldn’t revoke token: ' . $e->getMessage());
             $this->setFailFlash(Craft::t('app', 'Disconnected from id.craftcms.com with errors, check the logs.'));
         }
@@ -143,7 +147,7 @@ class PluginStoreController extends Controller
      * OAuth callback.
      *
      * @return Response
-     * @throws \yii\base\InvalidConfigException
+     * @throws InvalidConfigException
      */
     public function actionCallback(): Response
     {
@@ -208,7 +212,7 @@ class PluginStoreController extends Controller
                 'success' => true,
                 'redirect' => UrlHelper::cpUrl('plugin-store/account'),
             ]);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             return $this->asErrorJson($e->getMessage());
         }
     }
@@ -249,8 +253,8 @@ class PluginStoreController extends Controller
      * Save plugin license keys.
      *
      * @return Response
-     * @throws \craft\errors\InvalidLicenseKeyException
-     * @throws \craft\errors\InvalidPluginException
+     * @throws InvalidLicenseKeyException
+     * @throws InvalidPluginException
      */
     public function actionSavePluginLicenseKeys(): Response
     {

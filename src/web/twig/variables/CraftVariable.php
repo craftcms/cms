@@ -8,6 +8,7 @@
 namespace craft\web\twig\variables;
 
 use Craft;
+use craft\console\Application as ConsoleApplication;
 use craft\db\Query;
 use craft\elements\Asset;
 use craft\elements\Category;
@@ -24,6 +25,7 @@ use craft\elements\MatrixBlock;
 use craft\elements\Tag;
 use craft\elements\User;
 use craft\events\DefineBehaviorsEvent;
+use craft\web\Application as WebApplication;
 use yii\di\ServiceLocator;
 
 /**
@@ -51,7 +53,7 @@ class CraftVariable extends ServiceLocator
     const EVENT_DEFINE_BEHAVIORS = 'defineBehaviors';
 
     /**
-     * @var \craft\web\Application|\craft\console\Application|null The Craft application class
+     * @var WebApplication|ConsoleApplication|null The Craft application class
      */
     public $app;
 

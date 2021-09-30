@@ -19,6 +19,7 @@ use yii\db\Expression;
 use yii\helpers\Inflector;
 use yii\helpers\VarDumper;
 use yii\web\Request;
+use function GuzzleHttp\default_user_agent;
 
 /**
  * Craft is helper class serving common Craft and Yii framework functionality.
@@ -336,7 +337,7 @@ EOD;
         // Set the Craft header by default.
         $defaultConfig = [
             'headers' => [
-                'User-Agent' => 'Craft/' . static::$app->getVersion() . ' ' . \GuzzleHttp\default_user_agent(),
+                'User-Agent' => 'Craft/' . static::$app->getVersion() . ' ' . default_user_agent(),
             ],
         ];
 

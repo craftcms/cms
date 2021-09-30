@@ -21,7 +21,9 @@ use craft\helpers\FileHelper;
 use craft\helpers\StringHelper;
 use craft\migrations\CreateDbCacheTable;
 use craft\migrations\CreatePhpSessionTable;
+use PDOException;
 use Seld\CliPrompt\CliPrompt;
+use Throwable;
 use yii\base\InvalidConfigException;
 use yii\console\ExitCode;
 
@@ -343,7 +345,7 @@ EOD;
             // 1045: Access denied for user (username, password)
             // 1049: Unknown database (database)
             // 2002: Connection timed out (server)
-            /** @var \PDOException $pdoException */
+            /** @var PDOException $pdoException */
             $pdoException = $e->getPrevious()->getPrevious() ?? $e->getPrevious() ?? $e;
             $this->stderr('failed: ' . $pdoException->getMessage() . PHP_EOL, Console::FG_RED);
 
@@ -503,7 +505,7 @@ EOD;
             if ($this->confirm(PHP_EOL . "A .env file doesn't exist at {$path}. Would you like to create one?", true)) {
                 try {
                     FileHelper::writeToFile($path, '');
-                } catch (\Throwable $e) {
+                } catch (Throwable $e) {
                     $this->stderr("Unable to create {$path}: {$e->getMessage()}" . PHP_EOL, Console::FG_RED);
                     return false;
                 }
@@ -517,7 +519,7 @@ EOD;
 
         try {
             $configService->setDotEnvVar($name, $value);
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $this->stderr("Unable to set {$name} on {$path}: {$e->getMessage()}" . PHP_EOL, Console::FG_RED);
             return false;
         }

@@ -22,6 +22,7 @@ use craft\web\twig\Environment;
 use craft\web\twig\Extension;
 use craft\web\twig\GlobalsExtension;
 use craft\web\twig\TemplateLoader;
+use Throwable;
 use Twig\Error\LoaderError as TwigLoaderError;
 use Twig\Error\RuntimeError as TwigRuntimeError;
 use Twig\Error\SyntaxError as TwigSyntaxError;
@@ -502,7 +503,7 @@ class View extends \yii\web\View
      * @param string $templateMode The template mode to use.
      * @return string The rendered template.
      * @throws Exception in case of failure
-     * @throws \Throwable in case of failure
+     * @throws Throwable in case of failure
      */
     public function renderObjectTemplate(string $template, $object, array $variables = [], string $templateMode = self::TEMPLATE_MODE_SITE): string
     {

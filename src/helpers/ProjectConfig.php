@@ -9,6 +9,7 @@ namespace craft\helpers;
 
 use Craft;
 use craft\services\ProjectConfig as ProjectConfigService;
+use StdClass;
 use yii\base\InvalidConfigException;
 use yii\caching\ChainedDependency;
 use yii\caching\ExpressionDependency;
@@ -196,7 +197,7 @@ class ProjectConfig
     private static function _cleanupConfigValue($value)
     {
         // Only scalars, arrays and simple objects allowed.
-        if ($value instanceof \StdClass) {
+        if ($value instanceof StdClass) {
             $value = (array)$value;
         }
 

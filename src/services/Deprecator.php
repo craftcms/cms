@@ -17,6 +17,7 @@ use craft\helpers\StringHelper;
 use craft\helpers\Template;
 use craft\models\DeprecationError;
 use craft\web\twig\Extension;
+use DateTime;
 use Twig\Template as TwigTemplate;
 use yii\base\Application;
 use yii\base\Component;
@@ -103,7 +104,7 @@ class Deprecator extends Component
         $this->_requestLogs["$key-$fingerprint"] = new DeprecationError([
             'key' => $key,
             'fingerprint' => $fingerprint,
-            'lastOccurrence' => new \DateTime(),
+            'lastOccurrence' => new DateTime(),
             'file' => $file,
             'line' => $line,
             'message' => $message,

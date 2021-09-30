@@ -32,9 +32,11 @@ use craft\models\SiteGroup;
 use craft\queue\jobs\PropagateElements;
 use craft\records\Site as SiteRecord;
 use craft\records\SiteGroup as SiteGroupRecord;
+use Throwable;
 use yii\base\Component;
 use yii\base\Exception;
 use yii\base\InvalidArgumentException;
+use yii\base\NotSupportedException;
 use yii\db\Exception as DbException;
 
 /**
@@ -638,7 +640,7 @@ class Sites extends Component
      * @param bool $runValidation Whether the site should be validated
      * @return bool
      * @throws SiteNotFoundException if $site->id is invalid
-     * @throws \Throwable if reasons
+     * @throws Throwable if reasons
      */
     public function saveSite(Site $site, bool $runValidation = true): bool
     {
@@ -702,7 +704,7 @@ class Sites extends Component
      * Handle site changes.
      *
      * @param ConfigEvent $event
-     * @throws \Throwable
+     * @throws Throwable
      */
     public function handleChangedSite(ConfigEvent $event): void
     {
@@ -746,7 +748,7 @@ class Sites extends Component
             }
 
             $transaction->commit();
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $transaction->rollBack();
             throw $e;
         }
@@ -823,7 +825,7 @@ class Sites extends Component
      *
      * @param string[] $siteIds The site IDs in their new order
      * @return bool Whether the sites were reordered successfully
-     * @throws \Throwable if reasons
+     * @throws Throwable if reasons
      */
     public function reorderSites(array $siteIds): bool
     {
@@ -860,7 +862,7 @@ class Sites extends Component
      * @param int $siteId The site ID to be deleted
      * @param int|null $transferContentTo The site ID that should take over the deleted site’s contents
      * @return bool Whether the site was deleted successfully
-     * @throws \Throwable if reasons
+     * @throws Throwable if reasons
      */
     public function deleteSiteById(int $siteId, ?int $transferContentTo = null): bool
     {
@@ -880,7 +882,7 @@ class Sites extends Component
      * @param int|null $transferContentTo The site ID that should take over the deleted site’s contents
      * @return bool Whether the site was deleted successfully
      * @throws Exception if $site is the primary site
-     * @throws \Throwable if reasons
+     * @throws Throwable if reasons
      */
     public function deleteSite(Site $site, ?int $transferContentTo = null): bool
     {
@@ -1039,8 +1041,8 @@ class Sites extends Component
      *
      * @param ConfigEvent $event
      * @throws DbException
-     * @throws \Throwable
-     * @throws \yii\base\NotSupportedException
+     * @throws Throwable
+     * @throws NotSupportedException
      */
     public function handleDeletedSite(ConfigEvent $event): void
     {
@@ -1069,7 +1071,7 @@ class Sites extends Component
                 ->execute();
 
             $transaction->commit();
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $transaction->rollBack();
             throw $e;
         }
@@ -1248,7 +1250,7 @@ class Sites extends Component
         $query = $withTrashed ? SiteRecord::findWithTrashed() : SiteRecord::find();
         if (is_numeric($criteria)) {
             $query->andWhere(['id' => $criteria]);
-        } else if (\is_string($criteria)) {
+        } else if (is_string($criteria)) {
             $query->andWhere(['uid' => $criteria]);
         }
 
@@ -1261,7 +1263,7 @@ class Sites extends Component
      *
      * @param int $oldPrimarySiteId
      * @param int $newPrimarySiteId
-     * @throws \Throwable
+     * @throws Throwable
      */
     private function _processNewPrimarySite(int $oldPrimarySiteId, int $newPrimarySiteId): void
     {
@@ -1323,7 +1325,7 @@ class Sites extends Component
             }
 
             $transaction->commit();
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $transaction->rollBack();
             throw $e;
         }

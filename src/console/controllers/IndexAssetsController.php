@@ -18,6 +18,7 @@ use craft\errors\MissingVolumeFolderException;
 use craft\errors\VolumeObjectNotFoundException;
 use craft\helpers\Db;
 use craft\models\VolumeListing;
+use Throwable;
 use yii\console\ExitCode;
 use yii\db\Exception;
 use yii\helpers\Console;
@@ -185,7 +186,7 @@ class IndexAssetsController extends Controller
                 } catch (AssetDisallowedExtensionException | AssetNotIndexableException $e) {
                     $this->stdout('skipped: ' . $e->getMessage() . PHP_EOL, Console::FG_YELLOW);
                     continue;
-                } catch (\Throwable $e) {
+                } catch (Throwable $e) {
                     $this->stdout('error: ' . $e->getMessage() . PHP_EOL . PHP_EOL, Console::FG_RED);
                     Craft::$app->getErrorHandler()->logException($e);
                     return ExitCode::UNSPECIFIED_ERROR;

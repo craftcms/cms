@@ -10,6 +10,7 @@ namespace craft\helpers;
 use Craft;
 use yii\base\InvalidConfigException;
 use yii\console\Controller;
+use const STDOUT;
 
 /**
  * Console helper
@@ -35,7 +36,7 @@ class Console extends \yii\helpers\Console
      */
     public static function stdout($string)
     {
-        if (static::streamSupportsAnsiColors(\STDOUT)) {
+        if (static::streamSupportsAnsiColors(STDOUT)) {
             $args = func_get_args();
             array_shift($args);
             if (!empty($args)) {

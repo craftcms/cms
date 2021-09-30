@@ -7,6 +7,7 @@
 
 namespace craft\web\twig;
 
+use Closure;
 use Craft;
 use craft\base\MissingComponentInterface;
 use craft\base\PluginInterface;
@@ -54,6 +55,8 @@ use DateInterval;
 use DateTime;
 use DateTimeInterface;
 use DateTimeZone;
+use IteratorAggregate;
+use Throwable;
 use Traversable;
 use Twig\Environment as TwigEnvironment;
 use Twig\Error\RuntimeError;
@@ -64,8 +67,11 @@ use Twig\TwigFunction;
 use Twig\TwigTest;
 use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
+use yii\db\Exception;
 use yii\db\Expression;
 use yii\helpers\Markdown;
+use function twig_date_converter;
+use function twig_date_format_filter;
 
 /**
  * Class Extension
@@ -787,7 +793,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
     public function dateFilter(TwigEnvironment $env, $date, ?string $format = null, $timezone = null, ?string $locale = null): string
     {
         if ($date instanceof \DateInterval) {
-            return \twig_date_format_filter($env, $date, $format, $timezone);
+            return twig_date_format_filter($env, $date, $format, $timezone);
         }
 
         // Is this a custom PHP date format?
@@ -799,7 +805,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
             }
         }
 
-        $date = \twig_date_converter($env, $date, $timezone);
+        $date = twig_date_converter($env, $date, $timezone);
         $formatter = $locale ? (new Locale($locale))->getFormatter() : Craft::$app->getFormatter();
         $fmtTimeZone = $formatter->timeZone;
         $formatter->timeZone = $timezone !== null ? $date->getTimezone()->getName() : $formatter->timeZone;
@@ -839,7 +845,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
      */
     public function atomFilter(TwigEnvironment $env, $date, $timezone = null): string
     {
-        return \twig_date_format_filter($env, $date, \DateTime::ATOM, $timezone);
+        return twig_date_format_filter($env, $date, \DateTime::ATOM, $timezone);
     }
 
     /**
@@ -870,7 +876,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
      */
     public function rssFilter(TwigEnvironment $env, $date, $timezone = null): string
     {
-        return \twig_date_format_filter($env, $date, \DateTime::RSS, $timezone);
+        return twig_date_format_filter($env, $date, \DateTime::RSS, $timezone);
     }
 
     /**
@@ -894,7 +900,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
             }
         }
 
-        $date = \twig_date_converter($env, $date, $timezone);
+        $date = twig_date_converter($env, $date, $timezone);
         $formatter = $locale ? (new Locale($locale))->getFormatter() : Craft::$app->getFormatter();
         $fmtTimeZone = $formatter->timeZone;
         $formatter->timeZone = $timezone !== null ? $date->getTimezone()->getName() : $formatter->timeZone;
@@ -924,7 +930,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
             }
         }
 
-        $date = \twig_date_converter($env, $date, $timezone);
+        $date = twig_date_converter($env, $date, $timezone);
         $formatter = $locale ? (new Locale($locale))->getFormatter() : Craft::$app->getFormatter();
         $fmtTimeZone = $formatter->timeZone;
         $formatter->timeZone = $timezone !== null ? $date->getTimezone()->getName() : $formatter->timeZone;
@@ -1024,7 +1030,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
      */
     public function httpdateFilter(TwigEnvironment $env, $date, $timezone = null): string
     {
-        return \twig_date_format_filter($env, $date, \DateTime::RFC7231, $timezone);
+        return twig_date_format_filter($env, $date, \DateTime::RFC7231, $timezone);
     }
 
 
@@ -1041,7 +1047,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
             $index = strpos($haystack, $needle);
         } else if (is_array($haystack)) {
             $index = array_search($needle, $haystack, false);
-        } else if (is_object($haystack) && $haystack instanceof \IteratorAggregate) {
+        } else if (is_object($haystack) && $haystack instanceof IteratorAggregate) {
             $index = false;
 
             foreach ($haystack as $i => $item) {
@@ -1113,7 +1119,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
      * Duplicates an array and sorts it with [[\craft\helpers\ArrayHelper::multisort()]].
      *
      * @param mixed $array the array to be sorted. The array will be modified after calling this method.
-     * @param string|\Closure|array $key the key(s) to be sorted by. This refers to a key name of the sub-array
+     * @param string|Closure|array $key the key(s) to be sorted by. This refers to a key name of the sub-array
      * elements, a property name of the objects, or an anonymous function returning the values for comparison
      * purpose. The anonymous function signature should be: `function($item)`.
      * To sort by multiple keys, provide an array of keys here.
@@ -1284,8 +1290,8 @@ class Extension extends AbstractExtension implements GlobalsInterface
      * @param bool $next Whether the next number in the sequence should be returned (and the sequence should be incremented).
      * If set to `false`, the current number in the sequence will be returned instead.
      * @return int|string
-     * @throws \Throwable if reasons
-     * @throws \yii\db\Exception
+     * @throws Throwable if reasons
+     * @throws Exception
      * @since 3.0.31
      */
     public function seqFunction(string $name, ?int $length = null, bool $next = true)
@@ -1344,7 +1350,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
         if ($svg instanceof Asset) {
             try {
                 $svg = $svg->getContents();
-            } catch (\Throwable $e) {
+            } catch (Throwable $e) {
                 Craft::error("Could not get the contents of {$svg->getPath()}: {$e->getMessage()}", __METHOD__);
                 Craft::$app->getErrorHandler()->logException($e);
                 return '';

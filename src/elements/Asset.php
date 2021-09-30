@@ -52,6 +52,7 @@ use craft\validators\DateTimeValidator;
 use craft\validators\StringValidator;
 use craft\volumes\Temp;
 use DateTime;
+use Throwable;
 use Twig\Markup;
 use yii\base\ErrorHandler;
 use yii\base\Exception;
@@ -705,7 +706,7 @@ class Asset extends Element
             if (isset($this->_transform) && ($url = (string)$this->getUrl())) {
                 return $url;
             }
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             ErrorHandler::convertExceptionToError($e);
         }
 
@@ -1911,7 +1912,7 @@ class Asset extends Element
             $sanitizeCpImageUploads = Craft::$app->getConfig()->getGeneral()->sanitizeCpImageUploads;
 
             if (
-                \in_array($this->getScenario(), [self::SCENARIO_REPLACE, self::SCENARIO_CREATE], true) &&
+                in_array($this->getScenario(), [self::SCENARIO_REPLACE, self::SCENARIO_CREATE], true) &&
                 AssetsHelper::getFileKindByExtension($this->tempFilePath) === static::KIND_IMAGE &&
                 !($isCpRequest && !$sanitizeCpImageUploads)
             ) {

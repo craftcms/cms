@@ -14,6 +14,7 @@ use craft\events\RegisterCacheOptionsEvent;
 use craft\helpers\ArrayHelper;
 use craft\helpers\FileHelper;
 use craft\web\assets\clearcaches\ClearCachesAsset;
+use Exception;
 use yii\base\Event;
 use yii\base\InvalidArgumentException;
 
@@ -168,7 +169,7 @@ class ClearCaches extends Utility
                         $request->isWebrootAliasSetDynamically &&
                         strpos($basePath, '@webroot') === 0
                     ) {
-                        throw new \Exception("Unable to clear control panel resources because the location isn't known for console commands.\n" .
+                        throw new Exception("Unable to clear control panel resources because the location isn't known for console commands.\n" .
                             "Explicitly set the @webroot alias in config/general.php to avoid this error.\n" .
                             'See https://craftcms.com/docs/3.x/config/#aliases for more info.');
                     }

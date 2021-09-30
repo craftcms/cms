@@ -18,6 +18,11 @@ use craft\helpers\Cp as CpHelper;
 use craft\helpers\StringHelper;
 use craft\helpers\UrlHelper;
 use DateTime;
+use DateTimeZone;
+use RecursiveCallbackFilterIterator;
+use RecursiveDirectoryIterator;
+use RecursiveIteratorIterator;
+use SplFileInfo;
 use yii\base\Component;
 use yii\base\InvalidConfigException;
 
@@ -527,8 +532,8 @@ class Cp extends Component
         $offsets = [];
         $timezoneIds = [];
 
-        foreach (\DateTimeZone::listIdentifiers() as $timezoneId) {
-            $timezone = new \DateTimeZone($timezoneId);
+        foreach (DateTimeZone::listIdentifiers() as $timezoneId) {
+            $timezone = new DateTimeZone($timezoneId);
             $transition = $timezone->getTransitions($utc->getTimestamp(), $utc->getTimestamp());
             $abbr = $transition[0]['abbr'];
 
@@ -598,10 +603,10 @@ class Cp extends Component
             return [];
         }
 
-        $directory = new \RecursiveDirectoryIterator($root);
+        $directory = new RecursiveDirectoryIterator($root);
 
         /** @noinspection PhpParamsInspection */
-        $filter = new \RecursiveCallbackFilterIterator($directory, function($current) {
+        $filter = new RecursiveCallbackFilterIterator($directory, function($current) {
             // Skip hidden files and directories, as well as node_modules/ folders
             if ($current->getFilename()[0] === '.' || $current->getFilename() === 'node_modules') {
                 return false;
@@ -609,13 +614,13 @@ class Cp extends Component
             return true;
         });
 
-        $iterator = new \RecursiveIteratorIterator($filter);
-        /** @var \SplFileInfo[] $files */
+        $iterator = new RecursiveIteratorIterator($filter);
+        /** @var SplFileInfo[] $files */
         $files = [];
         $pathLengths = [];
 
         foreach ($iterator as $file) {
-            /** @var \SplFileInfo $file */
+            /** @var SplFileInfo $file */
             if (!$file->isDir() && $file->getFilename()[0] !== '.') {
                 $files[] = $file;
                 $pathLengths[] = strlen($file->getRealPath());

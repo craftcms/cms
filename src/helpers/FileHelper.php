@@ -13,6 +13,7 @@ use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
 use Symfony\Component\Filesystem\Exception\IOException;
 use Symfony\Component\Filesystem\Filesystem;
+use Throwable;
 use yii\base\ErrorException;
 use yii\base\Exception;
 use yii\base\InvalidArgumentException;
@@ -425,7 +426,7 @@ class FileHelper extends \yii\helpers\FileHelper
         // BaseFileHelper::unlink() doesn't seem to catch all possible exceptions
         try {
             return parent::unlink($path);
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             return false;
         }
     }
@@ -579,7 +580,7 @@ class FileHelper extends \yii\helpers\FileHelper
                 throw new Exception('Unable to release test lock.');
             }
             self::$_useFileLocks = true;
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             Craft::warning('Write lock test failed: ' . $e->getMessage(), __METHOD__);
         }
 

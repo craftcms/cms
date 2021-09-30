@@ -26,6 +26,7 @@ use craft\records\Volume as AssetVolumeRecord;
 use craft\records\VolumeFolder as VolumeFolderRecord;
 use craft\volumes\Local;
 use craft\volumes\MissingVolume;
+use Throwable;
 use yii\base\Component;
 use yii\base\UnknownPropertyException;
 
@@ -343,7 +344,7 @@ class Volumes extends Component
      * @param VolumeInterface $volume the volume to be saved.
      * @param bool $runValidation Whether the volume should be validated
      * @return bool Whether the volume was saved successfully
-     * @throws \Throwable
+     * @throws Throwable
      */
     public function saveVolume(VolumeInterface $volume, bool $runValidation = true): bool
     {
@@ -457,7 +458,7 @@ class Volumes extends Component
             }
 
             $transaction->commit();
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $transaction->rollBack();
             throw $e;
         }
@@ -495,7 +496,7 @@ class Volumes extends Component
      *
      * @param array $volumeIds
      * @return bool
-     * @throws \Throwable
+     * @throws Throwable
      */
     public function reorderVolumes(array $volumeIds): bool
     {
@@ -587,7 +588,7 @@ class Volumes extends Component
      *
      * @param int $volumeId
      * @return bool
-     * @throws \Throwable
+     * @throws Throwable
      */
     public function deleteVolumeById(int $volumeId): bool
     {
@@ -605,7 +606,7 @@ class Volumes extends Component
      *
      * @param VolumeInterface $volume The volume to delete
      * @return bool
-     * @throws \Throwable
+     * @throws Throwable
      */
     public function deleteVolume(VolumeInterface $volume): bool
     {
@@ -679,7 +680,7 @@ class Volumes extends Component
             $volume->afterDelete();
 
             $transaction->commit();
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $transaction->rollBack();
             throw $e;
         }

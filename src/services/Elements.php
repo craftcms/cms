@@ -56,6 +56,7 @@ use craft\records\StructureElement as StructureElementRecord;
 use craft\validators\HandleValidator;
 use craft\validators\SlugValidator;
 use DateTime;
+use Throwable;
 use yii\base\Behavior;
 use yii\base\Component;
 use yii\base\Exception;
@@ -444,7 +445,7 @@ class Elements extends Component
 
         try {
             $rootElement = ElementHelper::rootElement($element);
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $rootElement = $element;
         }
 
@@ -762,7 +763,7 @@ class Elements extends Component
      * @return bool
      * @throws ElementNotFoundException if $element has an invalid $id
      * @throws Exception if the $element doesn’t have any supported sites
-     * @throws \Throwable if reasons
+     * @throws Throwable if reasons
      */
     public function saveElement(ElementInterface $element, bool $runValidation = true, bool $propagate = true, ?bool $updateSearchIndex = null): bool
     {
@@ -926,7 +927,7 @@ class Elements extends Component
      * @param bool $skipRevisions Whether elements that are (or belong to) a revision should be skipped
      * @param bool|null $updateSearchIndex Whether to update the element search index for the element
      * (this will happen via a background job if this is a web request)
-     * @throws \Throwable if reasons
+     * @throws Throwable if reasons
      * @since 3.2.0
      */
     public function resaveElements(ElementQueryInterface $query, bool $continueOnError = false, bool $skipRevisions = true, ?bool $updateSearchIndex = null): void
@@ -970,7 +971,7 @@ class Elements extends Component
                             if (ElementHelper::isRevision($element)) {
                                 throw new InvalidElementException($element, "Skipped resaving {$element} ({$element->id}) because it's a revision.");
                             }
-                        } catch (\Throwable $rootException) {
+                        } catch (Throwable $rootException) {
                             throw new InvalidElementException($element, "Skipped resaving {$element} ({$element->id}) due to an error obtaining its root element: " . $rootException->getMessage());
                         }
                     }
@@ -980,7 +981,7 @@ class Elements extends Component
                 if ($e === null) {
                     try {
                         $this->_saveElementInternal($element, true, true, $updateSearchIndex);
-                    } catch (\Throwable $e) {
+                    } catch (Throwable $e) {
                         if (!$continueOnError) {
                             throw $e;
                         }
@@ -1016,7 +1017,7 @@ class Elements extends Component
      * @param ElementQueryInterface $query The element query to fetch elements with
      * @param int|int[]|null $siteIds The site ID(s) that the elements should be propagated to. If null, elements will be
      * @param bool $continueOnError Whether to continue going if an error occurs
-     * @throws \Throwable if reasons
+     * @throws Throwable if reasons
      * propagated to all supported sites, except the one they were queried in.
      * @since 3.2.0
      */
@@ -1070,7 +1071,7 @@ class Elements extends Component
                     // It's now fully duplicated and propagated
                     $element->markAsDirty();
                     $element->afterPropagate(false);
-                } catch (\Throwable $e) {
+                } catch (Throwable $e) {
                     if (!$continueOnError) {
                         throw $e;
                     }
@@ -1108,7 +1109,7 @@ class Elements extends Component
      * @return ElementInterface the duplicated element
      * @throws UnsupportedSiteException if the element is being duplicated into a site it doesn’t support
      * @throws InvalidElementException if saveElement() returns false for any of the sites
-     * @throws \Throwable if reasons
+     * @throws Throwable if reasons
      */
     public function duplicateElement(ElementInterface $element, array $newAttributes = [], bool $placeInStructure = true): ElementInterface
     {
@@ -1310,7 +1311,7 @@ class Elements extends Component
             $mainClone->afterPropagate(empty($newAttributes['id']));
 
             $transaction->commit();
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $transaction->rollBack();
             throw $e;
         }
@@ -1453,7 +1454,7 @@ class Elements extends Component
      * @param int $prevailingElementId The ID of the element that is sticking around.
      * @return bool Whether the elements were merged successfully.
      * @throws ElementNotFoundException if one of the element IDs don’t exist.
-     * @throws \Throwable if reasons
+     * @throws Throwable if reasons
      */
     public function mergeElementsByIds(int $mergedElementId, int $prevailingElementId): bool
     {
@@ -1482,7 +1483,7 @@ class Elements extends Component
      * @param ElementInterface $mergedElement The element that is going away.
      * @param ElementInterface $prevailingElement The element that is sticking around.
      * @return bool Whether the elements were merged successfully.
-     * @throws \Throwable if reasons
+     * @throws Throwable if reasons
      * @since 3.1.31
      */
     public function mergeElements(ElementInterface $mergedElement, ElementInterface $prevailingElement): bool
@@ -1577,7 +1578,7 @@ class Elements extends Component
             $transaction->commit();
 
             return $success;
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $transaction->rollBack();
             throw $e;
         }
@@ -1592,7 +1593,7 @@ class Elements extends Component
      * Defaults to the current site.
      * @param bool Whether the element should be hard-deleted immediately, instead of soft-deleted
      * @return bool Whether the element was deleted successfully
-     * @throws \Throwable
+     * @throws Throwable
      */
     public function deleteElementById(int $elementId, ?string $elementType = null, ?int $siteId = null, bool $hardDelete = false): bool
     {
@@ -1634,7 +1635,7 @@ class Elements extends Component
      * @param ElementInterface $element The element to be deleted
      * @param bool Whether the element should be hard-deleted immediately, instead of soft-deleted
      * @return bool Whether the element was deleted successfully
-     * @throws \Throwable
+     * @throws Throwable
      */
     public function deleteElement(ElementInterface $element, bool $hardDelete = false): bool
     {
@@ -1690,7 +1691,7 @@ class Elements extends Component
             $element->afterDelete();
 
             $transaction->commit();
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $transaction->rollBack();
             throw $e;
         }
@@ -1711,7 +1712,7 @@ class Elements extends Component
      * @param ElementInterface $element
      * @return bool Whether the element was restored successfully
      * @throws Exception if the $element doesn’t have any supported sites
-     * @throws \Throwable if reasons
+     * @throws Throwable if reasons
      * @since 3.1.0
      */
     public function restoreElement(ElementInterface $element): bool
@@ -1725,7 +1726,7 @@ class Elements extends Component
      * @param ElementInterface[] $elements
      * @return bool Whether at least one element was restored successfully
      * @throws UnsupportedSiteException if an element is being restored for a site it doesn’t support
-     * @throws \Throwable if reasons
+     * @throws Throwable if reasons
      */
     public function restoreElements(array $elements): bool
     {
@@ -1825,7 +1826,7 @@ class Elements extends Component
             }
 
             $transaction->commit();
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $transaction->rollBack();
             throw $e;
         }
@@ -2424,7 +2425,7 @@ class Elements extends Component
      * @return bool
      * @throws ElementNotFoundException if $element has an invalid $id
      * @throws UnsupportedSiteException if the element is being saved for a site it doesn’t support
-     * @throws \Throwable if reasons
+     * @throws Throwable if reasons
      */
     private function _saveElementInternal(ElementInterface $element, bool $runValidation = true, bool $propagate = true, ?bool $updateSearchIndex = null): bool
     {
@@ -2688,7 +2689,7 @@ class Elements extends Component
             }
 
             $transaction->commit();
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $transaction->rollBack();
             $element->firstSave = $originalFirstSave;
             $element->propagateAll = $originalPropagateAll;
@@ -2955,7 +2956,7 @@ SQL;
             }
 
             return $this->parseRefs((string)$value);
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             // Log it
             Craft::error("An exception was thrown when parsing the ref tag \"$fullMatch\":\n" . $e->getMessage(), __METHOD__);
 
