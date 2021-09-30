@@ -1975,7 +1975,9 @@ JS;
         foreach (array_keys($names) as $name) {
             if ($name) {
                 $jsName = Json::encode(str_replace(['<', '>'], '', $name));
-                $js .= "  Craft.$property[$jsName] = true;\n";
+                // WARNING: the curly braces are needed here no matter what PhpStorm thinks
+                // https://youtrack.jetbrains.com/issue/WI-60044
+                $js .= "  Craft.{$property}[$jsName] = true;\n";
             }
         }
         $js .= '}';
