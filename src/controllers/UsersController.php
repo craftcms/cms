@@ -532,7 +532,7 @@ class UsersController extends Controller
             return $this->_renderSetPasswordTemplate([
                 'code' => $code,
                 'id' => $uid,
-                'newUser' => $user->password ? false : true,
+                'newUser' => !$user->password,
             ]);
         }
 
@@ -566,7 +566,7 @@ class UsersController extends Controller
                 'errors' => $errors,
                 'code' => $code,
                 'id' => $uid,
-                'newUser' => $user->password ? false : true,
+                'newUser' => !$user->password,
             ]);
         }
 
