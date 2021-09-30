@@ -458,8 +458,8 @@ class UrlHelper
             }
         }
 
-        // Use the request's base URL as a fallback
-        return static::baseRequestUrl();
+        // Use @web as a fallback
+        return Craft::getAlias('@web');
     }
 
     /**
@@ -483,6 +483,7 @@ class UrlHelper
      * Returns the base URL (with a trailing slash) for the current request.
      *
      * @return string
+     * @deprecated in 3.7.15. `Craft::getAlias('@web')` should be used instead.
      */
     public static function baseRequestUrl(): string
     {
