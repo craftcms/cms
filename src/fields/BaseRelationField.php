@@ -322,7 +322,7 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
             /** @var Element $related */
             if ($related->enabled && $related->getEnabledForSite()) {
                 if (!self::_validateRelatedElement($related)) {
-                    $element->addModelErrors($related, "{$this->handle}[{$i}]");
+                    $element->addModelErrors($related, "$this->handle[$i]");
                     $errorCount++;
                 }
             }
@@ -602,7 +602,7 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
 
         $view = Craft::$app->getView();
         $id = Html::id($this->handle);
-        $html = "<div id='{$id}' class='elementselect'><div class='elements'>";
+        $html = "<div id='$id' class='elementselect'><div class='elements'>";
 
         foreach ($value as $relatedElement) {
             $html .= Cp::elementHtml($relatedElement);
@@ -612,7 +612,7 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
 
         $nsId = $view->namespaceInputId($id);
         $js = <<<JS
-(new Craft.ElementThumbLoader()).load($('#{$nsId}'));
+(new Craft.ElementThumbLoader()).load($('#$nsId'));
 JS;
         $view->registerJs($js);
 

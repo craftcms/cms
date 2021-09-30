@@ -92,10 +92,10 @@ class ExitNode extends Node
 
             if ($class === HttpException::class) {
                 $compiler
-                    ->write("throw new {$class}({$status});\n");
+                    ->write("throw new $class($status);\n");
             } else {
                 $compiler
-                    ->write("throw new {$class}();\n");
+                    ->write("throw new $class();\n");
             }
         } else {
             $compiler->write(Craft::class . "::\$app->end();\n");

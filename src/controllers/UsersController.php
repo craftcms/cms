@@ -2128,7 +2128,7 @@ class UsersController extends Controller
                 // Make sure the current user is in the group or has permission to assign it
                 if (
                     !$currentUser->isInGroup($groupId) &&
-                    !$currentUser->can("assignUserGroup:{$group->uid}")
+                    !$currentUser->can("assignUserGroup:$group->uid")
                 ) {
                     throw new ForbiddenHttpException("Your account doesn't have permission to assign user group “{$group->name}” to a user.");
                 }

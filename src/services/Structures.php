@@ -202,7 +202,7 @@ class Structures extends Component
                 ->one();
 
             if (!$structureRecord) {
-                throw new StructureNotFoundException("No structure exists with the ID '{$structure->id}'");
+                throw new StructureNotFoundException("No structure exists with the ID '$structure->id'");
             }
         } else {
             $structureRecord = new StructureRecord();

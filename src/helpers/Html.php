@@ -233,8 +233,8 @@ class Html extends \yii\helpers\Html
             }
 
             // Find the closing tag
-            if (($htmlEnd = stripos($tag, "</{$type}>", $cursor)) === false) {
-                throw new InvalidArgumentException("Could not find a </{$type}> tag in string: {$tag}");
+            if (($htmlEnd = stripos($tag, "</$type>", $cursor)) === false) {
+                throw new InvalidArgumentException("Could not find a </$type> tag in string: $tag");
             }
 
             $end = $htmlEnd + strlen($type) + 3;

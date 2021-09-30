@@ -638,7 +638,7 @@ class Assets extends BaseRelationField
                 // (Use singleUploadLocationSource here because the actual folder could belong to a temp volume)
                 $volumeId = $this->_volumeIdBySourceKey($this->singleUploadLocationSource);
                 $volume = $volumeId ? Craft::$app->getVolumes()->getVolumeById($volumeId) : null;
-                if (!$volume || !Craft::$app->getUser()->checkPermission("viewVolume:{$volume->uid}")) {
+                if (!$volume || !Craft::$app->getUser()->checkPermission("viewVolume:$volume->uid")) {
                     return [];
                 }
             }
@@ -679,7 +679,7 @@ class Assets extends BaseRelationField
                 // Only show it if they have permission to view it
                 $folder = $assetsService->getFolderByUid(explode(':', $source)[1]);
                 $volume = $folder ? $folder->getVolume() : null;
-                return $volume && $userService->checkPermission("viewVolume:{$volume->uid}");
+                return $volume && $userService->checkPermission("viewVolume:$volume->uid");
             }, true, true, false);
         }
 

@@ -841,7 +841,7 @@ class Locale extends BaseObject
     {
         if (Craft::$app->getI18n()->getIsIntlLoaded()) {
             // hat tip: https://stackoverflow.com/a/30026774
-            $formatter = new NumberFormatter("{$this->id}@currency={$currency}", NumberFormatter::CURRENCY);
+            $formatter = new NumberFormatter("$this->id@currency=$currency", NumberFormatter::CURRENCY);
             return $formatter->getSymbol(NumberFormatter::CURRENCY_SYMBOL);
         }
 

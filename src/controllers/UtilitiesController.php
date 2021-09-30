@@ -292,7 +292,7 @@ class UtilitiesController extends Controller
                 } catch (InvalidArgumentException $e) {
                     // the directory doesn't exist
                 } catch (Throwable $e) {
-                    Craft::warning("Could not clear the directory {$action}: " . $e->getMessage(), __METHOD__);
+                    Craft::warning("Could not clear the directory $action: " . $e->getMessage(), __METHOD__);
                 }
             } else if (isset($cacheOption['params'])) {
                 call_user_func_array($action, $cacheOption['params']);
@@ -448,12 +448,12 @@ class UtilitiesController extends Controller
         }
 
         if (!is_file($iconPath)) {
-            Craft::warning("Utility icon file doesn't exist: {$iconPath}", __METHOD__);
+            Craft::warning("Utility icon file doesn't exist: $iconPath", __METHOD__);
             return $this->_getDefaultUtilityIconSvg($class);
         }
 
         if (!FileHelper::isSvg($iconPath)) {
-            Craft::warning("Utility icon file is not an SVG: {$iconPath}", __METHOD__);
+            Craft::warning("Utility icon file is not an SVG: $iconPath", __METHOD__);
             return $this->_getDefaultUtilityIconSvg($class);
         }
 

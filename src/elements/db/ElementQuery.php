@@ -2007,8 +2007,8 @@ class ElementQuery extends Query implements ElementQueryInterface
     protected function joinElementTable(string $table): void
     {
         $joinTable = [$table => "{{%$table}}"];
-        $this->query->innerJoin($joinTable, "[[{$table}.id]] = [[subquery.elementsId]]");
-        $this->subQuery->innerJoin($joinTable, "[[{$table}.id]] = [[elements.id]]");
+        $this->query->innerJoin($joinTable, "[[$table.id]] = [[subquery.elementsId]]");
+        $this->subQuery->innerJoin($joinTable, "[[$table.id]] = [[elements.id]]");
     }
 
     /**
@@ -2235,7 +2235,7 @@ class ElementQuery extends Query implements ElementQueryInterface
 
             foreach ($structureParams as $param) {
                 if ($this->$param !== null) {
-                    throw new QueryAbortedException("Unable to apply the '{$param}' param because 'structureId' isn't set");
+                    throw new QueryAbortedException("Unable to apply the '$param' param because 'structureId' isn't set");
                 }
             }
 
@@ -2761,7 +2761,7 @@ class ElementQuery extends Query implements ElementQueryInterface
         $caseParams = [];
         foreach ($preferSites as $index => $siteId) {
             $param = 'preferSites' . $index;
-            $caseSql .= " when [[elements_sites.siteId]] = :{$param} then {$index}";
+            $caseSql .= " when [[elements_sites.siteId]] = :$param then $index";
             $caseParams[$param] = $siteId;
         }
         $caseSql .= ' else ' . count($preferSites) . ' end';
@@ -2783,11 +2783,11 @@ class ElementQuery extends Query implements ElementQueryInterface
         $qSubElements = $db->quoteTableName('subElements');
         $qTmpElements = $db->quoteTableName('tmpElements');
         $q = $qElements[0];
-        $subSelectSql = str_replace("{$qElements}.", "{$qSubElements}.", $subSelectSql);
-        $subSelectSql = str_replace("{$q} {$qElements}", "{$q} {$qSubElements}", $subSelectSql);
+        $subSelectSql = str_replace("$qElements.", "$qSubElements.", $subSelectSql);
+        $subSelectSql = str_replace("$q $qElements", "$q $qSubElements", $subSelectSql);
         $subSelectSql = str_replace($qTmpElements, $qElements, $subSelectSql);
 
-        $this->subQuery->andWhere(new Expression("[[elements_sites.id]] = ({$subSelectSql})"));
+        $this->subQuery->andWhere(new Expression("[[elements_sites.id]] = ($subSelectSql)"));
     }
 
     /**

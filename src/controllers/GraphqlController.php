@@ -303,7 +303,7 @@ class GraphqlController extends Controller
             } catch (InvalidArgumentException $e) {
                 throw new BadRequestHttpException('Invalid token UID.');
             }
-            Craft::$app->getSession()->authorize("graphql-schema:{$schemaUid}");
+            Craft::$app->getSession()->authorize("graphql-schema:$schemaUid");
         } else {
             $selectedSchema = GqlHelper::createFullAccessSchema();
         }

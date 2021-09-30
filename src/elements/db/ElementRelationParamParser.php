@@ -367,8 +367,8 @@ class ElementRelationParamParser extends BaseObject
                         $subQuery = (new Query())
                             ->select(["$sourcesAlias.targetId"])
                             ->from([$sourcesAlias => Table::RELATIONS])
-                            ->innerJoin([$targetMatrixBlocksAlias => Table::MATRIXBLOCKS], "[[{$targetMatrixBlocksAlias}.id]] = [[{$sourcesAlias}.sourceId]]")
-                            ->innerJoin([$targetMatrixElementsAlias => Table::ELEMENTS], "[[{$targetMatrixElementsAlias}.id]] = [[{$targetMatrixBlocksAlias}.id]]")
+                            ->innerJoin([$targetMatrixBlocksAlias => Table::MATRIXBLOCKS], "[[$targetMatrixBlocksAlias.id]] = [[$sourcesAlias.sourceId]]")
+                            ->innerJoin([$targetMatrixElementsAlias => Table::ELEMENTS], "[[$targetMatrixElementsAlias.id]] = [[$targetMatrixBlocksAlias.id]]")
                             ->where([
                                 "$targetMatrixBlocksAlias.ownerId" => $relElementIds,
                                 "$targetMatrixBlocksAlias.fieldId" => $fieldModel->id,
@@ -396,8 +396,8 @@ class ElementRelationParamParser extends BaseObject
                         $subQuery = (new Query())
                             ->select(["$sourceMatrixBlocksAlias.ownerId"])
                             ->from([$sourceMatrixBlocksAlias => Table::MATRIXBLOCKS])
-                            ->innerJoin([$sourceMatrixElementsAlias => Table::ELEMENTS], "[[{$sourceMatrixElementsAlias}.id]] = [[{$sourceMatrixBlocksAlias}.id]]")
-                            ->innerJoin([$matrixBlockTargetsAlias => Table::RELATIONS], "[[{$matrixBlockTargetsAlias}.sourceId]] = [[{$sourceMatrixBlocksAlias}.id]]")
+                            ->innerJoin([$sourceMatrixElementsAlias => Table::ELEMENTS], "[[$sourceMatrixElementsAlias.id]] = [[$sourceMatrixBlocksAlias.id]]")
+                            ->innerJoin([$matrixBlockTargetsAlias => Table::RELATIONS], "[[$matrixBlockTargetsAlias.sourceId]] = [[$sourceMatrixBlocksAlias.id]]")
                             ->where([
                                 "$sourceMatrixElementsAlias.enabled" => true,
                                 "$sourceMatrixElementsAlias.dateDeleted" => null,

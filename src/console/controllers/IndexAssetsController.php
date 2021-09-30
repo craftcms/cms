@@ -201,7 +201,7 @@ class IndexAssetsController extends Controller
 
             if (!$this->createMissingAssets && !empty($missingRecords)) {
                 $totalMissing = count($missingRecords);
-                $this->stdout(($totalMissing === 1 ? 'One record is missing:' : "{$totalMissing} records are missing:") . PHP_EOL, Console::FG_YELLOW);
+                $this->stdout(($totalMissing === 1 ? 'One record is missing:' : "$totalMissing records are missing:") . PHP_EOL, Console::FG_YELLOW);
                 foreach ($missingRecords as $e) {
                     $this->stdout("- {$e->volume->name}/{$e->indexEntry->uri}" . ($e instanceof MissingVolumeFolderException ? '/' : '') . PHP_EOL);
                 }
@@ -219,9 +219,9 @@ class IndexAssetsController extends Controller
 
         if (!empty($missingFiles)) {
             $totalMissing = count($missingFiles);
-            $this->stdout(($totalMissing === 1 ? 'One recorded asset is missing its file:' : "{$totalMissing} recorded assets are missing their files:") . PHP_EOL, Console::FG_YELLOW);
+            $this->stdout(($totalMissing === 1 ? 'One recorded asset is missing its file:' : "$totalMissing recorded assets are missing their files:") . PHP_EOL, Console::FG_YELLOW);
             foreach ($missingFiles as $assetId => $filePath) {
-                $this->stdout("- {$filePath} ({$assetId})");
+                $this->stdout("- $filePath ($assetId)");
                 $filename = basename($filePath);
                 if (isset($missingRecordsByFilename[$filename])) {
                     $maybes = true;
@@ -246,10 +246,10 @@ class IndexAssetsController extends Controller
                 if (isset($missingRecordsByFilename[$filename])) {
                     $e = $this->_chooseMissingRecord($filePath, $missingRecordsByFilename[$filename]);
                     if (!$e) {
-                        $this->stdout("Skipping asset {$assetId}" . PHP_EOL);
+                        $this->stdout("Skipping asset $assetId" . PHP_EOL);
                         continue;
                     }
-                    $this->stdout("Relocating asset {$assetId} to {$e->volume->name}/{$e->indexEntry->uri} ... ");
+                    $this->stdout("Relocating asset $assetId to {$e->volume->name}/{$e->indexEntry->uri} ... ");
                     Db::update(Table::ASSETS, [
                         'volumeId' => $e->volume->id,
                         'folderId' => $e->folder->id,

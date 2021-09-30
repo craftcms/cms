@@ -95,7 +95,7 @@ class ConfigSyncController extends BaseUpdaterController
 
         if (!$success) {
             $info = Craft::$app->getPlugins()->getComposerPluginInfo($handle);
-            $pluginName = $info['name'] ?? "`{$handle}`";
+            $pluginName = $info['name'] ?? "`$handle`";
             $email = $info['developerEmail'] ?? 'support@craftcms.com';
 
             return $this->send([

@@ -43,7 +43,7 @@ class DatepickerI18nAsset extends AssetBundle
             ];
 
             $this->js = [
-                "datepicker-{$datepickerLanguage}.js",
+                "datepicker-$datepickerLanguage.js",
             ];
         }
 

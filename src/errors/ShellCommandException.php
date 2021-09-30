@@ -66,7 +66,7 @@ class ShellCommandException extends Exception
         $this->error = $error;
 
         if ($message === null) {
-            $message = "The shell command \"$command\" failed with exit code {$exitCode}" . ($error ? ": {$error}" : '.');
+            $message = "The shell command \"$command\" failed with exit code $exitCode" . ($error ? ": $error" : '.');
         }
 
         parent::__construct($message, $code);

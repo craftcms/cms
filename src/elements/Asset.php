@@ -1444,7 +1444,7 @@ class Asset extends Element
         if (!$width || !$height) {
             return null;
         }
-        return "{$width}×{$height}";
+        return $width . '×' . $height;
     }
 
     /**

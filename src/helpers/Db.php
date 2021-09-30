@@ -218,17 +218,17 @@ class Db
 
         // Decimal or int?
         if ($decimals > 0) {
-            return Schema::TYPE_DECIMAL . "({$length},{$decimals})";
+            return Schema::TYPE_DECIMAL . "($length,$decimals)";
         }
 
         // Figure out the smallest possible int column type that will fit our min/max
         foreach (self::$_integerSizeRanges as $type => [$typeMin, $typeMax]) {
             if ($min >= $typeMin && $max <= $typeMax) {
-                return $type . "({$length})";
+                return $type . "($length)";
             }
         }
 
-        throw new Exception("No integer column type can contain numbers between {$min} and {$max}");
+        throw new Exception("No integer column type can contain numbers between $min and $max");
     }
 
     /**
@@ -491,7 +491,7 @@ class Db
             $caseInsensitive = false;
         }
 
-        $caseColumn = $caseInsensitive ? "lower([[{$column}]])" : $column;
+        $caseColumn = $caseInsensitive ? "lower([[$column]])" : $column;
 
         $inVals = [];
         $notInVals = [];
@@ -1263,7 +1263,7 @@ class Db
             }
         }
 
-        $config['dsn'] = "{$driver}:" . implode(';', $dsnParams);
+        $config['dsn'] = "$driver:" . implode(';', $dsnParams);
 
         return $config;
     }

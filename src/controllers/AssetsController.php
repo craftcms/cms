@@ -86,7 +86,7 @@ class AssetsController extends Controller
             $siteHandle = $site;
             $site = $sitesService->getSiteByHandle($siteHandle);
             if (!$site) {
-                throw new BadRequestHttpException("Invalid site handle: {$siteHandle}");
+                throw new BadRequestHttpException("Invalid site handle: $siteHandle");
             }
             if (!in_array($site->id, $editableSiteIds, false)) {
                 throw new ForbiddenHttpException('User not permitted to edit content in this site');
@@ -104,7 +104,7 @@ class AssetsController extends Controller
                 ->siteId($site->id)
                 ->one();
             if ($asset === null) {
-                throw new BadRequestHttpException("Invalid asset ID: {$assetId}");
+                throw new BadRequestHttpException("Invalid asset ID: $assetId");
             }
         }
 
@@ -138,8 +138,8 @@ class AssetsController extends Controller
         // See if the user is allowed to replace the file
         $userSession = Craft::$app->getUser();
         $canReplaceFile = (
-            $userSession->checkPermission("replaceFilesInVolume:{$volume->uid}") &&
-            ($userSession->getId() == $asset->uploaderId || $userSession->checkPermission("replacePeerFilesInVolume:{$volume->uid}"))
+            $userSession->checkPermission("replaceFilesInVolume:$volume->uid") &&
+            ($userSession->getId() == $asset->uploaderId || $userSession->checkPermission("replacePeerFilesInVolume:$volume->uid"))
         );
 
         // See if the user is allowed to delete the asset
@@ -189,7 +189,7 @@ class AssetsController extends Controller
 
         $asset = Asset::findOne($assetId);
         if ($asset === null) {
-            throw new BadRequestHttpException("Invalid asset ID: {$assetId}");
+            throw new BadRequestHttpException("Invalid asset ID: $assetId");
         }
 
         return $this->asJson([
@@ -230,7 +230,7 @@ class AssetsController extends Controller
             ->one();
 
         if ($asset === null) {
-            throw new BadRequestHttpException("Invalid asset ID: {$assetId}");
+            throw new BadRequestHttpException("Invalid asset ID: $assetId");
         }
 
         $this->requireVolumePermissionByAsset('saveAssetInVolume', $asset);

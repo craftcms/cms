@@ -530,7 +530,7 @@ trait ApplicationTrait
 
             if (($orBetter && $installedEdition < $edition) || (!$orBetter && $installedEdition !== $edition)) {
                 $editionName = App::editionName($edition);
-                throw new WrongEditionException("Craft {$editionName} is required for this");
+                throw new WrongEditionException("Craft $editionName is required for this");
             }
         }
     }
@@ -666,7 +666,7 @@ trait ApplicationTrait
 
         if (!$row) {
             $tableName = $this->getDb()->getSchema()->getRawTableName(Table::INFO);
-            throw new ServerErrorHttpException("The {$tableName} table is missing its row");
+            throw new ServerErrorHttpException("The $tableName table is missing its row");
         }
 
         return $this->_info = new Info($row);

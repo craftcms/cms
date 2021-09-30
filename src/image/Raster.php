@@ -479,7 +479,7 @@ class Raster extends Image
                 try {
                     rename($tempFile, $targetPath);
                 } catch (ErrorException $e) {
-                    Craft::warning("Unable to rename \"{$tempFile}\" to \"{$targetPath}\": " . $e->getMessage(), __METHOD__);
+                    Craft::warning("Unable to rename \"$tempFile\" to \"$targetPath\": " . $e->getMessage(), __METHOD__);
                 }
             } else {
                 if (Craft::$app->getImages()->getIsImagick()) {

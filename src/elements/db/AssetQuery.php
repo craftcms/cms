@@ -824,7 +824,7 @@ class AssetQuery extends ElementQuery
             foreach ((array)$this->kind as $kind) {
                 if (isset($kinds[$kind])) {
                     foreach ($kinds[$kind]['extensions'] as $extension) {
-                        $kindCondition[] = ['like', 'assets.filename', "%.{$extension}", false];
+                        $kindCondition[] = ['like', 'assets.filename', "%.$extension", false];
                     }
                 }
             }

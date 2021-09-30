@@ -37,7 +37,7 @@ class DownloadAssetFile extends ElementAction
         $js = <<<JS
 (() => {
     new Craft.ElementActionTrigger({
-        type: {$type},
+        type: $type,
         activate: function(\$selectedItems)
         {
             var \$form = Craft.createForm().appendTo(Garnish.\$bod);

@@ -95,7 +95,7 @@ abstract class BaseUpdaterController extends Controller
         $state['data'] = $this->_hashedData();
         $idJs = Json::encode($this->id);
         $stateJs = Json::encode($state);
-        $this->getView()->registerJs("Craft.updater = (new Craft.Updater({$idJs})).setState($stateJs);");
+        $this->getView()->registerJs("Craft.updater = (new Craft.Updater($idJs)).setState($stateJs);");
 
         return $this->renderTemplate('_special/updater', [
             'title' => $this->pageTitle(),

@@ -127,15 +127,15 @@ class Svg extends Image
         $width /= $viewBoxXFactor;
         $height /= $viewBoxYFactor;
 
-        $value = "{$x1} {$y1} {$width} {$height}";
+        $value = "$x1 $y1 $width $height";
 
         // Add/modify the viewbox to crop the image.
         if (preg_match(self::SVG_VIEWBOX_RE, $this->_svgContent)) {
             $this->_svgContent = preg_replace(self::SVG_VIEWBOX_RE,
-                "\${1}{$value}\"", $this->_svgContent);
+                "\${1}$value\"", $this->_svgContent);
         } else {
             $this->_svgContent = preg_replace(self::SVG_TAG_RE,
-                "<svg viewBox=\"{$value}\"", $this->_svgContent);
+                "<svg viewBox=\"$value\"", $this->_svgContent);
         }
 
         return $this;
@@ -188,10 +188,10 @@ class Svg extends Image
             // Add/modify aspect ratio information
             if (preg_match(self::SVG_ASPECT_RE, $this->_svgContent)) {
                 $this->_svgContent = preg_replace(self::SVG_ASPECT_RE,
-                    "\${1}{$value}\"", $this->_svgContent);
+                    "\${1}$value\"", $this->_svgContent);
             } else {
                 $this->_svgContent = preg_replace(self::SVG_TAG_RE,
-                    "<svg preserveAspectRatio=\"{$value}\"",
+                    "<svg preserveAspectRatio=\"$value\"",
                     $this->_svgContent);
             }
         }
@@ -220,8 +220,8 @@ class Svg extends Image
 
         // If viewbox does not exist, add it to retain the scale.
         if (!preg_match(static::SVG_VIEWBOX_RE, $this->_svgContent)) {
-            $viewBox = "0 0 {$this->_width} {$this->_height}";
-            $this->_svgContent = preg_replace(static::SVG_TAG_RE, "<svg viewBox=\"{$viewBox}\"", $this->_svgContent);
+            $viewBox = "0 0 $this->_width $this->_height";
+            $this->_svgContent = preg_replace(static::SVG_TAG_RE, "<svg viewBox=\"$viewBox\"", $this->_svgContent);
         }
 
         $this->_width = $targetWidth;

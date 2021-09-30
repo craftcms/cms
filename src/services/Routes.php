@@ -180,7 +180,7 @@ class Routes extends Component
                 }
 
                 // Add the var as a named subpattern
-                $uriPattern .= "<{$subpatternName}:{$part[1]}>";
+                $uriPattern .= "<$subpatternName:$part[1]>";
             }
         }
 

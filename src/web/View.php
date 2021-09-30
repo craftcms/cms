@@ -1136,7 +1136,7 @@ class View extends \yii\web\View
             if ($translation !== $message) {
                 $jsMessage = Json::encode($message);
                 $jsTranslation = Json::encode($translation);
-                $js .= ($js !== '' ? PHP_EOL : '') . "Craft.translations[{$jsCategory}][{$jsMessage}] = {$jsTranslation};";
+                $js .= ($js !== '' ? PHP_EOL : '') . "Craft.translations[$jsCategory][$jsMessage] = $jsTranslation;";
             }
         }
 
@@ -1145,10 +1145,10 @@ class View extends \yii\web\View
         }
 
         $js = <<<JS
-if (typeof Craft.translations[{$jsCategory}] === 'undefined') {
-    Craft.translations[{$jsCategory}] = {};
+if (typeof Craft.translations[$jsCategory] === 'undefined') {
+    Craft.translations[$jsCategory] = {};
 }
-{$js}
+$js
 JS;
 
         $this->registerJs($js, self::POS_BEGIN);
@@ -1975,7 +1975,7 @@ JS;
         foreach (array_keys($names) as $name) {
             if ($name) {
                 $jsName = Json::encode(str_replace(['<', '>'], '', $name));
-                $js .= "  Craft.{$property}[{$jsName}] = true;\n";
+                $js .= "  Craft.$property[$jsName] = true;\n";
             }
         }
         $js .= '}';

@@ -776,7 +776,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
             }
 
             if (!$block->validate()) {
-                $element->addModelErrors($block, "{$this->handle}[{$i}]");
+                $element->addModelErrors($block, "$this->handle[$i]");
                 $allBlocksValidate = false;
             }
         }
@@ -1210,7 +1210,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
         $prevBlock = null;
 
         $fieldNamespace = $element->getFieldParamNamespace();
-        $baseBlockFieldNamespace = $fieldNamespace ? "{$fieldNamespace}.{$this->handle}" : null;
+        $baseBlockFieldNamespace = $fieldNamespace ? "$fieldNamespace.$this->handle" : null;
 
         // Was the value posted in the new (delta) format?
         if (isset($value['blocks']) || isset($value['sortOrder'])) {
@@ -1280,7 +1280,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
 
             // Set the content post location on the block if we can
             if ($baseBlockFieldNamespace) {
-                $block->setFieldParamNamespace("{$baseBlockFieldNamespace}.{$blockId}.fields");
+                $block->setFieldParamNamespace("$baseBlockFieldNamespace.$blockId.fields");
             }
 
             if (isset($blockData['fields'])) {

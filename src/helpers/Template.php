@@ -226,7 +226,7 @@ class Template
      */
     private static function _profileToken(string $type, string $name, int $count): string
     {
-        return "render {$type}: {$name}" . ($count === 1 ? '' : " ({$count})");
+        return "render $type: $name" . ($count === 1 ? '' : " ($count)");
     }
 
     /**

@@ -55,7 +55,7 @@ class ClearCacheAction extends Action
             } catch (InvalidArgumentException $e) {
                 // the directory doesn't exist
             } catch (Throwable $e) {
-                $error = "Could not clear the directory {$this->label}: " . $e->getMessage();
+                $error = "Could not clear the directory $this->label: " . $e->getMessage();
                 $this->controller->stderr($error . PHP_EOL, Console::FG_RED);
                 Craft::warning($error, __METHOD__);
             }
@@ -63,7 +63,7 @@ class ClearCacheAction extends Action
             try {
                 call_user_func_array($this->action, $this->params);
             } catch (Throwable $e) {
-                $error = "Error clearing cache {$this->label}: " . $e->getMessage();
+                $error = "Error clearing cache $this->label: " . $e->getMessage();
                 $this->controller->stderr($error . PHP_EOL, Console::FG_RED);
                 Craft::warning($error, __METHOD__);
             }
@@ -72,7 +72,7 @@ class ClearCacheAction extends Action
                 $action = $this->action;
                 $action();
             } catch (Throwable $e) {
-                $error = "Error clearing cache {$this->label}: " . $e->getMessage();
+                $error = "Error clearing cache $this->label: " . $e->getMessage();
                 $this->controller->stderr($error . PHP_EOL, Console::FG_RED);
                 Craft::warning($error, __METHOD__);
             }

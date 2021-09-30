@@ -1074,7 +1074,7 @@ class Users extends Component
 
         foreach (Db::each($query) as $user) {
             $elementsService->deleteElement($user);
-            Craft::info("Just deleted pending user {$user->username} ({$user->id}), because they took too long to activate their account.", __METHOD__);
+            Craft::info("Just deleted pending user $user->username ($user->id), because they took too long to activate their account.", __METHOD__);
         }
     }
 
@@ -1364,7 +1364,7 @@ class Users extends Component
         $userRecord = UserRecord::findOne($userId);
 
         if (!$userRecord) {
-            throw new UserNotFoundException("No user exists with the ID '{$userId}'");
+            throw new UserNotFoundException("No user exists with the ID '$userId'");
         }
 
         return $userRecord;

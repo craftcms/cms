@@ -962,17 +962,17 @@ class Elements extends Component
                 try {
                     // Make sure the element was queried with its content
                     if ($element::hasContent() && $element->contentId === null) {
-                        throw new InvalidElementException($element, "Skipped resaving {$element} ({$element->id}) because it wasn’t loaded with its content.");
+                        throw new InvalidElementException($element, "Skipped resaving $element ($element->id) because it wasn’t loaded with its content.");
                     }
 
                     // Make sure this isn't a revision
                     if ($skipRevisions) {
                         try {
                             if (ElementHelper::isRevision($element)) {
-                                throw new InvalidElementException($element, "Skipped resaving {$element} ({$element->id}) because it's a revision.");
+                                throw new InvalidElementException($element, "Skipped resaving $element ($element->id) because it's a revision.");
                             }
                         } catch (Throwable $rootException) {
-                            throw new InvalidElementException($element, "Skipped resaving {$element} ({$element->id}) due to an error obtaining its root element: " . $rootException->getMessage());
+                            throw new InvalidElementException($element, "Skipped resaving $element ($element->id) due to an error obtaining its root element: " . $rootException->getMessage());
                         }
                     }
                 } catch (InvalidElementException $e) {
@@ -1290,7 +1290,7 @@ class Elements extends Component
                         // Make sure it has a valid slug
                         (new SlugValidator())->validateAttribute($siteClone, 'slug');
                         if ($siteClone->hasErrors('slug')) {
-                            throw new InvalidElementException($siteClone, "Element {$element->id} could not be duplicated for site {$siteInfo['siteId']}: " . $siteClone->getFirstError('slug'));
+                            throw new InvalidElementException($siteClone, "Element $element->id could not be duplicated for site {$siteInfo['siteId']}: " . $siteClone->getFirstError('slug'));
                         }
 
                         // Set a unique URI on the site clone
@@ -1302,7 +1302,7 @@ class Elements extends Component
                     }
 
                     if (!$this->_saveElementInternal($siteClone, false, false)) {
-                        throw new InvalidElementException($siteClone, "Element {$element->id} could not be duplicated for site {$siteInfo['siteId']}: " . implode(', ', $siteClone->getFirstErrors()));
+                        throw new InvalidElementException($siteClone, "Element $element->id could not be duplicated for site {$siteInfo['siteId']}: " . implode(', ', $siteClone->getFirstErrors()));
                     }
                 }
             }
@@ -1461,11 +1461,11 @@ class Elements extends Component
         // Get the elements
         $mergedElement = $this->getElementById($mergedElementId);
         if (!$mergedElement) {
-            throw new ElementNotFoundException("No element exists with the ID '{$mergedElementId}'");
+            throw new ElementNotFoundException("No element exists with the ID '$mergedElementId'");
         }
         $prevailingElement = $this->getElementById($prevailingElementId);
         if (!$prevailingElement) {
-            throw new ElementNotFoundException("No element exists with the ID '{$prevailingElementId}'");
+            throw new ElementNotFoundException("No element exists with the ID '$prevailingElementId'");
         }
 
         // Merge them
@@ -1549,7 +1549,7 @@ class Elements extends Component
             $elementType = $this->getElementTypeById($prevailingElement->id);
 
             if ($elementType !== null && ($refHandle = $elementType::refHandle()) !== null) {
-                $refTagPrefix = "{{$refHandle}:";
+                $refTagPrefix = "\{$refHandle:";
 
                 Queue::push(new FindAndReplace([
                     'description' => Translation::prep('app', 'Updating element references'),
@@ -1751,7 +1751,7 @@ class Elements extends Component
             foreach ($elements as $element) {
                 // Get the sites supported by this element
                 if (empty($supportedSites = ElementHelper::supportedSitesForElement($element))) {
-                    throw new UnsupportedSiteException($element, $element->siteId, "Element {$element->id} has no supported sites.");
+                    throw new UnsupportedSiteException($element, $element->siteId, "Element $element->id has no supported sites.");
                 }
 
                 // Make sure the element actually supports the site it's being saved in
@@ -1781,7 +1781,7 @@ class Elements extends Component
                 // Make sure it still passes essential validation
                 $element->setScenario(Element::SCENARIO_ESSENTIALS);
                 if (!$element->validate()) {
-                    Craft::warning("Unable to restore element {$element->id}: doesn't pass essential validation: " . print_r($element->errors, true), __METHOD__);
+                    Craft::warning("Unable to restore element $element->id: doesn't pass essential validation: " . print_r($element->errors, true), __METHOD__);
                     $transaction->rollBack();
                     return false;
                 }
@@ -1790,8 +1790,8 @@ class Elements extends Component
                     if ($siteElement !== $element) {
                         $siteElement->setScenario(Element::SCENARIO_ESSENTIALS);
                         if (!$siteElement->validate()) {
-                            Craft::warning("Unable to restore element {$element->id}: doesn't pass essential validation for site {$element->siteId}: " . print_r($element->errors, true), __METHOD__);
-                            throw new Exception("Element {$element->id} doesn't pass essential validation for site {$element->siteId}.");
+                            Craft::warning("Unable to restore element $element->id: doesn't pass essential validation for site $element->siteId: " . print_r($element->errors, true), __METHOD__);
+                            throw new Exception("Element $element->id doesn't pass essential validation for site $element->siteId.");
                         }
                     }
                 }
@@ -2533,7 +2533,7 @@ class Elements extends Component
                     if (!$elementRecord) {
                         $element->firstSave = $originalFirstSave;
                         $element->propagateAll = $originalPropagateAll;
-                        throw new ElementNotFoundException("No element exists with the ID '{$element->id}'");
+                        throw new ElementNotFoundException("No element exists with the ID '$element->id'");
                     }
                 } else {
                     $elementRecord = new ElementRecord();

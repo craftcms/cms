@@ -195,7 +195,7 @@ class PlainText extends Field implements PreviewableFieldInterface, SortableFiel
             return Schema::TYPE_TEXT;
         }
 
-        return Schema::TYPE_STRING . "({$bytes})";
+        return Schema::TYPE_STRING . "($bytes)";
     }
 
     /**

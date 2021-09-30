@@ -172,7 +172,7 @@ class ChartHelper
             $shortDateFormats[$unit] = $format;
 
             foreach ($chars as $char) {
-                $shortDateFormats[$unit] = preg_replace("/(^[{$char}]+\W+|\W+[{$char}]+)/iu", '', $shortDateFormats[$unit]);
+                $shortDateFormats[$unit] = preg_replace("/(^[$char]+\W+|\W+[$char]+)/iu", '', $shortDateFormats[$unit]);
             }
         }
 
@@ -188,7 +188,7 @@ class ChartHelper
         foreach ($shortDateFormats as $unit => $format) {
             foreach ($yiiToD3Formats as $_unit => $_formats) {
                 foreach ($_formats as $yiiFormat => $d3Format) {
-                    $pattern = "/({$yiiFormat})/i";
+                    $pattern = "/($yiiFormat)/i";
 
                     preg_match($pattern, $shortDateFormats[$unit], $matches);
 

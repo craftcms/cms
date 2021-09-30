@@ -1129,9 +1129,9 @@ class Entry extends Element
         $sectionEntryTypes = ArrayHelper::index($this->getSection()->getEntryTypes(), 'id');
 
         if (!isset($this->typeId) || !isset($sectionEntryTypes[$this->typeId])) {
-            Craft::warning("Entry {$this->id} has an invalid entry type ID: {$this->typeId}");
+            Craft::warning("Entry $this->id has an invalid entry type ID: $this->typeId");
             if (empty($sectionEntryTypes)) {
-                throw new InvalidConfigException("Section {$this->sectionId} has no entry types");
+                throw new InvalidConfigException("Section $this->sectionId has no entry types");
             }
             return reset($sectionEntryTypes);
         }
@@ -1533,7 +1533,7 @@ EOD;
         // Verify that the section supports this site
         $sectionSiteSettings = $section->getSiteSettings();
         if (!isset($sectionSiteSettings[$this->siteId])) {
-            throw new UnsupportedSiteException($this, $this->siteId, "The section '{$section->name}' is not enabled for the site '{$this->siteId}'");
+            throw new UnsupportedSiteException($this, $this->siteId, "The section '$section->name' is not enabled for the site '$this->siteId'");
         }
 
         // Make sure the entry has at least one revision if the section has versioning enabled

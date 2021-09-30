@@ -110,7 +110,7 @@ class Url extends Field implements PreviewableFieldInterface
      */
     public function getContentColumnType(): string
     {
-        return Schema::TYPE_STRING . "({$this->maxLength})";
+        return Schema::TYPE_STRING . "($this->maxLength)";
     }
 
     /**
@@ -326,7 +326,7 @@ JS;
             return '';
         }
         $value = Html::encode($value);
-        return "<a href=\"{$value}\" target=\"_blank\">{$value}</a>";
+        return "<a href=\"$value\" target=\"_blank\">$value</a>";
     }
 
     /**

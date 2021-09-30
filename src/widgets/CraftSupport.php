@@ -103,7 +103,7 @@ class CraftSupport extends Widget
             'Plugins & versions' => $plugins,
         ]);
 
-        $js = "new Craft.CraftSupportWidget({$this->id}, {$envInfoJs});";
+        $js = "new Craft.CraftSupportWidget($this->id, $envInfoJs);";
         $view->registerJs($js);
 
         $iconsDir = Craft::getAlias('@appicons');

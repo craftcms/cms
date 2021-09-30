@@ -685,12 +685,12 @@ class Extension extends AbstractExtension implements GlobalsInterface
                 DIRECTORY_SEPARATOR . $config . '.json';
             $config = null;
             if (!is_file($path)) {
-                Craft::warning("No HTML Purifier config found at {$path}.");
+                Craft::warning("No HTML Purifier config found at $path.");
             } else {
                 try {
                     $config = Json::decode(file_get_contents($path));
                 } catch (InvalidArgumentException $e) {
-                    Craft::warning("Invalid HTML Purifier config at {$path}.");
+                    Craft::warning("Invalid HTML Purifier config at $path.");
                 }
             }
         }
@@ -1365,7 +1365,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
                 return '';
             }
             if (!is_file($svg) || !FileHelper::isSvg($svg)) {
-                Craft::warning("Could not get the contents of {$svg}: The file doesn't exist", __METHOD__);
+                Craft::warning("Could not get the contents of $svg: The file doesn't exist", __METHOD__);
                 return '';
             }
             $svg = file_get_contents($svg);

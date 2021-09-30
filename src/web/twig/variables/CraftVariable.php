@@ -101,7 +101,7 @@ class CraftVariable extends ServiceLocator
     {
         // Are they calling one of the components as if it's still a function?
         if ($params === [] && $this->has($name)) {
-            Craft::$app->getDeprecator()->log("CraftVariable::{$name}()", "`craft.{$name}()` is no longer a function. Use `craft.{$name}` instead (without the parentheses).");
+            Craft::$app->getDeprecator()->log("CraftVariable::$name()", "`craft.$name()` is no longer a function. Use `craft.$name` instead (without the parentheses).");
             return $this->get($name);
         }
 

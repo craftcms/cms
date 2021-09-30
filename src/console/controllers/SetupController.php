@@ -185,7 +185,7 @@ EOD;
         if (!$this->_setEnvVar('APP_ID', $key)) {
             return ExitCode::UNSPECIFIED_ERROR;
         }
-        $this->stdout("done ({$key})" . PHP_EOL, Console::FG_YELLOW);
+        $this->stdout("done ($key)" . PHP_EOL, Console::FG_YELLOW);
         return ExitCode::OK;
     }
 
@@ -203,7 +203,7 @@ EOD;
         }
 
         Craft::$app->getConfig()->getGeneral()->securityKey = $key;
-        $this->stdout("done ({$key})" . PHP_EOL, Console::FG_YELLOW);
+        $this->stdout("done ($key)" . PHP_EOL, Console::FG_YELLOW);
         return ExitCode::OK;
     }
 
@@ -320,7 +320,7 @@ EOD;
         $dbConfig->port = $this->port;
         /** @noinspection PhpFieldAssignmentTypeMismatchInspection */
         $dbConfig->database = $this->database;
-        $dbConfig->dsn = "{$this->driver}:host={$this->server};port={$this->port};dbname={$this->database};";
+        $dbConfig->dsn = "$this->driver:host=$this->server;port=$this->port;dbname=$this->database;";
         /** @noinspection PhpFieldAssignmentTypeMismatchInspection */
         $dbConfig->user = $this->user;
         /** @noinspection PhpFieldAssignmentTypeMismatchInspection */
@@ -502,15 +502,15 @@ EOD;
         $path = $configService->getDotEnvPath();
 
         if (!file_exists($path)) {
-            if ($this->confirm(PHP_EOL . "A .env file doesn't exist at {$path}. Would you like to create one?", true)) {
+            if ($this->confirm(PHP_EOL . "A .env file doesn't exist at $path. Would you like to create one?", true)) {
                 try {
                     FileHelper::writeToFile($path, '');
                 } catch (Throwable $e) {
-                    $this->stderr("Unable to create {$path}: {$e->getMessage()}" . PHP_EOL, Console::FG_RED);
+                    $this->stderr("Unable to create $path: {$e->getMessage()}" . PHP_EOL, Console::FG_RED);
                     return false;
                 }
 
-                $this->stdout("{$path} created. Note you still need to set up PHP dotenv for its values to take effect." . PHP_EOL, Console::FG_YELLOW);
+                $this->stdout("$path created. Note you still need to set up PHP dotenv for its values to take effect." . PHP_EOL, Console::FG_YELLOW);
             } else {
                 $this->stdout(PHP_EOL . 'Action aborted.' . PHP_EOL, Console::FG_YELLOW);
                 return false;
@@ -520,7 +520,7 @@ EOD;
         try {
             $configService->setDotEnvVar($name, $value);
         } catch (Throwable $e) {
-            $this->stderr("Unable to set {$name} on {$path}: {$e->getMessage()}" . PHP_EOL, Console::FG_RED);
+            $this->stderr("Unable to set $name on $path: {$e->getMessage()}" . PHP_EOL, Console::FG_RED);
             return false;
         }
 

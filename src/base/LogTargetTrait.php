@@ -93,7 +93,7 @@ trait LogTargetTrait
 
             foreach ($context as $key => $value) {
                 $value = $security->redactIfSensitive($key, $value);
-                $result[] = "\${$key} = " . VarDumper::dumpAsString($value);
+                $result[] = "\$$key = " . VarDumper::dumpAsString($value);
             }
         }
 

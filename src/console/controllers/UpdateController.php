@@ -338,7 +338,7 @@ class UpdateController extends Controller
     private function _updateRequirements(array &$requirements, array &$info, string $handle, string $from, ?string $to, string $oldPackageName, Update $update): void
     {
         if ($update->status === Update::STATUS_EXPIRED) {
-            $this->stdout("Skipping {$handle} because its license has expired." . PHP_EOL, Console::FG_GREY);
+            $this->stdout("Skipping $handle because its license has expired." . PHP_EOL, Console::FG_GREY);
             return;
         }
 
@@ -353,7 +353,7 @@ class UpdateController extends Controller
         }
 
         if ($to === $from) {
-            $this->stdout("Skipping {$handle} because it’s already up to date." . PHP_EOL, Console::FG_GREY);
+            $this->stdout("Skipping $handle because it’s already up to date." . PHP_EOL, Console::FG_GREY);
             return;
         }
 
@@ -469,12 +469,12 @@ class UpdateController extends Controller
         $lockBackup = $backupsDir . DIRECTORY_SEPARATOR . 'composer.lock';
 
         if (!is_file($jsonBackup)) {
-            $this->stdout("Can’t revert Composer changes because no composer.json backup exists in {$backupsDir}." . PHP_EOL, Console::FG_RED);
+            $this->stdout("Can’t revert Composer changes because no composer.json backup exists in $backupsDir." . PHP_EOL, Console::FG_RED);
             return;
         }
 
         if (!is_file($lockBackup)) {
-            $this->stdout("Can’t revert Composer changes because no composer.lock backup exists in {$backupsDir}." . PHP_EOL, Console::FG_RED);
+            $this->stdout("Can’t revert Composer changes because no composer.lock backup exists in $backupsDir." . PHP_EOL, Console::FG_RED);
             return;
         }
 

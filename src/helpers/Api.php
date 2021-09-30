@@ -38,7 +38,7 @@ abstract class Api
         // platform
         $platform = [];
         foreach (self::platformVersions() as $name => $version) {
-            $platform[] = "{$name}:{$version}";
+            $platform[] = "$name:$version";
         }
         $headers['X-Craft-Platform'] = implode(',', $platform);
 
@@ -72,7 +72,7 @@ abstract class Api
         $pluginsService = Craft::$app->getPlugins();
         foreach ($pluginsService->getAllPluginInfo() as $pluginHandle => $pluginInfo) {
             if ($pluginInfo['isInstalled']) {
-                $headers['X-Craft-System'] .= ",plugin-{$pluginHandle}:{$pluginInfo['version']};{$pluginInfo['edition']}";
+                $headers['X-Craft-System'] .= ",plugin-$pluginHandle:{$pluginInfo['version']};{$pluginInfo['edition']}";
                 try {
                     $licenseKey = $pluginsService->getPluginLicenseKey($pluginHandle);
                 } catch (InvalidLicenseKeyException $e) {
@@ -204,17 +204,17 @@ abstract class Api
             if (App::licenseKey() !== null) {
                 $i = 0;
                 do {
-                    $newPath = "{$path}." . ++$i;
+                    $newPath = "$path." . ++$i;
                 } while (file_exists($newPath));
                 $path = $newPath;
-                Craft::warning("A new license key was issued, but we already had one. Writing it to {$path} instead.", __METHOD__);
+                Craft::warning("A new license key was issued, but we already had one. Writing it to $path instead.", __METHOD__);
             }
 
             try {
                 FileHelper::writeToFile($path, chunk_split($license, 50));
             } catch (ErrorException $err) {
                 // log and keep going
-                Craft::error("Could not write new license key to {$path}: {$err->getMessage()}\nLicense key: {$license}", __METHOD__);
+                Craft::error("Could not write new license key to $path: {$err->getMessage()}\nLicense key: $license", __METHOD__);
                 Craft::$app->getErrorHandler()->logException($err);
             }
         }

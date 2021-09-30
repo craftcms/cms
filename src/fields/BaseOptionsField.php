@@ -344,12 +344,12 @@ abstract class BaseOptionsField extends Field implements PreviewableFieldInterfa
         if ($this->multi) {
             if (is_string($value)) {
                 if (preg_match('/^(not\s+)?([^\*\[\]"]+)$/', $value, $match)) {
-                    $value = "{$match[1]}*\"{$match[2]}\"*";
+                    $value = "$match[1]*\"$match[2]\"*";
                 }
             } else if (is_array($value)) {
                 foreach ($value as &$v) {
                     if (!in_array(strtolower($v), ['and', 'or', 'not']) && preg_match('/^(not\s+)?([^\*\[\]"]+)$/', $v, $match)) {
-                        $v = "{$match[1]}*\"{$match[2]}\"*";
+                        $v = "$match[1]*\"$match[2]\"*";
                     }
                 }
             }

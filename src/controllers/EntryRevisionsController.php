@@ -85,7 +85,7 @@ class EntryRevisionsController extends BaseEntriesController
         if ($site === null) {
             return $this->renderTemplate('_special/sitepicker', [
                 'siteIds' => $editableSiteIds,
-                'baseUrl' => "entries/{$section->handle}/new",
+                'baseUrl' => "entries/$section->handle/new",
             ]);
         }
 
@@ -464,7 +464,7 @@ class EntryRevisionsController extends BaseEntriesController
         $this->_setDraftAttributesFromPost($draft);
 
         // Even more permission enforcement
-        if ($draft->enabled && !Craft::$app->getUser()->checkPermission("publishEntries:{$section->uid}")) {
+        if ($draft->enabled && !Craft::$app->getUser()->checkPermission("publishEntries:$section->uid")) {
             if ($draft->getIsUnpublishedDraft()) {
                 // Just disable it
                 $draft->enabled = false;

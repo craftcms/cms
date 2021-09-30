@@ -136,7 +136,7 @@ class Controller extends YiiController
             }
 
             if (!isset($action['action'])) {
-                throw new InvalidConfigException("Action '{$id}' is missing an 'action' key.");
+                throw new InvalidConfigException("Action '$id' is missing an 'action' key.");
             }
 
             if (is_callable($action['action'])) {

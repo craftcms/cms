@@ -426,7 +426,7 @@ class Dashboard extends Component
      */
     private function _noWidgetExists(int $widgetId): void
     {
-        throw new WidgetNotFoundException("No widget exists with the ID '{$widgetId}'");
+        throw new WidgetNotFoundException("No widget exists with the ID '$widgetId'");
     }
 
     /**

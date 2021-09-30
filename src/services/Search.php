@@ -116,7 +116,7 @@ class Search extends Component
     {
         // Acquire a lock for this element/site ID
         $mutex = Craft::$app->getMutex();
-        $lockKey = "searchindex:{$element->id}:{$element->siteId}";
+        $lockKey = "searchindex:$element->id:$element->siteId";
 
         if (!$mutex->acquire($lockKey)) {
             // Not worth waiting around; for all we know the other process has newer search attributes anyway
@@ -540,7 +540,7 @@ SQL;
 
             // And group together for non-inclusive queries
             if (!$inclusive) {
-                $where = "({$where})";
+                $where = "($where)";
             }
         } else {
             // If the tokens didn't produce a valid where clause,

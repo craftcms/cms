@@ -314,7 +314,7 @@ class ProjectConfigController extends Controller
 
         foreach ($handles as $handle) {
             $this->stdout('Uninstalling plugin ', Console::FG_YELLOW);
-            $this->stdout("\"{$handle}\"", Console::FG_CYAN);
+            $this->stdout("\"$handle\"", Console::FG_CYAN);
             $this->stdout(' ... ', Console::FG_YELLOW);
 
             ob_start();
@@ -337,7 +337,7 @@ class ProjectConfigController extends Controller
 
         foreach ($handles as $handle) {
             $this->stdout('Installing plugin ', Console::FG_YELLOW);
-            $this->stdout("\"{$handle}\"", Console::FG_CYAN);
+            $this->stdout("\"$handle\"", Console::FG_CYAN);
             $this->stdout(' ... ', Console::FG_YELLOW);
 
             ob_start();

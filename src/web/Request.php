@@ -322,7 +322,7 @@ class Request extends \yii\web\Request
             // "/page/2"-style pagination URLs
             $pageTrigger = preg_quote($pageTrigger, '/');
 
-            if (preg_match("/^(?:(.*)\/)?{$pageTrigger}(\d+)$/", $this->_path, $match)) {
+            if (preg_match("/^(?:(.*)\/)?$pageTrigger(\d+)$/", $this->_path, $match)) {
                 // Capture the page num
                 $this->_pageNum = (int)$match[2];
 

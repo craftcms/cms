@@ -251,7 +251,7 @@ class TestSetup
             require $srcPath . '/config/app.php',
             require $srcPath . '/config/app.' . $appType . '.php',
             $configService->getConfigFromFile('app'),
-            $configService->getConfigFromFile("app.{$appType}")
+            $configService->getConfigFromFile("app.$appType")
         );
 
         if (defined('CRAFT_SITE')) {

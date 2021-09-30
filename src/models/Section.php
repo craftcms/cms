@@ -207,7 +207,7 @@ class Section extends Model
 
         foreach ($this->getSiteSettings() as $i => $siteSettings) {
             if (!$siteSettings->validate()) {
-                $this->addModelErrors($siteSettings, "siteSettings[{$i}]");
+                $this->addModelErrors($siteSettings, "siteSettings[$i]");
             }
         }
     }

@@ -194,7 +194,7 @@ class Schema extends \yii\db\mysql\Schema
         $ignoreTableArgs = [];
         foreach ($ignoreTables as $table) {
             $table = $this->getRawTableName($table);
-            $ignoreTableArgs[] = "--ignore-table={database}.{$table}";
+            $ignoreTableArgs[] = "--ignore-table={database}.$table";
         }
 
         $schemaDump = 'mysqldump' .

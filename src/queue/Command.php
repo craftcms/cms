@@ -103,7 +103,7 @@ class Command extends \yii\queue\cli\Command
                 $this->stdout('No failed jobs in the queue.' . PHP_EOL);
                 return ExitCode::OK;
             }
-            $this->stdout("Re-adding {$total} failed " . ($total === 1 ? 'job' : 'jobs') . ' back into the queue ... ');
+            $this->stdout("Re-adding $total failed " . ($total === 1 ? 'job' : 'jobs') . ' back into the queue ... ');
             $this->queue->retryAll();
         } else {
             $this->stdout('Re-adding 1 failed job back into the queue ... ');

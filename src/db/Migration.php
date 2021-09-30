@@ -160,7 +160,7 @@ abstract class Migration extends \yii\db\Migration
             return $this->db->getSchema()->createColumnSchemaBuilder('enum', $values);
         }
 
-        $check = "[[{$columnName}]] in (";
+        $check = "[[$columnName]] in (";
         foreach ($values as $i => $value) {
             if ($i != 0) {
                 $check .= ',';

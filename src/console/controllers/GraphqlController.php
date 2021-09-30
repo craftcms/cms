@@ -92,7 +92,7 @@ class GraphqlController extends Controller
         // Output the schema
         $filename = Inflector::slug($schema->name, '_') . self::GQL_SCHEMA_EXTENSION;
         $schemaDump = SchemaPrinter::doPrint($schemaDef);
-        $this->stdout("Dumping GraphQL schema to {$filename} ... ", Console::FG_YELLOW);
+        $this->stdout("Dumping GraphQL schema to $filename ... ", Console::FG_YELLOW);
         file_put_contents($filename, $schemaDump);
         $this->stdout('done' . PHP_EOL, Console::FG_GREEN);
 
@@ -118,14 +118,14 @@ class GraphqlController extends Controller
             try {
                 $token = $gqlService->getTokenByAccessToken($this->token);
             } catch (InvalidArgumentException $e) {
-                $this->stderr("Invalid authorization token: {$this->token}" . PHP_EOL, Console::FG_RED);
+                $this->stderr("Invalid authorization token: $this->token" . PHP_EOL, Console::FG_RED);
                 return null;
             }
 
             $schema = $token->getSchema();
 
             if (!$schema) {
-                $this->stderr("No schema selected for token: {$this->token}" . PHP_EOL, Console::FG_RED);
+                $this->stderr("No schema selected for token: $this->token" . PHP_EOL, Console::FG_RED);
                 return null;
             }
 

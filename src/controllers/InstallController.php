@@ -355,7 +355,7 @@ class InstallController extends Controller
         foreach ($vars as $setting => $var) {
             $realValues[$setting] = App::env($var);
             $tempValues[$setting] = $_SERVER[$var] = StringHelper::randomString();
-            putenv("{$var}={$tempValues[$setting]}");
+            putenv("$var=$tempValues[$setting]");
         }
 
         // Grab the new DB config. Maybe it will contain our temporary values
@@ -368,7 +368,7 @@ class InstallController extends Controller
                 putenv($var);
             } else {
                 $_SERVER[$var] = $realValues[$setting];
-                putenv("{$var}={$realValues[$setting]}");
+                putenv("$var=$realValues[$setting]");
             }
         }
 
@@ -402,7 +402,7 @@ class InstallController extends Controller
         $dbConfig->server = $server;
         $dbConfig->port = $port;
         $dbConfig->database = $database;
-        $dbConfig->dsn = "{$driver}:host={$server};port={$port};dbname={$database}";
+        $dbConfig->dsn = "$driver:host=$server;port=$port;dbname=$database";
         $dbConfig->user = $this->request->getBodyParam("{$prefix}user") ?: 'root';
         $dbConfig->password = $this->request->getBodyParam("{$prefix}password");
         $dbConfig->schema = $this->request->getBodyParam("{$prefix}schema") ?: 'public';

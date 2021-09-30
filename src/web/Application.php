@@ -128,7 +128,7 @@ class Application extends \yii\web\Application
                 /** @noinspection PhpExpressionResultUnusedInspection */
                 new IntlDateFormatter($this->language, IntlDateFormatter::NONE, IntlDateFormatter::NONE);
             } catch (IntlException $e) {
-                Craft::warning("Time zone \"{$value}\" does not appear to be supported by ICU: " . intl_get_error_message());
+                Craft::warning("Time zone “{$value}” does not appear to be supported by ICU: " . intl_get_error_message());
                 parent::setTimeZone('UTC');
             }
         }
@@ -412,7 +412,7 @@ class Application extends \yii\web\Application
         }
 
         $svg = rawurlencode(file_get_contents(dirname(__DIR__) . '/icons/c-debug.svg'));
-        DebugModule::setYiiLogo("data:image/svg+xml;charset=utf-8,{$svg}");
+        DebugModule::setYiiLogo("data:image/svg+xml;charset=utf-8,$svg");
 
         $this->setModule('debug', [
             'class' => DebugModule::class,

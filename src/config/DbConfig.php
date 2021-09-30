@@ -207,7 +207,7 @@ class DbConfig extends BaseObject
 
         if ($this->driver === Connection::DRIVER_MYSQL && $this->unixSocket) {
             $this->unixSocket = strtolower($this->unixSocket);
-            $this->dsn = "{$this->driver}:unix_socket={$this->unixSocket};dbname={$this->database}";
+            $this->dsn = "$this->driver:unix_socket=$this->unixSocket;dbname=$this->database";
             return;
         }
 
@@ -222,6 +222,6 @@ class DbConfig extends BaseObject
                     break;
             }
         }
-        $this->dsn = "{$this->driver}:host={$this->server};dbname={$this->database};port={$this->port}";
+        $this->dsn = "$this->driver:host=$this->server;dbname=$this->database;port=$this->port";
     }
 }

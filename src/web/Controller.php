@@ -78,7 +78,7 @@ abstract class Controller extends \yii\web\Controller
                     (is_int($k) && !is_string($v)) ||
                     (is_string($k) && !is_int($v))
                 ) {
-                    throw new InvalidArgumentException("Invalid \$allowAnonymous value for key \"{$k}\"");
+                    throw new InvalidArgumentException("Invalid \$allowAnonymous value for key \"$k\"");
                 }
                 if (is_int($k)) {
                     $normalized[$v] = self::ALLOW_ANONYMOUS_LIVE;

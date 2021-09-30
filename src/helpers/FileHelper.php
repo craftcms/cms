@@ -176,8 +176,8 @@ class FileHelper extends \yii\helpers\FileHelper
 
         if ($separator !== null) {
             $qSeparator = preg_quote($separator, '/');
-            $filename = preg_replace("/[\s{$qSeparator}]+/u", $separator, $filename);
-            $filename = preg_replace("/^{$qSeparator}+|{$qSeparator}+$/u", '', $filename);
+            $filename = preg_replace("/[\s$qSeparator]+/u", $separator, $filename);
+            $filename = preg_replace("/^$qSeparator+|$qSeparator+$/u", '', $filename);
         }
 
         return $filename;
@@ -350,7 +350,7 @@ class FileHelper extends \yii\helpers\FileHelper
             if (!isset($options['createDirs']) || $options['createDirs']) {
                 static::createDirectory($dir);
             } else {
-                throw new InvalidArgumentException("Cannot write to \"{$file}\" because the parent directory doesn't exist.");
+                throw new InvalidArgumentException("Cannot write to \"$file\" because the parent directory doesn't exist.");
             }
         }
 
@@ -364,7 +364,7 @@ class FileHelper extends \yii\helpers\FileHelper
             $mutex = Craft::$app->getMutex();
             $lockName = md5($file);
             if (!$mutex->acquire($lockName, 2)) {
-                throw new ErrorException("Unable to acquire a lock for file \"{$file}\".");
+                throw new ErrorException("Unable to acquire a lock for file \"$file\".");
             }
         } else {
             $lockName = $mutex = null;
@@ -376,7 +376,7 @@ class FileHelper extends \yii\helpers\FileHelper
         }
 
         if (file_put_contents($file, $contents, $flags) === false) {
-            throw new ErrorException("Unable to write new contents to \"{$file}\".");
+            throw new ErrorException("Unable to write new contents to \"$file\".");
         }
 
         // Invalidate opcache
@@ -515,15 +515,15 @@ class FileHelper extends \yii\helpers\FileHelper
     public static function hasAnythingChanged(string $dir, string $ref): bool
     {
         if (!is_dir($dir)) {
-            throw new InvalidArgumentException("The src argument must be a directory: {$dir}");
+            throw new InvalidArgumentException("The src argument must be a directory: $dir");
         }
 
         if (!is_dir($ref)) {
-            throw new InvalidArgumentException("The ref argument must be a directory: {$ref}");
+            throw new InvalidArgumentException("The ref argument must be a directory: $ref");
         }
 
         if (!($handle = opendir($dir))) {
-            throw new ErrorException("Unable to open the directory: {$dir}");
+            throw new ErrorException("Unable to open the directory: $dir");
         }
 
         while (($file = readdir($handle)) !== false) {
