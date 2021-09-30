@@ -71,7 +71,6 @@ abstract class BaseUpdaterController extends Controller
                 throw new BadRequestHttpException();
             }
 
-            /** @noinspection PhpFieldAssignmentTypeMismatchInspection */
             $this->data = Json::decode($data);
         }
 

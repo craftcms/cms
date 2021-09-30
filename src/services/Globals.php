@@ -294,7 +294,6 @@ class Globals extends Component
 
         if ($isNewSet) {
             $globalSet->uid = $globalSet->uid ?: StringHelper::UUID();
-            /** @noinspection PhpFieldAssignmentTypeMismatchInspection */
             $globalSet->sortOrder = (new Query())
                     ->from([Table::GLOBALSETS])
                     ->max('[[sortOrder]]') + 1;

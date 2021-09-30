@@ -595,7 +595,6 @@ class ElementQuery extends Query implements ElementQueryInterface
     public function behaviors(): array
     {
         $behaviors = parent::behaviors();
-        /** @noinspection PhpUndefinedClassInspection */
         $behaviors['customFields'] = [
             'class' => CustomFieldBehavior::class,
             'hasMethods' => true,
