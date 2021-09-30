@@ -60,7 +60,7 @@ class Diff
                 }
             }
 
-            $diff .= $lines[$i][0] . ' ' . $lines[$i][1] . "\n";
+            $diff .= $line[0] . ' ' . $line[1] . "\n";
             $lastChange = $i;
         }
 

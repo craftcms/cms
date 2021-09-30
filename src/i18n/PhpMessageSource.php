@@ -87,7 +87,7 @@ class PhpMessageSource extends \yii\i18n\PhpMessageSource
             } else if (!empty($fallbackMessages)) {
                 foreach ($fallbackMessages as $key => $value) {
                     if (!empty($value) && empty($messages[$key])) {
-                        $messages[$key] = $fallbackMessages[$key];
+                        $messages[$key] = $value;
                     }
                 }
             }

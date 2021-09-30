@@ -754,7 +754,7 @@ SQL;
         if (is_array($val)) {
             foreach ($val as $key => $value) {
                 if (StringHelper::contains($value, ' ')) {
-                    $temp = explode(' ', $val[$key]);
+                    $temp = explode(' ', $value);
                     $temp = implode(' & ', $temp);
                     $val[$key] = $temp;
                 }
