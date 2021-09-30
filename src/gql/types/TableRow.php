@@ -8,7 +8,6 @@
 namespace craft\gql\types;
 
 use craft\gql\base\ObjectType;
-use craft\gql\TypeManager;
 use GraphQL\Type\Definition\ResolveInfo;
 use GraphQL\Type\Definition\Type;
 
