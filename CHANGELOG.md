@@ -226,6 +226,7 @@
 - Removed the `useProjectConfigFile` config setting. Override `craft\services\ProjectConfig::$writeYamlAutomatically` to opt into [manual YAML file generation](https://craftcms.com/docs/4.x/project-config.html#manual-yaml-file-generation).
 - Removed support for `config/volumes.php`. Environment-specific volume settings can be defined via environment variables or dependency injection.
 - Removed support for the `CRAFT_SITE_URL` PHP constant. Environment-specific site URLs can be defined via environment variables.
+- Removed the `enabledForSite` GraphQL argument. `status` argument should be used instead.
 - Removed the `{% includeCss %}` Twig tag. The `{% css %}` tag can be used instead.
 - Removed the `{% includeCssFile %}` Twig tag. The `{% css %}` tag can be used instead.
 - Removed the `{% includeHiResCss %}` Twig tag.
