@@ -611,7 +611,7 @@ trait ApplicationTrait
      */
     public function getIsInMaintenanceMode(): bool
     {
-        return (bool)$this->getInfo()->maintenance;
+        return $this->getInfo()->maintenance;
     }
 
     /**
@@ -1433,7 +1433,7 @@ trait ApplicationTrait
     private function _setMaintenanceMode(bool $value): bool
     {
         $info = $this->getInfo();
-        if ((bool)$info->maintenance === $value) {
+        if ($info->maintenance === $value) {
             return true;
         }
         $info->maintenance = $value;

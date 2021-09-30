@@ -273,11 +273,11 @@ class Site extends Model
             'name' => $this->_name,
             'handle' => $this->handle,
             'language' => $this->language,
-            'hasUrls' => (bool)$this->hasUrls,
+            'hasUrls' => $this->hasUrls,
             'baseUrl' => $this->_baseUrl ?: null,
-            'sortOrder' => (int)$this->sortOrder,
-            'primary' => (bool)$this->primary,
-            'enabled' => (bool)$this->enabled,
+            'sortOrder' => $this->sortOrder,
+            'primary' => $this->primary,
+            'enabled' => $this->enabled,
         ];
     }
 }

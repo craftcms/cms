@@ -1072,7 +1072,7 @@ class Install extends Migration
         if ($this->applyProjectConfigYaml && $projectConfig->getDoesYamlExist()) {
             try {
                 $expectedSchemaVersion = (string)$projectConfig->get(ProjectConfig::PATH_SCHEMA_VERSION, true);
-                $craftSchemaVersion = (string)Craft::$app->schemaVersion;
+                $craftSchemaVersion = Craft::$app->schemaVersion;
 
                 // Compare existing Craft schema version with the one that is being applied.
                 if (!version_compare($craftSchemaVersion, $expectedSchemaVersion, '=')) {

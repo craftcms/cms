@@ -87,7 +87,7 @@ class QueryArgument extends ScalarType
     public function parseLiteral($valueNode, ?array $variables = null)
     {
         if ($valueNode instanceof StringValueNode) {
-            return (string)$valueNode->value;
+            return $valueNode->value;
         }
 
         if ($valueNode instanceof IntValueNode) {
@@ -95,7 +95,7 @@ class QueryArgument extends ScalarType
         }
 
         if ($valueNode instanceof BooleanValueNode) {
-            return (bool)$valueNode->value;
+            return $valueNode->value;
         }
 
         // This message will be lost by the wrapping exception, but it feels good to provide one.

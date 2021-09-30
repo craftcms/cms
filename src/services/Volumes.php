@@ -297,7 +297,7 @@ class Volumes extends Component
             'name' => $volume->name,
             'handle' => $volume->handle,
             'type' => get_class($volume),
-            'hasUrls' => (bool)$volume->hasUrls,
+            'hasUrls' => $volume->hasUrls,
             'url' => $volume->url,
             'titleTranslationMethod' => $volume->titleTranslationMethod,
             'titleTranslationKeyFormat' => $volume->titleTranslationKeyFormat ?: null,

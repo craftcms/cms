@@ -322,7 +322,7 @@ class Gql extends Component
         }
 
         $tokenRecord->name = $token->name;
-        $tokenRecord->enabled = (bool)$token->enabled;
+        $tokenRecord->enabled = $token->enabled;
         $tokenRecord->expiryDate = $token->expiryDate;
         $tokenRecord->lastUsed = $token->lastUsed;
         $tokenRecord->schemaId = $token->schemaId;
@@ -877,7 +877,7 @@ class Gql extends Component
         if ($token->accessToken === GqlToken::PUBLIC_TOKEN) {
             $data = [
                 'expiryDate' => $token->expiryDate ? $token->expiryDate->getTimestamp() : null,
-                'enabled' => (bool)$token->enabled,
+                'enabled' => $token->enabled,
             ];
 
             Craft::$app->getProjectConfig()->set(ProjectConfig::PATH_GRAPHQL_PUBLIC_TOKEN, $data);

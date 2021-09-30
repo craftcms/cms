@@ -93,8 +93,8 @@ class Svg extends Image
                 "<svg width=\"{$width}px\" height=\"{$height}px\" ", $svg);
         }
 
-        $this->_height = (int)$height;
-        $this->_width = (int)$width;
+        $this->_height = $height;
+        $this->_width = $width;
 
         $this->_svgContent = $svg;
 

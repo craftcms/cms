@@ -972,7 +972,7 @@ class ProjectConfig extends Component
     public function getAreConfigSchemaVersionsCompatible(array &$issues = []): bool
     {
         $incomingSchema = (string)$this->get(self::PATH_SCHEMA_VERSION, true);
-        $existingSchema = (string)Craft::$app->schemaVersion;
+        $existingSchema = Craft::$app->schemaVersion;
 
         // Compare existing Craft schema version with the one that is being applied.
         if (!version_compare($existingSchema, $incomingSchema, '=')) {
@@ -987,7 +987,7 @@ class ProjectConfig extends Component
 
         foreach ($plugins as $plugin) {
             $incomingSchema = (string)$this->get(self::PATH_PLUGINS . '.' . $plugin->handle . '.schemaVersion', true);
-            $existingSchema = (string)$plugin->schemaVersion;
+            $existingSchema = $plugin->schemaVersion;
 
             // Compare existing plugin schema version with the one that is being applied.
             if ($incomingSchema && !version_compare($existingSchema, $incomingSchema, '=')) {
@@ -2161,7 +2161,7 @@ class ProjectConfig extends Component
         $data = [
             'schemas' => [],
             'publicToken' => [
-                'enabled' => (bool)($publicToken->enabled ?? false),
+                'enabled' => $publicToken->enabled ?? false,
                 'expiryDate' => ($publicToken->expiryDate ?? false) ? $publicToken->expiryDate->getTimestamp() : null,
             ],
         ];

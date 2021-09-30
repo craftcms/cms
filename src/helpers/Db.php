@@ -507,7 +507,7 @@ class Db
                     if ($operator === '!=') {
                         $val = !$val;
                     }
-                    $condition[] = [$column => (bool)$val];
+                    $condition[] = [$column => $val];
                     continue;
                 }
 

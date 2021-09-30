@@ -1147,7 +1147,7 @@ class AssetTransforms extends Component
      */
     public function getCachedCloudImageSize(): int
     {
-        return (int)Craft::$app->getConfig()->getGeneral()->maxCachedCloudImageSize;
+        return Craft::$app->getConfig()->getGeneral()->maxCachedCloudImageSize;
     }
 
     /**

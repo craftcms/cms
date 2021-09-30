@@ -364,7 +364,7 @@ class Section extends Model
             'name' => $this->name,
             'handle' => $this->handle,
             'type' => $this->type,
-            'enableVersioning' => (bool)$this->enableVersioning,
+            'enableVersioning' => $this->enableVersioning,
             'propagationMethod' => $this->propagationMethod,
             'siteSettings' => [],
             'defaultPlacement' => $this->defaultPlacement ?? self::DEFAULT_PLACEMENT_END,
