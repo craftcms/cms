@@ -10,7 +10,7 @@ namespace craft\base;
 use Craft;
 use craft\helpers\App;
 use craft\helpers\FileHelper;
-use craft\web\AssetBundle;
+use yii\web\AssetBundle;
 use Dotenv\Dotenv;
 use GuzzleHttp\Exception\GuzzleException;
 
@@ -31,33 +31,33 @@ class HotReloadAssetBundle extends AssetBundle
      *
      * @var string|null
      */
-    private $_assetDir;
+    private ?string $_assetDir;
 
     /**
      * Webpack dev server public path/host.
      *
      * @var string|null
      */
-    private $_devServerPublic;
+    private ?string $_devServerPublic = null;
 
     /**
      * Loaded status of the environment file.
      *
      * @var bool
      */
-    private $_envLoaded = false;
+    private bool $_envLoaded = false;
 
     /**
      * Running status of the webpack dev server.
      *
      * @var bool|null
      */
-    private $_isDevServerRunning;
+    private ?bool $_isDevServerRunning = null;
 
     /**
      * @inheritdoc
      */
-    public function init()
+    public function init(): void
     {
         parent::init();
 
