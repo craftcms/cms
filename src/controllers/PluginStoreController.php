@@ -259,7 +259,7 @@ class PluginStoreController extends Controller
     public function actionSavePluginLicenseKeys(): Response
     {
         $payload = Json::decode($this->request->getRawBody(), true);
-        $pluginLicenseKeys = (isset($payload['pluginLicenseKeys']) ? $payload['pluginLicenseKeys'] : []);
+        $pluginLicenseKeys = ($payload['pluginLicenseKeys'] ?? []);
         $plugins = Craft::$app->getPlugins()->getAllPlugins();
 
         foreach ($pluginLicenseKeys as $pluginLicenseKey) {
