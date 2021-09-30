@@ -26,8 +26,8 @@
 - Added `craft\db\Table::ASSETINDEXINGSESSIONS`.
 - Added `craft\elements\Asset::setFilename()`.
 - Added `craft\elements\User::$active`.
-- Added `craft\elements\User::STATUS_INACTIVE`.
 - Added `craft\elements\User::getIsCredentialed()`.
+- Added `craft\elements\User::STATUS_INACTIVE`.
 - Added `craft\errors\MissingVolumeFolderException`.
 - Added `craft\fieldlayoutelements\BaseNativeField`, which replaces `craft\fieldlayoutelements\StandardField`.
 - Added `craft\fieldlayoutelements\TextField`, which replaces `craft\fieldlayoutelements\StandardTextField`.
