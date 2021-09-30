@@ -1641,7 +1641,7 @@ return [
     'Whether to show files that the user doesn’t have permission to view, per the “View files uploaded by other users” permission.' => 'Whether to show files that the user doesn’t have permission to view, per the “View files uploaded by other users” permission.',
     'Whether to show volumes that the user doesn’t have permission to view.' => 'Whether to show volumes that the user doesn’t have permission to view.',
     'Whether validation errors on the related {type} should prevent the source element from being saved.' => 'Whether validation errors on the related {type} should prevent the source element from being saved.',
-    'Whether {type} should be allowed to relate themselves.' => 'Whether {type} should be allowed to relate to themselves.',
+    'Whether {type} elements should be allowed to relate to themselves.' => 'Whether {type} elements should be allowed to relate to themselves.',
     'Which fields should be visible in the widget?' => 'Which fields should be visible in the widget?',
     'Which group should this field be displayed in?' => 'Which group should this field be displayed in?',
     'Which group should this site belong to?' => 'Which group should this site belong to?',

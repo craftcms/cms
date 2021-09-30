@@ -458,8 +458,8 @@ class UrlHelper
             }
         }
 
-        // Use the request's base URL as a fallback
-        return static::baseRequestUrl();
+        // Use @web as a fallback
+        return Craft::getAlias('@web');
     }
 
     /**
@@ -475,23 +475,8 @@ class UrlHelper
             return rtrim($generalConfig->baseCpUrl, '/') . '/';
         }
 
-        // Use the request's base URL as a fallback
-        return static::baseRequestUrl();
-    }
-
-    /**
-     * Returns the base URL (with a trailing slash) for the current request.
-     *
-     * @return string
-     */
-    public static function baseRequestUrl(): string
-    {
-        $request = Craft::$app->getRequest();
-        if ($request->getIsConsoleRequest()) {
-            return '/';
-        }
-
-        return rtrim($request->getHostInfo() . $request->getBaseUrl(), '/') . '/';
+        // Use @web as a fallback
+        return Craft::getAlias('@web');
     }
 
     /**

@@ -1641,7 +1641,7 @@ return [
     'Whether to show files that the user doesn’t have permission to view, per the “View files uploaded by other users” permission.' => 'Показывать ли файлы, на просмотр которых у пользователя нет прав, по праву доступа "Просматривать файлы, загруженные другими пользователями".',
     'Whether to show volumes that the user doesn’t have permission to view.' => 'Показывать ли тома, на просмотр которых у пользователя нет прав.',
     'Whether validation errors on the related {type} should prevent the source element from being saved.' => 'Следует ли отменять сохранение исходного элемента при ошибках валидации связанного типа {type}.',
-    'Whether {type} should be allowed to relate themselves.' => 'Разрешено ли типу {type} ссылаться на себя.',
+    'Whether {type} elements should be allowed to relate to themselves.' => 'Whether {type} elements should be allowed to relate to themselves.',
     'Which fields should be visible in the widget?' => 'Какие поля должны быть видны в этом виджете?',
     'Which group should this field be displayed in?' => 'В какой группе должно отображаться это поле?',
     'Which group should this site belong to?' => 'К какой группе должен относиться данный сайт?',

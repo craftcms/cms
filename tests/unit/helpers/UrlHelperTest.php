@@ -349,19 +349,19 @@ class UrlHelperTest extends Unit
     public function cpUrlCreationDataProvider(): array
     {
         return [
-            'test-empty' => ['{siteUrl}{cpTrigger}', '', []],
+            'test-empty' => ['{cpUrl}', '', []],
             'test-simple-endpoint' => [
-                '{siteUrl}{cpTrigger}/nav?param1=entry1&param2=entry2',
+                '{cpUrl}/nav?param1=entry1&param2=entry2',
                 'nav',
                 ['param1' => 'entry1', 'param2' => 'entry2']
             ],
             'test-preexisting-endpoints' => [
-                '{siteUrl}{cpTrigger}/nav?param3=entry3&param1=entry1&param2=entry2',
+                '{cpUrl}/nav?param3=entry3&param1=entry1&param2=entry2',
                 'nav?param3=entry3',
                 ['param1' => 'entry1', 'param2' => 'entry2']
             ],
             [
-                '{siteUrl}{cpTrigger}/nav?param1=entry1&param2=entry2',
+                '{cpUrl}/nav?param1=entry1&param2=entry2',
                 'nav',
                 [
                     'param1' => 'entry1',
@@ -655,6 +655,7 @@ class UrlHelperTest extends Unit
         if ($scheme === 'http') {
             $siteUrl = str_replace('https', 'http', $siteUrl);
         }
-        return str_replace(['{siteUrl}', '{cpTrigger}'], [$siteUrl, $this->cpTrigger], $url);
+        $cpUrl = rtrim($siteUrl, '/') . ":80/$this->cpTrigger";
+        return str_replace(['{siteUrl}', '{cpUrl}'], [$siteUrl, $cpUrl], $url);
     }
 }

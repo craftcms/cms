@@ -185,6 +185,7 @@
 - `craft\events\GetAssetUrlEvent` has been renamed to `DefineAssetUrlEvent`.
 - `craft\events\RevisionEvent::$source` has been renamed to `$canonical`.
 - `craft\gql\directives\FormatDateTime::defaultTimezone()` has been renamed to `defaultTimeZone()`.
+- `craft\gql\TypeManager::EVENT_DEFINE_GQL_TYPE_FIELDS` is now triggered when actually resolving fields for a GraphQL type, rather than when the type is first created. ([#9626](https://github.com/craftcms/cms/issues/9626))
 - `craft\helpers\Db::parseParam()` now validates that numeric values are passed if the `$columnType` is set to a numeric column type. ([#9142](https://github.com/craftcms/cms/issues/9142))
 - `craft\helpers\Db::prepareDateForDb()` no longer has a `$stripSeconds` argument.
 - `craft\helpers\Db::prepareValueForDb()` now has a `$columnType` argument.
@@ -228,6 +229,7 @@
 - Removed the `useProjectConfigFile` config setting. Override `craft\services\ProjectConfig::$writeYamlAutomatically` to opt into [manual YAML file generation](https://craftcms.com/docs/4.x/project-config.html#manual-yaml-file-generation).
 - Removed support for `config/volumes.php`. Environment-specific volume settings can be defined via environment variables or dependency injection.
 - Removed support for the `CRAFT_SITE_URL` PHP constant. Environment-specific site URLs can be defined via environment variables.
+- Removed the `enabledForSite` GraphQL argument. `status` should be used instead.
 - Removed the `{% includeCss %}` Twig tag. The `{% css %}` tag can be used instead.
 - Removed the `{% includeCssFile %}` Twig tag. The `{% css %}` tag can be used instead.
 - Removed the `{% includeHiResCss %}` Twig tag.
@@ -340,6 +342,7 @@
 - Removed `craft\helpers\FileHelper::removeFile()`. `unlink()` can be used instead.
 - Removed `craft\helpers\MailerHelper::createMailer()`. `craft\helpers\mailerConfig()` can be used instead.
 - Removed `craft\helpers\Stringy`.
+- Removed `craft\helpers\UrlHelper::baseRequestUrl()`. `Craft::getAlias('@web')` can be used instead.
 - Removed `craft\helpers\UrlHelper::getProtocolForTokenizedUrl()`. `getSchemeForTokenizedUrl()` can be used instead.
 - Removed `craft\helpers\UrlHelper::urlWithProtocol()`. `urlWithScheme()` can be used instead.
 - Removed `craft\i18n\Locale::getId()`. `$id` can be used instead.
@@ -447,3 +450,7 @@
 - Removed the `users/get-remaining-session-time` action. `users/session-info` can be used instead.
 - Removed the Flysystem package. The `craftcms/flysystem-adapter` package now provides a base Flysystem adapter class.
 - Removed the laminas-feed package.
+
+### Security
+
+- Generated control panel URLs now begin with the `@web` alias value if the `baseCpUrl` config setting isn’t defined.
