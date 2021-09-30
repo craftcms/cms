@@ -32,15 +32,15 @@ class Number extends Field implements PreviewableFieldInterface, SortableFieldIn
     /**
      * @since 3.5.11
      */
-    const FORMAT_DECIMAL = 'decimal';
+    public const FORMAT_DECIMAL = 'decimal';
     /**
      * @since 3.5.11
      */
-    const FORMAT_CURRENCY = 'currency';
+    public const FORMAT_CURRENCY = 'currency';
     /**
      * @since 3.5.11
      */
-    const FORMAT_NONE = 'none';
+    public const FORMAT_NONE = 'none';
 
     /**
      * @inheritdoc

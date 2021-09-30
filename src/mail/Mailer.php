@@ -31,7 +31,7 @@ class Mailer extends \yii\swiftmailer\Mailer
      * @event MailEvent The event that is triggered before a message is prepped to be sent.
      * @since 3.6.5
      */
-    const EVENT_BEFORE_PREP = 'beforePrep';
+    public const EVENT_BEFORE_PREP = 'beforePrep';
 
     /**
      * @var string|null The email template that should be used

@@ -38,7 +38,7 @@ class ClearCaches extends Utility
      *
      * @see cacheOptions()
      */
-    const EVENT_REGISTER_CACHE_OPTIONS = 'registerCacheOptions';
+    public const EVENT_REGISTER_CACHE_OPTIONS = 'registerCacheOptions';
 
     /**
      * @event RegisterCacheOptionsEvent The event that is triggered when registering cache tag invalidation options.
@@ -51,7 +51,7 @@ class ClearCaches extends Utility
      * @see tagOptions()
      * @since 3.5.0
      */
-    const EVENT_REGISTER_TAG_OPTIONS = 'registerTagOptions';
+    public const EVENT_REGISTER_TAG_OPTIONS = 'registerTagOptions';
 
     /**
      * @inheritdoc

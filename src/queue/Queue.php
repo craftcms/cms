@@ -38,7 +38,7 @@ class Queue extends \yii\queue\cli\Queue implements QueueInterface
     /**
      * @see isFailed()
      */
-    const STATUS_FAILED = 4;
+    public const STATUS_FAILED = 4;
 
     /**
      * @var Connection|array|string The database connection to use

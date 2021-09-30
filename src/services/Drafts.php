@@ -38,24 +38,24 @@ class Drafts extends Component
     /**
      * @event DraftEvent The event that is triggered before a draft is created.
      */
-    const EVENT_BEFORE_CREATE_DRAFT = 'beforeCreateDraft';
+    public const EVENT_BEFORE_CREATE_DRAFT = 'beforeCreateDraft';
 
     /**
      * @event DraftEvent The event that is triggered after a draft is created.
      */
-    const EVENT_AFTER_CREATE_DRAFT = 'afterCreateDraft';
+    public const EVENT_AFTER_CREATE_DRAFT = 'afterCreateDraft';
 
     /**
      * @event DraftEvent The event that is triggered before a draft is published.
      * @since 3.6.0
      */
-    const EVENT_BEFORE_APPLY_DRAFT = 'beforeApplyDraft';
+    public const EVENT_BEFORE_APPLY_DRAFT = 'beforeApplyDraft';
 
     /**
      * @event DraftEvent The event that is triggered after a draft is applied to its canonical element.
      * @see applyDraft()
      */
-    const EVENT_AFTER_APPLY_DRAFT = 'afterApplyDraft';
+    public const EVENT_AFTER_APPLY_DRAFT = 'afterApplyDraft';
 
     /**
      * @var Connection|array|string The database connection to use

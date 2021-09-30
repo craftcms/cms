@@ -29,31 +29,31 @@ class DateTimeHelper
     /**
      * @var int Number of seconds in a minute.
      */
-    const SECONDS_MINUTE = 60;
+    public const SECONDS_MINUTE = 60;
 
     /**
      * @var int Number of seconds in an hour.
      */
-    const SECONDS_HOUR = 3600;
+    public const SECONDS_HOUR = 3600;
 
     /**
      * @var int Number of seconds in a day.
      */
-    const SECONDS_DAY = 86400;
+    public const SECONDS_DAY = 86400;
 
     /**
      * @var int The number of seconds in a month.
      *
      * Based on a 30.4368 day month, with the product rounded.
      */
-    const SECONDS_MONTH = 2629740;
+    public const SECONDS_MONTH = 2629740;
 
     /**
      * @var int The number of seconds in a year.
      *
      * Based on a 365.2416 day year, with the product rounded.
      */
-    const SECONDS_YEAR = 31556874;
+    public const SECONDS_YEAR = 31556874;
 
     /**
      * @var array Translation pairs for [[translateDate()]]

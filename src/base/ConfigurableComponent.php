@@ -24,7 +24,7 @@ abstract class ConfigurableComponent extends Component implements ConfigurableCo
      * @event DefineValueEvent The event that is triggered when defining the component’s settings attributes, as returned by [[settingsAttributes()]].
      * @since 3.7.0
      */
-    const EVENT_DEFINE_SETTINGS_ATTRIBUTES = 'defineSettingsAttributes';
+    public const EVENT_DEFINE_SETTINGS_ATTRIBUTES = 'defineSettingsAttributes';
 
     /**
      * @inheritdoc

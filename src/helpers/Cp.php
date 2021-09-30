@@ -30,16 +30,16 @@ class Cp
     /**
      * @event RegisterCpAlertsEvent The event that is triggered when registering control panel alerts.
      */
-    const EVENT_REGISTER_ALERTS = 'registerAlerts';
+    public const EVENT_REGISTER_ALERTS = 'registerAlerts';
 
     /**
      * @since 3.5.8
      */
-    const ELEMENT_SIZE_SMALL = 'small';
+    public const ELEMENT_SIZE_SMALL = 'small';
     /**
      * @since 3.5.8
      */
-    const ELEMENT_SIZE_LARGE = 'large';
+    public const ELEMENT_SIZE_LARGE = 'large';
 
     /**
      * Renders a control panel template.

@@ -27,8 +27,8 @@ use GraphQL\Type\Definition\Type;
  */
 class FormatDateTime extends Directive
 {
-    const DEFAULT_FORMAT = 'Y-m-d\TH:i:sP';
-    const DEFAULT_TIMEZONE = 'UTC';
+    public const DEFAULT_FORMAT = 'Y-m-d\TH:i:sP';
+    public const DEFAULT_TIMEZONE = 'UTC';
 
     /**
      * @inheritdoc

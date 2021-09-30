@@ -25,22 +25,22 @@ use yii\base\UnknownPropertyException;
  */
 class GeneralConfig extends BaseObject
 {
-    const IMAGE_DRIVER_AUTO = 'auto';
-    const IMAGE_DRIVER_GD = 'gd';
-    const IMAGE_DRIVER_IMAGICK = 'imagick';
+    public const IMAGE_DRIVER_AUTO = 'auto';
+    public const IMAGE_DRIVER_GD = 'gd';
+    public const IMAGE_DRIVER_IMAGICK = 'imagick';
 
     /**
      * @since 3.6.0
      */
-    const CAMEL_CASE = 'camel';
+    public const CAMEL_CASE = 'camel';
     /**
      * @since 3.6.0
      */
-    const PASCAL_CASE = 'pascal';
+    public const PASCAL_CASE = 'pascal';
     /**
      * @since 3.6.0
      */
-    const SNAKE_CASE = 'snake';
+    public const SNAKE_CASE = 'snake';
 
     private static array $renamedSettings = [
         'activateAccountFailurePath' => 'invalidUserTokenPath',

@@ -44,13 +44,13 @@ class CraftVariable extends ServiceLocator
      * @event \yii\base\Event The event that is triggered after the component's init cycle
      * @see init()
      */
-    const EVENT_INIT = 'init';
+    public const EVENT_INIT = 'init';
 
     /**
      * @event DefineBehaviorsEvent The event that is triggered when defining the class behaviors
      * @see behaviors()
      */
-    const EVENT_DEFINE_BEHAVIORS = 'defineBehaviors';
+    public const EVENT_DEFINE_BEHAVIORS = 'defineBehaviors';
 
     /**
      * @var WebApplication|ConsoleApplication|null The Craft application class

@@ -29,34 +29,34 @@ abstract class Model extends \yii\base\Model
      * @event \yii\base\Event The event that is triggered after the model's init cycle
      * @see init()
      */
-    const EVENT_INIT = 'init';
+    public const EVENT_INIT = 'init';
 
     /**
      * @event DefineBehaviorsEvent The event that is triggered when defining the class behaviors
      * @see behaviors()
      */
-    const EVENT_DEFINE_BEHAVIORS = 'defineBehaviors';
+    public const EVENT_DEFINE_BEHAVIORS = 'defineBehaviors';
 
     /**
      * @event DefineRulesEvent The event that is triggered when defining the model rules
      * @see rules()
      * @since 3.1.0
      */
-    const EVENT_DEFINE_RULES = 'defineRules';
+    public const EVENT_DEFINE_RULES = 'defineRules';
 
     /**
      * @event DefineRulesEvent The event that is triggered when defining the arrayable fields
      * @see fields()
      * @since 3.5.0
      */
-    const EVENT_DEFINE_FIELDS = 'defineFields';
+    public const EVENT_DEFINE_FIELDS = 'defineFields';
 
     /**
      * @event DefineRulesEvent The event that is triggered when defining the extra arrayable fields
      * @see extraFields()
      * @since 3.5.0
      */
-    const EVENT_DEFINE_EXTRA_FIELDS = 'defineExtraFields';
+    public const EVENT_DEFINE_EXTRA_FIELDS = 'defineExtraFields';
 
     public function __construct($config = [])
     {

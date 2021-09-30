@@ -24,11 +24,11 @@ use yii\web\Response;
  */
 class ConfigSyncController extends BaseUpdaterController
 {
-    const ACTION_RETRY = 'retry';
-    const ACTION_APPLY_YAML_CHANGES = 'apply-yaml-changes';
-    const ACTION_REGENERATE_YAML = 'regenerate-yaml';
-    const ACTION_UNINSTALL_PLUGIN = 'uninstall-plugin';
-    const ACTION_INSTALL_PLUGIN = 'install-plugin';
+    public const ACTION_RETRY = 'retry';
+    public const ACTION_APPLY_YAML_CHANGES = 'apply-yaml-changes';
+    public const ACTION_REGENERATE_YAML = 'regenerate-yaml';
+    public const ACTION_UNINSTALL_PLUGIN = 'uninstall-plugin';
+    public const ACTION_INSTALL_PLUGIN = 'install-plugin';
 
     /**
      * Re-kicks off the sync, after the user has had a chance to run `composer install`

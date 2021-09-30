@@ -56,43 +56,43 @@ class AssetTransforms extends Component
     /**
      * @event AssetTransformEvent The event that is triggered before an asset transform is saved
      */
-    const EVENT_BEFORE_SAVE_ASSET_TRANSFORM = 'beforeSaveAssetTransform';
+    public const EVENT_BEFORE_SAVE_ASSET_TRANSFORM = 'beforeSaveAssetTransform';
 
     /**
      * @event AssetTransformEvent The event that is triggered after an asset transform is saved
      */
-    const EVENT_AFTER_SAVE_ASSET_TRANSFORM = 'afterSaveAssetTransform';
+    public const EVENT_AFTER_SAVE_ASSET_TRANSFORM = 'afterSaveAssetTransform';
 
     /**
      * @event AssetTransformEvent The event that is triggered before an asset transform is deleted
      */
-    const EVENT_BEFORE_DELETE_ASSET_TRANSFORM = 'beforeDeleteAssetTransform';
+    public const EVENT_BEFORE_DELETE_ASSET_TRANSFORM = 'beforeDeleteAssetTransform';
 
     /**
      * @event AssetTransformEvent The event that is triggered after an asset transform is deleted
      */
-    const EVENT_AFTER_DELETE_ASSET_TRANSFORM = 'afterDeleteAssetTransform';
+    public const EVENT_AFTER_DELETE_ASSET_TRANSFORM = 'afterDeleteAssetTransform';
 
     /**
      * @event GenerateTransformEvent The event that is triggered when a transform is being generated for an Asset.
      */
-    const EVENT_GENERATE_TRANSFORM = 'generateTransform';
+    public const EVENT_GENERATE_TRANSFORM = 'generateTransform';
 
     /**
      * @event AssetTransformImageEvent The event that is triggered before deleting generated transforms.
      */
-    const EVENT_BEFORE_DELETE_TRANSFORMS = 'beforeDeleteTransforms';
+    public const EVENT_BEFORE_DELETE_TRANSFORMS = 'beforeDeleteTransforms';
 
     /**
      * @event AssetTransformEvent The event that is triggered before a transform delete is applied to the database.
      * @since 3.1.0
      */
-    const EVENT_BEFORE_APPLY_TRANSFORM_DELETE = 'beforeApplyTransformDelete';
+    public const EVENT_BEFORE_APPLY_TRANSFORM_DELETE = 'beforeApplyTransformDelete';
 
     /**
      * @event AssetTransformImageEvent The event that is triggered after deleting generated transforms.
      */
-    const EVENT_AFTER_DELETE_TRANSFORMS = 'afterDeleteTransforms';
+    public const EVENT_AFTER_DELETE_TRANSFORMS = 'afterDeleteTransforms';
 
     /**
      * @var Connection|array|string The database connection to use

@@ -22,7 +22,7 @@ class Sendmail extends BaseTransportAdapter
     /**
      * @since 3.4.0
      */
-    const DEFAULT_COMMAND = '/usr/sbin/sendmail -bs';
+    public const DEFAULT_COMMAND = '/usr/sbin/sendmail -bs';
 
     /**
      * @var string|null The command to pass to the transport

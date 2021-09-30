@@ -47,7 +47,7 @@ class ArgumentManager extends Component
      * });
      * ```
      */
-    const EVENT_DEFINE_GQL_ARGUMENT_HANDLERS = 'defineGqlArgumentHandlers';
+    public const EVENT_DEFINE_GQL_ARGUMENT_HANDLERS = 'defineGqlArgumentHandlers';
 
     private array $_argumentHandlers = [];
 

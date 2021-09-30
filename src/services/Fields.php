@@ -96,79 +96,79 @@ class Fields extends Component
      * );
      * ```
      */
-    const EVENT_REGISTER_FIELD_TYPES = 'registerFieldTypes';
+    public const EVENT_REGISTER_FIELD_TYPES = 'registerFieldTypes';
 
     /**
      * @event FieldGroupEvent The event that is triggered before a field group is saved.
      */
-    const EVENT_BEFORE_SAVE_FIELD_GROUP = 'beforeSaveFieldGroup';
+    public const EVENT_BEFORE_SAVE_FIELD_GROUP = 'beforeSaveFieldGroup';
 
     /**
      * @event FieldGroupEvent The event that is triggered after a field group is saved.
      */
-    const EVENT_AFTER_SAVE_FIELD_GROUP = 'afterSaveFieldGroup';
+    public const EVENT_AFTER_SAVE_FIELD_GROUP = 'afterSaveFieldGroup';
 
     /**
      * @event FieldGroupEvent The event that is triggered before a field group delete is applied to the database.
      * @since 3.1.0
      */
-    const EVENT_BEFORE_APPLY_GROUP_DELETE = 'beforeApplyGroupDelete';
+    public const EVENT_BEFORE_APPLY_GROUP_DELETE = 'beforeApplyGroupDelete';
 
     /**
      * @event FieldGroupEvent The event that is triggered before a field group is deleted.
      */
-    const EVENT_BEFORE_DELETE_FIELD_GROUP = 'beforeDeleteFieldGroup';
+    public const EVENT_BEFORE_DELETE_FIELD_GROUP = 'beforeDeleteFieldGroup';
 
     /**
      * @event FieldGroupEvent The event that is triggered after a field group is deleted.
      */
-    const EVENT_AFTER_DELETE_FIELD_GROUP = 'afterDeleteFieldGroup';
+    public const EVENT_AFTER_DELETE_FIELD_GROUP = 'afterDeleteFieldGroup';
 
     /**
      * @event FieldEvent The event that is triggered before a field is saved.
      */
-    const EVENT_BEFORE_SAVE_FIELD = 'beforeSaveField';
+    public const EVENT_BEFORE_SAVE_FIELD = 'beforeSaveField';
 
     /**
      * @event FieldEvent The event that is triggered after a field is saved.
      */
-    const EVENT_AFTER_SAVE_FIELD = 'afterSaveField';
+    public const EVENT_AFTER_SAVE_FIELD = 'afterSaveField';
 
     /**
      * @event FieldEvent The event that is triggered before a field is deleted.
      */
-    const EVENT_BEFORE_DELETE_FIELD = 'beforeDeleteField';
+    public const EVENT_BEFORE_DELETE_FIELD = 'beforeDeleteField';
 
     /**
      * @event FieldEvent The event that is triggered before a field delete is applied to the database.
      * @since 3.1.0
      */
-    const EVENT_BEFORE_APPLY_FIELD_DELETE = 'beforeApplyFieldDelete';
+    public const EVENT_BEFORE_APPLY_FIELD_DELETE = 'beforeApplyFieldDelete';
 
     /**
      * @event FieldEvent The event that is triggered after a field is deleted.
      */
-    const EVENT_AFTER_DELETE_FIELD = 'afterDeleteField';
+    public const EVENT_AFTER_DELETE_FIELD = 'afterDeleteField';
 
     /**
      * @event FieldLayoutEvent The event that is triggered before a field layout is saved.
      */
-    const EVENT_BEFORE_SAVE_FIELD_LAYOUT = 'beforeSaveFieldLayout';
+    public const EVENT_BEFORE_SAVE_FIELD_LAYOUT = 'beforeSaveFieldLayout';
 
     /**
      * @event FieldLayoutEvent The event that is triggered after a field layout is saved.
      */
-    const EVENT_AFTER_SAVE_FIELD_LAYOUT = 'afterSaveFieldLayout';
+    public const EVENT_AFTER_SAVE_FIELD_LAYOUT = 'afterSaveFieldLayout';
 
     /**
      * @event FieldLayoutEvent The event that is triggered before a field layout is deleted.
      */
-    const EVENT_BEFORE_DELETE_FIELD_LAYOUT = 'beforeDeleteFieldLayout';
+    public const EVENT_BEFORE_DELETE_FIELD_LAYOUT = 'beforeDeleteFieldLayout';
 
     /**
      * @event FieldLayoutEvent The event that is triggered after a field layout is deleted.
      */
-    const EVENT_AFTER_DELETE_FIELD_LAYOUT = 'afterDeleteFieldLayout';
+    public const EVENT_AFTER_DELETE_FIELD_LAYOUT = 'afterDeleteFieldLayout';
 
     /**
      * @var string|null

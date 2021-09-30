@@ -28,7 +28,7 @@ use yii\web\BadRequestHttpException;
  */
 class GraphqlController extends Controller
 {
-    const GQL_SCHEMA_EXTENSION = ".graphql";
+    public const GQL_SCHEMA_EXTENSION = ".graphql";
 
     /**
      * @var string|null The token to look up to determine the appropriate GraphQL schema.

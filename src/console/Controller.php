@@ -63,7 +63,7 @@ class Controller extends YiiController
      * );
      * ```
      */
-    const EVENT_DEFINE_ACTIONS = 'defineActions';
+    public const EVENT_DEFINE_ACTIONS = 'defineActions';
 
     /**
      * @var array Custom actions that should be available.

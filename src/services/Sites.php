@@ -58,71 +58,71 @@ class Sites extends Component
     /**
      * @event SiteGroupEvent The event that is triggered before a site group is saved.
      */
-    const EVENT_BEFORE_SAVE_SITE_GROUP = 'beforeSaveSiteGroup';
+    public const EVENT_BEFORE_SAVE_SITE_GROUP = 'beforeSaveSiteGroup';
 
     /**
      * @event SiteGroupEvent The event that is triggered after a site group is saved.
      */
-    const EVENT_AFTER_SAVE_SITE_GROUP = 'afterSaveSiteGroup';
+    public const EVENT_AFTER_SAVE_SITE_GROUP = 'afterSaveSiteGroup';
 
     /**
      * @event SiteGroupEvent The event that is triggered before a site group is deleted.
      */
-    const EVENT_BEFORE_DELETE_SITE_GROUP = 'beforeDeleteSiteGroup';
+    public const EVENT_BEFORE_DELETE_SITE_GROUP = 'beforeDeleteSiteGroup';
 
     /**
      * @event SiteGroupEvent The event that is triggered before a site group delete is applied to the database.
      * @since 3.1.0
      */
-    const EVENT_BEFORE_APPLY_GROUP_DELETE = 'beforeApplyGroupDelete';
+    public const EVENT_BEFORE_APPLY_GROUP_DELETE = 'beforeApplyGroupDelete';
 
     /**
      * @event SiteGroupEvent The event that is triggered after a site group is deleted.
      */
-    const EVENT_AFTER_DELETE_SITE_GROUP = 'afterDeleteSiteGroup';
+    public const EVENT_AFTER_DELETE_SITE_GROUP = 'afterDeleteSiteGroup';
 
     /**
      * @event SiteEvent The event that is triggered before a site is saved.
      */
-    const EVENT_BEFORE_SAVE_SITE = 'beforeSaveSite';
+    public const EVENT_BEFORE_SAVE_SITE = 'beforeSaveSite';
 
     /**
      * @event SiteEvent The event that is triggered after a site is saved.
      */
-    const EVENT_AFTER_SAVE_SITE = 'afterSaveSite';
+    public const EVENT_AFTER_SAVE_SITE = 'afterSaveSite';
 
     /**
      * @event ReorderSitesEvent The event that is triggered before the sites are reordered.
      */
-    const EVENT_BEFORE_REORDER_SITES = 'beforeReorderSites';
+    public const EVENT_BEFORE_REORDER_SITES = 'beforeReorderSites';
 
     /**
      * @event ReorderSitesEvent The event that is triggered after the sites are reordered.
      */
-    const EVENT_AFTER_REORDER_SITES = 'afterReorderSites';
+    public const EVENT_AFTER_REORDER_SITES = 'afterReorderSites';
 
     /**
      * @event SiteEvent The event that is triggered after the primary site has changed
      */
-    const EVENT_AFTER_CHANGE_PRIMARY_SITE = 'afterChangePrimarySite';
+    public const EVENT_AFTER_CHANGE_PRIMARY_SITE = 'afterChangePrimarySite';
 
     /**
      * @event DeleteSiteEvent The event that is triggered before a site is deleted.
      *
      * You may set [[\craft\events\CancelableEvent::$isValid]] to `false` to prevent the site from getting deleted.
      */
-    const EVENT_BEFORE_DELETE_SITE = 'beforeDeleteSite';
+    public const EVENT_BEFORE_DELETE_SITE = 'beforeDeleteSite';
 
     /**
      * @event DeleteSiteEvent The event that is triggered before a site delete is applied to the database.
      * @since 3.1.0
      */
-    const EVENT_BEFORE_APPLY_SITE_DELETE = 'beforeApplySiteDelete';
+    public const EVENT_BEFORE_APPLY_SITE_DELETE = 'beforeApplySiteDelete';
 
     /**
      * @event DeleteSiteEvent The event that is triggered after a site is deleted.
      */
-    const EVENT_AFTER_DELETE_SITE = 'afterDeleteSite';
+    public const EVENT_AFTER_DELETE_SITE = 'afterDeleteSite';
 
     /**
      * @var MemoizableArray<SiteGroup>|null

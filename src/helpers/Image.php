@@ -23,9 +23,9 @@ use yii\base\InvalidArgumentException;
  */
 class Image
 {
-    const EXIF_IFD0_ROTATE_180 = 3;
-    const EXIF_IFD0_ROTATE_90 = 6;
-    const EXIF_IFD0_ROTATE_270 = 8;
+    public const EXIF_IFD0_ROTATE_180 = 3;
+    public const EXIF_IFD0_ROTATE_90 = 6;
+    public const EXIF_IFD0_ROTATE_270 = 8;
 
     /**
      * Calculates a missing target dimension for an image.

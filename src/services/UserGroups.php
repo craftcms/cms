@@ -33,28 +33,28 @@ class UserGroups extends Component
     /**
      * @event UserGroupEvent The event that is triggered before a user group is saved.
      */
-    const EVENT_BEFORE_SAVE_USER_GROUP = 'beforeSaveUserGroup';
+    public const EVENT_BEFORE_SAVE_USER_GROUP = 'beforeSaveUserGroup';
 
     /**
      * @event UserGroupEvent The event that is triggered after a user group is saved.
      */
-    const EVENT_AFTER_SAVE_USER_GROUP = 'afterSaveUserGroup';
+    public const EVENT_AFTER_SAVE_USER_GROUP = 'afterSaveUserGroup';
 
     /**
      * @event UserGroupEvent The event that is triggered before a user group is deleted.
      */
-    const EVENT_BEFORE_DELETE_USER_GROUP = 'beforeDeleteUserGroup';
+    public const EVENT_BEFORE_DELETE_USER_GROUP = 'beforeDeleteUserGroup';
 
     /**
      * @event UserGroupEvent The event that is triggered before a user group delete is applied to the database.
      * @since 3.1.0
      */
-    const EVENT_BEFORE_APPLY_GROUP_DELETE = 'beforeApplyGroupDelete';
+    public const EVENT_BEFORE_APPLY_GROUP_DELETE = 'beforeApplyGroupDelete';
 
     /**
      * @event UserGroupEvent The event that is triggered after a user group is saved.
      */
-    const EVENT_AFTER_DELETE_USER_GROUP = 'afterDeleteUserGroup';
+    public const EVENT_AFTER_DELETE_USER_GROUP = 'afterDeleteUserGroup';
 
     /**
      * Returns all user groups.

@@ -79,7 +79,7 @@ class MigrateController extends BaseMigrateController
      *
      * @since 3.5.0
      */
-    const EVENT_REGISTER_MIGRATOR = 'registerMigrator';
+    public const EVENT_REGISTER_MIGRATOR = 'registerMigrator';
 
     /**
      * @var string|null The migration track to work with (e.g. `craft`, `content`, `plugin:commerce`, etc.)

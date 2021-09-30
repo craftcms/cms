@@ -43,28 +43,28 @@ class Connection extends \yii\db\Connection
 {
     use PrimaryReplicaTrait;
 
-    const DRIVER_MYSQL = 'mysql';
-    const DRIVER_PGSQL = 'pgsql';
+    public const DRIVER_MYSQL = 'mysql';
+    public const DRIVER_PGSQL = 'pgsql';
 
     /**
      * @event BackupEvent The event that is triggered before the backup is created.
      */
-    const EVENT_BEFORE_CREATE_BACKUP = 'beforeCreateBackup';
+    public const EVENT_BEFORE_CREATE_BACKUP = 'beforeCreateBackup';
 
     /**
      * @event BackupEvent The event that is triggered after the backup is created.
      */
-    const EVENT_AFTER_CREATE_BACKUP = 'afterCreateBackup';
+    public const EVENT_AFTER_CREATE_BACKUP = 'afterCreateBackup';
 
     /**
      * @event RestoreEvent The event that is triggered before the restore is started.
      */
-    const EVENT_BEFORE_RESTORE_BACKUP = 'beforeRestoreBackup';
+    public const EVENT_BEFORE_RESTORE_BACKUP = 'beforeRestoreBackup';
 
     /**
      * @event RestoreEvent The event that is triggered after the restore occurred.
      */
-    const EVENT_AFTER_RESTORE_BACKUP = 'afterRestoreBackup';
+    public const EVENT_AFTER_RESTORE_BACKUP = 'afterRestoreBackup';
 
     /**
      * @var bool|null whether the database supports 4+ byte characters

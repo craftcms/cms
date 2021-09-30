@@ -25,12 +25,12 @@ class DbConfig extends BaseObject
     /**
      * @deprecated in 3.4.0. Use [[Connection::DRIVER_MYSQL]] instead.
      */
-    const DRIVER_MYSQL = 'mysql';
+    public const DRIVER_MYSQL = 'mysql';
 
     /**
      * @deprecated in 3.4.0. Use [[Connection::DRIVER_PGSQL]] instead.
      */
-    const DRIVER_PGSQL = 'pgsql';
+    public const DRIVER_PGSQL = 'pgsql';
 
     /**
      * @var array An array of key => value pairs of PDO attributes to pass into the PDO constructor.

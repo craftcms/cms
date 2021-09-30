@@ -31,38 +31,38 @@ class Locale extends BaseObject
     /**
      * @var int Positive prefix.
      */
-    const ATTR_POSITIVE_PREFIX = 0;
+    public const ATTR_POSITIVE_PREFIX = 0;
 
     /**
      * @var int Positive suffix.
      */
-    const ATTR_POSITIVE_SUFFIX = 1;
+    public const ATTR_POSITIVE_SUFFIX = 1;
 
     /**
      * @var int Negative prefix.
      */
-    const ATTR_NEGATIVE_PREFIX = 2;
+    public const ATTR_NEGATIVE_PREFIX = 2;
 
     /**
      * @var int Negative suffix.
      */
-    const ATTR_NEGATIVE_SUFFIX = 3;
+    public const ATTR_NEGATIVE_SUFFIX = 3;
 
     /**
      * @var int The character used to pad to the format width.
      */
-    const ATTR_PADDING_CHARACTER = 4;
+    public const ATTR_PADDING_CHARACTER = 4;
 
     /**
      * @var int The ISO currency code.
      */
-    const ATTR_CURRENCY_CODE = 5;
+    public const ATTR_CURRENCY_CODE = 5;
 
     /**
      * @var int The default rule set. This is only available with rule-based
      * formatters.
      */
-    const ATTR_DEFAULT_RULESET = 6;
+    public const ATTR_DEFAULT_RULESET = 6;
 
     /**
      * @var int The public rule sets. This is only available with rule-based
@@ -70,157 +70,157 @@ class Locale extends BaseObject
      * returned as a single string, with each ruleset name delimited by ';'
      * (semicolon).
      */
-    const ATTR_PUBLIC_RULESETS = 7;
+    public const ATTR_PUBLIC_RULESETS = 7;
 
     /**
      * @var int Decimal style
      */
-    const STYLE_DECIMAL = 1;
+    public const STYLE_DECIMAL = 1;
 
     /**
      * @var int Currency style
      */
-    const STYLE_CURRENCY = 2;
+    public const STYLE_CURRENCY = 2;
 
     /**
      * @var int Percent style
      */
-    const STYLE_PERCENT = 3;
+    public const STYLE_PERCENT = 3;
 
     /**
      * @var int Scientific style
      */
-    const STYLE_SCIENTIFIC = 4;
+    public const STYLE_SCIENTIFIC = 4;
 
     /**
      * @var int The decimal separator.
      */
-    const SYMBOL_DECIMAL_SEPARATOR = 0;
+    public const SYMBOL_DECIMAL_SEPARATOR = 0;
 
     /**
      * @var int The grouping separator.
      */
-    const SYMBOL_GROUPING_SEPARATOR = 1;
+    public const SYMBOL_GROUPING_SEPARATOR = 1;
 
     /**
      * @var int The pattern separator.
      */
-    const SYMBOL_PATTERN_SEPARATOR = 2;
+    public const SYMBOL_PATTERN_SEPARATOR = 2;
 
     /**
      * @var int The percent sign.
      */
-    const SYMBOL_PERCENT = 3;
+    public const SYMBOL_PERCENT = 3;
 
     /**
      * @var int Zero.
      */
-    const SYMBOL_ZERO_DIGIT = 4;
+    public const SYMBOL_ZERO_DIGIT = 4;
 
     /**
      * @var int Character representing a digit in the pattern.
      */
-    const SYMBOL_DIGIT = 5;
+    public const SYMBOL_DIGIT = 5;
 
     /**
      * @var int The minus sign.
      */
-    const SYMBOL_MINUS_SIGN = 6;
+    public const SYMBOL_MINUS_SIGN = 6;
 
     /**
      * @var int The plus sign.
      */
-    const SYMBOL_PLUS_SIGN = 7;
+    public const SYMBOL_PLUS_SIGN = 7;
 
     /**
      * @var int The currency symbol.
      */
-    const SYMBOL_CURRENCY = 8;
+    public const SYMBOL_CURRENCY = 8;
 
     /**
      * @var int The international currency symbol.
      */
-    const SYMBOL_INTL_CURRENCY = 9;
+    public const SYMBOL_INTL_CURRENCY = 9;
 
     /**
      * @var int The monetary separator.
      */
-    const SYMBOL_MONETARY_SEPARATOR = 10;
+    public const SYMBOL_MONETARY_SEPARATOR = 10;
 
     /**
      * @var int The exponential symbol.
      */
-    const SYMBOL_EXPONENTIAL = 11;
+    public const SYMBOL_EXPONENTIAL = 11;
 
     /**
      * @var int Per mill symbol.
      */
-    const SYMBOL_PERMILL = 12;
+    public const SYMBOL_PERMILL = 12;
 
     /**
      * @var int Escape padding character.
      */
-    const SYMBOL_PAD_ESCAPE = 13;
+    public const SYMBOL_PAD_ESCAPE = 13;
 
     /**
      * @var int Infinity symbol.
      */
-    const SYMBOL_INFINITY = 14;
+    public const SYMBOL_INFINITY = 14;
 
     /**
      * @var int Not-a-number symbol.
      */
-    const SYMBOL_NAN = 15;
+    public const SYMBOL_NAN = 15;
 
     /**
      * @var int Significant digit symbol.
      */
-    const SYMBOL_SIGNIFICANT_DIGIT = 16;
+    public const SYMBOL_SIGNIFICANT_DIGIT = 16;
 
     /**
      * @var int The monetary grouping separator.
      */
-    const SYMBOL_MONETARY_GROUPING_SEPARATOR = 17;
+    public const SYMBOL_MONETARY_GROUPING_SEPARATOR = 17;
 
     /**
      * @var string The abbreviated date/time format.
      */
-    const LENGTH_ABBREVIATED = 'abbreviated';
+    public const LENGTH_ABBREVIATED = 'abbreviated';
 
     /**
      * @var string The short date/time format.
      */
-    const LENGTH_SHORT = 'short';
+    public const LENGTH_SHORT = 'short';
 
     /**
      * @var string The medium date/time format.
      */
-    const LENGTH_MEDIUM = 'medium';
+    public const LENGTH_MEDIUM = 'medium';
 
     /**
      * @var string The long date/time format.
      */
-    const LENGTH_LONG = 'long';
+    public const LENGTH_LONG = 'long';
 
     /**
      * @var string The full date/time format.
      */
-    const LENGTH_FULL = 'full';
+    public const LENGTH_FULL = 'full';
 
     /**
      * @var string ICU format
      */
-    const FORMAT_ICU = 'icu';
+    public const FORMAT_ICU = 'icu';
 
     /**
      * @var string PHP format
      */
-    const FORMAT_PHP = 'php';
+    public const FORMAT_PHP = 'php';
 
     /**
      * @var string jQuery UI format
      */
-    const FORMAT_JUI = 'jui';
+    public const FORMAT_JUI = 'jui';
 
     /**
      * @var array The languages that use RTL orientation.

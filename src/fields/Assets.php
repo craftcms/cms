@@ -48,11 +48,11 @@ class Assets extends BaseRelationField
     /**
      * @since 3.5.11
      */
-    const PREVIEW_MODE_FULL = 'full';
+    public const PREVIEW_MODE_FULL = 'full';
     /**
      * @since 3.5.11
      */
-    const PREVIEW_MODE_THUMBS = 'thumbs';
+    public const PREVIEW_MODE_THUMBS = 'thumbs';
 
     /**
      * @inheritdoc

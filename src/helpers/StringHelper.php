@@ -25,12 +25,12 @@ use const ENT_COMPAT;
  */
 class StringHelper extends \yii\helpers\StringHelper
 {
-    const UTF8 = 'UTF-8';
+    public const UTF8 = 'UTF-8';
 
     /**
      * @since 3.0.37
      */
-    const UUID_PATTERN = '[A-Za-z0-9]{8}-[A-Za-z0-9]{4}-4[A-Za-z0-9]{3}-[89abAB][A-Za-z0-9]{3}-[A-Za-z0-9]{12}';
+    public const UUID_PATTERN = '[A-Za-z0-9]{8}-[A-Za-z0-9]{4}-4[A-Za-z0-9]{3}-[89abAB][A-Za-z0-9]{3}-[A-Za-z0-9]{12}';
 
     /**
      * @var array Character mappings

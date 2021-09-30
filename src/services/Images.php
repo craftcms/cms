@@ -34,9 +34,9 @@ use yii\base\Exception;
  */
 class Images extends Component
 {
-    const DRIVER_GD = 'gd';
-    const DRIVER_IMAGICK = 'imagick';
-    const MINIMUM_IMAGICK_VERSION = '6.2.9';
+    public const DRIVER_GD = 'gd';
+    public const DRIVER_IMAGICK = 'imagick';
+    public const MINIMUM_IMAGICK_VERSION = '6.2.9';
 
     /**
      * @var array Image formats that can be manipulated.

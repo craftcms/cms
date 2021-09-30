@@ -25,13 +25,13 @@ abstract class Migration extends \yii\db\Migration
      * @event \yii\base\Event The event that is triggered after the migration is executed
      * @since 3.0.6
      */
-    const EVENT_AFTER_UP = 'afterUp';
+    public const EVENT_AFTER_UP = 'afterUp';
 
     /**
      * @event \yii\base\Event The event that is triggered after the migration is reverted
      * @since 3.0.6
      */
-    const EVENT_AFTER_DOWN = 'afterDown';
+    public const EVENT_AFTER_DOWN = 'afterDown';
 
     // Execution Methods
     // -------------------------------------------------------------------------

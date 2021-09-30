@@ -38,12 +38,12 @@ class Globals extends Component
     /**
      * @event GlobalSetEvent The event that is triggered before a global set is saved.
      */
-    const EVENT_BEFORE_SAVE_GLOBAL_SET = 'beforeSaveGlobalSet';
+    public const EVENT_BEFORE_SAVE_GLOBAL_SET = 'beforeSaveGlobalSet';
 
     /**
      * @event GlobalSetEvent The event that is triggered after a global set is saved.
      */
-    const EVENT_AFTER_SAVE_GLOBAL_SET = 'afterSaveGlobalSet';
+    public const EVENT_AFTER_SAVE_GLOBAL_SET = 'afterSaveGlobalSet';
 
     /**
      * @var MemoizableArray<GlobalSet>[]|null

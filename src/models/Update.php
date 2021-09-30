@@ -20,9 +20,9 @@ use craft\base\Model;
  */
 class Update extends Model
 {
-    const STATUS_ELIGIBLE = 'eligible';
-    const STATUS_BREAKPOINT = 'breakpoint';
-    const STATUS_EXPIRED = 'expired';
+    public const STATUS_ELIGIBLE = 'eligible';
+    public const STATUS_BREAKPOINT = 'breakpoint';
+    public const STATUS_EXPIRED = 'expired';
 
     /**
      * @var string The status of the update (eligible, breakpoint, or expired)

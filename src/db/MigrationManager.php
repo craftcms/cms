@@ -32,16 +32,16 @@ class MigrationManager extends Component
     /**
      * The name of the dummy migration that marks the beginning of the whole migration history.
      */
-    const BASE_MIGRATION = 'm000000_000000_base';
+    public const BASE_MIGRATION = 'm000000_000000_base';
 
     /**
      * @since 3.5.0
      */
-    const TRACK_CRAFT = 'craft';
+    public const TRACK_CRAFT = 'craft';
     /**
      * @since 3.5.0
      */
-    const TRACK_CONTENT = 'content';
+    public const TRACK_CONTENT = 'content';
 
     /**
      * @var string The migration track (e.g. `craft`, `content`, `plugin:commerce`, etc.)

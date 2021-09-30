@@ -79,12 +79,12 @@ class Application extends \yii\web\Application
      * });
      * ```
      */
-    const EVENT_INIT = 'init';
+    public const EVENT_INIT = 'init';
 
     /**
      * @event \craft\events\EditionChangeEvent The event that is triggered after the edition changes
      */
-    const EVENT_AFTER_EDITION_CHANGE = 'afterEditionChange';
+    public const EVENT_AFTER_EDITION_CHANGE = 'afterEditionChange';
 
     /**
      * Initializes the application.

@@ -32,8 +32,8 @@ use yii\base\InvalidConfigException;
  */
 class Config extends Component
 {
-    const CATEGORY_DB = 'db';
-    const CATEGORY_GENERAL = 'general';
+    public const CATEGORY_DB = 'db';
+    public const CATEGORY_GENERAL = 'general';
 
     /**
      * @var string|null The environment ID Craft is currently running in.

@@ -26,12 +26,12 @@ use yii\web\Response;
  */
 class UpdaterController extends BaseUpdaterController
 {
-    const ACTION_FORCE_UPDATE = 'force-update';
-    const ACTION_BACKUP = 'backup';
-    const ACTION_SERVER_CHECK = 'server-check';
-    const ACTION_REVERT = 'revert';
-    const ACTION_RESTORE_DB = 'restore-db';
-    const ACTION_MIGRATE = 'migrate';
+    public const ACTION_FORCE_UPDATE = 'force-update';
+    public const ACTION_BACKUP = 'backup';
+    public const ACTION_SERVER_CHECK = 'server-check';
+    public const ACTION_REVERT = 'revert';
+    public const ACTION_RESTORE_DB = 'restore-db';
+    public const ACTION_MIGRATE = 'migrate';
 
     /**
      * @inheritdoc

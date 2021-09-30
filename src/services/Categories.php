@@ -45,28 +45,28 @@ class Categories extends Component
     /**
      * @event CategoryGroupEvent The event that is triggered before a category group is saved.
      */
-    const EVENT_BEFORE_SAVE_GROUP = 'beforeSaveGroup';
+    public const EVENT_BEFORE_SAVE_GROUP = 'beforeSaveGroup';
 
     /**
      * @event CategoryGroupEvent The event that is triggered after a category group is saved.
      */
-    const EVENT_AFTER_SAVE_GROUP = 'afterSaveGroup';
+    public const EVENT_AFTER_SAVE_GROUP = 'afterSaveGroup';
 
     /**
      * @event CategoryGroupEvent The event that is triggered before a category group is deleted.
      */
-    const EVENT_BEFORE_DELETE_GROUP = 'beforeDeleteGroup';
+    public const EVENT_BEFORE_DELETE_GROUP = 'beforeDeleteGroup';
 
     /**
      * @event CategoryGroupEvent The event that is triggered before a category group delete is applied to the database.
      * @since 3.1.0
      */
-    const EVENT_BEFORE_APPLY_GROUP_DELETE = 'beforeApplyGroupDelete';
+    public const EVENT_BEFORE_APPLY_GROUP_DELETE = 'beforeApplyGroupDelete';
 
     /**
      * @event CategoryGroupEvent The event that is triggered after a category group is deleted.
      */
-    const EVENT_AFTER_DELETE_GROUP = 'afterDeleteGroup';
+    public const EVENT_AFTER_DELETE_GROUP = 'afterDeleteGroup';
 
     /**
      * @var MemoizableArray<CategoryGroup>|null

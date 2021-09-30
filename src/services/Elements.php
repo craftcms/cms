@@ -94,40 +94,40 @@ class Elements extends Component
      * );
      * ```
      */
-    const EVENT_REGISTER_ELEMENT_TYPES = 'registerElementTypes';
+    public const EVENT_REGISTER_ELEMENT_TYPES = 'registerElementTypes';
 
     /**
      * @event EagerLoadElementsEvent The event that is triggered before elements are eager-loaded.
      * @since 3.5.0
      */
-    const EVENT_BEFORE_EAGER_LOAD_ELEMENTS = 'beforeEagerLoadElements';
+    public const EVENT_BEFORE_EAGER_LOAD_ELEMENTS = 'beforeEagerLoadElements';
 
     /**
      * @event MergeElementsEvent The event that is triggered after two elements are merged together.
      */
-    const EVENT_AFTER_MERGE_ELEMENTS = 'afterMergeElements';
+    public const EVENT_AFTER_MERGE_ELEMENTS = 'afterMergeElements';
 
     /**
      * @event DeleteElementEvent The event that is triggered before an element is deleted.
      */
-    const EVENT_BEFORE_DELETE_ELEMENT = 'beforeDeleteElement';
+    public const EVENT_BEFORE_DELETE_ELEMENT = 'beforeDeleteElement';
 
     /**
      * @event ElementEvent The event that is triggered after an element is deleted.
      */
-    const EVENT_AFTER_DELETE_ELEMENT = 'afterDeleteElement';
+    public const EVENT_AFTER_DELETE_ELEMENT = 'afterDeleteElement';
 
     /**
      * @event ElementEvent The event that is triggered before an element is restored.
      * @since 3.1.0
      */
-    const EVENT_BEFORE_RESTORE_ELEMENT = 'beforeRestoreElement';
+    public const EVENT_BEFORE_RESTORE_ELEMENT = 'beforeRestoreElement';
 
     /**
      * @event ElementEvent The event that is triggered after an element is restored.
      * @since 3.1.0
      */
-    const EVENT_AFTER_RESTORE_ELEMENT = 'afterRestoreElement';
+    public const EVENT_AFTER_RESTORE_ELEMENT = 'afterRestoreElement';
 
     /**
      * @event ElementEvent The event that is triggered before an element is saved.
@@ -149,7 +149,7 @@ class Elements extends Component
      * });
      * ```
      */
-    const EVENT_BEFORE_SAVE_ELEMENT = 'beforeSaveElement';
+    public const EVENT_BEFORE_SAVE_ELEMENT = 'beforeSaveElement';
 
     /**
      * @event ElementEvent The event that is triggered after an element is saved.
@@ -171,7 +171,7 @@ class Elements extends Component
      * });
      * ```
      */
-    const EVENT_AFTER_SAVE_ELEMENT = 'afterSaveElement';
+    public const EVENT_AFTER_SAVE_ELEMENT = 'afterSaveElement';
 
     /**
      * @event ElementEvent The event that is triggered before indexing an element’s search keywords,
@@ -181,81 +181,81 @@ class Elements extends Component
      *
      * @since 3.7.12
      */
-    const EVENT_BEFORE_UPDATE_SEARCH_INDEX = 'beforeUpdateSearchIndex';
+    public const EVENT_BEFORE_UPDATE_SEARCH_INDEX = 'beforeUpdateSearchIndex';
 
     /**
      * @event ElementQueryEvent The event that is triggered before resaving a batch of elements.
      */
-    const EVENT_BEFORE_RESAVE_ELEMENTS = 'beforeResaveElements';
+    public const EVENT_BEFORE_RESAVE_ELEMENTS = 'beforeResaveElements';
 
     /**
      * @event ElementQueryEvent The event that is triggered after resaving a batch of elements.
      */
-    const EVENT_AFTER_RESAVE_ELEMENTS = 'afterResaveElements';
+    public const EVENT_AFTER_RESAVE_ELEMENTS = 'afterResaveElements';
 
     /**
      * @event BatchElementActionEvent The event that is triggered before an element is resaved.
      */
-    const EVENT_BEFORE_RESAVE_ELEMENT = 'beforeResaveElement';
+    public const EVENT_BEFORE_RESAVE_ELEMENT = 'beforeResaveElement';
 
     /**
      * @event BatchElementActionEvent The event that is triggered after an element is resaved.
      */
-    const EVENT_AFTER_RESAVE_ELEMENT = 'afterResaveElement';
+    public const EVENT_AFTER_RESAVE_ELEMENT = 'afterResaveElement';
 
     /**
      * @event ElementQueryEvent The event that is triggered before propagating a batch of elements.
      */
-    const EVENT_BEFORE_PROPAGATE_ELEMENTS = 'beforePropagateElements';
+    public const EVENT_BEFORE_PROPAGATE_ELEMENTS = 'beforePropagateElements';
 
     /**
      * @event ElementQueryEvent The event that is triggered after propagating a batch of elements.
      */
-    const EVENT_AFTER_PROPAGATE_ELEMENTS = 'afterPropagateElements';
+    public const EVENT_AFTER_PROPAGATE_ELEMENTS = 'afterPropagateElements';
 
     /**
      * @event BatchElementActionEvent The event that is triggered before an element is propagated.
      */
-    const EVENT_BEFORE_PROPAGATE_ELEMENT = 'beforePropagateElement';
+    public const EVENT_BEFORE_PROPAGATE_ELEMENT = 'beforePropagateElement';
 
     /**
      * @event BatchElementActionEvent The event that is triggered after an element is propagated.
      */
-    const EVENT_AFTER_PROPAGATE_ELEMENT = 'afterPropagateElement';
+    public const EVENT_AFTER_PROPAGATE_ELEMENT = 'afterPropagateElement';
 
     /**
      * @event ElementEvent The event that is triggered before an element’s slug and URI are updated, usually following a Structure move.
      */
-    const EVENT_BEFORE_UPDATE_SLUG_AND_URI = 'beforeUpdateSlugAndUri';
+    public const EVENT_BEFORE_UPDATE_SLUG_AND_URI = 'beforeUpdateSlugAndUri';
 
     /**
      * @event ElementEvent The event that is triggered after an element’s slug and URI are updated, usually following a Structure move.
      */
-    const EVENT_AFTER_UPDATE_SLUG_AND_URI = 'afterUpdateSlugAndUri';
+    public const EVENT_AFTER_UPDATE_SLUG_AND_URI = 'afterUpdateSlugAndUri';
 
     /**
      * @event \craft\events\ElementActionEvent The event that is triggered before an element action is performed.
      *
      * You may set [[\craft\events\CancelableEvent::$isValid]] to `false` to prevent the action from being performed.
      */
-    const EVENT_BEFORE_PERFORM_ACTION = 'beforePerformAction';
+    public const EVENT_BEFORE_PERFORM_ACTION = 'beforePerformAction';
 
     /**
      * @event \craft\events\ElementActionEvent The event that is triggered after an element action is performed.
      */
-    const EVENT_AFTER_PERFORM_ACTION = 'afterPerformAction';
+    public const EVENT_AFTER_PERFORM_ACTION = 'afterPerformAction';
 
     /**
      * @event ElementEvent The event that is triggered before canonical element changes are merged into a derivative.
      * @since 3.7.0
      */
-    const EVENT_BEFORE_MERGE_CANONICAL_CHANGES = 'beforeMergeCanonical';
+    public const EVENT_BEFORE_MERGE_CANONICAL_CHANGES = 'beforeMergeCanonical';
 
     /**
      * @event ElementEvent The event that is triggered after canonical element changes are merged into a derivative.
      * @since 3.7.0
      */
-    const EVENT_AFTER_MERGE_CANONICAL_CHANGES = 'afterMergeCanonical';
+    public const EVENT_AFTER_MERGE_CANONICAL_CHANGES = 'afterMergeCanonical';
 
     /**
      * @var int[] Stores a mapping of source element IDs to their duplicated element IDs.

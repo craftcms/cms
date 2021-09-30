@@ -33,13 +33,13 @@ class ElementIndexes extends Component
      * @event DefineSourceTableAttributesEvent The event that is triggered when defining the available table attributes for a source.
      * @since 3.6.5
      */
-    const EVENT_DEFINE_SOURCE_TABLE_ATTRIBUTES = 'defineSourceTableAttributes';
+    public const EVENT_DEFINE_SOURCE_TABLE_ATTRIBUTES = 'defineSourceTableAttributes';
 
     /**
      * @event DefineSourceSortOptionsEvent The event that is triggered when defining the available sort options for a source.
      * @since 3.6.5
      */
-    const EVENT_DEFINE_SOURCE_SORT_OPTIONS = 'defineSourceSortOptions';
+    public const EVENT_DEFINE_SOURCE_SORT_OPTIONS = 'defineSourceSortOptions';
 
     /**
      * @var array

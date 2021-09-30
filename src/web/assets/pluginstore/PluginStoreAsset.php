@@ -23,10 +23,10 @@ use yii\web\NotFoundHttpException;
  */
 class PluginStoreAsset extends AssetBundle
 {
-    const CACHE_KEY = 'pluginstore';
-    const CACHE_TAG = 'pluginstore';
+    public const CACHE_KEY = 'pluginstore';
+    public const CACHE_TAG = 'pluginstore';
 
-    const DEVMODE_CACHE_DURATION = 1;
+    public const DEVMODE_CACHE_DURATION = 1;
 
     /**
      * @var array

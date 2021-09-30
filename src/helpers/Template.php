@@ -32,12 +32,12 @@ use function twig_get_attribute;
  */
 class Template
 {
-    const PROFILE_TYPE_TEMPLATE = 'template';
-    const PROFILE_TYPE_BLOCK = 'block';
-    const PROFILE_TYPE_MACRO = 'macro';
+    public const PROFILE_TYPE_TEMPLATE = 'template';
+    public const PROFILE_TYPE_BLOCK = 'block';
+    public const PROFILE_TYPE_MACRO = 'macro';
 
-    const PROFILE_STAGE_BEGIN = 'begin';
-    const PROFILE_STAGE_END = 'end';
+    public const PROFILE_STAGE_BEGIN = 'begin';
+    public const PROFILE_STAGE_END = 'end';
 
     /**
      * @var bool Whether to enable profiling for this request

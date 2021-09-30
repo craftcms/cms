@@ -110,7 +110,7 @@ class Gql extends Component
      * });
      * ```
      */
-    const EVENT_REGISTER_GQL_TYPES = 'registerGqlTypes';
+    public const EVENT_REGISTER_GQL_TYPES = 'registerGqlTypes';
 
     /**
      * @event RegisterGqlQueriesEvent The event that is triggered when registering GraphQL queries.
@@ -136,7 +136,7 @@ class Gql extends Component
      * });
      * ```
      */
-    const EVENT_REGISTER_GQL_QUERIES = 'registerGqlQueries';
+    public const EVENT_REGISTER_GQL_QUERIES = 'registerGqlQueries';
 
     /**
      * @event RegisterGqlMutationsEvent The event that is triggered when registering GraphQL mutations.
@@ -161,7 +161,7 @@ class Gql extends Component
      * });
      * ```
      */
-    const EVENT_REGISTER_GQL_MUTATIONS = 'registerGqlMutations';
+    public const EVENT_REGISTER_GQL_MUTATIONS = 'registerGqlMutations';
 
     /**
      * @event RegisterGqlDirectivesEvent The event that is triggered when registering GraphQL directives.
@@ -183,13 +183,13 @@ class Gql extends Component
      * );
      * ```
      */
-    const EVENT_REGISTER_GQL_DIRECTIVES = 'registerGqlDirectives';
+    public const EVENT_REGISTER_GQL_DIRECTIVES = 'registerGqlDirectives';
 
     /**
      * @event RegisterGqlSchemaComponentsEvent The event that is triggered when registering GraphQL schema components.
      * @since 3.5.0
      */
-    const EVENT_REGISTER_GQL_SCHEMA_COMPONENTS = 'registerGqlSchemaComponents';
+    public const EVENT_REGISTER_GQL_SCHEMA_COMPONENTS = 'registerGqlSchemaComponents';
 
     /**
      * @event DefineGqlValidationRulesEvent The event that is triggered when defining validation rules to be used.
@@ -210,7 +210,7 @@ class Gql extends Component
      * });
      * ```
      */
-    const EVENT_DEFINE_GQL_VALIDATION_RULES = 'defineGqlValidationRules';
+    public const EVENT_DEFINE_GQL_VALIDATION_RULES = 'defineGqlValidationRules';
 
     /**
      * @event ExecuteGqlQueryEvent The event that is triggered before executing the GraphQL query.
@@ -234,7 +234,7 @@ class Gql extends Component
      *
      * @since 3.3.11
      */
-    const EVENT_BEFORE_EXECUTE_GQL_QUERY = 'beforeExecuteGqlQuery';
+    public const EVENT_BEFORE_EXECUTE_GQL_QUERY = 'beforeExecuteGqlQuery';
 
     /**
      * @event ExecuteGqlQueryEvent The event that is triggered after executing the GraphQL query.
@@ -257,54 +257,54 @@ class Gql extends Component
      *
      * @since 3.3.11
      */
-    const EVENT_AFTER_EXECUTE_GQL_QUERY = 'afterExecuteGqlQuery';
+    public const EVENT_AFTER_EXECUTE_GQL_QUERY = 'afterExecuteGqlQuery';
 
     /**
      * @since 3.3.12
      */
-    const CACHE_TAG = 'graphql';
+    public const CACHE_TAG = 'graphql';
 
     /**
      * The field name to use when fetching count of related elements
      *
      * @since 3.4.0
      */
-    const GRAPHQL_COUNT_FIELD = '_count';
+    public const GRAPHQL_COUNT_FIELD = '_count';
 
     /**
      * Complexity value for accessing a simple field.
      *
      * @since 3.6.0
      */
-    const GRAPHQL_COMPLEXITY_SIMPLE_FIELD = 1;
+    public const GRAPHQL_COMPLEXITY_SIMPLE_FIELD = 1;
 
     /**
      * Complexity value for accessing a field that will trigger a single query for the request.
      *
      * @since 3.6.0
      */
-    const GRAPHQL_COMPLEXITY_QUERY = 10;
+    public const GRAPHQL_COMPLEXITY_QUERY = 10;
 
     /**
      * Complexity value for accessing a field that will add an instance of eager-loading for the request.
      *
      * @since 3.6.0
      */
-    const GRAPHQL_COMPLEXITY_EAGER_LOAD = 25;
+    public const GRAPHQL_COMPLEXITY_EAGER_LOAD = 25;
 
     /**
      * Complexity value for accessing a field that will likely trigger a CPU heavy operation.
      *
      * @since 3.6.0
      */
-    const GRAPHQL_COMPLEXITY_CPU_HEAVY = 200;
+    public const GRAPHQL_COMPLEXITY_CPU_HEAVY = 200;
 
     /**
      * Complexity value for accessing a field that will trigger a query for every parent returned.
      *
      * @since 3.6.0
      */
-    const GRAPHQL_COMPLEXITY_NPLUS1 = 500;
+    public const GRAPHQL_COMPLEXITY_NPLUS1 = 500;
 
     /**
      * Save a GQL Token record based on the model.

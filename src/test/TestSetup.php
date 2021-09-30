@@ -93,12 +93,12 @@ class TestSetup
     /**
      * @since 3.6.0
      */
-    const SITE_URL = 'https://test.craftcms.test/';
+    public const SITE_URL = 'https://test.craftcms.test/';
 
     /**
      * @since 3.6.0
      */
-    const USERNAME = 'craftcms';
+    public const USERNAME = 'craftcms';
 
     /**
      * @var array Project Config data

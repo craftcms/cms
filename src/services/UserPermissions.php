@@ -38,7 +38,7 @@ class UserPermissions extends Component
     /**
      * @event RegisterUserPermissionsEvent The event that is triggered when registering user permissions.
      */
-    const EVENT_REGISTER_PERMISSIONS = 'registerPermissions';
+    public const EVENT_REGISTER_PERMISSIONS = 'registerPermissions';
 
     /**
      * @var string[][]

@@ -60,16 +60,16 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
      * @event SectionEvent The event that is triggered before a section is saved.
      * @since 3.1.27
      */
-    const EVENT_SET_FIELD_BLOCK_TYPES = 'setFieldBlockTypes';
+    public const EVENT_SET_FIELD_BLOCK_TYPES = 'setFieldBlockTypes';
 
-    const PROPAGATION_METHOD_NONE = 'none';
-    const PROPAGATION_METHOD_SITE_GROUP = 'siteGroup';
-    const PROPAGATION_METHOD_LANGUAGE = 'language';
+    public const PROPAGATION_METHOD_NONE = 'none';
+    public const PROPAGATION_METHOD_SITE_GROUP = 'siteGroup';
+    public const PROPAGATION_METHOD_LANGUAGE = 'language';
     /**
      * @since 3.7.0
      */
-    const PROPAGATION_METHOD_CUSTOM = 'custom';
-    const PROPAGATION_METHOD_ALL = 'all';
+    public const PROPAGATION_METHOD_CUSTOM = 'custom';
+    public const PROPAGATION_METHOD_ALL = 'all';
 
     /**
      * @inheritdoc

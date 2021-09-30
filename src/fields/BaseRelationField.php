@@ -52,7 +52,7 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
      * @event ElementCriteriaEvent The event that is triggered when defining the selection criteria for this field.
      * @since 3.4.16
      */
-    const EVENT_DEFINE_SELECTION_CRITERIA = 'defineSelectionCriteria';
+    public const EVENT_DEFINE_SELECTION_CRITERIA = 'defineSelectionCriteria';
 
     /**
      * @inheritdoc

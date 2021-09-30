@@ -60,42 +60,42 @@ class View extends \yii\web\View
     /**
      * @event RegisterTemplateRootsEvent The event that is triggered when registering control panel template roots
      */
-    const EVENT_REGISTER_CP_TEMPLATE_ROOTS = 'registerCpTemplateRoots';
+    public const EVENT_REGISTER_CP_TEMPLATE_ROOTS = 'registerCpTemplateRoots';
 
     /**
      * @event RegisterTemplateRootsEvent The event that is triggered when registering site template roots
      */
-    const EVENT_REGISTER_SITE_TEMPLATE_ROOTS = 'registerSiteTemplateRoots';
+    public const EVENT_REGISTER_SITE_TEMPLATE_ROOTS = 'registerSiteTemplateRoots';
 
     /**
      * @event TemplateEvent The event that is triggered before a template gets rendered
      */
-    const EVENT_BEFORE_RENDER_TEMPLATE = 'beforeRenderTemplate';
+    public const EVENT_BEFORE_RENDER_TEMPLATE = 'beforeRenderTemplate';
 
     /**
      * @event TemplateEvent The event that is triggered after a template gets rendered
      */
-    const EVENT_AFTER_RENDER_TEMPLATE = 'afterRenderTemplate';
+    public const EVENT_AFTER_RENDER_TEMPLATE = 'afterRenderTemplate';
 
     /**
      * @event TemplateEvent The event that is triggered before a page template gets rendered
      */
-    const EVENT_BEFORE_RENDER_PAGE_TEMPLATE = 'beforeRenderPageTemplate';
+    public const EVENT_BEFORE_RENDER_PAGE_TEMPLATE = 'beforeRenderPageTemplate';
 
     /**
      * @event TemplateEvent The event that is triggered after a page template gets rendered
      */
-    const EVENT_AFTER_RENDER_PAGE_TEMPLATE = 'afterRenderPageTemplate';
+    public const EVENT_AFTER_RENDER_PAGE_TEMPLATE = 'afterRenderPageTemplate';
 
     /**
      * @const TEMPLATE_MODE_CP
      */
-    const TEMPLATE_MODE_CP = 'cp';
+    public const TEMPLATE_MODE_CP = 'cp';
 
     /**
      * @const TEMPLATE_MODE_SITE
      */
-    const TEMPLATE_MODE_SITE = 'site';
+    public const TEMPLATE_MODE_SITE = 'site';
 
     /**
      * @var bool Whether to allow [[evaluateDynamicContent()]] to be called.

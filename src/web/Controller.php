@@ -38,9 +38,9 @@ use yii\web\UnauthorizedHttpException;
  */
 abstract class Controller extends \yii\web\Controller
 {
-    const ALLOW_ANONYMOUS_NEVER = 0;
-    const ALLOW_ANONYMOUS_LIVE = 1;
-    const ALLOW_ANONYMOUS_OFFLINE = 2;
+    public const ALLOW_ANONYMOUS_NEVER = 0;
+    public const ALLOW_ANONYMOUS_LIVE = 1;
+    public const ALLOW_ANONYMOUS_OFFLINE = 2;
 
     /**
      * @var int|bool|int[]|string[] Whether this controller’s actions can be accessed anonymously.

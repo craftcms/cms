@@ -32,15 +32,15 @@ class Url extends Field implements PreviewableFieldInterface
     /**
      * @since 3.6.0
      */
-    const TYPE_URL = 'url';
+    public const TYPE_URL = 'url';
     /**
      * @since 3.6.0
      */
-    const TYPE_TEL = 'tel';
+    public const TYPE_TEL = 'tel';
     /**
      * @since 3.6.0
      */
-    const TYPE_EMAIL = 'email';
+    public const TYPE_EMAIL = 'email';
 
     /**
      * @inheritdoc

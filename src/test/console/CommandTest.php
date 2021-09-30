@@ -24,12 +24,12 @@ use yii\base\InvalidConfigException;
  */
 class CommandTest
 {
-    const STD_OUT = 'stdOut';
-    const STD_ERR = 'stderr';
-    const PROMPT = 'prompt';
-    const CONFIRM = 'confirm';
-    const SELECT = 'select';
-    const OUTPUT_COMMAND = 'outputCommand';
+    public const STD_OUT = 'stdOut';
+    public const STD_ERR = 'stderr';
+    public const PROMPT = 'prompt';
+    public const CONFIRM = 'confirm';
+    public const SELECT = 'select';
+    public const OUTPUT_COMMAND = 'outputCommand';
 
     /**
      * @var ConsoleTest

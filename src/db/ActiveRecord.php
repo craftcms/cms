@@ -32,7 +32,7 @@ abstract class ActiveRecord extends \yii\db\ActiveRecord
      * @see behaviors()
      * @since 3.4.0
      */
-    const EVENT_DEFINE_BEHAVIORS = 'defineBehaviors';
+    public const EVENT_DEFINE_BEHAVIORS = 'defineBehaviors';
 
     /**
      * @inheritdoc

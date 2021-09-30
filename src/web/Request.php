@@ -51,11 +51,11 @@ class Request extends \yii\web\Request
 {
     use RequestTrait;
 
-    const CP_PATH_LOGIN = 'login';
-    const CP_PATH_LOGOUT = 'logout';
-    const CP_PATH_SET_PASSWORD = 'set-password';
-    const CP_PATH_VERIFY_EMAIL = 'verify-email';
-    const CP_PATH_UPDATE = 'update';
+    public const CP_PATH_LOGIN = 'login';
+    public const CP_PATH_LOGOUT = 'logout';
+    public const CP_PATH_SET_PASSWORD = 'set-password';
+    public const CP_PATH_VERIFY_EMAIL = 'verify-email';
+    public const CP_PATH_UPDATE = 'update';
 
     /**
      * @inheritdoc

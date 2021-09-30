@@ -62,9 +62,9 @@ use yii\db\Expression;
  */
 class Entry extends Element
 {
-    const STATUS_LIVE = 'live';
-    const STATUS_PENDING = 'pending';
-    const STATUS_EXPIRED = 'expired';
+    public const STATUS_LIVE = 'live';
+    public const STATUS_PENDING = 'pending';
+    public const STATUS_EXPIRED = 'expired';
 
     /**
      * @event DefineEntryTypesEvent The event that is triggered when defining the available entry types for the entry
@@ -72,7 +72,7 @@ class Entry extends Element
      * @see getAvailableEntryTypes()
      * @since 3.6.0
      */
-    const EVENT_DEFINE_ENTRY_TYPES = 'defineEntryTypes';
+    public const EVENT_DEFINE_ENTRY_TYPES = 'defineEntryTypes';
 
     /**
      * @inheritdoc

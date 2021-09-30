@@ -59,27 +59,27 @@ class Dashboard extends Component
      * );
      * ```
      */
-    const EVENT_REGISTER_WIDGET_TYPES = 'registerWidgetTypes';
+    public const EVENT_REGISTER_WIDGET_TYPES = 'registerWidgetTypes';
 
     /**
      * @event WidgetEvent The event that is triggered before a widget is saved.
      */
-    const EVENT_BEFORE_SAVE_WIDGET = 'beforeSaveWidget';
+    public const EVENT_BEFORE_SAVE_WIDGET = 'beforeSaveWidget';
 
     /**
      * @event WidgetEvent The event that is triggered after a widget is saved.
      */
-    const EVENT_AFTER_SAVE_WIDGET = 'afterSaveWidget';
+    public const EVENT_AFTER_SAVE_WIDGET = 'afterSaveWidget';
 
     /**
      * @event WidgetEvent The event that is triggered before a widget is deleted.
      */
-    const EVENT_BEFORE_DELETE_WIDGET = 'beforeDeleteWidget';
+    public const EVENT_BEFORE_DELETE_WIDGET = 'beforeDeleteWidget';
 
     /**
      * @event WidgetEvent The event that is triggered after a widget is deleted.
      */
-    const EVENT_AFTER_DELETE_WIDGET = 'afterDeleteWidget';
+    public const EVENT_AFTER_DELETE_WIDGET = 'afterDeleteWidget';
 
     /**
      * Returns all available widget type classes.

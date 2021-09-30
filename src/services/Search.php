@@ -42,12 +42,12 @@ class Search extends Component
     /**
      * @event SearchEvent The event that is triggered before a search is performed.
      */
-    const EVENT_BEFORE_SEARCH = 'beforeSearch';
+    public const EVENT_BEFORE_SEARCH = 'beforeSearch';
 
     /**
      * @event SearchEvent The event that is triggered after a search is performed.
      */
-    const EVENT_AFTER_SEARCH = 'afterSearch';
+    public const EVENT_AFTER_SEARCH = 'afterSearch';
 
     /**
      * @var bool Whether fulltext searches should be used ever. (MySQL only.)

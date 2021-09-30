@@ -44,60 +44,60 @@ class Plugins extends Component
     /**
      * @event \yii\base\Event The event that is triggered before any plugins have been loaded
      */
-    const EVENT_BEFORE_LOAD_PLUGINS = 'beforeLoadPlugins';
+    public const EVENT_BEFORE_LOAD_PLUGINS = 'beforeLoadPlugins';
 
     /**
      * @event \yii\base\Event The event that is triggered after all plugins have been loaded
      */
-    const EVENT_AFTER_LOAD_PLUGINS = 'afterLoadPlugins';
+    public const EVENT_AFTER_LOAD_PLUGINS = 'afterLoadPlugins';
 
     /**
      * @event PluginEvent The event that is triggered before a plugin is enabled
      */
-    const EVENT_BEFORE_ENABLE_PLUGIN = 'beforeEnablePlugin';
+    public const EVENT_BEFORE_ENABLE_PLUGIN = 'beforeEnablePlugin';
     /**
      * @event PluginEvent The event that is triggered after a plugin is enabled
      */
-    const EVENT_AFTER_ENABLE_PLUGIN = 'afterEnablePlugin';
+    public const EVENT_AFTER_ENABLE_PLUGIN = 'afterEnablePlugin';
 
     /**
      * @event PluginEvent The event that is triggered before a plugin is disabled
      */
-    const EVENT_BEFORE_DISABLE_PLUGIN = 'beforeDisablePlugin';
+    public const EVENT_BEFORE_DISABLE_PLUGIN = 'beforeDisablePlugin';
     /**
      * @event PluginEvent The event that is triggered after a plugin is disabled
      */
-    const EVENT_AFTER_DISABLE_PLUGIN = 'afterDisablePlugin';
+    public const EVENT_AFTER_DISABLE_PLUGIN = 'afterDisablePlugin';
 
     /**
      * @event PluginEvent The event that is triggered before a plugin is installed
      */
-    const EVENT_BEFORE_INSTALL_PLUGIN = 'beforeInstallPlugin';
+    public const EVENT_BEFORE_INSTALL_PLUGIN = 'beforeInstallPlugin';
 
     /**
      * @event PluginEvent The event that is triggered after a plugin is installed
      */
-    const EVENT_AFTER_INSTALL_PLUGIN = 'afterInstallPlugin';
+    public const EVENT_AFTER_INSTALL_PLUGIN = 'afterInstallPlugin';
 
     /**
      * @event PluginEvent The event that is triggered before a plugin is uninstalled
      */
-    const EVENT_BEFORE_UNINSTALL_PLUGIN = 'beforeUninstallPlugin';
+    public const EVENT_BEFORE_UNINSTALL_PLUGIN = 'beforeUninstallPlugin';
 
     /**
      * @event PluginEvent The event that is triggered after a plugin is uninstalled
      */
-    const EVENT_AFTER_UNINSTALL_PLUGIN = 'afterUninstallPlugin';
+    public const EVENT_AFTER_UNINSTALL_PLUGIN = 'afterUninstallPlugin';
 
     /**
      * @event PluginEvent The event that is triggered before a plugin's settings are saved
      */
-    const EVENT_BEFORE_SAVE_PLUGIN_SETTINGS = 'beforeSavePluginSettings';
+    public const EVENT_BEFORE_SAVE_PLUGIN_SETTINGS = 'beforeSavePluginSettings';
 
     /**
      * @event PluginEvent The event that is triggered after a plugin's settings are saved
      */
-    const EVENT_AFTER_SAVE_PLUGIN_SETTINGS = 'afterSavePluginSettings';
+    public const EVENT_AFTER_SAVE_PLUGIN_SETTINGS = 'afterSavePluginSettings';
 
     /**
      * @var array[] Custom plugin configurations.

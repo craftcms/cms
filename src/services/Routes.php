@@ -26,22 +26,22 @@ class Routes extends Component
     /**
      * @event RouteEvent The event that is triggered before a route is saved.
      */
-    const EVENT_BEFORE_SAVE_ROUTE = 'beforeSaveRoute';
+    public const EVENT_BEFORE_SAVE_ROUTE = 'beforeSaveRoute';
 
     /**
      * @event RouteEvent The event that is triggered after a route is saved.
      */
-    const EVENT_AFTER_SAVE_ROUTE = 'afterSaveRoute';
+    public const EVENT_AFTER_SAVE_ROUTE = 'afterSaveRoute';
 
     /**
      * @event RouteEvent The event that is triggered before a route is deleted.
      */
-    const EVENT_BEFORE_DELETE_ROUTE = 'beforeDeleteRoute';
+    public const EVENT_BEFORE_DELETE_ROUTE = 'beforeDeleteRoute';
 
     /**
      * @event RouteEvent The event that is triggered after a route is deleted.
      */
-    const EVENT_AFTER_DELETE_ROUTE = 'afterDeleteRoute';
+    public const EVENT_AFTER_DELETE_ROUTE = 'afterDeleteRoute';
 
     /**
      * @var array|null all the routes in project config for current site

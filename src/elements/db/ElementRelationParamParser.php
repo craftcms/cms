@@ -27,8 +27,8 @@ use yii\base\InvalidArgumentException;
  */
 class ElementRelationParamParser extends BaseObject
 {
-    const DIR_FORWARD = 0;
-    const DIR_REVERSE = 1;
+    public const DIR_FORWARD = 0;
+    public const DIR_REVERSE = 1;
 
     /**
      * @var int

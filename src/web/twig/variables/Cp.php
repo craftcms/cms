@@ -55,7 +55,7 @@ class Cp extends Component
      * @see prepFormActions()
      * @since 3.6.10
      */
-    const EVENT_REGISTER_FORM_ACTIONS = 'registerFormActions';
+    public const EVENT_REGISTER_FORM_ACTIONS = 'registerFormActions';
 
     /**
      * @event RegisterCpNavItemsEvent The event that is triggered when registering control panel nav items.
@@ -90,7 +90,7 @@ class Cp extends Component
      * If a subnav is defined, subpages can specify which subnav item should be selected by defining a `selectedSubnavItem` variable that is set to
      * the selected item’s ID (its key in the `subnav` array).
      */
-    const EVENT_REGISTER_CP_NAV_ITEMS = 'registerCpNavItems';
+    public const EVENT_REGISTER_CP_NAV_ITEMS = 'registerCpNavItems';
 
     /**
      * @event RegisterCpSettingsEvent The event that is triggered when registering links that should render on the Settings page in the control panel.
@@ -120,7 +120,7 @@ class Cp extends Component
      *
      * @since 3.1.0
      */
-    const EVENT_REGISTER_CP_SETTINGS = 'registerCpSettings';
+    public const EVENT_REGISTER_CP_SETTINGS = 'registerCpSettings';
 
     /**
      * Returns the Craft ID account URL.

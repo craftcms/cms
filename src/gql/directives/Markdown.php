@@ -24,8 +24,8 @@ use yii\helpers\Markdown as MarkdownHelper;
  */
 class Markdown extends Directive
 {
-    const DEFAULT_FLAVOR = null;
-    const DEFAULT_INLINE_ONLY = false;
+    public const DEFAULT_FLAVOR = null;
+    public const DEFAULT_INLINE_ONLY = false;
 
     /**
      * @inheritdoc

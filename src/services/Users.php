@@ -53,24 +53,24 @@ class Users extends Component
     /**
      * @event UserEvent The event that is triggered before a user's email is verified.
      */
-    const EVENT_BEFORE_VERIFY_EMAIL = 'beforeVerifyEmail';
+    public const EVENT_BEFORE_VERIFY_EMAIL = 'beforeVerifyEmail';
 
     /**
      * @event UserEvent The event that is triggered after a user's email is verified.
      */
-    const EVENT_AFTER_VERIFY_EMAIL = 'afterVerifyEmail';
+    public const EVENT_AFTER_VERIFY_EMAIL = 'afterVerifyEmail';
 
     /**
      * @event UserEvent The event that is triggered before a user is activated.
      *
      * You may set [[\craft\events\CancelableEvent::$isValid]] to `false` to prevent the user from getting activated.
      */
-    const EVENT_BEFORE_ACTIVATE_USER = 'beforeActivateUser';
+    public const EVENT_BEFORE_ACTIVATE_USER = 'beforeActivateUser';
 
     /**
      * @event UserEvent The event that is triggered after a user is activated.
      */
-    const EVENT_AFTER_ACTIVATE_USER = 'afterActivateUser';
+    public const EVENT_AFTER_ACTIVATE_USER = 'afterActivateUser';
 
     /**
      * @event UserEvent The event that is triggered before a user is deactivated.
@@ -79,66 +79,66 @@ class Users extends Component
      *
      * @since 4.0.0
      */
-    const EVENT_BEFORE_DEACTIVATE_USER = 'beforeDeactivateUser';
+    public const EVENT_BEFORE_DEACTIVATE_USER = 'beforeDeactivateUser';
 
     /**
      * @event UserEvent The event that is triggered after a user is deactivated.
      * @since 4.0.0
      */
-    const EVENT_AFTER_DEACTIVATE_USER = 'afterDeactivateUser';
+    public const EVENT_AFTER_DEACTIVATE_USER = 'afterDeactivateUser';
 
     /**
      * @event UserEvent The event that is triggered after a user is locked.
      */
-    const EVENT_AFTER_LOCK_USER = 'afterLockUser';
+    public const EVENT_AFTER_LOCK_USER = 'afterLockUser';
 
     /**
      * @event UserEvent The event that is triggered before a user is unlocked.
      *
      * You may set [[\craft\events\CancelableEvent::$isValid]] to `false` to prevent the user from getting unlocked.
      */
-    const EVENT_BEFORE_UNLOCK_USER = 'beforeUnlockUser';
+    public const EVENT_BEFORE_UNLOCK_USER = 'beforeUnlockUser';
 
     /**
      * @event UserEvent The event that is triggered after a user is unlocked.
      */
-    const EVENT_AFTER_UNLOCK_USER = 'afterUnlockUser';
+    public const EVENT_AFTER_UNLOCK_USER = 'afterUnlockUser';
 
     /**
      * @event UserEvent The event that is triggered before a user is suspended.
      *
      * You may set [[\craft\events\CancelableEvent::$isValid]] to `false` to prevent the user from getting suspended.
      */
-    const EVENT_BEFORE_SUSPEND_USER = 'beforeSuspendUser';
+    public const EVENT_BEFORE_SUSPEND_USER = 'beforeSuspendUser';
 
     /**
      * @event UserEvent The event that is triggered after a user is suspended.
      */
-    const EVENT_AFTER_SUSPEND_USER = 'afterSuspendUser';
+    public const EVENT_AFTER_SUSPEND_USER = 'afterSuspendUser';
 
     /**
      * @event UserEvent The event that is triggered before a user is unsuspended.
      *
      * You may set [[\craft\events\CancelableEvent::isValid]] to `false` to prevent the user from getting unsuspended.
      */
-    const EVENT_BEFORE_UNSUSPEND_USER = 'beforeUnsuspendUser';
+    public const EVENT_BEFORE_UNSUSPEND_USER = 'beforeUnsuspendUser';
 
     /**
      * @event UserEvent The event that is triggered after a user is unsuspended.
      */
-    const EVENT_AFTER_UNSUSPEND_USER = 'afterUnsuspendUser';
+    public const EVENT_AFTER_UNSUSPEND_USER = 'afterUnsuspendUser';
 
     /**
      * @event UserGroupsAssignEvent The event that is triggered before a user is assigned to some user groups.
      *
      * You may set [[\craft\events\CancelableEvent::$isValid]] to `false` to prevent the user from getting assigned to the groups.
      */
-    const EVENT_BEFORE_ASSIGN_USER_TO_GROUPS = 'beforeAssignUserToGroups';
+    public const EVENT_BEFORE_ASSIGN_USER_TO_GROUPS = 'beforeAssignUserToGroups';
 
     /**
      * @event UserGroupsAssignEvent The event that is triggered after a user is assigned to some user groups.
      */
-    const EVENT_AFTER_ASSIGN_USER_TO_GROUPS = 'afterAssignUserToGroups';
+    public const EVENT_AFTER_ASSIGN_USER_TO_GROUPS = 'afterAssignUserToGroups';
 
     /**
      * @event UserAssignGroupEvent The event that is triggered before a user is assigned to the default user group.
@@ -146,12 +146,12 @@ class Users extends Component
      * You may set [[\craft\events\CancelableEvent::$isValid]] to `false` to prevent the user from getting assigned to the default
      * user group.
      */
-    const EVENT_BEFORE_ASSIGN_USER_TO_DEFAULT_GROUP = 'beforeAssignUserToDefaultGroup';
+    public const EVENT_BEFORE_ASSIGN_USER_TO_DEFAULT_GROUP = 'beforeAssignUserToDefaultGroup';
 
     /**
      * @event UserAssignGroupEvent The event that is triggered after a user is assigned to the default user group.
      */
-    const EVENT_AFTER_ASSIGN_USER_TO_DEFAULT_GROUP = 'afterAssignUserToDefaultGroup';
+    public const EVENT_AFTER_ASSIGN_USER_TO_DEFAULT_GROUP = 'afterAssignUserToDefaultGroup';
 
     /**
      * Returns a user by an email address, creating one if non already exists.

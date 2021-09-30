@@ -32,8 +32,8 @@ use function GuzzleHttp\default_user_agent;
 class Craft extends Yii
 {
     // Edition constants
-    const Solo = 0;
-    const Pro = 1;
+    public const Solo = 0;
+    public const Pro = 1;
 
     /**
      * @var array The default cookie configuration.

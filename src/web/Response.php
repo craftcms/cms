@@ -24,7 +24,7 @@ class Response extends \yii\web\Response
     /**
      * @since 3.4.0
      */
-    const FORMAT_CSV = 'csv';
+    public const FORMAT_CSV = 'csv';
 
     /**
      * @var bool whether the response has been prepared.

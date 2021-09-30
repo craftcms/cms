@@ -43,7 +43,7 @@ class UrlManager extends \yii\web\UrlManager
      * });
      * ```
      */
-    const EVENT_REGISTER_CP_URL_RULES = 'registerCpUrlRules';
+    public const EVENT_REGISTER_CP_URL_RULES = 'registerCpUrlRules';
 
     /**
      * @event RegisterUrlRulesEvent The event that is triggered when registering
@@ -64,7 +64,7 @@ class UrlManager extends \yii\web\UrlManager
      * });
      * ```
      */
-    const EVENT_REGISTER_SITE_URL_RULES = 'registerSiteUrlRules';
+    public const EVENT_REGISTER_SITE_URL_RULES = 'registerSiteUrlRules';
 
     /**
      * @var bool Whether [[parseRequest()]] should check for a token on the request and route the request based on that.

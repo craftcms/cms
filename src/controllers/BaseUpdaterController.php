@@ -32,11 +32,11 @@ use yii\web\Response;
  */
 abstract class BaseUpdaterController extends Controller
 {
-    const ACTION_PRECHECK = 'precheck';
-    const ACTION_RECHECK_COMPOSER = 'recheck-composer';
-    const ACTION_COMPOSER_INSTALL = 'composer-install';
-    const ACTION_COMPOSER_REMOVE = 'composer-remove';
-    const ACTION_FINISH = 'finish';
+    public const ACTION_PRECHECK = 'precheck';
+    public const ACTION_RECHECK_COMPOSER = 'recheck-composer';
+    public const ACTION_COMPOSER_INSTALL = 'composer-install';
+    public const ACTION_COMPOSER_REMOVE = 'composer-remove';
+    public const ACTION_FINISH = 'finish';
 
     /**
      * @inheritdoc

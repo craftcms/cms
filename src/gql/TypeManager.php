@@ -47,7 +47,7 @@ class TypeManager extends Component
      * });
      * ```
      */
-    const EVENT_DEFINE_GQL_TYPE_FIELDS = 'defineGqlTypeFields';
+    public const EVENT_DEFINE_GQL_TYPE_FIELDS = 'defineGqlTypeFields';
 
     /**
      * @var self

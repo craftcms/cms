@@ -32,25 +32,25 @@ class Structures extends Component
     /**
      * @event MoveElementEvent The event that is triggered before an element is moved.
      */
-    const EVENT_BEFORE_MOVE_ELEMENT = 'beforeMoveElement';
+    public const EVENT_BEFORE_MOVE_ELEMENT = 'beforeMoveElement';
 
     /**
      * @event MoveElementEvent The event that is triggered after an element is moved.
      */
-    const EVENT_AFTER_MOVE_ELEMENT = 'afterMoveElement';
+    public const EVENT_AFTER_MOVE_ELEMENT = 'afterMoveElement';
 
     /**
      * @since 3.4.21
      */
-    const MODE_INSERT = 'insert';
+    public const MODE_INSERT = 'insert';
     /**
      * @since 3.4.21
      */
-    const MODE_UPDATE = 'update';
+    public const MODE_UPDATE = 'update';
     /**
      * @since 3.4.21
      */
-    const MODE_AUTO = 'auto';
+    public const MODE_AUTO = 'auto';
 
     /**
      * @var int The timeout to pass to [[\yii\mutex\Mutex::acquire()]] when acquiring a lock on the structure.

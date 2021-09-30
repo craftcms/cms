@@ -45,44 +45,44 @@ class ProjectConfig extends Component
     /**
      * The cache key that is used to store the modified time of the project config files, at the time they were last applied.
      */
-    const CACHE_KEY = 'projectConfig:files';
+    public const CACHE_KEY = 'projectConfig:files';
     /**
      * The cache key that is used to store the modified time of the project config files, at the time they were last applied or ignored.
      *
      * @since 3.5.0
      */
-    const IGNORE_CACHE_KEY = 'projectConfig:ignore';
+    public const IGNORE_CACHE_KEY = 'projectConfig:ignore';
     /**
      * The cache key that is used to store the loaded project config data.
      */
-    const STORED_CACHE_KEY = 'projectConfig:internal';
+    public const STORED_CACHE_KEY = 'projectConfig:internal';
     /**
      * The cache key that is used to store whether there were any issues writing the project config files out.
      *
      * @since 3.5.0
      */
-    const FILE_ISSUES_CACHE_KEY = 'projectConfig:fileIssues';
+    public const FILE_ISSUES_CACHE_KEY = 'projectConfig:fileIssues';
     /**
      * The cache key that is used to store the current project config diff
      *
      * @since 3.5.8
      */
-    const DIFF_CACHE_KEY = 'projectConfig:diff';
+    public const DIFF_CACHE_KEY = 'projectConfig:diff';
     /**
      * The duration that project config caches should be cached.
      */
-    const CACHE_DURATION = 31536000; // 1 year
+    public const CACHE_DURATION = 31536000; // 1 year
     /**
      * @var string Filename for base config file
      * @since 3.1.0
      */
-    const CONFIG_FILENAME = 'project.yaml';
+    public const CONFIG_FILENAME = 'project.yaml';
     /**
      * Filename for base config delta files
      *
      * @since 3.4.0
      */
-    const CONFIG_DELTA_FILENAME = 'delta.yaml';
+    public const CONFIG_DELTA_FILENAME = 'delta.yaml';
     /**
      * The array key to use for signaling ordered-to-associative array conversion.
      */
@@ -119,7 +119,7 @@ class ProjectConfig extends Component
     /**
      * Regexp pattern to determine a string that could be used as an UID.
      */
-    const UID_PATTERN = '[a-zA-Z0-9_-]+';
+    public const UID_PATTERN = '[a-zA-Z0-9_-]+';
 
     // Events
     // -------------------------------------------------------------------------
@@ -139,7 +139,7 @@ class ProjectConfig extends Component
      * });
      * ```
      */
-    const EVENT_ADD_ITEM = 'addItem';
+    public const EVENT_ADD_ITEM = 'addItem';
 
     /**
      * @event ConfigEvent The event that is triggered when an item is updated in the config.
@@ -156,7 +156,7 @@ class ProjectConfig extends Component
      * });
      * ```
      */
-    const EVENT_UPDATE_ITEM = 'updateItem';
+    public const EVENT_UPDATE_ITEM = 'updateItem';
 
     /**
      * @event ConfigEvent The event that is triggered when an item is removed from the config.
@@ -173,12 +173,12 @@ class ProjectConfig extends Component
      * });
      * ```
      */
-    const EVENT_REMOVE_ITEM = 'removeItem';
+    public const EVENT_REMOVE_ITEM = 'removeItem';
 
     /**
      * @event Event The event that is triggered after pending project config file changes have been applied.
      */
-    const EVENT_AFTER_APPLY_CHANGES = 'afterApplyChanges';
+    public const EVENT_AFTER_APPLY_CHANGES = 'afterApplyChanges';
 
     /**
      * @event RebuildConfigEvent The event that is triggered when the project config is being rebuilt.
@@ -198,7 +198,7 @@ class ProjectConfig extends Component
      *
      * @since 3.1.20
      */
-    const EVENT_REBUILD = 'rebuild';
+    public const EVENT_REBUILD = 'rebuild';
 
     /**
      * @var bool Whether project config changes should be written to YAML files automatically.

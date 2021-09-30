@@ -35,8 +35,8 @@ use yii\db\Schema;
  */
 class Db
 {
-    const SIMPLE_TYPE_NUMERIC = 'numeric';
-    const SIMPLE_TYPE_TEXTUAL = 'textual';
+    public const SIMPLE_TYPE_NUMERIC = 'numeric';
+    public const SIMPLE_TYPE_TEXTUAL = 'textual';
 
     /**
      * @var array

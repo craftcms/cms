@@ -37,7 +37,7 @@ class Gc extends Component
     /**
      * @event Event The event that is triggered when running garbage collection.
      */
-    const EVENT_RUN = 'run';
+    public const EVENT_RUN = 'run';
 
     /**
      * @var int the probability (parts per million) that garbage collection (GC) should be performed

@@ -23,9 +23,9 @@ use yii\web\Response as YiiResponse;
  */
 class InstallController extends BaseUpdaterController
 {
-    const ACTION_CRAFT_INSTALL = 'craft-install';
-    const ACTION_ENABLE = 'enable';
-    const ACTION_MIGRATE = 'migrate';
+    public const ACTION_CRAFT_INSTALL = 'craft-install';
+    public const ACTION_ENABLE = 'enable';
+    public const ACTION_MIGRATE = 'migrate';
 
     /**
      * @var string|null

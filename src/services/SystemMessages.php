@@ -29,7 +29,7 @@ class SystemMessages extends Component
     /**
      * @event RegisterEmailMessagesEvent The event that is triggered when registering email messages.
      */
-    const EVENT_REGISTER_MESSAGES = 'registerMessages';
+    public const EVENT_REGISTER_MESSAGES = 'registerMessages';
 
     /**
      * @var SystemMessage[]|null

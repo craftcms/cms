@@ -70,9 +70,9 @@ class ElementQueryConditionBuilder extends Component
      *
      * @since 3.5.0
      */
-    const EVENT_REGISTER_GQL_EAGERLOADABLE_FIELDS = 'registerGqlEagerLoadableFields';
+    public const EVENT_REGISTER_GQL_EAGERLOADABLE_FIELDS = 'registerGqlEagerLoadableFields';
 
-    const LOCALIZED_NODENAME = 'localized';
+    public const LOCALIZED_NODENAME = 'localized';
 
     /**
      * @var ResolveInfo

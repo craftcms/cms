@@ -30,10 +30,10 @@ use yii\db\Exception;
  */
 class Schema extends \yii\db\mysql\Schema
 {
-    const TYPE_TINYTEXT = 'tinytext';
-    const TYPE_MEDIUMTEXT = 'mediumtext';
-    const TYPE_LONGTEXT = 'longtext';
-    const TYPE_ENUM = 'enum';
+    public const TYPE_TINYTEXT = 'tinytext';
+    public const TYPE_MEDIUMTEXT = 'mediumtext';
+    public const TYPE_LONGTEXT = 'longtext';
+    public const TYPE_ENUM = 'enum';
 
     /**
      * @inheritdoc

@@ -54,54 +54,54 @@ class Sections extends Component
     /**
      * @event SectionEvent The event that is triggered before a section is saved.
      */
-    const EVENT_BEFORE_SAVE_SECTION = 'beforeSaveSection';
+    public const EVENT_BEFORE_SAVE_SECTION = 'beforeSaveSection';
 
     /**
      * @event SectionEvent The event that is triggered after a section is saved.
      */
-    const EVENT_AFTER_SAVE_SECTION = 'afterSaveSection';
+    public const EVENT_AFTER_SAVE_SECTION = 'afterSaveSection';
 
     /**
      * @event SectionEvent The event that is triggered before a section is deleted.
      */
-    const EVENT_BEFORE_DELETE_SECTION = 'beforeDeleteSection';
+    public const EVENT_BEFORE_DELETE_SECTION = 'beforeDeleteSection';
 
     /**
      * @event SectionEvent The event that is triggered before a section delete is applied to the database.
      * @since 3.1.0
      */
-    const EVENT_BEFORE_APPLY_SECTION_DELETE = 'beforeApplySectionDelete';
+    public const EVENT_BEFORE_APPLY_SECTION_DELETE = 'beforeApplySectionDelete';
 
     /**
      * @event SectionEvent The event that is triggered after a section is deleted.
      */
-    const EVENT_AFTER_DELETE_SECTION = 'afterDeleteSection';
+    public const EVENT_AFTER_DELETE_SECTION = 'afterDeleteSection';
 
     /**
      * @event EntryTypeEvent The event that is triggered before an entry type is saved.
      */
-    const EVENT_BEFORE_SAVE_ENTRY_TYPE = 'beforeSaveEntryType';
+    public const EVENT_BEFORE_SAVE_ENTRY_TYPE = 'beforeSaveEntryType';
 
     /**
      * @event EntryTypeEvent The event that is triggered after an entry type is saved.
      */
-    const EVENT_AFTER_SAVE_ENTRY_TYPE = 'afterSaveEntryType';
+    public const EVENT_AFTER_SAVE_ENTRY_TYPE = 'afterSaveEntryType';
 
     /**
      * @event EntryTypeEvent The event that is triggered before an entry type is deleted.
      */
-    const EVENT_BEFORE_DELETE_ENTRY_TYPE = 'beforeDeleteEntryType';
+    public const EVENT_BEFORE_DELETE_ENTRY_TYPE = 'beforeDeleteEntryType';
 
     /**
      * @event EntryTypeEvent The event that is triggered before an entry type delete is applied to the database.
      * @since 3.1.0
      */
-    const EVENT_BEFORE_APPLY_ENTRY_TYPE_DELETE = 'beforeApplyEntryTypeDelete';
+    public const EVENT_BEFORE_APPLY_ENTRY_TYPE_DELETE = 'beforeApplyEntryTypeDelete';
 
     /**
      * @event EntryTypeEvent The event that is triggered after an entry type is deleted.
      */
-    const EVENT_AFTER_DELETE_ENTRY_TYPE = 'afterDeleteEntryType';
+    public const EVENT_AFTER_DELETE_ENTRY_TYPE = 'afterDeleteEntryType';
 
     /**
      * @var bool Whether entries should be resaved after a section or entry type has been updated.
