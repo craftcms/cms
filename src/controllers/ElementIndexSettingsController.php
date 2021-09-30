@@ -11,6 +11,7 @@ use Craft;
 use craft\base\ElementInterface;
 use craft\helpers\ArrayHelper;
 use craft\services\ElementSources;
+use craft\services\ProjectConfig;
 use yii\web\Response;
 
 /**
@@ -124,7 +125,7 @@ class ElementIndexSettingsController extends BaseElementsController
 
         // Get the old source configs
         $projectConfig = Craft::$app->getProjectConfig();
-        $oldSourceConfigs = $projectConfig->get("elementSources.$elementType") ?? [];
+        $oldSourceConfigs = $projectConfig->get(ProjectConfig::PATH_ELEMENT_SOURCES . ".$elementType") ?? [];
         $oldSourceConfigs = ArrayHelper::index(array_filter($oldSourceConfigs, fn($s) => $s['type'] !== ElementSources::TYPE_HEADING), 'key');
 
         $sourceOrder = $this->request->getBodyParam('sourceOrder', []);
@@ -166,7 +167,7 @@ class ElementIndexSettingsController extends BaseElementsController
             }
         }
 
-        $projectConfig->set("elementSources.$elementType", $newSourceConfigs);
+        $projectConfig->set(ProjectConfig::PATH_ELEMENT_SOURCES . ".$elementType", $newSourceConfigs);
         return $this->asJson(['success' => true]);
     }
 }

@@ -292,7 +292,7 @@ class ElementSources extends Component
      */
     private function _sourceConfigs(string $elementType): ?array
     {
-        return Craft::$app->getProjectConfig()->get("elementSources.$elementType");
+        return Craft::$app->getProjectConfig()->get(ProjectConfig::PATH_ELEMENT_SOURCES . ".$elementType");
     }
 
     /**

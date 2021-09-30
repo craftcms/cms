@@ -8,6 +8,7 @@ use craft\db\Migration;
 use craft\db\Query;
 use craft\helpers\Json;
 use craft\services\ElementSources;
+use craft\services\ProjectConfig;
 
 /**
  * m210904_132612_store_element_source_settings_in_project_config migration.
@@ -98,7 +99,7 @@ class m210904_132612_store_element_source_settings_in_project_config extends Mig
                 $newSettings[$elementType] = $sourceConfigs;
             }
 
-            $projectConfig->set('elementSources', $newSettings);
+            $projectConfig->set(ProjectConfig::PATH_ELEMENT_SOURCES, $newSettings);
         }
 
         $this->dropTable('{{%elementindexsettings}}');

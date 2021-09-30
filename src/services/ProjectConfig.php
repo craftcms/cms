@@ -90,6 +90,7 @@ class ProjectConfig extends Component
 
     public const PATH_CATEGORY_GROUPS = 'categoryGroups';
     public const PATH_DATE_MODIFIED = 'dateModified';
+    public const PATH_ELEMENT_SOURCES = 'elementSources';
     public const PATH_ENTRY_TYPES = 'entryTypes';
     public const PATH_FIELDS = 'fields';
     public const PATH_FIELD_GROUPS = 'fieldGroups';
