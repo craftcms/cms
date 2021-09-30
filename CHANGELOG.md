@@ -338,6 +338,7 @@
 - Removed `craft\helpers\FileHelper::removeFile()`. `unlink()` can be used instead.
 - Removed `craft\helpers\MailerHelper::createMailer()`. `craft\helpers\mailerConfig()` can be used instead.
 - Removed `craft\helpers\Stringy`.
+- Removed `craft\helpers\UrlHelper::baseRequestUrl()`. `Craft::getAlias('@web')` can be used instead.
 - Removed `craft\helpers\UrlHelper::getProtocolForTokenizedUrl()`. `getSchemeForTokenizedUrl()` can be used instead.
 - Removed `craft\helpers\UrlHelper::urlWithProtocol()`. `urlWithScheme()` can be used instead.
 - Removed `craft\i18n\Locale::getId()`. `$id` can be used instead.
@@ -445,3 +446,7 @@
 - Removed the `users/get-remaining-session-time` action. `users/session-info` can be used instead.
 - Removed the Flysystem package. The `craftcms/flysystem-adapter` package now provides a base Flysystem adapter class.
 - Removed the laminas-feed package.
+
+### Security
+
+- Generated control panel URLs now begin with the `@web` alias value if the `baseCpUrl` config setting isn’t defined.
