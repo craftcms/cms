@@ -18,7 +18,7 @@ module.exports = {
 
         require('../../../../packages/craftui-tailwind')({
             semanticColors,
-            darkModeSupport: true,
+            darkModeSupport: false,
         }),
     ],
 }
