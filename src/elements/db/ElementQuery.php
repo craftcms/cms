@@ -30,6 +30,7 @@ use craft\helpers\ElementHelper;
 use craft\helpers\StringHelper;
 use craft\models\Site;
 use craft\search\SearchQuery;
+use ReflectionClass;
 use ReflectionProperty;
 use yii\base\ArrayableTrait;
 use yii\base\Exception;
@@ -54,19 +55,19 @@ class ElementQuery extends Query implements ElementQueryInterface
     /**
      * @event Event An event that is triggered at the beginning of preparing an element query for the query builder.
      */
-    const EVENT_BEFORE_PREPARE = 'beforePrepare';
+    public const EVENT_BEFORE_PREPARE = 'beforePrepare';
 
     /**
      * @event Event An event that is triggered at the end of preparing an element query for the query builder.
      */
-    const EVENT_AFTER_PREPARE = 'afterPrepare';
+    public const EVENT_AFTER_PREPARE = 'afterPrepare';
 
     /**
      * @event PopulateElementEvent The event that is triggered after an element is populated.
      *
      * If [[PopulateElementEvent::$element]] is replaced by an event handler, the replacement will be returned by [[createElement()]] instead.
      */
-    const EVENT_AFTER_POPULATE_ELEMENT = 'afterPopulateElement';
+    public const EVENT_AFTER_POPULATE_ELEMENT = 'afterPopulateElement';
 
     /**
      * @var string The name of the [[ElementInterface]] class.
@@ -594,7 +595,6 @@ class ElementQuery extends Query implements ElementQueryInterface
     public function behaviors(): array
     {
         $behaviors = parent::behaviors();
-        /** @noinspection PhpUndefinedClassInspection */
         $behaviors['customFields'] = [
             'class' => CustomFieldBehavior::class,
             'hasMethods' => true,
@@ -1534,7 +1534,7 @@ class ElementQuery extends Query implements ElementQueryInterface
      */
     public function exists($db = null): bool
     {
-        return ($this->getCachedResult() !== null) ?: parent::exists($db);
+        return $this->getCachedResult() !== null || parent::exists($db);
     }
 
     /**
@@ -1638,7 +1638,7 @@ class ElementQuery extends Query implements ElementQueryInterface
         $names = [];
 
         // By default, include all public, non-static properties that were defined by a sub class, and certain ones in this class
-        foreach ((new \ReflectionClass($this))->getProperties(ReflectionProperty::IS_PUBLIC) as $property) {
+        foreach ((new ReflectionClass($this))->getProperties(ReflectionProperty::IS_PUBLIC) as $property) {
             if (!$property->isStatic()) {
                 $dec = $property->getDeclaringClass();
                 if (
@@ -1653,7 +1653,7 @@ class ElementQuery extends Query implements ElementQueryInterface
         // Add custom field properties
         /** @var CustomFieldBehavior $behavior */
         $behavior = $this->getBehavior('customFields');
-        foreach ((new \ReflectionClass($behavior))->getProperties(ReflectionProperty::IS_PUBLIC) as $property) {
+        foreach ((new ReflectionClass($behavior))->getProperties(ReflectionProperty::IS_PUBLIC) as $property) {
             if (
                 !$property->isStatic() &&
                 !in_array($property->getName(), [
@@ -2006,8 +2006,8 @@ class ElementQuery extends Query implements ElementQueryInterface
     protected function joinElementTable(string $table): void
     {
         $joinTable = [$table => "{{%$table}}"];
-        $this->query->innerJoin($joinTable, "[[{$table}.id]] = [[subquery.elementsId]]");
-        $this->subQuery->innerJoin($joinTable, "[[{$table}.id]] = [[elements.id]]");
+        $this->query->innerJoin($joinTable, "[[$table.id]] = [[subquery.elementsId]]");
+        $this->subQuery->innerJoin($joinTable, "[[$table.id]] = [[elements.id]]");
     }
 
     /**
@@ -2234,7 +2234,7 @@ class ElementQuery extends Query implements ElementQueryInterface
 
             foreach ($structureParams as $param) {
                 if ($this->$param !== null) {
-                    throw new QueryAbortedException("Unable to apply the '{$param}' param because 'structureId' isn't set");
+                    throw new QueryAbortedException("Unable to apply the '$param' param because 'structureId' isn't set");
                 }
             }
 
@@ -2760,7 +2760,7 @@ class ElementQuery extends Query implements ElementQueryInterface
         $caseParams = [];
         foreach ($preferSites as $index => $siteId) {
             $param = 'preferSites' . $index;
-            $caseSql .= " when [[elements_sites.siteId]] = :{$param} then {$index}";
+            $caseSql .= " when [[elements_sites.siteId]] = :$param then $index";
             $caseParams[$param] = $siteId;
         }
         $caseSql .= ' else ' . count($preferSites) . ' end';
@@ -2782,11 +2782,11 @@ class ElementQuery extends Query implements ElementQueryInterface
         $qSubElements = $db->quoteTableName('subElements');
         $qTmpElements = $db->quoteTableName('tmpElements');
         $q = $qElements[0];
-        $subSelectSql = str_replace("{$qElements}.", "{$qSubElements}.", $subSelectSql);
-        $subSelectSql = str_replace("{$q} {$qElements}", "{$q} {$qSubElements}", $subSelectSql);
+        $subSelectSql = str_replace("$qElements.", "$qSubElements.", $subSelectSql);
+        $subSelectSql = str_replace("$q $qElements", "$q $qSubElements", $subSelectSql);
         $subSelectSql = str_replace($qTmpElements, $qElements, $subSelectSql);
 
-        $this->subQuery->andWhere(new Expression("[[elements_sites.id]] = ({$subSelectSql})"));
+        $this->subQuery->andWhere(new Expression("[[elements_sites.id]] = ($subSelectSql)"));
     }
 
     /**

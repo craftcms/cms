@@ -133,6 +133,6 @@ class Email extends Field implements PreviewableFieldInterface
             return '';
         }
         $value = Html::encode($value);
-        return "<a href=\"mailto:{$value}\">{$value}</a>";
+        return "<a href=\"mailto:$value\">$value</a>";
     }
 }

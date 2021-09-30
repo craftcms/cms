@@ -8,6 +8,7 @@
 namespace craft\web\twig\variables;
 
 use Craft;
+use craft\console\Application as ConsoleApplication;
 use craft\db\Query;
 use craft\elements\Asset;
 use craft\elements\Category;
@@ -24,6 +25,7 @@ use craft\elements\MatrixBlock;
 use craft\elements\Tag;
 use craft\elements\User;
 use craft\events\DefineBehaviorsEvent;
+use craft\web\Application as WebApplication;
 use yii\di\ServiceLocator;
 
 /**
@@ -42,16 +44,16 @@ class CraftVariable extends ServiceLocator
      * @event \yii\base\Event The event that is triggered after the component's init cycle
      * @see init()
      */
-    const EVENT_INIT = 'init';
+    public const EVENT_INIT = 'init';
 
     /**
      * @event DefineBehaviorsEvent The event that is triggered when defining the class behaviors
      * @see behaviors()
      */
-    const EVENT_DEFINE_BEHAVIORS = 'defineBehaviors';
+    public const EVENT_DEFINE_BEHAVIORS = 'defineBehaviors';
 
     /**
-     * @var \craft\web\Application|\craft\console\Application|null The Craft application class
+     * @var WebApplication|ConsoleApplication|null The Craft application class
      */
     public $app;
 
@@ -99,7 +101,7 @@ class CraftVariable extends ServiceLocator
     {
         // Are they calling one of the components as if it's still a function?
         if ($params === [] && $this->has($name)) {
-            Craft::$app->getDeprecator()->log("CraftVariable::{$name}()", "`craft.{$name}()` is no longer a function. Use `craft.{$name}` instead (without the parentheses).");
+            Craft::$app->getDeprecator()->log("CraftVariable::$name()", "`craft.$name()` is no longer a function. Use `craft.$name` instead (without the parentheses).");
             return $this->get($name);
         }
 

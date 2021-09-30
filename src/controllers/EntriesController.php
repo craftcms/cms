@@ -24,6 +24,7 @@ use craft\models\Section;
 use craft\models\Site;
 use craft\services\Structures;
 use craft\web\assets\editentry\EditEntryAsset;
+use Throwable;
 use yii\base\InvalidConfigException;
 use yii\web\BadRequestHttpException;
 use yii\web\ForbiddenHttpException;
@@ -349,7 +350,7 @@ class EntriesController extends BaseEntriesController
                 ]);
 
                 return null;
-            } catch (\Throwable $e) {
+            } catch (Throwable $e) {
                 throw new ServerErrorHttpException(Craft::t('app', 'An error occurred when duplicating the entry.'), 0, $e);
             }
         }

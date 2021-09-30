@@ -25,6 +25,7 @@ use craft\models\Site;
 use craft\search\SearchQuery;
 use craft\search\SearchQueryTerm;
 use craft\search\SearchQueryTermGroup;
+use Throwable;
 use yii\base\Component;
 use yii\db\Expression;
 use yii\db\Schema;
@@ -41,12 +42,12 @@ class Search extends Component
     /**
      * @event SearchEvent The event that is triggered before a search is performed.
      */
-    const EVENT_BEFORE_SEARCH = 'beforeSearch';
+    public const EVENT_BEFORE_SEARCH = 'beforeSearch';
 
     /**
      * @event SearchEvent The event that is triggered after a search is performed.
      */
-    const EVENT_AFTER_SEARCH = 'afterSearch';
+    public const EVENT_AFTER_SEARCH = 'afterSearch';
 
     /**
      * @var bool Whether fulltext searches should be used ever. (MySQL only.)
@@ -115,7 +116,7 @@ class Search extends Component
     {
         // Acquire a lock for this element/site ID
         $mutex = Craft::$app->getMutex();
-        $lockKey = "searchindex:{$element->id}:{$element->siteId}";
+        $lockKey = "searchindex:$element->id:$element->siteId";
 
         if (!$mutex->acquire($lockKey)) {
             // Not worth waiting around; for all we know the other process has newer search attributes anyway
@@ -243,7 +244,7 @@ class Search extends Component
             ->andWhere([
                 'elementId' => $elementQuery->select(['elements.id']),
             ])
-            ->cache(true, new ElementQueryTagDependency($elementQuery));;
+            ->cache(true, new ElementQueryTagDependency($elementQuery));
 
         if ($elementQuery->siteId !== null) {
             $query->andWhere(['siteId' => $elementQuery->siteId]);
@@ -496,7 +497,7 @@ SQL;
      * @param int|int[]|null $siteId
      * @param MemoizableArray<FieldInterface>|null $customFields
      * @return string|false
-     * @throws \Throwable
+     * @throws Throwable
      */
     private function _processTokens(array $tokens, bool $inclusive, $siteId, ?MemoizableArray $customFields)
     {
@@ -539,7 +540,7 @@ SQL;
 
             // And group together for non-inclusive queries
             if (!$inclusive) {
-                $where = "({$where})";
+                $where = "($where)";
             }
         } else {
             // If the tokens didn't produce a valid where clause,
@@ -558,7 +559,7 @@ SQL;
      * @param int|int[]|null $siteId
      * @param MemoizableArray<FieldInterface>|null $customFields
      * @return array
-     * @throws \Throwable
+     * @throws Throwable
      */
     private function _getSqlFromTerm(SearchQueryTerm $term, $siteId, ?MemoizableArray $customFields): array
     {
@@ -735,7 +736,7 @@ SQL;
      * @param bool $bool Use In Boolean Mode or not
      * @param string $glue If multiple values are passed in as an array, the operator to combine them (AND or OR)
      * @return string
-     * @throws \Throwable
+     * @throws Throwable
      */
     private function _sqlFullText($val, bool $bool = true, string $glue = ' AND '): string
     {
@@ -754,7 +755,7 @@ SQL;
         if (is_array($val)) {
             foreach ($val as $key => $value) {
                 if (StringHelper::contains($value, ' ')) {
-                    $temp = explode(' ', $val[$key]);
+                    $temp = explode(' ', $value);
                     $temp = implode(' & ', $temp);
                     $val[$key] = $temp;
                 }

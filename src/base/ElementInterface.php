@@ -7,6 +7,7 @@
 
 namespace craft\base;
 
+use craft\behaviors\CustomFieldBehavior;
 use craft\conditions\QueryConditionInterface;
 use craft\elements\db\ElementQueryInterface;
 use craft\errors\InvalidFieldException;
@@ -21,7 +22,7 @@ use Twig\Markup;
  * A class implementing this interface should also use [[ElementTrait]] and [[ContentTrait]].
  *
  * @mixin ElementTrait
- * @mixin \craft\behaviors\CustomFieldBehavior
+ * @mixin CustomFieldBehavior
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */

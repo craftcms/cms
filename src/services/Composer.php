@@ -24,6 +24,7 @@ use craft\helpers\FileHelper;
 use craft\helpers\Json;
 use Seld\JsonLint\DuplicateKeyException;
 use Seld\JsonLint\JsonParser;
+use Throwable;
 use yii\base\Component;
 use yii\base\Exception;
 
@@ -104,7 +105,7 @@ class Composer extends Component
     {
         try {
             return Json::decode(file_get_contents($this->getJsonPath()));
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             return [];
         }
     }
@@ -114,7 +115,7 @@ class Composer extends Component
      *
      * @param array|null $requirements Package name/version pairs, or set to null to run the equivalent of `composer install`
      * @param IOInterface|null $io The IO object that Composer should be instantiated with
-     * @throws \Throwable if something goes wrong
+     * @throws Throwable if something goes wrong
      */
     public function install(?array $requirements, ?IOInterface $io = null): void
     {
@@ -176,7 +177,7 @@ class Composer extends Component
         try {
             // Run the installer
             $status = $this->run($installer);
-        } catch (\Throwable $exception) {
+        } catch (Throwable $exception) {
             $status = 1;
         }
 
@@ -211,7 +212,7 @@ class Composer extends Component
      *
      * @param string[] $packages Package names
      * @param IOInterface|null $io The IO object that Composer should be instantiated with
-     * @throws \Throwable if something goes wrong
+     * @throws Throwable if something goes wrong
      */
     public function uninstall(array $packages, ?IOInterface $io = null): void
     {
@@ -266,7 +267,7 @@ class Composer extends Component
                 ->setRunScripts(false);
 
             $status = $this->run($installer);
-        } catch (\Throwable $exception) {
+        } catch (Throwable $exception) {
             $status = 1;
         }
 

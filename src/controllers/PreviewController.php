@@ -10,6 +10,8 @@ namespace craft\controllers;
 use Craft;
 use craft\base\ElementInterface;
 use craft\web\Controller;
+use Exception;
+use Throwable;
 use yii\web\BadRequestHttpException;
 use yii\web\Response;
 use yii\web\ServerErrorHttpException;
@@ -47,7 +49,7 @@ class PreviewController extends Controller
      *
      * @throws ServerErrorHttpException if the token couldn't be created
      * @throws BadRequestHttpException
-     * @throws \Exception
+     * @throws Exception
      * @return Response
      */
     public function actionCreateToken(): Response
@@ -97,7 +99,7 @@ class PreviewController extends Controller
      * @param bool $provisional
      * @return Response
      * @throws BadRequestHttpException
-     * @throws \Throwable
+     * @throws Throwable
      */
     public function actionPreview(
         string $elementType,

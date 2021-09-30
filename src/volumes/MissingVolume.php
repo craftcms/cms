@@ -11,6 +11,7 @@ namespace craft\volumes;
 use craft\base\MissingComponentInterface;
 use craft\base\MissingComponentTrait;
 use craft\base\Volume;
+use Generator;
 use yii\base\NotSupportedException;
 
 /**
@@ -36,7 +37,7 @@ class MissingVolume extends Volume implements MissingComponentInterface
     /**
      * @inheritdoc
      */
-    public function getFileList(string $directory = '', bool $recursive = true): \Generator
+    public function getFileList(string $directory = '', bool $recursive = true): Generator
     {
         throw new NotSupportedException('getFileList() is not implemented.');
     }

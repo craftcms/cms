@@ -10,6 +10,7 @@ namespace craft\web;
 use Craft;
 use craft\events\ExceptionEvent;
 use craft\log\Dispatcher;
+use Throwable;
 use Twig\Error\Error as TwigError;
 use Twig\Error\LoaderError as TwigLoaderError;
 use Twig\Error\RuntimeError as TwigRuntimeError;
@@ -31,7 +32,7 @@ class ErrorHandler extends \yii\web\ErrorHandler
     /**
      * @event ExceptionEvent The event that is triggered before handling an exception.
      */
-    const EVENT_BEFORE_HANDLE_EXCEPTION = 'beforeHandleException';
+    public const EVENT_BEFORE_HANDLE_EXCEPTION = 'beforeHandleException';
 
     /**
      * @inheritdoc
@@ -184,7 +185,7 @@ class ErrorHandler extends \yii\web\ErrorHandler
         if (strpos($file, 'compiled_templates') !== false) {
             try {
                 [$file, $line] = $this->_resolveTemplateTrace($file, $line);
-            } catch (\Throwable $e) {
+            } catch (Throwable $e) {
                 // oh well, we tried
             }
         }

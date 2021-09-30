@@ -8,6 +8,8 @@
 namespace craft\db;
 
 use craft\helpers\Db;
+use Exception;
+use Throwable;
 use yii\db\ColumnSchemaBuilder;
 
 /**
@@ -23,13 +25,13 @@ abstract class Migration extends \yii\db\Migration
      * @event \yii\base\Event The event that is triggered after the migration is executed
      * @since 3.0.6
      */
-    const EVENT_AFTER_UP = 'afterUp';
+    public const EVENT_AFTER_UP = 'afterUp';
 
     /**
      * @event \yii\base\Event The event that is triggered after the migration is reverted
      * @since 3.0.6
      */
-    const EVENT_AFTER_DOWN = 'afterDown';
+    public const EVENT_AFTER_DOWN = 'afterDown';
 
     // Execution Methods
     // -------------------------------------------------------------------------
@@ -38,7 +40,7 @@ abstract class Migration extends \yii\db\Migration
      * @inheritdoc
      * @param bool $throwExceptions Whether exceptions should be thrown
      * @return bool Whether the operation was successful
-     * @throws \Throwable
+     * @throws Throwable
      */
     public function up(bool $throwExceptions = false): bool
     {
@@ -50,7 +52,7 @@ abstract class Migration extends \yii\db\Migration
                 return false;
             }
             $transaction->commit();
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $this->_printException($e);
             $transaction->rollBack();
             if ($throwExceptions) {
@@ -71,7 +73,7 @@ abstract class Migration extends \yii\db\Migration
      * @inheritdoc
      * @param bool $throwExceptions Whether exceptions should be thrown
      * @return bool Whether the operation was successful
-     * @throws \Throwable
+     * @throws Throwable
      */
     public function down(bool $throwExceptions = false): bool
     {
@@ -83,7 +85,7 @@ abstract class Migration extends \yii\db\Migration
                 return false;
             }
             $transaction->commit();
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $this->_printException($e);
             $transaction->rollBack();
             if ($throwExceptions) {
@@ -158,7 +160,7 @@ abstract class Migration extends \yii\db\Migration
             return $this->db->getSchema()->createColumnSchemaBuilder('enum', $values);
         }
 
-        $check = "[[{$columnName}]] in (";
+        $check = "[[$columnName]] in (";
         foreach ($values as $i => $value) {
             if ($i != 0) {
                 $check .= ',';
@@ -393,7 +395,7 @@ abstract class Migration extends \yii\db\Migration
     public function addPrimaryKey($name, $table, $columns): void
     {
         if ($name === null) {
-            $name = $this->db->getPrimaryKeyName($table, $columns);
+            $name = $this->db->getPrimaryKeyName();
         }
 
         parent::addPrimaryKey($name, $table, $columns);
@@ -494,7 +496,7 @@ abstract class Migration extends \yii\db\Migration
     }
 
     /**
-     * @param \Throwable|\Exception $e
+     * @param Throwable|Exception $e
      */
     private function _printException($e): void
     {

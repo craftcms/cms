@@ -28,8 +28,8 @@
 - Added `craft\db\Table::ASSETINDEXINGSESSIONS`.
 - Added `craft\elements\Asset::setFilename()`.
 - Added `craft\elements\User::$active`.
-- Added `craft\elements\User::STATUS_INACTIVE`.
 - Added `craft\elements\User::getIsCredentialed()`.
+- Added `craft\elements\User::STATUS_INACTIVE`.
 - Added `craft\errors\MissingVolumeFolderException`.
 - Added `craft\fieldlayoutelements\BaseNativeField`, which replaces `craft\fieldlayoutelements\StandardField`.
 - Added `craft\fieldlayoutelements\TextField`, which replaces `craft\fieldlayoutelements\StandardTextField`.
@@ -72,6 +72,31 @@
 - Added `craft\services\AssetIndexer::stopIndexingSession()`.
 - Added `craft\services\AssetTransforms::deleteTransformIndexDataByAssetIds()`.
 - Added `craft\services\ElementSources`, which replaces `craft\services\ElementIndexes`.
+- Added `craft\services\ProjectConfig::ASSOC_KEY`.
+- Added `craft\services\ProjectConfig::PATH_CATEGORY_GROUPS`.
+- Added `craft\services\ProjectConfig::PATH_DATE_MODIFIED`.
+- Added `craft\services\ProjectConfig::PATH_ENTRY_TYPES`.
+- Added `craft\services\ProjectConfig::PATH_FIELD_GROUPS`.
+- Added `craft\services\ProjectConfig::PATH_FIELDS`.
+- Added `craft\services\ProjectConfig::PATH_GLOBAL_SETS`.
+- Added `craft\services\ProjectConfig::PATH_GRAPHQL_PUBLIC_TOKEN`.
+- Added `craft\services\ProjectConfig::PATH_GRAPHQL_SCHEMAS`.
+- Added `craft\services\ProjectConfig::PATH_GRAPHQL`.
+- Added `craft\services\ProjectConfig::PATH_IMAGE_TRANSFORMS`.
+- Added `craft\services\ProjectConfig::PATH_MATRIX_BLOCK_TYPES`.
+- Added `craft\services\ProjectConfig::PATH_META_NAMES`.
+- Added `craft\services\ProjectConfig::PATH_PLUGINS`.
+- Added `craft\services\ProjectConfig::PATH_ROUTES`.
+- Added `craft\services\ProjectConfig::PATH_SCHEMA_VERSION`.
+- Added `craft\services\ProjectConfig::PATH_SECTIONS`.
+- Added `craft\services\ProjectConfig::PATH_SITE_GROUPS`.
+- Added `craft\services\ProjectConfig::PATH_SITES`.
+- Added `craft\services\ProjectConfig::PATH_SYSTEM`.
+- Added `craft\services\ProjectConfig::PATH_TAG_GROUPS`.
+- Added `craft\services\ProjectConfig::PATH_USER_FIELD_LAYOUTS`.
+- Added `craft\services\ProjectConfig::PATH_USER_GROUPS`.
+- Added `craft\services\ProjectConfig::PATH_USERS`.
+- Added `craft\services\ProjectConfig::PATH_VOLUMES`.
 - Added `craft\services\Users::deactivateUser()`.
 - Added `craft\services\Users::ensureUserByEmail()`, which will return a user for the given email, creating one if it didn’t exist yet.
 - Added `craft\services\Users::EVENT_AFTER_DEACTIVATE_USER`.
@@ -373,6 +398,8 @@
 - Removed `craft\services\AssetIndexer::prepareIndexList()`.
 - Removed `craft\services\AssetIndexer::processIndexForVolume()`.
 - Removed `craft\services\Assets::getCurrentUserTemporaryUploadFolder()`. `getUserTemporaryUploadFolder()` can be used instead.
+- Removed `craft\services\AssetTransforms::CONFIG_TRANSFORM_KEY`. `craft\services\ProjectConfig::PATH_IMAGE_TRANSFORMS` can be used instead.
+- Removed `craft\services\Categories::CONFIG_CATEGORYROUP_KEY`. `craft\services\ProjectConfig::PATH_CATEGORY_GROUPS` can be used instead.
 - Removed `craft\services\Composer::$disablePackagist`.
 - Removed `craft\services\Composer::optimize()`.
 - Removed `craft\services\Content::getContentRow()`.
@@ -386,19 +413,38 @@
 - Removed `craft\services\ElementIndexes`. `craft\services\ElementSources` can be used instead.
 - Removed `craft\services\EntryRevisions`.
 - Removed `craft\services\Fields::$ignoreProjectConfigChanges`. `craft\services\ProjectConfig::$muteEvents` can be used instead.
+- Removed `craft\services\Fields::CONFIG_FIELDGROUP_KEY`. `craft\services\ProjectConfig::PATH_FIELD_GROUPS` can be used instead.
+- Removed `craft\services\Fields::CONFIG_FIELDS_KEY`. `craft\services\ProjectConfig::PATH_FIELDS` can be used instead.
+- Removed `craft\services\Globals::CONFIG_GLOBALSETS_KEY`. `craft\services\ProjectConfig::PATH_GLOBAL_SETS` can be used instead.
+- Removed `craft\services\Gql::CONFIG_GQL_KEY`. `craft\services\ProjectConfig::PATH_GRAPHQL` can be used instead.
+- Removed `craft\services\Gql::CONFIG_GQL_PUBLIC_TOKEN_KEY`. `craft\services\ProjectConfig::PATH_GRAPHQL_PUBLIC_TOKEN` can be used instead.
+- Removed `craft\services\Gql::CONFIG_GQL_SCHEMAS_KEY`. `craft\services\ProjectConfig::PATH_GRAPHQL_SCHEMAS` can be used instead.
 - Removed `craft\services\Gql::EVENT_REGISTER_GQL_PERMISSIONS`. `EVENT_REGISTER_GQL_SCHEMA_COMPONENTS` can be used instead.
 - Removed `craft\services\Gql::getAllPermissions()`.
 - Removed `craft\services\Matrix::$ignoreProjectConfigChanges`. `craft\services\ProjectConfig::$muteEvents` can be used instead.
+- Removed `craft\services\Matrix::CONFIG_BLOCKTYPE_KEY`. `craft\services\ProjectConfig::PATH_MATRIX_BLOCK_TYPESPATH_` can be used instead.
 - Removed `craft\services\Matrix::getContentTableName()`. Matrix fields’ `$contentTable` properties can be used instead.
 - Removed `craft\services\Matrix::getSupportedSiteIdsForField()`. `getSupportedSiteIds()` can be used instead.
+- Removed `craft\services\Plugins::CONFIG_PLUGINS_KEY`. `craft\services\ProjectConfig::PATH_PLUGINS` can be used instead.
 - Removed `craft\services\ProjectConfig::CONFIG_ALL_KEY`.
+- Removed `craft\services\ProjectConfig::CONFIG_ALL_KEY`.
+- Removed `craft\services\ProjectConfig::CONFIG_ASSOC_KEY`. `ASSOC_KEY` can be used instead.
 - Removed `craft\services\ProjectConfig::CONFIG_KEY`.
+- Removed `craft\services\ProjectConfig::CONFIG_NAMES_KEY`. `PATH_META_NAMES` can be used instead.
+- Removed `craft\services\ProjectConfig::CONFIG_SCHEMA_VERSION_KEY`. `PATH_SCHEMA_VERSION` can be used instead.
+- Removed `craft\services\ProjectConfig::CONFIG_SYSTEM`. `PATH_SYSTEM` can be used instead.
+- Removed `craft\services\Routes::CONFIG_ROUTES_KEY`. `craft\services\ProjectConfig::PATH_ROUTES` can be used instead.
 - Removed `craft\services\Routes::getDbRoutes()`. `getProjectConfigRoutes()` can be used instead.
 - Removed `craft\services\Search::filterElementIdsByQuery()`. `searchElements()` can be used instead.
 - Removed `craft\services\Search::indexElementFields()`. `indexElementAttributes()` can be used instead.
+- Removed `craft\services\Sections::CONFIG_ENTRYTYPES_KEY`. `craft\services\ProjectConfig::PATH_ENTRY_TYPES` can be used instead.
+- Removed `craft\services\Sections::CONFIG_SECTIONS_KEY`. `craft\services\ProjectConfig::PATH_PATH_SECTIONS` can be used instead.
 - Removed `craft\services\Sections::isSectionTemplateValid()`.
 - Removed `craft\services\Security::getValidationKey()`. `craft\config\GeneralConfig::$securityKey` can be used instead.
+- Removed `craft\services\Sites::CONFIG_SITEGROUP_KEY`. `craft\services\ProjectConfig::PATH_SITE_GROUPS` can be used instead.
+- Removed `craft\services\Sites::CONFIG_SITES_KEY`. `craft\services\ProjectConfig::PATH_SITES` can be used instead.
 - Removed `craft\services\SystemSettings`.
+- Removed `craft\services\Tags::CONFIG_TAGGROUP_KEY`. `craft\services\ProjectConfig::PATH_TAG_GROUPS` can be used instead.
 - Removed `craft\services\TemplateCaches::deleteAllCaches()`. `craft\services\Elements::invalidateAllCaches()` can be used instead.
 - Removed `craft\services\TemplateCaches::deleteCacheById()`.
 - Removed `craft\services\TemplateCaches::deleteCachesByElement()`. `craft\services\Elements::invalidateCachesForElement()` can be used instead.
@@ -414,6 +460,10 @@
 - Removed `craft\services\TemplateCaches::handleResponse()`.
 - Removed `craft\services\TemplateCaches::includeElementInTemplateCaches()`.
 - Removed `craft\services\TemplateCaches::includeElementQueryInTemplateCaches()`.
+- Removed `craft\services\UserGroups::CONFIG_USERPGROUPS_KEY`. `craft\services\ProjectConfig::PATH_USER_GROUPS` can be used instead.
+- Removed `craft\services\Users::CONFIG_USERLAYOUT_KEY`. `craft\services\ProjectConfig::PATH_USER_FIELD_LAYOUTS` can be used instead.
+- Removed `craft\services\Users::CONFIG_USERS_KEY`. `craft\services\ProjectConfig::PATH_USERS` can be used instead.
+- Removed `craft\services\Volumes::CONFIG_VOLUME_KEY`. `craft\services\ProjectConfig::PATH_VOLUMES` can be used instead.
 - Removed `craft\services\Volumes::getVolumeOverrides()`.
 - Removed `craft\test\Fixture`. `craft\test\ActiveFixture` can be used instead.
 - Removed `craft\validators\StringValidator::$trim`. The `trim` validator can be used instead.

@@ -12,6 +12,7 @@ use craft\gql\base\Directive;
 use craft\gql\GqlEntityRegistry;
 use craft\helpers\StringHelper;
 use craft\i18n\Locale;
+use DateTime;
 use GraphQL\Language\DirectiveLocation;
 use GraphQL\Type\Definition\Directive as GqlDirective;
 use GraphQL\Type\Definition\FieldArgument;
@@ -26,8 +27,8 @@ use GraphQL\Type\Definition\Type;
  */
 class FormatDateTime extends Directive
 {
-    const DEFAULT_FORMAT = 'Y-m-d\TH:i:sP';
-    const DEFAULT_TIMEZONE = 'UTC';
+    public const DEFAULT_FORMAT = 'Y-m-d\TH:i:sP';
+    public const DEFAULT_TIMEZONE = 'UTC';
 
     /**
      * @inheritdoc
@@ -38,7 +39,7 @@ class FormatDateTime extends Directive
             return $type;
         }
 
-        $type = GqlEntityRegistry::createEntity(static::name(), new self([
+        return GqlEntityRegistry::createEntity(static::name(), new self([
             'name' => static::name(),
             'locations' => [
                 DirectiveLocation::FIELD,
@@ -64,8 +65,6 @@ class FormatDateTime extends Directive
             ],
             'description' => 'This directive allows for formatting any date to the desired format. It can be applied to all fields, but changes anything only when applied to a DateTime field.',
         ]));
-
-        return $type;
     }
 
     /**
@@ -81,8 +80,8 @@ class FormatDateTime extends Directive
      */
     public static function apply($source, $value, array $arguments, ResolveInfo $resolveInfo)
     {
-        if ($value instanceof \DateTime) {
-            /** @var \DateTime $value */
+        if ($value instanceof DateTime) {
+            /** @var DateTime $value */
             $format = $arguments['format'] ?? self::DEFAULT_FORMAT;
 
             // Is this a custom PHP date format?

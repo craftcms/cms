@@ -21,8 +21,8 @@ use yii\helpers\Markdown;
  */
 class Tip extends BaseUiElement
 {
-    const STYLE_TIP = 'tip';
-    const STYLE_WARNING = 'warning';
+    public const STYLE_TIP = 'tip';
+    public const STYLE_WARNING = 'warning';
 
     /**
      * @var string The tip text

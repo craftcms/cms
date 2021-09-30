@@ -14,6 +14,7 @@ use craft\helpers\Json;
 use craft\i18n\Locale;
 use craft\models\AssetIndexingSession;
 use craft\web\Controller;
+use Throwable;
 use yii\web\BadRequestHttpException;
 use yii\web\Response;
 
@@ -75,7 +76,7 @@ class AssetIndexesController extends Controller
      *
      * @return Response
      * @throws BadRequestHttpException
-     * @throws \Throwable if something goes wrong.
+     * @throws Throwable if something goes wrong.
      */
     public function actionStopIndexingSession(): Response
     {
@@ -98,7 +99,7 @@ class AssetIndexesController extends Controller
      * Progress an indexing session by one step.
      *
      * @return Response
-     * @throws \Throwable if something goes wrong
+     * @throws Throwable if something goes wrong
      */
     public function actionProcessIndexingSession(): Response
     {
@@ -176,7 +177,7 @@ class AssetIndexesController extends Controller
      * Finish an indexing session, removing the specified file and folder records.
      *
      * @return Response
-     * @throws \Throwable
+     * @throws Throwable
      */
     public function actionFinishIndexingSession(): Response
     {

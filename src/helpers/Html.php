@@ -10,6 +10,7 @@ namespace craft\helpers;
 use Craft;
 use craft\image\SvgAllowedAttributes;
 use enshrined\svgSanitize\Sanitizer;
+use Throwable;
 use yii\base\Exception;
 use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
@@ -247,8 +248,8 @@ class Html extends \yii\helpers\Html
             }
 
             // Find the closing tag
-            if (($htmlEnd = stripos($tag, "</{$type}>", $cursor)) === false) {
-                throw new InvalidArgumentException("Could not find a </{$type}> tag in string: {$tag}");
+            if (($htmlEnd = stripos($tag, "</$type>", $cursor)) === false) {
+                throw new InvalidArgumentException("Could not find a </$type> tag in string: $tag");
             }
 
             $end = $htmlEnd + strlen($type) + 3;
@@ -784,7 +785,7 @@ class Html extends \yii\helpers\Html
      * @param array $markers
      * @return string
      */
-    private static function _restoreTextareas(string $html, array &$markers): string
+    private static function _restoreTextareas(string $html, array $markers): string
     {
         return str_replace(array_keys($markers), array_values($markers), $html);
     }
@@ -804,8 +805,7 @@ class Html extends \yii\helpers\Html
         // Remove comments, title & desc
         $svg = preg_replace('/<!--.*?-->\s*/s', '', $svg);
         $svg = preg_replace('/<title>.*?<\/title>\s*/is', '', $svg);
-        $svg = preg_replace('/<desc>.*?<\/desc>\s*/is', '', $svg);
-        return $svg;
+        return preg_replace('/<desc>.*?<\/desc>\s*/is', '', $svg);
     }
 
     /**
@@ -826,7 +826,7 @@ class Html extends \yii\helpers\Html
         if ($mimeType === null) {
             try {
                 $mimeType = FileHelper::getMimeType($file);
-            } catch (\Throwable $e) {
+            } catch (Throwable $e) {
                 Craft::warning("Unable to determine the MIME type for $file: " . $e->getMessage());
                 Craft::$app->getErrorHandler()->logException($e);
             }

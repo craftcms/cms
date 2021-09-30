@@ -58,7 +58,7 @@ class FieldLayout extends Model
      * @see getAvailableNativeFields()
      * @since 4.0.0
      */
-    const EVENT_DEFINE_NATIVE_FIELDS = 'defineNativeFields';
+    public const EVENT_DEFINE_NATIVE_FIELDS = 'defineNativeFields';
 
     /**
      * @event DefineFieldLayoutFieldsEvent The event that is triggered when defining the native (not custom) fields for the layout.
@@ -67,7 +67,7 @@ class FieldLayout extends Model
      * @since 3.5.0
      * @deprecated in 4.0.0. Use [[EVENT_DEFINE_NATIVE_FIELDS]] instead.
      */
-    const EVENT_DEFINE_STANDARD_FIELDS = 'defineNativeFields';
+    public const EVENT_DEFINE_STANDARD_FIELDS = 'defineNativeFields';
 
     /**
      * @event DefineFieldLayoutElementsEvent The event that is triggered when defining UI elements for the layout.
@@ -89,7 +89,7 @@ class FieldLayout extends Model
      * @see getAvailableNativeFields()
      * @since 3.5.0
      */
-    const EVENT_DEFINE_UI_ELEMENTS = 'defineUiElements';
+    public const EVENT_DEFINE_UI_ELEMENTS = 'defineUiElements';
 
     /**
      * @event CreateFieldLayoutFormEvent The event that is triggered when creating a new field layout form.
@@ -130,7 +130,7 @@ class FieldLayout extends Model
      * @see createForm()
      * @since 3.6.0
      */
-    const EVENT_CREATE_FORM = 'createForm';
+    public const EVENT_CREATE_FORM = 'createForm';
 
     /**
      * Creates a new field layout from the given config.

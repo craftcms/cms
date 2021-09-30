@@ -12,6 +12,7 @@ use craft\helpers\DateTimeHelper;
 use craft\helpers\Html;
 use craft\helpers\StringHelper;
 use DateTime;
+use Throwable;
 use yii\base\Component;
 use yii\base\Exception;
 
@@ -109,7 +110,7 @@ class TemplateCaches extends Component
      * [[\craft\web\View::registerScript()]], and [[\craft\web\View::registerCss()]] should be captured and
      * included in the cache.
      * @throws Exception if this is a console request and `false` is passed to `$global`
-     * @throws \Throwable
+     * @throws Throwable
      */
     public function endTemplateCache(string $key, bool $global, ?string $duration, $expiration, string $body, bool $withScripts = false): void
     {

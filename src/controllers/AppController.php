@@ -22,6 +22,8 @@ use craft\models\Update;
 use craft\models\Updates;
 use craft\web\Controller;
 use craft\web\ServiceUnavailableHttpException;
+use DateInterval;
+use Throwable;
 use yii\base\InvalidConfigException;
 use yii\web\BadRequestHttpException;
 use yii\web\ForbiddenHttpException;
@@ -244,7 +246,7 @@ class AppController extends Controller
         if ($backup) {
             try {
                 $backupPath = $db->backup();
-            } catch (\Throwable $e) {
+            } catch (Throwable $e) {
                 Craft::$app->disableMaintenanceMode();
                 throw new ServerErrorHttpException('Error backing up the database.', 0, $e);
             }
@@ -264,7 +266,7 @@ class AppController extends Controller
             }
 
             $transaction->commit();
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $transaction->rollBack();
 
             // MySQL may have implicitly committed the transaction
@@ -276,7 +278,7 @@ class AppController extends Controller
                 try {
                     $db->restore($backupPath);
                     $restored = true;
-                } catch (\Throwable $restoreException) {
+                } catch (Throwable $restoreException) {
                     // Just log it
                     Craft::$app->getErrorHandler()->logException($restoreException);
                 }
@@ -353,7 +355,7 @@ class AppController extends Controller
         $user = Craft::$app->getUser()->getIdentity();
 
         $currentTime = DateTimeHelper::currentUTCDateTime();
-        $tomorrow = $currentTime->add(new \DateInterval('P1D'));
+        $tomorrow = $currentTime->add(new DateInterval('P1D'));
 
         if (Craft::$app->getUsers()->shunMessageForUser($user->id, $message, $tomorrow)) {
             return $this->asJson([

@@ -36,6 +36,7 @@ use craft\web\Response as WebResponse;
 use craft\web\Session;
 use craft\web\User as WebUser;
 use craft\web\View;
+use HTMLPurifier_Encoder;
 use yii\base\InvalidArgumentException;
 use yii\helpers\Inflector;
 use yii\i18n\PhpMessageSource;
@@ -299,7 +300,7 @@ class App
 
         // Check if iconv is installed. Note we can't just use HTMLPurifier_Encoder::iconvAvailable() because they
         // don't consider iconv "installed" if it's there but "unusable".
-        return self::$_iconv = (function_exists('iconv') && \HTMLPurifier_Encoder::testIconvTruncateBug() === \HTMLPurifier_Encoder::ICONV_OK);
+        return self::$_iconv = (function_exists('iconv') && HTMLPurifier_Encoder::testIconvTruncateBug() === HTMLPurifier_Encoder::ICONV_OK);
     }
 
     /**
@@ -654,7 +655,7 @@ class App
                     'url' => 'php://stderr',
                     'levels' => Logger::LEVEL_ERROR | Logger::LEVEL_WARNING,
                     'includeUserIp' => $generalConfig->storeUserIps,
-                ]);;
+                ]);
 
                 if (!$onlyLogErrors) {
                     $targets[Dispatcher::TARGET_STDOUT] = Craft::createObject([

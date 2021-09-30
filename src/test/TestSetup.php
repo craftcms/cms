@@ -12,6 +12,7 @@ use Craft;
 use craft\db\Connection;
 use craft\db\Migration;
 use craft\db\MigrationManager;
+use craft\errors\MigrationException;
 use craft\feeds\Feeds;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Db;
@@ -92,12 +93,12 @@ class TestSetup
     /**
      * @since 3.6.0
      */
-    const SITE_URL = 'https://test.craftcms.test/';
+    public const SITE_URL = 'https://test.craftcms.test/';
 
     /**
      * @since 3.6.0
      */
-    const USERNAME = 'craftcms';
+    public const USERNAME = 'craftcms';
 
     /**
      * @var array Project Config data
@@ -177,7 +178,7 @@ class TestSetup
      *
      * @return bool
      * @throws InvalidConfigException
-     * @throws \craft\errors\MigrationException
+     * @throws MigrationException
      */
     public static function validateAndApplyMigration(string $class, array $params, bool $ignorePreviousMigrations = false): bool
     {
@@ -250,7 +251,7 @@ class TestSetup
             require $srcPath . '/config/app.php',
             require $srcPath . '/config/app.' . $appType . '.php',
             $configService->getConfigFromFile('app'),
-            $configService->getConfigFromFile("app.{$appType}")
+            $configService->getConfigFromFile("app.$appType")
         );
 
         if (defined('CRAFT_SITE')) {

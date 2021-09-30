@@ -8,6 +8,7 @@
 namespace craft\mail\transportadapters;
 
 use craft\base\ConfigurableComponentInterface;
+use Swift_Transport;
 
 /**
  * TransportAdapterInterface defines the common interface to be implemented by SwiftMailer transport adapter classes.
@@ -20,7 +21,7 @@ interface TransportAdapterInterface extends ConfigurableComponentInterface
     /**
      * Returns the config array or \Swift_Transport object that should be passed to [[\craft\mail\Mailer::setTransport()]].
      *
-     * @return array|\Swift_Transport
+     * @return array|Swift_Transport
      */
     public function defineTransport();
 }

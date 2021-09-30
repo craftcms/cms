@@ -12,7 +12,9 @@ use craft\console\Controller;
 use craft\helpers\Console;
 use craft\helpers\FileHelper;
 use craft\helpers\StringHelper;
+use Throwable;
 use yii\console\ExitCode;
+use ZipArchive;
 
 /**
  * Performs database operations.
@@ -115,7 +117,7 @@ class DbController extends Controller
                 unlink($path);
                 $path = $zipPath;
             }
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             Craft::$app->getErrorHandler()->logException($e);
             $this->stderr('error: ' . $e->getMessage() . PHP_EOL, Console::FG_RED);
             return ExitCode::UNSPECIFIED_ERROR;
@@ -123,7 +125,7 @@ class DbController extends Controller
 
         $this->stdout('done' . PHP_EOL, Console::FG_GREEN);
         $size = Craft::$app->getFormatter()->asShortSize(filesize($path));
-        $this->stdout("Backup file: {$path} ({$size})" . PHP_EOL);
+        $this->stdout("Backup file: $path ($size)" . PHP_EOL);
         return ExitCode::OK;
     }
 
@@ -141,7 +143,7 @@ class DbController extends Controller
         }
 
         if (strtolower(pathinfo($path, PATHINFO_EXTENSION)) === 'zip') {
-            $zip = new \ZipArchive();
+            $zip = new ZipArchive();
 
             if ($zip->open($path) !== true) {
                 $this->stderr("Unable to open the zip file at $path." . PHP_EOL, Console::FG_RED);
@@ -168,7 +170,7 @@ class DbController extends Controller
 
         try {
             Craft::$app->getDb()->restore($path);
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             Craft::$app->getErrorHandler()->logException($e);
             $this->stderr('error: ' . $e->getMessage() . PHP_EOL, Console::FG_RED);
             return ExitCode::UNSPECIFIED_ERROR;

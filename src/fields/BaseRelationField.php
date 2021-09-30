@@ -34,6 +34,7 @@ use craft\queue\jobs\LocalizeRelations;
 use craft\services\Elements;
 use craft\services\ElementSources;
 use craft\validators\ArrayValidator;
+use DateTime;
 use GraphQL\Type\Definition\Type;
 use Illuminate\Support\Collection;
 use yii\base\Event;
@@ -52,7 +53,7 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
      * @event ElementCriteriaEvent The event that is triggered when defining the selection criteria for this field.
      * @since 3.4.16
      */
-    const EVENT_DEFINE_SELECTION_CRITERIA = 'defineSelectionCriteria';
+    public const EVENT_DEFINE_SELECTION_CRITERIA = 'defineSelectionCriteria';
 
     /**
      * @inheritdoc
@@ -322,7 +323,7 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
             /** @var Element $related */
             if ($related->enabled && $related->getEnabledForSite()) {
                 if (!self::_validateRelatedElement($related)) {
-                    $element->addModelErrors($related, "{$this->handle}[{$i}]");
+                    $element->addModelErrors($related, "$this->handle[$i]");
                     $errorCount++;
                 }
             }
@@ -602,7 +603,7 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
 
         $view = Craft::$app->getView();
         $id = Html::id($this->handle);
-        $html = "<div id='{$id}' class='elementselect'><div class='elements'>";
+        $html = "<div id='$id' class='elementselect'><div class='elements'>";
 
         foreach ($value as $relatedElement) {
             $html .= Cp::elementHtml($relatedElement);
@@ -612,7 +613,7 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
 
         $nsId = $view->namespaceInputId($id);
         $js = <<<JS
-(new Craft.ElementThumbLoader()).load($('#{$nsId}'));
+(new Craft.ElementThumbLoader()).load($('#$nsId'));
 JS;
         $view->registerJs($js);
 
@@ -759,7 +760,7 @@ JS;
                 $siteIds = ArrayHelper::withoutValue($siteIds, $element->siteId);
                 if (!empty($siteIds)) {
                     $userId = Craft::$app->getUser()->getId();
-                    $timestamp = Db::prepareDateForDb(new \DateTime());
+                    $timestamp = Db::prepareDateForDb(new DateTime());
 
                     foreach ($siteIds as $siteId) {
                         Db::upsert(DbTable::CHANGEDFIELDS, [
@@ -959,7 +960,7 @@ JS;
             'sources' => $this->inputSources($element),
             'criteria' => $selectionCriteria,
             'showSiteMenu' => ($this->targetSiteId || !$this->showSiteMenu) ? false : 'auto',
-            'allowSelfRelations' => (bool)$this->allowSelfRelations,
+            'allowSelfRelations' => $this->allowSelfRelations,
             'sourceElementId' => !empty($element->id) ? $element->id : null,
             'disabledElementIds' => $disabledElementIds,
             'limit' => $this->allowLimit ? $this->limit : null,

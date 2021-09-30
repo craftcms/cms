@@ -22,6 +22,7 @@ use craft\web\twig\Environment;
 use craft\web\twig\Extension;
 use craft\web\twig\GlobalsExtension;
 use craft\web\twig\TemplateLoader;
+use Throwable;
 use Twig\Error\LoaderError as TwigLoaderError;
 use Twig\Error\RuntimeError as TwigRuntimeError;
 use Twig\Error\SyntaxError as TwigSyntaxError;
@@ -59,42 +60,42 @@ class View extends \yii\web\View
     /**
      * @event RegisterTemplateRootsEvent The event that is triggered when registering control panel template roots
      */
-    const EVENT_REGISTER_CP_TEMPLATE_ROOTS = 'registerCpTemplateRoots';
+    public const EVENT_REGISTER_CP_TEMPLATE_ROOTS = 'registerCpTemplateRoots';
 
     /**
      * @event RegisterTemplateRootsEvent The event that is triggered when registering site template roots
      */
-    const EVENT_REGISTER_SITE_TEMPLATE_ROOTS = 'registerSiteTemplateRoots';
+    public const EVENT_REGISTER_SITE_TEMPLATE_ROOTS = 'registerSiteTemplateRoots';
 
     /**
      * @event TemplateEvent The event that is triggered before a template gets rendered
      */
-    const EVENT_BEFORE_RENDER_TEMPLATE = 'beforeRenderTemplate';
+    public const EVENT_BEFORE_RENDER_TEMPLATE = 'beforeRenderTemplate';
 
     /**
      * @event TemplateEvent The event that is triggered after a template gets rendered
      */
-    const EVENT_AFTER_RENDER_TEMPLATE = 'afterRenderTemplate';
+    public const EVENT_AFTER_RENDER_TEMPLATE = 'afterRenderTemplate';
 
     /**
      * @event TemplateEvent The event that is triggered before a page template gets rendered
      */
-    const EVENT_BEFORE_RENDER_PAGE_TEMPLATE = 'beforeRenderPageTemplate';
+    public const EVENT_BEFORE_RENDER_PAGE_TEMPLATE = 'beforeRenderPageTemplate';
 
     /**
      * @event TemplateEvent The event that is triggered after a page template gets rendered
      */
-    const EVENT_AFTER_RENDER_PAGE_TEMPLATE = 'afterRenderPageTemplate';
+    public const EVENT_AFTER_RENDER_PAGE_TEMPLATE = 'afterRenderPageTemplate';
 
     /**
      * @const TEMPLATE_MODE_CP
      */
-    const TEMPLATE_MODE_CP = 'cp';
+    public const TEMPLATE_MODE_CP = 'cp';
 
     /**
      * @const TEMPLATE_MODE_SITE
      */
-    const TEMPLATE_MODE_SITE = 'site';
+    public const TEMPLATE_MODE_SITE = 'site';
 
     /**
      * @var bool Whether to allow [[evaluateDynamicContent()]] to be called.
@@ -502,7 +503,7 @@ class View extends \yii\web\View
      * @param string $templateMode The template mode to use.
      * @return string The rendered template.
      * @throws Exception in case of failure
-     * @throws \Throwable in case of failure
+     * @throws Throwable in case of failure
      */
     public function renderObjectTemplate(string $template, $object, array $variables = [], string $templateMode = self::TEMPLATE_MODE_SITE): string
     {
@@ -1135,7 +1136,7 @@ class View extends \yii\web\View
             if ($translation !== $message) {
                 $jsMessage = Json::encode($message);
                 $jsTranslation = Json::encode($translation);
-                $js .= ($js !== '' ? PHP_EOL : '') . "Craft.translations[{$jsCategory}][{$jsMessage}] = {$jsTranslation};";
+                $js .= ($js !== '' ? PHP_EOL : '') . "Craft.translations[$jsCategory][$jsMessage] = $jsTranslation;";
             }
         }
 
@@ -1144,10 +1145,10 @@ class View extends \yii\web\View
         }
 
         $js = <<<JS
-if (typeof Craft.translations[{$jsCategory}] === 'undefined') {
-    Craft.translations[{$jsCategory}] = {};
+if (typeof Craft.translations[$jsCategory] === 'undefined') {
+    Craft.translations[$jsCategory] = {};
 }
-{$js}
+$js
 JS;
 
         $this->registerJs($js, self::POS_BEGIN);
@@ -1974,7 +1975,9 @@ JS;
         foreach (array_keys($names) as $name) {
             if ($name) {
                 $jsName = Json::encode(str_replace(['<', '>'], '', $name));
-                $js .= "  Craft.{$property}[{$jsName}] = true;\n";
+                // WARNING: the curly braces are needed here no matter what PhpStorm thinks
+                // https://youtrack.jetbrains.com/issue/WI-60044
+                $js .= "  Craft.{$property}[$jsName] = true;\n";
             }
         }
         $js .= '}';
@@ -1987,7 +1990,7 @@ JS;
      * @param array $context
      * @return string|null
      */
-    private function _getCpElementHtml(array &$context): ?string
+    private function _getCpElementHtml(array $context): ?string
     {
         if (!isset($context['element'])) {
             return null;

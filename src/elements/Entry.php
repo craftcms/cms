@@ -64,9 +64,9 @@ use yii\db\Expression;
  */
 class Entry extends Element
 {
-    const STATUS_LIVE = 'live';
-    const STATUS_PENDING = 'pending';
-    const STATUS_EXPIRED = 'expired';
+    public const STATUS_LIVE = 'live';
+    public const STATUS_PENDING = 'pending';
+    public const STATUS_EXPIRED = 'expired';
 
     /**
      * @event DefineEntryTypesEvent The event that is triggered when defining the available entry types for the entry
@@ -74,7 +74,7 @@ class Entry extends Element
      * @see getAvailableEntryTypes()
      * @since 3.6.0
      */
-    const EVENT_DEFINE_ENTRY_TYPES = 'defineEntryTypes';
+    public const EVENT_DEFINE_ENTRY_TYPES = 'defineEntryTypes';
 
     /**
      * @inheritdoc
@@ -1140,9 +1140,9 @@ class Entry extends Element
         $sectionEntryTypes = ArrayHelper::index($this->getSection()->getEntryTypes(), 'id');
 
         if (!isset($this->typeId) || !isset($sectionEntryTypes[$this->typeId])) {
-            Craft::warning("Entry {$this->id} has an invalid entry type ID: {$this->typeId}");
+            Craft::warning("Entry $this->id has an invalid entry type ID: $this->typeId");
             if (empty($sectionEntryTypes)) {
-                throw new InvalidConfigException("Section {$this->sectionId} has no entry types");
+                throw new InvalidConfigException("Section $this->sectionId has no entry types");
             }
             return reset($sectionEntryTypes);
         }
@@ -1544,7 +1544,7 @@ EOD;
         // Verify that the section supports this site
         $sectionSiteSettings = $section->getSiteSettings();
         if (!isset($sectionSiteSettings[$this->siteId])) {
-            throw new UnsupportedSiteException($this, $this->siteId, "The section '{$section->name}' is not enabled for the site '{$this->siteId}'");
+            throw new UnsupportedSiteException($this, $this->siteId, "The section '$section->name' is not enabled for the site '$this->siteId'");
         }
 
         // Make sure the entry has at least one revision if the section has versioning enabled
@@ -1861,7 +1861,6 @@ EOD;
      */
     private static function _getGqlIdentifierByContext(EntryType $context): string
     {
-        $gqlIdentifier = $context->getSection()->handle . '_' . $context->handle;
-        return $gqlIdentifier;
+        return $context->getSection()->handle . '_' . $context->handle;
     }
 }

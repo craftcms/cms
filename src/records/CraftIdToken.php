@@ -9,6 +9,7 @@ namespace craft\records;
 
 use craft\db\ActiveRecord;
 use craft\db\Table;
+use DateTime;
 use yii\db\ActiveQueryInterface;
 
 /**
@@ -17,7 +18,7 @@ use yii\db\ActiveQueryInterface;
  * @property int $id ID
  * @property int $userId User ID
  * @property string $accessToken Access Token
- * @property \DateTime $expiryDate Expiration Date
+ * @property DateTime $expiryDate Expiration Date
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */

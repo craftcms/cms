@@ -19,6 +19,7 @@ use craft\events\DraftEvent;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
 use craft\helpers\ElementHelper;
+use Throwable;
 use yii\base\Component;
 use yii\base\Exception;
 use yii\base\InvalidArgumentException;
@@ -37,24 +38,24 @@ class Drafts extends Component
     /**
      * @event DraftEvent The event that is triggered before a draft is created.
      */
-    const EVENT_BEFORE_CREATE_DRAFT = 'beforeCreateDraft';
+    public const EVENT_BEFORE_CREATE_DRAFT = 'beforeCreateDraft';
 
     /**
      * @event DraftEvent The event that is triggered after a draft is created.
      */
-    const EVENT_AFTER_CREATE_DRAFT = 'afterCreateDraft';
+    public const EVENT_AFTER_CREATE_DRAFT = 'afterCreateDraft';
 
     /**
      * @event DraftEvent The event that is triggered before a draft is published.
      * @since 3.6.0
      */
-    const EVENT_BEFORE_APPLY_DRAFT = 'beforeApplyDraft';
+    public const EVENT_BEFORE_APPLY_DRAFT = 'beforeApplyDraft';
 
     /**
      * @event DraftEvent The event that is triggered after a draft is applied to its canonical element.
      * @see applyDraft()
      */
-    const EVENT_AFTER_APPLY_DRAFT = 'afterApplyDraft';
+    public const EVENT_AFTER_APPLY_DRAFT = 'afterApplyDraft';
 
     /**
      * @var Connection|array|string The database connection to use
@@ -108,7 +109,7 @@ class Drafts extends Component
      * @param array $newAttributes any attributes to apply to the draft
      * @param bool $provisional Whether to create a provisional draft
      * @return ElementInterface The new draft
-     * @throws \Throwable
+     * @throws Throwable
      */
     public function createDraft(
         ElementInterface $canonical,
@@ -159,7 +160,7 @@ class Drafts extends Component
             $draft = Craft::$app->getElements()->duplicateElement($canonical, $newAttributes);
 
             $transaction->commit();
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $transaction->rollBack();
             throw $e;
         }
@@ -214,7 +215,7 @@ class Drafts extends Component
      * @param string|null $notes
      * @param bool $markAsSaved
      * @return bool
-     * @throws \Throwable
+     * @throws Throwable
      */
     public function saveElementAsDraft(ElementInterface $element, ?int $creatorId = null, ?string $name = null, ?string $notes = null, bool $markAsSaved = true): bool
     {
@@ -244,7 +245,7 @@ class Drafts extends Component
      *
      * @param ElementInterface $draft The draft
      * @return ElementInterface The canonical element with the draft applied to it
-     * @throws \Throwable
+     * @throws Throwable
      * @since 3.6.0
      */
     public function applyDraft(ElementInterface $draft): ElementInterface
@@ -330,7 +331,7 @@ class Drafts extends Component
                     Db::delete(Table::DRAFTS, [
                         'id' => $draftId,
                     ]);
-                } catch (\Throwable $e) {
+                } catch (Throwable $e) {
                     // Put everything back
                     $draft->draftId = $draftId;
                     $draft->attachBehavior('draft', $behavior);
@@ -343,7 +344,7 @@ class Drafts extends Component
             }
 
             $transaction->commit();
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $transaction->rollBack();
 
             if ($e instanceof InvalidElementException) {

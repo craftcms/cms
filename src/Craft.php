@@ -19,6 +19,7 @@ use yii\db\Expression;
 use yii\helpers\Inflector;
 use yii\helpers\VarDumper;
 use yii\web\Request;
+use function GuzzleHttp\default_user_agent;
 
 /**
  * Craft is helper class serving common Craft and Yii framework functionality.
@@ -31,8 +32,8 @@ use yii\web\Request;
 class Craft extends Yii
 {
     // Edition constants
-    const Solo = 0;
-    const Pro = 1;
+    public const Solo = 0;
+    public const Pro = 1;
 
     /**
      * @var array The default cookie configuration.
@@ -235,19 +236,19 @@ class Craft extends Yii
 
         foreach ($fieldHandles as $handle => $types) {
             $methods[] = <<<EOD
- * @method \$this {$handle}(mixed \$value) Sets the [[{$handle}]] property
+ * @method \$this $handle(mixed \$value) Sets the [[$handle]] property
 EOD;
 
             $handles[] = <<<EOD
-        '{$handle}' => true,
+        '$handle' => true,
 EOD;
 
             $phpDocTypes = implode('|', array_keys($types));
             $properties[] = <<<EOD
     /**
-     * @var {$phpDocTypes} Value for field with the handle “{$handle}”.
+     * @var $phpDocTypes Value for field with the handle “{$handle}”.
      */
-    public \${$handle};
+    public \$$handle;
 EOD;
         }
 
@@ -336,7 +337,7 @@ EOD;
         // Set the Craft header by default.
         $defaultConfig = [
             'headers' => [
-                'User-Agent' => 'Craft/' . static::$app->getVersion() . ' ' . \GuzzleHttp\default_user_agent(),
+                'User-Agent' => 'Craft/' . static::$app->getVersion() . ' ' . default_user_agent(),
             ],
         ];
 

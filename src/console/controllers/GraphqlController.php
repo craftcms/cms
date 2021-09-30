@@ -14,6 +14,7 @@ use craft\helpers\Console;
 use craft\helpers\Gql;
 use craft\models\GqlSchema;
 use GraphQL\Utils\SchemaPrinter;
+use yii\base\Exception;
 use yii\base\InvalidArgumentException;
 use yii\console\ExitCode;
 use yii\helpers\Inflector;
@@ -27,7 +28,7 @@ use yii\web\BadRequestHttpException;
  */
 class GraphqlController extends Controller
 {
-    const GQL_SCHEMA_EXTENSION = ".graphql";
+    public const GQL_SCHEMA_EXTENSION = ".graphql";
 
     /**
      * @var string|null The token to look up to determine the appropriate GraphQL schema.
@@ -91,7 +92,7 @@ class GraphqlController extends Controller
         // Output the schema
         $filename = Inflector::slug($schema->name, '_') . self::GQL_SCHEMA_EXTENSION;
         $schemaDump = SchemaPrinter::doPrint($schemaDef);
-        $this->stdout("Dumping GraphQL schema to {$filename} ... ", Console::FG_YELLOW);
+        $this->stdout("Dumping GraphQL schema to $filename ... ", Console::FG_YELLOW);
         file_put_contents($filename, $schemaDump);
         $this->stdout('done' . PHP_EOL, Console::FG_GREEN);
 
@@ -101,7 +102,7 @@ class GraphqlController extends Controller
     /**
      * @return GqlSchema|null
      * @throws BadRequestHttpException
-     * @throws \yii\base\Exception
+     * @throws Exception
      */
     protected function getGqlSchema(): ?GqlSchema
     {
@@ -117,14 +118,14 @@ class GraphqlController extends Controller
             try {
                 $token = $gqlService->getTokenByAccessToken($this->token);
             } catch (InvalidArgumentException $e) {
-                $this->stderr("Invalid authorization token: {$this->token}" . PHP_EOL, Console::FG_RED);
+                $this->stderr("Invalid authorization token: $this->token" . PHP_EOL, Console::FG_RED);
                 return null;
             }
 
             $schema = $token->getSchema();
 
             if (!$schema) {
-                $this->stderr("No schema selected for token: {$this->token}" . PHP_EOL, Console::FG_RED);
+                $this->stderr("No schema selected for token: $this->token" . PHP_EOL, Console::FG_RED);
                 return null;
             }
 

@@ -104,9 +104,9 @@ class NoFixturesTest extends TestCase
         $projectConfig->init();
 
         $projectConfig
-            ->onAdd(Sections::CONFIG_SECTIONS_KEY . '.{uid}', [$sectionService, 'handleChangedSection'])
-            ->onUpdate(Sections::CONFIG_SECTIONS_KEY . '.{uid}', [$sectionService, 'handleChangedSection'])
-            ->onRemove(Sections::CONFIG_SECTIONS_KEY . '.{uid}', [$sectionService, 'handleDeletedSection']);
+            ->onAdd(ProjectConfig::PATH_SECTIONS . '.{uid}', [$sectionService, 'handleChangedSection'])
+            ->onUpdate(ProjectConfig::PATH_SECTIONS . '.{uid}', [$sectionService, 'handleChangedSection'])
+            ->onRemove(ProjectConfig::PATH_SECTIONS . '.{uid}', [$sectionService, 'handleDeletedSection']);
 
 
         Craft::$app->set('sections', $sectionService);

@@ -52,6 +52,7 @@ use craft\validators\DateTimeValidator;
 use craft\validators\StringValidator;
 use craft\volumes\Temp;
 use DateTime;
+use Throwable;
 use Twig\Markup;
 use yii\base\ErrorHandler;
 use yii\base\Exception;
@@ -87,13 +88,13 @@ class Asset extends Element
     /**
      * @event AssetEvent The event that is triggered before an asset is uploaded to volume.
      */
-    const EVENT_BEFORE_HANDLE_FILE = 'beforeHandleFile';
+    public const EVENT_BEFORE_HANDLE_FILE = 'beforeHandleFile';
 
     // Location error codes
     // -------------------------------------------------------------------------
 
-    const ERROR_DISALLOWED_EXTENSION = 'disallowed_extension';
-    const ERROR_FILENAME_CONFLICT = 'filename_conflict';
+    public const ERROR_DISALLOWED_EXTENSION = 'disallowed_extension';
+    public const ERROR_FILENAME_CONFLICT = 'filename_conflict';
 
     // Validation scenarios
     // -------------------------------------------------------------------------
@@ -103,38 +104,38 @@ class Asset extends Element
      *
      * @since 3.7.1
      */
-    const SCENARIO_MOVE = 'move';
-    const SCENARIO_FILEOPS = 'fileOperations';
-    const SCENARIO_INDEX = 'index';
-    const SCENARIO_CREATE = 'create';
-    const SCENARIO_REPLACE = 'replace';
+    public const SCENARIO_MOVE = 'move';
+    public const SCENARIO_FILEOPS = 'fileOperations';
+    public const SCENARIO_INDEX = 'index';
+    public const SCENARIO_CREATE = 'create';
+    public const SCENARIO_REPLACE = 'replace';
 
     // File kinds
     // -------------------------------------------------------------------------
 
-    const KIND_ACCESS = 'access';
-    const KIND_AUDIO = 'audio';
+    public const KIND_ACCESS = 'access';
+    public const KIND_AUDIO = 'audio';
     /**
      * @since 3.6.0
      */
-    const KIND_CAPTIONS_SUBTITLES = 'captionsSubtitles';
-    const KIND_COMPRESSED = 'compressed';
-    const KIND_EXCEL = 'excel';
-    const KIND_FLASH = 'flash';
-    const KIND_HTML = 'html';
-    const KIND_ILLUSTRATOR = 'illustrator';
-    const KIND_IMAGE = 'image';
-    const KIND_JAVASCRIPT = 'javascript';
-    const KIND_JSON = 'json';
-    const KIND_PDF = 'pdf';
-    const KIND_PHOTOSHOP = 'photoshop';
-    const KIND_PHP = 'php';
-    const KIND_POWERPOINT = 'powerpoint';
-    const KIND_TEXT = 'text';
-    const KIND_VIDEO = 'video';
-    const KIND_WORD = 'word';
-    const KIND_XML = 'xml';
-    const KIND_UNKNOWN = 'unknown';
+    public const KIND_CAPTIONS_SUBTITLES = 'captionsSubtitles';
+    public const KIND_COMPRESSED = 'compressed';
+    public const KIND_EXCEL = 'excel';
+    public const KIND_FLASH = 'flash';
+    public const KIND_HTML = 'html';
+    public const KIND_ILLUSTRATOR = 'illustrator';
+    public const KIND_IMAGE = 'image';
+    public const KIND_JAVASCRIPT = 'javascript';
+    public const KIND_JSON = 'json';
+    public const KIND_PDF = 'pdf';
+    public const KIND_PHOTOSHOP = 'photoshop';
+    public const KIND_PHP = 'php';
+    public const KIND_POWERPOINT = 'powerpoint';
+    public const KIND_TEXT = 'text';
+    public const KIND_VIDEO = 'video';
+    public const KIND_WORD = 'word';
+    public const KIND_XML = 'xml';
+    public const KIND_UNKNOWN = 'unknown';
 
     /**
      * @inheritdoc
@@ -588,7 +589,7 @@ class Asset extends Element
     public ?bool $keptFile = null;
 
     /**
-     * @var \DateTime|null Date modified
+     * @var DateTime|null Date modified
      */
     public ?DateTime $dateModified = null;
 
@@ -705,7 +706,7 @@ class Asset extends Element
             if (isset($this->_transform) && ($url = (string)$this->getUrl())) {
                 return $url;
             }
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             ErrorHandler::convertExceptionToError($e);
         }
 
@@ -1443,7 +1444,7 @@ class Asset extends Element
         if (!$width || !$height) {
             return null;
         }
-        return "{$width}×{$height}";
+        return $width . '×' . $height;
     }
 
     /**
@@ -1911,7 +1912,7 @@ class Asset extends Element
             $sanitizeCpImageUploads = Craft::$app->getConfig()->getGeneral()->sanitizeCpImageUploads;
 
             if (
-                \in_array($this->getScenario(), [self::SCENARIO_REPLACE, self::SCENARIO_CREATE], true) &&
+                in_array($this->getScenario(), [self::SCENARIO_REPLACE, self::SCENARIO_CREATE], true) &&
                 AssetsHelper::getFileKindByExtension($this->tempFilePath) === static::KIND_IMAGE &&
                 !($isCpRequest && !$sanitizeCpImageUploads)
             ) {

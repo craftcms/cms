@@ -10,6 +10,7 @@ namespace craft\controllers\pluginstore;
 use Craft;
 use craft\controllers\BaseUpdaterController;
 use craft\web\Response;
+use Throwable;
 use yii\web\ForbiddenHttpException;
 use yii\web\Response as YiiResponse;
 
@@ -22,9 +23,9 @@ use yii\web\Response as YiiResponse;
  */
 class InstallController extends BaseUpdaterController
 {
-    const ACTION_CRAFT_INSTALL = 'craft-install';
-    const ACTION_ENABLE = 'enable';
-    const ACTION_MIGRATE = 'migrate';
+    public const ACTION_CRAFT_INSTALL = 'craft-install';
+    public const ACTION_ENABLE = 'enable';
+    public const ACTION_MIGRATE = 'migrate';
 
     /**
      * @var string|null
@@ -221,7 +222,7 @@ class InstallController extends BaseUpdaterController
         if ($this->data['licenseKey'] !== null) {
             try {
                 Craft::$app->getPlugins()->setPluginLicenseKey($this->data['handle'], $this->data['licenseKey']);
-            } catch (\Throwable $e) {
+            } catch (Throwable $e) {
                 Craft::error("Could not set the license key on {$this->data['handle']}: {$e->getMessage()}", __METHOD__);
                 Craft::$app->getErrorHandler()->logException($e);
             }

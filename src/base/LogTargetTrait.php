@@ -9,6 +9,7 @@ namespace craft\base;
 
 use Craft;
 use craft\helpers\ArrayHelper;
+use Throwable;
 use yii\base\InvalidConfigException;
 use yii\helpers\VarDumper;
 use yii\log\Target;
@@ -39,7 +40,7 @@ trait LogTargetTrait
      * The message structure follows that in [[\yii\log\Logger::$messages]].
      * @return string the prefix string
      * @throws InvalidConfigException
-     * @throws \Throwable
+     * @throws Throwable
      * @see Target::getMessagePrefix()
      */
     public function getMessagePrefix($message): string
@@ -92,7 +93,7 @@ trait LogTargetTrait
 
             foreach ($context as $key => $value) {
                 $value = $security->redactIfSensitive($key, $value);
-                $result[] = "\${$key} = " . VarDumper::dumpAsString($value);
+                $result[] = "\$$key = " . VarDumper::dumpAsString($value);
             }
         }
 

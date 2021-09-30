@@ -18,6 +18,11 @@ use craft\helpers\Cp as CpHelper;
 use craft\helpers\StringHelper;
 use craft\helpers\UrlHelper;
 use DateTime;
+use DateTimeZone;
+use RecursiveCallbackFilterIterator;
+use RecursiveDirectoryIterator;
+use RecursiveIteratorIterator;
+use SplFileInfo;
 use yii\base\Component;
 use yii\base\InvalidConfigException;
 
@@ -50,7 +55,7 @@ class Cp extends Component
      * @see prepFormActions()
      * @since 3.6.10
      */
-    const EVENT_REGISTER_FORM_ACTIONS = 'registerFormActions';
+    public const EVENT_REGISTER_FORM_ACTIONS = 'registerFormActions';
 
     /**
      * @event RegisterCpNavItemsEvent The event that is triggered when registering control panel nav items.
@@ -85,7 +90,7 @@ class Cp extends Component
      * If a subnav is defined, subpages can specify which subnav item should be selected by defining a `selectedSubnavItem` variable that is set to
      * the selected item’s ID (its key in the `subnav` array).
      */
-    const EVENT_REGISTER_CP_NAV_ITEMS = 'registerCpNavItems';
+    public const EVENT_REGISTER_CP_NAV_ITEMS = 'registerCpNavItems';
 
     /**
      * @event RegisterCpSettingsEvent The event that is triggered when registering links that should render on the Settings page in the control panel.
@@ -115,7 +120,7 @@ class Cp extends Component
      *
      * @since 3.1.0
      */
-    const EVENT_REGISTER_CP_SETTINGS = 'registerCpSettings';
+    public const EVENT_REGISTER_CP_SETTINGS = 'registerCpSettings';
 
     /**
      * Returns the Craft ID account URL.
@@ -527,8 +532,8 @@ class Cp extends Component
         $offsets = [];
         $timezoneIds = [];
 
-        foreach (\DateTimeZone::listIdentifiers() as $timezoneId) {
-            $timezone = new \DateTimeZone($timezoneId);
+        foreach (DateTimeZone::listIdentifiers() as $timezoneId) {
+            $timezone = new DateTimeZone($timezoneId);
             $transition = $timezone->getTransitions($utc->getTimestamp(), $utc->getTimestamp());
             $abbr = $transition[0]['abbr'];
 
@@ -598,10 +603,10 @@ class Cp extends Component
             return [];
         }
 
-        $directory = new \RecursiveDirectoryIterator($root);
+        $directory = new RecursiveDirectoryIterator($root);
 
         /** @noinspection PhpParamsInspection */
-        $filter = new \RecursiveCallbackFilterIterator($directory, function($current) {
+        $filter = new RecursiveCallbackFilterIterator($directory, function($current) {
             // Skip hidden files and directories, as well as node_modules/ folders
             if ($current->getFilename()[0] === '.' || $current->getFilename() === 'node_modules') {
                 return false;
@@ -609,13 +614,13 @@ class Cp extends Component
             return true;
         });
 
-        $iterator = new \RecursiveIteratorIterator($filter);
-        /** @var \SplFileInfo[] $files */
+        $iterator = new RecursiveIteratorIterator($filter);
+        /** @var SplFileInfo[] $files */
         $files = [];
         $pathLengths = [];
 
         foreach ($iterator as $file) {
-            /** @var \SplFileInfo $file */
+            /** @var SplFileInfo $file */
             if (!$file->isDir() && $file->getFilename()[0] !== '.') {
                 $files[] = $file;
                 $pathLengths[] = strlen($file->getRealPath());

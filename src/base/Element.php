@@ -7,6 +7,7 @@
 
 namespace craft\base;
 
+use Closure;
 use Craft;
 use craft\behaviors\CustomFieldBehavior;
 use craft\behaviors\DraftBehavior;
@@ -63,6 +64,7 @@ use craft\validators\StringValidator;
 use craft\web\UploadedFile;
 use DateTime;
 use Illuminate\Support\Collection;
+use Throwable;
 use Twig\Markup;
 use yii\base\ErrorHandler;
 use yii\base\Event;
@@ -125,26 +127,26 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @since 3.3.6
      */
-    const HOMEPAGE_URI = '__home__';
+    public const HOMEPAGE_URI = '__home__';
 
     // Statuses
     // -------------------------------------------------------------------------
 
-    const STATUS_ENABLED = 'enabled';
-    const STATUS_DISABLED = 'disabled';
-    const STATUS_ARCHIVED = 'archived';
+    public const STATUS_ENABLED = 'enabled';
+    public const STATUS_DISABLED = 'disabled';
+    public const STATUS_ARCHIVED = 'archived';
 
     // Validation scenarios
     // -------------------------------------------------------------------------
 
-    const SCENARIO_ESSENTIALS = 'essentials';
-    const SCENARIO_LIVE = 'live';
+    public const SCENARIO_ESSENTIALS = 'essentials';
+    public const SCENARIO_LIVE = 'live';
 
     // Attribute/Field Statuses
     // -------------------------------------------------------------------------
 
-    const ATTR_STATUS_MODIFIED = 'modified';
-    const ATTR_STATUS_OUTDATED = 'outdated';
+    public const ATTR_STATUS_MODIFIED = 'modified';
+    public const ATTR_STATUS_OUTDATED = 'outdated';
 
     // Events
     // -------------------------------------------------------------------------
@@ -152,7 +154,7 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @event RegisterElementSourcesEvent The event that is triggered when registering the available sources for the element type.
      */
-    const EVENT_REGISTER_SOURCES = 'registerSources';
+    public const EVENT_REGISTER_SOURCES = 'registerSources';
 
     /**
      * @event RegisterElementFieldLayoutsEvent The event that is triggered when registering all of the field layouts
@@ -160,38 +162,38 @@ abstract class Element extends Component implements ElementInterface
      * @see fieldLayouts()
      * @since 3.5.0
      */
-    const EVENT_REGISTER_FIELD_LAYOUTS = 'registerFieldLayouts';
+    public const EVENT_REGISTER_FIELD_LAYOUTS = 'registerFieldLayouts';
 
     /**
      * @event RegisterElementActionsEvent The event that is triggered when registering the available actions for the element type.
      */
-    const EVENT_REGISTER_ACTIONS = 'registerActions';
+    public const EVENT_REGISTER_ACTIONS = 'registerActions';
 
     /**
      * @event RegisterElementExportersEvent The event that is triggered when registering the available exporters for the element type.
      * @since 3.4.0
      */
-    const EVENT_REGISTER_EXPORTERS = 'registerExporters';
+    public const EVENT_REGISTER_EXPORTERS = 'registerExporters';
 
     /**
      * @event RegisterElementSearchableAttributesEvent The event that is triggered when registering the searchable attributes for the element type.
      */
-    const EVENT_REGISTER_SEARCHABLE_ATTRIBUTES = 'registerSearchableAttributes';
+    public const EVENT_REGISTER_SEARCHABLE_ATTRIBUTES = 'registerSearchableAttributes';
 
     /**
      * @event RegisterElementSortOptionsEvent The event that is triggered when registering the sort options for the element type.
      */
-    const EVENT_REGISTER_SORT_OPTIONS = 'registerSortOptions';
+    public const EVENT_REGISTER_SORT_OPTIONS = 'registerSortOptions';
 
     /**
      * @event RegisterElementTableAttributesEvent The event that is triggered when registering the table attributes for the element type.
      */
-    const EVENT_REGISTER_TABLE_ATTRIBUTES = 'registerTableAttributes';
+    public const EVENT_REGISTER_TABLE_ATTRIBUTES = 'registerTableAttributes';
 
     /**
      * @event RegisterElementTableAttributesEvent The event that is triggered when registering the table attributes for the element type.
      */
-    const EVENT_REGISTER_DEFAULT_TABLE_ATTRIBUTES = 'registerDefaultTableAttributes';
+    public const EVENT_REGISTER_DEFAULT_TABLE_ATTRIBUTES = 'registerDefaultTableAttributes';
 
     /**
      * @event ElementIndexTableAttributeEvent The event that is triggered when preparing an element query for an element index, for each
@@ -250,7 +252,7 @@ abstract class Element extends Component implements ElementInterface
      *
      * @since 3.7.14
      */
-    const EVENT_PREP_QUERY_FOR_TABLE_ATTRIBUTE = 'prepQueryForTableAttribute';
+    public const EVENT_PREP_QUERY_FOR_TABLE_ATTRIBUTE = 'prepQueryForTableAttribute';
 
     /**
      * @event DefineEagerLoadingMapEvent The event that is triggered when defining an eager-loading map.
@@ -284,7 +286,7 @@ abstract class Element extends Component implements ElementInterface
      *
      * @since 3.1.0
      */
-    const EVENT_DEFINE_EAGER_LOADING_MAP = 'defineEagerLoadingMap';
+    public const EVENT_DEFINE_EAGER_LOADING_MAP = 'defineEagerLoadingMap';
 
     /**
      * @event SetEagerLoadedElementsEvent The event that is triggered when setting eager-loaded elements.
@@ -294,58 +296,58 @@ abstract class Element extends Component implements ElementInterface
      *
      * @since 3.5.0
      */
-    const EVENT_SET_EAGER_LOADED_ELEMENTS = 'setEagerLoadedElements';
+    public const EVENT_SET_EAGER_LOADED_ELEMENTS = 'setEagerLoadedElements';
 
     /**
      * @event RegisterPreviewTargetsEvent The event that is triggered when registering the element’s preview targets.
      * @since 3.2.0
      */
-    const EVENT_REGISTER_PREVIEW_TARGETS = 'registerPreviewTargets';
+    public const EVENT_REGISTER_PREVIEW_TARGETS = 'registerPreviewTargets';
 
     /**
      * @event SetElementTableAttributeHtmlEvent The event that is triggered when defining the HTML to represent a table attribute.
      */
-    const EVENT_SET_TABLE_ATTRIBUTE_HTML = 'setTableAttributeHtml';
+    public const EVENT_SET_TABLE_ATTRIBUTE_HTML = 'setTableAttributeHtml';
 
     /**
      * @event RegisterElementHtmlAttributesEvent The event that is triggered when registering the HTML attributes that should be included in the element’s DOM representation in the control panel.
      */
-    const EVENT_REGISTER_HTML_ATTRIBUTES = 'registerHtmlAttributes';
+    public const EVENT_REGISTER_HTML_ATTRIBUTES = 'registerHtmlAttributes';
 
     /**
      * @event DefineHtmlEvent The event that is triggered when defining the HTML for the element’s editor slideout sidebar.
      * @see getSidebarHtml()
      * @since 3.7.0
      */
-    const EVENT_DEFINE_SIDEBAR_HTML = 'defineSidebarHtml';
+    public const EVENT_DEFINE_SIDEBAR_HTML = 'defineSidebarHtml';
 
     /**
      * @event DefineHtmlEvent The event that is triggered when defining the HTML for meta fields within the element’s editor slideout sidebar.
      * @see metaFieldsHtml()
      * @since 3.7.0
      */
-    const EVENT_DEFINE_META_FIELDS_HTML = 'defineMetaFieldsHtml';
+    public const EVENT_DEFINE_META_FIELDS_HTML = 'defineMetaFieldsHtml';
 
     /**
      * @event DefineMetadataEvent The event that is triggered when defining the element’s metadata info.
      * @see getMetadata()
      * @since 3.7.0
      */
-    const EVENT_DEFINE_METADATA = 'defineMetadata';
+    public const EVENT_DEFINE_METADATA = 'defineMetadata';
 
     /**
      * @event DefineValueEvent The event that is triggered when determining whether the element should be editable by the current user.
      * @see getIsEditable()
      * @since 3.7.0
      */
-    const EVENT_DEFINE_IS_EDITABLE = 'defineIsEditable';
+    public const EVENT_DEFINE_IS_EDITABLE = 'defineIsEditable';
 
     /**
      * @event DefineValueEvent The event that is triggered when determining whether the element should be deletable by the current user.
      * @see getIsDeletable()
      * @since 3.7.0
      */
-    const EVENT_DEFINE_IS_DELETABLE = 'defineIsDeletable';
+    public const EVENT_DEFINE_IS_DELETABLE = 'defineIsDeletable';
 
     /**
      * @event SetElementRouteEvent The event that is triggered when defining the route that should be used when this element’s URL is requested.
@@ -368,7 +370,7 @@ abstract class Element extends Component implements ElementInterface
      * });
      * ```
      */
-    const EVENT_SET_ROUTE = 'setRoute';
+    public const EVENT_SET_ROUTE = 'setRoute';
 
     /**
      * @event DefineAttributeKeywordsEvent The event that is triggered when defining the search keywords for an
@@ -396,7 +398,7 @@ abstract class Element extends Component implements ElementInterface
      *
      * @since 3.5.0
      */
-    const EVENT_DEFINE_KEYWORDS = 'defineKeywords';
+    public const EVENT_DEFINE_KEYWORDS = 'defineKeywords';
 
     /**
      * @event ModelEvent The event that is triggered before the element is saved.
@@ -425,7 +427,7 @@ abstract class Element extends Component implements ElementInterface
      * });
      * ```
      */
-    const EVENT_BEFORE_SAVE = 'beforeSave';
+    public const EVENT_BEFORE_SAVE = 'beforeSave';
 
     /**
      * @event ModelEvent The event that is triggered after the element is saved.
@@ -452,7 +454,7 @@ abstract class Element extends Component implements ElementInterface
      * });
      * ```
      */
-    const EVENT_AFTER_SAVE = 'afterSave';
+    public const EVENT_AFTER_SAVE = 'afterSave';
 
     /**
      * @event ModelEvent The event that is triggered after the element is fully saved and propagated to other sites.
@@ -481,19 +483,19 @@ abstract class Element extends Component implements ElementInterface
      *
      * @since 3.2.0
      */
-    const EVENT_AFTER_PROPAGATE = 'afterPropagate';
+    public const EVENT_AFTER_PROPAGATE = 'afterPropagate';
 
     /**
      * @event ModelEvent The event that is triggered before the element is deleted.
      *
      * You may set [[\yii\base\ModelEvent::$isValid]] to `false` to prevent the element from getting deleted.
      */
-    const EVENT_BEFORE_DELETE = 'beforeDelete';
+    public const EVENT_BEFORE_DELETE = 'beforeDelete';
 
     /**
      * @event \yii\base\Event The event that is triggered after the element is deleted.
      */
-    const EVENT_AFTER_DELETE = 'afterDelete';
+    public const EVENT_AFTER_DELETE = 'afterDelete';
 
     /**
      * @event ModelEvent The event that is triggered before the element is restored.
@@ -501,25 +503,25 @@ abstract class Element extends Component implements ElementInterface
      * You may set [[\yii\base\ModelEvent::$isValid]] to `false` to prevent the element from getting restored.
      * @since 3.1.0
      */
-    const EVENT_BEFORE_RESTORE = 'beforeRestore';
+    public const EVENT_BEFORE_RESTORE = 'beforeRestore';
 
     /**
      * @event \yii\base\Event The event that is triggered after the element is restored.
      * @since 3.1.0
      */
-    const EVENT_AFTER_RESTORE = 'afterRestore';
+    public const EVENT_AFTER_RESTORE = 'afterRestore';
 
     /**
      * @event ElementStructureEvent The event that is triggered before the element is moved in a structure.
      *
      * You may set [[\yii\base\ModelEvent::$isValid]] to `false` to prevent the element from getting moved.
      */
-    const EVENT_BEFORE_MOVE_IN_STRUCTURE = 'beforeMoveInStructure';
+    public const EVENT_BEFORE_MOVE_IN_STRUCTURE = 'beforeMoveInStructure';
 
     /**
      * @event ElementStructureEvent The event that is triggered after the element is moved in a structure.
      */
-    const EVENT_AFTER_MOVE_IN_STRUCTURE = 'afterMoveInStructure';
+    public const EVENT_AFTER_MOVE_IN_STRUCTURE = 'afterMoveInStructure';
 
     /**
      * @inheritdoc
@@ -1698,7 +1700,7 @@ abstract class Element extends Component implements ElementInterface
 
         try {
             return static::displayName();
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             ErrorHandler::convertExceptionToError($e);
         }
     }
@@ -2034,7 +2036,7 @@ abstract class Element extends Component implements ElementInterface
             array_unshift($rule, $attribute);
         }
 
-        if ($rule[1] instanceof \Closure || $field->hasMethod($rule[1])) {
+        if ($rule[1] instanceof Closure || $field->hasMethod($rule[1])) {
             // InlineValidator assumes that the closure is on the model being validated
             // so it won’t pass a reference to the element
             $rule['params'] = [

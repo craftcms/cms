@@ -21,12 +21,12 @@ class UserPasswordValidator extends StringValidator
     /**
      * @since 3.5.18
      */
-    const MIN_PASSWORD_LENGTH = 6;
+    public const MIN_PASSWORD_LENGTH = 6;
 
     /**
      * @since 3.5.18
      */
-    const MAX_PASSWORD_LENGTH = 160;
+    public const MAX_PASSWORD_LENGTH = 160;
 
     /**
      * @var bool Whether the password must be different from the existing password.

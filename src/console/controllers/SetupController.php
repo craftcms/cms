@@ -21,7 +21,9 @@ use craft\helpers\FileHelper;
 use craft\helpers\StringHelper;
 use craft\migrations\CreateDbCacheTable;
 use craft\migrations\CreatePhpSessionTable;
+use PDOException;
 use Seld\CliPrompt\CliPrompt;
+use Throwable;
 use yii\base\InvalidConfigException;
 use yii\console\ExitCode;
 
@@ -183,7 +185,7 @@ EOD;
         if (!$this->_setEnvVar('APP_ID', $key)) {
             return ExitCode::UNSPECIFIED_ERROR;
         }
-        $this->stdout("done ({$key})" . PHP_EOL, Console::FG_YELLOW);
+        $this->stdout("done ($key)" . PHP_EOL, Console::FG_YELLOW);
         return ExitCode::OK;
     }
 
@@ -201,7 +203,7 @@ EOD;
         }
 
         Craft::$app->getConfig()->getGeneral()->securityKey = $key;
-        $this->stdout("done ({$key})" . PHP_EOL, Console::FG_YELLOW);
+        $this->stdout("done ($key)" . PHP_EOL, Console::FG_YELLOW);
         return ExitCode::OK;
     }
 
@@ -311,21 +313,14 @@ EOD;
             }
         }
 
-        /** @noinspection PhpFieldAssignmentTypeMismatchInspection */
         $dbConfig->driver = $this->driver;
-        /** @noinspection PhpFieldAssignmentTypeMismatchInspection */
         $dbConfig->server = $this->server;
         $dbConfig->port = $this->port;
-        /** @noinspection PhpFieldAssignmentTypeMismatchInspection */
         $dbConfig->database = $this->database;
-        $dbConfig->dsn = "{$this->driver}:host={$this->server};port={$this->port};dbname={$this->database};";
-        /** @noinspection PhpFieldAssignmentTypeMismatchInspection */
+        $dbConfig->dsn = "$this->driver:host=$this->server;port=$this->port;dbname=$this->database;";
         $dbConfig->user = $this->user;
-        /** @noinspection PhpFieldAssignmentTypeMismatchInspection */
         $dbConfig->password = $this->password;
-        /** @noinspection PhpFieldAssignmentTypeMismatchInspection */
         $dbConfig->schema = $this->schema;
-        /** @noinspection PhpFieldAssignmentTypeMismatchInspection */
         $dbConfig->tablePrefix = $this->tablePrefix;
 
         $db = Craft::$app->getDb();
@@ -343,7 +338,7 @@ EOD;
             // 1045: Access denied for user (username, password)
             // 1049: Unknown database (database)
             // 2002: Connection timed out (server)
-            /** @var \PDOException $pdoException */
+            /** @var PDOException $pdoException */
             $pdoException = $e->getPrevious()->getPrevious() ?? $e->getPrevious() ?? $e;
             $this->stderr('failed: ' . $pdoException->getMessage() . PHP_EOL, Console::FG_RED);
 
@@ -500,15 +495,15 @@ EOD;
         $path = $configService->getDotEnvPath();
 
         if (!file_exists($path)) {
-            if ($this->confirm(PHP_EOL . "A .env file doesn't exist at {$path}. Would you like to create one?", true)) {
+            if ($this->confirm(PHP_EOL . "A .env file doesn't exist at $path. Would you like to create one?", true)) {
                 try {
                     FileHelper::writeToFile($path, '');
-                } catch (\Throwable $e) {
-                    $this->stderr("Unable to create {$path}: {$e->getMessage()}" . PHP_EOL, Console::FG_RED);
+                } catch (Throwable $e) {
+                    $this->stderr("Unable to create $path: {$e->getMessage()}" . PHP_EOL, Console::FG_RED);
                     return false;
                 }
 
-                $this->stdout("{$path} created. Note you still need to set up PHP dotenv for its values to take effect." . PHP_EOL, Console::FG_YELLOW);
+                $this->stdout("$path created. Note you still need to set up PHP dotenv for its values to take effect." . PHP_EOL, Console::FG_YELLOW);
             } else {
                 $this->stdout(PHP_EOL . 'Action aborted.' . PHP_EOL, Console::FG_YELLOW);
                 return false;
@@ -517,8 +512,8 @@ EOD;
 
         try {
             $configService->setDotEnvVar($name, $value);
-        } catch (\Throwable $e) {
-            $this->stderr("Unable to set {$name} on {$path}: {$e->getMessage()}" . PHP_EOL, Console::FG_RED);
+        } catch (Throwable $e) {
+            $this->stderr("Unable to set $name on $path: {$e->getMessage()}" . PHP_EOL, Console::FG_RED);
             return false;
         }
 

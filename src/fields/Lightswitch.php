@@ -173,7 +173,7 @@ class Lightswitch extends Field implements PreviewableFieldInterface, SortableFi
         }
 
         $column = ElementHelper::fieldColumnFromField($this);
-        $query->subQuery->andWhere(Db::parseBooleanParam("content.$column", $value, (bool)$this->default));
+        $query->subQuery->andWhere(Db::parseBooleanParam("content.$column", $value, $this->default));
     }
 
     /**

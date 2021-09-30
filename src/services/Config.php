@@ -32,8 +32,8 @@ use yii\base\InvalidConfigException;
  */
 class Config extends Component
 {
-    const CATEGORY_DB = 'db';
-    const CATEGORY_GENERAL = 'general';
+    public const CATEGORY_DB = 'db';
+    public const CATEGORY_GENERAL = 'general';
 
     /**
      * @var string|null The environment ID Craft is currently running in.
@@ -115,7 +115,7 @@ class Config extends Component
                     }
                     $config->securityKey = $key;
                 }
-                Craft::$app->getDeprecator()->log('validation.key', "The auto-generated validation key stored at `{$keyPath}` has been deprecated. Copy its value to the `securityKey` config setting in `config/general.php`.");
+                Craft::$app->getDeprecator()->log('validation.key', "The auto-generated validation key stored at `$keyPath` has been deprecated. Copy its value to the `securityKey` config setting in `config/general.php`.");
             }
         }
 
@@ -243,7 +243,7 @@ class Config extends Component
         $path = $this->getDotEnvPath();
 
         if (!file_exists($path)) {
-            throw new Exception("No .env file exists at {$path}");
+            throw new Exception("No .env file exists at $path");
         }
 
         $contents = file_get_contents($path);
@@ -254,7 +254,7 @@ class Config extends Component
             $slashedValue = "\"$slashedValue\"";
         }
         $qValue = str_replace('$', '\\$', $slashedValue);
-        $contents = preg_replace("/^(\s*){$qName}=.*/m", "\$1$name=$qValue", $contents, -1, $count);
+        $contents = preg_replace("/^(\s*)$qName=.*/m", "\$1$name=$qValue", $contents, -1, $count);
 
         if ($count === 0) {
             $contents = rtrim($contents);
@@ -264,6 +264,6 @@ class Config extends Component
         FileHelper::writeToFile($path, $contents);
 
         // Now actually set the environment variable
-        putenv("{$name}={$value}");
+        putenv("$name=$value");
     }
 }

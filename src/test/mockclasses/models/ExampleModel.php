@@ -8,6 +8,7 @@
 namespace craft\test\mockclasses\models;
 
 use craft\base\Model;
+use DateTime;
 
 /**
  * Class ExampleModel.
@@ -29,12 +30,12 @@ class ExampleModel extends Model
     public $exampleDateParam;
 
     /**
-     * @var \DateTime
+     * @var DateTime
      */
     public $dateCreated;
 
     /**
-     * @var \DateTime
+     * @var DateTime
      */
     public $dateUpdated;
 

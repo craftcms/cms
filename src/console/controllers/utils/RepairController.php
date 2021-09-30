@@ -20,6 +20,7 @@ use craft\models\Section;
 use craft\records\StructureElement;
 use craft\services\ProjectConfig;
 use craft\services\Structures;
+use Throwable;
 use yii\console\ExitCode;
 use yii\db\Expression;
 
@@ -230,7 +231,7 @@ class RepairController extends Controller
             if (isset($transaction)) {
                 $transaction->commit();
             }
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             if (isset($transaction)) {
                 $transaction->rollBack();
             }
@@ -272,13 +273,13 @@ class RepairController extends Controller
     {
         if (is_array($value)) {
             // Is this a packed array?
-            if (isset($value[ProjectConfig::CONFIG_ASSOC_KEY])) {
+            if (isset($value[ProjectConfig::ASSOC_KEY])) {
                 $double = false;
                 while (
-                    isset($value[ProjectConfig::CONFIG_ASSOC_KEY][0][0]) &&
-                    $value[ProjectConfig::CONFIG_ASSOC_KEY][0][0] === ProjectConfig::CONFIG_ASSOC_KEY
+                    isset($value[ProjectConfig::ASSOC_KEY][0][0]) &&
+                    $value[ProjectConfig::ASSOC_KEY][0][0] === ProjectConfig::ASSOC_KEY
                 ) {
-                    $value[ProjectConfig::CONFIG_ASSOC_KEY] = $value[ProjectConfig::CONFIG_ASSOC_KEY][0][1] ?? [];
+                    $value[ProjectConfig::ASSOC_KEY] = $value[ProjectConfig::ASSOC_KEY][0][1] ?? [];
                     $double = true;
                 }
 

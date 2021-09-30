@@ -16,7 +16,6 @@ use craft\base\FieldInterface;
 use craft\base\GqlInlineFragmentFieldInterface;
 use craft\base\GqlInlineFragmentInterface;
 use craft\db\Query;
-use craft\db\QueryAbortedException;
 use craft\db\Table as DbTable;
 use craft\elements\db\ElementQuery;
 use craft\elements\db\ElementQueryInterface;
@@ -61,16 +60,16 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
      * @event SectionEvent The event that is triggered before a section is saved.
      * @since 3.1.27
      */
-    const EVENT_SET_FIELD_BLOCK_TYPES = 'setFieldBlockTypes';
+    public const EVENT_SET_FIELD_BLOCK_TYPES = 'setFieldBlockTypes';
 
-    const PROPAGATION_METHOD_NONE = 'none';
-    const PROPAGATION_METHOD_SITE_GROUP = 'siteGroup';
-    const PROPAGATION_METHOD_LANGUAGE = 'language';
+    public const PROPAGATION_METHOD_NONE = 'none';
+    public const PROPAGATION_METHOD_SITE_GROUP = 'siteGroup';
+    public const PROPAGATION_METHOD_LANGUAGE = 'language';
     /**
      * @since 3.7.0
      */
-    const PROPAGATION_METHOD_CUSTOM = 'custom';
-    const PROPAGATION_METHOD_ALL = 'all';
+    public const PROPAGATION_METHOD_CUSTOM = 'custom';
+    public const PROPAGATION_METHOD_ALL = 'all';
 
     /**
      * @inheritdoc
@@ -777,7 +776,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
             }
 
             if (!$block->validate()) {
-                $element->addModelErrors($block, "{$this->handle}[{$i}]");
+                $element->addModelErrors($block, "$this->handle[$i]");
                 $allBlocksValidate = false;
             }
         }
@@ -1211,7 +1210,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
         $prevBlock = null;
 
         $fieldNamespace = $element->getFieldParamNamespace();
-        $baseBlockFieldNamespace = $fieldNamespace ? "{$fieldNamespace}.{$this->handle}" : null;
+        $baseBlockFieldNamespace = $fieldNamespace ? "$fieldNamespace.$this->handle" : null;
 
         // Was the value posted in the new (delta) format?
         if (isset($value['blocks']) || isset($value['sortOrder'])) {
@@ -1281,7 +1280,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
 
             // Set the content post location on the block if we can
             if ($baseBlockFieldNamespace) {
-                $block->setFieldParamNamespace("{$baseBlockFieldNamespace}.{$blockId}.fields");
+                $block->setFieldParamNamespace("$baseBlockFieldNamespace.$blockId.fields");
             }
 
             if (isset($blockData['fields'])) {

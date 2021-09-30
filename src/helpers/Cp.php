@@ -30,16 +30,16 @@ class Cp
     /**
      * @event RegisterCpAlertsEvent The event that is triggered when registering control panel alerts.
      */
-    const EVENT_REGISTER_ALERTS = 'registerAlerts';
+    public const EVENT_REGISTER_ALERTS = 'registerAlerts';
 
     /**
      * @since 3.5.8
      */
-    const ELEMENT_SIZE_SMALL = 'small';
+    public const ELEMENT_SIZE_SMALL = 'small';
     /**
      * @since 3.5.8
      */
-    const ELEMENT_SIZE_LARGE = 'large';
+    public const ELEMENT_SIZE_LARGE = 'large';
 
     /**
      * Renders a control panel template.
@@ -220,9 +220,7 @@ class Cp
         // Give plugins a chance to add their own alerts
         $event = new RegisterCpAlertsEvent();
         Event::trigger(self::class, self::EVENT_REGISTER_ALERTS, $event);
-        $alerts = array_merge($alerts, $event->alerts);
-
-        return $alerts;
+        return array_merge($alerts, $event->alerts);
     }
 
     /**

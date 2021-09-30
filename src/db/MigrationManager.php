@@ -12,6 +12,8 @@ use craft\errors\MigrationException;
 use craft\helpers\App;
 use craft\helpers\Db;
 use craft\helpers\FileHelper;
+use DateTime;
+use Throwable;
 use yii\base\Component;
 use yii\base\Exception;
 use yii\base\InvalidConfigException;
@@ -30,16 +32,16 @@ class MigrationManager extends Component
     /**
      * The name of the dummy migration that marks the beginning of the whole migration history.
      */
-    const BASE_MIGRATION = 'm000000_000000_base';
+    public const BASE_MIGRATION = 'm000000_000000_base';
 
     /**
      * @since 3.5.0
      */
-    const TRACK_CRAFT = 'craft';
+    public const TRACK_CRAFT = 'craft';
     /**
      * @since 3.5.0
      */
-    const TRACK_CONTENT = 'content';
+    public const TRACK_CONTENT = 'content';
 
     /**
      * @var string The migration track (e.g. `craft`, `content`, `plugin:commerce`, etc.)
@@ -232,7 +234,7 @@ class MigrationManager extends Component
             } else {
                 $success = ($migration->up() !== false);
             }
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $success = false;
         }
         $time = microtime(true) - $start;
@@ -293,7 +295,7 @@ class MigrationManager extends Component
             } else {
                 $success = ($migration->down() !== false);
             }
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $success = false;
         }
         $time = microtime(true) - $start;
@@ -345,7 +347,7 @@ class MigrationManager extends Component
         Db::insert($this->migrationTable, [
             'track' => $this->track,
             'name' => $name,
-            'applyTime' => Db::prepareDateForDb(new \DateTime()),
+            'applyTime' => Db::prepareDateForDb(new DateTime()),
         ]);
     }
 

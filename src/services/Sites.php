@@ -32,9 +32,11 @@ use craft\models\SiteGroup;
 use craft\queue\jobs\PropagateElements;
 use craft\records\Site as SiteRecord;
 use craft\records\SiteGroup as SiteGroupRecord;
+use Throwable;
 use yii\base\Component;
 use yii\base\Exception;
 use yii\base\InvalidArgumentException;
+use yii\base\NotSupportedException;
 use yii\db\Exception as DbException;
 
 /**
@@ -56,74 +58,71 @@ class Sites extends Component
     /**
      * @event SiteGroupEvent The event that is triggered before a site group is saved.
      */
-    const EVENT_BEFORE_SAVE_SITE_GROUP = 'beforeSaveSiteGroup';
+    public const EVENT_BEFORE_SAVE_SITE_GROUP = 'beforeSaveSiteGroup';
 
     /**
      * @event SiteGroupEvent The event that is triggered after a site group is saved.
      */
-    const EVENT_AFTER_SAVE_SITE_GROUP = 'afterSaveSiteGroup';
+    public const EVENT_AFTER_SAVE_SITE_GROUP = 'afterSaveSiteGroup';
 
     /**
      * @event SiteGroupEvent The event that is triggered before a site group is deleted.
      */
-    const EVENT_BEFORE_DELETE_SITE_GROUP = 'beforeDeleteSiteGroup';
+    public const EVENT_BEFORE_DELETE_SITE_GROUP = 'beforeDeleteSiteGroup';
 
     /**
      * @event SiteGroupEvent The event that is triggered before a site group delete is applied to the database.
      * @since 3.1.0
      */
-    const EVENT_BEFORE_APPLY_GROUP_DELETE = 'beforeApplyGroupDelete';
+    public const EVENT_BEFORE_APPLY_GROUP_DELETE = 'beforeApplyGroupDelete';
 
     /**
      * @event SiteGroupEvent The event that is triggered after a site group is deleted.
      */
-    const EVENT_AFTER_DELETE_SITE_GROUP = 'afterDeleteSiteGroup';
+    public const EVENT_AFTER_DELETE_SITE_GROUP = 'afterDeleteSiteGroup';
 
     /**
      * @event SiteEvent The event that is triggered before a site is saved.
      */
-    const EVENT_BEFORE_SAVE_SITE = 'beforeSaveSite';
+    public const EVENT_BEFORE_SAVE_SITE = 'beforeSaveSite';
 
     /**
      * @event SiteEvent The event that is triggered after a site is saved.
      */
-    const EVENT_AFTER_SAVE_SITE = 'afterSaveSite';
+    public const EVENT_AFTER_SAVE_SITE = 'afterSaveSite';
 
     /**
      * @event ReorderSitesEvent The event that is triggered before the sites are reordered.
      */
-    const EVENT_BEFORE_REORDER_SITES = 'beforeReorderSites';
+    public const EVENT_BEFORE_REORDER_SITES = 'beforeReorderSites';
 
     /**
      * @event ReorderSitesEvent The event that is triggered after the sites are reordered.
      */
-    const EVENT_AFTER_REORDER_SITES = 'afterReorderSites';
+    public const EVENT_AFTER_REORDER_SITES = 'afterReorderSites';
 
     /**
      * @event SiteEvent The event that is triggered after the primary site has changed
      */
-    const EVENT_AFTER_CHANGE_PRIMARY_SITE = 'afterChangePrimarySite';
+    public const EVENT_AFTER_CHANGE_PRIMARY_SITE = 'afterChangePrimarySite';
 
     /**
      * @event DeleteSiteEvent The event that is triggered before a site is deleted.
      *
      * You may set [[\craft\events\CancelableEvent::$isValid]] to `false` to prevent the site from getting deleted.
      */
-    const EVENT_BEFORE_DELETE_SITE = 'beforeDeleteSite';
+    public const EVENT_BEFORE_DELETE_SITE = 'beforeDeleteSite';
 
     /**
      * @event DeleteSiteEvent The event that is triggered before a site delete is applied to the database.
      * @since 3.1.0
      */
-    const EVENT_BEFORE_APPLY_SITE_DELETE = 'beforeApplySiteDelete';
+    public const EVENT_BEFORE_APPLY_SITE_DELETE = 'beforeApplySiteDelete';
 
     /**
      * @event DeleteSiteEvent The event that is triggered after a site is deleted.
      */
-    const EVENT_AFTER_DELETE_SITE = 'afterDeleteSite';
-
-    const CONFIG_SITEGROUP_KEY = 'siteGroups';
-    const CONFIG_SITES_KEY = 'sites';
+    public const EVENT_AFTER_DELETE_SITE = 'afterDeleteSite';
 
     /**
      * @var MemoizableArray<SiteGroup>|null
@@ -267,7 +266,7 @@ class Sites extends Component
             $group->uid = Db::uidById(Table::SITEGROUPS, $group->id);
         }
 
-        $configPath = self::CONFIG_SITEGROUP_KEY . '.' . $group->uid;
+        $configPath = ProjectConfig::PATH_SITE_GROUPS . '.' . $group->uid;
         $configData = $group->getConfig();
         Craft::$app->getProjectConfig()->set($configPath, $configData, "Save the “{$group->getName(false)}” site group");
 
@@ -399,7 +398,7 @@ class Sites extends Component
             ]));
         }
 
-        Craft::$app->getProjectConfig()->remove(self::CONFIG_SITEGROUP_KEY . '.' . $group->uid, "Delete the “{$group->getName(false)}” site group");
+        Craft::$app->getProjectConfig()->remove(ProjectConfig::PATH_SITE_GROUPS . '.' . $group->uid, "Delete the “{$group->getName(false)}” site group");
         return true;
     }
 
@@ -641,7 +640,7 @@ class Sites extends Component
      * @param bool $runValidation Whether the site should be validated
      * @return bool
      * @throws SiteNotFoundException if $site->id is invalid
-     * @throws \Throwable if reasons
+     * @throws Throwable if reasons
      */
     public function saveSite(Site $site, bool $runValidation = true): bool
     {
@@ -679,7 +678,7 @@ class Sites extends Component
 
         $projectConfigService = Craft::$app->getProjectConfig();
         $projectConfigService->set(
-            self::CONFIG_SITES_KEY . ".$site->uid",
+            ProjectConfig::PATH_SITES . ".$site->uid",
             $site->getConfig(),
             "Save the “{$site->handle}” site"
         );
@@ -692,7 +691,7 @@ class Sites extends Component
         // If this just became the new primary site, update the old primary site's config
         if ($site->primary && $primarySite && $site->id != $primarySite->id) {
             $projectConfigService->set(
-                self::CONFIG_SITES_KEY . ".$primarySite->uid.primary",
+                ProjectConfig::PATH_SITES . ".$primarySite->uid.primary",
                 false,
                 "Set the “{$primarySite->handle}” site not be primary"
             );
@@ -705,7 +704,7 @@ class Sites extends Component
      * Handle site changes.
      *
      * @param ConfigEvent $event
-     * @throws \Throwable
+     * @throws Throwable
      */
     public function handleChangedSite(ConfigEvent $event): void
     {
@@ -715,7 +714,7 @@ class Sites extends Component
 
         // Ensure we have the site group in place first
         $projectConfig = Craft::$app->getProjectConfig();
-        $projectConfig->processConfigChanges(self::CONFIG_SITEGROUP_KEY . '.' . $groupUid);
+        $projectConfig->processConfigChanges(ProjectConfig::PATH_SITE_GROUPS . '.' . $groupUid);
 
         try {
             $oldPrimarySiteId = $this->getPrimarySite()->id;
@@ -749,7 +748,7 @@ class Sites extends Component
             }
 
             $transaction->commit();
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $transaction->rollBack();
             throw $e;
         }
@@ -777,12 +776,12 @@ class Sites extends Component
 
         if ($isNewSite && $oldPrimarySiteId) {
             $oldPrimarySiteUid = Db::uidById(Table::SITES, $oldPrimarySiteId);
-            $existingCategorySettings = $projectConfig->get(Categories::CONFIG_CATEGORYROUP_KEY);
+            $existingCategorySettings = $projectConfig->get(ProjectConfig::PATH_CATEGORY_GROUPS);
 
             if (!$projectConfig->getIsApplyingYamlChanges() && is_array($existingCategorySettings)) {
                 foreach ($existingCategorySettings as $categoryUid => $settings) {
                     $primarySiteSettings = $settings['siteSettings'][$oldPrimarySiteUid];
-                    $projectConfig->set(Categories::CONFIG_CATEGORYROUP_KEY . '.' . $categoryUid . '.siteSettings.' . $site->uid, $primarySiteSettings, 'Copy site settings for category groups');
+                    $projectConfig->set(ProjectConfig::PATH_CATEGORY_GROUPS . '.' . $categoryUid . '.siteSettings.' . $site->uid, $primarySiteSettings, 'Copy site settings for category groups');
                 }
             }
 
@@ -826,7 +825,7 @@ class Sites extends Component
      *
      * @param string[] $siteIds The site IDs in their new order
      * @return bool Whether the sites were reordered successfully
-     * @throws \Throwable if reasons
+     * @throws Throwable if reasons
      */
     public function reorderSites(array $siteIds): bool
     {
@@ -844,7 +843,7 @@ class Sites extends Component
         foreach ($siteIds as $sortOrder => $siteId) {
             if (!empty($uidsByIds[$siteId])) {
                 $siteUid = $uidsByIds[$siteId];
-                $projectConfig->set(self::CONFIG_SITES_KEY . '.' . $siteUid . '.sortOrder', $sortOrder + 1, 'Reorder sites');
+                $projectConfig->set(ProjectConfig::PATH_SITES . '.' . $siteUid . '.sortOrder', $sortOrder + 1, 'Reorder sites');
             }
         }
 
@@ -863,7 +862,7 @@ class Sites extends Component
      * @param int $siteId The site ID to be deleted
      * @param int|null $transferContentTo The site ID that should take over the deleted site’s contents
      * @return bool Whether the site was deleted successfully
-     * @throws \Throwable if reasons
+     * @throws Throwable if reasons
      */
     public function deleteSiteById(int $siteId, ?int $transferContentTo = null): bool
     {
@@ -883,7 +882,7 @@ class Sites extends Component
      * @param int|null $transferContentTo The site ID that should take over the deleted site’s contents
      * @return bool Whether the site was deleted successfully
      * @throws Exception if $site is the primary site
-     * @throws \Throwable if reasons
+     * @throws Throwable if reasons
      */
     public function deleteSite(Site $site, ?int $transferContentTo = null): bool
     {
@@ -941,10 +940,10 @@ class Sites extends Component
                 // Update the project config too
                 $muteEvents = $projectConfig->muteEvents;
                 $projectConfig->muteEvents = true;
-                foreach ($projectConfig->get(Sections::CONFIG_SECTIONS_KEY) as $sectionUid => $sectionConfig) {
+                foreach ($projectConfig->get(ProjectConfig::PATH_SECTIONS) as $sectionUid => $sectionConfig) {
                     if (count($sectionConfig['siteSettings']) === 1 && isset($sectionConfig['siteSettings'][$site->uid])) {
                         $sectionConfig['siteSettings'][$transferContentToSite->uid] = ArrayHelper::remove($sectionConfig['siteSettings'], $site->uid);
-                        $projectConfig->set(Sections::CONFIG_SECTIONS_KEY . '.' . $sectionUid, $sectionConfig, 'Prune site settings');
+                        $projectConfig->set(ProjectConfig::PATH_SECTIONS . '.' . $sectionUid, $sectionConfig, 'Prune site settings');
                     }
                 }
                 $projectConfig->muteEvents = $muteEvents;
@@ -1033,7 +1032,7 @@ class Sites extends Component
             }
         }
 
-        $projectConfig->remove(self::CONFIG_SITES_KEY . '.' . $site->uid, "Delete the “{$site->handle}” site");
+        $projectConfig->remove(ProjectConfig::PATH_SITES . '.' . $site->uid, "Delete the “{$site->handle}” site");
         return true;
     }
 
@@ -1042,8 +1041,8 @@ class Sites extends Component
      *
      * @param ConfigEvent $event
      * @throws DbException
-     * @throws \Throwable
-     * @throws \yii\base\NotSupportedException
+     * @throws Throwable
+     * @throws NotSupportedException
      */
     public function handleDeletedSite(ConfigEvent $event): void
     {
@@ -1072,7 +1071,7 @@ class Sites extends Component
                 ->execute();
 
             $transaction->commit();
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $transaction->rollBack();
             throw $e;
         }
@@ -1251,7 +1250,7 @@ class Sites extends Component
         $query = $withTrashed ? SiteRecord::findWithTrashed() : SiteRecord::find();
         if (is_numeric($criteria)) {
             $query->andWhere(['id' => $criteria]);
-        } else if (\is_string($criteria)) {
+        } else if (is_string($criteria)) {
             $query->andWhere(['uid' => $criteria]);
         }
 
@@ -1264,7 +1263,7 @@ class Sites extends Component
      *
      * @param int $oldPrimarySiteId
      * @param int $newPrimarySiteId
-     * @throws \Throwable
+     * @throws Throwable
      */
     private function _processNewPrimarySite(int $oldPrimarySiteId, int $newPrimarySiteId): void
     {
@@ -1326,7 +1325,7 @@ class Sites extends Component
             }
 
             $transaction->commit();
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $transaction->rollBack();
             throw $e;
         }

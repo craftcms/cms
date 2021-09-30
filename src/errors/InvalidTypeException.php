@@ -41,7 +41,7 @@ class InvalidTypeException extends Exception
         $this->requiredType = $requiredType;
 
         if ($message === null) {
-            $message = "{$handle} doesn’t exist or doesn’t extend/implement {$requiredType}";
+            $message = "$handle doesn’t exist or doesn’t extend/implement $requiredType";
         }
 
         parent::__construct($message, $code);

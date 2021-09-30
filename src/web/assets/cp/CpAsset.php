@@ -98,7 +98,7 @@ class CpAsset extends AssetBundle
         // Define the Craft object
         $craftJson = Json::encode($this->_craftData(), JSON_UNESCAPED_UNICODE);
         $js = <<<JS
-window.Craft = {$craftJson};
+window.Craft = $craftJson;
 JS;
         $view->registerJs($js, View::POS_HEAD);
     }
@@ -330,11 +330,11 @@ JS;
             'actionUrl' => UrlHelper::actionUrl(),
             'allowAdminChanges' => $generalConfig->allowAdminChanges,
             'allowUpdates' => $generalConfig->allowUpdates,
-            'allowUppercaseInSlug' => (bool)$generalConfig->allowUppercaseInSlug,
+            'allowUppercaseInSlug' => $generalConfig->allowUppercaseInSlug,
             'announcements' => $upToDate ? Craft::$app->getAnnouncements()->get() : [],
             'apiParams' => Craft::$app->apiParams,
             'asciiCharMap' => StringHelper::asciiCharMap(true, Craft::$app->language),
-            'autosaveDrafts' => (bool)$generalConfig->autosaveDrafts,
+            'autosaveDrafts' => $generalConfig->autosaveDrafts,
             'baseApiUrl' => Craft::$app->baseApiUrl,
             'baseCpUrl' => UrlHelper::cpUrl(),
             'baseSiteUrl' => UrlHelper::siteUrl(),
@@ -357,10 +357,10 @@ JS;
             'isMultiSite' => Craft::$app->getIsMultiSite(),
             'language' => Craft::$app->language,
             'left' => $orientation === 'ltr' ? 'left' : 'right',
-            'limitAutoSlugsToAscii' => (bool)$generalConfig->limitAutoSlugsToAscii,
+            'limitAutoSlugsToAscii' => $generalConfig->limitAutoSlugsToAscii,
             'maxUploadSize' => Assets::getMaxUploadSize(),
             'modifiedDeltaNames' => $request->getBodyParam('modifiedDeltaNames', []),
-            'omitScriptNameInUrls' => (bool)$generalConfig->omitScriptNameInUrls,
+            'omitScriptNameInUrls' => $generalConfig->omitScriptNameInUrls,
             'orientation' => $orientation,
             'pageNum' => $request->getPageNum(),
             'pageTrigger' => $generalConfig->getPageTrigger(),
@@ -375,7 +375,7 @@ JS;
             'registeredJsFiles' => ['' => ''], // force encode as JS object
             'remainingSessionTime' => !in_array($request->getSegment(1), ['updates', 'manualupdate'], true) ? $userSession->getRemainingSessionTime() : 0,
             'right' => $orientation === 'ltr' ? 'right' : 'left',
-            'runQueueAutomatically' => (bool)$generalConfig->runQueueAutomatically,
+            'runQueueAutomatically' => $generalConfig->runQueueAutomatically,
             'scriptName' => basename($request->getScriptFile()),
             'siteId' => $upToDate ? (int)$sitesService->currentSite->id : null,
             'sites' => $this->_sites($sitesService),
@@ -387,7 +387,7 @@ JS;
             'timezone' => Craft::$app->getTimeZone(),
             'tokenParam' => $generalConfig->tokenParam,
             'translations' => ['' => ''], // force encode as JS object
-            'usePathInfo' => (bool)$generalConfig->usePathInfo,
+            'usePathInfo' => $generalConfig->usePathInfo,
             'username' => $currentUser->username ?? null,
         ];
 

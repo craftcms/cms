@@ -10,6 +10,7 @@ namespace crafttests\unit\services;
 use Codeception\Test\Unit;
 use Craft;
 use craft\helpers\StringHelper;
+use craft\services\ProjectConfig;
 use craft\services\Routes;
 use UnitTester;
 
@@ -47,7 +48,7 @@ class RoutesTest extends Unit
     {
         $uid = $this->routes->saveRoute($uriParts, $template, $siteUid, $routeUid);
         self::assertTrue(StringHelper::isUUID($uid));
-        self::assertSame($expected, Craft::$app->getProjectConfig()->get(Routes::CONFIG_ROUTES_KEY . '.' . $uid));
+        self::assertSame($expected, Craft::$app->getProjectConfig()->get(ProjectConfig::PATH_ROUTES . '.' . $uid));
     }
 
     /**

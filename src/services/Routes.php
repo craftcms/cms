@@ -26,24 +26,23 @@ class Routes extends Component
     /**
      * @event RouteEvent The event that is triggered before a route is saved.
      */
-    const EVENT_BEFORE_SAVE_ROUTE = 'beforeSaveRoute';
+    public const EVENT_BEFORE_SAVE_ROUTE = 'beforeSaveRoute';
 
     /**
      * @event RouteEvent The event that is triggered after a route is saved.
      */
-    const EVENT_AFTER_SAVE_ROUTE = 'afterSaveRoute';
+    public const EVENT_AFTER_SAVE_ROUTE = 'afterSaveRoute';
 
     /**
      * @event RouteEvent The event that is triggered before a route is deleted.
      */
-    const EVENT_BEFORE_DELETE_ROUTE = 'beforeDeleteRoute';
+    public const EVENT_BEFORE_DELETE_ROUTE = 'beforeDeleteRoute';
 
     /**
      * @event RouteEvent The event that is triggered after a route is deleted.
      */
-    const EVENT_AFTER_DELETE_ROUTE = 'afterDeleteRoute';
+    public const EVENT_AFTER_DELETE_ROUTE = 'afterDeleteRoute';
 
-    const CONFIG_ROUTES_KEY = 'routes';
     /**
      * @var array|null all the routes in project config for current site
      */
@@ -107,7 +106,7 @@ class Routes extends Component
             return $this->_projectConfigRoutes;
         }
 
-        $routes = Craft::$app->getProjectConfig()->get(self::CONFIG_ROUTES_KEY) ?? [];
+        $routes = Craft::$app->getProjectConfig()->get(ProjectConfig::PATH_ROUTES) ?? [];
         ArrayHelper::multisort($routes, 'sortOrder', SORT_ASC, SORT_NUMERIC);
         $currentSiteUid = Craft::$app->getSites()->getCurrentSite()->uid;
         $this->_projectConfigRoutes = [];
@@ -148,10 +147,10 @@ class Routes extends Component
         $projectConfig = Craft::$app->getProjectConfig();
 
         if ($routeUid !== null) {
-            $sortOrder = $projectConfig->get(self::CONFIG_ROUTES_KEY . '.' . $routeUid . '.sortOrder') ?? $this->_getMaxSortOrder();
+            $sortOrder = $projectConfig->get(ProjectConfig::PATH_ROUTES . '.' . $routeUid . '.sortOrder') ?? $this->_getMaxSortOrder();
         } else {
             $routeUid = StringHelper::UUID();
-            $sortOrder = $this->_getMaxSortOrder();;
+            $sortOrder = $this->_getMaxSortOrder();
         }
 
         // Compile the URI parts into a regex pattern
@@ -181,7 +180,7 @@ class Routes extends Component
                 }
 
                 // Add the var as a named subpattern
-                $uriPattern .= "<{$subpatternName}:{$part[1]}>";
+                $uriPattern .= "<$subpatternName:$part[1]>";
             }
         }
 
@@ -193,7 +192,7 @@ class Routes extends Component
             'siteUid' => $siteUid,
         ];
 
-        $projectConfig->set(self::CONFIG_ROUTES_KEY . '.' . $routeUid, $configData, 'Save route');
+        $projectConfig->set(ProjectConfig::PATH_ROUTES . '.' . $routeUid, $configData, 'Save route');
 
         // Fire an 'afterSaveRoute' event
         if ($this->hasEventHandlers(self::EVENT_AFTER_SAVE_ROUTE)) {
@@ -216,7 +215,7 @@ class Routes extends Component
      */
     public function deleteRouteByUid(string $routeUid): bool
     {
-        $route = Craft::$app->getProjectConfig()->get(self::CONFIG_ROUTES_KEY . '.' . $routeUid);
+        $route = Craft::$app->getProjectConfig()->get(ProjectConfig::PATH_ROUTES . '.' . $routeUid);
 
         if ($route) {
             // Fire a 'beforeDeleteRoute' event
@@ -228,7 +227,7 @@ class Routes extends Component
                 ]));
             }
 
-            Craft::$app->getProjectConfig()->remove(self::CONFIG_ROUTES_KEY . '.' . $routeUid, "Delete route");
+            Craft::$app->getProjectConfig()->remove(ProjectConfig::PATH_ROUTES . '.' . $routeUid, "Delete route");
 
             // Fire an 'afterDeleteRoute' event
             if ($this->hasEventHandlers(self::EVENT_AFTER_DELETE_ROUTE)) {
@@ -251,11 +250,11 @@ class Routes extends Component
     public function handleDeletedSite(DeleteSiteEvent $event): void
     {
         $projectConfig = Craft::$app->getProjectConfig();
-        $routes = $projectConfig->get(self::CONFIG_ROUTES_KEY) ?? [];
+        $routes = $projectConfig->get(ProjectConfig::PATH_ROUTES) ?? [];
 
         foreach ($routes as $routeUid => $route) {
             if ($route['siteUid'] === $event->site->uid) {
-                $projectConfig->remove(self::CONFIG_ROUTES_KEY . '.' . $routeUid, 'Remove routes that belong to a site being deleted');
+                $projectConfig->remove(ProjectConfig::PATH_ROUTES . '.' . $routeUid, 'Remove routes that belong to a site being deleted');
             }
         }
     }
@@ -268,7 +267,7 @@ class Routes extends Component
     public function updateRouteOrder(array $routeUids): void
     {
         foreach ($routeUids as $order => $routeUid) {
-            Craft::$app->getProjectConfig()->set(self::CONFIG_ROUTES_KEY . '.' . $routeUid . '.sortOrder', $order + 1, 'Reorder routes');
+            Craft::$app->getProjectConfig()->set(ProjectConfig::PATH_ROUTES . '.' . $routeUid . '.sortOrder', $order + 1, 'Reorder routes');
         }
     }
 
@@ -279,7 +278,7 @@ class Routes extends Component
      */
     private function _getMaxSortOrder(): int
     {
-        $routes = Craft::$app->getProjectConfig()->get(self::CONFIG_ROUTES_KEY) ?? [];
+        $routes = Craft::$app->getProjectConfig()->get(ProjectConfig::PATH_ROUTES) ?? [];
         $max = 0;
 
         foreach ($routes as $route) {

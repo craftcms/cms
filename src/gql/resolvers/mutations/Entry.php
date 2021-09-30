@@ -18,8 +18,10 @@ use craft\gql\base\StructureMutationTrait;
 use craft\helpers\Db;
 use craft\models\EntryType;
 use craft\models\Section;
+use Exception;
 use GraphQL\Error\Error;
 use GraphQL\Type\Definition\ResolveInfo;
+use Throwable;
 
 /**
  * Class Entry
@@ -42,7 +44,7 @@ class Entry extends ElementMutationResolver
      * @param $context
      * @param ResolveInfo $resolveInfo
      * @return EntryElement
-     * @throws \Throwable if reasons.
+     * @throws Throwable if reasons.
      */
     public function saveEntry($source, array $arguments, $context, ResolveInfo $resolveInfo): EntryElement
     {
@@ -82,7 +84,7 @@ class Entry extends ElementMutationResolver
      * @param array $arguments
      * @param $context
      * @param ResolveInfo $resolveInfo
-     * @throws \Throwable if reasons.
+     * @throws Throwable if reasons.
      */
     public function deleteEntry($source, array $arguments, $context, ResolveInfo $resolveInfo): void
     {
@@ -110,7 +112,7 @@ class Entry extends ElementMutationResolver
      * @param $context
      * @param ResolveInfo $resolveInfo
      * @return mixed
-     * @throws \Throwable if reasons.
+     * @throws Throwable if reasons.
      */
     public function createDraft($source, array $arguments, $context, ResolveInfo $resolveInfo)
     {
@@ -140,7 +142,7 @@ class Entry extends ElementMutationResolver
      * @param $context
      * @param ResolveInfo $resolveInfo
      * @return int
-     * @throws \Throwable if reasons.
+     * @throws Throwable if reasons.
      */
     public function publishDraft($source, array $arguments, $context, ResolveInfo $resolveInfo): int
     {
@@ -164,7 +166,7 @@ class Entry extends ElementMutationResolver
      *
      * @param array $arguments
      * @return EntryElement
-     * @throws \Exception if reasons
+     * @throws Exception if reasons
      */
     protected function getEntryElement(array $arguments): EntryElement
     {

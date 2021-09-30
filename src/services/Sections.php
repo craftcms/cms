@@ -38,6 +38,7 @@ use craft\queue\jobs\ResaveElements;
 use craft\records\EntryType as EntryTypeRecord;
 use craft\records\Section as SectionRecord;
 use craft\records\Section_SiteSettings as Section_SiteSettingsRecord;
+use Throwable;
 use yii\base\Component;
 use yii\base\Exception;
 
@@ -53,58 +54,54 @@ class Sections extends Component
     /**
      * @event SectionEvent The event that is triggered before a section is saved.
      */
-    const EVENT_BEFORE_SAVE_SECTION = 'beforeSaveSection';
+    public const EVENT_BEFORE_SAVE_SECTION = 'beforeSaveSection';
 
     /**
      * @event SectionEvent The event that is triggered after a section is saved.
      */
-    const EVENT_AFTER_SAVE_SECTION = 'afterSaveSection';
+    public const EVENT_AFTER_SAVE_SECTION = 'afterSaveSection';
 
     /**
      * @event SectionEvent The event that is triggered before a section is deleted.
      */
-    const EVENT_BEFORE_DELETE_SECTION = 'beforeDeleteSection';
+    public const EVENT_BEFORE_DELETE_SECTION = 'beforeDeleteSection';
 
     /**
      * @event SectionEvent The event that is triggered before a section delete is applied to the database.
      * @since 3.1.0
      */
-    const EVENT_BEFORE_APPLY_SECTION_DELETE = 'beforeApplySectionDelete';
+    public const EVENT_BEFORE_APPLY_SECTION_DELETE = 'beforeApplySectionDelete';
 
     /**
      * @event SectionEvent The event that is triggered after a section is deleted.
      */
-    const EVENT_AFTER_DELETE_SECTION = 'afterDeleteSection';
+    public const EVENT_AFTER_DELETE_SECTION = 'afterDeleteSection';
 
     /**
      * @event EntryTypeEvent The event that is triggered before an entry type is saved.
      */
-    const EVENT_BEFORE_SAVE_ENTRY_TYPE = 'beforeSaveEntryType';
+    public const EVENT_BEFORE_SAVE_ENTRY_TYPE = 'beforeSaveEntryType';
 
     /**
      * @event EntryTypeEvent The event that is triggered after an entry type is saved.
      */
-    const EVENT_AFTER_SAVE_ENTRY_TYPE = 'afterSaveEntryType';
+    public const EVENT_AFTER_SAVE_ENTRY_TYPE = 'afterSaveEntryType';
 
     /**
      * @event EntryTypeEvent The event that is triggered before an entry type is deleted.
      */
-    const EVENT_BEFORE_DELETE_ENTRY_TYPE = 'beforeDeleteEntryType';
+    public const EVENT_BEFORE_DELETE_ENTRY_TYPE = 'beforeDeleteEntryType';
 
     /**
      * @event EntryTypeEvent The event that is triggered before an entry type delete is applied to the database.
      * @since 3.1.0
      */
-    const EVENT_BEFORE_APPLY_ENTRY_TYPE_DELETE = 'beforeApplyEntryTypeDelete';
+    public const EVENT_BEFORE_APPLY_ENTRY_TYPE_DELETE = 'beforeApplyEntryTypeDelete';
 
     /**
      * @event EntryTypeEvent The event that is triggered after an entry type is deleted.
      */
-    const EVENT_AFTER_DELETE_ENTRY_TYPE = 'afterDeleteEntryType';
-
-    const CONFIG_SECTIONS_KEY = 'sections';
-
-    const CONFIG_ENTRYTYPES_KEY = 'entryTypes';
+    public const EVENT_AFTER_DELETE_ENTRY_TYPE = 'afterDeleteEntryType';
 
     /**
      * @var bool Whether entries should be resaved after a section or entry type has been updated.
@@ -438,7 +435,7 @@ class Sections extends Component
      * @param bool $runValidation Whether the section should be validated
      * @return bool
      * @throws SectionNotFoundException if $section->id is invalid
-     * @throws \Throwable if reasons
+     * @throws Throwable if reasons
      */
     public function saveSection(Section $section, bool $runValidation = true): bool
     {
@@ -480,7 +477,7 @@ class Sections extends Component
             // Save the section config
             // -----------------------------------------------------------------
 
-            $configPath = self::CONFIG_SECTIONS_KEY . '.' . $section->uid;
+            $configPath = ProjectConfig::PATH_SECTIONS . '.' . $section->uid;
             $configData = $section->getConfig();
             Craft::$app->getProjectConfig()->set($configPath, $configData, "Save section “{$section->handle}”");
 
@@ -549,7 +546,7 @@ class Sections extends Component
             }
 
             $transaction->commit();
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $transaction->rollBack();
             throw $e;
         }
@@ -733,7 +730,7 @@ class Sections extends Component
             }
 
             $transaction->commit();
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $transaction->rollBack();
             throw $e;
         }
@@ -777,7 +774,7 @@ class Sections extends Component
      *
      * @param int $sectionId
      * @return bool Whether the section was deleted successfully
-     * @throws \Throwable if reasons
+     * @throws Throwable if reasons
      */
     public function deleteSectionById(int $sectionId): bool
     {
@@ -801,7 +798,7 @@ class Sections extends Component
      *
      * @param Section $section
      * @return bool Whether the section was deleted successfully
-     * @throws \Throwable if reasons
+     * @throws Throwable if reasons
      */
     public function deleteSection(Section $section): bool
     {
@@ -819,7 +816,7 @@ class Sections extends Component
         }
 
         // Remove the section from the project config
-        Craft::$app->getProjectConfig()->remove(self::CONFIG_SECTIONS_KEY . '.' . $section->uid, "Delete the “{$section->handle}” section");
+        Craft::$app->getProjectConfig()->remove(ProjectConfig::PATH_SECTIONS . '.' . $section->uid, "Delete the “{$section->handle}” section");
         return true;
     }
 
@@ -872,7 +869,7 @@ class Sections extends Component
                 ->execute();
 
             $transaction->commit();
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $transaction->rollBack();
             throw $e;
         }
@@ -901,12 +898,12 @@ class Sections extends Component
         $siteUid = $event->site->uid;
 
         $projectConfig = Craft::$app->getProjectConfig();
-        $sections = $projectConfig->get(self::CONFIG_SECTIONS_KEY);
+        $sections = $projectConfig->get(ProjectConfig::PATH_SECTIONS);
 
         // Loop through the sections and prune the UID from field layouts.
         if (is_array($sections)) {
             foreach ($sections as $sectionUid => $sectionGroup) {
-                $projectConfig->remove(self::CONFIG_SECTIONS_KEY . '.' . $sectionUid . '.siteSettings.' . $siteUid, 'Remove section settings that belong to a site being deleted');
+                $projectConfig->remove(ProjectConfig::PATH_SECTIONS . '.' . $sectionUid . '.siteSettings.' . $siteUid, 'Remove section settings that belong to a site being deleted');
             }
         }
     }
@@ -923,7 +920,7 @@ class Sections extends Component
         $fieldUid = $field->uid;
 
         $projectConfig = Craft::$app->getProjectConfig();
-        $entryTypes = $projectConfig->get(self::CONFIG_ENTRYTYPES_KEY);
+        $entryTypes = $projectConfig->get(ProjectConfig::PATH_ENTRY_TYPES);
 
         // Engage stealth mode
         $projectConfig->muteEvents = true;
@@ -935,7 +932,7 @@ class Sections extends Component
                     foreach ($entryType['fieldLayouts'] as $layoutUid => $layout) {
                         if (!empty($layout['tabs'])) {
                             foreach ($layout['tabs'] as $tabUid => $tab) {
-                                $projectConfig->remove(self::CONFIG_ENTRYTYPES_KEY . '.' . $entryTypeUid . '.fieldLayouts.' . $layoutUid . '.tabs.' . $tabUid . '.fields.' . $fieldUid, 'Prune deleted field');
+                                $projectConfig->remove(ProjectConfig::PATH_ENTRY_TYPES . '.' . $entryTypeUid . '.fieldLayouts.' . $layoutUid . '.tabs.' . $tabUid . '.fields.' . $fieldUid, 'Prune deleted field');
                             }
                         }
                     }
@@ -1051,7 +1048,7 @@ class Sections extends Component
      * @param bool $runValidation Whether the entry type should be validated
      * @return bool Whether the entry type was saved successfully
      * @throws EntryTypeNotFoundException if $entryType->id is invalid
-     * @throws \Throwable if reasons
+     * @throws Throwable if reasons
      */
     public function saveEntryType(EntryType $entryType, bool $runValidation = true): bool
     {
@@ -1083,7 +1080,7 @@ class Sections extends Component
             $entryType->sortOrder = $maxSortOrder ? $maxSortOrder + 1 : 1;
         }
 
-        $configPath = self::CONFIG_ENTRYTYPES_KEY . '.' . $entryType->uid;
+        $configPath = ProjectConfig::PATH_ENTRY_TYPES . '.' . $entryType->uid;
         $configData = $entryType->getConfig();
         Craft::$app->getProjectConfig()->set($configPath, $configData, "Save entry type “{$entryType->handle}”");
 
@@ -1160,7 +1157,7 @@ class Sections extends Component
             }
 
             $transaction->commit();
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $transaction->rollBack();
             throw $e;
         }
@@ -1224,7 +1221,7 @@ class Sections extends Component
      *
      * @param array $entryTypeIds
      * @return bool Whether the entry types were reordered successfully
-     * @throws \Throwable if reasons
+     * @throws Throwable if reasons
      */
     public function reorderEntryTypes(array $entryTypeIds): bool
     {
@@ -1243,7 +1240,7 @@ class Sections extends Component
                     $sectionRecord = SectionRecord::findOne($entryTypeRecord->sectionId);
                 }
 
-                $configPath = self::CONFIG_ENTRYTYPES_KEY . '.' . $entryTypeUid . '.sortOrder';
+                $configPath = ProjectConfig::PATH_ENTRY_TYPES . '.' . $entryTypeUid . '.sortOrder';
                 $projectConfig->set($configPath, $entryTypeOrder + 1, 'Reorder entry types');
             }
         }
@@ -1262,7 +1259,7 @@ class Sections extends Component
      *
      * @param int $entryTypeId
      * @return bool Whether the entry type was deleted successfully
-     * @throws \Throwable if reasons
+     * @throws Throwable if reasons
      */
     public function deleteEntryTypeById(int $entryTypeId): bool
     {
@@ -1286,7 +1283,7 @@ class Sections extends Component
      *
      * @param EntryType $entryType
      * @return bool Whether the entry type was deleted successfully
-     * @throws \Throwable if reasons
+     * @throws Throwable if reasons
      */
     public function deleteEntryType(EntryType $entryType): bool
     {
@@ -1297,7 +1294,7 @@ class Sections extends Component
             ]));
         }
 
-        Craft::$app->getProjectConfig()->remove(self::CONFIG_ENTRYTYPES_KEY . '.' . $entryType->uid, "Delete the “{$entryType->handle}” entry type");
+        Craft::$app->getProjectConfig()->remove(ProjectConfig::PATH_ENTRY_TYPES . '.' . $entryType->uid, "Delete the “{$entryType->handle}” entry type");
         return true;
     }
 
@@ -1356,7 +1353,7 @@ class Sections extends Component
                 ->execute();
 
             $transaction->commit();
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $transaction->rollBack();
             throw $e;
         }
@@ -1421,7 +1418,7 @@ class Sections extends Component
         // ---------------------------------------------------------------------
 
         if ($siteSettings === null) {
-            $siteSettings = Craft::$app->getProjectConfig()->get(self::CONFIG_SECTIONS_KEY . '.' . $section->uid . '.siteSettings');
+            $siteSettings = Craft::$app->getProjectConfig()->get(ProjectConfig::PATH_SECTIONS . '.' . $section->uid . '.siteSettings');
         }
 
         if (empty($siteSettings)) {

@@ -18,6 +18,7 @@ use craft\helpers\Html;
 use craft\helpers\Localization;
 use craft\helpers\Number as NumberHelper;
 use craft\i18n\Locale;
+use Throwable;
 use yii\base\InvalidArgumentException;
 
 /**
@@ -31,15 +32,15 @@ class Number extends Field implements PreviewableFieldInterface, SortableFieldIn
     /**
      * @since 3.5.11
      */
-    const FORMAT_DECIMAL = 'decimal';
+    public const FORMAT_DECIMAL = 'decimal';
     /**
      * @since 3.5.11
      */
-    const FORMAT_CURRENCY = 'currency';
+    public const FORMAT_CURRENCY = 'currency';
     /**
      * @since 3.5.11
      */
-    const FORMAT_NONE = 'none';
+    public const FORMAT_NONE = 'none';
 
     /**
      * @inheritdoc
@@ -231,7 +232,7 @@ class Number extends Field implements PreviewableFieldInterface, SortableFieldIn
                 $decimalSeparator = Craft::$app->getFormattingLocale()->getNumberSymbol(Locale::SYMBOL_DECIMAL_SEPARATOR);
                 try {
                     $value = number_format($value, $this->decimals, $decimalSeparator, '');
-                } catch (\Throwable $e) {
+                } catch (Throwable $e) {
                     // NaN
                 }
             }

@@ -21,11 +21,11 @@ use craft\elements\db\ElementQueryInterface;
  */
 class SetStatus extends ElementAction
 {
-    const ENABLED = 'enabled';
+    public const ENABLED = 'enabled';
     /**
      * @since 3.4.0
      */
-    const DISABLED = 'disabled';
+    public const DISABLED = 'disabled';
 
     /**
      * @var string|null The status elements should be set to

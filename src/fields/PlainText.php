@@ -195,7 +195,7 @@ class PlainText extends Field implements PreviewableFieldInterface, SortableFiel
             return Schema::TYPE_TEXT;
         }
 
-        return Schema::TYPE_STRING . "({$bytes})";
+        return Schema::TYPE_STRING . "($bytes)";
     }
 
     /**
@@ -255,7 +255,6 @@ class PlainText extends Field implements PreviewableFieldInterface, SortableFiel
     protected function searchKeywords($value, ElementInterface $element): string
     {
         $value = (string)$value;
-        $value = LitEmoji::unicodeToShortcode($value);
-        return $value;
+        return LitEmoji::unicodeToShortcode($value);
     }
 }

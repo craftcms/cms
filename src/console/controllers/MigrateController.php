@@ -79,7 +79,7 @@ class MigrateController extends BaseMigrateController
      *
      * @since 3.5.0
      */
-    const EVENT_REGISTER_MIGRATOR = 'registerMigrator';
+    public const EVENT_REGISTER_MIGRATOR = 'registerMigrator';
 
     /**
      * @var string|null The migration track to work with (e.g. `craft`, `content`, `plugin:commerce`, etc.)
@@ -553,9 +553,7 @@ class MigrateController extends BaseMigrateController
         $history = $this->getMigrator()->getMigrationHistory((int)$limit);
 
         // Convert values to unix timestamps
-        $history = array_map('strtotime', $history);
-
-        return $history;
+        return array_map('strtotime', $history);
     }
 
     /**

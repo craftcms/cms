@@ -278,13 +278,11 @@ class Gql
      */
     public static function getUnionType(string $typeName, array $includedTypes, callable $resolveFunction)
     {
-        $unionType = GqlEntityRegistry::getEntity($typeName) ?: GqlEntityRegistry::createEntity($typeName, new UnionType([
+        return GqlEntityRegistry::getEntity($typeName) ?: GqlEntityRegistry::createEntity($typeName, new UnionType([
             'name' => $typeName,
             'types' => $includedTypes,
             'resolveType' => $resolveFunction,
         ]));
-
-        return $unionType;
     }
 
     /**

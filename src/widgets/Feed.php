@@ -121,7 +121,7 @@ class Feed extends Widget
             $view = Craft::$app->getView();
             $view->registerAssetBundle(FeedAsset::class);
             $view->registerJs(
-                "new Craft.FeedWidget({$this->id}, " .
+                "new Craft.FeedWidget($this->id, " .
                 Json::encode($this->url) . ', ' .
                 Json::encode($this->limit) . ');'
             );

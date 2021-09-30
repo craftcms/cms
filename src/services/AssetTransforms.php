@@ -35,6 +35,9 @@ use craft\models\AssetTransform;
 use craft\models\AssetTransformIndex;
 use craft\records\AssetTransform as AssetTransformRecord;
 use DateTime;
+use Exception;
+use Imagick;
+use Throwable;
 use yii\base\Application;
 use yii\base\Component;
 use yii\base\InvalidArgumentException;
@@ -53,45 +56,43 @@ class AssetTransforms extends Component
     /**
      * @event AssetTransformEvent The event that is triggered before an asset transform is saved
      */
-    const EVENT_BEFORE_SAVE_ASSET_TRANSFORM = 'beforeSaveAssetTransform';
+    public const EVENT_BEFORE_SAVE_ASSET_TRANSFORM = 'beforeSaveAssetTransform';
 
     /**
      * @event AssetTransformEvent The event that is triggered after an asset transform is saved
      */
-    const EVENT_AFTER_SAVE_ASSET_TRANSFORM = 'afterSaveAssetTransform';
+    public const EVENT_AFTER_SAVE_ASSET_TRANSFORM = 'afterSaveAssetTransform';
 
     /**
      * @event AssetTransformEvent The event that is triggered before an asset transform is deleted
      */
-    const EVENT_BEFORE_DELETE_ASSET_TRANSFORM = 'beforeDeleteAssetTransform';
+    public const EVENT_BEFORE_DELETE_ASSET_TRANSFORM = 'beforeDeleteAssetTransform';
 
     /**
      * @event AssetTransformEvent The event that is triggered after an asset transform is deleted
      */
-    const EVENT_AFTER_DELETE_ASSET_TRANSFORM = 'afterDeleteAssetTransform';
+    public const EVENT_AFTER_DELETE_ASSET_TRANSFORM = 'afterDeleteAssetTransform';
 
     /**
      * @event GenerateTransformEvent The event that is triggered when a transform is being generated for an Asset.
      */
-    const EVENT_GENERATE_TRANSFORM = 'generateTransform';
+    public const EVENT_GENERATE_TRANSFORM = 'generateTransform';
 
     /**
      * @event AssetTransformImageEvent The event that is triggered before deleting generated transforms.
      */
-    const EVENT_BEFORE_DELETE_TRANSFORMS = 'beforeDeleteTransforms';
+    public const EVENT_BEFORE_DELETE_TRANSFORMS = 'beforeDeleteTransforms';
 
     /**
      * @event AssetTransformEvent The event that is triggered before a transform delete is applied to the database.
      * @since 3.1.0
      */
-    const EVENT_BEFORE_APPLY_TRANSFORM_DELETE = 'beforeApplyTransformDelete';
+    public const EVENT_BEFORE_APPLY_TRANSFORM_DELETE = 'beforeApplyTransformDelete';
 
     /**
      * @event AssetTransformImageEvent The event that is triggered after deleting generated transforms.
      */
-    const EVENT_AFTER_DELETE_TRANSFORMS = 'afterDeleteTransforms';
-
-    const CONFIG_TRANSFORM_KEY = 'imageTransforms';
+    public const EVENT_AFTER_DELETE_TRANSFORMS = 'afterDeleteTransforms';
 
     /**
      * @var Connection|array|string The database connection to use
@@ -248,7 +249,7 @@ class AssetTransforms extends Component
             'width' => (int)$transform->width ?: null,
         ];
 
-        $configPath = self::CONFIG_TRANSFORM_KEY . '.' . $transform->uid;
+        $configPath = ProjectConfig::PATH_IMAGE_TRANSFORMS . '.' . $transform->uid;
         $projectConfig->set($configPath, $configData, "Saving transform “{$transform->handle}”");
 
         if ($isNewTransform) {
@@ -300,7 +301,7 @@ class AssetTransforms extends Component
             $transformRecord->save(false);
 
             $transaction->commit();
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $transaction->rollBack();
             throw $e;
         }
@@ -371,7 +372,7 @@ class AssetTransforms extends Component
             ]));
         }
 
-        Craft::$app->getProjectConfig()->remove(self::CONFIG_TRANSFORM_KEY . '.' . $transform->uid, "Delete transform “{$transform->handle}”");
+        Craft::$app->getProjectConfig()->remove(ProjectConfig::PATH_IMAGE_TRANSFORMS . '.' . $transform->uid, "Delete transform “{$transform->handle}”");
         return true;
     }
 
@@ -714,7 +715,7 @@ class AssetTransforms extends Component
                 }
 
                 $this->storeTransformIndexData($index);
-            } catch (\Exception $e) {
+            } catch (Exception $e) {
                 $index->inProgress = false;
                 $index->fileExists = false;
                 $index->error = true;
@@ -1146,7 +1147,7 @@ class AssetTransforms extends Component
      */
     public function getCachedCloudImageSize(): int
     {
-        return (int)Craft::$app->getConfig()->getGeneral()->maxCachedCloudImageSize;
+        return Craft::$app->getConfig()->getGeneral()->maxCachedCloudImageSize;
     }
 
     /**
@@ -1229,7 +1230,7 @@ class AssetTransforms extends Component
         // The only reasonable way to check for transparency is with Imagick. If Imagick is not present, then
         // we fallback to jpg
         $images = Craft::$app->getImages();
-        if ($images->getIsGd() || !method_exists(\Imagick::class, 'getImageAlphaChannel')) {
+        if ($images->getIsGd() || !method_exists(Imagick::class, 'getImageAlphaChannel')) {
             return 'jpg';
         }
 
@@ -1566,7 +1567,7 @@ class AssetTransforms extends Component
             // Let's cook up a new one.
             try {
                 $volume->deleteFile($transformPath);
-            } catch (\Throwable $exception) {
+            } catch (Throwable $exception) {
                 // Unlikely, but if it got deleted while we were comparing timestamps, don't freak out.
             }
         }

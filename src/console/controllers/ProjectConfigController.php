@@ -12,8 +12,8 @@ use craft\console\Controller;
 use craft\events\ConfigEvent;
 use craft\helpers\Console;
 use craft\helpers\ProjectConfig;
-use craft\services\Plugins;
 use craft\services\ProjectConfig as ProjectConfigService;
+use Throwable;
 use yii\console\ExitCode;
 
 /**
@@ -147,8 +147,8 @@ class ProjectConfigController extends Controller
             $projectConfig->regenerateYamlFromConfig();
         } else {
             // Any plugins need to be installed/uninstalled?
-            $loadedConfigPlugins = array_keys($projectConfig->get(Plugins::CONFIG_PLUGINS_KEY) ?? []);
-            $yamlPlugins = array_keys($projectConfig->get(Plugins::CONFIG_PLUGINS_KEY, true) ?? []);
+            $loadedConfigPlugins = array_keys($projectConfig->get(ProjectConfigService::PATH_PLUGINS) ?? []);
+            $yamlPlugins = array_keys($projectConfig->get(ProjectConfigService::PATH_PLUGINS, true) ?? []);
 
             if (!$this->_installPlugins(array_diff($yamlPlugins, $loadedConfigPlugins))) {
                 $this->stdout('Aborting config apply process' . PHP_EOL, Console::FG_RED);
@@ -174,7 +174,7 @@ class ProjectConfigController extends Controller
                 $projectConfig->applyYamlChanges();
 
                 $projectConfig->forceUpdate = $forceUpdate;
-            } catch (\Throwable $e) {
+            } catch (Throwable $e) {
                 $this->stderr("\nerror: " . $e->getMessage() . PHP_EOL, Console::FG_RED);
                 Craft::$app->getErrorHandler()->logException($e);
                 return ExitCode::UNSPECIFIED_ERROR;
@@ -280,7 +280,7 @@ class ProjectConfigController extends Controller
 
         try {
             $projectConfig->rebuild();
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $this->stderr('error: ' . $e->getMessage() . PHP_EOL, Console::FG_RED);
             Craft::$app->getErrorHandler()->logException($e);
             return ExitCode::UNSPECIFIED_ERROR;
@@ -314,7 +314,7 @@ class ProjectConfigController extends Controller
 
         foreach ($handles as $handle) {
             $this->stdout('Uninstalling plugin ', Console::FG_YELLOW);
-            $this->stdout("\"{$handle}\"", Console::FG_CYAN);
+            $this->stdout("\"$handle\"", Console::FG_CYAN);
             $this->stdout(' ... ', Console::FG_YELLOW);
 
             ob_start();
@@ -337,7 +337,7 @@ class ProjectConfigController extends Controller
 
         foreach ($handles as $handle) {
             $this->stdout('Installing plugin ', Console::FG_YELLOW);
-            $this->stdout("\"{$handle}\"", Console::FG_CYAN);
+            $this->stdout("\"$handle\"", Console::FG_CYAN);
             $this->stdout(' ... ', Console::FG_YELLOW);
 
             ob_start();
@@ -346,7 +346,7 @@ class ProjectConfigController extends Controller
                 $pluginsService->installPlugin($handle);
                 ob_end_clean();
                 $this->stdout('done' . PHP_EOL, Console::FG_GREEN);
-            } catch (\Throwable $e) {
+            } catch (Throwable $e) {
                 ob_end_clean();
                 $this->stdout('error: ' . $e->getMessage() . PHP_EOL, Console::FG_RED);
                 Craft::$app->getErrorHandler()->logException($e);

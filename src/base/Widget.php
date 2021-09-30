@@ -94,7 +94,7 @@ abstract class Widget extends SavableComponent implements WidgetInterface
 
         return <<<EOD
 <div style="margin: 0 -24px -24px;">
-    <img style="display: block; width: 100%; border-radius: 0 0 4px 4px" src="{$url}">
+    <img style="display: block; width: 100%; border-radius: 0 0 4px 4px" src="$url">
 </div>
 EOD;
     }

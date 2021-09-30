@@ -23,7 +23,6 @@ class RequestPanel extends \yii\debug\panels\RequestPanel
     public function save(): array
     {
         $data = parent::save();
-        $data = Craft::$app->getSecurity()->redactIfSensitive('', $data);
-        return $data;
+        return Craft::$app->getSecurity()->redactIfSensitive('', $data);
     }
 }

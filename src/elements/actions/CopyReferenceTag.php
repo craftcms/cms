@@ -39,7 +39,7 @@ class CopyReferenceTag extends ElementAction
         $elementType = $this->elementType;
 
         if (($refHandle = $elementType::refHandle()) === null) {
-            throw new Exception("Element type \"{$elementType}\" doesn't have a reference handle.");
+            throw new Exception("Element type \"$elementType\" doesn't have a reference handle.");
         }
 
         $refHandleJs = Json::encode($refHandle);
@@ -47,13 +47,13 @@ class CopyReferenceTag extends ElementAction
         $js = <<<JS
 (() => {
     new Craft.ElementActionTrigger({
-        type: {$type},
+        type: $type,
         batch: false,
         activate: function(\$selectedItems)
         {
             Craft.ui.createCopyTextPrompt({
                 label: Craft.t('app', 'Copy the reference tag'),
-                value: '{'+{$refHandleJs}+':'+\$selectedItems.find('.element').data('id')+'}',
+                value: '{'+$refHandleJs+':'+\$selectedItems.find('.element').data('id')+'}',
             });
         }
     });

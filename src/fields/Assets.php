@@ -49,11 +49,11 @@ class Assets extends BaseRelationField
     /**
      * @since 3.5.11
      */
-    const PREVIEW_MODE_FULL = 'full';
+    public const PREVIEW_MODE_FULL = 'full';
     /**
      * @since 3.5.11
      */
-    const PREVIEW_MODE_THUMBS = 'thumbs';
+    public const PREVIEW_MODE_THUMBS = 'thumbs';
 
     /**
      * @inheritdoc
@@ -543,7 +543,7 @@ class Assets extends BaseRelationField
 
                 if (!empty($assetIds)) {
                     // Add the newly uploaded IDs to the mix.
-                    if (\is_array($query->id)) {
+                    if (is_array($query->id)) {
                         $query = $this->normalizeValue(array_merge($query->id, $assetIds), $element);
                     } else {
                         $query = $this->normalizeValue($assetIds, $element);
@@ -631,7 +631,7 @@ class Assets extends BaseRelationField
                 // (Use singleUploadLocationSource here because the actual folder could belong to a temp volume)
                 $volumeId = $this->_volumeIdBySourceKey($this->singleUploadLocationSource);
                 $volume = $volumeId ? Craft::$app->getVolumes()->getVolumeById($volumeId) : null;
-                if (!$volume || !Craft::$app->getUser()->checkPermission("viewVolume:{$volume->uid}")) {
+                if (!$volume || !Craft::$app->getUser()->checkPermission("viewVolume:$volume->uid")) {
                     return [];
                 }
             }
@@ -672,7 +672,7 @@ class Assets extends BaseRelationField
                 // Only show it if they have permission to view it
                 $folder = $assetsService->getFolderByUid(explode(':', $source)[1]);
                 $volume = $folder ? $folder->getVolume() : null;
-                return $volume && $userService->checkPermission("viewVolume:{$volume->uid}");
+                return $volume && $userService->checkPermission("viewVolume:$volume->uid");
             }, true, true, false);
         }
 

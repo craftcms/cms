@@ -48,7 +48,7 @@ class NewSiblingBefore extends ElementAction
         $js = <<<JS
 (() => {
     let trigger = new Craft.ElementActionTrigger({
-        type: {$type},
+        type: $type,
         batch: false,
         activate: function(\$selectedItems)
         {

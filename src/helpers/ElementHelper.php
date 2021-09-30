@@ -217,9 +217,7 @@ class ElementHelper
         $uri = Craft::$app->getView()->renderObjectTemplate($uriFormat, $element, $variables);
 
         // Remove any leading/trailing/double slashes
-        $uri = preg_replace('/^\/+|(?<=\/)\/+|\/+$/', '', $uri);
-
-        return $uri;
+        return preg_replace('/^\/+|(?<=\/)\/+|\/+$/', '', $uri);
     }
 
     /**

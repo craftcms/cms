@@ -271,7 +271,7 @@ class GlobalSet extends Element
             $this->fieldLayoutId &&
             !Craft::$app->getFields()->restoreLayoutById($this->fieldLayoutId)
         ) {
-            Craft::warning("Global set {$this->id} restored, but its field layout ({$this->fieldLayoutId}) was not.");
+            Craft::warning("Global set $this->id restored, but its field layout ($this->fieldLayoutId) was not.");
         }
 
         parent::afterRestore();

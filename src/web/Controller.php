@@ -13,6 +13,7 @@ use craft\helpers\Json;
 use craft\helpers\StringHelper;
 use craft\web\assets\iframeresizer\ContentWindowAsset;
 use GuzzleHttp\Exception\ClientException;
+use Throwable;
 use yii\base\Action;
 use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
@@ -37,9 +38,9 @@ use yii\web\UnauthorizedHttpException;
  */
 abstract class Controller extends \yii\web\Controller
 {
-    const ALLOW_ANONYMOUS_NEVER = 0;
-    const ALLOW_ANONYMOUS_LIVE = 1;
-    const ALLOW_ANONYMOUS_OFFLINE = 2;
+    public const ALLOW_ANONYMOUS_NEVER = 0;
+    public const ALLOW_ANONYMOUS_LIVE = 1;
+    public const ALLOW_ANONYMOUS_OFFLINE = 2;
 
     /**
      * @var int|bool|int[]|string[] Whether this controller’s actions can be accessed anonymously.
@@ -77,7 +78,7 @@ abstract class Controller extends \yii\web\Controller
                     (is_int($k) && !is_string($v)) ||
                     (is_string($k) && !is_int($v))
                 ) {
-                    throw new InvalidArgumentException("Invalid \$allowAnonymous value for key \"{$k}\"");
+                    throw new InvalidArgumentException("Invalid \$allowAnonymous value for key \"$k\"");
                 }
                 if (is_int($k)) {
                     $normalized[$v] = self::ALLOW_ANONYMOUS_LIVE;
@@ -187,7 +188,7 @@ abstract class Controller extends \yii\web\Controller
     {
         try {
             return parent::runAction($id, $params);
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             if ($this->request->getAcceptsJson()) {
                 Craft::$app->getErrorHandler()->logException($e);
                 if (!YII_DEBUG && !$e instanceof UserException) {

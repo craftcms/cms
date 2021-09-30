@@ -30,7 +30,7 @@ return [
             'class' => craft\services\Categories::class,
         ],
         'composer' => [
-            'class' => \craft\services\Composer::class,
+            'class' => craft\services\Composer::class,
         ],
         'conditions' => [
             'class' => craft\services\Conditions::class,
