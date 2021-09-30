@@ -88,7 +88,7 @@ class Transform extends Directive
         }
 
         if ($onAssetElementList) {
-            foreach ($value as &$asset) {
+            foreach ($value as $asset) {
                 // If this somehow ended up being a mix of elements, don't explicitly fail, just set the transform on the asset elements
                 if ($asset instanceof Asset) {
                     $asset->setTransform($transform);

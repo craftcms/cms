@@ -130,12 +130,11 @@ class ElementIndexes extends Component
             // Prune out any settings for sources that don't exist
             $indexedBaseSources = $this->_indexSourcesByKey($baseSources);
 
-            foreach ($settings['sources'] as $key => &$source) {
+            foreach ($settings['sources'] as $key => $source) {
                 if (!isset($indexedBaseSources[$key])) {
                     unset($settings['sources'][$key]);
                 }
             }
-            unset($source);
         }
 
         $success = (bool)Db::upsert(Table::ELEMENTINDEXSETTINGS, [

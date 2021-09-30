@@ -769,7 +769,7 @@ class Html extends \yii\helpers\Html
      * @param array $markers
      * @return string
      */
-    private static function _restoreTextareas(string $html, array &$markers): string
+    private static function _restoreTextareas(string $html, array $markers): string
     {
         return str_replace(array_keys($markers), array_values($markers), $html);
     }

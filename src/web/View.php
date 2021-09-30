@@ -1987,7 +1987,7 @@ JS;
      * @param array $context
      * @return string|null
      */
-    private function _getCpElementHtml(array &$context): ?string
+    private function _getCpElementHtml(array $context): ?string
     {
         if (!isset($context['element'])) {
             return null;

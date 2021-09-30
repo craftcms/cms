@@ -459,7 +459,7 @@ class ProjectConfig
      * @param array $item
      * @return bool
      */
-    private static function isComponentArray(array &$item): bool
+    private static function isComponentArray(array $item): bool
     {
         if (empty($item)) {
             return false;
