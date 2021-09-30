@@ -495,7 +495,7 @@ class Table extends Field
             return $argumentType;
         }
 
-        $contentFields = TableRow::prepareRowFieldDefinition($this->columns, $typeName, false);
+        $contentFields = TableRow::prepareRowFieldDefinition($this->columns, false);
 
         $argumentType = GqlEntityRegistry::createEntity($typeName, new InputObjectType([
             'name' => $typeName,

@@ -61,7 +61,7 @@ class MatrixBlockType extends Generator implements GeneratorInterface, SingleGen
 
         if (!($entity = GqlEntityRegistry::getEntity($typeName))) {
             $contentFieldGqlTypes = self::getContentFields($context);
-            $blockTypeFields = TypeManager::prepareFieldDefinitions(array_merge(MatrixBlockInterface::getFieldDefinitions(), $contentFieldGqlTypes), $typeName);
+            $blockTypeFields = array_merge(MatrixBlockInterface::getFieldDefinitions(), $contentFieldGqlTypes);
 
             // Generate a type for each block type
             $entity = GqlEntityRegistry::getEntity($typeName);
@@ -69,8 +69,8 @@ class MatrixBlockType extends Generator implements GeneratorInterface, SingleGen
             if (!$entity) {
                 $entity = new MatrixBlock([
                     'name' => $typeName,
-                    'fields' => function() use ($blockTypeFields) {
-                        return $blockTypeFields;
+                    'fields' => function() use ($blockTypeFields, $typeName) {
+                        return TypeManager::prepareFieldDefinitions($blockTypeFields, $typeName);
                     },
                 ]);
 

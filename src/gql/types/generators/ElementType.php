@@ -40,12 +40,12 @@ class ElementType implements GeneratorInterface, SingleGeneratorInterface
     public static function generateType($context): ObjectType
     {
         $typeName = BaseElement::gqlTypeNameByContext(null);
-        $elementFields = TypeManager::prepareFieldDefinitions(ElementInterface::getFieldDefinitions(), $typeName);
+        $elementFields = ElementInterface::getFieldDefinitions();
 
         return GqlEntityRegistry::getEntity($typeName) ?: GqlEntityRegistry::createEntity($typeName, new Element([
             'name' => $typeName,
-            'fields' => function() use ($elementFields) {
-                return $elementFields;
+            'fields' => function() use ($elementFields, $typeName) {
+                return TypeManager::prepareFieldDefinitions($elementFields, $typeName);
             },
         ]));
     }

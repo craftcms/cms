@@ -34,11 +34,10 @@ class TableRow extends ObjectType
      * Take an array of columns and return fields prepared for GraphQL object definition.
      *
      * @param array $columns
-     * @param string $typeName
      * @param bool $includeHandles Whether columns also should be present by their field handles.
      * @return array
      */
-    public static function prepareRowFieldDefinition(array $columns, string $typeName, bool $includeHandles = true): array
+    public static function prepareRowFieldDefinition(array $columns, bool $includeHandles = true): array
     {
         $contentFields = [];
 
@@ -64,8 +63,6 @@ class TableRow extends ObjectType
                 $contentFields[$columnDefinition['handle']] = $cellType;
             }
         }
-
-        $contentFields = TypeManager::prepareFieldDefinitions($contentFields, $typeName);
 
         return $contentFields;
     }
