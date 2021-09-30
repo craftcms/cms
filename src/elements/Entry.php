@@ -1850,7 +1850,6 @@ EOD;
      */
     private static function _getGqlIdentifierByContext(EntryType $context): string
     {
-        $gqlIdentifier = $context->getSection()->handle . '_' . $context->handle;
-        return $gqlIdentifier;
+        return $context->getSection()->handle . '_' . $context->handle;
     }
 }

@@ -732,9 +732,7 @@ class AssetIndexer extends Component
             throw new MissingVolumeFolderException($indexEntry, $volume, $indexEntry->uri);
         }
 
-        $folder = Craft::$app->getAssets()->ensureFolderByFullPathAndVolume($indexEntry->uri, $volume);
-
-        return $folder;
+        return Craft::$app->getAssets()->ensureFolderByFullPathAndVolume($indexEntry->uri, $volume);
     }
 
     /**

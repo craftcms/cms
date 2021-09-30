@@ -789,8 +789,7 @@ class Html extends \yii\helpers\Html
         // Remove comments, title & desc
         $svg = preg_replace('/<!--.*?-->\s*/s', '', $svg);
         $svg = preg_replace('/<title>.*?<\/title>\s*/is', '', $svg);
-        $svg = preg_replace('/<desc>.*?<\/desc>\s*/is', '', $svg);
-        return $svg;
+        return preg_replace('/<desc>.*?<\/desc>\s*/is', '', $svg);
     }
 
     /**

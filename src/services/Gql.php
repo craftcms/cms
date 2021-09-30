@@ -1613,7 +1613,7 @@ class Gql extends Component
      */
     private function _createTokenQuery(): DbQuery
     {
-        $query = (new DbQuery())
+        return (new DbQuery())
             ->select([
                 'id',
                 'schemaId',
@@ -1626,8 +1626,6 @@ class Gql extends Component
                 'uid',
             ])
             ->from([Table::GQLTOKENS]);
-
-        return $query;
     }
 
     /**
@@ -1637,7 +1635,7 @@ class Gql extends Component
      */
     private function _createSchemaQuery(): DbQuery
     {
-        $query = (new DbQuery())
+        return (new DbQuery())
             ->select([
                 'id',
                 'name',
@@ -1646,8 +1644,6 @@ class Gql extends Component
                 'uid',
             ])
             ->from([Table::GQLSCHEMAS]);
-
-        return $query;
     }
 
     /**

@@ -80,12 +80,10 @@ class MailerHelper
     public static function createTransportAdapter(string $type, ?array $settings = null): TransportAdapterInterface
     {
         /** @var BaseTransportAdapter $adapter */
-        $adapter = Component::createComponent([
+        return Component::createComponent([
             'type' => $type,
             'settings' => $settings,
         ], TransportAdapterInterface::class);
-
-        return $adapter;
     }
 
     /**

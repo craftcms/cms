@@ -36,7 +36,7 @@ class Markdown extends Directive
             return $type;
         }
 
-        $type = GqlEntityRegistry::createEntity(static::name(), new self([
+        return GqlEntityRegistry::createEntity(static::name(), new self([
             'name' => static::name(),
             'locations' => [
                 DirectiveLocation::FIELD,
@@ -57,8 +57,6 @@ class Markdown extends Directive
             ],
             'description' => 'Parses the passed field value as Markdown.',
         ]));
-
-        return $type;
     }
 
     /**

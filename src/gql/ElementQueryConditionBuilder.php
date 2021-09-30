@@ -350,9 +350,7 @@ class ElementQueryConditionBuilder extends Component
             return [];
         }
 
-        $arguments = [GqlHelper::prepareTransformArguments($arguments)];
-
-        return $arguments;
+        return [GqlHelper::prepareTransformArguments($arguments)];
     }
 
     /**

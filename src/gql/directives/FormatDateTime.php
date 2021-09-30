@@ -38,7 +38,7 @@ class FormatDateTime extends Directive
             return $type;
         }
 
-        $type = GqlEntityRegistry::createEntity(static::name(), new self([
+        return GqlEntityRegistry::createEntity(static::name(), new self([
             'name' => static::name(),
             'locations' => [
                 DirectiveLocation::FIELD,
@@ -64,8 +64,6 @@ class FormatDateTime extends Directive
             ],
             'description' => 'This directive allows for formatting any date to the desired format. It can be applied to all fields, but changes anything only when applied to a DateTime field.',
         ]));
-
-        return $type;
     }
 
     /**

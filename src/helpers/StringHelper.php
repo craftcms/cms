@@ -1642,12 +1642,10 @@ class StringHelper extends \yii\helpers\StringHelper
     public static function toPascalCase(string $str): string
     {
         $words = self::toWords($str, true, true);
-        $string = implode('', array_map([
+        return implode('', array_map([
             static::class,
             'upperCaseFirst',
         ], $words));
-
-        return $string;
     }
 
     /**

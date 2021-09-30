@@ -2024,9 +2024,7 @@ class Elements extends Component
         }
 
         // Swap the tokens with the references
-        $str = str_replace($search, $replace, $str);
-
-        return $str;
+        return str_replace($search, $replace, $str);
     }
 
     /**

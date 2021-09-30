@@ -220,9 +220,7 @@ class Cp
         // Give plugins a chance to add their own alerts
         $event = new RegisterCpAlertsEvent();
         Event::trigger(self::class, self::EVENT_REGISTER_ALERTS, $event);
-        $alerts = array_merge($alerts, $event->alerts);
-
-        return $alerts;
+        return array_merge($alerts, $event->alerts);
     }
 
     /**

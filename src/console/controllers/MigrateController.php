@@ -553,9 +553,7 @@ class MigrateController extends BaseMigrateController
         $history = $this->getMigrator()->getMigrationHistory((int)$limit);
 
         // Convert values to unix timestamps
-        $history = array_map('strtotime', $history);
-
-        return $history;
+        return array_map('strtotime', $history);
     }
 
     /**
