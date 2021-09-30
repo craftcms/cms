@@ -25,7 +25,7 @@ return [
     'Access {plugin}' => 'الوصول إلى {plugin}',
     'Access' => 'أكسس',
     'Accessibility' => 'إمكانية الوصول',
-    'Account Type' => 'Account Type',
+    'Account Type' => 'نوع الحساب',
     'Account has not been activated.' => 'لم يتم تفعيل الحساب',
     'Account locked. Try again in {time}.' => 'تم قفل الحساب. حاول مجدداً في {time}.',
     'Account locked.' => 'تم قفل الحساب.',
