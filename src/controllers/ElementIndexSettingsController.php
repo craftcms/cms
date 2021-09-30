@@ -128,6 +128,8 @@ class ElementIndexSettingsController extends BaseElementsController
         $oldSourceConfigs = $projectConfig->get(ProjectConfig::PATH_ELEMENT_SOURCES . ".$elementType") ?? [];
         $oldSourceConfigs = ArrayHelper::index(array_filter($oldSourceConfigs, fn($s) => $s['type'] !== ElementSources::TYPE_HEADING), 'key');
 
+        $conditionsService = Craft::$app->getConditions();
+
         $sourceOrder = $this->request->getBodyParam('sourceOrder', []);
         $sourceSettings = $this->request->getBodyParam('sources', []);
         $newSourceConfigs = [];
@@ -154,7 +156,7 @@ class ElementIndexSettingsController extends BaseElementsController
                     if ($isCustom) {
                         $sourceConfig += [
                             'label' => $postedSettings['label'],
-                            'condition' => $postedSettings['condition'],
+                            'condition' => $conditionsService->createCondition($postedSettings['condition'])->getConfig(),
                         ];
                     }
                 } else if (isset($oldSourceConfigs[$source['key']])) {
