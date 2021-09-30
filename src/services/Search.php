@@ -243,7 +243,7 @@ class Search extends Component
             ->andWhere([
                 'elementId' => $elementQuery->select(['elements.id']),
             ])
-            ->cache(true, new ElementQueryTagDependency($elementQuery));;
+            ->cache(true, new ElementQueryTagDependency($elementQuery));
 
         if ($elementQuery->siteId !== null) {
             $query->andWhere(['siteId' => $elementQuery->siteId]);

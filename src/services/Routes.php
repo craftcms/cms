@@ -150,7 +150,7 @@ class Routes extends Component
             $sortOrder = $projectConfig->get(ProjectConfig::PATH_ROUTES . '.' . $routeUid . '.sortOrder') ?? $this->_getMaxSortOrder();
         } else {
             $routeUid = StringHelper::UUID();
-            $sortOrder = $this->_getMaxSortOrder();;
+            $sortOrder = $this->_getMaxSortOrder();
         }
 
         // Compile the URI parts into a regex pattern

@@ -654,7 +654,7 @@ class App
                     'url' => 'php://stderr',
                     'levels' => Logger::LEVEL_ERROR | Logger::LEVEL_WARNING,
                     'includeUserIp' => $generalConfig->storeUserIps,
-                ]);;
+                ]);
 
                 if (!$onlyLogErrors) {
                     $targets[Dispatcher::TARGET_STDOUT] = Craft::createObject([
