@@ -393,7 +393,7 @@ abstract class Migration extends \yii\db\Migration
     public function addPrimaryKey($name, $table, $columns): void
     {
         if ($name === null) {
-            $name = $this->db->getPrimaryKeyName($table, $columns);
+            $name = $this->db->getPrimaryKeyName();
         }
 
         parent::addPrimaryKey($name, $table, $columns);
