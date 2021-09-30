@@ -675,7 +675,7 @@ class Db
     {
         self::_normalizeEmptyValue($value);
         $operator = self::_parseParamOperator($value, '=');
-        $value = !($value === ':empty:') && (bool)$value;
+        $value = !($value === ':empty:') && $value;
         if ($operator === '!=') {
             $value = !$value;
         }
