@@ -79,7 +79,6 @@ class MailerHelper
      */
     public static function createTransportAdapter(string $type, ?array $settings = null): TransportAdapterInterface
     {
-        /** @var BaseTransportAdapter $adapter */
         return Component::createComponent([
             'type' => $type,
             'settings' => $settings,
