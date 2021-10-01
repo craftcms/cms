@@ -478,6 +478,8 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
 }
 
 #global-header {
+  width: 100%;
+  overflow-x: auto;
   margin-bottom: 14px;
   @include pane;
   background: $grey050;
@@ -493,6 +495,7 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
   flex-direction: row;
   align-items: center;
   font-size: 13px;
+  margin: 0 !important;
 
   &.empty {
     display: none;
@@ -637,6 +640,7 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
     display: block;
     width: 30px;
     height: 30px;
+    max-width: none;
     border-radius: 50%;
     box-shadow: 0 0 0 1px transparentize($grey900, 0.95), 0 0 0 transparentize($grey900, 1);
     transition: box-shadow linear 150ms;
@@ -1044,8 +1048,8 @@ $toolbarIconColor: darken($inputColor, 10%);
     }
 
     .text::placeholder,
-    .datewrapper .text:placeholder-shown + div[data-icon],
-    .timewrapper .text:placeholder-shown + div[data-icon] {
+    .datewrapper .text + div[data-icon],
+    .timewrapper .text + div[data-icon] {
       color: $grey300;
     }
 
@@ -1214,8 +1218,8 @@ $toolbarIconColor: darken($inputColor, 10%);
   #crumbs,
   #header,
   #main-content {
-    padding-left: 10px;
-    padding-right: 10px;
+    padding-left: 10px !important;
+    padding-right: 10px !important;
   }
 
   #tabs ul li {

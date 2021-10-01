@@ -17,6 +17,7 @@
 ### Changed
 - Mutex locks which are “released” during a database transaction are no longer actually released for other requests until the transaction is complete.
 - Username inputs now disable auto-capitalization on iOS devices.
+- Date and time fields now use native `date` and `type` input types on mobile. ([#9903](https://github.com/craftcms/cms/discussions/9903))
 
 ### Deprecated
 - Deprecated `craft\helpers\UrlHelper::baseRequestUrl()`. `Craft::getAlias('@web')` should be used instead.
@@ -29,6 +30,7 @@
 - Fixed an error that could occur when merging upstream changes into a draft, if the canonical entry had been enabled for a new site and contained new Matrix blocks. ([#9895](https://github.com/craftcms/cms/issues/9895))
 - Fixed a bug where sections’ Default Status settings weren’t being respected when adding a new site to an entry. ([#9896](https://github.com/craftcms/cms/issues/9896))
 - Fixed a bug where the `utils/repair/section-structure` command was removing provisional drafts from the structure. ([#9868](https://github.com/craftcms/cms/issues/9868))
+- Fixed a bug where the control panel header elements could become squished. ([#9902](https://github.com/craftcms/cms/issues/9902))
 
 ### Security
 - Generated front-end URLs now begin with the `@web` alias value if the current site doesn’t have a base URL.
