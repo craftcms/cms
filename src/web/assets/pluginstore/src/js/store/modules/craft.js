@@ -12,7 +12,6 @@ const state = {
     defaultPluginSvg: null,
     licensedEdition: null,
     pluginLicenseInfo: {},
-    alertIcon: null,
 
     // Craft editions
     CraftEdition: null,
@@ -213,7 +212,6 @@ const mutations = {
         state.currentUser = response.data.currentUser
         state.defaultPluginSvg = response.data.defaultPluginSvg
         state.licensedEdition = response.data.licensedEdition
-        state.alertIcon = response.data.alertIcon
 
         // Craft editions
         state.CraftEdition = response.data.CraftEdition

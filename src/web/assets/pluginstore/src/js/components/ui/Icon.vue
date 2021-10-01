@@ -4,6 +4,7 @@
 
 <script>
 
+import AlertIcon from './icons/AlertIcon'
 import BookIcon from './icons/BookIcon'
 import CheckIcon from './icons/CheckIcon'
 import ChevronLeftIcon from './icons/ChevronLeftIcon'
@@ -20,6 +21,7 @@ export default {
         icon: String,
     },
     components: {
+        AlertIcon,
         BookIcon,
         CheckIcon,
         ChevronLeftIcon,
