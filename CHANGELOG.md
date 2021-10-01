@@ -18,6 +18,7 @@
 - Mutex locks which are “released” during a database transaction are no longer actually released for other requests until the transaction is complete.
 - Username inputs now disable auto-capitalization on iOS devices.
 - Date and time fields now use native `date` and `type` input types on mobile. ([#9903](https://github.com/craftcms/cms/discussions/9903))
+- Improved the performance of eager-loading entry authors. ([#9907](https://github.com/craftcms/cms/discussions/9907))
 
 ### Deprecated
 - Deprecated `craft\helpers\UrlHelper::baseRequestUrl()`. `Craft::getAlias('@web')` should be used instead.
