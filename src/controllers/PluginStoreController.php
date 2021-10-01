@@ -61,6 +61,7 @@ class PluginStoreController extends Controller
 
         $view = $this->getView();
         $view->registerJsFile('https://js.stripe.com/v2/');
+        $view->registerJs('window.craftIdEndpoint = "' . Craft::$app->getPluginStore()->craftIdEndpoint . '";', View::POS_BEGIN);
         $view->registerJs('window.craftApiEndpoint = "' . Craft::$app->getPluginStore()->craftApiEndpoint . '";', View::POS_BEGIN);
         $view->registerJs('window.pluginStoreAppBaseUrl = "' . $pluginStoreAppBaseUrl . '";', View::POS_BEGIN);
         $view->registerJs('window.cmsInfo = ' . Json::encode($cmsInfo) . ';', View::POS_BEGIN);
