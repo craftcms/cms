@@ -12,9 +12,14 @@
 - Added the `is resource` Twig test.
 - Added the `is scalar` Twig test.
 - Added the `is string` Twig test.
+- Added `craft\mutex\DbMutexTrait`.
+
+### Changed
+- Mutex locks which are “released” during a database transaction are no longer actually released for other requests until the transaction is complete.
 
 ### Deprecated
 - Deprecated `craft\helpers\UrlHelper::baseRequestUrl()`. `Craft::getAlias('@web')` should be used instead.
+- Deprecated `craft\mutex\PrefixedMutexTrait`. `DbMutexTrait` should be used instead.
 
 ### Fixed
 - Fixed a bug where the “Duplicate (with descendants)” element action would only partially duplicate multi-level structures. ([#9889](https://github.com/craftcms/cms/issues/9889))
