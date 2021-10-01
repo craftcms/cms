@@ -16,6 +16,7 @@
 
 ### Changed
 - Mutex locks which are “released” during a database transaction are no longer actually released for other requests until the transaction is complete.
+- Username inputs now disable auto-capitalization on iOS devices.
 
 ### Deprecated
 - Deprecated `craft\helpers\UrlHelper::baseRequestUrl()`. `Craft::getAlias('@web')` should be used instead.
