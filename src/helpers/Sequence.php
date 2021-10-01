@@ -48,7 +48,7 @@ class Sequence
         $mutex = Craft::$app->getMutex();
         $lockName = 'seq--' . str_replace(['/', '\\'], '-', $name);
 
-        if (!$mutex->acquire($lockName, 5)) {
+        if (!$mutex->acquire($lockName, 3)) {
             throw new Exception('Could not acquire a lock for the sequence "' . $name . '".');
         }
 
