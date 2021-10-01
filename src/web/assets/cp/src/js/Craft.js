@@ -1560,6 +1560,7 @@ $.extend(Craft,
             $('.nicetext', $container).nicetext();
             $('.formsubmit', $container).formsubmit();
             $('.menubtn', $container).menubtn();
+            $('[data-disclosure-trigger]', $container).disclosure();
             $('.datetimewrapper', $container).datetime();
 
             // Open outbound links in new windows
@@ -2136,6 +2137,20 @@ $.extend($.fn,
                     }
 
                     new Garnish.MenuBtn($btn, settings);
+                }
+            });
+        },
+
+        disclosure: function() {
+            return this.each(function() {
+                var $trigger = $(this);
+                var $disclosureId = $trigger.attr('aria-controls');
+
+                // Only instantiate element if there is a reference to disclosure content
+                if ($disclosureId) {
+                    var settings = {};
+
+                    new Garnish.Disclosure($trigger, settings);
                 }
             });
         },

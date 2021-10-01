@@ -1242,6 +1242,7 @@ ul.icons {
 }
 
 .btn[data-icon-after]:not(:empty):after,
+.menu-toggle:not(:empty):after,
 .menubtn:not(:empty):after,
 .menubtn.icon:after {
   @include margin-left(6px);
@@ -1428,6 +1429,7 @@ ul.icons {
 }
 
 /* menu buttons */
+.menu-toggle,
 .menubtn {
   display: inline-flex;
   align-items: center;
@@ -4441,6 +4443,15 @@ ul.tree,
   hr.padded,
   h6.padded {
     @include margin-left(10px);
+  }
+}
+
+.menu--disclosure {
+  body:not(.reduce-focus-visibility) & {
+    li > a:focus,
+    li > a:focus-visible {
+      box-shadow: inset 0 0 0 3px transparentize($darkFocusColor, 0.3);
+    }
   }
 }
 
