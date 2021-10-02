@@ -23,6 +23,12 @@ use yii\console\ExitCode;
 class UsersController extends Controller
 {
     /**
+     * @var int|null The user's id.
+     * @since 3.8.0
+     */
+    public $id;
+
+    /**
      * @var string|null The user’s email address.
      * @since 3.7.0
      */
@@ -99,6 +105,10 @@ class UsersController extends Controller
             case 'set-password':
                 $options[] = 'password';
                 break;
+            case 'impersonate':
+                $options[] = 'id';
+                $options[] = 'email';
+                $options[] = 'username';
         }
 
         return $options;
@@ -325,6 +335,40 @@ class UsersController extends Controller
         $this->stdout('Saving the user ... ');
         Craft::$app->getElements()->saveElement($user, false);
         $this->stdout('done' . PHP_EOL, Console::FG_GREEN);
+
+        return ExitCode::OK;
+    }
+
+    public function actionImpersonate(): int
+    {
+        if ($this->id !== null) {
+            $user = Craft::$app->getUsers()->getUserById($this->id);
+        }
+        elseif ($this->username !== null || $this->email !== null) {
+            $user = Craft::$app->getUsers()->getUserByUsernameOrEmail($this->username ?? $this->email);
+        }
+        
+        if (!$user) {
+            $this->stderr('No user found.');
+            return ExitCode::UNSPECIFIED_ERROR;
+        }
+
+        $token = Craft::$app->getTokens()->createToken([
+            'users/i personate-with-token', [
+                'userId' => $user->id,
+                'prevUserId' => $user->id,
+            ],
+        ], 1, new DateTime('+10 minutes'));
+
+        if (!$token) {
+            $this->stderr('Unable to create the impersonation token');
+            return ExitCode::UNSPECIFIED_ERROR;
+        }
+
+        $url = $user->can('accessCp') ? UrlHelper::cpUrl() : UrlHelper::siteUrl();
+        $url = UrlHelper::urlWithToken($url, $token);
+
+        $this->stdout($url);
 
         return ExitCode::OK;
     }
