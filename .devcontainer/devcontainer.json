@@ -1,3 +1,5 @@
 {
-    "build": { "dockerfile": "Dockerfile" },
+    "dockerComposeFile": "docker-compose.yml",
+    "service": "php",
+    "postCreateCommand": "composer install"
 }
