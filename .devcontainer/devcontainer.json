@@ -1,5 +1,0 @@
-{
-    "dockerComposeFile": "docker-compose.yml",
-    "service": "php",
-    "postCreateCommand": "composer install"
-}
