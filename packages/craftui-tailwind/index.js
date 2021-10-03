@@ -147,7 +147,8 @@ module.exports = index.withOptions(
                     }
                 }
 
-                // `ringColor` doesn't work with semantic colors
+                // DOESN'T WORK
+                // `ringColor` doesn't work with semantic colors because Tailwind’s ring opacity is dynamic
                 // if (tailwindColorKey === 'ringColor') {
                 //     return {
                 //         ...theme('colors'),
@@ -207,6 +208,8 @@ module.exports = index.withOptions(
                     none: 'none',
                 },
 
+                // WORKS
+                // Lets us override the default ring color value
                 // ringColor: (theme) => ({
                 //     DEFAULT: theme('colors.green.500', '#41bd00'),
                 //     ...theme('colors'),
