@@ -9,7 +9,6 @@ const state = {
     craftId: null,
     craftLogo: null,
     currentUser: null,
-    defaultPluginSvg: null,
     licensedEdition: null,
     pluginLicenseInfo: {},
 
@@ -210,7 +209,6 @@ const mutations = {
         state.canTestEditions = response.data.canTestEditions
         state.craftLogo = response.data.craftLogo
         state.currentUser = response.data.currentUser
-        state.defaultPluginSvg = response.data.defaultPluginSvg
         state.licensedEdition = response.data.licensedEdition
 
         // Craft editions

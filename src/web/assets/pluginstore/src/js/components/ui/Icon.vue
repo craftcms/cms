@@ -14,6 +14,7 @@ import ExclamationCircleIcon from './icons/ExclamationCircleIcon'
 import ExclamationTriangleIcon from './icons/ExclamationTriangleIcon'
 import InfoCircleIcon from './icons/InfoCircleIcon'
 import LinkIcon from './icons/LinkIcon'
+import PlugIcon from './icons/PlugIcon'
 import SearchIcon from './icons/SearchIcon'
 
 export default {
@@ -30,6 +31,7 @@ export default {
         ExclamationCircleIcon,
         ExclamationTriangleIcon,
         InfoCircleIcon,
+        PlugIcon,
         LinkIcon,
         SearchIcon,
     },

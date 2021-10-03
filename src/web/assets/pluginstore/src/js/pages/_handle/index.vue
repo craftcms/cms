@@ -4,8 +4,14 @@
             <!-- header -->
             <div class="plugin-details-header tw-border-b tw-border-solid tw-border-gray-100 tw-flex tw-mb-6 tw-pb-6 tw-items-center">
                 <div class="plugin-icon">
-                    <img v-if="plugin.iconUrl" :src="plugin.iconUrl" width="100" />
-                    <img v-else :src="defaultPluginSvg" width="100" />
+                    <template v-if="plugin.iconUrl">
+                        <img :src="plugin.iconUrl" class="tw-w-24 tw-h-24" />
+                    </template>
+                    <template v-else>
+                        <div class="tw-bg-gray-100 tw-w-24 tw-h-24 tw-flex tw-items-center tw-justify-center tw-rounded-full">
+                            <icon icon="plug" class="tw-w-10 tw-h-10 tw-text-gray-400"></icon>
+                        </div>
+                    </template>
                 </div>
 
                 <div class="description tw-flex-1">
@@ -22,7 +28,7 @@
             <!-- body -->
             <div class="plugin-details-body">
                 <template v-if="!loading">
-                    <template v-if="plugin.abandoned">
+                    <template v-if="!plugin.abandoned">
                         <div class="error tw-mb-6 tw-px-4 tw-py-3 tw-rounded tw-border tw-border-solid tw-border-red-500 tw-flex tw-flex-nowrap tw-text-base tw-items-center">
                             <icon icon="alert" class="tw-w-8 tw-h-8 tw-mr-2"></icon>
 
@@ -164,7 +170,6 @@ c-2-26.8-24.8-53.5-42-72.5S0,169.8,0,144C0,76,64.8,32,128,32S256,76,256,144z"/>
         computed: {
             ...mapState({
                 categories: state => state.pluginStore.categories,
-                defaultPluginSvg: state => state.craft.defaultPluginSvg,
                 plugin: state => state.pluginStore.plugin,
                 showingScreenshotModal: state => state.app.showingScreenshotModal,
             }),
