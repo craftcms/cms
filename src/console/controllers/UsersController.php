@@ -8,10 +8,12 @@
 namespace craft\console\controllers;
 
 use Craft;
+use DateTime;
 use craft\console\Controller;
 use craft\elements\User;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Console;
+use craft\helpers\UrlHelper;
 use yii\console\ExitCode;
 
 /**
@@ -339,6 +341,11 @@ class UsersController extends Controller
         return ExitCode::OK;
     }
 
+    /**
+     * Generate a URL to impersonate a user.
+     *
+     * @return int
+     */
     public function actionImpersonate(): int
     {
         if ($this->id !== null) {
@@ -368,7 +375,7 @@ class UsersController extends Controller
         $url = $user->can('accessCp') ? UrlHelper::cpUrl() : UrlHelper::siteUrl();
         $url = UrlHelper::urlWithToken($url, $token);
 
-        $this->stdout($url);
+        $this->output($url);
 
         return ExitCode::OK;
     }
