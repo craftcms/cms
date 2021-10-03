@@ -190,10 +190,6 @@ module.exports = index.withOptions(
                     ...configTheme.colors,
                 },
 
-                gradients: theme => ({
-                    'primary-gradient': [theme('colors.primary-gradient-1'), theme('colors.primary-gradient-2')]
-                }),
-
                 boxShadow: {
                     xs: '0 0 0 1px var(--craftui-colors-shadow-05)',
                     sm: '0 1px 2px 0 var(--craftui-colors-shadow-05)',
