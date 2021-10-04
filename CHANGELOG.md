@@ -36,6 +36,7 @@
 
 ### Security
 - Generated front-end URLs now begin with the `@web` alias value if the current site doesn’t have a base URL.
+- Password inputs now hide the password when their form is submitted.
 
 ## 3.7.14 - 2021-09-28
 
