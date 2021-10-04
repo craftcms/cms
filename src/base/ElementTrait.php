@@ -177,6 +177,12 @@ trait ElementTrait
     public $newSiteIds = [];
 
     /**
+     * @var bool Whether the element is being saved to the current site for the first time.
+     * @since 3.7.15
+     */
+    public $isNewForSite = false;
+
+    /**
      * @var bool Whether the element is being resaved by a ResaveElement job or a `resave` console command.
      * @since 3.1.22
      */

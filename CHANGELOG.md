@@ -12,6 +12,7 @@
 - Added the `is resource` Twig test.
 - Added the `is scalar` Twig test.
 - Added the `is string` Twig test.
+- Added `craft\base\ElementTrait::$isNewForSite`.
 - Added `craft\mutex\DbMutexTrait`.
 
 ### Changed
@@ -33,6 +34,7 @@
 - Fixed a bug where the `utils/repair/section-structure` command was removing provisional drafts from the structure. ([#9868](https://github.com/craftcms/cms/issues/9868))
 - Fixed a bug where the control panel header elements could become squished. ([#9902](https://github.com/craftcms/cms/issues/9902))
 - Fixed a bug where collapsed structure elements weren’t getting included in exports. ([#9913](https://github.com/craftcms/cms/issues/9913))
+- Fixed a bug where Matrix blocks weren’t getting propagated to sites that were added to a draft, when its changes were applied to the canonical entry. ([#9910](https://github.com/craftcms/cms/issues/9910))
 
 ### Security
 - Generated front-end URLs now begin with the `@web` alias value if the current site doesn’t have a base URL.
