@@ -753,7 +753,7 @@ td.right {
 
 .icon.move:before {
   content: 'move';
-  color: $darkHairlineColor;
+  color: $mediumTextColor;
 }
 
 .icon.move:not(.disabled):hover:before {
@@ -5925,12 +5925,30 @@ $titlebarBorderRadius: $largeBorderRadius - 1;
     align-items: center;
     position: absolute;
     z-index: 1;
-    top: 4px;
+    top: 5px;
     @include right(14px);
     cursor: default;
 
     & > * {
-      @include margin(0, 0, 0, 10px);
+      @include margin(0, 0, 0, 5px);
+    }
+
+    & > .settings {
+      padding: 0 8px;
+      height: 20px;
+      color: $mediumTextColor;
+
+      &:before {
+        @include margin-right(0 !important);
+      }
+
+      &:not(:hover):not(:active) {
+        background-color: transparent;
+      }
+    }
+
+    & > .move {
+      margin-top: -3px !important;
     }
 
     & > .status {

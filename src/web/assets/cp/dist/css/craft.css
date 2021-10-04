@@ -428,7 +428,7 @@ body.rtl .with-icon.notice:before, body.rtl .with-icon.warning:before { margin: 
 
 .icon.move:not(.disabled) { cursor: move; }
 
-.icon.move:before { content: 'move'; color: rgba(123, 135, 147, 0.5); }
+.icon.move:before { content: 'move'; color: #596673; }
 
 .icon.move:not(.disabled):hover:before { color: #0B69A3; }
 
@@ -2926,15 +2926,25 @@ body.ltr .matrixblock > .checkbox { left: 14px; }
 
 body.rtl .matrixblock > .checkbox { right: 14px; }
 
-.matrixblock > .actions { display: -webkit-flex; display: flex; -webkit-align-items: center; align-items: center; position: absolute; z-index: 1; top: 4px; cursor: default; }
+.matrixblock > .actions { display: -webkit-flex; display: flex; -webkit-align-items: center; align-items: center; position: absolute; z-index: 1; top: 5px; cursor: default; }
 
 body.ltr .matrixblock > .actions { right: 14px; }
 
 body.rtl .matrixblock > .actions { left: 14px; }
 
-body.ltr .matrixblock > .actions > * { margin: 0 0 0 10px ; }
+body.ltr .matrixblock > .actions > * { margin: 0 0 0 5px ; }
 
-body.rtl .matrixblock > .actions > * { margin: 0 10px 0 0 ; }
+body.rtl .matrixblock > .actions > * { margin: 0 5px 0 0 ; }
+
+.matrixblock > .actions > .settings { padding: 0 8px; height: 20px; color: #596673; }
+
+body.ltr .matrixblock > .actions > .settings:before { margin-right: 0 !important; }
+
+body.rtl .matrixblock > .actions > .settings:before { margin-left: 0 !important; }
+
+.matrixblock > .actions > .settings:not(:hover):not(:active) { background-color: transparent; }
+
+.matrixblock > .actions > .move { margin-top: -3px !important; }
 
 .matrixblock > .actions > .status.off { display: none; }
 
