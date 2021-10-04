@@ -188,20 +188,7 @@ module.exports = index.withOptions(
                     // Customize the Tailwind color palette
                     ...colors,
                     ...configTheme.colors,
-                },
 
-                boxShadow: {
-                    xs: '0 0 0 1px var(--craftui-colors-shadow-05)',
-                    sm: '0 1px 2px 0 var(--craftui-colors-shadow-05)',
-                    DEFAULT: '0 1px 3px 0 var(--craftui-colors-shadow-1), 0 1px 2px 0 var(--craftui-colors-shadow-06)',
-                    md: '0 4px 6px -1px var(--craftui-colors-shadow-1), 0 2px 4px -1px var(--craftui-colors-shadow-06)',
-                    lg: '0 10px 15px -3px var(--craftui-colors-shadow-1), 0 4px 6px -2px var(--craftui-colors-shadow-05)',
-                    xl: '0 20px 25px -5px var(--craftui-colors-shadow-1), 0 10px 10px -5px var(--craftui-colors-shadow-04)',
-                    '2xl': '0 25px 50px -12px var(--craftui-colors-shadow-25)',
-                    inner: 'inset 0 2px 4px 0 var(--craftui-colors-shadow-06)',
-                    // outline: '0 0 0 3px var(--craftui-colors-shadow-outline)',
-                    outline: '0 0 0 3px red',
-                    none: 'none',
                 },
 
                 // WORKS
