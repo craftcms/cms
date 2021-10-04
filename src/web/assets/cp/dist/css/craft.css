@@ -2507,11 +2507,11 @@ body.rtl .texticon .clear { left: 9px; }
 
 .passwordwrapper .password { border: none; background: transparent; padding-right: 4rem; box-shadow: none; }
 
-.passwordwrapper .password-toggle { color: #0B69A3; position: absolute; top: 0; bottom: 0; }
+.passwordwrapper .password-toggle { color: #0B69A3; position: absolute; top: 0; bottom: 0; cursor: pointer; }
 
-body.ltr .passwordwrapper .password-toggle { right: 0; }
+body.ltr .passwordwrapper .password-toggle { right: 9px; }
 
-body.rtl .passwordwrapper .password-toggle { left: 0; }
+body.rtl .passwordwrapper .password-toggle { left: 9px; }
 
 .passwordwrapper .password-toggle:hover { text-decoration: underline; }
 
@@ -3471,9 +3471,9 @@ body.rtl #details { padding-right: 14px; }
 
 #details .meta > .field > .heading > label, #details .meta > .field > .heading, #details .meta > .data > .heading > label, #details .meta > .data > .heading { color: #515f6c; }
 
-body.ltr #details .meta > .field > .status-badge { left: -2px; }
+body.ltr #details .meta > .field > .status-badge { left: -1px; }
 
-body.rtl #details .meta > .field > .status-badge { right: -2px; }
+body.rtl #details .meta > .field > .status-badge { right: -1px; }
 
 #details .meta .text::-webkit-input-placeholder { color: #9aa5b1; }
 

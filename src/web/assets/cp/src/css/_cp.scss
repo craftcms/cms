@@ -1044,7 +1044,7 @@ $toolbarIconColor: darken($inputColor, 10%);
     }
 
     & > .field  > .status-badge {
-      @include left(-2px);
+      @include left(-1px);
     }
 
     .text::placeholder,

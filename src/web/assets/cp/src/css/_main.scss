@@ -5145,8 +5145,9 @@ body.reduce-focus-visibility {
     color: $linkColor;
     position: absolute;
     top: 0;
-    @include right(0);
+    @include right(9px);
     bottom: 0;
+    cursor: pointer;
 
     &:hover {
       text-decoration: underline;
