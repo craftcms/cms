@@ -185,10 +185,11 @@ module.exports = index.withOptions(
                 ...configTheme,
 
                 colors: {
-                    // Customize the Tailwind color palette
+                    // Color palette
                     ...colors,
-                    ...configTheme.colors,
 
+                    // Custom colors
+                    ...configTheme.colors,
                 },
 
                 // WORKS
