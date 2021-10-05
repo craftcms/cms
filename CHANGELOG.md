@@ -3,6 +3,8 @@
 ## Unreleased
 
 ### Added
+- Added the `graphql/create-token` command. ([#9930](https://github.com/craftcms/cms/discussions/9930))
+- Added the `graphql/list-schemas` command.
 - Added the `users/impersonate` command. ([#9919](https://github.com/craftcms/cms/pull/9919))
 - Added the `provisional` argument for draft mutations via GraphQL.
 - Added the `is array` Twig test.
@@ -23,6 +25,7 @@
 - Improved the performance of eager-loading entry authors. ([#9907](https://github.com/craftcms/cms/discussions/9907))
 - Simultaneous entry-save requests are now executed once at a time.
 - Matrix block queries now factor in nested fields based on the `type`/`typeId` param, if set. ([#9921](https://github.com/craftcms/cms/discussions/9921))
+- The `graphql/dump-schema` and `graphql/print-schema` commands now support a `--schema` argument.
 - The `users/delete` and `users/set-password` commands now support passing a user ID.
 - `craft\fields\Matrix::getBlockTypeFields()` now has a `$typeIds` argument.
 
