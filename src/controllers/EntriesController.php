@@ -24,6 +24,7 @@ use craft\models\Section;
 use craft\models\Site;
 use craft\services\Structures;
 use craft\web\assets\editentry\EditEntryAsset;
+use yii\base\Exception;
 use yii\base\InvalidConfigException;
 use yii\web\BadRequestHttpException;
 use yii\web\ForbiddenHttpException;
@@ -381,11 +382,24 @@ class EntriesController extends BaseEntriesController
             $entry->setScenario(Element::SCENARIO_LIVE);
         }
 
+        $isNotNew = (bool)$entry->id;
+        if ($isNotNew) {
+            $lockKey = "entry:$entry->id";
+            $mutex = Craft::$app->getMutex();
+            if (!$mutex->acquire($lockKey, 15)) {
+                throw new Exception('Could not acquire a lock to save the entry.');
+            }
+        }
+
         try {
             $success = Craft::$app->getElements()->saveElement($entry);
         } catch (UnsupportedSiteException $e) {
             $entry->addError('siteId', $e->getMessage());
             $success = false;
+        } finally {
+            if ($isNotNew) {
+                $mutex->release($lockKey);
+            }
         }
 
         if (!$success) {
