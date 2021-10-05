@@ -1,5 +1,57 @@
 # Release Notes for Craft CMS 3.x
 
+## 3.7.15 - 2021-10-05
+
+### Added
+- Added the `graphql/create-token` command. ([#9930](https://github.com/craftcms/cms/discussions/9930))
+- Added the `graphql/list-schemas` command.
+- Added the `users/impersonate` command. ([#9919](https://github.com/craftcms/cms/pull/9919))
+- Added the `provisional` argument for draft mutations via GraphQL.
+- Added the `is array` Twig test.
+- Added the `is callable` Twig test.
+- Added the `is float` Twig test.
+- Added the `is integer` Twig test.
+- Added the `is numeric` Twig test.
+- Added the `is resource` Twig test.
+- Added the `is scalar` Twig test.
+- Added the `is string` Twig test.
+- Added `craft\base\ElementTrait::$isNewForSite`.
+- Added `craft\mutex\DbMutexTrait`.
+
+### Changed
+- Mutex locks which are “released” during a database transaction are no longer actually released for other requests until the transaction is complete.
+- Username inputs now disable auto-capitalization on iOS devices.
+- Date and time fields now use native `date` and `type` input types on mobile. ([#9903](https://github.com/craftcms/cms/discussions/9903))
+- Improved the performance of eager-loading entry authors. ([#9907](https://github.com/craftcms/cms/discussions/9907))
+- Simultaneous entry-save requests are now executed once at a time.
+- Matrix block queries now factor in nested fields based on the `type`/`typeId` param, if set. ([#9921](https://github.com/craftcms/cms/discussions/9921))
+- The `graphql/dump-schema` and `graphql/print-schema` commands now support a `--schema` argument.
+- The `users/delete` and `users/set-password` commands now support passing a user ID.
+- `craft\fields\Matrix::getBlockTypeFields()` now has a `$typeIds` argument.
+
+### Deprecated
+- Deprecated `craft\helpers\UrlHelper::baseRequestUrl()`. `Craft::getAlias('@web')` should be used instead.
+- Deprecated `craft\mutex\PrefixedMutexTrait`. `DbMutexTrait` should be used instead.
+
+### Fixed
+- Fixed a bug where the “Duplicate (with descendants)” element action would only partially duplicate multi-level structures. ([#9889](https://github.com/craftcms/cms/issues/9889))
+- Fixed a bug where it wasn’t possible to mutate a provisional draft via GraphQL. ([#9892](https://github.com/craftcms/cms/issues/9892))
+- Fixed a bug where it wasn’t possible to mutate a draft via GraphQL without passing all required custom fields. ([#9893](https://github.com/craftcms/cms/issues/9893))
+- Fixed an error that could occur when merging upstream changes into a draft, if the canonical entry had been enabled for a new site and contained new Matrix blocks. ([#9895](https://github.com/craftcms/cms/issues/9895))
+- Fixed a bug where sections’ Default Status settings weren’t being respected when adding a new site to an entry. ([#9896](https://github.com/craftcms/cms/issues/9896))
+- Fixed a bug where the `utils/repair/section-structure` command was removing provisional drafts from the structure. ([#9868](https://github.com/craftcms/cms/issues/9868))
+- Fixed a bug where the control panel header elements could become squished. ([#9902](https://github.com/craftcms/cms/issues/9902))
+- Fixed a bug where collapsed structure elements weren’t getting included in exports. ([#9913](https://github.com/craftcms/cms/issues/9913))
+- Fixed a bug where Matrix blocks weren’t getting propagated to sites that were added to a draft, when its changes were applied to the canonical entry. ([#9910](https://github.com/craftcms/cms/issues/9910))
+- Fixed a bug where it wasn’t possible to revert Matrix blocks that had been soft-deleted. ([#9928](https://github.com/craftcms/cms/issues/9928))
+- Fixed a styling conflict with Craft Commerce.
+- Fixed a bug where `craft\services\AssetTransforms::getLocalImageSource()` was trying to delete non-existent transform source files. ([#9884](https://github.com/craftcms/cms/issues/9884))
+- Fixed a bug where `craft\services\Fields::getLayoutByType()` wasn’t setting the `type` property when a field layout didn’t exist yet for the element type. ([#9918](https://github.com/craftcms/cms/issues/9918))
+
+### Security
+- Generated front-end URLs now begin with the `@web` alias value if the current site doesn’t have a base URL.
+- Password inputs now hide the password when their form is submitted.
+
 ## 3.7.14 - 2021-09-28
 
 ### Added

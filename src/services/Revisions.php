@@ -19,8 +19,8 @@ use craft\helpers\Db;
 use craft\helpers\Queue;
 use craft\queue\jobs\PruneRevisions;
 use yii\base\Component;
+use yii\base\Exception;
 use yii\base\InvalidArgumentException;
-use yii\db\Exception;
 
 /**
  * Revisions service.
@@ -73,7 +73,7 @@ class Revisions extends Component
 
         $lockKey = 'revision:' . $source->id;
         $mutex = Craft::$app->getMutex();
-        if (!$mutex->acquire($lockKey)) {
+        if (!$mutex->acquire($lockKey, 3)) {
             throw new Exception('Could not acquire a lock to save a revision for element ' . $source->id);
         }
 
