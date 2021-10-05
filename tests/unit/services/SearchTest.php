@@ -55,19 +55,41 @@ class SearchTest extends Unit
      *
      * @param $usernameOrEmailsForResult
      * @param $usernameOrEmailsForQuery
-     * @param $query
-     * @param bool $scoreResults
-     * @param null $siteId
-     * @param bool $returnScores
+     * @param $searchQuery
      */
-    public function testFilterElementIdsByQuery($usernameOrEmailsForResult, $usernameOrEmailsForQuery, $query, $scoreResults = true, $siteId = null, $returnScores = false)
+    public function testSearchElements($usernameOrEmailsForResult, $usernameOrEmailsForQuery, $searchQuery)
     {
         // Repackage the dataProvider data into something that can be used by the filter function
         $result = $this->_usernameEmailArrayToIdList($usernameOrEmailsForResult);
-        $forQuery = $this->_usernameEmailArrayToIdList($usernameOrEmailsForQuery);
+        $elementIds = $this->_usernameEmailArrayToIdList($usernameOrEmailsForQuery);
+        $elementQuery = User::find()
+            ->id($elementIds ?: null)
+            ->search($searchQuery);
 
         // Filter them
-        $filtered = $this->search->filterElementIdsByQuery($forQuery, $query, $scoreResults, $siteId, $returnScores);
+        $filtered = array_keys($this->search->searchElements($elementQuery));
+
+        sort($result, SORT_NUMERIC);
+        sort($filtered, SORT_NUMERIC);
+
+        self::assertSame($result, $filtered);
+    }
+
+    /**
+     * @dataProvider filterElementIdByQueryDataProvider
+     *
+     * @param $usernameOrEmailsForResult
+     * @param $usernameOrEmailsForQuery
+     * @param $searchQuery
+     */
+    public function testFilterElementIdsByQuery($usernameOrEmailsForResult, $usernameOrEmailsForQuery, $searchQuery)
+    {
+        // Repackage the dataProvider data into something that can be used by the filter function
+        $result = $this->_usernameEmailArrayToIdList($usernameOrEmailsForResult);
+        $elementIds = $this->_usernameEmailArrayToIdList($usernameOrEmailsForQuery);
+
+        // Filter them
+        $filtered = $this->search->filterElementIdsByQuery($elementIds, $searchQuery, true, 1, false);
 
         sort($result, SORT_NUMERIC);
         sort($filtered, SORT_NUMERIC);
@@ -123,21 +145,21 @@ class SearchTest extends Unit
     public function filterElementIdByQueryDataProvider(): array
     {
         return [
-            [['user1'], ['user1', 'user2', 'user3', 'user4'], 'user1@crafttest.com', true, 1, false],
+            [['user1'], ['user1', 'user2', 'user3', 'user4'], 'user1@crafttest.com'],
 
-            [['user4', 'user1', 'user2', 'user3'], ['user1', 'user2', 'user3', 'user4'], 'user', true, 1, false],
-            [['user4', 'user1', 'user2', 'user3'], [], 'user', true, 1, false],
-            [['user1', 'user2', 'user3'], ['user1', 'user2', 'user3'], 'user', true, 1, false],
-            [['user4'], ['user1', 'user2', 'user3', 'user4'], 'user someemail', true, 1, false],
-            [[], ['user1', 'user2', 'user3'], 'user someemail', true, 1, false],
+            [['user4', 'user1', 'user2', 'user3'], ['user1', 'user2', 'user3', 'user4'], 'user'],
+            [['user4', 'user1', 'user2', 'user3'], [], 'user'],
+            [['user1', 'user2', 'user3'], ['user1', 'user2', 'user3'], 'user'],
+            [['user4'], ['user1', 'user2', 'user3', 'user4'], 'user someemail'],
+            [[], ['user1', 'user2', 'user3'], 'user someemail'],
 
             // This should work. If you want an empty slug you should try: -slug:*
-            [[], ['user1', 'user2', 'user3', 'user4'], 'slug:', true, 1, false],
-            [[], ['user1', 'user2', 'user3', 'user4'], 'slug:""', true, 1, false],
+            [[], ['user1', 'user2', 'user3', 'user4'], 'slug:'],
+            [[], ['user1', 'user2', 'user3', 'user4'], 'slug:""'],
 
             // User4 goes first as it has both user and someemail keywords
-            [['user4', 'user1', 'user2', 'user3'], ['user1', 'user2', 'user3', 'user4'], 'user OR someemail', true, 1, false],
-            [['user4', 'user1'], ['user1', 'user2', 'user3', 'user4'], 'someemail OR -firstname:*', true, 1, false],
+            [['user4', 'user1', 'user2', 'user3'], ['user1', 'user2', 'user3', 'user4'], 'user OR someemail'],
+            [['user4', 'user1'], ['user1', 'user2', 'user3', 'user4'], 'someemail OR -firstname:*'],
         ];
     }
 

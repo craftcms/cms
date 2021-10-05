@@ -1065,8 +1065,10 @@ class AssetTransforms extends Component
         try {
             if (!$volume instanceof LocalVolumeInterface) {
                 if (!is_file($imageSourcePath) || filesize($imageSourcePath) === 0) {
-                    // Delete it just in case it's a 0-byter
-                    FileHelper::unlink($imageSourcePath);
+                    if (is_file($imageSourcePath)) {
+                        // Delete since it's a 0-byter
+                        FileHelper::unlink($imageSourcePath);
+                    }
 
                     $prefix = pathinfo($asset->filename, PATHINFO_FILENAME) . '.delimiter.';
                     $extension = $asset->getExtension();

@@ -856,7 +856,7 @@ class Matrix extends Component
                 ];
 
                 if ($target->updatingFromDerivative && $block->getIsDerivative()) {
-                    if ($block->getOwner()->isFieldModified($field->handle)) {
+                    if (!empty($target->newSiteIds) || $source->isFieldModified($field->handle)) {
                         /** @var MatrixBlock $newBlock */
                         $newBlock = $elementsService->updateCanonicalElement($block, $newAttributes);
                         $newBlockId = $newBlock->id;
@@ -953,6 +953,7 @@ class Matrix extends Component
             ->ignorePlaceholders()
             ->indexBy('siteId')
             ->all();
+        $localizedOwners[$owner->siteId] = $owner;
 
         // Get the canonical owner across all sites
         $canonicalOwners = $owner::find()

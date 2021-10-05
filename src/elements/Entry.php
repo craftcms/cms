@@ -599,14 +599,16 @@ class Entry extends Element
     public static function eagerLoadingMap(array $sourceElements, string $handle)
     {
         if ($handle === 'author') {
-            // Get the source element IDs
-            $sourceElementIds = ArrayHelper::getColumn($sourceElements, 'id');
+            $sourceElementsWithAuthors = array_filter($sourceElements, function(Entry $entry) {
+                return $entry->authorId !== null;
+            });
 
-            $map = (new Query())
-                ->select(['id as source', 'authorId as target'])
-                ->from([Table::ENTRIES])
-                ->where(['and', ['id' => $sourceElementIds], ['not', ['authorId' => null]]])
-                ->all();
+            $map = array_map(function(Entry $entry){
+                return [
+                    'source' => $entry->id,
+                    'target' => $entry->authorId
+                ];
+            }, $sourceElementsWithAuthors);
 
             return [
                 'elementType' => User::class,

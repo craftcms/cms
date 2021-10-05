@@ -8,6 +8,7 @@
 namespace craft\gql\resolvers\mutations;
 
 use Craft;
+use craft\base\Element;
 use craft\db\Table;
 use craft\elements\db\EntryQuery;
 use craft\elements\Entry as EntryElement;
@@ -46,15 +47,20 @@ class Entry extends ElementMutationResolver
     {
         $entry = $this->getEntryElement($arguments);
 
-        $entry = $this->populateElementWithData($entry, $arguments, $resolveInfo);
+        // TODO refactor saving draft to its own method in 4.0
+        if (array_key_exists('draftId', $arguments)) {
+            $entry->setScenario(Element::SCENARIO_ESSENTIALS);
+        }
 
+        $entry = $this->populateElementWithData($entry, $arguments, $resolveInfo);
         $entry = $this->saveElement($entry);
         $this->performStructureOperations($entry, $arguments);
 
-        return Craft::$app->getElements()->createElementQuery(EntryElement::class)
+        $query = Craft::$app->getElements()->createElementQuery(EntryElement::class)
             ->siteId($entry->siteId)
-            ->anyStatus()
-            ->id($entry->id)
+            ->anyStatus();
+
+        return $this->identifyEntry($query, $arguments)
             ->one();
     }
 
@@ -162,7 +168,7 @@ class Entry extends ElementMutationResolver
         $entry = null;
 
         // Figure out whether the mutation is about an already saved entry
-        $canIdentify = $section->type === Section::TYPE_SINGLE || !empty($arguments['id']) || !empty($arguments['uid']);
+        $canIdentify = $section->type === Section::TYPE_SINGLE || !empty($arguments['id']) || !empty($arguments['uid']) || !empty($arguments['draftId']);
 
         // Check if relevant schema is present
         $this->requireSchemaAction('entrytypes.' . $entryType->uid, $canIdentify ? 'save' : 'create');
@@ -216,6 +222,10 @@ class Entry extends ElementMutationResolver
 
         if (!empty($arguments['draftId'])) {
             $entryQuery->draftId($arguments['draftId']);
+
+            if (array_key_exists('provisional', $arguments)) {
+                $entryQuery->provisionalDrafts($arguments['provisional']);
+            }
         } else if ($section->type === Section::TYPE_SINGLE) {
             $entryQuery->typeId($entryType->id);
         } else if (!empty($arguments['uid'])) {

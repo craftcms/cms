@@ -9,6 +9,8 @@ namespace craft\console\controllers\utils;
 
 use Craft;
 use craft\base\ElementInterface;
+use craft\behaviors\DraftBehavior;
+use craft\behaviors\RevisionBehavior;
 use craft\console\Controller;
 use craft\elements\Category;
 use craft\elements\db\ElementQuery;
@@ -106,6 +108,8 @@ class RepairController extends Controller
         $elements = $query
             ->siteId('*')
             ->unique()
+            ->drafts(null)
+            ->provisionalDrafts(null)
             ->anyStatus()
             ->withStructure(false)
             ->addSelect([
@@ -202,6 +206,16 @@ class RepairController extends Controller
                 $space = $element->level > 1 ? str_repeat(' ', ($element->level - 1) * 4 - 2) : '';
                 $this->stdout(' ' . ($issue ? '✖' : '✔') . ' ' . $space, $issue ? Console::FG_RED : Console::FG_GREEN);
                 $this->stdout(($element->level > 1 ? '∟ ' : '') . $element->title);
+                if ($element->getIsDraft() || $element->getIsRevision()) {
+                    if ($element->getIsDraft()) {
+                        /** @var DraftBehavior|ElementInterface $element */
+                        $revLabel = $element->draftName ?: 'Draft';
+                    } else {
+                        /** @var RevisionBehavior|ElementInterface $element */
+                        $revLabel = $element->revisionNum ? "Revision $element->revisionNum" : 'Revision';
+                    }
+                    $this->stdout(" ($revLabel)", Console::FG_GREY);
+                }
                 if ($issue) {
                     $this->stdout(" - $issue", Console::FG_RED);
                 }

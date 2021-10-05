@@ -278,7 +278,7 @@ Craft.DraftEditor = Garnish.Base.extend({
         }
 
         // Are there additional sites that can be added?
-        if (this.settings.addlSiteIds && this.settings.addlSiteIds.length) {
+        if (this.settings.addlSites && this.settings.addlSites.length) {
             this._createAddlSiteField();
         }
 
@@ -348,14 +348,14 @@ Craft.DraftEditor = Garnish.Base.extend({
         });
     },
 
-    _createSiteStatusField: function(site) {
+    _createSiteStatusField: function(site, status) {
         const $field = Craft.ui.createLightswitchField({
             id: `enabledForSite-${site.id}`,
             label: Craft.t('app', 'Enabled for {site}', {site: site.name}),
             name: `enabledForSite[${site.id}]`,
-            on: this.settings.siteStatuses.hasOwnProperty(site.id)
-                ? this.settings.siteStatuses[site.id]
-                : true,
+            on: typeof status != 'undefined'
+                ? status
+                : (this.settings.siteStatuses.hasOwnProperty(site.id) ? this.settings.siteStatuses[site.id] : true),
             disabled: !!this.settings.revisionId,
         });
 
@@ -378,8 +378,8 @@ Craft.DraftEditor = Garnish.Base.extend({
     },
 
     _createAddlSiteField: function() {
-        const addlSites = Craft.sites.filter(s => {
-            return !this.siteIds.includes(s.id) && this.settings.addlSiteIds.includes(s.id);
+        const addlSites = Craft.sites.filter(site => {
+            return !this.siteIds.includes(site.id) && this.settings.addlSites.some(s => s.siteId == site.id);
         });
 
         if (!addlSites.length) {
@@ -409,7 +409,8 @@ Craft.DraftEditor = Garnish.Base.extend({
                 return;
             }
 
-            this._createSiteStatusField(site);
+            const addlSiteInfo = this.settings.addlSites.find(s => s.siteId == site.id);
+            this._createSiteStatusField(site, addlSiteInfo.enabledByDefault);
 
             $addlSiteSelect
                 .val('')
@@ -773,7 +774,6 @@ Craft.DraftEditor = Garnish.Base.extend({
                     if (createdProvisionalDraft) {
                         this.$revisionLabel.append(
                             $('<span/>', {
-                                class: 'extralight',
                                 text: ` — ${Craft.t('app', 'Edited')}`,
                             })
                         );
@@ -1166,7 +1166,7 @@ Craft.DraftEditor = Garnish.Base.extend({
         isLive: false,
         isProvisionalDraft: false,
         siteStatuses: null,
-        addlSiteIds: [],
+        addlSites: [],
         cpEditUrl: null,
         draftId: null,
         revisionId: null,

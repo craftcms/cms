@@ -3,18 +3,75 @@
 ## Unreleased
 
 ### Added
+- Added the `users/impersonate` command. ([#9919](https://github.com/craftcms/cms/pull/9919))
+- Added the `provisional` argument for draft mutations via GraphQL.
+- Added the `is array` Twig test.
+- Added the `is callable` Twig test.
+- Added the `is float` Twig test.
+- Added the `is integer` Twig test.
+- Added the `is numeric` Twig test.
+- Added the `is resource` Twig test.
+- Added the `is scalar` Twig test.
+- Added the `is string` Twig test.
+- Added `craft\base\ElementTrait::$isNewForSite`.
+- Added `craft\mutex\DbMutexTrait`.
+
+### Changed
+- Mutex locks which are “released” during a database transaction are no longer actually released for other requests until the transaction is complete.
+- Username inputs now disable auto-capitalization on iOS devices.
+- Date and time fields now use native `date` and `type` input types on mobile. ([#9903](https://github.com/craftcms/cms/discussions/9903))
+- Improved the performance of eager-loading entry authors. ([#9907](https://github.com/craftcms/cms/discussions/9907))
+- Simultaneous entry-save requests are now executed once at a time.
+- The `users/delete` and `users/set-password` commands now support passing a user ID.
+
+### Deprecated
+- Deprecated `craft\helpers\UrlHelper::baseRequestUrl()`. `Craft::getAlias('@web')` should be used instead.
+- Deprecated `craft\mutex\PrefixedMutexTrait`. `DbMutexTrait` should be used instead.
+
+### Fixed
+- Fixed a bug where the “Duplicate (with descendants)” element action would only partially duplicate multi-level structures. ([#9889](https://github.com/craftcms/cms/issues/9889))
+- Fixed a bug where it wasn’t possible to mutate a provisional draft via GraphQL. ([#9892](https://github.com/craftcms/cms/issues/9892))
+- Fixed a bug where it wasn’t possible to mutate a draft via GraphQL without passing all required custom fields. ([#9893](https://github.com/craftcms/cms/issues/9893))
+- Fixed an error that could occur when merging upstream changes into a draft, if the canonical entry had been enabled for a new site and contained new Matrix blocks. ([#9895](https://github.com/craftcms/cms/issues/9895))
+- Fixed a bug where sections’ Default Status settings weren’t being respected when adding a new site to an entry. ([#9896](https://github.com/craftcms/cms/issues/9896))
+- Fixed a bug where the `utils/repair/section-structure` command was removing provisional drafts from the structure. ([#9868](https://github.com/craftcms/cms/issues/9868))
+- Fixed a bug where the control panel header elements could become squished. ([#9902](https://github.com/craftcms/cms/issues/9902))
+- Fixed a bug where collapsed structure elements weren’t getting included in exports. ([#9913](https://github.com/craftcms/cms/issues/9913))
+- Fixed a bug where Matrix blocks weren’t getting propagated to sites that were added to a draft, when its changes were applied to the canonical entry. ([#9910](https://github.com/craftcms/cms/issues/9910))
+- Fixed a bug where `craft\services\Fields::getLayoutByType()` wasn’t setting the `type` property when a field layout didn’t exist yet for the element type. ([#9918](https://github.com/craftcms/cms/issues/9918))
+- Fixed a bug where Craft tried to delete a file that didn't exist. ([#9884](https://github.com/craftcms/cms/issues/9884))
+
+### Security
+- Generated front-end URLs now begin with the `@web` alias value if the current site doesn’t have a base URL.
+- Password inputs now hide the password when their form is submitted.
+
+## 3.7.14 - 2021-09-28
+
+### Added
 - Added `craft\base\Element::EVENT_PREP_QUERY_FOR_TABLE_ATTRIBUTE`. ([#9862](https://github.com/craftcms/cms/pull/9862))
 - Added `craft\base\ElementInterface::getIsFresh()`.
 - Added `craft\base\ElementInterface::setIsFresh()`.
+- Added `craft\cache\ElementQueryTagDependency`.
+- Added `craft\elements\db\ElementQuery::getCacheTags()`.
 - Added `craft\events\ElementIndexTableAttributeEvent`.
+- Added `craft\events\SearchEvent::$elementQuery`.
+- Added `craft\events\SearchEvent::getElementIds()`.
+- Added `craft\events\SearchEvent::setElementIds()`.
+- Added `craft\services\Search::searchElements()`.
+- Added the `fullPane` setting to Vue admin tables, which can be set to `false` if the table is not the only UI component in its content pane.
 
 ### Changed
 - Enhanced the visibility of global navigation badges.
 - Enhanced the visibility of focused menu options.
+- Improved the performance of element query `search` params. ([#9867](https://github.com/craftcms/cms/issues/9867))
+- Element queries’ `cache()` methods now create a cache dependency based on the element queries’ cache tags by default.
+- Element index queries are now cached.
 - The `migrate/all` command now includes plugins whose schema versions have changed, even if they don’t have any new migrations. ([#9860](https://github.com/craftcms/cms/issues/9860))
+- It’s now possible to pass an array of Matrix block IDs into a Matrix field’s element query param. ([#9875](https://github.com/craftcms/cms/issues/9875))
 
 ### Deprecated
 - Deprecated `craft\base\Element::getHasFreshContent()`. `getIsFresh()` should be used instead.
+- Deprecated `craft\services\Search::filterElementIdsByQuery()`.
 
 ### Fixed
 - Fixed the control panel heading order for more intuitive navigation by screen reader users.
@@ -24,6 +81,12 @@
 - Fixed a bug where some action menus didn’t have a label for screen readers.
 - Fixed a bug where `craft\web\Response::redirect()` no longer supported passing an array to the `$url` argument. ([#9857](https://github.com/craftcms/cms/issues/9857))
 - Fixed a bug where duplicated entries that were created via an “Applying new propagation method” job weren’t getting positioned correctly based on the original entries’ structure. ([#9782](https://github.com/craftcms/cms/issues/9782))
+- Fixed a bug where unpublished drafts could disappear after clicking “Create entry” if the URI could not be made unique. ([#9873](https://github.com/craftcms/cms/issues/9873))
+- Fixed an error that could occur when processing `relatedTo*` GraphQL arguments in some cases.
+- Fixed an error that could occur when an entry’s Title Format referenced a custom field with `author` in its handle. ([#9891](https://github.com/craftcms/cms/issues/9891))
+
+### Security
+- Fixed a potential CSV injection vulnerability.
 
 ## 3.7.13 - 2021-09-14
 

@@ -485,7 +485,7 @@ class ElementQueryConditionBuilder extends Component
                         }
 
                         // For relational fields, prepare the arguments.
-                        if ($craftContentField instanceof BaseRelationField) {
+                        if ($craftContentField instanceof EagerLoadingFieldInterface) {
                             $arguments = $this->_argumentManager->prepareArguments($arguments);
                         }
                     }

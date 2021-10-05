@@ -9,6 +9,7 @@
         value: (user is defined ? user.username : null),
         autofocus: true,
         autocomplete: false,
+        autocapitalize: false,
         required: (isNewUser or (currentUser.admin or user.getIsCurrent()) ? true : false),
         disabled: (isNewUser or (currentUser.admin or user.getIsCurrent()) ? false : true),
         errors: (user is defined ? user.getErrors('username') : null),
