@@ -40,6 +40,7 @@
 - Fixed a bug where the control panel header elements could become squished. ([#9902](https://github.com/craftcms/cms/issues/9902))
 - Fixed a bug where collapsed structure elements weren’t getting included in exports. ([#9913](https://github.com/craftcms/cms/issues/9913))
 - Fixed a bug where Matrix blocks weren’t getting propagated to sites that were added to a draft, when its changes were applied to the canonical entry. ([#9910](https://github.com/craftcms/cms/issues/9910))
+- Fixed a styling conflict with Craft Commerce.
 - Fixed a bug where `craft\services\AssetTransforms::getLocalImageSource()` was trying to delete non-existent transform source files. ([#9884](https://github.com/craftcms/cms/issues/9884))
 - Fixed a bug where `craft\services\Fields::getLayoutByType()` wasn’t setting the `type` property when a field layout didn’t exist yet for the element type. ([#9918](https://github.com/craftcms/cms/issues/9918))
 
