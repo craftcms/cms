@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 3.x
 
-## Unreleased
+## 3.7.15 - 2021-10-05
 
 ### Added
 - Added the `graphql/create-token` command. ([#9930](https://github.com/craftcms/cms/discussions/9930))
