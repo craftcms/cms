@@ -3,6 +3,7 @@
 ## Unreleased
 
 ### Added
+- Added the `users/impersonate` command. ([#9919](https://github.com/craftcms/cms/pull/9919))
 - Added the `provisional` argument for draft mutations via GraphQL.
 - Added the `is array` Twig test.
 - Added the `is callable` Twig test.
@@ -21,6 +22,7 @@
 - Date and time fields now use native `date` and `type` input types on mobile. ([#9903](https://github.com/craftcms/cms/discussions/9903))
 - Improved the performance of eager-loading entry authors. ([#9907](https://github.com/craftcms/cms/discussions/9907))
 - Simultaneous entry-save requests are now executed once at a time.
+- The `users/delete` and `users/set-password` commands now support passing a user ID.
 
 ### Deprecated
 - Deprecated `craft\helpers\UrlHelper::baseRequestUrl()`. `Craft::getAlias('@web')` should be used instead.
