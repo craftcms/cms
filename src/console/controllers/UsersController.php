@@ -337,6 +337,7 @@ class UsersController extends Controller
      *
      * @param string $user The ID, username, or email address of the user account.
      * @return int
+     * @since 3.7.15
      */
     public function actionImpersonate(string $user): int
     {
