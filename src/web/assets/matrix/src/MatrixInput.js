@@ -217,7 +217,7 @@
   <div class="checkbox" title="${Craft.t('app', 'Select')}"></div>
   <div class="actions">
     <div class="status off" title="${Craft.t('app', 'Disabled')}"></div>
-    <a class="settings icon menubtn" title="${Craft.t('app', 'Actions')}" role="button"></a> 
+    <button type="button" class="btn settings icon menubtn" title="${Craft.t('app', 'Actions')}"></button> 
     <div class="menu">
       <ul class="padded">
         <li><a data-icon="collapse" data-action="collapse">${Craft.t('app', 'Collapse')}</a></li>

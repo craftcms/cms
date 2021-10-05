@@ -856,7 +856,7 @@ class Matrix extends Component
                 ];
 
                 if ($target->updatingFromDerivative && $block->getIsDerivative()) {
-                    if ($block->getOwner()->isFieldModified($field->handle)) {
+                    if (!empty($target->newSiteIds) || $source->isFieldModified($field->handle)) {
                         /** @var MatrixBlock $newBlock */
                         $newBlock = $elementsService->updateCanonicalElement($block, $newAttributes);
                         $newBlockId = $newBlock->id;

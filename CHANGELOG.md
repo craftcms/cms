@@ -12,6 +12,7 @@
 - Added the `is resource` Twig test.
 - Added the `is scalar` Twig test.
 - Added the `is string` Twig test.
+- Added `craft\base\ElementTrait::$isNewForSite`.
 - Added `craft\mutex\DbMutexTrait`.
 
 ### Changed
@@ -19,6 +20,7 @@
 - Username inputs now disable auto-capitalization on iOS devices.
 - Date and time fields now use native `date` and `type` input types on mobile. ([#9903](https://github.com/craftcms/cms/discussions/9903))
 - Improved the performance of eager-loading entry authors. ([#9907](https://github.com/craftcms/cms/discussions/9907))
+- Simultaneous entry-save requests are now executed once at a time.
 
 ### Deprecated
 - Deprecated `craft\helpers\UrlHelper::baseRequestUrl()`. `Craft::getAlias('@web')` should be used instead.
@@ -33,9 +35,12 @@
 - Fixed a bug where the `utils/repair/section-structure` command was removing provisional drafts from the structure. ([#9868](https://github.com/craftcms/cms/issues/9868))
 - Fixed a bug where the control panel header elements could become squished. ([#9902](https://github.com/craftcms/cms/issues/9902))
 - Fixed a bug where collapsed structure elements weren’t getting included in exports. ([#9913](https://github.com/craftcms/cms/issues/9913))
+- Fixed a bug where Matrix blocks weren’t getting propagated to sites that were added to a draft, when its changes were applied to the canonical entry. ([#9910](https://github.com/craftcms/cms/issues/9910))
+- Fixed a bug where `craft\services\Fields::getLayoutByType()` wasn’t setting the `type` property when a field layout didn’t exist yet for the element type. ([#9918](https://github.com/craftcms/cms/issues/9918))
 
 ### Security
 - Generated front-end URLs now begin with the `@web` alias value if the current site doesn’t have a base URL.
+- Password inputs now hide the password when their form is submitted.
 
 ## 3.7.14 - 2021-09-28
 

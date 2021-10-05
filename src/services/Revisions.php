@@ -19,8 +19,8 @@ use craft\helpers\Db;
 use craft\helpers\Queue;
 use craft\queue\jobs\PruneRevisions;
 use yii\base\Component;
+use yii\base\Exception;
 use yii\base\InvalidArgumentException;
-use yii\db\Exception;
 
 /**
  * Revisions service.
