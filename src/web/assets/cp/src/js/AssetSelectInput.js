@@ -149,6 +149,25 @@ Craft.AssetSelectInput = Craft.BaseElementSelectInput.extend({
         }
     },
 
+    replaceElement: function(elementId, replaceWithId) {
+        var parameters = {
+            elementId: replaceWithId,
+            siteId: this.settings.criteria.siteId,
+            size: this.settings.viewMode
+        };
+
+        Craft.postActionRequest('elements/get-element-html', parameters, data => {
+            if (data.error) {
+                alert(data.error);
+            } else {
+                var $existing = this.$elements.filter('[data-id="' + elementId + '"]');
+                this.removeElement($existing);
+                let elementInfo = Craft.getElementInfo(data.html);
+                this.selectElements([elementInfo]);
+            }
+        });
+    },
+
     refreshThumbnail: function(elementId) {
         var parameters = {
             elementId: elementId,
