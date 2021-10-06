@@ -32,7 +32,6 @@ use craft\errors\VolumeObjectNotFoundException;
 use craft\events\AssetEvent;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Assets;
-use craft\helpers\Assets as AssetsHelper;
 use craft\helpers\Cp;
 use craft\helpers\Db;
 use craft\helpers\ElementHelper;
@@ -1209,7 +1208,7 @@ class Asset extends Element
             ($mimeType === 'image/gif' && !$generalConfig->transformGifs) ||
             ($mimeType === 'image/svg+xml' && !$generalConfig->transformSvgs)
         ) {
-            return AssetsHelper::generateUrl($volume, $this);
+            return Assets::generateUrl($volume, $this);
         }
 
         // Normalize empty transform values
@@ -1665,7 +1664,7 @@ class Asset extends Element
                 ]);
 
             case 'kind':
-                return AssetsHelper::getFileKindLabel($this->kind);
+                return Assets::getFileKindLabel($this->kind);
 
             case 'size':
                 if ($this->size === null) {
@@ -1893,7 +1892,7 @@ class Asset extends Element
 
         // Get the (new?) folder ID
         if ($this->newLocation !== null) {
-            [$folderId] = AssetsHelper::parseFileLocation($this->newLocation);
+            [$folderId] = Assets::parseFileLocation($this->newLocation);
         } else {
             $folderId = $this->folderId;
         }
@@ -1911,12 +1910,12 @@ class Asset extends Element
 
         // Set the kind based on filename, if not set already
         if ($this->kind === null && $this->filename !== null) {
-            $this->kind = AssetsHelper::getFileKindByExtension($this->filename);
+            $this->kind = Assets::getFileKindByExtension($this->filename);
         }
 
         // Give it a default title based on the file name, if it doesn't have a title yet
         if (!$this->id && !$this->title) {
-            $this->title = AssetsHelper::filename2Title(pathinfo($this->filename, PATHINFO_FILENAME));
+            $this->title = Assets::filename2Title(pathinfo($this->filename, PATHINFO_FILENAME));
         }
 
         // Set the field layout
@@ -1941,7 +1940,7 @@ class Asset extends Element
 
             if (
                 \in_array($this->getScenario(), [self::SCENARIO_REPLACE, self::SCENARIO_CREATE], true) &&
-                AssetsHelper::getFileKindByExtension($this->tempFilePath) === static::KIND_IMAGE &&
+                Assets::getFileKindByExtension($this->tempFilePath) === static::KIND_IMAGE &&
                 !($isCpRequest && !$sanitizeCpImageUploads)
             ) {
                 Image::cleanImageByPath($this->tempFilePath);
@@ -2157,7 +2156,7 @@ class Asset extends Element
 
         // Get the (new?) folder ID & filename
         if ($this->newLocation !== null) {
-            [$folderId, $filename] = AssetsHelper::parseFileLocation($this->newLocation);
+            [$folderId, $filename] = Assets::parseFileLocation($this->newLocation);
         } else {
             $folderId = $this->folderId;
             $filename = $this->filename;
@@ -2225,7 +2224,7 @@ class Asset extends Element
 
         // If there was a new file involved, update file data.
         if ($tempPath) {
-            $this->kind = AssetsHelper::getFileKindByExtension($filename);
+            $this->kind = Assets::getFileKindByExtension($filename);
 
             if ($this->kind === self::KIND_IMAGE) {
                 [$this->_width, $this->_height] = Image::imageSize($tempPath);
