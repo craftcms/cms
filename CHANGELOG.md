@@ -5,6 +5,9 @@
 ### Added
 - Added `craft\elements\Asset::getUrlsBySize()`. ([#9931](https://github.com/craftcms/cms/discussions/9931))
 
+### Fixed
+- Fixed a bug where the top-level “Enabled” lightswitch on Edit Entry pages wasn’t getting updated when adding a new site to an entry. ([#9935](https://github.com/craftcms/cms/issues/9935))
+
 ## 3.7.15 - 2021-10-05
 
 ### Added
