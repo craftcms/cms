@@ -998,11 +998,59 @@ class Asset extends Element
      */
     public function getSrcset(array $sizes, $transform = null)
     {
-        if ($this->kind !== self::KIND_IMAGE) {
+        $urls = $this->getUrlsBySize($sizes, $transform);
+
+        if (empty($urls)) {
             return false;
         }
 
         $srcset = [];
+
+        foreach ($urls as $size => $url) {
+            if ($size === '1x') {
+                $srcset[] = $url;
+            } else {
+                $srcset[] = "$url $size";
+            }
+        }
+
+        return implode(', ', $srcset);
+    }
+
+    /**
+     * Returns an array of image transform URLs based on the given widths or x-descriptors.
+     *
+     * For example, if you pass `['100w', '200w']`, you will get:
+     *
+     * ```php
+     * [
+     *     '100w' => 'image-url@100w.ext',
+     *     '200w' => 'image-url@200w.ext'
+     * ]
+     * ```
+     *
+     * If you pass x-descriptors, it will be assumed that the image’s current width is the indented 1x width.
+     * So if you pass `['1x', '2x']` on an image with a 100px-wide transform applied, you will get:
+     *
+     * ```php
+     * [
+     *     '1x' => 'image-url@100w.ext',
+     *     '2x' => 'image-url@200w.ext'
+     * ]
+     * ```
+     *
+     * @param string[] $sizes
+     * @param AssetTransform|string|array|null $transform A transform handle or configuration that should be applied to the image
+     * @return array
+     * @since 3.7.16
+     */
+    public function getUrlsBySize(array $sizes, $transform = null): array
+    {
+        if ($this->kind !== self::KIND_IMAGE) {
+            return [];
+        }
+
+        $urls = [];
 
         if (
             ($transform !== null || $this->_transform) &&
@@ -1016,12 +1064,12 @@ class Asset extends Element
         [$currentWidth, $currentHeight] = $this->_dimensions($transform);
 
         if (!$currentWidth || !$currentHeight) {
-            return false;
+            return [];
         }
 
         foreach ($sizes as $size) {
             if ($size === '1x') {
-                $srcset[] = $this->getUrl($transform);
+                $urls[$size] = $this->getUrl($transform);
                 continue;
             }
 
@@ -1047,10 +1095,10 @@ class Asset extends Element
                 }
             }
 
-            $srcset[] = $this->getUrl($sizeTransform) . " $value$unit";
+            $urls["$value$unit"] = $this->getUrl($sizeTransform);
         }
 
-        return implode(', ', $srcset);
+        return $urls;
     }
 
     /**
