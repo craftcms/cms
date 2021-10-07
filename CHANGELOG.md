@@ -2,7 +2,24 @@
 
 ## Unreleased
 
+### Changed
+- Logs now include the raw request body in place of the `$_POST` array, if the `$_POST` array is empty. ([#9941](https://github.com/craftcms/cms/discussions/9941))
+- Reverted [#9806](https://github.com/craftcms/cms/discussions/9806) from Craft 3.7.12 because it causes performance issues in some scenarios.
+
+## 3.7.16 - 2021-10-06
+
 ### Added
+- Added `craft\elements\Asset::getUrlsBySize()`. ([#9931](https://github.com/craftcms/cms/discussions/9931))
+
+### Fixed
+- Fixed a bug where the top-level “Enabled” lightswitch on Edit Entry pages wasn’t getting updated when adding a new site to an entry. ([#9935](https://github.com/craftcms/cms/issues/9935))
+- Fixed a bug where entry indexes weren’t showing changes to unpublished drafts until a published entry was saved. ([#9940](https://github.com/craftcms/cms/issues/9940))
+
+## 3.7.15 - 2021-10-05
+
+### Added
+- Added the `graphql/create-token` command. ([#9930](https://github.com/craftcms/cms/discussions/9930))
+- Added the `graphql/list-schemas` command.
 - Added the `users/impersonate` command. ([#9919](https://github.com/craftcms/cms/pull/9919))
 - Added the `provisional` argument for draft mutations via GraphQL.
 - Added the `is array` Twig test.
@@ -22,7 +39,10 @@
 - Date and time fields now use native `date` and `type` input types on mobile. ([#9903](https://github.com/craftcms/cms/discussions/9903))
 - Improved the performance of eager-loading entry authors. ([#9907](https://github.com/craftcms/cms/discussions/9907))
 - Simultaneous entry-save requests are now executed once at a time.
+- Matrix block queries now factor in nested fields based on the `type`/`typeId` param, if set. ([#9921](https://github.com/craftcms/cms/discussions/9921))
+- The `graphql/dump-schema` and `graphql/print-schema` commands now support a `--schema` argument.
 - The `users/delete` and `users/set-password` commands now support passing a user ID.
+- `craft\fields\Matrix::getBlockTypeFields()` now has a `$typeIds` argument.
 
 ### Deprecated
 - Deprecated `craft\helpers\UrlHelper::baseRequestUrl()`. `Craft::getAlias('@web')` should be used instead.
@@ -38,8 +58,10 @@
 - Fixed a bug where the control panel header elements could become squished. ([#9902](https://github.com/craftcms/cms/issues/9902))
 - Fixed a bug where collapsed structure elements weren’t getting included in exports. ([#9913](https://github.com/craftcms/cms/issues/9913))
 - Fixed a bug where Matrix blocks weren’t getting propagated to sites that were added to a draft, when its changes were applied to the canonical entry. ([#9910](https://github.com/craftcms/cms/issues/9910))
+- Fixed a bug where it wasn’t possible to revert Matrix blocks that had been soft-deleted. ([#9928](https://github.com/craftcms/cms/issues/9928))
+- Fixed a styling conflict with Craft Commerce.
+- Fixed a bug where `craft\services\AssetTransforms::getLocalImageSource()` was trying to delete non-existent transform source files. ([#9884](https://github.com/craftcms/cms/issues/9884))
 - Fixed a bug where `craft\services\Fields::getLayoutByType()` wasn’t setting the `type` property when a field layout didn’t exist yet for the element type. ([#9918](https://github.com/craftcms/cms/issues/9918))
-- Fixed a bug where Craft tried to delete a file that didn't exist. ([#9884](https://github.com/craftcms/cms/issues/9884))
 
 ### Security
 - Generated front-end URLs now begin with the `@web` alias value if the current site doesn’t have a base URL.
