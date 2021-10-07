@@ -363,7 +363,7 @@ class FileHelper extends \yii\helpers\FileHelper
         if ($lock) {
             $mutex = Craft::$app->getMutex();
             $lockName = md5($file);
-            if (!$mutex->acquire($lockName, 2)) {
+            if (!$mutex->acquire($lockName, 3)) {
                 throw new ErrorException("Unable to acquire a lock for file \"$file\".");
             }
         } else {

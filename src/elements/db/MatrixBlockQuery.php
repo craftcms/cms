@@ -530,6 +530,11 @@ class MatrixBlockQuery extends ElementQuery
         // This method won't get called if $this->fieldId isn't set to a single int
         /** @var MatrixField $matrixField */
         $matrixField = Craft::$app->getFields()->getFieldById(reset($this->fieldId));
+
+        if (!empty($this->typeId) && ArrayHelper::isNumeric($this->typeId)) {
+            return $matrixField->getBlockTypeFields($this->typeId);
+        }
+
         return $matrixField->getBlockTypeFields();
     }
 

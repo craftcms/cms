@@ -12,7 +12,10 @@ use craft\console\Controller;
 use craft\elements\User;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Console;
+use craft\helpers\UrlHelper;
+use DateTime;
 use Throwable;
+use yii\base\InvalidArgumentException;
 use yii\console\ExitCode;
 
 /**
@@ -232,15 +235,15 @@ class UsersController extends Controller
     /**
      * Deletes a user.
      *
-     * @param string $usernameOrEmail The user’s username or email address.
+     * @param string $user The ID, username, or email address of the user account.
      * @return int
      */
-    public function actionDelete(string $usernameOrEmail): int
+    public function actionDelete(string $user): int
     {
-        $user = Craft::$app->getUsers()->getUserByUsernameOrEmail($usernameOrEmail);
-
-        if (!$user) {
-            $this->stderr("No user exists with a username/email of “{$usernameOrEmail}”." . PHP_EOL, Console::FG_RED);
+        try {
+            $user = $this->_user($user);
+        } catch (InvalidArgumentException $e) {
+            $this->stderr($e->getMessage() . PHP_EOL, Console::FG_RED);
             return ExitCode::UNSPECIFIED_ERROR;
         }
 
@@ -263,14 +266,14 @@ class UsersController extends Controller
                 return ExitCode::UNSPECIFIED_ERROR;
             }
 
-            if (!$this->confirm("Delete user “{$usernameOrEmail}” and transfer their content to user “{$this->inheritor}”?")) {
+            if (!$this->confirm("Delete user “{$user->username}” and transfer their content to user “{$inheritor->username}”?")) {
                 $this->stdout('Aborting.' . PHP_EOL);
                 return ExitCode::USAGE;
             }
 
             $user->inheritorOnDelete = $inheritor;
         } else if ($this->interactive) {
-            $this->deleteContent = $this->confirm("Delete user “{$usernameOrEmail}” and their content?");
+            $this->deleteContent = $this->confirm("Delete user “{$user->username}” and their content?");
 
             if (!$this->deleteContent) {
                 $this->stdout('Aborting.' . PHP_EOL);
@@ -297,15 +300,15 @@ class UsersController extends Controller
     /**
      * Changes a user’s password.
      *
-     * @param string $usernameOrEmail The user’s username or email address
+     * @param string $user The ID, username, or email address of the user account.
      * @return int
      */
-    public function actionSetPassword(string $usernameOrEmail): int
+    public function actionSetPassword(string $user): int
     {
-        $user = Craft::$app->getUsers()->getUserByUsernameOrEmail($usernameOrEmail);
-
-        if (!$user) {
-            $this->stderr("No user exists with a username/email of “{$usernameOrEmail}”." . PHP_EOL, Console::FG_RED);
+        try {
+            $user = $this->_user($user);
+        } catch (InvalidArgumentException $e) {
+            $this->stderr($e->getMessage() . PHP_EOL, Console::FG_RED);
             return ExitCode::UNSPECIFIED_ERROR;
         }
 
@@ -328,5 +331,67 @@ class UsersController extends Controller
         $this->stdout('done' . PHP_EOL, Console::FG_GREEN);
 
         return ExitCode::OK;
+    }
+
+    /**
+     * Generate a URL to impersonate a user.
+     *
+     * @param string $user The ID, username, or email address of the user account.
+     * @return int
+     * @since 3.7.15
+     */
+    public function actionImpersonate(string $user): int
+    {
+        try {
+            $user = $this->_user($user);
+        } catch (InvalidArgumentException $e) {
+            $this->stderr($e->getMessage() . PHP_EOL, Console::FG_RED);
+            return ExitCode::UNSPECIFIED_ERROR;
+        }
+
+        $token = Craft::$app->getTokens()->createToken([
+            'users/impersonate-with-token', [
+                'userId' => $user->id,
+                'prevUserId' => $user->id,
+            ],
+        ], 1, new DateTime('+1 hour'));
+
+        if (!$token) {
+            $this->stderr('Unable to create the impersonation token.' . PHP_EOL, Console::FG_RED);
+            return ExitCode::UNSPECIFIED_ERROR;
+        }
+
+        $url = $user->can('accessCp') ? UrlHelper::cpUrl() : UrlHelper::siteUrl();
+        $url = UrlHelper::urlWithToken($url, $token);
+
+        $this->stdout("Impersonation URL for $user->username: ");
+        $this->stdout($url . PHP_EOL, Console::FG_CYAN);
+        $this->stdout('(Expires in one hour.)' . PHP_EOL, Console::FG_GREY);
+
+        return ExitCode::OK;
+    }
+
+    /**
+     * Resolves a `user` argument.
+     *
+     * @param string $value The `user` argument value
+     * @return User
+     * @throws InvalidArgumentException if the user could not be found
+     */
+    private function _user(string $value): User
+    {
+        if (is_numeric($value)) {
+            $user = Craft::$app->getUsers()->getUserById($value);
+            if (!$user) {
+                throw new InvalidArgumentException("No user exists with the ID: $value");
+            }
+        } else {
+            $user = Craft::$app->getUsers()->getUserByUsernameOrEmail($value);
+            if (!$user) {
+                throw new InvalidArgumentException("No user exists with the username/email: $value");
+            }
+        }
+
+        return $user;
     }
 }

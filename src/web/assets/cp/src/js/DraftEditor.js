@@ -411,6 +411,7 @@ Craft.DraftEditor = Garnish.Base.extend({
 
             const addlSiteInfo = this.settings.addlSites.find(s => s.siteId == site.id);
             this._createSiteStatusField(site, addlSiteInfo.enabledByDefault);
+            this._updateGlobalStatus();
 
             $addlSiteSelect
                 .val('')

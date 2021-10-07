@@ -26,6 +26,7 @@ Craft.CP = Garnish.Base.extend({
     $deltaForms: null,
     $collapsibleTables: null,
 
+    isMobile: null,
     fixedHeader: false,
 
     tabManager: null,
@@ -66,6 +67,8 @@ Craft.CP = Garnish.Base.extend({
         this.$contentContainer = $('#content-container');
         this.$collapsibleTables = $('table.collapsible');
 
+        this.isMobile = Garnish.isMobileBrowser();
+
         this.updateSidebarMenuLabel();
 
         // Swap any instruction text with info icons
@@ -81,7 +84,7 @@ Craft.CP = Garnish.Base.extend({
             $instructions.remove();
         }
 
-        if (this.$header.length) {
+        if (!this.isMobile && this.$header.length) {
             this.addListener(Garnish.$win, 'scroll', 'updateFixedHeader');
             this.updateFixedHeader();
         }
@@ -523,6 +526,10 @@ Craft.CP = Garnish.Base.extend({
     },
 
     updateFixedHeader: function() {
+        if (this.isMobile) {
+            return;
+        }
+
         // Have we scrolled passed the top of #main?
         if (this.$main.length && this.$headerContainer[0].getBoundingClientRect().top < 0) {
             if (!this.fixedHeader) {

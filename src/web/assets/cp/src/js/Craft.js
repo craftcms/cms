@@ -1561,6 +1561,7 @@ $.extend(Craft,
             $('.formsubmit', $container).formsubmit();
             $('.menubtn', $container).menubtn();
             $('.datetimewrapper', $container).datetime();
+            $('.datewrapper > input[type="date"], .timewrapper > input[type="time"]', $container).datetimeinput();
 
             // Open outbound links in new windows
             // hat tip: https://stackoverflow.com/a/2911045/1688568
@@ -2163,10 +2164,10 @@ $.extend($.fn,
                                 .appendTo($wrapper)
                                 .on('click', () => {
                                     for (let i = 0; i < $inputs.length; i++) {
-                                        $inputs.eq(i).val('');
+                                        $inputs.eq(i).val('').trigger('input').trigger('change');
                                     }
                                     $btn.remove();
-                                    $inputs.first().focus();
+                                    $inputs.first().filter('[type="text"]').focus();
                                 })
                         }
                     } else {
@@ -2174,6 +2175,21 @@ $.extend($.fn,
                     }
                 };
                 $inputs.on('change', checkValue);
+                checkValue();
+            });
+        },
+
+        datetimeinput: function() {
+            return this.each(function() {
+                const $input = $(this);
+                const checkValue = () => {
+                    if ($input.val() === '') {
+                        $input.addClass('empty-value');
+                    } else {
+                        $input.removeClass('empty-value');
+                    }
+                };
+                $input.on('input', checkValue);
                 checkValue();
             });
         },
