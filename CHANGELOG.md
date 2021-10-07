@@ -106,6 +106,7 @@
 - Users are no longer required to have a username or email.
 - User queries now return all users by default, rather than only active users.
 - Filtering users by `active`, `pending`, and `locked` statuses no longer excludes suspended users.
+- When an image is saved as a new asset from the Image Editor via an Assets field, the Assets field will now automatically replace the selected asset with the new one. ([#8974](https://github.com/craftcms/cms/discussions/8974))
 - Entry queries’ `authorGroup()` param method now accepts an array of `craft\models\UserGroup` objects.
 - Relational fields now load elements in the current site rather than the primary site, if the source element isn’t localizable. ([#7048](https://github.com/craftcms/cms/issues/7048))
 - Built-in queue jobs are now always translated for the current user’s language. ([#9745](https://github.com/craftcms/cms/pull/9745))
@@ -113,7 +114,6 @@
 - All control panel templates end in `.twig` now. ([#9743](https://github.com/craftcms/cms/pull/9743))
 - The `users/save-user` action no longer includes a `unverifiedEmail` key in failure responses.
 - When using GraphQL to mutate entries, the `enabled` status is now affected on a per-site basis when specifying both the `enabled` and `siteId` parameters. ([#9771](https://github.com/craftcms/cms/issues/9771))
-- Saving an image as a new asset now automatically replaces the previous selected asset when editing assets in an assets field. ([#8974](https://github.com/craftcms/cms/discussions/8974))
 - Elements’ `searchScore` GraphQL fields are now returned as integers.
 - Plugins’ `$changelogUrl` properties must now have a `?string` type declaration.
 - Plugins’ `$description` properties must now have a `?string` type declaration.
