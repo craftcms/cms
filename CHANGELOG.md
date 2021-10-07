@@ -1,5 +1,14 @@
 # Release Notes for Craft CMS 3.x
 
+## 3.7.16 - 2021-10-06
+
+### Added
+- Added `craft\elements\Asset::getUrlsBySize()`. ([#9931](https://github.com/craftcms/cms/discussions/9931))
+
+### Fixed
+- Fixed a bug where the top-level “Enabled” lightswitch on Edit Entry pages wasn’t getting updated when adding a new site to an entry. ([#9935](https://github.com/craftcms/cms/issues/9935))
+- Fixed a bug where entry indexes weren’t showing changes to unpublished drafts until a published entry was saved. ([#9940](https://github.com/craftcms/cms/issues/9940))
+
 ## 3.7.15 - 2021-10-05
 
 ### Added

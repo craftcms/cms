@@ -2129,12 +2129,18 @@ class ElementQuery extends Query implements ElementQueryInterface
             // If specific IDs were requested, then use those
             if (is_numeric($this->id) || (is_array($this->id) && ArrayHelper::isNumeric($this->id))) {
                 $queryTags = (array)$this->id;
-            } else if ($this->drafts) {
-                $queryTags = ['drafts'];
-            } else if ($this->revisions) {
-                $queryTags = ['revisions'];
             } else {
-                $queryTags = $this->cacheTags() ?: ['*'];
+                $queryTags = $this->cacheTags();
+                if (!empty($queryTags)) {
+                    if ($this->drafts !== false) {
+                        $queryTags[] = 'drafts';
+                    }
+                    if ($this->revisions !== false) {
+                        $queryTags[] = 'revisions';
+                    }
+                } else {
+                    $queryTags[] = '*';
+                }
             }
 
             foreach ($queryTags as $tag) {
