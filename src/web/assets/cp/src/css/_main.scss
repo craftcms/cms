@@ -4402,6 +4402,7 @@ ul.tree,
 }
 
 .menu ul li a:not(.sel):not(.disabled):hover,
+.menu ul li a:not(.sel):not(.disabled):focus,
 .menu:not(:hover) ul li a:not(.disabled).hover {
   @include menu-option-active-styles;
 

@@ -484,7 +484,6 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
   background: $grey050;
 
   .flex {
-    height: 50px;
     align-items: center;
   }
 }
@@ -513,25 +512,26 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
 
   nav {
     margin: 0;
+  }
+}
 
-    ul {
-      display: flex;
-      flex-direction: row;
-      align-items: stretch;
+.breadcrumb-list {
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+  flex-wrap: wrap;
 
-      li {
-        display: inline-flex;
-        align-items: center;
+  li {
+    display: inline-flex;
+    align-items: center;
 
-        a {
-          padding: 15px 0;
-        }
+    a {
+      padding: 15px 0;
+    }
 
-        &:after {
-          margin: 0 7px;
-          @include angle(right, $mediumHairlineColor);
-        }
-      }
+    &:after {
+      margin: 0 7px;
+      @include angle(right, $mediumHairlineColor);
     }
   }
 }
