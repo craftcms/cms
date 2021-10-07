@@ -139,7 +139,7 @@
                     </button>
 
                     {# New account dropdown #}
-                    <div style="position: relative;">
+                    <div class="account-toggle-wrapper" data-wrapper>
                         <button 
                             id="user-info"
                             aria-controls="account-menu" 
@@ -149,7 +149,7 @@
                             data-disclosure-trigger>
                             {{ userPhoto }}
                         </button>
-                        <div id="account-menu" class="menu menu--disclosure" data-align="right" data-position-relative-to-trigger>
+                        <div id="account-menu" class="menu menu--disclosure" data-align="right" data-align-to=".header-photo">
                             <ul>
                                 <li>
                                     <a href="{{ url('myaccount') }}" class="flex flex-nowrap">

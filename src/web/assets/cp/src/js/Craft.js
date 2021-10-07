@@ -1560,7 +1560,7 @@ $.extend(Craft,
             $('.nicetext', $container).nicetext();
             $('.formsubmit', $container).formsubmit();
             $('.menubtn', $container).menubtn();
-            $('[data-disclosure-trigger]', $container).disclosure();
+            $('[data-disclosure-trigger]', $container).disclosureMenu();
             $('.datetimewrapper', $container).datetime();
             $('.datewrapper > input[type="date"], .timewrapper > input[type="time"]', $container).datetimeinput();
 
@@ -2142,7 +2142,7 @@ $.extend($.fn,
             });
         },
 
-        disclosure: function() {
+        disclosureMenu: function() {
             return this.each(function() {
                 var $trigger = $(this);
                 var $disclosureId = $trigger.attr('aria-controls');
@@ -2151,7 +2151,7 @@ $.extend($.fn,
                 if ($disclosureId) {
                     var settings = {};
 
-                    new Garnish.Disclosure($trigger, settings);
+                    new Garnish.DisclosureMenu($trigger, settings);
                 }
             });
         },

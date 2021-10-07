@@ -3234,7 +3234,7 @@ body.rtl #page-container { padding-right: 226px; }
 
 #alerts li a.go:hover { border-color: #CF1124; -o-transition: border-color linear 100ms; transition: border-color linear 100ms; }
 
-#global-header { width: 100%; overflow-x: auto; margin-bottom: 14px; background: #fff; box-shadow: 0 0 0 1px #cdd8e4, 0 2px 12px rgba(205, 216, 228, 0.5); background: #f3f7fc; }
+#global-header { width: 100%; margin-bottom: 14px; background: #fff; box-shadow: 0 0 0 1px #cdd8e4, 0 2px 12px rgba(205, 216, 228, 0.5); background: #f3f7fc; }
 
 #global-header:focus { box-shadow: 0 0 0 1px #127FBF, 0 0 0 3px rgba(18, 127, 191, 0.5); }
 
@@ -3297,6 +3297,8 @@ body.ltr #announcements .announcement.unread h2:after { left: -13px; }
 body.rtl #announcements .announcement.unread h2:after { right: -13px; }
 
 #announcements .announcement p { margin: 0; }
+
+.account-toggle-wrapper { position: relative; }
 
 #user-info { display: -webkit-flex; display: flex; -webkit-flex-direction: row; flex-direction: row; -webkit-align-items: center; align-items: center; height: 100%; background-color: transparent; border-radius: 0; }
 

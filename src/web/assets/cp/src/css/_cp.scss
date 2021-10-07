@@ -479,7 +479,6 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
 
 #global-header {
   width: 100%;
-  overflow-x: auto;
   margin-bottom: 14px;
   @include pane;
   background: $grey050;
@@ -609,6 +608,10 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
       margin: 0;
     }
   }
+}
+
+.account-toggle-wrapper {
+  position: relative;
 }
 
 #user-info {
