@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 3.x
 
-## Unreleased
+## 3.7.16 - 2021-10-06
 
 ### Added
 - Added `craft\elements\Asset::getUrlsBySize()`. ([#9931](https://github.com/craftcms/cms/discussions/9931))
