@@ -888,7 +888,8 @@ td.right {
       transition: opacity linear 100ms;
     }
 
-    &:hover {
+    &:hover,
+    &:focus {
       color: $mediumTextColor !important;
       text-decoration: none;
 

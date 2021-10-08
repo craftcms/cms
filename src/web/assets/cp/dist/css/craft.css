@@ -486,9 +486,9 @@ body.rtl .sidebar .customize-sources .icon { margin-left: 4px; }
 
 .sidebar .customize-sources .label { opacity: 0; -o-transition: opacity linear 100ms; transition: opacity linear 100ms; }
 
-.sidebar .customize-sources:hover { color: #596673 !important; text-decoration: none; }
+.sidebar .customize-sources:hover, .sidebar .customize-sources:focus { color: #596673 !important; text-decoration: none; }
 
-.sidebar .customize-sources:hover .label { opacity: 1; }
+.sidebar .customize-sources:hover .label, .sidebar .customize-sources:focus .label { opacity: 1; }
 
 .sidebar .customize-sources:hover { color: #0B69A3; }
 
