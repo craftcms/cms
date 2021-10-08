@@ -6,6 +6,9 @@
 - Logs now include the raw request body in place of the `$_POST` array, if the `$_POST` array is empty. ([#9941](https://github.com/craftcms/cms/discussions/9941))
 - Reverted [#9806](https://github.com/craftcms/cms/discussions/9806) from Craft 3.7.12 because it causes performance issues in some scenarios.
 
+### Fixed
+- Fixed a bug where entry drafts weren’t getting propagated to other sites automatically after a section’s Propagation Method setting was changed. ([#9944](https://github.com/craftcms/cms/issues/9944))
+
 ## 3.7.16 - 2021-10-06
 
 ### Added
