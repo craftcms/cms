@@ -8,6 +8,7 @@
 
 ### Fixed
 - Fixed a bug where entry drafts weren’t getting propagated to other sites automatically after a section’s Propagation Method setting was changed. ([#9944](https://github.com/craftcms/cms/issues/9944))
+- Fixed a bug where user indexes weren’t immediately showing changes to users’ activation/suspension states. ([#9947](https://github.com/craftcms/cms/issues/9947))
 
 ## 3.7.16 - 2021-10-06
 
