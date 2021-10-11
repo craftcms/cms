@@ -4089,8 +4089,11 @@ ul.tree,
     }
   }
 
-  &:hover .buttons {
-    opacity: 1;
+  &:hover,
+  &:focus-within {
+    .buttons {
+      opacity: 1;
+    }
   }
 }
 

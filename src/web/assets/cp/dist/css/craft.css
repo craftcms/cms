@@ -2019,7 +2019,7 @@ body.rtl .preview-thumb-container .buttons { left: 10px; }
 
 @supports ((-webkit-backdrop-filter: blur(10px)) or (backdrop-filter: blur(10px))) { .preview-thumb-container .buttons .btn:hover { background-color: rgba(96, 109, 123, 0.7); } }
 
-.preview-thumb-container:hover .buttons { opacity: 1; }
+.preview-thumb-container:hover .buttons, .preview-thumb-container:focus-within .buttons { opacity: 1; }
 
 /* element selector modals */
 .elementselectormodal { padding-bottom: 62px; -webkit-user-select: none; user-select: none; }
