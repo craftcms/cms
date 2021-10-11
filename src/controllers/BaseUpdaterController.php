@@ -13,6 +13,7 @@ use craft\errors\MigrateException;
 use craft\errors\MigrationException;
 use craft\helpers\App;
 use craft\helpers\Json;
+use craft\validators\UrlValidator;
 use craft\web\assets\updater\UpdaterAsset;
 use craft\web\Controller;
 use craft\web\Response as CraftResponse;
@@ -309,6 +310,25 @@ abstract class BaseUpdaterController extends Controller
      * @return array
      */
     abstract protected function postComposerInstallState(): array;
+
+    /**
+     * Returns the return URL provided by the `return` body param, if it’s a valid URL.
+     *
+     * @return string|null
+     * @throws BadRequestHttpException if the `return` body param isn’t a valid URL.
+     * @since 3.7.17
+     */
+    protected function findReturnUrl(): ?string
+    {
+        $returnUrl = $this->request->getBodyParam('return');
+        if ($returnUrl === null) {
+            return null;
+        }
+        if (strpos($returnUrl, '{') !== false) {
+            throw new BadRequestHttpException("Invalid return URL: $returnUrl");
+        }
+        return $returnUrl;
+    }
 
     /**
      * Returns the return URL that should be passed with a finished state.
