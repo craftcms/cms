@@ -7,6 +7,9 @@ Craft.CP = Garnish.Base.extend({
     authManager: null,
 
     $nav: null,
+    $navToggle: null,
+    $globalSidebar: null,
+    $globalContainer: null,
     $mainContainer: null,
     $alerts: null,
     $crumbs: null,
@@ -52,6 +55,9 @@ Craft.CP = Garnish.Base.extend({
 
         // Find all the key elements
         this.$nav = $('#nav');
+        this.$navToggle = $('#nav-toggle');
+        this.$globalSidebar = $('#global-sidebar');
+        this.$globalContainer = $('#global-container');
         this.$mainContainer = $('#main-container');
         this.$alerts = $('#alerts');
         this.$crumbs = $('#crumbs');
@@ -98,6 +104,7 @@ Craft.CP = Garnish.Base.extend({
                 }
             });
             this.handleWindowResize();
+            this.setSidebarNavAttributes();
 
             // Fade the notification out two seconds after page load
             var $errorNotifications = this.$notificationContainer.children('.error'),
@@ -117,7 +124,7 @@ Craft.CP = Garnish.Base.extend({
         }
 
         // Toggles
-        this.addListener($('#nav-toggle'), 'click', 'toggleNav');
+        this.addListener(this.$navToggle, 'click', 'toggleNav');
         this.addListener($('#sidebar-toggle'), 'click', 'toggleSidebar');
 
         // Does this page have a primary form?
@@ -360,6 +367,47 @@ Craft.CP = Garnish.Base.extend({
 
     toggleNav: function() {
         Garnish.$bod.toggleClass('showing-nav');
+        this.setSidebarNavAttributes();
+
+        var isOpen = this.navIsOpen();
+
+        if (isOpen) {
+            this.$globalSidebar.find(':focusable')[0].focus();
+            this.$navToggle.attr('aria-expanded', 'true');
+        } else {
+            this.$navToggle.focus();
+            this.$navToggle.attr('aria-expanded', 'false');
+        }
+    },
+
+    globalSidebarIsOffscreen: function() {
+        var styles = getComputedStyle(this.$globalContainer[0]);
+        var leftPosition = parseInt(styles.left, 10);
+        var rightPosition = parseInt(styles.right, 10);
+
+        return (leftPosition < 0 || rightPosition < 0);
+    },
+
+    setSidebarNavAttributes: function() {
+        var isOpen = this.navIsOpen();
+        var focusableItems = this.$globalSidebar.find(':focusable');
+        var tabIndex;
+
+        var isOffscreen = this.globalSidebarIsOffscreen();
+
+        if (isOpen) {
+            tabIndex = 0;
+        } else if (!isOpen && isOffscreen) {
+            tabIndex = -1;
+        }
+
+        $(focusableItems).each(function() {
+            $(this).attr('tabindex', tabIndex);
+        });
+    },
+
+    navIsOpen: function() {
+        return Garnish.$bod.hasClass('showing-nav');
     },
 
     toggleSidebar: function() {
@@ -485,6 +533,7 @@ Craft.CP = Garnish.Base.extend({
 
     handleWindowResize: function() {
         this.updateResponsiveTables();
+        this.setSidebarNavAttributes();
     },
 
     updateResponsiveTables: function() {
