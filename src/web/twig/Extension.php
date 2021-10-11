@@ -298,6 +298,12 @@ class Extension extends AbstractExtension implements GlobalsInterface
             new TwigTest('callable', function($obj): bool {
                 return is_callable($obj);
             }),
+            new TwigTest('countable', function ($obj): bool {
+                if (!function_exists('is_countable')) {
+                    return is_array($obj) || $obj instanceof \Countable;
+                }
+                return is_countable($obj);
+            }),
             new TwigTest('float', function($obj): bool {
                 return is_float($obj);
             }),
@@ -307,11 +313,17 @@ class Extension extends AbstractExtension implements GlobalsInterface
             new TwigTest('integer', function($obj): bool {
                 return is_int($obj);
             }),
+            new TwigTest('iterable', function ($obj): bool {
+                return is_iterable($obj);
+            }),
             new TwigTest('missing', function($obj) {
                 return $obj instanceof MissingComponentInterface;
             }),
             new TwigTest('numeric', function($obj): bool {
                 return is_numeric($obj);
+            }),
+            new TwigTest('object', function ($obj): bool {
+                return is_object($obj);
             }),
             new TwigTest('resource', function($obj): bool {
                 return is_resource($obj);
