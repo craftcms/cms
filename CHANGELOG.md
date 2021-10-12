@@ -5,7 +5,6 @@
 ### Added
 
 - Added the `is countable` Twig test.
-- Added the `is iterable` Twig test.
 - Added the `is object` Twig test.
 
 ### Changed
