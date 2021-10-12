@@ -449,6 +449,32 @@ class ElementHelper
     }
 
     /**
+     * Returns whether the given element (or its root element if a block element) is a canonical element.
+     *
+     * @param ElementInterface $element
+     * @return bool
+     * @since 3.7.17
+     */
+    public static function isCanonical(ElementInterface $element): bool
+    {
+        $root = static::rootElement($element);
+        return $root->getIsCanonical();
+    }
+
+    /**
+     * Returns whether the given element (or its root element if a block element) is a derivative of another element.
+     *
+     * @param ElementInterface $element
+     * @return bool
+     * @since 3.7.17
+     */
+    public static function isDerivative(ElementInterface $element): bool
+    {
+        $root = static::rootElement($element);
+        return $root->getIsDerivative();
+    }
+
+    /**
      * Returns whether the given derivative element is outdated compared to its canonical element.
      *
      * @param ElementInterface $element

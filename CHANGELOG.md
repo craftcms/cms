@@ -5,6 +5,8 @@
 ### Added
 - Added the `provisional` argument for the remaining draft mutations via GraphQL. ([#9946](https://github.com/craftcms/cms/issues/9946))
 - Added the `notes` and `name` arguments to the create draft mutation via GraphQL.
+- Added `craft\helpers\ElementHelper::isCanonical()`.
+- Added `craft\helpers\ElementHelper::isDerivative()`.
 
 ### Changed
 - Logs now include the raw request body in place of the `$_POST` array, if the `$_POST` array is empty. ([#9941](https://github.com/craftcms/cms/discussions/9941))
@@ -15,6 +17,7 @@
 - Fixed a bug where user indexes weren’t immediately showing changes to users’ activation/suspension states. ([#9947](https://github.com/craftcms/cms/issues/9947))
 - Fixed an element query performance issue. ([#9806](https://github.com/craftcms/cms/discussions/9806))
 - Fixed a bug where front-end action requests could resolve to disabled sites.
+- Fixed a bug where Assets fields weren’t respecting their dynamic folder path settings for unpublished drafts. ([#9619](https://github.com/craftcms/cms/issues/9619))
 
 ## 3.7.16 - 2021-10-06
 
