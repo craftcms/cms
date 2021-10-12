@@ -2180,11 +2180,11 @@ body.ltr .menubtn span.icon, body.ltr .menu span.icon { margin-right: 10px; }
 
 body.rtl .menubtn span.icon, body.rtl .menu span.icon { margin-left: 10px; }
 
-.menu ul li a:not(.sel):not(.disabled):hover, .menu ul li a:not(.sel):not(.disabled):focus, .menu:not(:hover) ul li a:not(.disabled).hover { color: #fff; background-color: #8b96a2; --text-color: #fff; --light-text-color: #e4edf6; }
+.menu ul li a:not(.sel):not(.disabled):hover, .menu:not(:hover) ul li a:not(.disabled).hover { color: #fff; background-color: #8b96a2; --text-color: #fff; --light-text-color: #e4edf6; }
 
-.menu ul li a:not(.sel):not(.disabled):hover span.icon, .menu ul li a:not(.sel):not(.disabled):hover:before, .menu ul li a:not(.sel):not(.disabled):focus span.icon, .menu ul li a:not(.sel):not(.disabled):focus:before, .menu:not(:hover) ul li a:not(.disabled).hover span.icon, .menu:not(:hover) ul li a:not(.disabled).hover:before { color: #fff; }
+.menu ul li a:not(.sel):not(.disabled):hover span.icon, .menu ul li a:not(.sel):not(.disabled):hover:before, .menu:not(:hover) ul li a:not(.disabled).hover span.icon, .menu:not(:hover) ul li a:not(.disabled).hover:before { color: #fff; }
 
-.menu ul li a:not(.sel):not(.disabled):hover.error, .menu ul li a:not(.sel):not(.disabled):focus.error, .menu:not(:hover) ul li a:not(.disabled).hover.error { color: #fff !important; }
+.menu ul li a:not(.sel):not(.disabled):hover.error, .menu:not(:hover) ul li a:not(.disabled).hover.error { color: #fff !important; }
 
 body.ltr .menu hr.padded, body.ltr .menu h6.padded { margin-left: 10px; }
 
