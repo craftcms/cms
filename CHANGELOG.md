@@ -2,10 +2,15 @@
 
 ## Unreleased
 
+### Added
+- Added the `provisional` argument for the remaining draft mutations via GraphQL. ([#9946](https://github.com/craftcms/cms/issues/9946))
+- Added the `notes` and `name` arguments to the create draft mutation via GraphQL.
+
 ### Changed
 - Logs now include the raw request body in place of the `$_POST` array, if the `$_POST` array is empty. ([#9941](https://github.com/craftcms/cms/discussions/9941))
 
 ### Fixed
+- Fixed a bug where it wasn’t possible to create or publish a provisional draft via GraphQL. ([#9946](https://github.com/craftcms/cms/issues/9946))
 - Fixed a bug where entry drafts weren’t getting propagated to other sites automatically after a section’s Propagation Method setting was changed. ([#9944](https://github.com/craftcms/cms/issues/9944))
 - Fixed a bug where user indexes weren’t immediately showing changes to users’ activation/suspension states. ([#9947](https://github.com/craftcms/cms/issues/9947))
 - Fixed an element query performance issue. ([#9806](https://github.com/craftcms/cms/discussions/9806))
