@@ -5,6 +5,8 @@
 ### Added
 - Added the `provisional` argument for the remaining draft mutations via GraphQL. ([#9946](https://github.com/craftcms/cms/issues/9946))
 - Added the `notes` and `name` arguments to the create draft mutation via GraphQL.
+- Added the `is countable` Twig test.
+- Added the `is object` Twig test.
 - Added `craft\helpers\ElementHelper::isCanonical()`.
 - Added `craft\helpers\ElementHelper::isDerivative()`.
 
