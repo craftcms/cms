@@ -47,6 +47,8 @@ Craft.CP = Garnish.Base.extend({
     includingDetailsOnUpdatesCheck: false,
     checkForUpdatesCallbacks: null,
 
+    resizeTimeout: null,
+
     init: function() {
         // Is this session going to expire?
         if (Craft.remainingSessionTime !== 0) {
@@ -101,6 +103,12 @@ Craft.CP = Garnish.Base.extend({
                 // Ignore element resizes
                 if (ev.target === window) {
                     this.handleWindowResize();
+
+                    clearTimeout(this.resizeTimeout);
+                    var cp = this;
+                    this.resizeTimeout = setTimeout(function() {
+                        cp.setSidebarNavAttributes();
+                    }, 100);
                 }
             });
             this.handleWindowResize();
@@ -366,48 +374,61 @@ Craft.CP = Garnish.Base.extend({
     },
 
     toggleNav: function() {
-        Garnish.$bod.toggleClass('showing-nav');
-        this.setSidebarNavAttributes();
+        const isExpanded = this.navIsExpanded();
 
-        var isOpen = this.navIsOpen();
-
-        if (isOpen) {
-            this.$globalSidebar.find(':focusable')[0].focus();
-            this.$navToggle.attr('aria-expanded', 'true');
-        } else {
+        if (isExpanded) {
+            this.disableGlobalSidebarLinks();
             this.$navToggle.focus();
             this.$navToggle.attr('aria-expanded', 'false');
+            Garnish.$bod.removeClass('showing-nav');
+        } else {
+            this.enableGlobalSidebarLinks();
+            this.$globalSidebar.find(':focusable')[0].focus();
+            this.$navToggle.attr('aria-expanded', 'true');
+            Garnish.$bod.addClass('showing-nav');
         }
     },
 
     globalSidebarIsOffscreen: function() {
-        var styles = getComputedStyle(this.$globalContainer[0]);
-        var leftPosition = parseInt(styles.left, 10);
-        var rightPosition = parseInt(styles.right, 10);
+        const styles = getComputedStyle(this.$globalContainer[0]);
+        const leftPosition = parseInt(styles.left, 10);
+        const rightPosition = parseInt(styles.right, 10);
 
         return (leftPosition < 0 || rightPosition < 0);
     },
 
-    setSidebarNavAttributes: function() {
-        var isOpen = this.navIsOpen();
-        var focusableItems = this.$globalSidebar.find(':focusable');
-        var tabIndex;
-
-        var isOffscreen = this.globalSidebarIsOffscreen();
-
-        if (isOpen) {
-            tabIndex = 0;
-        } else if (!isOpen && isOffscreen) {
-            tabIndex = -1;
-        }
-
+    enableGlobalSidebarLinks: function() {
+        const focusableItems = this.$globalSidebar.find(':focusable');
+        
         $(focusableItems).each(function() {
-            $(this).attr('tabindex', tabIndex);
+            $(this).attr('tabindex', '0');
         });
     },
 
-    navIsOpen: function() {
-        return Garnish.$bod.hasClass('showing-nav');
+    disableGlobalSidebarLinks: function() {
+        const focusableItems = this.$globalSidebar.find(':focusable');
+        
+        $(focusableItems).each(function() {
+            $(this).attr('tabindex', '-1');
+        });
+    },
+
+    setSidebarNavAttributes: function() {
+        const isExpanded = this.navIsExpanded();
+
+        if (!isExpanded) {
+            this.disableGlobalSidebarLinks();
+        } else {
+            this.enableGlobalSidebarLinks();
+        }
+    },
+
+    navIsExpanded: function() {
+        const isAlwaysVisible = getComputedStyle(this.$globalSidebar[0]).getPropertyValue('--is-always-visible');
+
+        return this.$navToggle.attr('aria-expanded') === 'true' 
+            || !this.globalSidebarIsOffscreen()
+            || isAlwaysVisible === 'true';
     },
 
     toggleSidebar: function() {
@@ -533,7 +554,6 @@ Craft.CP = Garnish.Base.extend({
 
     handleWindowResize: function() {
         this.updateResponsiveTables();
-        this.setSidebarNavAttributes();
     },
 
     updateResponsiveTables: function() {

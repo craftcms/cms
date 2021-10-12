@@ -3080,7 +3080,7 @@ body.ltr #global-container { -o-transition: left 250ms ease-out; transition: lef
 body.rtl #global-container { -o-transition: right 250ms ease-out; transition: right 250ms ease-out; }
 
 /* global sidebar */
-#global-sidebar { position: fixed; z-index: 100; display: -webkit-flex; display: flex; -webkit-flex-direction: column; flex-direction: column; height: 100vh; padding: 0; overflow-y: auto; overflow-x: hidden; -webkit-overflow-scrolling: touch; -moz-osx-font-smoothing: grayscale; -webkit-font-smoothing: antialiased; font-weight: 500; background-color: #33404d; }
+#global-sidebar { --is-always-visible: true; position: fixed; z-index: 100; display: -webkit-flex; display: flex; -webkit-flex-direction: column; flex-direction: column; height: 100vh; padding: 0; overflow-y: auto; overflow-x: hidden; -webkit-overflow-scrolling: touch; -moz-osx-font-smoothing: grayscale; -webkit-font-smoothing: antialiased; font-weight: 500; background-color: #33404d; }
 
 body:not(.reduce-focus-visibility) #global-sidebar :focus { box-shadow: 0 0 0 1px #1992D4, 0 0 0 3px rgba(25, 146, 212, 0.5); }
 
@@ -3103,6 +3103,8 @@ body.reduce-focus-visibility #global-sidebar :focus-visible { box-shadow: 0 0 0 
 #global-sidebar > a .icon, #global-sidebar *:not(.has-subnav) > a .icon { -o-transition: opacity linear 100ms; transition: opacity linear 100ms; }
 
 #global-sidebar .light { color: #7b8793; }
+
+@media only screen and (max-width: 1199px) { #global-sidebar { --is-always-visible: false; } }
 
 #system-info { display: grid; grid-template-columns: 30px auto; grid-gap: 10px; padding: 0 10px; position: relative; -webkit-flex: 0 0 50px; flex: 0 0 50px; -webkit-flex-direction: row; flex-direction: row; -webkit-align-items: center; align-items: center; background-color: #29333d; }
 
