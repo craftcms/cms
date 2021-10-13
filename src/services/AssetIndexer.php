@@ -293,7 +293,7 @@ class AssetIndexer extends Component
         $mutex = Craft::$app->getMutex();
         $lockName = 'idx--' . $indexingSession->id . '--';
 
-        if (!$mutex->acquire($lockName, 5)) {
+        if (!$mutex->acquire($lockName, 3)) {
             throw new Exception('Could not acquire a lock for the indexing session "' . $indexingSession->id . '".');
         }
 

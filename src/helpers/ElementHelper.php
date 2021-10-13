@@ -290,18 +290,21 @@ class ElementHelper
         foreach ($element->getSupportedSites() as $site) {
             if (!is_array($site)) {
                 $site = [
-                    'siteId' => $site,
+                    'siteId' => (int)$site,
                 ];
-            } else if (!isset($site['siteId'])) {
-                throw new Exception('Missing "siteId" key in ' . get_class($element) . '::getSupportedSites()');
+            } else {
+                if (!isset($site['siteId'])) {
+                    throw new Exception('Missing "siteId" key in ' . get_class($element) . '::getSupportedSites()');
+                }
+                $site['siteId'] = (int)$site['siteId'];
             }
 
             $site['siteUid'] = $siteUidMap[$site['siteId']];
 
-            $site = array_merge([
+            $site += [
                 'propagate' => true,
                 'enabledByDefault' => true,
-            ], $site);
+            ];
 
             if ($withUnpropagatedSites || $site['propagate']) {
                 $sites[] = $site;

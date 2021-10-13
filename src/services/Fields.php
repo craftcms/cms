@@ -1083,7 +1083,9 @@ class Fields extends Component
             ->one();
 
         if (!$result) {
-            return $this->_layoutsByType[$type] = new FieldLayout();
+            return $this->_layoutsByType[$type] = new FieldLayout([
+                'type' => $type,
+            ]);
         }
 
         $id = $result['id'];

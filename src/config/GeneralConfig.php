@@ -829,7 +829,7 @@ class GeneralConfig extends BaseObject
      * See [[ConfigHelper::durationInSeconds()]] for a list of supported value types.
      *
      * @group Security
-     * @defaultAlt 5 minutes
+     * @defaultAlt 1 hour
      */
     public $invalidLoginWindowDuration = 3600;
 
