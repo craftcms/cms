@@ -32,7 +32,7 @@ Craft.CP = Garnish.Base.extend({
     fixedHeader: false,
 
     breadcrumbListWidth: 0,
-    breadcrumbDisclosureItem: '<li data-more-btn><button>More</button><div id="breadcrumb-disclosure" class="menu menu--disclosure"></div></li>',
+    breadcrumbDisclosureItem: '<li class="breadcrumb-toggle-wrapper" data-disclosure-item data-wrapper><button data-disclosure-trigger aria-controls="breadcrumb-disclosure">More</button><div id="breadcrumb-disclosure" class="menu menu--disclosure" data-disclosure-menu><ul></ul></div></li>',
 
     tabManager: null,
 
@@ -514,7 +514,7 @@ Craft.CP = Garnish.Base.extend({
         if (!this.breadcrumbItemsWrap()) return;
 
         this.$breadcrumbList.append(this.breadcrumbDisclosureItem);
-        const triggerWidth = this.$breadcrumbList.find('[data-more-btn]')[0].offsetWidth;
+        const triggerWidth = this.$breadcrumbList.find('[data-disclosure-item]')[0].offsetWidth;
         let visibleItemWidth = triggerWidth;
         let finalIndex;
         let newWidth;
@@ -539,6 +539,10 @@ Craft.CP = Garnish.Base.extend({
         this.$breadcrumbList.html('');
         this.$breadcrumbList.append(shownItems);
         this.$breadcrumbList.append(this.breadcrumbDisclosureItem);
+        
+        // This add hidden items to disclosure menu
+        this.$breadcrumbList.find('[data-disclosure-menu] ul').append(hiddenItems);
+        this.$breadcrumbList.find('[data-disclosure-trigger]').disclosureMenu();
     },
 
     updateResponsiveTables: function() {

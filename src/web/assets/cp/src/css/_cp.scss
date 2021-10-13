@@ -525,14 +525,35 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
     display: inline-flex;
     align-items: center;
 
-    a {
+    a,
+    button {
       padding: 15px 0;
+    }
+
+    button {
+      cursor: pointer;
     }
 
     &:after {
       margin: 0 7px;
       @include angle(right, $mediumHairlineColor);
     }
+  }
+
+  & .menu--disclosure {
+    li {
+      display: block;
+
+      &::after {
+        content: none;
+      }
+    }
+  }
+}
+
+li.breadcrumb-toggle-wrapper {
+  &::after {
+    content: none;
   }
 }
 
@@ -610,6 +631,7 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
   }
 }
 
+.breadcrumb-toggle-wrapper,
 .account-toggle-wrapper {
   position: relative;
 }

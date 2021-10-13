@@ -4401,8 +4401,8 @@ ul.tree,
   }
 }
 
-.menu ul li a:not(.sel):not(.disabled):hover,
-.menu:not(:hover) ul li a:not(.disabled).hover {
+.menu:not(.menu--disclosure) ul li a:not(.sel):not(.disabled):hover,
+.menu:not(.menu--disclosure):not(:hover) ul li a:not(.disabled).hover {
   @include menu-option-active-styles;
 
   --text-color: #{$white};
@@ -4416,6 +4416,10 @@ ul.tree,
   &.error {
     color: $menuOptionActiveColor !important;
   }
+}
+
+.menu--disclosure ul li a:hover {
+  @include disclosure-link-hover-styles;
 }
 
 .menu {
