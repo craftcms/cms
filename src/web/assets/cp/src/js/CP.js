@@ -32,7 +32,7 @@ Craft.CP = Garnish.Base.extend({
     fixedHeader: false,
 
     breadcrumbListWidth: 0,
-    breadcrumbDisclosureItem: '<li class="breadcrumb-toggle-wrapper" data-disclosure-item data-wrapper><button data-disclosure-trigger aria-controls="breadcrumb-disclosure">More</button><div id="breadcrumb-disclosure" class="menu menu--disclosure" data-disclosure-menu><ul></ul></div></li>',
+    breadcrumbDisclosureItem: `<li class="breadcrumb-toggle-wrapper" data-disclosure-item data-wrapper><button data-disclosure-trigger aria-controls="breadcrumb-disclosure">${Craft.t('app', 'More')}</button><div id="breadcrumb-disclosure" class="menu menu--disclosure" data-disclosure-menu><ul></ul></div></li>`,
 
     tabManager: null,
 
@@ -501,7 +501,8 @@ Craft.CP = Garnish.Base.extend({
         const listWidth = this.$breadcrumbList[0].offsetWidth;
         let totalItemWidth = 0;
         
-        this.$breadcrumbItems.each(function() {
+        // Iterate through all list items (inclusive of more button)
+        this.$breadcrumbList.find('li').each(function() {
             totalItemWidth += $(this)[0].offsetWidth;
         });
 
@@ -513,7 +514,10 @@ Craft.CP = Garnish.Base.extend({
     handleBreadcrumbVisibility: function() {
         if (!this.breadcrumbItemsWrap()) return;
 
-        this.$breadcrumbList.append(this.breadcrumbDisclosureItem);
+        if (this.$breadcrumbList.find('[data-disclosure-item]').length === 0) {
+            this.$breadcrumbList.append(this.breadcrumbDisclosureItem);
+        }
+
         const triggerWidth = this.$breadcrumbList.find('[data-disclosure-item]')[0].offsetWidth;
         let visibleItemWidth = triggerWidth;
         let finalIndex;
@@ -532,15 +536,16 @@ Craft.CP = Garnish.Base.extend({
             }
         });
 
-        // Arrays of hidden vs. visible breadcrumbs
+        // Separate breadcrums that should remain visible vs. hidden
         const shownItems = this.$breadcrumbItems.slice(0, finalIndex + 1);
         const hiddenItems = this.$breadcrumbItems.slice(finalIndex + 1);
         
+        // Empty list DOM and add shown items and trigger item
         this.$breadcrumbList.html('');
         this.$breadcrumbList.append(shownItems);
         this.$breadcrumbList.append(this.breadcrumbDisclosureItem);
         
-        // This add hidden items to disclosure menu
+        // Add hidden items to disclosure menu and initialize
         this.$breadcrumbList.find('[data-disclosure-menu] ul').append(hiddenItems);
         this.$breadcrumbList.find('[data-disclosure-trigger]').disclosureMenu();
     },
