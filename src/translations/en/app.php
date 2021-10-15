@@ -862,6 +862,7 @@ return [
     'Months' => 'Months',
     'More Resources' => 'More Resources',
     'More' => 'More',
+    'More…' => 'More…',
     'Move down' => 'Move down',
     'Move to the left' => 'Move to the left',
     'Move to the right' => 'Move to the right',

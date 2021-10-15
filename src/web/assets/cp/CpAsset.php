@@ -190,6 +190,7 @@ JS;
             'Make required',
             'Merge the folder (any conflicting files will be replaced)',
             'More',
+            'More…',
             'Move down',
             'Move up',
             'Move',
