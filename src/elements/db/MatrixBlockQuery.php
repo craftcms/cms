@@ -108,6 +108,12 @@ class MatrixBlockQuery extends ElementQuery
     public function __set($name, $value)
     {
         switch ($name) {
+            case 'field':
+                $this->field($value);
+                break;
+            case 'owner':
+                $this->owner($value);
+                break;
             case 'type':
                 $this->type($value);
                 break;

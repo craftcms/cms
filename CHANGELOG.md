@@ -14,6 +14,7 @@
 - Improved the accessibility of overflowing breadcrumbs and the “My account” menu. ([#9945](https://github.com/craftcms/cms/pull/9945))
 - Logs now include the raw request body in place of the `$_POST` array, if the `$_POST` array is empty. ([#9941](https://github.com/craftcms/cms/discussions/9941))
 - It’s now possible to modify Entries fields to relate entry drafts. ([#9963](https://github.com/craftcms/cms/issues/9963))
+- It’s now possible to set Matrix block queries’ `field` and `owner` params via config arrays. ([#9968](https://github.com/craftcms/cms/issues/9968))
 - Updated Garnish to 0.1.47.
 
 ### Fixed
