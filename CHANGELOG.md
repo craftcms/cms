@@ -15,6 +15,7 @@
 - Logs now include the raw request body in place of the `$_POST` array, if the `$_POST` array is empty. ([#9941](https://github.com/craftcms/cms/discussions/9941))
 - It’s now possible to modify Entries fields to relate entry drafts. ([#9963](https://github.com/craftcms/cms/issues/9963))
 - It’s now possible to set Matrix block queries’ `field` and `owner` params via config arrays. ([#9968](https://github.com/craftcms/cms/issues/9968))
+- The `_includes/forms/text.html` control panel template now supports an `orientation` config value, which defines the `dir` input attribute.
 - Updated Garnish to 0.1.47.
 
 ### Fixed
@@ -30,6 +31,7 @@
 - Fixed a bug where HTML entities within nested field values weren’t getting encoded for Matrix block previews. ([#9964](https://github.com/craftcms/cms/issues/9964))
 - Fixed an error that could occur on element edit pages if there weren’t any alternate form actions. ([#9969](https://github.com/craftcms/cms/issues/9969))
 - Fixed a bug where it wasn’t possible to upload an asset via a data URL if its MIME type contained a period. ([#9632](https://github.com/craftcms/cms/issues/9632))
+- Fixed a bug where the characters-left indicator was right-aligned for RTL Plain Text fields, for users with an LTR formatting locale. ([#9967](https://github.com/craftcms/cms/issues/9967))
 
 ## 3.7.16 - 2021-10-06
 
