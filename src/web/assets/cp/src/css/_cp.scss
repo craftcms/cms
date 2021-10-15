@@ -86,16 +86,9 @@ $sidebarLinkSecondaryColor: $grey200;
   @include light-on-dark-text;
   background-color: $grey800;
 
-  body:not(.reduce-focus-visibility) & {
-    :focus {
-      box-shadow: $lightFocusRing;
-    }
-  }
-
-  body.reduce-focus-visibility & {
-    :focus-visible {
-      box-shadow: $lightFocusRing;
-    }
+  body:not(.reduce-focus-visibility) &:focus,
+  body.reduce-focus-visibility &:focus-visible {
+    box-shadow: $lightFocusRing;
   }
 
   a {
